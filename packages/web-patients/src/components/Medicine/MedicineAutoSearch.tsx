@@ -235,6 +235,13 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 14,
       lineHeight: '18px',
     },
+    notForSale: {
+      backgroundColor: 'rgba(137,0,0,0.5)',
+      fontSize: 12,
+      fontWeight: 600,
+      padding: '3px 8px',
+      color: '#fff',
+    },
   };
 });
 
@@ -523,7 +530,9 @@ export const MedicineAutoSearch: React.FC = (props) => {
                               : ''}
                           </AphButton>
                         )}
-                        {!medicine.sell_online ? <div>NOT FOR SALE</div> : null}
+                        {!medicine.sell_online ? (
+                          <div className={classes.notForSale}>NOT FOR SALE</div>
+                        ) : null}
                         {isInCart(medicine) && (
                           <div className={classes.addQty}>
                             <AphButton

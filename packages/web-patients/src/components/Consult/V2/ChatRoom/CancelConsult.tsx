@@ -39,7 +39,6 @@ const useStyles = makeStyles((theme: Theme) => {
           paddingLeft: 0,
           paddingRight: 0,
           borderBottom: '1px solid rgba(1,71,91,0.2)',
-          textTransform: 'capitalize',
           '&:last-child': {
             borderBottom: 'none',
           },

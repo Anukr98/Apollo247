@@ -681,7 +681,7 @@ const PayMedicine: React.FC = (props) => {
     );
     setMutationLoading(true);
     paymentMutation()
-      .then((res) => {
+      .then((res: any) => {
         /**Gtm code start  */
         let ecommItems: any[] = [];
         cartItems.map((items, key) => {
@@ -748,7 +748,7 @@ const PayMedicine: React.FC = (props) => {
           setIsLoading(false);
         }
       })
-      .catch((e) => {
+      .catch((e: any) => {
         /**Gtm code start  */
         gtmTracking({
           category: 'Pharmacy',

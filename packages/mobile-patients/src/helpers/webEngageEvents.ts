@@ -693,6 +693,7 @@ export interface WebEngageEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
+    Rank: number;
   };
   [WebEngageEventName.DOCTOR_CONNECT_CARD_CLICK]: {
     'Online Price': number;

@@ -1,10 +1,25 @@
+import { Platform } from 'react-native';
 import ApolloClient from 'apollo-client';
 import {
   GetDoctorNextAvailableSlot,
   GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots,
 } from '@aph/mobile-doctors/src/graphql/types/GetDoctorNextAvailableSlot';
-import { NEXT_AVAILABLE_SLOT, DOWNLOAD_DOCUMENT } from '@aph/mobile-doctors/src/graphql/profiles';
+import {
+  NEXT_AVAILABLE_SLOT,
+  DOWNLOAD_DOCUMENT,
+  GET_PARTICIPANTS_LIVE_STATUS,
+} from '@aph/mobile-doctors/src/graphql/profiles';
 import { downloadDocuments } from '@aph/mobile-doctors/src/graphql/types/downloadDocuments';
+import {
+  USER_STATUS,
+  USER_TYPE,
+  BOOKINGSOURCE,
+  DEVICETYPE,
+} from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import {
+  setAndGetNumberOfParticipants,
+  setAndGetNumberOfParticipantsVariables,
+} from '@aph/mobile-doctors/src/graphql/types/setAndGetNumberOfParticipants';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -66,6 +81,34 @@ export const getPrismUrls = (
       .catch((e) => {
         // const error = JSON.parse(JSON.stringify(e));
         rej({ error: e });
+      });
+  });
+};
+
+export const updateParticipantsLiveStatus = (
+  client: ApolloClient<object>,
+  appointmentId: string,
+  userStatus: USER_STATUS
+) => {
+  const input = {
+    appointmentId: appointmentId,
+    userType: USER_TYPE.DOCTOR,
+    sourceType: BOOKINGSOURCE.MOBILE,
+    deviceType: Platform.OS === 'ios' ? DEVICETYPE.IOS : DEVICETYPE.ANDROID,
+    userStatus: userStatus,
+  };
+  return new Promise((res, rej) => {
+    client
+      .query<setAndGetNumberOfParticipants, setAndGetNumberOfParticipantsVariables>({
+        query: GET_PARTICIPANTS_LIVE_STATUS,
+        variables: input,
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        res(data);
+      })
+      .catch((e) => {
+        rej(e);
       });
   });
 };

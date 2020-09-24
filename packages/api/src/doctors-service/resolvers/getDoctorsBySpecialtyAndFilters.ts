@@ -687,7 +687,9 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         element['key'] &&
         !('name' in ifKeyExist(filters[field], 'name', capitalize(element['key'])))
       ) {
-        if (field != 'brands') {
+        if (field == 'gender') {
+          filters[field].push({ name: element['key'].toUpperCase() });
+        } else if (field != 'brands') {
           filters[field].push({ name: capitalize(element['key']) });
         } else {
           filters[field].push({

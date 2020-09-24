@@ -175,6 +175,7 @@ export const getDoctorDetailsTypeDefs = gql`
     streetLine3: String
     thumbnailUrl: String
     zip: String
+    isJdAllowed: Boolean
     bankAccount: [BankAccount]
     consultHours: [ConsultHours]
     doctorHospital: [DoctorHospital!]!

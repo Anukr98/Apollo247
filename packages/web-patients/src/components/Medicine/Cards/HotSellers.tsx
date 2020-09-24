@@ -50,6 +50,7 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'center',
       '& img': {
         maxWidth: 70,
+        maxHeight: 70,
         margin: 'auto',
       },
     },
@@ -137,7 +138,7 @@ interface HotSellerProps {
 export const HotSellers: React.FC<HotSellerProps> = (props) => {
   const classes = useStyles({});
   const sliderSettings = {
-    infinite: true,
+    infinite: false,
     speed: 500,
     slidesToShow: 6,
     slidesToScroll: 3,
@@ -149,7 +150,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
         settings: {
           slidesToShow: 3,
           slidesToScroll: 3,
-          infinite: true,
+          infinite: false,
           dots: true,
           centerPadding: '50px',
         },

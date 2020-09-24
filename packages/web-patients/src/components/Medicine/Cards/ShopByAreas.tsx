@@ -60,7 +60,7 @@ interface ShopByAreasProps {
 export const ShopByAreas: React.FC<ShopByAreasProps> = (props) => {
   const classes = useStyles({});
   const sliderSettings = {
-    infinite: true,
+    infinite: false,
     speed: 500,
     slidesToShow: 6,
     slidesToScroll: 3,
@@ -72,7 +72,7 @@ export const ShopByAreas: React.FC<ShopByAreasProps> = (props) => {
         settings: {
           slidesToShow: 3,
           slidesToScroll: 3,
-          infinite: true,
+          infinite: false,
           dots: true,
         },
       },
