@@ -417,7 +417,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
             tatU,
           } = res.data.response;
           const { exist, mrp, qty } = items[0];
-          const { sku, quantity, special_price, price } = cartItems[0];
+          const { sku, quantity, price, mou } = cartItems[0];
           pharmaTatApiTracking({
             source: 'Cart',
             inputSku: sku,
@@ -425,10 +425,10 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
             inputLat: paramObject.lat,
             inputLng: paramObject.lng,
             inputPincode: paramObject.postalcode,
-            inputMrp: special_price || price,
+            inputMrp: price,
             itemsInCart: cartItems.length,
             resExist: exist,
-            resMrp: mrp,
+            resMrp: mrp * parseInt(mou),
             resQty: qty,
             resLat: lat,
             resLng: lng,
@@ -462,15 +462,15 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
             if (res.data.response.length > 0) {
               /** Webengage Tracking */
               const { exist, mrp, qty } = res.data.response[0];
-              const { sku, special_price, price } = cartItems[0];
+              const { sku, price, mou } = cartItems[0];
               pharmaAvailabilityApiTracking({
                 source: 'Cart',
                 inputSku: sku,
                 inputPincode: zipCode,
-                inputMrp: special_price || price,
+                inputMrp: price,
                 itemsInCart: cartItems.length,
                 resExist: exist,
-                resMrp: mrp,
+                resMrp: mrp * parseInt(mou),
                 resQty: qty,
               });
               /** Webengage Tracking */

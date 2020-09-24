@@ -854,7 +854,7 @@ export const MedicineCart: React.FC = (props) => {
             tatU,
           } = res.data.response;
           const { exist, mrp, qty } = items[0];
-          const { sku, quantity, special_price, price } = cartItems[0];
+          const { sku, quantity, price, mou } = cartItems[0];
           pharmaTatApiTracking({
             source: 'Cart',
             inputSku: sku,
@@ -862,10 +862,10 @@ export const MedicineCart: React.FC = (props) => {
             inputLat: lat,
             inputLng: lng,
             inputPincode: pincode,
-            inputMrp: special_price || price,
+            inputMrp: price,
             itemsInCart: cartItems.length,
             resExist: exist,
-            resMrp: mrp,
+            resMrp: mrp * parseInt(mou),
             resQty: qty,
             resLat: lat,
             resLng: lng,
