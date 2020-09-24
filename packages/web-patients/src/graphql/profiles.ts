@@ -1023,3 +1023,11 @@ export const CREATE_SUBSCRIPTION = gql`
     }
   }
 `;
+
+export const INITIATE_CALL_FOR_PARTNER = gql`
+  query initiateCallForPartner($mobileNumber: String!, $benefitId: String!) {
+    initiateCallForPartner(mobileNumber: $mobileNumber, benefitId: $benefitId) {
+      success
+    }
+  }
+`;
