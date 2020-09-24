@@ -81,10 +81,8 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
   const editedData = {
     ivrEnabled: ivrSwitch,
     typeOfAppointment: appointmentType,
-    onlineRemainderTime:
-      appointmentType !== ConsultMode.PHYSICAL ? onlineAppointmentTime.value : null,
-    inpersonRemainderTime:
-      appointmentType !== ConsultMode.ONLINE ? inpersonAppointmentTime.value : null,
+    onlineRemainderTime: onlineAppointmentTime.value,
+    inpersonRemainderTime: inpersonAppointmentTime.value,
     followUpDays: followUpDays.key,
   };
 
@@ -119,14 +117,8 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       const ivrDetails = {
         ivrEnabled: g(doctorDetails, 'isIvrSet') || false,
         typeOfAppointment: g(doctorDetails, 'ivrConsultType') || ConsultMode.BOTH,
-        onlineRemainderTime:
-          (g(doctorDetails, 'ivrConsultType') || ConsultMode.BOTH) !== ConsultMode.PHYSICAL
-            ? (g(doctorDetails, 'ivrCallTimeOnline') || 10).toString()
-            : null,
-        inpersonRemainderTime:
-          (g(doctorDetails, 'ivrConsultType') || ConsultMode.BOTH) !== ConsultMode.ONLINE
-            ? (g(doctorDetails, 'ivrCallTimePhysical') || 10).toString()
-            : null,
+        onlineRemainderTime: (g(doctorDetails, 'ivrCallTimeOnline') || 10).toString(),
+        inpersonRemainderTime: (g(doctorDetails, 'ivrCallTimePhysical') || 10).toString(),
       };
       AsyncStorage.setItem(
         'settingsData',
@@ -141,11 +133,10 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       setIvrSwitch(ivrDetails.ivrEnabled);
       setAppointmentType(ivrDetails.typeOfAppointment);
       setOnlineAppointmentTime(
-        getOpionObject(timeOptionArray, ivrDetails.onlineRemainderTime || '10', false) ||
-          timeOptionArray[0]
+        getOpionObject(timeOptionArray, ivrDetails.onlineRemainderTime, false) || timeOptionArray[0]
       );
       setInPersonAppointmentTime(
-        getOpionObject(timeOptionArray, ivrDetails.inpersonRemainderTime || '10', false) ||
+        getOpionObject(timeOptionArray, ivrDetails.inpersonRemainderTime, false) ||
           timeOptionArray[0]
       );
     }
