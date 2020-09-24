@@ -26,7 +26,7 @@ import { OTPublisher, OTSession, OTSubscriber } from 'opentok-react-native';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { AppState, AppStateStatus, StatusBar, Text, TouchableOpacity, View } from 'react-native';
 import CallDetectorManager from 'react-native-call-detection';
-import { Image } from 'react-native-elements';
+import { FastImageLoading } from '@aph/mobile-doctors/src/components/ui/FastImageLoading';
 import RNSound from 'react-native-sound';
 import SystemSetting from 'react-native-system-setting';
 
@@ -398,21 +398,10 @@ export const AudioVideoProvider: React.FC = (props) => {
         ]}
       >
         {patientImage ? (
-          <Image
-            source={{
-              uri: patientImage,
-            }}
-            style={isMinimized ? styles.patientImageMinimizedStyle : styles.patientImageStyle}
+          <FastImageLoading
+            uri={patientImage}
+            imageStyle={isMinimized ? styles.patientImageMinimizedStyle : styles.patientImageStyle}
             resizeMode={'contain'}
-            placeholderStyle={
-              isMinimized ? styles.placeHolderLoaderMinimizedStyle : styles.placeHolderLoaderStyle
-            }
-            PlaceholderContent={
-              <Spinner
-                style={{ backgroundColor: 'transparent' }}
-                message={strings.common.imageLoading}
-              />
-            }
           />
         ) : (
           <UserPlaceHolder
