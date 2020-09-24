@@ -2,6 +2,7 @@ import React from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography, Tabs, Tab, Grid } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
+import { ConfigOneApolloData } from 'strings/AppConfig';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -197,35 +198,20 @@ export const MyMembership: React.FC = () => {
       </div>
       <div className={classes.benefitsContainer}>
         <Grid container spacing={2}>
-          <Grid item md={4}>
-            <div className={classes.benefitContent}>
-              <div className={classes.imgContainer}>
-                <img src={require('images/apollo-clinics.jpg')} alt="Apollo Clinics" />
-              </div>
-              <Typography component="h3">Apollo Clinics</Typography>
-              <Typography>Free home sample collections on clinic consultations</Typography>
-            </div>
-          </Grid>
-          <Grid item md={4}>
-            <div className={classes.benefitContent}>
-              <div className={classes.imgContainer}>
-                <img src={require('images/apollo-cradle.jpg')} alt="Apollo Cradle" />
-              </div>
-              <Typography component="h3">Apollo Cradle</Typography>
-              <Typography>Avail 15% discount on Health Checks</Typography>
-            </div>
-          </Grid>
-          <Grid item md={4}>
-            <div className={classes.benefitContent}>
-              <div className={classes.imgContainer}>
-                <img src={require('images/apollo-diagnostics.jpg')} alt="Apollo Diagnostics" />
-              </div>
-              <Typography component="h3">Apollo Diagnostics</Typography>
-              <Typography>
-                Avail 5% discount on Lab &amp; Imaging Services in OP Diagnostics
-              </Typography>
-            </div>
-          </Grid>
+					{ ConfigOneApolloData.myMembershipBenefits &&
+						ConfigOneApolloData.myMembershipBenefits.map((benefitsData: any) => {
+						return (
+							<Grid item md={4}>
+								<div className={classes.benefitContent}>
+									<div className={classes.imgContainer}>
+										<img src={require(`images/${benefitsData.image}`)} alt={benefitsData.title} />
+									</div>
+									<Typography component="h3">{benefitsData.title}</Typography>
+									<Typography>{benefitsData.description}</Typography>
+								</div>
+							</Grid>
+						)
+					})}
         </Grid>
         <Grid container spacing={3}>
           <Grid item md={6}>

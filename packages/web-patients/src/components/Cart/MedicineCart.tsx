@@ -29,6 +29,7 @@ import {
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { getDeviceType, getCouponByUserMobileNumber } from 'helpers/commonHelpers';
+import { ConfigOneApolloData } from 'strings/AppConfig';
 import { ApplyCoupon } from 'components/Cart/ApplyCoupon';
 import _compact from 'lodash/compact';
 import _find from 'lodash/find';
@@ -1959,8 +1960,7 @@ export const MedicineCart: React.FC = (props) => {
               <div className={classes.oneApolloDetails}>
                 <img src={require('images/one-apollo.svg')} width="30" alt="One Apollo" />
                 <Typography>
-                  You will earn OneApollo Health Credits for this transaction, if applicable,
-                  T&amp;C apply.
+                  {ConfigOneApolloData.medicineCartString}
                 </Typography>
               </div>
             </div>

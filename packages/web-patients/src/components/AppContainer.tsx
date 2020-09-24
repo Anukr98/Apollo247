@@ -71,7 +71,6 @@ const TestsLanding = loadable(() => import('components/Tests/TestsLanding'));
 const AddressBook = loadable(() => import('components/MyAccount/AddressBook'));
 const MyAccount = loadable(() => import('components/MyAccount/MyAccount'));
 const MyPayments = loadable(() => import('components/MyAccount/MyPayments'));
-// const OneApolloMembership = loadable(() => import('components/MyAccount/OneApolloMembership'));
 
 const useStyles = makeStyles((theme: Theme) => {
   return {

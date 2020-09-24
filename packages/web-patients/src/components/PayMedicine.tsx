@@ -20,6 +20,7 @@ import {
 } from 'webEngageTracking';
 import { useMutation } from 'react-apollo-hooks';
 import { getDeviceType, getCouponByUserMobileNumber } from 'helpers/commonHelpers';
+import { ConfigOneApolloData } from 'strings/AppConfig';
 import { CouponCodeConsult } from 'components/Coupon/CouponCodeConsult';
 import _lowerCase from 'lodash/lowerCase';
 
@@ -154,7 +155,17 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     paymentContainer: {
       height: '100%',
-    },
+		},
+		positionRelative: {
+			position: 'relative',
+		},
+		progressContainer: {
+			position: 'absolute',
+			top: 0,
+			left: 0,
+			bottom: 0,
+			right: 0
+		},
     paper: {
       borderRadius: 5,
       padding: 20,
@@ -510,7 +521,8 @@ const PayMedicine: React.FC = (props) => {
   const [isOneApolloHcApplied, oneApolloHcApplied] = React.useState<boolean>(false);
   const [totalWithHCsAndDiscount, calculateTotalWithHcs] = React.useState<number>(0);
   const [setOneApolloHCsResponse, oneApolloHCsResponse] = useState<any>({});
-  const [isLoading, setIsLoading] = React.useState<boolean>(false);
+	const [isLoading, setIsLoading] = React.useState<boolean>(false);
+	const [oneApolloLoader, setOneApolloLoader] = React.useState<boolean>(true);
 
   const [paymentOptions, setPaymentOptions] = React.useState([]);
   const [mutationLoading, setMutationLoading] = useState(false);
@@ -633,6 +645,7 @@ const PayMedicine: React.FC = (props) => {
         })
         .then((res) => {
           if (res && res.data && res.data.getOneApolloUser) {
+						setOneApolloLoader(false);
             const data = res.data.getOneApolloUser;
             oneApolloHCsResponse(res.data.getOneApolloUser);
             if (data.availableHC >= mrpTotal - productDiscount) {
@@ -643,7 +656,7 @@ const PayMedicine: React.FC = (props) => {
           }
         })
         .catch((e) => {
-          console.log('Error occured while getting Patient OneApollo HCs', e);
+          console.log(ConfigOneApolloData.apolloHcsError, e);
         });
     }
   }, [currentPatient, mrpTotal, productDiscount]);
@@ -1092,7 +1105,16 @@ const PayMedicine: React.FC = (props) => {
               </p>
             </div>
             <Grid container spacing={2} className={classes.paymentContainer}>
-              <Grid item xs={12} sm={8}>
+              <Grid item xs={12} sm={8} className={classes.positionRelative}>
+								{oneApolloLoader ? (
+									<div className={classes.progressContainer}>
+									<CircularProgress
+										className={classes.circlularProgress}
+										size={34}
+										color="secondary"
+									/>
+									</div>
+								) : (
                 <Paper className={`${classes.paper} ${classes.paperHeight}`}>
                   {setOneApolloHCsResponse && setOneApolloHCsResponse.availableHC > 0 && (
                     <div className={classes.healthCredit}>
@@ -1269,7 +1291,8 @@ const PayMedicine: React.FC = (props) => {
                     </div>
                   )}
                 </Paper>
-              </Grid>
+								)}
+							</Grid>
               <Grid item xs={12} sm={4} className={classes.chargesContainer}>
                 {params.payType === 'consults' && (
                   <div
