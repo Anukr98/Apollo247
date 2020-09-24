@@ -66,7 +66,7 @@ const identifyHdfcCustomer: Resolver<
     const isHDFC =
       (await customerIdentification(args.mobileNumber, args.DOB))?.decryptedResponse
         ?.customerCASADetailsDTO?.existingCustomer === 'Y';
-    if (isHDFC) {
+    if (!isHDFC) {
       return { status: HDFC_CUSTOMER.NOT_HDFC_CUSTOMER };
     }
     const otpGenerationResponse = await generateOtp(args.mobileNumber);
