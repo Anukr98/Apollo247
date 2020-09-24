@@ -122,18 +122,15 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
                 params.putString("appointment_id",appointment_id);
                 params.putString("call_type",incoming_call_type);
 
-                if(isAppRuning){
+                
                     String deeplinkUri="apollopatients://DoctorCall?"+appointment_id+'+'+incoming_call_type;
                     Uri uri = Uri.parse(deeplinkUri);
                     Log.e("deeplinkUri", uri.toString());
                     Intent intent = new Intent(Intent.ACTION_VIEW, uri);
                     finish();
                     startActivity(intent);
-                }
-            else{
-                    sendEvent(reactContext, "accept", params);
-                    finish();
-                }
+                
+         
             }
         });
 
