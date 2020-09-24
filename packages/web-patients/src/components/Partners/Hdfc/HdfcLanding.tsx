@@ -638,49 +638,55 @@ export const HdfcLanding: React.FC = (props) => {
             <Typography component="h2"> Benefits</Typography>
             <ul className={classes.benefitList}>
               <li>
-                <img src={require('images/hdfc/call.svg')} alt="Doctor On Call" />
+                <img src={require('images/hdfc/call.svg')} alt="Apollo Doctor on call 24|7" />
                 <div className={classes.benefitDetails}>
-                  <Typography component="h3">24*7 Doctor on Call</Typography>
-                  <Typography>Get an instant call from an Apollo Doctor</Typography>
+                  <Typography component="h3">Apollo Doctor on call 24|7​</Typography>
+                  <Typography>Complimentary on-call assistance by Apollo Doctors</Typography>
+                </div>
+              </li>
+              <li>
+                <img src={require('images/hdfc/diagnostics.svg')} alt="Diagnostic Tests" />
+                <div className={classes.benefitDetails}>
+                  <Typography component="h3">Diagnostic Tests</Typography>
+                  <Typography>Doorstep sample collection by trained experts​</Typography>
                 </div>
               </li>
               <li>
                 <img src={require('images/hdfc/medicine-delivery.svg')} alt="Medicine Delivery" />
+
                 <div className={classes.benefitDetails}>
-                  <Typography component="h3">Seamless Medicine Delivery</Typography>
-                  <Typography>Get upto 20% off on Apollo pharmacy</Typography>
+                  <Typography component="h3">Doorstep Medicine Delivery</Typography>
+                  <Typography>
+                    Get 10% off on medicines and upto 20% off on Apollo Branded products with free
+                    home delivery​
+                  </Typography>
+                </div>
+              </li>
+              <li>
+                <img
+                  src={require('images/hdfc/covid-access.svg')}
+                  alt="Preferential access to COVID Care"
+                />
+                <div className={classes.benefitDetails}>
+                  <Typography component="h3">Preferential access to COVID Care</Typography>
+                  <Typography>
+                    At-home testing, pre and post COVID assessment, @home @hotel isolation
+                    assistance​
+                  </Typography>
                 </div>
               </li>
               <li>
                 <img src={require('images/hdfc/health-records.svg')} alt="Health Records" />
                 <div className={classes.benefitDetails}>
-                  <Typography component="h3">Patients Health Records</Typography>
-                  <Typography>Access to a digital vault for your health records</Typography>
-                </div>
-              </li>
-              <li>
-                <img src={require('images/hdfc/diabetes.svg')} alt="Diabetes Program" />
-                <div className={classes.benefitDetails}>
-                  <Typography component="h3">Diabetes Management Program</Typography>
-                  <Typography>Complimentary Access to Base Diabetes Management Program</Typography>
-                </div>
-              </li>
-              <li>
-                <img src={require('images/hdfc/health-testing.svg')} alt="Covid Health Testing" />
-                <div className={classes.benefitDetails}>
-                  <Typography component="h3">Covid Health Testing</Typography>
-                  <Typography>Preferential access for Covid testing</Typography>
+                  <Typography component="h3">Patients Health Records Vault</Typography>
+                  <Typography>Digitization and access to your health records</Typography>
                 </div>
               </li>
               <li>
                 <img src={require('images/hdfc/access.svg')} alt="Access to Apollo Services" />
                 <div className={classes.benefitDetails}>
-                  <Typography component="h3">
-                    Access to Apollo Doctors &amp; Diagnostic Services
-                  </Typography>
-                  <Typography>
-                    Get 24/7 access to Apollo Doctors and Diagnostic services on App
-                  </Typography>
+                  <Typography component="h3">Access to 7000+ Apollo Doctors</Typography>
+                  <Typography>Doctors from over 70 specialities to consult with</Typography>
                 </div>
               </li>
             </ul>
