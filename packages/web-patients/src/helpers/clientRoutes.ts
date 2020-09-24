@@ -68,6 +68,7 @@ export const clientRoutes = {
   prescription: (appointmentId: string) => `/prescription/${appointmentId}`,
   // sitemap: (sitemap: string) => `/${sitemap}`,
   // childSitemap: (sitemap: string, pageNo: string) => `/${sitemap}/${pageNo}`,
+  knowledgeBaseLanding: () => '/knowledge-base',
 };
 
 export const clientBaseUrl = () => webPatientsBaseUrl();
