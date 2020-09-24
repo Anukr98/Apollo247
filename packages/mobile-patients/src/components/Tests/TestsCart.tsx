@@ -231,7 +231,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         selectedTimeSlot &&
         selectedTimeSlot!.slotInfo!.slot! &&
         deliveryAddressId! &&
-        deliveryAddressId.length > 0
+        deliveryAddressId.length > 0 &&
+        cartItems
       ) {
         console.log('s');
         fetchHC_ChargesForTest(selectedTimeSlot!.slotInfo!.slot!);
@@ -239,7 +240,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     } else {
       setHcCharges!(0);
     }
-  }, [selectedTab, selectedTimeSlot, deliveryAddressId]);
+  }, [selectedTab, selectedTimeSlot, deliveryAddressId, cartItems]);
 
   useEffect(() => {
     if (cartItems.length) {
@@ -1102,7 +1103,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               <Text style={styles.blueTextStyle}>- Rs. {couponDiscount.toFixed(2)}</Text>
             </View>
           )}
-          {selectedTab == tabs[0].title && hcCharges > 0 && (
+          {selectedTab == tabs[0].title && (
             <View style={styles.rowSpaceBetweenStyle}>
               <Text style={styles.blueTextStyle}>Home Collection Charges</Text>
               <Text style={styles.blueTextStyle}>Rs. {hcCharges.toFixed(2)}</Text>
@@ -1560,7 +1561,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     console.log('insdie the function');
     setLoading!(true);
     try {
-      const HomeCollectionCharges = await client.query<
+      const HomeCollectionChargesApi = await client.query<
         getDiagnosticsHCCharges,
         getDiagnosticsHCChargesVariables
       >({
@@ -1573,13 +1574,21 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         },
         fetchPolicy: 'no-cache',
       });
-      console.log('charges...' + HomeCollectionCharges);
+      /**
+       * check for the types..
+       */
+      const getCharges =
+        ((HomeCollectionChargesApi.data.getDiagnosticsHCCharges
+          .charges as unknown) as getDiagnosticsHCCharges_getDiagnosticsHCCharges) || null;
+      console.log(getCharges);
+      if (getCharges != null) {
+        setHcCharges!(getCharges);
+      }
       setLoading!(false);
     } catch (error) {
       setLoading!(false);
       renderAlert(`Something went wrong, unable to fetch Home collection charges.`);
     }
-    setHcCharges!(100);
   };
 
   const renderProfiles = () => {
