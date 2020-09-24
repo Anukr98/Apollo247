@@ -1558,7 +1558,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   // };
 
   const fetchHC_ChargesForTest = async (slotVal: string) => {
-    console.log('insdie the function');
     setLoading!(true);
     try {
       const HomeCollectionChargesApi = await client.query<
@@ -1577,12 +1576,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       /**
        * check for the types..
        */
-      const getCharges =
-        ((HomeCollectionChargesApi.data.getDiagnosticsHCCharges
-          .charges as unknown) as getDiagnosticsHCCharges_getDiagnosticsHCCharges) || null;
-      console.log(getCharges);
+
+      let getCharges = g(HomeCollectionChargesApi.data, 'getDiagnosticsHCCharges', 'charges') || 0;
       if (getCharges != null) {
-        setHcCharges!(getCharges);
+        setHcCharges!(getCharges as getDiagnosticsHCCharges_getDiagnosticsHCCharges[]);
       }
       setLoading!(false);
     } catch (error) {
