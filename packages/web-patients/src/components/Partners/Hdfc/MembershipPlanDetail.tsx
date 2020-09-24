@@ -152,7 +152,7 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: '12px 16px',
         background: '#fff',
       },
-      '& a': {
+      '& a, button': {
         color: '#FC9916',
         position: 'relative',
         background: '#fff',
@@ -454,7 +454,7 @@ const useStyles = makeStyles((theme: Theme) => {
           },
         },
       },
-      '& a': {
+      '& a, button': {
         background: '#fff',
         color: '#FC9916',
         width: '100%',
@@ -486,6 +486,9 @@ const useStyles = makeStyles((theme: Theme) => {
           margin: 0,
         },
       },
+    },
+    disabledButton: {
+      color: 'grey !important',
     },
     couponInactive: {
       padding: '0 30px',
@@ -663,11 +666,11 @@ export const MembershipPlanDetail: React.FC = (props) => {
   }, []);
 
   const handleWhatsappChat = (number: String, message: String) => {
-    window.open(`https://api.whatsapp.com/send?phone=91${number}&message=${message}`);
+    window.open(`https://api.whatsapp.com/send?phone=91${number}&text=${message}`);
   };
 
   const handleCTAClick = (cta_action: any) => {
-    if (cta_action.meta.type == 'REDIRECT') {
+    if (cta_action.type == 'REDIRECT') {
       if (cta_action.meta.action == 'SPECIALITY_LISTING') {
         history.push(clientRoutes.specialityListing());
       } else if (cta_action.meta.action == 'PHARMACY_LANDING') {
@@ -679,14 +682,14 @@ export const MembershipPlanDetail: React.FC = (props) => {
       } else if (cta_action.meta.action == 'DIAGNOSTICS_LANDING') {
         history.push(clientRoutes.tests());
       }
-    } else if (cta_action.meta.type == 'CALL_API') {
+    } else if (cta_action.type == 'CALL_API') {
       if (cta_action.meta.action == 'CALL_EXOTEL_API') {
         console.log('call exotel api');
       }
-    } else if (cta_action.meta.type == 'WHATSAPP_OPEN_CHAT') {
+    } else if (cta_action.type == 'WHATSAPP_OPEN_CHAT') {
       handleWhatsappChat(cta_action.meta.action, cta_action.meta.message);
     } else {
-      history.push(clientRoutes.tests());
+      history.push(clientRoutes.welcome());
     }
   };
 
@@ -824,6 +827,7 @@ export const MembershipPlanDetail: React.FC = (props) => {
                                 {item.cta_label != 'NULL' && (
                                   <AphButton
                                     disabled={!active}
+                                    className={active ? '' : classes.disabledButton}
                                     onClick={() => handleCTAClick(item.cta_action)}
                                     // href={clientRoutes.welcome()}
                                   >
