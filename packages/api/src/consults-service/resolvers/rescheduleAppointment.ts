@@ -193,7 +193,7 @@ const getAppointmentRescheduleDetails: Resolver<
   const rescheduleDetails = await rescheduleRepo.getRescheduleDetailsByAppointment(apptDetails.id);
   if (!rescheduleDetails) throw new AphError(AphErrorMessages.NO_RESCHEDULE_DETAILS, undefined, {});
   const apptCount = await appointmentRepo.checkIfAppointmentExist(
-    rescheduleDetails.rescheduleInitiatedId,
+    apptDetails.doctorId,
     rescheduleDetails.rescheduledDateTime
   );
   if (rescheduleDetails.rescheduledDateTime < new Date() || apptCount > 0) {
@@ -201,7 +201,7 @@ const getAppointmentRescheduleDetails: Resolver<
     let availableSlot;
     while (true) {
       const nextSlot = await appointmentRepo.getDoctorNextSlotDate(
-        rescheduleDetails.rescheduleInitiatedId,
+        apptDetails.doctorId,
         nextDate,
         doctorsDb,
         apptDetails.appointmentType,
