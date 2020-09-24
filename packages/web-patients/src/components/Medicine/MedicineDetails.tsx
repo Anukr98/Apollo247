@@ -644,6 +644,10 @@ const MedicineDetails: React.FC = (props) => {
             }
           )
           .then(({ data }) => {
+            if (data.productdp[0] && data.productdp[0].url_key === null) {
+              window.location.href = clientRoutes.medicines();
+              return;
+            }
             setMedicineDetails(data.productdp[0]);
             /**schema markup  start*/
             const {
@@ -848,6 +852,10 @@ const MedicineDetails: React.FC = (props) => {
   const history = useHistory();
 
   useEffect(() => {
+    if (params.sku === 'null') {
+      window.location.href = clientRoutes.medicines();
+      return;
+    }
     if (params.sku.match('[A-Z]{3}[0-9]{4}')) {
       setIsSkuVersion(true);
     }
@@ -855,7 +863,7 @@ const MedicineDetails: React.FC = (props) => {
   }, [params.sku]);
 
   useEffect(() => {
-    if (params && params.searchText) {
+    if (params && params.searchText && params.searchText !== 'null') {
       window.history.replaceState(null, '', clientRoutes.medicineDetails(params.sku));
     }
   }, []);
