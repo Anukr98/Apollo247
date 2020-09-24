@@ -31,11 +31,11 @@ export enum ApiConstants {
   PHYSICAL_APPOINTMENT_REMINDER_15_BODY = 'Your appointment with Dr {0} will start in 3 hours at {1}. We hope to see you soon :)',
   PHYSICAL_APPOINTMENT_REMINDER_60_BODY = 'Hi {0}! Dr. {1} will see you in an hour. Please come down to {2}.',
   PHYSICAL_APPOINTMENT_REMINDER_1_BODY = "Hi {0}! It's time to see Dr. {1}. Hope you're ready for your appointment.",
-  PHYSICAL_APPOINTMENT_REMINDER_DOCTOR_1_BODY = "Hi Dr. {0}! It's time to see {1}. Hope you're ready for your appointment.",
+  PHYSICAL_APPOINTMENT_REMINDER_DOCTOR_1_BODY = "Namaste Dr. {0}! It's time to see {1}. Hope you're ready for your appointment.",
 
   DOCTOR_APPOINTMENT_REMINDER_15_SMS = 'Appointment Reminder: Your appointment with {0} will start in 15 mins. Please be available online and prepared, accordingly.',
   DOCTOR_APPOINTMENT_REMINDER_15_SMS_PHYSICAL = 'Appointment Reminder: Your appointment with {0} will start in 15 mins. Please be available and prepared, accordingly.',
-  DOCTOR_APPOINTMENT_REMINDER_1_SMS = "Hi Dr. {0}! It's time to see {1}. Hope you're online and ready for your appointment.",
+  DOCTOR_APPOINTMENT_REMINDER_1_SMS = "Namaste Dr. {0}! It's time to see {1}. Hope you're online and ready for your appointment.",
 
   //appointment casesheet reminder 15
   APPOINTMENT_CASESHEET_REMINDER_15_TITLE = 'Appointment reminder',
@@ -48,7 +48,7 @@ export enum ApiConstants {
 
   //appointment reschedule by patient
   DOCTOR_APPOINTMENT_RESCHEDULE_TITLE = 'Appointment has been rescheduled',
-  DOCTOR_APPOINTMENT_RESCHEDULE_BODY = 'Hi Dr. {0}!  Your appointment {1} with {2} has been rescheduled  to {3}. ',
+  DOCTOR_APPOINTMENT_RESCHEDULE_BODY = 'Namaste Dr. {0}!  Your appointment {1} with {2} has been rescheduled  to {3}. ',
   //initiate junior doctor session
   JUNIOR_APPT_SESSION_TITLE = 'Junior doctor initiated the session',
   JUNIOR_APPT_SESSION_BODY = "Hi {0}! :) Dr. {2}'s team doctor is waiting to start your consultation prep. Please proceed to the Consult Room",
@@ -114,7 +114,7 @@ export enum ApiConstants {
   PATIENT_CANCEL_APPT_TITLE = 'Your appointment has been cancelled',
   PATIENT_CANCEL_APPT_BODY = 'Hi {0}! As per your request, your appointment {1} with Dr. {2} scheduled for {3} has been cancelled.',
   PATIENT_CANCEL_APPT_BODY_END = 'to book a new appointment with our top Apollo doctors.',
-  DOCTOR_PATIENT_CANCEL_SMS = 'Hi Dr. {0}! Your appointment {1} with {2} scheduled for {3} has unfortunately been cancelled. Please make note.',
+  DOCTOR_PATIENT_CANCEL_SMS = 'Namaste Dr. {0}! Your appointment {1} with {2} scheduled for {3} has unfortunately been cancelled.',
   //patient registration successfull
   PATIENT_REGISTRATION_TITLE = 'Welcome to Apollo24|7',
   PATIENT_REGISTRATION_BODY = "Hi {0}, Welcome to Apollo24|7. We're glad you're here! Consult online with our top Apollo doctors now!",
@@ -141,7 +141,7 @@ export enum ApiConstants {
   //physical book appointment sucessfull
   PHYSICAL_BOOK_APPOINTMENT_BODY_WITH_CLICK = 'Thanks for choosing Apollo24|7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3} at {4}. Click here {5} to fill your details before your consultation starts. This will take hardly 10 minutes and will help our doctor to assist you better. You may be required to pay additional fees for registration at Hospital for Visit Clinic appointments.',
   PHYSICAL_BOOK_APPOINTMENT_BODY = 'Thanks for choosing Apollo24|7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3} at {4}. Click here to fill your details before your consultation starts. This will take hardly 10 minutes and will help our doctor to assist you better.',
-  DOCTOR_BOOK_APPOINTMENT_SMS = 'Hi {4} {0}! You have a new appointment {1} with {2} scheduled for {3}.',
+  DOCTOR_BOOK_APPOINTMENT_SMS = 'Namaste {4} {0}! You have a new appointment {1} with {2} scheduled for {3}.',
   SEND_DOCTOR_BOOK_APPOINTMENT_SMS = 24, //send sms to doctor if appointment datetime is less than 24hrs
   DOCTOR_BOOK_APPOINTMENT_WHATSAPP = 'Hi%20{3}%20{0}%2C%20you%20have%20a%20new%20appointment%20for%20today.%0A%0APatient%20Name%20%3A%20{1}%0AAppointment%20Time%20%3A%20{2}%0A%0ATeam%20Apollo%2024%7C7',
   DIAGNOSTIC_ORDER_SUCCESS_TITLE = 'Diagnostic test is booked',
@@ -152,13 +152,13 @@ export enum ApiConstants {
   MEDICINE_ORDER_PAYMENT_FAILED_TITLE = 'Medicine order payment failed',
   MEDICINE_ORDER_PAYMENT_FAILED_BODY = "Hi {0}! We're sorry. :(  There's been a problem with your order. If money was debited from your account, it will be refunded automatically in 5-7 working days.",
   SENT_BY_API = 'SENT_BY_API',
-  DAILY_APPOINTMENT_SUMMARY = 'Hi Dr. {0}! Good morning. You have {1} appointment(s) booked for today on Apollo24|7. Summary of appointments',
+  DAILY_APPOINTMENT_SUMMARY = 'Namaste Dr. {0}! Good morning. You have {1} appointment(s) booked for today on Apollo24|7. Summary of appointments',
   ONLINE_APPOINTMENTS = '\nOnline Appointments : {0}',
   PHYSICAL_APPOINTMENTS = '\nPhysical Appointments : {0}',
   DAILY_WHATSAPP_NOTIFICATION = 'Hi Dr.{0}! Good morning. You have {1} appointment(s) booked for today on Apollo24|7. \nSummary:',
   WHATSAPP_LINK = '\nClick here to check your today’s calendar on Mobile Application ',
   FOLLOWUP_NOTIFITICATION_TEXT = 'Hi {0}! Hope you are feeling better after your consultation with Dr. {1} :) You can book a free follow up with us till {2}.',
-  CHAT_MESSGAE_TEXT = 'Hi Dr. {0}! Your patient {1} has sent you a chat message. ',
+  CHAT_MESSGAE_TEXT = 'Namaste Dr. {0}! Your patient {1} has sent you a chat message. ',
   SEND_PATIENT_NOTIFICATION = 'Hi%20{3}%20{0}%21%20{1}%20is%20waiting%20for%20you%20to%20start%20the%20consultation.%20Please%20go%20to%20your%20dashboard%20in%20Apollo%2024%7C7%20and%20start%20the%20consultation.%20https%3A%2F%2F{5}%2Fdoctordeeplink%3Furl%3Dapollodoctors%3A%2F%2Fappointments%3Fid%3D{2}%26date%3D{4}',
   WHATSAPP_SD_CHAT_NOTIFICATION = 'Hi%20{2}%20{0}%21%20{1}%20has%20sent%20you%20a%20chat%20message.%20Click%20here%20to%20respond.%20https%3A%2F%2F{4}%2Fdoctordeeplink%3Furl%3Dapollodoctors%3A%2F%2Fchat%3F{3}',
   DAILY_APPOINTMENT_SUMMARY_RESPONSE = 'Daily Appointment summaries have been sent to {0} Doctor(s) successfully',
@@ -271,9 +271,10 @@ export enum ApiConstants {
   CACHE_EXPIRATION_300 = 300, // 5 mins
   CACHE_EXPIRATION_600 = 600, // 10 mins
   CACHE_EXPIRATION_900 = 900, //15 mins
-  CACHE_EXPIRATION_3600 = 3600, // 1hour
-  CACHE_EXPIRATION_14400 = 14400, // 4hour
-  CACHE_EXPIRATION_86400 = 86400, // 24 hour
+  CACHE_EXPIRATION_1800 = 1800, //30 mins
+  CACHE_EXPIRATION_3600 = 3600, //1hour
+  CACHE_EXPIRATION_14400 = 14400, //4hour
+  CACHE_EXPIRATION_86400 = 86400, //24 hour
   //doctor no-photo url
   DOCTOR_DEFAULT_PHOTO_URL = 'https://prodaphstorage.blob.core.windows.net/doctors/no_photo.png',
 
@@ -367,11 +368,11 @@ export enum ApiConstants {
   FREE_CHAT_DAYS = 7,
   CHAT_DAYS_LIMIT = 30,
   AUTO_SUBMIT_BY_SD_SMS_TEXT = 'Hi {0}, Dr. {1} has fast-tracked your consultation. To join the consultation, please click here {2}.',
-  DOCTOR_CHAT_SMS_TEXT = 'Hi {0}, you have pending chat messages from {1} patient(s). Please login to your doctor portal to reply.',
-  DOCTOR_CHAT_SMS_LAST_DAY = 'Hi {0}, you have pending chat messages from {1} patient(s). Please login to your doctor portal to reply. Please note that for {2} patient(s), today is the last day to reply.',
+  DOCTOR_CHAT_SMS_TEXT = 'Namaste {0}, you have pending chat messages from {1} patient(s). Please login to your doctor portal to reply.',
+  DOCTOR_CHAT_SMS_LAST_DAY = 'Namaste {0}, you have pending chat messages from {1} patient(s). Please login to your doctor portal to reply. Please note that for {2} patient(s), today is the last day to reply.',
   CASESHEET_PROVISIONAL_HEADING = 'Diagnosis',
   CASESHEET_WHATSAPP_LABEL = 'WhatsApp',
-  CASESHEET_WHATSAPP_NUMBER = '+91 93550 31397',
+  CASESHEET_WHATSAPP_NUMBER = '+91 80471 04009 ', //'+91 93550 31397',
   CASESHEET_EMAIL_LABEL = 'E-mail',
   CASESHEET_EMAIL = 'Helpdesk@apollo247.com',
   AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT = 10,
@@ -394,6 +395,8 @@ export enum ApiConstants {
   PATIENT_APPT_DEEPLINK = 'apollopatients://Consult',
   PATIENT_CHATROOM_DEEPLINK = 'apollopatients://ChatRoom?',
   PATIENT_PRESCRIPTION_DEEPLINK = 'apollopatients://ConsultDetails?',
+  DOCTOR_DEEPLINK_WEB_URL = 'https://www.apollo247.com/doctors/<DoctorID>',
+
   // whatsapp constants
   WEB_ENGAGE_AUTHORIZATION = 'fe30a7fd-5dd7-48a8-9ce0-be85b5eb4de7',
 

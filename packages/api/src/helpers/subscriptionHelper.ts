@@ -7,8 +7,8 @@ type SuccessTransactionInputForSubscription = {
   amount: string;
   transactionType: TransactionType;
   transactionDate: Date;
-  transactionId: string;
-  sourceTransactionIdentifier: string;
+  transactionId?: string;
+  sourceTransactionIdentifier?: string;
   mobileNumber: string;
   couponAvailed?: boolean;
   userSubscriptionId?: string;
@@ -27,7 +27,7 @@ export async function transactionSuccessTrigger(args: SuccessTransactionInputFor
     userSubscriptionId,
     subscriptionInclusionId,
   } = args;
-  const url = `${process.env.SUBSCRIPTION_SERVICE_HOST}`;
+  const url = `http://${process.env.SUBSCRIPTION_SERVICE_HOST}:${process.env.SUBSCRIPTION_SERVICE_PORT}`;
   const query = `mutation {
       CreateUserSubscriptionTransactions(UserSubscriptionTransactions:{
        user_subscription_id: "${userSubscriptionId || ''}"
@@ -35,8 +35,8 @@ export async function transactionSuccessTrigger(args: SuccessTransactionInputFor
        transaction_type: ${transactionType}
        transaction_date: "${format(new Date(transactionDate), 'yyyy-MM-dd hh:mm')}"
        amount: ${parseFloat(amount)}
-       source_transaction_indentifier: "${sourceTransactionIdentifier}",
-       mobile_number:"${mobileNumber}",
+       source_transaction_indentifier: "${sourceTransactionIdentifier} || ''"
+       mobile_number:"${mobileNumber}"
        payment_reference_id: "${transactionId}",
        coupon_availed: "${couponAvailed || false}"
      }){
@@ -52,23 +52,23 @@ export async function transactionSuccessTrigger(args: SuccessTransactionInputFor
       query,
     },
     headers: {
-      Authorization: process.env.SUBSCRIPTION_AUTH_TOKEN,
+      Authorization: process.env.SUBSCRIPTION_SERVICE_AUTH_TOKEN,
     },
   })
     .then((response: any) => {
       log(
-        'TransactionSucessLogger',
+        'consultServiceLogger',
         'transactionSuccessTrigger=>success',
-        `orderId:${sourceTransactionIdentifier}`,
+        `orderId:${sourceTransactionIdentifier || ''}`,
         response.data,
         ''
       );
     })
     .catch((error: any) => {
       log(
-        'TransactionSucessLogger',
+        'consultServiceLogger',
         'transactionSuccessTrigger=>failed',
-        `orderId:${sourceTransactionIdentifier}`,
+        `orderId:${sourceTransactionIdentifier || ''}`,
         '',
         JSON.stringify(error)
       );

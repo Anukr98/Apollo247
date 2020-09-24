@@ -372,7 +372,11 @@ const a11yProps = (index: any) => {
   };
 };
 
-export const HowItWorks: React.FC = (props) => {
+interface HowItWorksInterface {
+  alternateVariant?: boolean;
+}
+
+export const HowItWorks: React.FC<HowItWorksInterface> = (props) => {
   const classes = useStyles({});
   const [chatConsult, setChatConsult] = useState<boolean>(false);
   const [meetInPerson, setMeetInPerson] = useState<boolean>(false);
@@ -443,13 +447,18 @@ export const HowItWorks: React.FC = (props) => {
                       Be present in the consult room on apollo247.com at the time of consult
                     </Typography>
                   </li>
-                  <li>
-                    <img src={require('images/prescription.svg')} />
-                    <Typography>Receive prescriptions instantly </Typography>
-                  </li>
+                  {props.alternateVariant ? (
+                    ''
+                  ) : (
+                    <li>
+                      <img src={require('images/prescription.svg')} />
+                      <Typography>Receive prescriptions instantly </Typography>
+                    </li>
+                  )}
+
                   <li>
                     <img src={require('images/ic-followchat.svg')} />
-                    <Typography>Follow Up via text - validity 7 days</Typography>
+                    <Typography>Follow Up via text - Valid upto 7 days</Typography>
                   </li>
                 </ul>
               </div>
@@ -531,7 +540,7 @@ export const HowItWorks: React.FC = (props) => {
             </li>
             <li className={classes.highlight}>
               <img src={require('images/chat.svg')} />
-              <Typography>Chat with the doctor for 7 days after your consult</Typography>
+              <Typography>Chat with the doctor upto 7 days after your consult</Typography>
             </li>
           </ul>
           <div className={`${classes.appDetails} ${classes.appDetailsMobile}`}>
@@ -582,4 +591,7 @@ export const HowItWorks: React.FC = (props) => {
       </AphDialog>
     </div>
   );
+};
+HowItWorks.defaultProps = {
+  alternateVariant: true,
 };

@@ -19,7 +19,6 @@ import { GET_RECOMMENDED_PRODUCTS_LIST } from 'graphql/profiles';
 import { getRecommendedProductsList_getRecommendedProductsList_recommendedProducts as recommendedProductsType } from 'graphql/types/getRecommendedProductsList';
 import { gtmTracking } from 'gtmTracking';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { getImageUrl } from 'helpers/commonHelpers';
 import { useCurrentPatient } from 'hooks/authHooks';
 import { useParams } from 'hooks/routerHooks';
 import _replace from 'lodash/replace';
@@ -35,6 +34,7 @@ import {
   uploadPrescriptionTracking,
 } from 'webEngageTracking';
 import { MedicineProduct } from './../../helpers/MedicineApiCalls';
+import { getImageUrl, readableParam } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -633,19 +633,29 @@ const SearchByMedicine: React.FC = (props) => {
     setIsUploadPreDialogOpen(true);
   };
 
-  const getMetaTitle =
-    paramSearchType === 'shop-by-category'
-      ? `Buy ${paramSearchText} - Online Pharmacy Store - Apollo 247`
-      : paramSearchType === 'shop-by-brand'
-      ? `Buy ${paramSearchText} Medicines Online - Apollo 247`
-      : `${paramSearchText} Online - Buy Special Medical Kits Online - Apollo 247`;
+  // const getMetaTitle =
+  //   paramSearchType === 'shop-by-category'
+  //     ? `Buy ${paramSearchText} - Online Pharmacy Store - Apollo 247`
+  //     : paramSearchType === 'shop-by-brand'
+  //     ? `Buy ${paramSearchText} Medicines Online - Apollo 247`
+  //     : `${paramSearchText} Online - Buy Special Medical Kits Online - Apollo 247`;
 
-  const getMetaDescription =
-    paramSearchType === 'shop-by-category'
-      ? `Buy ${paramSearchText} online at Apollo 247 - India's online pharmacy store. Get ${paramSearchText} medicines in just a few clicks. Buy ${paramSearchText} at best prices in India.`
-      : paramSearchType === 'shop-by-brand'
-      ? `Buy medicines from ${paramSearchText} online at Apollo 247 - India's online pharmacy store. Get all the medicines from ${paramSearchText} in a single place and buy them in just a few clicks.`
-      : `${paramSearchText} by Apollo 247. Get ${paramSearchText} to buy pre grouped essential medicines online. Buy medicines online at Apollo 247 in just a few clicks.`;
+  // const getMetaDescription =
+  //   paramSearchType === 'shop-by-category'
+  //     ? `Buy ${paramSearchText} online at Apollo 247 - India's online pharmacy store. Get ${paramSearchText} medicines in just a few clicks. Buy ${paramSearchText} at best prices in India.`
+  //     : paramSearchType === 'shop-by-brand'
+  //     ? `Buy medicines from ${paramSearchText} online at Apollo 247 - India's online pharmacy store. Get all the medicines from ${paramSearchText} in a single place and buy them in just a few clicks.`
+  //     : `${paramSearchText} by Apollo 247. Get ${paramSearchText} to buy pre grouped essential medicines online. Buy medicines online at Apollo 247 in just a few clicks.`;
+
+  const getMetaTitle = `Buy Best ${readableParam(
+    paramSearchText
+  )} Medicines & Products Online in India - Apollo 247`;
+
+  const getMetaDescription = `Search and buy best ${readableParam(
+    paramSearchText
+  )} medicines & products online from India's largest pharmacy chain. Order online and get the fastest home delivery at your doorsteps of your ${readableParam(
+    paramSearchText
+  )} products.`;
 
   const metaTagProps = {
     title: getMetaTitle,

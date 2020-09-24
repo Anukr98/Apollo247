@@ -16,6 +16,7 @@ import {
 import { ApiConstants, PATIENT_REPO_RELATIONS, PartnerId } from 'ApiConstants';
 import { createPrismUser } from 'helpers/phrV1Services';
 import { getCache, delCache, setCache } from 'profiles-service/database/connectRedis';
+import { customerIdentification } from 'profiles-service/helpers/hdfc';
 import { checkForRegisteredPartner } from 'profiles-service/resolvers/hdfcCustomerValidation';
 
 const REDIS_PATIENT_LOCK_PREFIX = `patient:lock:`;
@@ -57,6 +58,7 @@ type UpdatePatientResult = {
 };
 
 type UpdatePatientArgs = { patientInput: Partial<Patient> & { id: Patient['id'] } };
+const MOCK_KEY = 'mock:hdfc';
 const updatePatient: Resolver<
   null,
   UpdatePatientArgs,
@@ -98,8 +100,9 @@ const updatePatient: Resolver<
   // partnerId && partnerid == HDFC --- check for correct reffral to handle error
 
   if (patient.partnerId && patient.partnerId == PartnerId.HDFCBANK) {
+    console.log('referralCode', referralCode);
     if (referralCode != PartnerId.HDFCBANK) {
-      throw new AphError(AphErrorMessages.INVALID_REFERRAL_CODE);
+      referralCode = PartnerId.HDFCBANK;
     }
   } else {
     if (referralCode == PartnerId.HDFCBANK) {

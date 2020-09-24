@@ -93,6 +93,7 @@ export class DoctorRepository extends Repository<Doctor> {
       const updateResp = await client.update(doc1);
       stDate = addDays(stDate, 1);
     }
+    client.close();
     return slotsAdded;
   }
 
@@ -287,6 +288,7 @@ export class DoctorRepository extends Repository<Doctor> {
       },
     };
     const getDetails = await client.search(searchParams);
+    client.close();
     let doctorData, facilities;
 
     if (getDetails.body.hits.hits && getDetails.body.hits.hits.length > 0) {

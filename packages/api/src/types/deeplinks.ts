@@ -11,4 +11,5 @@ export type DeepLinkInputData = {
   af_dp: string;
   af_sub1: string;
   af_force_deeplink: string;
+  af_web_dp: string;
 };

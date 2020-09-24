@@ -22,6 +22,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       physicalConsultationFees
       qualification
       doctorType
+      chatDays
       starTeam {
         associatedDoctor {
           fullName
@@ -518,6 +519,10 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
         isSeniorConsultStarted
         isJdQuestionsComplete
         symptoms
+        caseSheet {
+          followUpAfterInDays
+          doctorType
+        }
         doctorInfo {
           awards
           city

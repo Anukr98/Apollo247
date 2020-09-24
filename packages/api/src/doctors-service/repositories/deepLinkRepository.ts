@@ -40,7 +40,31 @@ export class DeeplinkRepository extends Repository<Deeplink> {
     });
   }
 
+  async getDeeplinksByLimit(offset: number, limit: number) {
+    return this.find({
+      skip: offset,
+      take: limit,
+      order: {
+        id: 'ASC',
+      },
+    }).catch((deepLinkError) => {
+      throw new AphError(AphErrorMessages.GET_DEEPLINK_ERROR, undefined, {
+        deepLinkError,
+      });
+    });
+  }
+
   async bulkUpsertDeepLinks(deeplinkAttrs: Partial<Deeplink>[]) {
+    try {
+      return this.save(deeplinkAttrs);
+    } catch (deepLinkError) {
+      throw new AphError(AphErrorMessages.SAVE_DEEPLINK_ERROR, undefined, {
+        deepLinkError,
+      });
+    }
+  }
+
+  async upsertDeepLink(deeplinkAttrs: Partial<Deeplink>) {
     try {
       return this.save(deeplinkAttrs);
     } catch (deepLinkError) {
