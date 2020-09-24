@@ -273,15 +273,12 @@ export class DoctorRepository extends Repository<Doctor> {
     const searchParams: RequestParams.Search = {
       index: process.env.ELASTIC_INDEX_DOCTORS,
       body: {
+        _source: {
+          excludes: ['doctorSlots'],
+        },
         query: {
-          bool: {
-            must: [
-              {
-                match_phrase: {
-                  doctorId: id,
-                },
-              },
-            ],
+          ids: {
+            values: id,
           },
         },
       },
