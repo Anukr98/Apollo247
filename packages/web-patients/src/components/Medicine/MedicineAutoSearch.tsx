@@ -341,6 +341,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
     <div className={classes.root}>
       <div className={classes.medicineSearchForm} ref={searchRef}>
         <AphTextField
+          id={'searchProduct'}
           placeholder="Search meds, brands and more"
           error={showError}
           className={classes.searchInput}

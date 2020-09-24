@@ -127,7 +127,12 @@ export const DayDeals: React.FC<DayDealsProps> = (props) => {
 
   return (
     <div className={classes.root}>
-      <Slider {...sliderSettings}>
+      <Slider
+        {...sliderSettings}
+        beforeChange={() => {
+          document.getElementById('searchProduct').blur();
+        }}
+      >
         {props.data &&
           props.data.map((deal, index) => (
             <div key={index} className={classes.card}>
