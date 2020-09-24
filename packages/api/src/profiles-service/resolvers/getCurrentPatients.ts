@@ -91,6 +91,7 @@ export const getCurrentPatientsTypeDefs = gql`
     primaryPatientId: String
     whatsAppMedicine: Boolean
     whatsAppConsult: Boolean
+    partnerId: String
   }
 
   type LifeStyle {

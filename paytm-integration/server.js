@@ -31,10 +31,14 @@ const {
 
 const listOfPaymentMethods = require('./consult-integrations/helpers/list-of-payment-method');
 
-const { getAddressDetails } = require('./commons/getAddressDetails');
+const {
+  getAddressDetails,
+  getCache,
+  CreateUserSubscription,
+  getCallDetails,
+} = require('./commons');
 const { getMedicineOrderQuery } = require('./pharma-integrations/helpers/medicine-order-query');
 const getPrescriptionUrls = require('./pharma-integrations/controllers/pharma-prescription-urls');
-
 require('dotenv').config();
 
 app.use(
@@ -57,7 +61,23 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(express.static(__dirname + '/views'));
 app.set('view engine', 'ejs');
+app.post('/exotelCallEnd', async (req, res) => {
+  try {
+    const EXOTEL_HDFC_CALL_PREFIX = 'exotelcall:hdfc';
 
+    const { mobileNumber } = req.query;
+    const key = `${EXOTEL_HDFC_CALL_PREFIX}:${mobileNumber}`;
+    let callEndResponse = await getCache(key);
+    callEndResponse = JSON.parse(callEndResponse);
+    const callDetails = await getCallDetails(callEndResponse);
+    if (callDetails['Call']['Status'] == Constants.EXOTEL_CALL_END_STATUS.COMPLETED) {
+      await CreateUserSubscription(mobileNumber);
+    }
+    res.json({ success: true });
+  } catch (error) {
+    throw new Error(error);
+  }
+});
 app.get(
   '/deeplink',
   deeplink({

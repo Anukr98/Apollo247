@@ -40,6 +40,7 @@ import { BottomLinks } from 'components/BottomLinks';
 import { Route } from 'react-router-dom';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useAuth } from 'hooks/authHooks';
+import { isAlternateVersion } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -238,6 +239,8 @@ const useStyles = makeStyles((theme: Theme) => {
     groupTitle: {
       fontSize: 16,
       paddingBottom: 16,
+      margin: 0,
+      fontWeight: 500,
     },
     marginNone: {
       marginBottom: 0,
@@ -278,6 +281,14 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 'bold',
         color: '#fc9916',
       },
+    },
+    sectionHeading: {
+      fontSize: 14,
+      color: '#02475b',
+      fontWeight: 'bold',
+      margin: 0,
+      padding: 0,
+      textTransform: 'uppercase',
     },
     bottomPopover: {
       overflow: 'initial',
@@ -646,9 +657,9 @@ const MedicineLanding: React.FC = (props: any) => {
     setIsUploadPreDialogOpen(true);
   };
   const metaTagProps = {
-    title: 'Buy/Order Medicines And Health Products - Online Pharmacy Store - Apollo 247',
+    title: 'Online Medicine Order & Delivery, Buy Medicines from Apollo Pharmacy',
     description:
-      'Order medicines and health products online at Apollo 247 - a leading online pharmacy store. Buy all medicines you need from home in just a few clicks. Apollo 247 is a one-stop solution for all your medical needs.',
+      "Online Medicine Order - Buy medicines online from Apollo Pharmacy Stores (India's largest pharmacy chain) and get the home delivery. All kinds on medicines, health products & equipments are available at our online medicine store.",
     canonicalLink:
       window && window.location && window.location.origin && `${window.location.origin}/medicines`,
   };
@@ -738,9 +749,11 @@ const MedicineLanding: React.FC = (props: any) => {
                     <div className={classes.preServiceType}>
                       <div className={classes.prescriptionGroup}>
                         <div>
-                          <div className={classes.groupTitle}>
-                            Now place your order via prescription
-                          </div>
+                          {!isAlternateVersion() && (
+                            <h3 className={classes.groupTitle}>
+                              Now place your order via prescription
+                            </h3>
+                          )}
                           <AphButton
                             onClick={() => handleUploadPrescription()}
                             title={'Upload Prescription'}
@@ -748,9 +761,11 @@ const MedicineLanding: React.FC = (props: any) => {
                             Upload
                           </AphButton>
                         </div>
-                        <div className={classes.prescriptionIcon}>
-                          <img src={require('images/ic_prescription_pad.svg')} alt="" />
-                        </div>
+                        {!isAlternateVersion() && (
+                          <div className={classes.prescriptionIcon}>
+                            <img src={require('images/ic_prescription_pad.svg')} alt="" />
+                          </div>
+                        )}
                       </div>
                       <div className={classes.medicineReview}>
                         <p>
@@ -842,7 +857,7 @@ const MedicineLanding: React.FC = (props: any) => {
                         <div className={classes.sectionTitle}>
                           {item.section_key === 'shop_by_brand' || item.viewAll ? (
                             <>
-                              <span>{item.section_name}</span>
+                              <h3 className={classes.sectionHeading}>{item.section_name}</h3>
                               <div className={classes.viewAllLink}>
                                 <Link
                                   to={
@@ -859,7 +874,7 @@ const MedicineLanding: React.FC = (props: any) => {
                               </div>
                             </>
                           ) : (
-                            item.section_name
+                            <h3 className={classes.sectionHeading}>{item.section_name}</h3>
                           )}
                         </div>
                         {item.value}

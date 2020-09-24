@@ -239,6 +239,13 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = (props) =
     return index;
   };
 
+  const getUrlKey = (name: string) => {
+    const formattedName = name
+      ? name.replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/gi, '-')
+      : '';
+    return formattedName.replace(/\s+/g, '-');
+  };
+
   return (
     <div className={classes.root}>
       {recommendedProductsList && recommendedProductsList.length >= 5 ? (
@@ -274,7 +281,7 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = (props) =
                     <div className={classes.productIcon}>
                       <img
                         src={`${apiDetails.url}${getImageUrl(productList.productImage || '')}`}
-                        alt=""
+                        alt={`Buy ${productList.productName} Online`}
                       />
                     </div>
                     <div className={classes.productTitle}>{productList.productName}</div>
@@ -301,25 +308,28 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = (props) =
                             const imageList = [];
                             imageList.push(productList.productImage);
                             const cartItem: MedicineCartItem = {
-                              MaxOrderQty: null,
-                              url_key: productList.productSku,
+                              MaxOrderQty: productList.MaxOrderQty,
+                              url_key:
+                                productList.urlKey && productList.urlKey !== ''
+                                  ? productList.urlKey
+                                  : getUrlKey(productList.productName),
                               description: null,
-                              id: Number(productList.categoryName),
+                              id: Number(productList.id),
                               image: imageList,
-                              is_in_stock: true,
+                              is_in_stock: productList.is_in_stock,
                               is_prescription_required:
                                 productList.isPrescriptionNeeded === '0' ? '0' : '1',
                               name: productList.productName,
                               price: Number(productList.productPrice),
                               sku: productList.productSku,
                               special_price: productList.productSpecialPrice,
-                              small_image: productList.productImage,
-                              status: Number(productList.status),
-                              thumbnail: productList.productImage || '',
-                              type_id: productList.categoryName || '',
+                              small_image: productList.small_image,
+                              status: productList.status === 'Enabled' ? 1 : 0,
+                              thumbnail: productList.thumbnail || '',
+                              type_id: productList.type_id,
                               mou: productList.mou,
                               quantity: 1,
-                              isShippable: true,
+                              isShippable: productList.isShippable === 'false' ? false : true,
                             };
                             addToCartTracking({
                               productName: productList.productName,

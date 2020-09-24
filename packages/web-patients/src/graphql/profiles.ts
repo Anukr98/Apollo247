@@ -32,6 +32,7 @@ export const GET_PATIENT_BY_MOBILE_NUMBER = gql`
         emailAddress
         photoUrl
         referralCode
+        partnerId
       }
     }
   }
@@ -69,6 +70,7 @@ export const UPDATE_PATIENT = gql`
         uhid
         dateOfBirth
         emailAddress
+        partnerId
       }
     }
   }
@@ -873,6 +875,9 @@ export const GET_SUBSCRIPTIONS_OF_USER_BY_STATUS = gql`
         _id
         status
         group_plan {
+          group {
+            name
+          }
           _id
           plan_id
           name
@@ -958,7 +963,7 @@ export const GET_LAB_RESULT_PDF = gql`
 `;
 
 export const IDENTIFY_HDFC_CUSTOMER = gql`
-  query identifyHdfcCustomer($mobile_number: String!, $DOB: String!) {
+  query identifyHdfcCustomer($mobile_number: String!, $DOB: Date!) {
     identifyHdfcCustomer(mobileNumber: $mobile_number, DOB: $DOB) {
       status
       token
@@ -967,8 +972,8 @@ export const IDENTIFY_HDFC_CUSTOMER = gql`
 `;
 
 export const VALIDATE_HDFC_OTP = gql`
-  query validateHdfcOTP($otp: String!, $token: String!) {
-    validateHdfcOTP(otp: $otp, token: $token) {
+  query validateHdfcOTP($otp: String!, $token: String!, $dateOfBirth: Date!) {
+    validateHdfcOTP(otp: $otp, token: $token, dateOfBirth: $dateOfBirth) {
       status
       defaultPlan
     }

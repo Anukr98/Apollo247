@@ -21,5 +21,5 @@ export interface identifyHdfcCustomer {
 
 export interface identifyHdfcCustomerVariables {
   mobile_number: string;
-  DOB: string;
+  DOB: any;
 }

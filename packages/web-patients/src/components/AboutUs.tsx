@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/core';
 import { Theme } from '@material-ui/core';
 import { Header } from 'components/Header';
 import { BottomLinks } from 'components/BottomLinks';
 import { NavigationBottom } from 'components/NavigationBottom';
+import { MetaTagsComp } from 'MetaTagsComp';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -83,22 +84,37 @@ const useStyles = makeStyles((theme: Theme) => {
 
 const AboutUs: React.FC = () => {
   const classes = useStyles({});
-
+  const [metaTagProps, setMetaTagProps] = useState(null);
+  setMetaTagProps({
+    title: 'Official Apollo Website for Online Medicines & Consultations - About Apollo 247',
+    description:
+      'Apollo 247 is a part of the multi-specialty healthcare group Apollo Hospitals. Buy medicines online and get treated by Apollo certified doctors anytime.',
+    canonicalLink: typeof window !== 'undefined' && window.location && window.location.href,
+  });
   return (
     <div className={classes.root}>
+      {metaTagProps && <MetaTagsComp {...metaTagProps} />}
       <Header />
       <div className={classes.container}>
         <div className={classes.aboutUs}>
-          <div className={classes.headerText}>about us</div>
-          <div className={classes.headerSubText}>
+          <h1 className={classes.headerText}>about us</h1>
+          <h2 className={classes.headerSubText}>
             know more about us, we are more than a hospital…
-          </div>
+          </h2>
         </div>
         <div className={classes.bodyMain}>
           <div className={classes.bodyPart}>
             <div className={classes.image}>
-              <img className={classes.desktopBanner} src={require('images/img_aboutus.png')} />
-              <img className={classes.mobileBanner} src={require('images/img_aboutus1.png')} />
+              <img
+                className={classes.desktopBanner}
+                alt={'About Apollo 24|7'}
+                src={require('images/img_aboutus.png')}
+              />
+              <img
+                className={classes.mobileBanner}
+                alt={'About Apollo 24|7'}
+                src={require('images/img_aboutus1.png')}
+              />
             </div>
             <div className={classes.bodyText}>
               <p className={classes.content}>

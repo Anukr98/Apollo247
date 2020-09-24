@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { makeStyles, ThemeProvider } from '@material-ui/styles';
-import { Theme, Typography, FormControl, Fab, Modal } from '@material-ui/core';
+import { Theme, Typography, CircularProgress, Fab, Modal } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import { AphButton, AphDialog, AphTextField, AphRadio } from '@aph/web-ui-components';
 import Popover from '@material-ui/core/Popover';
@@ -22,11 +22,7 @@ import { useMutation, useQuery, useApolloClient } from 'react-apollo-hooks';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
 import { UpdatePatient, UpdatePatientVariables } from 'graphql/types/UpdatePatient';
-import {
-  UPDATE_PATIENT,
-  //   CREATE_SUBSCRIPTION,
-  //   GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
-} from 'graphql/profiles';
+import { UPDATE_PATIENT } from 'graphql/profiles';
 import { ProfileSuccess } from 'components/ProfileSuccess';
 import { NewProfile } from 'components/NewProfile';
 
@@ -482,6 +478,7 @@ export const HdfcLanding: React.FC = (props) => {
   const updatePatient = useMutation<UpdatePatient, UpdatePatientVariables>(UPDATE_PATIENT);
   const [isProfileUpdate, setisProfileUpdate] = React.useState<boolean>(false);
   const [showProfileSuccess, setShowProfileSuccess] = React.useState<boolean>(false);
+  const [loading, setLoading] = React.useState<boolean>(false);
   const [value, setValue] = React.useState('');
   // const [userSubscriptions, setUserSubscriptions] = React.useState([]);
 
@@ -595,38 +592,44 @@ export const HdfcLanding: React.FC = (props) => {
                     Wide Range of benefits worth 38K+ for all HDFC customers
                   </Typography>
                 </div>
-                <Route
-                  render={({ history }) => (
-                    <AphButton
-                      color="primary"
-                      variant="contained"
-                      onClick={() => {
-                        if (!isSignedIn) setIsLoginPopupVisible(true);
-                        else {
-                          history.push(clientRoutes.welcome());
-                          // userSubscriptions.length != 0
-                          //   ? history.push(clientRoutes.welcome())
-                          //   : createSubscription({
-                          //       variables: {
-                          //         userSubscription: {
-                          //           mobile_number: currentPatient.mobileNumber,
-                          //         },
-                          //       },
-                          //     })
-                          //       .then(() => {
-                          //         history.push(clientRoutes.membershipHdfc());
-                          //       })
-                          //       .catch((error) => {
-                          //         console.error(error);
-                          //         alert('Something went wrong :(');
-                          //       });
-                        }
-                      }}
-                    >
-                      {isSignedIn ? 'Explore now' : 'SignUp Now'}
-                    </AphButton>
-                  )}
-                />
+                {loading ? (
+                  <CircularProgress size={30} />
+                ) : (
+                  <Route
+                    render={({ history }) => (
+                      <AphButton
+                        color="primary"
+                        variant="contained"
+                        onClick={() => {
+                          if (!isSignedIn) setIsLoginPopupVisible(true);
+                          else {
+                            setLoading(true);
+                            updatePatient({
+                              variables: {
+                                patientInput: {
+                                  id: currentPatient.id,
+                                  partnerId: currentPatient.partnerId
+                                    ? currentPatient.partnerId
+                                    : 'HDFCBANK',
+                                },
+                              },
+                            })
+                              .then(() => {
+                                setLoading(false);
+                                history.push(clientRoutes.welcome());
+                              })
+                              .catch((error) => {
+                                setLoading(false);
+                                console.error(error);
+                              });
+                          }
+                        }}
+                      >
+                        {isSignedIn ? 'Explore now' : 'SignUp Now'}
+                      </AphButton>
+                    )}
+                  />
+                )}
               </div>
             </div>
           </div>
@@ -695,37 +698,43 @@ export const HdfcLanding: React.FC = (props) => {
                   &amp; tests online and much more on Apollo 24/7
                 </Typography>
 
-                <Route
-                  render={({ history }) => (
-                    <AphButton
-                      color="primary"
-                      onClick={() => {
-                        if (!isSignedIn) setIsLoginPopupVisible(true);
-                        else {
-                          history.push(clientRoutes.welcome());
-                          // userSubscriptions.length != 0
-                          //   ? history.push(clientRoutes.welcome())
-                          //   : createSubscription({
-                          //       variables: {
-                          //         userSubscription: {
-                          //           mobile_number: currentPatient.mobileNumber,
-                          //         },
-                          //       },
-                          //     })
-                          //       .then(() => {
-                          //         history.push(clientRoutes.membershipHdfc());
-                          //       })
-                          //       .catch((error) => {
-                          //         console.error(error);
-                          //         alert('Something went wrong :(');
-                          //       });
-                        }
-                      }}
-                    >
-                      {isSignedIn ? 'Explore now' : 'SignUp Now'}
-                    </AphButton>
-                  )}
-                />
+                {loading ? (
+                  <CircularProgress size={30} />
+                ) : (
+                  <Route
+                    render={({ history }) => (
+                      <AphButton
+                        color="primary"
+                        onClick={() => {
+                          if (!isSignedIn) setIsLoginPopupVisible(true);
+                          else {
+                            setLoading(true);
+                            updatePatient({
+                              variables: {
+                                patientInput: {
+                                  id: currentPatient.id,
+                                  partnerId: currentPatient.partnerId
+                                    ? currentPatient.partnerId
+                                    : 'HDFCBANK',
+                                },
+                              },
+                            })
+                              .then(() => {
+                                setLoading(false);
+                                history.push(clientRoutes.welcome());
+                              })
+                              .catch((error) => {
+                                setLoading(false);
+                                console.error(error);
+                              });
+                          }
+                        }}
+                      >
+                        {isSignedIn ? 'Explore now' : 'SignUp Now'}
+                      </AphButton>
+                    )}
+                  />
+                )}
               </div>
             </div>
           </div>
