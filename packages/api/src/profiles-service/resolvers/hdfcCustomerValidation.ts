@@ -105,7 +105,7 @@ const validateHdfcOTP: Resolver<
 
       const planName: string = fetchEthnicCodeResponse.decryptedResponse?.customerCASADetailsDTO
         ? defaultPlan(fetchEthnicCodeResponse.decryptedResponse.customerCASADetailsDTO)
-        : '';
+        : 'HDFCSilver';
       return { status: true, defaultPlan: planName };
     }
     return { status: false, defaultPlan: '' };
@@ -136,9 +136,9 @@ function defaultPlan(params: { [index: string]: string | number }[]): string {
   let matchingPlan: { hdfcCustomerType: string; plan: string; rank: number } | null = null;
   let current_rank = 0;
   for (let index = 0; index < params.length; index++) {
-    if (current_rank < plan_map[params[index]['ethnicCode']].rank) {
-      current_rank = plan_map[params[index]['ethnicCode']].rank;
-      matchingPlan = plan_map[params[index]['ethnicCode']];
+    if (current_rank < plan_map[params[index]['ethnicCode'].toString().trim()].rank) {
+      current_rank = plan_map[params[index]['ethnicCode'].toString().trim()].rank;
+      matchingPlan = plan_map[params[index]['ethnicCode'].toString().trim()];
     }
   }
   return matchingPlan ? matchingPlan.plan : 'HDFCSilver';
