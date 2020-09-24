@@ -324,13 +324,17 @@ const getDiagnosticSlots: Resolver<
       response: diagnosticSlot,
     });
   }
+
+  let slots: any[]
+  slots = []
   const employeeSlot = [
     {
       employeeName: 'apollo_employee_name',
       employeeCode: 'apollo_employee_code',
-      slotInfo: [],
+      slotInfo: slots,
     },
   ];
+  
   diagnosticSlot.data.forEach((element: ItdoseSlotInfo) => {
     let skip = false;
     const timeSlotDate = parse(element.Timeslot, 'HH:mm', new Date());
@@ -342,7 +346,7 @@ const getDiagnosticSlots: Resolver<
       skip = true;
     }
     if (!skip) {
-      employeeSlot[0].slotInfo.push({
+      slots.push({
         status: 'empty',
         startTime: element.Timeslot,
         endTime: element.Timeslot,
@@ -350,6 +354,7 @@ const getDiagnosticSlots: Resolver<
       });
     }
   });
+  employeeSlot[0].slotInfo = slots
   return {
     diagnosticBranchCode: 'apollo_route',
     diagnosticSlot: employeeSlot,
