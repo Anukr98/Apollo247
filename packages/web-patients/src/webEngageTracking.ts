@@ -856,3 +856,83 @@ export const buyMedicineClickTracking = (result: string) => {
     }
   }
 };
+
+export const pharmaAvailabilityApiTracking = (data: any) => {
+  if (typeof window !== 'undefined') {
+    const {
+      source,
+      inputSku,
+      inputPincode,
+      inputMrp,
+      itemsInCart,
+      resExist,
+      resMrp,
+      resQty,
+    } = data;
+    try {
+      window.webengage.track('Pharmacy Proceed To Pay Clicked - web', {
+        Source: source,
+        Input_SKU: inputSku,
+        Input_Pincode: inputPincode,
+        Input_MRP: inputMrp,
+        No_of_items_in_the_cart: itemsInCart,
+        Response_Exist: resExist,
+        Response_MRP: resMrp,
+        Response_Qty: resQty,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const pharmaTatApiTracking = (data: any) => {
+  if (typeof window !== 'undefined') {
+    const {
+      source,
+      inputSku,
+      inputQty,
+      inputLat,
+      inputLng,
+      inputPincode,
+      inputMrp,
+      itemsInCart,
+      resExist,
+      resMrp,
+      resQty,
+      resLat,
+      resLng,
+      resOrderTime,
+      resPincode,
+      resStorecode,
+      resStoreType,
+      resTat,
+      resTatU,
+    } = data;
+    try {
+      window.webengage.track('Pharmacy Proceed To Pay Clicked - web', {
+        Source: source,
+        Input_SKU: inputSku,
+        Input_qty: inputQty,
+        Input_lat: inputLat,
+        Input_long: inputLng,
+        Input_Pincode: inputPincode,
+        Input_MRP: inputMrp,
+        No_of_items_in_the_cart: itemsInCart,
+        Response_Exist: resExist,
+        Response_MRP: resMrp,
+        Response_Qty: resQty,
+        Response_lat: resLat,
+        Response_lng: resLng,
+        Response_ordertime: resOrderTime,
+        Response_pincode: resPincode,
+        Response_storeCode: resStorecode,
+        Response_storeType: resStoreType,
+        Response_tat: resTat,
+        Response_tatU: resTatU,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
