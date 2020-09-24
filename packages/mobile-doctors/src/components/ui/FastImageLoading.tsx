@@ -35,7 +35,7 @@ export const FastImageLoading: React.FC<FastImageLoadingProps> = (props) => {
           loader
         ) : (
           <Spinner
-            style={{ backgroundColor: 'transparent' }}
+            style={{ backgroundColor: 'transparent', alignSelf: 'center' }}
             size={'small'}
             message={`${string.common.imageLoading}: ${progress}%`}
           />
