@@ -83,4 +83,6 @@ target 'ApolloDoctor' do
   pod 'react-native-webengage', :path => '../node_modules/react-native-webengage'
   pod 'RNDeviceInfo', :path => '../node_modules/react-native-device-info'
 
+  pod 'RNFastImage', :path => '../node_modules/react-native-fast-image'
+
 end
