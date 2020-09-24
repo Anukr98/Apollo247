@@ -7,6 +7,7 @@ import { GetPatientAddressList_getPatientAddressList_addressList } from 'graphql
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { checkSkuAvailability } from 'helpers/MedicineApiCalls';
+import { pharmaAvailabilityApiTracking } from 'webEngageTracking';
 
 export interface MedicineCartItem {
   url_key: string;
@@ -73,7 +74,7 @@ export interface MedicineCartContextProps {
   itemsStr: string | null;
   cartItems: MedicineCartItem[];
   setCartItems: ((cartItems: MedicineCartItem[]) => void) | null;
-  addCartItem: ((item: MedicineCartItem) => void) | null;
+  addCartItem: ((item: MedicineCartItem, source?: string) => void) | null;
   addCartItems: ((item: Array<MedicineCartItem>) => void) | null;
   removeCartItemSku: ((sku: MedicineCartItem['sku']) => void) | null;
   removeCartItems: ((itemId: MedicineCartItem['arrSku']) => void) | null;
@@ -332,24 +333,33 @@ export const MedicinesCartProvider: React.FC = (props) => {
     }
   }, [prescriptionUploaded, ePrescriptionData, uploadedEPrescription]);
 
-  const addCartItem: MedicineCartContextProps['addCartItem'] = (itemToAdd) => {
+  const addCartItem: MedicineCartContextProps['addCartItem'] = (itemToAdd, source) => {
     if (pharmaAddressDetails && pharmaAddressDetails.pincode) {
       checkSkuAvailability(itemToAdd.sku, pharmaAddressDetails.pincode)
         .then((res: any) => {
-          if (
-            res &&
-            res.data &&
-            res.data.response &&
-            res.data.response.length > 0 &&
-            res.data.response[0].exist
-          ) {
-            const result = [...cartItems, itemToAdd];
-            const freeProducts = result.filter((e) => e.couponFree);
-            const normalProducts = result.filter((e) => !e.couponFree);
-            setCartItems(normalProducts.concat(freeProducts));
-            setIsCartUpdated(true);
-          } else {
-            window.location.href = clientRoutes.medicineDetails(itemToAdd.url_key);
+          if (res && res.data && res.data.response && res.data.response.length > 0) {
+            /** Webengage Tracking */
+            const { exist, mrp, qty } = res.data.response[0];
+            pharmaAvailabilityApiTracking({
+              source: source || 'Add_Display',
+              inputSku: itemToAdd.sku,
+              inputPincode: pharmaAddressDetails.pincode,
+              inputMrp: itemToAdd.price,
+              itemsInCart: 1,
+              resExist: exist,
+              resMrp: mrp * parseInt(itemToAdd.mou),
+              resQty: qty,
+            });
+            /** Webengage Tracking */
+            if (res.data.response[0].exist) {
+              const result = [...cartItems, itemToAdd];
+              const freeProducts = result.filter((e) => e.couponFree);
+              const normalProducts = result.filter((e) => !e.couponFree);
+              setCartItems(normalProducts.concat(freeProducts));
+              setIsCartUpdated(true);
+            } else {
+              window.location.href = clientRoutes.medicineDetails(itemToAdd.url_key);
+            }
           }
         })
         .catch((e) => {
