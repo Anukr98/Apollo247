@@ -18,8 +18,6 @@ target 'ApolloDoctor' do
  pod 'OpenTok', '~> 2.17.0'
   # pod 'react-native-splash-screen', :path => '../node_modules/react-native-splash-screen'
 
-  # pod 'react-native-image-picker', :path => '../node_modules/react-native-image-picker'
-
   pod 'FBLazyVector', :path => "../node_modules/react-native/Libraries/FBLazyVector"
   pod 'FBReactNativeSpec', :path => "../node_modules/react-native/Libraries/FBReactNativeSpec"
   pod 'RCTRequired', :path => "../node_modules/react-native/Libraries/RCTRequired"

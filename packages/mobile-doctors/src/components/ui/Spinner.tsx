@@ -7,10 +7,11 @@ export interface SpinnerProps {
   indicatorColor?: string;
   message?: string;
   messageStyle?: StyleProp<TextStyle>;
+  size?: number | 'small' | 'large' | undefined;
 }
 
 export const Spinner: React.FC<SpinnerProps> = (props) => {
-  const { style, indicatorColor, message, messageStyle } = props;
+  const { style, indicatorColor, message, messageStyle, size } = props;
   return (
     <View
       style={[
@@ -33,7 +34,7 @@ export const Spinner: React.FC<SpinnerProps> = (props) => {
     >
       <ActivityIndicator
         animating={true}
-        size="large"
+        size={size || 'large'}
         color={indicatorColor ? indicatorColor : 'green'}
       />
       {message ? (
