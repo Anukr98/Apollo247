@@ -936,6 +936,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const [modalOpen, setModalOpen] = React.useState(false);
   const [imgPrevUrl, setImgPrevUrl] = React.useState<any>();
   const [doctorInteractionModal, setDoctorInteractionModal] = useState(true);
+  const [isJdAllowed, setIsJdAllowed] = useState<boolean>(false);
 
   const { currentPatient } = useAllCurrentPatients();
   const doctorDisplayName = props.doctorDetails.getDoctorDetailsById.displayName;
@@ -955,7 +956,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const [isVideoCall, setIsVideoCall] = useState<boolean>(false);
   const [sessionId, setsessionId] = useState<string>('');
   const [token, settoken] = useState<string>('');
-  const [callAudio, setCallAudio] = useState(autoMessageStrings.audioCallMsg);
+  // const [callAudio, setCallAudio] = useState(autoMessageStrings.audioCallMsg);
   const [isNewMsg, setIsNewMsg] = useState<boolean>(false);
   const [convertVideo, setConvertVideo] = useState<boolean>(false);
   const [videoCall, setVideoCall] = useState(false);
@@ -2070,9 +2071,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                         };
                         publishMessage(appointmentId, composeMessage);
                       }
+                      const isJdAllowed =
+                        response.data.addToConsultQueueWithAutomatedQuestions.isJdAllowed;
                       setAutoQuestionsCompleted(true);
                       const eventInfo = consultWebengageEventsInfo(doctorDetail, currentPatient);
                       medicalDetailsFillTracking(eventInfo);
+                      setIsJdAllowed(isJdAllowed);
                       // console.log(response, 'response after mutation is.....');
                     })
                     .catch((error) => {
