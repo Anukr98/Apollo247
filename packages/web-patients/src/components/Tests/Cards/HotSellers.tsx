@@ -200,9 +200,9 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                           'hot-seller',
                           hotSeller.packageName
                             ? hotSeller.packageName
-                              .replace(/\s/g, '_')
-                              .replace('_-_', '-')
-                              .toLowerCase()
+                                .replace(/\s/g, '_')
+                                .replace('_-_', '-')
+                                .toLowerCase()
                             : ' ',
                           hotSeller.diagnostics ? hotSeller.diagnostics.itemId.toString() : ' '
                         ))
@@ -211,8 +211,8 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                       {hotSeller.packageImage ? (
                         <img src={hotSeller.packageImage} alt="" />
                       ) : (
-                          <img src={require('images/shopby/ic_stomach.svg')} alt="" />
-                        )}
+                        <img src={require('images/shopby/ic_stomach.svg')} alt="" />
+                      )}
                     </div>
                     <div className={classes.productTitle}>{hotSeller.packageName}</div>
                     <div className={classes.bottomSection}>
@@ -276,26 +276,26 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                             Add To Cart
                           </AphButton>
                         ) : (
-                            <AphButton
-                              onClick={() => {
-                                /**Gtm code start  */
-                                gtmTracking({
-                                  category: 'Pharmacy',
-                                  action: 'Remove From Cart',
-                                  label: hotSeller.packageName,
-                                  value: hotSeller.diagnostics ? hotSeller.diagnostics.rate : 0,
-                                });
-                                /**Gtm code End  */
-                                removeCartItem &&
-                                  removeCartItem(
-                                    hotSeller.diagnostics ? hotSeller.diagnostics.id : '',
-                                    hotSeller.diagnostics ? `${hotSeller.diagnostics.itemId}` : ''
-                                  );
-                              }}
-                            >
-                              remove
-                            </AphButton>
-                          )}
+                          <AphButton
+                            onClick={() => {
+                              /**Gtm code start  */
+                              gtmTracking({
+                                category: 'Pharmacy',
+                                action: 'Remove From Cart',
+                                label: hotSeller.packageName,
+                                value: hotSeller.diagnostics ? hotSeller.diagnostics.rate : 0,
+                              });
+                              /**Gtm code End  */
+                              removeCartItem &&
+                                removeCartItem(
+                                  hotSeller.diagnostics ? hotSeller.diagnostics.id : '',
+                                  hotSeller.diagnostics ? `${hotSeller.diagnostics.itemId}` : ''
+                                );
+                            }}
+                          >
+                            remove
+                          </AphButton>
+                        )}
                       </div>
                     </div>
                   </div>

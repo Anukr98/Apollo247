@@ -283,14 +283,14 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = (props) =
                   <div className={classes.bottomSection}>
                     <div className={classes.priceGroup}>
                       {productList &&
-                        productList.productSpecialPrice &&
-                        productList.productPrice !== productList.productSpecialPrice ? (
-                          <span className={classes.regularPrice}>
-                            (Rs. {productList.productPrice})
-                          </span>
-                        ) : (
-                          <span className={`${classes.regularPrice} ${classes.emptyBlock}`}></span>
-                        )}
+                      productList.productSpecialPrice &&
+                      productList.productPrice !== productList.productSpecialPrice ? (
+                        <span className={classes.regularPrice}>
+                          (Rs. {productList.productPrice})
+                        </span>
+                      ) : (
+                        <span className={`${classes.regularPrice} ${classes.emptyBlock}`}></span>
+                      )}
                       <span>
                         Rs. {productList.productSpecialPrice || productList.productPrice}{' '}
                       </span>
@@ -400,72 +400,72 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = (props) =
                           Add To Cart
                         </AphButton>
                       ) : (
-                          <AphButton
-                            onClick={() => {
-                              removeFromCartTracking({
-                                productName: productList.productName,
-                                cartSize: cartItems.length,
-                                productId: productList.productSku,
-                                brand: '',
-                                brandId: '',
-                                categoryName: productList.categoryName,
-                                categoryId: productList.categoryName || '',
-                                discountedPrice: productList.productSpecialPrice,
-                                productPrice: productList.productPrice,
-                                quantity: 1,
-                              });
-                              /**Gtm code start  */
-                              gtmTracking({
-                                category: 'Pharmacy',
-                                action: 'Remove From Cart',
-                                label: productList.productName,
-                                value: productList.productSpecialPrice || productList.productPrice,
-                                ecommObj: {
-                                  event: 'remove_from_cart',
-                                  ecommerce: {
-                                    items: [
-                                      {
-                                        item_name: productList.productName,
-                                        item_id: productList.productSku,
-                                        productPrice:
-                                          productList.productSpecialPrice || productList.productPrice,
-                                        item_category: 'Pharmacy',
-                                        item_variant: 'Default',
-                                        index: 1,
-                                        quantity: 1,
-                                      },
-                                    ],
-                                  },
+                        <AphButton
+                          onClick={() => {
+                            removeFromCartTracking({
+                              productName: productList.productName,
+                              cartSize: cartItems.length,
+                              productId: productList.productSku,
+                              brand: '',
+                              brandId: '',
+                              categoryName: productList.categoryName,
+                              categoryId: productList.categoryName || '',
+                              discountedPrice: productList.productSpecialPrice,
+                              productPrice: productList.productPrice,
+                              quantity: 1,
+                            });
+                            /**Gtm code start  */
+                            gtmTracking({
+                              category: 'Pharmacy',
+                              action: 'Remove From Cart',
+                              label: productList.productName,
+                              value: productList.productSpecialPrice || productList.productPrice,
+                              ecommObj: {
+                                event: 'remove_from_cart',
+                                ecommerce: {
+                                  items: [
+                                    {
+                                      item_name: productList.productName,
+                                      item_id: productList.productSku,
+                                      productPrice:
+                                        productList.productSpecialPrice || productList.productPrice,
+                                      item_category: 'Pharmacy',
+                                      item_variant: 'Default',
+                                      index: 1,
+                                      quantity: 1,
+                                    },
+                                  ],
                                 },
-                              });
-                              /**Gtm code End  */
+                              },
+                            });
+                            /**Gtm code End  */
 
-                              /**Gtm code start start */
-                              dataLayerTracking({
-                                event: 'Product Removed from Cart',
-                                productlist: JSON.stringify([
-                                  {
-                                    item_name: productList.productName,
-                                    item_id: productList.productSku,
-                                    productPrice:
-                                      productList.productSpecialPrice || productList.productPrice,
-                                    item_category: 'Pharmacy',
-                                    item_variant: 'Default',
-                                    index: 1,
-                                    quantity: 1,
-                                  },
-                                ]),
-                                label: productList.productName,
-                                value: productList.productSpecialPrice || productList.productPrice,
-                              });
-                              /**Gtm code start end */
+                            /**Gtm code start start */
+                            dataLayerTracking({
+                              event: 'Product Removed from Cart',
+                              productlist: JSON.stringify([
+                                {
+                                  item_name: productList.productName,
+                                  item_id: productList.productSku,
+                                  productPrice:
+                                    productList.productSpecialPrice || productList.productPrice,
+                                  item_category: 'Pharmacy',
+                                  item_variant: 'Default',
+                                  index: 1,
+                                  quantity: 1,
+                                },
+                              ]),
+                              label: productList.productName,
+                              value: productList.productSpecialPrice || productList.productPrice,
+                            });
+                            /**Gtm code start end */
 
-                              removeCartItemSku && removeCartItemSku(productList.productSku);
-                            }}
-                          >
-                            Remove
-                          </AphButton>
-                        )}
+                            removeCartItemSku && removeCartItemSku(productList.productSku);
+                          }}
+                        >
+                          Remove
+                        </AphButton>
+                      )}
                     </div>
                   </div>
                 </div>
