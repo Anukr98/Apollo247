@@ -227,7 +227,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
     VALIDATE_CONSULT_COUPON
   );
   const currentTime = new Date().getTime();
-  const doctorName = doctorDetails && doctorDetails.firstName ? doctorDetails.firstName : '';
+  const doctorName = doctorDetails && doctorDetails.displayName ? doctorDetails.displayName : '';
 
   const physicalConsultationFees =
     doctorDetails && doctorDetails && doctorDetails.physicalConsultationFees

@@ -420,7 +420,7 @@ const getDiagnosticsHCCharges: Resolver<
       throw new AphError(AphErrorMessages.NO_HUB_SLOTS, undefined, { cause: error.toString() });
     });
 
-  if (diagnosticSlot.data.length == 0) {
+  if (diagnosticSlot.data == '[]') {
     return { charges: 0 };
   }
   return { charges: diagnosticSlot.data[0].Amount };
