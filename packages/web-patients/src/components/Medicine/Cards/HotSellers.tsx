@@ -50,6 +50,7 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'center',
       '& img': {
         maxWidth: 70,
+        maxHeight: 70,
         margin: 'auto',
       },
     },
@@ -204,10 +205,10 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                         <span>
                           -
                           {Math.floor(
-                            ((Number(hotSeller.price) - Number(hotSeller.special_price!)) /
-                              hotSeller.price) *
-                              100
-                          )}
+                          ((Number(hotSeller.price) - Number(hotSeller.special_price!)) /
+                            hotSeller.price) *
+                          100
+                        )}
                           %
                         </span>
                       </div>
@@ -245,12 +246,12 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                   <div className={classes.bottomSection}>
                     <div className={classes.priceGroup}>
                       {hotSeller &&
-                      hotSeller.special_price &&
-                      hotSeller.price !== hotSeller.special_price ? (
-                        <span className={classes.regularPrice}>(Rs. {hotSeller.price})</span>
-                      ) : (
-                        <span className={`${classes.regularPrice} ${classes.emptyBlock}`}></span>
-                      )}
+                        hotSeller.special_price &&
+                        hotSeller.price !== hotSeller.special_price ? (
+                          <span className={classes.regularPrice}>(Rs. {hotSeller.price})</span>
+                        ) : (
+                          <span className={`${classes.regularPrice} ${classes.emptyBlock}`}></span>
+                        )}
                       <span>Rs. {hotSeller.special_price || hotSeller.price} </span>
                     </div>
                     <div className={classes.addToCart}>
@@ -355,70 +356,70 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                           Add To Cart
                         </AphButton>
                       ) : (
-                        <AphButton
-                          onClick={() => {
-                            removeFromCartTracking({
-                              productName: hotSeller.name,
-                              cartSize: cartItems.length,
-                              productId: hotSeller.sku,
-                              brand: '',
-                              brandId: '',
-                              categoryName: '',
-                              categoryId: '',
-                              discountedPrice: hotSeller.special_price,
-                              price: hotSeller.price,
-                              quantity: 1,
-                            });
-                            /**Gtm code start  */
-                            gtmTracking({
-                              category: 'Pharmacy',
-                              action: 'Remove From Cart',
-                              label: hotSeller.name,
-                              value: hotSeller.special_price || hotSeller.price,
-                              ecommObj: {
-                                event: 'remove_from_cart',
-                                ecommerce: {
-                                  items: [
-                                    {
-                                      item_name: hotSeller.name,
-                                      item_id: hotSeller.sku,
-                                      price: hotSeller.special_price || hotSeller.price,
-                                      item_category: 'Pharmacy',
-                                      item_variant: 'Default',
-                                      index: 1,
-                                      quantity: 1,
-                                    },
-                                  ],
+                          <AphButton
+                            onClick={() => {
+                              removeFromCartTracking({
+                                productName: hotSeller.name,
+                                cartSize: cartItems.length,
+                                productId: hotSeller.sku,
+                                brand: '',
+                                brandId: '',
+                                categoryName: '',
+                                categoryId: '',
+                                discountedPrice: hotSeller.special_price,
+                                price: hotSeller.price,
+                                quantity: 1,
+                              });
+                              /**Gtm code start  */
+                              gtmTracking({
+                                category: 'Pharmacy',
+                                action: 'Remove From Cart',
+                                label: hotSeller.name,
+                                value: hotSeller.special_price || hotSeller.price,
+                                ecommObj: {
+                                  event: 'remove_from_cart',
+                                  ecommerce: {
+                                    items: [
+                                      {
+                                        item_name: hotSeller.name,
+                                        item_id: hotSeller.sku,
+                                        price: hotSeller.special_price || hotSeller.price,
+                                        item_category: 'Pharmacy',
+                                        item_variant: 'Default',
+                                        index: 1,
+                                        quantity: 1,
+                                      },
+                                    ],
+                                  },
                                 },
-                              },
-                            });
-                            /**Gtm code End  */
+                              });
+                              /**Gtm code End  */
 
-                            /**Gtm code start start */
-                            dataLayerTracking({
-                              event: 'Product Removed from Cart',
-                              productlist: JSON.stringify([
-                                {
-                                  item_name: hotSeller.name,
-                                  item_id: hotSeller.sku,
-                                  price: hotSeller.special_price || hotSeller.price,
-                                  item_category: 'Pharmacy',
-                                  item_variant: 'Default',
-                                  index: 1,
-                                  quantity: 1,
-                                },
-                              ]),
-                              label: hotSeller.name,
-                              value: hotSeller.special_price || hotSeller.price,
-                            });
-                            /**Gtm code start end */
+                              /**Gtm code start start */
+                              dataLayerTracking({
+                                event: 'Product Removed from Cart',
+                                productlist: JSON.stringify([
+                                  {
+                                    item_name: hotSeller.name,
+                                    item_id: hotSeller.sku,
+                                    price: hotSeller.special_price || hotSeller.price,
+                                    item_category: 'Pharmacy',
+                                    item_variant: 'Default',
+                                    index: 1,
+                                    quantity: 1,
+                                  },
+                                ]),
+                                label: hotSeller.name,
+                                value: hotSeller.special_price || hotSeller.price,
+                              });
+                              /**Gtm code start end */
 
-                            removeCartItemSku && removeCartItemSku(hotSeller.sku);
-                          }}
-                        >
-                          Remove
-                        </AphButton>
-                      )}
+                              removeCartItemSku && removeCartItemSku(hotSeller.sku);
+                            }}
+                          >
+                            Remove
+                          </AphButton>
+                        )}
                     </div>
                   </div>
                 </div>
