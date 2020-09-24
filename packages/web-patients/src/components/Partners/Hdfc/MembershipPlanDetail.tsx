@@ -185,9 +185,9 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     expansionContainer: {
-      // padding: 30,
+      padding: 30,
       [theme.breakpoints.down('sm')]: {
-        // padding: 16,
+        padding: 16,
       },
     },
     panelRoot: {
@@ -578,7 +578,12 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     benefitsConsumedContainer: {},
-    benefitsContent: {},
+    benefitsContent: {
+      padding: 30,
+      [theme.breakpoints.down('sm')]: {
+        padding: 16,
+      },
+    },
     table: {
       '& th': {
         fonsSize: 14,
