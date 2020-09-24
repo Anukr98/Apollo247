@@ -152,11 +152,14 @@ const useStyles = makeStyles((theme: Theme) => {
       bottom: 16,
       right: 0,
       [theme.breakpoints.down('sm')]: {
-        bottom: -55,
+        bottom: 0,
         left: 0,
         padding: '12px 16px',
         background: '#fff',
+        position: 'fixed',
+        zIndex: 999,
       },
+
       '& a': {
         color: '#FC9916',
         position: 'relative',
@@ -181,7 +184,10 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     expansionContainer: {
-      //   padding: '20px 0 50px',
+      // padding: 30,
+      [theme.breakpoints.down('sm')]: {
+        // padding: 16,
+      },
     },
     panelRoot: {
       boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.16)',
@@ -356,9 +362,9 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
     },
     tabContent: {
-      padding: 30,
+      // padding: 30,
       [theme.breakpoints.down('sm')]: {
-        padding: 16,
+        // padding: 16,
       },
     },
     couponContent: {
@@ -568,7 +574,28 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     benefitsConsumedContainer: {},
-    table: {},
+    benefitsContent: {},
+    table: {
+      '& th': {
+        fonsSize: 14,
+        fontWeight: 700,
+        color: '#00B38E',
+        textTransform: 'uppercase',
+      },
+      '& td': {
+        fontSize: 12,
+        fontWeight: 500,
+        color: '#000',
+        textTransform: 'uppercase',
+      },
+    },
+    tableContainer: {
+      boxShadow: '0px 1px 8px rgba(0, 0, 0, 0.16)',
+      [theme.breakpoints.down('sm')]: {
+        width: '100%',
+        overflowX: 'auto',
+      },
+    },
   };
 });
 interface TabPanelProps {
@@ -576,17 +603,6 @@ interface TabPanelProps {
   index: any;
   value: any;
 }
-function createData(benefit: string, whatYouGet: string, redemptionLimit: string, status: string) {
-  return { benefit, whatYouGet, redemptionLimit, status };
-}
-
-const rows = [
-  createData('Frozen yoghurt', '159', '6.0', ' 24'),
-  createData('Ice cream sandwich', '237', '9.0', '37'),
-  createData('Eclair', '262', '16.0', '24'),
-  createData('Cupcake', '305', '3.7', '67'),
-  createData('Gingerbread', '356', '16.0', '49'),
-];
 
 const TabPanel = (props: any) => {
   const { children, value, index, ...other } = props;
@@ -616,6 +632,7 @@ export const MembershipPlanDetail: React.FC = (props) => {
   const [benefitsWorth, setBenefitsWorth] = React.useState<string>('');
   const [minimumTransactionValue, setMinimumTransactionValue] = React.useState<string>('');
   const apolloClient = useApolloClient();
+  const [membshipPlanBenefits, setMembershipPlanBenefits] = React.useState([]);
 
   const handleChange = (panel: string) => (event: React.ChangeEvent<{}>, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false);
@@ -659,6 +676,9 @@ export const MembershipPlanDetail: React.FC = (props) => {
       })
       .then((response) => {
         setSubscriptionInclusions(response.data.GetAllUserSubscriptionsWithPlanBenefits.response);
+        setMembershipPlanBenefits(
+          response.data.GetAllUserSubscriptionsWithPlanBenefits.response[0].benefits
+        );
         setPlanName(response.data.GetAllUserSubscriptionsWithPlanBenefits.response[0].name);
         setBenefitsWorth(
           response.data.GetAllUserSubscriptionsWithPlanBenefits.response[0].benefits_worth
@@ -803,9 +823,9 @@ export const MembershipPlanDetail: React.FC = (props) => {
                     <ul className={classes.couponList}>
                       {subscriptionInclusions &&
                         subscriptionInclusions[0] &&
-                        subscriptionInclusions[0].benefits.map((item: any) => {
+                        subscriptionInclusions[0].benefits.map((item: any, index: any) => {
                           return (
-                            <li>
+                            <li key={index}>
                               <div className={classes.couponCard}>
                                 <Typography component="h2">{item.header_content}</Typography>
                                 <Typography>{item.description}</Typography>
@@ -823,28 +843,34 @@ export const MembershipPlanDetail: React.FC = (props) => {
                 </TabPanel>
                 <TabPanel value={value} index={1}>
                   <div className={classes.benefitsConsumedContainer}>
-                    <TableContainer component={Paper}>
-                      <Table className={classes.table} aria-label="simple table">
-                        <TableHead>
-                          <TableRow>
-                            <TableCell> Benefit</TableCell>
-                            <TableCell>What Do You Get</TableCell>
-                            <TableCell>Redemption Limit</TableCell>
-                            <TableCell>Status</TableCell>
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          {rows.map((row) => (
+                    <div className={classes.benefitsContent}>
+                      <TableContainer className={classes.tableContainer}>
+                        <Table className={classes.table} aria-label="simple table">
+                          <TableHead>
                             <TableRow>
-                              <TableCell>{row.benefit}</TableCell>
-                              <TableCell>{row.whatYouGet}</TableCell>
-                              <TableCell>{row.redemptionLimit}</TableCell>
-                              <TableCell>{row.status}</TableCell>
+                              <TableCell>Benefits)</TableCell>
+                              <TableCell>What You Get</TableCell>
+                              <TableCell>Redemption Limit</TableCell>
+                              <TableCell>Status</TableCell>
                             </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </TableContainer>
+                          </TableHead>
+                          <TableBody>
+                            {subscriptionInclusions &&
+                              subscriptionInclusions[0] &&
+                              subscriptionInclusions[0].benefits.map((item: any, index: any) => {
+                                return (
+                                  <TableRow key={index}>
+                                    <TableCell>{item.header_content}</TableCell>
+                                    <TableCell>{item.description}</TableCell>
+                                    <TableCell>once</TableCell>
+                                    <TableCell>{item.attribute_type.remaining}</TableCell>
+                                  </TableRow>
+                                );
+                              })}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                    </div>
                   </div>
                 </TabPanel>
               </div>

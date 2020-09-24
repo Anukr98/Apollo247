@@ -8,12 +8,15 @@ import { HDFC_EXOTEL_CALLERID, HDFC_EXOTEL_NUMBER } from 'helpers/constants';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     hdcContainer: {
-      background: `url(${require('images/hdfc/bg.svg')}) no-repeat 0 0`,
+      background: `#fff url(${require('images/hdfc/bg.svg')}) no-repeat 0 0`,
       boxShadow: ' 0px 5px 20px rgba(128, 128, 128, 0.3)',
       borderRadius: 10,
       padding: '16px 16px 0 16px',
       margin: '30px 0 0 auto',
       position: 'relative',
+      [theme.breakpoints.down('sm')]: {
+        backgroundSize: 'contain',
+      },
     },
     hdfcIntro: {
       // display: 'none',
