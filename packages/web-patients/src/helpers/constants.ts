@@ -1,4 +1,6 @@
-const PARTNER_TP_REF_CODES = ['SBIYONO', 'HDFCBANK'];
+const SBI_REF_CODE = 'SBIYONO';
+const HDFC_REF_CODE = 'HDFCBANK';
+const PARTNER_TP_REF_CODES = [SBI_REF_CODE, HDFC_REF_CODE];
 const HDFC_EXOTEL_CALLERID = '04048217258';
 const HDFC_EXOTEL_NUMBER = '--To Be Filled Later--';
 const EXOTEL_CALL_URL = 'https://notifications.apollo247.com/webhooks/exotel/call';
@@ -13,6 +15,8 @@ const HDFC_SUBSCRIPTION_GOLD = {
 };
 
 export {
+  SBI_REF_CODE,
+  HDFC_REF_CODE,
   PARTNER_TP_REF_CODES,
   HDFC_EXOTEL_NUMBER,
   HDFC_EXOTEL_CALLERID,

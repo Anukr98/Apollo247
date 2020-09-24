@@ -367,27 +367,26 @@ export const Header: React.FC<HeaderProps> = (props) => {
 
   useEffect(() => {
     const userSubscriptionsLocalStorage = JSON.parse(localStorage.getItem('userSubscriptions'));
-    userSubscriptionsLocalStorage
-      ? setUserSubscriptions(userSubscriptionsLocalStorage)
-      : setUserSubscriptions([]);
-    if (isSignedIn && userSubscriptions.length == 0 && !userSubscriptionsLocalStorage) {
+    userSubscriptionsLocalStorage ? setUserSubscriptions(userSubscriptionsLocalStorage) : '';
+    if (
+      isSignedIn &&
+      userSubscriptions.length == 0 &&
+      (userSubscriptionsLocalStorage == null || userSubscriptionsLocalStorage.length == 0)
+    ) {
       apolloClient
         .query<getSubscriptionsOfUserByStatus, getSubscriptionsOfUserByStatusVariables>({
           query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
           variables: {
-            user: {
-              mobile_number: currentPatient.mobileNumber,
-              patiend_id: currentPatient.id,
-            },
-            status: [],
+            mobile_number: localStorage.getItem('userMobileNo'),
+            status: ['active', 'deferred_inactive'],
           },
           fetchPolicy: 'no-cache',
         })
         .then((response) => {
-          setUserSubscriptions(response.data.getSubscriptionsOfUserByStatus.response);
+          setUserSubscriptions(response.data.GetSubscriptionsOfUserByStatus.response);
           localStorage.setItem(
             'userSubscriptions',
-            JSON.stringify(response.data.getSubscriptionsOfUserByStatus.response)
+            JSON.stringify(response.data.GetSubscriptionsOfUserByStatus.response)
           );
         })
         .catch((error) => {
@@ -503,25 +502,16 @@ export const Header: React.FC<HeaderProps> = (props) => {
                                   <img src={require('images/ic_arrow_right.svg')} alt="" />
                                 </Link>
                               </li>
-
-                              <li>
-                                <Link to={clientRoutes.myPayments()}>
-                                  <span>
-                                    <img src={require('images/ic_fees.svg')} alt="" /> My Payments
-                                  </span>
-                                  <img src={require('images/ic_arrow_right.svg')} alt="" />
-                                </Link>
-                              </li>
                               {userSubscriptions.length != 0 && (
                                 <li>
                                   <Link to={clientRoutes.myMembership()}>
                                     <span>
                                       <img
-                                        src={require('images/one-apollo.svg')}
+                                        src={require('images/my_membership.svg')}
                                         width="24"
                                         alt=""
                                       />{' '}
-                                      OneApollo Membership
+                                      My Memberships
                                     </span>
                                     <img src={require('images/ic_arrow_right.svg')} alt="" />
                                   </Link>
