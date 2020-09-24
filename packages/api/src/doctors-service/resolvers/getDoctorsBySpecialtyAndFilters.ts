@@ -13,6 +13,7 @@ import {
   elasticDoctorTextSearch,
   elasticDoctorLatestSlotFilter,
   elasticDoctorAvailabilityFilter,
+  elasticDoctorConsultModeFilter,
   elasticDoctorDistanceSort,
   elasticDoctorAvailabilitySort,
   elasticDoctorDoctorTypeSort,
@@ -860,6 +861,9 @@ const getDoctorList: Resolver<
 
   if (args.filterInput.doctorType && args.filterInput.doctorType.length > 0) {
     elasticMatch.push({ match: { doctorType: args.filterInput.doctorType.join(',') } });
+  }
+  if (args.filterInput.consultMode && args.filterInput.consultMode.length > 0) {
+    elasticMatch.push(elasticDoctorConsultModeFilter(args.filterInput.consultMode));
   }
 
   if (args.filterInput.city && args.filterInput.city.length) {

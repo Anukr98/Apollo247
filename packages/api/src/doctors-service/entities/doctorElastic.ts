@@ -1,5 +1,5 @@
 import { ApiResponse, Client, RequestParams } from "@elastic/elasticsearch";
-import { Doctor } from "doctors-service/entities";
+import { Doctor, ConsultMode } from "doctors-service/entities";
 import { APPOINTMENT_TYPE, ES_DOCTOR_SLOT_STATUS, Appointment } from "consults-service/entities";
 import { format, addMinutes, addDays } from "date-fns";
 import { AphError } from "AphError";
@@ -275,6 +275,27 @@ export function elasticDoctorLatestSlotFilter(){
       },
     },
   };
+}
+
+export function elasticDoctorConsultModeFilter(consultModeInput: ConsultMode){
+  let consultMode: string[] = [];
+    const consultModeQueryObj:{ [index: string]: any } = [];
+    switch (consultModeInput) {
+      case 'ONLINE':
+        consultMode = ['ONLINE', 'BOTH'];
+        break;
+      case 'PHYSICAL':
+        consultMode = ['PHYSICAL', 'BOTH'];
+        break;
+      default:
+        consultMode = [];
+    }
+    consultMode.forEach((mode) => {
+      consultModeQueryObj.push({ match: { 'consultHours.consultMode': mode } });
+    });
+    if (consultModeQueryObj.length) {
+     return { bool: { should: consultModeQueryObj } };
+    }
 }
 
 export function elasticDoctorAvailabilityFilter(filterInput: FilterDoctorInput){
