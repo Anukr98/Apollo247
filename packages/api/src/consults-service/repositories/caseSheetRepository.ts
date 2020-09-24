@@ -6,6 +6,7 @@ import { DoctorType } from 'doctors-service/entities';
 import { format, addDays } from 'date-fns';
 import { STATUS } from 'consults-service/entities';
 import { ApiConstants } from 'ApiConstants';
+import _ from 'lodash';
 
 @EntityRepository(CaseSheet)
 export class CaseSheetRepository extends Repository<CaseSheet> {
@@ -83,6 +84,19 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
     const modifiedCaseSheet = this.create(caseSheet);
     Object.assign(modifiedCaseSheet, { ...caseSheetAttrs });
     return modifiedCaseSheet.save().catch((createErrors) => {
+      throw new AphError(AphErrorMessages.UPDATE_CASESHEET_ERROR, undefined, { createErrors });
+    });
+  }
+
+  async updateCaseSheetExcludeStatus(
+    id: string,
+    caseSheetAttrs: Partial<CaseSheet>,
+    caseSheet: CaseSheet
+  ) {
+    const modifiedCaseSheet = this.create(caseSheet);
+    Object.assign(modifiedCaseSheet, { ...caseSheetAttrs });
+    const newCaseSheet: Omit<CaseSheet, 'status'> = modifiedCaseSheet;
+    return newCaseSheet.save().catch((createErrors) => {
       throw new AphError(AphErrorMessages.UPDATE_CASESHEET_ERROR, undefined, { createErrors });
     });
   }
