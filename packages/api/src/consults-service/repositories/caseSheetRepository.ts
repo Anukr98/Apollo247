@@ -88,19 +88,6 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
     });
   }
 
-  async updateCaseSheetExcludeStatus(
-    id: string,
-    caseSheetAttrs: Partial<CaseSheet>,
-    caseSheet: CaseSheet
-  ) {
-    const modifiedCaseSheet = this.create(caseSheet);
-    Object.assign(modifiedCaseSheet, { ...caseSheetAttrs });
-    const newCaseSheet: Omit<CaseSheet, 'status'> = modifiedCaseSheet;
-    return newCaseSheet.save().catch((createErrors) => {
-      throw new AphError(AphErrorMessages.UPDATE_CASESHEET_ERROR, undefined, { createErrors });
-    });
-  }
-
   getCaseSheetById(id: string) {
     return this.findOne({
       where: [{ id }],
