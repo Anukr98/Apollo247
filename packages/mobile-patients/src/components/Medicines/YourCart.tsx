@@ -483,14 +483,12 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             showUnServiceableItemsAlert(updatedCartItems);
           }
 
-          const availableItems = updatedCartItems
-            .filter(({ id }) => !unserviceableSkus.find((item) => id === item))
-            .map((item) => {
-              return { sku: item.id, qty: item.quantity };
-            });
+          const availableItems = updatedCartItems.filter(
+            ({ id }) => !unserviceableSkus.find((item) => id === item)
+          );
 
           const tatApiInput247: TatApiInput247 = {
-            items: availableItems,
+            items: availableItems.map(({ id, quantity }) => ({ sku: id, qty: quantity })),
             pincode: selectedAddress.zipcode || '',
             lat: selectedAddress?.latitude!,
             lng: selectedAddress?.longitude!,
@@ -540,11 +538,51 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             setshowDeliverySpinner(false);
             setLoading!(false);
           }
+          try {
+            const response = tatRes.data.response;
+            const item = response.items[0];
+            const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_TAT_API_CALLED] = {
+              Source: 'Cart',
+              Input_sku: availableItems[0]?.id,
+              Input_qty: availableItems[0]?.quantity,
+              Input_lat: selectedAddress.latitude!,
+              Input_long: selectedAddress.longitude!,
+              Input_pincode: selectedAddress.zipcode!,
+              Input_MRP: availableItems[0]?.price,
+              No_of_items_in_the_cart: availableItems.length,
+              Response_Exist: item.exist ? 'Yes' : 'No',
+              Response_MRP: item.mrp,
+              Response_Qty: item.qty,
+              Response_lat: response.lat,
+              Response_lng: response.lng,
+              Response_ordertime: response.ordertime,
+              Response_pincode: `${response.pincode}`,
+              Response_storeCode: response.storeCode,
+              Response_storeType: response.storeType,
+              Response_tat: response.tat,
+              Response_tatU: response.tatU,
+            };
+            postWebEngageEvent(WebEngageEventName.PHARMACY_TAT_API_CALLED, eventAttributes);
+          } catch (error) {}
         } else {
           showGenericTatDate(lookUp);
           setshowDeliverySpinner(false);
           setLoading!(false);
         }
+        try {
+          const { mrp, exist, qty } = checkAvailabilityRes.data.response[0];
+          const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED] = {
+            Source: 'PDP',
+            Input_SKU: cartItems[0]?.id,
+            Input_Pincode: selectedAddress.zipcode || '',
+            Input_MRP: cartItems[0]?.price,
+            No_of_items_in_the_cart: cartItems.length,
+            Response_Exist: exist ? 'Yes' : 'No',
+            Response_MRP: mrp,
+            Response_Qty: qty,
+          };
+          postWebEngageEvent(WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED, eventAttributes);
+        } catch (error) {}
       } catch (err) {
         CommonBugFender('YourCart_getDeliveryTime', err);
         if (!Axios.isCancel(err) || g(err, 'code') === 'ECONNABORTED') {

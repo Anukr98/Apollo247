@@ -1463,6 +1463,20 @@ export const addPharmaItemToCart = (
       } else {
         navigate();
       }
+      try {
+        const { mrp, exist, qty } = res.data.response[0];
+        const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED] = {
+          Source: setLoading ? 'Add_Display' : 'Add_Search',
+          Input_SKU: cartItem.id,
+          Input_Pincode: pincode,
+          Input_MRP: cartItem.price,
+          No_of_items_in_the_cart: 1,
+          Response_Exist: exist ? 'Yes' : 'No',
+          Response_MRP: mrp,
+          Response_Qty: qty,
+        };
+        postWebEngageEvent(WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED, eventAttributes);
+      } catch (error) {}
     })
     .catch(() => {
       addToCart();
