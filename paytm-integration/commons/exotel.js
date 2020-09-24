@@ -5,7 +5,7 @@ const logger = require('../winston-logger')('Universal-Error-Logs');
 
 module.exports = {
   CreateUserSubscription(mobileNumber) {
-    const url = `https://${process.env.SUBSCRIPTION_SERVICE_HOST}:${process.env.SUBSCRIPTION_SERVICE_PORT}`;
+    const url = `http://${process.env.SUBSCRIPTION_SERVICE_HOST}:${process.env.SUBSCRIPTION_SERVICE_PORT}`;
     const query = `mutation {
       CreateUserSubscriptionTransactions(UserSubscriptionTransactions:{
       transaction_type:CONSULT
