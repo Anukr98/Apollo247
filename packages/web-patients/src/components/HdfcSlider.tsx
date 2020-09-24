@@ -2,8 +2,20 @@ import React from 'react';
 import { Theme, Typography, CircularProgress } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphButton, AphDialog, AphInput } from '@aph/web-ui-components';
-import { callToExotelApi } from 'helpers/commonHelpers';
-import { HDFC_EXOTEL_CALLERID, HDFC_EXOTEL_NUMBER } from 'helpers/constants';
+import WarningModel from 'components/WarningModel';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  GetAllUserSubscriptionsWithPlanBenefits,
+  GetAllUserSubscriptionsWithPlanBenefitsVariables,
+} from 'graphql/types/GetAllUserSubscriptionsWithPlanBenefits';
+import {
+  initiateCallForPartner,
+  initiateCallForPartnerVariables,
+} from 'graphql/types/initiateCallForPartner';
+import {
+  GET_ALL_USER_SUBSCRIPTIONS_WITH_BENEFITS,
+  INITIATE_CALL_FOR_PARTNER,
+} from 'graphql/profiles';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -143,6 +155,66 @@ export const HdfcSlider: React.FC<HdfcSliderProps> = (props) => {
   const classes = useStyles({});
   const [callDoctorPopup, setCallDoctorPopup] = React.useState<boolean>(false);
   const [showIntro, setShowIntro] = React.useState<boolean>(true);
+  const [successMessage, setSuccessMessage] = React.useState<object>();
+  const [exotelBenefitId, setExotelBenefitId] = React.useState<string>('');
+  const apolloClient = useApolloClient();
+
+  const handleDoctorCall = () => {
+    apolloClient
+      .query<
+        GetAllUserSubscriptionsWithPlanBenefits,
+        GetAllUserSubscriptionsWithPlanBenefitsVariables
+      >({
+        query: GET_ALL_USER_SUBSCRIPTIONS_WITH_BENEFITS,
+        variables: {
+          mobile_number: localStorage.getItem('userMobileNo'),
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((response) => {
+        let benefits = response.data.GetAllUserSubscriptionsWithPlanBenefits.response[0].benefits;
+        benefits.map((item: any) => {
+          if (item.cta_action.type == 'CALL_API') {
+            if (item.available_count > 0) {
+              setExotelBenefitId(item._id);
+              setCallDoctorPopup(true);
+            } else {
+              setSuccessMessage({
+                message: `You have exhausted all your attempts to reach our doctors, Please try again next month.`,
+              });
+            }
+          }
+        });
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
+
+  const initiateExotelCall = (mobileNumber: string, benefitId: string) => {
+    apolloClient
+      .query<initiateCallForPartner, initiateCallForPartnerVariables>({
+        query: INITIATE_CALL_FOR_PARTNER,
+        variables: {
+          mobileNumber: mobileNumber,
+          benefitId: benefitId,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((response) => {
+        response.data.initiateCallForPartner.success
+          ? setSuccessMessage({ message: `You'll be connected to the Doctor in a while` })
+          : setSuccessMessage({
+              message: `Error while connecting to the Doctor, Please try again`,
+            });
+        setCallDoctorPopup(false);
+      })
+      .catch((error) => {
+        console.log(error);
+        setCallDoctorPopup(false);
+        setSuccessMessage({ message: `Error while connecting to the Doctor, Please try again` });
+      });
+  };
 
   return (
     <div className={classes.hdcContainer}>
@@ -159,7 +231,7 @@ export const HdfcSlider: React.FC<HdfcSliderProps> = (props) => {
             <Typography className={classes.otpError}>
               Note: You will be connected to a General Physician
             </Typography>
-            <AphButton onClick={() => setCallDoctorPopup(true)}> CONNECT NOW </AphButton>
+            <AphButton onClick={() => handleDoctorCall()}> CONNECT NOW </AphButton>
           </div>
         )}
       </div>
@@ -195,12 +267,7 @@ export const HdfcSlider: React.FC<HdfcSliderProps> = (props) => {
             <AphButton
               color="primary"
               onClick={() => {
-                const param = {
-                  fromPhone: props.patientPhone,
-                  toPhone: HDFC_EXOTEL_NUMBER,
-                  callerId: HDFC_EXOTEL_CALLERID,
-                };
-                callToExotelApi(param);
+                initiateExotelCall(localStorage.getItem('userMobileNo'), exotelBenefitId);
               }}
             >
               Proceed To Connect
@@ -208,6 +275,12 @@ export const HdfcSlider: React.FC<HdfcSliderProps> = (props) => {
           </div>
         </div>
       </AphDialog>
+      <WarningModel
+        error={successMessage}
+        onClose={() => {
+          setSuccessMessage(null);
+        }}
+      />
     </div>
   );
 };
