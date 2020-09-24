@@ -6,7 +6,6 @@ import { DoctorType } from 'doctors-service/entities';
 import { format, addDays } from 'date-fns';
 import { STATUS } from 'consults-service/entities';
 import { ApiConstants } from 'ApiConstants';
-import _ from 'lodash';
 
 @EntityRepository(CaseSheet)
 export class CaseSheetRepository extends Repository<CaseSheet> {
