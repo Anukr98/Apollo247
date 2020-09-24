@@ -334,6 +334,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           if (data.length === 2) getAppointmentDataAndNavigate(linkId, false);
           break;
 
+        case 'DoctorCall':
+          if (data.length === 2) {
+            const params = linkId.split('+');
+            voipCallType.current = params[1];
+            getAppointmentDataAndNavigate(params[0], true);
+          }
+          break;
+
         case 'Order':
           if (data.length === 2) getData('Order', linkId);
           break;
@@ -679,6 +687,15 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       case 'ConsultDetails':
         props.navigation.navigate(AppRoutes.ConsultDetails, {
           CaseSheet: id,
+        });
+        break;
+      case 'DoctorCall':
+        props.navigation.navigate(AppRoutes.ChatRoom, {
+          data: id,
+          callType: voipCallType.current ? voipCallType.current.toUpperCase() : '',
+          prescription: '',
+          isCall: true,
+          isVoipCall: false,
         });
         break;
 
