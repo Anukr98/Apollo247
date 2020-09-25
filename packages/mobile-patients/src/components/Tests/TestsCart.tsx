@@ -214,7 +214,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [isEPrescriptionUploadComplete, setisEPrescriptionUploadComplete] = useState<boolean>();
   const [storePickUpLoading, setStorePickUpLoading] = useState<boolean>(false);
   const [testCentresLoaded, setTestCentresLoaded] = useState<boolean>(false);
-  const [testItemId, setTestItemId] = useState<[]>([]);
 
   const itemsWithHC = cartItems!.filter((item) => item!.collectionMethod == 'HC');
   const itemWithId = itemsWithHC!.map((item) => parseInt(item.id));
