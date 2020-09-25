@@ -428,6 +428,7 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
           awards
           city
           country
+          chatDays
           dateOfBirth
           displayName
           doctorType
@@ -2413,6 +2414,7 @@ export const GET_APPOINTMENT_DATA = gql`
         doctorInfo {
           id
           salutation
+          chatDays
           firstName
           lastName
           displayName

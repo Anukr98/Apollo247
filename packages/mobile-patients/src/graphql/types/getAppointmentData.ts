@@ -34,6 +34,7 @@ export interface getAppointmentData_getAppointmentData_appointmentsHistory_docto
   __typename: "DoctorDetailsWithStatusExclude";
   id: string;
   salutation: string | null;
+  chatDays: number | null;
   firstName: string;
   lastName: string;
   displayName: string | null;
