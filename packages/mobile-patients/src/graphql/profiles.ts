@@ -3101,3 +3101,12 @@ export const GET_PARTICIPANTS_LIVE_STATUS = gql`
     }
   }
 `;
+
+export const CREATE_ONE_APOLLO_USER = gql`
+  mutation createOneApolloUser($patientId: String!) {
+    createOneApolloUser(patientId: $patientId) {
+      success
+      message
+    }
+  }
+`;
