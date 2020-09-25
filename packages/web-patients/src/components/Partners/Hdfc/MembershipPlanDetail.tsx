@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography, CircularProgress } from '@material-ui/core';
-// import { useHistory } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { useLoginPopupState, useAuth, useAllCurrentPatients } from 'hooks/authHooks';
 import WarningModel from 'components/WarningModel';
@@ -778,7 +778,7 @@ export const MembershipPlanDetail: React.FC = (props) => {
   const [exotelBenefitId, setExotelBenefitId] = React.useState<string>('');
 
   const apolloClient = useApolloClient();
-  // const history = useHistory();
+  const history = useHistory();
 
   const handleChange = (panel: string) => (event: React.ChangeEvent<{}>, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false);
@@ -872,37 +872,37 @@ export const MembershipPlanDetail: React.FC = (props) => {
   };
 
   const handleCTAClick = (item: any) => {
-    // const cta_action = item.cta_action;
-    // if (cta_action.type == 'REDIRECT') {
-    //   if (cta_action.meta.action == 'SPECIALITY_LISTING') {
-    //     history.push(clientRoutes.specialityListing());
-    //   } else if (cta_action.meta.action == 'PHARMACY_LANDING') {
-    //     history.push(clientRoutes.medicines());
-    //   } else if (cta_action.meta.action == 'PHR') {
-    //     history.push(clientRoutes.healthRecords());
-    //   } else if (cta_action.meta.action == 'DOC_LISTING_WITH_PAYROLL_DOCS_SELECTED') {
-    //     history.push(clientRoutes.doctorsLanding());
-    //   } else if (cta_action.meta.action == 'DIAGNOSTICS_LANDING') {
-    //     history.push(clientRoutes.tests());
-    //   }
-    // } else if (cta_action.type == 'CALL_API') {
-    //   if (cta_action.meta.action == 'CALL_EXOTEL_API') {
-    //     console.log('call exotel api');
-    //     if (item.available_count > 0) {
-    //       setExotelBenefitId(item._id);
-    //       setCallDoctorPopup(true);
-    //     } else {
-    //       setSuccessMessage({
-    //         message: `You have exhausted all your attempts to reach our doctors, Please try again next month.`,
-    //       });
-    //     }
-    //     // initiateExotelCall(localStorage.getItem('userMobileNo'), item._id);
-    //   }
-    // } else if (cta_action.type == 'WHATSAPP_OPEN_CHAT') {
-    //   handleWhatsappChat(cta_action.meta.action, cta_action.meta.message);
-    // } else {
-    //   history.push(clientRoutes.welcome());
-    // }
+    const cta_action = item.cta_action;
+    if (cta_action.type == 'REDIRECT') {
+      if (cta_action.meta.action == 'SPECIALITY_LISTING') {
+        history.push(clientRoutes.specialityListing());
+      } else if (cta_action.meta.action == 'PHARMACY_LANDING') {
+        history.push(clientRoutes.medicines());
+      } else if (cta_action.meta.action == 'PHR') {
+        history.push(clientRoutes.healthRecords());
+      } else if (cta_action.meta.action == 'DOC_LISTING_WITH_PAYROLL_DOCS_SELECTED') {
+        history.push(clientRoutes.doctorsLanding());
+      } else if (cta_action.meta.action == 'DIAGNOSTICS_LANDING') {
+        history.push(clientRoutes.tests());
+      }
+    } else if (cta_action.type == 'CALL_API') {
+      if (cta_action.meta.action == 'CALL_EXOTEL_API') {
+        console.log('call exotel api');
+        if (item.available_count > 0) {
+          setExotelBenefitId(item._id);
+          setCallDoctorPopup(true);
+        } else {
+          setSuccessMessage({
+            message: `You have exhausted all your attempts to reach our doctors, Please try again next month.`,
+          });
+        }
+        // initiateExotelCall(localStorage.getItem('userMobileNo'), item._id);
+      }
+    } else if (cta_action.type == 'WHATSAPP_OPEN_CHAT') {
+      handleWhatsappChat(cta_action.meta.action, cta_action.meta.message);
+    } else {
+      history.push(clientRoutes.welcome());
+    }
   };
 
   return (
