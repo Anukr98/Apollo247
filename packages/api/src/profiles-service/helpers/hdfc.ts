@@ -71,8 +71,7 @@ export async function generateOtp(mobile: String) {
       ctype: '1',
       sender: process.env.HDFC_OTP_SENDER,
       mobilenumber: `91${formattedMobile}`,
-      msgtxt:
-        'Your confidential one time password for HDFC Bank Credit card on call authentication is #OTP#, valid for 2 hours. Kindly enter this OTP as prompted by IVR.',
+      msgtxt: process.env.HDFC_SMS_TEXT,
       departmentcode: process.env.HDFC_DEPARTMENT_CODE,
       submitdate: '',
       author: '',
