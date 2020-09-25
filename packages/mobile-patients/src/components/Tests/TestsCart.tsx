@@ -1573,13 +1573,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         },
         fetchPolicy: 'no-cache',
       });
-      /**
-       * check for the types..
-       */
 
       let getCharges = g(HomeCollectionChargesApi.data, 'getDiagnosticsHCCharges', 'charges') || 0;
       if (getCharges != null) {
-        setHcCharges!(getCharges as getDiagnosticsHCCharges_getDiagnosticsHCCharges[]);
+        setHcCharges!(getCharges);
       }
       setLoading!(false);
     } catch (error) {
@@ -1654,7 +1651,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               diagnosticEmployeeCode: slotInfo.employeeCode,
               city: selectedAddr ? selectedAddr.city! : '', // not using city from this in order place API
             });
-            // fetchHC_ChargesForTest(slotInfo.slotInfo.slot!);
             setDisplaySchedule(false);
           }}
         />

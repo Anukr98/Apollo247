@@ -105,11 +105,8 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
       .add(30, 'minutes')
       .format('HH:mm');
 
-    const newSlot = startTime.concat('-', endTime);
-    return newSlot
-      .split('-')
-      .map((item) => moment(item.trim(), 'hh:mm').format('hh:mm A'))
-      .join(' - ');
+    const newSlot = [startTime, endTime];
+    return newSlot.map((item) => moment(item.trim(), 'hh:mm').format('hh:mm A')).join(' - ');
   };
 
   /**
