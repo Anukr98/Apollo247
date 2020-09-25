@@ -12,7 +12,7 @@ export const apiBaseUrl =
     : AppConfig.APP_ENV == AppEnv.PERFORM
     ? 'https://asapi.apollo247.com/'
     : AppConfig.APP_ENV == AppEnv.VAPT
-    ? 'https://aph.vapt.api.popcornapps.com/'
+    ? 'https://stagingapi.apollo247.com/'
     : AppConfig.APP_ENV == AppEnv.DEV
     ? 'https://aph.dev.api.popcornapps.com/'
     : AppConfig.APP_ENV == AppEnv.DEVReplica
@@ -23,7 +23,7 @@ export const apiBaseUrl =
 // export const apiBaseUrl = 'https://aph.dev.api.popcornapps.com/'; //Development
 // export const apiBaseUrl = 'https://aph.staging.api.popcornapps.com/'; // QA
 // export const apiBaseUrl = 'https://aph.uat.api.popcornapps.com/'; // UAT
-// export const apiBaseUrl = 'https://aph.vapt.api.popcornapps.com/'; // VAPT
+// export const apiBaseUrl = 'https://stagingapi.apollo247.com/'; // VAPT
 // export const apiBaseUrl = 'https://api.apollo247.com/'; // Production
 // export const apiBaseUrl = 'https://asapi.apollo247.com/'; // Performance Url
 // export const apiBaseUrl = 'https://devapi.apollo247.com/'; //Development replica
