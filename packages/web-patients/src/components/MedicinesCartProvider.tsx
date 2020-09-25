@@ -344,10 +344,10 @@ export const MedicinesCartProvider: React.FC = (props) => {
               source: source || 'Add_Display',
               inputSku: itemToAdd.sku,
               inputPincode: pharmaAddressDetails.pincode,
-              inputMrp: itemToAdd.special_price || itemToAdd.price,
+              inputMrp: itemToAdd.price,
               itemsInCart: 1,
               resExist: exist,
-              resMrp: mrp,
+              resMrp: mrp * parseInt(itemToAdd.mou),
               resQty: qty,
             });
             /** Webengage Tracking */

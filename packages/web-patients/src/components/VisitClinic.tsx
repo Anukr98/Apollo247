@@ -442,7 +442,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
 
         const {
           city,
-          fullName,
+          displayName,
           id,
           doctorType,
           doctorHospital,
@@ -452,7 +452,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
           count = 0;
         onlineConsultationFees &&
           items.push({
-            item_name: fullName,
+            item_name: displayName,
             item_id: id,
             price: Number(onlineConsultationFees),
             item_brand:
@@ -474,7 +474,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
           });
         physicalConsultationFees &&
           items.push({
-            item_name: fullName,
+            item_name: displayName,
             item_id: id,
             price: Number(physicalConsultationFees),
             item_brand:
