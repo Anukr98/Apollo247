@@ -259,6 +259,7 @@ export async function trackWebEngageEventForDoctorCallInitiation(
 }
 
 export async function trackWebEngageEventForCasesheetUpdate(caseSheetDetails: CaseSheet) {
+  console.log('trackWebEngageEventForCasesheetUpdate...', caseSheetDetails);
   if (caseSheetDetails.status !== CASESHEET_STATUS.COMPLETED) return '';
 
   const appointmentDetails = caseSheetDetails.appointment;
@@ -306,6 +307,7 @@ export async function trackWebEngageEventForCasesheetUpdate(caseSheetDetails: Ca
 }
 
 export async function trackWebEngageEventForCasesheetInsert(caseSheetDetails: CaseSheet) {
+  console.log('trackWebEngageEventForCasesheetInsert...', caseSheetDetails);
   if (caseSheetDetails.version <= 1 || caseSheetDetails.doctorType === DoctorType.JUNIOR) return '';
 
   const appointmentDetails = caseSheetDetails.appointment;
