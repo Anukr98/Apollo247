@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import {
   View,
   SafeAreaView,
@@ -110,6 +110,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
   const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>(false);
   const shoppingCart = useShoppingCart();
+  const navigatedFrom = props.navigation.getParam('movedFrom') || '';
 
   useEffect(() => {
     fetchAddress();
@@ -538,6 +539,19 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           if (couponProducts.length) {
             removeFreeProductsFromCart();
           }
+          navigatedFrom === 'registration'
+            ? props.navigation.dispatch(
+                StackActions.reset({
+                  index: 0,
+                  key: null,
+                  actions: [
+                    NavigationActions.navigate({
+                      routeName: AppRoutes.ConsultRoom,
+                    }),
+                  ],
+                })
+              )
+            : props.navigation.navigate('MEDICINES', { focusSearch: true });
         }}
       >
         <Text style={{ ...theme.fonts.IBMPlexSansSemiBold(13), color: theme.colors.APP_YELLOW }}>
