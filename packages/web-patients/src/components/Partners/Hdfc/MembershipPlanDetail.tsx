@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography, CircularProgress } from '@material-ui/core';
-import { useHistory } from 'react-router-dom';
+// import { useHistory } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { useLoginPopupState, useAuth, useAllCurrentPatients } from 'hooks/authHooks';
 import WarningModel from 'components/WarningModel';
@@ -159,8 +159,9 @@ const useStyles = makeStyles((theme: Theme) => {
 
     btnContainer: {
       position: 'absolute',
-      bottom: 16,
+      bottom: 0,
       right: 0,
+      left: 0,
       [theme.breakpoints.down('sm')]: {
         bottom: 0,
         left: 0,
@@ -171,15 +172,15 @@ const useStyles = makeStyles((theme: Theme) => {
       },
 
       '& a': {
-        color: '#FC9916',
+        background: '#FC9916',
         position: 'relative',
-        background: '#fff',
-        borderRadius: 0,
-        width: 160,
+        color: '#fff',
+        width: '100%',
         boxShadow: 'none',
+        borderRadius: '0 0 5px 5px',
         '&:hover': {
-          background: '#fff',
-          color: '#FC9916',
+          background: '#FC9916',
+          color: '#fff',
           boxShadow: 'none',
         },
         [theme.breakpoints.down('sm')]: {
@@ -267,27 +268,26 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    cardContent: {},
     planCard: {
       padding: 16,
       position: 'relative',
       width: 400,
       height: 230,
-      flex: '1 0 auto',
-      borderRadius: 4,
+      boxShadow: '0px 0px 32px rgba(0, 0, 0, 0.1)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 5,
       [theme.breakpoints.down('sm')]: {
         width: '100%',
         height: 160,
         position: 'static',
+        boxShadow: 'none',
         // borderRadius: 10,
       },
       '& img': {
-        position: 'absolute',
-        top: 16,
-        right: 16,
-        [theme.breakpoints.down('sm')]: {
-          top: 30,
-          right: 30,
-        },
+        margin: '0 auto 0',
       },
       '& h1': {
         fontsize: 28,
@@ -299,16 +299,34 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     silver: {
-      background: `url(${require('images/hdfc/silver.png')}) no-repeat 0 0`,
-      backgroundSize: 'cover',
+      '& p': {
+        '&:before': {
+          borderColor: '#C7C7C7',
+        },
+        '& span': {
+          color: '#898989, 100%',
+        },
+      },
     },
     gold: {
-      background: `url(${require('images/hdfc/gold.png')}) no-repeat 0 0`,
-      backgroundSize: 'cover',
+      '& p': {
+        '&:before': {
+          borderColor: '#E7BB65',
+        },
+        '& span': {
+          color: '#B45807',
+        },
+      },
     },
     platinum: {
-      background: `url(${require('images/hdfc/platinum.png')}) no-repeat 0 0`,
-      backgroundSize: 'cover',
+      '& p': {
+        '&:before': {
+          borderColor: '#C7C7C7',
+        },
+        '& span': {
+          color: '#606060',
+        },
+      },
     },
     benefitDesc: {
       fontSize: 16,
@@ -457,6 +475,7 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 14,
         color: '#07AE8B',
         fontWeight: 600,
+        lineHeight: '16px',
         margin: '0 0 5px',
       },
       '& p': {
@@ -514,13 +533,12 @@ const useStyles = makeStyles((theme: Theme) => {
     couponInactive: {
       padding: '0 30px',
       [theme.breakpoints.down('sm')]: {
-        padding: '10px 16px 0',
-
+        padding: '10px 0 0',
         flex: 'auto',
       },
       '& p': {
-        fontSize: 18,
-        color: '#EA5F65',
+        fontSize: 14,
+        color: '#007C9D',
         fontWeight: 500,
         [theme.breakpoints.down('sm')]: {
           fontSize: 10,
@@ -666,6 +684,60 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'block',
       },
     },
+    planName: {
+      textAlign: 'center',
+      position: 'relative',
+      margin: '5px 0',
+      '&:before': {
+        content: "''",
+        position: 'absolute',
+        top: 10,
+        left: 0,
+        right: 0,
+        borderBottom: '1px solid transparent',
+      },
+      '& span': {
+        padding: '5px 15px',
+        background: '#fff',
+        display: 'inline-block',
+        fontSize: 14,
+        textTransform: 'uppercase',
+        letterSpacing: 2,
+        fontWeight: 600,
+        position: 'relative',
+        zIndex: 2,
+      },
+    },
+    ciContent: {
+      boxShadow: '0px 0px 32px rgba(0, 0, 0, 0.1)',
+      background: '#fff',
+      padding: 40,
+      height: 230,
+      '& h2': {
+        fontSize: 20,
+        fontWeight: 700,
+        margin: '0 0 20px',
+      },
+      '& h5': {
+        fontSize: 18,
+        fontWeight: 600,
+        margin: '0 0 10px',
+      },
+    },
+    benefitIcon: {
+      display: 'none',
+      [theme.breakpoints.down('sm')]: {
+        display: 'block',
+        position: 'absolute',
+        top: 10,
+        right: 10,
+      },
+    },
+    beneContent: {
+      [theme.breakpoints.down('sm')]: {
+        width: '90%',
+      },
+    },
   };
 });
 interface TabPanelProps {
@@ -706,7 +778,7 @@ export const MembershipPlanDetail: React.FC = (props) => {
   const [exotelBenefitId, setExotelBenefitId] = React.useState<string>('');
 
   const apolloClient = useApolloClient();
-  const history = useHistory();
+  // const history = useHistory();
 
   const handleChange = (panel: string) => (event: React.ChangeEvent<{}>, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false);
@@ -729,11 +801,11 @@ export const MembershipPlanDetail: React.FC = (props) => {
 
   const getMedalImage = (planName: String) => {
     if (planName == 'GOLD+ PLAN') {
-      return require('images/hdfc/medal_gold.svg');
+      return require('images/hdfc/gold.svg');
     }
     if (planName == 'PLATINUM+ PLAN') {
-      return require('images/hdfc/medal_platinum.svg');
-    } else return require('images/hdfc/medal_silver.svg');
+      return require('images/hdfc/platinum.svg');
+    } else return require('images/hdfc/silver.svg');
   };
 
   useEffect(() => {
@@ -800,37 +872,37 @@ export const MembershipPlanDetail: React.FC = (props) => {
   };
 
   const handleCTAClick = (item: any) => {
-    const cta_action = item.cta_action;
-    if (cta_action.type == 'REDIRECT') {
-      if (cta_action.meta.action == 'SPECIALITY_LISTING') {
-        history.push(clientRoutes.specialityListing());
-      } else if (cta_action.meta.action == 'PHARMACY_LANDING') {
-        history.push(clientRoutes.medicines());
-      } else if (cta_action.meta.action == 'PHR') {
-        history.push(clientRoutes.healthRecords());
-      } else if (cta_action.meta.action == 'DOC_LISTING_WITH_PAYROLL_DOCS_SELECTED') {
-        history.push(clientRoutes.doctorsLanding());
-      } else if (cta_action.meta.action == 'DIAGNOSTICS_LANDING') {
-        history.push(clientRoutes.tests());
-      }
-    } else if (cta_action.type == 'CALL_API') {
-      if (cta_action.meta.action == 'CALL_EXOTEL_API') {
-        console.log('call exotel api');
-        if (item.available_count > 0) {
-          setExotelBenefitId(item._id);
-          setCallDoctorPopup(true);
-        } else {
-          setSuccessMessage({
-            message: `You have exhausted all your attempts to reach our doctors, Please try again next month.`,
-          });
-        }
-        // initiateExotelCall(localStorage.getItem('userMobileNo'), item._id);
-      }
-    } else if (cta_action.type == 'WHATSAPP_OPEN_CHAT') {
-      handleWhatsappChat(cta_action.meta.action, cta_action.meta.message);
-    } else {
-      history.push(clientRoutes.welcome());
-    }
+    // const cta_action = item.cta_action;
+    // if (cta_action.type == 'REDIRECT') {
+    //   if (cta_action.meta.action == 'SPECIALITY_LISTING') {
+    //     history.push(clientRoutes.specialityListing());
+    //   } else if (cta_action.meta.action == 'PHARMACY_LANDING') {
+    //     history.push(clientRoutes.medicines());
+    //   } else if (cta_action.meta.action == 'PHR') {
+    //     history.push(clientRoutes.healthRecords());
+    //   } else if (cta_action.meta.action == 'DOC_LISTING_WITH_PAYROLL_DOCS_SELECTED') {
+    //     history.push(clientRoutes.doctorsLanding());
+    //   } else if (cta_action.meta.action == 'DIAGNOSTICS_LANDING') {
+    //     history.push(clientRoutes.tests());
+    //   }
+    // } else if (cta_action.type == 'CALL_API') {
+    //   if (cta_action.meta.action == 'CALL_EXOTEL_API') {
+    //     console.log('call exotel api');
+    //     if (item.available_count > 0) {
+    //       setExotelBenefitId(item._id);
+    //       setCallDoctorPopup(true);
+    //     } else {
+    //       setSuccessMessage({
+    //         message: `You have exhausted all your attempts to reach our doctors, Please try again next month.`,
+    //       });
+    //     }
+    //     // initiateExotelCall(localStorage.getItem('userMobileNo'), item._id);
+    //   }
+    // } else if (cta_action.type == 'WHATSAPP_OPEN_CHAT') {
+    //   handleWhatsappChat(cta_action.meta.action, cta_action.meta.message);
+    // } else {
+    //   history.push(clientRoutes.welcome());
+    // }
   };
 
   return (
@@ -880,16 +952,14 @@ export const MembershipPlanDetail: React.FC = (props) => {
             <div className={classes.pcContent}>
               <div className={classes.planCardContent}>
                 <div className={classes.planCard + ' ' + cardBg(planName)}>
-                  <img src={getMedalImage(planName)} alt="Gold MemberShip" />
-                  <Typography component="h1">{planName}</Typography>
-                  <Typography className={classes.benefitDesc}>Availing Benefits worth</Typography>
-                  <Typography className={classes.cardWorth}>Rs. {benefitsWorth}+</Typography>
-                  <Typography className={classes.cardDesc}>
-                    {`A host of benefits await you with our`} {planName}{' '}
-                    {`curated for HDFC customers`}
-                  </Typography>
+                  <div className={classes.cardContent}>
+                    <img src={getMedalImage(planName)} alt="" />
+                    <Typography className={classes.planName}>
+                      <span>Gold</span>
+                    </Typography>
+                  </div>
                   <div className={classes.btnContainer}>
-                    <AphButton variant="contained" href={clientRoutes.welcome()}>
+                    <AphButton variant="contained" href={clientRoutes.welcome()} color="primary">
                       {active ? 'Explore Now' : 'Activate Now'}
                     </AphButton>
                   </div>
@@ -914,10 +984,16 @@ export const MembershipPlanDetail: React.FC = (props) => {
                   </div>
                 ) : (
                   <div className={classes.couponInactive}>
-                    <Typography>
-                      Your Plan is Currently INACTIVE. To activate your plan, make a transaction
-                      greater than Rs {minimumTransactionValue} on Apollo 24/7
-                    </Typography>
+                    <div className={classes.ciContent}>
+                      <Typography component="h2">
+                        Complete your first transaction to unlock your benefits
+                      </Typography>
+                      <Typography component="h5">How to Unlock</Typography>
+                      <Typography>
+                        Transact for Rs. {minimumTransactionValue} or more on Virtual Consultations
+                        or Pharmacy Orders
+                      </Typography>
+                    </div>
                   </div>
                 )}
               </div>
@@ -962,8 +1038,15 @@ export const MembershipPlanDetail: React.FC = (props) => {
                           return (
                             <li key={index}>
                               <div className={classes.couponCard}>
-                                <Typography component="h2">{item.header_content}</Typography>
-                                <Typography>{item.description}</Typography>
+                                <img
+                                  src={item.icon}
+                                  className={classes.benefitIcon}
+                                  alt="Benefits Available"
+                                />
+                                <div className={classes.beneContent}>
+                                  <Typography component="h2">{item.header_content}</Typography>
+                                  <Typography>{item.description}</Typography>
+                                </div>
                                 {item.cta_label != 'NULL' && (
                                   <AphButton
                                     disabled={!active}
