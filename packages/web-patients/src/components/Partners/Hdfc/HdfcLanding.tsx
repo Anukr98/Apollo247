@@ -1,36 +1,22 @@
-import React, { useRef, useEffect } from 'react';
-import { makeStyles, ThemeProvider } from '@material-ui/styles';
-import { Theme, Typography, CircularProgress, Fab, Modal } from '@material-ui/core';
+import React, { useRef } from 'react';
+import { makeStyles } from '@material-ui/styles';
+import { Theme, Typography, CircularProgress } from '@material-ui/core';
 import { Link } from 'react-router-dom';
-import { AphButton, AphDialog, AphTextField, AphRadio } from '@aph/web-ui-components';
+import { AphButton, AphDialog } from '@aph/web-ui-components';
 import Popover from '@material-ui/core/Popover';
 import Paper from '@material-ui/core/Paper';
 import { SignIn } from 'components/SignIn';
 import { useLoginPopupState, useAuth, useAllCurrentPatients } from 'hooks/authHooks';
 import { clientRoutes } from 'helpers/clientRoutes';
-import Radio from '@material-ui/core/Radio';
-import RadioGroup from '@material-ui/core/RadioGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import FormLabel from '@material-ui/core/FormLabel';
-import DateFnsUtils from '@date-io/date-fns';
-import { MuiPickersUtilsProvider, KeyboardDatePicker } from '@material-ui/pickers';
 import { createMuiTheme } from '@material-ui/core';
 import { Route } from 'react-router-dom';
 import _isEmpty from 'lodash/isEmpty';
-import { Formik, FormikProps, Field, FieldProps, Form } from 'formik';
-import { useMutation, useQuery, useApolloClient } from 'react-apollo-hooks';
-import { useQueryWithSkip } from 'hooks/apolloHooks';
+import { useMutation, useApolloClient } from 'react-apollo-hooks';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
 import { UpdatePatient, UpdatePatientVariables } from 'graphql/types/UpdatePatient';
 import { UPDATE_PATIENT } from 'graphql/profiles';
 import { ProfileSuccess } from 'components/ProfileSuccess';
 import { NewProfile } from 'components/NewProfile';
-
-// import { createSubscription, createSubscriptionVariables } from 'graphql/types/createSubscription';
-// import {
-//   getSubscriptionsOfUserByStatus,
-//   getSubscriptionsOfUserByStatusVariables,
-// } from 'graphql/types/getSubscriptionsOfUserByStatus';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -541,11 +527,6 @@ export const HdfcLanding: React.FC = (props) => {
   const [showProfileSuccess, setShowProfileSuccess] = React.useState<boolean>(false);
   const [loading, setLoading] = React.useState<boolean>(false);
   const [value, setValue] = React.useState('');
-  // const [userSubscriptions, setUserSubscriptions] = React.useState([]);
-
-  // const createSubscription = useMutation<createSubscription, createSubscriptionVariables>(
-  //   CREATE_SUBSCRIPTION
-  // );
 
   const apolloClient = useApolloClient();
 
@@ -554,29 +535,6 @@ export const HdfcLanding: React.FC = (props) => {
   const defaultNewProfile = allCurrentPatients ? currentPatient || allCurrentPatients[0] : null;
   const hasExistingProfile =
     allCurrentPatients && allCurrentPatients.some((p) => !_isEmpty(p.uhid));
-
-  // useEffect(() => {
-  //   if (hasExistingProfile && currentPatient && userSubscriptions.length == 0) {
-  //     apolloClient
-  //       .query<getSubscriptionsOfUserByStatus, getSubscriptionsOfUserByStatusVariables>({
-  //         query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
-  //         variables: {
-  //           user: {
-  //             mobile_number: currentPatient.mobileNumber,
-  //             patiend_id: currentPatient.id,
-  //           },
-  //           status: ['active'],
-  //         },
-  //         fetchPolicy: 'no-cache',
-  //       })
-  //       .then((response) => {
-  //         setUserSubscriptions(response.data.getSubscriptionsOfUserByStatus.response);
-  //       })
-  //       .catch((error) => {
-  //         alert('Something went wrong :(');
-  //       });
-  //   }
-  // }, [isSignedIn]);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setValue((event.target as HTMLInputElement).value);
@@ -658,7 +616,43 @@ export const HdfcLanding: React.FC = (props) => {
               </div>
               <div className={classes.bannerFooter}>
                 <Typography>Offer exclusively for HDFC Bank customers</Typography>
-                <AphButton className={classes.unlockNow}>Unlock Now</AphButton>
+                {loading ? (
+                  <CircularProgress size={30} />
+                ) : (
+                  <Route
+                    render={({ history }) => (
+                      <AphButton
+                        className={classes.unlockNow}
+                        onClick={() => {
+                          if (!isSignedIn) setIsLoginPopupVisible(true);
+                          else {
+                            setLoading(true);
+                            updatePatient({
+                              variables: {
+                                patientInput: {
+                                  id: currentPatient.id,
+                                  partnerId: currentPatient.partnerId
+                                    ? currentPatient.partnerId
+                                    : 'HDFCBANK',
+                                },
+                              },
+                            })
+                              .then(() => {
+                                setLoading(false);
+                                history.push(clientRoutes.welcome());
+                              })
+                              .catch((error) => {
+                                setLoading(false);
+                                console.error(error);
+                              });
+                          }
+                        }}
+                      >
+                        Unlock Now
+                      </AphButton>
+                    )}
+                  />
+                )}
               </div>
             </div>
           </div>
@@ -726,7 +720,37 @@ export const HdfcLanding: React.FC = (props) => {
                   <CircularProgress size={30} />
                 ) : (
                   <Route
-                    render={({ history }) => <AphButton color="primary">Unlock Now</AphButton>}
+                    render={({ history }) => (
+                      <AphButton
+                        color="primary"
+                        onClick={() => {
+                          if (!isSignedIn) setIsLoginPopupVisible(true);
+                          else {
+                            setLoading(true);
+                            updatePatient({
+                              variables: {
+                                patientInput: {
+                                  id: currentPatient.id,
+                                  partnerId: currentPatient.partnerId
+                                    ? currentPatient.partnerId
+                                    : 'HDFCBANK',
+                                },
+                              },
+                            })
+                              .then(() => {
+                                setLoading(false);
+                                history.push(clientRoutes.welcome());
+                              })
+                              .catch((error) => {
+                                setLoading(false);
+                                console.error(error);
+                              });
+                          }
+                        }}
+                      >
+                        Unlock Now
+                      </AphButton>
+                    )}
                   />
                 )}
               </div>
