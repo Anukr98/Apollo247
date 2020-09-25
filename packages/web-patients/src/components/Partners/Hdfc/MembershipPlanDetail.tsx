@@ -955,7 +955,7 @@ export const MembershipPlanDetail: React.FC = (props) => {
                   <div className={classes.cardContent}>
                     <img src={getMedalImage(planName)} alt="" />
                     <Typography className={classes.planName}>
-                      <span>Gold</span>
+                      <span>{planName.split('+')[0]}</span>
                     </Typography>
                   </div>
                   <div className={classes.btnContainer}>
