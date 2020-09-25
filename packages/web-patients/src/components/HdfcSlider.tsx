@@ -4,6 +4,8 @@ import { makeStyles } from '@material-ui/styles';
 import { AphButton, AphDialog, AphInput } from '@aph/web-ui-components';
 import WarningModel from 'components/WarningModel';
 import { useApolloClient } from 'react-apollo-hooks';
+import { clientRoutes } from 'helpers/clientRoutes';
+import { useHistory } from 'react-router-dom';
 import {
   GetAllUserSubscriptionsWithPlanBenefits,
   GetAllUserSubscriptionsWithPlanBenefitsVariables,
@@ -16,71 +18,45 @@ import {
   GET_ALL_USER_SUBSCRIPTIONS_WITH_BENEFITS,
   INITIATE_CALL_FOR_PARTNER,
 } from 'graphql/profiles';
+import Slider from 'react-slick';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
-    hdcContainer: {
-      background: `#fff url(${require('images/hdfc/bg.svg')}) no-repeat 0 0`,
+    card: {
       boxShadow: ' 0px 5px 20px rgba(128, 128, 128, 0.3)',
       borderRadius: 10,
-      padding: '16px 16px 0 16px',
+      height: 172,
       margin: '30px 0 0 auto',
-      position: 'relative',
       [theme.breakpoints.down('sm')]: {
+        height: 155,
         backgroundSize: 'contain',
-      },
-    },
-    hdfcIntro: {
-      // display: 'none',
-      [theme.breakpoints.down('sm')]: {
-        padding: '10px 0 0',
-      },
-      '& >img': {
-        position: 'absolute',
-        top: 20,
-        right: 60,
-        [theme.breakpoints.down('sm')]: {
-          display: 'none',
-        },
-      },
-      '& h2': {
-        fontSize: 24,
-        fontWeight: 600,
-        color: '#07AE8B',
-        lineHeight: '20px',
-        [theme.breakpoints.down('sm')]: {
-          fontSize: 14,
-        },
-      },
-      '& button': {
+        backgroundPosition: 'center',
         boxShadow: 'none',
-        display: 'block',
-        marginLeft: 'auto',
-        color: '#FC9916',
-      },
-      [theme.breakpoints.down('xs')]: {
-        width: '100%',
       },
     },
-
-    hdcContent: {},
-    desc: {
-      fontSize: 12,
-      fontWeight: 300,
-      color: '#01475B',
-      lineHeight: '16px',
-      fontStyle: 'italic',
-      margin: '10px 0',
+    slide1: {
+      background: `#fff url(${require('images/hdfc/banners/slide1.png')}) no-repeat 0 0`,
       [theme.breakpoints.down('sm')]: {
-        fontSize: 10,
-        margin: ' 0 0 10px',
+        background: `url(${require('images/hdfc/banners/mweb_slide1.png')}) no-repeat 0 0`,
       },
     },
-    note: {
-      fontSize: 10,
-      fontWeight: 500,
-      color: '#FF637B',
-      lineHeight: '16px',
+    slide2: {
+      background: `#fff url(${require('images/hdfc/banners/slide2.png')}) no-repeat 0 0`,
+      [theme.breakpoints.down('sm')]: {
+        background: `url(${require('images/hdfc/banners/mweb_slide2.png')}) no-repeat 0 0`,
+      },
+    },
+    slide3: {
+      background: `#fff url(${require('images/hdfc/banners/slide3.png')}) no-repeat 0 0`,
+      [theme.breakpoints.down('sm')]: {
+        background: `url(${require('images/hdfc/banners/mweb_slide3.png')}) no-repeat 0 0`,
+      },
+    },
+    slide4: {
+      background: `#fff url(${require('images/hdfc/banners/slide4.png')}) no-repeat 0 0`,
+      [theme.breakpoints.down('sm')]: {
+        background: `url(${require('images/hdfc/banners/mweb_slide4.png')}) no-repeat 0 0`,
+      },
     },
     connectDoctorContent: {
       display: 'flex',
@@ -102,11 +78,6 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
-    otpError: {
-      color: 'red',
-      fontSize: 14,
-      marginTop: 10,
-    },
     dialogContent: {},
     dialogHeader: {
       padding: '16px 16px 10px',
@@ -120,7 +91,6 @@ const useStyles = makeStyles((theme: Theme) => {
         lineHeight: '13px',
       },
     },
-
     btnContainer: {
       display: 'flex',
       alignItems: 'center',
@@ -144,6 +114,41 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'block',
       },
     },
+    slider: {
+      '& >.slick-list': {
+        overflow: 'visible',
+        '& .slick-track': {
+          display: 'flex',
+        },
+        '& .slick-slide': {
+          width: '100%',
+          margin: 25,
+          [theme.breakpoints.down('sm')]: {
+            margin: 10,
+          },
+        },
+      },
+      '& >.slick-dots': {
+        position: 'static !important',
+        '& li': {
+          margin: 0,
+          '& button': {
+            '&:before': {
+              fontSize: 10,
+              color: 'rgba(0,0,0,0.4)',
+            },
+          },
+          '&.slick-active': {
+            '& button': {
+              '&:before': {
+                fontSize: 18,
+                color: '#007C9D',
+              },
+            },
+          },
+        },
+      },
+    },
   };
 });
 
@@ -158,6 +163,18 @@ export const HdfcSlider: React.FC<HdfcSliderProps> = (props) => {
   const [successMessage, setSuccessMessage] = React.useState<object>();
   const [exotelBenefitId, setExotelBenefitId] = React.useState<string>('');
   const apolloClient = useApolloClient();
+  const history = useHistory();
+
+  const sliderSettings = {
+    infinite: true,
+    dots: true,
+    arrows: false,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    autoPlaySpeed: 5000,
+    autoplay: true,
+  };
 
   const handleDoctorCall = () => {
     apolloClient
@@ -217,24 +234,34 @@ export const HdfcSlider: React.FC<HdfcSliderProps> = (props) => {
   };
 
   return (
-    <div className={classes.hdcContainer}>
-      <div className={classes.hdcContent}>
-        <img src={require('images/hdfc/hdfc-logo.svg')} alt="HDFC Call Doctor" width="100" />
-        {/* Intro */}
-        {showIntro && (
-          <div className={classes.hdfcIntro}>
-            <img src={require('images/hdfc/doctor_connect.svg')} alt="Otp" />
-            <Typography className={classes.desc}>
-              As our privileged customer in partnership with HDFC
-            </Typography>
-            <Typography component="h2">You are eligible for a free call to a Doctor</Typography>
-            <Typography className={classes.otpError}>
-              Note: You will be connected to a General Physician
-            </Typography>
-            <AphButton onClick={() => handleDoctorCall()}> CONNECT NOW </AphButton>
-          </div>
-        )}
-      </div>
+    <>
+      <Slider {...sliderSettings} className={classes.slider}>
+        <div
+          className={`${classes.card} ${classes.slide1}`}
+          onClick={() => {
+            handleDoctorCall();
+          }}
+        ></div>
+        <div
+          className={`${classes.card} ${classes.slide2}`}
+          onClick={() => {
+            history.push(clientRoutes.membershipPlanDetail());
+          }}
+        ></div>
+        <div
+          className={`${classes.card} ${classes.slide3}`}
+          onClick={() => {
+            history.push(clientRoutes.medicines());
+          }}
+        ></div>
+        <div
+          className={`${classes.card} ${classes.slide4}`}
+          onClick={() => {
+            history.push(clientRoutes.membershipPlanDetail());
+          }}
+        ></div>
+      </Slider>
+
       <AphDialog open={callDoctorPopup} maxWidth="sm">
         <div className={classes.dialogContent}>
           <div className={classes.dialogHeader}>
@@ -281,6 +308,6 @@ export const HdfcSlider: React.FC<HdfcSliderProps> = (props) => {
           setSuccessMessage(null);
         }}
       />
-    </div>
+    </>
   );
 };
