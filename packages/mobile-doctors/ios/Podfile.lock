@@ -426,6 +426,10 @@ PODS:
   - WebEngage (5.0.2):
     - WebEngage/Xcode11 (= 5.0.2)
   - WebEngage/Xcode11 (5.0.2)
+  - WebEngageAppEx/ContentExtension (0.9.0):
+    - WebEngageAppEx/CoreApi
+  - WebEngageAppEx/CoreApi (0.9.0)
+  - WebEngageBannerPush (0.9.0)
   - Yoga (1.14.0)
 
 DEPENDENCIES:
@@ -496,6 +500,8 @@ DEPENDENCIES:
   - RNSound (from `../node_modules/react-native-sound`)
   - RNSVG (from `../node_modules/react-native-svg`)
   - WebEngage
+  - WebEngageAppEx/ContentExtension
+  - WebEngageBannerPush
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -533,6 +539,8 @@ SPEC REPOS:
     - SDWebImage
     - SDWebImageWebPCoder
     - WebEngage
+    - WebEngageAppEx
+    - WebEngageBannerPush
 
 EXTERNAL SOURCES:
   BugsnagReactNative:
@@ -734,8 +742,10 @@ SPEC CHECKSUMS:
   SDWebImage: cf6922231e95550934da2ada0f20f2becf2ceba9
   SDWebImageWebPCoder: d0dac55073088d24b2ac1b191a71a8f8d0adac21
   WebEngage: b8f322ebfdd08c9cd56aec038f9d3c29c018335d
+  WebEngageAppEx: c36609d1bc25f78dc820fa6a75b4084d243c3d15
+  WebEngageBannerPush: 12b84f74718a2806ac6cc0c643574f6cd2f9f3fe
   Yoga: 02036f6383c0008edb7ef0773a0e6beb6ce82bd1
 
-PODFILE CHECKSUM: 145185f52c412516b5e3564a2bf622d57b421e76
+PODFILE CHECKSUM: 8eef9aced498d24169fe4753861a93cc2879b231
 
 COCOAPODS: 1.9.3
