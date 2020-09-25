@@ -97,24 +97,33 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
   };
 
   const formatSlot = (slot: string /*07:00-07:30 */) => {
-    return slot
+    /**
+     * for showing 30 mins buffer time.
+     */
+    const startTime = slot.split('-')[0];
+    const endTime = moment(startTime, 'HH:mm')
+      .add(30, 'minutes')
+      .format('HH:mm');
+
+    const newSlot = startTime.concat('-', endTime);
+    return newSlot
       .split('-')
       .map((item) => moment(item.trim(), 'hh:mm').format('hh:mm A'))
       .join(' - ');
   };
 
-  const individualDiagnosticsObject = orderDetails?.diagnosticOrderLineItems?.map(
-    (item) => item?.diagnostics
+  /**
+   * to handle the quantity
+   */
+  const individualDiagnosticsArray = orderDetails?.diagnosticOrderLineItems!.map(
+    (item) => item?.price * item?.quantity
   );
 
-  const totalIndividualDiagonsticsCharges = Object.keys(individualDiagnosticsObject!).reduce(
-    function(prev, key) {
-      return prev + individualDiagnosticsObject![key].rate;
-    },
-    0
+  const totalIndividualDiagonsticsCharges = individualDiagnosticsArray?.reduce(
+    (prevVal, currVal) => prevVal + currVal
   );
 
-  const HomeCollectionCharges = orderDetails?.totalPrice! - totalIndividualDiagonsticsCharges;
+  const HomeCollectionCharges = orderDetails?.totalPrice! - totalIndividualDiagonsticsCharges!;
 
   const orderLineItems = orderDetails!.diagnosticOrderLineItems || [];
   return (
@@ -179,7 +188,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
       {/**
        * HOME COLLECTION CHARGES
        */}
-      {HomeCollectionCharges && (
+      {!!HomeCollectionCharges && (
         <View style={styles.commonTax}>
           <View style={{ flex: 1 }}>
             <Text style={styles.commonText}>Home Collection Charges</Text>
