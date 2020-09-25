@@ -82,6 +82,8 @@ export enum WebEngageEventName {
   PHARMACY_ADD_NEW_ADDRESS_COMPLETED = 'Pharmacy Add New Address Completed', // (Event triggered Once the address is selected & TAT is displayed)
   PHARMACY_CART_ADDRESS_SELECTED_SUCCESS = 'Pharmacy Cart Address Selected Success',
   PHARMACY_CART_ADDRESS_SELECTED_FAILURE = 'Pharmacy Cart Address Selected Failure',
+  PHARMACY_AVAILABILITY_API_CALLED = 'Pharmacy Availability API Called',
+  PHARMACY_TAT_API_CALLED = 'Pharmacy TAT API Called',
 
   // HomePageElements Events
   BUY_MEDICINES = 'Buy Medicines',
@@ -903,6 +905,39 @@ export interface WebEngageEvents {
     'Delivery Successful': YesOrNo; // Yes / No (If Error message shown because it is unservicable)
     'Delivery Address': string;
     Pincode: string;
+  };
+
+  [WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED]: {
+    Source: 'PDP' | 'Add_Search' | 'Add_Display' | 'Cart';
+    Input_SKU: string;
+    Input_Pincode: string;
+    Input_MRP: number;
+    No_of_items_in_the_cart: number;
+    Response_Exist: YesOrNo;
+    Response_MRP: number;
+    Response_Qty: number;
+  };
+
+  [WebEngageEventName.PHARMACY_TAT_API_CALLED]: {
+    Source: 'PDP' | 'Cart';
+    Input_sku: string;
+    Input_qty: number;
+    Input_lat: number;
+    Input_long: number;
+    Input_pincode: string;
+    Input_MRP: number;
+    No_of_items_in_the_cart: number;
+    Response_Exist: YesOrNo;
+    Response_MRP: number;
+    Response_Qty: number;
+    Response_lat: number;
+    Response_lng: number;
+    Response_ordertime: number;
+    Response_pincode: string;
+    Response_storeCode: string;
+    Response_storeType: string;
+    Response_tat: string;
+    Response_tatU: number;
   };
 
   [WebEngageEventName.FEATURED_TEST_CLICKED]: {

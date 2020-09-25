@@ -481,6 +481,20 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
       const checkAvailabilityRes = await availabilityApi247(pincode, sku)
       const outOfStock = !(!!(checkAvailabilityRes?.data?.response[0]?.exist))
+      try {
+        const { mrp, exist, qty } = checkAvailabilityRes.data.response[0];
+        const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED] = {
+          Source: 'PDP',
+          Input_SKU: sku,
+          Input_Pincode: pincode,
+          Input_MRP: medicineDetails?.price,
+          No_of_items_in_the_cart: 1,
+          Response_Exist: exist ? 'Yes' : 'No',
+          Response_MRP: mrp,
+          Response_Qty: qty,
+        };
+        postWebEngageEvent(WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED, eventAttributes);
+      } catch (error) {}
      
       if (outOfStock) {
         setdeliveryTime('');
@@ -504,7 +518,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       }
 
       getDeliveryTAT247({
-        items: [{ sku: sku, qty: getItemQuantity(sku) }],
+        items: [{ sku: sku, qty: getItemQuantity(sku) || 1 }],
         pincode: pincode,
         lat: lattitude,
         lng: longitude
@@ -530,7 +544,33 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           setdeliveryError(pincodeServiceableItemOutOfStockMsg);
           setdeliveryTime('');
         }
-      })
+          try {
+            const response = res.data.response;
+            const item = response.items[0];
+            const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_TAT_API_CALLED] = {
+              Source: 'PDP',
+              Input_sku: sku,
+              Input_qty: getItemQuantity(sku) || 1,
+              Input_lat: lattitude,
+              Input_long: longitude,
+              Input_pincode: pincode,
+              Input_MRP: medicineDetails?.price,
+              No_of_items_in_the_cart: 1,
+              Response_Exist: item.exist ? 'Yes' : 'No',
+              Response_MRP: item.mrp,
+              Response_Qty: item.qty,
+              Response_lat: response.lat,
+              Response_lng: response.lng,
+              Response_ordertime: response.ordertime,
+              Response_pincode: `${response.pincode}`,
+              Response_storeCode: response.storeCode,
+              Response_storeType: response.storeType,
+              Response_tat: response.tat,
+              Response_tatU: response.tatU,
+            };
+            postWebEngageEvent(WebEngageEventName.PHARMACY_TAT_API_CALLED, eventAttributes);
+          } catch (error) {}
+        })
         .catch(() => {
           // Intentionally show T+2 days as Delivery Date
           setdeliveryTime(genericServiceableDate);

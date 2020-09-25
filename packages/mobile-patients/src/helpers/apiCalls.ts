@@ -138,6 +138,8 @@ export interface ServiceAbilityApiInput {
 export interface GetAvailabilityResponse247 {
   response: {
     sku: string;
+    qty: number;
+    mrp: number;
     exist: boolean;
   }[];
   errorMSG?: string;
@@ -152,10 +154,14 @@ export interface GetTatResponse247 {
       exist: boolean;
     }[];
     storeCode: string;
+    pincode: number;
+    lat: number;
+    lng: number;
     tat: string;
     tatU: number;
     inventoryExist: boolean;
     storeType: string;
+    ordertime: number;
   };
   errorMSG?: string;
 }
