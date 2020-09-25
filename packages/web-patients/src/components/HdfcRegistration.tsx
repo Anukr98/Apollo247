@@ -1,9 +1,8 @@
 import React from 'react';
 import { Theme, Typography, CircularProgress } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { AphButton, AphDialog, AphInput } from '@aph/web-ui-components';
-import { callToExotelApi } from 'helpers/commonHelpers';
-import { HDFC_EXOTEL_CALLERID, HDFC_EXOTEL_NUMBER } from 'helpers/constants';
+import { AphButton, AphInput } from '@aph/web-ui-components';
+import { HDFC_ENROLL_LINK } from 'helpers/constants';
 import { useApolloClient } from 'react-apollo-hooks';
 import { IDENTIFY_HDFC_CUSTOMER, VALIDATE_HDFC_OTP, CREATE_SUBSCRIPTION } from 'graphql/profiles';
 import { useAllCurrentPatients } from 'hooks/authHooks';
@@ -14,12 +13,12 @@ import {
   CreateUserSubscriptionVariables,
 } from 'graphql/types/CreateUserSubscription';
 import { HDFC_CUSTOMER, CreateUserSubscriptionInput } from 'graphql/types/globalTypes';
-import { TrendingUpTwoTone } from '@material-ui/icons';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     hdcContainer: {
-      background: '#fff',
+      background: `#fff url(${require('images/hdfc/bg.svg')}) no-repeat 0 0`,
+      backgroundPosition: 'bottom',
       boxShadow: ' 0px 5px 20px rgba(128, 128, 128, 0.3)',
       borderRadius: 10,
       padding: 16,
@@ -220,7 +219,7 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'absolute',
       bottom: 0,
       right: 0,
-      '& button': {
+      '& a, button': {
         margin: '0 0 0 10px',
         '&:first-child': {
           boxShadow: 'none',
@@ -374,52 +373,6 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
-    joinClub: {
-      [theme.breakpoints.down('sm')]: {
-        padding: '0 0 30px',
-      },
-
-      '& h2': {
-        fontSize: 32,
-        fontWeight: 700,
-        color: '#02475b',
-        lineHeight: '42px',
-        [theme.breakpoints.down('sm')]: {
-          fontSize: 18,
-          lineHeight: '24px',
-          margin: '0 0 5px',
-        },
-      },
-      '& h5': {
-        fontSize: 14,
-        lineHeight: '24px',
-        margin: '0 0 10px',
-        fontWeight: 600,
-        [theme.breakpoints.down('sm')]: {
-          fontSize: 10,
-          lineHeight: '18px',
-          margin: '0 0 5px',
-        },
-      },
-      '& p': {
-        fontSize: 14,
-        lineHeight: '24px',
-        fontWeight: 300,
-        [theme.breakpoints.down('sm')]: {
-          fontSize: 10,
-          lineHeight: '16px',
-        },
-      },
-      '& button': {
-        position: 'absolute',
-        right: 0,
-        bottom: 0,
-        boxShadow: 'none',
-        display: 'block',
-        marginLeft: 'auto',
-        color: '#FC9916',
-      },
-    },
     overflowHidden: {
       overflow: 'hidden',
     },
@@ -458,7 +411,6 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
   const [showCongratulations, setShowCongratulations] = React.useState<boolean>(false);
   const [showRecheckOTP, setShowRecheckOTP] = React.useState<boolean>(false);
   const [loading, setLoading] = React.useState<boolean>(false);
-  const [showJoinClub, setShowJoinClub] = React.useState<boolean>(false);
 
   const queryIdentifyHDFCCustomer = () => {
     setLoading(true);
@@ -558,7 +510,7 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
   };
 
   return (
-    <div className={`${classes.hdcContainer} ${showJoinClub ? classes.overflowHidden : ''} `}>
+    <div className={`${classes.hdcContainer}`}>
       <div className={classes.hdcContent}>
         <div className={classes.hdcHeader}>
           <img src={require('images/hdfc/apollo-hashtag.svg')} alt="HDFC Call Doctor" width="100" />
@@ -629,7 +581,8 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
               <div>
                 <Typography component="h2">Congratulations ! </Typography>
                 <Typography>
-                  You are now a <span className={classes.planName}>Gold + Member</span>
+                  You are now a{' '}
+                  <span className={classes.planName}>{planName.split(' ')[0]} Member</span>
                 </Typography>
               </div>
             </div>
@@ -650,73 +603,14 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
               </Typography>
             </div>
             <div className={classes.btnContainer}>
-              <AphButton>Enroll</AphButton>
+              <AphButton href={HDFC_ENROLL_LINK}>Enroll</AphButton>
               <AphButton onClick={() => queryIdentifyHDFCCustomer()}>
                 {loading ? <CircularProgress size={30} /> : 'Recheck Otp'}
               </AphButton>
             </div>
           </div>
         )}
-        {showJoinClub && (
-          <div className={classes.joinClub}>
-            <Typography component="h2">Hey ! </Typography>
-            <Typography component="h5">
-              You are missing out on a world of exclusive benefits
-            </Typography>
-            <Typography>
-              Just book a Doctor Consultation or order Pharmacy products worth Rs 499 or more to
-              join the club!
-            </Typography>
-            <AphButton>Tell Me More</AphButton>
-          </div>
-        )}
       </div>
-
-      <AphDialog open={callDoctorPopup} maxWidth="sm">
-        <div className={classes.dialogContent}>
-          <div className={classes.dialogHeader}>
-            <Typography component="h3">Connect to the Doctor </Typography>
-            <Typography>Please follow the steps to connect to Doctor </Typography>
-          </div>
-          <div className={classes.connectDoctorContent}>
-            <div className={classes.cdDetails}>
-              <img src={require('images/hdfc/call-incoming.svg')} alt="" />
-              <Typography component="h5">
-                Answer the call from <span>‘040-482-17258’</span> to connect.
-              </Typography>
-            </div>
-            <div className={classes.cdDetails}>
-              <img src={require('images/hdfc/call-outgoing.svg')} alt="" />
-              <Typography component="h5">The same call will connect to the Doctor.</Typography>
-            </div>
-            <div className={classes.cdDetails}>
-              <img src={require('images/hdfc/group.svg')} alt="" />
-              <Typography component="h5">Wait for the Doctor to connect over the call.</Typography>
-            </div>
-            <div className={classes.cdDetails}>
-              <Typography className={classes.callNote}>
-                <span>*Note : </span>Your personal phone number will not be shared.
-              </Typography>
-            </div>
-          </div>
-          <div className={classes.btnContainer}>
-            <AphButton onClick={() => setCallDoctorPopup(false)}>Cancel</AphButton>
-            <AphButton
-              color="primary"
-              onClick={() => {
-                const param = {
-                  fromPhone: props.patientPhone,
-                  toPhone: HDFC_EXOTEL_NUMBER,
-                  callerId: HDFC_EXOTEL_CALLERID,
-                };
-                callToExotelApi(param);
-              }}
-            >
-              Proceed To Connect
-            </AphButton>
-          </div>
-        </div>
-      </AphDialog>
     </div>
   );
 };
