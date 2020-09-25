@@ -225,7 +225,6 @@ export const FilterHealthRecordScene: React.FC<FilterHealthRecordSceneProps> = (
       return obj;
     });
     setData(filterData);
-    props.setData(filterData);
     props.onClickClose(data);
   };
   const renderTopView = () => {
