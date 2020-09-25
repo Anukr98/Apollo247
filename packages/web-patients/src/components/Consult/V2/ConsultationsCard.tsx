@@ -543,16 +543,24 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
     }, 60000);
   };
 
-  const getAppointmentStatus = (status: STATUS, isConsultStarted: boolean | null) => {
+  const getAppointmentStatus = (
+    status: STATUS,
+    isConsultStarted: boolean | null,
+    isSeniorConsultStarted: boolean
+  ) => {
     switch (status) {
       case STATUS.PENDING:
-        return isConsultStarted ? 'CONTINUE CONSULT' : 'FILL MEDICAL DETAILS';
+        return isSeniorConsultStarted
+          ? 'CONTINUE CONSULT'
+          : isConsultStarted
+          ? 'GO TO CONSULT ROOM'
+          : 'FILL MEDICAL DETAILS';
       case STATUS.NO_SHOW || STATUS.CALL_ABANDON:
         return 'PICK ANOTHER SLOT';
       case STATUS.COMPLETED:
         return props.pastOrCurrent === 'past' ? 'BOOK FOLLOW UP' : 'TEXT CONSULT';
       case STATUS.IN_PROGRESS:
-        return 'GO TO CONSULT ROOM';
+        return 'CONTINUE CONSULT';
       case STATUS.CANCELLED:
         return 'BOOK AGAIN';
     }
@@ -561,20 +569,25 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
   const showAppointmentAction = (
     appointmentState: APPOINTMENT_STATE | null,
     status: STATUS,
-    isConsultStarted: boolean | null
+    isConsultStarted: boolean | null,
+    isSeniorConsultStarted: boolean
   ) => {
     if (appointmentState) {
       switch (appointmentState) {
         case APPOINTMENT_STATE.NEW:
-          return getAppointmentStatus(status, isConsultStarted);
+          return getAppointmentStatus(status, isConsultStarted, isSeniorConsultStarted);
         case APPOINTMENT_STATE.AWAITING_RESCHEDULE:
           return 'PICK ANOTHER SLOT';
         case APPOINTMENT_STATE.RESCHEDULE:
-          return isConsultStarted ? 'CONTINUE CONSULT' : 'FILL MEDICAL DETAILS';
+          return isSeniorConsultStarted
+            ? 'CONTINUE CONSULT'
+            : isConsultStarted
+            ? 'GO TO CONSULT ROOM'
+            : 'FILL MEDICAL DETAILS';
       }
     }
     // need to add one more condition for view prescription for this have to query casesheet
-    getAppointmentStatus(status, isConsultStarted);
+    getAppointmentStatus(status, isConsultStarted, isSeniorConsultStarted);
   };
 
   const getConsultationUpdateText = (
@@ -994,9 +1007,10 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                                     if (
                                       props.pastOrCurrent === 'past' ||
                                       showAppointmentAction(
-                                        appointmentState,
-                                        status,
-                                        isConsultStarted
+                                        appointmentDetails.appointmentState,
+                                        appointmentDetails.status,
+                                        appointmentDetails.isConsultStarted,
+                                        appointmentDetails.isSeniorConsultStarted
                                       ) === 'BOOK FOLLOW UP'
                                     ) {
                                       callSlotScreen(appointmentDetails);
@@ -1031,9 +1045,10 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                                     ? props.pastOrCurrent === 'past'
                                       ? 'BOOK FOLLOW UP'
                                       : showAppointmentAction(
-                                          appointmentState,
-                                          status,
-                                          isConsultStarted
+                                          appointmentDetails.appointmentState,
+                                          appointmentDetails.status,
+                                          appointmentDetails.isConsultStarted,
+                                          appointmentDetails.isSeniorConsultStarted
                                         )
                                     : 'VIEW DETAILS'}
                                 </h3>
