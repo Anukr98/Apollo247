@@ -106,7 +106,12 @@ export const ShopByAreas: React.FC<ShopByAreasProps> = (props) => {
 
   return (
     <div className={classes.root}>
-      <Slider {...sliderSettings}>
+      <Slider
+        {...sliderSettings}
+        beforeChange={() => {
+          document.getElementById('searchProduct').blur();
+        }}
+      >
         {props.data &&
           props.data.map((healthArea, index) => {
             let formattedTitle = _replace(healthArea.title.toLowerCase(), ' & ', '_');
