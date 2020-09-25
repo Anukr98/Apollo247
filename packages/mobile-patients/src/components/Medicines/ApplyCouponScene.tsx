@@ -123,7 +123,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
   const { locationDetails, hdfcUserSubscriptions } = useAppCommonData();
   const mobileNumber = g(currentPatient, 'mobileNumber');
   const emailAddress = g(currentPatient, 'emailAddress');
-  const packageId = hdfcUserSubscriptions ? (hdfcUserSubscriptions.plan_id + ':' + hdfcUserSubscriptions.name) : null;
+  const packageId = hdfcUserSubscriptions ? (g(hdfcUserSubscriptions, 'group', 'name') + ':' + hdfcUserSubscriptions.planId) : null;
 
   useEffect(() => {
     fetchConsultCoupons(mobileNumber, emailAddress, packageId)
@@ -150,6 +150,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
       mobile: g(currentPatient, 'mobileNumber'),
       billAmount: cartTotal.toFixed(2),
       coupon: coupon,
+      packageId,
       pinCode: locationDetails && locationDetails.pincode,
       products: cartItems.map((item) => ({
         sku: item.id,

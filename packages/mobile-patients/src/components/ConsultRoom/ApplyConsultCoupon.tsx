@@ -119,7 +119,7 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
   const { hdfcUserSubscriptions } = useAppCommonData();
   const mobileNumber = g(currentPatient, 'mobileNumber');
   const emailAddress = g(currentPatient, 'emailAddress');
-  const packageId = hdfcUserSubscriptions ? (hdfcUserSubscriptions.name + ':' + hdfcUserSubscriptions.plan_id) : null;
+  const packageId = hdfcUserSubscriptions ? (g(hdfcUserSubscriptions, 'group', 'name') + ':' + hdfcUserSubscriptions.planId) : null;
 
   const renderErrorPopup = (desc: string) =>
     showAphAlert!({

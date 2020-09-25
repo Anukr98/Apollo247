@@ -160,7 +160,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const { getPatientApiCall } = useAuth();
   const mobileNumber = g(currentPatient, 'mobileNumber');
   const emailAddress = g(currentPatient, 'emailAddress');
-  const packageId = hdfcUserSubscriptions ? (hdfcUserSubscriptions.plan_id + ':' + hdfcUserSubscriptions.name) : null;
+  const packageId = hdfcUserSubscriptions ? (g(hdfcUserSubscriptions, 'group', 'name') + ':' + hdfcUserSubscriptions.planId) : null;
 
   const renderErrorPopup = (desc: string) =>
     showAphAlert!({
@@ -844,6 +844,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       mobile: g(currentPatient, 'mobileNumber'),
       billAmount: Number(doctorFees),
       coupon: coupon,
+      packageId,
       // paymentType: 'CASH', //CASH,NetBanking, CARD, COD
       pinCode: locationDetails && locationDetails.pincode,
       consultations: [

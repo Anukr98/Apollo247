@@ -1101,10 +1101,6 @@ export const HdfcSilverMedal: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/medal_silver.png')} />
 );
 
-export const HdfcCongratulations: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./icons/hdfc_congratulations.png')} />
-);
-
 export const LockIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/lock.png')} />
 );
@@ -1119,14 +1115,6 @@ export const UpOrange: React.FC<IconProps> = (props) => (
 
 export const DownOrange: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/down_orange.png')} />
-);
-
-export const OneVectorNumber: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/Vector1.png')} />
-);
-
-export const TwoVectorNumber: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/Vector2.png')} />
 );
 
 export const RoundCancelIcon: React.FC<IconProps> = (props) => (
@@ -1146,7 +1134,7 @@ export const GroupCallIcon: React.FC<IconProps> = (props) => (
 );
 
 export const HdfcBankLogo: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./icons/HDFC_logo.png')} />
+  <IconBase {...props} source={require('./icons/HDFC_logo_presents.png')} />
 );
 
 export const HdfcBankLogoSmall: React.FC<IconProps> = (props) => (
@@ -1175,4 +1163,32 @@ export const MinusIconWhite: React.FC<IconProps> = (props) => (
 
 export const MinusIconOrange: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/minus-icon-orange.png')} />
+);
+
+export const ExclamationGreen: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/info_blue.png')} />
+);
+
+export const LastStepIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/last_step.png')} />
+);
+
+export const SadFaceYellow: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/sad_face_yellow.png')} />
+);
+
+export const ThumbsUp: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/thumbs_up.png')} />
+);
+
+export const HdfcBannerSilver: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/Hdfc-Silver-Banner.png')} />
+);
+
+export const HdfcBannerGold: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/Hdfc-Gold-Banner.png')} />
+);
+
+export const HdfcBannerPlatinum: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/Hdfc-Platinum-Banner.png')} />
 );

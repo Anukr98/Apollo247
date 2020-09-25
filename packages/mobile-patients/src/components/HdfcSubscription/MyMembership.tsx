@@ -101,6 +101,8 @@ export interface MyMembershipProps extends NavigationScreenProps {}
 export const MyMembership: React.FC<MyMembershipProps> = (props) => {
   const { hdfcUserSubscriptions } = useAppCommonData();
   const showSubscriptions = !!(hdfcUserSubscriptions && hdfcUserSubscriptions.name);
+  const canUpgradeMultiplePlans = !!g(hdfcUserSubscriptions, 'canUpgradeTo', 'canUpgradeTo', 'name');
+  const premiumPlan = canUpgradeMultiplePlans ? g(hdfcUserSubscriptions, 'canUpgradeTo', 'canUpgradeTo') : {};
   const canUpgrade = !!g(hdfcUserSubscriptions, 'canUpgradeTo', 'name');
   const minTransactionToUpgrade = canUpgrade ? g(hdfcUserSubscriptions, 'canUpgradeTo', 'minTransactionValue') : 0;
   const isActive = !!(hdfcUserSubscriptions && hdfcUserSubscriptions.isActive);
@@ -202,7 +204,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
             {subscription!.name}
           </Text>
           {
-            isCanUpgradeToPlan ? (
+            (isCanUpgradeToPlan || !isActive) ? (
               <LockIcon style={styles.lockIcon} />
             ) : (
               <>
@@ -232,7 +234,16 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
         {
           showSubscriptions && 
           <ScrollView bounces={false}>
-            {renderMembershipCard(hdfcUserSubscriptions, false)}
+            <View>
+                <Text style={{
+                  ...theme.viewStyles.text('B', 14, '#02475B', 1, 20, 0.35),
+                  paddingLeft: 20,
+                  paddingBottom: 10,
+                }}>
+                  CURRENT BENEFITS
+                </Text>
+                {renderMembershipCard(hdfcUserSubscriptions, false)}
+              </View>
             {
               canUpgrade &&
               <View>
@@ -245,6 +256,8 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
                   OTHER PLANS
                 </Text>
                 {renderMembershipCard(hdfcUserSubscriptions!.canUpgradeTo, true)}
+                <View style={{marginTop: 15}} />
+                {canUpgradeMultiplePlans && renderMembershipCard(premiumPlan, true)}
               </View>
             }
           </ScrollView>

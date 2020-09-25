@@ -238,7 +238,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
   const mobileNumber = g(currentPatient, 'mobileNumber');
   const emailAddress = g(currentPatient, 'emailAddress');
-  const packageId = hdfcUserSubscriptions ? (hdfcUserSubscriptions.plan_id + ':' + hdfcUserSubscriptions.name) : null;
+  const packageId = hdfcUserSubscriptions ? (g(hdfcUserSubscriptions, 'group', 'name') + ':' + hdfcUserSubscriptions.planId) : null;
 
   const navigatedFrom = props.navigation.getParam('movedFrom') || '';
 
@@ -703,6 +703,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       mobile: g(currentPatient, 'mobileNumber'),
       billAmount: cartTotal.toFixed(2),
       coupon: coupon,
+      packageId,
       pinCode: locationDetails && locationDetails.pincode,
       products: cartItems.map((item) => ({
         sku: item.id,

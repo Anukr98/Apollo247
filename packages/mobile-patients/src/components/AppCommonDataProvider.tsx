@@ -43,6 +43,15 @@ export interface GroupPlan {
   isActive: boolean;
 }
 
+export interface bannerType {
+  _id: string | null;
+  is_active: boolean;
+  banner: string;
+  banner_template_info?: null;
+  cta_action?: (() => void) | null;
+  meta?: {} | null;
+};
+
 export interface PlanBenefits {
   _id: string;
   attribute: string;
@@ -54,6 +63,7 @@ export interface PlanBenefits {
   attributeType: string;
   availableCount: number;
   refreshFrequency: number;
+  icon: string | null;
 }
 
 export interface BenefitCtaAction {

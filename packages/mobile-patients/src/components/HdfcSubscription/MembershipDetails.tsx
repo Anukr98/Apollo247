@@ -1,17 +1,19 @@
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Linking } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Linking, Image, Dimensions } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { HelpIcon, DownOrange, UpOrange, EllipseBulletPoint, OneVectorNumber, TwoVectorNumber } from '../ui/Icons';
+import { HelpIcon, DownOrange, UpOrange, EllipseBulletPoint, ExclamationGreen, HdfcBannerSilver, HdfcBannerGold, HdfcBannerPlatinum, SpeakerOff } from '../ui/Icons';
 import { TabsComponent } from '../ui/TabsComponent';
-import { SubscriptionBanner } from './SubscriptionBanner';
 import { AppRoutes } from '../NavigatorContainer';
 import { HdfcConnectPopup } from './HdfcConnectPopup';
 import { Hdfc_values } from '@aph/mobile-patients/src/strings/strings.json';
 import { useAppCommonData } from '../AppCommonDataProvider';
 import { g } from '../../helpers/helperFunctions';
 import { AvailNowPopup } from './AvailNowPopup';
+import { Spinner } from '../ui/Spinner';
+
+const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -25,6 +27,7 @@ const styles = StyleSheet.create({
     elevation: 4,
     borderRadius: 0,
     borderBottomColor: 'rgba(2, 71, 91, 0.3)',
+    marginTop: 15,
   },
   arrowStyle: {
     resizeMode: 'contain',
@@ -112,13 +115,16 @@ const styles = StyleSheet.create({
   },
   inactivePlanText: {
     ...theme.viewStyles.text('M', 13, '#EA5F65', 1, 17, 0.35),
-    paddingHorizontal: 20,
-    paddingBottom: 20,
   },
   benefitsAvailableHeading: {
     ...theme.viewStyles.text('B', 17, '#02475B', 1, 20, 0.35),
     paddingHorizontal: 20,
-  }
+  },
+  membershipBanner: {
+    width: '100%',
+    height: 200,
+    resizeMode: 'contain',
+  },
 });
 
 export interface MembershipDetailsProps extends NavigationScreenProps {
@@ -131,7 +137,9 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
 
   const { hdfcUserSubscriptions } = useAppCommonData();
   const membershipDetails = membershipType === g(hdfcUserSubscriptions, 'name') ? hdfcUserSubscriptions : g(hdfcUserSubscriptions, 'canUpgradeTo');
-  const isCanUpgradeTo = membershipType === g(hdfcUserSubscriptions, 'canUpgradeTo', 'name');
+  const isCanUpgradeTo = 
+    membershipType === g(hdfcUserSubscriptions, 'canUpgradeTo', 'name') ||
+    membershipType === g(hdfcUserSubscriptions, 'canUpgradeTo', 'canUpgradeTo', 'name');
   const isActivePlan = !!membershipDetails!.isActive;
   const benefits = membershipDetails!.benefits;
   const coupons = membershipDetails!.coupons;
@@ -144,7 +152,14 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const [isTnCVisible, setIsTnCVisible] = useState<boolean>(false);
   const [showHdfcConnectPopup, setShowHdfcConnectPopup] = useState<boolean>(false);
   const [showAvailPopup, setShowAvailPopup] = useState<boolean>(false);
-  const { TnC } = Hdfc_values;
+  const [showSpinner, setshowSpinner] = useState<boolean>(true);
+  const { TnC, SILVER_PLAN, GOLD_PLAN, PLATINUM_PLAN } = Hdfc_values;
+
+  useEffect(() => {
+    if (hdfcUserSubscriptions && g(hdfcUserSubscriptions, '_id')) {
+      setshowSpinner(false);
+    }
+  }, [hdfcUserSubscriptions]);
 
   const benefitsActionMapping = [
     {
@@ -193,7 +208,8 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
 
   const renderTabComponent = () => {
     return (
-      <>
+      <ScrollView bounces={false}>
+        {renderCoupons()}
         <TabsComponent
           style={styles.tabsContainer}
           onChange={(title) => {
@@ -205,75 +221,34 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
           selectedTab={selectedTab}
           selectedTitleStyle={theme.viewStyles.text('B', 16, '#02475B')}
         />
-        <ScrollView bounces={false}>
-          {selectedTab == 'Benefits Available'
-            ? renderBenefitsAvailable()
-            : renderBenefitsConsumed()}
-        </ScrollView>
-      </>
+        {selectedTab == 'Benefits Available'
+          ? renderBenefitsAvailable()
+          : renderBenefitsConsumed()}
+      </ScrollView>
     );
   };
 
   const renderActivePlans = () => {
     return (
-      <>
-        {  
-          areCouponsAvailable &&
-          <View style={styles.cardStyle}>
-            <TouchableOpacity onPress={() => {setIsActiveCouponVisible(!isActiveCouponVisible)}} style={styles.sectionsHeading}>
-              <Text style={theme.viewStyles.text('SB', 15, '#00B38E', 1, 20, 0.35)}>
-                Active Coupons
-              </Text>
-              {
-                isActiveCouponVisible ? 
-                <DownOrange
-                  style={styles.arrowStyle}
-                /> :
-                <UpOrange
-                  style={styles.arrowStyle}
-                />
-              }
-            </TouchableOpacity>
-            {
-              isActiveCouponVisible &&
-              <View style={{
-                marginTop: 15,
-              }}>
-                <Text style={styles.eligibleText}>
-                  You are eligible for the following coupons on Apollo 24|7
-                </Text>
-                {
-                  coupons.map(value => {
-                    return (
-                      renderCouponInfo(value.coupon, value.message)
-                    );
-                  })
-                }
-              </View>
-            }
-          </View>
-        }
-        {
-          (areBenefitsAvailable) &&
-          benefits.map(value => {
-            const {headerContent, description, ctaLabel, ctaAction, benefitCtaAction} = value;
-            const {action, message, type} = benefitCtaAction;
-            const ctaLabelName = ctaLabel.toUpperCase();
-            return (
-              ctaLabelName !== 'NULL' && 
-              renderRedeemableCards(
-                headerContent, 
-                description, 
-                ctaLabelName, 
-                ctaAction,
-                action,
-                message,
-                type,
-              )
-            )
-          })
-        }
-      </>
+      (areBenefitsAvailable) &&
+      benefits.map(value => {
+        const {headerContent, description, ctaLabel, ctaAction, benefitCtaAction, icon} = value;
+        const {action, message, type} = benefitCtaAction;
+        const ctaLabelName = ctaLabel.toUpperCase();
+        return (
+          ctaLabelName !== 'NULL' && 
+          renderRedeemableCards(
+            headerContent, 
+            description, 
+            ctaLabelName, 
+            ctaAction,
+            action,
+            message,
+            type,
+            icon,
+          )
+        )
+      })
     );
   };
 
@@ -282,10 +257,15 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
       <View style={styles.cardStyle}>
         {
           benefits.map((value, index) => {
-            const {headerContent, description} = value;
+            const {headerContent, description, icon} = value;
             return (
               <>
-                {renderRedeemableCardsContent(headerContent, description)}
+                {renderRedeemableCardsContent(headerContent, description, icon)}
+                <TouchableOpacity disabled={true} onPress={() => {}}>
+                  <Text style={[styles.redeemButtonText, {color: '#f7cc8f'}]}>
+                    REDEEM
+                  </Text>
+                </TouchableOpacity>
                 {
                   (index + 1 !== benefits.length) &&
                   <View style={styles.horizontalLine} />
@@ -310,7 +290,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         {isActivePlan ? renderActivePlans() : renderInactivePlans()}
 
         {renderTermsAndConditions()}
-        {renderBottomContainer()}
+        {/* {renderBottomContainer()} */}
       </ScrollView>
     );
   };
@@ -356,6 +336,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     action: string,
     message: string,
     type: string,
+    icon: string | null,
   ) => {
     let actionCta = benefitsActionMapping.filter((value) => {
       return value.attribute === action
@@ -373,7 +354,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     const onCtaClick = actionCta[0].action;
     return (
       <View style={[styles.cardStyle, { marginVertical: 10 }]}>
-        {renderRedeemableCardsContent(heading, bodyText)}
+        {renderRedeemableCardsContent(heading, bodyText, icon)}
         <TouchableOpacity onPress={() => {onCtaClick()}}>
           <Text style={styles.redeemButtonText}>
             {ctaLabel}
@@ -383,36 +364,36 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     );
   };
 
-  const renderRedeemableCardsContent = (heading: string, bodyText: string) => {
+  const renderRedeemableCardsContent = (heading: string, bodyText: string, icon: string | null) => {
+    // console.log(icon);
     return (
-      <>
-      <Text style={styles.redeemableCardsHeading}>
-        {heading}
-      </Text>
-      <Text style={styles.redeemableCardsText}>
-        {bodyText}
-      </Text>
-      {/* {
-        bodyText.length === 1 ? (
-          <Text style={styles.redeemableCardsText}>
-            {bodyText[0]}
+      <View>
+        <View style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between'
+        }}>
+          <Text style={styles.redeemableCardsHeading}>
+            {heading}
           </Text>
-        ) : (
-          <View style={styles.bulletPointsContainer}>
-            {
-              bodyText.map((text) => {
-                return (
-                  <View style={{flexDirection: 'row', marginBottom: 10}}>
-                    <EllipseBulletPoint style={styles.ellipseBulletPointStyle} />
-                    <Text style={theme.viewStyles.text('R', 13, '#02475B', 1, 20, 0.35)}>{text}</Text>
-                  </View>
-                )
-              })
-            }
-          </View>
-        )
-      } */}
-      </>
+          {/* {
+            icon && 
+            <Image
+              style={{
+                width: 30,
+                height: 30,
+                resizeMode: 'contain',
+              }}
+              source={{
+                uri: icon,
+              }}
+              resizeMode={'contain'}
+            />
+          } */}
+        </View>
+        <Text style={styles.redeemableCardsText}>
+          {bodyText}
+        </Text>
+      </View>
     );
   };
 
@@ -437,6 +418,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         backgroundColor: 'white',
       },
       benefitContainer: {
+        width,
         flexDirection: 'column',
         padding: 20,
         borderBottomColor: '#A9A9A9',
@@ -448,7 +430,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         alignItems: 'stretch',
       },
       halfWidth: {
-        width: '50%'
+        width: width / 2.1
       },
       benefitDescription: {
         textTransform: 'uppercase',
@@ -462,12 +444,19 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     });
     return (
       <ScrollView 
+        horizontal={true}
+        // showsHorizontalScrollIndicator={true}
         contentContainerStyle={{
           paddingVertical: 20,
         }} 
         bounces={false}
       >
-        <View style={benefitStyle.whiteBG}>
+        <View style={[
+          benefitStyle.whiteBG,
+          {
+            flexDirection: 'row',
+          }
+        ]}>
           {
             benefits.map(value => {
               return (
@@ -490,7 +479,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
                       </Text>
                     </View>
                   </View>
-                  <View style={[benefitStyle.rowStretch, { marginTop: 20 }]}>
+                  <View style={benefitStyle.rowStretch}>
                     <View style={benefitStyle.halfWidth}>
                       <Text style={benefitStyle.benefitHeading}>
                         REDEMPTION LIMIT
@@ -504,7 +493,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
                         STATUS
                       </Text>
                       <Text style={benefitStyle.benefitDescription}>
-                      {`${value.attributeType!.remaining} REMAINING`}
+                        {`${value.attributeType!.remaining} REMAINING`}
                       </Text>
                     </View>
                   </View>
@@ -548,7 +537,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
       >
         {areBenefitsAvailable && renderWhatWillYouGet()}
         {renderHowToAvail()}
-        {renderBottomContainer()}
+        {/* {renderBottomContainer()} */}
       </ScrollView>
     )
   };
@@ -557,7 +546,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     return (
       <View style={styles.cardStyle}>
         <TouchableOpacity onPress={() => {setIsWhatWillYouGetVisible(!isWhatWillYouGetVisible)}} style={styles.sectionsHeading}>
-          <Text style={theme.viewStyles.text('SB', 15, '#00B38E', 1, 20, 0.35)}>
+          <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 20, 0.35)}>
             What Will You Get!
           </Text>
           {
@@ -592,9 +581,19 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     return (
       <View style={styles.cardStyle}>
         <TouchableOpacity onPress={() => {setIsHowToAvailVisible(!isHowToAvailVisible)}} style={styles.sectionsHeading}>
-          <Text style={theme.viewStyles.text('SB', 15, '#00B38E', 1, 20, 0.35)}>
-            How To Avail
-          </Text>
+          <View style={{
+            flexDirection: 'row'
+          }}>
+            <ExclamationGreen style={{
+              width: 20,
+              height: 20,
+              resizeMode: 'contain',
+              marginRight: 10,
+            }} />
+            <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 20, 0.35)}>
+              How To Avail
+            </Text>
+          </View>
           {
             isHowToAvailVisible ? 
             <DownOrange
@@ -614,29 +613,15 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   };
 
   const renderHowToAvailContent = () => {
+    const canUpgradeMembership = g(hdfcUserSubscriptions, 'canUpgradeTo', 'name');
+    const smallCaseName = canUpgradeMembership ? canUpgradeMembership.toLowerCase() : '';
     return (
       <View style={{
         marginTop: 15,
       }}>
-        <Text style={theme.viewStyles.text('SB', 13, '#02475B', 1, 20, 0.35)}>
-          Please Follow These Steps
+        <Text style={theme.viewStyles.text('SB', 13, '#007C9D', 1, 20, 0.35)}>
+          {`Complete transactions worth Rs.${membershipDetails!.minTransactionValue} or more on the Apollo 24|7 app to unlock ${smallCaseName} membership​`}
         </Text>
-        <View>
-          <View style={styles.howToAvail}>
-            <OneVectorNumber style={styles.oneVectorStyle} />
-            <Text style={{
-              ...theme.viewStyles.text('SB', 13, '#007C9D', 1, 20, 0.35),
-            }}>
-              {`Complete transactions worth Rs ${membershipDetails!.minTransactionValue}+ on Apollo 24/7`}
-            </Text>
-          </View>
-          <View style={styles.howToAvail}>
-            <TwoVectorNumber style={styles.oneVectorStyle} />
-            <Text style={theme.viewStyles.text('SB', 13, '#007C9D', 1, 20, 0.35)}>
-              {`Duration of membership is 1 year. It will be auto renewed if you spend more than Rs ${membershipDetails!.minTransactionValue} within 1 year on Apollo 24/7`}
-            </Text>
-          </View>
-        </View>
       </View>
     );
   };
@@ -668,24 +653,96 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const renderInactivePlansContainer = () => {
     return (
       <ScrollView bounces={false}>
-        <Text style={styles.inactivePlanText}>
-          {`Your Plan is Currently INACTIVE. To activate your plan, make a transaction greater than Rs ${membershipDetails!.minTransactionValue} on Apollo 24/7`}
-        </Text>
+        {renderInactivePlanMessage()}
         <Text style={styles.benefitsAvailableHeading}>Benefits Available</Text>
         {renderBenefitsAvailable()}
       </ScrollView>
     );
   };
 
+  const renderInactivePlanMessage = () => {
+    return (
+      <View style={[
+        styles.cardStyle,
+        {
+          marginHorizontal: 20,
+          marginBottom: 20,
+        }
+      ]}>
+        <Text style={theme.viewStyles.text('M', 14, '#02475B', 1, 17, 0.35)}>
+          Complete your first transaction to unlock your benefits
+        </Text>
+        <Text style={theme.viewStyles.text('M', 14, '#02475B', 1, 27, 0.35)}>
+          How to Unlock
+        </Text>
+        <Text style={{
+          ...theme.viewStyles.text('R', 13, '#007C9D', 1, 17, 0.35),
+          marginTop: 6,
+        }}>
+          {`Transact for Rs ${membershipDetails!.minTransactionValue} or more on Virtual Consultations or Pharmacy Orders`}
+        </Text>
+      </View>
+    )
+  };
+
+  const renderCoupons = () => {
+    return (
+      areCouponsAvailable &&
+      <View style={styles.cardStyle}>
+        <TouchableOpacity onPress={() => {setIsActiveCouponVisible(!isActiveCouponVisible)}} style={styles.sectionsHeading}>
+          <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 20, 0.35)}>
+            Here’s what you have unlocked !
+          </Text>
+          {
+            isActiveCouponVisible ? 
+            <DownOrange
+              style={styles.arrowStyle}
+            /> :
+            <UpOrange
+              style={styles.arrowStyle}
+            />
+          }
+        </TouchableOpacity>
+        {
+          isActiveCouponVisible &&
+          <View style={{
+            marginTop: 15,
+          }}>
+            <Text style={styles.eligibleText}>
+              Use the coupon codes to avail the benefits
+            </Text>
+            {
+              coupons.map(value => {
+                return (
+                  renderCouponInfo(value.coupon, value.message)
+                );
+              })
+            }
+          </View>
+        }
+      </View>
+    )
+  };
+
+  const renderMembershipBanner = () => {
+    const isSilverMembership = membershipType === SILVER_PLAN;
+    const isGoldMembership = membershipType === GOLD_PLAN;
+    const isPlatinumMembership = membershipType === PLATINUM_PLAN;
+
+    return (
+      <View>
+        {isSilverMembership && <HdfcBannerSilver style={styles.membershipBanner}/>}
+        {isGoldMembership && <HdfcBannerGold style={styles.membershipBanner}/>}
+        {isPlatinumMembership && <HdfcBannerPlatinum style={styles.membershipBanner}/>}
+      </View>
+    )
+  }
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={styles.safeAreaStyle}>
         {renderHeader()}
-        <SubscriptionBanner 
-          membershipType={membershipType} 
-          benefitsWorth={membershipDetails!.benefitsWorth || ' '}
-          showLockIcon={isCanUpgradeTo}
-        />
+        {renderMembershipBanner()}
         {
           isCanUpgradeTo ?
           renderSubscribeContent() : 
@@ -695,6 +752,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
             renderInactivePlansContainer()
           )
         }
+        {renderBottomContainer()}
       </SafeAreaView>
       {
         showHdfcConnectPopup &&
@@ -710,6 +768,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
           navigation={props.navigation}
         />
       }
+      {showSpinner && <Spinner />}
     </View>
   );
 };

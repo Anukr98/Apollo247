@@ -1,5 +1,5 @@
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React from 'react';
+import React, { useState } from 'react';
 import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { CallConnectIcon, CallRingIcon, GroupCallIcon } from '../ui/Icons';
 import { useAllCurrentPatients } from '../../hooks/authHooks';
@@ -82,8 +82,11 @@ export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const mobileNumber = g(currentPatient, 'mobileNumber')
   const { showAphAlert, setLoading: globalLoading } = useUIElements();
+  const [showConnectMessage, setShowConnectMessage] = useState<boolean>(false);
+  const [disableButton, setDisableButton] = useState<boolean>(false);
 
   const fireExotelApi = () => {
+    setDisableButton(true);
     let caller_id = AppConfig.Configuration.HDFC_EXOTEL_CALLER_ID;
     let to = AppConfig.Configuration.HDFC_CONNECT_EXOTEL_CALL_NUMBER;
     const param = {
@@ -94,8 +97,11 @@ export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
     globalLoading!(true);
     callToExotelApi(param)
       .then((response) => {
-        props.onClose();
+        setShowConnectMessage(true);
         globalLoading!(false);
+        setTimeout(() => {
+          props.onClose();
+        }, 2000);
         console.log('exotelCallAPI response', response, ' ,params', param);
       })
       .catch((error) => {
@@ -118,7 +124,7 @@ export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
           <View style={styles.stepsContainer}>
             <CallConnectIcon />
             <Text style={styles.stepsText}>
-              Answer the call from ‘040-482-17258’ to connect.
+              {`Answer the call from ${AppConfig.Configuration.HDFC_CONNECT_EXOTEL_CALL_NUMBER} to connect.`}
             </Text>
           </View>
           <View style={styles.stepsContainer}>
@@ -148,24 +154,34 @@ export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
 
   const renderButtons = () => {
     return (
-      <View style={styles.buttonsContainer}>
-        <TouchableOpacity
-          style={styles.cancelButton}
-          onPress={props.onClose}
-        >
-          <Text style={theme.viewStyles.text('B', 13, '#FC9916', 1, 20, 0.35)}>
-            CANCEL
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.connectButton}
-          onPress={() => fireExotelApi()}
-        >
-          <Text style={theme.viewStyles.text('B', 13, '#FFFFFF', 1, 20, 0.35)}>
-            PROCEED TO CONNECT
-          </Text>
-        </TouchableOpacity>
-      </View>
+      showConnectMessage ? 
+        <Text style={{
+          ...theme.viewStyles.text('SB', 15, '#01475B', 1, 30, 0.35),
+          textAlign: 'center',
+          marginTop: 20,
+        }}>
+          You will receive the call shortly.
+        </Text> :
+        <View style={styles.buttonsContainer}>
+          <TouchableOpacity
+            disabled={disableButton}
+            style={styles.cancelButton}
+            onPress={props.onClose}
+          >
+            <Text style={theme.viewStyles.text('B', 13, '#FC9916', 1, 20, 0.35)}>
+              CANCEL
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            disabled={disableButton}
+            style={styles.connectButton}
+            onPress={() => fireExotelApi()}
+          >
+            <Text style={theme.viewStyles.text('B', 13, '#FFFFFF', 1, 20, 0.35)}>
+              PROCEED TO CONNECT
+            </Text>
+          </TouchableOpacity>
+        </View>
     );
   };
 

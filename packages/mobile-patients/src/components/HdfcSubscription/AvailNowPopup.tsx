@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
-import { RoundCancelIcon, OneVectorNumber, TwoVectorNumber } from '../ui/Icons';
+import { RoundCancelIcon, ExclamationGreen } from '../ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '../NavigatorContainer';
@@ -21,10 +21,10 @@ const styles = StyleSheet.create({
     width: '90%',
     height: 'auto',
     backgroundColor: '#fff',
-    borderRadius: 8,
+    borderRadius: 18,
     paddingHorizontal: 20,
     paddingTop: 20,
-    paddingBottom: 14,
+    paddingBottom: 20,
   },
   cardStyle: {
     ...theme.viewStyles.cardViewStyle,
@@ -72,26 +72,11 @@ export const AvailNowPopup: React.FC<AvailNowPopupProps> = (props) => {
       <View style={{
         marginTop: 15,
       }}>
-        <Text style={theme.viewStyles.text('SB', 13, '#02475B', 1, 20, 0.35)}>
-          Please Follow These Steps
-        </Text>
         <View>
-          <View style={styles.howToAvail}>
-            <OneVectorNumber style={styles.oneVectorStyle} />
-            <Text style={{
-              ...theme.viewStyles.text('SB', 13, '#007C9D', 1, 20, 0.35),
-            }}>
-              {`Complete transactions worth Rs ${props.transactionAmount}+ on Apollo 24/7`}
-            </Text>
-          </View>
-          <View style={styles.howToAvail}>
-            <TwoVectorNumber style={styles.oneVectorStyle} />
-            <Text style={theme.viewStyles.text('SB', 13, '#007C9D', 1, 20, 0.35)}>
-              {`Duration of membership is 1 year. It will be auto renewed if you spend more than Rs ${props.transactionAmount} within 1 year on Apollo 24/7`}
-            </Text>
-          </View>
+          <Text style={theme.viewStyles.text('SB', 13, '#007C9D', 1, 20, 0.35)}>
+            {`Complete transactions worth Rs.${props!.transactionAmount} or more on the Apollo 24|7 app to unlock platinum+ plan membership​`}
+          </Text>
         </View>
-        {/* {renderBottomContainer()} */}
       </View>
     );
   };
@@ -121,9 +106,19 @@ export const AvailNowPopup: React.FC<AvailNowPopupProps> = (props) => {
               props.onClose();
             }} 
             style={styles.sectionsHeading}>
-            <Text style={theme.viewStyles.text('SB', 17, '#00B38E', 1, 20, 0.35)}>
-              How To Avail
-            </Text>
+            <View style={{
+              flexDirection: 'row'
+            }}>
+              <ExclamationGreen style={{
+                width: 20,
+                height: 20,
+                resizeMode: 'contain',
+                marginRight: 10,
+              }} />
+              <Text style={theme.viewStyles.text('SB', 15, '#00B38E', 1, 20, 0.35)}>
+                How To Avail
+              </Text>
+            </View>
             <RoundCancelIcon style={styles.crossIconStyle}/>
           </TouchableOpacity>
           {renderHowToAvailContent()}

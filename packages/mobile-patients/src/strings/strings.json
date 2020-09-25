@@ -407,6 +407,7 @@
     "DEFFERED_INACTIVE": "deferred_inactive",
     "SILVER_PLAN": "SILVER+ PLAN",
     "GOLD_PLAN": "GOLD+ PLAN",
-    "PLATINUM_PLAN": "PLATINUM+ PLAN"
+    "PLATINUM_PLAN": "PLATINUM+ PLAN",
+    "ENROLL_URL": "https://apply.hdfcbank.com/vivid/s_account_newuiux?LGCode=HFAP&mc_id=hfap_mobileapp&utm_source=apollo&utm_medium=mobileapp&utm_campaign=apollo_app_hf_ntb",
   }
 }
