@@ -134,10 +134,12 @@ export const formatAddress = (address: savePatientAddress_savePatientAddress_pat
     .filter((item, idx, array) => array.indexOf(item) === idx)
     .join(', ');
   const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
-    return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
+  return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
 };
 
-export const formatAddressWithLandmark = (address: savePatientAddress_savePatientAddress_patientAddress) => {
+export const formatAddressWithLandmark = (
+  address: savePatientAddress_savePatientAddress_patientAddress
+) => {
   const addrLine1 = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');
   const landmark = [address.landmark];
   // to handle state value getting twice
@@ -149,13 +151,11 @@ export const formatAddressWithLandmark = (address: savePatientAddress_savePatien
     .filter((item, idx, array) => array.indexOf(item) === idx)
     .join(', ');
   const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
-  if(address.landmark!=''){
+  if (address.landmark != '') {
     return `${addrLine1},\nLandmark: ${landmark}\n${addrLine2}${formattedZipcode}`;
-  }
-  else{
+  } else {
     return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
   }
-    
 };
 
 export const formatNameNumber = (address: savePatientAddress_savePatientAddress_patientAddress) => {
@@ -693,15 +693,15 @@ export const isValidName = (value: string) =>
     : value == '' || /^[a-zA-Z]+((['’ ][a-zA-Z])?[a-zA-Z]*)*$/.test(value)
     ? true
     : false;
-  
-export const isValidPhoneNumber = (value: string) =>{
-    const isValidNumber = !/^[6-9]{1}\d{0,9}$/.test(value)
-      ? !/^(234){1}\d{0,9}$/.test(value)
-        ? false
-        : true
-      : true;
-    return isValidNumber;
-}
+
+export const isValidPhoneNumber = (value: string) => {
+  const isValidNumber = !/^[6-9]{1}\d{0,9}$/.test(value)
+    ? !/^(234){1}\d{0,9}$/.test(value)
+      ? false
+      : true
+    : true;
+  return isValidNumber;
+};
 
 export const extractUrlFromString = (text: string): string | undefined => {
   const urlRegex = /(https?:\/\/[^ ]*)/;
@@ -890,11 +890,9 @@ export const getBuildEnvironment = () => {
     case 'https://aph.staging.api.popcornapps.com//graphql':
       return 'QA';
     case 'https://stagingapi.apollo247.com//graphql':
-      return 'STAGING';
+      return 'VAPT';
     case 'https://aph.uat.api.popcornapps.com//graphql':
       return 'UAT';
-    case 'https://aph.vapt.api.popcornapps.com//graphql':
-      return 'VAPT';
     case 'https://api.apollo247.com//graphql':
       return 'PROD';
     case 'https://asapi.apollo247.com//graphql':

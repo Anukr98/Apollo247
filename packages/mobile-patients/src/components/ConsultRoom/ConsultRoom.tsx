@@ -46,7 +46,7 @@ import {
 import {
   GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
   SAVE_DEVICE_TOKEN,
-  SAVE_VOIP_DEVICE_TOKEN
+  SAVE_VOIP_DEVICE_TOKEN,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { getPatientFutureAppointmentCount } from '@aph/mobile-patients/src/graphql/types/getPatientFutureAppointmentCount';
 import { DEVICE_TYPE, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -742,11 +742,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       case 'https://aph.staging.api.popcornapps.com//graphql':
         return 'QA';
       case 'https://stagingapi.apollo247.com//graphql':
-        return 'STAGING';
+        return 'VAPT';
       case 'https://aph.uat.api.popcornapps.com//graphql':
         return 'UAT';
-      case 'https://aph.vapt.api.popcornapps.com//graphql':
-        return 'VAPT';
       case 'https://api.apollo247.com//graphql':
         return 'PROD';
       case 'https://asapi.apollo247.com//graphql':
@@ -812,7 +810,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     if (isIos()) {
       initializeVoip();
     }
-  }, [])
+  }, []);
 
   const initializeVoip = () => {
     VoipPushNotification.requestPermissions();
@@ -821,7 +819,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     VoipPushNotification.addEventListener('register', (token: string) => {
       if (token) setVoipDeviceToken(token);
     });
-  }
+  };
 
   useEffect(() => {
     if (voipDeviceToken) {
@@ -829,25 +827,27 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         callVoipDeviceTokenAPI(); // for safer side(to get currentPatient.id)
       }, 2000);
     }
-  }, [voipDeviceToken])
+  }, [voipDeviceToken]);
 
   const callVoipDeviceTokenAPI = async () => {
-      const input = {
-        patientId: currentPatient ? currentPatient.id : '',
-        voipToken: voipDeviceToken
-      }
-      client.mutate<addVoipPushToken, addVoipPushTokenVariables>({
+    const input = {
+      patientId: currentPatient ? currentPatient.id : '',
+      voipToken: voipDeviceToken,
+    };
+    client
+      .mutate<addVoipPushToken, addVoipPushTokenVariables>({
         mutation: SAVE_VOIP_DEVICE_TOKEN,
         variables: {
-          voipPushTokenInput: input
+          voipPushTokenInput: input,
         },
-        fetchPolicy: 'no-cache'
-      }).then((data: any) => {
-      }).catch((e) => {
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {})
+      .catch((e) => {
         CommonBugFender('ConsultRoom_callDeviceVoipTokenAPI', e);
         console.log('Error occured while sending voip token', e);
-      })
-  }
+      });
+  };
 
   const getTokenforCM = async () => {
     const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
@@ -1530,7 +1530,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         }
       });
     } catch (e) {}
-
   };
 
   const renderCovidScanBanner = () => {

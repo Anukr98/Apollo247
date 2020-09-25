@@ -725,28 +725,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   //   SplashScreenView.hide();
   // }, [props.navigation, signInError, signOut]);
 
-  const buildName = () => {
-    switch (apiRoutes.graphql()) {
-      case 'https://aph.dev.api.popcornapps.com//graphql':
-        return 'DEV';
-      case 'https://aph.staging.api.popcornapps.com//graphql':
-        return 'QA';
-      case 'https://stagingapi.apollo247.com//graphql':
-        return 'STAGING';
-      case 'https://aph.uat.api.popcornapps.com//graphql':
-        return 'UAT';
-      case 'https://aph.vapt.api.popcornapps.com//graphql':
-        return 'VAPT';
-      case 'https://api.apollo247.com//graphql':
-        return 'PROD';
-      case 'https://asapi.apollo247.com//graphql':
-        return 'PRF';
-      case 'https://devapi.apollo247.com//graphql':
-        return 'DEVReplica';
-      default:
-        return '';
-    }
-  };
   const {
     setLocationDetails,
     setNeedHelpToContactInMessage,
