@@ -132,7 +132,6 @@ const PatientsOverview: React.FC = () => {
           <HdfcRegistration patientPhone={currentPatient.mobileNumber} />
         )}
       {currentPatient &&
-        currentPatient.partnerId === HDFC_REF_CODE &&
         userSubscriptionsLocalStorage &&
         userSubscriptionsLocalStorage.length != 0 &&
         userSubscriptionsLocalStorage[0] &&
@@ -140,7 +139,6 @@ const PatientsOverview: React.FC = () => {
           <HdfcHomePage patientPhone={currentPatient.mobileNumber} />
         )}
       {currentPatient &&
-        currentPatient.partnerId === HDFC_REF_CODE &&
         userSubscriptionsLocalStorage &&
         userSubscriptionsLocalStorage.length != 0 &&
         userSubscriptionsLocalStorage[0] &&
