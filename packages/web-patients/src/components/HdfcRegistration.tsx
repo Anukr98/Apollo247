@@ -31,14 +31,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('sm')]: {
         padding: '10px 0 0',
       },
-      '& >img': {
-        position: 'absolute',
-        top: 10,
-        right: 20,
-        [theme.breakpoints.down('sm')]: {
-          display: 'none',
-        },
-      },
+
       '& h2': {
         fontSize: 24,
         fontWeight: 600,
@@ -66,9 +59,6 @@ const useStyles = makeStyles((theme: Theme) => {
 
     hdcContent: {
       position: 'relative',
-      '& >img': {
-        margin: '0 0 10px',
-      },
     },
     desc: {
       position: 'absolute',
@@ -116,14 +106,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('sm')]: {
         padding: '10px 0 0',
       },
-      '& >img': {
-        position: 'absolute',
-        top: 10,
-        right: 10,
-        [theme.breakpoints.down('sm')]: {
-          display: 'none',
-        },
-      },
+
       '& h2': {
         fontSize: 20,
         fontWeight: 500,
@@ -261,14 +244,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('sm')]: {
         padding: '10px 0 30px',
       },
-      '& img': {
-        width: 100,
-        margin: '0 20px 0 0 ',
-        [theme.breakpoints.down('sm')]: {
-          width: 50,
-          margin: '0 15px 0 0 ',
-        },
-      },
+
       '& a,button': {
         marginLeft: 'auto',
         position: 'absolute',
@@ -333,16 +309,6 @@ const useStyles = makeStyles((theme: Theme) => {
       '& button': {
         boxShadow: 'none',
         color: '#FC9916',
-      },
-      '& >img': {
-        position: 'absolute',
-        top: 10,
-        right: 20,
-        margin: 0,
-        opacity: 0.5,
-        [theme.breakpoints.down('sm')]: {
-          display: 'none',
-        },
       },
     },
     recheckOtp: {
@@ -412,16 +378,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('sm')]: {
         padding: '0 0 30px',
       },
-      '&:after': {
-        content: "''",
-        position: 'absolute',
-        top: -80,
-        right: -80,
-        width: 170,
-        height: 170,
-        borderRadius: '50%',
-        border: '30px solid rgba(251,191,50,0.3)',
-      },
+
       '& h2': {
         fontSize: 32,
         fontWeight: 700,
@@ -462,17 +419,18 @@ const useStyles = makeStyles((theme: Theme) => {
         marginLeft: 'auto',
         color: '#FC9916',
       },
-      '& img': {
-        position: 'absolute',
-        top: 10,
-        right: 10,
-      },
     },
     overflowHidden: {
       overflow: 'hidden',
     },
     planName: {
       color: '#d3a047',
+    },
+    hdcHeader: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: '0 0 10px',
     },
   };
 });
@@ -495,7 +453,7 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
   >();
   const apolloClient = useApolloClient();
 
-  const [showIntro, setShowIntro] = React.useState<boolean>(TrendingUpTwoTone);
+  const [showIntro, setShowIntro] = React.useState<boolean>(true);
   const [showOTPValidator, setShowOTPValidator] = React.useState<boolean>(false);
   const [showCongratulations, setShowCongratulations] = React.useState<boolean>(false);
   const [showRecheckOTP, setShowRecheckOTP] = React.useState<boolean>(false);
@@ -602,11 +560,13 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
   return (
     <div className={`${classes.hdcContainer} ${showJoinClub ? classes.overflowHidden : ''} `}>
       <div className={classes.hdcContent}>
-        <img src={require('images/hdfc/hdfc-logo.png')} alt="HDFC Call Doctor" width="100" />
+        <div className={classes.hdcHeader}>
+          <img src={require('images/hdfc/apollo-hashtag.svg')} alt="HDFC Call Doctor" width="100" />
+          <img src={require('images/hdfc/hdfc-logo.svg')} alt="HDFC Call Doctor" width="100" />
+        </div>
         {/* Intro */}
         {showIntro && (
           <div className={classes.hdfcIntro}>
-            <img src={require('images/hdfc/otp.svg')} alt="Otp" width="48" />
             <div className={classes.newContent}>
               <img src={require('images/hdfc/last-step.svg')} alt="Otp" />
               <Typography component="h2">
@@ -624,7 +584,6 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
         {/* Otp Validator */}
         {showOTPValidator && (
           <div className={classes.otpValidator}>
-            <img src={require('images/hdfc/otp.svg')} alt="Otp" width="48" />
             <Typography component="h2">Please Enter OTP Sent by HDFC Bank</Typography>
             <div className={classes.otpContainer}>
               <div className={classes.otpInput}>
@@ -665,7 +624,6 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
         {/* Congratulations Section */}
         {showCongratulations && (
           <div className={classes.cContainer}>
-            {/* <img src={require('images/hdfc/apollo-hashtag.svg')} alt="Apollo Health Life" /> */}
             <div className={classes.cContent}>
               <img src={require('images/hdfc/congrats.svg')} alt="Congraulations" />
               <div>
@@ -681,7 +639,6 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
         {/* Recheck OTP Section */}
         {showRecheckOTP && (
           <div className={classes.recheckOtpContent}>
-            <img src={require('images/hdfc/sorry.svg')} alt="Sorry" />
             <div className={classes.recheckOtp}>
               <Typography component="h2">
                 <img src={require('images/hdfc/sorry-new.svg')} alt="Sorry" />
@@ -702,7 +659,6 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
         )}
         {showJoinClub && (
           <div className={classes.joinClub}>
-            <img src={require('images/hdfc/locked.svg')} alt="" />
             <Typography component="h2">Hey ! </Typography>
             <Typography component="h5">
               You are missing out on a world of exclusive benefits
