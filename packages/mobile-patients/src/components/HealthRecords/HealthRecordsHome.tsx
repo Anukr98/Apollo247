@@ -147,6 +147,8 @@ type rescheduleType = {
 };
 type PickerImage = any;
 
+let selectOptions: string[] = [];
+
 export interface HealthRecordsHomeProps extends NavigationScreenProps {}
 
 export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
@@ -181,6 +183,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [medicineOrders, setMedicineOrders] = useState<(medicineOrders | null)[] | null>(null);
   const [combination, setCombination] = useState<{ type: string; data: any }[]>();
   const { loading, setLoading } = useUIElements();
+  const [filterSelected, setFilterSelected] = useState(false);
+  const [filterSelectedOptions, setFilterSelectedOptions] = useState(selectOptions);
   const [prismdataLoader, setPrismdataLoader] = useState<boolean>(false);
   const [pastDataLoader, setPastDataLoader] = useState<boolean>(false);
   const [arrayValues, setarrayValues] = useState<any>();
@@ -212,7 +216,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     if (selectedOptions.includes('Online Consults')) filterArray.push('ONLINE');
     if (selectedOptions.includes('Clinic Visits')) filterArray.push('PHYSICAL');
     if (selectedOptions.includes('Prescriptions')) filterArray.push('PRESCRIPTION');
-
+    setFilterSelectedOptions(filterArray);
+    setPastDataLoader(true);
     client
       .query<getPatientPastConsultsAndPrescriptions>({
         query: GET_PAST_CONSULTS_PRESCRIPTIONS,
@@ -329,6 +334,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
       fetchPastData();
       fetchTestData();
+      setFilterData(FilterData);
       setDisplayFilter(false);
     });
     return () => {
@@ -338,13 +344,18 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
 
   useEffect(() => {
     if (consultsData && medicineOrders && prescriptions) {
+      const prescriptionSelect = filterSelected
+        ? filterSelectedOptions.length > 0 && filterSelectedOptions.includes('PRESCRIPTION')
+        : true;
       let mergeArray: { type: string; data: any }[] = [];
-      arrayValues!.forEach((item: any) => {
+      arrayValues?.forEach((item: any) => {
         mergeArray.push({ type: 'pastConsults', data: item });
       });
-      prescriptions!.forEach((c) => {
-        mergeArray.push({ type: 'prescriptions', data: c });
-      });
+      if (prescriptionSelect || filterSelectedOptions?.length === 0) {
+        prescriptions?.forEach((c) => {
+          mergeArray.push({ type: 'prescriptions', data: c });
+        });
+      }
       setCombination(sortByDate(mergeArray));
     }
   }, [arrayValues, prescriptions]);
@@ -774,12 +785,17 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             setDisplayFilter(false);
             setFilterData(data);
           }}
+          onResetClick={() => {
+            setPastDataLoader(false);
+          }}
           setData={(data) => {
             setFilterData(data);
+            setFilterSelected(true);
             fetchPastData(data);
           }}
           data={JSON.parse(JSON.stringify(FilterData))}
           filterLength={() => {
+            setFilterSelected(false);
             setTimeout(() => {
               setLoading && setLoading(false);
             }, 500);
