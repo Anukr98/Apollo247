@@ -103,6 +103,19 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
       .join(' - ');
   };
 
+  const individualDiagnosticsObject = orderDetails?.diagnosticOrderLineItems?.map(
+    (item) => item?.diagnostics
+  );
+
+  const totalIndividualDiagonsticsCharges = Object.keys(individualDiagnosticsObject!).reduce(
+    function(prev, key) {
+      return prev + individualDiagnosticsObject![key].rate;
+    },
+    0
+  );
+
+  const HomeCollectionCharges = orderDetails?.totalPrice! - totalIndividualDiagonsticsCharges;
+
   const orderLineItems = orderDetails!.diagnosticOrderLineItems || [];
   return (
     <View
@@ -138,9 +151,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
           </View>
         )}
       </View>
-
       <View style={styles.horizontalline} />
-
       <View style={styles.headeingView}>
         <View style={{ flex: 1 }}>
           <Text style={styles.testsummeryHeading}>CONSULT DETAIL</Text>
@@ -152,7 +163,6 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
           <Text style={styles.testsummeryHeading}>CHARGES</Text>
         </View>
       </View>
-
       {orderLineItems.map((item) => (
         <View style={styles.commonTax}>
           <View style={{ flex: 1 }}>
@@ -166,9 +176,24 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
           </View>
         </View>
       ))}
+      {/**
+       * HOME COLLECTION CHARGES
+       */}
+      {HomeCollectionCharges && (
+        <View style={styles.commonTax}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.commonText}>Home Collection Charges</Text>
+          </View>
+          <View style={{ flex: 1, alignItems: 'flex-end' }}>
+            <Text style={styles.commonText}>-</Text>
+          </View>
+          <View style={{ flex: 1, alignItems: 'center' }}>
+            <Text style={styles.commonText}>Rs.{HomeCollectionCharges}</Text>
+          </View>
+        </View>
+      )}
 
       <View style={styles.horizontalline1} />
-
       <View style={styles.payment}>
         <Text style={styles.paymentText1}> Total </Text>
         <Text style={styles.paymentText}> Rs. {orderDetails.totalPrice} </Text>
