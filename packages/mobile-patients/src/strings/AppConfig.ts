@@ -379,7 +379,7 @@ const ConfigurationQA2 = {
 };
 
 // VAPT
-const ConfigurationVapt = {
+const ConfigurationVAPT = {
   TAGALYS_API_KEY: '050343bfa6dae87212fd64ee7809c2c8',
   TAGALYS_CLIENT_CODE: 'A029C7273776C78A',
   CODE_PUSH_DEPLOYMENT_KEY_ANDROID: '8njVNeiezjGyi0BjIuIWOWm_N3zo2uVb5Z5_B',
@@ -548,7 +548,7 @@ const Configuration =
     : APP_ENV == AppEnv.PERFORM
     ? ConfigurationPERFORM
     : APP_ENV == AppEnv.VAPT
-    ? ConfigurationVapt
+    ? ConfigurationVAPT
     : APP_ENV == AppEnv.DEVReplica
     ? ConfigurationDevReplica
     : ConfigurationDev;
