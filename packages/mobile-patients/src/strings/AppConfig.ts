@@ -7,7 +7,6 @@ export enum AppEnv {
   DEV = 'DEV',
   QA = 'QA',
   QA2 = 'QA2',
-  STAGING = 'STAGING',
   PROD = 'PROD',
   PERFORM = 'PERFORM',
   VAPT = 'VAPT',
