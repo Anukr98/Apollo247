@@ -642,12 +642,9 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
           title={string.symptomChecker.consultDoctor}
           style={[styles.proceedBtn, styles.consultDoctorMargin]}
           onPress={() => {
-            const filteredSpecialities: string[] =
-              specialities && specialities.length > 0
-                ? specialities.map((item: any) => {
-                    return item.name;
-                  })
-                : [''];
+            const filteredSpecialities: string[] = specialities?.map((item: any) => {
+              return item.name;
+            }) || [''];
             props.navigation.navigate(AppRoutes.DoctorSearchListing, {
               specialities: filteredSpecialities,
               MoveDoctor: 'MoveDoctor',
