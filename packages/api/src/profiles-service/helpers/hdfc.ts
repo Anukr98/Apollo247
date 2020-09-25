@@ -159,7 +159,7 @@ export async function customerIdentification(mobile: String, dateOfBirth: Date) 
   ).slice(-2)}${('0' + dateOfBirth.getDate()).slice(-2)}`;
   const requestBeforeEncryption = {
     FetchCustomerCASADetailsReqDTO: {
-      mobileNumber: `91${formattedMobile}`,
+      mobileNumber: `${formattedMobile}`,
       dateOfBirth: formattedDateOfBirth,
     },
     sessionContext: {
