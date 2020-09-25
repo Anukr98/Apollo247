@@ -3,6 +3,8 @@ const HDFC_REF_CODE = 'HDFCBANK';
 const PARTNER_TP_REF_CODES = [SBI_REF_CODE, HDFC_REF_CODE];
 const HDFC_EXOTEL_CALLERID = '04048217258';
 const HDFC_EXOTEL_NUMBER = '--To Be Filled Later--';
+const HDFC_ENROLL_LINK =
+  'https://apply.hdfcbank.com/vivid/s_account_newuiux?LGCode=HFAP&mc_id=hfap_mobileapp&utm_source=apollo&utm_medium=mobileapp&utm_campaign=apollo_app_hf_ntb';
 const EXOTEL_CALL_URL = 'https://notifications.apollo247.com/webhooks/exotel/call';
 const EXOTEL_X_API = 'gNXyYhY2VDxwzv8f6TwJqvfYmPmj';
 
@@ -23,4 +25,5 @@ export {
   HDFC_SUBSCRIPTION_GOLD,
   EXOTEL_CALL_URL,
   EXOTEL_X_API,
+  HDFC_ENROLL_LINK,
 };

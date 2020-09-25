@@ -136,7 +136,8 @@ function defaultPlan(params: { [index: string]: string | number }[]): string {
   let matchingPlan: { hdfcCustomerType: string; plan: string; rank: number } | null = null;
   let current_rank = 0;
   for (let index = 0; index < params.length; index++) {
-    if (current_rank < plan_map[params[index]['ethnicCode'].toString().trim()].rank) {
+    if (params[index]['ethnicCode'] &&  plan_map[params[index]['ethnicCode'].toString().trim()] 
+        && current_rank < plan_map[params[index]['ethnicCode'].toString().trim()].rank) {
       current_rank = plan_map[params[index]['ethnicCode'].toString().trim()].rank;
       matchingPlan = plan_map[params[index]['ethnicCode'].toString().trim()];
     }
