@@ -140,6 +140,7 @@ import {
 import { mimeType } from '@aph/mobile-doctors/src/helpers/mimeType';
 import {
   postWebEngageEvent,
+  setScreenName,
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-doctors/src/helpers/WebEngageHelper';
@@ -302,6 +303,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     /**
      * in case doctor kills app after start consult so default USER_STATUS shouldn't be ENTERING
      */
+    setScreenName('ConsultRoom');
     updateNumberOfParticipants(USER_STATUS.LEAVING);
     getSpecialties();
     getFavoutires(client, setFavList, setFavMed, setFavTest);
