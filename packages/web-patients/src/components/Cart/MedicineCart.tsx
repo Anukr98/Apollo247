@@ -1011,6 +1011,8 @@ export const MedicineCart: React.FC = (props) => {
       const data = {
         mobile: localStorage.getItem('userMobileNo'),
         billAmount: cartTotal.toFixed(2),
+        email: currentPatient && currentPatient.emailAddress,
+        packageId: packageId,
         coupon: couponCode,
         pinCode: localStorage.getItem('pharmaPincode'),
         products: cartItems.map((item) => {
