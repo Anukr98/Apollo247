@@ -106,7 +106,9 @@ export class AppointmentRepository extends Repository<Appointment> {
     return this.createQueryBuilder('appointment')
       .leftJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
       .where('appointment.appointmentDateTime > :currentDate', { currentDate })
-      .andWhere('appointment.appointmentDateTime <= :limitedHoursFutureDate', { limitedHoursFutureDate })
+      .andWhere('appointment.appointmentDateTime <= :limitedHoursFutureDate', {
+        limitedHoursFutureDate,
+      })
       .andWhere(
         'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',
         {
@@ -576,7 +578,7 @@ export class AppointmentRepository extends Repository<Appointment> {
   getDoctorAppointments(doctorId: string, startDate: Date, endDate: Date) {
     //const newStartDate = new Date(format(addDays(startDate, -1), 'yyyy-MM-dd') + '18:30');
     const newStartDate = new Date(format(addDays(startDate, -1), 'yyyy-MM-dd') + 'T18:30');
-    const newEndDate = new Date(format(endDate, 'yyyy-MM-dd') + 'T18:30');
+    const newEndDate = new Date(format(endDate, 'yyyy-MM-dd') + 'T18:29');
 
     /*return this.find({
       where: {
