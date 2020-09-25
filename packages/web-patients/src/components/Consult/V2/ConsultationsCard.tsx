@@ -546,7 +546,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
   const getAppointmentStatus = (status: STATUS, isConsultStarted: boolean | null) => {
     switch (status) {
       case STATUS.PENDING:
-        return isConsultStarted ? 'GO TO CONSULT ROOM' : 'FILL MEDICAL DETAILS';
+        return isConsultStarted ? 'CONTINUE CONSULT' : 'FILL MEDICAL DETAILS';
       case STATUS.NO_SHOW || STATUS.CALL_ABANDON:
         return 'PICK ANOTHER SLOT';
       case STATUS.COMPLETED:
@@ -570,7 +570,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
         case APPOINTMENT_STATE.AWAITING_RESCHEDULE:
           return 'PICK ANOTHER SLOT';
         case APPOINTMENT_STATE.RESCHEDULE:
-          return isConsultStarted ? 'GO TO CONSULT ROOM' : 'FILL MEDICAL DETAILS';
+          return isConsultStarted ? 'CONTINUE CONSULT' : 'FILL MEDICAL DETAILS';
       }
     }
     // need to add one more condition for view prescription for this have to query casesheet
