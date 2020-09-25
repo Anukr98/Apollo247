@@ -13,6 +13,9 @@ import { GetOneApollo, GetOneApolloVariables } from 'graphql/types/GetOneApollo'
 import { GET_ONE_APOLLO } from 'graphql/medicines';
 import moment from 'moment';
 import { MyMembership } from 'components/MyAccount/MyMembership';
+import { useQuery } from 'react-apollo-hooks';
+import { getOneApolloUserTransactions } from 'graphql/types/getOneApolloUserTransactions';
+import { ConfigOneApolloData } from 'strings/AppConfig';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -259,27 +262,11 @@ export const OneApolloMembership: React.FC = () => {
   const classes = useStyles({});
   const [tabValue, setTabValue] = useState<number>(0);
   const [oneApolloHc, setOneApollo] = useState<any>({});
-  const [oneApolloTrxnList, setOneApolloTrxnList] = React.useState([]);
   const [isLoading, setLoading] = useState<boolean>(true);
   const [totalEarned, setTotalEarned] = useState<number>(0);
-  const [totalRedeemed, setTotalRedeemed] = useState<number>(0);
-  useEffect(() => {
-    client
-      .query({
-        query: GET_ONEAPOLLO_USERTXNS,
-        fetchPolicy: 'no-cache',
-      })
-      .then((res) => {
-        if (res && res.data && res.data.getOneApolloUserTransactions) {
-          const data = res.data.getOneApolloUserTransactions;
-          setOneApolloTrxnList(data);
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }, [currentPatient]);
-
+	const [totalRedeemed, setTotalRedeemed] = useState<number>(0);
+	const { error, loading, data } = useQuery<getOneApolloUserTransactions>(GET_ONEAPOLLO_USERTXNS);
+	const oneApolloTrxnList = data && data.getOneApolloUserTransactions;
   useEffect(() => {
     if (currentPatient && currentPatient.id) {
       client
@@ -300,7 +287,7 @@ export const OneApolloMembership: React.FC = () => {
           }
         })
         .catch((e) => {
-          console.log('Error occured while getting Patient OneApollo HCs', e);
+          console.log( ConfigOneApolloData.apolloHcsError, e);
         });
     }
   }, [currentPatient]);
@@ -353,12 +340,12 @@ export const OneApolloMembership: React.FC = () => {
                   >
                     <Tab
                       classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-                      label={`My Membership`}
+                      label="My Membership"
                       value={0}
                     />
                     <Tab
                       classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-                      label={`My Transcations`}
+                      label="My Transcations"
                       value={1}
                     />
                   </Tabs>

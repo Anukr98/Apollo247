@@ -199,9 +199,9 @@ export const MyMembership: React.FC = () => {
       <div className={classes.benefitsContainer}>
         <Grid container spacing={2}>
 					{ ConfigOneApolloData.myMembershipBenefits &&
-						ConfigOneApolloData.myMembershipBenefits.map((benefitsData: any) => {
+						ConfigOneApolloData.myMembershipBenefits.map((benefitsData: any, index) => {
 						return (
-							<Grid item md={4}>
+							<Grid item md={4} key={index}>
 								<div className={classes.benefitContent}>
 									<div className={classes.imgContainer}>
 										<img src={require(`images/${benefitsData.image}`)} alt={benefitsData.title} />
