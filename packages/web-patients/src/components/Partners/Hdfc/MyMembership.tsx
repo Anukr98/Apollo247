@@ -350,34 +350,16 @@ const useStyles = makeStyles((theme: Theme) => {
         width: '100%',
       },
     },
-    availList: {
-      margin: '10px 0',
-      padding: '0 0 0 35px',
-      listStyle: 'none',
-      counterReset: 'my-counter',
-      '& li': {
-        padding: '10px 0',
-        fontSize: 12,
-        color: '#007C9D',
-        fontWeight: 500,
-        position: 'relative',
-        counterIncrement: 'my-counter',
-        '&:before': {
-          content: 'counter(my-counter)',
-          position: 'absolute',
-          top: 10,
-          left: -35,
-          width: 24,
-          height: 24,
-          borderRadius: 5,
-          background: '#007C9D',
-          fontSize: 14,
-          color: '#fff',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        },
-      },
+    availDesc: {
+      fontWeight: 500,
+      fontSize: 14,
+      color: '#007C9D',
+      marginTop: 20,
+    },
+    availHeading: {
+      fontSize: 18,
+      color: '#02475B',
+      fontWeight: 500,
     },
     more: {
       display: 'none',
@@ -538,14 +520,14 @@ export const MyMembership: React.FC = (props) => {
                     <div className={classes.upgradableSubscription}>
                       <div className={classes.seperator} />
                       <Typography component="h3" className={classes.sectionTitle}>
-                        Premium Plans
+                        Other Plans
                       </Typography>
                       <div>
                         <div className={classes.mcContent}>
                           <Typography component="h4">
                             {upgradableSubscription && upgradableSubscription.name}
                           </Typography>
-                          <Typography>Key Features you get .. </Typography>
+                          <Typography>Benefits Available </Typography>
                           <ul
                             className={` ${classes.benefitList} ${
                               showMore ? classes.heightFull : ''
@@ -598,22 +580,15 @@ export const MyMembership: React.FC = (props) => {
           onClick={() => setIsHowToAvail(false)}
           title={'Close'}
         />
-        <AphDialogTitle className={classes.dialogTitle}>How To Avail?</AphDialogTitle>
         <div className={classes.availContainer}>
-          <Typography>Please follow these steps</Typography>
-          <ul className={classes.availList}>
-            <li>
-              Complete transactions worth Rs{' '}
-              {upgradableSubscription && upgradableSubscription.min_transaction_value}+ on Apollo
-              24/7
-            </li>
-            <li>
-              Duration of membership is 1 year. It will be auto renewed if you spend more than Rs
-              {upgradableSubscription && upgradableSubscription.min_transaction_value} within 1 year
-              on Apollo 24/7
-            </li>
-          </ul>
-          <AphButton color="primary">Avail Now</AphButton>
+          <Typography component="h2" className={classes.availHeading}>
+            How To Avail ?
+          </Typography>
+          <Typography className={classes.availDesc}>
+            Complete transactions worth Rs{' '}
+            {upgradableSubscription && upgradableSubscription.min_transaction_value}+ on Apollo 24/7
+            app to unlock {upgradableSubscription && upgradableSubscription.name} membership
+          </Typography>
         </div>
       </AphDialog>
     </div>

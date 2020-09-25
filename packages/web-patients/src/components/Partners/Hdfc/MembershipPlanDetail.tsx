@@ -1002,8 +1002,12 @@ export const MembershipPlanDetail: React.FC = (props) => {
                                   <TableRow key={index}>
                                     <TableCell>{item.header_content}</TableCell>
                                     <TableCell>{item.description}</TableCell>
-                                    <TableCell>once</TableCell>
-                                    <TableCell>{item.attribute_type.remaining}</TableCell>
+                                    <TableCell>{item.attribute_type.type}</TableCell>
+                                    <TableCell>
+                                      {item.attribute_type.type == 'unlimited'
+                                        ? 'Available'
+                                        : `${item.attribute_type.remaining}`}
+                                    </TableCell>
                                   </TableRow>
                                 );
                               })}
