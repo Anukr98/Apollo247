@@ -170,7 +170,7 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: '0 0 10px',
       boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.16)',
       overflow: 'hidden',
-      border: '1px solid rgba(0, 0, 0, 0.2)',
+      padding: 20,
       position: 'relative',
 
       '& >img': {
@@ -392,6 +392,22 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'block',
       },
     },
+    upgradableSubscription: {
+      background: `#fff url(${require('images/hdfc/locked.svg')}) no-repeat 50% 50%`,
+    },
+    seperator: {
+      display: 'block',
+      height: 1,
+      border: '1px solid rgba(0, 0, 0, 0.2)',
+      margin: '1em 0',
+      padding: 0,
+    },
+    hdcHeader: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: '0 0 10px',
+    },
   };
 });
 
@@ -469,17 +485,23 @@ export const MyMembership: React.FC = (props) => {
               </div>
             ) : (
               <div className={classes.msContent}>
-                <div>
+                <div className={classes.membershipCard}>
+                  <div className={classes.hdcHeader}>
+                    <img
+                      src={require('images/hdfc/apollo-hashtag.svg')}
+                      alt="HDFC Call Doctor"
+                      width="100"
+                    />
+                    <img
+                      src={require('images/hdfc/hdfc-logo.svg')}
+                      alt="HDFC Call Doctor"
+                      width="100"
+                    />
+                  </div>
                   <Typography component="h3" className={classes.sectionTitle}>
                     Current Benefits
                   </Typography>
-                  <div className={classes.membershipCard}>
-                    <img
-                      src={getMedalImage(
-                        currentSubscription && currentSubscription[0] && currentSubscription[0].name
-                      )}
-                      alt="Membeship Medal"
-                    />
+                  <div>
                     <div className={classes.mcContent}>
                       <Typography component="h4">
                         {currentSubscription &&
@@ -511,54 +533,55 @@ export const MyMembership: React.FC = (props) => {
                       </AphButton>
                     </div>
                   </div>
-                </div>
-                {upgradableSubscription ? (
-                  <div>
-                    <Typography component="h3" className={classes.sectionTitle}>
-                      Premium Plans
-                    </Typography>
-                    <div className={classes.membershipCard}>
-                      <img src={require('images/hdfc/locked.svg')} alt="" />
-                      <div className={classes.mcContent}>
-                        <Typography component="h4">
-                          {upgradableSubscription && upgradableSubscription.name}
-                        </Typography>
-                        <Typography>Key Features you get .. </Typography>
-                        <ul
-                          className={` ${classes.benefitList} ${
-                            showMore ? classes.heightFull : ''
-                          }`}
-                        >
-                          {upgradableSubscription &&
-                            upgradableSubscription.benefits.map((item: any) => {
-                              return <li>{item.header_content}</li>;
-                            })}
-                        </ul>
-                        {/* <a
+
+                  {upgradableSubscription ? (
+                    <div className={classes.upgradableSubscription}>
+                      <div className={classes.seperator} />
+                      <Typography component="h3" className={classes.sectionTitle}>
+                        Premium Plans
+                      </Typography>
+                      <div>
+                        <div className={classes.mcContent}>
+                          <Typography component="h4">
+                            {upgradableSubscription && upgradableSubscription.name}
+                          </Typography>
+                          <Typography>Key Features you get .. </Typography>
+                          <ul
+                            className={` ${classes.benefitList} ${
+                              showMore ? classes.heightFull : ''
+                            }`}
+                          >
+                            {upgradableSubscription &&
+                              upgradableSubscription.benefits.map((item: any) => {
+                                return <li>{item.header_content}</li>;
+                              })}
+                          </ul>
+                          {/* <a
                       href="javascript: void(0);"
                       className={classes.more}
                       onClick={() => setShowMore(!showMore)}
                     >
                       {!showMore ? <span> +12 more</span> : <span>Hide</span>}
                     </a> */}
-                      </div>
-                      <div className={classes.btnContainer}>
-                        <AphButton href={clientRoutes.membershipPlanLocked()}>
-                          View Details
-                        </AphButton>
-                        <AphButton
-                          color="primary"
-                          variant="contained"
-                          onClick={() => setIsHowToAvail(true)}
-                        >
-                          How To Avail
-                        </AphButton>
+                        </div>
+                        <div className={classes.btnContainer}>
+                          <AphButton href={clientRoutes.membershipPlanLocked()}>
+                            View Details
+                          </AphButton>
+                          <AphButton
+                            color="primary"
+                            variant="contained"
+                            onClick={() => setIsHowToAvail(true)}
+                          >
+                            How To Avail
+                          </AphButton>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ) : (
-                  ''
-                )}
+                  ) : (
+                    ''
+                  )}
+                </div>
               </div>
             )}
           </div>
