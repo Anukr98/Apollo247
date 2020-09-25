@@ -181,8 +181,6 @@ export function generateDeepLinkBody(doctordata: Partial<Doctor>): DeepLinkInput
       ? ApiConstants.CHANNEL_NAME_NON_APOLLO.toString()
       : ApiConstants.CHANNEL_NAME_APOLLO.toString();
 
-  const webLink = ApiConstants.DOCTOR_DEEPLINK_WEB_URL.replace('<DoctorID>', doctordata.id!);
-
   const deepLinkAttrs: DeepLinkInput = {
     //brand_domain: ApiConstants.BRAND_DOMAIN.toString(),
     ttl: ApiConstants.LINK_TTL.toString(),

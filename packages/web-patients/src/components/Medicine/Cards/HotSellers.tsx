@@ -7,7 +7,7 @@ import { MedicineProduct } from '../../../helpers/MedicineApiCalls';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Route } from 'react-router-dom';
 import { useShoppingCart, MedicineCartItem } from '../../MedicinesCartProvider';
-import { gtmTracking } from '../../../gtmTracking';
+import { gtmTracking, dataLayerTracking } from '../../../gtmTracking';
 import {
   pharmacyConfigSectionTracking,
   addToCartTracking,
@@ -50,6 +50,7 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'center',
       '& img': {
         maxWidth: 70,
+        maxHeight: 70,
         margin: 'auto',
       },
     },
@@ -137,7 +138,7 @@ interface HotSellerProps {
 export const HotSellers: React.FC<HotSellerProps> = (props) => {
   const classes = useStyles({});
   const sliderSettings = {
-    infinite: true,
+    infinite: false,
     speed: 500,
     slidesToShow: 6,
     slidesToScroll: 3,
@@ -149,7 +150,7 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
         settings: {
           slidesToShow: 3,
           slidesToScroll: 3,
-          infinite: true,
+          infinite: false,
           dots: true,
           centerPadding: '50px',
         },
@@ -191,7 +192,12 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
 
   return (
     <div className={classes.root}>
-      <Slider {...sliderSettings}>
+      <Slider
+        {...sliderSettings}
+        beforeChange={() => {
+          document.getElementById('searchProduct').blur();
+        }}
+      >
         {props.data &&
           props.data.products &&
           props.data.products.map((hotSeller) =>
@@ -319,6 +325,31 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                               },
                             });
                             /**Gtm code End  */
+
+                            /**Gtm code start start */
+                            dataLayerTracking({
+                              event: 'Product Added to Cart',
+                              productlist: JSON.stringify([
+                                {
+                                  item_name: hotSeller.name,
+                                  item_id: hotSeller.sku,
+                                  price: hotSeller.price,
+                                  item_category: 'Pharmacy',
+                                  item_category_2: hotSeller.type_id
+                                    ? hotSeller.type_id.toLowerCase() === 'pharma'
+                                      ? 'Drugs'
+                                      : 'FMCG'
+                                    : null,
+                                  item_variant: 'Default',
+                                  index: 1,
+                                  quantity: 1,
+                                },
+                              ]),
+                              label: hotSeller.name,
+                              value: hotSeller.special_price || hotSeller.price,
+                            });
+                            /**Gtm code start end */
+
                             const index = cartItems.findIndex((item) => item.id === cartItem.id);
                             if (index >= 0) {
                               updateCartItem && updateCartItem(cartItem);
@@ -368,6 +399,26 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                               },
                             });
                             /**Gtm code End  */
+
+                            /**Gtm code start start */
+                            dataLayerTracking({
+                              event: 'Product Removed from Cart',
+                              productlist: JSON.stringify([
+                                {
+                                  item_name: hotSeller.name,
+                                  item_id: hotSeller.sku,
+                                  price: hotSeller.special_price || hotSeller.price,
+                                  item_category: 'Pharmacy',
+                                  item_variant: 'Default',
+                                  index: 1,
+                                  quantity: 1,
+                                },
+                              ]),
+                              label: hotSeller.name,
+                              value: hotSeller.special_price || hotSeller.price,
+                            });
+                            /**Gtm code start end */
+
                             removeCartItemSku && removeCartItemSku(hotSeller.sku);
                           }}
                         >

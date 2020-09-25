@@ -11,10 +11,12 @@ import fetchUtil from 'helpers/fetch';
 import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
 import { GetPatientByMobileNumber_getPatientByMobileNumber_patients as CurrentPatient } from 'graphql/types/GetPatientByMobileNumber';
 
+import { getAppStoreLink } from 'helpers/dateHelpers';
 declare global {
   interface Window {
     opera: any;
     vendor: any;
+    dataLayer: any;
   }
 }
 
@@ -534,8 +536,18 @@ export const consultWebengageEventsCommonInfo = (data: any) => {
     'Hospital City': hospitalCity,
   };
 };
+const deepLinkUtil = (deepLinkPattern: string) => {
+  if (getDeviceType() !== DEVICETYPE.DESKTOP && !sessionStorage.getItem('deepLinkAccessed')) {
+    window.location.href = `apollopatients://${deepLinkPattern}`;
+    setTimeout(() => {
+      window.location.href = getAppStoreLink();
+    }, 1000);
+    sessionStorage.setItem('deepLinkAccessed', '1');
+  }
+};
 
 export {
+  deepLinkUtil,
   HEALTH_RECORDS_NO_DATA_FOUND,
   removeGraphQLKeyword,
   getCouponByUserMobileNumber,

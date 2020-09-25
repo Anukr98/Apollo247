@@ -79,6 +79,7 @@ import { deepLinkTypeDefs, deepLinkResolvers } from 'doctors-service/resolvers/d
 import { sitemapTypeDefs, sitemapResolvers } from 'doctors-service/resolvers/sitemap';
 import { getDoctorHelplineTypeDef, getDoctorHelplineResolver } from 'doctors-service/resolvers/getHelpline';
 import { updateDoctorChatDaysResolvers, updateDoctorChatDaysTypeDefs } from 'doctors-service/resolvers/updateDoctorChatDays';
+import { setAppointmentReminderIvrTypeDefs, setAppointmentReminderIvrResolvers } from 'doctors-service/resolvers/doctorAppointmentReminderIVR';
 
 (async () => {
   await connect();
@@ -200,11 +201,15 @@ import { updateDoctorChatDaysResolvers, updateDoctorChatDaysTypeDefs } from 'doc
       {
         typeDefs: getDoctorHelplineTypeDef,
         resolvers: getDoctorHelplineResolver,
-      }, 
+      },
       {
         typeDefs: updateDoctorChatDaysTypeDefs,
-        resolvers: updateDoctorChatDaysResolvers, 
-      }
+        resolvers: updateDoctorChatDaysResolvers,
+      },
+      {
+        typeDefs: setAppointmentReminderIvrTypeDefs,
+        resolvers: setAppointmentReminderIvrResolvers,
+      },
     ]),
     plugins: [
       /* This plugin is defined in-line. */

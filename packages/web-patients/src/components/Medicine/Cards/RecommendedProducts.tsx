@@ -10,7 +10,7 @@ import { useMutation } from 'react-apollo-hooks';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Link } from 'react-router-dom';
 import { useShoppingCart, MedicineCartItem } from '../../MedicinesCartProvider';
-import { gtmTracking } from '../../../gtmTracking';
+import { gtmTracking, dataLayerTracking } from '../../../gtmTracking';
 import {
   pharmacyConfigSectionTracking,
   addToCartTracking,
@@ -49,6 +49,7 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'center',
       '& img': {
         maxWidth: 70,
+        maxHeight: 70,
         margin: 'auto',
       },
     },
@@ -157,7 +158,7 @@ interface RecommendedProductsProps {
 export const RecommendedProducts: React.FC<RecommendedProductsProps> = (props) => {
   const classes = useStyles({});
   const sliderSettings = {
-    infinite: true,
+    infinite: false,
     speed: 500,
     slidesToShow: 6,
     slidesToScroll: 3,
@@ -169,7 +170,7 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = (props) =
         settings: {
           slidesToShow: 3,
           slidesToScroll: 3,
-          infinite: true,
+          infinite: false,
           dots: true,
           centerPadding: '50px',
         },
@@ -363,6 +364,31 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = (props) =
                               },
                             });
                             /**Gtm code End  */
+
+                            /**Gtm code start start */
+                            dataLayerTracking({
+                              event: 'Product Added to Cart',
+                              productlist: JSON.stringify([
+                                {
+                                  item_name: productList.productName,
+                                  item_id: productList.productSku,
+                                  productPrice: productList.productPrice,
+                                  item_category: 'Pharmacy',
+                                  item_category_2: productList.categoryName
+                                    ? productList.categoryName.toLowerCase() === 'pharma'
+                                      ? 'Drugs'
+                                      : 'FMCG'
+                                    : null || '',
+                                  item_variant: 'Default',
+                                  index: 1,
+                                  quantity: 1,
+                                },
+                              ]),
+                              label: productList.productName,
+                              value: productList.productSpecialPrice || productList.productPrice,
+                            });
+                            /**Gtm code start end */
+
                             const index = cartItems.findIndex((item) => item.sku === cartItem.sku);
                             if (index >= 0) {
                               updateCartItem && updateCartItem(cartItem);
@@ -413,6 +439,27 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = (props) =
                               },
                             });
                             /**Gtm code End  */
+
+                            /**Gtm code start start */
+                            dataLayerTracking({
+                              event: 'Product Removed from Cart',
+                              productlist: JSON.stringify([
+                                {
+                                  item_name: productList.productName,
+                                  item_id: productList.productSku,
+                                  productPrice:
+                                    productList.productSpecialPrice || productList.productPrice,
+                                  item_category: 'Pharmacy',
+                                  item_variant: 'Default',
+                                  index: 1,
+                                  quantity: 1,
+                                },
+                              ]),
+                              label: productList.productName,
+                              value: productList.productSpecialPrice || productList.productPrice,
+                            });
+                            /**Gtm code start end */
+
                             removeCartItemSku && removeCartItemSku(productList.productSku);
                           }}
                         >

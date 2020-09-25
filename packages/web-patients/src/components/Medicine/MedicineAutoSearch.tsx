@@ -235,6 +235,13 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 14,
       lineHeight: '18px',
     },
+    notForSale: {
+      backgroundColor: 'rgba(137,0,0,0.5)',
+      fontSize: 12,
+      fontWeight: 600,
+      padding: '3px 8px',
+      color: '#fff',
+    },
   };
 });
 
@@ -334,6 +341,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
     <div className={classes.root}>
       <div className={classes.medicineSearchForm} ref={searchRef}>
         <AphTextField
+          id={'searchProduct'}
           placeholder="Search meds, brands and more"
           error={showError}
           className={classes.searchInput}
@@ -434,7 +442,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
                         </div>
                       </Link>
                       <div className={classes.rightActions}>
-                        {!isInCart(medicine) && (
+                        {!isInCart(medicine) && !!medicine.sell_online && (
                           <AphButton
                             onClick={() => {
                               if (medicine.is_in_stock) {
@@ -523,6 +531,9 @@ export const MedicineAutoSearch: React.FC = (props) => {
                               : ''}
                           </AphButton>
                         )}
+                        {!medicine.sell_online ? (
+                          <div className={classes.notForSale}>NOT FOR SALE</div>
+                        ) : null}
                         {isInCart(medicine) && (
                           <div className={classes.addQty}>
                             <AphButton

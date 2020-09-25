@@ -36,6 +36,7 @@ import {
 } from '../../webEngageTracking';
 import { BottomLinks } from 'components/BottomLinks';
 import { MedicalRecordType } from '../../graphql/types/globalTypes';
+import { isNumeric } from 'validator';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -231,7 +232,13 @@ const PHRLanding: React.FC<LandingProps> = (props) => {
       ) => {
         const date1 = moment(data1.date).toDate().getTime();
         const date2 = moment(data2.date).toDate().getTime();
-        return date1 > date2 ? -1 : date1 < date2 ? 1 : 0;
+        return date1 > date2
+          ? -1
+          : date1 < date2
+          ? 1
+          : isNaN(parseInt(data2.id))
+          ? 0
+          : parseInt(data2.id) - parseInt(data1.id);
       }
     );
   };
@@ -300,7 +307,13 @@ const PHRLanding: React.FC<LandingProps> = (props) => {
       const date2 = moment(b.bookingDate || b.date || b.quoteDateTime)
         .toDate()
         .getTime();
-      return date1 > date2 ? -1 : date1 < date2 ? 1 : a.id - b.id;
+      return date1 > date2
+        ? -1
+        : date1 < date2
+        ? 1
+        : isNaN(parseInt(b.id))
+        ? 0
+        : parseInt(b.id) - parseInt(a.id);
     });
   };
 

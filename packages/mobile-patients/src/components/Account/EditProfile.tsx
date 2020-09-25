@@ -360,6 +360,8 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       value
     );
 
+  const isSatisfyEmailRegex = (value: string) => /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value);
+
   const _setFirstName = (value: string) => {
     if (/^[a-zA-Z'’ ]*$/.test(value)) {
       setFirstName(value);
@@ -1181,6 +1183,8 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           value={`${email}`}
           onChangeText={(email) => setEmail(email)}
           placeholder={'name@email.com'}
+          autoCapitalize="none"
+          keyboardType="email-address"
         />
       </View>
     );
@@ -1217,6 +1221,8 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
                   validationMessage = 'Select a valid relation';
                 } else if (!(email === '' || (email && isSatisfyingEmailRegex(email.trim())))) {
                   validationMessage = 'Enter valid email';
+                } else if (!(email === '' || (email && isSatisfyEmailRegex(email.trim())))) {
+                  validationMessage = 'Enter valid email2';
                 }
                 if (validationMessage) {
                   showAphAlert && showAphAlert({ title: 'Alert!', description: validationMessage });

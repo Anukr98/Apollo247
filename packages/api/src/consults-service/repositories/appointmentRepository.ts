@@ -102,6 +102,26 @@ export class AppointmentRepository extends Repository<Appointment> {
     return appointment;
   }
 
+  getlimitedHoursFutureAppointments(currentDate: Date, limitedHoursFutureDate: Date) {
+    return this.createQueryBuilder('appointment')
+      .leftJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
+      .where('appointment.appointmentDateTime > :currentDate', { currentDate })
+      .andWhere('appointment.appointmentDateTime <= :limitedHoursFutureDate', { limitedHoursFutureDate })
+      .andWhere(
+        'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',
+        {
+          status1: STATUS.CANCELLED,
+          status2: STATUS.PAYMENT_PENDING,
+          status3: STATUS.UNAVAILABLE_MEDMANTRA,
+          status4: STATUS.PAYMENT_FAILED,
+          status5: STATUS.PAYMENT_PENDING_PG,
+          status6: STATUS.PAYMENT_ABORTED,
+        }
+      )
+      .orderBy('appointment.appointmentDateTime', 'ASC')
+      .getMany();
+  }
+
   getAppointmentsCount(doctorId: string, patientId: string) {
     return this.createQueryBuilder('appointment')
       .andWhere('appointment.patientId = :patientId', { patientId })

@@ -62,7 +62,7 @@ interface ShopByCategoryProps {
 export const ShopByCategory: React.FC<ShopByCategoryProps> = (props) => {
   const classes = useStyles({});
   const sliderSettings = {
-    infinite: true,
+    infinite: false,
     speed: 500,
     slidesToShow: 6,
     slidesToScroll: 3,
@@ -74,7 +74,7 @@ export const ShopByCategory: React.FC<ShopByCategoryProps> = (props) => {
         settings: {
           slidesToShow: 3,
           slidesToScroll: 3,
-          infinite: true,
+          infinite: false,
           dots: true,
         },
       },
@@ -110,7 +110,12 @@ export const ShopByCategory: React.FC<ShopByCategoryProps> = (props) => {
 
   return (
     <div className={classes.root}>
-      <Slider {...sliderSettings}>
+      <Slider
+        {...sliderSettings}
+        beforeChange={() => {
+          document.getElementById('searchProduct').blur();
+        }}
+      >
         {props.data &&
           props.data.map((category) => {
             let formattedTitle = _replace(category.title.toLowerCase(), ' & ', '_');

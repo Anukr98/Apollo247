@@ -180,6 +180,8 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
       value
     );
 
+  const isSatisfyEmailRegex = (value: string) => /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value);
+
   // const isSatisfyingEmailRegex = (value: string) =>
   //   /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/.test(value);
 
@@ -187,6 +189,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
     const trimmedValue = (value || '').trim();
     setEmail(trimmedValue);
     setEmailValidation(isSatisfyingEmailRegex(trimmedValue));
+    setEmailValidation(isSatisfyEmailRegex(trimmedValue));
   };
 
   const _setFirstName = (value: string) => {
@@ -427,9 +430,11 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
             placeholder={'name@email.com'}
             onChangeText={(text: string) => _setEmail(text)}
             value={email}
-            textInputprops={{
-              autoCapitalize: 'none',
-            }}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            // textInputprops={{
+            //   autoCapitalize: 'none',
+            // }}
           />
           {/* <View style={{ height: 80 }} /> */}
           {showReferralCode && renderReferral()}
