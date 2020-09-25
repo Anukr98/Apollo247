@@ -56,7 +56,7 @@
       "point6": "Follow Up via text - valid for 7 days"
     },
     "follow_up_chat_days_text": "Follow Up via text - valid for {0} days",
-    "follow_up_chat_message": "is available for a minimum of {0} days for free follow-up chat post Consult. However, doctor can decide to increase the follow-up text days as per case basis.",
+    "follow_up_chat_message": "is available for a minimum of {0} days for free follow-up via text post Consult. However, doctor can decide to increase the follow-up text days as per case basis.",
     "chatDisabledHeader": "Free follow up chat days with the doctor are over. Please book a new appointment for consulting with {0} again!",
     "availableForInAppConsultsOnly": "Due to the current situation, {{doctor}} is available only for In-App Consults"
   },

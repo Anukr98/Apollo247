@@ -1043,10 +1043,8 @@ const modifyCaseSheet: Resolver<
     getCaseSheetData.createdDate
   );
 
-  //delete getCaseSheetData.status;
-
   //medicalHistory upsert ends
-  const caseSheetAttrs: Omit<Partial<Omit<Partial<CaseSheet>, 'status'>>, 'id'> = getCaseSheetData;
+  const caseSheetAttrs: Omit<Partial<CaseSheet>, 'id'> = getCaseSheetData;
   await caseSheetRepo.updateCaseSheet(inputArguments.id, caseSheetAttrs, getCaseSheetData);
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointmentData = await appointmentRepo.findById(getCaseSheetData.appointment.id);

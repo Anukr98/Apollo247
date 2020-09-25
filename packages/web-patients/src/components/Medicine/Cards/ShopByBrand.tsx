@@ -109,7 +109,12 @@ export const ShopByBrand: React.FC<ShopByBrandsProps> = (props) => {
 
   return (
     <div className={classes.root}>
-      <Slider {...sliderSettings}>
+      <Slider
+        {...sliderSettings}
+        beforeChange={() => {
+          document.getElementById('searchProduct').blur();
+        }}
+      >
         {props.data &&
           props.data.map((brand, index) => {
             let formattedTitle = _replace(brand.title.toLowerCase(), ' & ', '_');

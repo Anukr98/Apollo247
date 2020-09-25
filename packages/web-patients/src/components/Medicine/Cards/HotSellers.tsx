@@ -192,7 +192,12 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
 
   return (
     <div className={classes.root}>
-      <Slider {...sliderSettings}>
+      <Slider
+        {...sliderSettings}
+        beforeChange={() => {
+          document.getElementById('searchProduct').blur();
+        }}
+      >
         {props.data &&
           props.data.products &&
           props.data.products.map((hotSeller) =>

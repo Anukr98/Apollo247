@@ -230,9 +230,15 @@ const PHRLanding: React.FC<LandingProps> = (props) => {
         data1: HealthCheckType | HospitalizationType | LabResultsType,
         data2: HealthCheckType | HospitalizationType | LabResultsType
       ) => {
-        const date1 = moment(data1.dateTime).toDate().getTime();
-        const date2 = moment(data2.dateTime).toDate().getTime();
-        return date1 > date2 ? -1 : date1 < date2 ? 1 : 0;
+        const date1 = moment(data1.date).toDate().getTime();
+        const date2 = moment(data2.date).toDate().getTime();
+        return date1 > date2
+          ? -1
+          : date1 < date2
+          ? 1
+          : isNaN(parseInt(data2.id))
+          ? 0
+          : parseInt(data2.id) - parseInt(data1.id);
       }
     );
   };
@@ -295,13 +301,19 @@ const PHRLanding: React.FC<LandingProps> = (props) => {
 
   const sortByDate = (array: any[]) => {
     return array.sort((a: any, b: any) => {
-      const date1 = moment(a.bookingDate || a.dateTime || a.quoteDateTime)
+      const date1 = moment(a.bookingDate || a.date || a.quoteDateTime)
         .toDate()
         .getTime();
-      const date2 = moment(b.bookingDate || b.dateTime || b.quoteDateTime)
+      const date2 = moment(b.bookingDate || b.date || b.quoteDateTime)
         .toDate()
         .getTime();
-      return date1 > date2 ? -1 : date1 < date2 ? 1 : isNaN(parseInt(b.id)) ? 0 : b.id - a.id;
+      return date1 > date2
+        ? -1
+        : date1 < date2
+        ? 1
+        : isNaN(parseInt(b.id))
+        ? 0
+        : parseInt(b.id) - parseInt(a.id);
     });
   };
 
