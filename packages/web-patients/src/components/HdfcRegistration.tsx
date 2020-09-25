@@ -14,6 +14,7 @@ import {
   CreateUserSubscriptionVariables,
 } from 'graphql/types/CreateUserSubscription';
 import { HDFC_CUSTOMER, CreateUserSubscriptionInput } from 'graphql/types/globalTypes';
+import { TrendingUpTwoTone } from '@material-ui/icons';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -32,7 +33,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '& >img': {
         position: 'absolute',
-        top: 20,
+        top: 10,
         right: 20,
         [theme.breakpoints.down('sm')]: {
           display: 'none',
@@ -48,27 +49,39 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
       '& button': {
+        bottom: 30,
+        // right: 10,
         boxShadow: 'none',
         display: 'block',
         marginLeft: 'auto',
         color: '#FC9916',
+        [theme.breakpoints.down('sm')]: {
+          bottom: 20,
+        },
       },
       [theme.breakpoints.down('xs')]: {
         width: '100%',
       },
     },
 
-    hdcContent: {},
+    hdcContent: {
+      position: 'relative',
+      '& >img': {
+        margin: '0 0 10px',
+      },
+    },
     desc: {
+      position: 'absolute',
+      bottom: 10,
+      right: 10,
       fontSize: 12,
       fontWeight: 300,
       color: '#01475B',
       lineHeight: '16px',
       fontStyle: 'italic',
-      margin: '10px 0',
       [theme.breakpoints.down('sm')]: {
         fontSize: 10,
-        margin: ' 0 0 10px',
+        bottom: 0,
       },
     },
     note: {
@@ -100,14 +113,13 @@ const useStyles = makeStyles((theme: Theme) => {
     otpValidator: {
       padding: '20px 0 0',
       // display: 'none',
-      position: 'relative',
       [theme.breakpoints.down('sm')]: {
         padding: '10px 0 0',
       },
       '& >img': {
         position: 'absolute',
-        top: -35,
-        right: 20,
+        top: 10,
+        right: 10,
         [theme.breakpoints.down('sm')]: {
           display: 'none',
         },
@@ -115,7 +127,6 @@ const useStyles = makeStyles((theme: Theme) => {
       '& h2': {
         fontSize: 20,
         fontWeight: 500,
-        color: '#0087BA',
         lineHeight: '18px',
         [theme.breakpoints.down('sm')]: {
           fontSize: 14,
@@ -132,12 +143,22 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     otpError: {
-      color: 'red',
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      '& p': {
+        color: '#ED1C24',
+        fontSize: 12,
+        fontWeight: 600,
+        [theme.breakpoints.down('sm')]: {
+          fontsize: 11,
+        },
+      },
     },
     otpInput: {
       display: 'flex',
       alignItems: 'center',
-      padding: '10px 0 0',
+      padding: '20px 0 30px',
       [theme.breakpoints.down('sm')]: {
         padding: 0,
       },
@@ -160,6 +181,9 @@ const useStyles = makeStyles((theme: Theme) => {
     btnAction: {
       display: 'flex',
       alignItems: 'center',
+      [theme.breakpoints.down('sm')]: {
+        margin: '0 0 20px',
+      },
       '& button': {
         margin: '0 0 0 10px',
         '&:first-child': {
@@ -184,6 +208,7 @@ const useStyles = makeStyles((theme: Theme) => {
             padding: 10,
             minWidth: 'auto',
             borderRadius: '50%',
+            margin: 0,
             '& p': {
               display: 'none',
             },
@@ -209,7 +234,9 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'flex-end',
-      padding: '10px 16px 16px',
+      position: 'absolute',
+      bottom: 0,
+      right: 0,
       '& button': {
         margin: '0 0 0 10px',
         '&:first-child': {
@@ -229,14 +256,11 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     cContainer: {
-      padding: '10px 0 0',
-      // display: 'flex',
-      // display: 'none',
+      padding: '0 0 30px',
       alignItems: 'center',
       [theme.breakpoints.down('sm')]: {
         padding: '10px 0 30px',
       },
-
       '& img': {
         width: 100,
         margin: '0 20px 0 0 ',
@@ -246,9 +270,10 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
       '& a,button': {
+        marginLeft: 'auto',
         position: 'absolute',
-        bottom: 10,
-        right: 10,
+        bottom: 0,
+        right: 0,
         boxShadow: 'none',
         color: '#FC9916',
         [theme.breakpoints.down('sm')]: {
@@ -257,35 +282,39 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     cContent: {
-      '& >img': {
-        position: 'absolute',
-        top: 20,
-        right: 20,
-        width: 40,
-        margin: 0,
+      width: '70%',
+      margin: '0  auto',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      [theme.breakpoints.down('sm')]: {
+        width: '100%',
+        margin: '0 0 20px',
+      },
+      '& img': {
+        margin: '0 40px 0 0',
         [theme.breakpoints.down('sm')]: {
-          width: 16,
+          margin: '0 20px 0 0',
         },
       },
       '& h2': {
         fontSize: 32,
         fontWeight: 700,
-        color: '#00B38E',
         lineHeight: '42px',
+        margin: '0 0 20px',
         [theme.breakpoints.down('sm')]: {
-          fontSize: 18,
+          fontSize: 24,
           lineHeight: '24px',
-          margin: 0,
+          margin: ' 0 0 10px',
         },
       },
       '& p': {
         fontSize: 18,
         lineHeight: '24px',
-        color: '#00B38E',
         margin: '0 0 5px',
-        fontWeight: 600,
+        fontWeight: 500,
         [theme.breakpoints.down('sm')]: {
-          fontSize: 10,
+          fontSize: 14,
           lineHeight: '12px',
         },
       },
@@ -300,26 +329,40 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: '10px !important',
       },
     },
-    recheckOtp: {
-      // display: 'none',
-      [theme.breakpoints.down('sm')]: {
-        padding: '10px 0 20px',
+    recheckOtpContent: {
+      '& button': {
+        boxShadow: 'none',
+        color: '#FC9916',
       },
       '& >img': {
         position: 'absolute',
-        top: 20,
+        top: 10,
         right: 20,
         margin: 0,
+        opacity: 0.5,
         [theme.breakpoints.down('sm')]: {
           display: 'none',
         },
       },
+    },
+    recheckOtp: {
+      // display: 'none',
+      width: '60%',
+      [theme.breakpoints.down('sm')]: {
+        width: '100%',
+        padding: '0 0 30px',
+      },
       '& h2': {
         fontSize: 32,
-        fontWeight: 700,
-        color: '#00B38E',
+        fontWeight: 600,
+        color: '#02475b',
         lineHeight: '42px',
         margin: '0 0 10px',
+        display: 'flex',
+        alignItems: 'center',
+        '& img': {
+          margin: '0 10px 0 0',
+        },
         [theme.breakpoints.down('sm')]: {
           fontSize: 18,
           lineHeight: '24px',
@@ -327,23 +370,109 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
       '& p': {
-        fontSize: 18,
+        fontSize: 14,
         lineHeight: '24px',
-        color: '#00B38E',
+        margin: '0 0 10px',
+        [theme.breakpoints.down('sm')]: {
+          fontSize: 10,
+          lineHeight: '16px',
+        },
+      },
+    },
+    newContent: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '70%',
+      margin: '0 auto',
+      [theme.breakpoints.down('sm')]: {
+        width: '100%',
+        margin: '0 0 10px',
+      },
+      '& h2': {
+        fontSize: 32,
+        fontWeight: 700,
+        color: '#02475b',
+        lineHeight: '42px',
+        [theme.breakpoints.down('sm')]: {
+          fontSize: 14,
+          lineHeight: '24px',
+          margin: 0,
+        },
+      },
+      '& img': {
+        margin: '0 30px 0 0',
+        [theme.breakpoints.down('sm')]: {
+          width: 54,
+          margin: '0 15px 0 0',
+        },
+      },
+    },
+    joinClub: {
+      [theme.breakpoints.down('sm')]: {
+        padding: '0 0 30px',
+      },
+      '&:after': {
+        content: "''",
+        position: 'absolute',
+        top: -80,
+        right: -80,
+        width: 170,
+        height: 170,
+        borderRadius: '50%',
+        border: '30px solid rgba(251,191,50,0.3)',
+      },
+      '& h2': {
+        fontSize: 32,
+        fontWeight: 700,
+        color: '#02475b',
+        lineHeight: '42px',
+        [theme.breakpoints.down('sm')]: {
+          fontSize: 18,
+          lineHeight: '24px',
+          margin: '0 0 5px',
+        },
+      },
+      '& h5': {
+        fontSize: 14,
+        lineHeight: '24px',
         margin: '0 0 10px',
         fontWeight: 600,
         [theme.breakpoints.down('sm')]: {
           fontSize: 10,
-          lineHeight: '12px',
+          lineHeight: '18px',
+          margin: '0 0 5px',
+        },
+      },
+      '& p': {
+        fontSize: 14,
+        lineHeight: '24px',
+        fontWeight: 300,
+        [theme.breakpoints.down('sm')]: {
+          fontSize: 10,
+          lineHeight: '16px',
         },
       },
       '& button': {
         position: 'absolute',
-        bottom: 10,
-        right: 10,
+        right: 0,
+        bottom: 0,
         boxShadow: 'none',
+        display: 'block',
+        marginLeft: 'auto',
         color: '#FC9916',
       },
+      '& img': {
+        position: 'absolute',
+        top: 10,
+        right: 10,
+      },
+    },
+    overflowHidden: {
+      overflow: 'hidden',
+    },
+    planName: {
+      color: '#d3a047',
     },
   };
 });
@@ -366,11 +495,12 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
   >();
   const apolloClient = useApolloClient();
 
-  const [showIntro, setShowIntro] = React.useState<boolean>(true);
+  const [showIntro, setShowIntro] = React.useState<boolean>(TrendingUpTwoTone);
   const [showOTPValidator, setShowOTPValidator] = React.useState<boolean>(false);
   const [showCongratulations, setShowCongratulations] = React.useState<boolean>(false);
   const [showRecheckOTP, setShowRecheckOTP] = React.useState<boolean>(false);
   const [loading, setLoading] = React.useState<boolean>(false);
+  const [showJoinClub, setShowJoinClub] = React.useState<boolean>(false);
 
   const queryIdentifyHDFCCustomer = () => {
     setLoading(true);
@@ -470,22 +600,23 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
   };
 
   return (
-    <div className={classes.hdcContainer}>
+    <div className={`${classes.hdcContainer} ${showJoinClub ? classes.overflowHidden : ''} `}>
       <div className={classes.hdcContent}>
-        <img src={require('images/hdfc/hdfc-logo.svg')} alt="HDFC Call Doctor" width="100" />
+        <img src={require('images/hdfc/hdfc-logo.png')} alt="HDFC Call Doctor" width="100" />
         {/* Intro */}
         {showIntro && (
           <div className={classes.hdfcIntro}>
-            <img src={require('images/hdfc/otp.svg')} alt="Otp" />
+            <img src={require('images/hdfc/otp.svg')} alt="Otp" width="48" />
+            <div className={classes.newContent}>
+              <img src={require('images/hdfc/last-step.svg')} alt="Otp" />
+              <Typography component="h2">
+                One last step to start your HealthyLife Journey
+              </Typography>
+            </div>
             <Typography className={classes.desc}>
-              As our privileged customer and a member of HDFC Bank, you are eligible to enroll in
-              this exclusive offer
-            </Typography>
-            <Typography component="h2">
-              Click here to generate your HDFC Bank OTP and complete registration
+              This is required by HDFC Bank to verify your details
             </Typography>
             <AphButton onClick={() => queryIdentifyHDFCCustomer()}>
-              {' '}
               {loading ? <CircularProgress size={30} /> : 'Generate Otp'}{' '}
             </AphButton>
           </div>
@@ -493,8 +624,8 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
         {/* Otp Validator */}
         {showOTPValidator && (
           <div className={classes.otpValidator}>
-            <img src={require('images/hdfc/otp.svg')} alt="Otp" />
-            <Typography component="h2">Please Validate OTP Sent by HDFC Bank</Typography>
+            <img src={require('images/hdfc/otp.svg')} alt="Otp" width="48" />
+            <Typography component="h2">Please Enter OTP Sent by HDFC Bank</Typography>
             <div className={classes.otpContainer}>
               <div className={classes.otpInput}>
                 <AphInput
@@ -512,7 +643,7 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
               </div>
               {otpError && (
                 <div className={classes.otpError}>
-                  <Typography>Note : Please Enter correct OTP</Typography>
+                  <Typography>Oops! Re-enter OTP</Typography>
                 </div>
               )}
               <div className={classes.btnAction}>
@@ -534,36 +665,57 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
         {/* Congratulations Section */}
         {showCongratulations && (
           <div className={classes.cContainer}>
-            <img src={require('images/hdfc/gift.svg')} alt="Congraulations" />
+            {/* <img src={require('images/hdfc/apollo-hashtag.svg')} alt="Apollo Health Life" /> */}
             <div className={classes.cContent}>
-              <img src={require('images/hdfc/medal.svg')} alt="Otp" />
-              <Typography component="h2">Congratulations ! </Typography>
-              <Typography> You Have Successfully Enrolled For {planName}</Typography>
-              <Typography className={classes.description}>
-                You are now eligible for wide range of benefits !
-              </Typography>
+              <img src={require('images/hdfc/congrats.svg')} alt="Congraulations" />
+              <div>
+                <Typography component="h2">Congratulations ! </Typography>
+                <Typography>
+                  You are now a <span className={classes.planName}>Gold + Member</span>
+                </Typography>
+              </div>
             </div>
-            <AphButton href={clientRoutes.membershipPlanDetail()}>Go To Details Page</AphButton>
+            <AphButton href={clientRoutes.membershipPlanDetail()}>Explore Benefits</AphButton>
           </div>
         )}
         {/* Recheck OTP Section */}
         {showRecheckOTP && (
-          <div className={classes.recheckOtp}>
-            <img src={require('images/hdfc/sorry.svg')} alt="Congraulations" />
-            <Typography component="h2">Sorry !</Typography>
+          <div className={classes.recheckOtpContent}>
+            <img src={require('images/hdfc/sorry.svg')} alt="Sorry" />
+            <div className={classes.recheckOtp}>
+              <Typography component="h2">
+                <img src={require('images/hdfc/sorry-new.svg')} alt="Sorry" />
+                Sorry !
+              </Typography>
+              <Typography>
+                Looks like your details are not matching with HDFC Bank records.​ Please retry or
+                enroll yourself with HDFC Bank
+              </Typography>
+            </div>
+            <div className={classes.btnContainer}>
+              <AphButton>Enroll</AphButton>
+              <AphButton onClick={() => queryIdentifyHDFCCustomer()}>
+                {loading ? <CircularProgress size={30} /> : 'Recheck Otp'}
+              </AphButton>
+            </div>
+          </div>
+        )}
+        {showJoinClub && (
+          <div className={classes.joinClub}>
+            <img src={require('images/hdfc/locked.svg')} alt="" />
+            <Typography component="h2">Hey ! </Typography>
+            <Typography component="h5">
+              You are missing out on a world of exclusive benefits
+            </Typography>
             <Typography>
-              Unfortunately the OTP did not match or you are not a HDFC Premium Customer
+              Just book a Doctor Consultation or order Pharmacy products worth Rs 499 or more to
+              join the club!
             </Typography>
-            <Typography className={classes.description}>
-              Please Contact HDFC for further Updates
-            </Typography>
-            <AphButton onClick={() => queryIdentifyHDFCCustomer()}>
-              {' '}
-              {loading ? <CircularProgress size={30} /> : 'Recheck Otp'}{' '}
-            </AphButton>
+            <AphButton>Tell Me More</AphButton>
           </div>
         )}
       </div>
+
       <AphDialog open={callDoctorPopup} maxWidth="sm">
         <div className={classes.dialogContent}>
           <div className={classes.dialogHeader}>
