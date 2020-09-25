@@ -1982,17 +1982,70 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderHdfcSliderItem = ({ item, index }) => {
-    // console.log(item.cta_action);
+    const {cta_action} = item;
+    const benefitsActionMapping = [
+      {
+        attribute: 'CALL_EXOTEL_API',
+        action: () => {
+          setShowHdfcConnectPopup(true);
+        }
+      },
+      {
+        attribute: 'SPECIALITY_LISTING',
+        action: () => {
+          props.navigation.navigate(AppRoutes.DoctorSearch);
+        }
+      },
+      {
+        attribute: 'PHARMACY_LANDING',
+        action: () => {
+          props.navigation.navigate('MEDICINES');
+        }
+      },
+      {
+        attribute: 'PHR',
+        action: () => {
+          props.navigation.navigate('APPOINTMENTS');
+        }
+      },
+      {
+        attribute: 'DIAGNOSTICS_LANDING',
+        action: () => {
+          props.navigation.navigate('HEALTH RECORDS');
+        }
+      },
+      {
+        attribute: 'DOC_LISTING_WITH_PAYROLL_DOCS_SELECTED',
+        action: () => {
+          props.navigation.navigate(AppRoutes.DoctorSearch);
+        }
+      },
+      {
+        attribute: 'WHATSAPP_OPEN_CHAT',
+        action: () => {
+          Linking.openURL(`whatsapp://send?text=&phone=+914048218743`);
+        }
+      },
+    ];
+
+    let actionCta = benefitsActionMapping.filter((value) => {
+      return value.attribute === cta_action.meta.action
+    });
+    const onCtaClick = actionCta.length ? actionCta[0]!.action : () => {};
+
     const bannerUri = getMobileURL(item.banner)
     return (
-      <View style={{
-        ...theme.viewStyles.cardViewStyle,
-        borderRadius: 12,
-        elevation: 15,
-        margin: 12,
-        marginBottom: 25,
-        padding: 0
-      }}>
+      <TouchableOpacity
+        activeOpacity={1}
+        onPress={onCtaClick}
+        style={{
+          ...theme.viewStyles.cardViewStyle,
+          borderRadius: 12,
+          elevation: 15,
+          margin: 12,
+          marginBottom: 25,
+          padding: 0,
+        }}>
         <Image
           style={{
             height: 180,
@@ -2003,7 +2056,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           }}
           resizeMode={'stretch'}
         />
-      </View>
+      </TouchableOpacity>
     );
   };
 

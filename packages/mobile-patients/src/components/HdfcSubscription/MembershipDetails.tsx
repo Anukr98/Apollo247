@@ -459,6 +459,8 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         ]}>
           {
             benefits.map(value => {
+              const limit = value.attributeType!.type;
+              const status = limit === 'unlimited' ? 'AVAILABLE' : `${value.attributeType!.remaining} REMAINING`;
               return (
                 <View style={benefitStyle.benefitContainer}>
                   <View style={benefitStyle.rowStretch}>
@@ -485,7 +487,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
                         REDEMPTION LIMIT
                       </Text>
                       <Text style={benefitStyle.benefitDescription}>
-                        {value.attributeType!.type}
+                        {limit}
                       </Text>
                     </View>
                     <View style={benefitStyle.halfWidth}>
@@ -493,7 +495,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
                         STATUS
                       </Text>
                       <Text style={benefitStyle.benefitDescription}>
-                        {`${value.attributeType!.remaining} REMAINING`}
+                        {status}
                       </Text>
                     </View>
                   </View>
