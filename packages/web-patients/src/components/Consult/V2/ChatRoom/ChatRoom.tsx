@@ -687,7 +687,7 @@ const ChatRoom: React.FC = () => {
                   {appointmentDetails &&
                     appointmentDetails.status !== STATUS.CANCELLED &&
                     appointmentDetails.status !== STATUS.COMPLETED &&
-                    getDiffInMinutes(appointmentDetails.appointmentDateTime) > 30 &&
+                    getDiffInMinutes(appointmentDetails.appointmentDateTime) > 15 &&
                     !disableActions &&
                     !srDoctorJoined && (
                       <div className={classes.headerActions}>

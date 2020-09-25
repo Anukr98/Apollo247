@@ -512,8 +512,10 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
           differenceInMinutes >= -15 &&
           (differenceInMinutes <= 30 || appointmentDetails.isSeniorConsultStarted)
         ) {
-          setDisableActions(true);
           setRefreshTimer(!refreshTimer);
+        }
+        if (differenceInMinutes <= 15) {
+          setDisableActions(true);
         }
       }, 60000);
     };
@@ -584,7 +586,7 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
               appointmentDetails.status !== STATUS.CANCELLED &&
               !appointmentDetails.isSeniorConsultStarted &&
               !props.srDoctorJoined &&
-              differenceInMinutes > 30 &&
+              differenceInMinutes > 15 &&
               !disableActions && (
                 <div
                   onClick={() => setIsCancelPopoverOpen(true)}
