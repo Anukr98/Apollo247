@@ -181,7 +181,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   }, [props.consultModeSelected]);
 
   useEffect(() => {
-    fetchUserSpecificCoupon();
     const todayDate = new Date().toISOString().slice(0, 10);
     getNextAvailableSlots(client, props.doctor ? [props.doctor.id] : [], todayDate)
       .then(({ data }: any) => {
@@ -202,10 +201,15 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       });
   }, []);
 
+  useEffect(() => {
+    if (selectedTimeSlot != '') {
+      fetchUserSpecificCoupon();
+    }
+  }, [selectedTimeSlot]);
+
   const fetchUserSpecificCoupon = () => {
     userSpecificCoupon(g(currentPatient, 'mobileNumber'))
       .then((resp: any) => {
-        console.log(resp.data);
         if (resp.data.errorCode == 0) {
           let couponList = resp.data.response;
           if (typeof couponList != null && couponList.length) {
@@ -890,11 +894,9 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       ],
     };
 
-    // console.log('validateCouponData', data);
     return new Promise((res, rej) => {
       validateConsultCoupon(data)
         .then((resp: any) => {
-          // console.log(g(resp, 'data'), 'data');
           if (resp.data.errorCode == 0) {
             if (resp.data.response.valid) {
               const revisedAmount =
