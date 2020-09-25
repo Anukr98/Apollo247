@@ -2378,9 +2378,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const automatedTextFromPatient = () => {
-    const chatDays = g(appointmentData, 'doctorInfo', 'chatDays');
+    const chatDays = appointmentData?.doctorInfo?.chatDays;
     let step5;
-    
+
     if (chatDays > 0) {
       step5 = `Follow up via text (valid for ${chatDays} ${chatDays === 1 ? 'day' : 'days'})`;
     } else {
