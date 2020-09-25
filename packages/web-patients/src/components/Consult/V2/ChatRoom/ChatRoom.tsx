@@ -40,7 +40,7 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import { GET_APPOINTMENT_DATA } from 'graphql/consult';
 import { GetAppointmentData, GetAppointmentDataVariables } from 'graphql/types/GetAppointmentData';
 import { GetAppointmentData_getAppointmentData_appointmentsHistory as AppointmentHistory } from 'graphql/types/GetAppointmentData';
-import { removeGraphQLKeyword } from 'helpers/commonHelpers';
+import { removeGraphQLKeyword, getDiffInMinutes } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -516,6 +516,7 @@ const ChatRoom: React.FC = () => {
   const [rescheduleCount, setRescheduleCount] = useState<number | null>(null);
   const [reschedulesRemaining, setReschedulesRemaining] = useState<number | null>(null);
   const [isConsultCompleted, setIsConsultCompleted] = useState<boolean>(false);
+  const [disableActions, setDisableActions] = useState<boolean>(false);
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const patientId = (currentPatient && currentPatient.id) || '';
@@ -675,6 +676,8 @@ const ChatRoom: React.FC = () => {
                     appointmentDetails={appointmentDetails}
                     srDoctorJoined={srDoctorJoined}
                     isConsultCompleted={isConsultCompleted}
+                    setDisableActions={setDisableActions}
+                    disableActions={disableActions}
                   />
                 )}
               </div>
@@ -684,10 +687,16 @@ const ChatRoom: React.FC = () => {
                   {appointmentDetails &&
                     appointmentDetails.status !== STATUS.CANCELLED &&
                     appointmentDetails.status !== STATUS.COMPLETED &&
+                    getDiffInMinutes(appointmentDetails.appointmentDateTime) > 30 &&
+                    !disableActions &&
                     !srDoctorJoined && (
                       <div className={classes.headerActions}>
                         <AphButton
-                          disabled={appointmentDetails.isSeniorConsultStarted || srDoctorJoined}
+                          disabled={
+                            disableActions ||
+                            appointmentDetails.isSeniorConsultStarted ||
+                            srDoctorJoined
+                          }
                           classes={{
                             root: classes.viewButton,
                             disabled: classes.disabledButton,

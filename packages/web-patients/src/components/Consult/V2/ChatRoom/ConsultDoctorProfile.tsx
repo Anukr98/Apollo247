@@ -405,6 +405,8 @@ interface ConsultDoctorProfileProps {
   handleRescheduleOpen: any;
   srDoctorJoined: boolean;
   isConsultCompleted: boolean;
+  setDisableActions: (disableActions: boolean) => void;
+  disableActions: boolean;
 }
 
 type Params = { appointmentId: string; doctorId: string };
@@ -416,7 +418,14 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
   const cancelAppointRef = useRef(null);
   const [isCancelPopoverOpen, setIsCancelPopoverOpen] = React.useState<boolean>(false);
 
-  const { doctorDetails, setRescheduleCount, handleRescheduleOpen, appointmentDetails } = props;
+  const {
+    doctorDetails,
+    setRescheduleCount,
+    handleRescheduleOpen,
+    appointmentDetails,
+    setDisableActions,
+    disableActions,
+  } = props;
 
   const [showMore, setShowMore] = useState<boolean>(true);
   const [moreOrLessMessage, setMoreOrLessMessage] = useState<string>('MORE');
@@ -503,6 +512,7 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
           differenceInMinutes >= -15 &&
           (differenceInMinutes <= 30 || appointmentDetails.isSeniorConsultStarted)
         ) {
+          setDisableActions(true);
           setRefreshTimer(!refreshTimer);
         }
       }, 60000);
@@ -573,7 +583,9 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
             {appointmentDetails.status !== STATUS.COMPLETED &&
               appointmentDetails.status !== STATUS.CANCELLED &&
               !appointmentDetails.isSeniorConsultStarted &&
-              !props.srDoctorJoined && (
+              !props.srDoctorJoined &&
+              differenceInMinutes > 30 &&
+              !disableActions && (
                 <div
                   onClick={() => setIsCancelPopoverOpen(true)}
                   ref={cancelAppointRef}
