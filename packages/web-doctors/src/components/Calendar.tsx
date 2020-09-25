@@ -25,6 +25,7 @@ import {
 import { useAuth } from 'hooks/authHooks';
 import Scrollbars from 'react-custom-scrollbars';
 import * as _ from 'lodash';
+import { useApolloClient } from 'react-apollo-hooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -237,6 +238,9 @@ export const Calendar: React.FC = () => {
   const [viewSelection, setViewSelection] = useState<string>('day');
   const [monthSelected, setMonthSelected] = useState<string>(moment(today).format('MMMM'));
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const apolloClient = useApolloClient();
+  const [data, setData] = useState();
+  const [loading, setLoading] = useState(true);
 
   const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
   const { currentUserId, currentUserType } = useAuthContext();
@@ -267,8 +271,28 @@ export const Calendar: React.FC = () => {
       setDoctorDetails(currentPatient);
     }
   }, [selectedDate]);
-  const { data, loading } = isSignedIn
-    ? useQuery(GET_DOCTOR_APPOINTMENTS, {
+
+  // const { data, loading } =
+  //   useQuery(GET_DOCTOR_APPOINTMENTS, {
+  //     variables: {
+  //       doctorId:
+  //         currentUserType === LoggedInUserType.SECRETARY
+  //           ? currentUserId
+  //             ? currentUserId
+  //             : localStorage.getItem('currentUserId')
+  //           : null,
+  //       startDate: format(range.start as number | Date, 'yyyy-MM-dd'),
+  //       endDate: format(range.end as number | Date, 'yyyy-MM-dd'),
+  //     },
+  //     fetchPolicy: 'no-cache',
+  //     pollInterval: !isDialogOpen && pageRefreshTimeInSeconds * 1000,
+  //     notifyOnNetworkStatusChange: true,
+  //   });
+
+  const getDoctorAppointmentsApi = () => {
+    apolloClient
+      .query<any>({
+        query: GET_DOCTOR_APPOINTMENTS,
         variables: {
           doctorId:
             currentUserType === LoggedInUserType.SECRETARY
@@ -279,11 +303,33 @@ export const Calendar: React.FC = () => {
           startDate: format(range.start as number | Date, 'yyyy-MM-dd'),
           endDate: format(range.end as number | Date, 'yyyy-MM-dd'),
         },
-        fetchPolicy: 'no-cache',
-        pollInterval: !isDialogOpen && pageRefreshTimeInSeconds * 1000,
-        notifyOnNetworkStatusChange: true,
       })
-    : { data: [], loading: false };
+      .then((response) => {
+        console.log('query', {
+          doctorId:
+            currentUserType === LoggedInUserType.SECRETARY
+              ? currentUserId
+                ? currentUserId
+                : localStorage.getItem('currentUserId')
+              : null,
+          startDate: format(range.start as number | Date, 'yyyy-MM-dd'),
+          endDate: format(range.end as number | Date, 'yyyy-MM-dd'),
+        });
+        console.log(response);
+        if (response.data) {
+          setData(response.data);
+          setLoading(response.loading);
+        }
+      });
+  };
+
+  useEffect(() => {
+    console.log('in use effect, calling GET_DOCTOR_APPOINTMENTS');
+    getDoctorAppointmentsApi();
+    setInterval(() => {
+      getDoctorAppointmentsApi();
+    }, 300000);
+  }, [selectedDate, monthSelected]);
 
   return (
     <div className={classes.welcome}>

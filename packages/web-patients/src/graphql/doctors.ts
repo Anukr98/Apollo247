@@ -169,6 +169,21 @@ export const GET_DOCTORS_BY_SPECIALITY_AND_FILTERS = gql`
   }
 `;
 
+export const GET_DOCTOR_LIST = gql`
+  query GetDoctorList($filterInput: FilterDoctorInput) {
+    getDoctorList(filterInput: $filterInput) {
+      doctors
+      specialties {
+        id
+        name
+        specialtydisplayName
+      }
+      apolloDoctorCount
+      partnerDoctorCount
+    }
+  }
+`;
+
 export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
   query SearchDoctorAndSpecialtyByName(
     $searchText: String!

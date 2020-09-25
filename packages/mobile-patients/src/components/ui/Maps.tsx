@@ -513,8 +513,8 @@ export const Maps: React.FC<MapProps> = (props) => {
           };
           setRegion(currentRegion);
           if (response?.latitude && response?.longitude) {
-            setLatitude(response.longitude);
-            setLongitude(response.latitude);
+            setLatitude(response.latitude);
+            setLongitude(response.longitude);
           }
           // createAddressFromCurrentPos(response?.latitude,response?.longitude)
         }

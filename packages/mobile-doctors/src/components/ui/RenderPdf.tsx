@@ -172,6 +172,9 @@ export const RenderPdf: React.FC<RenderPdfProps> = (props) => {
           console.log(`current page: ${page}`);
         }}
         onError={(error) => {
+          if (error.toString().indexOf('canceled') > -1) {
+            return;
+          }
           showAphAlert &&
             showAphAlert({
               title: string.common.alert,
