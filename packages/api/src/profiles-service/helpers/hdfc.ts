@@ -190,7 +190,7 @@ export async function fetchEthnicCode(dateOfBirth: Date, mobile: String, history
     },
     sessionContext: {
       bankCode: '08',
-      channel: 'ACL',
+      channel: 'APIGW',
       userId: 'DevUser01',
       transactionBranch: '089999',
       externalReferenceNo: externalReferenceNo,
