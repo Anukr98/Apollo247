@@ -20,6 +20,7 @@ import { CartItemsList } from '@aph/mobile-patients/src/components/MedicineCart/
 import {
   useShoppingCart,
   ShoppingCartItem,
+  PhysicalPrescription,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { FreeDelivery } from '@aph/mobile-patients/src/components/MedicineCart/Components/FreeDelivery';
 import { AmountCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/AmountCard';
@@ -36,7 +37,10 @@ import {
   getPatientAddressList,
   getPatientAddressListVariables,
 } from '../../graphql/types/getPatientAddressList';
-import { GET_PATIENT_ADDRESS_LIST } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  GET_PATIENT_ADDRESS_LIST,
+  UPLOAD_DOCUMENT,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { g, formatAddress } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import {
@@ -70,6 +74,8 @@ import {
   postPharmacyAddNewAddressClick,
   postPharmacyAddNewAddressCompleted,
 } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
+import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
+
 export interface MedicineCartProps extends NavigationScreenProps {}
 
 export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
@@ -86,6 +92,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     deliveryAddressId,
     setDeliveryAddressId,
     addMultipleCartItems,
+    physicalPrescriptions,
+    ePrescriptions,
+    setPhysicalPrescriptions,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -99,7 +108,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const [isfocused, setisfocused] = useState<boolean>(false);
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
+  const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>(false);
   const shoppingCart = useShoppingCart();
+
   useEffect(() => {
     fetchAddress();
     availabilityTat();
@@ -146,6 +157,10 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       getMedicineDetailsOfCouponProducts();
     }
   }, [couponProducts]);
+
+  useEffect(() => {
+    onFinishUpload();
+  }, [isPhysicalUploadComplete]);
 
   async function fetchAddress() {
     try {
@@ -407,6 +422,68 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       });
   };
 
+  const onFinishUpload = () => {
+    if (isPhysicalUploadComplete) {
+      setloading!(false);
+      setisPhysicalUploadComplete(false);
+      onPressProceedtoPay();
+    }
+  };
+
+  const multiplePhysicalPrescriptionUpload = (prescriptions = physicalPrescriptions) => {
+    return Promise.all(
+      prescriptions.map((item) =>
+        client.mutate<uploadDocument>({
+          mutation: UPLOAD_DOCUMENT,
+          fetchPolicy: 'no-cache',
+          variables: {
+            UploadDocumentInput: {
+              base64FileInput: item.base64,
+              category: 'HealthChecks',
+              fileType: item.fileType == 'jpg' ? 'JPEG' : item.fileType.toUpperCase(),
+              patientId: currentPatient && currentPatient!.id,
+            },
+          },
+        })
+      )
+    );
+  };
+
+  async function uploadPhysicalPrescriptons() {
+    const prescriptions = physicalPrescriptions;
+    const unUploadedPres = prescriptions.filter((item) => !item.uploadedUrl);
+    if (unUploadedPres.length > 0) {
+      try {
+        setloading!(true);
+        const data = await multiplePhysicalPrescriptionUpload(unUploadedPres);
+        const uploadUrls = data.map((item) =>
+          item.data!.uploadDocument.status
+            ? {
+                fileId: item.data!.uploadDocument.fileId!,
+                url: item.data!.uploadDocument.filePath!,
+              }
+            : null
+        );
+        const newuploadedPrescriptions = unUploadedPres.map(
+          (item, index) =>
+            ({
+              ...item,
+              uploadedUrl: uploadUrls![index]!.url,
+              prismPrescriptionFileId: uploadUrls![index]!.fileId,
+            } as PhysicalPrescription)
+        );
+        setPhysicalPrescriptions && setPhysicalPrescriptions([...newuploadedPrescriptions]);
+        setisPhysicalUploadComplete(true);
+      } catch (error) {
+        CommonBugFender('YourCart_physicalPrescriptionUpload', error);
+        setloading!(false);
+        renderAlert('Error occurred while uploading prescriptions.');
+      }
+    } else {
+      onPressProceedtoPay();
+    }
+  }
+
   function showAddressPopup() {
     showAphAlert!({
       title: string.common.selectAddress,
@@ -588,7 +665,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             deliveryTime: deliveryTime,
           })
         }
-        onPressProceedtoPay={() => onPressProceedtoPay()}
+        onPressProceedtoPay={() => {
+          physicalPrescriptions?.length > 0 ? uploadPhysicalPrescriptons() : onPressProceedtoPay();
+        }}
         deliveryTime={deliveryTime}
         onPressChangeAddress={showAddressPopup}
       />

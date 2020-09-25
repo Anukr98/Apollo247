@@ -9,15 +9,23 @@ import {
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import {
+  PhysicalPrescription,
   useShoppingCart,
   ShoppingCartItem,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import { SelectedAddress } from '@aph/mobile-patients/src/components/MedicineCart/Components/SelectedAddress';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { CartItemsList } from '@aph/mobile-patients/src/components/MedicineCart/Components/CartItemsList';
 import { UploadPrescription } from '@aph/mobile-patients/src/components/MedicineCart/Components/UploadPrescription';
 import { Prescriptions } from '@aph/mobile-patients/src/components/MedicineCart/Components/Prescriptions';
 import { PickUpProceedBar } from '@aph/mobile-patients/src/components/MedicineCart/Components/PickUpProceedBar';
+import { postwebEngageProceedToPayEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
+import { UPLOAD_DOCUMENT } from '@aph/mobile-patients/src/graphql/profiles';
+import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
+import { useApolloClient } from 'react-apollo-hooks';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 
 export interface PickUpCartSummaryProps extends NavigationScreenProps {}
 
@@ -28,9 +36,93 @@ export const PickUpCartSummary: React.FC<PickUpCartSummaryProps> = (props) => {
     physicalPrescriptions,
     ePrescriptions,
     stores: storesFromContext,
+    setPhysicalPrescriptions,
   } = useShoppingCart();
+  const client = useApolloClient();
+  const { showAphAlert, hideAphAlert } = useUIElements();
+  const { currentPatient } = useAllCurrentPatients();
   const [loading, setloading] = useState<boolean>(false);
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
+  const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>(false);
+  const shoppingCart = useShoppingCart();
+
+  useEffect(() => {
+    onFinishUpload();
+  }, [isPhysicalUploadComplete]);
+
+  const onFinishUpload = () => {
+    if (isPhysicalUploadComplete) {
+      setloading!(false);
+      setisPhysicalUploadComplete(false);
+      onPressProceedtoPay();
+    }
+  };
+
+  const multiplePhysicalPrescriptionUpload = (prescriptions = physicalPrescriptions) => {
+    return Promise.all(
+      prescriptions.map((item) =>
+        client.mutate<uploadDocument>({
+          mutation: UPLOAD_DOCUMENT,
+          fetchPolicy: 'no-cache',
+          variables: {
+            UploadDocumentInput: {
+              base64FileInput: item.base64,
+              category: 'HealthChecks',
+              fileType: item.fileType == 'jpg' ? 'JPEG' : item.fileType.toUpperCase(),
+              patientId: currentPatient && currentPatient!.id,
+            },
+          },
+        })
+      )
+    );
+  };
+
+  async function uploadPhysicalPrescriptons() {
+    const prescriptions = physicalPrescriptions;
+    const unUploadedPres = prescriptions.filter((item) => !item.uploadedUrl);
+    if (unUploadedPres.length > 0) {
+      try {
+        setloading!(true);
+        const data = await multiplePhysicalPrescriptionUpload(unUploadedPres);
+        const uploadUrls = data.map((item) =>
+          item.data!.uploadDocument.status
+            ? {
+                fileId: item.data!.uploadDocument.fileId!,
+                url: item.data!.uploadDocument.filePath!,
+              }
+            : null
+        );
+        const newuploadedPrescriptions = unUploadedPres.map(
+          (item, index) =>
+            ({
+              ...item,
+              uploadedUrl: uploadUrls![index]!.url,
+              prismPrescriptionFileId: uploadUrls![index]!.fileId,
+            } as PhysicalPrescription)
+        );
+        setPhysicalPrescriptions && setPhysicalPrescriptions([...newuploadedPrescriptions]);
+        setisPhysicalUploadComplete(true);
+      } catch (error) {
+        CommonBugFender('YourCart_physicalPrescriptionUpload', error);
+        setloading!(false);
+        renderAlert('Error occurred while uploading prescriptions.');
+      }
+    } else {
+      onPressProceedtoPay();
+    }
+  }
+
+  function onPressProceedtoPay() {
+    props.navigation.navigate(AppRoutes.CheckoutSceneNew, { isStorePickup: true });
+    postwebEngageProceedToPayEvent(shoppingCart, false);
+  }
+
+  const renderAlert = (message: string) => {
+    showAphAlert!({
+      title: string.common.uhOh,
+      description: message,
+    });
+  };
 
   const renderHeader = () => {
     return (
@@ -74,8 +166,7 @@ export const PickUpCartSummary: React.FC<PickUpCartSummaryProps> = (props) => {
     return (
       <PickUpProceedBar
         onPressProceedtoPay={() => {
-          console.log('proceed to pay');
-          props.navigation.navigate(AppRoutes.CheckoutSceneNew, { isStorePickup: true });
+          physicalPrescriptions?.length > 0 ? uploadPhysicalPrescriptons() : onPressProceedtoPay();
         }}
         onPressUploadPrescription={() => {
           setshowPopUp(true);

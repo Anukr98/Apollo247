@@ -201,7 +201,7 @@ export const formatOrderAddress = (
 export const formatSelectedAddress = (
   address: savePatientAddress_savePatientAddress_patientAddress
 ) => {
-  return (
+  const formattedAddress =
     (address.addressLine1 && address.addressLine1 + ', ') +
     '' +
     (address.addressLine2 && address.addressLine2 + ', ') +
@@ -210,8 +210,8 @@ export const formatSelectedAddress = (
     '' +
     (address.state && address.state + ',') +
     '' +
-    (address.zipcode && address.zipcode)
-  );
+    (address.zipcode && address.zipcode);
+  return formattedAddress;
 };
 
 export const getUuidV4 = () => {

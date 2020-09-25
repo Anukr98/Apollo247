@@ -18,7 +18,7 @@ import {
   GetStoreInventoryResponse,
   getStoreInventoryApi,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { StoreDriveWayPickupPopup } from '@aph/mobile-patients/src/components/Medicines/StoreDriveWayPickupPopup';
+import { StoreDriveWayPickupPopup } from '@aph/mobile-patients/src/components/MedicineCart/Components/StoreDriveWayPickupPopup';
 import { StorePickupCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/StorePickupCard';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
