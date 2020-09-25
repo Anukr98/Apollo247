@@ -28,6 +28,7 @@ export interface MedicineProductDetails extends Omit<MedicineProduct, 'image'> {
   manufacturer: string;
   PharmaOverview: PharmaOverview[];
   similar_products: MedicineProduct[];
+  crosssell_products: MedicineProduct[];
 }
 
 export type Doseform = 'TABLET' | 'INJECTION' | 'SYRUP' | '';
