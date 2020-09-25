@@ -470,6 +470,9 @@ const useStyles = makeStyles((theme: Theme) => {
         textAlign: 'left',
         height: 'auto',
         boxShadow: '0px 0px 32px rgba(0, 0, 0, 0.1)',
+        '& p': {
+          width: '80%',
+        },
       },
       '& h2': {
         fontSize: 14,
@@ -481,11 +484,10 @@ const useStyles = makeStyles((theme: Theme) => {
       '& p': {
         fontSize: 11,
         lineHeight: '18px',
-        width: '80%',
       },
       '&:hover': {
         boxShadow: ' 0px 1px 12px rgba(128, 128, 128, 0.2)',
-        '& a': {
+        '& a, button': {
           background: '#FC9916',
           color: '#FFF',
           [theme.breakpoints.down('sm')]: {
@@ -573,6 +575,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 24,
       width: '100% ',
       margin: '0 0 0 30px',
+      minHeight: 230,
       boxShadow: '0px 0px 32px rgba(0, 0, 0, 0.1)',
       '& h2': {
         fontsize: 18,
@@ -881,9 +884,9 @@ export const MembershipPlanDetail: React.FC = (props) => {
       } else if (cta_action.meta.action == 'PHR') {
         history.push(clientRoutes.healthRecords());
       } else if (cta_action.meta.action == 'DOC_LISTING_WITH_PAYROLL_DOCS_SELECTED') {
-        history.push(clientRoutes.doctorsLanding());
+        history.push(clientRoutes.specialityListing());
       } else if (cta_action.meta.action == 'DIAGNOSTICS_LANDING') {
-        history.push(clientRoutes.tests());
+        history.push(clientRoutes.welcome());
       }
     } else if (cta_action.type == 'CALL_API') {
       if (cta_action.meta.action == 'CALL_EXOTEL_API') {
@@ -1082,16 +1085,18 @@ export const MembershipPlanDetail: React.FC = (props) => {
                               subscriptionInclusions[0] &&
                               subscriptionInclusions[0].benefits.map((item: any, index: any) => {
                                 return (
-                                  <TableRow key={index}>
-                                    <TableCell>{item.header_content}</TableCell>
-                                    <TableCell>{item.description}</TableCell>
-                                    <TableCell>{item.attribute_type.type}</TableCell>
-                                    <TableCell>
-                                      {item.attribute_type.type == 'unlimited'
-                                        ? 'Available'
-                                        : `${item.attribute_type.remaining}`}
-                                    </TableCell>
-                                  </TableRow>
+                                  <>
+                                    {item.attribute_type.type !== 'unlimited' ? (
+                                      <TableRow key={index}>
+                                        <TableCell>{item.header_content}</TableCell>
+                                        <TableCell>{item.description}</TableCell>
+                                        <TableCell>{item.attribute_type.type}</TableCell>
+                                        <TableCell>{item.attribute_type.remaining}</TableCell>
+                                      </TableRow>
+                                    ) : (
+                                      ''
+                                    )}
+                                  </>
                                 );
                               })}
                           </TableBody>
