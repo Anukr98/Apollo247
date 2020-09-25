@@ -4,7 +4,8 @@ import { Theme, Typography, CircularProgress } from '@material-ui/core';
 import { useHistory } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { useLoginPopupState, useAuth, useAllCurrentPatients } from 'hooks/authHooks';
-import { AphButton } from '@aph/web-ui-components';
+import WarningModel from 'components/WarningModel';
+import { AphButton, AphDialog } from '@aph/web-ui-components';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
@@ -24,7 +25,15 @@ import {
   GetAllUserSubscriptionsWithPlanBenefits,
   GetAllUserSubscriptionsWithPlanBenefitsVariables,
 } from 'graphql/types/GetAllUserSubscriptionsWithPlanBenefits';
-import { GET_ALL_USER_SUBSCRIPTIONS_WITH_BENEFITS } from 'graphql/profiles';
+
+import {
+  initiateCallForPartner,
+  initiateCallForPartnerVariables,
+} from 'graphql/types/initiateCallForPartner';
+import {
+  GET_ALL_USER_SUBSCRIPTIONS_WITH_BENEFITS,
+  INITIATE_CALL_FOR_PARTNER,
+} from 'graphql/profiles';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -605,6 +614,58 @@ const useStyles = makeStyles((theme: Theme) => {
         overflowX: 'auto',
       },
     },
+    dialogHeader: {
+      padding: '16px 16px 10px',
+      '& h3': {
+        fontSize: 16,
+        fontWeight: 600,
+        lineHeight: '21px',
+      },
+      '& p': {
+        fontSize: 10,
+        lineHeight: '13px',
+      },
+    },
+    connectDoctorContent: {
+      display: 'flex',
+      alignItems: 'flex-start',
+      flexWrap: 'wrap',
+    },
+    cdDetails: {
+      width: '50%',
+      padding: 12,
+      '& img': {
+        margin: '0 auto 10px',
+      },
+      '& h5': {
+        fontSize: 12,
+        color: '#00B38E',
+        linHeight: '16px',
+        '& span': {
+          fontWeight: 700,
+        },
+      },
+    },
+    btncContainer: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'flex-end',
+      padding: '10px 16px 16px',
+      '& button': {
+        margin: '0 0 0 10px',
+        '&:first-child': {
+          boxShadow: 'none',
+          color: '#FC9916',
+        },
+      },
+    },
+    callNote: {
+      fontSize: 12,
+      linrHeight: '16px',
+      '& span': {
+        display: 'block',
+      },
+    },
   };
 });
 interface TabPanelProps {
@@ -640,6 +701,9 @@ export const MembershipPlanDetail: React.FC = (props) => {
   const [planName, setPlanName] = React.useState<string>('');
   const [benefitsWorth, setBenefitsWorth] = React.useState<string>('');
   const [minimumTransactionValue, setMinimumTransactionValue] = React.useState<string>('');
+  const [successMessage, setSuccessMessage] = React.useState<object>();
+  const [callDoctorPopup, setCallDoctorPopup] = React.useState<boolean>(false);
+  const [exotelBenefitId, setExotelBenefitId] = React.useState<string>('');
 
   const apolloClient = useApolloClient();
   const history = useHistory();
@@ -706,11 +770,37 @@ export const MembershipPlanDetail: React.FC = (props) => {
       });
   }, []);
 
+  const initiateExotelCall = (mobileNumber: string, benefitId: string) => {
+    apolloClient
+      .query<initiateCallForPartner, initiateCallForPartnerVariables>({
+        query: INITIATE_CALL_FOR_PARTNER,
+        variables: {
+          mobileNumber: mobileNumber,
+          benefitId: benefitId,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((response) => {
+        response.data.initiateCallForPartner.success
+          ? setSuccessMessage({ message: `You'll be connected to the Doctor in a while` })
+          : setSuccessMessage({
+              message: `Error while connecting to the Doctor, Please try again`,
+            });
+        setCallDoctorPopup(false);
+      })
+      .catch((error) => {
+        console.log(error);
+        setCallDoctorPopup(false);
+        setSuccessMessage({ message: `Error while connecting to the Doctor, Please try again` });
+      });
+  };
+
   const handleWhatsappChat = (number: String, message: String) => {
     window.open(`https://api.whatsapp.com/send?phone=91${number}&text=${message}`);
   };
 
-  const handleCTAClick = (cta_action: any) => {
+  const handleCTAClick = (item: any) => {
+    const cta_action = item.cta_action;
     if (cta_action.type == 'REDIRECT') {
       if (cta_action.meta.action == 'SPECIALITY_LISTING') {
         history.push(clientRoutes.specialityListing());
@@ -726,6 +816,15 @@ export const MembershipPlanDetail: React.FC = (props) => {
     } else if (cta_action.type == 'CALL_API') {
       if (cta_action.meta.action == 'CALL_EXOTEL_API') {
         console.log('call exotel api');
+        if (item.available_count > 0) {
+          setExotelBenefitId(item._id);
+          setCallDoctorPopup(true);
+        } else {
+          setSuccessMessage({
+            message: `You have exhausted all your attempts to reach our doctors, Please try again next month.`,
+          });
+        }
+        // initiateExotelCall(localStorage.getItem('userMobileNo'), item._id);
       }
     } else if (cta_action.type == 'WHATSAPP_OPEN_CHAT') {
       handleWhatsappChat(cta_action.meta.action, cta_action.meta.message);
@@ -869,7 +968,7 @@ export const MembershipPlanDetail: React.FC = (props) => {
                                   <AphButton
                                     disabled={!active}
                                     className={active ? '' : classes.disabledButton}
-                                    onClick={() => handleCTAClick(item.cta_action)}
+                                    onClick={() => handleCTAClick(item)}
                                     // href={clientRoutes.welcome()}
                                   >
                                     {item.cta_label}
@@ -1024,6 +1123,52 @@ export const MembershipPlanDetail: React.FC = (props) => {
           </div>
         </div>
       )}
+      <AphDialog open={callDoctorPopup} maxWidth="sm">
+        <div>
+          <div className={classes.dialogHeader}>
+            <Typography component="h3">Connect to the Doctor </Typography>
+            <Typography>Please follow the steps to connect to Doctor </Typography>
+          </div>
+          <div className={classes.connectDoctorContent}>
+            <div className={classes.cdDetails}>
+              <img src={require('images/hdfc/call-incoming.svg')} alt="" />
+              <Typography component="h5">
+                Answer the call from <span>‘040-482-17258’</span> to connect.
+              </Typography>
+            </div>
+            <div className={classes.cdDetails}>
+              <img src={require('images/hdfc/call-outgoing.svg')} alt="" />
+              <Typography component="h5">The same call will connect to the Doctor.</Typography>
+            </div>
+            <div className={classes.cdDetails}>
+              <img src={require('images/hdfc/group.svg')} alt="" />
+              <Typography component="h5">Wait for the Doctor to connect over the call.</Typography>
+            </div>
+            <div className={classes.cdDetails}>
+              <Typography className={classes.callNote}>
+                <span>*Note : </span>Your personal phone number will not be shared.
+              </Typography>
+            </div>
+          </div>
+          <div className={classes.btncContainer}>
+            <AphButton onClick={() => setCallDoctorPopup(false)}>Cancel</AphButton>
+            <AphButton
+              color="primary"
+              onClick={() => {
+                initiateExotelCall(localStorage.getItem('userMobileNo'), exotelBenefitId);
+              }}
+            >
+              Proceed To Connect
+            </AphButton>
+          </div>
+        </div>
+      </AphDialog>
+      <WarningModel
+        error={successMessage}
+        onClose={() => {
+          setSuccessMessage(null);
+        }}
+      />
     </div>
   );
 };
