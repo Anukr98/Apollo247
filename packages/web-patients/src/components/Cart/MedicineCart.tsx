@@ -735,6 +735,13 @@ export const MedicineCart: React.FC = (props) => {
   if (userSubscriptions && userSubscriptions[0] && userSubscriptions[0].status == 'ACTIVE') {
     packageId = `${userSubscriptions[0].group_plan.group.name}:${userSubscriptions[0].group_plan.plan_id}`;
   }
+  const freeDelivery =
+    userSubscriptions &&
+    userSubscriptions[0] &&
+    userSubscriptions[0].status == 'ACTIVE' &&
+    userSubscriptions[0].group_plan &&
+    (userSubscriptions[0].group_plan.name == 'PLATINUM+ PLAN' ||
+      userSubscriptions[0].group_plan.name == 'GOLD+ PLAN');
 
   const apiDetails = {
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
@@ -894,6 +901,7 @@ export const MedicineCart: React.FC = (props) => {
   //   });
   //   return sum;
   // };
+
   const mrpTotal = getMRPTotal();
   // const couponDiscountTotal = getCouponDiscountTotal();
   let productDiscount = mrpTotal - cartTotal;
@@ -904,12 +912,13 @@ export const MedicineCart: React.FC = (props) => {
     validateCouponResult.discount >= productDiscount
       ? Number(cartTotal) - couponDiscount
       : Number(cartTotal);
-  const deliveryCharges =
-    modifiedAmountForCharges >= Number(pharmacyMinDeliveryValue) ||
-    modifiedAmountForCharges <= 0 ||
-    tabValue === 1
-      ? 0
-      : Number(pharmacyDeliveryCharges);
+  const deliveryCharges = freeDelivery
+    ? 0
+    : modifiedAmountForCharges >= Number(pharmacyMinDeliveryValue) ||
+      modifiedAmountForCharges <= 0 ||
+      tabValue === 1
+    ? 0
+    : Number(pharmacyDeliveryCharges);
   const totalAmount = (cartTotal + Number(deliveryCharges)).toFixed(2);
   const totalWithCouponDiscount =
     validateCouponResult &&
