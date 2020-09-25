@@ -81,10 +81,15 @@ export const StorePickupCard: React.FC<StorePickupCardProps> = (props) => {
     );
   };
 
+  const renderSeperator = () => {
+    return <View style={styles.seperator}></View>;
+  };
+
   const renderStores = () => {
     return (
       <View style={{ marginHorizontal: 15, marginTop: 30 }}>
-        <Text style={styles.storesHeader}>Stores In This Region</Text>
+        <Text style={styles.storesHeader}>{'Stores In This Region'}</Text>
+        {renderSeperator()}
         {!loading ? (
           stores.length ? (
             stores.map((item) => {
@@ -129,13 +134,15 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     color: '#02475B',
     paddingBottom: 8,
-    borderBottomWidth: 0.5,
-    borderColor: 'rgba(2, 71, 91, 0.3)',
   },
   noStoreMsg: {
     paddingTop: 10,
     ...theme.fonts.IBMPlexSansMedium(16),
     lineHeight: 24,
     color: '#0087ba',
+  },
+  seperator: {
+    borderBottomWidth: 0.5,
+    borderBottomColor: 'rgba(2, 71, 91, 0.4)',
   },
 });
