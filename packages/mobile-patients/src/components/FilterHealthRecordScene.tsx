@@ -80,6 +80,7 @@ export interface FilterHealthRecordSceneProps {
   data: filterDataType[];
   setData: (arg0: filterDataType[]) => void;
   filterLength: () => void;
+  onResetClick?: () => void;
 }
 export const FilterHealthRecordScene: React.FC<FilterHealthRecordSceneProps> = (props) => {
   const [data, setData] = useState<filterDataType[]>(props.data);
@@ -247,6 +248,7 @@ export const FilterHealthRecordScene: React.FC<FilterHealthRecordSceneProps> = (
               });
               setData(filterData);
               props.setData(filterData);
+              props.onResetClick && props.onResetClick();
             }}
           >
             <Reload />
