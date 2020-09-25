@@ -328,12 +328,6 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
       .toFixed(2)
   );
 
-  // const deliveryCharges =
-  //   deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-  //     ? 0
-  //     : cartTotal > 0 && cartTotal < AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY
-  //     ? AppConfig.Configuration.DIASGNOS_DELIVERY_CHARGES
-  //     : 0;
   const deliveryCharges =
     deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP ? 0 : cartTotal > 0 ? hcCharges : 0;
 
