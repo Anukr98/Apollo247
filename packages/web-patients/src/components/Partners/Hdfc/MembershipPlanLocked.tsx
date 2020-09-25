@@ -571,6 +571,14 @@ export const MembershipPlanLocked: React.FC = (props) => {
       return classes.gold;
     }
   };
+  const getMedalImage = (planName: String) => {
+    if (planName == 'GOLD+ PLAN') {
+      return require('images/hdfc/gold.svg');
+    }
+    if (planName == 'PLATINUM+ PLAN') {
+      return require('images/hdfc/platinum.svg');
+    } else return require('images/hdfc/silver.svg');
+  };
 
   useEffect(() => {
     apolloClient
@@ -655,9 +663,9 @@ export const MembershipPlanLocked: React.FC = (props) => {
               <div className={classes.planCardContent}>
                 <div className={classes.planCard + ' ' + cardBg(planName)}>
                   <div className={classes.cardContent}>
-                    <img src={require('images/hdfc/platinum.svg')} alt="" />
+                    <img src={getMedalImage(planName)} alt="" />
                     <Typography className={classes.planName}>
-                      <span>Platinum</span>
+                      <span>{planName.split('+')[0]}</span>
                     </Typography>
                   </div>
                   <div className={classes.btnContainer}>
@@ -720,8 +728,8 @@ export const MembershipPlanLocked: React.FC = (props) => {
                 <ExpansionPanelDetails className={classes.panelDetails}>
                   <div className={`${classes.detailsContent} ${classes.availContent}`}>
                     <Typography>
-                      Complete transactions worth Rs.25000 or more on the Apollo 24I7 app to unlock
-                      platinum+ plan membership
+                      Complete transactions worth Rs. {minimumTransactionValue} or more on the
+                      Apollo 24I7 app to unlock platinum+ plan membership
                     </Typography>
                   </div>
                 </ExpansionPanelDetails>
