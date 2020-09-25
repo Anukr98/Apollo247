@@ -1706,7 +1706,9 @@ export async function sendNotification(
   /*patientDetails.patientDeviceTokens.forEach((values) => {
       registrationToken.push(values.deviceToken);
     });*/
+  console.log(registrationToken, 'registrationToken');
   if (registrationToken.length == 0) return;
+
   admin
     .messaging()
     .sendToDevice(registrationToken, payload, options)
@@ -1743,8 +1745,6 @@ export async function sendNotification(
       console.log('PushNotification Failed::' + error);
       throw new AphError(AphErrorMessages.PUSH_NOTIFICATION_FAILED);
     });
-
-  console.log(notificationResponse, 'notificationResponse');
 
   return notificationResponse;
 }
