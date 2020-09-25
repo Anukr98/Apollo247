@@ -1,36 +1,22 @@
-import React, { useRef, useEffect } from 'react';
-import { makeStyles, ThemeProvider } from '@material-ui/styles';
-import { Theme, Typography, CircularProgress, Fab, Modal } from '@material-ui/core';
+import React, { useRef } from 'react';
+import { makeStyles } from '@material-ui/styles';
+import { Theme, Typography, CircularProgress } from '@material-ui/core';
 import { Link } from 'react-router-dom';
-import { AphButton, AphDialog, AphTextField, AphRadio } from '@aph/web-ui-components';
+import { AphButton, AphDialog } from '@aph/web-ui-components';
 import Popover from '@material-ui/core/Popover';
 import Paper from '@material-ui/core/Paper';
 import { SignIn } from 'components/SignIn';
 import { useLoginPopupState, useAuth, useAllCurrentPatients } from 'hooks/authHooks';
 import { clientRoutes } from 'helpers/clientRoutes';
-import Radio from '@material-ui/core/Radio';
-import RadioGroup from '@material-ui/core/RadioGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import FormLabel from '@material-ui/core/FormLabel';
-import DateFnsUtils from '@date-io/date-fns';
-import { MuiPickersUtilsProvider, KeyboardDatePicker } from '@material-ui/pickers';
 import { createMuiTheme } from '@material-ui/core';
 import { Route } from 'react-router-dom';
 import _isEmpty from 'lodash/isEmpty';
-import { Formik, FormikProps, Field, FieldProps, Form } from 'formik';
-import { useMutation, useQuery, useApolloClient } from 'react-apollo-hooks';
-import { useQueryWithSkip } from 'hooks/apolloHooks';
+import { useMutation, useApolloClient } from 'react-apollo-hooks';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
 import { UpdatePatient, UpdatePatientVariables } from 'graphql/types/UpdatePatient';
 import { UPDATE_PATIENT } from 'graphql/profiles';
 import { ProfileSuccess } from 'components/ProfileSuccess';
 import { NewProfile } from 'components/NewProfile';
-
-// import { createSubscription, createSubscriptionVariables } from 'graphql/types/createSubscription';
-// import {
-//   getSubscriptionsOfUserByStatus,
-//   getSubscriptionsOfUserByStatusVariables,
-// } from 'graphql/types/getSubscriptionsOfUserByStatus';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -66,42 +52,41 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     mainContent: {
       background: '#fff',
-      padding: 0,
-    },
-    bannerContainer: {
-      padding: 0,
+      padding: 20,
       [theme.breakpoints.down('sm')]: {
         padding: 16,
       },
+    },
+    bannerContainer: {
+      padding: '20px 0',
+      borderRadius: 10,
     },
     mainBanner: {
       width: '100%',
       position: 'relative',
-      '& img': {
-        width: '100%',
-      },
+      background: '#C4E8EF',
+      borderRadius: 10,
+      padding: 20,
+
       [theme.breakpoints.down('sm')]: {
-        borderRadius: 10,
         overflow: 'hidden',
       },
     },
     bannerContent: {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      bottom: 0,
-      right: 0,
-      padding: 60,
+      padding: 30,
+      display: 'flex',
+      alignItems: 'center',
       [theme.breakpoints.down('sm')]: {
-        padding: 16,
+        padding: '20px 0',
       },
+
       '& p': {
         fontSize: 18,
         lineHeight: '24px',
         fontWeight: 600,
-        color: '#fff',
+        color: '#005CA8',
         [theme.breakpoints.down('sm')]: {
-          fontSize: 10,
+          fontSize: 12,
           lineHeight: '18px',
         },
       },
@@ -109,9 +94,9 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 32,
         lineHeight: '38px',
         fontWeight: 700,
-        color: '#fff',
+        color: '#005CA8',
         [theme.breakpoints.down('sm')]: {
-          fontSize: 16,
+          fontSize: 20,
           lineHeight: '22px',
         },
       },
@@ -123,6 +108,27 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    imgcontainer: {
+      width: 150,
+      height: 160,
+      background: '#005CA8',
+      borderRadius: '50%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      margin: '0 30px 0 0',
+      [theme.breakpoints.down('sm')]: {
+        width: 46,
+        height: 46,
+        margin: '0 15px 0 0',
+        flex: '1 0 auto',
+      },
+      '& img': {
+        [theme.breakpoints.down('sm')]: {
+          width: 20,
+        },
+      },
+    },
     bannerDetails: {
       width: '60%',
       [theme.breakpoints.down('sm')]: {
@@ -130,19 +136,23 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     benefitContent: {
+      borderRadius: 10,
+      background: ' linear-gradient(160.46deg, #1D3052 0%, #1E5F74 46.19%, #41A8A8 98.44%)',
       padding: 30,
       [theme.breakpoints.down('sm')]: {
-        padding: '0 20px',
+        padding: 20,
       },
       '& h2': {
         textTransform: 'uppercase',
         fontWeight: 600,
         fontSize: 24,
         lineHeight: '22px',
+        color: '#fff',
+        padding: '0 0 20px',
+        borderBottom: '1px solid rgba(255,255,255,0.24)',
+        margin: '0 0 20px',
         [theme.breakpoints.down('sm')]: {
           fontSize: 16,
-          padding: '0 0 10px',
-          borderBottom: '1px solid rgba(0, 0, 0, 0.05)',
         },
       },
     },
@@ -178,12 +188,13 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 20,
         lineHeight: '20px',
         fontWeight: 600,
-        color: '#00B38E',
+        color: '#fff',
         margin: '0 0 15px',
       },
       '& p': {
         fontSize: 18,
         lineHeight: '18px',
+        color: '#fff',
       },
       [theme.breakpoints.down('sm')]: {
         '& h3': {
@@ -212,52 +223,54 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     apolloContainer: {
       padding: '20px 0',
-      [theme.breakpoints.down('sm')]: {
-        padding: 16,
-      },
     },
     apolloCare: {
       padding: 50,
-      background: '#02475b',
+      boxShadow: '0px 0px 12px rgba(0, 0, 0, 0.16)',
+      // background: '#02475b',
       display: 'flex',
       alignItems: 'flex-start',
       [theme.breakpoints.down('sm')]: {
-        padding: 10,
+        padding: 20,
         borderRadius: 10,
+        alignItems: 'center',
       },
       '& img': {
         margin: '0 40px 0 0',
         [theme.breakpoints.down('sm')]: {
           margin: '0 20px 0 0',
-          width: 30,
+          width: 90,
         },
       },
       '& h4': {
-        fontSize: 24,
+        fontSize: 40,
         fontWeight: 600,
-        textTransform: 'uppercase',
-        lineHeight: '32px',
+        lineHeight: '56px',
         margin: '0 0 5px',
-        color: '#fff',
+        width: '60%',
         [theme.breakpoints.down('sm')]: {
-          fontSize: 12,
-          lineHeight: '12px',
+          fontSize: 14,
+          width: '100%',
+          lineHeight: '16px',
         },
       },
       '& p': {
-        fontSize: 16,
+        fontSize: 18,
         lineHeight: '24px',
-        color: '#fff',
         width: '80%',
+        fontWeight: 400,
         [theme.breakpoints.down('sm')]: {
-          fontSize: 10,
-          lineHeight: '16px',
-          width: 'auto',
+          display: 'none',
         },
       },
     },
     acContainer: {
+      position: 'relative',
+
       '& button': {
+        position: 'absolute',
+        bottom: 0,
+        right: -100,
         fontSize: 14,
         boxShadow: 'none',
         fontWeight: 700,
@@ -265,15 +278,16 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'block',
         [theme.breakpoints.down('sm')]: {
           fontSize: 12,
-          margin: '10px 0 0',
+          margin: '30px 0 0 auto',
+          position: 'static',
         },
       },
     },
     tncContainer: {
-      padding: 30,
-      [theme.breakpoints.down('sm')]: {
-        padding: '0 16px',
-      },
+      // padding: 0,
+      // [theme.breakpoints.down('sm')]: {
+      //   padding: '0 16px',
+      // },
     },
     tncContent: {
       boxShadow: '0px 0px 8px rgba(0, 0, 0, 0.08)',
@@ -424,6 +438,39 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'block',
       },
     },
+    bannerHeader: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      // padding: '0 0 20px',
+    },
+    bannerFooter: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'flex-end',
+      '& button': {
+        margin: '0 0 0 20px',
+      },
+      '& p': {
+        fontSize: 14,
+        color: '#E52936',
+        [theme.breakpoints.down('sm')]: {
+          fontSize: 10,
+        },
+      },
+    },
+    unlockNow: {
+      padding: 10,
+      background: '#E52936',
+      color: '#fff',
+      [theme.breakpoints.down('sm')]: {
+        fontSize: 10,
+      },
+      '&:hover': {
+        background: '#E52936',
+        color: '#fff',
+      },
+    },
   };
 });
 
@@ -480,11 +527,6 @@ export const HdfcLanding: React.FC = (props) => {
   const [showProfileSuccess, setShowProfileSuccess] = React.useState<boolean>(false);
   const [loading, setLoading] = React.useState<boolean>(false);
   const [value, setValue] = React.useState('');
-  // const [userSubscriptions, setUserSubscriptions] = React.useState([]);
-
-  // const createSubscription = useMutation<createSubscription, createSubscriptionVariables>(
-  //   CREATE_SUBSCRIPTION
-  // );
 
   const apolloClient = useApolloClient();
 
@@ -493,29 +535,6 @@ export const HdfcLanding: React.FC = (props) => {
   const defaultNewProfile = allCurrentPatients ? currentPatient || allCurrentPatients[0] : null;
   const hasExistingProfile =
     allCurrentPatients && allCurrentPatients.some((p) => !_isEmpty(p.uhid));
-
-  // useEffect(() => {
-  //   if (hasExistingProfile && currentPatient && userSubscriptions.length == 0) {
-  //     apolloClient
-  //       .query<getSubscriptionsOfUserByStatus, getSubscriptionsOfUserByStatusVariables>({
-  //         query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
-  //         variables: {
-  //           user: {
-  //             mobile_number: currentPatient.mobileNumber,
-  //             patiend_id: currentPatient.id,
-  //           },
-  //           status: ['active'],
-  //         },
-  //         fetchPolicy: 'no-cache',
-  //       })
-  //       .then((response) => {
-  //         setUserSubscriptions(response.data.getSubscriptionsOfUserByStatus.response);
-  //       })
-  //       .catch((error) => {
-  //         alert('Something went wrong :(');
-  //       });
-  //   }
-  // }, [isSignedIn]);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setValue((event.target as HTMLInputElement).value);
@@ -573,33 +592,37 @@ export const HdfcLanding: React.FC = (props) => {
         <div className={classes.mainContent}>
           <div className={classes.bannerContainer}>
             <div className={classes.mainBanner}>
-              <img
-                src={require('images/hdfc/banner.jpg')}
-                className={classes.hideWeb}
-                alt="HDFC "
-              />
-              <img
-                src={require('images/hdfc/banner-web.jpg')}
-                className={classes.hideMobile}
-                alt="HDFC "
-              />
+              <div className={classes.bannerHeader}>
+                <img
+                  src={require('images/hdfc/apollo-hashtag.svg')}
+                  alt="HDFC Call Doctor"
+                  width="100"
+                />
+                <img
+                  src={require('images/hdfc/hdfc-logo.svg')}
+                  alt="HDFC Call Doctor"
+                  width="100"
+                />
+              </div>
               <div className={classes.bannerContent}>
-                <div className={classes.bannerDetails}>
-                  <Typography>
-                    A Healthcare Plan brought to you by HDFC &amp; APOLLO 24|7
-                  </Typography>
-                  <Typography component="h1">
-                    Wide Range of benefits worth 38K+ for all HDFC customers
-                  </Typography>
+                <div className={classes.imgcontainer}>
+                  <img src={require('images/hdfc/call-doctor.svg')} alt="" />
                 </div>
+
+                <div className={classes.bannerDetails}>
+                  <Typography component="h1">Apollo Doctor on Call 24|7</Typography>
+                  <Typography>Complimentary on-call assistance by Apollo Doctors</Typography>
+                </div>
+              </div>
+              <div className={classes.bannerFooter}>
+                <Typography>Offer exclusively for HDFC Bank customers</Typography>
                 {loading ? (
                   <CircularProgress size={30} />
                 ) : (
                   <Route
                     render={({ history }) => (
                       <AphButton
-                        color="primary"
-                        variant="contained"
+                        className={classes.unlockNow}
                         onClick={() => {
                           if (!isSignedIn) setIsLoginPopupVisible(true);
                           else {
@@ -625,7 +648,7 @@ export const HdfcLanding: React.FC = (props) => {
                           }
                         }}
                       >
-                        {isSignedIn ? 'Explore now' : 'SignUp Now'}
+                        Unlock Now
                       </AphButton>
                     )}
                   />
@@ -635,7 +658,7 @@ export const HdfcLanding: React.FC = (props) => {
           </div>
 
           <div className={classes.benefitContent}>
-            <Typography component="h2"> Benefits</Typography>
+            <Typography component="h2"> Here's What You Get</Typography>
             <ul className={classes.benefitList}>
               <li>
                 <img src={require('images/hdfc/call.svg')} alt="Apollo Doctor on call 24|7" />
@@ -691,19 +714,14 @@ export const HdfcLanding: React.FC = (props) => {
               </li>
             </ul>
           </div>
-          <Typography className={classes.register}>
-            *Register Now to Unlock many more benefits
-          </Typography>
+
           <div className={classes.apolloContainer}>
             <div className={classes.apolloCare}>
               <img src={require('images/hdfc/join-apollo.svg')} alt="Apollo World of Care" />
               <div className={classes.acContainer}>
-                <Typography component="h4">Join The Apollo World Of Care</Typography>
-                <Typography>
-                  Register now for Round-the-clock doctor availability, ease of ordering medicines
-                  &amp; tests online and much more on Apollo 24/7
-                </Typography>
+                <Typography component="h4">Apollo HealthyLife Program for you !</Typography>
 
+                <Typography>Exclusively for HDFC Bank customers</Typography>
                 {loading ? (
                   <CircularProgress size={30} />
                 ) : (
@@ -736,7 +754,7 @@ export const HdfcLanding: React.FC = (props) => {
                           }
                         }}
                       >
-                        {isSignedIn ? 'Explore now' : 'SignUp Now'}
+                        Unlock Now
                       </AphButton>
                     )}
                   />

@@ -200,6 +200,8 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
   const validateCouponBody = {
     mobile: currentPatient && currentPatient.mobileNumber,
     billAmount: Number(props.cartValue),
+    email: currentPatient && currentPatient.emailAddress,
+    packageId: packageId,
     coupon: selectCouponCode,
     pinCode: currentPincode ? currentPincode : localStorage.getItem('currentPincode') || '',
     consultations: [

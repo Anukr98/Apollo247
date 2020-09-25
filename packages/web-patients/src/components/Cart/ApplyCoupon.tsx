@@ -195,6 +195,8 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
     const data = {
       mobile: localStorage.getItem('userMobileNo'),
       billAmount: cartTotal.toFixed(2),
+      email: currentPatient && currentPatient.emailAddress,
+      packageId: packageId,
       coupon: selectCouponCode,
       pinCode: localStorage.getItem('pharmaPincode'),
       products: cartItems.map((item) => {
