@@ -190,7 +190,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     {
       attribute: 'DIAGNOSTICS_LANDING',
       action: () => {
-        props.navigation.navigate('HEALTH RECORDS');
+        props.navigation.navigate('TESTS');
       }
     },
     {
@@ -201,9 +201,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     },
     {
       attribute: 'WHATSAPP_OPEN_CHAT',
-      action: () => {
-        Linking.openURL(`whatsapp://send?text=&phone=+914048218743`);
-      }
+      action: () => {}
     },
     {
       attribute: 'NULL',
@@ -767,6 +765,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         showHdfcConnectPopup &&
         <HdfcConnectPopup
           onClose={() => setShowHdfcConnectPopup(false)}
+          benefitId={membershipDetails!._id || ''}
         />
       }
       {

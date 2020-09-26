@@ -65,6 +65,14 @@ export const UPDATE_PATIENT = gql`
   }
 `;
 
+export const INITIATE_CALL_FOR_PARTNER = gql`
+  query initiateCallForPartner($mobileNumber: String!, $benefitId: String!) {
+    initiateCallForPartner(mobileNumber: $mobileNumber, benefitId: $benefitId) {
+      success
+    }
+  }
+`;
+
 // export const GET_PATIENTS = gql`
 //   query getPatients {
 //     getPatients {

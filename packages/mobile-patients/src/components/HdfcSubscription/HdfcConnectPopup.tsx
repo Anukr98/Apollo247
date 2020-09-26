@@ -5,9 +5,11 @@ import { CallConnectIcon, CallRingIcon, GroupCallIcon } from '../ui/Icons';
 import { useAllCurrentPatients } from '../../hooks/authHooks';
 import { g } from '../../helpers/helperFunctions';
 import { AppConfig } from '../../strings/AppConfig';
-import { callToExotelApi } from '../../helpers/apiCalls';
 import { useUIElements } from '../UIElementsProvider';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { useApolloClient } from 'react-apollo-hooks';
+import { initiateCallForPartner, initiateCallForPartnerVariables } from '../../graphql/types/initiateCallForPartner';
+import { INITIATE_CALL_FOR_PARTNER } from '../../graphql/profiles';
 
 const styles = StyleSheet.create({
   blurView: {
@@ -76,6 +78,7 @@ const styles = StyleSheet.create({
 
 export interface HdfcConnectPopupProps {
   onClose: () => void;
+  benefitId: string;
 }
 
 export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
@@ -84,35 +87,37 @@ export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
   const { showAphAlert, setLoading: globalLoading } = useUIElements();
   const [showConnectMessage, setShowConnectMessage] = useState<boolean>(false);
   const [disableButton, setDisableButton] = useState<boolean>(false);
+  const client = useApolloClient();
 
   const fireExotelApi = () => {
     setDisableButton(true);
-    let caller_id = AppConfig.Configuration.HDFC_EXOTEL_CALLER_ID;
-    let to = AppConfig.Configuration.HDFC_CONNECT_EXOTEL_CALL_NUMBER;
-    const param = {
-      fromPhone: mobileNumber,
-      toPhone: to,
-      callerId: caller_id,
-    };
     globalLoading!(true);
-    callToExotelApi(param)
-      .then((response) => {
+    client
+      .query<initiateCallForPartner, initiateCallForPartnerVariables>({
+        query: INITIATE_CALL_FOR_PARTNER,
+        variables: { 
+          mobileNumber,
+          benefitId: props.benefitId
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data) => {
         setShowConnectMessage(true);
         globalLoading!(false);
         setTimeout(() => {
           props.onClose();
         }, 2000);
-        console.log('exotelCallAPI response', response, ' ,params', param);
+        console.log('initiateCallForPartner response', data);
       })
-      .catch((error) => {
+      .catch((e) => {
         props.onClose();
         globalLoading!(false);
         showAphAlert!({
           title: string.common.uhOh,
           description: 'We could not connect to the doctor now. Please try later.',
         });
-        console.log('exotelCallAPI error', error, ' ,params', param);
-      });
+        console.log('initiateCallForPartner error', e);
+      })
   };
 
   const renderConnectSteps = () => {

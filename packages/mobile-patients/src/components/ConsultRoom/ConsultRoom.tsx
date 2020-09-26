@@ -378,6 +378,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [showNotHdfcCustomer, setShowNotHdfcCustomer] = useState<boolean>(false);
   const [slideIndex, setSlideIndex] = useState(0);
   const [bannerData, setBannerData] = useState<bannerType[]>([]);
+  const [benefitId, setbenefitId] = useState<string>('');
 
   const webengage = new WebEngage();
   const client = useApolloClient();
@@ -428,6 +429,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       if (hdfcUserSubscriptions && g(hdfcUserSubscriptions, '_id')) {
         getUserBanners();
         const subscriptionName = g(hdfcUserSubscriptions, 'name') ? g(hdfcUserSubscriptions, 'name') : '';
+        const subscriptionId = g(hdfcUserSubscriptions, '_id') ? g(hdfcUserSubscriptions, '_id') : '';
+        setbenefitId(subscriptionId || '');
         if (g(hdfcUserSubscriptions, 'isActive')) {
           setHdfcPlanName && setHdfcPlanName(subscriptionName);
         }
@@ -1499,7 +1502,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       <View>
         <ListCard
           container={{
-            marginTop: 32,
+            marginTop: 20,
             marginBottom: 32,
             shadowColor: '#4c808080',
             shadowOffset: { width: 0, height: 5 },
@@ -1902,34 +1905,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderHdfcCarousel = () => {
-    const carouselData = [
-      {
-        heading: 'As our privellaged customer in partnership with HDFC',
-        description: 'You are eligible for a Free Call to a Doctor',
-        cta: 'CONNECT',
-        ctaAction: () => {
-          setShowHdfcConnectPopup(true);
-        }
-      },
-      {
-        heading: 'As our privellaged customer in partnership with HDFC',
-        description: 'You are eligible for a Free Call to a Doctor',
-        cta: 'CONNECTT',
-        ctaAction: () => {
-          setShowHdfcConnectPopup(true);
-        }
-      },
-      {
-        heading: 'As our privellaged customer in partnership with HDFC',
-        description: 'You are eligible for a Free Call to a Doctor',
-        cta: 'CONNECTTT',
-        ctaAction: () => {
-          setShowHdfcConnectPopup(true);
-        }
-      },
-    ];
     return (
-      <View style={{ marginBottom: 10 }}>
+      <View>
         <Carousel
           onSnapToItem={setSlideIndex}
           data={bannerData}
@@ -2016,15 +1993,25 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       },
       {
         attribute: 'WHATSAPP_OPEN_CHAT',
-        action: () => {
-          Linking.openURL(`whatsapp://send?text=&phone=+914048218743`);
-        }
+        action: () => {}
       },
     ];
 
     let actionCta = benefitsActionMapping.filter((value) => {
       return value.attribute === cta_action.meta.action
     });
+    if (cta_action.meta.action === 'WHATSAPP_OPEN_CHAT') {
+      const message = cta_action.meta.message ? cta_action.meta.message : '';
+      const action = cta_action.meta.action ? cta_action.meta.action : '';
+      actionCta = [
+        {
+          attribute: cta_action.meta.action,
+          action: () => {
+            Linking.openURL(`whatsapp://send?text=${message}&phone=${action}`);
+          }
+        }
+      ]
+    };
     const onCtaClick = actionCta.length ? actionCta[0]!.action : () => {};
 
     const bannerUri = getMobileURL(item.banner)
@@ -2036,19 +2023,19 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           ...theme.viewStyles.cardViewStyle,
           borderRadius: 12,
           elevation: 15,
-          margin: 12,
-          marginBottom: 25,
+          marginTop: 10,
+          marginHorizontal: 28,
+          marginBottom: 23,
           padding: 0,
         }}>
         <Image
           style={{
-            height: 180,
-            resizeMode: 'stretch',
+            height: 160,
           }}
           source={{
             uri: bannerUri,
           }}
-          resizeMode={'stretch'}
+          resizeMode={'contain'}
         />
       </TouchableOpacity>
     );
@@ -2483,6 +2470,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         showHdfcConnectPopup &&
         <HdfcConnectPopup
           onClose={() => setShowHdfcConnectPopup(false)}
+          benefitId={benefitId || ''}
         />
       }
       {isLocationSearchVisible && (
