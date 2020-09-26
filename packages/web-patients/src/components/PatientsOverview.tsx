@@ -70,8 +70,8 @@ const PatientsOverview: React.FC = () => {
   >(GET_PATIENT_FUTURE_APPOINTMENT_COUNT);
   const [alertMessage, setAlertMessage] = useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
-
-  const userSubscriptionsLocalStorage = JSON.parse(localStorage.getItem('userSubscriptions'));
+  const [userSubscriptions, setUserSubscriptions] = React.useState([]);
+  const [showSubscription, setSshowSubscription] = useState<boolean>(false);
 
   useEffect(() => {
     if (currentPatient && currentPatient.id) {
@@ -88,6 +88,11 @@ const PatientsOverview: React.FC = () => {
               responseData && responseData.getPatientFutureAppointmentCount.consultsCount
             );
           }
+          const userSubscriptionsLocalStorage = JSON.parse(
+            localStorage.getItem('userSubscriptions')
+          );
+          setUserSubscriptions(userSubscriptionsLocalStorage);
+          setSshowSubscription(true);
           setLoading(false);
         })
         .catch((error) => {
@@ -127,24 +132,23 @@ const PatientsOverview: React.FC = () => {
       {/* </Grid> */}
       {/* <Grid item xs={12} sm={6}> */}
       {currentPatient &&
+        showSubscription &&
         currentPatient.partnerId === HDFC_REF_CODE &&
-        (userSubscriptionsLocalStorage == null || userSubscriptionsLocalStorage.length == 0) && (
+        (userSubscriptions == null || userSubscriptions.length == 0) && (
           <HdfcRegistration patientPhone={currentPatient.mobileNumber} />
         )}
       {currentPatient &&
-        currentPatient.partnerId === HDFC_REF_CODE &&
-        userSubscriptionsLocalStorage &&
-        userSubscriptionsLocalStorage.length != 0 &&
-        userSubscriptionsLocalStorage[0] &&
-        userSubscriptionsLocalStorage[0].status == 'DEFERRED_INACTIVE' && (
+        userSubscriptions &&
+        userSubscriptions.length != 0 &&
+        userSubscriptions[0] &&
+        userSubscriptions[0].status == 'DEFERRED_INACTIVE' && (
           <HdfcHomePage patientPhone={currentPatient.mobileNumber} />
         )}
       {currentPatient &&
-        currentPatient.partnerId === HDFC_REF_CODE &&
-        userSubscriptionsLocalStorage &&
-        userSubscriptionsLocalStorage.length != 0 &&
-        userSubscriptionsLocalStorage[0] &&
-        userSubscriptionsLocalStorage[0].status == 'ACTIVE' && (
+        userSubscriptions &&
+        userSubscriptions.length != 0 &&
+        userSubscriptions[0] &&
+        userSubscriptions[0].status == 'ACTIVE' && (
           <HdfcSlider patientPhone={currentPatient.mobileNumber} />
         )}
       {/* </Grid>

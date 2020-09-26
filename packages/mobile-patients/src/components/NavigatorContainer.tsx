@@ -70,6 +70,8 @@ import { EditProfile } from '@aph/mobile-patients/src/components/Account/EditPro
 import { ManageProfile } from '@aph/mobile-patients/src/components/Account/ManageProfile';
 import { LinkUHID } from '@aph/mobile-patients/src/components/Account/LinkUHID';
 import { ReadMoreLinkUHID } from '@aph/mobile-patients/src/components/Account/ReadMoreLinkUHID';
+import { MyMembership } from '@aph/mobile-patients/src/components/HdfcSubscription/MyMembership';
+import { MembershipDetails } from '@aph/mobile-patients/src/components/HdfcSubscription/MembershipDetails';
 import { TestsByCategory } from '@aph/mobile-patients/src/components/Medicines/TestsByCategory';
 import { RenderPdf } from '@aph/mobile-patients/src/components/ui/RenderPdf';
 import { TestPayment } from '@aph/mobile-patients/src/components/Tests/TestPayment';
@@ -152,6 +154,8 @@ export enum AppRoutes {
   ManageProfile = 'ManageProfile',
   LinkUHID = 'LinkUHID',
   ReadMoreLinkUHID = 'ReadMoreLinkUHID',
+  MyMembership = 'MyMembership',
+  MembershipDetails = 'MembershipDetails',
   YourOrdersTest = 'YourOrdersTest',
   TestOrderDetails = 'TestOrderDetails',
   ClinicSelection = 'ClinicSelection',
@@ -392,6 +396,12 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.ReadMoreLinkUHID]: {
     screen: ReadMoreLinkUHID,
+  },
+  [AppRoutes.MyMembership]: {
+    screen: MyMembership,
+  },
+  [AppRoutes.MembershipDetails]: {
+    screen: MembershipDetails,
   },
   [AppRoutes.YourOrdersTest]: {
     screen: YourOrdersTest,
