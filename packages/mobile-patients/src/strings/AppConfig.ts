@@ -56,6 +56,8 @@ const appStaticVariables = {
   EXOTEL_CALL_API_URL:
     'https://157e9636faf8c1b7296a749deb8789fa84314b27598eb7a9:82ac24fd451cbf85373a4ea90f083c9d321040ee9c3d26ed@api.exotel.com/v1/Accounts/apollo2471/Calls/connect.json',
   EXOTEL_CALLER_ID: '04049171522',
+  HDFC_EXOTEL_CALLER_ID: '04048217258',
+  HDFC_CONNECT_EXOTEL_CALL_NUMBER: '+919903007744',
   HOME_SCREEN_COVID_HEADER_TEXT: string.common.covidHeading,
   HOME_SCREEN_COVID_CONTACT_TEXT: string.common.covidContactText,
   HOME_SCREEN_COVIDSCAN_BANNER_TEXT: string.common.covidScanBannerText,
@@ -374,7 +376,7 @@ const ConfigurationQA2 = {
   COVID_RISK_LEVEL_URL: 'https://www.apollo247.com/covid19/cough-scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
     'https://qapatients.apollo247.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
-  CONSULT_COUPON_BASE_URL: 'https://validcoupon.apollo247.com',
+  CONSULT_COUPON_BASE_URL: 'https://uatvalidcoupon.apollo247.com',
   KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
 };
 
@@ -847,6 +849,24 @@ export const NeedHelp = [
   {
     category: 'Unsubscribe',
     options: ['Marketing SMSes', 'Marketing Push Notifications', 'Both'],
+  },
+  {
+    category: 'Membership',
+    options: [
+      'Coupon related',
+      'Concierge Services',
+      'Digitization of Health Records',
+      'Covid Services',
+      'OneApollo Membership',
+      'Doctor on Call',
+      'Early Access to Offers & Sampling of New health products',
+      'Free Delivery',
+      'Base Diabetes Management Program',
+      'Advanced Diabetes Management Program Trial',
+      'Activating Membership',
+      'Membership Upgrade',
+      'Membership Downgrade',
+    ],
   },
 ];
 

@@ -156,8 +156,11 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   );
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
-  const { locationDetails } = useAppCommonData();
+  const { locationDetails, hdfcUserSubscriptions } = useAppCommonData();
   const { getPatientApiCall } = useAuth();
+  const mobileNumber = g(currentPatient, 'mobileNumber');
+  const emailAddress = g(currentPatient, 'emailAddress');
+  const packageId = hdfcUserSubscriptions ? (g(hdfcUserSubscriptions, 'group', 'name') + ':' + hdfcUserSubscriptions.planId) : null;
 
   const renderErrorPopup = (desc: string) =>
     showAphAlert!({
@@ -841,6 +844,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       mobile: g(currentPatient, 'mobileNumber'),
       billAmount: Number(doctorFees),
       coupon: coupon,
+      packageId,
       // paymentType: 'CASH', //CASH,NetBanking, CARD, COD
       pinCode: locationDetails && locationDetails.pincode,
       consultations: [
@@ -858,7 +862,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
 
     // console.log('validateCouponData', data);
     return new Promise((res, rej) => {
-      validateConsultCoupon(data)
+      validateConsultCoupon(data, mobileNumber, emailAddress, packageId)
         .then((resp: any) => {
           // console.log(g(resp, 'data'), 'data');
           if (resp.data.errorCode == 0) {

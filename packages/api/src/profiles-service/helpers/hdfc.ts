@@ -69,15 +69,14 @@ export async function generateOtp(mobile: String) {
       sms_userid: process.env.HDFC_SMS_USERID,
       sms_password: process.env.HDFC_SMS_PASSWORD,
       ctype: '1',
-      sender: 'HDFCBank',
+      sender: process.env.HDFC_OTP_SENDER,
       mobilenumber: `91${formattedMobile}`,
-      msgtxt:
-        'Your confidential one time password for HDFC Bank Credit card on call authentication is #OTP#, valid for 2 hours. Kindly enter this OTP as prompted by IVR.',
+      msgtxt: process.env.HDFC_SMS_TEXT,
       departmentcode: process.env.HDFC_DEPARTMENT_CODE,
       submitdate: '',
       author: '',
       subAuthor: '',
-      broadcastname: 'HDFC-BRD',
+      broadcastname: process.env.HDFC_BROADCAST_NAME,
       internationalflag: '0',
       msgid: refNo,
       drlflag: '',
@@ -159,7 +158,7 @@ export async function customerIdentification(mobile: String, dateOfBirth: Date) 
   ).slice(-2)}${('0' + dateOfBirth.getDate()).slice(-2)}`;
   const requestBeforeEncryption = {
     FetchCustomerCASADetailsReqDTO: {
-      mobileNumber: formattedMobile,
+      mobileNumber: `${formattedMobile}`,
       dateOfBirth: formattedDateOfBirth,
     },
     sessionContext: {
@@ -185,12 +184,12 @@ export async function fetchEthnicCode(dateOfBirth: Date, mobile: String, history
   const requestBeforeEncryption = {
     FetchCustomerCASADetailsReqDTO: {
       dateOfBirth: formattedDateOfBirth,
-      mobileNumber: formattedMobile,
+      mobileNumber: `${formattedMobile}`,
       panNumber: '',
     },
     sessionContext: {
       bankCode: '08',
-      channel: 'ACL',
+      channel: 'APIGW',
       userId: 'DevUser01',
       transactionBranch: '089999',
       externalReferenceNo: externalReferenceNo,

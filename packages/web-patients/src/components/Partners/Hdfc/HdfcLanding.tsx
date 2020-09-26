@@ -661,7 +661,7 @@ export const HdfcLanding: React.FC = (props) => {
             <Typography component="h2"> Here's What You Get</Typography>
             <ul className={classes.benefitList}>
               <li>
-                <img src={require('images/hdfc/call.svg')} alt="Doctor On Call" />
+                <img src={require('images/hdfc/call.svg')} alt="Apollo Doctor on call 24|7" />
                 <div className={classes.benefitDetails}>
                   <Typography component="h3">Apollo Doctor on call 24|7</Typography>
                   <Typography>Complimentary on-call assistance by Apollo Doctors</Typography>

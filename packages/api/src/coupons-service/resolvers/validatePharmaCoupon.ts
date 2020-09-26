@@ -48,7 +48,7 @@ export const validatePharmaCouponTypeDefs = gql`
     productType: CouponCategoryApplicable!
     quantity: Int!
     specialPrice: Float!
-    couponFree: Boolean
+    couponFree: Int
   }
 
   input PharmaCouponInput {
@@ -70,7 +70,7 @@ export type OrderLineItems = {
   productType: CouponCategoryApplicable;
   quantity: number;
   specialPrice: number;
-  couponFree: boolean;
+  couponFree: number;
 };
 
 type PharmaCouponInput = {
@@ -138,7 +138,7 @@ export const validatePharmaCoupon: Resolver<
       quantity: item.quantity,
       totalCost: amountToBeConsidered * item.quantity,
       categoryId: item.productType.toString(),
-      couponFree: item.couponFree || false,
+      couponFree: item.couponFree || 0,
     };
     couponProduct.push(product);
   });
