@@ -436,7 +436,7 @@ const makeAppointmentPayment: Resolver<
   paymentInfo.paymentStatus = paymentInput.paymentStatus;
   paymentInfo.responseCode = paymentInput.responseCode;
   paymentInfo.responseMessage = paymentInput.responseMessage;
-  paymentInfo.partnerInfo = paymentInput.partnerInfo;
+  if (paymentInfo.partnerInfo) paymentInfo.partnerInfo = paymentInput.partnerInfo;
   await apptsRepo.updateAppointment(
     processingAppointment.id,
     {

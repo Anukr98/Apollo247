@@ -1066,7 +1066,7 @@ const PayMedicine: React.FC = (props) => {
                               </span>
                             </div>
                             <div className={classes.couponText}>
-                              {validateConsultCouponResult ? 'Coupon succefully applied' : ''}
+                              {validateConsultCouponResult ? 'Coupon successfully applied' : ''}
                             </div>
                           </>
                         )}
