@@ -6,7 +6,7 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { Resolver } from 'api-gateway';
 import { getConnection } from 'typeorm';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-
+import { log } from 'customWinstonLogger'
 import { Gender } from 'doctors-service/entities';
 import { getRegisteredUsers } from 'helpers/phrV1Services';
 import { getCache, setCache, delCache } from 'profiles-service/database/connectRedis';
@@ -135,7 +135,20 @@ const getCurrentPatients: Resolver<
   { appVersion: string; deviceType: DEVICE_TYPE },
   ProfilesServiceContext,
   GetCurrentPatientsResult
-> = async (parent, args, { mobileNumber, profilesDb }) => {
+> = async (parent, args, { mobileNumber, profilesDb, headers }) => {
+
+  /* Throw error if mobile number is not found in context */
+  if (!mobileNumber) {
+    log(
+      'profileServiceLogger',
+      'API_CALL_ERROR',
+      'getCurrentPatients()->API_CALL_RESPONSE',
+      'HEADER_INVALID_MOBILE_NUMBER',
+      JSON.stringify(headers)
+    );
+    throw new Error(AphErrorMessages.INVALID_MOBILE_NUMBER)
+  }
+
   const findOrCreatePatient = async (
     findOptions: { uhid?: Patient['uhid']; mobileNumber: Patient['mobileNumber']; isActive: true },
     createOptions: Partial<Patient>

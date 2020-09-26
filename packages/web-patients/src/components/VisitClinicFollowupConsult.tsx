@@ -205,7 +205,7 @@ export const VisitClinicFollowupConsult: React.FC<VisitClinicFollowupConsultProp
   const isSmallScreen = useMediaQuery('(max-width:767px)');
   const prevDateSelected = usePrevious(dateSelected);
   const currentTime = new Date().getTime();
-  const doctorName = doctorDetails && doctorDetails.firstName ? doctorDetails.firstName : '';
+  const doctorName = doctorDetails && doctorDetails.displayName ? doctorDetails.displayName : '';
 
   const morningSlots: number[] = [],
     afternoonSlots: number[] = [],
@@ -425,7 +425,7 @@ export const VisitClinicFollowupConsult: React.FC<VisitClinicFollowupConsultProp
                   />
                 ) : (
                   <div className={classes.noSlotsAvailable}>
-                    Oops! No slots available with Dr. {doctorName} :(
+                    Oops! No slots available with {doctorName} :(
                   </div>
                 )}
               </div>

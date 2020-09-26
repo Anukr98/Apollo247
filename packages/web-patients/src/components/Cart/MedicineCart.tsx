@@ -68,6 +68,7 @@ import {
   pharmacyProceedToPayTracking,
   pharmacySubmitPrescTracking,
   pharmacyUploadPresClickTracking,
+  pharmaTatApiTracking,
 } from '../../webEngageTracking';
 import { ChennaiCheckout, submitFormType } from 'components/Cart/ChennaiCheckout';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
@@ -849,10 +850,48 @@ export const MedicineCart: React.FC = (props) => {
     });
     return await checkTatAvailability(items, pincode, lat, lng)
       .then((res: any) => {
-        const updatedCartItems = res && res.data && res.data.response && res.data.response.items;
-        //call the fxn here
-        checkCartChangesUtil(updatedCartItems);
-        return true;
+        if (res && res.data && res.data.response) {
+          const updatedCartItems = res.data.response.items;
+          //call the fxn here
+          checkCartChangesUtil(updatedCartItems);
+          /** Webengage Tracking */
+          const {
+            items,
+            lat,
+            lng,
+            ordertime,
+            pincode,
+            storeCode,
+            storeType,
+            tat,
+            tatU,
+          } = res.data.response;
+          const { exist, mrp, qty } = items[0];
+          const { sku, quantity, price, mou } = cartItems[0];
+          pharmaTatApiTracking({
+            source: 'Cart',
+            inputSku: sku,
+            inputQty: quantity,
+            inputLat: lat,
+            inputLng: lng,
+            inputPincode: pincode,
+            inputMrp: price,
+            itemsInCart: cartItems.length,
+            resExist: exist,
+            resMrp: mrp * parseInt(mou),
+            resQty: qty,
+            resLat: lat,
+            resLng: lng,
+            resOrderTime: ordertime,
+            resPincode: pincode,
+            resStorecode: storeCode,
+            resStoreType: storeType,
+            resTat: tat,
+            resTatU: tatU,
+          });
+          /** Webengage Tracking */
+          return true;
+        }
       })
       .catch((e) => {
         console.error(e);

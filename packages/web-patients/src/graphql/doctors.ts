@@ -99,6 +99,7 @@ export const GET_DOCTORS_BY_SPECIALITY_AND_FILTERS = gql`
         firstName
         lastName
         fullName
+        displayName
         specialty {
           id
           name
@@ -178,6 +179,7 @@ export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
         firstName
         lastName
         fullName
+        displayName
         specialty {
           id
           name
