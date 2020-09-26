@@ -1051,10 +1051,6 @@ export const HdfcBankLogoSmall: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/hdfc_logo_small.png')} />
 );
 
-export const DeleteIconOrange: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./icons/remove-icon-orange.png')} />
-);
-
 export const DeleteIconWhite: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/remove-icon-white.png')} />
 );
@@ -1065,10 +1061,6 @@ export const PlusIconWhite: React.FC<IconProps> = (props) => (
 
 export const MinusIconWhite: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/minus-icon-white.png')} />
-);
-
-export const MinusIconOrange: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./icons/minus-icon-orange.png')} />
 );
 
 export const ExclamationGreen: React.FC<IconProps> = (props) => (

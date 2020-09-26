@@ -68,7 +68,8 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   redeemableCardsHeading: {
-    ...theme.viewStyles.text('SB', 15, '#00B38E', 1, 20, 0.35),
+    ...theme.viewStyles.text('SB', 15, '#02475B', 1, 20, 0.35),
+    width: '80%',
     marginBottom: 10,
   },
   redeemableCardsText: {
@@ -204,6 +205,10 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         Linking.openURL(`whatsapp://send?text=&phone=+914048218743`);
       }
     },
+    {
+      attribute: 'NULL',
+      action: () => {}
+    },
   ];
 
   const renderTabComponent = () => {
@@ -236,7 +241,6 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         const {action, message, type} = benefitCtaAction;
         const ctaLabelName = ctaLabel.toUpperCase();
         return (
-          ctaLabelName !== 'NULL' && 
           renderRedeemableCards(
             headerContent, 
             description, 
@@ -351,21 +355,24 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         }
       ]
     };
-    const onCtaClick = actionCta[0].action;
+    const onCtaClick = actionCta.length ? actionCta[0].action : () => {};
     return (
       <View style={[styles.cardStyle, { marginVertical: 10 }]}>
         {renderRedeemableCardsContent(heading, bodyText, icon)}
-        <TouchableOpacity onPress={() => {onCtaClick()}}>
-          <Text style={styles.redeemButtonText}>
-            {ctaLabel}
-          </Text>
-        </TouchableOpacity>
+        { 
+          ctaLabel !== 'NULL' &&
+          <TouchableOpacity onPress={() => {onCtaClick()}}>
+            <Text style={styles.redeemButtonText}>
+              {ctaLabel}
+            </Text>
+          </TouchableOpacity>
+        }
       </View>
     );
   };
 
   const renderRedeemableCardsContent = (heading: string, bodyText: string, icon: string | null) => {
-    // console.log(icon);
+    const iconPngPath = icon ? icon.replace('.svg', '.png') : null;
     return (
       <View>
         <View style={{
@@ -375,20 +382,20 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
           <Text style={styles.redeemableCardsHeading}>
             {heading}
           </Text>
-          {/* {
-            icon && 
+          {
+            (iconPngPath && isActivePlan) && 
             <Image
               style={{
-                width: 30,
-                height: 30,
+                width: 25,
+                height: 25,
                 resizeMode: 'contain',
               }}
               source={{
-                uri: icon,
+                uri: iconPngPath,
               }}
               resizeMode={'contain'}
             />
-          } */}
+          }
         </View>
         <Text style={styles.redeemableCardsText}>
           {bodyText}

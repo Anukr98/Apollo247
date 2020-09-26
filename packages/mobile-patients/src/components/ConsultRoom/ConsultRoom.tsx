@@ -733,7 +733,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       })
       .catch((e) => {
         setHdfcLoading(false);
-        CommonBugFender('ConsultRoom_getSubscriptionsOfUserByStatus', e);
+        CommonBugFender('ConsultRoom_identifyHdfcCustomer', e);
       })
   };
 
@@ -762,7 +762,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       })
       .catch((e) => {
         setHdfcLoading(false);
-        CommonBugFender('ConsultRoom_getSubscriptionsOfUserByStatus', e);
+        CommonBugFender('ConsultRoom_validateHdfcOtp', e);
       })
   };
 
@@ -792,7 +792,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         }
       })
       .catch((e) => {
-        CommonBugFender('ConsultRoom_getSubscriptionsOfUserByStatus', e);
+        CommonBugFender('ConsultRoom_createUserHdfcSubscription', e);
       })
   };
 
@@ -826,7 +826,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       })
       .catch((e) => {
         setHdfcLoading(false);
-        CommonBugFender('ConsultRoom_getSubscriptionsOfUserByStatus', e);
+        CommonBugFender('ConsultRoom_GetAllGroupBannersOfUser', e);
       })
   };
 
