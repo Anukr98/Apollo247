@@ -33,7 +33,7 @@ export interface CouponProduct {
   quantity: number;
   totalCost: number;
   categoryId: string;
-  couponFree: boolean;
+  couponFree: number;
 }
 
 export interface ValidateCouponResponse {

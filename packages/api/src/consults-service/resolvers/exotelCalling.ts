@@ -271,7 +271,7 @@ const initiateCallForPartner: Resolver<
   null,
   ExotelCallFlowResponse
 > = async (parent, { mobileNumber, benefitId }) => {
-  const apiBaseUrl = `https://${process.env.EXOTEL_API_KEY}:${process.env.EXOTEL_API_TOKEN}@${process.env.EXOTEL_SUB_DOMAIN}`;
+  const apiBaseUrl = `https://${process.env.HDFC_EXOTEL_API_KEY}:${process.env.HDFC_EXOTEL_API_TOKEN}@${process.env.EXOTEL_SUB_DOMAIN}`;
   const apiUrl = `${apiBaseUrl}/v1/Accounts/${process.env.EXOTEL_SID}/Calls/connect.json`;
   const params = new URLSearchParams();
   params.append('From', mobileNumber);
