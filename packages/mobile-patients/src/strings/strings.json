@@ -387,5 +387,23 @@
     "block_Calendar": "Block Calendar",
     "manage_calendar": "Manage Calendar"
   },
-  "ChatRoom_NotRecorded_Value": "Not Recorded"
+  "ChatRoom_NotRecorded_Value": "Not Recorded",
+  "symptomChecker": {
+    "howItWorks": "HOW IT WORKS?",
+    "patientDetails": "Patient Details",
+    "name": "Name",
+    "age": "Age",
+    "gender": "Gender",
+    "selectAnotherMember": "Select Another Member",
+    "typeSymptomOrChooseFromList": "Type symptom here or choose from the list",
+    "addSelectedSymptom": "ADD SELECTED SYMPTOMS",
+    "symptoms": "Symptoms",
+    "noOtherSymptoms": "NO OTHER SYMPTOM",
+    "thanksForGivingAnswers": "Thanks {{name}}, for helping us with your answers.\n\nBelow is a summary of your symptoms.",
+    "restart": "RESTART",
+    "consultDoctor": "Consult Doctor",
+    "restartSymptomTrackerDiscription": "This will end your symptom tracking and you’ll have to start it again. Do you want to continue tracking your symptoms or go back?",
+    "symptomTracker": "Symptom Tracker",
+    "addAnotherSymptom": "Would you like to report another symptom?"
+  }
 }
