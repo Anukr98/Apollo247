@@ -211,6 +211,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
         };
       }),
     };
+    console.log(data, 'Checkpoint by Vasudev');
     if (currentPatient && currentPatient.id) {
       setMuationLoading(true);
       const fetchCouponUrl = `${process.env.VALIDATE_CONSULT_COUPONS}?mobile=${
