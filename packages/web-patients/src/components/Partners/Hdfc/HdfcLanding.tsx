@@ -663,20 +663,19 @@ export const HdfcLanding: React.FC = (props) => {
               <li>
                 <img src={require('images/hdfc/call.svg')} alt="Apollo Doctor on call 24|7" />
                 <div className={classes.benefitDetails}>
-                  <Typography component="h3">Apollo Doctor on call 24|7​</Typography>
+                  <Typography component="h3">Apollo Doctor on call 24|7</Typography>
                   <Typography>Complimentary on-call assistance by Apollo Doctors</Typography>
                 </div>
               </li>
               <li>
-                <img src={require('images/hdfc/diagnostics.svg')} alt="Diagnostic Tests" />
+                <img src={require('images/hdfc/diagnostics.svg')} alt="Access to Apollo Services" />
                 <div className={classes.benefitDetails}>
                   <Typography component="h3">Diagnostic Tests</Typography>
-                  <Typography>Doorstep sample collection by trained experts​</Typography>
+                  <Typography>Doorstep Sample Collection by Trained Experts</Typography>
                 </div>
               </li>
               <li>
                 <img src={require('images/hdfc/medicine-delivery.svg')} alt="Medicine Delivery" />
-
                 <div className={classes.benefitDetails}>
                   <Typography component="h3">Doorstep Medicine Delivery</Typography>
                   <Typography>
@@ -686,14 +685,11 @@ export const HdfcLanding: React.FC = (props) => {
                 </div>
               </li>
               <li>
-                <img
-                  src={require('images/hdfc/covid-access.svg')}
-                  alt="Preferential access to COVID Care"
-                />
+                <img src={require('images/hdfc/covid.svg')} alt="Covid Health Testing" />
                 <div className={classes.benefitDetails}>
-                  <Typography component="h3">Preferential access to COVID Care</Typography>
+                  <Typography component="h3">Preferential Access to COVID Care</Typography>
                   <Typography>
-                    At-home testing, pre and post COVID assessment, @home @hotel isolation
+                    At-home testing, pre and post COVID assessment, @home &amp; @hotel isolation
                     assistance​
                   </Typography>
                 </div>
@@ -702,11 +698,11 @@ export const HdfcLanding: React.FC = (props) => {
                 <img src={require('images/hdfc/health-records.svg')} alt="Health Records" />
                 <div className={classes.benefitDetails}>
                   <Typography component="h3">Patients Health Records Vault</Typography>
-                  <Typography>Digitization and access to your health records</Typography>
+                  <Typography>Digitization and Access to your Health Records </Typography>
                 </div>
               </li>
               <li>
-                <img src={require('images/hdfc/access.svg')} alt="Access to Apollo Services" />
+                <img src={require('images/hdfc/apollo_doctors.svg')} alt="Diabetes Program" />
                 <div className={classes.benefitDetails}>
                   <Typography component="h3">Access to 7000+ Apollo Doctors</Typography>
                   <Typography>Doctors from over 70 specialities to consult with</Typography>

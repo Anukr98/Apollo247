@@ -1074,7 +1074,7 @@ export const MembershipPlanDetail: React.FC = (props) => {
                         <Table className={classes.table} aria-label="simple table">
                           <TableHead>
                             <TableRow>
-                              <TableCell>Benefits)</TableCell>
+                              <TableCell>Benefits</TableCell>
                               <TableCell>What You Get</TableCell>
                               <TableCell>Redemption Limit</TableCell>
                               <TableCell>Status</TableCell>
