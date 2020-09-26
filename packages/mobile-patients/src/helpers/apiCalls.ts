@@ -712,26 +712,15 @@ export const getTxnStatus = (orderID: string): Promise<AxiosResponse<any>> => {
   return Axios.post(url, { orderID: orderID });
 };
 
-export const fetchConsultCoupons = (
-  mobileNumber: string, 
-  emailAddress: string, 
-  packageId?: string | null,
-): Promise<AxiosResponse<any>> => {
+export const fetchConsultCoupons = (): Promise<AxiosResponse<any>> => {
   const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
-  let url = `${baseUrl}/frontend?mobile=${mobileNumber}&email=${emailAddress}`;
-  if (packageId) url += `&packageId=${packageId}`;
+  const url = `${baseUrl}/frontend`;
   return Axios.get(url);
 };
 
-export const validateConsultCoupon = (
-  data: any,
-  mobileNumber: string, 
-  emailAddress: string, 
-  packageId?: string | null,
-): Promise<AxiosResponse<any>> => {
+export const validateConsultCoupon = (data: any): Promise<AxiosResponse<any>> => {
   const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
-  let url = `${baseUrl}/validate?mobile=${mobileNumber}&email=${emailAddress}`;
-  if (packageId) url += `&packageId=${packageId}`;
+  let url = `${baseUrl}/validate`;
   return Axios.post(url, data);
 };
 
