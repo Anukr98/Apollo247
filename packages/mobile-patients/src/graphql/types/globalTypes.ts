@@ -152,6 +152,12 @@ export enum Gender {
   OTHER = "OTHER",
 }
 
+export enum HDFC_CUSTOMER {
+  NOT_HDFC_CUSTOMER = "NOT_HDFC_CUSTOMER",
+  OTP_GENERATED = "OTP_GENERATED",
+  OTP_NOT_GENERATED = "OTP_NOT_GENERATED",
+}
+
 export enum LOGIN_TYPE {
   DOCTOR = "DOCTOR",
   PATIENT = "PATIENT",
@@ -425,6 +431,19 @@ export enum STATUS {
 export enum SpecialtySearchType {
   ID = "ID",
   NAME = "NAME",
+}
+
+export enum Status {
+  active = "active",
+  discontinued = "discontinued",
+  inactive = "inactive",
+}
+
+export enum SubscriptionStatus {
+  active = "active",
+  cancelled = "cancelled",
+  deferred = "deferred",
+  disabled = "disabled",
 }
 
 export enum TEST_COLLECTION_TYPE {
@@ -1038,6 +1057,11 @@ export interface UploadDocumentInput {
   base64FileInput: string;
   patientId: string;
   category: PRISM_DOCUMENT_CATEGORY;
+}
+
+export interface UserIdentification {
+  mobile_number?: string | null;
+  patiend_id?: string | null;
 }
 
 export interface prescriptionFileProperties {
