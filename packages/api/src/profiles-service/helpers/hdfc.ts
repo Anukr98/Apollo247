@@ -6,6 +6,8 @@ import * as crypto from 'crypto';
 import * as cryptojs from 'crypto-js';
 import * as jwt from 'jsonwebtoken';
 import { debugLog } from 'customWinstonLogger';
+import { FetchMessagesResponse } from 'pubnub';
+import { Callback } from 'redis';
 
 const INSTANCE_ID = '8888';
 const assetsDir = <string>process.env.ASSETS_DIRECTORY;
@@ -33,7 +35,8 @@ async function generateAuthToken() {
         Authorization: `${process.env.HDFC_AUTHURIZATION_HEADER}`,
       },
     }
-  );
+  ).then(checkStatus);
+
   const body = JSON.parse(await response.text());
   return body['access_token'];
 }
@@ -263,12 +266,13 @@ async function highRequest(base_request: any, url: String, historyToken: string 
     },
     body: JSON.stringify(request),
     agent: sslConfiguredAgent,
-  });
-
-  const responseJson = JSON.parse((await response.text()).replace(/(\r\n|\n|\r)/gm, ''));
-  dLogger(new Date(), `HDFC HIGH REQUEST ${url}`, `request ${request} response ${responseJson} `);
-  const decryptedResponse = await decryptHighResponse(responseJson);
-  return decryptedResponse;
+  }).then(checkStatus);
+  if (response) {
+    const responseJson = JSON.parse((await response.text()).replace(/(\r\n|\n|\r)/gm, ''));
+    dLogger(new Date(), `HDFC HIGH REQUEST ${url}`, `request ${request} response ${responseJson} `);
+    const decryptedResponse = await decryptHighResponse(responseJson);
+    return decryptedResponse;
+  } else return { decryptedResponse: null, historyToken: null };
 }
 
 async function decryptMediumResponse(response: any) {
@@ -318,11 +322,17 @@ async function mediumRequest(base_request: any, url: String, historyToken: Strin
     },
     body: JSON.stringify(request),
     agent: sslConfiguredAgent,
-  });
-  const responseJson = JSON.parse((await response.text()).replace(/(\r\n|\n|\r)/gm, ''));
-  dLogger(new Date(), `HDFC Medium REQUEST ${url}`, `request ${request} response ${responseJson} `);
-  const decryptedResponse = decryptMediumResponse(responseJson);
-  return decryptedResponse;
+  }).then(checkStatus);
+  if (response) {
+    const responseJson = JSON.parse((await response.text()).replace(/(\r\n|\n|\r)/gm, ''));
+    dLogger(
+      new Date(),
+      `HDFC Medium REQUEST ${url}`,
+      `request ${request} response ${responseJson} `
+    );
+    const decryptedResponse = decryptMediumResponse(responseJson);
+    return decryptedResponse;
+  } else return { decryptedResponse: null, historyToken: null };
 }
 
 function symmetricKeyEncryptedValue(symmetricKey: String) {
@@ -359,6 +369,13 @@ function randomStringGenerator(length: number): string {
     .slice(0, length);
 }
 
+function checkStatus(response: any) {
+  if (response.status >= 200 && response.status < 300) {
+    return response;
+  } else {
+    return false;
+  }
+}
 // async function executeTestRun() {
 //     await fetchEthnicCode(
 //       new Date('06-10-1960'),

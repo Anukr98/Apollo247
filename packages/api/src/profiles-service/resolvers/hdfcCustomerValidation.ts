@@ -85,7 +85,7 @@ const identifyHdfcCustomer: Resolver<
       `request ${JSON.stringify(args)} response ${JSON.stringify(customerIdentificationResponse)} `
     );
     const isHDFCCustomer: any =
-      customerIdentificationResponse.decryptedResponse?.customerCASADetailsDTO?.existingCustomer;
+      customerIdentificationResponse?.decryptedResponse?.customerCASADetailsDTO?.existingCustomer;
 
     if (customerIdentificationResponse) {
       if (isHDFCCustomer === 'Y') {
@@ -146,8 +146,8 @@ const validateHdfcOTP: Resolver<
         `HDFC decrypted response fetchEthnicCodeResponse`,
         `request ${JSON.stringify(args)} response ${JSON.stringify(fetchEthnicCodeResponse)} `
       );
-      const planName: string = fetchEthnicCodeResponse.decryptedResponse?.customerCASADetailsDTO
-        ? defaultPlan(fetchEthnicCodeResponse.decryptedResponse.customerCASADetailsDTO)
+      const planName: string = fetchEthnicCodeResponse?.decryptedResponse?.customerCASADetailsDTO
+        ? defaultPlan(fetchEthnicCodeResponse?.decryptedResponse.customerCASADetailsDTO)
         : 'HDFCSilver';
       return { status: true, defaultPlan: planName, responseCode: 202 };
     }
