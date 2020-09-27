@@ -219,13 +219,16 @@ export async function sendMedicineOrderStatusNotification(
 //Notification - Dignostic order Status
 export async function sendDiagnosticOrderStatusNotification(
   notificationType: NotificationType,
-  orderDetails: DiagnosticOrders,
-  patientsDb: Connection
+  patientsDb: Connection,
+  patientId: String,
+  mobileNumber: string,
+  patientFirstName: string,
+  displayId: number,
+  orderId: string
 ) {
-  //get all the patient device tokens
   let patientDeviceTokens: string[] = [];
-  const patientDetails = orderDetails.patient;
-  patientDeviceTokens = await getPatientDeviceTokens(patientDetails.mobileNumber, patientsDb);
+
+  patientDeviceTokens = await getPatientDeviceTokens(mobileNumber, patientsDb);
 
   if (patientDeviceTokens.length == 0) return;
 
@@ -250,8 +253,8 @@ export async function sendDiagnosticOrderStatusNotification(
       notificationBody = ApiConstants.DIAGNOSTIC_ORDER_SUCCESS_BODY;
   }
   //notification payload
-  const userName = patientDetails.firstName ? patientDetails.firstName : 'User';
-  const orderNumber = orderDetails.displayId ? orderDetails.displayId.toString() : '';
+  const userName = patientFirstName ? patientFirstName : 'User';
+  const orderNumber = displayId ? displayId.toString() : '';
 
   notificationTitle = notificationTitle.toString();
   notificationBody = notificationBody.replace('{0}', userName);
@@ -265,8 +268,8 @@ export async function sendDiagnosticOrderStatusNotification(
     data: {
       type: payloadDataType,
       displayId: orderNumber,
-      orderId: orderDetails.id,
-      firstName: patientDetails.firstName,
+      orderId: orderId,
+      firstName: patientFirstName,
       content: notificationBody,
     },
   };
@@ -277,16 +280,16 @@ export async function sendDiagnosticOrderStatusNotification(
     timeToLive: 60 * 60 * 24, //wait for one day.. if device is offline
   };
 
-  sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
+  sendNotificationSMS(mobileNumber, notificationBody);
 
   admin
     .messaging()
     .sendToDevice(patientDeviceTokens, payload, options)
     .then((response: PushNotificationSuccessMessage) => {
       const logData = {
-        patientId: patientDetails.id,
+        patientId: patientId,
         displayId: orderNumber,
-        orderId: orderDetails.id,
+        orderId: orderId,
         multicastId: response.multicastId,
       };
       logNotificationResponse(notificationType, logData);

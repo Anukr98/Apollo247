@@ -156,15 +156,6 @@ import {
   saveMedicineOrderInvoiceTypeDefs,
   saveMedicineOrderInvoiceResolvers,
 } from 'profiles-service/resolvers/pharmaOrderInvoice';
-import { diagnosticsTypeDefs, diagnosticsResolvers } from 'profiles-service/resolvers/diagnostics';
-import {
-  saveDiagnosticOrderTypeDefs,
-  saveDiagnosticOrderResolvers,
-} from 'profiles-service/resolvers/saveDiagnosticOrders';
-import {
-  saveDiagnosticOrderPaymentTypeDefs,
-  saveDiagnosticOrderPaymentResolvers,
-} from 'profiles-service/resolvers/saveDiagnosticOrderPayment';
 import {
   cancelDiagnosticOrdersTypeDefs,
   cancelDiagnosticOrdersResolvers,
@@ -425,18 +416,6 @@ import {
         resolvers: saveMedicineOrderInvoiceResolvers,
       },
       {
-        typeDefs: diagnosticsTypeDefs,
-        resolvers: diagnosticsResolvers,
-      },
-      {
-        typeDefs: saveDiagnosticOrderTypeDefs,
-        resolvers: saveDiagnosticOrderResolvers,
-      },
-      {
-        typeDefs: saveDiagnosticOrderPaymentTypeDefs,
-        resolvers: saveDiagnosticOrderPaymentResolvers,
-      },
-      {
         typeDefs: cancelDiagnosticOrdersTypeDefs,
         resolvers: cancelDiagnosticOrdersResolvers,
       },
@@ -535,6 +514,6 @@ import {
   });
 
   server.listen({ port: process.env.PROFILES_SERVICE_PORT }).then(({ url }) => {
-    console.log(`🚀 profiles-service ready`);
+    console.log(`🚀 profiles-service ready`, url);
   });
 })();

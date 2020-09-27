@@ -34,6 +34,17 @@ import {
 import fetch from 'node-fetch';
 
 export const saveMedicineOrderOMSTypeDefs = gql`
+  enum BOOKINGSOURCE {
+    MOBILE
+    WEB
+  }
+
+  enum DEVICETYPE {
+    IOS
+    ANDROID
+    DESKTOP
+  }
+
   input MedicineCartOMSInput {
     quoteId: String
     shopId: String

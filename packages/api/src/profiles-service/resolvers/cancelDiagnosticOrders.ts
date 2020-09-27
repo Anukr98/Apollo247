@@ -9,6 +9,9 @@ import {
   DIAGNOSTIC_ORDER_STATUS,
 } from 'profiles-service/entities';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { sendDiagnosticOrderStatusNotification } from 'notifications-service/handlers/main';
+import { NotificationType } from 'notifications-service/constants';
+import { notificationType } from 'consults-service/entities';
 
 export const cancelDiagnosticOrdersTypeDefs = gql`
   type DiagnosticOrderCancelResult {
@@ -28,6 +31,21 @@ export const cancelDiagnosticOrdersTypeDefs = gql`
     centerCity: String!
     centerState: String!
     centerLocality: String!
+  }
+
+  input sendDiagnosticsOrderNotificationInput {
+    type: String
+    patientID: String
+    mobileNumber: String
+    patientFirstName: String
+    displayID: Int
+    orderID: String
+  }
+
+  extend type Query {
+    sendDiagnosticOrderNotification(
+      sendDiagnosticsOrderNotificationInput: sendDiagnosticsOrderNotificationInput
+    ): Boolean
   }
 
   extend type Mutation {
@@ -112,9 +130,51 @@ const cancelDiagnosticOrder: Resolver<
   return { message: 'Order cancelled successfully' };
 };
 
+const sendDiagnosticOrderNotification: Resolver<
+  null,
+  {
+    type: string;
+    patientID: string;
+    mobileNumber: string;
+    patientFirstName: string;
+    displayID: number;
+    orderID: string;
+  },
+  ProfilesServiceContext,
+  boolean
+> = async (parent, args, { profilesDb }) => {
+  let notificationType: NotificationType;
+  switch (args.type) {
+    case NotificationType.DIAGNOSTIC_ORDER_SUCCESS:
+      notificationType = NotificationType.DIAGNOSTIC_ORDER_SUCCESS;
+      break;
+    case NotificationType.DIAGNOSTIC_ORDER_PAYMENT_FAILED:
+      notificationType = NotificationType.DIAGNOSTIC_ORDER_PAYMENT_FAILED;
+      break;
+    default:
+      throw new AphError(AphErrorMessages.UNKNOWN_NOTIFICATION_ERROR);
+  }
+  const notification = await sendDiagnosticOrderStatusNotification(
+    notificationType,
+    profilesDb,
+    args.patientID,
+    args.mobileNumber,
+    args.patientFirstName,
+    args.displayID,
+    args.orderID
+  );
+  if (!notification) {
+    return false;
+  }
+  return notification.status;
+};
+
 export const cancelDiagnosticOrdersResolvers = {
   Mutation: {
     cancelDiagnosticOrder,
     updateDiagnosticOrder,
+  },
+  Query: {
+    sendDiagnosticOrderNotification,
   },
 };
