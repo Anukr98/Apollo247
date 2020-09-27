@@ -639,7 +639,7 @@ export const MembershipPlanLocked: React.FC = (props) => {
             />
           </Link>
           <Typography component="h1" className={classes.pageHeader}>
-            Membership Plan Detail
+            Membership Details
           </Typography>
         </div>
         <div>

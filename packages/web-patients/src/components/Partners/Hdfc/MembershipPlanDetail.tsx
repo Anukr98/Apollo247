@@ -928,7 +928,7 @@ export const MembershipPlanDetail: React.FC = (props) => {
             />
           </Link>
           <Typography component="h1" className={classes.pageHeader}>
-            Subscription Plan Detail
+            Membership Details
           </Typography>
         </div>
         <div>

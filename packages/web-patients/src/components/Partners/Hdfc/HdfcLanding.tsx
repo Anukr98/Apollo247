@@ -648,7 +648,7 @@ export const HdfcLanding: React.FC = (props) => {
                           }
                         }}
                       >
-                        Unlock Now
+                        {isSignedIn ? 'Explore Benefits' : 'Unlock Now'}
                       </AphButton>
                     )}
                   />
@@ -750,7 +750,7 @@ export const HdfcLanding: React.FC = (props) => {
                           }
                         }}
                       >
-                        Unlock Now
+                        {isSignedIn ? 'Explore Benefits' : 'Unlock Now'}
                       </AphButton>
                     )}
                   />
