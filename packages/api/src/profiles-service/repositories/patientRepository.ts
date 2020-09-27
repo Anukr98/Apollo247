@@ -603,6 +603,13 @@ export class PatientRepository extends Repository<Patient> {
       else return false;
     }
   }
+  async removePartnerId(partnerId: string, mobileNumber: string) {
+    const patient: Patient | undefined = await this.findOne({ where: { partnerId, mobileNumber } });
+    if (patient) {
+      patient.partnerId = '';
+      patient.save();
+    }
+  }
 
   findByUhid(uhid: string) {
     return this.findOne({ where: { uhid } });

@@ -5,6 +5,9 @@ import fetch from 'node-fetch';
 import * as crypto from 'crypto';
 import * as cryptojs from 'crypto-js';
 import * as jwt from 'jsonwebtoken';
+import { debugLog } from 'customWinstonLogger';
+import { FetchMessagesResponse } from 'pubnub';
+import { Callback } from 'redis';
 
 const INSTANCE_ID = '8888';
 const assetsDir = <string>process.env.ASSETS_DIRECTORY;
@@ -15,6 +18,11 @@ const options = {
   rejectUnauthorized: true,
   keepAlive: false,
 };
+const dLogger = debugLog(
+  'DoctorServiceLogger',
+  'RedisConnect',
+  Math.floor(Math.random() * 100000000)
+);
 const sslConfiguredAgent = new https.Agent(options);
 
 async function generateAuthToken() {
@@ -27,7 +35,8 @@ async function generateAuthToken() {
         Authorization: `${process.env.HDFC_AUTHURIZATION_HEADER}`,
       },
     }
-  );
+  ).then(checkStatus);
+
   const body = JSON.parse(await response.text());
   return body['access_token'];
 }
@@ -166,11 +175,10 @@ export async function customerIdentification(mobile: String, dateOfBirth: Date) 
       bankCode: '08',
       userId: 'DevUser01',
       transactionBranch: '089999',
-      userReferenceNumber: '12349876',
+      userReferenceNumber: refNoGenerator(),
     },
   };
   const response = await mediumRequest(requestBeforeEncryption, '/API/CustomerIdentification');
-  console.log(response);
   return response;
 }
 
@@ -200,11 +208,13 @@ export async function fetchEthnicCode(dateOfBirth: Date, mobile: String, history
     '/API/Fetch_EthnicCode_RM_Dtls',
     historyToken
   );
-  console.log(JSON.stringify(response['decryptedResponse']['customerCASADetailsDTO']));
   return response;
 }
 
 async function decryptHighResponse(response: any) {
+  if (!response['ResponseSignatureEncryptedValue']) {
+    return { decryptedResponse: null };
+  }
   const symmetricKey: string = symmetricKeyDecryptedValue(response['GWSymmetricKeyEncryptedValue']);
   const decipher = crypto.createDecipheriv(
     'AES-256-CBC',
@@ -224,9 +234,6 @@ async function decryptHighResponse(response: any) {
 }
 
 async function highRequest(base_request: any, url: String, historyToken: string = '') {
-  console.log('-----------------------------------------------------------------');
-  console.log(`request ${url}`, base_request);
-  console.log('-----------------------------------------------------------------');
   const key = randomStringGenerator(32);
   const privateKey = fs.readFileSync(
     path.resolve(assetsDir, `${process.env.APOLLO_CERTIFICATE_KEY}`),
@@ -247,7 +254,7 @@ async function highRequest(base_request: any, url: String, historyToken: string 
     RequestSignatureEncryptedValue: RequestSignatureEncryptedValue,
     SymmetricKeyEncryptedValue: symmetricKeyEncryptedValue(key),
     Scope: process.env.HDFC_SCOPE,
-    TransactionId: '2244167897',
+    TransactionId: refNoGenerator(),
     OAuthTokenValue: await generateAuthToken(),
     'Id-token-jwt': historyToken,
   };
@@ -259,20 +266,19 @@ async function highRequest(base_request: any, url: String, historyToken: string 
     },
     body: JSON.stringify(request),
     agent: sslConfiguredAgent,
-  });
-  console.log('--------------------------------------------------------');
-  console.log('response highrequest', response);
-  console.log('--------------------------------------------------------');
-  const decryptedResponse = await decryptHighResponse(
-    JSON.parse((await response.text()).replace(/(\r\n|\n|\r)/gm, ''))
-  );
-  console.log('--------------------------------------------------------');
-  console.log('response decryptedResponse', decryptedResponse['decryptedResponse']);
-  console.log('--------------------------------------------------------');
-  return decryptedResponse;
+  }).then(checkStatus);
+  if (response) {
+    const responseJson = JSON.parse((await response.text()).replace(/(\r\n|\n|\r)/gm, ''));
+    dLogger(new Date(), `HDFC HIGH REQUEST ${url}`, `request ${request} response ${responseJson} `);
+    const decryptedResponse = await decryptHighResponse(responseJson);
+    return decryptedResponse;
+  } else return { decryptedResponse: null, historyToken: null };
 }
 
 async function decryptMediumResponse(response: any) {
+  if (!response['ResponseEncryptedValue']) {
+    return { decryptedResponse: null };
+  }
   const symmetricKey: string = symmetricKeyDecryptedValue(response['GWSymmetricKeyEncryptedValue']);
   const decipher = crypto.createDecipheriv(
     'AES-256-CBC',
@@ -289,9 +295,6 @@ async function decryptMediumResponse(response: any) {
 }
 
 async function mediumRequest(base_request: any, url: String, historyToken: String = '') {
-  console.log('-----------------------------------------------------------------');
-  console.log(`request ${url}`, base_request);
-  console.log('-----------------------------------------------------------------');
   const key = randomStringGenerator(32);
   let iv = randomStringGenerator(16);
   const RequestEncryptedValue = cryptojs.AES.encrypt(
@@ -307,7 +310,7 @@ async function mediumRequest(base_request: any, url: String, historyToken: Strin
     RequestEncryptedValue: RequestEncryptedValue,
     SymmetricKeyEncryptedValue: symmetricKeyEncryptedValue(key),
     Scope: process.env.HDFC_SCOPE,
-    TransactionId: '2234167897',
+    TransactionId: refNoGenerator(),
     OAuthTokenValue: '',
     'Id-token-jwt': historyToken,
   };
@@ -319,17 +322,17 @@ async function mediumRequest(base_request: any, url: String, historyToken: Strin
     },
     body: JSON.stringify(request),
     agent: sslConfiguredAgent,
-  });
-  console.log('--------------------------------------------------------');
-  console.log('response medium request', response);
-  console.log('--------------------------------------------------------');
-  const decryptedResponse = decryptMediumResponse(
-    JSON.parse((await response.text()).replace(/(\r\n|\n|\r)/gm, ''))
-  );
-  console.log('--------------------------------------------------------');
-  console.log('response medium decryptedResponse', decryptedResponse);
-  console.log('--------------------------------------------------------');
-  return decryptedResponse;
+  }).then(checkStatus);
+  if (response) {
+    const responseJson = JSON.parse((await response.text()).replace(/(\r\n|\n|\r)/gm, ''));
+    dLogger(
+      new Date(),
+      `HDFC Medium REQUEST ${url}`,
+      `request ${request} response ${responseJson} `
+    );
+    const decryptedResponse = decryptMediumResponse(responseJson);
+    return decryptedResponse;
+  } else return { decryptedResponse: null, historyToken: null };
 }
 
 function symmetricKeyEncryptedValue(symmetricKey: String) {
@@ -366,16 +369,14 @@ function randomStringGenerator(length: number): string {
     .slice(0, length);
 }
 
-// console.log(cryptojs.enc.Base64.parse('c2F5IEhJ'));
-// console.log(await generateOtp('9930207495'));
-// console.log(verifyOtp('123456', '9930207495'));
-
-// console.log(CustomerIdentification('9930207495', new Date('06-10-1960')));
-
+function checkStatus(response: any) {
+  if (response.status >= 200 && response.status < 300) {
+    return response;
+  } else {
+    return false;
+  }
+}
 // async function executeTestRun() {
-// console.log(await generateOtp('9930207495'));
-// console.log(await verifyOtp('123456', '9930207495'));
-//   console.log(
 //     await fetchEthnicCode(
 //       new Date('06-10-1960'),
 //       '9930207495',
@@ -383,5 +384,3 @@ function randomStringGenerator(length: number): string {
 //     )
 //   );
 // }
-
-// console.log(executeTestRun());

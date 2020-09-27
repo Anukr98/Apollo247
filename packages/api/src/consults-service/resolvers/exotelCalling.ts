@@ -271,20 +271,22 @@ const initiateCallForPartner: Resolver<
   null,
   ExotelCallFlowResponse
 > = async (parent, { mobileNumber, benefitId }) => {
-  const apiBaseUrl = `https://${process.env.HDFC_EXOTEL_API_KEY}:${process.env.HDFC_EXOTEL_API_TOKEN}@${process.env.EXOTEL_SUB_DOMAIN}`;
+  const apiBaseUrl = `https://${process.env.EXOTEL_HDFC_API_KEY}:${process.env.EXOTEL_HDFC_API_TOKEN}@${process.env.EXOTEL_SUB_DOMAIN}`;
   const apiUrl = `${apiBaseUrl}/v1/Accounts/${process.env.EXOTEL_SID}/Calls/connect.json`;
-  const params = new URLSearchParams();
-  params.append('From', mobileNumber);
-  params.append('CallerId', `${process.env.EXOTEL_HDFC_CALLER_ID}`);
-  params.append('Url', 'http://my.exotel.com/apollo2471/exoml/start_voice/314043');
-  params.append('CallType', 'trans');
-  params.append(
-    'StatusCallback',
-    `${process.env.PAYTM_BASE_URL}/exotelCallEnd?mobileNumber=${parseInt(mobileNumber, 10)}`
-  );
+  const params: { [index: string]: string } = {
+    From: mobileNumber,
+    CallerId: `${process.env.EXOTEL_HDFC_CALLER_ID}`,
+    Url: `http://my.exotel.com/apollo2471/exoml/start_voice/${process.env.EXOTEL_HDFC_APP_ID}`,
+    CallType: 'trans',
+    StatusCallback: `${process.env.PAYTM_BASE_URL}/exotelCallEnd?mobileNumber=${parseInt(
+      mobileNumber,
+      10
+    )}`,
+  };
+  console.log(JSON.stringify(params));
   fetch(apiUrl, {
     method: 'POST',
-    body: params,
+    body: new URLSearchParams(params),
     headers: {
       'Content-type': 'application/x-www-form-urlencoded',
     },
@@ -304,12 +306,13 @@ const initiateCallForPartner: Resolver<
     })
     .catch((error) => {
       log(
-        'initateCallAPILogger',
-        `SEND_SMS_ERROR`,
-        'smsResponse()->CATCH_BLOCK',
+        'consultServiceLogger',
+        `EXOTEL_CALL_ERROR`,
+        'initiateCallForPartner->CATCH_BLOCK',
         '',
         `${mobileNumber}: ${JSON.stringify(error)}`
       );
+      console.log(params);
       throw new AphError(AphErrorMessages.EXOTEL_REQUEST_ERROR);
     });
   return { success: true };
