@@ -314,7 +314,6 @@ const initiateCallForPartner: Resolver<
         '',
         `${mobileNumber}: ${JSON.stringify(error)}`
       );
-      console.log(error);
       throw new AphError(AphErrorMessages.EXOTEL_REQUEST_ERROR);
     });
   return { success: true };
