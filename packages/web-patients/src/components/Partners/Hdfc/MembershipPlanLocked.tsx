@@ -554,6 +554,7 @@ export const MembershipPlanLocked: React.FC = (props) => {
   const [planName, setPlanName] = React.useState<string>('');
   const [benefitsWorth, setBenefitsWorth] = React.useState<string>('');
   const [minimumTransactionValue, setMinimumTransactionValue] = React.useState<string>('');
+  const [upgradableTransactionValue, setUpgradableTransactionValue] = React.useState<string>('');
   const apolloClient = useApolloClient();
 
   const handleChange = (panel: string) => (event: React.ChangeEvent<{}>, isExpanded: boolean) => {
@@ -606,6 +607,10 @@ export const MembershipPlanLocked: React.FC = (props) => {
         setMinimumTransactionValue(
           response.data.GetAllUserSubscriptionsWithPlanBenefits.response[0].can_upgrade_to
             .min_transaction_value
+        );
+        setUpgradableTransactionValue(
+          response.data.GetAllUserSubscriptionsWithPlanBenefits.response[0]
+            .upgrade_transaction_value
         );
         setLoading(false);
       })
@@ -727,7 +732,7 @@ export const MembershipPlanLocked: React.FC = (props) => {
                 <ExpansionPanelDetails className={classes.panelDetails}>
                   <div className={`${classes.detailsContent} ${classes.availContent}`}>
                     <Typography>
-                      Complete transactions worth Rs. {minimumTransactionValue} or more on the
+                      Complete transactions worth Rs. {upgradableTransactionValue} or more on the
                       Apollo 24/7 app to unlock platinum+ plan membership
                     </Typography>
                   </div>

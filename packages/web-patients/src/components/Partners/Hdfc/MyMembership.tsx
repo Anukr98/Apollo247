@@ -586,8 +586,11 @@ export const MyMembership: React.FC = (props) => {
           </Typography>
           <Typography className={classes.availDesc}>
             Complete transactions worth Rs{' '}
-            {upgradableSubscription && upgradableSubscription.min_transaction_value}+ on Apollo 24/7
-            app to unlock {upgradableSubscription && upgradableSubscription.name} membership
+            {currentSubscription &&
+              currentSubscription[0] &&
+              currentSubscription[0].upgrade_transaction_value}{' '}
+            on Apollo 24/7 app to unlock {upgradableSubscription && upgradableSubscription.name}{' '}
+            membership
           </Typography>
         </div>
       </AphDialog>
