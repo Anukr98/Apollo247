@@ -26,12 +26,12 @@ export const validateHDFCCustomerTypeDefs = gql`
   type identifyHdfcCustomerResponse {
     status: HDFC_CUSTOMER!
     token: String
-    responseCode: Number
+    responseCode: Int
   }
   type validHdfcCustomerResponse {
     status: Boolean
     defaultPlan: String
-    responseCode: Number
+    responseCode: Int
   }
   extend type Query {
     identifyHdfcCustomer(mobileNumber: String!, DOB: Date!): identifyHdfcCustomerResponse
