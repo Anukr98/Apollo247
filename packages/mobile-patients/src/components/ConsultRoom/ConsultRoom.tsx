@@ -1989,7 +1989,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           source={{
             uri: bannerUri,
           }}
-          resizeMode={'contain'}
+          resizeMode={'stretch'}
         />
       </TouchableOpacity>
     );
