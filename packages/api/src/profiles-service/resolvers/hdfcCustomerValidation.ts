@@ -10,6 +10,8 @@ import {
 import { getCache } from 'profiles-service/database/connectRedis';
 import { PartnerId } from 'ApiConstants';
 import { debugLog } from 'customWinstonLogger';
+import { PatientRepository } from 'profiles-service/repositories/patientRepository';
+import { Patient } from 'profiles-service/entities';
 const dLogger = debugLog(
   'DoctorServiceLogger',
   'RedisConnect',
@@ -105,6 +107,8 @@ const identifyHdfcCustomer: Resolver<
           return { status: HDFC_CUSTOMER.OTP_NOT_GENERATED, responseCode: 503 };
         }
       } else {
+        const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+        patientRepo.removePartnerId(PartnerId.HDFCBANK, args.mobileNumber);
         return { status: HDFC_CUSTOMER.NOT_HDFC_CUSTOMER, responseCode: 404 };
       }
     } else {
