@@ -16,8 +16,6 @@ import {
 import { ApiConstants, PATIENT_REPO_RELATIONS, PartnerId } from 'ApiConstants';
 import { createPrismUser } from 'helpers/phrV1Services';
 import { getCache, delCache, setCache } from 'profiles-service/database/connectRedis';
-import { customerIdentification } from 'profiles-service/helpers/hdfc';
-import { checkForRegisteredPartner } from 'profiles-service/resolvers/hdfcCustomerValidation';
 
 const REDIS_PATIENT_LOCK_PREFIX = `patient:lock:`;
 export const updatePatientTypeDefs = gql`
