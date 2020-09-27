@@ -271,17 +271,22 @@ const initiateCallForPartner: Resolver<
   null,
   ExotelCallFlowResponse
 > = async (parent, { mobileNumber, benefitId }) => {
-  const apiBaseUrl = `https://${process.env.HDFC_EXOTEL_API_KEY}:${process.env.HDFC_EXOTEL_API_TOKEN}@${process.env.EXOTEL_SUB_DOMAIN}`;
+  const apiBaseUrl = `https://${process.env.EXOTEL_HDFC_API_KEY}:${process.env.EXOTEL_HDFC_API_TOKEN}@${process.env.EXOTEL_SUB_DOMAIN}`;
   const apiUrl = `${apiBaseUrl}/v1/Accounts/${process.env.EXOTEL_SID}/Calls/connect.json`;
   const params = new URLSearchParams();
   params.append('From', mobileNumber);
   params.append('CallerId', `${process.env.EXOTEL_HDFC_CALLER_ID}`);
-  params.append('Url', 'http://my.exotel.com/apollo2471/exoml/start_voice/314043');
+  params.append(
+    'Url',
+    `http://my.exotel.com/apollo2471/exoml/start_voice/${process.env.EXOTEL_HDFC_APP_ID}`
+  );
   params.append('CallType', 'trans');
   params.append(
     'StatusCallback',
     `${process.env.PAYTM_BASE_URL}/exotelCallEnd?mobileNumber=${parseInt(mobileNumber, 10)}`
   );
+
+  console.log(params, apiUrl);
   fetch(apiUrl, {
     method: 'POST',
     body: params,
@@ -291,6 +296,8 @@ const initiateCallForPartner: Resolver<
   })
     .then((res) => res.json())
     .then((res) => {
+      console.log('========', res);
+
       // // add the cache for mobile number + Sid
       const value = {
         benefitId,
@@ -304,12 +311,13 @@ const initiateCallForPartner: Resolver<
     })
     .catch((error) => {
       log(
-        'initateCallAPILogger',
+        'consultServiceLogger',
         `SEND_SMS_ERROR`,
         'smsResponse()->CATCH_BLOCK',
         '',
         `${mobileNumber}: ${JSON.stringify(error)}`
       );
+      console.log(error);
       throw new AphError(AphErrorMessages.EXOTEL_REQUEST_ERROR);
     });
   return { success: true };
