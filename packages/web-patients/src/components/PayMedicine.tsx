@@ -418,8 +418,7 @@ const PayMedicine: React.FC = (props) => {
     userSubscriptions[0] &&
     userSubscriptions[0].status == 'ACTIVE' &&
     userSubscriptions[0].group_plan &&
-    (userSubscriptions[0].group_plan.name == 'PLATINUM+ PLAN' ||
-      userSubscriptions[0].group_plan.name == 'GOLD+ PLAN');
+    userSubscriptions[0].group_plan.name == 'PLATINUM+ PLAN';
 
   const getMRPTotal = () => {
     let sum = 0;
