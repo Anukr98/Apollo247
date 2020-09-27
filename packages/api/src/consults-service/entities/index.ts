@@ -325,6 +325,9 @@ export class Appointment extends BaseEntity {
   })
   paymentInfo: Partial<AppointmentPayments>;
 
+  @Column({ nullable: true, default: false })
+  hideHealthRecordNudge: Boolean;
+
   @BeforeUpdate()
   async appointMentStatusConstraintCheck() {
     try {

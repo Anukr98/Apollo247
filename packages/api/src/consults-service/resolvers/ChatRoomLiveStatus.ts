@@ -5,6 +5,7 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { BOOKINGSOURCE, DEVICETYPE } from 'consults-service/entities';
 import { ApiConstants } from 'ApiConstants';
 import { getCache, setCache } from 'consults-service/database/connectRedis';
+import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 
 export const liveStatusTypeDefs = gql`
     enum USER_TYPE {
@@ -33,6 +34,10 @@ export const liveStatusTypeDefs = gql`
         NUMBER_OF_PARTIPANTS: Int
         CALL_STATUS: CALL_STATUS
     }
+    type healthRecordResult {
+        isError: Boolean
+        response: String
+    }
     extend type Query {
         setAndGetNumberOfParticipants(
             appointmentId: String,
@@ -42,6 +47,12 @@ export const liveStatusTypeDefs = gql`
             userStatus: USER_STATUS,
             callStatus: CALL_STATUS)
         : setAndGetNumberOfParticipantsResult,
+    }
+    extend type Mutation {
+        updateHealthRecordNudgeStatus(
+            appointmentId: String!
+            hideHealthRecordNudge: Boolean
+        ): healthRecordResult!
     }
 `;
 
@@ -127,8 +138,30 @@ const setAndGetNumberOfParticipants: Resolver<
     };
 };
 
+const updateHealthRecordNudgeStatus: Resolver<
+    null,
+    { appointmentId: string; hideHealthRecordNudge: boolean; },
+    ConsultServiceContext,
+    {
+        isError: boolean;
+        response: string;
+    }
+> = async (parent, args, { consultsDb }) => {
+    try {
+        const appRepository = consultsDb.getCustomRepository(AppointmentRepository);
+        await appRepository.updateAppointmentAttributes(args.appointmentId, { hideHealthRecordNudge: args.hideHealthRecordNudge });
+        return { isError: false, response: "Updated Successfully" };
+    } catch (err) {
+        console.error("error in updating hideHealthRecordNudge > ", err);
+        return { isError: true, response: "Not Updated" };
+    }
+};
+
 export const liveStatusResolvers = {
     Query: {
         setAndGetNumberOfParticipants,
     },
+    Mutation: {
+        updateHealthRecordNudgeStatus
+    }
 };
