@@ -13,6 +13,8 @@ import {
   sendDoctorNotificationWhatsapp,
   isNotificationAllowed,
 } from 'notifications-service/handlers';
+import { PatientDeviceTokenRepository } from 'profiles-service/repositories/patientDeviceTokenRepository';
+import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 
 export const loginTypeDefs = gql`
   enum LOGIN_TYPE {
@@ -35,10 +37,17 @@ export const loginTypeDefs = gql`
   type testSMSResult {
     send: Boolean
   }
+  type LogoutResult{
+    isError: Boolean
+    response: String
+  }
   extend type Query {
     login(mobileNumber: String!, loginType: LOGIN_TYPE!, hashCode: String): LoginResult!
     resendOtp(mobileNumber: String!, id: String!, loginType: LOGIN_TYPE!): LoginResult!
     testSendSMS(mobileNumber: String!): testSMSResult!
+  }
+  extend type Mutation {
+    logout(mobileNumber: String!): LogoutResult!
   }
 `;
 
@@ -289,12 +298,41 @@ const testSMS = async (mobileNumber: string, otp: string) => {
   return smsResponse;
 };
 
+const logout: Resolver<
+  null,
+  { mobileNumber: string },
+  ProfilesServiceContext,
+  {
+    isError: boolean;
+    response: string;
+  }
+> = async (parent, args, { profilesDb }) => {
+  try {
+    const profilesRepository = profilesDb.getCustomRepository(PatientRepository);
+    const profiles = await profilesRepository.getIdsByMobileNumber(args.mobileNumber);
+    if (!profiles.length) {
+      throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
+    }
+    for (let index = 0; index < profiles.length; index++) {
+      const devTokenRepository = profilesDb.getCustomRepository(PatientDeviceTokenRepository);
+      await devTokenRepository.deleteDeviceTokenWhere({ patient: profiles[index] });
+    }
+    return { isError: false, response: "Tokens Deleted Successfully" };
+  } catch (err) {
+    console.error("error in deleting tokens > ", err);
+    return { isError: true, response: "Tokens Not Deleted" };
+  }
+};
+
 export const loginResolvers = {
   Query: {
     login,
     resendOtp,
     testSendSMS,
   },
+  Mutation: {
+    logout
+  }
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
