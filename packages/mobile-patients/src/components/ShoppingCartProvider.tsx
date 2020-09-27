@@ -85,12 +85,6 @@ export interface CartProduct {
 }
 export type EPrescriptionDisableOption = 'CAMERA_AND_GALLERY' | 'E-PRESCRIPTION' | 'NONE';
 
-export enum HDFC_PLANS {
-  SILVER = 'SILVER+ PLAN',
-  GOLD = 'GOLD+ PLAN',
-  PLATINUM = 'PLATINUM+ PLAN',
-}
-
 export interface ShoppingCartContextProps {
   cartItems: ShoppingCartItem[];
   setCartItems: ((items: ShoppingCartItem[]) => void) | null;
@@ -110,6 +104,8 @@ export interface ShoppingCartContextProps {
   packagingCharges: number;
   grandTotal: number;
   uploadPrescriptionRequired: boolean;
+  isFreeDelivery: boolean;
+  setIsFreeDelivery: ((value: boolean) => void) | null;
   showPrescriptionAtStore: boolean;
   setShowPrescriptionAtStore: ((value: boolean) => void) | null;
   stores: Store[];
@@ -195,6 +191,9 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   storesInventory: [],
   setStoresInventory: null,
 
+  isFreeDelivery: false,
+  setIsFreeDelivery: null,
+
   showPrescriptionAtStore: false,
   setShowPrescriptionAtStore: null,
   pinCode: '',
@@ -254,6 +253,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [coupon, setCoupon] = useState<ShoppingCartContextProps['coupon']>(null);
   const [deliveryType, setDeliveryType] = useState<ShoppingCartContextProps['deliveryType']>(null);
   const [hdfcPlanName, _setHdfcPlanName] = useState<ShoppingCartContextProps['hdfcPlanName']>('');
+  const [isFreeDelivery, setIsFreeDelivery] = useState<ShoppingCartContextProps['isFreeDelivery']>(false);
   const [showPrescriptionAtStore, setShowPrescriptionAtStore] = useState<
     ShoppingCartContextProps['showPrescriptionAtStore']
   >(false);
@@ -378,8 +378,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const deliveryCharges =
     !deliveryType || 
     deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP || 
-    hdfcPlanName === HDFC_PLANS.PLATINUM ||
-    hdfcPlanName === HDFC_PLANS.GOLD
+    isFreeDelivery
       ? 0
       : deliveryType == MEDICINE_DELIVERY_TYPE.HOME_DELIVERY &&
         cartTotal > 0 &&
@@ -632,6 +631,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setStoresInventory,
         storeId,
         setStoreId,
+        isFreeDelivery,
+        setIsFreeDelivery,
         showPrescriptionAtStore,
         setShowPrescriptionAtStore,
 

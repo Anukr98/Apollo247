@@ -137,10 +137,13 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const membershipType = props.navigation.getParam('membershipType');
 
   const { hdfcUserSubscriptions } = useAppCommonData();
-  const membershipDetails = membershipType === g(hdfcUserSubscriptions, 'name') ? hdfcUserSubscriptions : g(hdfcUserSubscriptions, 'canUpgradeTo');
+  const planName = g(hdfcUserSubscriptions, 'name');
+  const upgradePlanName = g(hdfcUserSubscriptions, 'canUpgradeTo', 'name');
+  const premiumPlanName = g(hdfcUserSubscriptions, 'canUpgradeTo', 'canUpgradeTo', 'name');
+  const membershipDetails = membershipType === planName ? hdfcUserSubscriptions : g(hdfcUserSubscriptions, 'canUpgradeTo');
   const isCanUpgradeTo = 
-    membershipType === g(hdfcUserSubscriptions, 'canUpgradeTo', 'name') ||
-    membershipType === g(hdfcUserSubscriptions, 'canUpgradeTo', 'canUpgradeTo', 'name');
+    membershipType === upgradePlanName ||
+    membershipType === premiumPlanName;
   const isActivePlan = !!membershipDetails!.isActive;
   const benefits = membershipDetails!.benefits;
   const coupons = membershipDetails!.coupons;
@@ -156,58 +159,16 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const { TnC, SILVER_PLAN, GOLD_PLAN, PLATINUM_PLAN } = Hdfc_values;
 
+  const upgradeTransactionValue = 
+    membershipType === upgradePlanName ? g(hdfcUserSubscriptions, 'upgradeTransactionValue') :
+      membershipType === premiumPlanName ? g(hdfcUserSubscriptions, 'canUpgradeTo', 'upgradeTransactionValue') :
+      0;
+
   useEffect(() => {
     if (hdfcUserSubscriptions && g(hdfcUserSubscriptions, '_id')) {
       setshowSpinner(false);
     }
   }, [hdfcUserSubscriptions]);
-
-  const benefitsActionMapping = [
-    {
-      attribute: 'CALL_EXOTEL_API',
-      action: () => {
-        setShowHdfcConnectPopup(true);
-      }
-    },
-    {
-      attribute: 'SPECIALITY_LISTING',
-      action: () => {
-        props.navigation.navigate(AppRoutes.DoctorSearch);
-      }
-    },
-    {
-      attribute: 'PHARMACY_LANDING',
-      action: () => {
-        props.navigation.navigate('MEDICINES');
-      }
-    },
-    {
-      attribute: 'PHR',
-      action: () => {
-        props.navigation.navigate('APPOINTMENTS');
-      }
-    },
-    {
-      attribute: 'DIAGNOSTICS_LANDING',
-      action: () => {
-        props.navigation.navigate('TESTS');
-      }
-    },
-    {
-      attribute: 'DOC_LISTING_WITH_PAYROLL_DOCS_SELECTED',
-      action: () => {
-        props.navigation.navigate(AppRoutes.DoctorSearch);
-      }
-    },
-    {
-      attribute: 'WHATSAPP_OPEN_CHAT',
-      action: () => {}
-    },
-    {
-      attribute: 'NULL',
-      action: () => {}
-    },
-  ];
 
   const renderTabComponent = () => {
     return (
@@ -235,7 +196,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     return (
       (areBenefitsAvailable) &&
       benefits.map(value => {
-        const {headerContent, description, ctaLabel, ctaAction, benefitCtaAction, icon} = value;
+        const {headerContent, description, ctaLabel, benefitCtaAction, icon} = value;
         const {action, message, type} = benefitCtaAction;
         const ctaLabelName = ctaLabel.toUpperCase();
         return (
@@ -243,7 +204,6 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
             headerContent, 
             description, 
             ctaLabelName, 
-            ctaAction,
             action,
             message,
             type,
@@ -334,32 +294,17 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     heading: string, 
     bodyText: string, 
     ctaLabel: string, 
-    ctaAction: string,
     action: string,
     message: string,
     type: string,
     icon: string | null,
   ) => {
-    let actionCta = benefitsActionMapping.filter((value) => {
-      return value.attribute === action
-    });
-    if (type === 'WHATSAPP_OPEN_CHAT') {
-      actionCta = [
-        {
-          attribute: type,
-          action: () => {
-            Linking.openURL(`whatsapp://send?text=${message}&phone=${action}`);
-          }
-        }
-      ]
-    };
-    const onCtaClick = actionCta.length ? actionCta[0].action : () => {};
     return (
       <View style={[styles.cardStyle, { marginVertical: 10 }]}>
         {renderRedeemableCardsContent(heading, bodyText, icon)}
         { 
           ctaLabel !== 'NULL' &&
-          <TouchableOpacity onPress={() => {onCtaClick()}}>
+          <TouchableOpacity onPress={() => {handleCtaClick(type, action, message)}}>
             <Text style={styles.redeemButtonText}>
               {ctaLabel}
             </Text>
@@ -367,6 +312,30 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         }
       </View>
     );
+  };
+
+  const handleCtaClick = (type: any, action: any, message: any) => {
+    if (type == Hdfc_values.REDIRECT) {
+      if (action == Hdfc_values.SPECIALITY_LISTING) {
+        props.navigation.navigate(AppRoutes.DoctorSearch);
+      } else if (action == Hdfc_values.PHARMACY_LANDING) {
+        props.navigation.navigate('MEDICINES');
+      } else if (action == Hdfc_values.PHR) {
+        props.navigation.navigate('HEALTH RECORDS');
+      } else if (action == Hdfc_values.DOC_LISTING_WITH_PAYROLL_DOCS_SELECTED) {
+        props.navigation.navigate(AppRoutes.DoctorSearch);
+      } else if (action == Hdfc_values.DIAGNOSTICS_LANDING) {
+        props.navigation.navigate('TESTS');
+      }
+    } else if (type == Hdfc_values.CALL_API) {
+      if (action == Hdfc_values.CALL_EXOTEL_API) {
+        setShowHdfcConnectPopup(true);
+      }
+    } else if (type == Hdfc_values.WHATSAPP_OPEN_CHAT) {
+      Linking.openURL(`whatsapp://send?text=${message}&phone=91${action}`);
+    } else {
+      props.navigation.navigate(AppRoutes.ConsultRoom);
+    }
   };
 
   const renderRedeemableCardsContent = (heading: string, bodyText: string, icon: string | null) => {
@@ -419,23 +388,24 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
 
   const renderBenefitsConsumed = () => {
     const benefitStyle = StyleSheet.create({
-      whiteBG: {
-        backgroundColor: 'white',
+      scrollViewStyle: {
+        marginTop: 20,
+        marginBottom: 20,
+        ...styles.cardStyle,
+        padding: 10,
       },
       benefitContainer: {
-        width,
-        flexDirection: 'column',
-        padding: 20,
-        borderBottomColor: '#A9A9A9',
-        borderBottomWidth: 1,
+        flexDirection: 'row',
+        backgroundColor: 'white',
+        padding: 10,
       },
       rowStretch: {
-        flex: 1,
         flexDirection: 'row',
-        alignItems: 'stretch',
+        backgroundColor: 'white',
+        padding: 10,
       },
       halfWidth: {
-        width: width / 2.1
+        width: width / 2.2
       },
       benefitDescription: {
         textTransform: 'uppercase',
@@ -444,73 +414,65 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
       },
       benefitHeading: {
         ...theme.viewStyles.text('SB', 15, '#00B38E', 1, 20, 0.35),
-        marginBottom: 10,
+      },
+      flexColumn: {
+        flexDirection: 'column',
       },
     });
-    return (
-      <ScrollView 
-        horizontal={true}
-        // showsHorizontalScrollIndicator={true}
-        contentContainerStyle={{
-          paddingVertical: 20,
-        }} 
-        bounces={false}
-      >
-        <View style={[
-          benefitStyle.whiteBG,
-          {
-            flexDirection: 'row',
-          }
-        ]}>
-          {
-            benefits.map(value => {
-              const limit = value.attributeType!.type;
-              const status = limit === 'unlimited' ? 'AVAILABLE' : `${value.attributeType!.remaining} REMAINING`;
-              return (
-                <View style={benefitStyle.benefitContainer}>
+
+    const benefitsConsumed = benefits.filter(benefit => {
+      return benefit.attributeType!.type !== 'unlimited';
+    });
+
+    if (benefitsConsumed.length) {
+      return (
+        <ScrollView 
+          horizontal={true}
+          contentContainerStyle={benefitStyle.scrollViewStyle} 
+          bounces={false}
+        >
+          <View style={benefitStyle.flexColumn}>
+            <View style={benefitStyle.benefitContainer}>
+              <View style={benefitStyle.halfWidth}>
+                <Text style={benefitStyle.benefitHeading}>BENEFITS</Text>
+              </View>
+              <View style={benefitStyle.halfWidth}>
+                <Text style={benefitStyle.benefitHeading}>WHAT DO YOU GET</Text>
+              </View>
+              <View style={benefitStyle.halfWidth}>
+                <Text style={benefitStyle.benefitHeading}>REDEMPTION LIMIT</Text>
+              </View>
+              <View style={benefitStyle.halfWidth}>
+                <Text style={benefitStyle.benefitHeading}>STATUS</Text>
+              </View>
+            </View>
+            {
+              benefitsConsumed.map(benefit => {
+                const limit = benefit.attributeType!.type;
+                return (
                   <View style={benefitStyle.rowStretch}>
                     <View style={benefitStyle.halfWidth}>
-                      <Text style={benefitStyle.benefitHeading}>
-                        BENEFIT
-                      </Text>
-                      <Text style={benefitStyle.benefitDescription}>
-                        {value.headerContent}
-                      </Text>
+                      <Text style={benefitStyle.benefitDescription}>{benefit.headerContent}</Text>
                     </View>
                     <View style={benefitStyle.halfWidth}>
-                      <Text style={benefitStyle.benefitHeading}>
-                        WHAT DO YOU GET
-                      </Text>
-                      <Text style={benefitStyle.benefitDescription}>
-                        {value.description}
-                      </Text>
+                      <Text style={benefitStyle.benefitDescription}>{benefit.description}</Text>
+                    </View>
+                    <View style={benefitStyle.halfWidth}>
+                      <Text style={benefitStyle.benefitDescription}>{limit}</Text>
+                    </View>
+                    <View style={benefitStyle.halfWidth}>
+                      <Text style={benefitStyle.benefitDescription}>{benefit.attributeType!.remaining}</Text>
                     </View>
                   </View>
-                  <View style={benefitStyle.rowStretch}>
-                    <View style={benefitStyle.halfWidth}>
-                      <Text style={benefitStyle.benefitHeading}>
-                        REDEMPTION LIMIT
-                      </Text>
-                      <Text style={benefitStyle.benefitDescription}>
-                        {limit}
-                      </Text>
-                    </View>
-                    <View style={benefitStyle.halfWidth}>
-                      <Text style={benefitStyle.benefitHeading}>
-                        STATUS
-                      </Text>
-                      <Text style={benefitStyle.benefitDescription}>
-                        {status}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-              )
-            })
-          }
-        </View>
-      </ScrollView>
-    );
+                )
+              })
+            }
+          </View>
+        </ScrollView>
+      );
+    } else {
+      return <></>
+    }
   };
 
   const renderBottomContainer = () => {
@@ -620,14 +582,14 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   };
 
   const renderHowToAvailContent = () => {
-    const canUpgradeMembership = g(hdfcUserSubscriptions, 'canUpgradeTo', 'name');
+    const canUpgradeMembership = upgradePlanName;
     const smallCaseName = canUpgradeMembership ? canUpgradeMembership.toLowerCase() : '';
     return (
       <View style={{
         marginTop: 15,
       }}>
         <Text style={theme.viewStyles.text('SB', 13, '#007C9D', 1, 20, 0.35)}>
-          {`Complete transactions worth Rs.${membershipDetails!.minTransactionValue} or more on the Apollo 24|7 app to unlock ${smallCaseName} membership​`}
+          {`Complete transactions worth Rs.${upgradeTransactionValue} or more on the Apollo 24|7 app to unlock ${smallCaseName} membership​`}
         </Text>
       </View>
     );
@@ -772,7 +734,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         showAvailPopup && 
         <AvailNowPopup 
           onClose={() => setShowAvailPopup(false)} 
-          transactionAmount={membershipDetails!.minTransactionValue} 
+          transactionAmount={upgradeTransactionValue} 
           navigation={props.navigation}
         />
       }

@@ -347,7 +347,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [isFindDoctorCustomProfile, setFindDoctorCustomProfile] = useState<boolean>(false);
 
   const { cartItems } = useDiagnosticsCart();
-  const { cartItems: shopCartItems, setHdfcPlanName } = useShoppingCart();
+  const { cartItems: shopCartItems, setHdfcPlanName, setIsFreeDelivery } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
 
   const { analytics } = useAuth();
@@ -434,6 +434,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         if (g(hdfcUserSubscriptions, 'isActive')) {
           setHdfcPlanName && setHdfcPlanName(subscriptionName);
         }
+        if(g(hdfcUserSubscriptions, 'isFreeDelivery')) {
+          setIsFreeDelivery && setIsFreeDelivery(true);
+        }
         setShowHdfcWidget(false);
         setShowHdfcConnectWidget(true);
       } else {
@@ -510,6 +513,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       }
       if (currentPatient&& g(currentPatient, 'partnerId') === hdfc_values.REFERRAL_CODE) {
         getUserSubscriptionsWithBenefits();
+      } else {
+        setHdfcUserSubscriptions && setHdfcUserSubscriptions(null);
+        setIsFreeDelivery && setIsFreeDelivery(false);
+        setHdfcPlanName && setHdfcPlanName('');
       }
     } catch (e) {}
   }, [currentPatient]);
@@ -869,6 +876,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       };
       const benefits = plan.benefits;
       const planBenefits: PlanBenefits[] = [];
+      let isFreeDelivery = false;
       if (benefits && benefits.length) {
         benefits.forEach((item) =>{
           const ctaAction = g(item, 'cta_action');
@@ -877,6 +885,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             action: g(ctaAction, 'meta', 'action'),
             message: g(ctaAction, 'meta', 'message'),
           };
+          if (g(ctaAction, 'meta', 'action') === 'PHARMACY_LANDING') {
+            isFreeDelivery = true;
+          }
           const benefit: PlanBenefits = {
             _id: item!._id,
             attribute: item!.attribute,
@@ -909,6 +920,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         benefits: planBenefits,
         coupons: plan!.coupons ? plan!.coupons : [],
         canUpgradeTo: g(upgradeToPlan, '_id') ? setSubscriptionData(upgradeToPlan) : {},
+        upgradeTransactionValue: plan!.upgrade_transaction_value,
+        isFreeDelivery: isFreeDelivery,
       }
       return subscription;
     } catch (e) {
@@ -1954,71 +1967,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const renderHdfcSliderItem = ({ item, index }) => {
     const {cta_action} = item;
-    const benefitsActionMapping = [
-      {
-        attribute: 'CALL_EXOTEL_API',
-        action: () => {
-          setShowHdfcConnectPopup(true);
-        }
-      },
-      {
-        attribute: 'SPECIALITY_LISTING',
-        action: () => {
-          props.navigation.navigate(AppRoutes.DoctorSearch);
-        }
-      },
-      {
-        attribute: 'PHARMACY_LANDING',
-        action: () => {
-          props.navigation.navigate('MEDICINES');
-        }
-      },
-      {
-        attribute: 'PHR',
-        action: () => {
-          props.navigation.navigate('APPOINTMENTS');
-        }
-      },
-      {
-        attribute: 'DIAGNOSTICS_LANDING',
-        action: () => {
-          props.navigation.navigate('HEALTH RECORDS');
-        }
-      },
-      {
-        attribute: 'DOC_LISTING_WITH_PAYROLL_DOCS_SELECTED',
-        action: () => {
-          props.navigation.navigate(AppRoutes.DoctorSearch);
-        }
-      },
-      {
-        attribute: 'WHATSAPP_OPEN_CHAT',
-        action: () => {}
-      },
-    ];
-
-    let actionCta = benefitsActionMapping.filter((value) => {
-      return value.attribute === cta_action.meta.action
-    });
-    if (cta_action.meta.action === 'WHATSAPP_OPEN_CHAT') {
-      const message = cta_action.meta.message ? cta_action.meta.message : '';
-      const action = cta_action.meta.action ? cta_action.meta.action : '';
-      actionCta = [
-        {
-          attribute: cta_action.meta.action,
-          action: () => {
-            Linking.openURL(`whatsapp://send?text=${message}&phone=${action}`);
-          }
-        }
-      ]
-    };
-    const onCtaClick = actionCta.length ? actionCta[0]!.action : () => {};
 
     const bannerUri = getMobileURL(item.banner)
     return (
       <TouchableOpacity
         activeOpacity={1}
-        onPress={onCtaClick}
+        onPress={() => handleOnBannerClick(cta_action.type, cta_action.meta.action, cta_action.meta.message)}
         style={{
           ...theme.viewStyles.cardViewStyle,
           borderRadius: 12,
@@ -2039,6 +1993,30 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         />
       </TouchableOpacity>
     );
+  };
+
+  const handleOnBannerClick = (type: any, action: any, message: any) => {
+    if (type == hdfc_values.REDIRECT) {
+      if (action == hdfc_values.SPECIALITY_LISTING) {
+        props.navigation.navigate(AppRoutes.DoctorSearch);
+      } else if (action == hdfc_values.PHARMACY_LANDING) {
+        props.navigation.navigate('MEDICINES');
+      } else if (action == hdfc_values.PHR) {
+        props.navigation.navigate('HEALTH RECORDS');
+      } else if (action == hdfc_values.DOC_LISTING_WITH_PAYROLL_DOCS_SELECTED) {
+        props.navigation.navigate(AppRoutes.DoctorSearch);
+      } else if (action == hdfc_values.DIAGNOSTICS_LANDING) {
+        props.navigation.navigate('TESTS');
+      }
+    } else if (type == hdfc_values.CALL_API) {
+      if (action == hdfc_values.CALL_EXOTEL_API) {
+        setShowHdfcConnectPopup(true);
+      }
+    } else if (type == hdfc_values.WHATSAPP_OPEN_CHAT) {
+      Linking.openURL(`whatsapp://send?text=${message}&phone=91${action}`);
+    } else {
+      props.navigation.navigate(AppRoutes.ConsultRoom);
+    }
   };
 
   const renderCovidHeader = () => {

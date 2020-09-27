@@ -12,6 +12,7 @@ import {
   HdfcSilverMedal,
   LockIcon,
   HdfcBankLogoSmall,
+  HdfcBankLogo,
 } from '../ui/Icons';
 import { useAppCommonData, PlanBenefits } from '../AppCommonDataProvider';
 import { g } from '../../helpers/helperFunctions';
@@ -93,6 +94,28 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.cardViewStyle,
     borderRadius: 0,
     marginBottom: 20,
+  },
+  healthyLifeContainer: {
+    marginHorizontal: 20,
+    marginBottom: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between'
+  },
+  hdfcLogo: {
+    resizeMode: 'contain',
+    width: 100,
+    height: 30,
+  },
+  currentBenefits: {
+    ...theme.viewStyles.text('B', 14, '#02475B', 1, 20, 0.35),
+    paddingLeft: 20,
+    paddingBottom: 10,
+  },
+  otherPlans: {
+    ...theme.viewStyles.text('B', 14, '#02475B', 1, 20, 0.35),
+    paddingTop: 20,
+    paddingLeft: 20,
+    paddingBottom: 10,
   }
 });
 
@@ -101,13 +124,14 @@ export interface MyMembershipProps extends NavigationScreenProps {}
 export const MyMembership: React.FC<MyMembershipProps> = (props) => {
   const { hdfcUserSubscriptions } = useAppCommonData();
   const showSubscriptions = !!(hdfcUserSubscriptions && hdfcUserSubscriptions.name);
-  const canUpgradeMultiplePlans = !!g(hdfcUserSubscriptions, 'canUpgradeTo', 'canUpgradeTo', 'name');
-  const premiumPlan = canUpgradeMultiplePlans ? g(hdfcUserSubscriptions, 'canUpgradeTo', 'canUpgradeTo') : {};
-  const canUpgrade = !!g(hdfcUserSubscriptions, 'canUpgradeTo', 'name');
-  const minTransactionToUpgrade = canUpgrade ? g(hdfcUserSubscriptions, 'canUpgradeTo', 'minTransactionValue') : 0;
+  const canUpgradeToPlans = g(hdfcUserSubscriptions, 'canUpgradeTo')
+  const canUpgradeMultiplePlans = !!g(canUpgradeToPlans, 'canUpgradeTo', 'name');
+  const premiumPlan = canUpgradeMultiplePlans ? g(canUpgradeToPlans, 'canUpgradeTo') : {};
+  const canUpgrade = !!g(canUpgradeToPlans, 'name');
   const isActive = !!(hdfcUserSubscriptions && hdfcUserSubscriptions.isActive);
   const [showAvailPopup, setShowAvailPopup] = useState<boolean>(false);
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
+  const [upgradeTransactionValue, setUpgradeTransactionValue] = useState<number>(0);
   const hdfc_values = string.Hdfc_values;
 
   useEffect(() => {
@@ -152,7 +176,14 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
   };
 
   const renderBottomButtons = (isActive: boolean, subscriptionName: string, isCanUpgradeToPlan: boolean) => {
-    const buttonText = isCanUpgradeToPlan ? 'AVAIL NOW' : (isActive ? 'EXPLORE NOW' : 'ACTIVATE NOW');
+    const buttonText = isCanUpgradeToPlan ? 'HOW TO AVAIL' : (isActive ? 'EXPLORE' : 'ACTIVATE NOW');
+    const upgradePlanName = g(hdfcUserSubscriptions, 'canUpgradeTo', 'name');
+    const premiumPlanName = g(hdfcUserSubscriptions, 'canUpgradeTo', 'canUpgradeTo', 'name');
+
+    const transactionValue = 
+    subscriptionName === upgradePlanName ? g(hdfcUserSubscriptions, 'upgradeTransactionValue') :
+      subscriptionName === premiumPlanName ? g(hdfcUserSubscriptions, 'canUpgradeTo', 'upgradeTransactionValue') :
+      0;
     return (
       <View style={styles.membershipButtons}>
         <TouchableOpacity 
@@ -172,6 +203,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
           style={{ padding: 10 }}
           onPress={() => {
             if (isCanUpgradeToPlan) {
+              setUpgradeTransactionValue(transactionValue);
               setShowAvailPopup(true);
             } else {
               props.navigation.navigate(AppRoutes.ConsultRoom, {});
@@ -193,13 +225,13 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
     return (
       <View style={styles.cardStyle}>
         <View style={styles.membershipCardContainer}>
-          <HdfcBankLogoSmall 
+          {/* <HdfcBankLogoSmall 
             style={{
               width: 20,
               height: 20,
               marginRight: 10,
             }} 
-          />
+          /> */}
           <Text style={styles.planName}>
             {subscription!.name}
           </Text>
@@ -221,6 +253,16 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
     );
   };
 
+  const renderAvailNowPopup = () => {
+    return (
+      <AvailNowPopup 
+        onClose={() => setShowAvailPopup(false)} 
+        transactionAmount={upgradeTransactionValue} 
+        navigation={props.navigation}
+      />
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
@@ -235,40 +277,35 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
           showSubscriptions && 
           <ScrollView bounces={false}>
             <View>
-                <Text style={{
-                  ...theme.viewStyles.text('B', 14, '#02475B', 1, 20, 0.35),
-                  paddingLeft: 20,
-                  paddingBottom: 10,
-                }}>
-                  CURRENT BENEFITS
+              <View style={styles.healthyLifeContainer}>
+                <Text style={theme.viewStyles.text('B', 12, '#005CA8', 1, 20, 0.35)}>
+                  #ApolloHealthyLife
                 </Text>
-                {renderMembershipCard(hdfcUserSubscriptions, false)}
+                <HdfcBankLogo style={styles.hdfcLogo}/>
               </View>
-            {
-              canUpgrade &&
               <View>
-                <Text style={{
-                  ...theme.viewStyles.text('B', 14, '#02475B', 1, 20, 0.35),
-                  paddingTop: 20,
-                  paddingLeft: 20,
-                  paddingBottom: 10,
-                }}>
-                  OTHER PLANS
-                </Text>
-                {renderMembershipCard(hdfcUserSubscriptions!.canUpgradeTo, true)}
-                <View style={{marginTop: 15}} />
-                {canUpgradeMultiplePlans && renderMembershipCard(premiumPlan, true)}
-              </View>
-            }
+                  <Text style={styles.currentBenefits}>
+                    CURRENT BENEFITS
+                  </Text>
+                  {renderMembershipCard(hdfcUserSubscriptions, false)}
+                </View>
+              {
+                canUpgrade &&
+                <View>
+                  <Text style={styles.otherPlans}>
+                    OTHER PLANS
+                  </Text>
+                  {renderMembershipCard(hdfcUserSubscriptions!.canUpgradeTo, true)}
+                  <View style={{marginTop: 15}} />
+                  {canUpgradeMultiplePlans && renderMembershipCard(premiumPlan, true)}
+                </View>
+              }
+            </View>
           </ScrollView>
         }
         {
           showAvailPopup && 
-          <AvailNowPopup 
-            onClose={() => setShowAvailPopup(false)} 
-            transactionAmount={minTransactionToUpgrade} 
-            navigation={props.navigation}
-          />
+          renderAvailNowPopup()
         }
         {showSpinner && <Spinner />}
       </SafeAreaView>

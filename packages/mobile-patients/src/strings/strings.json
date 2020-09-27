@@ -416,5 +416,14 @@
     "GOLD_PLAN": "GOLD+ PLAN",
     "PLATINUM_PLAN": "PLATINUM+ PLAN",
     "ENROLL_URL": "https://apply.hdfcbank.com/vivid/s_account_newuiux?LGCode=HFAP&mc_id=hfap_mobileapp&utm_source=apollo&utm_medium=mobileapp&utm_campaign=apollo_app_hf_ntb",
+    "REDIRECT": "REDIRECT",
+    "CALL_API": "CALL_API",
+    "WHATSAPP_OPEN_CHAT": "WHATSAPP_OPEN_CHAT",
+    "SPECIALITY_LISTING": "SPECIALITY_LISTING",
+    "PHARMACY_LANDING": "PHARMACY_LANDING",
+    "PHR": "PHR",
+    "DOC_LISTING_WITH_PAYROLL_DOCS_SELECTED": "DOC_LISTING_WITH_PAYROLL_DOCS_SELECTED",
+    "DIAGNOSTICS_LANDING": "DIAGNOSTICS_LANDING",
+    "CALL_EXOTEL_API": "CALL_EXOTEL_API"
   }
 }
