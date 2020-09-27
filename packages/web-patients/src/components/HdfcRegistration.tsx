@@ -410,6 +410,7 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
   const [showOTPValidator, setShowOTPValidator] = React.useState<boolean>(false);
   const [showCongratulations, setShowCongratulations] = React.useState<boolean>(false);
   const [showRecheckOTP, setShowRecheckOTP] = React.useState<boolean>(false);
+  const [showOtpFail, setShowOtpFail] = React.useState<boolean>(false);
   const [loading, setLoading] = React.useState<boolean>(false);
 
   const queryIdentifyHDFCCustomer = () => {
@@ -431,6 +432,11 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
           setShowIntro(false);
           setShowRecheckOTP(false);
           setShowOTPValidator(true);
+        } else if (response.data.identifyHdfcCustomer.status == HDFC_CUSTOMER.OTP_NOT_GENERATED) {
+          setLoading(false);
+          setShowIntro(false);
+          setShowOtpFail(true);
+          setShowRecheckOTP(true);
         } else {
           setLoading(false);
           setShowIntro(false);
@@ -598,12 +604,13 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
                 Sorry !
               </Typography>
               <Typography>
-                Looks like your details are not matching with HDFC Bank records.​ Please retry or
-                enroll yourself with HDFC Bank
+                {showOtpFail
+                  ? 'Due to a technical glitch, we are unable to verify your details with HDFC Bank right now. Please try again in sometime'
+                  : 'Looks like your details are not matching with HDFC Bank records.​ Please retry or enroll yourself with HDFC Bank'}
               </Typography>
             </div>
             <div className={classes.btnContainer}>
-              <AphButton href={HDFC_ENROLL_LINK}>Enroll</AphButton>
+              {!showOtpFail && <AphButton href={HDFC_ENROLL_LINK}>Enroll</AphButton>}
               <AphButton onClick={() => queryIdentifyHDFCCustomer()}>
                 {loading ? <CircularProgress size={30} /> : 'Recheck Otp'}
               </AphButton>
