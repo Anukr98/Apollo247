@@ -239,7 +239,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   // const [deliveryError, setdeliveryError] = useState<string>('');
   const [showDeliverySpinner, setshowDeliverySpinner] = useState<boolean>(true);
   const [showDriveWayPopup, setShowDriveWayPopup] = useState<boolean>(false);
-  const { locationDetails, pharmacyLocation, hdfcUserSubscriptions } = useAppCommonData();
+  const { locationDetails, pharmacyLocation } = useAppCommonData();
   const [lastCartItemsReplica, setLastCartItemsReplica] = useState('');
   const [lastCartItemsReplicaForStorePickup, setLastCartItemsReplicaForStorePickup] = useState('');
   const [lastPincodeReplica, setLastPincodeReplica] = useState('');
@@ -248,10 +248,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const [alertShown, setAlertShown] = useState<boolean>(false);
   const [storeType, setStoreType] = useState('');
   const [shopId, setShopId] = useState('');
-
-  const mobileNumber = g(currentPatient, 'mobileNumber');
-  const emailAddress = g(currentPatient, 'emailAddress');
-  const packageId = hdfcUserSubscriptions ? (g(hdfcUserSubscriptions, 'group', 'name') + ':' + hdfcUserSubscriptions.planId) : null;
 
   const navigatedFrom = props.navigation.getParam('movedFrom') || '';
 
@@ -821,7 +817,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       mobile: g(currentPatient, 'mobileNumber'),
       billAmount: cartTotal.toFixed(2),
       coupon: coupon,
-      packageId,
       pinCode: locationDetails && locationDetails.pincode,
       products: cartItems.map((item) => ({
         sku: item.id,
@@ -831,7 +826,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         specialPrice: item.specialPrice !== undefined ? item.specialPrice : item.price,
       })),
     };
-    validateConsultCoupon(data, mobileNumber, emailAddress, packageId)
+    validateConsultCoupon(data)
       .then((resp: any) => {
         if (resp.data.errorCode == 0) {
           if (resp.data.response.valid) {

@@ -205,12 +205,13 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
           sku,
           mrp: item.price,
           quantity,
-          couponFree: couponFree || false,
+          couponFree: couponFree || 0,
           categoryId: type_id || '',
           specialPrice: special_price || price,
         };
       }),
     };
+    console.log(data, 'Checkpoint by Vasudev');
     if (currentPatient && currentPatient.id) {
       setMuationLoading(true);
       const fetchCouponUrl = `${process.env.VALIDATE_CONSULT_COUPONS}?mobile=${
@@ -303,7 +304,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                       price: e.price,
                       sku: e.sku,
                       special_price: 0,
-                      couponFree: true,
+                      couponFree: 1,
                       small_image: e.small_image,
                       status: e.status,
                       thumbnail: e.thumbnail,

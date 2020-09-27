@@ -120,13 +120,10 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(true);
   const client = useApolloClient();
   const isEnableApplyBtn = couponText.length >= 4;
-  const { locationDetails, hdfcUserSubscriptions } = useAppCommonData();
-  const mobileNumber = g(currentPatient, 'mobileNumber');
-  const emailAddress = g(currentPatient, 'emailAddress');
-  const packageId = hdfcUserSubscriptions ? (g(hdfcUserSubscriptions, 'group', 'name') + ':' + hdfcUserSubscriptions.planId) : null;
+  const { locationDetails } = useAppCommonData();
 
   useEffect(() => {
-    fetchConsultCoupons(mobileNumber, emailAddress, packageId)
+    fetchConsultCoupons()
       .then((res: any) => {
         console.log(JSON.stringify(res.data), 'objobj');
         setcouponList(res.data.response);
@@ -141,7 +138,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
           description: "Sorry, we're unable to fetch coupon codes right now. Please try again.",
         });
       });
-  }, [mobileNumber , emailAddress]);
+  }, []);
 
   const applyCoupon = (coupon: string, cartItems: ShoppingCartItem[]) => {
     CommonLogEvent(AppRoutes.ApplyCouponScene, 'Select coupon');
@@ -150,7 +147,6 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
       mobile: g(currentPatient, 'mobileNumber'),
       billAmount: cartTotal.toFixed(2),
       coupon: coupon,
-      packageId,
       pinCode: locationDetails && locationDetails.pincode,
       products: cartItems.map((item) => ({
         sku: item.id,
@@ -160,7 +156,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
         specialPrice: item.specialPrice || item.price,
       })),
     };
-    validateConsultCoupon(data, mobileNumber, emailAddress, packageId)
+    validateConsultCoupon(data)
       .then((resp: any) => {
         if (resp.data.errorCode == 0) {
           if (resp.data.response.valid) {
