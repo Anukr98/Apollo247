@@ -466,7 +466,7 @@ export async function hitCallKitCurl(
     const curlCommand = `curl -v -d '{"name": "${doctorName}", 
       "${connecting ? 'isVideo' : 'disconnectCall'}": 
       ${connecting ? (callType == APPT_CALL_TYPE.VIDEO ? true : false) : true}, 
-      "appointmentId" : "${apptId}", "patientId": "${patientId}" }' --http2 --cert ${CERT_PATH}:${passphrase} ${domain}${token}`;
+      "appointmentId" : "${apptId}", "patientId": "${patientId}", "apns-expiration": ${0} }' --http2 --cert ${CERT_PATH}:${passphrase} ${domain}${token}`;
     const resp = child_process.execSync(curlCommand);
     const result = resp.toString('utf-8');
     console.log('voipCallKit result > ', result);
