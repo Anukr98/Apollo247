@@ -286,7 +286,6 @@ const initiateCallForPartner: Resolver<
     `${process.env.PAYTM_BASE_URL}/exotelCallEnd?mobileNumber=${parseInt(mobileNumber, 10)}`
   );
 
-  console.log(params, apiUrl);
   fetch(apiUrl, {
     method: 'POST',
     body: params,
@@ -296,8 +295,6 @@ const initiateCallForPartner: Resolver<
   })
     .then((res) => res.json())
     .then((res) => {
-      console.log('========', res);
-
       // // add the cache for mobile number + Sid
       const value = {
         benefitId,
@@ -312,8 +309,8 @@ const initiateCallForPartner: Resolver<
     .catch((error) => {
       log(
         'consultServiceLogger',
-        `SEND_SMS_ERROR`,
-        'smsResponse()->CATCH_BLOCK',
+        `EXOTEL_CALL_ERROR`,
+        'initiateCallForPartner->CATCH_BLOCK',
         '',
         `${mobileNumber}: ${JSON.stringify(error)}`
       );
