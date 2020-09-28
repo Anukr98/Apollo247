@@ -405,5 +405,14 @@
     "restartSymptomTrackerDiscription": "This will end your symptom tracking and you’ll have to start it again. Do you want to continue tracking your symptoms or go back?",
     "symptomTracker": "Symptom Tracker",
     "addAnotherSymptom": "Would you like to report another symptom?"
+  },
+  "callRelatedPermissions": {
+    "allPermissions": "For a smooth consultation experience with {0} and to ensure that you do not miss out your doctor's call, Apollo 247 needs your camera, microphone and call display permissions.",
+    "onlyOverlayPermission": "To make sure that you do not miss the call from {0} for your consultation, Apollo 247 need to have permission to display full screen notifications.",
+    "camAndMPPermission": "For a smooth consultation experience with {0}, Apollo 247 needs your camera and microphone permissions.",
+    "camAndOverlayPermission": "For a smooth consultation experience with {0} and to ensure that you do not miss out your doctor's call, Apollo 247 needs your camera and call display permissions.",
+    "mpAndOverlayPermission": "For a smooth consultation experience with {0} and to ensure that you do not miss out your doctor's call, Apollo 247 needs your microphone and call display permissions.",
+    "onlyCameraPermission": "For a smooth consultation experience with {0}, Apollo 247 needs your camera permission.",
+    "onlyMPPermission": "For a smooth consultation experience with {0}, Apollo 247 needs your microphone permission."
   }
 }

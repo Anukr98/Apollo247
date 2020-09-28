@@ -24,6 +24,7 @@ import {
   aphConsole,
   g,
   postWebEngageEvent,
+  overlyPermissionAndroid,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -100,6 +101,7 @@ type CustomNotificationType =
   | 'doctor_Noshow_Reschedule_Appointment'
   | 'Appointment_Canceled_Refund'
   | 'Appointment_Payment_Pending_Failure'
+  | 'Book_Appointment'
   | 'webview';
 
 export interface NotificationListenerProps extends NavigationScreenProps {}
@@ -853,6 +855,13 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       case 'PRESCRIPTION_READY': // prescription is generated
         {
           showConsultDetailsRoomAlert(data, 'PRESCRIPTION_READY', 'true');
+        }
+        break;
+      case 'Book_Appointment':
+        {
+          const doctorName = data.doctorName;
+          const userName = data.patientName;
+          overlyPermissionAndroid(userName, doctorName, showAphAlert, hideAphAlert);
         }
         break;
       case 'webview':
