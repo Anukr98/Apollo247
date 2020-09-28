@@ -16,7 +16,6 @@ export enum WebEngageEventName {
   SEARCH = 'Pharmacy Search',
   SEARCH_ENTER_CLICK = 'Pharmacy Search Enter Clicked',
   PHARMACY_SEARCH_RESULTS = 'Pharmacy Search Results',
-  PHARMACY_PRODUCT_DETAIL_SUBSTITUTE_CLICKED = 'Pharmacy Product Detail Substitute Clicked',
   PRODUCT_DETAIL_TAB_CLICKED = 'Product Detail Tab Clicked',
   PRODUCT_DETAIL_PINCODE_CHECK = 'Product Detail Pincode Check',
   NOTIFY_ME = 'Notify Me',
@@ -302,10 +301,6 @@ export interface WebEngageEvents {
   };
   [WebEngageEventName.PRODUCT_DETAIL_TAB_CLICKED]: {
     tabName: string;
-  };
-  [WebEngageEventName.PHARMACY_PRODUCT_DETAIL_SUBSTITUTE_CLICKED]: {
-    'product id': string; // (SKUID)
-    'product name': string;
   };
   [WebEngageEventName.NOTIFY_ME]: {
     'product name': string;

@@ -1192,14 +1192,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                   <TouchableOpacity
                     style={styles.textViewStyle}
                     onPress={() => {
-                      const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PRODUCT_DETAIL_SUBSTITUTE_CLICKED] = {
-                        'product id': item.sku,
-                        'product name': item.name,
-                      };
-                      postWebEngageEvent(
-                        WebEngageEventName.PHARMACY_PRODUCT_DETAIL_SUBSTITUTE_CLICKED,
-                        eventAttributes
-                      );
                       CommonLogEvent(
                         AppRoutes.MedicineDetailsScene,
                         'Navigate to Medicine Details scene with sku'
