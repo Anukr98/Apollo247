@@ -16,7 +16,8 @@ type SuccessTransactionInputForSubscription = {
 };
 export async function fetchUserSubscription(mobileNumber: string) {
   const url = `http://${process.env.SUBSCRIPTION_SERVICE_HOST}:${process.env.SUBSCRIPTION_SERVICE_PORT}`;
-  const query = `query{
+  const requestJSON = {
+    query: `query{
     GetSubscriptionsOfUserByStatus(mobile_number: ${mobileNumber},status: ["active"])
     {
       response
@@ -31,20 +32,12 @@ export async function fetchUserSubscription(mobileNumber: string) {
         }
       }
     }
-  }`;
-
-  const response = await (
-    await fetch(url, {
-      method: 'POST',
-      body: query,
-      headers: {
-        Authorization: `${process.env.SUBSCRIPTION_SERVICE_AUTH_TOKEN}`,
-      },
-    })
-  ).json();
-  if (response?.data?.response[0]?.group_plan?.plan_id)
+  }`,
+  };
+  const response = await axios.post(url, requestJSON);
+  if (response?.data?.response[0]?.group_plan) {
     return `${response.data.response[0].group_plan.group.name}:${response.data.response[0].group_plan.plan_id}`;
-  else return '';
+  } else return '';
 }
 export async function transactionSuccessTrigger(args: SuccessTransactionInputForSubscription) {
   const {

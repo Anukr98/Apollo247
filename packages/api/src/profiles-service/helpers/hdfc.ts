@@ -167,7 +167,7 @@ export async function customerIdentification(mobile: String, dateOfBirth: Date) 
   ).slice(-2)}${('0' + dateOfBirth.getDate()).slice(-2)}`;
   const requestBeforeEncryption = {
     FetchCustomerCASADetailsReqDTO: {
-      mobileNumber: `${formattedMobile}`,
+      mobileNumber: `91${formattedMobile}`,
       dateOfBirth: formattedDateOfBirth,
     },
     sessionContext: {
@@ -192,7 +192,7 @@ export async function fetchEthnicCode(dateOfBirth: Date, mobile: String, history
   const requestBeforeEncryption = {
     FetchCustomerCASADetailsReqDTO: {
       dateOfBirth: formattedDateOfBirth,
-      mobileNumber: `${formattedMobile}`,
+      mobileNumber: `91${formattedMobile}`,
       panNumber: '',
     },
     sessionContext: {
