@@ -28,6 +28,10 @@ export class PatientDeviceTokenRepository extends Repository<PatientDeviceTokens
     return this.delete({ deviceToken });
   }
 
+  deleteDeviceTokenWhere(condition: Partial<PatientDeviceTokens>) {
+    return this.delete(condition);
+  }
+
   getTokensByMobileNumber(mobileNumber: string) {
     return this.createQueryBuilder('patient')
       .leftJoinAndSelect('patient.patient_device_tokens', 'patient_device_tokens')
