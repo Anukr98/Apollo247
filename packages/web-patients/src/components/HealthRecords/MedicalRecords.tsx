@@ -460,13 +460,17 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
       allCombinedData.sort((data1: LabResultsType, data2: LabResultsType) => {
         const filteredData1 =
           type === FILTER_TYPE.DATE
-            ? moment(data1.date).toDate().getTime()
+            ? moment(data1.date)
+                .toDate()
+                .getTime()
             : type === FILTER_TYPE.TEST
             ? _lowerCase(data1.labTestName)
             : _lowerCase(data1.packageName);
         const filteredData2 =
           type === FILTER_TYPE.DATE
-            ? moment(data2.date).toDate().getTime()
+            ? moment(data2.date)
+                .toDate()
+                .getTime()
             : type === FILTER_TYPE.TEST
             ? _lowerCase(data2.labTestName)
             : _lowerCase(data2.packageName);

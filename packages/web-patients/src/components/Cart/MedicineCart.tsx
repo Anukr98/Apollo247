@@ -29,6 +29,7 @@ import {
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { getDeviceType, getCouponByUserMobileNumber } from 'helpers/commonHelpers';
+import { ConfigOneApolloData } from 'strings/AppConfig';
 import { ApplyCoupon } from 'components/Cart/ApplyCoupon';
 import _compact from 'lodash/compact';
 import _find from 'lodash/find';
@@ -660,6 +661,20 @@ const useStyles = makeStyles((theme: Theme) => {
     nudgeAddMore: {
       color: '#0087BA',
       paddingLeft: 5,
+    },
+    oneApolloDetails: {
+      display: 'flex',
+      alignItems: 'flex-start',
+      padding: '10px 0 0',
+      '& img': {
+        margin: '0 10px 0 0',
+      },
+      '& p': {
+        fontSize: 13,
+        fontWeight: 500,
+        color: '#666666',
+        lineHeight: '17px',
+      },
     },
   };
 });
@@ -1942,6 +1957,12 @@ export const MedicineCart: React.FC = (props) => {
                   </div>
                 </>
               )}
+              <div className={classes.oneApolloDetails}>
+                <img src={require('images/one-apollo.svg')} width="30" alt="One Apollo" />
+                <Typography>
+                  {ConfigOneApolloData.medicineCartString}
+                </Typography>
+              </div>
             </div>
           </Scrollbars>
           <div className={classes.checkoutBtn}>

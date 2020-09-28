@@ -183,6 +183,20 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
       .getOne();
   }
 
+  getSDLatestCompletedCaseSheetNotifcation(appointmentId: string) {
+    const juniorDoctorType = DoctorType.JUNIOR;
+    return (
+      this.createQueryBuilder('case_sheet')
+        .leftJoinAndSelect('case_sheet.appointment', 'appointment')
+        .leftJoinAndSelect('appointment.appointmentDocuments', 'appointmentDocuments')
+        .where('case_sheet.appointment = :appointmentId', { appointmentId })
+        .andWhere('case_sheet.doctorType != :juniorDoctorType', { juniorDoctorType })
+        //.andWhere('case_sheet.sentToPatient = :sentToPatient', { sentToPatient: true })
+        .orderBy('case_sheet.version', 'DESC')
+        .getOne()
+    );
+  }
+
   getAllAppointmentsToBeArchived(currentDate: Date) {
     const startDate = new Date(format(addDays(currentDate, -1), 'yyyy-MM-dd') + 'T18:30');
     const endDate = new Date(format(currentDate, 'yyyy-MM-dd') + 'T18:29');
