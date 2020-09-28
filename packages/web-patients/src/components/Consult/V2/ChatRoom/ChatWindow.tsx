@@ -929,9 +929,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const [drugAllergyError, setDrugAllergyError] = useState<boolean>(false);
   const [dietAllergyError, setDietAllergyError] = useState<boolean>(false);
   const [bpError, setBpError] = useState<boolean>(false);
-  const [autoQuestionsCompleted, setAutoQuestionsCompleted] = useState(
-    appointmentDetails ? appointmentDetails.isJdQuestionsComplete : false
-  );
+  const [autoQuestionsCompleted, setAutoQuestionsCompleted] = useState(false);
   const [userMessage, setUserMessage] = useState<string>('');
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
   const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
@@ -2478,9 +2476,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                 <span id="scrollDiv" ref={scrollDivRef}></span>
               </Scrollbars>
             </div>
-            {autoQuestionsCompleted ||
-            appointmentDetails.isConsultStarted ||
-            appointmentDetails.isJdQuestionsComplete ? (
+            {autoQuestionsCompleted ? (
               <>
                 {pastAppointment && appointmentDetails && (
                   <BookAppointmentCard
