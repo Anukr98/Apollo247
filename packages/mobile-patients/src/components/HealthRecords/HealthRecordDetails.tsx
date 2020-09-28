@@ -267,7 +267,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
               (data.medicalRecordParameters && data.medicalRecordParameters) ||
               (data.labTestResults && data.labTestResults)
             ).map((item: any) => {
-              const unit = MedicalTest.find((itm) => itm.key === item.unit);
+              const unit = item?.unit;
               return (
                 <View
                   style={[styles.cardViewStyle, { marginTop: 4, marginBottom: 4, paddingTop: 16 }]}
@@ -285,7 +285,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
                     'Normal Range',
                     item.range ? item.range : `${item.minimum || ''} - ${item.maximum || 'N/A'}`
                   )}
-                  {detailRowView('Units', unit ? unit.value : item.unit || 'N/A')}
+                  {detailRowView('Units', unit || 'N/A')}
                   {detailRowView('Result', item.result || 'N/A')}
                 </View>
               );
