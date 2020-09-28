@@ -16,11 +16,12 @@ import { hot } from 'react-hot-loader/root';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
 import { DiagnosticsCartProvider } from './Tests/DiagnosticsCartProvider';
 import { MedicinesCartProvider } from 'components/MedicinesCartProvider';
+import { OneApolloMembership } from 'components/MyAccount/OneApolloMembership';
 
 const Welcome = loadable(() => import('components/Welcome'));
 
-const NotificationSettings = loadable(
-  () => import('components/Notifications/NotificationSettings')
+const NotificationSettings = loadable(() =>
+  import('components/Notifications/NotificationSettings')
 );
 const SbiLandingPage = loadable(() => import('components/Partners/SBI/SbiLandingPage'));
 const PatientsList = loadable(() => import('components/PatientsList'));
@@ -180,6 +181,11 @@ const App: React.FC = () => {
         <AuthRouted exact path={clientRoutes.addressBook()} component={AddressBook} />
         <AuthRouted exact path={clientRoutes.needHelp()} component={Help} />
         <AuthRouted exact path={clientRoutes.myPayments()} component={MyPayments} />
+        <AuthRouted
+          exact
+          path={clientRoutes.oneApolloMembership()}
+          component={OneApolloMembership}
+        />
         <AuthRouted
           exact
           path={clientRoutes.notificationSettings()}
