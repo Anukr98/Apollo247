@@ -27,7 +27,6 @@ import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { AppRoutes } from '../NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { MedicalTest } from './AddRecord';
 import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
@@ -243,7 +242,7 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
               (data.medicalRecordParameters && data.medicalRecordParameters) ||
               (data.labTestResults && data.labTestResults)
             ).map((item: any) => {
-              const unit = MedicalTest.find((itm) => itm.key === item.unit);
+              const unit = item?.unit;
               return (
                 <View style={[styles.cardViewStyle, { marginTop: 4, marginBottom: 4 }]}>
                   <View style={styles.labelViewStyle}>
@@ -256,7 +255,7 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
                     </View>
                     <View style={{ flex: 0.5 }}>
                       <Text style={styles.labelTextStyle}>Units</Text>
-                      <Text style={styles.valuesTextStyle}>{unit ? unit.value : item.unit}</Text>
+                      <Text style={styles.valuesTextStyle}>{unit || 'N/A'}</Text>
                     </View>
                     <View style={{ flex: 0.7 }}>
                       <Text style={styles.labelTextStyle}>Normal Range</Text>
