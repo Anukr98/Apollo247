@@ -890,6 +890,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
     otherError: false,
   });
   // audioVideoChat start
+  const [userMessageOnCall, setUserMessageOnCall] = useState<string>('');
   const [showVideoChat, setShowVideoChat] = useState<boolean>(false);
   const [isVideoCall, setIsVideoCall] = useState<boolean>(false);
   const [isCallAccepted, setIsCallAccepted] = useState<boolean>(false);
@@ -990,6 +991,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       (status, response) => {}
     );
     setPlayRingtone(true);
+    setUserMessageOnCall('connecting....');
     actionBtn();
   };
   const actionBtn = () => {
@@ -2285,6 +2287,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
               setSessionError={props.setSessionError}
               setPublisherError={props.setPublisherError}
               setSubscriberError={props.setSubscriberError}
+              setUserMessageOnCall={setUserMessageOnCall}
+              userMessageOnCall={userMessageOnCall}
             />
           )}
         </div>
