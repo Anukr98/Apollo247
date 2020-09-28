@@ -234,7 +234,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         },
       })
       .then((_data) => {
-        console.log('data', _data);
         const consults = _data.data.getPatientPastConsultsAndPrescriptions!.consults || [];
         const medOrders = _data.data.getPatientPastConsultsAndPrescriptions!.medicineOrders || [];
         const consultsAndMedOrders: { [key: string]: any } = {};
