@@ -250,6 +250,9 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                     ? '0' + props.timerSeconds
                     : props.timerSeconds
                 }`}
+              {props.userMessageOnCall && props.userMessageOnCall !== ''  && (
+                <p className={classes.audioVideoState}>{props.userMessageOnCall}</p>
+              )}
               <p className={classes.audioVideoState}>{checkReconnecting()}</p>
               <p className={classes.audioVideoState}>{checkDowngradeToAudio()}</p>
               <p className={classes.audioVideoState}>{isPaused()}</p>
