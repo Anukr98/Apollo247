@@ -1441,7 +1441,7 @@ export const JDConsultRoom: React.FC = () => {
       .hereNow({ channels: [appointmentId], includeUUIDs: true })
       .then((response: any) => {
         const occupants = response.channels[appointmentId].occupants;
-        let doctorCount = 0;
+        let doctorCount = 1;
         let paientsCount = 0;
         occupants.forEach((item: any) => {
           if (item.uuid.indexOf('PATIENT') > -1) {
