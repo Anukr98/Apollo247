@@ -43,7 +43,7 @@ module.exports = {
 
   async getCallDetails(args) {
     const { sid } = args;
-    const apiBaseUrl = `https://${process.env.EXOTEL_API_KEY}:${process.env.EXOTEL_API_TOKEN}${process.env.EXOTEL_SUB_DOMAIN}`;
+    const apiBaseUrl = `https://${process.env.EXOTEL_HDFC_API_KEY}:${process.env.EXOTEL_HDFC_API_TOKEN}@${process.env.EXOTEL_SUB_DOMAIN}`;
     const apiUrl = `${apiBaseUrl}/v1/Accounts/${process.env.EXOTEL_SID}/Calls/${sid}.json`;
     return await fetch(apiUrl, {
       method: 'GET',
@@ -51,9 +51,7 @@ module.exports = {
       .then((res) => res.json())
       .catch((error) => {
         logger.error(
-          `initateCallAPILogger' SEND_SMS_ERROR smsResponse()->CATCH_BLOCK', call sid: ${sid}: ${JSON.stringify(
-            error
-          )}`
+          `initateCallAPILogger' CATCH_BLOCK', call sid: ${sid}: ${JSON.stringify(error)}`
         );
         throw new Error('EXOTEL_REQUEST_ERROR');
       });
