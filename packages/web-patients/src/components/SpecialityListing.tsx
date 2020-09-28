@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Theme, Grid, CircularProgress, Popover, Typography } from '@material-ui/core';
+import { Theme, Grid, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import { NavigationBottom } from 'components/NavigationBottom';
@@ -868,7 +868,7 @@ const SpecialityListing: React.FC = (props) => {
           {faqs && faqs.onlineConsultation && faqs.onlineConsultation.length > 0 && (
             <div className={classes.faq}>
               <div className={classes.faqTitle}>Frequently asked questions</div>
-              {faqs.onlineConsultation.map((que: any) => (
+              {faqs.onlineConsultation.map((que: any, idx: number) => (
                 <ExpansionPanel
                   key={que.id}
                   className={classes.panelRoot}
@@ -884,7 +884,7 @@ const SpecialityListing: React.FC = (props) => {
                       expanded: classes.panelExpanded,
                     }}
                   >
-                    <Typography className={classes.panelHeading} component="h3">
+                    <Typography className={classes.panelHeading} component={idx <= 9 ? 'h2' : 'h3'}>
                       {que.faqQuestion}
                     </Typography>
                   </ExpansionPanelSummary>
