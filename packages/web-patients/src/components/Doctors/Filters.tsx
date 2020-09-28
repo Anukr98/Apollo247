@@ -270,15 +270,6 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingLeft: 30,
       }
     },
-    popLocationIcon: {
-      textAlign: 'center',
-      paddingTop: 6,
-      position: 'absolute',
-      left: 0,
-      '& img': {
-        maxWidth: 24,
-      },
-    },
     searchContainer: {
       display: 'flex',
       alignItems: 'center',
