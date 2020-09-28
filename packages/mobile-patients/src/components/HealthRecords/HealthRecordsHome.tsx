@@ -355,7 +355,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             : filterSelectedOptions?.includes('ONLINE')
           : true
         : false;
-      console.log('!prescriptionSelect', !prescriptionSelect);
       let mergeArray: { type: string; data: any }[] = [];
       arrayValues?.forEach((item: any) => {
         mergeArray.push({ type: 'pastConsults', data: item });
