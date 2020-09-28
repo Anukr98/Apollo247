@@ -12,7 +12,8 @@ module.exports = {
       amount:0
       transaction_date: "${format(new Date(), 'yyyy-MM-dd hh:mm')}"
       mobile_number:"+${mobileNumber}"
-      subscription_inclusion_id: "${benefitID} || ''"
+      subscription_inclusion_id: "${benefitID || ''}"
+
      }){
        success,
        message
@@ -51,7 +52,9 @@ module.exports = {
       .then((res) => res.json())
       .catch((error) => {
         logger.error(
-          `initateCallAPILogger' CATCH_BLOCK', call sid: ${sid}: ${JSON.stringify(error)}`
+          `CreateUserSubscriptionTransactionsLogger'=>failed, call sid: ${sid}: ${JSON.stringify(
+            error
+          )}`
         );
         throw new Error('EXOTEL_REQUEST_ERROR');
       });
