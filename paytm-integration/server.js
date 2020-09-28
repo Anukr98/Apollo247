@@ -69,9 +69,10 @@ app.post('/exotelCallEnd', async (req, res) => {
     const key = `${EXOTEL_HDFC_CALL_PREFIX}:${mobileNumber}`;
     let callEndResponse = await getCache(key);
     callEndResponse = JSON.parse(callEndResponse);
+    const { benefitId } = callEndResponse;
     const callDetails = await getCallDetails(callEndResponse);
     if (callDetails['Call']['Status'] == Constants.EXOTEL_CALL_END_STATUS.COMPLETED) {
-      await CreateUserSubscription(mobileNumber);
+      await CreateUserSubscription(mobileNumber, benefitId);
     }
     res.json({ success: true });
   } catch (error) {

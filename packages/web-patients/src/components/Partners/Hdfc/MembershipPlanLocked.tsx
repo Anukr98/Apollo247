@@ -544,6 +544,12 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
+interface upgradableSubscriptionType {
+  name: String;
+  benefits: Array<string>;
+  min_transaction_value: String;
+}
+
 export const MembershipPlanLocked: React.FC = (props) => {
   const classes = useStyles({});
   const [showMore, setShowMore] = React.useState<boolean>(false);
@@ -551,6 +557,9 @@ export const MembershipPlanLocked: React.FC = (props) => {
   const [expanded, setExpanded] = React.useState<string | false>(false);
 
   const [subscriptionInclusions, setSubscriptionInclusions] = React.useState([]);
+  const [upgradableSubscription, setUpgradableSubscription] = React.useState<
+    upgradableSubscriptionType
+  >();
   const [planName, setPlanName] = React.useState<string>('');
   const [benefitsWorth, setBenefitsWorth] = React.useState<string>('');
   const [minimumTransactionValue, setMinimumTransactionValue] = React.useState<string>('');
@@ -593,9 +602,9 @@ export const MembershipPlanLocked: React.FC = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((response) => {
-        setSubscriptionInclusions(
+        setUpgradableSubscription(
           // response.data.GetAllUserSubscriptionsWithPlanBenefits.response[0].can_upgrade_to
-          response.data.GetAllUserSubscriptionsWithPlanBenefits.response.can_upgrade_to
+          response.data.GetAllUserSubscriptionsWithPlanBenefits.response[0].can_upgrade_to
         );
         setPlanName(
           response.data.GetAllUserSubscriptionsWithPlanBenefits.response[0].can_upgrade_to.name
@@ -696,9 +705,8 @@ export const MembershipPlanLocked: React.FC = (props) => {
                 <ExpansionPanelDetails className={classes.panelDetails}>
                   <div className={classes.detailsContent}>
                     <ul className={classes.couponList}>
-                      {subscriptionInclusions &&
-                        subscriptionInclusions[0] &&
-                        subscriptionInclusions[0].benefits.map((item: any) => {
+                      {upgradableSubscription &&
+                        upgradableSubscription.benefits.map((item: any) => {
                           return (
                             <li>
                               <div className={classes.couponCard}>
