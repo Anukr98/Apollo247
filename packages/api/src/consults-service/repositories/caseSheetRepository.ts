@@ -38,6 +38,7 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
 
   getJDCaseSheetByAppointmentId(appointmentId: string) {
     return this.createQueryBuilder('case_sheet')
+      .leftJoinAndSelect('case_sheet.appointment', 'appointment')
       .where('case_sheet.appointment = :appointmentId', { appointmentId })
       .andWhere('case_sheet.doctorType = :type', { type: DoctorType.JUNIOR })
       .orderBy('case_sheet.createdDate', 'DESC')
