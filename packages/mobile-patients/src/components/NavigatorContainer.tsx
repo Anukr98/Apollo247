@@ -91,6 +91,11 @@ import PaymentStatusScreen from '@aph/mobile-patients/src/components/MyPayments/
 import { ConsultTypeScreen } from './ConsultRoom/ConsultTypeScreen';
 import { CommonWebView } from '@aph/mobile-patients/src/components/CommonWebView';
 import { RefundStatus } from '@aph/mobile-patients/src/components/RefundStatus';
+import { MedicineCart } from '@aph/mobile-patients/src/components/MedicineCart/MedicineCart';
+import { CartSummary } from '@aph/mobile-patients/src/components/MedicineCart/CartSummary';
+import { StorePickup } from '@aph/mobile-patients/src/components/MedicineCart/StorePickup';
+import { PickUpCartSummary } from '@aph/mobile-patients/src/components/MedicineCart/PickUpCartSummary';
+
 import { SymptomTracker } from '@aph/mobile-patients/src/components/SymptomTracker';
 import { SymptomSelection } from '@aph/mobile-patients/src/components/SymptomSelection';
 
@@ -176,6 +181,10 @@ export enum AppRoutes {
   ConsultTypeScreen = 'ConsultTypeScreen',
   CommonWebView = 'CommonWebView',
   RefundStatus = 'RefundStatus',
+  MedicineCart = 'MedicineCart',
+  CartSummary = 'CartSummary',
+  StorePickup = 'StorePickup',
+  PickUpCartSummary = 'PickUpCartSummary',
   SymptomTracker = 'SymptomTracker',
   SymptomSelection = 'SymptomSelection',
   Maps = 'Maps',
@@ -460,6 +469,18 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.RefundStatus]: {
     screen: RefundStatus,
+  },
+  [AppRoutes.MedicineCart]: {
+    screen: MedicineCart,
+  },
+  [AppRoutes.CartSummary]: {
+    screen: CartSummary,
+  },
+  [AppRoutes.StorePickup]: {
+    screen: StorePickup,
+  },
+  [AppRoutes.PickUpCartSummary]: {
+    screen: PickUpCartSummary,
   },
   [AppRoutes.SymptomTracker]: {
     screen: SymptomTracker,
