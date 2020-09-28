@@ -4,7 +4,7 @@ const { format } = require('date-fns');
 const logger = require('../winston-logger')('Universal-Error-Logs');
 
 module.exports = {
-  CreateUserSubscription(mobileNumber) {
+  CreateUserSubscription(mobileNumber, benefitID) {
     const url = `http://${process.env.SUBSCRIPTION_SERVICE_HOST}:${process.env.SUBSCRIPTION_SERVICE_PORT}`;
     const query = `mutation {
       CreateUserSubscriptionTransactions(UserSubscriptionTransactions:{
@@ -12,7 +12,7 @@ module.exports = {
       amount:0
       transaction_date: "${format(new Date(), 'yyyy-MM-dd hh:mm')}"
       mobile_number:"+${mobileNumber}"
-
+      subscription_inclusion_id: "${benefitID} || ''"
      }){
        success,
        message
