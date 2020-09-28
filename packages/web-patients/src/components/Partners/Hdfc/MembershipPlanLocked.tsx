@@ -733,7 +733,7 @@ export const MembershipPlanLocked: React.FC = (props) => {
                   <div className={`${classes.detailsContent} ${classes.availContent}`}>
                     <Typography>
                       Complete transactions worth Rs. {upgradableTransactionValue} or more on the
-                      Apollo 24/7 app to unlock platinum+ plan membership
+                      Apollo 24|7 app to unlock platinum+ plan membership
                     </Typography>
                   </div>
                 </ExpansionPanelDetails>
@@ -760,13 +760,13 @@ export const MembershipPlanLocked: React.FC = (props) => {
                   <div className={classes.detailsContent}>
                     <ul className={classes.tncList}>
                       <li>
-                        The Healthy Life offering is the marketing program offered by Apollo 24/7,
+                        The Healthy Life offering is the marketing program offered by Apollo 24|7,
                         an app managed by Apollo Hospitals Enterprise Limited (AHEL) only for HDFC
                         Bank customers.
                       </li>
                       <li>
                         The validity of the program (“Term”) is till 31st August 2021, unless
-                        extended by Apollo 24/7 and HDFC Bank.
+                        extended by Apollo 24|7 and HDFC Bank.
                       </li>
                       <li>
                         The discounts applicable as per the Healthy Life program shall be applied at
@@ -775,7 +775,7 @@ export const MembershipPlanLocked: React.FC = (props) => {
                       <li>
                         This program is designed for select HDFC customers and offerings will vary
                         with the different categories of HDFC customers. However, membership schemes
-                        can be upgraded on the basis of the spending on the Apollo 24/7 app as
+                        can be upgraded on the basis of the spending on the Apollo 24|7 app as
                         mentioned in the offer grid.
                       </li>
                       <li>
@@ -792,7 +792,7 @@ export const MembershipPlanLocked: React.FC = (props) => {
                       </li>
                       <li>
                         The Healthy Life offering will be applicable to all HDFC customers, whether
-                        they are existing customers of Apollo 24/7 or not. However, all the
+                        they are existing customers of Apollo 24|7 or not. However, all the
                         customers shall adhere to the offerings as mentioned in this marketing
                         program.
                       </li>
@@ -819,29 +819,29 @@ export const MembershipPlanLocked: React.FC = (props) => {
                       <li>
                         The Healthy Life membership program will be issued solely at the discretion
                         of the management and the final discretion on all matters relating to the
-                        membership shall rest with Apollo 24/7(AHEL).
+                        membership shall rest with Apollo 24|7(AHEL).
                       </li>
                       <li>
                         Healthy Life program is a corporate offering exclusively for HDFC bank
                         customers and not for individuals.
                       </li>
                       <li>
-                        Apollo 24/7 reserves the right to add, alter, amend and revise terms and
+                        Apollo 24|7 reserves the right to add, alter, amend and revise terms and
                         conditions as well as rules and regulations governing the Healthy Life
                         membership program without prior notice.
                       </li>
                       <li>
                         Benefits and offers available through the program may change or be withdrawn
-                        without prior intimation. Apollo 24/7 will not be responsible for any
+                        without prior intimation. Apollo 24|7 will not be responsible for any
                         liability arising from such situations or use of such offers.
                       </li>
                       <li>
                         Any disputes arising out of the offer shall be subject to arbitration by a
-                        sole arbitrator appointed by Apollo 24/7 for this purpose. The proceedings
+                        sole arbitrator appointed by Apollo 24|7 for this purpose. The proceedings
                         of the arbitration shall be conducted as per the provisions of Arbitration
                         and Conciliation Act, 1996. The place of arbitration shall be at Chennai and
                         language of arbitration shall be English. The existence of a dispute, if at
-                        all, shall not constitute a claim against Apollo 24/7.
+                        all, shall not constitute a claim against Apollo 24|7.
                       </li>
                     </ul>
                   </div>
