@@ -334,7 +334,7 @@ const bookAppointment: Resolver<
       coupon: appointmentInput.couponCode,
       paymentType: '',
       pinCode: appointmentInput.pinCode ? appointmentInput.pinCode : '',
-      packageId: '', //await fetchUserSubscription(patientDetails.mobileNumber),
+      packageId: await fetchUserSubscription(patientDetails.mobileNumber),
       consultations: [
         {
           hospitalId: appointmentInput.hospitalId,

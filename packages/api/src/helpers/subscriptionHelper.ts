@@ -33,38 +33,18 @@ export async function fetchUserSubscription(mobileNumber: string) {
     }
   }`;
 
-  const response = await axios({
-    url,
-    method: 'post',
-    data: {
-      query,
-    },
-    headers: {
-      Authorization: process.env.SUBSCRIPTION_SERVICE_AUTH_TOKEN,
-    },
-  })
-    .then((response: any) => {
-      log(
-        'consultServiceLogger',
-        'transactionSuccessTrigger=>success',
-        `mobile_number:${mobileNumber || ''}`,
-        response.data,
-        ''
-      );
-      console.log('fetchUserSubscription', response);
-      return `${response.data.response[0].group_plan.group.name}:${response.data.response[0].group_plan.plan_id}`;
+  const response = await (
+    await fetch(url, {
+      method: 'POST',
+      body: query,
+      headers: {
+        Authorization: `${process.env.SUBSCRIPTION_SERVICE_AUTH_TOKEN}`,
+      },
     })
-    .catch((error: any) => {
-      log(
-        'consultServiceLogger',
-        'transactionSuccessTrigger=>failed',
-        `mobile_number:${mobileNumber || ''}`,
-        '',
-        JSON.stringify(error)
-      );
-      return '';
-    });
-  console.log('fetchUserSubscription', response);
+  ).json();
+  if (response?.data?.response[0]?.group_plan?.plan_id)
+    return `${response.data.response[0].group_plan.group.name}:${response.data.response[0].group_plan.plan_id}`;
+  else return '';
 }
 export async function transactionSuccessTrigger(args: SuccessTransactionInputForSubscription) {
   const {
