@@ -815,15 +815,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }
       getPastAppoinmentCount(client, doctorId, patientId, channel).then((data: any) => {
         const yesCount = g(data, 'data', 'data', 'getPastAppointmentsCount', 'yesCount');
-        const noCount = g(data, 'data', 'data', 'getPastAppointmentsCount', 'noCount');
         if (yesCount && yesCount > 0) {
           setShowConnectAlertPopup(false);
         } else {
-          if (noCount && noCount > 0) {
-            setShowConnectAlertPopup(false);
-          } else {
-            setShowConnectAlertPopup(true);
-          }
+          setShowConnectAlertPopup(true);
         }
       });
     } catch (error) {
