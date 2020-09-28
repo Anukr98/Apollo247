@@ -23,7 +23,13 @@ module.exports = async (req, res, next) => {
       return next(new Error(`checkSum did not match for order - ${orderId}`));
     }
 
-    axios.defaults.headers.common['authorization'] = process.env.API_TOKEN;
+    // axios.defaults.headers.common['authorization'] = process.env.API_TOKEN;
+    const axiosConfig = {
+      headers: {
+        'authorization': process.env.API_TOKEN
+      }
+    }
+
     payload.partnerInfo = '';
     if (payload.MERC_UNQ_REF) {
       const info = payload.MERC_UNQ_REF.split(':');
@@ -38,7 +44,7 @@ module.exports = async (req, res, next) => {
       query: medicineOrderQuery(payload),
     };
 
-    const response = await axios.post(process.env.API_URL, requestJSON);
+    const response = await axios.post(process.env.API_URL, requestJSON, axiosConfig);
     logger.info(
       `${payload.ORDERID} - SaveMedicineOrderPaymentMq -  ${JSON.stringify(response.data)}`
     );

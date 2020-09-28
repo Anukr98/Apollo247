@@ -298,8 +298,12 @@ app.get('/updateDoctorsAwayAndOnlineCount', (req, res) => {
   });
 });
 app.get('/getCmToken', (req, res) => {
-  axios.defaults.headers.common['authorization'] =
-    'ServerOnly eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcHBJZCI6ImFwb2xsb18yNF83IiwiaWF0IjoxNTcyNTcxOTIwLCJleHAiOjE1ODA4Mjg0ODUsImlzcyI6IlZpdGFDbG91ZC1BVVRIIiwic3ViIjoiVml0YVRva2VuIn0.ZGuLAK3M_O2leBCyCsPyghUKTGmQOgGX-j9q4SuLF-Y';
+  // axios.defaults.headers.common['authorization'] = 'ServerOnly eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcHBJZCI6ImFwb2xsb18yNF83IiwiaWF0IjoxNTcyNTcxOTIwLCJleHAiOjE1ODA4Mjg0ODUsImlzcyI6IlZpdGFDbG91ZC1BVVRIIiwic3ViIjoiVml0YVRva2VuIn0.ZGuLAK3M_O2leBCyCsPyghUKTGmQOgGX-j9q4SuLF-Y';
+  const axiosConfig = {
+    headers: {
+      'authorization': 'ServerOnly eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcHBJZCI6ImFwb2xsb18yNF83IiwiaWF0IjoxNTcyNTcxOTIwLCJleHAiOjE1ODA4Mjg0ODUsImlzcyI6IlZpdGFDbG91ZC1BVVRIIiwic3ViIjoiVml0YVRva2VuIn0.ZGuLAK3M_O2leBCyCsPyghUKTGmQOgGX-j9q4SuLF-Y'
+    }
+  }
   axios
     .get(
       process.env.CM_API_URL +
@@ -312,7 +316,8 @@ app.get('/getCmToken', (req, res) => {
       '&emailId=' +
       req.query.emailId +
       '&phoneNumber=' +
-      req.query.phoneNumber
+      req.query.phoneNumber,
+      axiosConfig
     )
     .then((response) => {
       res.send({
