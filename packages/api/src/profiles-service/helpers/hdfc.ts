@@ -6,8 +6,6 @@ import * as crypto from 'crypto';
 import * as cryptojs from 'crypto-js';
 import * as jwt from 'jsonwebtoken';
 import { debugLog } from 'customWinstonLogger';
-import { FetchMessagesResponse } from 'pubnub';
-import { Callback } from 'redis';
 
 const INSTANCE_ID = '8888';
 const assetsDir = <string>process.env.ASSETS_DIRECTORY;
@@ -18,11 +16,7 @@ const options = {
   rejectUnauthorized: true,
   keepAlive: false,
 };
-const dLogger = debugLog(
-  'DoctorServiceLogger',
-  'RedisConnect',
-  Math.floor(Math.random() * 100000000)
-);
+const dLogger = debugLog('profileServiceLogger', 'HDFC', Math.floor(Math.random() * 100000000));
 const sslConfiguredAgent = new https.Agent(options);
 
 async function generateAuthToken() {
