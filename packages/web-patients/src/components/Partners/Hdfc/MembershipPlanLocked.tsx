@@ -595,7 +595,7 @@ export const MembershipPlanLocked: React.FC = (props) => {
       .then((response) => {
         setSubscriptionInclusions(
           // response.data.GetAllUserSubscriptionsWithPlanBenefits.response[0].can_upgrade_to
-          response.data.GetAllUserSubscriptionsWithPlanBenefits.response
+          response.data.GetAllUserSubscriptionsWithPlanBenefits.response.can_upgrade_to
         );
         setPlanName(
           response.data.GetAllUserSubscriptionsWithPlanBenefits.response[0].can_upgrade_to.name

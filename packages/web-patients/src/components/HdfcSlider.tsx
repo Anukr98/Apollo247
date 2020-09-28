@@ -197,7 +197,7 @@ export const HdfcSlider: React.FC<HdfcSliderProps> = (props) => {
               setCallDoctorPopup(true);
             } else {
               setSuccessMessage({
-                message: `You have exhausted all your attempts to reach our doctors, Please try again next month.`,
+                message: `Hey, looks like you have exhausted the monthly usage limit for this benefit. If you feel this is an error, please raise a ticket on the Help section.`,
               });
             }
           }

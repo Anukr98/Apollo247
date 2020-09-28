@@ -887,6 +887,10 @@ export const MembershipPlanDetail: React.FC = (props) => {
         history.push(clientRoutes.specialityListing());
       } else if (cta_action.meta.action == 'DIAGNOSTICS_LANDING') {
         history.push(clientRoutes.welcome());
+      } else if (cta_action.meta.action == 'DIETECIAN_LANDING') {
+        history.push(clientRoutes.dietetics());
+      } else {
+        history.push(clientRoutes.welcome());
       }
     } else if (cta_action.type == 'CALL_API') {
       if (cta_action.meta.action == 'CALL_EXOTEL_API') {
@@ -896,7 +900,7 @@ export const MembershipPlanDetail: React.FC = (props) => {
           setCallDoctorPopup(true);
         } else {
           setSuccessMessage({
-            message: `You have exhausted all your attempts to reach our doctors, Please try again next month.`,
+            message: `Hey, looks like you have exhausted the monthly usage limit for this benefit. If you feel this is an error, please raise a ticket on the Help section.`,
           });
         }
         // initiateExotelCall(localStorage.getItem('userMobileNo'), item._id);
