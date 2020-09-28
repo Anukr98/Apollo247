@@ -142,6 +142,8 @@ export enum WebEngageEventName {
   TAKE_PHOTO_CLICK_CHATROOM = 'Take a photo in consult room clicked',
   GALLERY_UPLOAD_PHOTO_CLICK_CHATROOM = 'choose from gallery in consult room clicked',
   UPLOAD_PHR_CLICK_CHATROOM = 'Upload from PHR in consult room clicked',
+  PATIENT_JOINED_CONSULT = 'Patient Joined the consult with doctor',
+  PATIENT_ENDED_CONSULT = 'Patient ended the consult',
   // Medicine Events
   PHARMACY_AUTO_SELECT_LOCATION_CLICKED = 'Pharmacy Auto Select Location Clicked',
   PHARMACY_ENTER_DELIVERY_PINCODE_CLICKED = 'Pharmacy Enter Delivery Pincode Clicked',
@@ -323,7 +325,7 @@ export interface WebEngageEvents {
     'Brand ID': string;
     'category name': string;
     'category ID': string;
-    'pincode': string;
+    pincode: string;
   };
 
   [WebEngageEventName.CATEGORY_CLICKED]: {
@@ -1223,6 +1225,40 @@ export interface WebEngageEvents {
     'Customer ID': string;
   };
   [WebEngageEventName.SD_VIDEO_CALL_STARTED]: {
+    'Doctor Name': string;
+    'Speciality Name': string;
+    'Speciality ID': string;
+    'Doctor Category': DoctorType;
+    'Consult Date Time': Date;
+    'Consult Mode': 'Online' | 'Physical';
+    'Hospital Name': string;
+    'Hospital City': string;
+    'Consult ID': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Customer ID': string;
+  };
+  [WebEngageEventName.PATIENT_JOINED_CONSULT]: {
+    'Doctor Name': string;
+    'Speciality Name': string;
+    'Speciality ID': string;
+    'Doctor Category': DoctorType;
+    'Consult Date Time': Date;
+    'Consult Mode': 'Online' | 'Physical';
+    'Hospital Name': string;
+    'Hospital City': string;
+    'Consult ID': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Customer ID': string;
+  };
+  [WebEngageEventName.PATIENT_ENDED_CONSULT]: {
     'Doctor Name': string;
     'Speciality Name': string;
     'Speciality ID': string;

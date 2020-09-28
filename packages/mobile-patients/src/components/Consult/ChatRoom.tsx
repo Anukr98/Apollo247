@@ -635,7 +635,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       | WebEngageEventName.SD_CONSULTATION_STARTED
       | WebEngageEventName.SD_VIDEO_CALL_STARTED
       | WebEngageEventName.DOWNLOAD_PRESCRIPTION
-      | WebEngageEventName.VIEW_PRESCRIPTION_IN_CONSULT_DETAILS,
+      | WebEngageEventName.VIEW_PRESCRIPTION_IN_CONSULT_DETAILS
+      | WebEngageEventName.PATIENT_JOINED_CONSULT
+      | WebEngageEventName.PATIENT_ENDED_CONSULT,
     data:
       | getAppointmentData_getAppointmentData_appointmentsHistory
       | getPatinetAppointments_getPatinetAppointments_patinetAppointments = appointmentData
@@ -647,7 +649,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       | WebEngageEvents[WebEngageEventName.SD_CONSULTATION_STARTED]
       | WebEngageEvents[WebEngageEventName.SD_VIDEO_CALL_STARTED]
       | WebEngageEvents[WebEngageEventName.DOWNLOAD_PRESCRIPTION]
-      | WebEngageEvents[WebEngageEventName.VIEW_PRESCRIPTION_IN_CONSULT_DETAILS] = {
+      | WebEngageEvents[WebEngageEventName.VIEW_PRESCRIPTION_IN_CONSULT_DETAILS]
+      | WebEngageEvents[WebEngageEventName.PATIENT_JOINED_CONSULT]
+      | WebEngageEvents[WebEngageEventName.PATIENT_ENDED_CONSULT] = {
       'Doctor Name': g(data, 'doctorInfo', 'fullName')!,
       'Speciality ID': g(data, 'doctorInfo', 'specialty', 'id')!,
       'Speciality Name': g(data, 'doctorInfo', 'specialty', 'name')!,
@@ -5129,6 +5133,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             onPress={() => {
               patientJoinedCall.current = true;
               joinCallHandler();
+              postAppointmentWEGEvent(WebEngageEventName.PATIENT_JOINED_CONSULT);
             }}
           />
         </View>
@@ -5823,7 +5828,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               setIsPublishAudio(true);
               setShowVideo(true);
               setCameraPosition('front');
-
+              postAppointmentWEGEvent(WebEngageEventName.PATIENT_ENDED_CONSULT);
               pubnub.publish(
                 {
                   message: {
@@ -5900,7 +5905,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setCameraPosition('front');
             stopTimer();
             setHideStatusBar(false);
-
+            postAppointmentWEGEvent(WebEngageEventName.PATIENT_ENDED_CONSULT);
             pubnub.publish(
               {
                 message: {
@@ -6120,7 +6125,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     stopTimer();
     setHideStatusBar(false);
     setChatReceived(false);
-
+    postAppointmentWEGEvent(WebEngageEventName.PATIENT_ENDED_CONSULT);
     pubnub.publish(
       {
         message: {
@@ -6241,6 +6246,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 APICallAgain();
               }
             });
+            postAppointmentWEGEvent(WebEngageEventName.PATIENT_JOINED_CONSULT);
           }}
         >
           <PickCallIcon
