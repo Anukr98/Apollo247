@@ -163,6 +163,7 @@ export enum GroupPlanStatus {
 export enum HDFC_CUSTOMER {
   NOT_HDFC_CUSTOMER = 'NOT_HDFC_CUSTOMER',
   OTP_GENERATED = 'OTP_GENERATED',
+  OTP_NOT_GENERATED = 'OTP_NOT_GENERATED',
 }
 
 export enum LOGIN_TYPE {
@@ -420,6 +421,7 @@ export enum SubscriptionStatus {
   CANCELLED = 'CANCELLED',
   DEFERRED_INACTIVE = 'DEFERRED_INACTIVE',
   DISABLED = 'DISABLED',
+  UPGRADED = 'UPGRADED',
 }
 
 export enum TEST_COLLECTION_TYPE {
