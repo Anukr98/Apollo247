@@ -403,7 +403,9 @@ export async function sendChatMessageNotification(
     };
 
     deviceTokensList.forEach((values: { deviceToken: string }) => {
-      registrationToken.push(values.deviceToken);
+      if (values.deviceToken != '' && values.deviceToken != null) {
+        registrationToken.push(values.deviceToken);
+      }
     });
 
     console.log(registrationToken, 'registrationToken doctor');
