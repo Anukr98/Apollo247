@@ -108,7 +108,7 @@ import {
   StyleProp,
   ViewStyle,
 } from 'react-native';
-import { Image } from 'react-native-elements';
+import { FastImageLoading } from '@aph/mobile-doctors/src/components/ui/FastImageLoading';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import {
   NavigationParams,
@@ -2634,28 +2634,10 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     return (
       <View style={{ marginBottom: 20 }}>
         {patientDetails && patientDetails.photoUrl ? (
-          <Image
-            source={{
-              uri: (patientDetails && patientDetails.photoUrl) || '',
-            }}
-            style={{ height: width, width: width, backgroundColor: theme.colors.WHITE }}
+          <FastImageLoading
+            uri={(patientDetails && patientDetails.photoUrl) || ''}
+            imageStyle={{ height: width, width: width, backgroundColor: theme.colors.WHITE }}
             resizeMode={'contain'}
-            placeholderStyle={{
-              height: width,
-              width: width,
-              alignItems: 'center',
-              backgroundColor: 'transparent',
-            }}
-            PlaceholderContent={
-              loading ? (
-                <></>
-              ) : (
-                <Spinner
-                  style={{ backgroundColor: 'transparent' }}
-                  message={strings.common.imageLoading}
-                />
-              )
-            }
           />
         ) : (
           <UserPlaceHolder

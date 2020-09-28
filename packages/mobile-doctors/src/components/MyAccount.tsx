@@ -13,7 +13,15 @@ import { MaterialMenu, OptionsObject } from '@aph/mobile-doctors/src/components/
 import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
 import { Switch } from '@aph/mobile-doctors/src/components/ui/Switch';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
-import { UPDATE_CHAT_DAYS } from '@aph/mobile-doctors/src/graphql/profiles';
+import {
+  SET_APPOINTMENT_REMINDER_IVR,
+  UPDATE_CHAT_DAYS,
+} from '@aph/mobile-doctors/src/graphql/profiles';
+import { ConsultMode } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
+import {
+  setAppointmentReminderIvr,
+  setAppointmentReminderIvrVariables,
+} from '@aph/mobile-doctors/src/graphql/types/setAppointmentReminderIvr';
 import {
   updateDoctorChatDays,
   updateDoctorChatDaysVariables,
@@ -39,9 +47,9 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
   const client = useApolloClient();
   const { setLoading, showAphAlert } = useUIElements();
   const appointmentTypeArray = [
-    { key: 'O', value: 'Online' },
-    { key: 'I', value: 'In-person' },
-    { key: 'B', value: 'Both' },
+    { key: ConsultMode.ONLINE, value: 'Online' },
+    { key: ConsultMode.PHYSICAL, value: 'In-person' },
+    { key: ConsultMode.BOTH, value: 'Both' },
   ];
   const timeOptionArray: OptionsObject[] = [
     { key: '1', value: '10' },
@@ -61,7 +69,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
   const [showSavedTime, setShowSavedTime] = useState<boolean>(false);
   const [expandFollowUp, setExpandFollowUp] = useState<boolean>(false);
   const [ivrSwitch, setIvrSwitch] = useState<boolean>(false);
-  const [appointmentType, setAppointmentType] = useState<'O' | 'I' | 'B'>('B');
+  const [appointmentType, setAppointmentType] = useState<ConsultMode>(ConsultMode.BOTH);
   const [onlineAppointmentTime, setOnlineAppointmentTime] = useState<OptionsObject>(
     timeOptionArray[0]
   );
@@ -84,9 +92,13 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
         const savedData = JSON.parse(data);
         setIVRChanged(
           savedData.ivrEnabled !== editedData.ivrEnabled ||
-            savedData.typeOfAppointment !== editedData.typeOfAppointment ||
-            savedData.onlineRemainderTime !== editedData.onlineRemainderTime ||
-            savedData.inpersonRemainderTime !== editedData.inpersonRemainderTime
+            (ivrSwitch && savedData.typeOfAppointment !== editedData.typeOfAppointment) ||
+            (ivrSwitch &&
+              appointmentType !== ConsultMode.PHYSICAL &&
+              savedData.onlineRemainderTime !== editedData.onlineRemainderTime) ||
+            (ivrSwitch &&
+              appointmentType !== ConsultMode.ONLINE &&
+              savedData.inpersonRemainderTime !== editedData.inpersonRemainderTime)
         );
         setFollowupChanged(savedData.followUpDays !== editedData.followUpDays);
       } else {
@@ -95,22 +107,38 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     });
   }, [appointmentType, followUpDays, inpersonAppointmentTime, ivrSwitch, onlineAppointmentTime]);
 
+  const getOpionObject = (data: OptionsObject[], searchValue: string, isKey: boolean) => {
+    return data.find((item) => (isKey ? item.key === searchValue : item.value === searchValue));
+  };
+
   useEffect(() => {
     if (doctorDetails) {
       const chatDays = g(doctorDetails, 'chatDays');
+      const ivrDetails = {
+        ivrEnabled: g(doctorDetails, 'isIvrSet') || false,
+        typeOfAppointment: g(doctorDetails, 'ivrConsultType') || ConsultMode.BOTH,
+        onlineRemainderTime: (g(doctorDetails, 'ivrCallTimeOnline') || 10).toString(),
+        inpersonRemainderTime: (g(doctorDetails, 'ivrCallTimePhysical') || 10).toString(),
+      };
       AsyncStorage.setItem(
         'settingsData',
         JSON.stringify({
-          ivrEnabled: ivrSwitch,
-          typeOfAppointment: appointmentType,
-          onlineRemainderTime: onlineAppointmentTime.value,
-          inpersonRemainderTime: inpersonAppointmentTime.value,
+          ...ivrDetails,
           followUpDays: chatDays,
         })
       );
       if (chatDays !== null && chatDays !== undefined) {
         setFollowUpDays(daysOptionArray[chatDays]);
       }
+      setIvrSwitch(ivrDetails.ivrEnabled);
+      setAppointmentType(ivrDetails.typeOfAppointment);
+      setOnlineAppointmentTime(
+        getOpionObject(timeOptionArray, ivrDetails.onlineRemainderTime, false) || timeOptionArray[0]
+      );
+      setInPersonAppointmentTime(
+        getOpionObject(timeOptionArray, ivrDetails.inpersonRemainderTime, false) ||
+          timeOptionArray[0]
+      );
     }
   }, [doctorDetails]);
 
@@ -169,13 +197,13 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       <View style={styles.ivrDetailsContainer}>
         <Text style={styles.ivrSubHeadingStyle}>{string.settings.ivrOptionSelect}</Text>
         <View style={{ flexDirection: 'row' }}>
-          {appointmentTypeArray.map((appointmentitem) => {
+          {appointmentTypeArray.map((appointmentitem, index) => {
             const isSelected = appointmentType == appointmentitem.key;
             return (
-              <View style={styles.ivrOptionsContainer}>
+              <View style={styles.ivrOptionsContainer} key={index}>
                 <TouchableOpacity
                   activeOpacity={1}
-                  onPress={() => setAppointmentType(appointmentitem.key as 'O' | 'I' | 'B')}
+                  onPress={() => setAppointmentType(appointmentitem.key)}
                 >
                   <View style={styles.ivrOptionsItemContainer}>
                     {circleOption(isSelected)}
@@ -188,7 +216,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             );
           })}
         </View>
-        {appointmentType !== 'I' ? (
+        {appointmentType !== ConsultMode.PHYSICAL ? (
           <View style={styles.timingMainContainer}>
             <Text style={styles.ivrSubHeadingStyle}>{string.settings.ivrOnlineHeading}</Text>
             <View style={styles.dropContainer}>
@@ -221,7 +249,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             </View>
           </View>
         ) : null}
-        {appointmentType !== 'O' ? (
+        {appointmentType !== ConsultMode.ONLINE ? (
           <View style={styles.timingMainContainer}>
             <Text style={styles.ivrSubHeadingStyle}>{string.settings.ivrInPersonHeading}</Text>
             <View style={styles.dropContainer}>
@@ -406,7 +434,50 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
         });
     }
     if (ivrChanged) {
-      //Do IVR call
+      setLoading && setLoading(true);
+      client
+        .mutate<setAppointmentReminderIvr, setAppointmentReminderIvrVariables>({
+          mutation: SET_APPOINTMENT_REMINDER_IVR,
+          variables: {
+            doctorId: g(doctorDetails, 'id') || '',
+            isIvrSet: ivrSwitch,
+            ivrConsultType: ivrSwitch ? appointmentType : null,
+            ivrCallTimeOnline:
+              appointmentType !== ConsultMode.PHYSICAL && ivrSwitch
+                ? Number(onlineAppointmentTime.value)
+                : null,
+            ivrCallTimePhysical:
+              appointmentType !== ConsultMode.ONLINE && ivrSwitch
+                ? Number(inpersonAppointmentTime.value)
+                : null,
+          },
+        })
+        .then(({ data }) => {
+          setLoading && setLoading(false);
+          if (!g(data, 'setAppointmentReminderIvr', 'isError')) {
+            getDoctorDetailsApi && getDoctorDetailsApi();
+            AsyncStorage.setItem('settingsData', JSON.stringify(editedData));
+            setIVRChanged(false);
+            setShowSavedTime(true);
+            setTimeout(() => {
+              setShowSavedTime(false);
+            }, 5000);
+          } else {
+            showAphAlert &&
+              showAphAlert({
+                title: string.common.alert,
+                description: string.alerts.something_went_wrong,
+              });
+          }
+        })
+        .catch((error) => {
+          setLoading && setLoading(false);
+          showAphAlert &&
+            showAphAlert({
+              title: string.common.alert,
+              description: string.alerts.something_went_wrong,
+            });
+        });
     }
     if (notificationChanged) {
       //Do Notificaion change
@@ -419,10 +490,10 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
         {renderHeader()}
         <ScrollView bounces={false}>
           <View style={styles.viewMainContainer}>
-            {/* APP:2876: design */}
-            {/* {renderivr()}
+            {renderivr()}
             {ivrSwitch ? renderivrOption() : null}
-            {renderNotificationPreference()} */}
+            {/* APP-1947 */}
+            {/* {renderNotificationPreference()} */}
             {renderFollowupSettings()}
           </View>
         </ScrollView>

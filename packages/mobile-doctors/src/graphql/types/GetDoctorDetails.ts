@@ -147,6 +147,10 @@ export interface GetDoctorDetails_getDoctorDetails {
   streetLine3: string | null;
   zip: string | null;
   signature: string | null;
+  isIvrSet: boolean | null;
+  ivrConsultType: ConsultMode | null;
+  ivrCallTimeOnline: number | null;
+  ivrCallTimePhysical: number | null;
   specialty: GetDoctorDetails_getDoctorDetails_specialty | null;
   consultHours: (GetDoctorDetails_getDoctorDetails_consultHours | null)[] | null;
   packages: (GetDoctorDetails_getDoctorDetails_packages | null)[] | null;

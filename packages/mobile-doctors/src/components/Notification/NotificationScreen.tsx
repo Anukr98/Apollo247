@@ -17,7 +17,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { Image as ImageNative } from 'react-native-elements';
+import { FastImageLoading } from '@aph/mobile-doctors/src/components/ui/FastImageLoading';
 import { NavigationScreenProps } from 'react-navigation';
 
 const styles = NotificationScreenStyles;
@@ -44,12 +44,7 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
     if (url) {
       return (
         <View style={styles.chatIconContainer}>
-          <ImageNative
-            placeholderStyle={styles.placeHolderLoading}
-            PlaceholderContent={<ActivityIndicator animating={true} size="small" color="green" />}
-            source={{ uri: url }}
-            style={styles.imageStyle}
-          />
+          <FastImageLoading uri={url} imageStyle={styles.imageStyle} resizeMode={'cover'} />
         </View>
       );
     } else {
