@@ -776,6 +776,8 @@ interface CallPopoverProps {
   setRejectedByPatientBeforeAnswer: (value: string) => void;
   rejectedByPatientBeforeAnswer: string | null;
   setGiveRating: (flag: boolean) => void;
+  setUserMessageOnCall: (msg: string) => void;
+  userMessageOnCall: string;
 }
 
 let intervalId: any;
@@ -989,6 +991,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       },
       (status, response) => {}
     );
+    props.setUserMessageOnCall('connecting....');
     setPlayRingtone(true);
     actionBtn();
   };
@@ -2285,6 +2288,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
               setSessionError={props.setSessionError}
               setPublisherError={props.setPublisherError}
               setSubscriberError={props.setSubscriberError}
+              setUserMessageOnCall={props.setUserMessageOnCall}
+              userMessageOnCall={props.userMessageOnCall}
             />
           )}
         </div>

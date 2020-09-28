@@ -174,6 +174,8 @@ interface ConsultProps {
   setPublisherError: (error: any) => void;
   setSubscriberError: (error: any) => void;
   setGiveRating: (flag: boolean) => void;
+  setUserMessageOnCall: (msg: string) => void;
+  userMessageOnCall: string;
 }
 function getCookieValue() {
   const name = 'action=';
@@ -248,6 +250,9 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                     ? '0' + props.timerSeconds
                     : props.timerSeconds
                 }`}
+              {props.userMessageOnCall && props.userMessageOnCall !== ''  && (
+                <p className={classes.audioVideoState}>{props.userMessageOnCall}</p>
+              )}
               <p className={classes.audioVideoState}>{checkReconnecting()}</p>
               <p className={classes.audioVideoState}>{checkDowngradeToAudio()}</p>
               <p className={classes.audioVideoState}>{isPaused()}</p>
@@ -371,6 +376,13 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                       props.setSubscriberError(error);
                     }}
                     eventHandlers={{
+                      connected: (event: string) => {
+                        console.log('Subscribe stream connected!', event);
+                        props.setUserMessageOnCall('Patient Joined');
+                        setTimeout(() => {
+                          props.setUserMessageOnCall('');
+                        }, 3000);
+                      },
                       videoDisabled: (event: any) => {
                         console.log(`videoDisabled: ${JSON.stringify(event)}`);
                         if (event.reason === 'quality') {
@@ -423,6 +435,7 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                       />
                     </div>
                     <div className={classes.errorMessage}>
+                      {props.userMessageOnCall && props.userMessageOnCall !== ''  && (<p className={classes.audioVideoState}>{props.userMessageOnCall}</p>) }
                       <p className={classes.audioVideoState}>{checkReconnecting()}</p>
                       <p className={classes.audioVideoState}>{checkDowngradeToAudio()}</p>
                       <p className={classes.audioVideoState}>{isPaused()}</p>

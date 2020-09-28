@@ -417,6 +417,7 @@ export const JDConsultRoom: React.FC = () => {
   const classes = useStyles({});
   const { patientId, appointmentId, queueId, isActive } = useParams<JDConsultRoomParams>();
   const [isCall, setIscall] = React.useState(true);
+  const [userMessageOnCall, setUserMessageOnCall] = useState<string>('');
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [jrdNoFillDialog, setJrdNoFillDialog] = React.useState(false);
   const [isNewMessage, setIsNewMessage] = React.useState(false);
@@ -1736,6 +1737,8 @@ export const JDConsultRoom: React.FC = () => {
                     setIscall={setIscall}
                     rejectedByPatientBeforeAnswer={rejectedByPatientBeforeAnswer}
                     setRejectedByPatientBeforeAnswer={setRejectedByPatientBeforeAnswer}
+                    setUserMessageOnCall={setUserMessageOnCall}
+                    userMessageOnCall={userMessageOnCall}
                   />
                 )}
                 <div className={classes.contentGroup}>
@@ -1770,6 +1773,8 @@ export const JDConsultRoom: React.FC = () => {
                           setSubscriberError={setSubscriberError}
                           isCall={isCall}
                           setIscall={setIscall}
+                          setUserMessageOnCall={setUserMessageOnCall}
+                          userMessageOnCall={userMessageOnCall}
                         />
                       </div>
                     </div>
