@@ -161,15 +161,18 @@ const useStyles = makeStyles((theme: Theme) => {
       listStyle: 'none',
       margin: '10px 0',
       display: 'grid',
-      gridTemplateColumns: '40% 50%',
-      gridColumnGap: 50,
+      gridTemplateColumns: '46% 46%',
+      gridColumnGap: 40,
       '& li': {
         display: 'flex',
         alignItems: 'flex-start',
-        padding: '20px 0',
+        padding: '20px 0 20px 60px',
+        position: 'relative',
         '& img': {
-          width: 40,
-          margin: '0 20px 0 0',
+          width: 36,
+          position: 'absolute',
+          top: 20,
+          left: 0,
         },
       },
       [theme.breakpoints.down('sm')]: {
