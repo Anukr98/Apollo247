@@ -1469,6 +1469,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     otherError: false,
   });
   // audioVideoChat start
+  const [userMessageOnCall, setUserMessageOnCall] = useState<string>('');
   const [showVideoChat, setShowVideoChat] = useState<boolean>(false);
   const [isVideoCall, setIsVideoCall] = useState<boolean>(false);
   const [isNewMsg, setIsNewMsg] = useState<boolean>(false);
@@ -1649,6 +1650,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     );
     {
       joinPrompt || floatingJoinPrompt ? setPlayRingtone(false) : setPlayRingtone(true);
+    }
+    if(!(joinPrompt || floatingJoinPrompt)){
+      setUserMessageOnCall('Connecting…');
     }
 
     actionBtn();
@@ -3502,6 +3506,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               setSubscriberError={setSubscriberError}
               isCall={isCall}
               setIscall={setIscall}
+              setUserMessageOnCall={setUserMessageOnCall}
+              userMessageOnCall={userMessageOnCall}
             />
           )}
         </div>
