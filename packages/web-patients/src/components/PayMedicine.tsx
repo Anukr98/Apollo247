@@ -48,6 +48,7 @@ import { MAKE_APPOINTMENT_PAYMENT } from 'graphql/consult';
 import { Alerts } from 'components/Alerts/Alerts';
 import { validatePharmaCoupon_validatePharmaCoupon_pharmaLineItemsWithDiscountedPrice as pharmaCouponItem } from 'graphql/types/validatePharmaCoupon';
 import { Redirect } from 'react-router-dom';
+import { Query } from 'react-apollo';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -410,12 +411,15 @@ const PayMedicine: React.FC = (props) => {
   const pharmacyDeliveryCharges = process.env.PHARMACY_DELIVERY_CHARGES;
 
   const { currentPatient } = useAllCurrentPatients();
-  // const deliveryCharges =
-  //   cartTotal >= parseFloat(pharmacyMinDeliveryValue) || cartTotal <= 0
-  //     ? 0
-  //     : parseFloat(pharmacyDeliveryCharges);
 
-  // const totalAmount = (cartTotal + Number(deliveryCharges)).toFixed(2);
+  const userSubscriptions = JSON.parse(localStorage.getItem('userSubscriptions'));
+  const freeDelivery =
+    userSubscriptions &&
+    userSubscriptions[0] &&
+    userSubscriptions[0].status == 'ACTIVE' &&
+    userSubscriptions[0].group_plan &&
+    userSubscriptions[0].group_plan.name == 'PLATINUM+ PLAN';
+
   const getMRPTotal = () => {
     let sum = 0;
     cartItems.forEach((item) => {
@@ -439,11 +443,12 @@ const PayMedicine: React.FC = (props) => {
     deliveryAddressId,
     tatType,
   } = cartValues;
-  const deliveryCharges =
-    cartTotal - Number(couponValue) >= Number(pharmacyMinDeliveryValue) ||
-    totalWithCouponDiscount <= 0
-      ? 0
-      : Number(pharmacyDeliveryCharges);
+  const deliveryCharges = freeDelivery
+    ? 0
+    : cartTotal - Number(couponValue) >= Number(pharmacyMinDeliveryValue) ||
+      totalWithCouponDiscount <= 0
+    ? 0
+    : Number(pharmacyDeliveryCharges);
 
   const consultBookDetails = localStorage.getItem('consultBookDetails')
     ? JSON.parse(localStorage.getItem('consultBookDetails'))
@@ -548,7 +553,7 @@ const PayMedicine: React.FC = (props) => {
                 ? Number(getDiscountedLineItemPrice(cartItemDetails.sku))
                 : Number(getItemSpecialPrice(cartItemDetails)),
             quantity: cartItemDetails.quantity,
-            couponFree: cartItemDetails.couponFree || false,
+            couponFree: cartItemDetails.couponFree || 0,
             itemValue: Number((cartItemDetails.quantity * cartItemDetails.price).toFixed(2)),
             itemDiscount: Number(
               (

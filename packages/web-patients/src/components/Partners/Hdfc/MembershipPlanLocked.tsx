@@ -75,7 +75,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '& h2': {
         fontSize: 14,
-        color: '#07AE8B',
+        // color: '#07AE8B',
         fontWeight: 600,
         margin: '0 0 5px',
       },
@@ -230,20 +230,23 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'absolute',
       bottom: 0,
       right: 0,
-
+      left: 0,
       [theme.breakpoints.down('sm')]: {
-        bottom: -55,
+        bottom: 0,
         left: 0,
         padding: '12px 16px',
         background: '#fff',
+        position: 'fixed',
+        zIndex: 999,
       },
-      '& a, button': {
-        color: '#FC9916',
-        position: 'relative',
+
+      '& a': {
         background: '#fff',
-        borderRadius: 0,
-        width: 160,
+        position: 'relative',
+        color: '#FC9916',
+        width: '100%',
         boxShadow: 'none',
+        borderRadius: '0 0 5px 5px',
         '&:hover': {
           background: '#fff',
           color: '#FC9916',
@@ -251,13 +254,11 @@ const useStyles = makeStyles((theme: Theme) => {
         },
         [theme.breakpoints.down('sm')]: {
           width: '100%',
-
-          background: '#FC9916',
+          background: '#fff',
           borderRadius: 5,
-          color: '#fff',
+          color: '#FC9916',
           '&:hover': {
             background: '#FC9916',
-            boxShadow: 'none',
           },
         },
       },
@@ -265,7 +266,7 @@ const useStyles = makeStyles((theme: Theme) => {
     expansionContainer: {
       padding: '20px 0 50px',
       [theme.breakpoints.down('sm')]: {
-        padding: 20,
+        padding: 0,
       },
     },
     panelRoot: {
@@ -303,7 +304,6 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '& p': {
         fontSize: 14,
-        fontWeight: 500,
         [theme.breakpoints.down('sm')]: {
           fontSize: 12,
         },
@@ -313,7 +313,11 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 0,
       fontSize: 17,
       fontWeight: 500,
-      color: '#07AE8B',
+      // color: '#07AE8B',
+      textAlign: 'center',
+      '& img': {
+        margin: '0 10px 0 0',
+      },
     },
     detailsContent: {
       width: '100%',
@@ -347,26 +351,27 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    cardContent: {},
     planCard: {
       padding: 16,
       position: 'relative',
       width: 400,
-      height: 200,
-      borderRadius: 4,
+      height: 230,
+      boxShadow: '0px 0px 32px rgba(0, 0, 0, 0.1)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 5,
       [theme.breakpoints.down('sm')]: {
         width: '100%',
         height: 160,
         position: 'static',
         // borderRadius: 10,
+        boxShadow: 'none',
+        padding: 0,
       },
       '& img': {
-        position: 'absolute',
-        top: 16,
-        right: 16,
-        [theme.breakpoints.down('sm')]: {
-          top: 30,
-          right: 30,
-        },
+        margin: '0 auto 0',
       },
       '& h1': {
         fontsize: 28,
@@ -377,13 +382,35 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    silver: {
+      '& p': {
+        '&:before': {
+          borderColor: '#C7C7C7',
+        },
+        '& span': {
+          color: '#898989, 100%',
+        },
+      },
+    },
     gold: {
-      background: `url(${require('images/hdfc/gold.svg')}) no-repeat 0 0`,
-      backgroundSize: 'cover',
+      '& p': {
+        '&:before': {
+          borderColor: '#E7BB65',
+        },
+        '& span': {
+          color: '#B45807',
+        },
+      },
     },
     platinum: {
-      background: `url(${require('images/hdfc/platinum.svg')}) no-repeat center center`,
-      backgroundSize: 'cover',
+      '& p': {
+        '&:before': {
+          borderColor: '#C7C7C7',
+        },
+        '& span': {
+          color: '#606060',
+        },
+      },
     },
     benefitDesc: {
       fontSize: 16,
@@ -448,6 +475,10 @@ const useStyles = makeStyles((theme: Theme) => {
       top: 20,
       right: 30,
       width: 580,
+      height: 230,
+      border: 'none',
+      boxShadow: '0px 0px 32px rgba(0, 0, 0, 0.1)',
+      background: '#fff',
       [theme.breakpoints.down('sm')]: {
         position: 'static',
         width: '100%',
@@ -463,6 +494,53 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#fc9916',
       },
     },
+    planName: {
+      textAlign: 'center',
+      position: 'relative',
+      margin: '5px 0',
+      '&:before': {
+        content: "''",
+        position: 'absolute',
+        top: 10,
+        left: 0,
+        right: 0,
+        borderBottom: '1px solid transparent',
+      },
+      '& span': {
+        padding: '5px 15px',
+        background: '#fff',
+        display: 'inline-block',
+        fontSize: 14,
+        textTransform: 'uppercase',
+        letterSpacing: 2,
+        fontWeight: 600,
+        position: 'relative',
+        zIndex: 2,
+      },
+    },
+    ciContent: {
+      boxShadow: '0px 0px 32px rgba(0, 0, 0, 0.1)',
+      background: '#fff',
+      padding: 40,
+      height: 230,
+      '& h2': {
+        fontSize: 20,
+        fontWeight: 700,
+        margin: '0 0 20px',
+      },
+      '& h5': {
+        fontSize: 18,
+        fontWeight: 600,
+        margin: '0 0 10px',
+      },
+    },
+    availContent: {
+      '& p': {
+        color: '#007C9D',
+        fontSize: 18,
+        fontWeight: 500,
+      },
+    },
   };
 });
 
@@ -476,10 +554,30 @@ export const MembershipPlanLocked: React.FC = (props) => {
   const [planName, setPlanName] = React.useState<string>('');
   const [benefitsWorth, setBenefitsWorth] = React.useState<string>('');
   const [minimumTransactionValue, setMinimumTransactionValue] = React.useState<string>('');
+  const [upgradableTransactionValue, setUpgradableTransactionValue] = React.useState<string>('');
   const apolloClient = useApolloClient();
 
   const handleChange = (panel: string) => (event: React.ChangeEvent<{}>, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false);
+  };
+
+  const cardBg = (plan: String) => {
+    if (plan === 'GOLD+ PLAN') {
+      return classes.gold;
+    }
+    if (plan === 'PLATINUM+ PLAN') {
+      return classes.platinum;
+    } else {
+      return classes.gold;
+    }
+  };
+  const getMedalImage = (planName: String) => {
+    if (planName == 'GOLD+ PLAN') {
+      return require('images/hdfc/gold.svg');
+    }
+    if (planName == 'PLATINUM+ PLAN') {
+      return require('images/hdfc/platinum.svg');
+    } else return require('images/hdfc/silver.svg');
   };
 
   useEffect(() => {
@@ -497,7 +595,7 @@ export const MembershipPlanLocked: React.FC = (props) => {
       .then((response) => {
         setSubscriptionInclusions(
           // response.data.GetAllUserSubscriptionsWithPlanBenefits.response[0].can_upgrade_to
-          response.data.GetAllUserSubscriptionsWithPlanBenefits.response
+          response.data.GetAllUserSubscriptionsWithPlanBenefits.response.can_upgrade_to
         );
         setPlanName(
           response.data.GetAllUserSubscriptionsWithPlanBenefits.response[0].can_upgrade_to.name
@@ -509,6 +607,10 @@ export const MembershipPlanLocked: React.FC = (props) => {
         setMinimumTransactionValue(
           response.data.GetAllUserSubscriptionsWithPlanBenefits.response[0].can_upgrade_to
             .min_transaction_value
+        );
+        setUpgradableTransactionValue(
+          response.data.GetAllUserSubscriptionsWithPlanBenefits.response[0]
+            .upgrade_transaction_value
         );
         setLoading(false);
       })
@@ -537,7 +639,7 @@ export const MembershipPlanLocked: React.FC = (props) => {
             />
           </Link>
           <Typography component="h1" className={classes.pageHeader}>
-            Membership Plan Detail
+            Membership Details
           </Typography>
         </div>
         <div>
@@ -563,15 +665,13 @@ export const MembershipPlanLocked: React.FC = (props) => {
           <div className={classes.mainContent}>
             <div className={classes.pcContent}>
               <div className={classes.planCardContent}>
-                <div className={`${classes.planCard} ${classes.platinum}`}>
-                  <img src={require('images/hdfc/locked.svg')} alt="Gold MemberShip" />
-                  <Typography component="h1">{planName}</Typography>
-                  <Typography className={classes.benefitDesc}>Availing Benefits worth</Typography>
-                  <Typography className={classes.cardWorth}>Rs. {benefitsWorth}</Typography>
-                  <Typography className={classes.cardDesc}>
-                    {`A host of benefits await you with our`} {planName}{' '}
-                    {`curated for HDFC customers`}
-                  </Typography>
+                <div className={classes.planCard + ' ' + cardBg(planName)}>
+                  <div className={classes.cardContent}>
+                    <img src={getMedalImage(planName)} alt="" />
+                    <Typography className={classes.planName}>
+                      <span>{planName.split('+')[0]}</span>
+                    </Typography>
+                  </div>
                   <div className={classes.btnContainer}>
                     <AphButton variant="contained" href={clientRoutes.welcome()}>
                       Explore Now
@@ -625,20 +725,16 @@ export const MembershipPlanLocked: React.FC = (props) => {
                     expanded: classes.panelExpanded,
                   }}
                 >
-                  <Typography className={classes.panelHeading}>How To Avail?</Typography>
+                  <Typography className={classes.panelHeading}>
+                    <img src={require('images/hdfc/info-avail.svg')} alt="" /> How To Avail?
+                  </Typography>
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails className={classes.panelDetails}>
-                  <div className={classes.detailsContent}>
-                    <Typography>Please follow these steps</Typography>
-                    <ul className={classes.availList}>
-                      <li>
-                        Complete transactions worth Rs {minimumTransactionValue}+ on Apollo 24/7
-                      </li>
-                      <li>
-                        Duration of membership is 1 year. It will be auto renewed if you spend more
-                        than Rs 25000 within 1 year on Apollo 24/7
-                      </li>
-                    </ul>
+                  <div className={`${classes.detailsContent} ${classes.availContent}`}>
+                    <Typography>
+                      Complete transactions worth Rs. {upgradableTransactionValue} or more on the
+                      Apollo 24|7 app to unlock platinum+ plan membership
+                    </Typography>
                   </div>
                 </ExpansionPanelDetails>
               </ExpansionPanel>
@@ -664,13 +760,13 @@ export const MembershipPlanLocked: React.FC = (props) => {
                   <div className={classes.detailsContent}>
                     <ul className={classes.tncList}>
                       <li>
-                        The Healthy Life offering is the marketing program offered by Apollo 24/7,
+                        The Healthy Life offering is the marketing program offered by Apollo 24|7,
                         an app managed by Apollo Hospitals Enterprise Limited (AHEL) only for HDFC
                         Bank customers.
                       </li>
                       <li>
                         The validity of the program (“Term”) is till 31st August 2021, unless
-                        extended by Apollo 24/7 and HDFC Bank.
+                        extended by Apollo 24|7 and HDFC Bank.
                       </li>
                       <li>
                         The discounts applicable as per the Healthy Life program shall be applied at
@@ -679,7 +775,7 @@ export const MembershipPlanLocked: React.FC = (props) => {
                       <li>
                         This program is designed for select HDFC customers and offerings will vary
                         with the different categories of HDFC customers. However, membership schemes
-                        can be upgraded on the basis of the spending on the Apollo 24/7 app as
+                        can be upgraded on the basis of the spending on the Apollo 24|7 app as
                         mentioned in the offer grid.
                       </li>
                       <li>
@@ -696,7 +792,7 @@ export const MembershipPlanLocked: React.FC = (props) => {
                       </li>
                       <li>
                         The Healthy Life offering will be applicable to all HDFC customers, whether
-                        they are existing customers of Apollo 24/7 or not. However, all the
+                        they are existing customers of Apollo 24|7 or not. However, all the
                         customers shall adhere to the offerings as mentioned in this marketing
                         program.
                       </li>
@@ -723,29 +819,29 @@ export const MembershipPlanLocked: React.FC = (props) => {
                       <li>
                         The Healthy Life membership program will be issued solely at the discretion
                         of the management and the final discretion on all matters relating to the
-                        membership shall rest with Apollo 24/7(AHEL).
+                        membership shall rest with Apollo 24|7(AHEL).
                       </li>
                       <li>
                         Healthy Life program is a corporate offering exclusively for HDFC bank
                         customers and not for individuals.
                       </li>
                       <li>
-                        Apollo 24/7 reserves the right to add, alter, amend and revise terms and
+                        Apollo 24|7 reserves the right to add, alter, amend and revise terms and
                         conditions as well as rules and regulations governing the Healthy Life
                         membership program without prior notice.
                       </li>
                       <li>
                         Benefits and offers available through the program may change or be withdrawn
-                        without prior intimation. Apollo 24/7 will not be responsible for any
+                        without prior intimation. Apollo 24|7 will not be responsible for any
                         liability arising from such situations or use of such offers.
                       </li>
                       <li>
                         Any disputes arising out of the offer shall be subject to arbitration by a
-                        sole arbitrator appointed by Apollo 24/7 for this purpose. The proceedings
+                        sole arbitrator appointed by Apollo 24|7 for this purpose. The proceedings
                         of the arbitration shall be conducted as per the provisions of Arbitration
                         and Conciliation Act, 1996. The place of arbitration shall be at Chennai and
                         language of arbitration shall be English. The existence of a dispute, if at
-                        all, shall not constitute a claim against Apollo 24/7.
+                        all, shall not constitute a claim against Apollo 24|7.
                       </li>
                     </ul>
                   </div>

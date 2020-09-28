@@ -71,9 +71,10 @@ export const clientRoutes = {
   membershipPlanLocked: () => '/partners/hdfc-membership-locked',
   membershipPlanDetail: () => '/partners/hdfc-membership-plan-detail',
   covidProtocol: () => '/medical-condition',
+  dietetics: () => 'specialties/dietetics',
   prescription: (appointmentId: string) => `/prescription/${appointmentId}`,
-  // sitemap: (sitemap: string) => `/${sitemap}`,
-  // childSitemap: (sitemap: string, pageNo: string) => `/${sitemap}/${pageNo}`,
+  sitemap: (sitemap: string) => `/static/${sitemap}`,
+  childSitemap: (sitemap: string, pageNo: string) => `/static/${sitemap}/${pageNo}`,
 };
 
 export const clientBaseUrl = () => webPatientsBaseUrl();

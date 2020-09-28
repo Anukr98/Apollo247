@@ -115,7 +115,7 @@ export const saveMedicineOrderOMSTypeDefs = gql`
   input MedicineCartOMSItem {
     medicineSKU: String
     medicineName: String
-    couponFree: Boolean
+    couponFree: Int
     price: Float
     quantity: Int
     mrp: Float
@@ -183,7 +183,7 @@ type MedicineCartOMSItem = {
   mou: number;
   isMedicine: string;
   specialPrice: number;
-  couponFree: boolean;
+  couponFree: number;
 };
 
 type SaveMedicineOrderResult = {

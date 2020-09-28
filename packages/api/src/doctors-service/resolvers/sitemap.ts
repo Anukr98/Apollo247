@@ -6,7 +6,7 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import path from 'path';
 import fs from 'fs';
 import { format } from 'date-fns';
-import { keyCache, hgetAllCache } from 'doctors-service/database/connectRedis';
+import { hmsetCache, keyCache, hgetAllCache } from 'doctors-service/database/connectRedis';
 import { log } from 'customWinstonLogger';
 
 export const sitemapTypeDefs = gql`
@@ -68,7 +68,7 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, SitemapResult> 
   args,
   { doctorsDb }
 ) => {
-  console.log(await hgetAllCache('apollo247:staticpages:*'), 'static pages');
+  //console.log(await hgetAllCache('apollo247:staticpages:*'), 'static pages');
   const specialtyRepo = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
   const specialityUrls: SitemapUrls[] = [],
@@ -130,7 +130,6 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, SitemapResult> 
   );
   const textRes = await listResp.text();
   const cmsUrlsList = JSON.parse(textRes);
-  console.log(cmsUrlsList, 'cmsUrlsList');
   if (cmsUrlsList && cmsUrlsList.data.length > 0) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     cmsUrlsList.data.forEach((link: any) => {
@@ -180,7 +179,7 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, SitemapResult> 
   ) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     healthAreasUrlsList.shop_by_healthareas.forEach((link: any) => {
-      const url = process.env.SITEMAP_BASE_URL + 'medicine/healthareas/' + link.url_key;
+      const url = process.env.SITEMAP_BASE_URL + 'medicine/shop-by-healthareas/' + link.url_key;
       const urlInfo: SitemapUrls = {
         url,
         urlName: link.title,
@@ -204,35 +203,49 @@ const generateSitemap: Resolver<null, {}, DoctorsServiceContext, SitemapResult> 
         '<url>\n<loc>' + url + '</loc>\n<lastmod>' + modifiedDate + '</lastmod>\n</url>\n';
     });
   }
-
-  const redisMedKeys = await keyCache('medicine:sku:*');
   let medicineUrls = '\n<!--Medicines list-->\n';
-  if (redisMedKeys && redisMedKeys.length > 0) {
-    let medCount = redisMedKeys.length;
-    if (
-      process.env.NODE_ENV == 'local' ||
-      process.env.NODE_ENV == 'dev' ||
-      process.env.NODE_ENV == 'staging'
-    ) {
-      medCount = 100;
-    }
-    for (let k = 0; k < medCount; k++) {
-      //console.log(redisMedKeys[k], 'key');
-      const skuDets = await hgetAllCache(redisMedKeys[k]);
-      //console.log(skuDets, 'indise key');
+  const sitemapMedKeys = await hgetAllCache('sitemap:medicine:all');
+  //console.log(sitemapMedKeys, 'sitemapMedKeys');
+  if (sitemapMedKeys) {
+    //console.log(JSON.parse(sitemapMedKeys.urlInfo), 'url info after decode');
+    const urlInfo: SitemapUrls[] = JSON.parse(sitemapMedKeys.urlInfo);
+    //console.log(urlInfo, 'urlInfo');
+    Object.assign(medicinesUrls, urlInfo);
+    //console.log(medicinesUrls, 'medicinesUrls');
+    medicineUrls = decodeURIComponent(sitemapMedKeys.fileUrl);
+  } else {
+    const redisMedKeys = await keyCache('medicine:sku:*');
+    if (redisMedKeys && redisMedKeys.length > 0) {
+      let medCount = redisMedKeys.length;
       if (
-        skuDets &&
-        skuDets.url_key &&
-        (skuDets.status == 'Enabled' || skuDets.status == 'enabled')
+        process.env.NODE_ENV == 'local' ||
+        process.env.NODE_ENV == 'dev' ||
+        process.env.NODE_ENV == 'staging'
       ) {
-        const url = process.env.SITEMAP_BASE_URL + 'medicine/' + skuDets.url_key.toString();
-        const urlInfo: SitemapUrls = {
-          url,
-          urlName: decodeURIComponent(skuDets.name),
-        };
-        medicinesUrls.push(urlInfo);
-        medicineUrls += `<url>\n<loc>${url}</loc>\n<lastmod>${modifiedDate}</lastmod>\n</url>\n`;
+        medCount = 1000;
       }
+      for (let k = 0; k < medCount; k++) {
+        //console.log(redisMedKeys[k], 'key');
+        const skuDets = await hgetAllCache(redisMedKeys[k]);
+        //console.log(skuDets, 'indise key');
+        if (
+          skuDets &&
+          skuDets.url_key &&
+          (skuDets.status == 'Enabled' || skuDets.status == 'enabled')
+        ) {
+          const url = process.env.SITEMAP_BASE_URL + 'medicine/' + skuDets.url_key.toString();
+          const urlInfo: SitemapUrls = {
+            url,
+            urlName: decodeURIComponent(skuDets.name),
+          };
+          medicinesUrls.push(urlInfo);
+          medicineUrls += `<url>\n<loc>${url}</loc>\n<lastmod>${modifiedDate}</lastmod>\n</url>\n`;
+        }
+      }
+      await hmsetCache('sitemap:medicine:all', {
+        urlInfo: JSON.stringify(medicinesUrls),
+        fileUrl: encodeURIComponent(medicineUrls),
+      });
     }
   }
 

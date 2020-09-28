@@ -50,7 +50,6 @@ const CovidArticleDetails = loadable(() => import('components/Covid/CovidArticle
 const covidProtocolLanding = loadable(() => import('components/Covid/CovidProtocolLanding'));
 const SpecialityListing = loadable(() => import('components/SpecialityListing'));
 const DoctorsLanding = loadable(() => import('components/DoctorsLanding'));
-// import { Sitemap } from 'components/Sitemap';
 const SpecialtyDetails = loadable(() => import('components/Doctors/SpecialtyDetails'));
 const Appointments = loadable(() => import('components/Consult/V2/Appointments'));
 const ChatRoom = loadable(() => import('components/Consult/V2/ChatRoom/ChatRoom'));
@@ -76,6 +75,7 @@ const TestsLanding = loadable(() => import('components/Tests/TestsLanding'));
 const AddressBook = loadable(() => import('components/MyAccount/AddressBook'));
 const MyAccount = loadable(() => import('components/MyAccount/MyAccount'));
 const MyPayments = loadable(() => import('components/MyAccount/MyPayments'));
+const Sitemap = loadable(() => import('components/Sitemap'));
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -221,16 +221,10 @@ const App: React.FC = () => {
         <Route exact path={clientRoutes.partnersHdfc()} component={HdfcLanding} />
         <AuthRouted exact path={clientRoutes.membershipHdfc()} component={HdfcMemberShip} />
         <AuthRouted exact path={clientRoutes.myMembership()} component={MyMembership} />
-        <Route
-          exact
-          path={clientRoutes.membershipPlanLocked()}
-          component={MembershipPlanLocked}
-        />
-        <Route
-          exact
-          path={clientRoutes.membershipPlanDetail()}
-          component={MembershipPlanDetail}
-        /> 
+        <Route exact path={clientRoutes.membershipPlanLocked()} component={MembershipPlanLocked} />
+        <Route exact path={clientRoutes.membershipPlanDetail()} component={MembershipPlanDetail} />
+        <Route exact path={clientRoutes.sitemap(':sitemap')} component={Sitemap} />
+        <Route exact path={clientRoutes.childSitemap(':sitemap', ':pageNo')} component={Sitemap} />
       </Switch>
     </div>
   );

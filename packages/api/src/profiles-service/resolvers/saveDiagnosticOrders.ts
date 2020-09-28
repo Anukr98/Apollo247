@@ -561,8 +561,8 @@ const SaveDiagnosticOrder: Resolver<
               'Itemtype': item.itemType,
               'NetAmt': element.price * element.quantity,
               'Rate': element.price,
-              'SubCategoryID': item.labID,
-              'TestCode': item.labCode
+              'SubCategoryID': item.subCategoryId,
+              'TestCode': item.itemCode
             }
             homeCollectionData.TestDetail.push(itemHomeCollection)
           }

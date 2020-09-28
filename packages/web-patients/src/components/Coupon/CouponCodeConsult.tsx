@@ -176,7 +176,7 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   var packageId: string;
   const userSubscriptions = JSON.parse(localStorage.getItem('userSubscriptions'));
-  if (userSubscriptions) {
+  if (userSubscriptions && userSubscriptions[0] && userSubscriptions[0].status == 'ACTIVE') {
     packageId = `${userSubscriptions[0].group_plan.group.name}:${userSubscriptions[0].group_plan.plan_id}`;
   }
 
@@ -200,6 +200,8 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
   const validateCouponBody = {
     mobile: currentPatient && currentPatient.mobileNumber,
     billAmount: Number(props.cartValue),
+    email: currentPatient && currentPatient.emailAddress,
+    packageId: packageId,
     coupon: selectCouponCode,
     pinCode: currentPincode ? currentPincode : localStorage.getItem('currentPincode') || '',
     consultations: [

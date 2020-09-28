@@ -187,7 +187,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
 
   var packageId: string;
   const userSubscriptions = JSON.parse(localStorage.getItem('userSubscriptions'));
-  if (userSubscriptions) {
+  if (userSubscriptions && userSubscriptions[0] && userSubscriptions[0].status == 'ACTIVE') {
     packageId = `${userSubscriptions[0].group_plan.group.name}:${userSubscriptions[0].group_plan.plan_id}`;
   }
 
@@ -195,6 +195,8 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
     const data = {
       mobile: localStorage.getItem('userMobileNo'),
       billAmount: cartTotal.toFixed(2),
+      email: currentPatient && currentPatient.emailAddress,
+      packageId: packageId,
       coupon: selectCouponCode,
       pinCode: localStorage.getItem('pharmaPincode'),
       products: cartItems.map((item) => {
@@ -203,12 +205,13 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
           sku,
           mrp: item.price,
           quantity,
-          couponFree: couponFree || false,
+          couponFree: couponFree || 0,
           categoryId: type_id || '',
           specialPrice: special_price || price,
         };
       }),
     };
+    console.log(data, 'Checkpoint by Vasudev');
     if (currentPatient && currentPatient.id) {
       setMuationLoading(true);
       const fetchCouponUrl = `${process.env.VALIDATE_CONSULT_COUPONS}?mobile=${
@@ -301,7 +304,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                       price: e.price,
                       sku: e.sku,
                       special_price: 0,
-                      couponFree: true,
+                      couponFree: 1,
                       small_image: e.small_image,
                       status: e.status,
                       thumbnail: e.thumbnail,

@@ -470,7 +470,7 @@ export const MedicineAutoSearch: React.FC = (props) => {
                                 },
                               });
                               /* Gtm code end  */
-                              addCartItem && addCartItem(cartItem);
+                              addCartItem && addCartItem(cartItem, 'Add_Search');
                             } else {
                               const { sku, name, category_id } = medicine;
                               /* WebEngage event start */
