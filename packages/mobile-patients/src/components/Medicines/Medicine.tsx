@@ -1308,7 +1308,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           Component={ProductCard}
           navigation={props.navigation}
           addToCartSource={'Pharmacy Home'}
-          pharmacyCategorySectionProductClickSectionName={title}
           sectionName={title}
         />
       </View>
