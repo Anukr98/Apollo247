@@ -333,6 +333,7 @@ const bookAppointment: Resolver<
       coupon: appointmentInput.couponCode,
       paymentType: '',
       pinCode: appointmentInput.pinCode ? appointmentInput.pinCode : '',
+      packageId: await patientDetails.getCurrentSubscription(),
       consultations: [
         {
           hospitalId: appointmentInput.hospitalId,

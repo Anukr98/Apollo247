@@ -152,6 +152,7 @@ export const validatePharmaCoupon: Resolver<
     coupon: code,
     paymentType: '',
     pinCode: '',
+    packageId: await patientData.getCurrentSubscription(),
     products: couponProduct,
   };
   const couponData = await validateCoupon(payload);

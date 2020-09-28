@@ -26,6 +26,7 @@ import { log } from 'customWinstonLogger';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata';
+import { fetchUserSubscription } from 'helpers/subscriptionHelper';
 
 export interface PaginateParams {
   take?: number;
@@ -1252,6 +1253,13 @@ export class Patient extends BaseEntity {
         ApiConstants.CACHE_EXPIRATION_3600
       );
     } catch (ex) {}
+  }
+  current_susbscription: string;
+
+  async getCurrentSubscription() {
+    this.current_susbscription =
+      this.current_susbscription || (await fetchUserSubscription(this.mobileNumber));
+    return this.current_susbscription;
   }
 }
 //patient Ends
