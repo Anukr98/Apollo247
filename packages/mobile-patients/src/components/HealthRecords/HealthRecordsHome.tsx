@@ -9,6 +9,7 @@ import {
   DropdownGreen,
   Filter,
   LinkedUhidIcon,
+  AddFileIcon,
   NoData,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
@@ -92,7 +93,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-end',
+    justifyContent: 'space-between',
   },
   hiTextStyle: {
     marginLeft: 20,
@@ -495,6 +496,16 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const renderFilter = () => {
     return (
       <View style={styles.filterViewStyle}>
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() =>
+            props.navigation.navigate(AppRoutes.AddRecord, {
+              navigatedFrom: 'Medical Records',
+            })
+          }
+        >
+          <AddFileIcon />
+        </TouchableOpacity>
         <TouchableOpacity activeOpacity={1} onPress={() => setDisplayFilter(true)}>
           <Filter />
         </TouchableOpacity>
