@@ -130,7 +130,9 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     addReportMobile: {
-      display: 'none',
+      '& img': {
+        verticalAlign: 'middle',
+      },
       [theme.breakpoints.up('sm')]: {
         display: 'none',
       },
@@ -386,8 +388,14 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
         filteredConsults =
           allConsultsData &&
           allConsultsData.filter((consult: any) => {
-            if (consult && consult.patientId) {
-              return consult.appointmentType === filter;
+            if (filter === 'PHYSICAL') {
+              return (
+                consult.source === '247self' ||
+                consult.source === 'self' ||
+                (consult && consult.patientId && consult.appointmentType === filter)
+              );
+            } else {
+              return consult && consult.patientId && consult.appointmentType === filter;
             }
           });
       }
