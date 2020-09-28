@@ -176,10 +176,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     | undefined
   >([]);
 
-  const recordAdded = props.navigation.state.params?.recordAdded
-    ? props.navigation.state.params!.recordAdded
-    : false;
-  const [recordAddedParam, setRecordAdded] = useState(recordAdded);
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
   const [FilterData, setFilterData] = useState<filterDataType[]>(filterData);
   const [displayFilter, setDisplayFilter] = useState<boolean>(false);
@@ -341,12 +337,10 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
 
   useEffect(() => {
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-      // if (recordAddedParam) {
       fetchPastData();
       fetchTestData();
       setFilterData(FilterData);
       setDisplayFilter(false);
-      // }
     });
     return () => {
       didFocusSubscription && didFocusSubscription.remove();
