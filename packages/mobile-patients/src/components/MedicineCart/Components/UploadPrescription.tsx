@@ -32,7 +32,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   };
 
   const renderUploadPrescription = () => {
-    return (
+    return showPopUp ? (
       <UploadPrescriprionPopup
         isVisible={showPopUp}
         hideTAndCs={false}
@@ -60,11 +60,11 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           }
         }}
       />
-    );
+    ) : null;
   };
 
   const renderEprescriptionUpload = () => {
-    return (
+    return showEprescriptionUpload ? (
       <SelectEPrescriptionModal
         displayPrismRecords={true}
         navigation={props.navigation}
@@ -78,7 +78,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         selectedEprescriptionIds={ePrescriptions.map((item) => item.id)}
         isVisible={showEprescriptionUpload}
       />
-    );
+    ) : null;
   };
 
   return (
