@@ -13,11 +13,18 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { useMutation } from 'react-apollo-hooks';
 import { Alerts } from 'components/Alerts/Alerts';
+import { HdfcRegistration } from 'components/HdfcRegistration';
+import { HdfcSlider } from 'components/HdfcSlider';
+import { HDFC_REF_CODE } from 'helpers/constants';
+import { HdfcHomePage } from 'components/HdfcHomePage';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
       paddingTop: 20,
+      [theme.breakpoints.down('sm')]: {
+        width: '100%',
+      },
     },
     card: {
       backgroundColor: '#fff',
@@ -63,6 +70,8 @@ const PatientsOverview: React.FC = () => {
   >(GET_PATIENT_FUTURE_APPOINTMENT_COUNT);
   const [alertMessage, setAlertMessage] = useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
+  const [userSubscriptions, setUserSubscriptions] = React.useState([]);
+  const [showSubscription, setSshowSubscription] = useState<boolean>(false);
 
   useEffect(() => {
     if (currentPatient && currentPatient.id) {
@@ -79,6 +88,11 @@ const PatientsOverview: React.FC = () => {
               responseData && responseData.getPatientFutureAppointmentCount.consultsCount
             );
           }
+          const userSubscriptionsLocalStorage = JSON.parse(
+            localStorage.getItem('userSubscriptions')
+          );
+          setUserSubscriptions(userSubscriptionsLocalStorage);
+          setSshowSubscription(true);
           setLoading(false);
         })
         .catch((error) => {
@@ -90,21 +104,21 @@ const PatientsOverview: React.FC = () => {
   }, [currentPatient]);
   return (
     <div className={classes.root}>
-      <Grid spacing={2} container>
-        <Grid item xs={12} sm={6}>
-          <Link to={clientRoutes.appointments()}>
-            <div className={classes.card} title={'View upcoming appointments'}>
-              <div className={classes.totalConsults}>
-                {loading ? <CircularProgress size={10} /> : activeAppointments}
-              </div>
-              <span>Upcoming Appointments</span>
-              <span className={classes.rightArrow}>
-                <img src={require('images/ic_arrow_right.svg')} />
-              </span>
-            </div>
-          </Link>
-        </Grid>
-        {/* <Grid item xs={12} sm={6}>
+      {/* <Grid spacing={2} container>
+        <Grid item xs={12} sm={6}> */}
+      <Link to={clientRoutes.appointments()}>
+        <div className={classes.card} title={'View upcoming appointments'}>
+          <div className={classes.totalConsults}>
+            {loading ? <CircularProgress size={10} /> : activeAppointments}
+          </div>
+          <span>Upcoming Appointments</span>
+          <span className={classes.rightArrow}>
+            <img src={require('images/ic_arrow_right.svg')} />
+          </span>
+        </div>
+      </Link>
+      {/* </Grid> */}
+      {/* <Grid item xs={12} sm={6}>
           <div className={classes.card}>
             <div className={classes.totalConsults}>
               {loading ? <CircularProgress size={10} /> : activeAppointments}
@@ -115,7 +129,30 @@ const PatientsOverview: React.FC = () => {
             </span>
           </div>
         </Grid> */}
-      </Grid>
+      {/* </Grid> */}
+      {/* <Grid item xs={12} sm={6}> */}
+      {currentPatient &&
+        showSubscription &&
+        currentPatient.partnerId === HDFC_REF_CODE &&
+        (userSubscriptions == null || userSubscriptions.length == 0) && (
+          <HdfcRegistration patientPhone={currentPatient.mobileNumber} />
+        )}
+      {currentPatient &&
+        userSubscriptions &&
+        userSubscriptions.length != 0 &&
+        userSubscriptions[0] &&
+        userSubscriptions[0].status == 'DEFERRED_INACTIVE' && (
+          <HdfcHomePage patientPhone={currentPatient.mobileNumber} />
+        )}
+      {currentPatient &&
+        userSubscriptions &&
+        userSubscriptions.length != 0 &&
+        userSubscriptions[0] &&
+        userSubscriptions[0].status == 'ACTIVE' && (
+          <HdfcSlider patientPhone={currentPatient.mobileNumber} />
+        )}
+      {/* </Grid>
+      </Grid> */}
       <Alerts
         setAlertMessage={setAlertMessage}
         alertMessage={alertMessage}

@@ -63,6 +63,12 @@ export type Resolver<Parent, Args, Context, Result> = (
           process.env.NOTIFICATIONS_SERVICE_PORT ? process.env.NOTIFICATIONS_SERVICE_PORT : '80'
         )}/graphql`,
       },
+      {
+        name: 'subscriptions',
+        url: `http://${process.env.SUBSCRIPTION_SERVICE_HOST}${getPortStr(
+          process.env.SUBSCRIPTION_SERVICE_PORT ? process.env.SUBSCRIPTION_SERVICE_PORT : '80'
+        )}/graphql`,
+      },
     ],
     buildService({ name, url }) {
       return new RemoteGraphQLDataSource({

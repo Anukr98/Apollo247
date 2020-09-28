@@ -17,6 +17,12 @@ import { BrowserRouter, Route, Switch } from 'react-router-dom';
 import { DiagnosticsCartProvider } from './Tests/DiagnosticsCartProvider';
 import { MedicinesCartProvider } from 'components/MedicinesCartProvider';
 
+import { HdfcLanding } from 'components/Partners/Hdfc/HdfcLanding';
+import { HdfcMemberShip } from 'components/Partners/Hdfc/HdfcMembership';
+import { MyMembership } from 'components/Partners/Hdfc/MyMembership';
+import { MembershipPlanLocked } from 'components/Partners/Hdfc/MembershipPlanLocked';
+import { MembershipPlanDetail } from 'components/Partners/Hdfc/MembershipPlanDetail';
+
 const Welcome = loadable(() => import('components/Welcome'));
 
 const NotificationSettings = loadable(() =>
@@ -212,6 +218,11 @@ const App: React.FC = () => {
         <Route exact path={clientRoutes.medicinePrescription()} component={MedicinePrescriptions} />
         <Route exact path={clientRoutes.covidProtocol()} component={covidProtocolLanding} />
         <Route exact path={clientRoutes.prescription(':appointmentId')} component={Prescription} />
+        <Route exact path={clientRoutes.partnersHdfc()} component={HdfcLanding} />
+        <AuthRouted exact path={clientRoutes.membershipHdfc()} component={HdfcMemberShip} />
+        <AuthRouted exact path={clientRoutes.myMembership()} component={MyMembership} />
+        <Route exact path={clientRoutes.membershipPlanLocked()} component={MembershipPlanLocked} />
+        <Route exact path={clientRoutes.membershipPlanDetail()} component={MembershipPlanDetail} />
         <Route exact path={clientRoutes.sitemap(':sitemap')} component={Sitemap} />
         <Route exact path={clientRoutes.childSitemap(':sitemap', ':pageNo')} component={Sitemap} />
       </Switch>

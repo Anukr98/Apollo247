@@ -30,7 +30,7 @@ export interface MedicineCartItem {
   mou: string;
   isShippable: boolean;
   MaxOrderQty: number;
-  couponFree?: boolean;
+  couponFree?: number;
 }
 
 export interface StoreAddresses {

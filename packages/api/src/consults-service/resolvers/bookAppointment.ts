@@ -24,6 +24,7 @@ import { DoctorPatientExternalConnectRepository } from 'doctors-service/reposito
 import { ApiConstants } from 'ApiConstants';
 import { validateCoupon } from 'helpers/couponServices';
 import { ValidateCouponRequest } from 'types/coupons';
+import { fetchUserSubscription } from 'helpers/subscriptionHelper';
 
 export const bookAppointmentTypeDefs = gql`
   enum STATUS {
@@ -333,6 +334,7 @@ const bookAppointment: Resolver<
       coupon: appointmentInput.couponCode,
       paymentType: '',
       pinCode: appointmentInput.pinCode ? appointmentInput.pinCode : '',
+      packageId: await fetchUserSubscription(patientDetails.mobileNumber),
       consultations: [
         {
           hospitalId: appointmentInput.hospitalId,

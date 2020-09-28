@@ -6,7 +6,9 @@ import { CouponCategoryApplicable } from 'graphql/types/globalTypes';
 import _lowerCase from 'lodash/lowerCase';
 import _upperFirst from 'lodash/upperFirst';
 import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
+import Axios, { AxiosResponse, Canceler } from 'axios';
 import { MedicineProductDetails } from 'helpers/MedicineApiCalls';
+import { EXOTEL_CALL_URL, EXOTEL_X_API } from 'helpers/constants';
 import fetchUtil from 'helpers/fetch';
 import { GetPatientAllAppointments_getPatientAllAppointments_appointments as AppointmentDetails } from 'graphql/types/GetPatientAllAppointments';
 
@@ -363,6 +365,19 @@ const isRejectedStatus = (status: MEDICINE_ORDER_STATUS) => {
   );
 };
 
+const callToExotelApi = (params: any): Promise<AxiosResponse<any>> => {
+  const url = EXOTEL_CALL_URL;
+  return Axios.post(
+    url,
+    { ...params },
+    {
+      headers: {
+        'x-api-key': EXOTEL_X_API,
+      },
+    }
+  );
+};
+
 const getAvailability = (nextAvailability: string, differenceInMinutes: number, type: string) => {
   const nextAvailabilityMoment = moment(nextAvailability);
   const tomorrowAvailabilityHourTime = moment('06:00', 'HH:mm');
@@ -542,6 +557,7 @@ export {
   ORDER_BILLING_STATUS_STRINGS,
   getTypeOfProduct,
   kavachHelpline,
+  callToExotelApi,
   isActualUser,
   NO_ONLINE_SERVICE,
   OUT_OF_STOCK,

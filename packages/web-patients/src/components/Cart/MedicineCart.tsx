@@ -664,7 +664,7 @@ export interface CartProduct {
   quantity: number;
   discountAmt: number;
   onMrp: boolean;
-  couponFree: boolean;
+  couponFree: number;
 }
 
 export const MedicineCart: React.FC = (props) => {
@@ -730,6 +730,18 @@ export const MedicineCart: React.FC = (props) => {
   const [couponDiscount, setCouponDiscount] = useState<number>(0);
   const [latitude, setLatitude] = React.useState<string>('');
   const [longitude, setLongitude] = React.useState<string>('');
+
+  const userSubscriptions = JSON.parse(localStorage.getItem('userSubscriptions'));
+  var packageId: string;
+  if (userSubscriptions && userSubscriptions[0] && userSubscriptions[0].status == 'ACTIVE') {
+    packageId = `${userSubscriptions[0].group_plan.group.name}:${userSubscriptions[0].group_plan.plan_id}`;
+  }
+  const freeDelivery =
+    userSubscriptions &&
+    userSubscriptions[0] &&
+    userSubscriptions[0].status == 'ACTIVE' &&
+    userSubscriptions[0].group_plan &&
+    userSubscriptions[0].group_plan.name == 'PLATINUM+ PLAN';
 
   const apiDetails = {
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
@@ -927,6 +939,7 @@ export const MedicineCart: React.FC = (props) => {
   //   });
   //   return sum;
   // };
+
   const mrpTotal = getMRPTotal();
   // const couponDiscountTotal = getCouponDiscountTotal();
   let productDiscount = mrpTotal - cartTotal;
@@ -937,12 +950,13 @@ export const MedicineCart: React.FC = (props) => {
     validateCouponResult.discount >= productDiscount
       ? Number(cartTotal) - couponDiscount
       : Number(cartTotal);
-  const deliveryCharges =
-    modifiedAmountForCharges >= Number(pharmacyMinDeliveryValue) ||
-    modifiedAmountForCharges <= 0 ||
-    tabValue === 1
-      ? 0
-      : Number(pharmacyDeliveryCharges);
+  const deliveryCharges = freeDelivery
+    ? 0
+    : modifiedAmountForCharges >= Number(pharmacyMinDeliveryValue) ||
+      modifiedAmountForCharges <= 0 ||
+      tabValue === 1
+    ? 0
+    : Number(pharmacyDeliveryCharges);
   const totalAmount = (cartTotal + Number(deliveryCharges)).toFixed(2);
   const totalWithCouponDiscount =
     validateCouponResult &&
@@ -1014,7 +1028,7 @@ export const MedicineCart: React.FC = (props) => {
               ).toFixed(2)
             ),
             mrp: cartItemDetails.price,
-            couponFree: cartItemDetails.couponFree || false,
+            couponFree: cartItemDetails.couponFree || 0,
             isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
             mou: parseInt(cartItemDetails.mou),
             isMedicine:
@@ -1035,6 +1049,8 @@ export const MedicineCart: React.FC = (props) => {
       const data = {
         mobile: localStorage.getItem('userMobileNo'),
         billAmount: cartTotal.toFixed(2),
+        email: currentPatient && currentPatient.emailAddress,
+        packageId: packageId,
         coupon: couponCode,
         pinCode: localStorage.getItem('pharmaPincode'),
         products: cartItems.map((item) => {
@@ -1043,12 +1059,15 @@ export const MedicineCart: React.FC = (props) => {
             sku,
             mrp: item.price,
             quantity,
-            couponFree: couponFree || false,
+            couponFree: couponFree || 0,
             categoryId: type_id || '',
             specialPrice: special_price || price,
           };
         }),
       };
+      const fetchCouponUrl = `${process.env.VALIDATE_CONSULT_COUPONS}?mobile=${
+        currentPatient.mobileNumber
+      }&email=${currentPatient.emailAddress}&packageId=${userSubscriptions ? packageId : ''}`;
       fetchUtil(process.env.VALIDATE_CONSULT_COUPONS, 'POST', data, '', false)
         .then((resp: any) => {
           if (resp.errorCode == 0) {
@@ -1138,7 +1157,7 @@ export const MedicineCart: React.FC = (props) => {
                       price: e.price,
                       sku: e.sku,
                       special_price: 0,
-                      couponFree: true,
+                      couponFree: 1,
                       small_image: e.small_image,
                       status: e.status,
                       thumbnail: e.thumbnail,

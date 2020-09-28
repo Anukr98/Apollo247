@@ -7,6 +7,7 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { CouponCategoryApplicable } from 'profiles-service/entities';
 import { getCouponsList, validateCoupon } from 'helpers/couponServices';
 import { CouponProduct, ValidateCouponRequestPharma } from 'types/coupons';
+import { fetchUserSubscription } from 'helpers/subscriptionHelper';
 
 export const validatePharmaCouponTypeDefs = gql`
   enum CouponCategoryApplicable {
@@ -48,7 +49,7 @@ export const validatePharmaCouponTypeDefs = gql`
     productType: CouponCategoryApplicable!
     quantity: Int!
     specialPrice: Float!
-    couponFree: Boolean
+    couponFree: Int
   }
 
   input PharmaCouponInput {
@@ -70,7 +71,7 @@ export type OrderLineItems = {
   productType: CouponCategoryApplicable;
   quantity: number;
   specialPrice: number;
-  couponFree: boolean;
+  couponFree: number;
 };
 
 type PharmaCouponInput = {
@@ -138,7 +139,7 @@ export const validatePharmaCoupon: Resolver<
       quantity: item.quantity,
       totalCost: amountToBeConsidered * item.quantity,
       categoryId: item.productType.toString(),
-      couponFree: item.couponFree || false,
+      couponFree: item.couponFree || 0,
     };
     couponProduct.push(product);
   });
@@ -152,8 +153,10 @@ export const validatePharmaCoupon: Resolver<
     coupon: code,
     paymentType: '',
     pinCode: '',
+    packageId: await fetchUserSubscription(patientData.mobileNumber),
     products: couponProduct,
   };
+  console.log('payload', payload);
   const couponData = await validateCoupon(payload);
   let validityStatus = false;
   let reasonForInvalidStatus = '';
