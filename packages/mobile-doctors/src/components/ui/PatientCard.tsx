@@ -14,7 +14,7 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
-import { Image as ImageNative } from 'react-native-elements';
+import { FastImageLoading } from '@aph/mobile-doctors/src/components/ui/FastImageLoading';
 
 const styles = PatientCardStyles;
 
@@ -41,13 +41,10 @@ export const PatientCard: React.FC<CalendarCardProps> = (props) => {
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <View style={[styles.imageView, { marginTop: 15 }]}>
             {isValidImageUrl(props.photoUrl) ? (
-              <ImageNative
-                placeholderStyle={styles.placeHolderLoading}
-                PlaceholderContent={
-                  <ActivityIndicator animating={true} size="small" color="green" />
-                }
-                source={{ uri: props.photoUrl }}
-                style={styles.imageStyle}
+              <FastImageLoading
+                uri={props.photoUrl || ''}
+                imageStyle={styles.imageStyle}
+                resizeMode={'cover'}
               />
             ) : (
               <UserPlaceHolder style={styles.imageStyle} />

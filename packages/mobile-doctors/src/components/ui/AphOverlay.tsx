@@ -1,8 +1,9 @@
 import { Remove } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useEffect } from 'react';
 import {
+  BackHandler,
   KeyboardAvoidingView,
   SafeAreaView,
   StyleProp,
@@ -12,7 +13,6 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
-import { Overlay } from 'react-native-elements';
 import { ScrollView } from 'react-navigation';
 
 export interface AphOverlayProps {
@@ -28,6 +28,18 @@ export interface AphOverlayProps {
 }
 
 export const AphOverlay: React.FC<AphOverlayProps> = (props) => {
+  const handleBack = async () => {
+    props.onClose();
+    return false;
+  };
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    };
+  }, []);
+
   const renderCloseIcon = () => {
     return (
       <View
@@ -97,66 +109,51 @@ export const AphOverlay: React.FC<AphOverlayProps> = (props) => {
   };
 
   return (
-    <Overlay
-      onRequestClose={props.onClose}
-      isVisible={props.isVisible}
-      windowBackgroundColor={'rgba(0, 0, 0, 0.6)'}
-      containerStyle={{
-        marginBottom: 20,
-      }}
-      fullScreen
-      transparent
-      overlayStyle={[
+    <View
+      style={[
         {
-          padding: 0,
-          margin: 0,
-          width: '88.88%',
-          height: '88.88%',
-          borderRadius: 10,
-          borderBottomLeftRadius: 10,
-          borderBottomRightRadius: 10,
-          backgroundColor: 'transparent',
-          overflow: 'hidden',
-          elevation: 0,
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          flex: 1,
+          backgroundColor: 'rgba(0, 0, 0, 0.6)',
+          zIndex: 5,
+          elevation: 500,
         },
         props.overlayStyle,
       ]}
     >
-      <View
+      <SafeAreaView
         style={{
-          flexGrow: 1,
+          flex: 1,
           backgroundColor: 'transparent',
+          marginHorizontal: 30,
         }}
       >
-        <SafeAreaView
-          style={{
-            flex: 1,
-            backgroundColor: 'transparent',
-          }}
-        >
-          {renderCloseIcon()}
-          <KeyboardAvoidingView style={{ flex: 1 }}>
-            <ScrollView
-              bounces={false}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{
-                backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-                borderBottomLeftRadius: 10,
-                borderBottomRightRadius: 10,
-                overflow: 'hidden',
-                borderTopRightRadius: 10,
-                borderTopLeftRadius: 10,
-              }}
-              stickyHeaderIndices={props.heading ? [0] : undefined}
-            >
-              {(props.heading || props.customHeader) && renderHeader()}
+        {renderCloseIcon()}
+        <KeyboardAvoidingView style={{ flex: 1 }}>
+          <ScrollView
+            bounces={false}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{
+              backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+              borderBottomLeftRadius: 10,
+              borderBottomRightRadius: 10,
+              overflow: 'hidden',
+              borderTopRightRadius: 10,
+              borderTopLeftRadius: 10,
+            }}
+            stickyHeaderIndices={props.heading ? [0] : undefined}
+          >
+            {(props.heading || props.customHeader) && renderHeader()}
 
-              {props.children}
-            </ScrollView>
-          </KeyboardAvoidingView>
-        </SafeAreaView>
-        {props.loading && <Spinner />}
-      </View>
-    </Overlay>
+            {props.children}
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+      {props.loading && <Spinner />}
+    </View>
   );
 };

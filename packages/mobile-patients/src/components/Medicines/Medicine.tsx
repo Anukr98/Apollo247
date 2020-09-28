@@ -114,7 +114,8 @@ import {
   MedicineReOrderOverlayProps,
   MedicineReOrderOverlay,
 } from '@aph/mobile-patients/src/components/Medicines/MedicineReOrderOverlay';
-import { AddToCartButtons } from './AddToCartButtons';
+import { ProductList } from '@aph/mobile-patients/src/components/Medicines/ProductList';
+import { ProductCard } from '@aph/mobile-patients/src/components/Medicines/ProductCard';
 import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails } from '../../graphql/types/getMedicineOrderOMSDetailsWithAddress';
 import _ from 'lodash';
 
@@ -1290,245 +1291,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
-  const hotSellerCard = (data: {
-    name: string;
-    imgUrl: string;
-    price: number;
-    specialPrice?: number;
-    isAddedToCart: boolean;
-    numberOfItemsInCart: number;
-    addToCart: (action?: string) => void;
-    removeFromCart: () => void;
-    removeItemFromCart: () => void;
-    maxOrderQty: number;
-    onAddOrRemoveCartItem: () => void;
-    onPress: () => void;
-    style?: ViewStyle;
-  }) => {
-    const { name, imgUrl, price, specialPrice, style } = data;
-    const discount = Math.floor(((Number(price) - Number(specialPrice!)) / price) * 100);
-
-    const localStyles = StyleSheet.create({
-      discountedPriceText: {
-        ...theme.viewStyles.text('M', 14, '#01475b', 0.6, 24),
-        textAlign: 'center',
-      },
-      priceText: {
-        ...theme.viewStyles.text('B', 14, '#01475b', 1, 24),
-        textAlign: 'center',
-      },
-      discountPercentageTagView: {
-        elevation: 20,
-        position: 'absolute',
-        right: 15,
-        top: 16,
-        zIndex: 1,
-      },
-      discountPercentageText: {
-        ...theme.viewStyles.text('B', 12, '#ffffff', 1, 24),
-        flex: 1,
-        position: 'absolute',
-        left: 0,
-        right: 0,
-        justifyContent: 'center',
-        alignItems: 'center',
-        textAlign: 'center',
-      },
-      hotSellerCardView: {
-        ...theme.viewStyles.card(12, 0),
-        elevation: 10,
-        height: 232,
-        width: 162,
-        marginHorizontal: 4,
-        alignItems: 'center',
-        ...style,
-      },
-    });
-
-    const renderDiscountedPrice = () => {
-      return (
-        <View style={[{ flexDirection: 'row', marginBottom: 8 }]}>
-          {!!specialPrice && !isNaN(discount) && !!discount && (
-            <Text style={[localStyles.discountedPriceText, { marginRight: 4 }]}>
-              (<Text style={[{ textDecorationLine: 'line-through' }]}>Rs. {price}</Text>)
-            </Text>
-          )}
-          <Text style={localStyles.priceText}>Rs. {specialPrice || price}</Text>
-        </View>
-      );
-    };
-
-    return (
-      <TouchableOpacity activeOpacity={1} onPress={data.onPress}>
-        {!isNaN(discount) && !!discount && (
-          <View style={localStyles.discountPercentageTagView}>
-            <OfferIcon />
-            <Text style={localStyles.discountPercentageText}>-{discount}%</Text>
-          </View>
-        )}
-        <View style={localStyles.hotSellerCardView}>
-          <Image
-            placeholderStyle={theme.viewStyles.imagePlaceholderStyle}
-            source={{ uri: imgUrl }}
-            style={{ height: 68, width: 68, marginBottom: 8 }}
-          />
-          <View style={{ height: 67.5 }}>
-            <Text
-              style={{
-                ...theme.viewStyles.text('M', 14, '#01475b', 1, 20),
-                textAlign: 'center',
-              }}
-              numberOfLines={3}
-            >
-              {name}
-            </Text>
-          </View>
-          <Spearator style={{ marginBottom: 7.5 }} />
-          {renderDiscountedPrice()}
-          {data.isAddedToCart ? (
-            <AddToCartButtons
-              numberOfItemsInCart={data.numberOfItemsInCart}
-              maxOrderQty={data.maxOrderQty}
-              addToCart={data.addToCart}
-              removeItemFromCart={data.removeItemFromCart}
-              removeFromCart={data.removeFromCart}
-              isSolidContainer={false}
-              deleteIconStyle={{
-                resizeMode: 'contain',
-                width: 10,
-                height: 14,
-                paddingLeft: 10,
-                paddingRight: 10,
-              }}
-              minusIconStyle={{
-                resizeMode: 'contain',
-                width: 10,
-                height: 20,
-                paddingLeft: 10,
-                paddingRight: 10,
-              }}
-              plusIconStyle={{
-                resizeMode: 'contain',
-                width: 15,
-                height: 15,
-                paddingLeft: 10,
-                paddingRight: 10,
-              }}
-            />
-          ) : (
-            <Text
-              style={{
-                ...theme.viewStyles.text('B', 13, '#fc9916', 1, 24),
-                textAlign: 'center',
-              }}
-              onPress={data.onAddOrRemoveCartItem}
-            >
-              ADD TO CART
-            </Text>
-          )}
-        </View>
-      </TouchableOpacity>
-    );
-  };
-
-  const renderHotSellerItem = (data: ListRenderItemInfo<MedicineProduct>, title: string) => {
-    const {
-      sku,
-      is_prescription_required,
-      name,
-      mou,
-      special_price,
-      price,
-      image,
-      thumbnail,
-      type_id,
-      MaxOrderQty,
-      category_id,
-    } = data.item;
-
-    const removeFromCart = () => removeCartItem!(sku);
-    const itemInCart = cartItems.find((item) => item.id == sku);
-    const foundMedicineInCart = !!cartItems.find((item) => item.id == sku);
-    const numberOfItemsInCart = foundMedicineInCart && itemInCart ? itemInCart.quantity : 0;
-
-    const removeItemFromCart = () => onUpdateCartItem(sku, numberOfItemsInCart - 1);
-
-    const addToCart = () => {
-      if (numberOfItemsInCart) {
-        onUpdateCartItem(sku, numberOfItemsInCart + 1);
-      } else {
-        addPharmaItemToCart(
-          {
-            id: sku,
-            mou: mou,
-            name: name,
-            price: price,
-            specialPrice: special_price
-              ? typeof special_price == 'string'
-                ? Number(special_price)
-                : special_price
-              : undefined,
-            prescriptionRequired: is_prescription_required == '1',
-            isMedicine: (type_id || '').toLowerCase() == 'pharma',
-            quantity: 1,
-            thumbnail,
-            isInStock: true,
-            maxOrderQty: MaxOrderQty,
-            productType: type_id,
-          },
-          pharmacyPincode!,
-          addCartItem,
-          globalLoading,
-          props.navigation,
-          currentPatient,
-          !!isPharmacyLocationServiceable,
-          { source: 'Pharmacy Home', section: title, categoryId: category_id }
-        );
-      }
-    };
-
-    return hotSellerCard({
-      name,
-      imgUrl: productsThumbnailUrl(image!),
-      price,
-      specialPrice: special_price
-        ? typeof special_price == 'string'
-          ? Number(special_price)
-          : special_price
-        : undefined,
-      isAddedToCart: foundMedicineInCart,
-      addToCart,
-      removeItemFromCart,
-      removeFromCart,
-      maxOrderQty: MaxOrderQty,
-      numberOfItemsInCart,
-      onAddOrRemoveCartItem: foundMedicineInCart ? removeFromCart : addToCart,
-      onPress: () => {
-        const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_CATEGORY_SECTION_PRODUCT_CLICK] = {
-          'Section Name': title,
-          ProductId: sku,
-          ProductName: name,
-        };
-        postWebEngageEvent(
-          WebEngageEventName.PHARMACY_CATEGORY_SECTION_PRODUCT_CLICK,
-          eventAttributes
-        );
-        postwebEngageProductClickedEvent(data.item, title, 'Home');
-        props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
-          sku,
-          movedFrom: 'widget',
-          sectionName: title,
-        });
-      },
-      style: {
-        marginHorizontal: 4,
-        marginTop: 16,
-        marginBottom: 20,
-        ...(data.index == 0 ? { marginLeft: 20 } : {}),
-      },
-    });
-  };
-
   const renderHotSellers = (title: string, products: MedicineProduct[], categoryId?: number) => {
     if (products.length == 0) return null;
     return (
@@ -1559,13 +1321,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           }
           style={categoryId ? { paddingBottom: 1 } : {}}
         />
-        <FlatList
-          bounces={false}
-          keyExtractor={(_, index) => `${index}`}
-          showsHorizontalScrollIndicator={false}
-          horizontal
+        <ProductList
           data={products}
-          renderItem={(itemData) => renderHotSellerItem(itemData, title)}
+          Component={ProductCard}
+          navigation={props.navigation}
+          addToCartSource={'Pharmacy Home'}
+          pharmacyProductClickedSource={'Home'}
+          pharmacyCategorySectionProductClickSectionName={title}
+          pharmacyProductClickedSectionName={title}
         />
       </View>
     );

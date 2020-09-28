@@ -1,5 +1,5 @@
 import WebEngage from 'react-native-webengage';
-import { AppConfig, AppEnv } from '@aph/mobile-doctors/src/helpers/AppConfig';
+import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
 
 export interface WebEngageType {
   init: (autoRegister: boolean) => void;
@@ -320,4 +320,8 @@ export const webEngageLogin = (id?: string) => {
       }
     }
   } catch (e) {}
+};
+
+export const setScreenName = (screenName: string) => {
+  webengage.screen(screenName);
 };
