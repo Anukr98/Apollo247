@@ -64,6 +64,16 @@ export const consultQueueTypeDefs = gql`
     isJdAllowed: Boolean
   }
 
+  type AddToConsultQueueWithJdAutomatedQuestionsResult {
+    id: Int!
+    doctorId: String!
+    totalJuniorDoctors: Int!
+    totalJuniorDoctorsOnline: Int!
+    juniorDoctorsList: [JuniorDoctorsList]!
+    isJdAllowed: Boolean
+    isJdAssigned: Boolean
+  }
+
   type RemoveFromConsultQueueResult {
     consultQueue: [ConsultQueueItem!]!
   }
@@ -87,7 +97,7 @@ export const consultQueueTypeDefs = gql`
     removeFromConsultQueue(id: Int!): RemoveFromConsultQueueResult!
     addToConsultQueueWithAutomatedQuestions(
       consultQueueInput: ConsultQueueInput
-    ): AddToConsultQueueResult!
+    ): AddToConsultQueueWithJdAutomatedQuestionsResult!
     removeInvalidConsultQueueItems(appointmentStatuses: [String]): String!
   }
 `;
@@ -344,11 +354,11 @@ const removeInvalidConsultQueueItems: Resolver<
   String
 > = async (parent, { appointmentStatuses }, { consultsDb }) => {
   const cqRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
-  let cQueue: any =  await cqRepo.getInvalidConsultQueueItems(appointmentStatuses, true);
+  let cQueue: any = await cqRepo.getInvalidConsultQueueItems(appointmentStatuses, true);
   cQueue = cQueue.map((queue: any) => {
     return queue.id;
   });
-  if(cQueue.length){
+  if (cQueue.length) {
     await cqRepo.bulkUpdateInvalidConsultQueueItems(cQueue);
   }
   return <String>'success';
@@ -372,11 +382,15 @@ type ConsultQueueInputArgs = {
   consultQueueInput: ConsultQueueInput;
 };
 
+type AddToConsultQueueWithJdAutomatedQuestionsResult = AddToConsultQueueResult & {
+  isJdAssigned: Boolean;
+}
+
 const addToConsultQueueWithAutomatedQuestions: Resolver<
   null,
   ConsultQueueInputArgs,
   ConsultServiceContext,
-  AddToConsultQueueResult
+  AddToConsultQueueWithJdAutomatedQuestionsResult
 > = async (parent, { consultQueueInput }, context) => {
   const appointmentId = consultQueueInput.appointmentId;
 
@@ -386,15 +400,18 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
   const doctorRepo = context.doctorsDb.getCustomRepository(DoctorRepository);
   const doctorDetails = await doctorRepo.findById(appointmentData.doctorId);
   const isJdAllowed = doctorDetails ? doctorDetails.isJdAllowed : true;
+  let isJdAssigned = false;
   const juniorDoctorCaseSheet = await caseSheetRepo.getJuniorDoctorCaseSheet(appointmentId);
   if (juniorDoctorCaseSheet != null) {
-    const queueResult: AddToConsultQueueResult = {
+    isJdAssigned = true;
+    const queueResult: AddToConsultQueueWithJdAutomatedQuestionsResult = {
       id: 0,
       doctorId: '',
       totalJuniorDoctors: 0,
       totalJuniorDoctorsOnline: 0,
       juniorDoctorsList: jrDocList,
       isJdAllowed,
+      isJdAssigned,
     };
     return queueResult;
   }
@@ -500,6 +517,7 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
       userName: appointmentData.patientId,
       reason: ApiConstants.CONSULT_QUEUE_HISTORY.toString() + ', assigned JD: ' + doctorId,
     };
+    isJdAssigned = true;
     apptRepo.saveAppointmentHistory(historyAttrs);
   } else {
     const consultQueueAttrs = {
@@ -671,6 +689,7 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
     totalJuniorDoctorsOnline: onlineJuniorDoctors.length,
     juniorDoctorsList: jrDocList,
     isJdAllowed,
+    isJdAssigned,
   };
 };
 
