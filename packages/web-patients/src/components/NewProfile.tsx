@@ -236,7 +236,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
   }
 
   let signUpObject = {
-    heading: 'Welcome to apollo 24/7',
+    heading: 'Welcome to apollo 24|7',
     subHeading:
       'Enter your detailsLet us quickly get to know you so that we can get you the best help :)',
     showMascot: true,

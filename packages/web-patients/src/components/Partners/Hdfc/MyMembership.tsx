@@ -589,7 +589,7 @@ export const MyMembership: React.FC = (props) => {
             {currentSubscription &&
               currentSubscription[0] &&
               currentSubscription[0].upgrade_transaction_value}{' '}
-            on Apollo 24/7 app to unlock {upgradableSubscription && upgradableSubscription.name}{' '}
+            on Apollo 24|7 app to unlock {upgradableSubscription && upgradableSubscription.name}{' '}
             membership
           </Typography>
         </div>
