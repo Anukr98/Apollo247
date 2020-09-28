@@ -35,9 +35,9 @@ export async function transactionSuccessTrigger(args: SuccessTransactionInputFor
        transaction_type: ${transactionType}
        transaction_date: "${format(new Date(transactionDate), 'yyyy-MM-dd hh:mm')}"
        amount: ${parseFloat(amount)}
-       source_transaction_indentifier: "${sourceTransactionIdentifier} || ''"
+       source_transaction_indentifier: "${sourceTransactionIdentifier || ''} "
        mobile_number:"${mobileNumber}"
-       payment_reference_id: "${transactionId}",
+       payment_reference_id: "${transactionId || ''}",
        coupon_availed: "${couponAvailed || false}"
      }){
        success,
