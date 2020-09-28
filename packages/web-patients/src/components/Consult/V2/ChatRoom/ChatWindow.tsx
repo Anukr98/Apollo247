@@ -837,6 +837,7 @@ interface AutoMessageStrings {
   patientJoinedMeetingRoom: string;
   patientRejectedCall: string;
   exotelCall: string;
+  vitalsCompletedByPatient: string;
 }
 
 interface ChatWindowProps {
@@ -900,6 +901,7 @@ const autoMessageStrings: AutoMessageStrings = {
   patientJoinedMeetingRoom: '^^#patientJoinedMeetingRoom',
   patientRejectedCall: '^^#PATIENT_REJECTED_CALL',
   exotelCall: '^^#exotelCall',
+  vitalsCompletedByPatient: '^^#vitalsCompletedByPatient',
 };
 
 type Params = { appointmentId: string; doctorId: string };
@@ -1244,6 +1246,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       pubnubClient.history(
         { channel: appointmentId, count: 100, stringifiedTimeToken: true },
         (status: PubnubStatus, response: HistoryResponse) => {
+          // console.log(messages, 'messages........');
           if (response.messages.length === 0) sendWelcomeMessage();
           const newmessage: MessagesObjectProps[] = messages;
           response.messages.forEach((element: any, index: number) => {
@@ -1259,6 +1262,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
           });
           insertText = newmessage;
           setMessages(newmessage);
+          // find the messages for vital completed. if found set the state.
+          let isVitalsCompleted = false;
+          newmessage.map((messageDetails) => {
+            const autoMessage = messageDetails.automatedText;
+            if (autoMessage === autoMessageStrings.vitalsCompletedByPatient)
+              isVitalsCompleted = true;
+          });
+          if (isVitalsCompleted) setAutoQuestionsCompleted(true);
           scrollToBottomAction();
         }
       );
@@ -1281,9 +1292,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       },
       (status: PubnubStatus, response: PublishResponse) => {
         if (status.error) {
-          console.log('message not published', status.error);
+          // console.log('message not published', status.error);
         } else {
-          console.log('message published', response);
+          // console.log('message published', response);
           if (appointmentDetails && appointmentDetails.status.toLowerCase() === 'completed') {
             messageSentPostConsultTracking({
               doctorName:
@@ -2210,6 +2221,18 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                         };
                         publishMessage(appointmentId, composeMessage);
                       }
+                      const vitalsCompletedMessage = {
+                        id: currentPatient && currentPatient.id,
+                        message: autoMessageStrings.vitalsCompletedByPatient,
+                        automatedText: autoMessageStrings.vitalsCompletedByPatient,
+                        duration: '',
+                        url: '',
+                        transferInfo: '',
+                        messageDate: new Date(),
+                        cardType: 'patient',
+                      };
+                      publishMessage(appointmentId, vitalsCompletedMessage);
+
                       const isJdAllowed =
                         response.data.addToConsultQueueWithAutomatedQuestions.isJdAllowed;
                       setAutoQuestionsCompleted(true);
@@ -2219,7 +2242,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                       // console.log(response, 'response after mutation is.....');
                     })
                     .catch((error) => {
-                      // console.log(error, 'error after mutation.......');
+                      console.log(error, 'error after mutation.......');
                     });
                 } else {
                   setBpError(true);
@@ -2384,7 +2407,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     messageDetails.message === autoMessageStrings.endCallMsg ||
                     messageDetails.message === autoMessageStrings.exotelCall ||
                     messageDetails.message === autoMessageStrings.firstMessage ||
-                    messageDetails.message === autoMessageStrings.secondMessage
+                    messageDetails.message === autoMessageStrings.secondMessage ||
+                    messageDetails.message === autoMessageStrings.vitalsCompletedByPatient
                   ) {
                     props.setSrDoctorJoined(
                       messageDetails.message === autoMessageStrings.startConsultMsg
