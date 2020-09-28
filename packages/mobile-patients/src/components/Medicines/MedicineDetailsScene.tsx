@@ -39,9 +39,7 @@ import {
   postwebEngageAddToCartEvent,
   postAppsFlyerAddToCartEvent,
   g,
-  productsThumbnailUrl,
   getDiscountPercentage,
-  addPharmaItemToCart,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -56,7 +54,6 @@ import {
   Text,
   TouchableOpacity,
   View,
-  ListRenderItemInfo,
   FlatList,
   ScrollView,
 } from 'react-native';
@@ -72,6 +69,7 @@ import {
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AddToCartButtons } from '@aph/mobile-patients/src/components/Medicines/AddToCartButtons';
 import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
+import { ProductList } from '@aph/mobile-patients/src/components/Medicines/ProductList';
 import { ProductUpSellingCard } from '@aph/mobile-patients/src/components/Medicines/ProductUpSellingCard';
 import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
 
@@ -1269,109 +1267,47 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     } catch (error) {}
   };
 
-  const renderSimilarProducts = (products: MedicineProduct[]) => {
-    const renderItem = ({ item, index }: ListRenderItemInfo<MedicineProduct>) => {
-      const { sku, name, image, price, special_price, is_in_stock, sell_online } = item;
-      const itemQty = getItemQuantity(sku);
-      const addToCart = () => updateQuantityCartItem({ sku }, itemQty + 1);
-      const removeItemFromCart = () => updateQuantityCartItem({ sku }, itemQty - 1);
-      const removeFromCart = () => removeCartItem!(sku);
-      const onPress = () =>
-        props.navigation.push(AppRoutes.MedicineDetailsScene, {
-          sku: sku,
-          title: name,
-        });
-      const addItemToCart = ({
-        sku,
-        mou,
-        name,
-        price,
-        special_price,
-        is_prescription_required,
-        type_id,
-        thumbnail,
-        MaxOrderQty,
-        category_id,
-      }: MedicineProduct) => {
-        addPharmaItemToCart(
-          {
-            id: sku,
-            mou,
-            name,
-            price: Number(price),
-            specialPrice: Number(special_price) || undefined,
-            prescriptionRequired: is_prescription_required == '1',
-            isMedicine: (type_id || '').toLowerCase() == 'pharma',
-            quantity: 1,
-            thumbnail: productsThumbnailUrl(thumbnail),
-            isInStock: true,
-            maxOrderQty: MaxOrderQty,
-            productType: type_id,
-          },
-          pharmacyPincode!,
-          addCartItem,
-          setGlobalLoading,
-          props.navigation,
-          currentPatient,
-          !!isPharmacyLocationServiceable,
-          { source: 'Pharmacy PDP', categoryId: category_id }
-        );
-      };
-      const onNotify = () => {
-        showAphAlert!({
-          title: 'Okay! :)',
-          description: `You will be notified when ${name} is back in stock.`,
-        });
-        postwebEngageNotifyMeEvent(item);
-      };
-
-      return (
-        <ProductUpSellingCard
-          key={sku}
-          title={name}
-          isSellOnline={!!sell_online}
-          price={price}
-          specialPrice={special_price}
-          imageUrl={productsThumbnailUrl(image)}
-          isInStock={!!is_in_stock}
-          onAddToCart={() => addItemToCart(item)}
-          onNotify={onNotify}
-          onPress={onPress}
-          numberOfItemsInCart={itemQty}
-          maxOrderQty={medicineDetails.MaxOrderQty}
-          addToCart={addToCart}
-          removeItemFromCart={removeItemFromCart}
-          removeFromCart={removeFromCart}
-          containerStyle={[
-            { marginRight: 10, marginBottom: 30 },
-            index === 0 && { marginLeft: 20 },
-          ]}
-        />
-      );
-    };
-
-    const sectionName = medicineDetails.name
-      ? `SIMILAR TO ${medicineDetails.name}`.toUpperCase()
-      : 'SIMILAR PRODUCTS';
-
+  const renderUpSellingProductsHeader = (sectionName: string) => {
     const marginTop =
       !medicineOverview.length && !Substitutes.length && !medicineDetails.description ? 20 : 0;
-
     return (
-      <>
-        <View style={[styles.labelViewStyle, { marginTop }]}>
-          <Text style={styles.labelStyle}>{sectionName}</Text>
-        </View>
-        <FlatList
-          bounces={false}
-          keyExtractor={({ sku }) => sku}
-          showsHorizontalScrollIndicator={false}
-          horizontal
-          data={products}
-          renderItem={renderItem}
-        />
-      </>
+      <View style={[styles.labelViewStyle, { marginTop }]}>
+        <Text style={[styles.labelStyle]}>{sectionName}</Text>
+      </View>
     );
+  };
+
+  const renderSimilarProducts = () => {
+    if (medicineDetails?.similar_products?.length) {
+      const sectionName = medicineDetails.name
+        ? `SIMILAR TO ${medicineDetails.name}`.toUpperCase()
+        : 'SIMILAR PRODUCTS';
+
+      return [
+        renderUpSellingProductsHeader(sectionName),
+        <ProductList
+          data={medicineDetails.similar_products}
+          Component={ProductUpSellingCard}
+          navigation={props.navigation}
+          addToCartSource={'Pharmacy PDP'}
+        />,
+      ];
+    }
+  };
+
+  const renderComplimentaryProducts = () => {
+    if (medicineDetails?.crosssell_products?.length) {
+      const sectionName = 'CUSTOMERS ALSO BOUGHT';
+      return [
+        renderUpSellingProductsHeader(sectionName),
+        <ProductList
+          data={medicineDetails.crosssell_products}
+          Component={ProductUpSellingCard}
+          navigation={props.navigation}
+          addToCartSource={'Pharmacy PDP'}
+        />,
+      ];
+    }
   };
 
   return (
@@ -1419,8 +1355,8 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             {renderTopView()}
             {medicineOverview.length > 0 && renderTabs()}
             {Substitutes.length ? renderSubstitutes() : null}
-            {!!g(medicineDetails, 'similar_products', 'length') &&
-              renderSimilarProducts(medicineDetails.similar_products)}
+            {renderSimilarProducts()}
+            {renderComplimentaryProducts()}
             {!isOutOfStock && !!medicineDetails.sell_online && renderDeliveryView()}
             <View style={{ height: 130 }} />
           </KeyboardAwareScrollView>

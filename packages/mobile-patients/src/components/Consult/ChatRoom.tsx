@@ -163,6 +163,7 @@ import { ChatRoom_NotRecorded_Value } from '@aph/mobile-patients/src/strings/str
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import RNCallKeep from 'react-native-callkeep';
 import VoipPushNotification from 'react-native-voip-push-notification';
+import { convertMinsToHrsMins } from '@aph/mobile-patients/src/utils/dateUtil';
 
 interface OpentokStreamObject {
   connection: {
@@ -2377,11 +2378,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const automatedTextFromPatient = () => {
+    const chatDays = appointmentData?.doctorInfo?.chatDays;
     let step5;
-    if (followUpAfterInDays > 0) {
-      step5 = `Follow up via text (valid for ${followUpAfterInDays} ${
-        followUpAfterInDays === 1 ? 'day' : 'days'
-      })`;
+
+    if (chatDays > 0) {
+      step5 = `Follow up via text (valid for ${chatDays} ${chatDays === 1 ? 'day' : 'days'})`;
     } else {
       step5 = `No follow Up via text is provided`;
     }
@@ -5051,20 +5052,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const renderChatHeader = () => {
     let time = '';
-    const diffMin = Math.ceil(
-      moment(appointmentData.appointmentDateTime).diff(moment(), 'minutes', true)
-    );
-    const diffHours = Math.ceil(
-      moment(appointmentData.appointmentDateTime).diff(moment(), 'hours', true)
-    );
-    const diffDays = Math.ceil(
-      moment(appointmentData.appointmentDateTime).diff(moment(), 'days', true)
-    );
-    const diffMonths = Math.ceil(
-      moment(appointmentData.appointmentDateTime).diff(moment(), 'months', true)
-    );
+    const appointmentTime = appointmentData.appointmentDateTime;
+    const diffMin = Math.ceil(moment(appointmentTime).diff(moment(), 'minutes', true));
+    const diffHours = Math.floor(moment(appointmentTime).diff(moment(), 'hours', true));
+    const diffDays = Math.round(moment(appointmentTime).diff(moment(), 'days', true));
     // console.log(diffMin, diffHours, diffDays, diffMonths, 'difference');
-
     if (textChange && !jrDoctorJoined.current) {
       time = 'Consult is In-progress';
     } else {
@@ -5073,13 +5065,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       } else if (diffMin <= 0) {
         time = `Will be joining soon`;
       } else if (diffMin > 0 && diffMin < 60 && diffHours <= 1) {
-        time = `Joining in Some time`;
-      } else if (diffHours > 0 && diffHours < 24 && diffDays <= 1) {
-        time = `Joining in Some time`;
-      } else if (diffDays > 0 && diffDays < 31 && diffMonths <= 1) {
-        time = `Joining in Some time`;
+        time = `Joining in ${diffMin} minute${diffMin === 1 ? '' : 's'}`;
+      } else if (diffHours >= 0 && diffHours < 24 && diffDays <= 1) {
+        time = `Joining in ${convertMinsToHrsMins(diffMin)}`;
       } else {
-        time = `Joining in Some time`;
+        time = `Consult on ${moment(appointmentTime).format('DD/MM')} at ${moment(
+          appointmentTime
+        ).format('h:mm A')}`;
       }
     }
     return (

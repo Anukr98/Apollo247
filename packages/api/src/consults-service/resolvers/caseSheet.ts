@@ -1346,6 +1346,9 @@ const submitJDCaseSheet: Resolver<
       casesheetAttrsToUpdate,
       juniorDoctorcaseSheet
     );
+
+    //update all existing JDcassheets to completed
+    await caseSheetRepo.updateAllJDCaseSheet(juniorDoctorcaseSheet.appointment.id);
   } else {
     const casesheetAttrsToAdd = {
       createdDate: createdDate,

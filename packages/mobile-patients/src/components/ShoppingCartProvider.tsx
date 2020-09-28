@@ -97,6 +97,7 @@ export interface ShoppingCartContextProps {
   updateCartItem:
     | ((itemUpdates: Partial<ShoppingCartItem> & { id: ShoppingCartItem['id'] }) => void)
     | null;
+  getCartItemQty: (id: string) => number;
   cartTotal: number;
   cartTotalOfRxProducts: number;
   couponDiscount: number;
@@ -161,6 +162,7 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   addMultipleCartItems: null,
   removeCartItem: null,
   updateCartItem: null,
+  getCartItemQty: () => 0,
   cartTotal: 0,
   cartTotalOfRxProducts: 0,
   couponDiscount: 0,
@@ -351,6 +353,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
       setCartItems([...cartItems]);
     }
   };
+
+  const getCartItemQty: ShoppingCartContextProps['getCartItemQty'] = (id) =>
+    cartItems.find(({ id: cId }) => cId == id)?.quantity || 0;
 
   const setCouponProducts: ShoppingCartContextProps['setCouponProducts'] = (items) => {
     _setCouponProducts(items);
@@ -584,6 +589,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
         addMultipleCartItems,
         removeCartItem,
         updateCartItem,
+        getCartItemQty,
         cartTotal, // MRP Total
         cartTotalOfRxProducts,
         grandTotal,

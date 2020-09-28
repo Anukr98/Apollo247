@@ -50,6 +50,7 @@ import { DELETE_DOCTOR_DEVICE_TOKEN } from '@aph/mobile-doctors/src/graphql/prof
 import { clearUserData } from '@aph/mobile-doctors/src/helpers/localStorage';
 import {
   postWebEngageEvent,
+  setScreenName,
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-doctors/src/helpers/WebEngageHelper';
@@ -225,6 +226,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
       return;
     }
     if (item.navigation) {
+      setScreenName(item.label);
       if (item.label === strings.account.settings) {
         postWebEngageEvent(WebEngageEventName.DOCTOR_CLICKED_SETTINGS, {
           'Doctor Mobile number': g(doctorDetails, 'mobileNumber') || '',

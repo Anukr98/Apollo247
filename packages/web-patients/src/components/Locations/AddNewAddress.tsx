@@ -677,7 +677,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
     return (
       <Fragment>
         <GoogleMap
-          onLoad={(map) => setMapRef(map)}
+          onLoad={(map: any) => setMapRef(map)}
           onCenterChanged={() => {
             const latLng = mapRef ? mapRef.getCenter().toJSON() : {};
             setLatitude(latLng.lat || latitude);

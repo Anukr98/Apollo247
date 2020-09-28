@@ -674,17 +674,19 @@ const SearchByMedicine: React.FC = (props) => {
   };
 
   useEffect(() => {
-    /**Gtm code start start */
-    dataLayerTracking({
-      event: 'pageviewEvent',
-      pagePath: window.location.href,
-      pageName: `${paramSearchText} Listing Page`,
-      pageLOB: 'Pharmacy',
-      pageType: 'Index',
-      productlist: JSON.stringify(medicineListFiltered),
-    });
-    /**Gtm code start end */
-  }, []);
+    if (medicineListFiltered && paramSearchText) {
+      /**Gtm code start start */
+      dataLayerTracking({
+        event: 'pageviewEvent',
+        pagePath: window.location.href,
+        pageName: `${paramSearchText} Listing Page`,
+        pageLOB: 'Pharmacy',
+        pageType: 'Index',
+        productlist: JSON.stringify(medicineListFiltered),
+      });
+      /**Gtm code start end */
+    }
+  }, [medicineListFiltered, paramSearchText]);
 
   return (
     <div className={classes.root}>

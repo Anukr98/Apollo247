@@ -67,6 +67,9 @@ import { getSecretaryDetailsByDoctorId } from 'graphql/types/getSecretaryDetails
 import { DoctorJoinedMessageCard } from 'components/Consult/V2/ChatRoom/DoctorJoinedMessageCard';
 import { AppointmentCompleteCardMessage } from 'components/Consult/V2/ChatRoom/AppointmentCompleteCardMessage';
 import { DoctorType } from 'graphql/types/globalTypes';
+import { ExotelMessageCard } from 'components/Consult/V2/ChatRoom/ExotelMessageCard';
+import { FirstMessageCard } from 'components/Consult/V2/ChatRoom/FirstMessageCard';
+import { SecondMessageCard } from 'components/Consult/V2/ChatRoom/SecondMessageCard';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -833,6 +836,7 @@ interface AutoMessageStrings {
   leaveChatRoom: string;
   patientJoinedMeetingRoom: string;
   patientRejectedCall: string;
+  exotelCall: string;
 }
 
 interface ChatWindowProps {
@@ -860,9 +864,11 @@ interface MessagesObjectProps {
   messageDate: string;
   cardType: string;
 }
+
 let insertText: MessagesObjectProps[] = [];
 let timerIntervalId: any;
 let stoppedConsulTimer: number;
+
 const ringtoneUrl = require('../../../../images/phone_ringing.mp3');
 const autoMessageStrings: AutoMessageStrings = {
   videoCallMsg: '^^callme`video^^',
@@ -893,6 +899,7 @@ const autoMessageStrings: AutoMessageStrings = {
   leaveChatRoom: '^^#leaveChatRoom',
   patientJoinedMeetingRoom: '^^#patientJoinedMeetingRoom',
   patientRejectedCall: '^^#PATIENT_REJECTED_CALL',
+  exotelCall: '^^#exotelCall',
 };
 
 type Params = { appointmentId: string; doctorId: string };
@@ -933,6 +940,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const [modalOpen, setModalOpen] = React.useState(false);
   const [imgPrevUrl, setImgPrevUrl] = React.useState<any>();
   const [doctorInteractionModal, setDoctorInteractionModal] = useState(true);
+  const [isJdAllowed, setIsJdAllowed] = useState<boolean>(false);
 
   const { currentPatient } = useAllCurrentPatients();
   const doctorDisplayName = props.doctorDetails.getDoctorDetailsById.displayName;
@@ -952,7 +960,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const [isVideoCall, setIsVideoCall] = useState<boolean>(false);
   const [sessionId, setsessionId] = useState<string>('');
   const [token, settoken] = useState<string>('');
-  const [callAudio, setCallAudio] = useState(autoMessageStrings.audioCallMsg);
+  // const [callAudio, setCallAudio] = useState(autoMessageStrings.audioCallMsg);
   const [isNewMsg, setIsNewMsg] = useState<boolean>(false);
   const [convertVideo, setConvertVideo] = useState<boolean>(false);
   const [videoCall, setVideoCall] = useState(false);
@@ -1019,7 +1027,144 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     }, 200);
   };
 
+  // console.log('insertText is.......', insertText);
   // subscribe for any udpates
+
+  const thirtySecondCall = () => {
+    // console.log('in thirty second call........');
+    const result = insertText.filter((obj: any) => {
+      // console.log('resultinsertText', obj.message);
+      return obj.message === autoMessageStrings.firstMessage;
+    });
+
+    const startConsultResult = insertText.filter((obj: any) => {
+      // console.log('resultinsertText', obj.message);
+      return obj.message === autoMessageStrings.startConsultMsg;
+    });
+
+    const startConsultjrResult = insertText.filter((obj: any) => {
+      // console.log('resultinsertText', obj.message);
+      return obj.message === autoMessageStrings.startConsultjr;
+    });
+
+    const jdThankyouResult = insertText.filter((obj: any) => {
+      // console.log('resultinsertText', obj.message);
+      return obj.message === autoMessageStrings.jdThankyou;
+    });
+
+    const stopConsultjrResult = insertText.filter((obj: any) => {
+      // console.log('resultinsertText', obj.message);
+      return obj.message === autoMessageStrings.stopConsultJr;
+    });
+
+    const languageQueueResult = insertText.filter((obj: any) => {
+      // console.log('resultinsertText', obj.message);
+      return obj.message === autoMessageStrings.languageQue;
+    });
+
+    if (
+      result.length === 0 &&
+      startConsultResult.length === 0 &&
+      startConsultjrResult.length === 0 &&
+      jdThankyouResult.length === 0 &&
+      stopConsultjrResult.length === 0 &&
+      languageQueueResult.length === 0 &&
+      !appointmentDetails.isJdQuestionsComplete &&
+      isJdAllowed
+    ) {
+      // console.log('result.length ', result);
+      pubnubClient.publish({
+        channel: appointmentId,
+        message: {
+          message: autoMessageStrings.firstMessage,
+          automatedText: `Hi ${currentPatient &&
+            currentPatient.firstName}, sorry to keep you waiting. ${
+            appointmentDetails.doctorInfo.displayName
+          }’s team is with another patient right now. Your consultation prep will start soon.`,
+          id: doctorId,
+          isTyping: true,
+          messageDate: new Date(),
+          cardType: 'doctor',
+        },
+        storeInHistory: true,
+        sendByPost: true,
+      });
+    }
+  };
+
+  const minuteCaller = () => {
+    console.log('in minute caller.....');
+    const result = insertText.filter((obj: any) => {
+      // console.log('resultinsertText', obj.message);
+      return obj.message === autoMessageStrings.secondMessage;
+    });
+
+    const startConsultResult = insertText.filter((obj: any) => {
+      // console.log('resultinsertText', obj.message);
+      return obj.message === autoMessageStrings.startConsultMsg;
+    });
+
+    const startConsultjrResult = insertText.filter((obj: any) => {
+      // console.log('resultinsertText', obj.message);
+      return obj.message === autoMessageStrings.startConsultjr;
+    });
+
+    const jdThankyouResult = insertText.filter((obj: any) => {
+      // console.log('resultinsertText', obj.message);
+      return obj.message === autoMessageStrings.jdThankyou;
+    });
+
+    const stopConsultjrResult = insertText.filter((obj: any) => {
+      // console.log('resultinsertText', obj.message);
+      return obj.message === autoMessageStrings.stopConsultJr;
+    });
+
+    const languageQueueResult = insertText.filter((obj: any) => {
+      // console.log('resultinsertText', obj.message);
+      return obj.message === autoMessageStrings.languageQue;
+    });
+
+    if (
+      result.length === 0 &&
+      startConsultResult.length === 0 &&
+      startConsultjrResult.length === 0 &&
+      jdThankyouResult.length === 0 &&
+      stopConsultjrResult.length === 0 &&
+      languageQueueResult.length === 0 &&
+      !appointmentDetails.isJdQuestionsComplete &&
+      isJdAllowed
+    ) {
+      // console.log('result.length ', result);
+      pubnubClient.publish({
+        channel: appointmentId,
+        message: {
+          message: autoMessageStrings.secondMessage,
+          automatedText: `Sorry, but all the members in ${appointmentDetails.doctorInfo.displayName}'s team are busy right now. We will send you a notification as soon as they are available for collecting your details`,
+          id: doctorId,
+          isTyping: true,
+          messageDate: new Date(),
+          cardType: 'doctor',
+        },
+        storeInHistory: true,
+        sendByPost: true,
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (isJdAllowed) {
+      const thirtySecCounter = setTimeout(() => {
+        thirtySecondCall();
+      }, 30000);
+      const oneMinuteCounter = setTimeout(() => {
+        minuteCaller();
+      }, 90000); // one minute after 30 seconds.
+      return () => {
+        clearTimeout(thirtySecCounter);
+        clearTimeout(oneMinuteCounter);
+      };
+    }
+  }, [isJdAllowed]);
 
   useEffect(() => {
     if (appointmentDetails) {
@@ -2067,9 +2212,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                         };
                         publishMessage(appointmentId, composeMessage);
                       }
+                      const isJdAllowed =
+                        response.data.addToConsultQueueWithAutomatedQuestions.isJdAllowed;
                       setAutoQuestionsCompleted(true);
                       const eventInfo = consultWebengageEventsInfo(doctorDetail, currentPatient);
                       medicalDetailsFillTracking(eventInfo);
+                      setIsJdAllowed(isJdAllowed);
                       // console.log(response, 'response after mutation is.....');
                     })
                     .catch((error) => {
@@ -2217,7 +2365,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                   const cardType = getCardType(messageDetails);
                   const message =
                     messageDetails && messageDetails.message ? messageDetails.message : '';
-
                   if (
                     messageDetails.message === autoMessageStrings.typingMsg ||
                     messageDetails.message === autoMessageStrings.endCallMsg ||
@@ -2236,7 +2383,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     messageDetails.message === autoMessageStrings.consultPatientStartedMsg ||
                     messageDetails.message === autoMessageStrings.patientJoinedMeetingRoom ||
                     messageDetails.message === autoMessageStrings.patientRejectedCall ||
-                    messageDetails.message === autoMessageStrings.endCallMsg
+                    messageDetails.message === autoMessageStrings.endCallMsg ||
+                    messageDetails.message === autoMessageStrings.exotelCall ||
+                    messageDetails.message === autoMessageStrings.firstMessage ||
+                    messageDetails.message === autoMessageStrings.secondMessage
                   ) {
                     props.setSrDoctorJoined(
                       messageDetails.message === autoMessageStrings.startConsultMsg
@@ -2259,6 +2409,30 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                         <AppointmentCompleteCardMessage
                           doctorName={doctorDisplayName}
                           messageDate={messageDetails.messageDate}
+                        />
+                      );
+                    } else if (messageDetails.message === autoMessageStrings.exotelCall) {
+                      return (
+                        <ExotelMessageCard
+                          doctorName={doctorDisplayName}
+                          messageDate={messageDetails.messageDate}
+                          exotelNumber={messageDetails.exotelNumber}
+                        />
+                      );
+                    } else if (messageDetails.message === autoMessageStrings.firstMessage) {
+                      return (
+                        <FirstMessageCard
+                          doctorName={doctorDisplayName}
+                          messageDate={messageDetails.messageDate}
+                          patientName={currentPatient && currentPatient.firstName}
+                        />
+                      );
+                    } else if (messageDetails.message === autoMessageStrings.secondMessage) {
+                      return (
+                        <SecondMessageCard
+                          doctorName={doctorDisplayName}
+                          messageDate={messageDetails.messageDate}
+                          patientName={currentPatient && currentPatient.firstName}
                         />
                       );
                     } else {
