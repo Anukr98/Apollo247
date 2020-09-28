@@ -156,6 +156,7 @@ export const validatePharmaCoupon: Resolver<
     packageId: await fetchUserSubscription(patientData.mobileNumber),
     products: couponProduct,
   };
+  console.log('payload', payload);
   const couponData = await validateCoupon(payload);
   let validityStatus = false;
   let reasonForInvalidStatus = '';

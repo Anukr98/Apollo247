@@ -33,7 +33,7 @@ export async function fetchUserSubscription(mobile_number: string) {
     }
   }`;
 
-  const response = axios({
+  const response = await axios({
     url,
     method: 'post',
     data: {
@@ -61,6 +61,7 @@ export async function fetchUserSubscription(mobile_number: string) {
         JSON.stringify(error)
       );
     });
+  console.log('fetchUserSubscription', response);
   if (response?.data?.response[0]?.group_plan) {
     return `${response.data.response[0].group_plan.group.name}:${response.data.response[0].group_plan.plan_id}`;
   } else return '';
