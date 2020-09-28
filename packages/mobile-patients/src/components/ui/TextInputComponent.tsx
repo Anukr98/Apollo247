@@ -51,9 +51,8 @@ const styles = StyleSheet.create({
   },
   drPrefixTextStyle: {
     ...theme.fonts.IBMPlexSansMedium(18),
-    borderBottomWidth: 2,
     paddingLeft: Platform.OS === 'ios' ? 0 : -3,
-    paddingTop: 0,
+    paddingTop: Platform.OS === 'ios' ? 0 : 3,
     color: theme.colors.SHERPA_BLUE,
   },
 });
