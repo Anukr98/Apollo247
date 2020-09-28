@@ -134,35 +134,38 @@ export const formatAddress = (address: savePatientAddress_savePatientAddress_pat
     .filter((item, idx, array) => array.indexOf(item) === idx)
     .join(', ');
   const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
-    return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
+  return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
 };
 
-export const formatAddressWithLandmark = (address: savePatientAddress_savePatientAddress_patientAddress) => {
-  const addrLine1 = removeConsecutiveComma([address.addressLine1, address.addressLine2].filter((v) => v).join(', '));
+export const formatAddressWithLandmark = (
+  address: savePatientAddress_savePatientAddress_patientAddress
+) => {
+  const addrLine1 = removeConsecutiveComma(
+    [address.addressLine1, address.addressLine2].filter((v) => v).join(', ')
+  );
   const landmark = [address.landmark];
   // to handle state value getting twice
-  const addrLine2 = removeConsecutiveComma([address.city, address.state]
-    .filter((v) => v)
-    .join(', ')
-    .split(',')
-    .map((v) => v.trim())
-    .filter((item, idx, array) => array.indexOf(item) === idx)
-    .join(', '));
+  const addrLine2 = removeConsecutiveComma(
+    [address.city, address.state]
+      .filter((v) => v)
+      .join(', ')
+      .split(',')
+      .map((v) => v.trim())
+      .filter((item, idx, array) => array.indexOf(item) === idx)
+      .join(', ')
+  );
   const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
-  if(address.landmark!=''){
+  if (address.landmark != '') {
     return `${addrLine1},\nLandmark: ${landmark}\n${addrLine2}${formattedZipcode}`;
-  }
-  else{
+  } else {
     return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
   }
-    
 };
 
 export const formatNameNumber = (address: savePatientAddress_savePatientAddress_patientAddress) => {
-  if(address.name!){
+  if (address.name!) {
     return `${address.name}\n${address.mobileNumber}`;
-  }
-  else{
+  } else {
     return `${address.mobileNumber}`;
   }
 };
@@ -193,6 +196,22 @@ export const formatOrderAddress = (
     .join(', ');
   const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
   return `${addrLine}${formattedZipcode}`;
+};
+
+export const formatSelectedAddress = (
+  address: savePatientAddress_savePatientAddress_patientAddress
+) => {
+  const formattedAddress =
+    (address.addressLine1 && address.addressLine1 + ', ') +
+    '' +
+    (address.addressLine2 && address.addressLine2 + ', ') +
+    '' +
+    (address.city && address.city + ',') +
+    '' +
+    (address.state && address.state + ',') +
+    '' +
+    (address.zipcode && address.zipcode);
+  return formattedAddress;
 };
 
 export const getUuidV4 = () => {
@@ -698,15 +717,15 @@ export const isValidName = (value: string) =>
     : value == '' || /^[a-zA-Z]+((['’ ][a-zA-Z])?[a-zA-Z]*)*$/.test(value)
     ? true
     : false;
-  
-export const isValidPhoneNumber = (value: string) =>{
-    const isValidNumber = !/^[6-9]{1}\d{0,9}$/.test(value)
-      ? !/^(234){1}\d{0,9}$/.test(value)
-        ? false
-        : true
-      : true;
-    return isValidNumber;
-}
+
+export const isValidPhoneNumber = (value: string) => {
+  const isValidNumber = !/^[6-9]{1}\d{0,9}$/.test(value)
+    ? !/^(234){1}\d{0,9}$/.test(value)
+      ? false
+      : true
+    : true;
+  return isValidNumber;
+};
 
 export const extractUrlFromString = (text: string): string | undefined => {
   const urlRegex = /(https?:\/\/[^ ]*)/;
@@ -1516,6 +1535,6 @@ export const dataSavedUserID = async (key: string) => {
 export const setWebEngageScreenNames = (screenName: string) => {
   webengage.screen(screenName);
 };
-export const removeConsecutiveComma = (value: string) =>{
-  return value.replace(/^,|,$|,(?=,)/g, '')
+export const removeConsecutiveComma = (value: string) => {
+  return value.replace(/^,|,$|,(?=,)/g, '');
 };

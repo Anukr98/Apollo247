@@ -9,7 +9,16 @@ import {
   GreenTickIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  upperContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    borderBottomWidth: 0.5,
+    borderColor: '#rgba(2,71,91, 0.2)',
+    marginLeft: 16,
+    paddingBottom: 6,
+  },
+});
 
 export interface EPrescriptionCardProps {
   style?: StyleProp<ViewStyle>;
@@ -45,10 +54,9 @@ export const EPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
           {
             ...theme.viewStyles.cardViewStyle,
             shadowRadius: 4,
-            padding: 16,
-            paddingLeft: 11,
+            paddingTop: 16,
             paddingBottom: 8,
-            marginHorizontal: 20,
+            marginHorizontal: 10,
             backgroundColor: isDisabled
               ? theme.colors.DEFAULT_BACKGROUND_COLOR
               : theme.colors.WHITE,
@@ -56,44 +64,45 @@ export const EPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
           props.style,
         ]}
       >
-        <View style={{ flexDirection: 'row', flex: 1 }}>
+        <View style={{ flexDirection: 'row', flex: 1, paddingHorizontal: 10 }}>
           <PrescriptionIcon />
-          <Text
-            style={{
-              flex: 1,
-              color: theme.colors.LIGHT_BLUE,
-              lineHeight: 24,
-              textAlign: 'left',
-              ...theme.fonts.IBMPlexSansMedium(16),
-              paddingLeft: 16,
-            }}
-          >
-            {doctorName}
-          </Text>
-          {
-            showTick && (
-              <GreenTickIcon style={{
-                width: 20,
-                paddingHorizontal: 8,
-              }} />
-            )
-          }
-          {!isDisabled && !showTick && (
-            <TouchableOpacity
-              onPress={() => {
-                actionType == 'removal' ? onRemove!() : onSelect!(!!!isSelected);
+          <View style={styles.upperContainer}>
+            <Text
+              style={{
+                // flex: 1,
+                color: theme.colors.LIGHT_BLUE,
+                lineHeight: 24,
+                textAlign: 'left',
+                ...theme.fonts.IBMPlexSansMedium(16),
               }}
-              style={{ flex: 1, alignItems: 'flex-end' }}
             >
-              {actionType == 'removal' ? (
-                <CrossYellow />
-              ) : isSelected ? (
-                <CheckedIcon />
-              ) : (
-                <UnCheck />
-              )}
-            </TouchableOpacity>
-          )}
+              {doctorName}
+            </Text>
+            {showTick && (
+              <GreenTickIcon
+                style={{
+                  width: 20,
+                  paddingHorizontal: 8,
+                }}
+              />
+            )}
+            {!isDisabled && !showTick && (
+              <TouchableOpacity
+                onPress={() => {
+                  actionType == 'removal' ? onRemove!() : onSelect!(!!!isSelected);
+                }}
+                style={{ flex: 1, alignItems: 'flex-end' }}
+              >
+                {actionType == 'removal' ? (
+                  <CrossYellow />
+                ) : isSelected ? (
+                  <CheckedIcon />
+                ) : (
+                  <UnCheck />
+                )}
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
         <View style={{ marginLeft: 43 }}>
           <View
