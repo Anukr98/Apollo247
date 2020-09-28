@@ -163,7 +163,6 @@ export enum GroupPlanStatus {
 export enum HDFC_CUSTOMER {
   NOT_HDFC_CUSTOMER = 'NOT_HDFC_CUSTOMER',
   OTP_GENERATED = 'OTP_GENERATED',
-  OTP_NOT_GENERATED = 'OTP_NOT_GENERATED',
 }
 
 export enum LOGIN_TYPE {
@@ -421,7 +420,6 @@ export enum SubscriptionStatus {
   CANCELLED = 'CANCELLED',
   DEFERRED_INACTIVE = 'DEFERRED_INACTIVE',
   DISABLED = 'DISABLED',
-  UPGRADED = 'UPGRADED',
 }
 
 export enum TEST_COLLECTION_TYPE {
@@ -733,7 +731,7 @@ export interface MedicineCartOMSInput {
 export interface MedicineCartOMSItem {
   medicineSKU?: string | null;
   medicineName?: string | null;
-  couponFree?: boolean | null;
+  couponFree?: number | null;
   price?: number | null;
   quantity?: number | null;
   mrp?: number | null;
@@ -796,7 +794,7 @@ export interface OrderLineItems {
   productType: CouponCategoryApplicable;
   quantity: number;
   specialPrice: number;
-  couponFree?: boolean | null;
+  couponFree?: number | null;
 }
 
 export interface OtpVerificationInput {
