@@ -753,12 +753,15 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     const showExpectedDelivery =
       isDeliveryOrder && tatInfo && !isCancelled && !isDelivered && hours > 0;
 
+    const expectedDeliveryInDays = moment.duration(moment(tatInfo!).diff(moment()));
+    const diffInDays = expectedDeliveryInDays.asDays();
+
     let statusList = orderStatusList
       .filter(
         (item, idx, array) => array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
       )
       .concat([]);
-    scrollToSlots();
+    diffInDays! < 0 ? null : scrollToSlots();
 
     if (
       orderDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
@@ -770,7 +773,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           (item, idx, array) => array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
         )
         .concat([]);
-      scrollToSlots();
+      diffInDays! < 0 ? null : scrollToSlots();
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_INITIATED) {
       statusList = orderStatusList
         .filter(
@@ -828,7 +831,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                 } as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
               ]
         );
-      scrollToSlots();
+      diffInDays! < 0 ? null : scrollToSlots();
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED) {
       statusList = orderStatusList
         .filter(
@@ -877,7 +880,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                 } as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
               ]
         );
-      scrollToSlots();
+      diffInDays! < 0 ? null : scrollToSlots();
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_VERIFIED) {
       statusList = orderStatusList
         .filter(
@@ -915,7 +918,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                 } as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
               ]
         );
-      scrollToSlots();
+      diffInDays! < 0 ? null : scrollToSlots();
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.READY_AT_STORE) {
       statusList = orderStatusList
         .filter(
@@ -928,7 +931,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             orderStatus: MEDICINE_ORDER_STATUS.PICKEDUP,
           } as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
         ]);
-      scrollToSlots();
+      diffInDays! < 0 ? null : scrollToSlots();
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED) {
       statusList = orderStatusList
         .filter(
@@ -946,7 +949,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             orderStatus: MEDICINE_ORDER_STATUS.DELIVERED,
           } as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
         ]);
-      scrollToSlots();
+      diffInDays! < 0 ? null : scrollToSlots();
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY) {
       statusList = orderStatusList
         .filter(
@@ -959,7 +962,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             orderStatus: MEDICINE_ORDER_STATUS.DELIVERED,
           } as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
         ]);
-      scrollToSlots();
+      diffInDays! < 0 ? null : scrollToSlots();
     } else if (
       orderDetails.currentStatus == MEDICINE_ORDER_STATUS.DELIVERED ||
       orderDetails.currentStatus == MEDICINE_ORDER_STATUS.PICKEDUP
@@ -969,12 +972,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           (item, idx, array) => array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
         )
         .concat([]);
-      scrollToSlots();
+      diffInDays! < 0 ? null : scrollToSlots();
     }
-
-    const expectedDeliveryInDays = moment.duration(moment(tatInfo!).diff(moment()));
-    const diffInDays = expectedDeliveryInDays.asDays();
-
     return (
       <View>
         <View style={{ margin: 20 }}>
