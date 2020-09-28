@@ -96,3 +96,16 @@ export async function delCache(key: string) {
     return false;
   }
 }
+
+export async function hmsetCache(key: string, value: { [index: string]: string }) {
+  try {
+    if (key && value) {
+      const set = client.hmset(key, value);
+      dLogger(new Date(), 'Redis Cache write hashmap', `Cache hit ${key}`);
+      return set;
+    }
+  } catch (e) {
+    dLogger(new Date(), 'Redis Cache write hashmap error', `Cache hit ${key} ${JSON.stringify(e)}`);
+    return false;
+  }
+}

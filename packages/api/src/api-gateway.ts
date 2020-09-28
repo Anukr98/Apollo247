@@ -17,6 +17,7 @@ console.log('gateway starting');
 
 export interface GatewayContext {
   mobileNumber: string;
+  authorization?: string;
 }
 
 export interface GatewayHeaders extends IncomingHttpHeaders {
@@ -72,6 +73,7 @@ export type Resolver<Parent, Args, Context, Result> = (
           const context = (requestContext.context as any) as GatewayContext;
           if (request && request.http) {
             request.http.headers.set('mobilenumber', context.mobileNumber);
+            request.http.headers.set('authorization', context.authorization || '');
           }
         },
       });
@@ -202,7 +204,8 @@ export type Resolver<Parent, Args, Context, Result> = (
           mobileNumber: firebaseUser.uid || '',
         };
       }
-
+      /* Add jwt token to context */
+      gatewayContext["authorization"] = req && req.headers && req.headers.authorization ? req && req.headers && req.headers.authorization : ''
       return gatewayContext;
     },
     plugins: [

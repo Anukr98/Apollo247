@@ -372,7 +372,11 @@ const a11yProps = (index: any) => {
   };
 };
 
-export const HowItWorks: React.FC = (props) => {
+interface HowItWorksInterface {
+  alternateVariant?: boolean;
+}
+
+export const HowItWorks: React.FC<HowItWorksInterface> = (props) => {
   const classes = useStyles({});
   const [chatConsult, setChatConsult] = useState<boolean>(false);
   const [meetInPerson, setMeetInPerson] = useState<boolean>(false);
@@ -443,10 +447,15 @@ export const HowItWorks: React.FC = (props) => {
                       Be present in the consult room on apollo247.com at the time of consult
                     </Typography>
                   </li>
-                  <li>
-                    <img src={require('images/prescription.svg')} />
-                    <Typography>Receive prescriptions instantly </Typography>
-                  </li>
+                  {props.alternateVariant ? (
+                    ''
+                  ) : (
+                    <li>
+                      <img src={require('images/prescription.svg')} />
+                      <Typography>Receive prescriptions instantly </Typography>
+                    </li>
+                  )}
+
                   <li>
                     <img src={require('images/ic-followchat.svg')} />
                     <Typography>Follow Up via text - Valid upto 7 days</Typography>
@@ -582,4 +591,7 @@ export const HowItWorks: React.FC = (props) => {
       </AphDialog>
     </div>
   );
+};
+HowItWorks.defaultProps = {
+  alternateVariant: true,
 };

@@ -1465,6 +1465,14 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
   }
 `;
 
+export const GET_DIAGNOSTICS_HC_CHARGES = gql`
+  query getDiagnosticsHCCharges($itemIDs: [Int]!, $totalCharges: Int!,  $slotID: String!, $pincode: Int!) {
+    getDiagnosticsHCCharges(itemIDs: $itemIDs, totalCharges: $totalCharges, slotID: $slotID, pincode: $pincode) {
+        charges
+    }
+  }
+`;
+
 export const CANCEL_DIAGNOSTIC_ORDER = gql`
   mutation cancelDiagnosticOrder($diagnosticOrderId: Int) {
     cancelDiagnosticOrder(diagnosticOrderId: $diagnosticOrderId) {

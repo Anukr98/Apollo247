@@ -496,7 +496,15 @@ const deepLinkUtil = (deepLinkPattern: string) => {
   }
 };
 
+const isAlternateVersion = () => {
+  // the below lines are written to init app in another mode variant=2 -> marketing requirements
+  const urlString = window.location.href;
+  const url = new URL(urlString);
+  const alternateVariant = url.searchParams.get('variant');
+  return alternateVariant && alternateVariant === '2' ? true : false;
+};
 export {
+  isAlternateVersion,
   deepLinkUtil,
   HEALTH_RECORDS_NO_DATA_FOUND,
   removeGraphQLKeyword,

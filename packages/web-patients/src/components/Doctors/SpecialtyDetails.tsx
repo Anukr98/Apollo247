@@ -23,6 +23,7 @@ import {
   SearchObject,
   SPECIALTY_DETAIL_LISTING_PAGE_SIZE as PAGE_SIZE,
   deepLinkUtil,
+  isAlternateVersion,
 } from 'helpers/commonHelpers';
 import { useLocationDetails } from 'components/LocationProvider';
 import { GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor as docDetails } from 'graphql/types/GetDoctorDetailsById';
@@ -428,6 +429,7 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const [specialtyId, setSpecialtyId] = useState<string>('');
   const [specialtyName, setSpecialtyName] = useState<string>('');
   const [locationPopup, setLocationPopup] = useState<boolean>(false);
+  const [isAlternateVariant, setIsAlternateVariant] = useState<boolean>(true);
   const [selectedCity, setSelectedCity] = useState<string>(
     params && params.city ? params.city : ''
   );
@@ -574,6 +576,12 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     }
   }, []);
   useEffect(() => {
+    // the below if-else is for marketing requirement (hiding prescription/Rx string)
+    if (isAlternateVersion()) {
+      setIsAlternateVariant(true);
+    } else {
+      setIsAlternateVariant(false);
+    }
     if (scrollRef && scrollRef.current) {
       window.addEventListener('scroll', handleOnScroll);
     }
@@ -877,8 +885,8 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     title: (faqData && faqData[0].specialtyMetaTitle) || '',
     description: (faqData && faqData[0].specialtyMetaDescription) || '',
     canonicalLink:
-      (faqData && faqData[0].canonicalUrl) || (window && window.location && window.location.href),
-    deepLink: window.location.href,
+      (faqData && faqData[0].canonicalUrl) ||
+      (window && window.location && `${window.location.host}${window.location.pathname}`),
   };
 
   return (
@@ -1035,8 +1043,8 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
             </div>
             <div className={classes.rightBar}>
               <div className={classes.stickyBlock}>
-                <WhyApollo />
-                <HowItWorks />
+                <WhyApollo alternateVariant={isAlternateVariant} />
+                <HowItWorks alternateVariant={isAlternateVariant} />
               </div>
             </div>
           </div>
