@@ -153,7 +153,7 @@ export const validatePharmaCoupon: Resolver<
     coupon: code,
     paymentType: '',
     pinCode: '',
-    packageId: await fetchUserSubscription(patientData.mobileNumber),
+    packageId: '', //await fetchUserSubscription(patientData.mobileNumber),
     products: couponProduct,
   };
   console.log('payload', payload);

@@ -14,10 +14,10 @@ type SuccessTransactionInputForSubscription = {
   userSubscriptionId?: string;
   subscriptionInclusionId?: string;
 };
-export async function fetchUserSubscription(mobile_number: string) {
+export async function fetchUserSubscription(mobileNumber: string) {
   const url = `http://${process.env.SUBSCRIPTION_SERVICE_HOST}:${process.env.SUBSCRIPTION_SERVICE_PORT}`;
   const query = `query{
-    GetSubscriptionsOfUserByStatus(mobile_number: ${mobile_number},status: "active")
+    GetSubscriptionsOfUserByStatus(mobile_number: ${mobileNumber},status: ["active"])
     {
       response
       {
@@ -47,24 +47,24 @@ export async function fetchUserSubscription(mobile_number: string) {
       log(
         'consultServiceLogger',
         'transactionSuccessTrigger=>success',
-        `mobile_number:${mobile_number || ''}`,
+        `mobile_number:${mobileNumber || ''}`,
         response.data,
         ''
       );
+      console.log('fetchUserSubscription', response);
+      return `${response.data.response[0].group_plan.group.name}:${response.data.response[0].group_plan.plan_id}`;
     })
     .catch((error: any) => {
       log(
         'consultServiceLogger',
         'transactionSuccessTrigger=>failed',
-        `mobile_number:${mobile_number || ''}`,
+        `mobile_number:${mobileNumber || ''}`,
         '',
         JSON.stringify(error)
       );
+      return '';
     });
   console.log('fetchUserSubscription', response);
-  if (response?.data?.response[0]?.group_plan) {
-    return `${response.data.response[0].group_plan.group.name}:${response.data.response[0].group_plan.plan_id}`;
-  } else return '';
 }
 export async function transactionSuccessTrigger(args: SuccessTransactionInputForSubscription) {
   const {
