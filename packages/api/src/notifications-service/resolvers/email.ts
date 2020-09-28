@@ -32,6 +32,7 @@ export async function sendMail(emailContent: EmailMessage) {
       JSON.stringify(sendgridResp),
       ''
     );
+    return "Success";
   } catch (error) {
     log(
       'notificationServiceLogger',
@@ -40,6 +41,7 @@ export async function sendMail(emailContent: EmailMessage) {
       JSON.stringify(error),
       ''
     );
+    return "Failure";
   }
 }
 
