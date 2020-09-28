@@ -95,7 +95,7 @@ export const ProductList: React.FC<Props> = ({
     );
   };
 
-  const renderItem = ({ item }: ListRenderItemInfo<MedicineProduct>) => {
+  const renderItem = ({ item, index }: ListRenderItemInfo<MedicineProduct>) => {
     const id = item.sku;
     const qty = getCartItemQty(id);
     const onPressAddQty = () => {
@@ -115,6 +115,12 @@ export const ProductList: React.FC<Props> = ({
       onPressAddQty: onPressAddQty,
       onPressSubtractQty: onPressSubtractQty,
       onPressNotify: () => onPressNotify(item.name),
+      containerStyle:
+        index === 0
+          ? styles.itemStartContainer
+          : index + 1 === data?.length
+          ? styles.itemEndContainer
+          : styles.itemContainer,
     };
 
     return <Component {...props} />;
@@ -139,9 +145,20 @@ export const ProductList: React.FC<Props> = ({
 };
 
 const styles = StyleSheet.create({
-  flatListContainer: {
-    padding: 20,
-    paddingTop: 16,
-  },
+  flatListContainer: {},
   itemSeparator: { margin: 5 },
+  itemContainer: {
+    marginTop: 16,
+    marginBottom: 20,
+  },
+  itemStartContainer: {
+    marginTop: 16,
+    marginBottom: 20,
+    marginLeft: 20,
+  },
+  itemEndContainer: {
+    marginTop: 16,
+    marginBottom: 20,
+    marginRight: 20,
+  },
 });

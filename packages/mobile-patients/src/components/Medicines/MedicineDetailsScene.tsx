@@ -1271,7 +1271,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     const marginTop =
       !medicineOverview.length && !Substitutes.length && !medicineDetails.description ? 20 : 0;
     return (
-      <View style={[styles.labelViewStyle, { marginTop, marginBottom: -14 }]}>
+      <View style={[styles.labelViewStyle, { marginTop }]}>
         <Text style={[styles.labelStyle]}>{sectionName}</Text>
       </View>
     );

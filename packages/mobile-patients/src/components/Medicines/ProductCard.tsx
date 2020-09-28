@@ -48,10 +48,10 @@ export const ProductCard: React.FC<Props> = ({
     const strikeOffPrice = `(Rs. ${price})`;
     const finalPrice = `  Rs. ${discount ? special_price : price}`;
     return (
-      <Text style={styles.priceContainer}>
+      <View style={styles.priceContainer}>
         {!!discount && <Text style={styles.priceStrikeOff}>{strikeOffPrice}</Text>}
         <Text style={styles.finalPrice}>{finalPrice}</Text>
-      </Text>
+      </View>
     );
   };
 
@@ -116,9 +116,8 @@ const { text } = theme.viewStyles;
 const styles = StyleSheet.create({
   card: {
     ...theme.viewStyles.card(12, 0),
-    elevation: 10,
     alignItems: 'center',
-    width: 162,
+    width: 168,
     height: 232,
   },
   image: {
@@ -140,12 +139,13 @@ const styles = StyleSheet.create({
   },
   priceContainer: {
     paddingVertical: 10,
+    flexDirection: 'row',
   },
   finalPrice: {
-    ...text('B', 14, '#01475b', 1, 24),
+    ...text('B', 13, '#01475b', 1, 24),
   },
   priceStrikeOff: {
-    ...text('M', 14, '#01475b', 0.6, 24),
+    ...text('M', 13, '#01475b', 0.6, 24),
     textDecorationLine: 'line-through',
   },
   addToCart: {
