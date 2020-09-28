@@ -39,9 +39,7 @@ import {
   postwebEngageAddToCartEvent,
   postAppsFlyerAddToCartEvent,
   g,
-  productsThumbnailUrl,
   getDiscountPercentage,
-  addPharmaItemToCart,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -56,7 +54,6 @@ import {
   Text,
   TouchableOpacity,
   View,
-  ListRenderItemInfo,
   FlatList,
   ScrollView,
 } from 'react-native';
@@ -72,7 +69,8 @@ import {
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AddToCartButtons } from '@aph/mobile-patients/src/components/Medicines/AddToCartButtons';
 import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
-import { UpSellingProducts } from '@aph/mobile-patients/src/components/MedicineDetails/UpSellingProducts';
+import { ProductList } from '@aph/mobile-patients/src/components/Medicines/ProductList';
+import { ProductUpSellingCard } from '@aph/mobile-patients/src/components/Medicines/ProductUpSellingCard';
 import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
 
 const { width, height } = Dimensions.get('window');
@@ -1273,8 +1271,8 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     const marginTop =
       !medicineOverview.length && !Substitutes.length && !medicineDetails.description ? 20 : 0;
     return (
-      <View style={[styles.labelViewStyle, { marginTop }]}>
-        <Text style={styles.labelStyle}>{sectionName}</Text>
+      <View style={[styles.labelViewStyle, { marginTop, marginBottom: -14 }]}>
+        <Text style={[styles.labelStyle]}>{sectionName}</Text>
       </View>
     );
   };
@@ -1287,7 +1285,12 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
       return [
         renderUpSellingProductsHeader(sectionName),
-        <UpSellingProducts data={medicineDetails.similar_products} navigation={props.navigation} />,
+        <ProductList
+          data={medicineDetails.similar_products}
+          Component={ProductUpSellingCard}
+          navigation={props.navigation}
+          addToCartSource={'Pharmacy PDP'}
+        />,
       ];
     }
   };
@@ -1297,9 +1300,11 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       const sectionName = 'CUSTOMERS ALSO BOUGHT';
       return [
         renderUpSellingProductsHeader(sectionName),
-        <UpSellingProducts
-          navigation={props.navigation}
+        <ProductList
           data={medicineDetails.crosssell_products}
+          Component={ProductUpSellingCard}
+          navigation={props.navigation}
+          addToCartSource={'Pharmacy PDP'}
         />,
       ];
     }
