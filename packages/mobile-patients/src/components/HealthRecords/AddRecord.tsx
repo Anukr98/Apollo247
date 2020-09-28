@@ -311,7 +311,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
             recordType: typeofRecord,
             sourceName: mediaPrescriptionSource.SELF,
-            // medicalRecordParameters: showReportDetails ? isRecordParameterFilled() : [],
             documentURLs: '',
             prismFileIds: '',
             testResultFiles: {
@@ -329,7 +328,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
             recordType: typeofRecord,
             sourceName: mediaPrescriptionSource.SELF,
-            // medicalRecordParameters: showReportDetails ? isRecordParameterFilled() : [],
             documentURLs: '',
             prismFileIds: '',
           };
