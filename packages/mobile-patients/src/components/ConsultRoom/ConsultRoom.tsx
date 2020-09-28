@@ -74,6 +74,7 @@ import {
   postWebEngageEvent,
   UnInstallAppsFlyer,
   setWebEngageScreenNames,
+  overlyPermissionAndroid,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -780,6 +781,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             setCurrentAppointments(
               (g(data, 'data', 'getPatientFutureAppointmentCount', 'consultsCount') || 0).toString()
             );
+            const appointmentsCount = (
+              g(data, 'data', 'getPatientFutureAppointmentCount', 'consultsCount') || 0
+            ).toString();
+            appointmentsCount !== '0'
+              ? overlyPermissionAndroid(
+                  currentPatient!.firstName!,
+                  'the doctor',
+                  showAphAlert,
+                  hideAphAlert
+                )
+              : null;
             setAppointmentLoading(false);
           })
           .catch((e) => {

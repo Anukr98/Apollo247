@@ -26,6 +26,7 @@ import {
   postWebEngageEvent,
   g,
   followUpChatDaysCaseSheet,
+  overlyPermissionAndroid,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -208,7 +209,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const [pastConsultations, setPastConsultations] = useState<
     getPatientAllAppointments_getPatientAllAppointments_appointments[]
   >([]);
-  const { loading, setLoading } = useUIElements();
+  const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
 
   const [showSchdulesView, setShowSchdulesView] = useState<boolean>(false);
   const [newAppointmentTime, setNewAppointmentTime] = useState<string>('');
@@ -383,6 +384,12 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 setconsultations(data.getPatientAllAppointments.appointments);
                 setActiveConsultations(activeAppointments);
                 setPastConsultations(pastAppointments);
+                overlyPermissionAndroid(
+                  currentPatient!.firstName!,
+                  activeAppointments[0].doctorInfo.displayName,
+                  showAphAlert,
+                  hideAphAlert
+                );
               } else {
                 setconsultations([]);
               }

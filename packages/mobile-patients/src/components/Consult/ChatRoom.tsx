@@ -144,6 +144,7 @@ import {
   postWebEngageEvent,
   nameFormater,
   followUpChatDaysCaseSheet,
+  overlyPermissionAndroid,
 } from '../../helpers/helperFunctions';
 import { mimeType } from '../../helpers/mimeType';
 import { FeedbackPopup } from '../FeedbackPopup';
@@ -680,7 +681,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     const willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
       BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
     });
-    callPermissions();
+    if (Platform.OS === 'android') {
+      overlyPermissionAndroid(
+        currentPatient!.firstName!,
+        appointmentData.doctorInfo.displayName,
+        showAphAlert,
+        hideAphAlert
+      );
+    } else {
+      callPermissions();
+    }
     return () => {
       didFocusSubscription && didFocusSubscription.remove();
       willBlurSubscription && willBlurSubscription.remove();
@@ -2461,7 +2471,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const [showFeedback, setShowFeedback] = useState(false);
-  const { showAphAlert, audioTrack, setPrevVolume, maxVolume } = useUIElements();
+  const { showAphAlert, audioTrack, setPrevVolume, maxVolume, hideAphAlert } = useUIElements();
   const pubNubMessages = (message: Pubnub.MessageEvent) => {
     console.log('pubNubMessages', message.message.sentBy);
     if (message.message.isTyping) {
