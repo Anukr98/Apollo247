@@ -448,20 +448,6 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     );
   };
 
-  const postwebEngageProductClickedEvent = ({ name, sku }: MedicineProduct) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PRODUCT_CLICKED] = {
-      'product name': name,
-      'product id': sku,
-      Brand: '',
-      'Brand ID': '',
-      'category name': '',
-      'category ID': category_id,
-      Source: 'List',
-      'Section Name': 'SEARCH',
-    };
-    postWebEngageEvent(WebEngageEventName.PHARMACY_PRODUCT_CLICKED, eventAttributes);
-  };
-
   const onNotifyMeClick = (name: string) => {
     showAphAlert!({
       title: 'Okay! :)',
@@ -498,7 +484,6 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           savePastSeacrh(medicine.sku, medicine.name).catch((e) => {
             // handleGraphQlError(e);
           });
-          postwebEngageProductClickedEvent(medicine);
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: medicine.sku,
             title: medicine.name,
@@ -570,7 +555,6 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           savePastSeacrh(medicine.sku, medicine.name).catch((e) => {
             // handleGraphQlError(e);
           });
-          postwebEngageProductClickedEvent(medicine);
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: medicine.sku,
             title: medicine.name,

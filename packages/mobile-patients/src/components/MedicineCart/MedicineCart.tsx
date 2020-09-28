@@ -65,7 +65,6 @@ import {
   PharmacyCartViewedEvent,
   PricemismatchEvent,
   postTatResponseFailureEvent,
-  postwebEngageProductClickedEvent,
   applyCouponClickedEvent,
 } from '@aph/mobile-patients/src/components/MedicineCart/Events';
 import {
@@ -614,7 +613,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             sku: item.id,
             title: item.name,
           });
-          postwebEngageProductClickedEvent(item);
         }}
       />
     );

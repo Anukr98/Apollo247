@@ -25,15 +25,13 @@ export interface Props extends Omit<ListProps, 'renderItem'> {
   Component: React.FC<ProductCardProps>;
   addToCartSource: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Source'];
   pharmacyCategorySectionProductClickSectionName?: WebEngageEvents[WebEngageEventName.PHARMACY_CATEGORY_SECTION_PRODUCT_CLICK]['Section Name'];
-  pharmacyProductClickedSource?: WebEngageEvents[WebEngageEventName.PHARMACY_PRODUCT_CLICKED]['Source'];
-  pharmacyProductClickedSectionName?: WebEngageEvents[WebEngageEventName.PHARMACY_PRODUCT_CLICKED]['Section Name'];
+  sectionName?: string;
 }
 
 export const ProductList: React.FC<Props> = ({
   addToCartSource,
   pharmacyCategorySectionProductClickSectionName,
-  pharmacyProductClickedSource,
-  pharmacyProductClickedSectionName,
+  sectionName,
   navigation,
   Component,
   data,
@@ -55,23 +53,10 @@ export const ProductList: React.FC<Props> = ({
       };
       postWebEngageEvent(WebEngageEventName.PHARMACY_CATEGORY_SECTION_PRODUCT_CLICK, atr1);
     }
-    if (pharmacyProductClickedSource && pharmacyProductClickedSectionName) {
-      const atr2: WebEngageEvents[WebEngageEventName.PHARMACY_PRODUCT_CLICKED] = {
-        'product name': name,
-        'product id': sku,
-        'category ID': categoryId,
-        Brand: '',
-        'Brand ID': '',
-        'category name': '',
-        Source: pharmacyProductClickedSource,
-        'Section Name': pharmacyProductClickedSectionName,
-      };
-      postWebEngageEvent(WebEngageEventName.PHARMACY_PRODUCT_CLICKED, atr2);
-    }
     navigation.navigate(AppRoutes.MedicineDetailsScene, {
       sku,
       movedFrom: 'widget',
-      sectionName: pharmacyProductClickedSectionName,
+      sectionName: sectionName,
     });
   };
 

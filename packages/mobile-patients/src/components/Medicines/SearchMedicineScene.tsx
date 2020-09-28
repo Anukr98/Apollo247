@@ -570,20 +570,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     );
   };
 
-  const postwebEngageProductClickedEvent = ({ name, sku, category_id }: MedicineProduct) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PRODUCT_CLICKED] = {
-      'product name': name,
-      'product id': sku,
-      Brand: '',
-      'Brand ID': '',
-      'category name': '',
-      'category ID': category_id,
-      Source: 'List',
-      'Section Name': 'SEARCH',
-    };
-    postWebEngageEvent(WebEngageEventName.PHARMACY_PRODUCT_CLICKED, eventAttributes);
-  };
-
   const renderMedicineCard = (
     medicine: MedicineProduct,
     index: number,
@@ -610,7 +596,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         containerStyle={[medicineCardContainerStyle, {}]}
         onPress={() => {
           savePastSeacrh(medicine.sku, medicine.name).catch((e) => {});
-          postwebEngageProductClickedEvent(medicine);
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: medicine.sku,
             title: medicine.name,
@@ -686,7 +671,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         containerStyle={[medicineCardContainerStyle, {}]}
         onPress={() => {
           savePastSeacrh(medicine.sku, medicine.name).catch((e) => {});
-          postwebEngageProductClickedEvent(medicine);
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: medicine.sku,
             title: medicine.name,

@@ -211,24 +211,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const { width: winWidth } = Dimensions.get('window');
   const [bannerLoading, setBannerLoading] = useState(true);
 
-  const postwebEngageProductClickedEvent = (
-    { name, sku, category_id }: MedicineProduct,
-    sectionName: string,
-    source: WebEngageEvents[WebEngageEventName.PHARMACY_PRODUCT_CLICKED]['Source']
-  ) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PRODUCT_CLICKED] = {
-      'product name': name,
-      'product id': sku,
-      Brand: '',
-      'Brand ID': '',
-      'category name': '',
-      'category ID': category_id!,
-      Source: source,
-      'Section Name': sectionName,
-    };
-    postWebEngageEvent(WebEngageEventName.PHARMACY_PRODUCT_CLICKED, eventAttributes);
-  };
-
   const postwebEngageCategoryClickedEvent = (
     categoryId: string,
     categoryName: string,
@@ -1326,9 +1308,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           Component={ProductCard}
           navigation={props.navigation}
           addToCartSource={'Pharmacy Home'}
-          pharmacyProductClickedSource={'Home'}
           pharmacyCategorySectionProductClickSectionName={title}
-          pharmacyProductClickedSectionName={title}
+          sectionName={title}
         />
       </View>
     );
@@ -1583,7 +1564,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     return (
       <MedicineSearchSuggestionItem
         onPress={() => {
-          postwebEngageProductClickedEvent(item, 'HOME SEARCH', 'Search');
           CommonLogEvent(AppRoutes.Medicine, 'Search suggestion Item');
           savePastSeacrh(`${item.sku}`, item.name).catch((e) => {});
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {

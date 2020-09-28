@@ -16,7 +16,6 @@ export enum WebEngageEventName {
   SEARCH = 'Pharmacy Search',
   SEARCH_ENTER_CLICK = 'Pharmacy Search Enter Clicked',
   PHARMACY_SEARCH_RESULTS = 'Pharmacy Search Results',
-  PHARMACY_PRODUCT_CLICKED = 'Pharmacy Product Clicked',
   PHARMACY_PRODUCT_DETAIL_SUBSTITUTE_CLICKED = 'Pharmacy Product Detail Substitute Clicked',
   PRODUCT_DETAIL_TAB_CLICKED = 'Product Detail Tab Clicked',
   PRODUCT_DETAIL_PINCODE_CHECK = 'Product Detail Pincode Check',
@@ -292,16 +291,6 @@ export interface WebEngageEvents {
   [WebEngageEventName.PHARMACY_SEARCH_RESULTS]: {
     keyword: string;
     Source: 'Pharmacy Home' | 'Pharmacy Search';
-  };
-  [WebEngageEventName.PHARMACY_PRODUCT_CLICKED]: {
-    'product name': string;
-    'product id': string; // (SKUID)
-    Brand: string;
-    'Brand ID': string;
-    'category name': string;
-    'category ID': string;
-    Source: 'Home' | 'List' | 'Search';
-    'Section Name': string;
   };
   [WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK]: {
     'product id': string; // (SKUID)
