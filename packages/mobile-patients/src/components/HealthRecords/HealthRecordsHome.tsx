@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
 const filterData: filterDataType[] = [
   {
     label: 'See Only',
-    options: ['Online Consults', 'Clinic Visits', 'Prescriptions'],
+    options: ['All Consults', 'Online', 'Physical'],
     selectedOptions: [],
   },
 ];
@@ -214,9 +214,12 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     const filterArray = [];
     const selectedOptions =
       filters.length > 0 && filters[0].selectedOptions ? filters[0].selectedOptions : [];
-    if (selectedOptions.includes('Online Consults')) filterArray.push('ONLINE');
-    if (selectedOptions.includes('Clinic Visits')) filterArray.push('PHYSICAL');
-    if (selectedOptions.includes('Prescriptions')) filterArray.push('PRESCRIPTION');
+    if (selectedOptions.includes('Online')) filterArray.push('ONLINE');
+    if (selectedOptions.includes('Physical')) filterArray.push('PHYSICAL');
+    if (selectedOptions.includes('All Consults')) {
+      !filterArray.includes('ONLINE') && filterArray.push('ONLINE');
+      !filterArray.includes('PHYSICAL') && filterArray.push('PHYSICAL');
+    }
     setFilterSelectedOptions(filterArray);
     setPastDataLoader(true);
     client
@@ -346,13 +349,17 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   useEffect(() => {
     if (consultsData && medicineOrders && prescriptions) {
       const prescriptionSelect = filterSelected
-        ? filterSelectedOptions.length > 0 && filterSelectedOptions.includes('PRESCRIPTION')
-        : true;
+        ? filterSelectedOptions?.length > 0
+          ? filterSelectedOptions?.includes('ONLINE') && filterSelectedOptions?.includes('PHYSICAL')
+            ? false
+            : filterSelectedOptions?.includes('ONLINE')
+          : true
+        : false;
       let mergeArray: { type: string; data: any }[] = [];
       arrayValues?.forEach((item: any) => {
         mergeArray.push({ type: 'pastConsults', data: item });
       });
-      if (prescriptionSelect || filterSelectedOptions?.length === 0) {
+      if (!prescriptionSelect || filterSelectedOptions?.length === 0) {
         prescriptions?.forEach((c) => {
           mergeArray.push({ type: 'prescriptions', data: c });
         });
@@ -794,7 +801,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         <FilterHealthRecordScene
           onClickClose={(data: filterDataType[]) => {
             setDisplayFilter(false);
-            setFilterData(data);
           }}
           onResetClick={() => {
             setPastDataLoader(false);
