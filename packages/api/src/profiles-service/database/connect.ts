@@ -102,7 +102,7 @@ import { AppointmentEntitySubscriber } from 'consults-service/entities/observers
 import { migrationDir } from 'ApiConstants';
 import { AppointmentCallFeedback } from 'consults-service/entities/appointmentCallFeedbackEntity';
 import { DiagnosticEntitySubscriber } from 'profiles-service/entities/observers/diagnosticPaymentSuccessObserver';
-import { MedicineEntitySubscriber } from 'profiles-service/entities/observers/medicinePaymentSuccessObserver copy';
+import { MedicineEntitySubscriber } from 'profiles-service/entities/observers/medicinePaymentSuccessObserver';
 
 export const connect = async () => {
   return await createConnections([
