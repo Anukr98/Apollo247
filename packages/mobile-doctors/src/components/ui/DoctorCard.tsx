@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  Image,
   ImageSourcePropType,
   ImageStyle,
   StyleProp,
@@ -12,6 +11,7 @@ import {
 } from 'react-native';
 import { theme } from '../../theme/theme';
 import DoctorCardStyles from '@aph/mobile-doctors/src/components/ui/DoctorCard.styles';
+import FastImage from 'react-native-fast-image';
 
 const styles = DoctorCardStyles;
 
@@ -33,7 +33,7 @@ export const DoctorCard: React.FC<CalendarCardProps> = (props) => {
       <TouchableOpacity onPress={props.onPress}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <View style={[styles.imageView, { marginTop: 15 }]}>
-            <Image
+            <FastImage
               source={require('../../images/doctor/rahul.png')}
               style={{ height: 58, width: 58 }}
             />
