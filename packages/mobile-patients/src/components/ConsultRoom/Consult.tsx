@@ -9,8 +9,10 @@ import {
   Mascot,
   OnlineConsult,
   PhysicalConsult,
-  PrimaryIcon,
+  EditProfilePlaceHolder,
   LinkedUhidIcon,
+  SearchGreenIcon,
+  FilterDarkBlueIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import {
@@ -72,7 +74,7 @@ import { NotificationListener } from '../NotificationListener';
 
 const styles = StyleSheet.create({
   nameTextContainerStyle: {
-    maxWidth: '75%',
+    flex: 1,
   },
   nameTextStyle: {
     marginLeft: 5,
@@ -182,6 +184,27 @@ const styles = StyleSheet.create({
     marginRight: 15,
     paddingLeft: 3,
   },
+  profileImageStyle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignSelf: 'center',
+    marginBottom: 4,
+    marginRight: 9,
+  },
+  profileChangeViewStyle: {
+    flexDirection: 'row',
+    paddingRight: 8,
+    borderRightWidth: 0,
+    borderRightColor: 'rgba(2, 71, 91, 0.2)',
+    backgroundColor: theme.colors.WHITE,
+  },
+  linkUhidIconStyle: {
+    width: 22,
+    height: 20,
+    marginLeft: 5,
+    marginTop: Platform.OS === 'ios' ? 16 : 20,
+  },
 });
 
 export interface ConsultProps extends NavigationScreenProps {
@@ -195,7 +218,7 @@ export interface ConsultProps extends NavigationScreenProps {
 export const Consult: React.FC<ConsultProps> = (props) => {
   const thingsToDo = string.consult_room.things_to_do.data;
   const articles = string.consult_room.articles.data;
-  const tabs = [{ title: 'Active' }, { title: 'Past' }];
+  const tabs = [{ title: 'Today' }, { title: 'Upcoming' }, { title: 'Past' }];
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
   const { analytics } = useAuth();
 
@@ -923,62 +946,74 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     return <TabHeader containerStyle={containerStyle} navigation={props.navigation} />;
   };
 
+  const renderProfileImage = () => {
+    const photoUrl = currentPatient?.photoUrl || '';
+    return photoUrl?.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jpeg|JPEG)/) ? (
+      <Image
+        style={styles.profileImageStyle}
+        source={{
+          uri: photoUrl,
+        }}
+        resizeMode={'contain'}
+      />
+    ) : (
+      <EditProfilePlaceHolder style={[styles.profileImageStyle, { borderRadius: 0 }]} />
+    );
+  };
+
   const renderProfileChangeView = () => {
     return (
       <View style={{ backgroundColor: theme.colors.WHITE, paddingLeft: 20, elevation: 15 }}>
-        <ProfileList
-          navigation={props.navigation}
-          saveUserChange={true}
-          childView={
-            <View
-              style={{
-                flexDirection: 'row',
-                paddingRight: 8,
-                borderRightWidth: 0,
-                borderRightColor: 'rgba(2, 71, 91, 0.2)',
-                backgroundColor: theme.colors.WHITE,
-              }}
-            >
-              <Text style={styles.hiTextStyle}>{'hi'}</Text>
-              <View style={styles.nameTextContainerStyle}>
-                <View style={{ flexDirection: 'row', flex: 1 }}>
-                  <Text
-                    style={[
-                      styles.nameTextStyle,
-                      { maxWidth: Platform.OS === 'ios' ? '85%' : '75%' },
-                    ]}
-                    numberOfLines={1}
-                  >
-                    {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
-                  </Text>
-                  {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
-                    <LinkedUhidIcon
-                      style={{
-                        width: 22,
-                        height: 20,
-                        marginLeft: 5,
-                        marginTop: Platform.OS === 'ios' ? 16 : 20,
-                      }}
-                      resizeMode={'contain'}
-                    />
-                  ) : null}
-                  <View style={{ paddingTop: 15, marginLeft: 6 }}>
-                    <DropdownGreen />
-                  </View>
-                </View>
-                {currentPatient && <View style={styles.seperatorStyle} />}
-              </View>
-            </View>
-          }
-          selectedProfile={profile}
-          setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
-          unsetloaderDisplay={true}
-        ></ProfileList>
+        <View style={styles.profileChangeViewStyle}>
+          {renderProfileImage()}
+          {renderCurrentPatientName()}
+        </View>
+        {renderSearchFilterView()}
+      </View>
+    );
+  };
+
+  const renderCurrentPatientName = () => {
+    return (
+      <>
+        <Text style={styles.hiTextStyle}>{'hi'}</Text>
+        <View style={styles.nameTextContainerStyle}>
+          <View style={{ flexDirection: 'row', flex: 1 }}>
+            <Text style={styles.nameTextStyle} numberOfLines={1}>
+              {(currentPatient && currentPatient!.firstName!.toLowerCase() + '!') || ''}
+            </Text>
+            {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
+              <LinkedUhidIcon style={styles.linkUhidIconStyle} resizeMode={'contain'} />
+            ) : null}
+          </View>
+        </View>
+      </>
+    );
+  };
+
+  const renderSearchFilterView = () => {
+    return (
+      <View style={{ flexDirection: 'row', flex: 1, marginRight: 20 }}>
         <Text style={styles.descriptionTextStyle}>
           {selectedTab === tabs[0].title
             ? 'You have ' + (activeConsultations.length || 'no') + ' active appointment(s)!'
             : 'You have ' + (pastConsultations.length || 'no') + ' past appointment(s)!'}
         </Text>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            flex: 1,
+            marginLeft: 10,
+          }}
+        >
+          <TouchableOpacity activeOpacity={1}>
+            <SearchGreenIcon style={{ width: 23, height: 23, marginTop: 8 }} />
+          </TouchableOpacity>
+          <TouchableOpacity activeOpacity={1}>
+            <FilterDarkBlueIcon style={{ width: 17, height: 18, marginTop: 8 }} />
+          </TouchableOpacity>
+        </View>
       </View>
     );
   };
@@ -1075,6 +1110,34 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               }
             }
           >
+            <View
+              style={{
+                flexDirection: 'row',
+                marginHorizontal: 20,
+                marginVertical: 14,
+                alignItems: 'center',
+                flex: 1,
+              }}
+            >
+              <Text style={{ ...theme.viewStyles.text('M', 13, '#02475B', 1, 16) }}>
+                {'View appointments of another member?'}
+              </Text>
+              <ProfileList
+                navigation={props.navigation}
+                saveUserChange={true}
+                childView={
+                  <Text
+                    style={{ ...theme.viewStyles.text('B', 15, '#FC9916', 1, 24), marginLeft: 8 }}
+                  >
+                    {'SELECT MEMBER'}
+                  </Text>
+                }
+                listContainerStyle={{ marginLeft: 10, marginTop: 22 }}
+                selectedProfile={profile}
+                setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+                unsetloaderDisplay={true}
+              ></ProfileList>
+            </View>
             {renderConsultations()}
             {/* {renderThingsToDo()} */}
             {/* {renderArticles()} */}
