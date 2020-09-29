@@ -4,10 +4,16 @@ import { makeStyles } from '@material-ui/styles';
 import { AphButton, AphInput } from '@aph/web-ui-components';
 import { HDFC_ENROLL_LINK } from 'helpers/constants';
 import { useApolloClient } from 'react-apollo-hooks';
+import { useHistory } from 'react-router-dom';
 import { IDENTIFY_HDFC_CUSTOMER, VALIDATE_HDFC_OTP, CREATE_SUBSCRIPTION } from 'graphql/profiles';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { clientRoutes } from 'helpers/clientRoutes';
-
+import {
+  HDFCGenerateOTPClicked,
+  HDFCVerifyOtpClicked,
+  HDFCExploreBenefitsClicked,
+  HDFCPlanSubscribed,
+} from 'webEngageTracking';
 import {
   CreateUserSubscription,
   CreateUserSubscriptionVariables,
@@ -405,6 +411,7 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
     CreateUserSubscriptionInput
   >();
   const apolloClient = useApolloClient();
+  const history = useHistory();
 
   const [showIntro, setShowIntro] = React.useState<boolean>(true);
   const [showOTPValidator, setShowOTPValidator] = React.useState<boolean>(false);
@@ -415,6 +422,15 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
 
   const queryIdentifyHDFCCustomer = () => {
     setLoading(true);
+    /*****WebEngage*******/
+    const data = {
+      mobileNumber: currentPatient.mobileNumber,
+      DOB: currentPatient.dateOfBirth,
+      emailId: currentPatient.emailAddress,
+      PartnerId: currentPatient.partnerId,
+    };
+    HDFCGenerateOTPClicked(data);
+    /*****WebEngage*******/
     apolloClient
       .query({
         query: IDENTIFY_HDFC_CUSTOMER,
@@ -451,6 +467,15 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
 
   const validateHDFCOtp = () => {
     setLoading(true);
+    /*****WebEngage*******/
+    const data = {
+      mobileNumber: currentPatient.mobileNumber,
+      DOB: currentPatient.dateOfBirth,
+      emailId: currentPatient.emailAddress,
+      PartnerId: currentPatient.partnerId,
+    };
+    HDFCVerifyOtpClicked(data);
+    /*****WebEngage*******/
     apolloClient
       .query({
         query: VALIDATE_HDFC_OTP,
@@ -496,16 +521,27 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((response) => {
-        setPlanName(
+        const plan =
           response.data &&
-            response.data.CreateUserSubscription &&
-            response.data.CreateUserSubscription.response &&
-            response.data.CreateUserSubscription.response.group_plan &&
-            response.data.CreateUserSubscription.response.group_plan.name
-        );
+          response.data.CreateUserSubscription &&
+          response.data.CreateUserSubscription.response &&
+          response.data.CreateUserSubscription.response.group_plan &&
+          response.data.CreateUserSubscription.response.group_plan.name;
+
+        setPlanName(plan);
         setLoading(false);
         setShowOTPValidator(false);
         setShowCongratulations(true);
+        /*****WebEngage*******/
+        const data = {
+          mobileNumber: currentPatient.mobileNumber,
+          DOB: currentPatient.dateOfBirth,
+          emailId: currentPatient.emailAddress,
+          PartnerId: currentPatient.partnerId,
+          planName: plan,
+        };
+        HDFCPlanSubscribed(data);
+        /*****WebEngage*******/
       })
       .catch((error) => {
         setLoading(false);
@@ -592,7 +628,23 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
                 </Typography>
               </div>
             </div>
-            <AphButton href={clientRoutes.membershipPlanDetail()}>Explore Benefits</AphButton>
+            <AphButton
+              onClick={() => {
+                /*****WebEngage*******/
+                const data = {
+                  mobileNumber: currentPatient.mobileNumber,
+                  DOB: currentPatient.dateOfBirth,
+                  emailId: currentPatient.emailAddress,
+                  PartnerId: currentPatient.partnerId,
+                  planName: planName,
+                };
+                HDFCExploreBenefitsClicked(data);
+                /*****WebEngage*******/
+                history.push(clientRoutes.membershipPlanDetail());
+              }}
+            >
+              Explore Benefits
+            </AphButton>
           </div>
         )}
         {/* Recheck OTP Section */}

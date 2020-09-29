@@ -13,6 +13,9 @@ type SuccessTransactionInputForSubscription = {
   couponAvailed?: boolean;
   userSubscriptionId?: string;
   subscriptionInclusionId?: string;
+  dob?: Date;
+  email?: string;
+  partnerId: string;
 };
 export async function fetchUserSubscription(mobileNumber: string) {
   const url = `http://${process.env.SUBSCRIPTION_SERVICE_HOST}:${process.env.SUBSCRIPTION_SERVICE_PORT}`;
@@ -50,6 +53,9 @@ export async function transactionSuccessTrigger(args: SuccessTransactionInputFor
     couponAvailed,
     userSubscriptionId,
     subscriptionInclusionId,
+    dob,
+    email,
+    partnerId,
   } = args;
   const url = `http://${process.env.SUBSCRIPTION_SERVICE_HOST}:${process.env.SUBSCRIPTION_SERVICE_PORT}`;
   const query = `mutation {
@@ -63,6 +69,9 @@ export async function transactionSuccessTrigger(args: SuccessTransactionInputFor
        mobile_number:"${mobileNumber}"
        payment_reference_id: "${transactionId || ''}",
        coupon_availed: "${couponAvailed || false}"
+       dob: "${dob || ''}"
+       email:"${email || ''}"
+       partnerId:"${partnerId}
      }){
        success,
        message

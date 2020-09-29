@@ -545,7 +545,7 @@ const ClinicCheckout: React.FC = () => {
                               </span>
                             </div>
                             <div className={classes.couponText}>
-                              {validateCouponResult ? 'Coupon succefully applied' : ''}
+                              {validateCouponResult ? 'Coupon successfully applied' : ''}
                             </div>
                           </>
                         )}
