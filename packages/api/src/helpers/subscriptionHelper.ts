@@ -36,7 +36,7 @@ export async function fetchUserSubscription(mobileNumber: string) {
   };
   const response = await axios.post(url, requestJSON);
   if (response?.data?.data?.GetSubscriptionsOfUserByStatus?.response[0].group_plan) {
-    return `${response.data.data.response[0].group_plan.group.name}:${response.data.data.response[0].group_plan.plan_id}`;
+    return `${response.data.data.GetSubscriptionsOfUserByStatus.response[0].group_plan.group.name}:${response.data.data.GetSubscriptionsOfUserByStatus.response[0].group_plan.plan_id}`;
   } else return '';
 }
 export async function transactionSuccessTrigger(args: SuccessTransactionInputForSubscription) {
