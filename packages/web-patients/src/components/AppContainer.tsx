@@ -117,6 +117,7 @@ const App: React.FC = () => {
         <Route exact path={clientRoutes.welcome()} component={Welcome} />
         <Route exact path={clientRoutes.aboutUs()} component={AboutUs} />
         <Route exact path={clientRoutes.covidLanding()} component={CovidLanding} />
+        <Route exact path={clientRoutes.articleDetails()} component={CovidArticleDetails} />
         <Route exact path={clientRoutes.kavachLanding()} component={KavachLanding} />
         <Route exact path={clientRoutes.covidDetails()} component={CovidArticleDetails} />
         <Route exact path={clientRoutes.patients()} component={PatientsList} />
