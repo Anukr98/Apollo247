@@ -322,6 +322,13 @@ const saveMedicineOrderOMS: Resolver<
     storeDetails = await getStoreDetails(medicineCartOMSInput.shopId);
   }
 
+  if (
+    medicineCartOMSInput.prescriptionImageUrl &&
+    medicineCartOMSInput.prescriptionImageUrl.split('/').pop() == 'null'
+  ) {
+    throw new AphError(AphErrorMessages.INVALID_MEDICINE_PRESCRIPTION_URL, undefined, {});
+  }
+
   const medicineOrderattrs: Partial<MedicineOrders> = {
     patient: patientDetails,
     estimatedAmount: medicineCartOMSInput.estimatedAmount,
