@@ -1233,10 +1233,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
   const moveBack = () => {
     try {
-      const MoveDoctor = props.navigation.getParam('movedFrom') || '';
-
-      console.log('MoveDoctor', MoveDoctor);
-      if (MoveDoctor === 'registration') {
+      if (movedFrom === ProductPageViewedSource.REGISTRATION) {
         props.navigation.dispatch(
           StackActions.reset({
             index: 0,
