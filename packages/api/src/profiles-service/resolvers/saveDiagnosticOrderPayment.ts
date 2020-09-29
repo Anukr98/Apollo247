@@ -8,8 +8,6 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { log } from 'customWinstonLogger';
 import { sendDiagnosticOrderStatusNotification } from 'notifications-service/handlers';
 import { NotificationType } from 'notifications-service/constants';
-import { transactionSuccessTrigger } from 'helpers/subscriptionHelper';
-import { TransactionType } from 'ApiConstants';
 
 export const saveDiagnosticOrderPaymentTypeDefs = gql`
   input DiagnosticPaymentInput {
@@ -138,17 +136,6 @@ const saveDiagnosticOrderPayment: Resolver<
 
   //call far-eye api's if payment is success
   if (diagnosticPaymentInput.paymentStatus == 'success') {
-    transactionSuccessTrigger({
-      amount: diagnosticPaymentInput.amountPaid,
-      transactionType: TransactionType.DIAGNOSTICS,
-      transactionDate: diagnosticPaymentInput.paymentDateTime,
-      transactionId: diagnosticPaymentInput.txnId,
-      sourceTransactionIdentifier: diagnosticPaymentInput.diagnosticOrderId,
-      mobileNumber: diagnosticOrder.patient.mobileNumber,
-      email: diagnosticOrder.patient.emailAddress,
-      partnerId: diagnosticOrder.patient.partnerId,
-      dob: diagnosticOrder.patient.dateOfBirth,
-    });
     diagnosticOrdersRepo.callDiagnosticFareEyeAPIs(diagnosticOrder, profilesDb);
 
     //send order payment success notification
