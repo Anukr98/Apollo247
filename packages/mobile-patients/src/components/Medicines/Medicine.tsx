@@ -813,7 +813,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       } else if (item.sku) {
         props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
           sku: item.sku,
-          movedFrom: ProductPageViewedSource.WIDGET,
+          movedFrom: ProductPageViewedSource.BANNER,
         });
       }
     };

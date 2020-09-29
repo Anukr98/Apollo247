@@ -246,7 +246,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const [showPopup, setShowPopup] = useState<boolean>(false);
   const [medicineError, setMedicineError] = useState<string>('Product Details Not Available!');
   const [popupHeight, setpopupHeight] = useState<number>(60);
-  const [notServiceable, setNotServiceable] = useState<boolean>(false)
+  const [notServiceable, setNotServiceable] = useState<boolean>(false);
 
   const { showAphAlert, setLoading: setGlobalLoading } = useUIElements();
 
@@ -483,7 +483,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         isPharmacyLocationServiceable == undefined || pharmacyPincode != pincode
           ? !(await pinCodeServiceabilityApi247(pincode)).data.response
           : pharmacyPincode == pincode && !isPharmacyLocationServiceable;
-      setNotServiceable(pinCodeNotServiceable)
+      setNotServiceable(pinCodeNotServiceable);
       if (pinCodeNotServiceable) {
         setdeliveryTime('');
         setdeliveryError(unServiceableMsg);
@@ -491,9 +491,9 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         return;
       }
 
-      const checkAvailabilityRes = await availabilityApi247(pincode, sku)
-      const outOfStock = !(!!(checkAvailabilityRes?.data?.response[0]?.exist))
-     
+      const checkAvailabilityRes = await availabilityApi247(pincode, sku);
+      const outOfStock = !!!checkAvailabilityRes?.data?.response[0]?.exist;
+
       if (outOfStock) {
         setdeliveryTime('');
         setdeliveryError(pincodeServiceableItemOutOfStockMsg);
@@ -503,10 +503,16 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
       let longitude, lattitude;
       if (pharmacyPincode == pincode) {
-        lattitude = pharmacyLocation ? pharmacyLocation.latitude : locationDetails
-          ? locationDetails.latitude : null;
-        longitude = pharmacyLocation ? pharmacyLocation.longitude : locationDetails
-          ? locationDetails.longitude : null;
+        lattitude = pharmacyLocation
+          ? pharmacyLocation.latitude
+          : locationDetails
+          ? locationDetails.latitude
+          : null;
+        longitude = pharmacyLocation
+          ? pharmacyLocation.longitude
+          : locationDetails
+          ? locationDetails.longitude
+          : null;
       }
       if (!lattitude || !longitude) {
         const data = await getPlaceInfoByPincode(pincode);
@@ -519,30 +525,37 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         items: [{ sku: sku, qty: getItemQuantity(sku) }],
         pincode: pincode,
         lat: lattitude,
-        lng: longitude
-      } as TatApiInput247).then((res) => {
-        const deliveryDate = g(res, 'data', 'response', 'tat')
-        const currentDate = moment();
-        if (deliveryDate) {
-          if (checkButtonClicked) {
-            const eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK] = {
-              'product id': sku,
-              'product name': medicineDetails.name,
-              pincode: Number(pincode),
-              'customer id': currentPatient && currentPatient.id ? currentPatient.id : '',
-              'Delivery TAT': moment(deliveryDate, AppConfig.Configuration.TAT_API_RESPONSE_DATE_FORMAT).diff(currentDate, 'd'),
-              Serviceable: pinCodeNotServiceable ? 'No' : 'Yes',
-            };
-            postWebEngageEvent(WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK, eventAttributes);
+        lng: longitude,
+      } as TatApiInput247)
+        .then((res) => {
+          const deliveryDate = g(res, 'data', 'response', 'tat');
+          const currentDate = moment();
+          if (deliveryDate) {
+            if (checkButtonClicked) {
+              const eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK] = {
+                'product id': sku,
+                'product name': medicineDetails.name,
+                pincode: Number(pincode),
+                'customer id': currentPatient && currentPatient.id ? currentPatient.id : '',
+                'Delivery TAT': moment(
+                  deliveryDate,
+                  AppConfig.Configuration.TAT_API_RESPONSE_DATE_FORMAT
+                ).diff(currentDate, 'd'),
+                Serviceable: pinCodeNotServiceable ? 'No' : 'Yes',
+              };
+              postWebEngageEvent(WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK, eventAttributes);
+            }
+            setdeliveryTime(
+              moment(deliveryDate, AppConfig.Configuration.TAT_API_RESPONSE_DATE_FORMAT).format(
+                AppConfig.Configuration.MED_DELIVERY_DATE_TAT_API_FORMAT
+              )
+            );
+            setdeliveryError('');
+          } else {
+            setdeliveryError(pincodeServiceableItemOutOfStockMsg);
+            setdeliveryTime('');
           }
-          setdeliveryTime(moment(deliveryDate, AppConfig.Configuration.TAT_API_RESPONSE_DATE_FORMAT)
-            .format(AppConfig.Configuration.MED_DELIVERY_DATE_TAT_API_FORMAT));
-          setdeliveryError('');
-        } else {
-          setdeliveryError(pincodeServiceableItemOutOfStockMsg);
-          setdeliveryTime('');
-        }
-      })
+        })
         .catch(() => {
           // Intentionally show T+2 days as Delivery Date
           setdeliveryTime(genericServiceableDate);
@@ -553,7 +566,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       // in case user entered wrong pincode, not able to get lat lng. showing out of stock to user
       setdeliveryError(pincodeServiceableItemOutOfStockMsg);
       setdeliveryTime('');
-      setshowDeliverySpinner(false)
+      setshowDeliverySpinner(false);
     }
   };
 
@@ -594,7 +607,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       'Brand ID': '',
       'category name': '',
       'category ID': category_id!,
-      'pincode': pincode,
+      pincode: pincode,
     };
     postWebEngageEvent(WebEngageEventName.NOTIFY_ME, eventAttributes);
   };
@@ -621,9 +634,8 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       ? (!showDeliverySpinner && !deliveryTime) || deliveryError || isOutOfStock
       : false;
 
-    return (
-      notServiceable ? null :
-       <StickyBottomComponent style={styles.stickyBottomComponent}>
+    return notServiceable ? null : (
+      <StickyBottomComponent style={styles.stickyBottomComponent}>
         {!medicineDetails.sell_online && renderVisitPharmacyText()}
         {showOutOfStockView ? (
           <View
