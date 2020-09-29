@@ -1010,3 +1010,13 @@ export const reschedulePatientTracking = (data: any) => {
     }
   }
 };
+
+export const medicinePageOpenTracking = () => {
+  if (typeof window !== 'undefined') {
+    try {
+      window.webengage.track('Medicine Page Opened - Web', {});
+    } catch (err) {
+      console.log('Webengage Err: ', err);
+    }
+  }
+};

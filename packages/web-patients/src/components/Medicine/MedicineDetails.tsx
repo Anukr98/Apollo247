@@ -27,6 +27,7 @@ import {
   uploadPrescriptionTracking,
   pharmacyPdpOverviewTracking,
   pharmacyProductViewTracking,
+  medicinePageOpenTracking,
 } from 'webEngageTracking';
 import { MetaTagsComp } from 'MetaTagsComp';
 import moment from 'moment';
@@ -609,6 +610,7 @@ const MedicineDetails: React.FC = (props) => {
   const { diagnosticsCartItems } = useDiagnosticsCart();
   useEffect(() => {
     deepLinkUtil(`MedicineDetail?${params.sku}`);
+    medicinePageOpenTracking();
   });
 
   const apiDetails = {
