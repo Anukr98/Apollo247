@@ -62,6 +62,7 @@ export const consultQueueTypeDefs = gql`
     totalJuniorDoctorsOnline: Int!
     juniorDoctorsList: [JuniorDoctorsList]!
     isJdAllowed: Boolean
+    isJdAssigned: Boolean
   }
 
   type AddToConsultQueueWithJdAutomatedQuestionsResult {
@@ -240,6 +241,7 @@ type AddToConsultQueueResult = {
   totalJuniorDoctorsOnline: number;
   juniorDoctorsList: JuniorDoctorsList[];
   isJdAllowed: Boolean;
+  isJdAssigned: Boolean;
 };
 type JuniorDoctorsList = {
   juniorDoctorId: string;
@@ -256,11 +258,12 @@ const addToConsultQueue: Resolver<
 > = async (parent, { appointmentId }, context) => {
   const { cqRepo, docRepo, apptRepo, caseSheetRepo } = getRepos(context);
   const apptDetails = await apptRepo.findOneOrFail(appointmentId);
-
+  let isJdAssigned = false;
   const jrDocList: JuniorDoctorsList[] = [];
   const juniorDoctorCaseSheet = await caseSheetRepo.getJuniorDoctorCaseSheet(appointmentId);
 
   if (juniorDoctorCaseSheet != null) {
+    isJdAssigned = (juniorDoctorCaseSheet.createdDoctorId && juniorDoctorCaseSheet.createdDoctorId === process.env.VIRTUAL_JD_ID ? false : true);
     const queueResult: AddToConsultQueueResult = {
       id: 0,
       doctorId: '',
@@ -268,6 +271,7 @@ const addToConsultQueue: Resolver<
       totalJuniorDoctorsOnline: 0,
       juniorDoctorsList: jrDocList,
       isJdAllowed: true,
+      isJdAssigned,
     };
     return queueResult;
   }
@@ -323,6 +327,7 @@ const addToConsultQueue: Resolver<
     totalJuniorDoctorsOnline: onlineJrDocs.length,
     juniorDoctorsList: jrDocList,
     isJdAllowed: true,
+    isJdAssigned,
   };
 };
 
@@ -403,7 +408,7 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
   let isJdAssigned = false;
   const juniorDoctorCaseSheet = await caseSheetRepo.getJuniorDoctorCaseSheet(appointmentId);
   if (juniorDoctorCaseSheet != null) {
-    isJdAssigned = true;
+    isJdAssigned = (juniorDoctorCaseSheet.createdDoctorId && juniorDoctorCaseSheet.createdDoctorId === process.env.VIRTUAL_JD_ID ? false : true);
     const queueResult: AddToConsultQueueWithJdAutomatedQuestionsResult = {
       id: 0,
       doctorId: '',

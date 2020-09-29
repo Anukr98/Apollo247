@@ -28,7 +28,8 @@
     "joinConsultRoomDescription": "Please click on 'Join' to start the\nconsult with",
     "waitForDoctirToJoinCall": "doctor_name is not in the room yet.\nPlease wait for few seconds while doctor joins the call....",
     "exotelMessage": " is trying to call you from the number ",
-    "requestMessage": ". Request you to answer the call."
+    "requestMessage": ". Request you to answer the call.",
+    "jdAssignedMessage": "A doctor from {0}’s team will join you shortly to collect your medical details. These details are essential for {0} to help you and will take around 3-5 minutes."
   },
   "consultType": {
     "mainHeading": "How would you like to consult with",
