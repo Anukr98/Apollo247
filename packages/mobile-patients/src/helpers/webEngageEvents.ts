@@ -159,6 +159,12 @@ export enum WebEngageEventName {
   HOME_PAGE_VIEWED = 'Pharmacy Home page viewed',
   PRODUCT_PAGE_VIEWED = 'Product page viewed',
   CATEGORY_PAGE_VIEWED = 'Category page viewed',
+
+  // HDFC events
+  HDFC_OTP_GENERATE_CLICKED = 'HDFC Generate OTP Clicked',
+  HDFC_OTP_VERIFY_CLICKED = 'HDFC Verify OTP Clicked',
+  HDFC_EXPLORE_BENEFITS_CLICKED = 'HDFC Explore Benefits Clicked',
+  HDFC_HOMEPAGE_CAROUSEL_CLICKED = 'HDFC Home Page Carousel Clicked',
 }
 
 export interface PatientInfo {
@@ -199,6 +205,21 @@ export interface PatientInfoWithSource extends PatientInfo {
   Source: 'Home Screen' | 'Menu';
   Pincode?: String;
   Serviceability?: String;
+}
+
+export interface HdfcCustomerInfo {
+  'Patient UHID': string;
+  'Customer ID': string;
+  'Patient Name': string;
+  'Mobile Number': string;
+  'Date of Birth': Date | string;
+  'Email': string;
+}
+
+export interface HdfcCustomerPlanInfo extends HdfcCustomerInfo {
+  'Partner ID': string;
+  'HDFCMembershipLevel': 'SILVER' | 'GOLD' | 'PLATINUM';
+  'HDFCMembershipState': 'Active' | 'Inactive';
 }
 
 export interface PatientInfoWithConsultId extends PatientInfo {
@@ -1299,4 +1320,8 @@ export interface WebEngageEvents {
     isMarkerModified: boolean;
     changedByInMeters: number;
   };
+  [WebEngageEventName.HDFC_OTP_GENERATE_CLICKED]: HdfcCustomerInfo;
+  [WebEngageEventName.HDFC_OTP_VERIFY_CLICKED]: HdfcCustomerInfo;
+  [WebEngageEventName.HDFC_EXPLORE_BENEFITS_CLICKED]: HdfcCustomerPlanInfo;
+  [WebEngageEventName.HDFC_HOMEPAGE_CAROUSEL_CLICKED]: HdfcCustomerPlanInfo;
 }

@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
   popupContainerView: {
     flexDirection: 'row',
     padding: 20,
-    top: Dimensions.get('window').height * 0.15,
+    top: Dimensions.get('window').height * 0.10,
   },
   popupView: {
     width: '90%',

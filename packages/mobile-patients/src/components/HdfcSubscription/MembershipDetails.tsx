@@ -1,9 +1,27 @@
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Linking, Image, Dimensions } from 'react-native';
+import { 
+  SafeAreaView, 
+  StyleSheet, 
+  Text, 
+  TouchableOpacity, 
+  View, 
+  Linking, 
+  Image, 
+  Dimensions 
+} from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { HelpIcon, DownOrange, UpOrange, EllipseBulletPoint, ExclamationGreen, HdfcBannerSilver, HdfcBannerGold, HdfcBannerPlatinum, SpeakerOff } from '../ui/Icons';
+import { 
+  HelpIcon, 
+  DownOrange, 
+  UpOrange, 
+  EllipseBulletPoint, 
+  ExclamationGreen, 
+  HdfcBannerSilver, 
+  HdfcBannerGold, 
+  HdfcBannerPlatinum, 
+} from '../ui/Icons';
 import { TabsComponent } from '../ui/TabsComponent';
 import { AppRoutes } from '../NavigatorContainer';
 import { HdfcConnectPopup } from './HdfcConnectPopup';
@@ -12,6 +30,7 @@ import { useAppCommonData } from '../AppCommonDataProvider';
 import { g } from '../../helpers/helperFunctions';
 import { AvailNowPopup } from './AvailNowPopup';
 import { Spinner } from '../ui/Spinner';
+import { useUIElements } from '../UIElementsProvider';
 
 const { width } = Dimensions.get('window');
 
@@ -123,7 +142,7 @@ const styles = StyleSheet.create({
   },
   membershipBanner: {
     width: '100%',
-    height: 200,
+    height: 180,
     resizeMode: 'contain',
   },
 });
@@ -137,6 +156,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const membershipType = props.navigation.getParam('membershipType');
 
   const { hdfcUserSubscriptions } = useAppCommonData();
+  const { showAphAlert, hideAphAlert } = useUIElements();
   const planName = g(hdfcUserSubscriptions, 'name');
   const upgradePlanName = g(hdfcUserSubscriptions, 'canUpgradeTo', 'name');
   const premiumPlanName = g(hdfcUserSubscriptions, 'canUpgradeTo', 'canUpgradeTo', 'name');
@@ -196,7 +216,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     return (
       (areBenefitsAvailable) &&
       benefits.map(value => {
-        const {headerContent, description, ctaLabel, benefitCtaAction, icon} = value;
+        const {headerContent, description, ctaLabel, benefitCtaAction, icon, availableCount} = value;
         const {action, message, type} = benefitCtaAction;
         const ctaLabelName = ctaLabel.toUpperCase();
         return (
@@ -208,6 +228,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
             message,
             type,
             icon,
+            availableCount,
           )
         )
       })
@@ -298,13 +319,14 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     message: string,
     type: string,
     icon: string | null,
+    availableCount: number,
   ) => {
     return (
       <View style={[styles.cardStyle, { marginVertical: 10 }]}>
         {renderRedeemableCardsContent(heading, bodyText, icon)}
         { 
           ctaLabel !== 'NULL' &&
-          <TouchableOpacity onPress={() => {handleCtaClick(type, action, message)}}>
+          <TouchableOpacity onPress={() => {handleCtaClick(type, action, message, availableCount)}}>
             <Text style={styles.redeemButtonText}>
               {ctaLabel}
             </Text>
@@ -314,7 +336,17 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     );
   };
 
-  const handleCtaClick = (type: any, action: any, message: any) => {
+  const renderAlert = (message: string) => {
+    showAphAlert!({
+      title: 'Hi',
+      description: message,
+      onPressOk: () => {
+        hideAphAlert!();
+      },
+    });
+  };
+
+  const handleCtaClick = (type: string, action: string, message: string, availableCount: number) => {
     if (type == Hdfc_values.REDIRECT) {
       if (action == Hdfc_values.SPECIALITY_LISTING) {
         props.navigation.navigate(AppRoutes.DoctorSearch);
@@ -326,10 +358,21 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         props.navigation.navigate(AppRoutes.DoctorSearch);
       } else if (action == Hdfc_values.DIAGNOSTICS_LANDING) {
         props.navigation.navigate('TESTS');
+      } else if (action = Hdfc_values.DIETECIAN_LANDING) {
+        props.navigation.navigate('DoctorSearchListing', {
+          specialityId: Hdfc_values.DIETICS_SPECIALITY_ID,
+          specialityName: Hdfc_values.DIETICS_SPECIALITY_NAME,
+        });
+      } else {
+        props.navigation.navigate(AppRoutes.ConsultRoom);
       }
     } else if (type == Hdfc_values.CALL_API) {
       if (action == Hdfc_values.CALL_EXOTEL_API) {
-        setShowHdfcConnectPopup(true);
+        if (availableCount > 0) {
+          setShowHdfcConnectPopup(true);
+        } else {
+          renderAlert('Hey, looks like you have exhausted the monthly usage limit for this benefit. If you feel this is an error, please raise a ticket on the Help section.');
+        }
       }
     } else if (type == Hdfc_values.WHATSAPP_OPEN_CHAT) {
       Linking.openURL(`whatsapp://send?text=${message}&phone=91${action}`);
@@ -442,7 +485,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
               <View style={benefitStyle.halfWidth}>
                 <Text style={benefitStyle.benefitHeading}>REDEMPTION LIMIT</Text>
               </View>
-              <View style={benefitStyle.halfWidth}>
+              <View style={{width: width / 3.3}}>
                 <Text style={benefitStyle.benefitHeading}>STATUS</Text>
               </View>
             </View>
@@ -460,7 +503,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
                     <View style={benefitStyle.halfWidth}>
                       <Text style={benefitStyle.benefitDescription}>{limit}</Text>
                     </View>
-                    <View style={benefitStyle.halfWidth}>
+                    <View style={{width: width / 3.3}}>
                       <Text style={benefitStyle.benefitDescription}>{benefit.attributeType!.remaining}</Text>
                     </View>
                   </View>
@@ -607,15 +650,15 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const renderHeader = () => {
     return (
       <Header
-          leftIcon="backArrow"
-          rightComponent={<HelpIcon style={styles.arrowStyle} />}
-          title={'MEMBERSHIP PLAN DETAIL'}
-          container={{
-            ...theme.viewStyles.cardViewStyle,
-            borderRadius: 0,
-          }}
-          onPressLeftIcon={() => props.navigation.goBack()}
-        />
+        leftIcon="backArrow"
+        rightComponent={<HelpIcon style={styles.arrowStyle} />}
+        title={'MEMBERSHIP PLAN DETAIL'}
+        container={{
+          ...theme.viewStyles.cardViewStyle,
+          borderRadius: 0,
+        }}
+        onPressLeftIcon={() => props.navigation.goBack()}
+      />
     );
   };
 

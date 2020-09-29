@@ -34,7 +34,7 @@ import {
   Symptomtracker,
   TestsCartIcon,
   TestsIcon,
-  HdfcBankLogo,
+  HdfcBankLogoPresents,
   ThumbsUp,
   LastStepIcon,
   BackArrowWhite,
@@ -373,6 +373,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [showHdfcOtpView, setShowHdfcOtpView] = useState<boolean>(false);
   const [hdfcOtpValue, setHdfcOtpValue] = useState<string>('');
   const [showErrorBottomLine, setshowErrorBottomLine] = useState<boolean>(false);
+  const [hdfcErrorMessage, setHdfcErrorMessage] = useState<string>('');
   const [showCongratulations, setShowCongratulations] = useState<boolean>(false);
   const [isValidOtp, setIsValidOtp] = useState<boolean>(false);
   const [showNotHdfcCustomer, setShowNotHdfcCustomer] = useState<boolean>(false);
@@ -430,7 +431,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         getUserBanners();
         const subscriptionName = g(hdfcUserSubscriptions, 'name') ? g(hdfcUserSubscriptions, 'name') : '';
         const subscriptionId = g(hdfcUserSubscriptions, '_id') ? g(hdfcUserSubscriptions, '_id') : '';
-        setbenefitId(subscriptionId || '');
         if (g(hdfcUserSubscriptions, 'isActive')) {
           setHdfcPlanName && setHdfcPlanName(subscriptionName);
         }
@@ -713,6 +713,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   }, []);
 
   const identifyHdfcCustomer = () => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_OTP_GENERATE_CLICKED] = {
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Customer ID': g(currentPatient, 'id'),
+      'Patient Name': g(currentPatient, 'firstName'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Date of Birth': g(currentPatient, 'dateOfBirth'),
+      'Email': g(currentPatient, 'emailAddress'),
+    };
+    postWebEngageEvent(WebEngageEventName.HDFC_OTP_GENERATE_CLICKED, eventAttributes);
     setHdfcLoading(true);
     setShowHdfcOtpView(false);
     setShowNotHdfcCustomer(false);
@@ -735,11 +744,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         if (hdfcStatus === hdfc_values.OTP_GENERATED_STATUS && !!hdfcToken) {
           setShowHdfcOtpView(true);
           setShowNotHdfcCustomer(false); 
+          setHdfcToken(hdfcToken);
         } else {
           setShowHdfcOtpView(true);
           setShowNotHdfcCustomer(true); 
+          if (hdfcStatus === hdfc_values.OTP_NOT_GENERATED) {
+            setHdfcErrorMessage('Looks like your details are not matching with HDFC Bank records.​ Please retry or enroll yourself with HDFC Bank');
+          } else {
+            setHdfcErrorMessage('Due to a technical glitch, we are unable to verify your details with HDFC Bank right now. Please try again in sometime');
+          }
         }
-        setHdfcToken(hdfcToken);
       })
       .catch((e) => {
         setHdfcLoading(false);
@@ -748,6 +762,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const validateHdfcOtp = () => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_OTP_VERIFY_CLICKED] = {
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Customer ID': g(currentPatient, 'id'),
+      'Patient Name': g(currentPatient, 'firstName'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Date of Birth': g(currentPatient, 'dateOfBirth'),
+      'Email': g(currentPatient, 'emailAddress'),
+    };
+    postWebEngageEvent(WebEngageEventName.HDFC_OTP_VERIFY_CLICKED, eventAttributes);
     setHdfcLoading(true);
     setshowErrorBottomLine(false);
     hdfcToken &&
@@ -1625,7 +1648,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const renderHdfcLogo = () => {
     return (
       <View>
-        <HdfcBankLogo style={styles.hdfcLogo} />
+        <HdfcBankLogoPresents style={styles.hdfcLogo} />
         <Text style={{
           ...theme.viewStyles.text('B', 11, '#005CA8', 1, 20, 0.35),
           marginBottom: 10,
@@ -1689,6 +1712,19 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           membershipType,
           isActive: isMembershipActive,
         });
+        const subscription_name = hdfcUserSubscriptions.name;
+        const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_EXPLORE_BENEFITS_CLICKED] = {
+          'Patient UHID': g(currentPatient, 'uhid'),
+          'Customer ID': g(currentPatient, 'id'),
+          'Patient Name': g(currentPatient, 'firstName'),
+          'Mobile Number': g(currentPatient, 'mobileNumber'),
+          'Date of Birth': g(currentPatient, 'dateOfBirth'),
+          'Email': g(currentPatient, 'emailAddress'),
+          'HDFCMembershipLevel': subscription_name.substring(0, subscription_name.indexOf("+")),
+          'Partner ID': g(currentPatient, 'partnerId'),
+          'HDFCMembershipState': !!g(hdfcUserSubscriptions, 'isActive') ? 'Active' : 'Inactive',
+        };
+        postWebEngageEvent(WebEngageEventName.HDFC_EXPLORE_BENEFITS_CLICKED, eventAttributes);
       }}>
         <Text style={styles.hdfcConnectButton}>EXPLORE BENEFITS</Text>
       </TouchableOpacity>
@@ -1709,36 +1745,30 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderGenerateOtp = () => {
-    const backgroundImage = require('@aph/mobile-patients/src/components/ui/icons/card_background.png');
     return (
       <View>
-        {/* <ImageBackground source={backgroundImage} style={{
-          flex: 1,
-          justifyContent: 'center',
-        }}> */}
-          <View style={{
-            flexDirection: 'row',
-          }}>
-            <LastStepIcon style={{
-              resizeMode: 'contain',
-              width: 60,
-              height: 70,
-              marginRight: 20,
-            }} />
-            <Text style={theme.viewStyles.text('B', 20, '#01475B', 1, 30, 0.35)}>
-              One last step to start your HealthyLife journey
-            </Text>
-          </View>
-          <TouchableOpacity onPress={() => {identifyHdfcCustomer()}}>
-            <Text style={styles.hdfcConnectButton}>GENERATE OTP</Text>
-          </TouchableOpacity>
-          <Text style={{
-            ...theme.viewStyles.text('LI', 12, '#01475B', 1, 20, 0.35),
-            textAlign: 'right',
-          }}>
-            This is required by HDFC Bank to verify your details
+        <View style={{
+          flexDirection: 'row',
+        }}>
+          <LastStepIcon style={{
+            resizeMode: 'contain',
+            width: 60,
+            height: 70,
+            marginRight: 20,
+          }} />
+          <Text style={theme.viewStyles.text('B', 20, '#01475B', 1, 30, 0.35)}>
+            One last step to start your HealthyLife journey
           </Text>
-        {/* </ImageBackground> */}
+        </View>
+        <TouchableOpacity onPress={() => {identifyHdfcCustomer()}}>
+          <Text style={styles.hdfcConnectButton}>GENERATE OTP</Text>
+        </TouchableOpacity>
+        <Text style={{
+          ...theme.viewStyles.text('LI', 12, '#01475B', 1, 20, 0.35),
+          textAlign: 'right',
+        }}>
+          This is required by HDFC Bank to verify your details
+        </Text>
       </View>
     );
   };
@@ -1849,8 +1879,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         <Text style={{
           ...theme.viewStyles.text('R', 12, '#02475B', 1, 20, 0.35),
         }}>
-          Looks like your details are not matching with HDFC Bank records.​
-          Please retry or enroll yourself with HDFC Bank
+          {hdfcErrorMessage}
         </Text>
         <View style={{
           flexDirection: 'row',
@@ -1969,34 +1998,68 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const renderHdfcSliderItem = ({ item, index }) => {
     const {cta_action} = item;
 
-    const bannerUri = getMobileURL(item.banner)
+    const bannerUri = getMobileURL(item.banner);
+    let imageWidth = 320;
+    let imageHeight = 144;
+    Image.getSize(bannerUri, (width, height) => {
+      imageWidth = width;
+      imageHeight = height;
+    },
+    (error) => {console.log(error)}
+    );
     return (
       <TouchableOpacity
         activeOpacity={1}
         onPress={() => handleOnBannerClick(cta_action.type, cta_action.meta.action, cta_action.meta.message)}
         style={{
           ...theme.viewStyles.cardViewStyle,
+          backgroundColor: theme.colors.CLEAR,
           borderRadius: 12,
           elevation: 15,
           marginTop: 10,
           marginHorizontal: 28,
           marginBottom: 23,
           padding: 0,
+          height: 140,
+          alignSelf: 'auto'
         }}>
         <Image
           style={{
-            height: 160,
+            height: imageHeight,
           }}
           source={{
             uri: bannerUri,
           }}
-          resizeMode={'stretch'}
+          resizeMode={'contain'}
         />
       </TouchableOpacity>
     );
   };
 
+  const renderAlert = (message: string) => {
+    showAphAlert!({
+      title: 'Hi',
+      description: message,
+      onPressOk: () => {
+        hideAphAlert!();
+      },
+    });
+  };
+
   const handleOnBannerClick = (type: any, action: any, message: any) => {
+    const subscription_name = hdfcUserSubscriptions.name;
+    const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_HOMEPAGE_CAROUSEL_CLICKED] = {
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Customer ID': g(currentPatient, 'id'),
+      'Patient Name': g(currentPatient, 'firstName'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Date of Birth': g(currentPatient, 'dateOfBirth'),
+      'Email': g(currentPatient, 'emailAddress'),
+      'HDFCMembershipLevel': subscription_name.substring(0, subscription_name.indexOf("+")),
+      'Partner ID': g(currentPatient, 'partnerId'),
+      'HDFCMembershipState': !!g(hdfcUserSubscriptions, 'isActive') ? 'Active' : 'Inactive',
+    };
+    postWebEngageEvent(WebEngageEventName.HDFC_HOMEPAGE_CAROUSEL_CLICKED, eventAttributes);
     if (type == hdfc_values.REDIRECT) {
       if (action == hdfc_values.SPECIALITY_LISTING) {
         props.navigation.navigate(AppRoutes.DoctorSearch);
@@ -2008,10 +2071,28 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         props.navigation.navigate(AppRoutes.DoctorSearch);
       } else if (action == hdfc_values.DIAGNOSTICS_LANDING) {
         props.navigation.navigate('TESTS');
+      } else if (action = hdfc_values.DIETECIAN_LANDING) {
+        props.navigation.navigate('DoctorSearchListing', {
+          specialityId: hdfc_values.DIETICS_SPECIALITY_ID,
+          specialityName: hdfc_values.DIETICS_SPECIALITY_NAME,
+        });
+      } else {
+        props.navigation.navigate(AppRoutes.ConsultRoom);
       }
     } else if (type == hdfc_values.CALL_API) {
       if (action == hdfc_values.CALL_EXOTEL_API) {
-        setShowHdfcConnectPopup(true);
+        const benefits = g(hdfcUserSubscriptions, 'benefits');
+        const currentBenefit = benefits.filter((value) => {
+          return g(value, 'benefitCtaAction', 'type') === type
+        });
+        const availableCount = currentBenefit.length ? currentBenefit[0].availableCount : 0;
+        const benefit_id = currentBenefit.length ? currentBenefit[0]._id : '';
+        setbenefitId(benefit_id);
+        if (availableCount > 0) {
+          setShowHdfcConnectPopup(true);
+        } else {
+          renderAlert('Hey, looks like you have exhausted the monthly usage limit for this benefit. If you feel this is an error, please raise a ticket on the Help section.');
+        }
       }
     } else if (type == hdfc_values.WHATSAPP_OPEN_CHAT) {
       Linking.openURL(`whatsapp://send?text=${message}&phone=91${action}`);
@@ -2396,6 +2477,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               {/* <Text style={styles.descriptionTextStyle}>{string.home.description}</Text> */}
               {isPersonalizedCard && renderAppointmentWidget()}
               {renderMenuOptions()}
+              {
+                showHdfcWidget && 
+                <View style={{ backgroundColor: '#f0f1ec' }}>{renderHdfcConnect()}</View>
+              }
+              {
+                showHdfcConnectWidget &&
+                <View style={{ backgroundColor: '#f0f1ec' }}>{renderHDFCConnectWidget()}</View>
+              }
               <View style={{ backgroundColor: '#f0f1ec' }}>{renderListView()}</View>
               {renderCovidMainView()}
               {/* {renderCovidHeader()}

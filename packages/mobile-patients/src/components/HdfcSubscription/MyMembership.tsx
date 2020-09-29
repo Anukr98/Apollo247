@@ -7,11 +7,7 @@ import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { 
   HelpIcon, 
   EllipseBulletPoint, 
-  HdfcGoldMedal, 
-  HdfcPlatinumMedal,
-  HdfcSilverMedal,
   LockIcon,
-  HdfcBankLogoSmall,
   HdfcBankLogo,
 } from '../ui/Icons';
 import { useAppCommonData, PlanBenefits } from '../AppCommonDataProvider';
@@ -240,9 +236,9 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
               <LockIcon style={styles.lockIcon} />
             ) : (
               <>
-              {isGold && <HdfcGoldMedal style={styles.medalIcon} />}
+              {/* {isGold && <HdfcGoldMedal style={styles.medalIcon} />}
               {isPlatinum && <HdfcPlatinumMedal style={styles.medalIcon} />}
-              {isSilver && <HdfcSilverMedal style={styles.medalIcon} />}
+              {isSilver && <HdfcSilverMedal style={styles.medalIcon} />} */}
               </>
             )
           }

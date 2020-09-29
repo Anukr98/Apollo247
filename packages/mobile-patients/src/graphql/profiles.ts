@@ -2741,6 +2741,7 @@ export const GET_PATIENTS_MOBILE = gql`
         isUhidPrimary
         primaryUhid
         primaryPatientId
+        partnerId
       }
     }
   }
