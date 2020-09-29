@@ -1364,147 +1364,153 @@ export interface WebEngageEvents {
 
   [WebEngageEventName.DOCTOR_SUBSCRIBER_ERROR]: {
     'Appointment ID': string;
-    'Patient Id': string;
+    'Patient ID': string;
     'Doctor ID': string;
     error: string;
+    'Session ID': string;
   };
 
   [WebEngageEventName.DOCTOR_SUBSCRIBER_OTRNERROR]: {
     'Appointment ID': string;
-    'Patient Id': string;
+    'Patient ID': string;
     'Doctor ID': string;
     error: string;
+    'Session ID': string;
   };
 
   [WebEngageEventName.DOCTOR_SUBSCRIBER_CONNECTED]: {
     'Appointment ID': string;
-    'Patient Id': string;
+    'Patient ID': string;
     'Doctor ID': string;
     event: string;
   };
 
   [WebEngageEventName.DOCTOR_SUBSCRIBER_DISCONNECTED]: {
     'Appointment ID': string;
-    'Patient Id': string;
+    'Patient ID': string;
     'Doctor ID': string;
     event: string;
   };
 
   [WebEngageEventName.DOCTOR_SUBSCRIBER_VIDEO_DISABLED]: {
     'Appointment ID': string;
-    'Patient Id': string;
+    'Patient ID': string;
     'Doctor ID': string;
     event: string;
   };
 
   [WebEngageEventName.DOCTOR_SUBSCRIBER_VIDEO_ENABLED]: {
     'Appointment ID': string;
-    'Patient Id': string;
+    'Patient ID': string;
     'Doctor ID': string;
     event: string;
   };
 
   [WebEngageEventName.PATIENT_PUBLISHER_ERROR]: {
     'Appointment ID': string;
-    'Patient Id': string;
+    'Patient ID': string;
     'Doctor ID': string;
     error: string;
+    'Session ID': string;
   };
 
   [WebEngageEventName.PATIENT_PUBLISHER_OTRNERROR]: {
     'Appointment ID': string;
-    'Patient Id': string;
+    'Patient ID': string;
     'Doctor ID': string;
     error: string;
+    'Session ID': string;
   };
 
   [WebEngageEventName.PATIENT_PUBLISHER_STREAM_CREATED]: {
     'Appointment ID': string;
-    'Patient Id': string;
+    'Patient ID': string;
     'Doctor ID': string;
     event: string;
   };
 
   [WebEngageEventName.PATIENT_PUBLISHER_STREAM_DESTROYED]: {
     'Appointment ID': string;
-    'Patient Id': string;
+    'Patient ID': string;
     'Doctor ID': string;
     event: string;
   };
 
   [WebEngageEventName.PATIENT_SESSION_ERROR]: {
     'Appointment ID': string;
-    'Patient Id': string;
+    'Patient ID': string;
     'Doctor ID': string;
     error: string;
+    'Session ID': string;
   };
 
   [WebEngageEventName.PATIENT_SESSION_OTRNERROR]: {
     'Appointment ID': string;
-    'Patient Id': string;
+    'Patient ID': string;
     'Doctor ID': string;
     error: string;
+    'Session ID': string;
   };
 
   [WebEngageEventName.PATIENT_SESSION_CONNECTION_CREATED]: {
     'Appointment ID': string;
-    'Patient Id': string;
+    'Patient ID': string;
     'Doctor ID': string;
     event: string;
   };
 
   [WebEngageEventName.PATIENT_SESSION_CONNECTION_DESTROYED]: {
     'Appointment ID': string;
-    'Patient Id': string;
+    'Patient ID': string;
     'Doctor ID': string;
     event: string;
   };
 
   [WebEngageEventName.PATIENT_SESSION_CONNECTED]: {
     'Appointment ID': string;
-    'Patient Id': string;
+    'Patient ID': string;
     'Doctor ID': string;
     event: string;
   };
 
   [WebEngageEventName.PATIENT_SESSION_DISCONNECTED]: {
     'Appointment ID': string;
-    'Patient Id': string;
+    'Patient ID': string;
     'Doctor ID': string;
     event: string;
   };
 
   [WebEngageEventName.PATIENT_SESSION_RECONNECTED]: {
     'Appointment ID': string;
-    'Patient Id': string;
+    'Patient ID': string;
     'Doctor ID': string;
     event: string;
   };
 
   [WebEngageEventName.PATIENT_SESSION_RECONNECTING]: {
     'Appointment ID': string;
-    'Patient Id': string;
+    'Patient ID': string;
     'Doctor ID': string;
     event: string;
   };
 
   [WebEngageEventName.PATIENT_SESSION_STREAM_CREATED]: {
     'Appointment ID': string;
-    'Patient Id': string;
+    'Patient ID': string;
     'Doctor ID': string;
     event: string;
   };
 
   [WebEngageEventName.PATIENT_SESSION_STREAM_DESTROYED]: {
     'Appointment ID': string;
-    'Patient Id': string;
+    'Patient ID': string;
     'Doctor ID': string;
     event: string;
   };
 
   [WebEngageEventName.PATIENT_SESSION_STREAM_PROPERTY_CHANGED]: {
     'Appointment ID': string;
-    'Patient Id': string;
+    'Patient ID': string;
     'Doctor ID': string;
     event: string;
   };

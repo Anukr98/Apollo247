@@ -702,7 +702,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       | WebEngageEvents[WebEngageEventName.PATIENT_SESSION_STREAM_DESTROYED]
       | WebEngageEvents[WebEngageEventName.PATIENT_SESSION_STREAM_PROPERTY_CHANGED] = {
       'Doctor ID': doctorId,
-      'Patient Id': patientId,
+      'Patient ID': patientId,
       'Appointment ID': channel,
       event: data,
     };
@@ -727,9 +727,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       | WebEngageEvents[WebEngageEventName.PATIENT_SESSION_ERROR]
       | WebEngageEvents[WebEngageEventName.PATIENT_SESSION_OTRNERROR] = {
       'Doctor ID': doctorId,
-      'Patient Id': patientId,
+      'Patient ID': patientId,
       'Appointment ID': channel,
       error: data,
+      'Session ID': sessionId,
     };
     postWebEngageEvent(type, eventAttributes);
   };
