@@ -104,6 +104,8 @@ export interface ShoppingCartContextProps {
   packagingCharges: number;
   grandTotal: number;
   uploadPrescriptionRequired: boolean;
+  isFreeDelivery: boolean;
+  setIsFreeDelivery: ((value: boolean) => void) | null;
   showPrescriptionAtStore: boolean;
   setShowPrescriptionAtStore: ((value: boolean) => void) | null;
   stores: Store[];
@@ -149,6 +151,9 @@ export interface ShoppingCartContextProps {
 
   deliveryType: MEDICINE_DELIVERY_TYPE | null;
   clearCartInfo: (() => void) | null;
+
+  hdfcPlanName: string;
+  setHdfcPlanName: ((id: string) => void) | null;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -187,6 +192,9 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   storesInventory: [],
   setStoresInventory: null,
 
+  isFreeDelivery: false,
+  setIsFreeDelivery: null,
+
   showPrescriptionAtStore: false,
   setShowPrescriptionAtStore: null,
   pinCode: '',
@@ -207,6 +215,9 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setStoreId: null,
   deliveryType: null,
   clearCartInfo: null,
+
+  hdfcPlanName: '',
+  setHdfcPlanName: null,
 });
 
 const AsyncStorageKeys = {
@@ -243,6 +254,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [storeId, _setStoreId] = useState<ShoppingCartContextProps['storeId']>('');
   const [coupon, setCoupon] = useState<ShoppingCartContextProps['coupon']>(null);
   const [deliveryType, setDeliveryType] = useState<ShoppingCartContextProps['deliveryType']>(null);
+  const [hdfcPlanName, _setHdfcPlanName] = useState<ShoppingCartContextProps['hdfcPlanName']>('');
+  const [isFreeDelivery, setIsFreeDelivery] = useState<ShoppingCartContextProps['isFreeDelivery']>(false);
   const [showPrescriptionAtStore, setShowPrescriptionAtStore] = useState<
     ShoppingCartContextProps['showPrescriptionAtStore']
   >(false);
@@ -365,7 +378,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   );
 
   const deliveryCharges =
-    !deliveryType || deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+    !deliveryType || 
+    deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP || 
+    isFreeDelivery
       ? 0
       : deliveryType == MEDICINE_DELIVERY_TYPE.HOME_DELIVERY &&
         cartTotal > 0 &&
@@ -399,6 +414,10 @@ export const ShoppingCartProvider: React.FC = (props) => {
     setDeliveryType(id ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY : null);
     _setDeliveryAddressId(id);
     _setStoreId('');
+  };
+
+  const setHdfcPlanName = (plan: ShoppingCartContextProps['hdfcPlanName']) => {
+    _setHdfcPlanName(plan);
   };
 
   const setNewAddressAdded = (id: ShoppingCartContextProps['newAddressAdded']) => {
@@ -443,6 +462,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     setAddresses([]);
     setCoupon(null);
     setCouponProducts([]);
+    setHdfcPlanName('');
   };
 
   useEffect(() => {
@@ -613,6 +633,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setStoresInventory,
         storeId,
         setStoreId,
+        isFreeDelivery,
+        setIsFreeDelivery,
         showPrescriptionAtStore,
         setShowPrescriptionAtStore,
 
@@ -624,6 +646,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
 
         deliveryType,
         clearCartInfo,
+
+        hdfcPlanName,
+        setHdfcPlanName,
       }}
     >
       {props.children}
