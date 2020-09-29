@@ -66,6 +66,8 @@ const appStaticVariables = {
   HOME_SCREEN_KAVACH_TEXT: string.common.KavachText,
   MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK: 'https://bit.ly/apollo247medicines',
   Doctors_Page_Size: 25,
+  CUSTOMER_CARE_HELP_TEXT: string.common.customerCareHelpText,
+  CUSTOMER_CARE_NUMBER: string.common.customerCareNumber
 };
 
 const DEV_top6_specailties = [
