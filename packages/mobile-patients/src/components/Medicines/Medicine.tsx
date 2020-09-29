@@ -70,6 +70,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
+  ProductPageViewedSource,
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
@@ -812,7 +813,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       } else if (item.sku) {
         props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
           sku: item.sku,
-          movedFrom: 'widget',
+          movedFrom: ProductPageViewedSource.WIDGET,
         });
       }
     };
@@ -1309,6 +1310,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           navigation={props.navigation}
           addToCartSource={'Pharmacy Home'}
           sectionName={title}
+          movedFrom={ProductPageViewedSource.HOME_PAGE}
         />
       </View>
     );
@@ -1567,7 +1569,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           savePastSeacrh(`${item.sku}`, item.name).catch((e) => {});
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: item.sku,
-            movedFrom: 'search',
+            movedFrom: ProductPageViewedSource.PARTIAL_SEARCH,
           });
         }}
         onPressAddToCart={() => {

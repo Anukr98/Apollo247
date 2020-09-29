@@ -43,6 +43,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
 import { GET_APPOINTMENT_DATA } from '@aph/mobile-patients/src/graphql/profiles';
 import {
+  ProductPageViewedSource,
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
@@ -560,7 +561,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         console.log('MedicineDetail');
         props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
           sku: id,
-          movedFrom: 'deeplink',
+          movedFrom: ProductPageViewedSource.DEEP_LINK,
         });
         break;
 

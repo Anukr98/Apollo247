@@ -62,6 +62,7 @@ import {
 import { TextInputComponent } from './ui/TextInputComponent';
 import AsyncStorage from '@react-native-community/async-storage';
 import {
+  ProductPageViewedSource,
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
@@ -646,7 +647,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                     routeName: AppRoutes.MedicineDetailsScene,
                     params: {
                       sku: id,
-                      movedFrom: 'registration',
+                      movedFrom: ProductPageViewedSource.REGISTRATION,
                     },
                   }),
                 ],

@@ -33,6 +33,7 @@ import {
   postWEGReferralCodeEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
+  ProductPageViewedSource,
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
@@ -634,7 +635,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                     routeName: AppRoutes.MedicineDetailsScene,
                     params: {
                       sku: id,
-                      movedFrom: 'registration',
+                      movedFrom: ProductPageViewedSource.REGISTRATION,
                     },
                   }),
                 ],

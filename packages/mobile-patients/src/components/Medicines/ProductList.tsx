@@ -9,6 +9,7 @@ import {
   formatToCartItem,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
+  ProductPageViewedSource,
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
@@ -23,12 +24,14 @@ export interface Props extends Omit<ListProps, 'renderItem'> {
   navigation: NavigationScreenProp<NavigationRoute<object>, object>;
   Component: React.FC<ProductCardProps>;
   addToCartSource: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Source'];
+  movedFrom: ProductPageViewedSource;
   sectionName?: string;
 }
 
 export const ProductList: React.FC<Props> = ({
   addToCartSource,
   sectionName,
+  movedFrom,
   navigation,
   Component,
   data,
@@ -42,11 +45,7 @@ export const ProductList: React.FC<Props> = ({
   const pharmacyPincode = pharmacyLocation?.pincode || locationDetails?.pincode;
 
   const onPress = (sku: string) => {
-    navigation.navigate(AppRoutes.MedicineDetailsScene, {
-      sku,
-      movedFrom: 'widget',
-      sectionName: sectionName,
-    });
+    navigation.navigate(AppRoutes.MedicineDetailsScene, { sku, movedFrom, sectionName });
   };
 
   const onPressNotify = (name: string) => {

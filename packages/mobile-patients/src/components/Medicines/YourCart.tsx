@@ -72,6 +72,7 @@ import {
   postPharmacyAddNewAddressCompleted,
 } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
+  ProductPageViewedSource,
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
@@ -1037,6 +1038,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                 props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
                   sku: medicine.id,
                   title: medicine.name,
+                  movedFrom: ProductPageViewedSource.CART,
                 });
               }}
               medicineName={medicine.name}

@@ -61,6 +61,7 @@ import stripHtml from 'string-strip-html';
 import { FilterRange, MedicineFilter, SortByOptions } from './MedicineFilter';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
+  ProductPageViewedSource,
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
@@ -543,8 +544,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         onPress={() => {
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: pastSeacrh.typeId,
-            title: pastSeacrh.name,
-            movedFrom: 'search',
+            movedFrom: ProductPageViewedSource.SEARCH,
           });
         }}
       >
@@ -598,8 +598,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           savePastSeacrh(medicine.sku, medicine.name).catch((e) => {});
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: medicine.sku,
-            title: medicine.name,
-            movedFrom: 'search',
+            movedFrom: ProductPageViewedSource.SEARCH,
           });
         }}
         medicineName={stripHtml(medicine.name)}
@@ -673,7 +672,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           savePastSeacrh(medicine.sku, medicine.name).catch((e) => {});
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: medicine.sku,
-            title: medicine.name,
+            movedFrom: ProductPageViewedSource.SEARCH,
           });
         }}
         medicineName={stripHtml(medicine.name)}
@@ -971,7 +970,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         onPress={() => {
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: item.sku,
-            movedFrom: 'search',
+            movedFrom: ProductPageViewedSource.PARTIAL_SEARCH,
           });
           resetSearchState();
         }}

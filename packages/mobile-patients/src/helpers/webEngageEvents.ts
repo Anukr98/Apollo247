@@ -5,6 +5,22 @@ import {
 
 type YesOrNo = 'Yes' | 'No';
 
+export enum ProductPageViewedSource {
+  NOTIFICATION = 'notification',
+  DEEP_LINK = 'deeplink',
+  WIDGET = 'widget',
+  SEARCH = 'search',
+  REGISTRATION = 'registration',
+  CART = 'cart',
+  PARTIAL_SEARCH = 'partial search',
+  FULL_SEARCH = 'full search',
+  HOME_PAGE = 'home page',
+  CATEGORY_OR_LISTING = 'category or listing',
+  SUBSTITUTES = 'substitutes',
+  CROSS_SELLING_PRODUCTS = 'cross selling products',
+  SIMILAR_PRODUCTS = 'similar products',
+}
+
 export enum WebEngageEventName {
   MOBILE_ENTRY = 'Mobile Entry',
   MOBILE_NUMBER_ENTERED = 'Mobile Number Entered',
@@ -1348,7 +1364,7 @@ export interface WebEngageEvents {
     source: 'deeplink' | 'app home';
   };
   [WebEngageEventName.PRODUCT_PAGE_VIEWED]: {
-    source: 'deeplink' | 'widget' | 'search';
+    source: ProductPageViewedSource;
     ProductId: string;
     ProductName: string;
     'Stock availability': YesOrNo;

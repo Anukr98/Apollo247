@@ -55,6 +55,7 @@ import {
   getMaxQtyForMedicineItem,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
+  ProductPageViewedSource,
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
@@ -343,7 +344,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         onPress={() => {
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: item.sku,
-            movedFrom: 'search',
+            movedFrom: ProductPageViewedSource.PARTIAL_SEARCH,
           });
           resetSearchState();
         }}
@@ -486,8 +487,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           });
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: medicine.sku,
-            title: medicine.name,
-            movedFrom: 'search',
+            movedFrom: ProductPageViewedSource.CATEGORY_OR_LISTING,
           });
         }}
         medicineName={medicine.name}
@@ -557,7 +557,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           });
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: medicine.sku,
-            title: medicine.name,
+            movedFrom: ProductPageViewedSource.CATEGORY_OR_LISTING,
           });
         }}
         medicineName={medicine.name}

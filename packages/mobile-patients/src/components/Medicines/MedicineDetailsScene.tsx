@@ -63,6 +63,7 @@ import { NavigationScreenProps, StackActions, NavigationActions } from 'react-na
 import HTML from 'react-native-render-html';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
+  ProductPageViewedSource,
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
@@ -218,8 +219,8 @@ const styles = StyleSheet.create({
 export interface MedicineDetailsSceneProps
   extends NavigationScreenProps<{
     sku: string;
-    title: string;
-    movedFrom: WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED]['source'];
+    /** movedFrom prop is mandatory. It is used as source in Product page viewed event */
+    movedFrom: ProductPageViewedSource;
     deliveryError: string;
     sectionName?: string;
   }> {}
@@ -354,6 +355,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         const productDetails = g(data, 'productdp', '0' as any);
         if (productDetails) {
           setmedicineDetails(productDetails || {});
+          postProductPageViewedEvent(productDetails);
           trackTagalysViewEvent(productDetails);
           if (_deliveryError) {
             setTimeout(() => {
@@ -402,6 +404,18 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       );
     } catch (error) {
       CommonBugFender(`${AppRoutes.MedicineDetailsScene}_trackTagalysEvent`, error);
+    }
+  };
+
+  const postProductPageViewedEvent = ({ sku, name, is_in_stock }: MedicineProductDetails) => {
+    if (movedFrom) {
+      const eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED] = {
+        source: movedFrom,
+        ProductId: sku,
+        ProductName: name,
+        'Stock availability': !!is_in_stock ? 'Yes' : 'No',
+      };
+      postWebEngageEvent(WebEngageEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
     }
   };
 
@@ -607,17 +621,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       ? (!showDeliverySpinner && !deliveryTime) || deliveryError || isOutOfStock
       : false;
 
-    if (typeof movedFrom !== 'undefined' && typeof isOutOfStock !== 'undefined') {
-      // webengage event when page is opened from different sources
-      const eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED] = {
-        source: movedFrom,
-        ProductId: sku,
-        ProductName: medicineName,
-        'Stock availability': showOutOfStockView ? 'No' : 'Yes',
-      };
-      postWebEngageEvent(WebEngageEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
-    }
-
     return (
       notServiceable ? null :
        <StickyBottomComponent style={styles.stickyBottomComponent}>
@@ -644,10 +647,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
               style={{ backgroundColor: theme.colors.WHITE, width: '75%' }}
               titleTextStyle={{ color: '#fc9916' }}
               onPress={() => {
-                CommonLogEvent(
-                  AppRoutes.MedicineDetailsScene,
-                  `You will be notified when ${medicineName} is back in stock.`
-                );
                 postwebEngageNotifyMeEvent(medicineDetails);
                 moveBack();
                 showAphAlert!({
@@ -1192,13 +1191,9 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                   <TouchableOpacity
                     style={styles.textViewStyle}
                     onPress={() => {
-                      CommonLogEvent(
-                        AppRoutes.MedicineDetailsScene,
-                        'Navigate to Medicine Details scene with sku'
-                      );
                       props.navigation.push(AppRoutes.MedicineDetailsScene, {
                         sku: item.sku,
-                        title: item.name,
+                        movedFrom: ProductPageViewedSource.SUBSTITUTES,
                       });
                       setShowPopup(false);
                     }}
@@ -1282,6 +1277,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           Component={ProductUpSellingCard}
           navigation={props.navigation}
           addToCartSource={'Pharmacy PDP'}
+          movedFrom={ProductPageViewedSource.SIMILAR_PRODUCTS}
         />,
       ];
     }
@@ -1297,6 +1293,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           Component={ProductUpSellingCard}
           navigation={props.navigation}
           addToCartSource={'Pharmacy PDP'}
+          movedFrom={ProductPageViewedSource.CROSS_SELLING_PRODUCTS}
         />,
       ];
     }
