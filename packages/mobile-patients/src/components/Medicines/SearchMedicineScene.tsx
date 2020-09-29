@@ -544,7 +544,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         onPress={() => {
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: pastSeacrh.typeId,
-            movedFrom: ProductPageViewedSource.SEARCH,
+            movedFrom: ProductPageViewedSource.FULL_SEARCH,
           });
         }}
       >
@@ -598,7 +598,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           savePastSeacrh(medicine.sku, medicine.name).catch((e) => {});
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: medicine.sku,
-            movedFrom: ProductPageViewedSource.SEARCH,
+            movedFrom: ProductPageViewedSource.FULL_SEARCH,
           });
         }}
         medicineName={stripHtml(medicine.name)}
@@ -672,7 +672,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           savePastSeacrh(medicine.sku, medicine.name).catch((e) => {});
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: medicine.sku,
-            movedFrom: ProductPageViewedSource.SEARCH,
+            movedFrom: ProductPageViewedSource.FULL_SEARCH,
           });
         }}
         medicineName={stripHtml(medicine.name)}

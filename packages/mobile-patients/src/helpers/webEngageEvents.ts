@@ -8,8 +8,7 @@ type YesOrNo = 'Yes' | 'No';
 export enum ProductPageViewedSource {
   NOTIFICATION = 'notification',
   DEEP_LINK = 'deeplink',
-  WIDGET = 'widget',
-  SEARCH = 'search',
+  BANNER = 'banner',
   REGISTRATION = 'registration',
   CART = 'cart',
   PARTIAL_SEARCH = 'partial search',
