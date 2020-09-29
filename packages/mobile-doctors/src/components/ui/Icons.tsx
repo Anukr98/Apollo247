@@ -60,7 +60,7 @@ export const Mascot: React.FC<IconProps> = (props) => (
 );
 
 export const More: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('../../images/icons/ic_more.png')} />
+  <IconBase size="sm" {...props} source={require('../../images/icons/ic_more.png')} />
 );
 
 export const Dropdown: React.FC<IconProps> = (props) => (
@@ -81,23 +81,23 @@ export const Download: React.FC<IconProps> = (props) => (
 );
 
 export const ArrowFull: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('../../images/icons/ic_arrowFull.png')} />
+  <IconBase size="sm" {...props} source={require('../../images/icons/ic_arrowFull.png')} />
 );
 
 export const ArrowStep1: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('../../images/icons/ic_arrowStep1.png')} />
+  <IconBase size="sm" {...props} source={require('../../images/icons/ic_arrowStep1.png')} />
 );
 
 export const ArrowStep2: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('../../images/icons/ic_arrowStep2.png')} />
+  <IconBase size="sm" {...props} source={require('../../images/icons/ic_arrowStep2.png')} />
 );
 
 export const ArrowStep3: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('../../images/icons/ic_arrowStep3.png')} />
+  <IconBase size="sm" {...props} source={require('../../images/icons/ic_arrowStep3.png')} />
 );
 
 export const Remove: React.FC<IconProps> = (props) => (
-  <IconBase {...props} size="sm" source={require('../../images/icons/ic_cross.png')} />
+  <IconBase size="sm" {...props} source={require('../../images/icons/ic_cross.png')} />
 );
 
 export const Reload: React.FC<IconProps> = (props) => (
@@ -149,7 +149,7 @@ export const CloseWhite: React.FC<IconProps> = (props) => (
 );
 
 export const SortDecreasing: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('../../images/icons/ic_sort_decreasing.png')} />
+  <IconBase size="sm" {...props} source={require('../../images/icons/ic_sort_decreasing.png')} />
 );
 
 export const SortIncreasing: React.FC<IconProps> = (props) => (
@@ -303,11 +303,15 @@ export const DoctorPlaceholder: React.FC<IconProps> = (props) => (
 );
 
 export const DoctorImage: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('../../images/icons/narayanRao.png')} />
+  <IconBase size="sm" {...props} source={require('../../images/icons/narayanRao.png')} />
 );
 
 export const BackIcon: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('../../images/icons/round_navigate_before_24_px.png')} />
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('../../images/icons/round_navigate_before_24_px.png')}
+  />
 );
 
 export const ApploLogo: React.FC<IconProps> = (props) => (
