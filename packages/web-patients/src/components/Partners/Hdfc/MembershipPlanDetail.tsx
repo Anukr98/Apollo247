@@ -451,10 +451,10 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     couponCard: {
       background: '#fafafa',
-      padding: 16,
+      padding: '16px 16px 40px 16px',
       borderRadius: 10,
       transition: '0.5s ease-in-out',
-      height: 220,
+      height: 180,
       overflow: 'hidden',
       position: 'relative',
       textAlign: 'center',
@@ -486,7 +486,7 @@ const useStyles = makeStyles((theme: Theme) => {
         lineHeight: '18px',
       },
       '&:hover': {
-        boxShadow: ' 0px 1px 12px rgba(128, 128, 128, 0.2)',
+        boxShadow: ' 0px 1px 12px rgba(128, 128, 128, 0.4)',
         '& a, button': {
           background: '#FC9916',
           color: '#FFF',
@@ -740,6 +740,9 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('sm')]: {
         width: '90%',
       },
+    },
+    pb16: {
+      paddingBottom: 16,
     },
   };
 });
@@ -1044,7 +1047,11 @@ export const MembershipPlanDetail: React.FC = (props) => {
                         subscriptionInclusions[0].benefits.map((item: any, index: any) => {
                           return (
                             <li key={index}>
-                              <div className={classes.couponCard}>
+                              <div
+                                className={`${classes.couponCard} ${
+                                  item.cta_label == 'NULL' ? classes.pb16 : ''
+                                }`}
+                              >
                                 <img
                                   src={item.icon}
                                   className={classes.benefitIcon}
