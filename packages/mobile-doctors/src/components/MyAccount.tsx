@@ -53,8 +53,8 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
   ];
   const timeOptionArray: OptionsObject[] = [
     { key: '1', value: '10' },
-    { key: '2', value: '20' },
-    { key: '3', value: '30' },
+    { key: '2', value: '30' },
+    { key: '3', value: '60' },
   ];
   const daysOptionArray: OptionsObject[] = Array(31)
     .fill(0)
