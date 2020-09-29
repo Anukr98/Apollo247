@@ -1322,7 +1322,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
               activeOpacity={1}
               onPress={() =>
                 props.navigation.navigate(
-                  diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.YourCart
+                  diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.MedicineCart
                 )
               }
               style={{ right: 20 }}

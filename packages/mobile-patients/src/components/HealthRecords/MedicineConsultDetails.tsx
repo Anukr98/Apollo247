@@ -236,7 +236,7 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
         };
         postWebEngageEvent(WebEngageEventName.RE_ORDER_MEDICINE, eventAttributes);
 
-        props.navigation.navigate(AppRoutes.YourCart);
+        props.navigation.navigate(AppRoutes.MedicineCart);
       })
       .catch((err) => {
         CommonBugFender('MedicineConsultDetails_addToCart', err);

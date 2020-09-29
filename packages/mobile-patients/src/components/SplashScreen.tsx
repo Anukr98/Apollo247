@@ -630,7 +630,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       case 'MedicineCart':
         console.log('MedicineCart handleopen');
-        props.navigation.navigate(AppRoutes.YourCart, {
+        props.navigation.navigate(AppRoutes.MedicineCart, {
           movedFrom: 'splashscreen',
         });
         break;

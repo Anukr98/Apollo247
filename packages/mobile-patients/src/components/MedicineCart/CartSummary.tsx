@@ -25,7 +25,7 @@ import { TatCardwithoutAddress } from '@aph/mobile-patients/src/components/Medic
 import { UploadPrescription } from '@aph/mobile-patients/src/components/MedicineCart/Components/UploadPrescription';
 import { Prescriptions } from '@aph/mobile-patients/src/components/MedicineCart/Components/Prescriptions';
 import { ProceedBar } from '@aph/mobile-patients/src/components/MedicineCart/Components/ProceedBar';
-import { g } from '@aph/mobile-patients/src//helpers/helperFunctions';
+import { g, formatAddress } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import {
   pinCodeServiceabilityApi247,
   availabilityApi247,
@@ -39,6 +39,7 @@ import { UPLOAD_DOCUMENT } from '@aph/mobile-patients/src/graphql/profiles';
 import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
 import { useApolloClient } from 'react-apollo-hooks';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { postPhamracyCartAddressSelectedFailure } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 
 export interface CartSummaryProps extends NavigationScreenProps {}
 
@@ -87,6 +88,8 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     } else {
       setDeliveryAddressId && setDeliveryAddressId('');
       setloading!(false);
+      postPhamracyCartAddressSelectedFailure(address.zipcode!, formatAddress(address), 'No');
+      renderAlert(string.medicine_cart.pharmaAddressUnServiceableAlert);
     }
   }
 
@@ -280,7 +283,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
         leftIcon={'backArrow'}
         title={'ORDER SUMMARY'}
         onPressLeftIcon={() => {
-          CommonLogEvent(AppRoutes.YourCart, 'Go back to add items');
+          CommonLogEvent(AppRoutes.MedicineCart, 'Go back to add items');
           props.navigation.goBack();
         }}
       />
