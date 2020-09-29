@@ -425,7 +425,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   useEffect(() => {
     const params = props.navigation.state.params;
     if (!params?.isReset && currentPatient) {
-      // reset will be true only from the payment screen
+      // reset will be true only from the payment screen(fill medical details)
       fetchAppointments();
     }
     if (params?.isFreeConsult) {

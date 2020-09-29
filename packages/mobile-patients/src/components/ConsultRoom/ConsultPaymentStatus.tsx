@@ -228,9 +228,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         actions: [
           NavigationActions.navigate({
             routeName: AppRoutes.ConsultRoom,
-            params: {
-              isReset: true,
-            },
           }),
         ],
       })
@@ -522,9 +519,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
           actions: [
             NavigationActions.navigate({
               routeName: AppRoutes.ConsultRoom,
-              params: {
-                isReset: true,
-              },
             }),
           ],
         })
