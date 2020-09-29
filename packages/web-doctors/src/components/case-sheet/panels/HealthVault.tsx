@@ -22,6 +22,7 @@ import { format } from 'date-fns';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { GetCaseSheet_getCaseSheet_pastAppointments } from 'graphql/types/GetCaseSheet';
 import ReactPanZoom from 'react-image-pan-zoom-rotate';
+import GallerySlider from 'components/GallerySlider';
 import moment from 'moment';
 import { GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_appointment_appointmentDocuments as appointmentDocumentType } from 'graphql/types/GetJuniorDoctorCaseSheet';
 
@@ -353,12 +354,19 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
 export const HealthVault: React.FC = () => {
   const classes = useStyles({});
   const ischild: boolean = false;
-  const { appointmentInfo, healthVault, appointmentDocuments, pastAppointments, patientDetails } = useContext(
-    CaseSheetContext
-  );
-  const filteredPastAppointments = pastAppointments && pastAppointments.length >0 ? pastAppointments.filter(function(e: any) {
-    return e.appointmentDateTime !== appointmentInfo.appointmentDateTime;
-  }) : [];
+  const {
+    appointmentInfo,
+    healthVault,
+    appointmentDocuments,
+    pastAppointments,
+    patientDetails,
+  } = useContext(CaseSheetContext);
+  const filteredPastAppointments =
+    pastAppointments && pastAppointments.length > 0
+      ? pastAppointments.filter(function(e: any) {
+          return e.appointmentDateTime !== appointmentInfo.appointmentDateTime;
+        })
+      : [];
   const client = useApolloClient();
   var prismIdList: any = [];
   const [prismImageList, setPrismImageList] = useState<any>([]);
@@ -367,6 +375,7 @@ export const HealthVault: React.FC = () => {
   const [imgPrevUrl, setImgPrevUrl] = React.useState<any>();
   const { documentArray, setDocumentArray } = useContext(CaseSheetContext);
   const [loading, setLoading] = React.useState(true);
+  const [currentIndex, setCurrentIndex] = useState(null);
 
   useEffect(() => {
     if (documentArray && documentArray.documentPath) {
@@ -397,10 +406,32 @@ export const HealthVault: React.FC = () => {
     }
   }, []);
 
+  const handleChange = React.useCallback((type) => {
+    switch (type) {
+      case 'next':
+        setCurrentIndex((index: number) => index + 1);
+        break;
+      case 'prev':
+        setCurrentIndex((index: number) => index - 1);
+        break;
+      default:
+        setCurrentIndex(null);
+    }
+  }, []);
+
   return (
     <ThemeProvider theme={theme}>
       <Typography component="div" className={classes.vaultContainer}>
         <Typography component="div">
+          {appointmentDocuments && appointmentDocuments.length > 0 && (
+            <GallerySlider
+              currentIndex={currentIndex}
+              onClose={handleChange}
+              onChange={handleChange}
+              documents={appointmentDocuments}
+            />
+          )}
+
           <Typography component="h5" variant="h5">
             Photos uploaded
           </Typography>
@@ -411,6 +442,7 @@ export const HealthVault: React.FC = () => {
                   key={index}
                   className={classes.listItem}
                   onClick={() => {
+                    setCurrentIndex(index);
                     if (
                       item &&
                       item.documentPath &&
@@ -431,13 +463,11 @@ export const HealthVault: React.FC = () => {
                         className={classes.bigAvatar}
                       />
                     ) : (
-                      <a href={item.documentPath as string} target="_blank">
-                        <Avatar
-                          alt={item.documentPath as string}
-                          src={require('images/pdf_thumbnail.png')}
-                          className={classes.bigAvatar}
-                        />
-                      </a>
+                      <Avatar
+                        alt={item.documentPath as string}
+                        src={require('images/pdf_thumbnail.png')}
+                        className={classes.bigAvatar}
+                      />
                     )}
                   </ListItemAvatar>
                   {/* <div hidden>
@@ -499,7 +529,7 @@ export const HealthVault: React.FC = () => {
                   />
                 </ListItem>
               ))}
-            {
+            {/* {
               <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
                 <div className={classes.modalWindowWrap}>
                   <div className={classes.tableContent}>
@@ -517,7 +547,7 @@ export const HealthVault: React.FC = () => {
                   </div>
                 </div>
               </Modal>
-            }
+            } */}
           </List>
         </Typography>
         <Typography component="div">
