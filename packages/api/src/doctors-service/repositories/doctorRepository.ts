@@ -487,7 +487,7 @@ export class DoctorRepository extends Repository<Doctor> {
   getSearchDoctorsByIds(doctorIds: string[]) {
     return this.createQueryBuilder('doctor')
       .select('doctor.id', 'typeId')
-      .addSelect("doctor.firstName || ' ' || doctor.lastName", 'name')
+      .addSelect("doctor.fullName", 'name')
       .addSelect('doctor.photoUrl', 'image')
       .addSelect('doctor.doctorType', 'doctorType')
       .where('doctor.id IN (:...doctorIds)', { doctorIds })
