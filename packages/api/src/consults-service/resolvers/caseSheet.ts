@@ -54,6 +54,7 @@ import { NotificationBinRepository } from 'notifications-service/repositories/no
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
 import { getCache, setCache, delCache } from 'consults-service/database/connectRedis';
+import _ from 'lodash';
 
 export type DiagnosisJson = {
   name: string;
@@ -1043,9 +1044,16 @@ const modifyCaseSheet: Resolver<
     getCaseSheetData.createdDate
   );
 
+  const getCaseSheetDataWithoutStatus = _.omit(getCaseSheetData, 'status');
+
   //medicalHistory upsert ends
-  const caseSheetAttrs: Omit<Partial<Omit<Partial<CaseSheet>, 'status'>>, 'id'> = getCaseSheetData;
-  await caseSheetRepo.updateCaseSheet(inputArguments.id, caseSheetAttrs, getCaseSheetData);
+  const caseSheetAttrs: Omit<Partial<CaseSheet>, 'id'> = getCaseSheetDataWithoutStatus;
+  await caseSheetRepo.updateCaseSheetWithPartialData(
+    inputArguments.id,
+    caseSheetAttrs,
+    getCaseSheetDataWithoutStatus
+  );
+
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointmentData = await appointmentRepo.findById(getCaseSheetData.appointment.id);
   if (appointmentData) {
