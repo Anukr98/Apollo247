@@ -4,6 +4,7 @@ import fetch from 'node-fetch';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format, addMinutes } from 'date-fns';
+import { MEDICINE_ORDER_STATUS } from 'profiles-service/entities';
 
 const webEngageTimeoutMillSeconds = Number(process.env.WEBENGAGE_TIMEOUT_IN_MILLISECONDS);
 
@@ -40,6 +41,10 @@ export interface WebEngageEventData {
   displayID: string;
   consultMode: string;
   doctorName: string;
+  orderStatus: MEDICINE_ORDER_STATUS;
+  refundAmount:number;
+  healthCreditsToRefund:number;
+  paymentRefundId:string;
 }
 
 export enum WebEngageEvent {

@@ -31,6 +31,8 @@ export const GET_PATIENT_BY_MOBILE_NUMBER = gql`
         dateOfBirth
         emailAddress
         photoUrl
+        referralCode
+        partnerId
       }
     }
   }
@@ -68,6 +70,7 @@ export const UPDATE_PATIENT = gql`
         uhid
         dateOfBirth
         emailAddress
+        partnerId
       }
     }
   }
@@ -408,14 +411,22 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
         source
       }
       labResults {
+        errorCode
+        errorMsg
+        errorType
         response {
+          authToken
           id
           labTestName
           labTestSource
+          packageId
+          packageName
           # labTestDate
           date
           labTestRefferedBy
           siteDisplayName
+          tag
+          consultId
           additionalNotes
           observation
           labTestResults {
@@ -427,6 +438,13 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
             # resultDate
           }
           fileUrl
+          testResultFiles {
+            id
+            fileName
+            mimeType
+            content
+            byteContent
+          }
         }
         errorCode
         errorMsg
@@ -449,6 +467,63 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
         errorCode
         errorMsg
         errorType
+      }
+      healthChecksNew {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          authToken
+          userId
+          id
+          fileUrl
+          date
+          healthCheckName
+          healthCheckDate
+          healthCheckSummary
+          healthCheckFiles {
+            id
+            fileName
+            mimeType
+            content
+            byteContent
+            dateCreated
+          }
+          source
+          healthCheckType
+          followupDate
+        }
+      }
+      hospitalizationsNew {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          authToken
+          userId
+          id
+          fileUrl
+          date
+          hospitalizationDate
+          dateOfHospitalization
+          hospitalName
+          doctorName
+          reasonForAdmission
+          diagnosisNotes
+          dateOfDischarge
+          dischargeSummary
+          doctorInstruction
+          dateOfNextVisit
+          hospitalizationFiles {
+            id
+            fileName
+            mimeType
+            content
+            byteContent
+            dateCreated
+          }
+          source
+        }
       }
     }
   }
@@ -791,23 +866,138 @@ export const SAVE_DIAGNOSTIC_ORDER = gql`
 `;
 
 export const GET_SUBSCRIPTIONS_OF_USER_BY_STATUS = gql`
-  query getSubscriptionsOfUserByStatus($user: UserIdentification, $status: [String]) {
-    getSubscriptionsOfUserByStatus(user: $user, status: $status) {
+  query getSubscriptionsOfUserByStatus($mobile_number: String!, $status: [String!]!) {
+    GetSubscriptionsOfUserByStatus(mobile_number: $mobile_number, status: $status) {
       code
       message
       success
       response {
         _id
         status
-        coupon_availed
         group_plan {
+          group {
+            name
+          }
+          _id
           plan_id
           name
           status
-          group {
-            name
-            is_active
-          }
+        }
+      }
+    }
+  }
+`;
+
+export const GET_ALL_USER_SUBSCRIPTIONS_WITH_BENEFITS = gql`
+  query GetAllUserSubscriptionsWithPlanBenefits($mobile_number: String!) {
+    GetAllUserSubscriptionsWithPlanBenefits(mobile_number: $mobile_number) {
+      code
+      message
+      success
+      response
+    }
+  }
+`;
+
+export const GET_SITEMAP = gql`
+  mutation generateSitemap {
+    generateSitemap {
+      specialityUrls {
+        urlName
+        url
+      }
+      doctorUrls {
+        urlName
+        url
+      }
+      articleUrls {
+        urlName
+        url
+      }
+      healthAreasUrls {
+        urlName
+        url
+      }
+      shopByCategoryUrls {
+        urlName
+        url
+      }
+      medicinesUrls {
+        urlName
+        url
+      }
+      staticPageUrls {
+        urlName
+        url
+      }
+    }
+  }
+`;
+
+// export const CREATE_SUBSCRIPTION = gql`
+//   mutation createSubscription($userSubscription: CreateUserSubscriptionInput) {
+//     CreateUserSubscription(CreateUserSubscriptionInput: $userSubscription) {
+//       code
+//       success
+//       message
+//       response {
+//         mobile_number
+//         status
+//         start_date
+//         end_date
+//         group_plan {
+//           name
+//           plan_id
+//         }
+//       }
+//     }
+//   }
+// `;
+
+export const GET_LAB_RESULT_PDF = gql`
+  query getLabResultpdf($patientId: ID!, $recordId: String!) {
+    getLabResultpdf(patientId: $patientId, recordId: $recordId) {
+      url
+    }
+  }
+`;
+
+export const IDENTIFY_HDFC_CUSTOMER = gql`
+  query identifyHdfcCustomer($mobile_number: String!, $DOB: Date!) {
+    identifyHdfcCustomer(mobileNumber: $mobile_number, DOB: $DOB) {
+      status
+      token
+    }
+  }
+`;
+
+export const VALIDATE_HDFC_OTP = gql`
+  query validateHdfcOTP($otp: String!, $token: String!, $dateOfBirth: Date!) {
+    validateHdfcOTP(otp: $otp, token: $token, dateOfBirth: $dateOfBirth) {
+      status
+      defaultPlan
+    }
+  }
+`;
+
+export const GET_ALL_SUBSCRIPTION_INCLUSIONS_OF_GROUP_PLAN = gql`
+  query GetAllSIOfGroupPlan($groupPlanId: String!) {
+    GetAllSubscriptionInclusionsOfGroupPlan(group_plan_id: $groupPlanId) {
+      code
+      message
+      success
+      response {
+        attribute
+        description
+        header_content
+        cta_label
+        cta_action
+        attribute_type
+        available_count
+        refresh_frequency
+        group_plan {
+          name
+          plan_id
         }
       }
     }
@@ -815,18 +1005,29 @@ export const GET_SUBSCRIPTIONS_OF_USER_BY_STATUS = gql`
 `;
 
 export const CREATE_SUBSCRIPTION = gql`
-  mutation createSubscription($userSubscription: CreateUserSubscriptionInput) {
-    createSubscription(userSubscription: $userSubscription) {
+  mutation CreateUserSubscription($userSubscription: CreateUserSubscriptionInput!) {
+    CreateUserSubscription(UserSubscription: $userSubscription) {
       code
       success
       message
       response {
+        mobile_number
         status
-        transaction_date_time
+        start_date
+        end_date
         group_plan {
           name
+          plan_id
         }
       }
+    }
+  }
+`;
+
+export const INITIATE_CALL_FOR_PARTNER = gql`
+  query initiateCallForPartner($mobileNumber: String!, $benefitId: String!) {
+    initiateCallForPartner(mobileNumber: $mobileNumber, benefitId: $benefitId) {
+      success
     }
   }
 `;

@@ -121,6 +121,7 @@ export interface PrescriptionUploadRequest {
   }[];
   speciality: string;
   hospital_name: string;
+  hospitalId: string;
   address: string;
   city: string;
   pincode: string;
@@ -155,6 +156,8 @@ export interface PrescriptionDownloadResponse {
     notes: string;
     prescriptionSource: string;
     source: string;
+    hospital_name: string;
+    hospitalId: string;
     prescriptionDetail: [];
     prescriptionFiles: {
       id: string;
@@ -179,4 +182,72 @@ export interface GetAuthTokenResponse {
   errorMsg: string;
   errorType: string;
   response: string;
+}
+
+export interface GetLabResultpdfResponse {
+  url: string
+}
+
+export interface HealthChecksResponse {
+  errorCode: number;
+  errorMsg: string;
+  errorType: string;
+  response: {
+    authToken: string;
+    userId: string;
+    id: string;
+    fileUrl: string; //this is not given by PHR. Added for internal purpose
+    date: Date; //this is not given by PHR. Added for internal purpose
+    healthCheckName: string;
+    healthCheckDate: number;
+    healthCheckSummary: string;
+    healthCheckFiles:
+    {
+      id: string;
+      fileName: string;
+      mimeType: string;
+      content: string;
+      byteContent: string;
+      dateCreated: number;
+    }[];
+    source: string;
+    healthCheckType: string;
+    followupDate: number;
+  }[];
+}
+
+export interface DischargeSummaryResponse {
+
+  errorCode: string,
+  errorMsg: string,
+  errorType: string,
+  response: [
+    {
+      authToken: string,
+      userId: string,
+      id: string,
+      fileUrl: string; //this is not given by PHR. Added for internal purpose
+      date: Date; //this is not given by PHR. Added for internal purpose
+      hospitalizationDate: Date;
+      dateOfHospitalization: number,
+      hospitalName: string,
+      doctorName: string,
+      reasonForAdmission: string,
+      diagnosisNotes: string,
+      dateOfDischarge: number,
+      dischargeSummary: string,
+      doctorInstruction: string,
+      dateOfNextVisit: number,
+      hospitalizationFiles: {
+        id: string,
+        fileName: string,
+        mimeType: string,
+        content: string,
+        byteContent: string,
+        dateCreated: number
+      }[];
+      source: string
+    }
+  ]
+
 }

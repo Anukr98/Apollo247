@@ -660,3 +660,5 @@ export const TestsLanding: React.FC = (props) => {
     </div>
   );
 };
+
+export default TestsLanding;

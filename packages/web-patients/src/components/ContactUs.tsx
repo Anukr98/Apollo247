@@ -4,6 +4,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import { BottomLinks } from 'components/BottomLinks';
 import { NavigationBottom } from 'components/NavigationBottom';
+import { MetaTagsComp } from 'MetaTagsComp';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -39,7 +40,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const ContactUs: React.FC = (props) => {
+const ContactUs: React.FC = (props) => {
   const classes = useStyles({});
   const [metaTagProps, setMetaTagProps] = useState(null);
   useEffect(() => {
@@ -50,9 +51,9 @@ export const ContactUs: React.FC = (props) => {
       canonicalLink: typeof window !== 'undefined' && window.location && window.location.href,
     });
   }, []);
-
   return (
     <div className={classes.root}>
+      {metaTagProps && <MetaTagsComp {...metaTagProps} />}
       <Header />
       <div className={classes.container}>
         <div className={classes.pageContainer}>
@@ -77,3 +78,5 @@ export const ContactUs: React.FC = (props) => {
     </div>
   );
 };
+
+export default ContactUs;

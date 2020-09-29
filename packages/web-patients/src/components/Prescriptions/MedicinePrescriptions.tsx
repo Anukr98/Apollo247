@@ -280,7 +280,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const MedicinePrescriptions: React.FC = (props) => {
+const MedicinePrescriptions: React.FC = (props) => {
   const classes = useStyles({});
   const {
     durationDays,
@@ -553,3 +553,5 @@ export const MedicinePrescriptions: React.FC = (props) => {
     </div>
   );
 };
+
+export default MedicinePrescriptions;

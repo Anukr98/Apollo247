@@ -7,6 +7,7 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { CouponCategoryApplicable } from 'profiles-service/entities';
 import { getCouponsList, validateCoupon } from 'helpers/couponServices';
 import { CouponProduct, ValidateCouponRequestPharma } from 'types/coupons';
+import { fetchUserSubscription } from 'helpers/subscriptionHelper';
 
 export const validatePharmaCouponTypeDefs = gql`
   enum CouponCategoryApplicable {
@@ -48,6 +49,7 @@ export const validatePharmaCouponTypeDefs = gql`
     productType: CouponCategoryApplicable!
     quantity: Int!
     specialPrice: Float!
+    couponFree: Int
   }
 
   input PharmaCouponInput {
@@ -69,6 +71,7 @@ export type OrderLineItems = {
   productType: CouponCategoryApplicable;
   quantity: number;
   specialPrice: number;
+  couponFree: number;
 };
 
 type PharmaCouponInput = {
@@ -122,6 +125,7 @@ export const validatePharmaCoupon: Resolver<
   const couponProduct: CouponProduct[] = [];
   let mrpPriceTotal = 0;
   let specialPriceTotal = 0;
+  let deductProductDiscount = 0;
 
   //calculate total amount
   orderLineItems.map((item) => {
@@ -135,6 +139,7 @@ export const validatePharmaCoupon: Resolver<
       quantity: item.quantity,
       totalCost: amountToBeConsidered * item.quantity,
       categoryId: item.productType.toString(),
+      couponFree: item.couponFree || 0,
     };
     couponProduct.push(product);
   });
@@ -148,22 +153,35 @@ export const validatePharmaCoupon: Resolver<
     coupon: code,
     paymentType: '',
     pinCode: '',
+    packageId: await fetchUserSubscription(patientData.mobileNumber),
     products: couponProduct,
   };
-
+  console.log('payload', payload);
   const couponData = await validateCoupon(payload);
   let validityStatus = false;
   let reasonForInvalidStatus = '';
   const lineItemsWithDiscount: PharmaLineItems[] = [];
-
   if (couponData && couponData.response) {
     validityStatus = couponData.response.valid;
+    const requestProductsCount = couponProduct.reduce((acc, item) => {
+      return acc + item.quantity;
+    }, 0);
+    const responseProductsCount = couponData.response.products.reduce((acc, item) => {
+      return acc + item.quantity;
+    }, 0);
+    // if user try to edit cart to by pass frontend validation
+    if (requestProductsCount != responseProductsCount) {
+      validityStatus = false;
+    }
     reasonForInvalidStatus = couponData.response.reason || '';
     couponData.response.products.map((item) => {
       const orderLineItemData = orderLineItems.filter((item1) => item1.itemId == item.sku);
       mrpPriceTotal = mrpPriceTotal + item.mrp * item.quantity;
       specialPriceTotal = specialPriceTotal + item.specialPrice * item.quantity;
-
+      if (item.mrp != item.specialPrice && item.onMrp) {
+        deductProductDiscount =
+          deductProductDiscount + (item.mrp - item.specialPrice) * item.quantity;
+      }
       const lineItems: PharmaLineItems = {
         applicablePrice: Number((item.mrp - item.discountAmt).toFixed(2)),
         discountedPrice: Number(item.discountAmt.toFixed(2)),
@@ -184,7 +202,7 @@ export const validatePharmaCoupon: Resolver<
   const totalDiscountPrice = couponData.response!.discount;
 
   const discountedTotals: DiscountedTotals = {
-    couponDiscount: Number((totalDiscountPrice - productDiscount).toFixed(2)),
+    couponDiscount: Number((totalDiscountPrice - deductProductDiscount).toFixed(2)),
     mrpPriceTotal: mrpPriceTotal,
     productDiscount: productDiscount,
   };

@@ -2,11 +2,9 @@ import React, { useState } from 'react';
 import { Theme, Popover } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import Typography from '@material-ui/core/Typography';
-
-import { Link } from 'react-router-dom';
-import { clientRoutes } from 'helpers/clientRoutes';
 import { AphButton } from '@aph/web-ui-components';
 import { NewsletterSubscriptionForm } from './NewsletterSubscriptionForm';
+import { LazyIntersection } from '../lib/LazyIntersection';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -220,7 +218,7 @@ export const Banner: React.FC<BannerProps> = (props) => {
         <div className={classes.successPopoverWindow}>
           <div className={classes.windowWrap}>
             <div className={classes.mascotIcon}>
-              <img src={require('images/ic-mascot.png')} alt="" />
+              <LazyIntersection src={require('images/ic-mascot.png')} alt="" />
             </div>
             <div className={classes.noServiceRoot}>
               <div className={classes.windowBody}>

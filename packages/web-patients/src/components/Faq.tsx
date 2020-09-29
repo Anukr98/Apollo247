@@ -195,7 +195,7 @@ TabPanel.propTypes = {
   value: PropTypes.any.isRequired,
 };
 
-export const Faq: React.FC = (props) => {
+const Faq: React.FC = (props) => {
   const classes = useStyles({});
   const [value, setValue] = useState(0);
   const [faqData, setFaqData] = useState<any>();
@@ -359,3 +359,5 @@ export const Faq: React.FC = (props) => {
     </div>
   );
 };
+
+export default Faq;

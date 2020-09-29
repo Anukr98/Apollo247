@@ -31,7 +31,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const TestsCartLanding: React.FC = (props) => {
+const TestsCartLanding: React.FC = (props) => {
   const classes = useStyles({});
   const onePrimaryUser = hasOnePrimaryUser();
   return (
@@ -51,3 +51,5 @@ export const TestsCartLanding: React.FC = (props) => {
     </div>
   );
 };
+
+export default TestsCartLanding;

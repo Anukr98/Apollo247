@@ -75,7 +75,7 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
   const [combination, setCombination] = useState<{ type: string; data: any }[]>();
 
   useEffect(() => {
-    let mergeArray: { type: string; data: any }[] = [];
+    const mergeArray: { type: string; data: any }[] = [];
     console.log('combination before', mergeArray);
     // MedicalRecordData!.forEach((item) => {
     //   mergeArray.push({ type: 'medical', data: item });

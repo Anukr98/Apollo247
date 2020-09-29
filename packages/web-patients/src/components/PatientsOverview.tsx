@@ -13,7 +13,10 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { useMutation } from 'react-apollo-hooks';
 import { Alerts } from 'components/Alerts/Alerts';
-import { HdfcCallDoctor } from 'components/HdfcCallDoctor';
+import { HdfcRegistration } from 'components/HdfcRegistration';
+import { HdfcSlider } from 'components/HdfcSlider';
+import { HDFC_REF_CODE } from 'helpers/constants';
+import { HdfcHomePage } from 'components/HdfcHomePage';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -55,7 +58,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const PatientsOverview: React.FC = () => {
+const PatientsOverview: React.FC = () => {
   const classes = useStyles({});
 
   const { currentPatient } = useAllCurrentPatients();
@@ -67,6 +70,8 @@ export const PatientsOverview: React.FC = () => {
   >(GET_PATIENT_FUTURE_APPOINTMENT_COUNT);
   const [alertMessage, setAlertMessage] = useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
+  const [userSubscriptions, setUserSubscriptions] = React.useState([]);
+  const [showSubscription, setSshowSubscription] = useState<boolean>(false);
 
   useEffect(() => {
     if (currentPatient && currentPatient.id) {
@@ -83,6 +88,11 @@ export const PatientsOverview: React.FC = () => {
               responseData && responseData.getPatientFutureAppointmentCount.consultsCount
             );
           }
+          const userSubscriptionsLocalStorage = JSON.parse(
+            localStorage.getItem('userSubscriptions')
+          );
+          setUserSubscriptions(userSubscriptionsLocalStorage);
+          setSshowSubscription(true);
           setLoading(false);
         })
         .catch((error) => {
@@ -121,7 +131,26 @@ export const PatientsOverview: React.FC = () => {
         </Grid> */}
       {/* </Grid> */}
       {/* <Grid item xs={12} sm={6}> */}
-      <HdfcCallDoctor patientPhone={currentPatient.mobileNumber} />
+      {currentPatient &&
+        showSubscription &&
+        currentPatient.partnerId === HDFC_REF_CODE &&
+        (userSubscriptions == null || userSubscriptions.length == 0) && (
+          <HdfcRegistration patientPhone={currentPatient.mobileNumber} />
+        )}
+      {currentPatient &&
+        userSubscriptions &&
+        userSubscriptions.length != 0 &&
+        userSubscriptions[0] &&
+        userSubscriptions[0].status == 'DEFERRED_INACTIVE' && (
+          <HdfcHomePage patientPhone={currentPatient.mobileNumber} />
+        )}
+      {currentPatient &&
+        userSubscriptions &&
+        userSubscriptions.length != 0 &&
+        userSubscriptions[0] &&
+        userSubscriptions[0].status == 'ACTIVE' && (
+          <HdfcSlider patientPhone={currentPatient.mobileNumber} />
+        )}
       {/* </Grid>
       </Grid> */}
       <Alerts
@@ -133,3 +162,5 @@ export const PatientsOverview: React.FC = () => {
     </div>
   );
 };
+
+export default PatientsOverview;

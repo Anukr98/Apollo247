@@ -8,20 +8,15 @@ import { buildCaseSheet } from 'consults-service/database/factories/caseSheetFac
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 
 (async () => {
-  console.log('Seeding consults-db...');
-
-  console.log('Establishing connection...');
   await connect();
   const consultsDb = getConnection();
 
-  console.log('Clearing all data...');
   await consultsDb.dropDatabase();
   await consultsDb.synchronize();
 
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
 
-  console.log('Building and saving records...');
   _times(_random(5, 20), () => appointmentRepo.save(buildAppointment()));
   _times(_random(5, 20), () => caseSheetRepo.save(buildCaseSheet()));
 })();

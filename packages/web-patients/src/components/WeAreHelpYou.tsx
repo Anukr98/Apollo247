@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { AphDialogTitle, AphDialog, AphDialogClose, AphButton } from '@aph/web-ui-components';
 import { customerCareNumber } from 'helpers/commonHelpers';
+import { LazyIntersection } from './lib/LazyIntersection';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -130,9 +131,6 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 0,
       paddingBottom: 12,
     },
-    kavachImage: {
-      width: 24,
-    },
     serviceCard: {
       display: 'flex',
       alignItems: 'center',
@@ -193,13 +191,21 @@ export const WeAreHelpYou: React.FC = (props) => {
             </p>
           </div>
           <div className={classes.rightGroup}>
-            <img src={require('images/ic_covid-banner.svg')} alt="" />
+            <LazyIntersection
+              style={{ width: '24px' }}
+              src={require('images/ic_covid-banner.svg')}
+              alt=""
+            />
           </div>
         </div>
         <div className={classes.cardContent}>
           <div className={classes.contentHeader}>
             <span>
-              <img src={require('images/ic-mascot.png')} alt="We are here to help you" />
+              <LazyIntersection
+                style={{ width: '40px' }}
+                src={require('images/ic-mascot.png')}
+                alt="We are here to help you"
+              />
             </span>
             <span>We are here to help you.</span>
           </div>
@@ -213,7 +219,11 @@ export const WeAreHelpYou: React.FC = (props) => {
             <Grid item sm={4} xs={12}>
               <Link className={classes.articleBox} to={clientRoutes.covidLanding()}>
                 <span>
-                  <img src={require('images/ic_feed.svg')} alt="" />
+                  <LazyIntersection
+                    style={{ width: '24px' }}
+                    src={require('images/ic_feed.svg')}
+                    alt=""
+                  />
                 </span>
                 <Typography variant="h3">Learn more about Coronavirus</Typography>
               </Link>
@@ -226,7 +236,11 @@ export const WeAreHelpYou: React.FC = (props) => {
                 <a href={covidScannerUrl} target={'_blank'}>
                   <div className={classes.serviceCard}>
                     <span>
-                      <img src={require('images/ic_covid-white.svg')} alt="" />
+                      <LazyIntersection
+                        style={{ width: '24px' }}
+                        src={require('images/ic_covid-white.svg')}
+                        alt=""
+                      />
                     </span>
                     <span>Check your risk level</span>
                   </div>
@@ -248,7 +262,11 @@ export const WeAreHelpYou: React.FC = (props) => {
                   className={classes.serviceCard}
                 >
                   <span>
-                    <img src={require('images/ic_family_doctor.svg')} alt="" />
+                    <LazyIntersection
+                      style={{ width: '24px' }}
+                      src={require('images/ic_family_doctor.svg')}
+                      alt=""
+                    />
                   </span>
                   <span>Call our experts</span>
                 </div>
@@ -256,10 +274,10 @@ export const WeAreHelpYou: React.FC = (props) => {
               <Grid item sm={4} xs={12}>
                 <Link className={classes.serviceCard} to={clientRoutes.kavachLanding()}>
                   <span>
-                    <img
-                      className={classes.kavachImage}
+                    <LazyIntersection
                       src={require('images/apollo-kavach.png')}
-                      alt=""
+                      alt="apollo-kavach"
+                      style={{ width: '24px' }}
                     />
                   </span>
                   <span>Explore the Apollo Kavach Program</span>

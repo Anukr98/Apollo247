@@ -50,7 +50,7 @@ import {
   getMedicineSearchSuggestionsApi,
   MedicinePageAPiResponse,
   MedicineProduct,
-  pinCodeServiceabilityApi,
+  pinCodeServiceabilityApi247,
   MedicinePageSection,
   getNearByStoreDetailsApi,
   callToExotelApi,
@@ -95,9 +95,10 @@ import {
   View,
   ViewStyle,
   Platform,
+  FlatList,
 } from 'react-native';
 import { Image, ListItem } from 'react-native-elements';
-import { FlatList, NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { MedicineSearchSuggestionItem } from '@aph/mobile-patients/src/components/Medicines/MedicineSearchSuggestionItem';
 import Carousel from 'react-native-snap-carousel';
 import {
@@ -115,6 +116,7 @@ import {
 } from '@aph/mobile-patients/src/components/Medicines/MedicineReOrderOverlay';
 import { AddToCartButtons } from './AddToCartButtons';
 import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails } from '../../graphql/types/getMedicineOrderOMSDetailsWithAddress';
+import _ from 'lodash';
 
 const styles = StyleSheet.create({
   sliderDotStyle: {
@@ -296,12 +298,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         });
     };
 
-    pinCodeServiceabilityApi(pincode)
-      .then(({ data: { Availability } }) => {
-        setServiceabilityMsg(Availability ? '' : 'Services unavailable. Change delivery location.');
-        setPharmacyLocationServiceable!(Availability ? true : false);
-        WebEngageEventAutoDetectLocation(pincode, Availability ? true : false);
-        if (!Availability) {
+    pinCodeServiceabilityApi247(pincode)
+      .then(({ data: { response } }) => {
+        setServiceabilityMsg(response ? '' : 'Services unavailable. Change delivery location.');
+        setPharmacyLocationServiceable!(response ? true : false);
+        WebEngageEventAutoDetectLocation(pincode, response ? true : false);
+        if (!response) {
           getNearByStoreDetailsApi(pincode)
             .then((response: any) => {
               showAphAlert!({
@@ -531,6 +533,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               type_id:
                 (item!.categoryName || '').toLowerCase().indexOf('pharma') > -1 ? 'Pharma' : 'FMCG',
               mou: item!.mou!,
+              sell_online: 1,
             } as MedicineProduct)
         );
       if (formattedRecommendedProducts.length >= 5) {
@@ -1629,34 +1632,28 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [searchSate, setsearchSate] = useState<'load' | 'success' | 'fail' | undefined>();
   const [isSearchFocused, setSearchFocused] = useState(false);
   const [itemsLoading, setItemsLoading] = useState<{ [key: string]: boolean }>({});
+  const [searchQuery, setSearchQuery] = useState({});
 
   const onSearchMedicine = (_searchText: string) => {
-    if (isValidSearch(_searchText)) {
-      setSearchText(_searchText);
-      if (!(_searchText && _searchText.length > 2)) {
-        setMedicineList([]);
-        return;
-      }
-      setsearchSate('load');
-      getMedicineSearchSuggestionsApi(_searchText)
-        .then(({ data }) => {
-          const products = data.products || [];
-          setMedicineList(products);
-          setsearchSate('success');
-          const eventAttributes: WebEngageEvents[WebEngageEventName.SEARCH] = {
-            keyword: _searchText,
-            Source: 'Pharmacy Home',
-            resultsdisplayed: products.length,
-          };
-          postWebEngageEvent(WebEngageEventName.SEARCH, eventAttributes);
-        })
-        .catch((e) => {
-          CommonBugFender('Medicine_onSearchMedicine', e);
-          if (!Axios.isCancel(e)) {
-            setsearchSate('fail');
-          }
-        });
-    }
+    setsearchSate('load');
+    getMedicineSearchSuggestionsApi(_searchText)
+      .then(({ data }) => {
+        const products = data.products || [];
+        setMedicineList(products);
+        setsearchSate('success');
+        const eventAttributes: WebEngageEvents[WebEngageEventName.SEARCH] = {
+          keyword: _searchText,
+          Source: 'Pharmacy Home',
+          resultsdisplayed: products.length,
+        };
+        postWebEngageEvent(WebEngageEventName.SEARCH, eventAttributes);
+      })
+      .catch((e) => {
+        CommonBugFender('Medicine_onSearchMedicine', e);
+        if (!Axios.isCancel(e)) {
+          setsearchSate('fail');
+        }
+      });
   };
 
   const renderSearchInput = () => {
@@ -1716,7 +1713,21 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             setsearchSate('success');
           }}
           onChangeText={(value) => {
-            onSearchMedicine(value);
+            if (isValidSearch(value)) {
+              setSearchText(value);
+              if (!(value && value.length > 2)) {
+                setMedicineList([]);
+                return;
+              }
+              const search = _.debounce(onSearchMedicine, 300);
+              setSearchQuery((prevSearch: any) => {
+                if (prevSearch.cancel) {
+                  prevSearch.cancel();
+                }
+                return search;
+              });
+              search(value);
+            }
           }}
           _rigthIconView={rigthIconView}
           placeholder="Search meds, brands &amp; more"
@@ -1924,7 +1935,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       });
 
     return (
-      <ScrollView bounces={false}>
+      <ScrollView removeClippedSubviews={true} bounces={false}>
         <View style={{ height: 10 }} />
         {sectionsView}
         {!error && <View style={{ height: 20 }} />}

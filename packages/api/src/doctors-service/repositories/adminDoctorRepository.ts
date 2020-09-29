@@ -28,21 +28,6 @@ export class AdminDoctorMap extends Repository<AdminDoctorMapper> {
     });
   }
 
-  findByadminId(doctor: string) {
-    return this.find({
-      where: [{ doctor }],
-      relations: [
-        'doctor',
-        'adminuser',
-        'doctor.specialty',
-        'doctor.consultHours',
-        'doctor.starTeam',
-        'doctor.bankAccount',
-        'doctor.packages',
-      ],
-    });
-  }
-
   getAdminIds(doctor: string) {
     return this.find({
       where: { doctor },

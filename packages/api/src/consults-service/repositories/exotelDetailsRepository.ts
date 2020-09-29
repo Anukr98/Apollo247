@@ -2,7 +2,7 @@ import { EntityRepository, Repository } from 'typeorm';
 import { ExotelDetails } from 'consults-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { DOCTOR_CALL_TYPE } from 'notifications-service/resolvers/notifications';
+import { DOCTOR_CALL_TYPE } from 'notifications-service/constants';
 
 @EntityRepository(ExotelDetails)
 export class ExotelDetailsRepository extends Repository<ExotelDetails> {

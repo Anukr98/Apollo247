@@ -75,6 +75,7 @@ export enum CouponCategoryApplicable {
   FMCG = "FMCG",
   PHARMA = "PHARMA",
   PHARMA_FMCG = "PHARMA_FMCG",
+  PL = "PL",
 }
 
 export enum CustomerType {
@@ -137,7 +138,6 @@ export enum DoctorType {
   STAR_APOLLO = "STAR_APOLLO",
   SUGAR = "SUGAR",
   WHITE_DENTAL = "WHITE_DENTAL",
-  SENIOR = "SENIOR"
 }
 
 export enum FEEDBACKTYPE {
@@ -617,7 +617,7 @@ export interface DiagnosticOrderInput {
   state: string;
   stateId: string;
   slotTimings: string;
-  employeeSlotId: number;
+  employeeSlotId?: any | null;
   diagnosticEmployeeCode: string;
   diagnosticBranchCode: string;
   totalPrice: number;
@@ -632,6 +632,7 @@ export interface DiagnosticOrderInput {
   deviceType?: DEVICETYPE | null;
   paymentType?: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
   items?: (DiagnosticLineItem | null)[] | null;
+  slotId?: string | null;
 }
 
 export interface DoctorAvailabilityInput {
@@ -695,6 +696,8 @@ export interface FilterDoctorInput {
   pincode?: string | null;
   doctorType?: (string | null)[] | null;
   sort?: string | null;
+  pageNo?: number | null;
+  pageSize?: number | null;
 }
 
 export interface Geolocation {
@@ -746,6 +749,7 @@ export interface MediaPrescriptionUploadRequest {
 export interface MedicineCartOMSInput {
   quoteId?: string | null;
   shopId?: string | null;
+  tatType?: string | null;
   estimatedAmount?: number | null;
   patientId: string;
   medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
@@ -769,6 +773,7 @@ export interface MedicineCartOMSInput {
 export interface MedicineCartOMSItem {
   medicineSKU?: string | null;
   medicineName?: string | null;
+  couponFree?: boolean | null;
   price?: number | null;
   quantity?: number | null;
   mrp?: number | null;
@@ -823,6 +828,7 @@ export interface OrderLineItems {
   productType: CouponCategoryApplicable;
   quantity: number;
   specialPrice: number;
+  couponFree?: boolean | null;
 }
 
 export interface OtpVerificationInput {
@@ -833,6 +839,7 @@ export interface OtpVerificationInput {
 
 export interface PatientAddressInput {
   patientId: string;
+  name?: string | null;
   addressLine1: string;
   addressLine2?: string | null;
   city?: string | null;
@@ -994,6 +1001,7 @@ export interface UpdateDiagnosticOrderInput {
 
 export interface UpdatePatientAddressInput {
   id: string;
+  name?: string | null;
   addressLine1: string;
   addressLine2?: string | null;
   city?: string | null;

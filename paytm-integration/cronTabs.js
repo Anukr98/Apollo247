@@ -73,7 +73,7 @@ exports.FollowUpNotification = (req, res) => {
         '\n---------------------------\n' +
         response.data.data.sendFollowUpNotification +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -102,7 +102,7 @@ exports.ApptReminder = (req, res) => {
         '\n---------------------------\n' +
         response.data.data.sendApptReminderNotification.apptsListCount +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -131,7 +131,7 @@ exports.DoctorApptReminder = (req, res) => {
         '\n---------------------------\n' +
         response.data.data.sendDoctorReminderNotifications.apptsListCount +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -160,7 +160,7 @@ exports.DailyAppointmentSummary = (req, res) => {
         '\n---------------------------\n' +
         response.data.data.sendDailyAppointmentSummary +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -190,7 +190,7 @@ exports.PhysicalApptReminder = (req, res) => {
         '\n---------------------------\n' +
         response.data.data.sendPhysicalApptReminderNotification.apptsListCount +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -248,7 +248,7 @@ exports.updateSdSummary = (req, res) => {
                   JSON.stringify(response.data.data.updateSdSummary) +
                   '\n-------------------\n';
                 console.log(response.data.data);
-                fs.appendFile(fileName, content, function(err) {
+                fs.appendFile(fileName, content, function (err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
@@ -314,7 +314,7 @@ exports.updateJdSummary = (req, res) => {
                   JSON.stringify(response.data.data.updateJdSummary) +
                   '\n-------------------\n';
                 console.log(response.data.data);
-                fs.appendFile(fileName, content, function(err) {
+                fs.appendFile(fileName, content, function (err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
@@ -386,7 +386,7 @@ exports.updateDoctorFeeSummary = (req, res) => {
                   JSON.stringify(response.data.data.updateDoctorFeeSummary) +
                   '\n-------------------\n';
                 console.log(response.data.data);
-                fs.appendFile(fileName, content, function(err) {
+                fs.appendFile(fileName, content, function (err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
@@ -464,7 +464,7 @@ exports.updateDoctorSlotsEs = (req, res) => {
                       .reason;
                 }
                 console.log(response.data.data.addAllDoctorSlotsElastic);
-                fs.appendFile(fileName, content, function(err) {
+                fs.appendFile(fileName, content, function (err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
@@ -488,7 +488,7 @@ exports.updateDoctorSlotsEs = (req, res) => {
 
 exports.refreshDoctorDeepLinks = (req, res) => {
   const requestJSON = {
-    query: Constants.DOCTORS_DEEPLINK_REFRESH,
+    query: Constants.DOCTORS_DEEPLINK_REFRESH.replace(`{0}`, req.query.offset),
   };
   axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
   axios
@@ -525,6 +525,45 @@ exports.generateDeeplinkForNewDoctors = (req, res) => {
 exports.sendCallStartNotification = (req, res) => {
   const requestJSON = {
     query: Constants.CALL_START_NOTIFICATION,
+  };
+  axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
+  axios
+    .post(process.env.API_URL, requestJSON)
+    .then((response) => {
+      res.send({
+        status: 'success',
+        message: response.data,
+      });
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+};
+
+exports.saveMedicineInfoRedis = (req, res) => {
+  console.log(req.body, 'input body');
+  let inputData = Constants.SAVE_MEDICINE_INFO.replace('{0}', req.body.sku);
+  inputData = inputData.replace('{1}', req.body.name);
+  inputData = inputData.replace('{2}', req.body.status);
+  inputData = inputData.replace('{3}', req.body.price);
+  inputData = inputData.replace('{4}', req.body.special_price);
+  inputData = inputData.replace('{5}', req.body.special_price_from);
+  inputData = inputData.replace('{6}', req.body.special_price_to);
+  inputData = inputData.replace('{7}', req.body.qty);
+  inputData = inputData.replace('{8}', req.body.description);
+  inputData = inputData.replace('{9}', req.body.url_key);
+  inputData = inputData.replace('{10}', req.body.base_image);
+  inputData = inputData.replace('{11}', req.body.is_prescription_required);
+  inputData = inputData.replace('{12}', req.body.category_name);
+  inputData = inputData.replace('{13}', req.body.product_discount_category);
+  inputData = inputData.replace('{14}', req.body.sell_online);
+  inputData = inputData.replace('{15}', req.body.molecules);
+  inputData = inputData.replace('{16}', req.body.mou);
+  inputData = inputData.replace('{17}', req.body.gallery_images);
+  inputData = inputData.replace('{18}', req.body.manufacturer);
+  console.log(inputData, 'input body');
+  const requestJSON = {
+    query: inputData,
   };
   axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
   axios

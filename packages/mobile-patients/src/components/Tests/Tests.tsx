@@ -110,6 +110,7 @@ import { WebEngageEventName, WebEngageEvents } from '../../helpers/webEngageEven
 import moment from 'moment';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
+import _ from 'lodash';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -210,6 +211,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [testPackages, setTestPackages] = useState<TestPackage[]>([]);
   const [locationError, setLocationError] = useState(false);
   const [showLocations, setshowLocations] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState({});
 
   useEffect(() => {
     console.log(locationDetails, 'locationDetails');
@@ -641,7 +643,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
                   onChangeText={(value) => {
                     setcurrentLocation(value);
                     if (value.length > 2) {
-                      autoSearch(value);
+                      const locSearch = _.debounce(autoSearch, 300);
+                      setSearchQuery((prevSearch: any) => {
+                        if (prevSearch.cancel) {
+                          prevSearch.cancel();
+                        }
+                        return locSearch;
+                      });
+                      locSearch(value);
                       setshowLocations(true);
                     } else {
                       setshowLocations(false);
@@ -807,44 +816,18 @@ export const Tests: React.FC<TestsProps> = (props) => {
   /*
   const uploadPrescriptionCTA = () => {
     return (
-      <View
-        style={[
-          {
-            ...theme.viewStyles.card(),
-            marginTop: 20,
-            marginBottom: 0,
-          },
-          medicineList.length > 0 && searchText
-            ? {
-                elevation: 0,
-              }
-            : {},
-        ]}
-      >
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <View>
-            <Text
-              style={{
-                ...theme.viewStyles.text('M', 16, '#02475b', 1, 24, 0),
-                paddingBottom: 12,
-              }}
-            >
-              Have a prescription ready?
-            </Text>
-            <Button
-              onPress={() => {
-                // setShowPopop(true);
-              }}
-              style={{ width: 'auto' }}
-              titleTextStyle={{
-                ...theme.viewStyles.text('B', 13, '#fff', 1, 24, 0),
-              }}
-              title={'UPLOAD PRESCRIPTION'}
-            />
-          </View>
-          <FileBig style={{ height: 60, width: 40 }} />
-        </View>
-      </View>
+      <ListCard
+        onPress={() => {
+          postMyOrdersClicked('Diagnostics', currentPatient);
+          props.navigation.navigate(AppRoutes.YourOrdersTest);
+        }}
+        container={{
+          marginBottom: 24,
+          marginTop: 20,
+        }}
+        title={'My Orders'}
+        leftIcon={<TestsIcon />}
+      />
     );
   };
 */
@@ -1727,7 +1710,25 @@ export const Tests: React.FC<TestsProps> = (props) => {
             setsearchSate('success');
           }}
           onChangeText={(value) => {
-            onSearchMedicine(value);
+            if (isValidSearch(value)) {
+              if (!g(locationForDiagnostics, 'cityId')) {
+                renderLocationNotServingPopup();
+                return;
+              }
+              setSearchText(value);
+              if (!(value && value.length > 2)) {
+                setMedicineList([]);
+                return;
+              }
+              const search = _.debounce(onSearchMedicine, 300);
+              setSearchQuery((prevSearch: any) => {
+                if (prevSearch.cancel) {
+                  prevSearch.cancel();
+                }
+                return search;
+              });
+              search(value);
+            }
           }}
           autoCorrect={false}
           rightIcon={isSearchFocused ? rigthIconView : <View />}

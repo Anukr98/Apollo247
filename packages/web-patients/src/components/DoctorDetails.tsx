@@ -221,7 +221,7 @@ const TabContainer: React.FC = (props) => {
   return <Typography component="div">{props.children}</Typography>;
 };
 
-export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
+const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const { isSignedIn } = useAuth();
   const classes = useStyles({});
   const onePrimaryUser = hasOnePrimaryUser();
@@ -257,14 +257,14 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       const {
         doctorType,
         experience,
-        fullName,
+        displayName,
         specialty: { name },
       } = doctorData;
       const eventData = {
         availableInMins: getDiffInMinutes(doctorSlots.availableSlot),
         docCategory: doctorType,
         exp: experience,
-        name: fullName,
+        name: displayName,
         specialty: name,
       };
       doctorProfileViewTracking(eventData);
@@ -287,7 +287,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           setDoctorData(data.getDoctorDetailsById);
           const {
             id,
-            fullName,
+            displayName,
             photoUrl,
             firstName,
             lastName,
@@ -296,7 +296,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             onlineConsultationFees,
             physicalConsultationFees,
             consultHours,
-            salutation,
           } = data.getDoctorDetailsById;
           if (currentPatient && currentPatient.id) {
             saveSearchMutation({
@@ -335,10 +334,13 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               doctorHospital[0].facility.imageUrl ||
               'https://prodaphstorage.blob.core.windows.net/patientwebstaticfiles/hospital_image-e202f2.png';
           }
+
+          const docSpecialty = specialty && specialty.name ? specialty.name : '';
+
           setStructuredJSON({
             '@context': 'http://schema.org/',
             '@type': 'Physician',
-            name: fullName ? fullName : `${firstName} ${lastName}`,
+            name: displayName ? displayName : `Dr. ${firstName} ${lastName}`,
             url: window && window.location ? window.location.href : null,
             currenciesAccepted: 'INR',
             image: photoUrl || 'https://prodaphstorage.blob.core.windows.net/doctors/no_photo.png',
@@ -410,24 +412,23 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               {
                 '@type': 'ListItem',
                 position: 4,
-                name: fullName ? fullName : `${firstName} ${lastName}`,
+                name: displayName ? displayName : `Dr. ${firstName} ${lastName}`,
                 item: `https://www.apollo247.com/specialties/${readableParam(
                   specialty ? specialty.name : ''
-                )}/${readableParam(fullName ? fullName : `${firstName} ${lastName}`)}-${id}`,
+                )}/${readableParam(
+                  displayName ? displayName : `Dr. ${firstName} ${lastName}`
+                )}-${id}`,
               },
             ],
           });
           setMetaTagProps({
-            title: `${fullName}: ${
-              specialty && specialty.name ? specialty.name : ''
-            } - Online Consultation/Appointment - Apollo 247`,
-            description: `Book an appointment with ${fullName} - ${specialty &&
-              specialty.name} and consult online at Apollo 247. Know more about ${fullName} and his work here. Get medical help online in just a few clicks at Apollo 247.`,
+            title: `${displayName}, ${docSpecialty} in ${city}, Consult Online Now - Apollo 247`,
+            description: `Consult ${displayName} (${docSpecialty}) online now. Book online appointment and clinic visit with ${displayName} in just a few clicks. Know fees, availability, experience and more about ${displayName}.`,
             canonicalLink:
               window &&
               window.location &&
               window.location.origin &&
-              `${window.location.origin}/doctors/${readableParam(fullName)}-${id}`,
+              `${window.location.origin}/doctors/${readableParam(displayName)}-${id}`,
           });
         }
         setError(false);
@@ -503,7 +504,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     </>
                   ) : null}
 
-                  <span>{doctorData.fullName || ''}</span>
+                  <span>{doctorData.displayName || ''}</span>
                 </>
               )}
             </div>
@@ -607,7 +608,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 <OnlineConsult
                   setIsPopoverOpen={setIsPopoverOpen}
                   doctorDetails={doctorData}
-                  onBookConsult={(popover: boolean) => setIsPopoverOpen(popover)}
                   tabValue={(tabValue: number) => setTabValue(tabValue)}
                   setIsShownOnce={(isShownOnce: boolean) => setIsShownOnce(isShownOnce)}
                   isShownOnce={isShownOnce}
@@ -633,3 +633,5 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     return <LinearProgress className={classes.loader} />;
   }
 };
+
+export default DoctorDetails;

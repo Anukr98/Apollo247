@@ -12,6 +12,8 @@ export interface getOneApolloUser_getOneApolloUser {
   earnedHC: number;
   availableHC: number;
   tier: string;
+  burnedCredits: number;
+  blockedCredits: number | null;
 }
 
 export interface getOneApolloUser {

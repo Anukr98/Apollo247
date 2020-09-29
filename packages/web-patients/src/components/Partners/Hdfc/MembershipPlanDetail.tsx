@@ -1,9 +1,11 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Typography } from '@material-ui/core';
+import { Theme, Typography, CircularProgress } from '@material-ui/core';
+import { useHistory } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { useLoginPopupState, useAuth, useAllCurrentPatients } from 'hooks/authHooks';
-import { AphButton } from '@aph/web-ui-components';
+import WarningModel from 'components/WarningModel';
+import { AphButton, AphDialog } from '@aph/web-ui-components';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
@@ -11,7 +13,27 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { HDFC_SUBSCRIPTION_GOLD } from 'helpers/constants';
+import { useApolloClient } from 'react-apollo-hooks';
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableContainer from '@material-ui/core/TableContainer';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
+
+import {
+  GetAllUserSubscriptionsWithPlanBenefits,
+  GetAllUserSubscriptionsWithPlanBenefitsVariables,
+} from 'graphql/types/GetAllUserSubscriptionsWithPlanBenefits';
+
+import {
+  initiateCallForPartner,
+  initiateCallForPartnerVariables,
+} from 'graphql/types/initiateCallForPartner';
+import {
+  GET_ALL_USER_SUBSCRIPTIONS_WITH_BENEFITS,
+  INITIATE_CALL_FOR_PARTNER,
+} from 'graphql/profiles';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -62,6 +84,12 @@ const useStyles = makeStyles((theme: Theme) => {
           fontSize: 12,
         },
       },
+    },
+    loadingContainer: {
+      width: '100%',
+      height: '100%',
+      textAlign: 'center',
+      verticalAlign: 'middle',
     },
     mainContent: {
       background: '#fff',
@@ -131,24 +159,28 @@ const useStyles = makeStyles((theme: Theme) => {
 
     btnContainer: {
       position: 'absolute',
-      bottom: 16,
+      bottom: 0,
       right: 0,
+      left: 0,
       [theme.breakpoints.down('sm')]: {
-        bottom: -55,
+        bottom: 0,
         left: 0,
         padding: '12px 16px',
         background: '#fff',
+        position: 'fixed',
+        zIndex: 999,
       },
+
       '& a': {
-        color: '#FC9916',
+        background: '#FC9916',
         position: 'relative',
-        background: '#fff',
-        borderRadius: 0,
-        width: 160,
+        color: '#fff',
+        width: '100%',
         boxShadow: 'none',
+        borderRadius: '0 0 5px 5px',
         '&:hover': {
-          background: '#fff',
-          color: '#FC9916',
+          background: '#FC9916',
+          color: '#fff',
           boxShadow: 'none',
         },
         [theme.breakpoints.down('sm')]: {
@@ -163,7 +195,10 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     expansionContainer: {
-      //   padding: '20px 0 50px',
+      padding: 30,
+      [theme.breakpoints.down('sm')]: {
+        padding: 16,
+      },
     },
     panelRoot: {
       boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.16)',
@@ -233,27 +268,26 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    cardContent: {},
     planCard: {
       padding: 16,
       position: 'relative',
       width: 400,
       height: 230,
-      flex: '1 0 auto',
-      borderRadius: 4,
+      boxShadow: '0px 0px 32px rgba(0, 0, 0, 0.1)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 5,
       [theme.breakpoints.down('sm')]: {
         width: '100%',
         height: 160,
         position: 'static',
+        boxShadow: 'none',
         // borderRadius: 10,
       },
       '& img': {
-        position: 'absolute',
-        top: 16,
-        right: 16,
-        [theme.breakpoints.down('sm')]: {
-          top: 30,
-          right: 30,
-        },
+        margin: '0 auto 0',
       },
       '& h1': {
         fontsize: 28,
@@ -264,13 +298,35 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    silver: {
+      '& p': {
+        '&:before': {
+          borderColor: '#C7C7C7',
+        },
+        '& span': {
+          color: '#898989, 100%',
+        },
+      },
+    },
     gold: {
-      background: `url(${require('images/hdfc/gold.svg')}) no-repeat 0 0`,
-      backgroundSize: 'cover',
+      '& p': {
+        '&:before': {
+          borderColor: '#E7BB65',
+        },
+        '& span': {
+          color: '#B45807',
+        },
+      },
     },
     platinum: {
-      background: `url(${require('images/hdfc/platinum.svg')}) no-repeat 0 0`,
-      backgroundSize: 'cover',
+      '& p': {
+        '&:before': {
+          borderColor: '#C7C7C7',
+        },
+        '& span': {
+          color: '#606060',
+        },
+      },
     },
     benefitDesc: {
       fontSize: 16,
@@ -334,9 +390,9 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
     },
     tabContent: {
-      padding: 30,
+      // padding: 30,
       [theme.breakpoints.down('sm')]: {
-        padding: 16,
+        // padding: 16,
       },
     },
     couponContent: {
@@ -395,10 +451,10 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     couponCard: {
       background: '#fafafa',
-      padding: 16,
+      padding: '16px 16px 40px 16px',
       borderRadius: 10,
       transition: '0.5s ease-in-out',
-      height: 220,
+      height: 180,
       overflow: 'hidden',
       position: 'relative',
       textAlign: 'center',
@@ -414,21 +470,24 @@ const useStyles = makeStyles((theme: Theme) => {
         textAlign: 'left',
         height: 'auto',
         boxShadow: '0px 0px 32px rgba(0, 0, 0, 0.1)',
+        '& p': {
+          width: '80%',
+        },
       },
       '& h2': {
         fontSize: 14,
         color: '#07AE8B',
         fontWeight: 600,
+        lineHeight: '16px',
         margin: '0 0 5px',
       },
       '& p': {
         fontSize: 11,
         lineHeight: '18px',
-        width: '80%',
       },
       '&:hover': {
-        boxShadow: ' 0px 1px 12px rgba(128, 128, 128, 0.2)',
-        '& a': {
+        boxShadow: ' 0px 1px 12px rgba(128, 128, 128, 0.4)',
+        '& a, button': {
           background: '#FC9916',
           color: '#FFF',
           [theme.breakpoints.down('sm')]: {
@@ -437,7 +496,7 @@ const useStyles = makeStyles((theme: Theme) => {
           },
         },
       },
-      '& a': {
+      '& a, button': {
         background: '#fff',
         color: '#FC9916',
         width: '100%',
@@ -456,7 +515,7 @@ const useStyles = makeStyles((theme: Theme) => {
           borderRadius: 5,
           display: 'block',
           width: 'auto',
-          position: 'static',
+          bottom: 10,
           '&:hover': {
             background: '#fff',
             color: '#FC9916',
@@ -470,16 +529,18 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    disabledButton: {
+      color: 'grey !important',
+    },
     couponInactive: {
       padding: '0 30px',
       [theme.breakpoints.down('sm')]: {
-        padding: '10px 16px 0',
-
+        padding: '10px 0 0',
         flex: 'auto',
       },
       '& p': {
-        fontSize: 18,
-        color: '#EA5F65',
+        fontSize: 14,
+        color: '#007C9D',
         fontWeight: 500,
         [theme.breakpoints.down('sm')]: {
           fontSize: 10,
@@ -514,6 +575,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 24,
       width: '100% ',
       margin: '0 0 0 30px',
+      minHeight: 230,
       boxShadow: '0px 0px 32px rgba(0, 0, 0, 0.1)',
       '& h2': {
         fontsize: 18,
@@ -545,6 +607,143 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'block',
       },
     },
+    benefitsConsumedContainer: {},
+    benefitsContent: {
+      padding: 30,
+      [theme.breakpoints.down('sm')]: {
+        padding: 16,
+      },
+    },
+    table: {
+      '& th': {
+        fonsSize: 14,
+        fontWeight: 700,
+        color: '#00B38E',
+        textTransform: 'uppercase',
+      },
+      '& td': {
+        fontSize: 12,
+        fontWeight: 500,
+        color: '#000',
+        textTransform: 'uppercase',
+      },
+    },
+    tableContainer: {
+      boxShadow: '0px 1px 8px rgba(0, 0, 0, 0.16)',
+      [theme.breakpoints.down('sm')]: {
+        width: '100%',
+        overflowX: 'auto',
+      },
+    },
+    dialogHeader: {
+      padding: '16px 16px 10px',
+      '& h3': {
+        fontSize: 16,
+        fontWeight: 600,
+        lineHeight: '21px',
+      },
+      '& p': {
+        fontSize: 10,
+        lineHeight: '13px',
+      },
+    },
+    connectDoctorContent: {
+      display: 'flex',
+      alignItems: 'flex-start',
+      flexWrap: 'wrap',
+    },
+    cdDetails: {
+      width: '50%',
+      padding: 12,
+      '& img': {
+        margin: '0 auto 10px',
+      },
+      '& h5': {
+        fontSize: 12,
+        color: '#00B38E',
+        linHeight: '16px',
+        '& span': {
+          fontWeight: 700,
+        },
+      },
+    },
+    btncContainer: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'flex-end',
+      padding: '10px 16px 16px',
+      '& button': {
+        margin: '0 0 0 10px',
+        '&:first-child': {
+          boxShadow: 'none',
+          color: '#FC9916',
+        },
+      },
+    },
+    callNote: {
+      fontSize: 12,
+      linrHeight: '16px',
+      '& span': {
+        display: 'block',
+      },
+    },
+    planName: {
+      textAlign: 'center',
+      position: 'relative',
+      margin: '5px 0',
+      '&:before': {
+        content: "''",
+        position: 'absolute',
+        top: 10,
+        left: 0,
+        right: 0,
+        borderBottom: '1px solid transparent',
+      },
+      '& span': {
+        padding: '5px 15px',
+        background: '#fff',
+        display: 'inline-block',
+        fontSize: 14,
+        textTransform: 'uppercase',
+        letterSpacing: 2,
+        fontWeight: 600,
+        position: 'relative',
+        zIndex: 2,
+      },
+    },
+    ciContent: {
+      boxShadow: '0px 0px 32px rgba(0, 0, 0, 0.1)',
+      background: '#fff',
+      padding: 40,
+      height: 230,
+      '& h2': {
+        fontSize: 20,
+        fontWeight: 700,
+        margin: '0 0 20px',
+      },
+      '& h5': {
+        fontSize: 18,
+        fontWeight: 600,
+        margin: '0 0 10px',
+      },
+    },
+    benefitIcon: {
+      display: 'none',
+      [theme.breakpoints.down('sm')]: {
+        display: 'block',
+        position: 'absolute',
+        top: 10,
+        right: 10,
+      },
+    },
+    beneContent: {
+      [theme.breakpoints.down('sm')]: {
+        width: '90%',
+      },
+    },
+    pb16: {
+      paddingBottom: 16,
+    },
   };
 });
 interface TabPanelProps {
@@ -552,6 +751,7 @@ interface TabPanelProps {
   index: any;
   value: any;
 }
+
 const TabPanel = (props: any) => {
   const { children, value, index, ...other } = props;
   return (
@@ -566,11 +766,25 @@ const TabPanel = (props: any) => {
     </div>
   );
 };
+
 export const MembershipPlanDetail: React.FC = (props) => {
   const classes = useStyles({});
   const [showMore, setShowMore] = React.useState<boolean>(false);
+  const [loading, setLoading] = React.useState<boolean>(true);
   const [expanded, setExpanded] = React.useState<string | false>(false);
   const [value, setValue] = React.useState(0);
+  const [subscriptionInclusions, setSubscriptionInclusions] = React.useState([]);
+  const [coupons, setCoupons] = React.useState([]);
+  const [active, setActive] = React.useState<boolean>(false);
+  const [planName, setPlanName] = React.useState<string>('');
+  const [benefitsWorth, setBenefitsWorth] = React.useState<string>('');
+  const [minimumTransactionValue, setMinimumTransactionValue] = React.useState<string>('');
+  const [successMessage, setSuccessMessage] = React.useState<object>();
+  const [callDoctorPopup, setCallDoctorPopup] = React.useState<boolean>(false);
+  const [exotelBenefitId, setExotelBenefitId] = React.useState<string>('');
+
+  const apolloClient = useApolloClient();
+  const history = useHistory();
 
   const handleChange = (panel: string) => (event: React.ChangeEvent<{}>, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false);
@@ -578,6 +792,127 @@ export const MembershipPlanDetail: React.FC = (props) => {
 
   const handleTabChange = (event: any, newValue: any) => {
     setValue(newValue);
+  };
+
+  const cardBg = (plan: String) => {
+    if (plan === 'GOLD+ PLAN') {
+      return classes.gold;
+    }
+    if (plan === 'PLATINUM+ PLAN') {
+      return classes.platinum;
+    } else {
+      return classes.silver;
+    }
+  };
+
+  const getMedalImage = (planName: String) => {
+    if (planName == 'GOLD+ PLAN') {
+      return require('images/hdfc/gold.svg');
+    }
+    if (planName == 'PLATINUM+ PLAN') {
+      return require('images/hdfc/platinum.svg');
+    } else return require('images/hdfc/silver.svg');
+  };
+
+  useEffect(() => {
+    apolloClient
+      .query<
+        GetAllUserSubscriptionsWithPlanBenefits,
+        GetAllUserSubscriptionsWithPlanBenefitsVariables
+      >({
+        query: GET_ALL_USER_SUBSCRIPTIONS_WITH_BENEFITS,
+        variables: {
+          mobile_number: localStorage.getItem('userMobileNo'),
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((response) => {
+        setSubscriptionInclusions(response.data.GetAllUserSubscriptionsWithPlanBenefits.response);
+
+        setPlanName(response.data.GetAllUserSubscriptionsWithPlanBenefits.response[0].name);
+        setBenefitsWorth(
+          response.data.GetAllUserSubscriptionsWithPlanBenefits.response[0].benefits_worth
+        );
+        setMinimumTransactionValue(
+          response.data.GetAllUserSubscriptionsWithPlanBenefits.response[0].min_transaction_value
+        );
+        setActive(
+          response.data.GetAllUserSubscriptionsWithPlanBenefits.response[0].subscriptionStatus ===
+            'active'
+        );
+        setCoupons(response.data.GetAllUserSubscriptionsWithPlanBenefits.response[0].coupons);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error('Failed fetching Subscription Inclusions');
+      });
+  }, []);
+
+  const initiateExotelCall = (mobileNumber: string, benefitId: string) => {
+    apolloClient
+      .query<initiateCallForPartner, initiateCallForPartnerVariables>({
+        query: INITIATE_CALL_FOR_PARTNER,
+        variables: {
+          mobileNumber: mobileNumber,
+          benefitId: benefitId,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((response) => {
+        response.data.initiateCallForPartner.success
+          ? setSuccessMessage({ message: `You'll be connected to the Doctor in a while` })
+          : setSuccessMessage({
+              message: `Error while connecting to the Doctor, Please try again`,
+            });
+        setCallDoctorPopup(false);
+      })
+      .catch((error) => {
+        console.log(error);
+        setCallDoctorPopup(false);
+        setSuccessMessage({ message: `Error while connecting to the Doctor, Please try again` });
+      });
+  };
+
+  const handleWhatsappChat = (number: String, message: String) => {
+    window.open(`https://api.whatsapp.com/send?phone=91${number}&text=${message}`);
+  };
+
+  const handleCTAClick = (item: any) => {
+    const cta_action = item.cta_action;
+    if (cta_action.type == 'REDIRECT') {
+      if (cta_action.meta.action == 'SPECIALITY_LISTING') {
+        history.push(clientRoutes.specialityListing());
+      } else if (cta_action.meta.action == 'PHARMACY_LANDING') {
+        history.push(clientRoutes.medicines());
+      } else if (cta_action.meta.action == 'PHR') {
+        history.push(clientRoutes.healthRecords());
+      } else if (cta_action.meta.action == 'DOC_LISTING_WITH_PAYROLL_DOCS_SELECTED') {
+        history.push(clientRoutes.specialityListing());
+      } else if (cta_action.meta.action == 'DIAGNOSTICS_LANDING') {
+        history.push(clientRoutes.welcome());
+      } else if (cta_action.meta.action == 'DIETECIAN_LANDING') {
+        history.push(clientRoutes.dietetics());
+      } else {
+        history.push(clientRoutes.welcome());
+      }
+    } else if (cta_action.type == 'CALL_API') {
+      if (cta_action.meta.action == 'CALL_EXOTEL_API') {
+        console.log('call exotel api');
+        if (item.available_count > 0) {
+          setExotelBenefitId(item._id);
+          setCallDoctorPopup(true);
+        } else {
+          setSuccessMessage({
+            message: `Hey, looks like you have exhausted the monthly usage limit for this benefit. If you feel this is an error, please raise a ticket on the Help section.`,
+          });
+        }
+        // initiateExotelCall(localStorage.getItem('userMobileNo'), item._id);
+      }
+    } else if (cta_action.type == 'WHATSAPP_OPEN_CHAT') {
+      handleWhatsappChat(cta_action.meta.action, cta_action.meta.message);
+    } else {
+      history.push(clientRoutes.welcome());
+    }
   };
 
   return (
@@ -600,7 +935,7 @@ export const MembershipPlanDetail: React.FC = (props) => {
             />
           </Link>
           <Typography component="h1" className={classes.pageHeader}>
-            Membership Plan Detail
+            Membership Details
           </Typography>
         </div>
         <div>
@@ -617,270 +952,326 @@ export const MembershipPlanDetail: React.FC = (props) => {
           </Link>
         </div>
       </header>
-      <div className={classes.container}>
-        <div className={classes.mainContent}>
-          <div className={classes.pcContent}>
-            <div className={classes.planCardContent}>
-              <div className={`${classes.planCard} ${classes.gold}`}>
-                <img src={require('images/hdfc/medal.svg')} alt="Gold MemberShip" />
-                <Typography component="h1">Gold + Plan</Typography>
-                <Typography className={classes.benefitDesc}>Availing Benefits worth</Typography>
-                <Typography className={classes.cardWorth}>Rs. 38K+</Typography>
-                <Typography className={classes.cardDesc}>
-                  A host of benefits await you with our Gold+ Plan curated for HDFC customers
-                </Typography>
-                <div className={classes.btnContainer}>
-                  <AphButton variant="contained" href={clientRoutes.welcome()}>
-                    Explore Now
-                  </AphButton>
+      {loading ? (
+        <div className={classes.loadingContainer}>
+          <CircularProgress size={30} />
+        </div>
+      ) : (
+        <div className={classes.container}>
+          <div className={classes.mainContent}>
+            <div className={classes.pcContent}>
+              <div className={classes.planCardContent}>
+                <div className={classes.planCard + ' ' + cardBg(planName)}>
+                  <div className={classes.cardContent}>
+                    <img src={getMedalImage(planName)} alt="" />
+                    <Typography className={classes.planName}>
+                      <span>{planName.split('+')[0]}</span>
+                    </Typography>
+                  </div>
+                  <div className={classes.btnContainer}>
+                    <AphButton variant="contained" href={clientRoutes.welcome()} color="primary">
+                      {active ? 'Explore Now' : 'Activate Now'}
+                    </AphButton>
+                  </div>
                 </div>
-              </div>
 
-              <div className={classes.couponContainer}>
-                <Typography component="h2">Active Coupons</Typography>
-                <Typography>You are eligible for the following coupons on Apollo 24|7</Typography>
-                <div className={classes.couponContent}>
-                  <div className={classes.couponDetails}>
-                    <Typography component="h3">Coupon Name 1</Typography>
-                    <Typography>Get Rs. 249/- Off on 2 Virtual Consultations Bookings</Typography>
+                {active ? (
+                  <div className={classes.couponContainer}>
+                    <Typography component="h2">Active Coupons</Typography>
+                    <Typography>
+                      You are eligible for the following coupons on Apollo 24|7
+                    </Typography>
+                    <div className={classes.couponContent}>
+                      {coupons.map((item) => {
+                        return (
+                          <div className={classes.couponDetails}>
+                            <Typography component="h3">{item.coupon}</Typography>
+                            <Typography>{item.message}</Typography>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                  <div className={classes.couponDetails}>
-                    <Typography component="h3">Coupon Name 2</Typography>
-                    <Typography>Get Rs. 249/- Off on 2 Virtual Consultations Bookings</Typography>
+                ) : (
+                  <div className={classes.couponInactive}>
+                    <div className={classes.ciContent}>
+                      <Typography component="h2">
+                        Complete your first transaction to unlock your benefits
+                      </Typography>
+                      <Typography component="h5">How to Unlock</Typography>
+                      <Typography>
+                        Transact for Rs. {minimumTransactionValue} or more on Virtual Consultations
+                        or Pharmacy Orders
+                      </Typography>
+                    </div>
                   </div>
-                  <div className={classes.couponDetails}>
-                    <Typography component="h3">Coupon Name 3</Typography>
-                    <Typography>Get Rs. 249/- Off on 2 Virtual Consultations Bookings</Typography>
-                  </div>
-                  <div className={classes.couponDetails}>
-                    <Typography component="h3">Coupon Name 4</Typography>
-                    <Typography>Get Rs. 249/- Off on 2 Virtual Consultations Bookings</Typography>
-                  </div>
-                </div>
-              </div>
-              <div className={classes.couponInactive}>
-                <Typography>
-                  Your Plan is Currently INACTIVE. To activate your plan, make a transaction greater
-                  than Rs 499 on Apollo 24/7
-                </Typography>
+                )}
               </div>
             </div>
-          </div>
 
-          <div className={classes.tabContainer}>
-            <Tabs
-              value={value}
-              classes={{
-                root: classes.tabsRoot,
-                indicator: classes.tabsIndicator,
-              }}
-              onChange={handleTabChange}
-              indicatorColor="primary"
+            <div className={classes.tabContainer}>
+              <Tabs
+                value={value}
+                classes={{
+                  root: classes.tabsRoot,
+                  indicator: classes.tabsIndicator,
+                }}
+                onChange={handleTabChange}
+                indicatorColor="primary"
+              >
+                <Tab
+                  classes={{
+                    root: classes.tabRoot,
+                    selected: classes.tabSelected,
+                  }}
+                  label="Available Benefits"
+                />
+                <Tab
+                  classes={{
+                    root: classes.tabRoot,
+                    selected: classes.tabSelected,
+                  }}
+                  label="Benefits Consumed"
+                />
+              </Tabs>
+              <div className={classes.tabContent}>
+                <TabPanel value={value} index={0}>
+                  <div className={classes.expansionContainer}>
+                    {/* Show this title when tab is not active */}
+                    <Typography component="h2" className={classes.sectionTitle}>
+                      Benefits Available
+                    </Typography>
+                    <ul className={classes.couponList}>
+                      {subscriptionInclusions &&
+                        subscriptionInclusions[0] &&
+                        subscriptionInclusions[0].benefits.map((item: any, index: any) => {
+                          return (
+                            <li key={index}>
+                              <div
+                                className={`${classes.couponCard} ${
+                                  item.cta_label == 'NULL' ? classes.pb16 : ''
+                                }`}
+                              >
+                                <img
+                                  src={item.icon}
+                                  className={classes.benefitIcon}
+                                  alt="Benefits Available"
+                                />
+                                <div className={classes.beneContent}>
+                                  <Typography component="h2">{item.header_content}</Typography>
+                                  <Typography>{item.description}</Typography>
+                                </div>
+                                {item.cta_label != 'NULL' && (
+                                  <AphButton
+                                    disabled={!active}
+                                    className={active ? '' : classes.disabledButton}
+                                    onClick={() => handleCTAClick(item)}
+                                    // href={clientRoutes.welcome()}
+                                  >
+                                    {item.cta_label}
+                                  </AphButton>
+                                )}
+                              </div>
+                            </li>
+                          );
+                        })}
+                    </ul>
+                  </div>
+                </TabPanel>
+                <TabPanel value={value} index={1}>
+                  <div className={classes.benefitsConsumedContainer}>
+                    <div className={classes.benefitsContent}>
+                      <TableContainer className={classes.tableContainer}>
+                        <Table className={classes.table} aria-label="simple table">
+                          <TableHead>
+                            <TableRow>
+                              <TableCell>Benefits</TableCell>
+                              <TableCell>What You Get</TableCell>
+                              <TableCell>Redemption Limit</TableCell>
+                              <TableCell>Status</TableCell>
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                            {subscriptionInclusions &&
+                              subscriptionInclusions[0] &&
+                              subscriptionInclusions[0].benefits.map((item: any, index: any) => {
+                                return (
+                                  <>
+                                    {item.attribute_type.type !== 'unlimited' ? (
+                                      <TableRow key={index}>
+                                        <TableCell>{item.header_content}</TableCell>
+                                        <TableCell>{item.description}</TableCell>
+                                        <TableCell>{item.attribute_type.type}</TableCell>
+                                        <TableCell>{item.attribute_type.remaining}</TableCell>
+                                      </TableRow>
+                                    ) : (
+                                      ''
+                                    )}
+                                  </>
+                                );
+                              })}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                    </div>
+                  </div>
+                </TabPanel>
+              </div>
+            </div>
+            <ExpansionPanel
+              expanded={expanded === 'panel3'}
+              onChange={handleChange('panel3')}
+              className={classes.panelRoot}
             >
-              <Tab
+              <ExpansionPanelSummary
+                expandIcon={<ExpandMoreIcon />}
                 classes={{
-                  root: classes.tabRoot,
-                  selected: classes.tabSelected,
+                  root: classes.panelHeader,
+                  content: classes.summaryContent,
+                  expandIcon: classes.expandIcon,
+                  expanded: classes.panelExpanded,
                 }}
-                label="Available Benefits"
-              />
-              <Tab
-                classes={{
-                  root: classes.tabRoot,
-                  selected: classes.tabSelected,
-                }}
-                label="Benefits Consumed"
-              />
-            </Tabs>
-            <div className={classes.tabContent}>
-              <TabPanel value={value} index={0}>
-                <div className={classes.expansionContainer}>
-                  {/* Show this title when tab is not active */}
-                  <Typography component="h2" className={classes.sectionTitle}>
-                    Benefits Available
-                  </Typography>
-                  <ul className={classes.couponList}>
+              >
+                <Typography className={classes.panelHeading}>Terms &amp; Conditions</Typography>
+              </ExpansionPanelSummary>
+              <ExpansionPanelDetails className={classes.panelDetails}>
+                <div className={classes.detailsContent}>
+                  <ul className={classes.tncList}>
                     <li>
-                      <div className={classes.couponCard}>
-                        <Typography component="h2">
-                          24/7 Access to a General Physician on Call
-                        </Typography>
-                        <Typography>
-                          Round-the-clock doctor availability at a click of a button
-                        </Typography>
-                        <AphButton href={clientRoutes.welcome()}>Redeem</AphButton>
-                      </div>
+                      The Healthy Life offering is the marketing program offered by Apollo 24|7, an
+                      app managed by Apollo Hospitals Enterprise Limited (AHEL) only for HDFC Bank
+                      customers.
                     </li>
                     <li>
-                      <div className={classes.couponCard}>
-                        <Typography component="h2">Concierge for 24|7 services</Typography>
-                        <Typography>
-                          Priority Chat Support on Whatsapp with our Executives
-                        </Typography>
-                        <AphButton href={clientRoutes.welcome()}>Redeem</AphButton>
-                      </div>
+                      The validity of the program (“Term”) is till 31st August 2021, unless extended
+                      by Apollo 24|7 and HDFC Bank.
                     </li>
                     <li>
-                      <div className={classes.couponCard}>
-                        <Typography component="h2">Covid-19 Care</Typography>
-                        <ul className={classes.benefitList}>
-                          <li>Preferential Access to Pre &amp; Post COVID assessments</li>
-                          <li>Preferential Access to COVID Home Testing </li>
-                          <li>Preferential Access To Home &amp; Hotel Care </li>
-                        </ul>
-                        <AphButton href={clientRoutes.covidLanding()}>Redeem</AphButton>
-                      </div>
+                      The discounts applicable as per the Healthy Life program shall be applied at
+                      the time of payment checkout by the customer.
                     </li>
                     <li>
-                      <div className={classes.couponCard}>
-                        <Typography component="h2">
-                          Access to Apollo doctors through 24|7 App
-                        </Typography>
-                        <Typography>
-                          Choose a Doctor and Book an Online Consultation instantly on our App
-                        </Typography>
-                        <AphButton href={clientRoutes.welcome()}>Redeem</AphButton>
-                      </div>
+                      This program is designed for select HDFC customers and offerings will vary
+                      with the different categories of HDFC customers. However, membership schemes
+                      can be upgraded on the basis of the spending on the Apollo 24|7 app as
+                      mentioned in the offer grid.
                     </li>
                     <li>
-                      <div className={classes.couponCard}>
-                        <Typography component="h2">Free Medicine Delivery</Typography>
-                        <Typography>No delivery charges for orders greater than Rs 300</Typography>
-                        <AphButton href={clientRoutes.medicines()}>Redeem</AphButton>
-                      </div>
+                      The Healthy Life Program is open to all HDFC customers with a valid Indian
+                      mobile number only.
                     </li>
                     <li>
-                      <div className={classes.couponCard}>
-                        <Typography component="h2">Digital Vault for health records</Typography>
-                        <Typography>
-                          Store all your medical documents in your personal digital vault
-                        </Typography>
-                        <AphButton href={clientRoutes.healthRecords()}>Redeem</AphButton>
-                      </div>
+                      The T&amp;C’s of the silver, gold and platinum membership offered in the
+                      Healthy Life program shall be governed by the terms &amp; conditions of the
+                      website -{' '}
+                      <a href="https://www.oneapollo.com/terms-conditions/">
+                        https://www.oneapollo.com/terms-conditions/
+                      </a>
                     </li>
                     <li>
-                      <div className={classes.couponCard}>
-                        <Typography component="h2">Free Health Assesment Consultation</Typography>
-                        <Typography>
-                          Get a free medical consultation from Top Apollo Doctors
-                        </Typography>
-                        <AphButton href={clientRoutes.welcome()}>Redeem</AphButton>
-                      </div>
+                      The Healthy Life offering will be applicable to all HDFC customers, whether
+                      they are existing customers of Apollo 24|7 or not. However, all the customers
+                      shall adhere to the offerings as mentioned in this marketing program.
+                    </li>
+                    <li>The Healthy Life program is non-transferable.</li>
+                    <li>
+                      The activation of the benefits for the Healthy Life program will be completed
+                      24 hours post the service delivery/fulfillment of the qualifying transaction.
+                      For e.g., to unlock benefits, the user is needed to make a qualifying
+                      transaction of INR 499, amount subject to change as per different tiers
+                    </li>
+                    <li>
+                      By enrolling for the Healthy Life program, a member consents to allow use and
+                      disclosure by Apollo Health centres, along with his/her personal and other
+                      information as provided by the member at the time of enrolment and/or
+                      subsequently.
+                    </li>
+                    <li>
+                      As a prerequisite to becoming a member, a customer will need to provide
+                      mandatory information including full name, valid and active Indian mobile
+                      number. He/she shall adhere to such terms and conditions as may be prescribed
+                      for membership from time to time.
+                    </li>
+                    <li>
+                      The Healthy Life membership program will be issued solely at the discretion of
+                      the management and the final discretion on all matters relating to the
+                      membership shall rest with Apollo 24|7(AHEL).
+                    </li>
+                    <li>
+                      Healthy Life program is a corporate offering exclusively for HDFC bank
+                      customers and not for individuals.
+                    </li>
+                    <li>
+                      Apollo 24|7 reserves the right to add, alter, amend and revise terms and
+                      conditions as well as rules and regulations governing the Healthy Life
+                      membership program without prior notice.
+                    </li>
+                    <li>
+                      Benefits and offers available through the program may change or be withdrawn
+                      without prior intimation. Apollo 24|7 will not be responsible for any
+                      liability arising from such situations or use of such offers.
+                    </li>
+                    <li>
+                      Any disputes arising out of the offer shall be subject to arbitration by a
+                      sole arbitrator appointed by Apollo 24|7 for this purpose. The proceedings of
+                      the arbitration shall be conducted as per the provisions of Arbitration and
+                      Conciliation Act, 1996. The place of arbitration shall be at Chennai and
+                      language of arbitration shall be English. The existence of a dispute, if at
+                      all, shall not constitute a claim against Apollo 24|7.
                     </li>
                   </ul>
                 </div>
-              </TabPanel>
-              <TabPanel value={value} index={1}>
-                Item two
-              </TabPanel>
+              </ExpansionPanelDetails>
+            </ExpansionPanel>
+          </div>
+        </div>
+      )}
+      <AphDialog open={callDoctorPopup} maxWidth="sm">
+        <div>
+          <div className={classes.dialogHeader}>
+            <Typography component="h3">Connect to the Doctor </Typography>
+            <Typography>Please follow the steps to connect to Doctor </Typography>
+          </div>
+          <div className={classes.connectDoctorContent}>
+            <div className={classes.cdDetails}>
+              <img src={require('images/hdfc/call-incoming.svg')} alt="" />
+              <Typography component="h5">
+                Answer the call from <span>‘040-482-17258’</span> to connect.
+              </Typography>
+            </div>
+            <div className={classes.cdDetails}>
+              <img src={require('images/hdfc/call-outgoing.svg')} alt="" />
+              <Typography component="h5">The same call will connect to the Doctor.</Typography>
+            </div>
+            <div className={classes.cdDetails}>
+              <img src={require('images/hdfc/group.svg')} alt="" />
+              <Typography component="h5">Wait for the Doctor to connect over the call.</Typography>
+            </div>
+            <div className={classes.cdDetails}>
+              <Typography className={classes.callNote}>
+                <span>*Note : </span>Your personal phone number will not be shared.
+              </Typography>
             </div>
           </div>
-          <ExpansionPanel
-            expanded={expanded === 'panel3'}
-            onChange={handleChange('panel3')}
-            className={classes.panelRoot}
-          >
-            <ExpansionPanelSummary
-              expandIcon={<ExpandMoreIcon />}
-              classes={{
-                root: classes.panelHeader,
-                content: classes.summaryContent,
-                expandIcon: classes.expandIcon,
-                expanded: classes.panelExpanded,
+          <div className={classes.btncContainer}>
+            <AphButton onClick={() => setCallDoctorPopup(false)}>Cancel</AphButton>
+            <AphButton
+              color="primary"
+              onClick={() => {
+                initiateExotelCall(localStorage.getItem('userMobileNo'), exotelBenefitId);
               }}
             >
-              <Typography className={classes.panelHeading}>Terms &amp; Conditions</Typography>
-            </ExpansionPanelSummary>
-            <ExpansionPanelDetails className={classes.panelDetails}>
-              <div className={classes.detailsContent}>
-                <ul className={classes.tncList}>
-                  <li>
-                    The Healthy Life offering is the marketing program offered by Apollo 24/7, an
-                    app managed by Apollo Hospitals Enterprise Limited (AHEL) only for HDFC Bank
-                    customers.
-                  </li>
-                  <li>
-                    The validity of the program (“Term”) is till 31st August 2021, unless extended
-                    by Apollo 24/7 and HDFC Bank.
-                  </li>
-                  <li>
-                    The discounts applicable as per the Healthy Life program shall be applied at the
-                    time of payment checkout by the customer.
-                  </li>
-                  <li>
-                    This program is designed for select HDFC customers and offerings will vary with
-                    the different categories of HDFC customers. However, membership schemes can be
-                    upgraded on the basis of the spending on the Apollo 24/7 app as mentioned in the
-                    offer grid.
-                  </li>
-                  <li>
-                    The Healthy Life Program is open to all HDFC customers with a valid Indian
-                    mobile number only.
-                  </li>
-                  <li>
-                    The T&amp;C’s of the silver, gold and platinum membership offered in the Healthy
-                    Life program shall be governed by the terms &amp; conditions of the website -{' '}
-                    <a href="https://www.oneapollo.com/terms-conditions/">
-                      https://www.oneapollo.com/terms-conditions/
-                    </a>
-                  </li>
-                  <li>
-                    The Healthy Life offering will be applicable to all HDFC customers, whether they
-                    are existing customers of Apollo 24/7 or not. However, all the customers shall
-                    adhere to the offerings as mentioned in this marketing program.
-                  </li>
-                  <li>The Healthy Life program is non-transferable.</li>
-                  <li>
-                    The activation of the benefits for the Healthy Life program will be completed 24
-                    hours post the service delivery/fulfillment of the qualifying transaction. For
-                    e.g., to unlock benefits, the user is needed to make a qualifying transaction of
-                    INR 499, amount subject to change as per different tiers
-                  </li>
-                  <li>
-                    By enrolling for the Healthy Life program, a member consents to allow use and
-                    disclosure by Apollo Health centres, along with his/her personal and other
-                    information as provided by the member at the time of enrolment and/or
-                    subsequently.
-                  </li>
-                  <li>
-                    As a prerequisite to becoming a member, a customer will need to provide
-                    mandatory information including full name, valid and active Indian mobile
-                    number. He/she shall adhere to such terms and conditions as may be prescribed
-                    for membership from time to time.
-                  </li>
-                  <li>
-                    The Healthy Life membership program will be issued solely at the discretion of
-                    the management and the final discretion on all matters relating to the
-                    membership shall rest with Apollo 24/7(AHEL).
-                  </li>
-                  <li>
-                    Healthy Life program is a corporate offering exclusively for HDFC bank customers
-                    and not for individuals.
-                  </li>
-                  <li>
-                    Apollo 24/7 reserves the right to add, alter, amend and revise terms and
-                    conditions as well as rules and regulations governing the Healthy Life
-                    membership program without prior notice.
-                  </li>
-                  <li>
-                    Benefits and offers available through the program may change or be withdrawn
-                    without prior intimation. Apollo 24/7 will not be responsible for any liability
-                    arising from such situations or use of such offers.
-                  </li>
-                  <li>
-                    Any disputes arising out of the offer shall be subject to arbitration by a sole
-                    arbitrator appointed by Apollo 24/7 for this purpose. The proceedings of the
-                    arbitration shall be conducted as per the provisions of Arbitration and
-                    Conciliation Act, 1996. The place of arbitration shall be at Chennai and
-                    language of arbitration shall be English. The existence of a dispute, if at all,
-                    shall not constitute a claim against Apollo 24/7.
-                  </li>
-                </ul>
-              </div>
-            </ExpansionPanelDetails>
-          </ExpansionPanel>
+              Proceed To Connect
+            </AphButton>
+          </div>
         </div>
-      </div>
+      </AphDialog>
+      <WarningModel
+        error={successMessage}
+        onClose={() => {
+          setSuccessMessage(null);
+        }}
+      />
     </div>
   );
 };

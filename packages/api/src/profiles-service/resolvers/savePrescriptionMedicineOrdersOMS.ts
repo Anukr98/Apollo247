@@ -172,6 +172,18 @@ const savePrescriptionMedicineOrderOMS: Resolver<
       medicineOrderAddressDetails.latitude = patientAddressDetails.latitude;
       medicineOrderAddressDetails.longitude = patientAddressDetails.longitude;
       medicineOrderAddressDetails.stateCode = patientAddressDetails.stateCode;
+
+      if (patientAddressDetails.name) {
+        medicineOrderAddressDetails.name = patientAddressDetails.name;
+      } else {
+        medicineOrderAddressDetails.name = patientDetails.firstName;
+      }
+
+      if (patientAddressDetails.mobileNumber) {
+        medicineOrderAddressDetails.mobileNumber = patientAddressDetails.mobileNumber;
+      } else {
+        medicineOrderAddressDetails.mobileNumber = patientDetails.mobileNumber;
+      }
     }
   }
 
@@ -220,8 +232,6 @@ const savePrescriptionMedicineOrderOMS: Resolver<
     };
     await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, saveOrder.orderAutoId);
 
-    medicineOrderAddressDetails.name = patientDetails.firstName;
-    medicineOrderAddressDetails.mobileNumber = patientDetails.mobileNumber;
     medicineOrderAddressDetails.medicineOrders = saveOrder;
     await medicineOrdersRepo.saveMedicineOrderAddress(medicineOrderAddressDetails);
   }
@@ -238,9 +248,7 @@ const savePrescriptionMedicineOrderOMS: Resolver<
         JSON.stringify(topicError),
         JSON.stringify(topicError)
       );
-      console.log('topic create error', topicError);
     }
-    console.log('connected to topic', queueName);
 
     const message = 'MEDICINE_ORDER:' + saveOrder.orderAutoId + ':' + patientDetails.id;
     azureServiceBus.sendTopicMessage(queueName, message, (sendMsgError) => {
@@ -252,9 +260,7 @@ const savePrescriptionMedicineOrderOMS: Resolver<
           message,
           JSON.stringify(sendMsgError)
         );
-        console.log('send message error', sendMsgError);
       }
-      console.log('message sent to topic');
     });
   });
 
@@ -283,15 +289,15 @@ const savePrescriptionMedicineOrderOMS: Resolver<
 
     const toEmailId =
       process.env.NODE_ENV == 'dev' ||
-        process.env.NODE_ENV == 'development' ||
-        process.env.NODE_ENV == 'local'
+      process.env.NODE_ENV == 'development' ||
+      process.env.NODE_ENV == 'local'
         ? ApiConstants.MEDICINE_SUPPORT_EMAILID
         : ApiConstants.MEDICINE_SUPPORT_EMAILID_PRODUCTION;
 
     let ccEmailIds =
       process.env.NODE_ENV == 'dev' ||
-        process.env.NODE_ENV == 'development' ||
-        process.env.NODE_ENV == 'local'
+      process.env.NODE_ENV == 'development' ||
+      process.env.NODE_ENV == 'local'
         ? ''
         : <string>ApiConstants.MEDICINE_SUPPORT_CC_EMAILID_PRODUCTION;
 

@@ -5,10 +5,18 @@
     { "state": "Maharastra", "data": ["Mumbai"] }
   ],
   "brands": [
-    { "name": "apollo abc", "image": "/sda" },
-    { "name": "apollo xyz", "image": "/das" },
-    { "name": "apollo spectra", "image": "/sds" },
-    { "name": "apollo pharma", "image": "/sas" }
+    { "name": "APOLLO_HOMECARE", "image": "/sda", "brandName": "Apollo Homecare" },
+    { "name": "STAR_APOLLO", "image": "/das", "brandName": "Star Apollo" },
+    { "name": "SPECTRA", "image": "/sds", "brandName": "Spectra" },
+    { "name": "CRADLE", "image": "/sas", "brandName": "Cradle" },
+    { "name": "APOLLO", "image": "/sas", "brandName": "Apollo" },
+    { "name": "CLINIC", "image": "/sas", "brandName": "Clinic" },
+    { "name": "DOCTOR_CONNECT", "image": "/sas", "brandName": "Doctor Connect" },
+    { "name": "JUNIOR", "image": "/sas", "brandName": "Junior" },
+    { "name": "PAYROLL", "image": "/sas", "brandName": "Payroll" },
+    { "name": "WHITE_DENTAL", "image": "/sas", "brandName": "White Dental" },
+    { "name": "SUGAR", "image": "/sas", "brandName": "Sugar" },
+    { "name": "FERTILITY", "image": "/sas", "brandName": "Fertility" }
   ],
   "experience": [{ "name": "0-5" }, { "name": "5-10" }, { "name": "11 - 15" }, { "name": "15+" }],
   "availability": [

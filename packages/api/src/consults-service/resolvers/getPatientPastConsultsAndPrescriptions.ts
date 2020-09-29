@@ -191,30 +191,6 @@ const getPatientPastConsultsAndPrescriptions: Resolver<
         ))
     );
   }
-
-  //commented to support backward compatability
-  /*let patientMedicineOrders: MedicineOrders[] = [];
-  let uniqueMedicineRxOrders: MedicineOrders[] = [];
-  const medicineOrdersRepo = patientsDb.getCustomRepository(MedicineOrdersRepository);
-  if (hasFilter(CONSULTS_RX_SEARCH_FILTER.PRESCRIPTION, filter)) {
-    patientMedicineOrders = await medicineOrdersRepo.findByPatientIds(
-      primaryPatientIds,
-      offset,
-      limit
-    );
-
-    //filtering the medicine orders by unique prescription url
-    const prescriptionUrls: string[] = [];
-    uniqueMedicineRxOrders = patientMedicineOrders.filter((order) => {
-      if (prescriptionUrls.includes(order.prescriptionImageUrl)) {
-        return false;
-      } else {
-        prescriptionUrls.push(order.prescriptionImageUrl);
-        return true;
-      }
-    });
-  } */
-
   return { consults: patientAppointments, medicineOrders: [] };
 };
 

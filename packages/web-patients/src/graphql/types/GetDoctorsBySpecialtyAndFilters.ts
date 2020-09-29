@@ -54,6 +54,7 @@ export interface GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters
   firstName: string;
   lastName: string;
   fullName: string | null;
+  displayName: string | null;
   specialty: GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_specialty | null;
   experience: string | null;
   photoUrl: string | null;
@@ -93,6 +94,8 @@ export interface GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters
   specialty: GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_specialty | null;
   doctorsNextAvailability: (GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability | null)[] | null;
   doctorsAvailability: (GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsAvailability | null)[] | null;
+  apolloDoctorCount: number | null;
+  partnerDoctorCount: number | null;
 }
 
 export interface GetDoctorsBySpecialtyAndFilters {

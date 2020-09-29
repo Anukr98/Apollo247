@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 // ====================================================
@@ -17,4 +18,5 @@ export interface EndCallNotification {
 
 export interface EndCallNotificationVariables {
   appointmentCallId?: string | null;
+  patientId?: string | null;
 }

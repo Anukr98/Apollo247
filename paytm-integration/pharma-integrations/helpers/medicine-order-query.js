@@ -12,12 +12,16 @@ const getMedicineOrderQuery = (method, patientId, orderId) => {
             devliveryCharges
             deliveryType
             patientAddressId
+            tatType
+            bookingSource
             prescriptionImageUrl
             orderType
             currentStatus
             quoteDateTime
             coupon
             customerComment
+            clusterId
+            allocationProfileName
             medicineOrderAddress {
               mobileNumber
               name
@@ -37,7 +41,7 @@ const getMedicineOrderQuery = (method, patientId, orderId) => {
               lastName
               emailAddress
               dateOfBirth
-              
+              mobileNumber
             }
             medicineOrderLineItems{
               medicineSKU

@@ -1,7 +1,6 @@
 import React from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
-import { Link } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -24,8 +23,10 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   });
 });
-
-export const WhyApollo: React.FC = (props) => {
+interface WhyApolloInterface {
+  alternateVariant?: boolean;
+}
+export const WhyApollo: React.FC<WhyApolloInterface> = (props) => {
   const classes = useStyles({});
 
   return (
@@ -34,10 +35,14 @@ export const WhyApollo: React.FC = (props) => {
       <ul>
         <li>Round-the-clock doctor availability</li>
         <li>Over 70 specialties</li>
-        <li>Detailed digital prescriptions</li>
+        {props.alternateVariant ? '' : <li>Detailed digital prescriptions</li>}
         <li>Order medicines {'&'} tests online</li>
         <li>Digitised health records</li>
       </ul>
     </div>
   );
+};
+
+WhyApollo.defaultProps = {
+  alternateVariant: true,
 };

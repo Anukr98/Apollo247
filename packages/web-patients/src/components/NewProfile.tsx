@@ -11,7 +11,8 @@ import _isEmpty from 'lodash/isEmpty';
 import { UpdatePatient, UpdatePatientVariables } from 'graphql/types/UpdatePatient';
 import { UPDATE_PATIENT } from 'graphql/profiles';
 import { ProfileSuccess } from 'components/ProfileSuccess';
-import { parse, format } from 'date-fns';
+import parse from 'date-fns/parse';
+import format from 'date-fns/format';
 import { GetCurrentPatients_getCurrentPatients_patients } from 'graphql/types/GetCurrentPatients';
 import { Formik, FormikProps, Field, FieldProps, Form } from 'formik';
 import { useMutation } from 'react-apollo-hooks';
@@ -19,9 +20,14 @@ import _toLower from 'lodash/toLower';
 import _upperFirst from 'lodash/upperFirst';
 import { Alerts } from 'components/Alerts/Alerts';
 import { Route } from 'react-router-dom';
-import { webengageUserLoginTracking, webengageUserDetailTracking } from '../webEngageTracking';
+import {
+  webengageUserLoginTracking,
+  webengageUserDetailTracking,
+  HdfcUserSignupDetailTracking,
+} from '../webEngageTracking';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { PARTNER_TP_REF_CODES } from 'helpers/constants';
+import { LazyIntersection } from './lib/LazyIntersection';
 
 const isoDatePattern = 'yyyy-MM-dd';
 const clientDatePattern = 'dd/MM/yyyy';
@@ -234,7 +240,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
   }
 
   let signUpObject = {
-    heading: 'Welcome to apollo 24/7',
+    heading: 'Welcome to apollo 24|7',
     subHeading:
       'Enter your detailsLet us quickly get to know you so that we can get you the best help :)',
     showMascot: true,
@@ -287,7 +293,15 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                   });
                   /* webengage code end */
                   if (props.customSignUp.referral === 'HDFCBANK') {
-                    history.push(clientRoutes.membershipHdfc());
+                    HdfcUserSignupDetailTracking({
+                      firstName: values.firstName,
+                      lastName: values.lastName,
+                      gender: values.gender,
+                      emailAddress: values.emailAddress,
+                      dateOfBirth: values.dateOfBirth,
+                      mobileNumber: patient.mobileNumber,
+                    });
+                    history.push(clientRoutes.welcome());
                   } else {
                     setShowProfileSuccess(true);
                   }

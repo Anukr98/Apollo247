@@ -4,13 +4,13 @@ import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { OrderCard } from '@aph/mobile-patients/src/components/ui/OrderCard';
 import { MEDICINE_DELIVERY_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { g, getOrderStatusText } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { getOrderStatusText } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React from 'react';
-import { SafeAreaView, StyleSheet, View, ScrollView, FlatList } from 'react-native';
+import { SafeAreaView, StyleSheet, View, FlatList } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { useQuery } from 'react-apollo-hooks';
 import { GET_MEDICINE_ORDERS_OMS__LIST } from '@aph/mobile-patients/src/graphql/profiles';
@@ -32,6 +32,15 @@ const styles = StyleSheet.create({
   },
 });
 
+const formatOrders = (orders?: getMedicineOrdersOMSList) =>
+  ((orders?.getMedicineOrdersOMSList?.medicineOrdersList as MedOrder[]) || []).filter(
+    (item) =>
+      !(
+        item.medicineOrdersStatus?.length == 1 &&
+        item.medicineOrdersStatus?.find((s) => !s!.hideStatus)
+      )
+  );
+
 type MedOrder = getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList;
 export interface YourOrdersSceneProps extends NavigationScreenProps<{ header: string }> {}
 
@@ -44,16 +53,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
     variables: { patientId: currentPatient && currentPatient.id },
     fetchPolicy: 'no-cache',
   });
-  const orders =
-    (loading || error) && !data
-      ? []
-      : ((g(data, 'getMedicineOrdersOMSList', 'medicineOrdersList') as MedOrder[]) || []).filter(
-          (item) =>
-            !(
-              (item.medicineOrdersStatus || []).length == 1 &&
-              (item.medicineOrdersStatus || []).find((s) => !s!.hideStatus)
-            )
-        );
+  const orders = loading || error ? [] : formatOrders(data);
 
   const refetchOrders = async () => {
     try {
@@ -63,101 +63,52 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
     }
   };
 
-  const getDeliverTypeOrDescription = (
-    order: getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList
-  ) => {
+  const getDeliverTypeOrDescription = (order: MedOrder) => {
     const getStore = () => {
-      const shopAddress = g(order, 'shopAddress');
+      const shopAddress = order?.shopAddress;
       const parsedShopAddress = JSON.parse(shopAddress || '{}');
       return (
-        (parsedShopAddress &&
-          parsedShopAddress.storename &&
-          parsedShopAddress.address &&
-          [
-            g(parsedShopAddress, 'storename'),
-            g(parsedShopAddress, 'city'),
-            g(parsedShopAddress, 'zipcode'),
-          ]
+        (parsedShopAddress?.storename &&
+          [parsedShopAddress.storename, parsedShopAddress.city, parsedShopAddress.zipcode]
             .filter((a) => a)
             .join(', ')) ||
         ''
       );
     };
 
-    const offlineOrderNumber = g(order, 'billNumber');
-    if (offlineOrderNumber) {
+    if (order?.billNumber) {
       return getStore();
     }
 
-    const type = g(order, 'deliveryType');
-    switch (type) {
-      case MEDICINE_DELIVERY_TYPE.HOME_DELIVERY:
-        return 'Home Delivery';
-        break;
-      case MEDICINE_DELIVERY_TYPE.STORE_PICKUP:
-        return 'Store Pickup';
-        break;
-      default:
-        return 'Unknown';
-        break;
+    const type = order?.deliveryType;
+
+    if (type === MEDICINE_DELIVERY_TYPE.HOME_DELIVERY) {
+      return 'Home Delivery';
+    } else if (type === MEDICINE_DELIVERY_TYPE.STORE_PICKUP) {
+      return 'Store Pickup';
+    } else {
+      return '';
     }
   };
-
-  /*
-  const getSortedList = (
-    orderStatusList: (getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList_medicineOrdersStatus | null)[]
-  ) => {
-    return orderStatusList.sort(
-      (a, b) =>
-        moment(b!.statusDate)
-          .toDate()
-          .getTime() -
-        moment(a!.statusDate)
-          .toDate()
-          .getTime()
-    );
-  };
-  const getStatusType = (
-    orderStatusList: (getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList_medicineOrdersStatus | null)[]
-  ) => {
-    const sortedList = getSortedList(orderStatusList);
-    return g(sortedList[0], 'orderStatus')!;
-  };
-  const getStatusDesc = (
-    orderStatusList: (getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList_medicineOrdersStatus | null)[]
-  ) => {
-    const sortedList = getSortedList(orderStatusList);
-    return getOrderStatusText(g(sortedList[0], 'orderStatus')!);
-  };
-  */
 
   const getFormattedTime = (time: string) => {
     return moment(time).format('D MMM YY, hh:mm A');
   };
 
-  const getOrderTitle = (
-    order: getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList
-  ) => {
+  const getOrderTitle = (order: MedOrder) => {
     // use billedItems for delivered orders
-    const billedItems = g(
-      order,
-      'medicineOrderShipments',
-      '0' as any,
-      'medicineOrderInvoice',
-      '0' as any,
-      'itemDetails'
-    );
+    const billedItems = order?.medicineOrderShipments?.[0]?.medicineOrderInvoice?.[0]?.itemDetails;
     const billedLineItems = billedItems
       ? (JSON.parse(billedItems) as { itemName: string }[])
       : null;
-    const lineItems = (billedLineItems || g(order, 'medicineOrderLineItems') || []) as {
+    const lineItems = (billedLineItems || order?.medicineOrderLineItems || []) as {
       itemName?: string;
       medicineName?: string;
     }[];
     let title = 'Medicines';
 
     if (lineItems.length) {
-      const firstItem = g(lineItems, '0' as any, billedLineItems ? 'itemName' : 'medicineName')!;
+      const firstItem = lineItems?.[0]?.[billedLineItems ? 'itemName' : 'medicineName']!;
       const lineItemsLength = lineItems.length;
       title =
         lineItemsLength > 1
@@ -168,10 +119,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
     return title;
   };
 
-  const renderOrder = (
-    order: getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList,
-    index: number
-  ) => {
+  const renderOrder = (order: MedOrder, index: number) => {
     const orderNumber = order.billNumber || order.orderAutoId;
     return (
       <OrderCard
@@ -193,21 +141,20 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
         description={getDeliverTypeOrDescription(order)}
         statusDesc={getOrderStatusText(order.currentStatus!)}
         status={order.currentStatus!}
-        dateTime={getFormattedTime(g(order, 'createdDate'))}
+        dateTime={getFormattedTime(order?.createdDate)}
       />
     );
   };
 
   const renderOrders = () => {
     return (
-      <View>
-        <FlatList
-          keyExtractor={(_, index) => `${index}`}
-          bounces={false}
-          data={orders}
-          renderItem={({ item, index }) => renderOrder(item, index)}
-        />
-      </View>
+      <FlatList
+        keyExtractor={(_, index) => `${index}`}
+        bounces={false}
+        data={orders}
+        renderItem={({ item, index }) => renderOrder(item, index)}
+        ListEmptyComponent={renderNoOrders()}
+      />
     );
   };
 
@@ -234,7 +181,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   };
 
   const renderError = () => {
-    if (!loading && error) {
+    if (error) {
       return (
         <Card
           cardContainer={[styles.noDataCard]}
@@ -256,11 +203,8 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
           container={{ borderBottomWidth: 0 }}
           onPressLeftIcon={() => props.navigation.goBack()}
         />
-        <ScrollView bounces={false}>
-          {renderOrders()}
-          {renderNoOrders()}
-          {renderError()}
-        </ScrollView>
+        {renderError()}
+        {renderOrders()}
       </SafeAreaView>
       {loading && <Spinner />}
     </View>

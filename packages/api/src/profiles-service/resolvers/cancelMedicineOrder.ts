@@ -106,7 +106,6 @@ const cancelMedicineOrder: Resolver<
   );
 
   const orderResp: PharmaCancelResponse = JSON.parse(textRes);
-  console.log(orderResp, orderResp.ordersCancelResult.Status, orderResp.ordersCancelResult.Message);
 
   if (orderResp.ordersCancelResult.Status) {
     const orderStatusAttrs: Partial<MedicineOrdersStatus> = {

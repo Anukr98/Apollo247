@@ -2,7 +2,6 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography } from '@material-ui/core';
 import React from 'react';
 import { AphButton } from '@aph/web-ui-components';
-import axios from 'axios';
 import { useContext } from 'react';
 import { LocationContext, Address } from 'components/LocationProvider';
 

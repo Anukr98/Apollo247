@@ -1,10 +1,22 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Typography } from '@material-ui/core';
+import { Theme, Typography, CircularProgress } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import { useLoginPopupState, useAuth, useAllCurrentPatients } from 'hooks/authHooks';
 import { AphButton, AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-ui-components';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { MyProfile } from 'components/MyAccount/MyProfile';
+import { Header } from 'components/Header';
+import { BottomLinks } from 'components/BottomLinks';
+import { NavigationBottom } from 'components/NavigationBottom';
+
+import { useApolloClient } from 'react-apollo-hooks';
+
+import {
+  GetAllUserSubscriptionsWithPlanBenefits,
+  GetAllUserSubscriptionsWithPlanBenefitsVariables,
+} from 'graphql/types/GetAllUserSubscriptionsWithPlanBenefits';
+import { GET_ALL_USER_SUBSCRIPTIONS_WITH_BENEFITS } from 'graphql/profiles';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -16,6 +28,33 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: '0 auto',
       [theme.breakpoints.down('sm')]: {
         width: '100%',
+      },
+    },
+    leftSection: {
+      width: 328,
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+      },
+    },
+    rightSection: {
+      width: 'calc(100% - 328px)',
+      paddingRight: 15,
+      paddingTop: 5,
+      [theme.breakpoints.down('xs')]: {
+        width: '100%',
+        paddingTop: 56,
+        paddingRight: 0,
+      },
+    },
+    loadingContainer: {
+      width: '100%',
+      height: '100%',
+      textAlign: 'center',
+      verticalAlign: 'middle',
+    },
+    footerLinks: {
+      [theme.breakpoints.down(900)]: {
+        display: 'none',
       },
     },
     header: {
@@ -55,12 +94,16 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     mainContent: {
       background: '#fff',
-      padding: 0,
+      padding: '0 0 60px',
+      [theme.breakpoints.up('sm')]: {
+        display: 'flex',
+        padding: '20px 3px 20px 20px',
+      },
     },
     msContent: {
       width: 700,
       margin: '0 auto',
-      padding: '30px 0',
+      padding: '0px 30px 30px 30px',
       [theme.breakpoints.down('sm')]: {
         width: '100%',
         padding: 20,
@@ -127,7 +170,7 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: '0 0 10px',
       boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.16)',
       overflow: 'hidden',
-      border: '1px solid rgba(0, 0, 0, 0.2)',
+      padding: 20,
       position: 'relative',
 
       '& >img': {
@@ -160,7 +203,6 @@ const useStyles = makeStyles((theme: Theme) => {
       listStyle: 'none',
       margin: '10px 0',
       padding: '0 0 0 20px',
-      height: 80,
       transition: '0.5s ease',
       overflow: 'hidden',
       display: 'grid',
@@ -308,34 +350,16 @@ const useStyles = makeStyles((theme: Theme) => {
         width: '100%',
       },
     },
-    availList: {
-      margin: '10px 0',
-      padding: '0 0 0 35px',
-      listStyle: 'none',
-      counterReset: 'my-counter',
-      '& li': {
-        padding: '10px 0',
-        fontSize: 12,
-        color: '#007C9D',
-        fontWeight: 500,
-        position: 'relative',
-        counterIncrement: 'my-counter',
-        '&:before': {
-          content: 'counter(my-counter)',
-          position: 'absolute',
-          top: 10,
-          left: -35,
-          width: 24,
-          height: 24,
-          borderRadius: 5,
-          background: '#007C9D',
-          fontSize: 14,
-          color: '#fff',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        },
-      },
+    availDesc: {
+      fontWeight: 500,
+      fontSize: 14,
+      color: '#007C9D',
+      marginTop: 20,
+    },
+    availHeading: {
+      fontSize: 18,
+      color: '#02475B',
+      fontWeight: 500,
     },
     more: {
       display: 'none',
@@ -350,118 +374,205 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'block',
       },
     },
+    upgradableSubscription: {
+      background: `#fff url(${require('images/hdfc/locked.svg')}) no-repeat 50% 50%`,
+    },
+    seperator: {
+      display: 'block',
+      height: 1,
+      border: '1px solid rgba(0, 0, 0, 0.2)',
+      margin: '1em 0',
+      padding: 0,
+    },
+    hdcHeader: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: '0 0 10px',
+    },
   };
 });
+
+interface upgradableSubscriptionType {
+  name: String;
+  benefits: Array<string>;
+  min_transaction_value: String;
+}
 
 export const MyMembership: React.FC = (props) => {
   const classes = useStyles({});
   const [showMore, setShowMore] = React.useState<boolean>(false);
   const [isHowToAvail, setIsHowToAvail] = React.useState<boolean>(false);
+  const apolloClient = useApolloClient();
+  const [loading, setLoading] = React.useState<boolean>(true);
+  const [active, setActive] = React.useState<boolean>(false);
+
+  const [currentSubscription, setCurrentSubscription] = React.useState([]);
+  const [upgradableSubscription, setUpgradableSubscription] = React.useState<
+    upgradableSubscriptionType
+  >();
+
+  useEffect(() => {
+    apolloClient
+      .query<
+        GetAllUserSubscriptionsWithPlanBenefits,
+        GetAllUserSubscriptionsWithPlanBenefitsVariables
+      >({
+        query: GET_ALL_USER_SUBSCRIPTIONS_WITH_BENEFITS,
+        variables: {
+          mobile_number: localStorage.getItem('userMobileNo'),
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((response) => {
+        setCurrentSubscription(response.data.GetAllUserSubscriptionsWithPlanBenefits.response);
+        setUpgradableSubscription(
+          response.data.GetAllUserSubscriptionsWithPlanBenefits.response[0].can_upgrade_to
+        );
+        setActive(
+          response.data.GetAllUserSubscriptionsWithPlanBenefits.response[0].subscriptionStatus ===
+            'active'
+        );
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error('Failed fetching Subscription Inclusions');
+      });
+  }, []);
+
+  const getMedalImage = (planName: String) => {
+    if (!active) {
+      return require('images/hdfc/locked.svg');
+    } else if (active && planName == 'GOLD+ PLAN') {
+      return require('images/hdfc/medal_gold.svg');
+    } else if (active && planName == 'PLATINUM+ PLAN') {
+      return require('images/hdfc/medal_platinum.svg');
+    } else if (active && planName == 'SILVER+ PLAN') {
+      return require('images/hdfc/medal_silver.svg');
+    }
+  };
 
   return (
     <div className={classes.mainContainer}>
-      <header className={` ${classes.header} ${classes.headerFixed}`}>
-        <div className={classes.headerContent}>
-          <Link to="/">
-            <img
-              src={require('images/ic_logo.png')}
-              title={'Apollo 24x7 | HDFC'}
-              alt={'Apollo 24x7 | HDFC'}
-              width="70"
-            />
-          </Link>
-          <Typography component="h1">Membership Listing</Typography>
-        </div>
-        <Link to="/">
-          <img
-            src={require('images/hdfc/hdfc-logo.svg')}
-            title={'Apollo 24x7 | HDFC'}
-            alt={'Apollo 24x7 | HDFC'}
-            width="100"
-          />
-        </Link>
-      </header>
+      <Header />
       <div className={classes.container}>
         <div className={classes.mainContent}>
-          <div className={classes.msContent}>
-            <Typography component="h3" className={classes.sectionTitle}>
-              Current Benefits
-            </Typography>
-            <div className={classes.membershipCard}>
-              <img src={require('images/hdfc/medal.svg')} alt="" />
-              <div className={classes.mcContent}>
-                <Typography component="h4">Gold + Plan</Typography>
-                <Typography>Benefits Available</Typography>
-                <ul className={`${classes.benefitList} ${showMore ? classes.heightFull : ''}`}>
-                  <li>24*7 Doctor on Call</li>
-                  <li>Seamless Medicine Delivery</li>
-                  <li>Patients Health Record</li>
-                  <li>Lorem Ipsum </li>
-                  <li>Lorem Ipsum </li>
-                  <li>Lorem Ipsum </li>
-                </ul>
-                <a
-                  href="javascript: void(0);"
-                  className={classes.more}
-                  onClick={() => setShowMore(!showMore)}
-                >
-                  {!showMore ? <span> +3 more</span> : <span>Hide</span>}
-                </a>
+          <div className={classes.leftSection}>
+            <MyProfile />
+          </div>
+          <div className={classes.rightSection}>
+            {loading ? (
+              <div className={classes.loadingContainer}>
+                <CircularProgress size={30} />
               </div>
-              <div className={classes.btnContainer}>
-                <AphButton href={clientRoutes.membershipPlanDetail()}>View Details</AphButton>
-                <AphButton color="primary" variant="contained" href={clientRoutes.welcome()}>
-                  Explore
-                </AphButton>
+            ) : (
+              <div className={classes.msContent}>
+                <div className={classes.membershipCard}>
+                  <div className={classes.hdcHeader}>
+                    <img
+                      src={require('images/hdfc/apollo-hashtag.svg')}
+                      alt="HDFC Call Doctor"
+                      width="100"
+                    />
+                    <img
+                      src={require('images/hdfc/hdfc-logo.svg')}
+                      alt="HDFC Call Doctor"
+                      width="100"
+                    />
+                  </div>
+                  <Typography component="h3" className={classes.sectionTitle}>
+                    Current Benefits
+                  </Typography>
+                  <div>
+                    <div className={classes.mcContent}>
+                      <Typography component="h4">
+                        {currentSubscription &&
+                          currentSubscription[0] &&
+                          currentSubscription[0].name}
+                      </Typography>
+                      <Typography>Benefits Available</Typography>
+                      <ul
+                        className={`${classes.benefitList} ${showMore ? classes.heightFull : ''}`}
+                      >
+                        {currentSubscription &&
+                          currentSubscription[0] &&
+                          currentSubscription[0].benefits.map((item: any) => {
+                            return <li>{item.header_content}</li>;
+                          })}
+                      </ul>
+                      {/* <a
+                      href="javascript: void(0);"
+                      className={classes.more}
+                      onClick={() => setShowMore(!showMore)}
+                    >
+                      {!showMore ? <span> +3 more</span> : <span>Hide</span>}
+                    </a> */}
+                    </div>
+                    <div className={classes.btnContainer}>
+                      <AphButton href={clientRoutes.membershipPlanDetail()}>View Details</AphButton>
+                      <AphButton color="primary" variant="contained" href={clientRoutes.welcome()}>
+                        Explore
+                      </AphButton>
+                    </div>
+                  </div>
+
+                  {upgradableSubscription ? (
+                    <div className={classes.upgradableSubscription}>
+                      <div className={classes.seperator} />
+                      <Typography component="h3" className={classes.sectionTitle}>
+                        Other Plans
+                      </Typography>
+                      <div>
+                        <div className={classes.mcContent}>
+                          <Typography component="h4">
+                            {upgradableSubscription && upgradableSubscription.name}
+                          </Typography>
+                          <Typography>Benefits Available </Typography>
+                          <ul
+                            className={` ${classes.benefitList} ${
+                              showMore ? classes.heightFull : ''
+                            }`}
+                          >
+                            {upgradableSubscription &&
+                              upgradableSubscription.benefits.map((item: any) => {
+                                return <li>{item.header_content}</li>;
+                              })}
+                          </ul>
+                          {/* <a
+                      href="javascript: void(0);"
+                      className={classes.more}
+                      onClick={() => setShowMore(!showMore)}
+                    >
+                      {!showMore ? <span> +12 more</span> : <span>Hide</span>}
+                    </a> */}
+                        </div>
+                        <div className={classes.btnContainer}>
+                          <AphButton href={clientRoutes.membershipPlanLocked()}>
+                            View Details
+                          </AphButton>
+                          <AphButton
+                            color="primary"
+                            variant="contained"
+                            onClick={() => setIsHowToAvail(true)}
+                          >
+                            How To Avail
+                          </AphButton>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    ''
+                  )}
+                </div>
               </div>
-            </div>
-            <Typography component="h3" className={classes.sectionTitle}>
-              Premium Plans
-            </Typography>
-            <div className={classes.membershipCard}>
-              <img src={require('images/hdfc/locked.svg')} alt="" />
-              <div className={classes.mcContent}>
-                <Typography component="h4">Platinum + Plan</Typography>
-                <Typography>Key Features you get .. </Typography>
-                <ul className={` ${classes.benefitList} ${showMore ? classes.heightFull : ''}`}>
-                  <li>24*7 Doctor on Call</li>
-                  <li>Seamless Medicine Delivery</li>
-                  <li>Patients Health Record</li>
-                  <li>Lorem Ipsum </li>
-                  <li>Lorem Ipsum </li>
-                  <li>Lorem Ipsum </li>
-                  <li>Lorem Ipsum </li>
-                  <li>Lorem Ipsum </li>
-                  <li>Lorem Ipsum </li>
-                  <li>Lorem Ipsum </li>
-                  <li>Lorem Ipsum </li>
-                  <li>Lorem Ipsum </li>
-                  <li>Lorem Ipsum </li>
-                  <li>Lorem Ipsum </li>
-                  <li>Lorem Ipsum </li>
-                </ul>
-                <a
-                  href="javascript: void(0);"
-                  className={classes.more}
-                  onClick={() => setShowMore(!showMore)}
-                >
-                  {!showMore ? <span> +12 more</span> : <span>Hide</span>}
-                </a>
-              </div>
-              <div className={classes.btnContainer}>
-                <AphButton href={clientRoutes.membershipPlanLocked()}>View Details</AphButton>
-                <AphButton
-                  color="primary"
-                  variant="contained"
-                  onClick={() => setIsHowToAvail(true)}
-                >
-                  How To Avail
-                </AphButton>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
+      <div className={classes.footerLinks}>
+        <BottomLinks />
+      </div>
+      <NavigationBottom />
 
       <AphDialog open={isHowToAvail} maxWidth="sm">
         <AphDialogClose
@@ -469,17 +580,18 @@ export const MyMembership: React.FC = (props) => {
           onClick={() => setIsHowToAvail(false)}
           title={'Close'}
         />
-        <AphDialogTitle className={classes.dialogTitle}>How To Avail?</AphDialogTitle>
         <div className={classes.availContainer}>
-          <Typography>Please follow these steps</Typography>
-          <ul className={classes.availList}>
-            <li>Complete transactions worth Rs 25000+ on Apollo 24/7</li>
-            <li>
-              Duration of membership is 1 year. It will be auto renewed if you spend more than Rs
-              25000 within 1 year on Apollo 24/7
-            </li>
-          </ul>
-          <AphButton color="primary">Avail Now</AphButton>
+          <Typography component="h2" className={classes.availHeading}>
+            How To Avail ?
+          </Typography>
+          <Typography className={classes.availDesc}>
+            Complete transactions worth Rs{' '}
+            {currentSubscription &&
+              currentSubscription[0] &&
+              currentSubscription[0].upgrade_transaction_value}{' '}
+            on Apollo 24|7 app to unlock {upgradableSubscription && upgradableSubscription.name}{' '}
+            membership
+          </Typography>
         </div>
       </AphDialog>
     </div>

@@ -80,10 +80,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     return moment((slot.split('-')[0] || '').trim(), 'hh:mm').format('hh:mm A');
   };
 
-  const renderOrder = (
-    order: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList,
-    index: number
-  ) => {
+  const renderOrder = (order: TestOrder, index: number) => {
     const isHomeVisit = !!order.slotTimings;
     const dt = moment(order!.diagnosticDate).format(`D MMM YYYY`);
     const tm = getSlotStartTime(order!.slotTimings);
@@ -131,13 +128,12 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   const renderOrders = () => {
     return (
-      <View>
-        <FlatList
-          bounces={false}
-          data={orders}
-          renderItem={({ item, index }) => renderOrder(item, index)}
-        />
-      </View>
+      <FlatList
+        bounces={false}
+        data={orders}
+        renderItem={({ item, index }) => renderOrder(item, index)}
+        ListEmptyComponent={renderNoOrders()}
+      />
     );
   };
 
@@ -164,7 +160,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const renderError = () => {
-    if (!loading && error) {
+    if (error) {
       return (
         <Card
           cardContainer={[styles.noDataCard]}
@@ -198,9 +194,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           onScroll={(i) => onScrolling(i.nativeEvent.contentOffset.y)}
           scrollEventThrottle={1}
         >
-          {renderOrders()}
-          {renderNoOrders()}
           {renderError()}
+          {renderOrders()}
         </ScrollView>
         {!loading && <ScrollableFooter show={show} />}
       </SafeAreaView>

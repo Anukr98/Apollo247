@@ -26,7 +26,7 @@ import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescri
 import { useAllCurrentPatients, useCurrentPatient } from 'hooks/authHooks';
 import {
   uploadPrescriptionTracking,
-  // pharmacyUploadPresClickTracking,
+  pharmacyUploadPresClickTracking,
   uploadPhotoTracking,
 } from '../../webEngageTracking';
 import moment from 'moment';
@@ -40,6 +40,7 @@ import { BottomLinks } from 'components/BottomLinks';
 import { Route } from 'react-router-dom';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useAuth } from 'hooks/authHooks';
+import { isAlternateVersion } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -238,6 +239,8 @@ const useStyles = makeStyles((theme: Theme) => {
     groupTitle: {
       fontSize: 16,
       paddingBottom: 16,
+      margin: 0,
+      fontWeight: 500,
     },
     marginNone: {
       marginBottom: 0,
@@ -278,6 +281,14 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 'bold',
         color: '#fc9916',
       },
+    },
+    sectionHeading: {
+      fontSize: 14,
+      color: '#02475b',
+      fontWeight: 'bold',
+      margin: 0,
+      padding: 0,
+      textTransform: 'uppercase',
     },
     bottomPopover: {
       overflow: 'initial',
@@ -439,7 +450,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const MedicineLanding: React.FC = (props: any) => {
+const MedicineLanding: React.FC = (props: any) => {
   const classes = useStyles({});
   const { isSignedIn } = useAuth();
   const addToCartRef = useRef(null);
@@ -504,6 +515,10 @@ export const MedicineLanding: React.FC = (props: any) => {
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
+
+  useEffect(() => {
+    sessionStorage.removeItem('categoryClicked');
+  }, []);
 
   useEffect(() => {
     if (
@@ -573,7 +588,7 @@ export const MedicineLanding: React.FC = (props: any) => {
       .then((res: any) => {
         setData(res.data);
         if (res.data && res.data.metadata && res.data.metadata.length > 0) {
-          const removableData = ['banners', 'orders', 'upload_prescription', 'recommended_for_you'];
+          const removableData = ['banners', 'orders', 'upload_prescription'];
           let position = 0;
           let updatedMetadata: any[] = [];
           res.data.metadata.forEach((section: any) => {
@@ -599,7 +614,7 @@ export const MedicineLanding: React.FC = (props: any) => {
                 section_key: section.section_key,
                 section_name: section.section_name,
                 section_position: position,
-                visible: section.visible,
+                visible: sectionData ? section.visible : false,
                 value: renderValue(),
                 viewAll: sectionData && sectionData.products && sectionData.url_key ? true : false,
                 viewAllUrlKey: sectionData && sectionData.url_key ? sectionData.url_key : '',
@@ -638,13 +653,13 @@ export const MedicineLanding: React.FC = (props: any) => {
 
   const handleUploadPrescription = () => {
     uploadPrescriptionTracking({ ...patient, age });
-    // pharmacyUploadPresClickTracking('Home');
+    pharmacyUploadPresClickTracking('Home');
     setIsUploadPreDialogOpen(true);
   };
   const metaTagProps = {
-    title: 'Buy/Order Medicines And Health Products - Online Pharmacy Store - Apollo 247',
+    title: 'Apollo 247- Online Pharmacy, Online Medicine Order, Fastest Delivery',
     description:
-      'Order medicines and health products online at Apollo 247 - a leading online pharmacy store. Buy all medicines you need from home in just a few clicks. Apollo 247 is a one-stop solution for all your medical needs.',
+      "Apollo 247 Online Pharmacy - Online Medicine Order - Buy medicines online from Apollo Online Pharmacy Store (India's largest pharmacy chain) and experience the fastest home delivery. All kinds of medicines, health products & equipments are available at our online medicine store.",
     canonicalLink:
       window && window.location && window.location.origin && `${window.location.origin}/medicines`,
   };
@@ -734,9 +749,11 @@ export const MedicineLanding: React.FC = (props: any) => {
                     <div className={classes.preServiceType}>
                       <div className={classes.prescriptionGroup}>
                         <div>
-                          <div className={classes.groupTitle}>
-                            Now place your order via prescription
-                          </div>
+                          {!isAlternateVersion() && (
+                            <h3 className={classes.groupTitle}>
+                              Now place your order via prescription
+                            </h3>
+                          )}
                           <AphButton
                             onClick={() => handleUploadPrescription()}
                             title={'Upload Prescription'}
@@ -744,9 +761,11 @@ export const MedicineLanding: React.FC = (props: any) => {
                             Upload
                           </AphButton>
                         </div>
-                        <div className={classes.prescriptionIcon}>
-                          <img src={require('images/ic_prescription_pad.svg')} alt="" />
-                        </div>
+                        {!isAlternateVersion() && (
+                          <div className={classes.prescriptionIcon}>
+                            <img src={require('images/ic_prescription_pad.svg')} alt="" />
+                          </div>
+                        )}
                       </div>
                       <div className={classes.medicineReview}>
                         <p>
@@ -831,34 +850,37 @@ export const MedicineLanding: React.FC = (props: any) => {
                 </div>
               )}
               {metadata &&
-                metadata.map((item: any, index: number) => (
-                  <div key={index} className={classes.sliderSection}>
-                    <div className={classes.sectionTitle}>
-                      {item.section_key === 'shop_by_brand' || item.viewAll ? (
-                        <>
-                          <span>{item.section_name}</span>
-                          <div className={classes.viewAllLink}>
-                            <Link
-                              to={
-                                item.section_key === 'shop_by_brand'
-                                  ? clientRoutes.medicineAllBrands()
-                                  : clientRoutes.searchByMedicine(
-                                      'shop-by-category',
-                                      item.viewAllUrlKey
-                                    )
-                              }
-                            >
-                              View All
-                            </Link>
-                          </div>
-                        </>
-                      ) : (
-                        item.section_name
-                      )}
-                    </div>
-                    {item.value}
-                  </div>
-                ))}
+                metadata.map(
+                  (item: any, index: number) =>
+                    item.visible && (
+                      <div key={index} className={classes.sliderSection}>
+                        <div className={classes.sectionTitle}>
+                          {item.section_key === 'shop_by_brand' || item.viewAll ? (
+                            <>
+                              <h3 className={classes.sectionHeading}>{item.section_name}</h3>
+                              <div className={classes.viewAllLink}>
+                                <Link
+                                  to={
+                                    item.section_key === 'shop_by_brand'
+                                      ? clientRoutes.medicineAllBrands()
+                                      : clientRoutes.searchByMedicine(
+                                          'shop-by-category',
+                                          item.viewAllUrlKey
+                                        )
+                                  }
+                                >
+                                  View All
+                                </Link>
+                              </div>
+                            </>
+                          ) : (
+                            <h3 className={classes.sectionHeading}>{item.section_name}</h3>
+                          )}
+                        </div>
+                        {item.value}
+                      </div>
+                    )
+                )}
             </div>
           )}
         </div>
@@ -975,3 +997,5 @@ export const MedicineLanding: React.FC = (props: any) => {
     </div>
   );
 };
+
+export default MedicineLanding;

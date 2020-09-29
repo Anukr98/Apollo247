@@ -12,26 +12,29 @@ import {
   DEVICE_TYPE,
   MedicineOrders,
 } from 'profiles-service/entities';
-import { ONE_APOLLO_STORE_CODE } from 'types/oneApolloTypes';
-
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { ServiceBusService } from 'azure-sb';
-import {
-  sendMedicineOrderStatusNotification,
-  NotificationType,
-} from 'notifications-service/resolvers/notifications';
-
+import { sendMedicineOrderStatusNotification } from 'notifications-service/handlers';
+import { NotificationType } from 'notifications-service/constants';
 import { medicineCOD } from 'helpers/emailTemplates/medicineCOD';
 import { sendMail } from 'notifications-service/resolvers/email';
-import { ApiConstants } from 'ApiConstants';
+import { ApiConstants, TransactionType } from 'ApiConstants';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { log } from 'customWinstonLogger';
-import { BlockOneApolloPointsRequest, BlockUserPointsResponse } from 'types/oneApolloTypes';
+import { acceptCoupon } from 'helpers/couponServices';
+import { AcceptCouponRequest } from 'types/coupons';
+import {
+  BlockOneApolloPointsRequest,
+  BlockUserPointsResponse,
+  ONE_APOLLO_STORE_CODE,
+} from 'types/oneApolloTypes';
 import { OneApollo } from 'helpers/oneApollo';
+import { getStoreCodeFromDevice } from 'profiles-service/helpers/OneApolloTransactionHelper';
 import { calculateRefund } from 'profiles-service/helpers/refundHelper';
+import { transactionSuccessTrigger } from 'helpers/subscriptionHelper';
 
 export const saveMedicineOrderPaymentMqTypeDefs = gql`
   enum CODCity {
@@ -119,6 +122,7 @@ type userDetailInput = {
   creditsToBlock: number;
   orderId: number;
   id: MedicineOrderPayments['id'];
+  bookingSource: MedicineOrders['bookingSource'];
 };
 
 type MedicinePaymentInputArgs = { medicinePaymentMqInput: MedicinePaymentMqInput };
@@ -283,8 +287,30 @@ const SaveMedicineOrderPaymentMq: Resolver<
       statusDate: new Date(),
       statusMessage: statusMsg,
     };
-    await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
 
+    if (currentStatus == MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS) {
+      transactionSuccessTrigger({
+        amount: `${medicinePaymentMqInput.amountPaid}`,
+        transactionType: TransactionType.PHARMA,
+        transactionDate: medicinePaymentMqInput.paymentDateTime || new Date(),
+        transactionId: medicinePaymentMqInput.paymentRefId,
+        sourceTransactionIdentifier: `${medicinePaymentMqInput.orderAutoId}`,
+        mobileNumber: orderDetails.patient.mobileNumber,
+      });
+    }
+    if (
+      currentStatus == MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS ||
+      currentStatus == MEDICINE_ORDER_STATUS.ORDER_INITIATED
+    ) {
+      if (orderDetails.coupon) {
+        const payload: AcceptCouponRequest = {
+          mobile: orderDetails.patient.mobileNumber.replace('+91', ''),
+          coupon: orderDetails.coupon,
+        };
+        await acceptCoupon(payload);
+      }
+    }
+    await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
     await medicineOrdersRepo.updateMedicineOrder(orderDetails.id, orderDetails.orderAutoId, {
       orderDateTime: new Date(),
       currentStatus,
@@ -306,6 +332,7 @@ const SaveMedicineOrderPaymentMq: Resolver<
               creditsToBlock: medicinePaymentMqInput.healthCredits,
               orderId: orderDetails.orderAutoId,
               id: orderDetails.id,
+              bookingSource: orderDetails.bookingSource,
             },
             profilesDb
           );
@@ -346,9 +373,7 @@ const SaveMedicineOrderPaymentMq: Resolver<
             JSON.stringify(topicError),
             JSON.stringify(topicError)
           );
-          console.log('topic create error', topicError);
         }
-        console.log('connected to topic', queueName);
         const message =
           'MEDICINE_ORDER:' + orderDetails.orderAutoId + ':' + orderDetails.patient.id;
         azureServiceBus.sendTopicMessage(queueName, message, (sendMsgError) => {
@@ -360,9 +385,7 @@ const SaveMedicineOrderPaymentMq: Resolver<
               message,
               JSON.stringify(sendMsgError)
             );
-            console.log('send message error', sendMsgError);
           }
-          console.log('message sent to topic');
         });
       });
     }
@@ -378,10 +401,20 @@ const SaveMedicineOrderPaymentMq: Resolver<
     if (patientAddressId)
       patientAddress = await patientRepo.getPatientAddressById(patientAddressId);
     if (medicineOrderLineItems.length) {
+      //to use to filter cod line in the email template
+      let isCODEmailTemplate = false;
+      if (
+        medicinePaymentMqInput.amountPaid == 0 &&
+        (medicinePaymentMqInput.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS ||
+          medicinePaymentMqInput.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.NO_PAYMENT)
+      ) {
+        isCODEmailTemplate = true;
+      }
       const mailContent = medicineCOD({
         orderDetails,
         patientAddress: patientAddress,
         medicineOrderLineItems: medicineOrderLineItems,
+        isCODEmailTemplate,
       });
 
       const subjectLine = ApiConstants.ORDER_PLACED_TITLE;
@@ -446,7 +479,7 @@ const blockOneApolloUserPoints = async (
   const blockUserPointsInput: BlockOneApolloPointsRequest = {
     MobileNumber: +userDetailInput.mobileNumber,
     CreditsRedeemed: userDetailInput.creditsToBlock,
-    StoreCode: storeCode,
+    StoreCode: getStoreCodeFromDevice(userDetailInput.deviceType, userDetailInput.bookingSource),
     BusinessUnit: process.env.ONEAPOLLO_BUSINESS_UNIT || '',
   };
   const oneApollo = new OneApollo();

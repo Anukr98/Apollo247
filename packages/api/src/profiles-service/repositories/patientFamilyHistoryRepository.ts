@@ -25,18 +25,11 @@ export class PatientFamilyHistoryRepository extends Repository<PatientFamilyHist
   }
 
   updatePatientFamilyHistory(id: string, patientFamilyHistoryAttrs: Partial<PatientFamilyHistory>) {
-    console.log(
-      'updatePatientFamilyHistory id',
-      id,
-      'patientFamilyHistory attr',
-      patientFamilyHistoryAttrs
-    );
     if (patientFamilyHistoryAttrs.patient) {
       patientFamilyHistoryAttrs.patientId = patientFamilyHistoryAttrs.patient.id;
       patientFamilyHistoryAttrs.id = id;
     }
     const patientFamilyHistory = this.create(patientFamilyHistoryAttrs);
-    console.log('patientFamilyHistory object', patientFamilyHistory);
     return this.save(patientFamilyHistory);
   }
 

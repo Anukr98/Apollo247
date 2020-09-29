@@ -36,7 +36,12 @@ export const StoragePoc: React.FC = () => {
       {isUploading && 'Uploading...'}
       <br />
       {uploadedFileUrl && (
-        <a style={{ color: 'blue' }} href={uploadedFileUrl} target="_blank">
+        <a
+          style={{ color: 'blue' }}
+          href={uploadedFileUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           {uploadedFileUrl}
         </a>
       )}

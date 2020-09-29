@@ -94,11 +94,9 @@ export const specialityResult = async (
     let mainResult: SpecialityAndCounts[] = [...result];
     Object.values(specialitys).forEach(async (speciality, index, array) => {
       const details = await getSpecialityDetails(speciality, availabilityDate, context);
-      console.log('specialityDetails==>', details);
       const data = await addFinalResult(mainResult, result, details);
       mainResult = data;
       if (index + 1 === array.length) {
-        console.log('mainResult==>', mainResult);
         resolve(mainResult);
       }
     });
@@ -112,10 +110,8 @@ export const addFinalResult = async (
 ) => {
   return new Promise<SpecialityAndCounts[]>(async (resolve, reject) => {
     const data: SpecialityAndCounts[] = [...mainResult];
-    console.log('data===>', data);
     result.forEach((item, index, array) => {
       if (item.speciality === details.speciality) {
-        console.log('inside condition');
         data[index] = details;
       }
       if (index + 1 === array.length) {
@@ -140,11 +136,9 @@ export const getSpecialityDetails = async (
     speciality.forEach(async (doctor, index, array) => {
       const weekDay = format(availabilityDate, 'EEEE').toUpperCase();
       const timeSlots = await consultHourRep.getConsultHours(doctor.id, weekDay);
-      console.log('timeSlots==>', timeSlots);
       if (!_isEmpty(timeSlots)) {
         check = false;
         const counts = await checkTimeslots(timeSlots);
-        console.log('counts===>', counts);
         morning += counts[0];
         afternoon += counts[1];
         evening += counts[2];
@@ -163,7 +157,6 @@ export const getSpecialityDetails = async (
               evening: evening,
               night: night,
             };
-            console.log('specialityDetails==>', specialityDetails);
             const plannedDoctorsAttrs: Partial<PlannedDoctors> = {
               availabilityDate: availabilityDate,
               specialityId: doctor.specialty.id,
@@ -187,7 +180,6 @@ export const checkTimeslots = async (timeSlots: ConsultHours[]) => {
     let night: number = 0;
     timeSlots.forEach((timeSlot, index, array) => {
       const d = new Date(ApiConstants.SAMPLE_DATE + timeSlot.startTime);
-      console.log('datess=>', d);
       if (
         isWithinInterval(d, {
           start: new Date(ApiConstants.SAMPLE_DATE_MORNING_START),
@@ -218,7 +210,6 @@ export const checkTimeslots = async (timeSlots: ConsultHours[]) => {
         night++;
       }
       if (index + 1 === array.length) {
-        console.log('finalCounts==>', [morning, afternoon, evening, night]);
         resolve([morning, afternoon, evening, night]);
       }
     });

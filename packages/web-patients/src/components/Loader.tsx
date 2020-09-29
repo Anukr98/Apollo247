@@ -11,7 +11,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export const Loader: React.FC = (props) => {
+const Loader: React.FC = (props) => {
   const classes = useStyles({});
   const { isLoading } = useAuth();
   if (isLoading) {
@@ -23,3 +23,5 @@ export const Loader: React.FC = (props) => {
   }
   return null;
 };
+
+export default Loader;

@@ -75,6 +75,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 type MedicineInformationProps = {
   data: MedicineProductDetails;
+  setImageClick: (imageClick: boolean) => void;
 };
 
 export const MedicineImageGallery: React.FC<MedicineInformationProps> = (props) => {
@@ -105,6 +106,7 @@ export const MedicineImageGallery: React.FC<MedicineInformationProps> = (props) 
           showPlayButton={false}
           showNav={false}
           showBullets={true}
+          onClick={() => props.setImageClick(true)}
         />
       </div>
     )

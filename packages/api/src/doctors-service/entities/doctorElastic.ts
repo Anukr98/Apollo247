@@ -5,6 +5,7 @@ import { format, addMinutes, addDays } from "date-fns";
 import { AphError } from "AphError";
 import { AphErrorMessages } from "@aph/universal/dist/AphErrorMessages";
 import { omit } from "lodash";
+import { ApiConstants, elasticConsts } from "ApiConstants";
 
 export async function addDoctorElastic(allDocsInfo: Doctor) {
     const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
@@ -117,6 +118,7 @@ export async function addDoctorElastic(allDocsInfo: Doctor) {
         languages: pushLanguagesInArray(allDocsInfo.languages),
         gender: allDocsInfo.gender,
 
+        chatDays: allDocsInfo.chatDays,
         isActive: allDocsInfo.isActive,
         middleName: allDocsInfo.middleName,
         photoUrl: allDocsInfo.photoUrl,
@@ -148,7 +150,6 @@ export async function addDoctorElastic(allDocsInfo: Doctor) {
         id: allDocsInfo.id,
         body: doctorData,
     });
-    console.log(resp, 'index resp');
 }
 
 
@@ -174,18 +175,16 @@ export async function updateDoctorSlotStatusES(
             .toString()
             .padStart(2, '0')}:00.000Z`;
 
-    console.log(slotApptDt, apptDt, slot, appointment.doctorId, 'appoint date time');
-
     const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
 
     if (!process.env.ELASTIC_INDEX_DOCTORS) {
         throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
     }
 
-    //naman_change index name
     const updateDoc: RequestParams.Update = {
         index: process.env.ELASTIC_INDEX_DOCTORS,
         id: doctorId,
+        retry_on_conflict: elasticConsts.ELASTIC_CONFLICT_RETRY_COUNT,
         body: {
             script: {
                 source:
@@ -201,4 +200,253 @@ export async function updateDoctorSlotStatusES(
     };
 
     return await client.update(updateDoc);
+}
+
+const ES_FIELDS_PRIORITY = {
+  doctor_fullName: 5,
+  speciality_name: 4,
+  speciality_groupName: 3,
+  speciality_commonSearchTerm: 2,
+  speciality_userFriendlyNomenclature: 1,
+};
+
+export function elasticDoctorTextSearch(searchText: string){
+      return {
+        bool: {
+          should: [
+            {
+              multi_match: {
+                fields: [
+                  `fullName^${ES_FIELDS_PRIORITY.doctor_fullName}`,
+                  `displayName^${ES_FIELDS_PRIORITY.doctor_fullName}`,
+                  `specialty.name^${ES_FIELDS_PRIORITY.speciality_name}`,
+                  `specialty.groupName^${ES_FIELDS_PRIORITY.speciality_groupName}`,
+                  `specialty.commonSearchTerm^${ES_FIELDS_PRIORITY.speciality_commonSearchTerm}`,
+                  `specialty.userFriendlyNomenclature^${ES_FIELDS_PRIORITY.speciality_userFriendlyNomenclature}`,
+                ],
+                type: 'phrase_prefix',
+                query: `*${searchText.trim().toLowerCase()}*`,
+              },
+            },
+            {
+              query_string: {
+                fields: [
+                  `fullName^${ES_FIELDS_PRIORITY.doctor_fullName}`,
+                  `displayName^${ES_FIELDS_PRIORITY.doctor_fullName}`,
+                  `specialty.name^${ES_FIELDS_PRIORITY.speciality_name}`,
+                  `specialty.groupName^${ES_FIELDS_PRIORITY.speciality_groupName}`,
+                  `specialty.commonSearchTerm^${ES_FIELDS_PRIORITY.speciality_commonSearchTerm}`,
+                  `specialty.userFriendlyNomenclature^${ES_FIELDS_PRIORITY.speciality_userFriendlyNomenclature}`,
+                ],
+                fuzziness: 'AUTO',
+                query: `*${searchText.trim().toLowerCase()}*`,
+              },
+            },
+          ],
+        },
+      };
+}
+
+type FilterDoctorInput = {
+  availability: string[];
+  availableNow: string;
+  geolocation: Geolocation;
+  sort: string;
+};
+type Geolocation = {
+  latitude: number;
+  longitude: number;
+};
+
+export function elasticDoctorLatestSlotFilter(){
+  return {
+    nested: {
+      path: 'doctorSlots.slots',
+      inner_hits: { size: 1 },
+      query: {
+        bool: {
+          must: [
+            { match: { 'doctorSlots.slots.status': 'OPEN' } },
+            { range: { 'doctorSlots.slots.slotThreshold': { gt: 'now' } } },
+          ],
+        },
+      },
+    },
+  };
+}
+
+export function elasticDoctorAvailabilityFilter(filterInput: FilterDoctorInput){
+  const elasticSlotDateAvailability: { [index: string]: any } = [];
+  const elasticSlotAvailabileNow: { [index: string]: any } = [];
+
+  if (filterInput.availability && filterInput.availability.length > 0) {
+    filterInput.availability.forEach((availability) => {
+      elasticSlotDateAvailability.push({
+        bool: {
+          must: [
+            {
+              nested: {
+                path: 'doctorSlots',
+                query: {
+                  bool: {
+                    must: [
+                      {
+                        match: {
+                          'doctorSlots.slotDate': availability,
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+            {
+              nested: {
+                path: 'doctorSlots.slots',
+                query: {
+                  bool: {
+                    must: [
+                      { match: { 'doctorSlots.slots.slot': availability } },
+                      {
+                        range: {
+                          'doctorSlots.slots.slotThreshold': {
+                            gt: 'now',
+                            lt: availability + 'T18:30:00.000Z',
+                          },
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+          ],
+        },
+      });
+    });
+  }
+
+  if (filterInput.availableNow) {
+    elasticSlotAvailabileNow.push({
+      nested: {
+        path: 'doctorSlots.slots',
+        query: { range: { 'doctorSlots.slots.slotThreshold': { gt: 'now', lte: 'now+4h' } } },
+      },
+    });
+  }
+
+  if (elasticSlotDateAvailability.length > 0 && filterInput.availableNow) {
+    return {
+      bool: {
+        should: [
+          { bool: { should: elasticSlotDateAvailability } },
+          { bool: { must: elasticSlotAvailabileNow } },
+        ],
+      },
+    };
+  } else if (elasticSlotDateAvailability.length > 0) {
+    return { bool: { should: elasticSlotDateAvailability } };
+  } else if (filterInput.availableNow) {
+    return elasticSlotAvailabileNow;
+  }
+
+}
+
+export function elasticDoctorDistanceSort(filterInput: FilterDoctorInput){
+  if (filterInput.geolocation && filterInput.sort === 'distance') {
+    return {
+      _geo_distance: {
+        'facility.location': {
+          lat: filterInput.geolocation.latitude,
+          lon: filterInput.geolocation.longitude,
+        },
+        order: 'asc',
+        unit: 'km',
+      },
+    };
+  }
+}
+  
+export function elasticDoctorAvailabilitySort(){ 
+    return {
+      'doctorSlots.slots.slot': {
+        order: 'asc',
+        mode: 'min',
+        nested_path: 'doctorSlots.slots',
+        nested_filter: {
+          bool: {
+            must: [
+              { match: { 'doctorSlots.slots.status': 'OPEN' } },
+              {
+                range: {
+                  'doctorSlots.slots.slotThreshold': { gt: 'now' },
+                },
+              },
+            ],
+          },
+        },
+      },
+    };
+}
+
+export function elasticDoctorDoctorTypeSort(){ 
+  return{
+    _script: {
+      type: 'number',
+      script: {
+        lang: 'painless',
+        source:
+          "if( doc['doctorType.keyword'].value == 'STAR_APOLLO'){ params.STAR_APOLLO }else {params.OTHERS}",
+        params: {
+          STAR_APOLLO: 1,
+          OTHERS: 0,
+        },
+      },
+      order: 'desc',
+    },
+  };
+}
+
+export function elasticDoctorSearch(
+  offset: number,
+  pageSize: number,
+  elasticSort:{},
+  elasticMatch:{}
+){ 
+  const searchParams: RequestParams.Search = {
+     index: process.env.ELASTIC_INDEX_DOCTORS,
+      body: {
+        from: offset,
+        size: pageSize,
+        sort: elasticSort,
+        _source: [
+          'doctorId',
+          'displayName',
+          'specialty',
+          'experience',
+          'photoUrl',
+          'thumbnailUrl',
+          'qualification',
+          'onlineConsultationFees',
+          'physicalConsultationFees',
+          'doctorType',
+          'facility.name',
+          'facility.city',
+          'consultHours.consultMode',
+        ],
+        query: {
+          bool: {
+            must: elasticMatch,
+          },
+        },
+        aggs: {
+          doctorTypeCount: {
+            terms: {
+              field: 'doctorType.keyword',
+            },
+          },
+        },
+      },
+    };
+    return searchParams;
 }

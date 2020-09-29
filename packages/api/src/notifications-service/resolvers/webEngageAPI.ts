@@ -21,40 +21,8 @@ import {
 } from 'consults-service/entities';
 import { getConnection } from 'typeorm';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-
-export const webEngageTypeDefs = gql`
-  enum WebEngageEvent {
-    DOCTOR_IN_CHAT_WINDOW
-    DOCTOR_LEFT_CHAT_WINDOW
-    DOCTOR_SENT_MESSAGE
-  }
-  enum ConsultMode {
-    ONLINE
-    PHYSICAL
-    BOTH
-  }
-
-  input DoctorConsultEventInput {
-    mobileNumber: String!
-    eventName: WebEngageEvent!
-    consultID: ID!
-    displayId: String!
-    consultMode: ConsultMode!
-    doctorFullName: String!
-  }
-
-  type WebEngageResponseData {
-    status: String!
-  }
-
-  type WebEngageResponse {
-    response: WebEngageResponseData!
-  }
-
-  extend type Mutation {
-    postDoctorConsultEvent(doctorConsultEventInput: DoctorConsultEventInput): WebEngageResponse
-  }
-`;
+import { loggers } from 'winston';
+import { log } from 'customWinstonLogger';
 
 type DoctorConsultEventInput = {
   mobileNumber: string;
@@ -306,33 +274,48 @@ export async function trackWebEngageEventForCasesheetInsert(caseSheetDetails: Ca
 }
 
 export async function trackWebEngageEventForAppointmentComplete(appointmentDetails: Appointment) {
-  if (appointmentDetails.status !== STATUS.COMPLETED) return '';
+  try {
+    if (appointmentDetails?.status !== STATUS.COMPLETED) return '';
+    //get doctor details
+    const doctorsDb = getConnection('doctors-db');
+    const doctorRepo = doctorsDb.getRepository(Doctor);
+    const doctorDetails = await doctorRepo.findOne({
+      select: ['fullName'],
+      where: { id: appointmentDetails.doctorId },
+    });
 
-  //get doctor details
-  const doctorsDb = getConnection('doctors-db');
-  const doctorRepo = doctorsDb.getRepository(Doctor);
-  const doctorDetails = await doctorRepo.findOne({
-    select: ['fullName'],
-    where: { id: appointmentDetails.doctorId },
-  });
+    //get patient details
+    const patientsDb = getConnection('patients-db');
+    const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+    const patientDetails = await patientRepo.findByIdWithRelations(
+      appointmentDetails.patientId,
+      []
+    );
 
-  //get patient details
-  const patientsDb = getConnection('patients-db');
-  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findByIdWithRelations(appointmentDetails.patientId, []);
+    const postBody: Partial<WebEngageInput> = {
+      userId: patientDetails?.mobileNumber || '',
+      eventName: ApiConstants.DOCTOR_ENDED_CONSULTATION_EVENT_NAME.toString(),
+      eventData: {
+        consultID: appointmentDetails.id,
+        displayID: appointmentDetails.displayId.toString(),
+        consultMode: appointmentDetails.appointmentType.toString(),
+        doctorName: doctorDetails?.fullName || '',
+      },
+    };
 
-  const postBody: Partial<WebEngageInput> = {
-    userId: patientDetails ? patientDetails.mobileNumber : '',
-    eventName: ApiConstants.DOCTOR_ENDED_CONSULTATION_EVENT_NAME.toString(),
-    eventData: {
-      consultID: appointmentDetails.id,
-      displayID: appointmentDetails.displayId.toString(),
-      consultMode: appointmentDetails.appointmentType.toString(),
-      doctorName: doctorDetails ? doctorDetails.fullName : '',
-    },
-  };
-
-  return await postEvent(postBody);
+    return await postEvent(postBody);
+  } catch (error) {
+    log(
+      'notificationServiceLogger',
+      `Appointment- ${appointmentDetails.id}`,
+      'trackWebEngageEventForAppointmentComplete()',
+      JSON.stringify(error),
+      ''
+    );
+    throw new AphError(AphErrorMessages.WEBENGAGE_APPOINTMENT_COMPLETE_TRACK_ERROR, undefined, {
+      error,
+    });
+  }
 }
 
 export async function trackWebEngageEventForExotelCall(exotelCallDetails: ExotelDetails) {

@@ -108,33 +108,35 @@ export const SubstituteDrugsList: React.FC<SubstituteDrugsListProps> = (props) =
         <ul>
           {props.data &&
             props.data.map((substitute) => (
-              <li
-                onClick={() => {
-                  const { url_key, sku, name } = substitute;
-                  props.setIsSubDrugsPopoverOpen(false);
-                  window.location.href = clientRoutes.medicineDetails(url_key);
-                  pharmacyPdpSubstituteTracking({ productId: sku, productName: name });
-                }}
-              >
-                <div className={classes.subMed}>
-                  <div className={classes.substituteImg}>
-                    <img
-                      src={`${apiDetails.imageUrl}${substitute.image}`}
-                      alt="Subsitute"
-                      title="Substitue Medicine"
-                    />
+              <a href={clientRoutes.medicineDetails(substitute.url_key)}>
+                <li
+                  onClick={() => {
+                    const { sku, name } = substitute;
+                    props.setIsSubDrugsPopoverOpen(false);
+                    // window.location.href = clientRoutes.medicineDetails(url_key);
+                    pharmacyPdpSubstituteTracking({ productId: sku, productName: name });
+                  }}
+                >
+                  <div className={classes.subMed}>
+                    <div className={classes.substituteImg}>
+                      <img
+                        src={`${apiDetails.imageUrl}${substitute.image}`}
+                        alt="Subsitute"
+                        title="Substitue Medicine"
+                      />
+                    </div>
+                    <div className={classes.name}>{substitute.name}</div>
+                    <div className={classes.price}>Rs. {substitute.price}</div>
+                    <div className={classes.rightArrow}>
+                      <img
+                        src={require('images/ic_arrow_right.svg')}
+                        alt="right arrow"
+                        title="right arrow"
+                      />
+                    </div>
                   </div>
-                  <div className={classes.name}>{substitute.name}</div>
-                  <div className={classes.price}>Rs. {substitute.price}</div>
-                  <div className={classes.rightArrow}>
-                    <img
-                      src={require('images/ic_arrow_right.svg')}
-                      alt="right arrow"
-                      title="right arrow"
-                    />
-                  </div>
-                </div>
-              </li>
+                </li>
+              </a>
             ))}
         </ul>
       </Scrollbars>

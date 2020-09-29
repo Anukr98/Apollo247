@@ -340,7 +340,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const ClinicCheckout: React.FC = () => {
+const ClinicCheckout: React.FC = () => {
   const classes = useStyles({});
   const { isSignedIn } = useAuth();
   const [data, setData] = useState<any>();
@@ -421,7 +421,7 @@ export const ClinicCheckout: React.FC = () => {
   if (doctorDetails) {
     const {
       experience,
-      fullName,
+      displayName,
       photoUrl,
       physicalConsultationFees,
     } = doctorDetails.getDoctorDetailsById;
@@ -473,7 +473,7 @@ export const ClinicCheckout: React.FC = () => {
                     <img src={photoUrl} alt="" />
                   </div>
                   <div className={classes.doctorInfo}>
-                    <div className={classes.doctorName}>{fullName}</div>
+                    <div className={classes.doctorName}>{displayName}</div>
                     <div className={classes.doctorType}>
                       <span>
                         {speciality} | {experience} Yrs. Exp
@@ -662,3 +662,5 @@ export const ClinicCheckout: React.FC = () => {
     return <LinearProgress className={classes.loader} />;
   }
 };
+
+export default ClinicCheckout;

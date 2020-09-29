@@ -118,7 +118,14 @@ const useStyles = makeStyles((theme: Theme) => {
           paddingBottom: 10,
           '& span': {
             '&:first-child': {
-              paddingRight: 12,
+              width: 20,
+              display: 'inline-block',
+              textAlign: 'center',
+              marginRight: 10,
+            },
+            '&:last-child': {
+              display: 'inline-block',
+              width: 'calc(100% - 30px)',
             },
           },
           '& img': {
@@ -267,6 +274,10 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 14,
         textTransform: 'uppercase',
         fontWeight: 600,
+        paddingRight: 30,
+        [theme.breakpoints.down('xs')]: {
+          paddingRight: 0,
+        },
       },
     },
     tabBody: {
@@ -325,6 +336,10 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 12,
       fontWeight: 500,
     },
+    mobileIcon: {
+      position: 'relative',
+      top: 3,
+    },
   });
 });
 
@@ -357,7 +372,11 @@ const a11yProps = (index: any) => {
   };
 };
 
-export const HowItWorks: React.FC = (props) => {
+interface HowItWorksInterface {
+  alternateVariant?: boolean;
+}
+
+export const HowItWorks: React.FC<HowItWorksInterface> = (props) => {
   const classes = useStyles({});
   const [chatConsult, setChatConsult] = useState<boolean>(false);
   const [meetInPerson, setMeetInPerson] = useState<boolean>(false);
@@ -406,7 +425,7 @@ export const HowItWorks: React.FC = (props) => {
             <div className={classes.chatContainer}>
               <div className={classes.tabHead}>
                 <img src={require('images/video-calling.svg')} />
-                <Typography component="h6">How to consult via chat/audio/video?</Typography>
+                <Typography component="h6">How to consult ON WEB via audio/video?</Typography>
               </div>
               <div className={classes.tabBody}>
                 <ul className={classes.tabList}>
@@ -422,17 +441,24 @@ export const HowItWorks: React.FC = (props) => {
                     <img src={require('images/ic-payment.svg')} />
                     <Typography>Make payment</Typography>
                   </li>
-                  <li className={classes.highlight}>
-                    <img src={require('images/ic-video.svg')} />
-                    <Typography>Speak to the doctor via video/audio/chat</Typography>
-                  </li>
                   <li>
-                    <img src={require('images/prescription.svg')} />
-                    <Typography>Receive prescriptions instantly </Typography>
+                    <img src={require('images/ic-mobile.svg')} className={classes.mobileIcon} />
+                    <Typography>
+                      Be present in the consult room on apollo247.com at the time of consult
+                    </Typography>
                   </li>
-                  <li className={classes.highlight}>
-                    <img src={require('images/chat.svg')} />
-                    <Typography>Chat with the doctor for 6 days after your consult</Typography>
+                  {props.alternateVariant ? (
+                    ''
+                  ) : (
+                    <li>
+                      <img src={require('images/prescription.svg')} />
+                      <Typography>Receive prescriptions instantly </Typography>
+                    </li>
+                  )}
+
+                  <li>
+                    <img src={require('images/ic-followchat.svg')} />
+                    <Typography>Follow Up via text - Valid upto 7 days</Typography>
                   </li>
                 </ul>
               </div>
@@ -473,7 +499,7 @@ export const HowItWorks: React.FC = (props) => {
         </div>
       </div>
       <div className={classes.appDetails}>
-        <Typography component="h6">Consultation works only on our mobile app</Typography>
+        {/* <Typography component="h6">Consultation works only on our mobile app</Typography> */}
         <Typography>To enjoy enhanced consultation experience download our mobile app</Typography>
         <a href={getAppStoreLink()} target={'_blank'}>
           <div className={classes.appDownload}>
@@ -487,7 +513,7 @@ export const HowItWorks: React.FC = (props) => {
         <AphDialogTitle>
           <div className={classes.tabHead}>
             <img src={require('images/video-calling.svg')} />
-            <span>How to consult via chat/audio/video?</span>
+            <span>How to consult ON WEB via audio/video?</span>
           </div>
         </AphDialogTitle>
         <div className={classes.consultContainer}>
@@ -514,7 +540,7 @@ export const HowItWorks: React.FC = (props) => {
             </li>
             <li className={classes.highlight}>
               <img src={require('images/chat.svg')} />
-              <Typography>Chat with the doctor for 6 days after your consult</Typography>
+              <Typography>Chat with the doctor upto 7 days after your consult</Typography>
             </li>
           </ul>
           <div className={`${classes.appDetails} ${classes.appDetailsMobile}`}>
@@ -565,4 +591,7 @@ export const HowItWorks: React.FC = (props) => {
       </AphDialog>
     </div>
   );
+};
+HowItWorks.defaultProps = {
+  alternateVariant: true,
 };

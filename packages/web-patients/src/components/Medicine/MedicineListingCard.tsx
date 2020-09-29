@@ -222,7 +222,7 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
               key={item.id}
               className={`${classes.medicineStrip} ${
                 item.is_in_stock ? '' : classes.medicineStripDisabled
-                }`}
+              }`}
             >
               <div className={classes.medicineStripWrap}>
                 <Link to={clientRoutes.medicineDetails(item.url_key)}>
@@ -245,8 +245,8 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                         ) : !item.is_in_stock ? (
                           'Out Of Stock'
                         ) : (
-                              <span className={classes.noService}>Not serviceable in your area.</span>
-                            )}
+                          <span className={classes.noService}>Not serviceable in your area.</span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -332,8 +332,12 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                         ))}
                       </AphCustomDropdown>
                     </div>
-                    {validateCouponResult && validateCouponResult.products ? (
+                    {validateCouponResult &&
+                    validateCouponResult.products &&
+                    validateCouponResult.products[idx] &&
+                    !validateCouponResult.products[idx].couponFree ? (
                       <>
+                        {/* {JSON.stringify(validateCouponResult.products[idx])} */}
                         <div className={`${classes.medicinePrice} ${classes.mrpPrice}`}>
                           {validateCouponResult.products[idx].specialPrice !==
                           validateCouponResult.products[idx].mrp ? (
@@ -362,19 +366,22 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                         </div>
                       </>
                     ) : (
-                        <>
-                          <div className={`${classes.medicinePrice} ${classes.mrpPrice}`}>
-                            {item.special_price ? (
-                              <span className={classes.lineThrough}>Rs. {item.price}</span>
-                            ) : null}
-                            <div className={classes.mrpText}>(MRP)</div>
-                          </div>
+                      <>
+                        <div className={`${classes.medicinePrice} ${classes.mrpPrice}`}>
+                          {item.special_price === 0 || item.special_price ? (
+                            <span className={classes.lineThrough}>Rs. {item.price}</span>
+                          ) : null}
+                          <div className={classes.mrpText}>(MRP)</div>
+                        </div>
 
-                          <div className={classes.medicinePrice}>
-                            Rs. {item.special_price || item.price}
-                          </div>
-                        </>
-                      )}
+                        <div className={classes.medicinePrice}>
+                          Rs.{' '}
+                          {item.special_price === 0 || item.special_price
+                            ? item.special_price
+                            : item.price}
+                        </div>
+                      </>
+                    )}
                   </div>
                 ) : null}
                 <div className={classes.addToCart}>

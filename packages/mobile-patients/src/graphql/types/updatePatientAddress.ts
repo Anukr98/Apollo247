@@ -24,6 +24,8 @@ export interface updatePatientAddress_updatePatientAddress_patientAddress {
   latitude: number | null;
   longitude: number | null;
   stateCode: string | null;
+  mobileNumber: string | null;
+  name: string | null;
 }
 
 export interface updatePatientAddress_updatePatientAddress {

@@ -109,7 +109,7 @@ export const MyTransactions: React.FC<MyTransactionsProps> = (props) => {
             {format(item.transactionDate, 'DD MMM YYYY')}
           </Text>
           <Text style={{ ...theme.fonts.IBMPlexSansMedium(14), color: '#666666', marginTop: 12 }}>
-            Billing Rs. {item.netAmount}
+            Billing Rs. {item.netAmount + item.redeemedHC}
           </Text>
         </View>
         <View style={{ flex: 0.25, alignItems: 'flex-end' }}>

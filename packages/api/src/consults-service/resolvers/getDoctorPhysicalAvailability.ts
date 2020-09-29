@@ -92,7 +92,6 @@ const getDoctorPhysicalAvailableSlots: Resolver<
       } else {
         slotsCount = Math.floor(slotsCount);
       }
-      console.log(slotsCount, 'slot count', differenceInMinutes(consultEndTime, consultStartTime));
       const stTime = consultStartTime.getHours() + ':' + consultStartTime.getMinutes();
       let startTime = new Date(previousDate.toDateString() + ' ' + stTime);
       if (prevDaySlots == 0) {
@@ -144,14 +143,12 @@ const getDoctorPhysicalAvailableSlots: Resolver<
         });
       const lastSlot = new Date(availableSlots[availableSlots.length - 1]);
       const lastMins = Math.abs(differenceInMinutes(lastSlot, consultEndTime));
-      console.log(lastMins, 'last mins', lastSlot);
       if (lastMins < timeSlot.consultDuration) {
         availableSlots.pop();
       }
       rowCount++;
     });
   }
-  console.log(availableSlotsReturn, 'return slots');
   const appts = consultsDb.getCustomRepository(AppointmentRepository);
   const apptSlots = await appts.findByDateDoctorId(
     DoctorPhysicalAvailabilityInput.doctorId,

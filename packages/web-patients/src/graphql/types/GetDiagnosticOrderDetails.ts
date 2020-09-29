@@ -39,7 +39,7 @@ export interface GetDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList 
   patientAddressId: string;
   city: string;
   slotTimings: string;
-  employeeSlotId: number;
+  employeeSlotId: string;
   diagnosticEmployeeCode: string;
   diagnosticBranchCode: string;
   totalPrice: number;

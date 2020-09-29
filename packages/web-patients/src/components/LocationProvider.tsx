@@ -159,7 +159,7 @@ export const LocationProvider: React.FC = (props) => {
     const currentAddress = localStorage.getItem('currentAddress');
     if (currentAddress) {
       const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${currentAddress}&components=country:in&key=${process.env.GOOGLE_API_KEY}`;
-      axios.get(url).then((res) => {
+      axios.get(url).then((res: any) => {
         if (res && res.data && res.data.results[0]) {
           const { lat, lng } = res.data.results[0].geometry.location;
           const addrComponents =

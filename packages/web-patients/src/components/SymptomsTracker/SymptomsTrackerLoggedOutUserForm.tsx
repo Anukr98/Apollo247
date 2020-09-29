@@ -9,7 +9,8 @@ import { isDobValid } from '@aph/universal/dist/aphValidators';
 import _isEmpty from 'lodash/isEmpty';
 import _isUndefined from 'lodash/isUndefined';
 
-import { parse, format } from 'date-fns';
+import parse from 'date-fns/parse';
+import format from 'date-fns/format';
 import { Formik, FormikProps, Field, FieldProps, Form } from 'formik';
 import _toLower from 'lodash/toLower';
 import _upperFirst from 'lodash/upperFirst';

@@ -70,6 +70,17 @@ export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAn
   image: string | null;
 }
 
+export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_doctorInfo_doctorHospital_facility {
+  __typename: "Facility";
+  id: string;
+  name: string;
+}
+
+export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_doctorInfo_doctorHospital {
+  __typename: "DoctorHospital";
+  facility: getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_doctorInfo_doctorHospital_facility;
+}
+
 export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_doctorInfo {
   __typename: "DoctorDetails";
   id: string;
@@ -85,6 +96,7 @@ export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAn
   photoUrl: string | null;
   qualification: string | null;
   specialty: getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_doctorInfo_specialty | null;
+  doctorHospital: getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_doctorInfo_doctorHospital[];
 }
 
 export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults {

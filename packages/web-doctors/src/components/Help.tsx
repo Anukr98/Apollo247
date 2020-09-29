@@ -1,9 +1,12 @@
 import { Theme, Typography } from '@material-ui/core';
 import { useAuth } from 'hooks/authHooks';
 import { makeStyles } from '@material-ui/styles';
-import React from 'react';
+import React, { useEffect, useContext, useState } from 'react';
 import { TestCall } from './TestCall';
-
+import { GET_DOCTOR_HELPLINE_NUMBER } from 'graphql/doctors';
+import { GetDoctorHelpline } from 'graphql/types/GetDoctorHelpline';
+import { useApolloClient } from 'react-apollo-hooks';
+import { AuthContext, AuthContextProps } from 'components/AuthProvider';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     loginFormWrap: {
@@ -92,26 +95,25 @@ interface HelpProps {
 export const HelpPopup: React.FC<HelpProps> = (props) => {
   const { isSignedIn } = useAuth();
   const classes = useStyles({});
-  const helpData = [
-    {
-      name: 'SPOC for Apollo Hyderabad Doctors',
-      doctorName: 'Ms. Sreevani',
-      helpNumber: '+9177027 00910',
-      email: 'sreevani_u@apollopharmacy.org',
-    },
-    {
-      name: 'SPOC for Apollo Chennai Doctors',
-      doctorName: 'Ms. Aruna',
-      helpNumber: '+9178239 13040',
-      email: 'edocmh_cni@apollohospitals.com',
-    },
-    {
-      name: 'SPOC for ATHS Doctors',
-      doctorName: 'Call Centre',
-      helpNumber: '18001021066',
-      email: 'mrc_support@healthnet-global.com',
-    },
-  ];
+  const apolloClient = useApolloClient();
+  const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
+  const { currentUser } = useAuthContext();
+  const [helpLineNumber, setHelpLineNumber] = useState<string>('');
+
+  useEffect(() => {
+    const doctorType = currentUser.doctorType;
+
+    apolloClient
+      .query<GetDoctorHelpline>({
+        query: GET_DOCTOR_HELPLINE_NUMBER,
+      })
+      .then((response) => {
+        const data = response.data.getDoctorHelpline;
+        let helpLineData = data.filter((x) => x.doctorType === doctorType);
+        setHelpLineNumber(helpLineData[0].mobileNumber);
+      });
+  }, []);
+
   return (
     <div
       className={
@@ -128,19 +130,8 @@ export const HelpPopup: React.FC<HelpProps> = (props) => {
       </div>
       <div className={classes.helpSection}>
         <h4>For any help,</h4>
-        <h5>Please call | 04048217273</h5>
+        <h5>{`Please call | ${helpLineNumber} `}</h5>
       </div>
-      {/* {helpData &&
-        helpData.length > 0 &&
-        helpData.map((helpObj) => (
-          <div className={classes.helpSection}>
-            <h4>{helpObj.name}</h4>
-            <h5>
-              {helpObj.doctorName} | {helpObj.helpNumber}
-            </h5>
-            <h6>{helpObj.email}</h6>
-          </div>
-        ))} */}
     </div>
   );
 };

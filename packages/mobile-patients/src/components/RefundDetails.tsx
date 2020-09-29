@@ -53,6 +53,21 @@ export const RefundDetails: React.FC<RefundDetailsProps> = (props) => {
           </View>
         );
       })}
+      <TouchableOpacity
+        activeOpacity={1}
+        style={styles.oneApolloTxt}
+        onPress={() => props.navigaitonProps.navigate(AppRoutes.OneApolloMembership)}
+      >
+        <Text style={{ ...theme.viewStyles.text('SB', 12, '#fcb716', 1, 15, 0.04) }}>
+          {'Click here '}
+        </Text>
+        <Text
+          numberOfLines={2}
+          style={{ ...theme.viewStyles.text('R', 12, '#02475b', 1, 15, 0.04), marginRight: 30 }}
+        >
+          {'to check your updated OneApollo Health Credits Balance'}
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -89,5 +104,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 11,
     textAlign: 'right',
     marginBottom: 5,
+  },
+  oneApolloTxt: {
+    flexDirection: 'row',
+    marginHorizontal: 20,
+    marginBottom: 16,
   },
 });

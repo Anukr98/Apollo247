@@ -8,7 +8,6 @@ import {
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import fetchUtil from 'helpers/fetch';
-import { Visibility } from '@material-ui/icons';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -258,6 +257,7 @@ export const BottomLinks: React.FC = (props) => {
                               key={currentLink.title}
                               href={currentLink.url}
                               target="_blank"
+                              rel="noopener noreferrer"
                             >
                               {currentLink.title}
                             </a>

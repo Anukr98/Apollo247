@@ -316,7 +316,7 @@ interface MedicineStripCardProps {
 export const MedicineStripCard: React.FC<MedicineStripCardProps> = (props) => {
   const classes = useStyles({});
   const medicineRef = useRef(null);
-  const { updateCartItem, removeCartItem } = useShoppingCart();
+  const { updateCartItem, removeCartItemSku } = useShoppingCart();
 
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [selectedPackedQty, setSelectedPackedQty] = React.useState<number[]>([]);
@@ -466,7 +466,7 @@ export const MedicineStripCard: React.FC<MedicineStripCardProps> = (props) => {
                   {medicineQty > 0 ? (
                     <AphButton
                       onClick={(e) => {
-                        removeCartItem && removeCartItem(medicineId);
+                        removeCartItemSku && removeCartItemSku(medicineSku);
                       }}
                     >
                       <img

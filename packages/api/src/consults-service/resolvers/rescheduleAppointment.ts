@@ -7,7 +7,6 @@ import {
   TRANSFER_INITIATED_TYPE,
   STATUS,
   REQUEST_ROLES,
-  ES_DOCTOR_SLOT_STATUS,
   RescheduleAppointmentDetails,
   AppointmentUpdateHistory,
   VALUE_TYPE,
@@ -27,11 +26,11 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { RescheduleAppointmentRepository } from 'consults-service/repositories/rescheduleAppointmentRepository';
 import {
   sendReminderNotification,
-  NotificationType,
   sendNotification,
   sendDoctorRescheduleAppointmentNotification,
-} from 'notifications-service/resolvers/notifications';
-import { addMilliseconds, differenceInDays } from 'date-fns';
+} from 'notifications-service/handlers';
+import { NotificationType } from 'notifications-service/constants';
+import { differenceInDays } from 'date-fns';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
 import { AdminDoctorMap } from 'doctors-service/repositories/adminDoctorRepository';
 import { rescheduleAppointmentEmailTemplate } from 'helpers/emailTemplates/rescheduleAppointmentEmailTemplate';
@@ -194,7 +193,7 @@ const getAppointmentRescheduleDetails: Resolver<
   const rescheduleDetails = await rescheduleRepo.getRescheduleDetailsByAppointment(apptDetails.id);
   if (!rescheduleDetails) throw new AphError(AphErrorMessages.NO_RESCHEDULE_DETAILS, undefined, {});
   const apptCount = await appointmentRepo.checkIfAppointmentExist(
-    rescheduleDetails.rescheduleInitiatedId,
+    apptDetails.doctorId,
     rescheduleDetails.rescheduledDateTime
   );
   if (rescheduleDetails.rescheduledDateTime < new Date() || apptCount > 0) {
@@ -202,7 +201,7 @@ const getAppointmentRescheduleDetails: Resolver<
     let availableSlot;
     while (true) {
       const nextSlot = await appointmentRepo.getDoctorNextSlotDate(
-        rescheduleDetails.rescheduleInitiatedId,
+        apptDetails.doctorId,
         nextDate,
         doctorsDb,
         apptDetails.appointmentType,
@@ -334,7 +333,6 @@ const initiateRescheduleAppointment: Resolver<
     consultsDb,
     doctorsDb
   );
-  console.log(notificationResult, 'notificationResult');
   const historyAttrs: Partial<AppointmentUpdateHistory> = {
     appointment,
     userType: APPOINTMENT_UPDATED_BY.DOCTOR,
@@ -534,13 +532,7 @@ const bookRescheduleAppointment: Resolver<
       appointmentId: bookRescheduleAppointmentInput.appointmentId,
       notificationType,
     };
-    const notificationResult = sendReminderNotification(
-      pushNotificationInput,
-      patientsDb,
-      consultsDb,
-      doctorsDb
-    );
-    console.log(notificationResult, 'notificationResult');
+    sendReminderNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
   }
 
   if (bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.DOCTOR) {
@@ -719,6 +711,7 @@ const bookRescheduleAppointment: Resolver<
   //   rescheduledapptDetails.doctorId,
   //   doctorsDb
   // );
+
   sendDoctorRescheduleAppointmentNotification(
     rescheduledapptDetails.appointmentDateTime,
     rescheduledapptDetails.patientName,
@@ -726,32 +719,6 @@ const bookRescheduleAppointment: Resolver<
     rescheduledapptDetails.doctorId,
     doctorsDb
   );
-
-  //send mail to doctor admin start
-  if (bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.PATIENT) {
-    const adminRepo = doctorsDb.getCustomRepository(AdminDoctorMap);
-    const adminDetails = await adminRepo.findByadminId(apptDetails.doctorId);
-    console.log(adminDetails, 'adminDetails');
-    if (adminDetails == null) throw new AphError(AphErrorMessages.GET_ADMIN_USER_ERROR);
-
-    const listOfEmails: string[] = [];
-
-    adminDetails.length > 0 &&
-      adminDetails.map((value) => listOfEmails.push(value.adminuser.email));
-    console.log('listOfEmails', listOfEmails);
-    listOfEmails.forEach(async (adminemail) => {
-      const adminEmailContent: EmailMessage = {
-        //ccEmail: ccEmailIds.toString(),
-        toEmail: adminemail.toString(),
-        subject: mailSubject.toString(),
-        fromEmail: ApiConstants.PATIENT_HELP_FROM_EMAILID.toString(),
-        fromName: ApiConstants.PATIENT_HELP_FROM_NAME.toString(),
-        messageContent: mailContent,
-      };
-      sendMail(adminEmailContent);
-    });
-  }
-  //send mail to doctor admin end
 
   //send SMS to patient after appintment reschedule accepted by patient
 
@@ -761,7 +728,7 @@ const bookRescheduleAppointment: Resolver<
   }
   const pushNotificationInput = {
     appointmentId: bookRescheduleAppointmentInput.appointmentId,
-    notificationType: NotificationType.ACCEPT_RESCHEDULED_APPOINTMENT,
+    notificationType: NotificationType.RESCHEDULE_APPOINTMENT_BY_PATIENT,
   };
   if (bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.DOCTOR) {
     // const notificationResult = await sendNotification(
@@ -777,13 +744,7 @@ const bookRescheduleAppointment: Resolver<
     //   appointmentId: bookRescheduleAppointmentInput.appointmentId,
     //   notificationType: NotificationType.RESCHEDULE_APPOINTMENT_BY_PATIENT,
     // };
-    const notificationResult = await sendNotification(
-      pushNotificationInput,
-      patientsDb,
-      consultsDb,
-      doctorsDb
-    );
-    console.log(notificationResult, 'appt rescheduled notification');
+    sendNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
   }
   return { appointmentDetails };
 };

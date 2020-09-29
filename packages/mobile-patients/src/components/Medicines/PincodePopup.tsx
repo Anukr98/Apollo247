@@ -9,7 +9,7 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   getPlaceInfoByPincode,
-  pinCodeServiceabilityApi,
+  pinCodeServiceabilityApi247,
   getNearByStoreDetailsApi,
   callToExotelApi,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
@@ -86,13 +86,13 @@ export const PincodePopup: React.FC<PincodePopupProps> = (props) => {
 
   const checkServiceabilityAndUpdatePlaceInfo = (pincode: string) => {
     globalLoading!(true);
-    pinCodeServiceabilityApi(pincode)
-      .then(({ data: { Availability } }) => {
+    pinCodeServiceabilityApi247(pincode)
+      .then(({ data: { response } }) => {
         const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ENTER_DELIVERY_PINCODE_SUBMITTED] = {
           'Patient UHID': currentPatient.uhid,
           'Mobile Number': currentPatient.mobileNumber,
           'Customer ID': currentPatient.id,
-          Serviceable: Availability ? 'Yes' : 'No',
+          Serviceable: response ? 'Yes' : 'No',
           Keyword: pincode,
           Source: 'Pharmacy Home',
         };
@@ -100,7 +100,7 @@ export const PincodePopup: React.FC<PincodePopupProps> = (props) => {
           WebEngageEventName.PHARMACY_ENTER_DELIVERY_PINCODE_SUBMITTED,
           eventAttributes
         );
-        if (!Availability) {
+        if (!response) {
           const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PINCODE_NONSERVICABLE] = {
             'Mobile Number': currentPatient.mobileNumber,
             Pincode: pincode,

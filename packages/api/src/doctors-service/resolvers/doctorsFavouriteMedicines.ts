@@ -244,7 +244,7 @@ const saveDoctorsFavouriteMedicine: Resolver<
 > = async (parent, { saveDoctorsFavouriteMedicineInput }, { doctorsDb, mobileNumber }) => {
   //doctor check
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  const doctordata = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
   if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   if (saveDoctorsFavouriteMedicineInput.medicineName.trim().length == 0)
@@ -279,7 +279,7 @@ const getDoctorFavouriteMedicineList: Resolver<
   GetDoctorFavouriteMedicineListResult
 > = async (parent, args, { mobileNumber, doctorsDb, consultsDb }) => {
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  const doctordata = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
   if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   const favouriteTestRepo = doctorsDb.getCustomRepository(DoctorFavouriteMedicineRepository);
@@ -301,7 +301,7 @@ const removeFavouriteMedicine: Resolver<
   const favouriteMedicineRepo = doctorsDb.getCustomRepository(DoctorFavouriteMedicineRepository);
 
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  const doctordata = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
   if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   // check if id exists or not
@@ -311,9 +311,9 @@ const removeFavouriteMedicine: Resolver<
   //delete medicine
   await favouriteMedicineRepo.removeFavouriteMedicineById(args.id);
 
-  const doctorsOtherFavouriteMedicines = await favouriteMedicineRepo.favouriteMedicines(<string>(
-    doctordata.id
-  ));
+  const doctorsOtherFavouriteMedicines = await favouriteMedicineRepo.favouriteMedicines(
+    <string>doctordata.id
+  );
 
   return { medicineList: doctorsOtherFavouriteMedicines };
 };
@@ -350,7 +350,7 @@ const updateDoctorFavouriteMedicine: Resolver<
   FavouriteMedicineList
 > = async (parent, { updateDoctorsFavouriteMedicineInput }, { doctorsDb, mobileNumber }) => {
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  const doctordata = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
   if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   if (updateDoctorsFavouriteMedicineInput.medicineName.trim().length == 0)

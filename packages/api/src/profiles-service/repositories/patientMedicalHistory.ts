@@ -9,6 +9,7 @@ export class PatientMedicalHistoryRepository extends Repository<PatientMedicalHi
     if (patientMedicalHistoryAttrs.patient) {
       patientMedicalHistoryAttrs.patientId = patientMedicalHistoryAttrs.patient.id;
     }
+
     return this.save(this.create(patientMedicalHistoryAttrs)).catch(
       (patientMedicalHistoryError) => {
         throw new AphError(AphErrorMessages.SAVE_PATIENT_MEDICAL_HISTORY_ERROR, undefined, {
@@ -22,8 +23,8 @@ export class PatientMedicalHistoryRepository extends Repository<PatientMedicalHi
     return this.find({ where: { patient } });
   }
 
-  getPatientMedicalHistory(patient: string) {
-    return this.findOne({ where: { patient }, order: { createdDate: 'DESC' } });
+  getPatientMedicalHistory(patientId: string) {
+    return this.findOne({ where: { patientId: patientId }, order: { createdDate: 'DESC' } });
   }
 
   updatePatientMedicalHistory(
@@ -34,6 +35,7 @@ export class PatientMedicalHistoryRepository extends Repository<PatientMedicalHi
       patientMedicalHistoryAttrs.patientId = patientMedicalHistoryAttrs.patient.id;
       patientMedicalHistoryAttrs.id = id;
     }
+
     const patientMedicalHistory = this.create(patientMedicalHistoryAttrs);
     return this.save(patientMedicalHistory);
   }

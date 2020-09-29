@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { STATUS, APPOINTMENT_TYPE, APPOINTMENT_STATE } from 'consults-service/entities';
+import { STATUS, APPOINTMENT_TYPE, APPOINTMENT_STATE, CaseSheet } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
@@ -34,6 +34,7 @@ export const getPatinetAppointmentsTypeDefs = gql`
     actualAmount: Float
     discountedAmount: Float
     appointmentPayments: [AppointmentPayment]
+    caseSheet: [CaseSheet]
     doctorInfo: DoctorDetailsWithStatusExclude @provides(fields: "id")
   }
 
@@ -92,7 +93,7 @@ export const getPatinetAppointmentsTypeDefs = gql`
 const REDIS_PATIENT_PASTCONSULT_BY_UHID_PREFIX: string = 'patient:pastconsult:';
 
 type PatientAppointmentsResult = {
-  patinetAppointments: PatinetAppointments[] | null;
+  patinetAppointments: Omit<PatinetAppointments, 'caseSheet'>[] | null;
 };
 
 type PatientAllAppointmentsResult = {
@@ -126,6 +127,7 @@ type PatinetAppointments = {
   actualAmount: number;
   discountedAmount: number;
   appointmentPayments: AppointmentPayment[];
+  caseSheet: CaseSheet[];
 };
 
 type AppointmentPayment = {
@@ -239,9 +241,9 @@ const getPatientPersonalizedAppointments: Resolver<
   const MAX_DAYS_PAST_CONSULT: number = 30;
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const doctorFacilityRepo = doctorsDb.getCustomRepository(DoctorHospitalRepository);
-  const apptRepo = consultsDb.getCustomRepository(AppointmentRepository); 
+  const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const uhid = args.patientUhid;
- 
+
   if (uhid == '' || uhid == null) {
     throw new AphError(AphErrorMessages.INVALID_UHID, undefined, {});
   }
@@ -320,7 +322,7 @@ const getPatientPersonalizedAppointments: Resolver<
       const apolloDoctorId = mapMedMantraApolloDoctor.get(appt.doctorid) || '';
       const patientId = patientDetails ? patientDetails.id : '';
       if (mapMedMantraApolloDoctor.has(appt.doctorid)) {
-        let apptBooked = await validateAppointmentBooked(
+        const apptBooked = await validateAppointmentBooked(
           apptRepo,
           apolloDoctorId,
           patientId,

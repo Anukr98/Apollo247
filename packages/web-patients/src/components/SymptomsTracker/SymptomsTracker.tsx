@@ -230,7 +230,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 type Patient = GetCurrentPatients_getCurrentPatients_patients;
 
-export const SymptomsTracker: React.FC = () => {
+const SymptomsTracker: React.FC = () => {
   const classes = useStyles({});
   const { isSignedIn } = useAuth();
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
@@ -255,7 +255,7 @@ export const SymptomsTracker: React.FC = () => {
                   <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
                 </div>
               </Link>
-              understand your symptoms
+              <h1>understand your symptoms</h1>
             </div>
             <Scrollbars
               autoHide={true}
@@ -365,3 +365,5 @@ export const SymptomsTracker: React.FC = () => {
     </div>
   );
 };
+
+export default SymptomsTracker;

@@ -260,3 +260,12 @@ export const GET_DOCTOR_AVAILABLE_SLOTS = gql`
     }
   }
 `;
+
+export const GET_DOCTOR_HELPLINE_NUMBER = gql`
+  query GetDoctorHelpline {
+    getDoctorHelpline {
+      doctorType
+      mobileNumber
+    }
+  }
+`;

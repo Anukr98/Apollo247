@@ -1,17 +1,21 @@
 import React from 'react';
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { Header } from 'components/Header';
+import loadable from '@loadable/component';
 import { HeroBanner } from 'components/HeroBanner';
-import { ManageProfile } from 'components/ManageProfile';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { useAuth, useAllCurrentPatients } from 'hooks/authHooks';
-import { PatientsOverview } from 'components/PatientsOverview';
 import { Relation } from 'graphql/types/globalTypes';
 import { WeAreHelpYou } from 'components/WeAreHelpYou';
 import { BottomLinks } from 'components/BottomLinks';
 import { SchemaMarkup } from 'SchemaMarkup';
 import { MetaTagsComp } from 'MetaTagsComp';
+
+const Header = loadable(() => import('components/Header'));
+// import { Header } from 'components/Header';
+import { ManageProfile } from 'components/ManageProfile';
+const PatientsOverview = loadable(() => import('components/PatientsOverview'));
+// const ManageProfile = loadable(() => import('components/ManageProfile'));
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -38,7 +42,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const Welcome: React.FC = (props) => {
+const Welcome: React.FC = (props) => {
   const classes = useStyles({});
   const { isSignedIn } = useAuth();
   const { allCurrentPatients } = useAllCurrentPatients();
@@ -77,3 +81,5 @@ export const Welcome: React.FC = (props) => {
     </div>
   );
 };
+
+export default Welcome;

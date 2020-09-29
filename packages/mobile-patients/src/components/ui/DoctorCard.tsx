@@ -361,10 +361,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                 }}
               > */}
               <View style={styles.imageView}>
-                {rowData.thumbnailUrl &&
-                rowData.thumbnailUrl.match(
-                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jpeg|JPEG)/
-                ) ? (
+                {!!g(rowData, 'thumbnailUrl') ? (
                   <Image
                     style={{
                       height: 80,
@@ -372,7 +369,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                       width: 80,
                     }}
                     source={{
-                      uri: rowData.thumbnailUrl,
+                      uri: rowData.thumbnailUrl!,
                     }}
                     resizeMode={'contain'}
                   />

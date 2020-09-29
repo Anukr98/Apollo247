@@ -9,7 +9,7 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import {
   sendPatientRegistrationNotification,
   sendNotificationWhatsapp,
-} from 'notifications-service/resolvers/notifications';
+} from 'notifications-service/handlers';
 import { ApiConstants, PATIENT_REPO_RELATIONS } from 'ApiConstants';
 import { createPrismUser } from 'helpers/phrV1Services';
 

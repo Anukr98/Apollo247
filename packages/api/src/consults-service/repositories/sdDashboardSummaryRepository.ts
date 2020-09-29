@@ -194,7 +194,6 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
     const inputDate = format(appointmentDate, 'yyyy-MM-dd');
     const endDate = new Date(inputDate + 'T18:29');
     const inputStartDate = format(addDays(appointmentDate, -1), 'yyyy-MM-dd');
-    console.log(inputStartDate, 'inputStartDate find by date doctor id');
     const startDate = new Date(inputStartDate + 'T18:30');
     if (appointmentType == 'BOTH') {
       return Appointment.createQueryBuilder('appointment')
@@ -280,7 +279,6 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
     const inputDate = format(appointmentDate, 'yyyy-MM-dd');
     const endDate = new Date(inputDate + 'T18:29');
     const inputStartDate = format(addDays(appointmentDate, -1), 'yyyy-MM-dd');
-    console.log(inputStartDate, 'inputStartDate find by date doctor id - calls count');
     const startDate = new Date(inputStartDate + 'T18:30');
     const callDetails: CasesheetPrepTime[] = await AppointmentCallDetails.createQueryBuilder(
       'appointment_call_details'
@@ -324,7 +322,6 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
     const inputDate = format(appointmentDate, 'yyyy-MM-dd');
     const endDate = new Date(inputDate + 'T18:29');
     const inputStartDate = format(addDays(appointmentDate, -1), 'yyyy-MM-dd');
-    console.log(inputStartDate, 'inputStartDate find by date doctor id');
     const startDate = new Date(inputStartDate + 'T18:30');
     if (rescheduleType == TRANSFER_INITIATED_TYPE.DOCTOR) {
       return Appointment.createQueryBuilder('appointment')
@@ -363,7 +360,6 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
     const inputDate = format(appointmentDate, 'yyyy-MM-dd');
     const endDate = new Date(inputDate + 'T18:29');
     const inputStartDate = format(addDays(appointmentDate, -1), 'yyyy-MM-dd');
-    console.log(inputStartDate, 'inputStartDate find by date doctor id');
     const startDate = new Date(inputStartDate + 'T18:30');
     return Appointment.createQueryBuilder('appointment')
       .where('(appointment."appointmentDateTime" Between :fromDate AND :toDate)', {
@@ -379,7 +375,6 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
     const inputDate = format(appointmentDate, 'yyyy-MM-dd');
     const endDate = new Date(inputDate + 'T18:29');
     const inputStartDate = format(addDays(appointmentDate, -1), 'yyyy-MM-dd');
-    console.log(inputStartDate, 'inputStartDate find by date doctor id');
     const startDate = new Date(inputStartDate + 'T18:30');
     return Appointment.count({
       where: {
@@ -401,7 +396,6 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
         const ed = `${appointmentDate.toDateString()} ${timeSlot.endTime.toString()}`;
         let consultStartTime = new Date(st);
         const consultEndTime = new Date(ed);
-        console.log('consults timings', consultStartTime, consultEndTime);
         let previousDate: Date = appointmentDate;
         if (consultEndTime < consultStartTime) {
           previousDate = addDays(appointmentDate, -1);
@@ -409,7 +403,6 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
           consultStartTime = new Date(st);
         }
         const duration = parseFloat((60 / timeSlot.consultDuration).toFixed(1));
-        console.log(duration, 'doctor duration');
         let slotsCount =
           (Math.abs(differenceInMinutes(consultEndTime, consultStartTime)) / 60) * duration;
         if (slotsCount - Math.floor(slotsCount) == 0.5) {
@@ -418,11 +411,6 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
           slotsCount = Math.floor(slotsCount);
         }
         totalSlots += slotsCount;
-        console.log(
-          slotsCount,
-          'slot count',
-          differenceInMinutes(consultEndTime, consultStartTime)
-        );
       });
     }
     return totalSlots;
@@ -432,7 +420,6 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
     const inputDate = format(appointmentDate, 'yyyy-MM-dd');
     const endDate = new Date(inputDate + 'T18:29');
     const inputStartDate = format(addDays(appointmentDate, -1), 'yyyy-MM-dd');
-    console.log(inputStartDate, 'inputStartDate find by date doctor id - time per consult');
     const startDate = new Date(inputStartDate + 'T18:30');
     const totalTime = await AppointmentCallDetails.createQueryBuilder('appointment_call_details')
       .leftJoinAndSelect('appointment_call_details.appointment', 'appointment')
@@ -445,7 +432,6 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       .andWhere('appointment.doctorId = :doctorId', { doctorId: doctorId })
       .andWhere('appointment."status" = :status', { status: STATUS.COMPLETED })
       .getMany();
-    console.log(totalTime, 'total time');
     let totalHours = 0;
     if (totalTime.length > 0) {
       totalTime.map((apptTime) => {
@@ -473,7 +459,6 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
       .andWhere('case_sheet."doctorType" != :docType', { docType: DoctorType.JUNIOR })
       .andWhere('case_sheet.status = :status', { status: CASESHEET_STATUS.COMPLETED })
       .getRawMany();
-    console.log(prepTimeRows, 'case sheet prep time');
     if (prepTimeRows[0].totalrows > 0) {
       return parseFloat((prepTimeRows[0].totaltime / 60).toFixed(2));
     } else {
@@ -517,7 +502,6 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
   async getOnTimeConsultations(doctorId: string, appointmentDate: Date) {
     const startDate = new Date(format(addDays(appointmentDate, -1), 'yyyy-MM-dd') + 'T18:30');
     const endDate = new Date(format(appointmentDate, 'yyyy-MM-dd') + 'T18:30');
-    console.log('checkingquery=>');
     const appointmentList = await Appointment.find({
       where: {
         doctorId,
@@ -525,10 +509,8 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
         status: STATUS.COMPLETED,
       },
     });
-    console.log('appointmentList==>', appointmentList);
     let count: number = 0;
     if (appointmentList.length) {
-      console.log('inside the consdition');
       return new Promise<number>((resolve, reject) => {
         appointmentList.forEach(async (appt, index, array) => {
           const calldetails = await AppointmentCallDetails.find({
@@ -536,13 +518,11 @@ export class SdDashboardSummaryRepository extends Repository<SdDashboardSummary>
             order: { startTime: 'ASC' },
             take: 1,
           });
-          console.log('calldetails==>', calldetails);
           if (calldetails) {
             const apptFormat = format(appt.appointmentDateTime, 'yyyy-MM-dd HH:mm');
             const callStartTimeFormat = format(calldetails[0].startTime, 'yyyy-MM-dd HH:mm');
             const addingFiveMinutes = addMinutes(appt.appointmentDateTime, 5);
             const addingFiveMinutesFormat = format(addingFiveMinutes, 'yyyy-MM-dd HH:mm');
-            console.log('dates', apptFormat, callStartTimeFormat, addingFiveMinutesFormat);
             const withInTime =
               isWithinInterval(new Date(callStartTimeFormat), {
                 start: new Date(apptFormat),

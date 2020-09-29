@@ -7,6 +7,7 @@ import {
   ExpansionPanelDetails,
   Grid,
 } from '@material-ui/core';
+import { getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response as LabResultsType } from '../../graphql/types/getPatientPrismMedicalRecords';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -75,30 +76,31 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 type ToplineReportProps = {
-  activeData: any;
+  activeData: LabResultsType;
 };
 
 export const ToplineReport: React.FC<ToplineReportProps> = (props) => {
   const classes = useStyles({});
-  const { data } = props.activeData;
+  const { activeData } = props;
   return (
-    <ExpansionPanel className={classes.root} defaultExpanded={true}>
-      <ExpansionPanelSummary
-        expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
-        classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
-      >
-        Topline Report
-      </ExpansionPanelSummary>
-      <ExpansionPanelDetails className={classes.panelDetails}>
-        <Grid container spacing={2}>
-          <Grid item sm={12}>
-            <div className={classes.cardSection}>
-              {(data.observations && data.observations) ||
-                (data.additionalNotes && data.additionalNotes)}
-            </div>
+    activeData && (
+      <ExpansionPanel className={classes.root} defaultExpanded={true}>
+        <ExpansionPanelSummary
+          expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
+          classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
+        >
+          Topline Report
+        </ExpansionPanelSummary>
+        <ExpansionPanelDetails className={classes.panelDetails}>
+          <Grid container spacing={2}>
+            <Grid item sm={12}>
+              <div className={classes.cardSection}>
+                {activeData.observation || activeData.additionalNotes}
+              </div>
+            </Grid>
           </Grid>
-        </Grid>
-      </ExpansionPanelDetails>
-    </ExpansionPanel>
+        </ExpansionPanelDetails>
+      </ExpansionPanel>
+    )
   );
 };

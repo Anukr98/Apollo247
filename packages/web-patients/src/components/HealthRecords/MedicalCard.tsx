@@ -36,6 +36,11 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       wordBreak: 'break-word',
     },
+    consultType: {
+      fontSize: 12,
+      color: 'rgba(2,71,91,0.6)',
+      fontWeight: 500,
+    },
     doctorService: {
       paddingTop: 8,
       paddingBottom: 8,
@@ -113,18 +118,16 @@ type MedicalCardProps = {
 export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
   const classes = useStyles({});
   const [showPopup, setShowPopup] = useState<boolean>(false);
+  const { name, source, type, isActiveCard, deleteReport, id } = props;
 
   return (
-    <div className={`${classes.root} ${props.isActiveCard ? classes.activeCard : ''}`}>
+    <div className={`${classes.root} ${isActiveCard ? classes.activeCard : ''}`}>
       <div className={classes.doctorInfoGroup}>
         <div className={classes.doctorInfo}>
-          <div className={classes.doctorName}>{props.name}</div>
+          <div className={classes.doctorName}>{name}</div>
         </div>
-        {/* <div className={classes.moreIcon}>
-          <img src={require('images/ic_more.svg')} alt="" onClick={() => setShowPopup(true)} />
-        </div> */}
       </div>
-      {props.source && props.source !== '-' && <div>{props.source}</div>}
+      {source && source !== '-' && <div className={classes.consultType}>{source}</div>}
       <AphDialog
         open={showPopup}
         disableBackdropClick
@@ -149,7 +152,7 @@ export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
           <AphButton
             color="primary"
             onClick={() => {
-              props.deleteReport(props.id, props.type);
+              deleteReport(id, type);
               setShowPopup(false);
             }}
             autoFocus

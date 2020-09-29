@@ -34,6 +34,7 @@ import {
   PrescriptionInputArgs,
 } from 'profiles-service/resolvers/prescriptionUpload';
 import { Doctor, ROUTE_OF_ADMINISTRATION } from 'doctors-service/entities';
+import { log } from 'customWinstonLogger';
 
 export const convertCaseSheetToRxPdfData = async (
   caseSheet: Partial<CaseSheet>,
@@ -66,29 +67,29 @@ export const convertCaseSheetToRxPdfData = async (
       let genericName;
       const plural =
         csRx.medicineUnit == MEDICINE_UNIT.ML ||
-        csRx.medicineUnit == MEDICINE_UNIT.MG ||
-        csRx.medicineUnit == MEDICINE_UNIT.AS_PRESCRIBED
+          csRx.medicineUnit == MEDICINE_UNIT.MG ||
+          csRx.medicineUnit == MEDICINE_UNIT.AS_PRESCRIBED
           ? ''
           : '(s)';
       const customDosage = csRx.medicineCustomDosage
         ? csRx.medicineCustomDosage
-            .split('-')
-            .filter((value) => parseInt(value, 10))
-            .join(
-              ' ' +
-                csRx.medicineUnit
-                  .split('_')
-                  .join(' ')
-                  .toLowerCase() +
-                plural +
-                ' - '
-            ) +
-          ' ' +
-          csRx.medicineUnit
-            .split('_')
-            .join(' ')
-            .toLowerCase() +
-          plural
+          .split('-')
+          .filter((value) => parseInt(value, 10))
+          .join(
+            ' ' +
+            csRx.medicineUnit
+              .split('_')
+              .join(' ')
+              .toLowerCase() +
+            plural +
+            ' - '
+          ) +
+        ' ' +
+        csRx.medicineUnit
+          .split('_')
+          .join(' ')
+          .toLowerCase() +
+        plural
         : '';
       if (csRx.medicineCustomDetails) {
         frequency = csRx.medicineCustomDetails;
@@ -204,7 +205,9 @@ export const convertCaseSheetToRxPdfData = async (
         frequency += '.';
       }
       const instructions = csRx.medicineInstructions;
-      const routeOfAdministration = csRx.medicineCustomDetails ? null : _capitalize(csRx.routeOfAdministration)
+      const routeOfAdministration = csRx.medicineCustomDetails
+        ? null
+        : _capitalize(csRx.routeOfAdministration);
       if (csRx.includeGenericNameInPrescription) {
         genericName = csRx.genericName;
       }
@@ -285,9 +288,9 @@ export const convertCaseSheetToRxPdfData = async (
         patientData.dateOfBirth === null
           ? ''
           : Math.abs(
-              new Date(Date.now()).getUTCFullYear() -
-                new Date(patientData.dateOfBirth).getUTCFullYear()
-            ).toString();
+            new Date(Date.now()).getUTCFullYear() -
+            new Date(patientData.dateOfBirth).getUTCFullYear()
+          ).toString();
       patientInfo = {
         firstName: patientData.firstName,
         lastName: patientData.lastName,
@@ -340,7 +343,6 @@ export const convertCaseSheetToRxPdfData = async (
         specialty: doctordata.specialty.name,
         signature: doctordata.signature,
       };
-      console.log(doctorInfo);
     }
   }
 
@@ -371,20 +373,20 @@ export const convertCaseSheetToRxPdfData = async (
 
   let followUpDetails = '';
 
-  if (caseSheet.followUp) {
-    followUpDetails = 'Follow up ';
-    if (caseSheet.followUpConsultType)
-      followUpDetails = followUpDetails + '(' + _capitalize(caseSheet.followUpConsultType) + ') ';
-    let followUpDays;
-    if (caseSheet.followUpAfterInDays && caseSheet.followUpAfterInDays <= 7) {
-      followUpDays = caseSheet.followUpAfterInDays;
-      if (followUpDays) followUpDetails = followUpDetails + 'after ' + followUpDays + ' days';
-    } else if (caseSheet.followUpDate) {
-      //followUpDays = differenceInCalendarDays(caseSheet.followUpDate, caseSheet.createdDate!);
-      followUpDetails = followUpDetails + 'on ' + format(caseSheet.followUpDate, 'dd/MM/yyyy');
-    }
-    followUpDetails = followUpDetails + ' with reports';
-  }
+  // if (caseSheet.followUp) {
+  //   followUpDetails = 'Follow up ';
+  //   if (caseSheet.followUpConsultType)
+  //     followUpDetails = followUpDetails + '(' + _capitalize(caseSheet.followUpConsultType) + ') ';
+  //   let followUpDays;
+  //   if (caseSheet.followUpAfterInDays) {
+  //     followUpDays = caseSheet.followUpAfterInDays;
+  //     if (followUpDays) followUpDetails = followUpDetails + 'after ' + followUpDays + ' days';
+  //   } else if (caseSheet.followUpDate) {
+  //     //followUpDays = differenceInCalendarDays(caseSheet.followUpDate, caseSheet.createdDate!);
+  //     followUpDetails = followUpDetails + 'on ' + format(caseSheet.followUpDate, 'dd/MM/yyyy');
+  //   }
+  //   followUpDetails = followUpDetails + ' with reports';
+  // }
 
   const referralSpecialtyName = caseSheet.referralSpecialtyName
     ? caseSheet.referralSpecialtyName
@@ -538,9 +540,8 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       .image(loadAsset('apolloLogo.png'), margin, margin / 2, { width: 87, height: 64 });
 
     //Doctor Details
-    const nameLine = `${doctorInfo.salutation.replace('.', '')}. ${doctorInfo.firstName} ${
-      doctorInfo.lastName
-    }`;
+    const nameLine = `${doctorInfo.salutation.replace('.', '')}. ${doctorInfo.firstName} ${doctorInfo.lastName
+      }`;
     const specialty = doctorInfo.specialty;
     const registrationLine = `Reg.No. ${doctorInfo.registrationNumber}`;
 
@@ -566,9 +567,8 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       .text(`${specialty} | ${registrationLine}`);
 
     //Doctor Address Details
-    const addressLastLine = `${hospitalAddress.city}  ${
-      hospitalAddress.zipcode ? ' - ' + hospitalAddress.zipcode : ''
-    } | ${hospitalAddress.state}, ${hospitalAddress.country}`;
+    const addressLastLine = `${hospitalAddress.city}  ${hospitalAddress.zipcode ? ' - ' + hospitalAddress.zipcode : ''
+      } | ${hospitalAddress.state}, ${hospitalAddress.country}`;
 
     doc
       .moveDown(0.3)
@@ -738,12 +738,10 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
           .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
           .fillColor('#666666')
           .text(
-            `To be ${
-              prescription.medicineFormTypes != MEDICINE_FORM_TYPES.OTHERS ? 'Applied' : 'taken'
-            }: ${
-              prescription.routeOfAdministration != ROUTE_OF_ADMINISTRATION.INTRA_ARTICULAR
-                ? prescription.routeOfAdministration.split('_').join(' ')
-                : 'Intra-articular'
+            `To be ${prescription.medicineFormTypes != MEDICINE_FORM_TYPES.OTHERS ? 'Applied' : 'taken'
+            }: ${prescription.routeOfAdministration != ROUTE_OF_ADMINISTRATION.INTRA_ARTICULAR
+              ? prescription.routeOfAdministration.split('_').join(' ')
+              : 'Intra-articular'
             } `,
             margin + 30
           )
@@ -998,9 +996,8 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       }
 
       //Doctor Details
-      const nameLine = `${doctorInfo.salutation.replace('.', '')}. ${doctorInfo.firstName} ${
-        doctorInfo.lastName
-      }`;
+      const nameLine = `${doctorInfo.salutation.replace('.', '')}. ${doctorInfo.firstName} ${doctorInfo.lastName
+        }`;
       const specialty = doctorInfo.specialty;
       const registrationLine = `Reg.No. ${doctorInfo.registrationNumber}`;
 
@@ -1108,10 +1105,17 @@ export const uploadRxPdf = async (
 
   const blob = await client.uploadFile({ name, filePath });
   const blobUrl = client.getBlobUrl(blob.name);
-  console.log('blobUrl===', blobUrl);
   const base64pdf = await convertPdfUrlToBase64(blobUrl);
 
-  fs.unlink(filePath, (error) => console.log(error));
+  fs.unlink(filePath, (error) => {
+    log(
+      'consultServiceLogger',
+      'uploadRxPdf fs.unlink error',
+      'rxPdfGenerator()->uploadRxPdf()->fs.unlink',
+      '',
+      JSON.stringify(error)
+    );
+  });
   const uploadData = { ...blob, base64pdf }; // returning blob details and base64Pdf
 
   return uploadData;
@@ -1126,7 +1130,6 @@ const convertPdfUrlToBase64 = async (pdfUrl: string) => {
   util.promisify(pdf2base64);
   try {
     const base64pdf = await pdf2base64(pdfUrl);
-    console.log('pdfData:', base64pdf);
     return base64pdf;
   } catch (e) {
     throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
@@ -1203,6 +1206,7 @@ export const uploadPdfBase64ToPrism = async (
       prescriptionFiles: prescriptionFiles,
       speciality: doctorData.specialty.name,
       hospital_name: hospitalDetails.name,
+      hospitalId: hospitalDetails.id,
       address: hospitalDetails.streetLine1,
       city: hospitalDetails.city,
       pincode: hospitalDetails.zipcode,

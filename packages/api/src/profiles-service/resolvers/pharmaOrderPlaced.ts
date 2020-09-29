@@ -1,17 +1,21 @@
 import gql from 'graphql-tag';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
-import { MEDICINE_ORDER_STATUS, MedicineOrdersStatus } from 'profiles-service/entities';
+import {
+  MEDICINE_ORDER_STATUS,
+  MedicineOrdersStatus,
+  MEDICINE_DELIVERY_TYPE,
+} from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import {
-  NotificationType,
-  sendMedicineOrderStatusNotification,
-} from 'notifications-service/resolvers/notifications';
+import { SYNC_TYPE } from 'types/inventorySync';
+import { sendMedicineOrderStatusNotification } from 'notifications-service/handlers';
+import { NotificationType } from 'notifications-service/constants';
 import { ApiConstants } from 'ApiConstants';
 import { postEvent, WebEngageInput } from 'helpers/webEngage';
 import { format, addMinutes } from 'date-fns';
+import { syncInventory } from 'helpers/inventorySync';
 
 export const pharmaOrderPlacedTypeDefs = gql`
   input OrderPlacedInput {
@@ -47,7 +51,7 @@ const saveOrderPlacedStatus: Resolver<
   OrderPlacedResult
 > = async (parent, { orderPlacedInput }, { profilesDb }) => {
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const orderDetails = await medicineOrdersRepo.getMedicineOrderWithShipments(
+  const orderDetails = await medicineOrdersRepo.getMedicineOrderPlacedDetails(
     orderPlacedInput.orderAutoId
   );
   if (!orderDetails) {
@@ -99,6 +103,13 @@ const saveOrderPlacedStatus: Resolver<
     },
   };
   postEvent(postBody);
+
+  orderDetails.medicineOrderLineItems = await medicineOrdersRepo.getMedicineOrderLineItemByOrderId(
+    orderDetails.id
+  );
+  if (orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.HOME_DELIVERY) {
+    syncInventory(orderDetails, SYNC_TYPE.BLOCK);
+  }
 
   return { message: 'Order placed successfully' };
 };

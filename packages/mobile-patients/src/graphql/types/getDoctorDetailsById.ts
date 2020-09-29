@@ -109,6 +109,7 @@ export interface getDoctorDetailsById_getDoctorDetailsById {
   fullName: string | null;
   displayName: string | null;
   doctorType: DoctorType;
+  chatDays: number | null;
   qualification: string | null;
   mobileNumber: string;
   experience: string | null;

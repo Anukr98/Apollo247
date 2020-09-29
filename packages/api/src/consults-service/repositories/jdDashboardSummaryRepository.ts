@@ -104,7 +104,6 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
     const promises: object[] = [];
     async function getCasesheetTime(appt: ConsultQueueItem) {
       return new Promise<number>(async (resolve) => {
-        console.log(appt, 'came here inside the appt');
         const caseSheetDets = await CaseSheet.findOne({
           where: {
             appointment: appt.appointmentId,
@@ -115,27 +114,22 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
         if (caseSheetDets) {
           const diffMins =
             Math.abs(differenceInSeconds(caseSheetDets.createdDate, appt.createdDate)) / 60;
-          console.log('dates ', caseSheetDets.createdDate, appt.createdDate);
           totalMins += diffMins;
-          console.log(totalMins, 'total mins');
         } else {
           totalMins += 0;
         }
         resolve(totalMins);
       });
     }
-    console.log(apptIds, apptIds.length);
     if (apptIds.length > 0) {
       apptIds.forEach(async (appt) => {
         promises.push(getCasesheetTime(appt));
       });
     }
     await Promise.all(promises);
-    console.log(apptIds.length, totalMins, 'wait time percasesheet');
     if (totalMins == 0 && apptIds.length == 0) {
       return 0;
     } else {
-      console.log('finalresult=>', totalMins / apptIds.length);
       return totalMins / apptIds.length;
     }
   }
@@ -197,7 +191,6 @@ export class JdDashboardSummaryRepository extends Repository<JdDashboardSummary>
       apptCallDetails.map((appt) => {
         apptIds.push(appt.appointmentId);
       });
-      console.log(apptIds, 'apptIds in ontime consultation');
       const callDetails: AvCount[] = await AppointmentCallDetails.createQueryBuilder(
         'appointment_call_details'
       )

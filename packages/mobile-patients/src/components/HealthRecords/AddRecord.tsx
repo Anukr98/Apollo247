@@ -1,82 +1,57 @@
 import { CollapseCard } from '@aph/mobile-patients/src/components/CollapseCard';
-import { AddFilePopup } from '@aph/mobile-patients/src/components/HealthRecords/AddFilePopup';
 // import { PickerImage } from '@aph/mobile-patients/src/components/Medicines/Medicine';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { DatePicker } from '@aph/mobile-patients/src/components/ui/DatePicker';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import {
-  CrossYellow,
-  PrescriptionThumbnail,
-  DropdownGreen,
-} from '@aph/mobile-patients/src/components/ui/Icons';
-import {
-  InputDropdown,
-  InputDropdownMenu,
-} from '@aph/mobile-patients/src/components/ui/InputDropdown';
+import { CrossYellow, DropdownGreen, FileBig } from '@aph/mobile-patients/src/components/ui/Icons';
+import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import {
-  ADD_MEDICAL_RECORD,
-  UPLOAD_FILE,
-  UPLOAD_DOCUMENT,
-  UPLOAD_LAB_RESULTS,
-  UPLOAD_HEALTH_RECORD_PRESCRIPTION,
-  DOWNLOAD_DOCUMENT,
-} from '@aph/mobile-patients/src/graphql/profiles';
+  CommonBugFender,
+  CommonLogEvent,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  addPatientMedicalRecord,
-  addPatientMedicalRecordVariables,
-} from '@aph/mobile-patients/src/graphql/types/addPatientMedicalRecord';
+  ADD_MEDICAL_RECORD,
+  UPLOAD_HEALTH_RECORD_PRESCRIPTION,
+  UPLOAD_LAB_RESULTS,
+} from '@aph/mobile-patients/src/graphql/profiles';
+import { addPatientMedicalRecord } from '@aph/mobile-patients/src/graphql/types/addPatientMedicalRecord';
 import {
   AddMedicalRecordParametersInput,
-  MedicalRecordType,
   MedicalTestUnit,
   prescriptionSource,
-  UPLOAD_FILE_TYPES,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { uploadFile, uploadFileVariables } from '@aph/mobile-patients/src/graphql/types/uploadFile';
 import {
   g,
-  isValidSearch,
   isValidText,
-  isValidName,
   postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Moment from 'moment';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
+  Dimensions,
+  Image,
   Keyboard,
   SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Image,
-  Dimensions,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
-import {
-  CommonLogEvent,
-  CommonBugFender,
-} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
-import { uploadDocumentVariables, uploadDocument } from '../../graphql/types/uploadDocument';
-import {
-  downloadDocuments,
-  downloadDocumentsVariables,
-} from '../../graphql/types/downloadDocuments';
-import { BottomPopUp } from '../ui/BottomPopUp';
+import { WebEngageEventName, WebEngageEvents } from '../../helpers/webEngageEvents';
 import { string } from '../../strings/string';
-import { useUIElements } from '../UIElementsProvider';
 import { UploadPrescriprionPopup } from '../Medicines/UploadPrescriprionPopup';
-import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
+import { BottomPopUp } from '../ui/BottomPopUp';
+import { useUIElements } from '../UIElementsProvider';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -554,9 +529,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const renderImagesRow = (data: PickerImage, i: number) => {
     console.log(data, 'renderImagesRow');
 
-    var base64Icon = 'data:image/png;base64,';
+    const base64Icon = 'data:image/png;base64,';
     fin = base64Icon.concat(data.base64);
     console.log(fin, 'fin');
+    const fileType = data.fileType;
+
     return (
       <TouchableOpacity activeOpacity={1} key={i} onPress={() => {}}>
         <View
@@ -580,8 +557,13 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               width: 54,
             }}
           >
-            {fin == '' ? (
-              <PrescriptionThumbnail />
+            {fileType === 'pdf' || fileType === 'application/pdf' ? (
+              <FileBig
+                style={{
+                  height: 45,
+                  width: 30,
+                }}
+              />
             ) : (
               <Image
                 style={{

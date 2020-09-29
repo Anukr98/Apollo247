@@ -7,7 +7,7 @@ const { POSSIBLE_PAYMENT_TYPES, INVALID_PAYMENT_TYPE } = require('../../Constant
  * @param {*} amount
  * @param {*} bookingSource
  */
-const initPayment = function(
+const initPayment = function (
   patientId,
   orderAutoId,
   amount,
@@ -34,6 +34,8 @@ const initPayment = function(
     };
 
     Object.assign(paymentObj, addParams);
+    logger.info(`${orderAutoId} -paymed-request-initPayment- ${JSON.stringify(paymentObj)}`);
+
     let merchantKey = process.env.PAYTM_MERCHANT_KEY_PHARMACY;
     if (paymentTypeID == process.env.PARTNER_SBI)
       merchantKey = process.env.SBI_PAYTM_MERCHANT_KEY_PHARMACY;

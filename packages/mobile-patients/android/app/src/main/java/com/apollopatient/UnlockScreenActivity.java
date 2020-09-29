@@ -65,8 +65,10 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        pnConfiguration.setSubscribeKey("sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b");
-        pnConfiguration.setPublishKey("pub-c-75e6dc17-2d81-4969-8410-397064dae70e");
+        //pubkey=pub-c-75e6dc17-2d81-4969-8410-397064dae70e
+        //subkey=sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b
+        pnConfiguration.setSubscribeKey("sub-c-517dafbc-d955-11e9-aa3a-6edd521294c5");
+        pnConfiguration.setPublishKey("pub-c-e275fde3-09e1-44dd-bc32-5c3d04c3b2ef");
         pnConfiguration.setSecure(true);
 
         mLocalBroadcastManager = LocalBroadcastManager.getInstance(this);

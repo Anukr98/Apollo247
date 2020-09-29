@@ -4,7 +4,7 @@ import { TabsComponent } from '../ui/TabsComponent';
 import { theme } from '../../theme/theme';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 // import { TextInputComponent } from '../ui/TextInputComponent';
-import { searchPickupStoresApi, pinCodeServiceabilityApi, Store } from '../../helpers/apiCalls';
+import { searchPickupStoresApi, Store, pinCodeServiceabilityApi247 } from '../../helpers/apiCalls';
 import { RadioSelectionItem } from './RadioSelectionItem';
 import { AppRoutes } from '../NavigatorContainer';
 import { savePatientAddress_savePatientAddress_patientAddress } from '../../graphql/types/savePatientAddress';
@@ -163,10 +163,10 @@ export const StorePickupOrAddressSelectionView: React.FC<StorePickupOrAddressSel
     }
     setDeliveryAddressId!('');
     setCheckingServicability(true);
-    pinCodeServiceabilityApi(address.zipcode!)
-      .then(({ data: { Availability } }) => {
+    pinCodeServiceabilityApi247(address.zipcode!)
+      .then(({ data: { response } }) => {
         setCheckingServicability(false);
-        if (Availability) {
+        if (response) {
           setDeliveryAddressId && setDeliveryAddressId(address.id);
         } else {
           showAphAlert!({
@@ -175,7 +175,7 @@ export const StorePickupOrAddressSelectionView: React.FC<StorePickupOrAddressSel
           });
         }
         const eventAttributes: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_ADDRESS_SELECTED] = {
-          Serviceable: Availability ? 'Yes' : 'No',
+          Serviceable: response ? 'Yes' : 'No',
         };
         postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_ADDRESS_SELECTED, eventAttributes);
       })

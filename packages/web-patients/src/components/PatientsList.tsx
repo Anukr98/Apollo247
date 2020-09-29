@@ -2,7 +2,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress, Typography, Divider } from '@material-ui/core';
 import React from 'react';
 import { GET_PATIENTS } from 'graphql/profiles';
-import { LocalHospital } from '@material-ui/icons';
+import LocalHospital from '@material-ui/icons/LocalHospital';
 import { GetPatients } from 'graphql/types/GetPatients';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 
@@ -21,7 +21,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export interface PatientsListProps {}
 
-export const PatientsList: React.FC<PatientsListProps> = (props) => {
+const PatientsList: React.FC<PatientsListProps> = (props) => {
   const classes = useStyles({});
   const { data, error, loading } = useQueryWithSkip<GetPatients>(GET_PATIENTS);
   if (loading) return <CircularProgress />;
@@ -48,3 +48,5 @@ export const PatientsList: React.FC<PatientsListProps> = (props) => {
     </div>
   );
 };
+
+export default PatientsList;

@@ -13,7 +13,6 @@ import {
 import { GET_PATIENT_ADDRESSES_LIST } from 'graphql/address';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { MascotWithMessage } from '../MascotWithMessage';
-import { Close } from '@material-ui/icons';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {

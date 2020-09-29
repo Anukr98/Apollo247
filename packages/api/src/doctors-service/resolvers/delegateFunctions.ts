@@ -57,7 +57,7 @@ const updateDelegateNumber: Resolver<
     throw new AphError(AphErrorMessages.INVALID_ENTITY);
 
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  const doctorData = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
   if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   const searchMobileNumberExistence = await doctorRepository.searchDoctorByMobileNumber(
@@ -82,7 +82,7 @@ const removeDelegateNumber: Resolver<null, {}, DoctorsServiceContext, Doctor> = 
   { mobileNumber, doctorsDb }
 ) => {
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  const doctorData = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
   if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   if (doctorData.delegateNumber != null)
@@ -102,7 +102,7 @@ const getSecretaryList: Resolver<null, {}, DoctorsServiceContext, Secretary[]> =
   { mobileNumber, doctorsDb }
 ) => {
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  const doctorData = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
   if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   const secretaryRepo = doctorsDb.getCustomRepository(SecretaryRepository);
@@ -116,7 +116,7 @@ const addSecretary: Resolver<
   DoctorSecretary
 > = async (parent, args, { mobileNumber, doctorsDb }) => {
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  const doctorData = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
   if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   //check if secretary id is valid.
@@ -151,7 +151,7 @@ const removeSecretary: Resolver<
   Doctor
 > = async (parent, args, { mobileNumber, doctorsDb }) => {
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  const doctorData = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
   if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   //check if secretary id is valid.
@@ -172,7 +172,7 @@ const removeSecretary: Resolver<
   //remove doctor secretary details
   await doctorSecretaryRepo.removeFromDoctorSecretary(doctorSecretaryRecord.id);
 
-  const updatedDoctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  const updatedDoctorData = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
   if (updatedDoctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   return updatedDoctorData;

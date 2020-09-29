@@ -1,47 +1,47 @@
-import { Theme } from "@material-ui/core";
-import { makeStyles } from "@material-ui/styles";
-import moment from "moment";
-import { useCurrentPatient } from "hooks/authHooks";
-import React, { useContext } from "react";
-import { isEmpty } from "lodash";
-import { CaseSheetContext } from "context/CaseSheetContext";
+import { Theme } from '@material-ui/core';
+import { makeStyles } from '@material-ui/styles';
+import moment from 'moment';
+import { useCurrentPatient } from 'hooks/authHooks';
+import React, { useContext } from 'react';
+import { isEmpty } from 'lodash';
+import { CaseSheetContext } from 'context/CaseSheetContext';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
-      width: "100%",
+      width: '100%',
       paddingBottom: 1,
     },
     prescriptionPreview: {
-      backgroundColor: "#fff",
-      display: "flex",
-      flexDirection: "column",
-      minHeight: "100vh",
-      width: "calc(100% - 40px)",
-      color: "rgba(0, 0, 0, 0.6)",
+      backgroundColor: '#fff',
+      display: 'flex',
+      flexDirection: 'column',
+      minHeight: '100vh',
+      width: '100%',
+      color: 'rgba(0, 0, 0, 0.6)',
       marginRight: 20,
-      marginLeft: 20,
       marginBottom: 20,
+      marginTop: 20,
       padding: 20,
     },
     pageHeader: {
-      display: "flex",
-      justifyContent: "space-between",
+      display: 'flex',
+      justifyContent: 'space-between',
     },
     doctorInformation: {
-      marginLeft: "auto",
+      marginLeft: 'auto',
       maxWidth: 250,
-      "& h3": {
+      '& h3': {
         fontSize: 11,
-        fontWeight: "bold",
-        color: "#02475b",
+        fontWeight: 'bold',
+        color: '#02475b',
         margin: 0,
         lineHeight: 1.5,
       },
     },
     specialty: {
       fontSize: 9,
-      color: "#02475b",
+      color: '#02475b',
       margin: 0,
       lineHeight: 1.5,
     },
@@ -49,12 +49,12 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
     },
     signInformation: {
-      marginRight: "auto",
+      marginRight: 'auto',
       maxWidth: 250,
-      "& h3": {
+      '& h3': {
         fontSize: 11,
-        fontWeight: "bold",
-        color: "#02475b",
+        fontWeight: 'bold',
+        color: '#02475b',
         margin: 0,
         padding: 0,
       },
@@ -63,23 +63,23 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 8,
     },
     logo: {
-      "& img": {
+      '& img': {
         height: 65,
       },
     },
     pageContent: {
-      padding: "20px 0 0 0",
+      padding: '20px 0 0 0',
     },
     sectionHeader: {
       fontSize: 11,
       fontWeight: 500,
-      color: "#02475b",
-      textTransform: "uppercase",
-      padding: "8px 5px",
-      borderBottom: "1px solid #02475b",
-      display: "flex",
-      alignItems: "center",
-      "& img": {
+      color: '#02475b',
+      textTransform: 'uppercase',
+      padding: '8px 5px',
+      borderBottom: '1px solid #02475b',
+      display: 'flex',
+      alignItems: 'center',
+      '& img': {
         marginRight: 10,
       },
     },
@@ -87,36 +87,36 @@ const useStyles = makeStyles((theme: Theme) => {
       marginBottom: 10,
     },
     advice: {
-      display: "flex",
-      "& span": {
+      display: 'flex',
+      '& span': {
         marginRight: 15,
         fontSize: 10,
-        color: "rgba(0, 0, 0, 0.5)",
+        color: 'rgba(0, 0, 0, 0.5)',
         width: 100,
-        flex: "0 0 100px",
+        flex: '0 0 100px',
         lineHeight: 1.5,
       },
     },
     adviceInstruction: {
-      padding: "20px 12px",
+      padding: '20px 12px',
     },
     disclaimer: {
       fontSize: 9,
-      borderTop: "solid 1px rgba(2, 71, 91, 0.15)",
-      color: "rgba(0, 0, 0, 0.5)",
+      borderTop: 'solid 1px rgba(2, 71, 91, 0.15)',
+      color: 'rgba(0, 0, 0, 0.5)',
       paddingTop: 10,
-      display: "flex",
-      "& span": {
-        "&:first-child": {
-          color: "rgba(0, 0, 0, 0.6)",
-          fontWeight: "bold",
+      display: 'flex',
+      '& span': {
+        '&:first-child': {
+          color: 'rgba(0, 0, 0, 0.6)',
+          fontWeight: 'bold',
           marginRight: 10,
         },
       },
     },
     pageNumbers: {
-      textAlign: "right",
-      color: "rgba(0, 0, 0, 0.66)",
+      textAlign: 'right',
+      color: 'rgba(0, 0, 0, 0.66)',
       fontSize: 8,
       fontWeight: 500,
       paddingBottom: 8,
@@ -124,42 +124,42 @@ const useStyles = makeStyles((theme: Theme) => {
     followUpContent: {
       padding: 12,
       fontSize: 12,
-      color: "#02475b",
+      color: '#02475b',
       fontWeight: 500,
-      "& img": {
+      '& img': {
         maxWidth: 200,
         height: 70,
       },
     },
     prescriptionHeader: {
       marginBottom: 10,
-      borderTop: "1px solid #02475b",
-      padding: "20px 12px",
+      borderTop: '1px solid #02475b',
+      padding: '20px 12px',
       marginTop: 30,
-      "& h6": {
+      '& h6': {
         fontSize: 11,
-        color: "rgba(0, 0, 0, 0.6)",
+        color: 'rgba(0, 0, 0, 0.6)',
         lineHeight: 1.5,
-        margin: "20px 0 10px",
+        margin: '20px 0 10px',
         fontWeight: 400,
       },
     },
     gerenalInfo: {
       flex: 1,
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "flex-end",
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'flex-end',
     },
     instruction: {
-      whiteSpace: "pre-wrap",
+      whiteSpace: 'pre-wrap',
       marginBottom: 10,
-      color: "rgba(0, 0, 0, 0.6)",
+      color: 'rgba(0, 0, 0, 0.6)',
       fontSize: 11,
     },
     followContent: {
       fontSize: 12,
       fontWeight: 500,
-      color: "rgba(0, 0, 0, 0.8)",
+      color: 'rgba(0, 0, 0, 0.8)',
       lineHeight: 1.5,
     },
   };
@@ -189,33 +189,28 @@ export const CaseSheetLastView: React.FC<CaseSheetViewProps> = (props) => {
   }
 
   return (
-    <div className={classes.root}>
-      <div className={classes.prescriptionPreview}>
-        <div className={classes.pageContent}>
-          {(otherInstructions && otherInstructions.length > 0) ||
-              (followUp[0] && parseInt(followUpAfterInDays[0]) > 0) ||
-              !isEmpty(referralSpecialtyName) ||
-              !isEmpty(referralDescription)
-            ? (
-              <div className={classes.prescriptionSection}>
-                <div className={classes.sectionHeader}>
-                  <img src={require("images/ic-doctors-2.svg")} />
-                  ADVICE/INSTRUCTIONS
+    <div className={classes.prescriptionPreview}>
+      <div className={classes.pageContent}>
+        {(otherInstructions && otherInstructions.length > 0) ||
+        !isEmpty(referralSpecialtyName) ||
+        !isEmpty(referralDescription) ? (
+          <div className={classes.prescriptionSection}>
+            <div className={classes.sectionHeader}>
+              <img src={require('images/ic-doctors-2.svg')} />
+              ADVICE/INSTRUCTIONS
+            </div>
+            <div className={classes.adviceInstruction}>
+              {otherInstructions && otherInstructions.length > 0 && (
+                <div className={classes.advice}>
+                  <span>Doctor’s Advice</span>
+                  <div>
+                    {otherInstructions.map((instruction) => (
+                      <div className={classes.instruction}>{instruction.instruction}</div>
+                    ))}
+                  </div>
                 </div>
-                <div className={classes.adviceInstruction}>
-                  {otherInstructions && otherInstructions.length > 0 && (
-                    <div className={classes.advice}>
-                      <span>Doctor’s Advice</span>
-                      <div>
-                        {otherInstructions.map((instruction) => (
-                          <div className={classes.instruction}>
-                            {instruction.instruction}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {followUp[0] && parseInt(followUpAfterInDays[0]) > 0
+              )}
+              {/* {followUp[0] && parseInt(followUpAfterInDays[0]) > 0
                     ? (
                       <div className={classes.advice}>
                         <span>Follow Up</span>
@@ -224,101 +219,90 @@ export const CaseSheetLastView: React.FC<CaseSheetViewProps> = (props) => {
                         </div>
                       </div>
                     )
-                    : null}
+                    : null} */}
 
-                  {(!isEmpty(referralSpecialtyName) ||
-                    !isEmpty(referralDescription)) && (
-                      <div className={classes.advice}>
-                        <span>Referral</span>
-                        <div>
-                          {!isEmpty(referralSpecialtyName) && (
-                            <div
-                              className={classes.followContent}
-                              style={{ marginBottom: 5 }}
-                            >
-                              {`Consult a ${referralSpecialtyName}`}
-                            </div>
-                          )}
-                          {!isEmpty(referralDescription) && (
-                            <div className={classes.instruction}>
-                              {referralDescription}
-                            </div>
-                          )}
-                        </div>
+              {(!isEmpty(referralSpecialtyName) || !isEmpty(referralDescription)) && (
+                <div className={classes.advice}>
+                  <span>Referral</span>
+                  <div>
+                    {!isEmpty(referralSpecialtyName) && (
+                      <div className={classes.followContent} style={{ marginBottom: 5 }}>
+                        {`Consult a ${referralSpecialtyName}`}
                       </div>
                     )}
-                </div>
-              </div>
-            )
-            : null}
-
-          {createdDoctorProfile && (
-            <div className={classes.prescriptionHeader}>
-              {((sdConsultationDate && sdConsultationDate !== "") ||
-                (appointmentInfo && appointmentInfo!.appointmentDateTime)) && (
-                  <h6>
-                    Prescribed on{" "}
-                    {sdConsultationDate && sdConsultationDate !== ""
-                      ? moment(sdConsultationDate).format("DD/MM/YYYY")
-                      : moment(appointmentInfo.appointmentDateTime).format(
-                        "DD/MM/YYYY",
-                      )}
-                    {" "}
-                    by
-                  </h6>
-                )}
-              {createdDoctorProfile!.signature && (
-                <div className={classes.followUpContent}>
-                  <img src={createdDoctorProfile.signature} />
+                    {!isEmpty(referralDescription) && (
+                      <div className={classes.instruction}>{referralDescription}</div>
+                    )}
+                  </div>
                 </div>
               )}
-              {(createdDoctorProfile!.salutation ||
-                createdDoctorProfile!.firstName ||
-                createdDoctorProfile!.lastName ||
-                createdDoctorProfile!.registrationNumber ||
-                (createdDoctorProfile!.specialty &&
-                  createdDoctorProfile!.specialty!.specialistSingularTerm)) && (
-                  <div className={classes.signInformation}>
-                    {(createdDoctorProfile.salutation ||
-                      createdDoctorProfile.firstName ||
-                      createdDoctorProfile.lastName) && (
-                        <h3 className={classes.followUpContent}>
-                          {`${createdDoctorProfile.salutation}. ${createdDoctorProfile.firstName} ${createdDoctorProfile.lastName}`}
-                        </h3>
-                      )}
+            </div>
+          </div>
+        ) : null}
 
-                    {/* {currentDoctor.qualification && (
+        {createdDoctorProfile && (
+          <div className={classes.prescriptionHeader}>
+            {((sdConsultationDate && sdConsultationDate !== '') ||
+              (appointmentInfo && appointmentInfo!.appointmentDateTime)) && (
+              <h6>
+                Prescribed on{' '}
+                {sdConsultationDate && sdConsultationDate !== ''
+                  ? moment(sdConsultationDate).format('DD/MM/YYYY')
+                  : moment(appointmentInfo.appointmentDateTime).format('DD/MM/YYYY')}{' '}
+                by
+              </h6>
+            )}
+            {createdDoctorProfile!.signature && (
+              <div className={classes.followUpContent}>
+                <img src={createdDoctorProfile.signature} />
+              </div>
+            )}
+            {(createdDoctorProfile!.salutation ||
+              createdDoctorProfile!.firstName ||
+              createdDoctorProfile!.lastName ||
+              createdDoctorProfile!.registrationNumber ||
+              (createdDoctorProfile!.specialty &&
+                createdDoctorProfile!.specialty!.specialistSingularTerm)) && (
+              <div className={classes.signInformation}>
+                {(createdDoctorProfile.salutation ||
+                  createdDoctorProfile.firstName ||
+                  createdDoctorProfile.lastName) && (
+                  <h3 className={classes.followUpContent}>
+                    {`${createdDoctorProfile.salutation}. ${createdDoctorProfile.firstName} ${createdDoctorProfile.lastName}`}
+                  </h3>
+                )}
+
+                {/* {currentDoctor.qualification && (
                       <p className={`${classes.specialty} ${classes.qualification}`}>
                         {currentDoctor.qualification}
                       </p>
                     )} */}
-                    {((createdDoctorProfile.specialty &&
-                      createdDoctorProfile.specialty.specialistSingularTerm) ||
-                      createdDoctorProfile.registrationNumber) && (
-                        <p className={classes.specialty}>
-                          {createdDoctorProfile.specialty.specialistSingularTerm
-                            ? `${createdDoctorProfile.specialty.specialistSingularTerm} | `
-                            : ""}
-                          {createdDoctorProfile.registrationNumber
-                            ? `Reg. No. ${createdDoctorProfile.registrationNumber}`
-                            : ""}
-                        </p>
-                      )}
-                  </div>
+                {((createdDoctorProfile.specialty &&
+                  createdDoctorProfile.specialty.specialistSingularTerm) ||
+                  createdDoctorProfile.registrationNumber) && (
+                  <p className={classes.specialty}>
+                    {createdDoctorProfile.specialty.specialistSingularTerm
+                      ? `${createdDoctorProfile.specialty.specialistSingularTerm} | `
+                      : ''}
+                    {createdDoctorProfile.registrationNumber
+                      ? `Reg. No. ${createdDoctorProfile.registrationNumber}`
+                      : ''}
+                  </p>
                 )}
-            </div>
-          )}
-        </div>
-        <div className={classes.gerenalInfo}>
-          <div className={classes.pageNumbers}>Page 2 of 2</div>
-          <div className={classes.disclaimer}>
-            <span>Disclaimer:</span>
-            <span>
-              This prescription is issued on the basis of your inputs during
-              teleconsultation. It is valid from the date of issue until the
-              specific period/dosage of each medicine as advised.
-            </span>
+              </div>
+            )}
           </div>
+        )}
+      </div>
+      <div className={classes.gerenalInfo}>
+        <div className={classes.pageNumbers}>Page 2 of 2</div>
+        <div className={classes.disclaimer}>
+          <span>Disclaimer:</span>
+          <span>
+            This prescription is issued on the basis of your inputs during teleconsultation. It is
+            valid from the date of issue until the specific period/dosage of each medicine as
+            advised.
+          </span>
         </div>
       </div>
     </div>

@@ -6,7 +6,6 @@ import { Link, Theme, Typography } from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
 import Modal from '@material-ui/core/Modal';
 import { AphButton } from '@aph/web-ui-components';
-import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
 import { MEDICINE_ORDER_PAYMENT_TYPE } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -289,7 +288,10 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
   };
 
   const doctorAddressDetail =
-    (doctorDetail && doctorDetail.doctorHospital[0] && doctorDetail.doctorHospital[0].facility) ||
+    (doctorDetail &&
+      doctorDetail.doctorHospital &&
+      doctorDetail.doctorHospital[0] &&
+      doctorDetail.doctorHospital[0].facility) ||
     '';
   return (
     <div className={classes.modalContent}>

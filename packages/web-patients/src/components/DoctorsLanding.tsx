@@ -212,7 +212,7 @@ interface DoctorsLandingProps {
   history: History;
 }
 
-export const DoctorsLanding: React.FC<DoctorsLandingProps> = (props) => {
+const DoctorsLanding: React.FC<DoctorsLandingProps> = (props) => {
   const classes = useStyles({});
   const {
     currentPincode,
@@ -786,3 +786,5 @@ export const DoctorsLanding: React.FC<DoctorsLandingProps> = (props) => {
     </div>
   );
 };
+
+export default DoctorsLanding;
