@@ -88,6 +88,18 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
     });
   }
 
+  updateCaseSheetWithPartialData(
+    id: string,
+    caseSheetAttrs: Partial<CaseSheet>,
+    caseSheet: Partial<CaseSheet>
+  ) {
+    const modifiedCaseSheet = this.create(caseSheet);
+    Object.assign(modifiedCaseSheet, { ...caseSheetAttrs });
+    return modifiedCaseSheet.save().catch((createErrors) => {
+      throw new AphError(AphErrorMessages.UPDATE_CASESHEET_ERROR, undefined, { createErrors });
+    });
+  }
+
   getCaseSheetById(id: string) {
     return this.findOne({
       where: [{ id }],
