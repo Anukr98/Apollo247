@@ -789,7 +789,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   currentPatient!.firstName!,
                   'the doctor',
                   showAphAlert,
-                  hideAphAlert
+                  hideAphAlert,
+                  true
                 )
               : null;
             setAppointmentLoading(false);

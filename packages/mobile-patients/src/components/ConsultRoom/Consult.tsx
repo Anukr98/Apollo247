@@ -388,7 +388,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                   currentPatient!.firstName!,
                   activeAppointments[0].doctorInfo.displayName,
                   showAphAlert,
-                  hideAphAlert
+                  hideAphAlert,
+                  true
                 );
               } else {
                 setconsultations([]);

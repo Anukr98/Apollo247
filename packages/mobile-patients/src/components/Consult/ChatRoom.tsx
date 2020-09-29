@@ -686,7 +686,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         currentPatient!.firstName!,
         appointmentData.doctorInfo.displayName,
         showAphAlert,
-        hideAphAlert
+        hideAphAlert,
+        true
       );
     } else {
       callPermissions();
