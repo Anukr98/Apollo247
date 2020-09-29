@@ -34,7 +34,6 @@ import {
 import { OneApollo } from 'helpers/oneApollo';
 import { getStoreCodeFromDevice } from 'profiles-service/helpers/OneApolloTransactionHelper';
 import { calculateRefund } from 'profiles-service/helpers/refundHelper';
-import { transactionSuccessTrigger } from 'helpers/subscriptionHelper';
 
 export const saveMedicineOrderPaymentMqTypeDefs = gql`
   enum CODCity {
@@ -288,19 +287,6 @@ const SaveMedicineOrderPaymentMq: Resolver<
       statusMessage: statusMsg,
     };
 
-    if (currentStatus == MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS) {
-      transactionSuccessTrigger({
-        amount: `${medicinePaymentMqInput.amountPaid}`,
-        transactionType: TransactionType.PHARMA,
-        transactionDate: medicinePaymentMqInput.paymentDateTime || new Date(),
-        transactionId: medicinePaymentMqInput.paymentRefId,
-        sourceTransactionIdentifier: `${medicinePaymentMqInput.orderAutoId}`,
-        mobileNumber: orderDetails.patient.mobileNumber,
-        email: orderDetails.patient.emailAddress,
-        dob: orderDetails.patient.dateOfBirth,
-        partnerId: orderDetails.patient.partnerId,
-      });
-    }
     if (
       currentStatus == MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS ||
       currentStatus == MEDICINE_ORDER_STATUS.ORDER_INITIATED
