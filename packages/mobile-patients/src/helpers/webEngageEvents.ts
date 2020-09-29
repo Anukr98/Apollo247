@@ -161,6 +161,31 @@ export enum WebEngageEventName {
   HOME_PAGE_VIEWED = 'Pharmacy Home page viewed',
   PRODUCT_PAGE_VIEWED = 'Product page viewed',
   CATEGORY_PAGE_VIEWED = 'Category page viewed',
+
+  // Opentok Events
+  DOCTOR_SUBSCRIBER_ERROR = 'Doctor Subscriber Error',
+  DOCTOR_SUBSCRIBER_OTRNERROR = 'Doctor Subscriber Otrnerror',
+  DOCTOR_SUBSCRIBER_DISCONNECTED = 'Doctor Subscriber Disconnected',
+  DOCTOR_SUBSCRIBER_CONNECTED = 'Doctor Subscriber Connected',
+  DOCTOR_SUBSCRIBER_VIDEO_DISABLED = 'Doctor Subscriber Video Disabled',
+  DOCTOR_SUBSCRIBER_VIDEO_ENABLED = 'Doctor Subscriber Video Enabled',
+
+  PATIENT_PUBLISHER_ERROR = 'Patient Publisher Error',
+  PATIENT_PUBLISHER_OTRNERROR = 'Patient Publisher Otrnerror',
+  PATIENT_PUBLISHER_STREAM_CREATED = 'Patient Publisher Stream Created',
+  PATIENT_PUBLISHER_STREAM_DESTROYED = 'Patient Publisher Stream Destroyed',
+
+  PATIENT_SESSION_ERROR = 'Patient Session Error',
+  PATIENT_SESSION_OTRNERROR = 'Patient Session Otrnerror',
+  PATIENT_SESSION_CONNECTION_CREATED = 'Patient Session Connection Created',
+  PATIENT_SESSION_CONNECTION_DESTROYED = 'Patient Session Connection Destroyed',
+  PATIENT_SESSION_CONNECTED = 'Patient Session Connected',
+  PATIENT_SESSION_DISCONNECTED = 'Patient Session Disconnected',
+  PATIENT_SESSION_RECONNECTED = 'Patient Session Reconnected',
+  PATIENT_SESSION_RECONNECTING = 'Patient Session Reconnecting',
+  PATIENT_SESSION_STREAM_CREATED = 'Patient Session Stream Created',
+  PATIENT_SESSION_STREAM_DESTROYED = 'Patient Session Stream Destroyed',
+  PATIENT_SESSION_STREAM_PROPERTY_CHANGED = 'Patient Session Stream Property Changed',
 }
 
 export interface PatientInfo {
@@ -345,8 +370,8 @@ export interface WebEngageEvents {
   [WebEngageEventName.CATEGORY_LIST_GRID_VIEW]: {
     'Category name'?: string;
     'Category id'?: string;
-    'Type': 'Grid' | 'List';
-    'Source': 'Search' | 'Category';
+    Type: 'Grid' | 'List';
+    Source: 'Search' | 'Category';
   };
   [WebEngageEventName.SHOW_PRESCRIPTION_AT_STORE_SELECTED]: {
     value: boolean;
@@ -1323,7 +1348,7 @@ export interface WebEngageEvents {
     source: 'deeplink' | 'widget' | 'search';
     ProductId: string;
     ProductName: string;
-    "Stock availability": YesOrNo;
+    'Stock availability': YesOrNo;
   };
   [WebEngageEventName.CATEGORY_PAGE_VIEWED]: {
     source: 'home' | 'deeplink';
@@ -1333,5 +1358,154 @@ export interface WebEngageEvents {
   [WebEngageEventName.CONFIRM_LOCATION]: {
     isMarkerModified: boolean;
     changedByInMeters: number;
+  };
+
+  // ********** Opentok Events ********** \\
+
+  [WebEngageEventName.DOCTOR_SUBSCRIBER_ERROR]: {
+    'Appointment ID': string;
+    'Patient Id': string;
+    'Doctor ID': string;
+    error: string;
+  };
+
+  [WebEngageEventName.DOCTOR_SUBSCRIBER_OTRNERROR]: {
+    'Appointment ID': string;
+    'Patient Id': string;
+    'Doctor ID': string;
+    error: string;
+  };
+
+  [WebEngageEventName.DOCTOR_SUBSCRIBER_CONNECTED]: {
+    'Appointment ID': string;
+    'Patient Id': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.DOCTOR_SUBSCRIBER_DISCONNECTED]: {
+    'Appointment ID': string;
+    'Patient Id': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.DOCTOR_SUBSCRIBER_VIDEO_DISABLED]: {
+    'Appointment ID': string;
+    'Patient Id': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.DOCTOR_SUBSCRIBER_VIDEO_ENABLED]: {
+    'Appointment ID': string;
+    'Patient Id': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.PATIENT_PUBLISHER_ERROR]: {
+    'Appointment ID': string;
+    'Patient Id': string;
+    'Doctor ID': string;
+    error: string;
+  };
+
+  [WebEngageEventName.PATIENT_PUBLISHER_OTRNERROR]: {
+    'Appointment ID': string;
+    'Patient Id': string;
+    'Doctor ID': string;
+    error: string;
+  };
+
+  [WebEngageEventName.PATIENT_PUBLISHER_STREAM_CREATED]: {
+    'Appointment ID': string;
+    'Patient Id': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.PATIENT_PUBLISHER_STREAM_DESTROYED]: {
+    'Appointment ID': string;
+    'Patient Id': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.PATIENT_SESSION_ERROR]: {
+    'Appointment ID': string;
+    'Patient Id': string;
+    'Doctor ID': string;
+    error: string;
+  };
+
+  [WebEngageEventName.PATIENT_SESSION_OTRNERROR]: {
+    'Appointment ID': string;
+    'Patient Id': string;
+    'Doctor ID': string;
+    error: string;
+  };
+
+  [WebEngageEventName.PATIENT_SESSION_CONNECTION_CREATED]: {
+    'Appointment ID': string;
+    'Patient Id': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.PATIENT_SESSION_CONNECTION_DESTROYED]: {
+    'Appointment ID': string;
+    'Patient Id': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.PATIENT_SESSION_CONNECTED]: {
+    'Appointment ID': string;
+    'Patient Id': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.PATIENT_SESSION_DISCONNECTED]: {
+    'Appointment ID': string;
+    'Patient Id': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.PATIENT_SESSION_RECONNECTED]: {
+    'Appointment ID': string;
+    'Patient Id': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.PATIENT_SESSION_RECONNECTING]: {
+    'Appointment ID': string;
+    'Patient Id': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.PATIENT_SESSION_STREAM_CREATED]: {
+    'Appointment ID': string;
+    'Patient Id': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.PATIENT_SESSION_STREAM_DESTROYED]: {
+    'Appointment ID': string;
+    'Patient Id': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.PATIENT_SESSION_STREAM_PROPERTY_CHANGED]: {
+    'Appointment ID': string;
+    'Patient Id': string;
+    'Doctor ID': string;
+    event: string;
   };
 }
