@@ -28,7 +28,6 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: ' 0px 5px 20px rgba(128, 128, 128, 0.3)',
       borderRadius: 10,
       height: 172,
-      margin: '30px 0 0 auto',
       [theme.breakpoints.down('sm')]: {
         height: 155,
         backgroundSize: 'contain',
@@ -116,38 +115,77 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'block',
       },
     },
+    slickCase: {
+      padding: 20,
+      [theme.breakpoints.down('sm')]: {
+        // margin: 10,
+      },
+    },
     slider: {
+      padding: '20px 0',
       '& >.slick-list': {
-        overflow: 'visible',
+        // overflow: 'visible',
         '& .slick-track': {
           display: 'flex',
         },
         '& .slick-slide': {
           width: '100%',
-          margin: 25,
-          [theme.breakpoints.down('sm')]: {
-            margin: 10,
-          },
         },
       },
       '& >.slick-dots': {
         position: 'static !important',
+        margin: '0 0 0 40px',
+        textAlign: 'left',
         '& li': {
-          margin: 0,
+          width: 'auto',
+          height: 'auto',
           '& button': {
+            display: 'block',
+            width: 8,
+            height: 8,
+            borderRadius: 8,
+            background: '#C4C4C4',
+            color: 'transparent',
             '&:before': {
-              fontSize: 10,
-              color: 'rgba(0,0,0,0.4)',
+              display: 'none',
             },
           },
           '&.slick-active': {
             '& button': {
-              '&:before': {
-                fontSize: 18,
-                color: '#007C9D',
-              },
+              width: 20,
+              height: 8,
+              background: '#007C9D',
             },
           },
+        },
+      },
+      '& .slick-arrow': {
+        width: 44,
+        height: 44,
+        background: '#fff',
+        borderRadius: '50%',
+        zIndex: 9,
+        boxShadow: ' 0px 0px 12px rgba(0, 0, 0, 0.16)',
+        display: 'flex !important',
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+      '& .slick-prev': {
+        left: 0,
+        '&:before': {
+          content: "''",
+          width: 12,
+          height: 18,
+          background: `url(${require('images/hdfc/arrow-left.svg')}) no-repeat 0 0`,
+        },
+      },
+      '& .slick-next': {
+        right: 0,
+        '&:before': {
+          content: "''",
+          width: 12,
+          height: 18,
+          background: `url(${require('images/hdfc/arrow-right.svg')}) no-repeat 0 0`,
         },
       },
     },
@@ -171,7 +209,7 @@ export const HdfcSlider: React.FC<HdfcSliderProps> = (props) => {
   const sliderSettings = {
     infinite: true,
     dots: true,
-    arrows: false,
+    arrows: true,
     speed: 500,
     slidesToShow: 1,
     slidesToScroll: 1,
@@ -256,34 +294,42 @@ export const HdfcSlider: React.FC<HdfcSliderProps> = (props) => {
   return (
     <>
       <Slider {...sliderSettings} className={classes.slider}>
-        <div
-          className={`${classes.card} ${classes.slide1}`}
-          onClick={() => {
-            HDFCHomePageCarouselClicked(data);
-            handleDoctorCall();
-          }}
-        ></div>
-        <div
-          className={`${classes.card} ${classes.slide2}`}
-          onClick={() => {
-            HDFCHomePageCarouselClicked(data);
-            history.push(clientRoutes.membershipPlanDetail());
-          }}
-        ></div>
-        <div
-          className={`${classes.card} ${classes.slide3}`}
-          onClick={() => {
-            HDFCHomePageCarouselClicked(data);
-            history.push(clientRoutes.medicines());
-          }}
-        ></div>
-        <div
-          className={`${classes.card} ${classes.slide4}`}
-          onClick={() => {
-            HDFCHomePageCarouselClicked(data);
-            history.push(clientRoutes.membershipPlanDetail());
-          }}
-        ></div>
+        <div className={classes.slickCase}>
+          <div
+            className={`${classes.card} ${classes.slide1}`}
+            onClick={() => {
+              HDFCHomePageCarouselClicked(data);
+              handleDoctorCall();
+            }}
+          ></div>
+        </div>
+        <div className={classes.slickCase}>
+          <div
+            className={`${classes.card} ${classes.slide2}`}
+            onClick={() => {
+              HDFCHomePageCarouselClicked(data);
+              history.push(clientRoutes.membershipPlanDetail());
+            }}
+          ></div>
+        </div>
+        <div className={classes.slickCase}>
+          <div
+            className={`${classes.card} ${classes.slide3}`}
+            onClick={() => {
+              HDFCHomePageCarouselClicked(data);
+              history.push(clientRoutes.medicines());
+            }}
+          ></div>
+        </div>
+        <div className={classes.slickCase}>
+          <div
+            className={`${classes.card} ${classes.slide4}`}
+            onClick={() => {
+              HDFCHomePageCarouselClicked(data);
+              history.push(clientRoutes.membershipPlanDetail());
+            }}
+          ></div>
+        </div>
       </Slider>
 
       <AphDialog open={callDoctorPopup} maxWidth="sm">
