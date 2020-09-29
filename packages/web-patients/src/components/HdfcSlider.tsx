@@ -1,6 +1,7 @@
 import React from 'react';
 import { Theme, Typography, CircularProgress } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 import { AphButton, AphDialog, AphInput } from '@aph/web-ui-components';
 import WarningModel from 'components/WarningModel';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -19,6 +20,7 @@ import {
   INITIATE_CALL_FOR_PARTNER,
 } from 'graphql/profiles';
 import Slider from 'react-slick';
+import { HDFCHomePageCarouselClicked } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -159,6 +161,7 @@ export interface HdfcSliderProps {
 export const HdfcSlider: React.FC<HdfcSliderProps> = (props) => {
   const classes = useStyles({});
   const [callDoctorPopup, setCallDoctorPopup] = React.useState<boolean>(false);
+  const { allCurrentPatients, currentPatient } = useAllCurrentPatients();
   const [showIntro, setShowIntro] = React.useState<boolean>(true);
   const [successMessage, setSuccessMessage] = React.useState<object>();
   const [exotelBenefitId, setExotelBenefitId] = React.useState<string>('');
@@ -233,30 +236,51 @@ export const HdfcSlider: React.FC<HdfcSliderProps> = (props) => {
       });
   };
 
+  const userSubscriptions = JSON.parse(localStorage.getItem('userSubscriptions'));
+
+  /*****WebEngage*******/
+  const data = {
+    mobileNumber: currentPatient && currentPatient.mobileNumber,
+    DOB: currentPatient && currentPatient.dateOfBirth,
+    emailId: currentPatient && currentPatient.emailAddress,
+    PartnerId: currentPatient && currentPatient.partnerId,
+    planName:
+      userSubscriptions &&
+      userSubscriptions[0] &&
+      userSubscriptions[0].group_plan &&
+      userSubscriptions[0].group_plan.name,
+    planStatus: userSubscriptions && userSubscriptions[0] && userSubscriptions[0].status,
+  };
+  /*****WebEngage*******/
+
   return (
     <>
       <Slider {...sliderSettings} className={classes.slider}>
         <div
           className={`${classes.card} ${classes.slide1}`}
           onClick={() => {
+            HDFCHomePageCarouselClicked(data);
             handleDoctorCall();
           }}
         ></div>
         <div
           className={`${classes.card} ${classes.slide2}`}
           onClick={() => {
+            HDFCHomePageCarouselClicked(data);
             history.push(clientRoutes.membershipPlanDetail());
           }}
         ></div>
         <div
           className={`${classes.card} ${classes.slide3}`}
           onClick={() => {
+            HDFCHomePageCarouselClicked(data);
             history.push(clientRoutes.medicines());
           }}
         ></div>
         <div
           className={`${classes.card} ${classes.slide4}`}
           onClick={() => {
+            HDFCHomePageCarouselClicked(data);
             history.push(clientRoutes.membershipPlanDetail());
           }}
         ></div>

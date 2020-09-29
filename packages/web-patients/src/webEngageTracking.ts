@@ -936,3 +936,147 @@ export const pharmaTatApiTracking = (data: any) => {
     }
   }
 };
+
+export const trackLanding = (location: any) => {
+  if (typeof window !== 'undefined') {
+    try {
+      window.webengage.track(location, {});
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const hdfcUnlockNowTracking = (location: any) => {
+  if (typeof window !== 'undefined') {
+    try {
+      window.webengage.track(location, {});
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const HdfcUserSignupDetailTracking = (userDetailData: UserDetail) => {
+  const { emailAddress, dateOfBirth, mobileNumber, gender, firstName, lastName } = userDetailData;
+  if (typeof window !== 'undefined') {
+    try {
+      window.webengage.user.setAttribute('we_email', emailAddress);
+      window.webengage.user.setAttribute('we_birth_date', dateOfBirth);
+      window.webengage.user.setAttribute('we_phone', mobileNumber);
+      window.webengage.user.setAttribute('we_gender', gender);
+      window.webengage.user.setAttribute('we_first_name', firstName);
+      window.webengage.user.setAttribute('we_last_name', lastName);
+    } catch (err) {
+      console.log('Webengage user tracking err: ', err);
+    }
+  }
+};
+
+export const HDFCGenerateOTPClicked = (data: any) => {
+  if (typeof window !== 'undefined') {
+    const { mobileNumber, DOB, emailId, PartnerId } = data;
+    try {
+      window.webengage.track('HDFC Generate OTP Clicked - web', {
+        mobileNumber: mobileNumber,
+        DOB: DOB,
+        emailId: emailId,
+        PartnerId: PartnerId,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const HDFCVerifyOtpClicked = (data: any) => {
+  if (typeof window !== 'undefined') {
+    const { mobileNumber, DOB, emailId, PartnerId } = data;
+    try {
+      window.webengage.track('HDFC Verify OTP Clicked - web', {
+        mobileNumber: mobileNumber,
+        DOB: DOB,
+        emailId: emailId,
+        PartnerId: PartnerId,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const HDFCExploreBenefitsClicked = (data: any) => {
+  if (typeof window !== 'undefined') {
+    const { mobileNumber, DOB, emailId, PartnerId, planName } = data;
+    try {
+      window.webengage.user.setAttribute('we_planName', planName);
+      window.webengage.track('HDFC Explore Benefits Clicked - web', {
+        mobileNumber: mobileNumber,
+        DOB: DOB,
+        emailId: emailId,
+        PartnerId: PartnerId,
+        planName: planName,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const HDFCPlanSubscribed = (data: any) => {
+  if (typeof window !== 'undefined') {
+    const { mobileNumber, DOB, emailId, PartnerId, planName } = data;
+    try {
+      window.webengage.user.setAttribute('HDFCMembershipLevel', planName);
+      window.webengage.track('HDFC Plan Subscribed - web', {
+        mobileNumber: mobileNumber,
+        DOB: DOB,
+        emailId: emailId,
+        PartnerId: PartnerId,
+        planName: planName,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const HDFCHomePageCardClicked = (data: any) => {
+  if (typeof window !== 'undefined') {
+    const { mobileNumber, DOB, emailId, PartnerId, planName, planStatus } = data;
+    try {
+      window.webengage.user.setAttribute('HDFCMembershipLevel', planName);
+      window.webengage.user.setAttribute('HDFCMembershipState', planStatus);
+      window.webengage.track('HDFC Home Page Card Clicked - web', {
+        mobileNumber: mobileNumber,
+        DOB: DOB,
+        emailId: emailId,
+        PartnerId: PartnerId,
+        planName: planName,
+        planStatus: planStatus,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const HDFCHomePageCarouselClicked = (data: any) => {
+  if (typeof window !== 'undefined') {
+    const { mobileNumber, DOB, emailId, PartnerId, planName, planStatus } = data;
+    try {
+      window.webengage.user.setAttribute('HDFCMembershipLevel', planName);
+      window.webengage.user.setAttribute('HDFCMembershipState', planStatus);
+      window.webengage.track('HDFC Home Page Carousel Clicked - web', {
+        mobileNumber: mobileNumber,
+        DOB: DOB,
+        emailId: emailId,
+        PartnerId: PartnerId,
+        planName: planName,
+        planStatus: planStatus,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};

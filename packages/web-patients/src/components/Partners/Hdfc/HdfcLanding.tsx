@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography, CircularProgress } from '@material-ui/core';
 import { Link } from 'react-router-dom';
@@ -17,6 +17,7 @@ import { UpdatePatient, UpdatePatientVariables } from 'graphql/types/UpdatePatie
 import { UPDATE_PATIENT } from 'graphql/profiles';
 import { ProfileSuccess } from 'components/ProfileSuccess';
 import { NewProfile } from 'components/NewProfile';
+import { trackLanding, hdfcUnlockNowTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -562,6 +563,10 @@ export const HdfcLanding: React.FC = (props) => {
     );
   }
 
+  useEffect(() => {
+    trackLanding('HDFC Landing Page loaded');
+  }, []);
+
   const customSignUp = {
     heading: 'Final Step',
     subHeading: 'Enter your details to complete the registration',
@@ -627,6 +632,7 @@ export const HdfcLanding: React.FC = (props) => {
                       <AphButton
                         className={classes.unlockNow}
                         onClick={() => {
+                          hdfcUnlockNowTracking('HDFC Unlock Now Clicked');
                           if (!isSignedIn) setIsLoginPopupVisible(true);
                           else {
                             setLoading(true);
