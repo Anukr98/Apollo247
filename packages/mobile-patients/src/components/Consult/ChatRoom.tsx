@@ -205,6 +205,7 @@ let callhandelBack: boolean = true;
 let jdCount: any = 1;
 let isJdAllowed: boolean = true;
 let abondmentStarted = false;
+let jdAssigned: boolean = false;
 
 type rescheduleType = {
   rescheduleCount: number;
@@ -1218,6 +1219,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             10
           );
           isJdAllowed = data.data.addToConsultQueueWithAutomatedQuestions.isJdAllowed;
+          jdAssigned = data.data.addToConsultQueueWithAutomatedQuestions.isJdAssigned;
         })
         .catch((e) => {
           CommonBugFender('ChatRoom_addToConsultQueueWithAutomatedQuestions', e);
@@ -1230,6 +1232,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           console.log(data, 'data res');
           jdCount = parseInt(data.data.addToConsultQueue.totalJuniorDoctorsOnline, 10);
           isJdAllowed = data.data.addToConsultQueue.isJdAllowed;
+          jdAssigned = data.data.addToConsultQueue.isJdAssigned;
         })
         .catch((e) => {
           CommonBugFender('ChatRoom_addToConsultQueue', e);
@@ -2251,7 +2254,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     '3. Connect with your doctor via In-App Audio/Video call\n',
     '4. Get a prescription and meds, if necessary\n',
     '5. Follow up via text (valid for 7 days)\n\n',
-    `A doctor from ${appointmentData.doctorInfo.displayName}’s team will join you shortly to collect your medical details. These details are essential for ${appointmentData.doctorInfo.displayName} to help you and will take around 3-5 minutes.`,
   ];
 
   const automatedTextFromPatient = () => {
@@ -2336,10 +2338,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             channel: channel,
             message: {
               message: firstMessage,
-              automatedText: `Hi ${currentPatient &&
-                currentPatient.firstName}, sorry to keep you waiting. ${
+              automatedText: strings.common.jdAssignedMessage.replace(
+                '{0}',
                 appointmentData.doctorInfo.displayName
-              }’s team is with another patient right now. Your consultation prep will start soon.`,
+              ),
               id: doctorId,
               isTyping: true,
               messageDate: new Date(),
@@ -2402,7 +2404,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         jdCount > 0 &&
         isJdAllowed === true &&
         !!(textChange && !jrDoctorJoined.current) &&
-        status !== STATUS.COMPLETED
+        status !== STATUS.COMPLETED &&
+        jdAssigned
       ) {
         // console.log('result.length ', result);
         pubnub.publish(
