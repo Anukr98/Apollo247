@@ -44,22 +44,22 @@ export const SelectedAddress: React.FC<SelectedAddressProps> = (props) => {
   const address = () => {
     return orderType == 'Delivery' ? (
       <View style={{ marginHorizontal: 20 }}>
-        <Text style={styles.name}>{selectedAddress!.name || selectedAddress!.addressType}</Text>
+        <Text style={styles.name}>{selectedAddress?.name || selectedAddress?.addressType}</Text>
         <Text style={styles.address}>{formatSelectedAddress(selectedAddress!)}</Text>
         <Text style={styles.address}>
           Mobile -
           <Text style={{ ...theme.fonts.IBMPlexSansMedium(12) }}>
-            {selectedAddress!.mobileNumber}
+            {selectedAddress?.mobileNumber}
           </Text>
         </Text>
       </View>
     ) : (
       <View style={{ marginHorizontal: 20 }}>
-        <Text style={styles.name}>{selectedStore!.storename}</Text>
-        <Text style={styles.address}>{selectedStore!.address}</Text>
+        <Text style={styles.name}>{selectedStore?.storename}</Text>
+        <Text style={styles.address}>{selectedStore?.address}</Text>
         <Text style={styles.address}>
           Mobile -
-          <Text style={{ ...theme.fonts.IBMPlexSansMedium(12) }}>{selectedStore!.phone}</Text>
+          <Text style={{ ...theme.fonts.IBMPlexSansMedium(12) }}>{selectedStore?.phone}</Text>
         </Text>
       </View>
     );
