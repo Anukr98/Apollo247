@@ -244,7 +244,7 @@ export const HdfcSlider: React.FC<HdfcSliderProps> = (props) => {
     slidesToShow: 1,
     slidesToScroll: 1,
     autoPlaySpeed: 5000,
-    autoplay: false,
+    autoplay: true,
   };
 
   const handleDoctorCall = () => {
