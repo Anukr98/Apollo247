@@ -13,8 +13,6 @@ import {
   postAppsFlyerEvent,
   postFirebaseEvent,
   postWebEngageEvent,
-  checkPermissions,
-  callPermissions,
   overlyPermissionAndroid,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
@@ -40,7 +38,6 @@ import {
   TouchableOpacity,
   View,
   Clipboard,
-  NativeModules,
 } from 'react-native';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';
@@ -58,7 +55,6 @@ import { ConsultationPermission } from '@aph/mobile-patients/src/components/ui/C
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
-const { RNAppSignatureHelper } = NativeModules;
 
 export interface ConsultPaymentStatusProps extends NavigationScreenProps {}
 
@@ -98,7 +94,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     });
 
   useEffect(() => {
-    overlyPermissionAndroid(currentPatient!.firstName!, doctorName, showAphAlert, hideAphAlert);
+    overlyPermissionAndroid(currentPatient.firstName, doctorName, showAphAlert, hideAphAlert, true);
   }, []);
 
   useEffect(() => {
@@ -233,6 +229,9 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         actions: [
           NavigationActions.navigate({
             routeName: AppRoutes.ConsultRoom,
+            params: {
+              isReset: true,
+            },
           }),
         ],
       })
@@ -505,30 +504,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     }
   };
 
-  const overlyPermission = () => {
-    if (Platform.OS === 'android') {
-      RNAppSignatureHelper.isRequestOverlayPermissionGranted((status: any) => {
-        if (status) {
-          showAphAlert!({
-            title: `Hi ${currentPatient.firstName} :)`,
-            description: Payment.askPermission1 + doctorName + Payment.askPermission2,
-            ctaContainerStyle: { justifyContent: 'flex-end' },
-            CTAs: [
-              {
-                text: 'OK, GOT IT',
-                type: 'orange-link',
-                onPress: () => {
-                  hideAphAlert!();
-                  RNAppSignatureHelper.requestOverlayPermission();
-                },
-              },
-            ],
-          });
-        }
-      });
-    }
-  };
-
   const handleButton = () => {
     const { navigation } = props;
     const { navigate } = navigation;
@@ -548,6 +523,9 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
           actions: [
             NavigationActions.navigate({
               routeName: AppRoutes.ConsultRoom,
+              params: {
+                isReset: true,
+              },
             }),
           ],
         })
@@ -582,7 +560,14 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
                   StackActions.reset({
                     index: 0,
                     key: null,
-                    actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+                    actions: [
+                      NavigationActions.navigate({
+                        routeName: AppRoutes.ConsultRoom,
+                        params: {
+                          isReset: true,
+                        },
+                      }),
+                    ],
                   })
                 );
                 props.navigation.navigate(AppRoutes.ChatRoom, {

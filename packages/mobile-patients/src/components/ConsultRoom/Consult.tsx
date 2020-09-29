@@ -387,17 +387,21 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 const inProgressAppointments = activeAppointments?.filter((item: any) => {
                   return item.status !== STATUS.COMPLETED;
                 });
-                console.log('activeAppointments', activeAppointments);
-                console.log('inProgressAppointments 2', inProgressAppointments);
                 if (inProgressAppointments && inProgressAppointments.length > 0) {
-                  callPermissions();
+                  if (Platform.OS === 'ios') {
+                    callPermissions();
+                  } else {
+                    callPermissions(() => {
+                      overlyPermissionAndroid(
+                        currentPatient!.firstName!,
+                        activeAppointments[0].doctorInfo.displayName,
+                        showAphAlert,
+                        hideAphAlert,
+                        true
+                      );
+                    });
+                  }
                 }
-                // overlyPermissionAndroid(
-                //   currentPatient!.firstName!,
-                //   activeAppointments[0].doctorInfo.displayName,
-                //   showAphAlert,
-                //   hideAphAlert
-                // );
               } else {
                 setconsultations([]);
               }

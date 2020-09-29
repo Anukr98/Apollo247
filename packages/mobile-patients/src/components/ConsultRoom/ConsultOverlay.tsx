@@ -239,33 +239,17 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       StackActions.reset({
         index: 0,
         key: null,
-        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+        actions: [
+          NavigationActions.navigate({
+            routeName: AppRoutes.ConsultRoom,
+            params: {
+              isFreeConsult: true,
+              doctorName: doctorName,
+            },
+          }),
+        ],
       })
     );
-    showAphAlert!({
-      unDismissable: true,
-      title: 'Appointment Confirmation',
-      description: `Your appointment has been successfully booked with Dr. ${doctorName}. Please go to consult room 10-15 minutes prior to your appointment. Answering a few medical questions in advance will make your appointment process quick and smooth :)`,
-      children: (
-        <View style={{ height: 60, alignItems: 'flex-end' }}>
-          <TouchableOpacity
-            activeOpacity={1}
-            style={{
-              height: 60,
-              paddingRight: 25,
-              backgroundColor: 'transparent',
-              justifyContent: 'center',
-            }}
-            onPress={() => {
-              hideAphAlert!();
-              props.navigation.navigate(AppRoutes.TabBar);
-            }}
-          >
-            <Text style={theme.viewStyles.yellowTextStyle}>GO TO CONSULT ROOM</Text>
-          </TouchableOpacity>
-        </View>
-      ),
-    });
   };
 
   const getConsultationBookedEventAttributes = (time: string, id: string) => {

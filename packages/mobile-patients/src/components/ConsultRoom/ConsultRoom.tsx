@@ -77,6 +77,7 @@ import {
   setWebEngageScreenNames,
   overlyPermissionAndroid,
   followUpChatDaysCaseSheet,
+  checkPermissions,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -315,6 +316,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [consultations, setconsultations] = useState<
     getPatientAllAppointments_getPatientAllAppointments_appointments[]
   >([]);
+  const [showFreeConsultOverlay, setShowFreeConsultOverlay] = useState<boolean>(false);
+  const [freeConsultDoctorName, setFreeConsultDoctorName] = useState<string>('');
+  const [profileChange, setProfileChange] = useState<boolean>(false);
 
   const webengage = new WebEngage();
 
@@ -419,10 +423,20 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   }
 
   useEffect(() => {
-    if (currentPatient) {
+    const params = props.navigation.state.params;
+    if (!params?.isReset && currentPatient) {
       fetchAppointments();
     }
-  }, [currentPatient]);
+    if (params?.isFreeConsult) {
+      setFreeConsultDoctorName(params?.doctorName);
+      checkPermissions(['camera', 'microphone']).then((response: any) => {
+        const { camera, microphone } = response;
+        if (camera === 'authorized' && microphone === 'authorized') {
+          setShowFreeConsultOverlay(true);
+        }
+      });
+    }
+  }, [profileChange]);
 
   useEffect(() => {
     try {
@@ -505,6 +519,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const onProfileChange = () => {
+    setProfileChange(!profileChange);
     setShowList(false);
     if (isFindDoctorCustomProfile) {
       setFindDoctorCustomProfile(false);
@@ -799,14 +814,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             const appointmentsCount = (
               g(data, 'data', 'getPatientFutureAppointmentCount', 'consultsCount') || 0
             ).toString();
-            // appointmentsCount !== '0'
-            //   ? overlyPermissionAndroid(
-            //       currentPatient!.firstName!,
-            //       'the doctor',
-            //       showAphAlert,
-            //       hideAphAlert
-            //     )
-            //   : null;
             setAppointmentLoading(false);
           })
           .catch((e) => {
@@ -864,14 +871,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           const inProgressAppointments = activeAppointments?.filter((item: any) => {
             return item.status !== STATUS.COMPLETED;
           });
-          console.log('activeAppointments', activeAppointments);
-          console.log('inProgressAppointments 2', inProgressAppointments);
           if (inProgressAppointments && inProgressAppointments.length > 0) {
             overlyPermissionAndroid(
               currentPatient!.firstName!,
               activeAppointments[0].doctorInfo.displayName,
               showAphAlert,
-              hideAphAlert
+              hideAphAlert,
+              true,
+              () => {
+                setShowFreeConsultOverlay(true);
+              }
             );
           }
         } else {
@@ -1754,6 +1763,33 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
+  const renderFreeConsultOverlay = () => {
+    return (
+      <BottomPopUp
+        title={`Appointment Confirmation`}
+        description={`Your appointment has been successfully booked with Dr. ${freeConsultDoctorName}. Please go to consult room 10-15 minutes prior to your appointment. Answering a few medical questions in advance will make your appointment process quick and smooth :)`}
+      >
+        <View style={{ height: 60, alignItems: 'flex-end' }}>
+          <TouchableOpacity
+            activeOpacity={1}
+            style={{
+              height: 60,
+              paddingRight: 25,
+              backgroundColor: 'transparent',
+              justifyContent: 'center',
+            }}
+            onPress={() => {
+              hideAphAlert!();
+              props.navigation.navigate(AppRoutes.TabBar);
+            }}
+          >
+            <Text style={theme.viewStyles.yellowTextStyle}>GO TO CONSULT ROOM</Text>
+          </TouchableOpacity>
+        </View>
+      </BottomPopUp>
+    );
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
@@ -1827,6 +1863,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         />
       )}
       <NotificationListener navigation={props.navigation} />
+      {showFreeConsultOverlay && freeConsultDoctorName ? renderFreeConsultOverlay() : null}
     </View>
   );
 };

@@ -1500,7 +1500,9 @@ export const overlyPermissionAndroid = (
   patientName: string,
   doctorName: string,
   showAphAlert: any,
-  hideAphAlert: any
+  hideAphAlert: any,
+  isDissmiss: boolean,
+  callback?: () => void | null
 ) => {
   if (Platform.OS === 'android') {
     Permissions.checkMultiple(['camera', 'microphone'])
@@ -1516,7 +1518,7 @@ export const overlyPermissionAndroid = (
           RNAppSignatureHelper.isRequestOverlayPermissionGranted((status: any) => {
             if (status) {
               showAphAlert!({
-                unDismissable: true,
+                unDismissable: isDissmiss,
                 title: `Hi ${patientName} :)`,
                 description: string.callRelatedPermissions.allPermissions.replace(
                   '{0}',
@@ -1538,7 +1540,7 @@ export const overlyPermissionAndroid = (
               });
             } else {
               showAphAlert!({
-                unDismissable: true,
+                unDismissable: isDissmiss,
                 title: `Hi ${patientName} :)`,
                 description: string.callRelatedPermissions.camAndMPPermission.replace(
                   '{0}',
@@ -1562,7 +1564,7 @@ export const overlyPermissionAndroid = (
           RNAppSignatureHelper.isRequestOverlayPermissionGranted((status: any) => {
             if (status) {
               showAphAlert!({
-                unDismissable: true,
+                unDismissable: isDissmiss,
                 title: `Hi ${patientName} :)`,
                 description: string.callRelatedPermissions.mpAndOverlayPermission.replace(
                   '{0}',
@@ -1584,7 +1586,7 @@ export const overlyPermissionAndroid = (
               });
             } else {
               showAphAlert!({
-                unDismissable: true,
+                unDismissable: isDissmiss,
                 title: `Hi ${patientName} :)`,
                 description: string.callRelatedPermissions.onlyMPPermission.replace(
                   '{0}',
@@ -1608,7 +1610,7 @@ export const overlyPermissionAndroid = (
           RNAppSignatureHelper.isRequestOverlayPermissionGranted((status: any) => {
             if (status) {
               showAphAlert!({
-                unDismissable: true,
+                unDismissable: isDissmiss,
                 title: `Hi ${patientName} :)`,
                 description: string.callRelatedPermissions.camAndOverlayPermission.replace(
                   '{0}',
@@ -1630,7 +1632,7 @@ export const overlyPermissionAndroid = (
               });
             } else {
               showAphAlert!({
-                unDismissable: true,
+                unDismissable: isDissmiss,
                 title: `Hi ${patientName} :)`,
                 description: string.callRelatedPermissions.onlyCameraPermission.replace(
                   '{0}',
@@ -1654,7 +1656,7 @@ export const overlyPermissionAndroid = (
           RNAppSignatureHelper.isRequestOverlayPermissionGranted((status: any) => {
             if (status) {
               showAphAlert!({
-                unDismissable: true,
+                unDismissable: isDissmiss,
                 title: `Hi ${patientName} :)`,
                 description: string.callRelatedPermissions.onlyOverlayPermission.replace(
                   '{0}',
@@ -1686,14 +1688,19 @@ export const overlyPermissionAndroid = (
         const cameraYes = camera === 'authorized';
         const microphoneYes = microphone === 'authorized';
         // Response is one of: 'authorized', 'denied', 'restricted', or 'undetermined'
-        if (cameraNo && microphoneNo) {
+        const description =
+          cameraNo && microphoneNo
+            ? string.callRelatedPermissions.camAndMPPermission
+            : cameraYes && microphoneNo
+            ? string.callRelatedPermissions.onlyMPPermission
+            : cameraNo && microphoneYes
+            ? string.callRelatedPermissions.onlyCameraPermission
+            : '';
+        if (description) {
           showAphAlert!({
             unDismissable: true,
             title: `Hi ${patientName} :)`,
-            description: string.callRelatedPermissions.camAndMPPermission.replace(
-              '{0}',
-              doctorName
-            ),
+            description: description.replace('{0}', doctorName),
             ctaContainerStyle: { justifyContent: 'flex-end' },
             CTAs: [
               {
@@ -1701,43 +1708,7 @@ export const overlyPermissionAndroid = (
                 type: 'orange-link',
                 onPress: () => {
                   hideAphAlert!();
-                  callPermissions();
-                },
-              },
-            ],
-          });
-        } else if (cameraYes && microphoneNo) {
-          showAphAlert!({
-            unDismissable: true,
-            title: `Hi ${patientName} :)`,
-            description: string.callRelatedPermissions.onlyMPPermission.replace('{0}', doctorName),
-            ctaContainerStyle: { justifyContent: 'flex-end' },
-            CTAs: [
-              {
-                text: 'OK, GOT IT',
-                type: 'orange-link',
-                onPress: () => {
-                  hideAphAlert!();
-                  callPermissions();
-                },
-              },
-            ],
-          });
-        } else if (cameraNo && microphoneYes) {
-          showAphAlert!({
-            unDismissable: true,
-            title: `Hi ${patientName} :)`,
-            description: string.callRelatedPermissions.onlyCameraPermission.replace(
-              '{0}',
-              doctorName
-            ),
-            ctaContainerStyle: { justifyContent: 'flex-end' },
-            CTAs: [
-              {
-                text: 'OK, GOT IT',
-                type: 'orange-link',
-                onPress: () => {
-                  hideAphAlert!();
+                  callback && callback();
                   callPermissions();
                 },
               },

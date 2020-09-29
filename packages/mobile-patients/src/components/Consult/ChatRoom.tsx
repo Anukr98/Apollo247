@@ -144,7 +144,6 @@ import {
   postWebEngageEvent,
   nameFormater,
   followUpChatDaysCaseSheet,
-  overlyPermissionAndroid,
 } from '../../helpers/helperFunctions';
 import { mimeType } from '../../helpers/mimeType';
 import { FeedbackPopup } from '../FeedbackPopup';
@@ -681,16 +680,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     const willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
       BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
     });
-    if (Platform.OS === 'android') {
-      overlyPermissionAndroid(
-        currentPatient!.firstName!,
-        appointmentData.doctorInfo.displayName,
-        showAphAlert,
-        hideAphAlert
-      );
-    } else {
-      callPermissions();
-    }
+    callPermissions();
     return () => {
       didFocusSubscription && didFocusSubscription.remove();
       willBlurSubscription && willBlurSubscription.remove();
