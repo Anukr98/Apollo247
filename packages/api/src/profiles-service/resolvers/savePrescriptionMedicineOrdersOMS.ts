@@ -152,11 +152,11 @@ const savePrescriptionMedicineOrderOMS: Resolver<
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
   }
 
-  if (
-    prescriptionMedicineOMSInput.prescriptionImageUrl &&
-    prescriptionMedicineOMSInput.prescriptionImageUrl.split('/').pop() == 'null'
-  ) {
-    throw new AphError(AphErrorMessages.INVALID_MEDICINE_PRESCRIPTION_URL, undefined, {});
+  if (prescriptionMedicineOMSInput.prescriptionImageUrl) {
+    const imgUrls = prescriptionMedicineOMSInput.prescriptionImageUrl.split(',');
+    if (imgUrls.some((url) => url.split('/').pop() == 'null')) {
+      throw new AphError(AphErrorMessages.INVALID_MEDICINE_PRESCRIPTION_URL, undefined, {});
+    }
   }
 
   let patientAddressDetails;

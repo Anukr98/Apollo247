@@ -322,11 +322,11 @@ const saveMedicineOrderOMS: Resolver<
     storeDetails = await getStoreDetails(medicineCartOMSInput.shopId);
   }
 
-  if (
-    medicineCartOMSInput.prescriptionImageUrl &&
-    medicineCartOMSInput.prescriptionImageUrl.split('/').pop() == 'null'
-  ) {
-    throw new AphError(AphErrorMessages.INVALID_MEDICINE_PRESCRIPTION_URL, undefined, {});
+  if (medicineCartOMSInput.prescriptionImageUrl) {
+    const imgUrls = medicineCartOMSInput.prescriptionImageUrl.split(',');
+    if (imgUrls.some((url) => url.split('/').pop() == 'null')) {
+      throw new AphError(AphErrorMessages.INVALID_MEDICINE_PRESCRIPTION_URL, undefined, {});
+    }
   }
 
   const medicineOrderattrs: Partial<MedicineOrders> = {
