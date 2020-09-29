@@ -24,7 +24,7 @@ import {
   aphConsole,
   g,
   postWebEngageEvent,
-  overlyPermissionAndroid,
+  overlyCallPermissions,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -861,7 +861,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         {
           const doctorName = data.doctorName;
           const userName = data.patientName;
-          overlyPermissionAndroid(userName, doctorName, showAphAlert, hideAphAlert, true);
+          overlyCallPermissions(userName, doctorName, showAphAlert, hideAphAlert, true);
         }
         break;
       case 'webview':

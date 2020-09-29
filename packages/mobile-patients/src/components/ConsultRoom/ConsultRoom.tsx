@@ -47,9 +47,10 @@ import {
   GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
   SAVE_DEVICE_TOKEN,
   SAVE_VOIP_DEVICE_TOKEN,
+  GET_PATIENT_ALL_APPOINTMENTS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { getPatientFutureAppointmentCount } from '@aph/mobile-patients/src/graphql/types/getPatientFutureAppointmentCount';
-import { DEVICE_TYPE, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { DEVICE_TYPE, Relation, STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   saveDeviceToken,
   saveDeviceTokenVariables,
@@ -74,7 +75,9 @@ import {
   postWebEngageEvent,
   UnInstallAppsFlyer,
   setWebEngageScreenNames,
-  overlyPermissionAndroid,
+  overlyCallPermissions,
+  followUpChatDaysCaseSheet,
+  checkPermissions,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -116,6 +119,10 @@ import { ConsultPersonalizedCard } from '../ui/ConsultPersonalizedCard';
 import VoipPushNotification from 'react-native-voip-push-notification';
 import { LocalStrings } from '@aph/mobile-patients/src/strings/LocalStrings';
 import { addVoipPushToken, addVoipPushTokenVariables } from '../../graphql/types/addVoipPushToken';
+import {
+  getPatientAllAppointments,
+  getPatientAllAppointments_getPatientAllAppointments_appointments,
+} from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
 
 const { Vitals } = NativeModules;
 
@@ -306,6 +313,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [personalizedData, setPersonalizedData] = useState<any>([]);
   const [isPersonalizedCard, setisPersonalizedCard] = useState(false);
   const [voipDeviceToken, setVoipDeviceToken] = useState<string>('');
+  const [consultations, setconsultations] = useState<
+    getPatientAllAppointments_getPatientAllAppointments_appointments[]
+  >([]);
+  const [showFreeConsultOverlay, setShowFreeConsultOverlay] = useState<boolean>(false);
+  const [freeConsultDoctorName, setFreeConsultDoctorName] = useState<string>('');
+  const [profileChange, setProfileChange] = useState<boolean>(false);
 
   const webengage = new WebEngage();
 
@@ -410,6 +423,23 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   }
 
   useEffect(() => {
+    const params = props.navigation.state.params;
+    if (!params?.isReset && currentPatient) {
+      // reset will be true only from the payment screen(fill medical details)
+      fetchAppointments();
+    }
+    if (params?.isFreeConsult) {
+      setFreeConsultDoctorName(params?.doctorName);
+      checkPermissions(['camera', 'microphone']).then((response: any) => {
+        const { camera, microphone } = response;
+        if (camera === 'authorized' && microphone === 'authorized') {
+          setShowFreeConsultOverlay(true);
+        }
+      });
+    }
+  }, [profileChange]);
+
+  useEffect(() => {
     try {
       if (currentPatient && g(currentPatient, 'relation') == Relation.ME && !isWEGFired) {
         setWEGFired(true);
@@ -490,6 +520,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const onProfileChange = () => {
+    setProfileChange(!profileChange);
     setShowList(false);
     if (isFindDoctorCustomProfile) {
       setFindDoctorCustomProfile(false);
@@ -784,15 +815,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             const appointmentsCount = (
               g(data, 'data', 'getPatientFutureAppointmentCount', 'consultsCount') || 0
             ).toString();
-            appointmentsCount !== '0'
-              ? overlyPermissionAndroid(
-                  currentPatient!.firstName!,
-                  'the doctor',
-                  showAphAlert,
-                  hideAphAlert,
-                  true
-                )
-              : null;
             setAppointmentLoading(false);
           })
           .catch((e) => {
@@ -802,6 +824,76 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       }
     }
   }, [currentPatient, analytics, props.navigation.state.params]);
+
+  const fetchAppointments = async () => {
+    let userId: any = await AsyncStorage.getItem('selectedProfileId');
+    userId = JSON.parse(userId);
+    client
+      .query<getPatientAllAppointments>({
+        query: GET_PATIENT_ALL_APPOINTMENTS,
+        fetchPolicy: 'no-cache',
+        variables: {
+          patientId:
+            userId !== g(currentPatient, 'id') ? g(currentPatient, 'id') || userId : userId,
+        },
+      })
+      .then(({ data }) => {
+        if (
+          data?.getPatientAllAppointments?.appointments &&
+          consultations !== data.getPatientAllAppointments.appointments
+        ) {
+          let pastAppointments:
+            | getPatientAllAppointments_getPatientAllAppointments_appointments
+            | any = [];
+          let activeAppointments:
+            | getPatientAllAppointments_getPatientAllAppointments_appointments
+            | any = [];
+          data.getPatientAllAppointments.appointments.forEach((item) => {
+            const caseSheet = followUpChatDaysCaseSheet(item.caseSheet);
+            const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpAfterInDays');
+            const followUpAfterInDays =
+              caseSheetChatDays || caseSheetChatDays === '0'
+                ? caseSheetChatDays === '0'
+                  ? 0
+                  : Number(caseSheetChatDays) - 1
+                : 6;
+            if (
+              moment(new Date(item.appointmentDateTime))
+                .add(followUpAfterInDays, 'days')
+                .startOf('day')
+                .isSameOrAfter(moment(new Date()).startOf('day'))
+            ) {
+              activeAppointments.push(item);
+            } else {
+              pastAppointments.push(item);
+            }
+          });
+          setconsultations(data.getPatientAllAppointments.appointments);
+          const inProgressAppointments = activeAppointments?.filter((item: any) => {
+            return item.status !== STATUS.COMPLETED;
+          });
+          if (inProgressAppointments && inProgressAppointments.length > 0) {
+            overlyCallPermissions(
+              currentPatient!.firstName!,
+              activeAppointments[0].doctorInfo.displayName,
+              showAphAlert,
+              hideAphAlert,
+              true,
+              () => {
+                setShowFreeConsultOverlay(true);
+              }
+            );
+          }
+        } else {
+          setconsultations([]);
+        }
+        // setLoading && setLoading(false);
+      })
+      .catch((e) => {
+        CommonBugFender('Consult_fetchAppointments', e);
+        console.log('Error occured in GET_PATIENT_ALL_APPOINTMENTS', e);
+      });
+  };
 
   useEffect(() => {
     async function fetchData() {
@@ -1672,6 +1764,33 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
+  const renderFreeConsultOverlay = () => {
+    return (
+      <BottomPopUp
+        title={`Appointment Confirmation`}
+        description={`Your appointment has been successfully booked with Dr. ${freeConsultDoctorName}. Please go to consult room 10-15 minutes prior to your appointment. Answering a few medical questions in advance will make your appointment process quick and smooth :)`}
+      >
+        <View style={{ height: 60, alignItems: 'flex-end' }}>
+          <TouchableOpacity
+            activeOpacity={1}
+            style={{
+              height: 60,
+              paddingRight: 25,
+              backgroundColor: 'transparent',
+              justifyContent: 'center',
+            }}
+            onPress={() => {
+              hideAphAlert!();
+              props.navigation.navigate(AppRoutes.TabBar);
+            }}
+          >
+            <Text style={theme.viewStyles.yellowTextStyle}>GO TO CONSULT ROOM</Text>
+          </TouchableOpacity>
+        </View>
+      </BottomPopUp>
+    );
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
@@ -1745,6 +1864,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         />
       )}
       <NotificationListener navigation={props.navigation} />
+      {showFreeConsultOverlay && freeConsultDoctorName ? renderFreeConsultOverlay() : null}
     </View>
   );
 };

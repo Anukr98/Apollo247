@@ -13,7 +13,7 @@ import {
   postAppsFlyerEvent,
   postFirebaseEvent,
   postWebEngageEvent,
-  overlyPermissionAndroid,
+  overlyCallPermissions,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
@@ -93,7 +93,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     });
 
   useEffect(() => {
-    overlyPermissionAndroid(currentPatient.firstName, doctorName, showAphAlert, hideAphAlert, true);
+    overlyCallPermissions(currentPatient.firstName, doctorName, showAphAlert, hideAphAlert, true);
   }, []);
 
   useEffect(() => {
@@ -553,7 +553,14 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
                   StackActions.reset({
                     index: 0,
                     key: null,
-                    actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+                    actions: [
+                      NavigationActions.navigate({
+                        routeName: AppRoutes.ConsultRoom,
+                        params: {
+                          isReset: true,
+                        },
+                      }),
+                    ],
                   })
                 );
                 props.navigation.navigate(AppRoutes.ChatRoom, {

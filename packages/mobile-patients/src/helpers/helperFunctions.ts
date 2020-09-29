@@ -1496,12 +1496,13 @@ export const setWebEngageScreenNames = (screenName: string) => {
   webengage.screen(screenName);
 };
 
-export const overlyPermissionAndroid = (
+export const overlyCallPermissions = (
   patientName: string,
   doctorName: string,
   showAphAlert: any,
   hideAphAlert: any,
-  isDissmiss: boolean
+  isDissmiss: boolean,
+  callback?: () => void | null
 ) => {
   if (Platform.OS === 'android') {
     Permissions.checkMultiple(['camera', 'microphone'])
@@ -1678,5 +1679,55 @@ export const overlyPermissionAndroid = (
         }
       })
       .catch((e) => {});
+  } else {
+    Permissions.checkMultiple(['camera', 'microphone'])
+      .then((response) => {
+        const { camera, microphone } = response;
+        const cameraNo = camera === 'denied' || camera === 'undetermined';
+        const microphoneNo = microphone === 'denied' || microphone === 'undetermined';
+        const cameraYes = camera === 'authorized';
+        const microphoneYes = microphone === 'authorized';
+        // Response is one of: 'authorized', 'denied', 'restricted', or 'undetermined'
+        const description =
+          cameraNo && microphoneNo
+            ? string.callRelatedPermissions.camAndMPPermission
+            : cameraYes && microphoneNo
+            ? string.callRelatedPermissions.onlyMPPermission
+            : cameraNo && microphoneYes
+            ? string.callRelatedPermissions.onlyCameraPermission
+            : '';
+        if (description) {
+          showAphAlert!({
+            unDismissable: true,
+            title: `Hi ${patientName} :)`,
+            description: description.replace('{0}', doctorName),
+            ctaContainerStyle: { justifyContent: 'flex-end' },
+            CTAs: [
+              {
+                text: 'OK, GOT IT',
+                type: 'orange-link',
+                onPress: () => {
+                  hideAphAlert!();
+                  callback && callback();
+                  callPermissions();
+                },
+              },
+            ],
+          });
+        }
+      })
+      .catch((e) => {});
   }
+};
+
+export const checkPermissions = (permissions: string[]) => {
+  return new Promise((resolve, reject) => {
+    Permissions.checkMultiple(permissions).then((response) => {
+      if (response) {
+        resolve(response);
+      } else {
+        reject('Unable to get permissions.');
+      }
+    });
+  });
 };
