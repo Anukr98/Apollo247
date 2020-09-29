@@ -47,9 +47,10 @@ import {
   GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
   SAVE_DEVICE_TOKEN,
   SAVE_VOIP_DEVICE_TOKEN,
+  GET_PATIENT_ALL_APPOINTMENTS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { getPatientFutureAppointmentCount } from '@aph/mobile-patients/src/graphql/types/getPatientFutureAppointmentCount';
-import { DEVICE_TYPE, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { DEVICE_TYPE, Relation, STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   saveDeviceToken,
   saveDeviceTokenVariables,
@@ -75,6 +76,7 @@ import {
   UnInstallAppsFlyer,
   setWebEngageScreenNames,
   overlyPermissionAndroid,
+  followUpChatDaysCaseSheet,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -116,6 +118,10 @@ import { ConsultPersonalizedCard } from '../ui/ConsultPersonalizedCard';
 import VoipPushNotification from 'react-native-voip-push-notification';
 import { LocalStrings } from '@aph/mobile-patients/src/strings/LocalStrings';
 import { addVoipPushToken, addVoipPushTokenVariables } from '../../graphql/types/addVoipPushToken';
+import {
+  getPatientAllAppointments,
+  getPatientAllAppointments_getPatientAllAppointments_appointments,
+} from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
 
 const { Vitals } = NativeModules;
 
@@ -306,6 +312,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [personalizedData, setPersonalizedData] = useState<any>([]);
   const [isPersonalizedCard, setisPersonalizedCard] = useState(false);
   const [voipDeviceToken, setVoipDeviceToken] = useState<string>('');
+  const [consultations, setconsultations] = useState<
+    getPatientAllAppointments_getPatientAllAppointments_appointments[]
+  >([]);
 
   const webengage = new WebEngage();
 
@@ -408,6 +417,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         });
     }
   }
+
+  useEffect(() => {
+    if (currentPatient) {
+      fetchAppointments();
+    }
+  }, [currentPatient]);
 
   useEffect(() => {
     try {
@@ -784,14 +799,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             const appointmentsCount = (
               g(data, 'data', 'getPatientFutureAppointmentCount', 'consultsCount') || 0
             ).toString();
-            appointmentsCount !== '0'
-              ? overlyPermissionAndroid(
-                  currentPatient!.firstName!,
-                  'the doctor',
-                  showAphAlert,
-                  hideAphAlert
-                )
-              : null;
+            // appointmentsCount !== '0'
+            //   ? overlyPermissionAndroid(
+            //       currentPatient!.firstName!,
+            //       'the doctor',
+            //       showAphAlert,
+            //       hideAphAlert
+            //     )
+            //   : null;
             setAppointmentLoading(false);
           })
           .catch((e) => {
@@ -801,6 +816,74 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       }
     }
   }, [currentPatient, analytics, props.navigation.state.params]);
+
+  const fetchAppointments = async () => {
+    let userId: any = await AsyncStorage.getItem('selectedProfileId');
+    userId = JSON.parse(userId);
+    client
+      .query<getPatientAllAppointments>({
+        query: GET_PATIENT_ALL_APPOINTMENTS,
+        fetchPolicy: 'no-cache',
+        variables: {
+          patientId:
+            userId !== g(currentPatient, 'id') ? g(currentPatient, 'id') || userId : userId,
+        },
+      })
+      .then(({ data }) => {
+        if (
+          data?.getPatientAllAppointments?.appointments &&
+          consultations !== data.getPatientAllAppointments.appointments
+        ) {
+          let pastAppointments:
+            | getPatientAllAppointments_getPatientAllAppointments_appointments
+            | any = [];
+          let activeAppointments:
+            | getPatientAllAppointments_getPatientAllAppointments_appointments
+            | any = [];
+          data.getPatientAllAppointments.appointments.forEach((item) => {
+            const caseSheet = followUpChatDaysCaseSheet(item.caseSheet);
+            const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpAfterInDays');
+            const followUpAfterInDays =
+              caseSheetChatDays || caseSheetChatDays === '0'
+                ? caseSheetChatDays === '0'
+                  ? 0
+                  : Number(caseSheetChatDays) - 1
+                : 6;
+            if (
+              moment(new Date(item.appointmentDateTime))
+                .add(followUpAfterInDays, 'days')
+                .startOf('day')
+                .isSameOrAfter(moment(new Date()).startOf('day'))
+            ) {
+              activeAppointments.push(item);
+            } else {
+              pastAppointments.push(item);
+            }
+          });
+          setconsultations(data.getPatientAllAppointments.appointments);
+          const inProgressAppointments = activeAppointments?.filter((item: any) => {
+            return item.status !== STATUS.COMPLETED;
+          });
+          console.log('activeAppointments', activeAppointments);
+          console.log('inProgressAppointments 2', inProgressAppointments);
+          if (inProgressAppointments && inProgressAppointments.length > 0) {
+            overlyPermissionAndroid(
+              currentPatient!.firstName!,
+              activeAppointments[0].doctorInfo.displayName,
+              showAphAlert,
+              hideAphAlert
+            );
+          }
+        } else {
+          setconsultations([]);
+        }
+        // setLoading && setLoading(false);
+      })
+      .catch((e) => {
+        CommonBugFender('Consult_fetchAppointments', e);
+        console.log('Error occured in GET_PATIENT_ALL_APPOINTMENTS', e);
+      });
+  };
 
   useEffect(() => {
     async function fetchData() {

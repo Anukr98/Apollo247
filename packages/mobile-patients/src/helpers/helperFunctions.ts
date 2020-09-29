@@ -1677,5 +1677,86 @@ export const overlyPermissionAndroid = (
         }
       })
       .catch((e) => {});
+  } else {
+    Permissions.checkMultiple(['camera', 'microphone'])
+      .then((response) => {
+        const { camera, microphone } = response;
+        const cameraNo = camera === 'denied' || camera === 'undetermined';
+        const microphoneNo = microphone === 'denied' || microphone === 'undetermined';
+        const cameraYes = camera === 'authorized';
+        const microphoneYes = microphone === 'authorized';
+        // Response is one of: 'authorized', 'denied', 'restricted', or 'undetermined'
+        if (cameraNo && microphoneNo) {
+          showAphAlert!({
+            unDismissable: true,
+            title: `Hi ${patientName} :)`,
+            description: string.callRelatedPermissions.camAndMPPermission.replace(
+              '{0}',
+              doctorName
+            ),
+            ctaContainerStyle: { justifyContent: 'flex-end' },
+            CTAs: [
+              {
+                text: 'OK, GOT IT',
+                type: 'orange-link',
+                onPress: () => {
+                  hideAphAlert!();
+                  callPermissions();
+                },
+              },
+            ],
+          });
+        } else if (cameraYes && microphoneNo) {
+          showAphAlert!({
+            unDismissable: true,
+            title: `Hi ${patientName} :)`,
+            description: string.callRelatedPermissions.onlyMPPermission.replace('{0}', doctorName),
+            ctaContainerStyle: { justifyContent: 'flex-end' },
+            CTAs: [
+              {
+                text: 'OK, GOT IT',
+                type: 'orange-link',
+                onPress: () => {
+                  hideAphAlert!();
+                  callPermissions();
+                },
+              },
+            ],
+          });
+        } else if (cameraNo && microphoneYes) {
+          showAphAlert!({
+            unDismissable: true,
+            title: `Hi ${patientName} :)`,
+            description: string.callRelatedPermissions.onlyCameraPermission.replace(
+              '{0}',
+              doctorName
+            ),
+            ctaContainerStyle: { justifyContent: 'flex-end' },
+            CTAs: [
+              {
+                text: 'OK, GOT IT',
+                type: 'orange-link',
+                onPress: () => {
+                  hideAphAlert!();
+                  callPermissions();
+                },
+              },
+            ],
+          });
+        }
+      })
+      .catch((e) => {});
   }
+};
+
+export const checkPermissions = (permissions: string[]) => {
+  return new Promise((resolve, reject) => {
+    Permissions.checkMultiple(permissions).then((response) => {
+      if (response) {
+        resolve(response);
+      } else {
+        reject('Unable to get permissions.');
+      }
+    });
+  });
 };

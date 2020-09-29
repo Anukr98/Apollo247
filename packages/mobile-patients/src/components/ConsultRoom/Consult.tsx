@@ -384,12 +384,20 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 setconsultations(data.getPatientAllAppointments.appointments);
                 setActiveConsultations(activeAppointments);
                 setPastConsultations(pastAppointments);
-                overlyPermissionAndroid(
-                  currentPatient!.firstName!,
-                  activeAppointments[0].doctorInfo.displayName,
-                  showAphAlert,
-                  hideAphAlert
-                );
+                const inProgressAppointments = activeAppointments?.filter((item: any) => {
+                  return item.status !== STATUS.COMPLETED;
+                });
+                console.log('activeAppointments', activeAppointments);
+                console.log('inProgressAppointments 2', inProgressAppointments);
+                if (inProgressAppointments && inProgressAppointments.length > 0) {
+                  callPermissions();
+                }
+                // overlyPermissionAndroid(
+                //   currentPatient!.firstName!,
+                //   activeAppointments[0].doctorInfo.displayName,
+                //   showAphAlert,
+                //   hideAphAlert
+                // );
               } else {
                 setconsultations([]);
               }
