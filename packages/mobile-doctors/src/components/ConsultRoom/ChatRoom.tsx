@@ -30,7 +30,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { Image, Image as ImageNative } from 'react-native-elements';
+import { FastImageLoading } from '@aph/mobile-doctors/src/components/ui/FastImageLoading';
 import { isIphoneX } from 'react-native-iphone-x-helper';
 import { NavigationScreenProps } from 'react-navigation';
 import FastImage from 'react-native-fast-image';
@@ -70,7 +70,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const iPhoneHeight = isIphoneX() ? 45 : Platform.OS === 'ios' ? -6 : 0;
 
   const patientImage = patientDetails && (
-    <Image style={styles.imageStyle} source={{ uri: patientDetails.photoUrl || '' }} />
+    <FastImageLoading
+      imageStyle={styles.imageStyle}
+      uri={patientDetails.photoUrl || ''}
+      resizeMode={'contain'}
+    />
   );
   const { messages, messageText, setMessageText, flatListRef } = props;
   const [keyboardHeight, setKeyBoardHeight] = useState<number>(0);

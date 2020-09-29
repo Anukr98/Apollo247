@@ -181,7 +181,9 @@ export async function sendCallsNotification(
   const devicetokensofFamily = await deviceTokenRepo.deviceTokensOfAllIds(listOfIds);
   if (devicetokensofFamily.length > 0) {
     devicetokensofFamily.forEach((values) => {
-      registrationToken.push(values.deviceToken);
+      if (values.deviceToken != '' && values.deviceToken != null) {
+        registrationToken.push(values.deviceToken);
+      }
     });
   }
   /*patientDetails.patientDeviceTokens.forEach((values) => {
@@ -643,7 +645,9 @@ export async function sendReminderNotification(
   const devicetokensofFamily = await deviceTokenRepo.deviceTokensOfAllIds(listOfIds);
   if (devicetokensofFamily.length > 0) {
     devicetokensofFamily.forEach((values) => {
-      registrationToken.push(values.deviceToken);
+      if (values.deviceToken != '' && values.deviceToken != null) {
+        registrationToken.push(values.deviceToken);
+      }
     });
   }
   if (pushNotificationInput.notificationType == NotificationType.APPOINTMENT_REMINDER_15) {
@@ -762,7 +766,9 @@ export async function sendCallsDisconnectNotification(
   const devicetokensofFamily = await deviceTokenRepo.deviceTokensOfAllIds(listOfIds);
   if (devicetokensofFamily.length > 0) {
     devicetokensofFamily.forEach((values) => {
-      registrationToken.push(values.deviceToken);
+      if (values.deviceToken != '' && values.deviceToken != null) {
+        registrationToken.push(values.deviceToken);
+      }
     });
   }
 
@@ -882,7 +888,9 @@ export async function sendCartNotification(
   const devicetokensofFamily = await deviceTokenRepo.deviceTokensOfAllIds(listOfIds);
   if (devicetokensofFamily.length > 0) {
     devicetokensofFamily.forEach((values) => {
-      registrationToken.push(values.deviceToken);
+      if (values.deviceToken != '' && values.deviceToken != null) {
+        registrationToken.push(values.deviceToken);
+      }
     });
   }
   /*patientDetails.patientDeviceTokens.forEach((values) => {
@@ -1700,7 +1708,9 @@ export async function sendNotification(
   const devicetokensofFamily = await deviceTokenRepo.deviceTokensOfAllIds(listOfIds);
   if (devicetokensofFamily.length > 0) {
     devicetokensofFamily.forEach((values) => {
-      registrationToken.push(values.deviceToken);
+      if (values.deviceToken != '' && values.deviceToken != null) {
+        registrationToken.push(values.deviceToken);
+      }
     });
   }
   /*patientDetails.patientDeviceTokens.forEach((values) => {
@@ -1793,7 +1803,9 @@ export async function sendDoctorAppointmentNotification(
   const registrationToken: string[] = [];
   if (deviceTokensList.length > 0) {
     deviceTokensList.forEach((values) => {
-      registrationToken.push(values.deviceToken);
+      if (values.deviceToken != '' && values.deviceToken != null) {
+        registrationToken.push(values.deviceToken);
+      }
     });
 
     console.log(registrationToken, 'registrationToken doctor');
@@ -1881,7 +1893,9 @@ export async function sendDoctorRescheduleAppointmentNotification(
   const registrationToken: string[] = [];
   if (deviceTokensList.length > 0) {
     deviceTokensList.forEach((values) => {
-      registrationToken.push(values.deviceToken);
+      if (values.deviceToken != '' && values.deviceToken != null) {
+        registrationToken.push(values.deviceToken);
+      }
     });
 
     console.log(registrationToken, 'registrationToken doctor');

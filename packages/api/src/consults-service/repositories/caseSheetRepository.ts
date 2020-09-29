@@ -38,6 +38,7 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
 
   getJDCaseSheetByAppointmentId(appointmentId: string) {
     return this.createQueryBuilder('case_sheet')
+      .leftJoinAndSelect('case_sheet.appointment', 'appointment')
       .where('case_sheet.appointment = :appointmentId', { appointmentId })
       .andWhere('case_sheet.doctorType = :type', { type: DoctorType.JUNIOR })
       .orderBy('case_sheet.createdDate', 'DESC')
@@ -180,6 +181,20 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
       .andWhere('case_sheet.sentToPatient = :sentToPatient', { sentToPatient: true })
       .orderBy('case_sheet.version', 'DESC')
       .getOne();
+  }
+
+  getSDLatestCompletedCaseSheetNotifcation(appointmentId: string) {
+    const juniorDoctorType = DoctorType.JUNIOR;
+    return (
+      this.createQueryBuilder('case_sheet')
+        .leftJoinAndSelect('case_sheet.appointment', 'appointment')
+        .leftJoinAndSelect('appointment.appointmentDocuments', 'appointmentDocuments')
+        .where('case_sheet.appointment = :appointmentId', { appointmentId })
+        .andWhere('case_sheet.doctorType != :juniorDoctorType', { juniorDoctorType })
+        //.andWhere('case_sheet.sentToPatient = :sentToPatient', { sentToPatient: true })
+        .orderBy('case_sheet.version', 'DESC')
+        .getOne()
+    );
   }
 
   getAllAppointmentsToBeArchived(currentDate: Date) {

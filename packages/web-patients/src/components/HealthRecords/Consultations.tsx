@@ -130,7 +130,9 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     addReportMobile: {
-      display: 'none',
+      '& img': {
+        verticalAlign: 'middle',
+      },
       [theme.breakpoints.up('sm')]: {
         display: 'none',
       },
@@ -386,8 +388,14 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
         filteredConsults =
           allConsultsData &&
           allConsultsData.filter((consult: any) => {
-            if (consult && consult.patientId) {
-              return consult.appointmentType === filter;
+            if (filter === 'PHYSICAL') {
+              return (
+                consult.source === '247self' ||
+                consult.source === 'self' ||
+                (consult && consult.patientId && consult.appointmentType === filter)
+              );
+            } else {
+              return consult && consult.patientId && consult.appointmentType === filter;
             }
           });
       }
@@ -451,7 +459,10 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
       <div className={classes.leftSection}>
         <div className={classes.noteText}>{HEALTH_RECORDS_NOTE}</div>
         <div className={classes.tabsWrapper}>
-          <Link className={classes.addReportMobile} to={clientRoutes.addHealthRecords('medical')}>
+          <Link
+            className={classes.addReportMobile}
+            to={clientRoutes.addHealthRecords('prescription')}
+          >
             <img src={require('images/ic_addfile.svg')} />
           </Link>
           <div className={classes.topFilters}>
@@ -527,9 +538,15 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
           )}
         </Scrollbars>
         <div className={classes.addReportActions}>
-          <Link to={clientRoutes.addHealthRecords('medical')} className={classes.addReport}>
-            Add a Report
-          </Link>
+          <AphButton
+            color="primary"
+            onClick={() => {
+              window.location.href = clientRoutes.addHealthRecords('prescription');
+            }}
+            fullWidth
+          >
+            Add Record
+          </AphButton>
         </div>
       </div>
       <div

@@ -91,7 +91,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   const isChennaiOrder = props.navigation.getParam('isChennaiOrder');
   const tatType = props.navigation.getParam('tatType');
   const paramShopId = props.navigation.getParam('shopId');
-
+  const isStorePickup = props.navigation.getParam('isStorePickup');
   const { currentPatient } = useAllCurrentPatients();
   const [isCashOnDelivery, setCashOnDelivery] = useState(false);
   const [showChennaiOrderForm, setShowChennaiOrderForm] = useState(false);
@@ -464,7 +464,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         productDiscount: getFormattedAmount(productDiscount) || 0,
         quoteId: null,
         patientId: (currentPatient && currentPatient.id) || '',
-        shopId: deliveryAddressId ? paramShopId : storeId || null,
+        shopId: isStorePickup ? storeId : paramShopId || null,
         shopAddress: selectedStore
           ? {
               storename,
