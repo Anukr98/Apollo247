@@ -67,6 +67,7 @@ export enum WebEngageEventName {
   DOCTOR_CLICKED_HELP = 'Front_end - Doctor Clicked on the help',
   DOCTOR_STARTED_TEST = 'Front_end - Doctor started test',
   DOCTOR_CLICKED_SETTINGS = 'Front_end - Doctor Clicked on the Settings',
+  DOCTOR_CALENDAR_ERROR = 'Front_end - Doctor API-Error on Calendar',
 }
 
 export interface WebEngageEvents {
@@ -283,6 +284,10 @@ export interface WebEngageEvents {
   [WebEngageEventName.DOCTOR_CLICKED_SETTINGS]: {
     'Doctor name': string;
     'Doctor Mobile number': string;
+  };
+  [WebEngageEventName.DOCTOR_CALENDAR_ERROR]: {
+    'Selected Calendar Day': string;
+    ErrorDetails: string;
   };
 }
 
