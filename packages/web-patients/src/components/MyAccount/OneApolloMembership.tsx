@@ -350,7 +350,7 @@ export const OneApolloMembership: React.FC = () => {
                     />
                   </Tabs>
                   <div className={classes.tabContent}>
-                    {tabValue === 0 && <MyMembership />}
+                    {tabValue === 0 && <MyMembership myMembershipType={oneApolloHc} />}
                     {tabValue === 1 && (
                       <TabContainer>
                         <div className={classes.transactionHeader}>
