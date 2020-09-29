@@ -620,12 +620,14 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 700,
         color: '#00B38E',
         textTransform: 'uppercase',
+        width: 250,
       },
       '& td': {
         fontSize: 12,
         fontWeight: 500,
         color: '#000',
         textTransform: 'uppercase',
+        width: 250,
       },
     },
     tableContainer: {
