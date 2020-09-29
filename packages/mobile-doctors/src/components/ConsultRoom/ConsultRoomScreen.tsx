@@ -2593,12 +2593,9 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
       );
       if (followupChatDays.key > 0) {
         send(
-          `If you have further queries, you may reach out to the ${g(
-            doctorDetails,
-            'displayName'
-          )} via text for ${
+          `Congratulations! ${g(doctorDetails, 'displayName')} has provided you with ${
             followupChatDays.key
-          } days.\nPlease note that this is not a real-time chat, expect a response within a day.\n*This feature is not intended for an emergency. In case of emergency, please reach out to the nearest medical practitioner/Hospital.*`
+          } days of complimentary follow-up chat.`
         );
       }
     }
