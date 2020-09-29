@@ -5,6 +5,22 @@ import {
 
 type YesOrNo = 'Yes' | 'No';
 
+export enum ProductPageViewedSource {
+  NOTIFICATION = 'notification',
+  DEEP_LINK = 'deeplink',
+  WIDGET = 'widget',
+  SEARCH = 'search',
+  REGISTRATION = 'registration',
+  CART = 'cart',
+  PARTIAL_SEARCH = 'partial search',
+  FULL_SEARCH = 'full search',
+  HOME_PAGE = 'home page',
+  CATEGORY_OR_LISTING = 'category or listing',
+  SUBSTITUTES = 'substitutes',
+  CROSS_SELLING_PRODUCTS = 'cross selling products',
+  SIMILAR_PRODUCTS = 'similar products',
+}
+
 export enum WebEngageEventName {
   MOBILE_ENTRY = 'Mobile Entry',
   MOBILE_NUMBER_ENTERED = 'Mobile Number Entered',
@@ -16,8 +32,6 @@ export enum WebEngageEventName {
   SEARCH = 'Pharmacy Search',
   SEARCH_ENTER_CLICK = 'Pharmacy Search Enter Clicked',
   PHARMACY_SEARCH_RESULTS = 'Pharmacy Search Results',
-  PHARMACY_PRODUCT_CLICKED = 'Pharmacy Product Clicked',
-  PHARMACY_PRODUCT_DETAIL_SUBSTITUTE_CLICKED = 'Pharmacy Product Detail Substitute Clicked',
   PRODUCT_DETAIL_TAB_CLICKED = 'Product Detail Tab Clicked',
   PRODUCT_DETAIL_PINCODE_CHECK = 'Product Detail Pincode Check',
   NOTIFY_ME = 'Notify Me',
@@ -149,7 +163,6 @@ export enum WebEngageEventName {
   PHARMACY_ENTER_DELIVERY_PINCODE_CLICKED = 'Pharmacy Enter Delivery Pincode Clicked',
   PHARMACY_ENTER_DELIVERY_PINCODE_SUBMITTED = 'Pharmacy Enter Delivery Pincode Submitted ',
   PHARMACY_PINCODE_NONSERVICABLE = 'Pharmacy location nonservicable',
-  PHARMACY_CATEGORY_SECTION_PRODUCT_CLICK = 'Pharmacy Category Section Product Click',
   PHARMACY_BANNER_CLICK = 'Pharmacy Homepage Banner click',
   CALL_THE_NEAREST_PHARMACY = 'Call the Nearest Pharmacy',
   // Payments Events
@@ -293,16 +306,6 @@ export interface WebEngageEvents {
     keyword: string;
     Source: 'Pharmacy Home' | 'Pharmacy Search';
   };
-  [WebEngageEventName.PHARMACY_PRODUCT_CLICKED]: {
-    'product name': string;
-    'product id': string; // (SKUID)
-    Brand: string;
-    'Brand ID': string;
-    'category name': string;
-    'category ID': string;
-    Source: 'Home' | 'List' | 'Search';
-    'Section Name': string;
-  };
   [WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK]: {
     'product id': string; // (SKUID)
     'product name': string;
@@ -313,10 +316,6 @@ export interface WebEngageEvents {
   };
   [WebEngageEventName.PRODUCT_DETAIL_TAB_CLICKED]: {
     tabName: string;
-  };
-  [WebEngageEventName.PHARMACY_PRODUCT_DETAIL_SUBSTITUTE_CLICKED]: {
-    'product id': string; // (SKUID)
-    'product name': string;
   };
   [WebEngageEventName.NOTIFY_ME]: {
     'product name': string;
@@ -601,11 +600,6 @@ export interface WebEngageEvents {
     'Mobile Number': string;
     Pincode: string;
     Servicable: boolean;
-  };
-  [WebEngageEventName.PHARMACY_CATEGORY_SECTION_PRODUCT_CLICK]: {
-    'Section Name': string;
-    ProductId: string;
-    ProductName: string;
   };
   [WebEngageEventName.PHARMACY_BANNER_CLICK]: {
     BannerPosition: number;
@@ -1370,7 +1364,7 @@ export interface WebEngageEvents {
     source: 'deeplink' | 'app home';
   };
   [WebEngageEventName.PRODUCT_PAGE_VIEWED]: {
-    source: 'deeplink' | 'widget' | 'search';
+    source: ProductPageViewedSource;
     ProductId: string;
     ProductName: string;
     'Stock availability': YesOrNo;

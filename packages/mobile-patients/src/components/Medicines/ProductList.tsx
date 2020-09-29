@@ -7,9 +7,9 @@ import { MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   addPharmaItemToCart,
   formatToCartItem,
-  postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
+  ProductPageViewedSource,
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
@@ -24,16 +24,14 @@ export interface Props extends Omit<ListProps, 'renderItem'> {
   navigation: NavigationScreenProp<NavigationRoute<object>, object>;
   Component: React.FC<ProductCardProps>;
   addToCartSource: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Source'];
-  pharmacyCategorySectionProductClickSectionName?: WebEngageEvents[WebEngageEventName.PHARMACY_CATEGORY_SECTION_PRODUCT_CLICK]['Section Name'];
-  pharmacyProductClickedSource?: WebEngageEvents[WebEngageEventName.PHARMACY_PRODUCT_CLICKED]['Source'];
-  pharmacyProductClickedSectionName?: WebEngageEvents[WebEngageEventName.PHARMACY_PRODUCT_CLICKED]['Section Name'];
+  movedFrom: ProductPageViewedSource;
+  sectionName?: string;
 }
 
 export const ProductList: React.FC<Props> = ({
   addToCartSource,
-  pharmacyCategorySectionProductClickSectionName,
-  pharmacyProductClickedSource,
-  pharmacyProductClickedSectionName,
+  sectionName,
+  movedFrom,
   navigation,
   Component,
   data,
@@ -46,33 +44,8 @@ export const ProductList: React.FC<Props> = ({
   const { getCartItemQty, addCartItem, updateCartItem, removeCartItem } = useShoppingCart();
   const pharmacyPincode = pharmacyLocation?.pincode || locationDetails?.pincode;
 
-  const onPress = (sku: string, name: string, categoryId: string) => {
-    if (pharmacyCategorySectionProductClickSectionName) {
-      const atr1: WebEngageEvents[WebEngageEventName.PHARMACY_CATEGORY_SECTION_PRODUCT_CLICK] = {
-        'Section Name': pharmacyCategorySectionProductClickSectionName,
-        ProductId: sku,
-        ProductName: name,
-      };
-      postWebEngageEvent(WebEngageEventName.PHARMACY_CATEGORY_SECTION_PRODUCT_CLICK, atr1);
-    }
-    if (pharmacyProductClickedSource && pharmacyProductClickedSectionName) {
-      const atr2: WebEngageEvents[WebEngageEventName.PHARMACY_PRODUCT_CLICKED] = {
-        'product name': name,
-        'product id': sku,
-        'category ID': categoryId,
-        Brand: '',
-        'Brand ID': '',
-        'category name': '',
-        Source: pharmacyProductClickedSource,
-        'Section Name': pharmacyProductClickedSectionName,
-      };
-      postWebEngageEvent(WebEngageEventName.PHARMACY_PRODUCT_CLICKED, atr2);
-    }
-    navigation.navigate(AppRoutes.MedicineDetailsScene, {
-      sku,
-      movedFrom: 'widget',
-      sectionName: pharmacyProductClickedSectionName,
-    });
+  const onPress = (sku: string) => {
+    navigation.navigate(AppRoutes.MedicineDetailsScene, { sku, movedFrom, sectionName });
   };
 
   const onPressNotify = (name: string) => {
@@ -110,7 +83,7 @@ export const ProductList: React.FC<Props> = ({
     const props: ProductCardProps = {
       ...item,
       quantity: qty,
-      onPress: () => onPress(item.sku, item.name, item.category_id!),
+      onPress: () => onPress(item.sku),
       onPressAddToCart: () => onPressAddToCart(item),
       onPressAddQty: onPressAddQty,
       onPressSubtractQty: onPressSubtractQty,

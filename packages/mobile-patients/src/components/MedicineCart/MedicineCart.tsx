@@ -65,7 +65,6 @@ import {
   PharmacyCartViewedEvent,
   PricemismatchEvent,
   postTatResponseFailureEvent,
-  postwebEngageProductClickedEvent,
   applyCouponClickedEvent,
 } from '@aph/mobile-patients/src/components/MedicineCart/Events';
 import {
@@ -75,6 +74,7 @@ import {
   postPharmacyAddNewAddressCompleted,
 } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
+import { ProductPageViewedSource } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 export interface MedicineCartProps extends NavigationScreenProps {}
 
@@ -612,9 +612,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         onPressProduct={(item) => {
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: item.id,
-            title: item.name,
+            movedFrom: ProductPageViewedSource.CART,
           });
-          postwebEngageProductClickedEvent(item);
         }}
       />
     );
