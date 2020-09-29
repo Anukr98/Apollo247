@@ -93,6 +93,7 @@ const useStyles = makeStyles((theme) => ({
     pointerEvents: 'auto',
     boxShadow: '0 0 5px rgba(0, 0, 0, 0.3)',
     transition: 'all 0.3s linear',
+    color: '#000',
     '&:hover': {
       backgroundColor: '#fff',
       boxShadow: '0 0 10px rgba(0, 0, 0, 0.3)',

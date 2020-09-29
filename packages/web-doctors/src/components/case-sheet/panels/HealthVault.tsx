@@ -21,9 +21,7 @@ import { makeStyles, ThemeProvider } from '@material-ui/styles';
 import { format } from 'date-fns';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { GetCaseSheet_getCaseSheet_pastAppointments } from 'graphql/types/GetCaseSheet';
-import ReactPanZoom from 'react-image-pan-zoom-rotate';
 import GallerySlider from 'components/GallerySlider';
-import moment from 'moment';
 import { GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_appointment_appointmentDocuments as appointmentDocumentType } from 'graphql/types/GetJuniorDoctorCaseSheet';
 
 const useStyles = makeStyles(() => ({
@@ -51,71 +49,6 @@ const useStyles = makeStyles(() => ({
       color: 'rgba(2,71,91,0.6)',
       marginTop: 6,
     },
-  },
-  modalWindowWrap: {
-    display: 'table',
-    height: '100%',
-    width: '100%',
-    outline: 'none',
-    '&:focus': {
-      outline: 'none',
-    },
-  },
-  modalWindow: {
-    backgroundColor: theme.palette.common.black,
-    maxWidth: 1150,
-    margin: 'auto',
-    borderRadius: 10,
-    boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.2)',
-    outline: 'none',
-    '&:focus': {
-      outline: 'none',
-    },
-  },
-  tableContent: {
-    display: 'table-cell',
-    verticalAlign: 'middle',
-    width: '100%',
-    '&:focus': {
-      outline: 'none',
-    },
-  },
-  modalContent: {
-    textAlign: 'center',
-    maxHeight: 'calc(100vh - 212px)',
-    overflow: 'hidden',
-    position: 'relative',
-    '& img': {
-      maxWidth: '100%',
-      width: 'auto',
-      maxHeight: 'calc(100vh - 212px)',
-    },
-  },
-  modalHeader: {
-    minHeight: 56,
-    textAlign: 'center',
-    fontSize: 13,
-    fontWeight: 600,
-    letterSpacing: 0.5,
-    color: theme.palette.common.white,
-    padding: '16px 50px',
-    textTransform: 'uppercase',
-    position: 'relative',
-    wordBreak: 'break-word',
-  },
-  modalClose: {
-    position: 'absolute',
-    right: 16,
-    top: 16,
-    width: 24,
-    height: 24,
-    cursor: 'pointer',
-  },
-  modalFooter: {
-    height: 56,
-    textAlign: 'center',
-    padding: 16,
-    textTransform: 'uppercase',
   },
   bigAvatar: {
     width: '60px',
