@@ -11,11 +11,15 @@ import { MedicineInformation } from 'components/Medicine/MedicineInformation';
 import { useParams } from 'hooks/routerHooks';
 import axios from 'axios';
 import { Alerts } from 'components/Alerts/Alerts';
-import { BottomLinks } from 'components/BottomLinks';
+import { MedicineProductDetails, PharmaOverview } from '../../helpers/MedicineApiCalls';
 import { ManageProfile } from 'components/ManageProfile';
-import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
 import { MedicinesCartContext, useShoppingCart } from 'components/MedicinesCartProvider';
 import { NavigationBottom } from 'components/NavigationBottom';
+import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
+import { gtmTracking } from '../../gtmTracking';
+import { SchemaMarkup } from 'SchemaMarkup';
+import { BottomLinks } from 'components/BottomLinks';
+import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import { clientRoutes } from 'helpers/clientRoutes';
@@ -31,11 +35,6 @@ import { MetaTagsComp } from 'MetaTagsComp';
 import moment from 'moment';
 import { useHistory } from 'react-router';
 import { Link } from 'react-router-dom';
-import { SchemaMarkup } from 'SchemaMarkup';
-
-import { gtmTracking } from '../../gtmTracking';
-import { MedicineProductDetails, PharmaOverview } from '../../helpers/MedicineApiCalls';
-import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
 import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
 import { HotSellers } from 'components/Medicine/Cards/HotSellers';
 
@@ -648,6 +647,10 @@ const MedicineDetails: React.FC = (props) => {
             }
           )
           .then(({ data }) => {
+            if (data.productdp[0] && data.productdp[0].url_key === null) {
+              window.location.href = clientRoutes.medicines();
+              return;
+            }
             setMedicineDetails(data.productdp[0]);
             /**schema markup  start*/
             const {
@@ -852,6 +855,10 @@ const MedicineDetails: React.FC = (props) => {
   const history = useHistory();
 
   useEffect(() => {
+    if (params.sku === 'null') {
+      window.location.href = clientRoutes.medicines();
+      return;
+    }
     if (params.sku.match('[A-Z]{3}[0-9]{4}')) {
       setIsSkuVersion(true);
     }
@@ -859,7 +866,7 @@ const MedicineDetails: React.FC = (props) => {
   }, [params.sku]);
 
   useEffect(() => {
-    if (params && params.searchText) {
+    if (params && params.searchText && params.searchText !== 'null') {
       window.history.replaceState(null, '', clientRoutes.medicineDetails(params.sku));
     }
   }, []);
@@ -922,6 +929,7 @@ const MedicineDetails: React.FC = (props) => {
                 .join('<')
                 .split('&gt;')
                 .join('>')
+                .replace(/&amp;bull;/g, '-')
                 .replace(/(<([^>]+)>)/gi, '')
                 .replace(/&amp;amp;/g, '&')
                 .replace(/&amp;nbsp;/g, ' ')
@@ -958,6 +966,7 @@ const MedicineDetails: React.FC = (props) => {
                 .join('>')
                 .replace(/(<([^>]+)>)/gi, '')
                 .replace(/&amp;amp;/g, '&')
+                .replace(/&amp;bull;/g, '-')
                 .replace(/&amp;nbsp;/g, ' ')
                 .replace(/&amp;/g, '&')
                 .replace(/\.t/g, '.')}; \n
@@ -975,8 +984,10 @@ const MedicineDetails: React.FC = (props) => {
                 .replace(/&amp;amp;/g, '&')
                 .replace(/&amp;nbsp;/g, ' ')
                 .replace(/&amp;/g, '&')
+                .replace(/&bull;/g, '-')
                 .replace(/&lt;/g, '')
                 .replace(/&gt/g, '')
+                .replace(/bull;/g, '-')
                 .replace(/br \//g, '')
                 .replace(/&#039;/g, '')}`;
             }

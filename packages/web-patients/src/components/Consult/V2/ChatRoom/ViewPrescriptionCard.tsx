@@ -379,19 +379,11 @@ export const ViewPrescriptionCard: React.FC<ViewPrescriptionCardProps> = (props)
               )}
 
               <div>
-                <button
-                  disabled={appointmentDetails.appointmentState === APPOINTMENT_STATE.RESCHEDULE}
-                  className={classes.downloadBtn}
-                  onClick={() => setIsModalOpen(true)}
-                >
+                <button className={classes.downloadBtn} onClick={() => setIsModalOpen(true)}>
                   CHANGE SLOT
                 </button>
 
-                <button
-                  disabled={appointmentDetails.appointmentState === APPOINTMENT_STATE.RESCHEDULE}
-                  className={classes.viewBtn}
-                  onClick={() => handleAcceptReschedule()}
-                >
+                <button className={classes.viewBtn} onClick={() => handleAcceptReschedule()}>
                   {apiLoading ? (
                     <CircularProgress size={22} color="secondary" />
                   ) : (

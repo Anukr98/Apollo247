@@ -13,6 +13,7 @@ import {
   postAppsFlyerEvent,
   postFirebaseEvent,
   postWebEngageEvent,
+  overlyPermissionAndroid,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
@@ -37,7 +38,6 @@ import {
   TouchableOpacity,
   View,
   Clipboard,
-  NativeModules,
 } from 'react-native';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';
@@ -54,7 +54,6 @@ import { Snackbar } from 'react-native-paper';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
-const { RNAppSignatureHelper } = NativeModules;
 
 export interface ConsultPaymentStatusProps extends NavigationScreenProps {}
 
@@ -94,7 +93,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     });
 
   useEffect(() => {
-    overlyPermissionAndroid();
+    overlyPermissionAndroid(currentPatient.firstName, doctorName, showAphAlert, hideAphAlert, true);
   }, []);
 
   useEffect(() => {
@@ -498,30 +497,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       return 'TRY AGAIN';
     } else {
       return 'GO TO HOME';
-    }
-  };
-
-  const overlyPermissionAndroid = () => {
-    if (Platform.OS === 'android') {
-      RNAppSignatureHelper.isRequestOverlayPermissionGranted((status: any) => {
-        if (status) {
-          showAphAlert!({
-            title: `Hi ${currentPatient.firstName} :)`,
-            description: Payment.askPermission1 + doctorName + Payment.askPermission2,
-            ctaContainerStyle: { justifyContent: 'flex-end' },
-            CTAs: [
-              {
-                text: 'OK, GOT IT',
-                type: 'orange-link',
-                onPress: () => {
-                  hideAphAlert!();
-                  RNAppSignatureHelper.requestOverlayPermission();
-                },
-              },
-            ],
-          });
-        }
-      });
     }
   };
 

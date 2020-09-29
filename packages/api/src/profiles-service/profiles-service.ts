@@ -227,6 +227,7 @@ import {
         doctorsDb,
         consultsDb,
         currentPatient,
+        headers: headers
       };
       return context;
     },

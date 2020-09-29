@@ -30,6 +30,7 @@ import React, { useEffect, useRef } from 'react';
 import { useApolloClient, useMutation } from 'react-apollo-hooks';
 import { gtmTracking } from '../../gtmTracking';
 import axios, { AxiosError } from 'axios';
+import { pharmaAvailabilityApiTracking, pharmaTatApiTracking } from 'webEngageTracking';
 
 export const formatAddress = (address: Address) => {
   const addressFormat = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');
@@ -403,6 +404,42 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
           setDeliveryTime(res.data.response.tat);
           props.checkForPriceUpdate(res.data.response);
           changeCartTatStatus && changeCartTatStatus(true);
+          /** Webengage Tracking */
+          const {
+            items,
+            lat,
+            lng,
+            ordertime,
+            pincode,
+            storeCode,
+            storeType,
+            tat,
+            tatU,
+          } = res.data.response;
+          const { exist, mrp, qty } = items[0];
+          const { sku, quantity, price, mou } = cartItems[0];
+          pharmaTatApiTracking({
+            source: 'Cart',
+            inputSku: sku,
+            inputQty: quantity,
+            inputLat: paramObject.lat,
+            inputLng: paramObject.lng,
+            inputPincode: paramObject.postalcode,
+            inputMrp: price,
+            itemsInCart: cartItems.length,
+            resExist: exist,
+            resMrp: mrp * parseInt(mou),
+            resQty: qty,
+            resLat: lat,
+            resLng: lng,
+            resOrderTime: ordertime,
+            resPincode: pincode,
+            resStorecode: storeCode,
+            resStoreType: storeType,
+            resTat: tat,
+            resTatU: tatU,
+          });
+          /** Webengage Tracking */
         }
       })
       .catch((e) => {
@@ -423,6 +460,20 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
             setDeliveryLoading(false);
             setSelectingAddress(true);
             if (res.data.response.length > 0) {
+              /** Webengage Tracking */
+              const { exist, mrp, qty } = res.data.response[0];
+              const { sku, price, mou } = cartItems[0];
+              pharmaAvailabilityApiTracking({
+                source: 'Cart',
+                inputSku: sku,
+                inputPincode: zipCode,
+                inputMrp: price,
+                itemsInCart: cartItems.length,
+                resExist: exist,
+                resMrp: mrp * parseInt(mou),
+                resQty: qty,
+              });
+              /** Webengage Tracking */
               const tatResult = res.data.response;
               const nonDeliverySKUArr = tatResult
                 .filter((item: any) => !item.exist)

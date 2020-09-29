@@ -249,7 +249,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   let slotAvailableNext = '',
     consultNowSlotTime = '';
 
-  const doctorName = doctorDetails && doctorDetails.fullName ? doctorDetails.fullName : '';
+  const doctorName = doctorDetails && doctorDetails.displayName ? doctorDetails.displayName : '';
 
   const onlineConsultationFees =
     doctorDetails && doctorDetails.onlineConsultationFees
@@ -589,7 +589,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
       <Scrollbars autoHide={true} autoHeight autoHeightMax={isSmallScreen ? '50vh' : '65vh'}>
         <div className={classes.customScrollBar}>
           <div className={classes.consultGroup}>
-            <p>{`Dr. ${doctorName} is ${availabilityMarkup()}! Would you like to
+            <p>{`${doctorName} is ${availabilityMarkup()}! Would you like to
                 consult now or schedule for later?`}</p>
             <div className={classes.actions}>
               <AphButton

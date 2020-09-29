@@ -74,6 +74,7 @@ import {
   postWebEngageEvent,
   UnInstallAppsFlyer,
   setWebEngageScreenNames,
+  overlyPermissionAndroid,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   PatientInfo,
@@ -570,12 +571,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     },
     {
       id: 5,
-      title: 'Understand Symptoms',
+      title: 'Track Symptoms',
       image: <Symptomtracker style={styles.menuOptionIconStyle} />,
       onPress: () => {
         postHomeFireBaseEvent(FirebaseEventName.TRACK_SYMPTOMS, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.TRACK_SYMPTOMS);
-        props.navigation.navigate(AppRoutes.SymptomChecker, { MoveDoctor: 'MoveDoctor' });
+        props.navigation.navigate(AppRoutes.SymptomTracker);
       },
     },
     {
@@ -780,6 +781,18 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             setCurrentAppointments(
               (g(data, 'data', 'getPatientFutureAppointmentCount', 'consultsCount') || 0).toString()
             );
+            const appointmentsCount = (
+              g(data, 'data', 'getPatientFutureAppointmentCount', 'consultsCount') || 0
+            ).toString();
+            appointmentsCount !== '0'
+              ? overlyPermissionAndroid(
+                  currentPatient!.firstName!,
+                  'the doctor',
+                  showAphAlert,
+                  hideAphAlert,
+                  true
+                )
+              : null;
             setAppointmentLoading(false);
           })
           .catch((e) => {

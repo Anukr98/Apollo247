@@ -815,15 +815,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }
       getPastAppoinmentCount(client, doctorId, patientId, channel).then((data: any) => {
         const yesCount = g(data, 'data', 'data', 'getPastAppointmentsCount', 'yesCount');
-        const noCount = g(data, 'data', 'data', 'getPastAppointmentsCount', 'noCount');
         if (yesCount && yesCount > 0) {
           setShowConnectAlertPopup(false);
         } else {
-          if (noCount && noCount > 0) {
-            setShowConnectAlertPopup(false);
-          } else {
-            setShowConnectAlertPopup(true);
-          }
+          setShowConnectAlertPopup(true);
         }
       });
     } catch (error) {
@@ -2466,7 +2461,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const [showFeedback, setShowFeedback] = useState(false);
-  const { showAphAlert, audioTrack, setPrevVolume, maxVolume } = useUIElements();
+  const { showAphAlert, audioTrack, setPrevVolume, maxVolume, hideAphAlert } = useUIElements();
   const pubNubMessages = (message: Pubnub.MessageEvent) => {
     console.log('pubNubMessages', message.message.sentBy);
     if (message.message.isTyping) {
