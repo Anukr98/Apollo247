@@ -1868,7 +1868,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     otrnError: (error: string) => {
       openTokErrorWebEngageEvents(
         WebEngageEventName.PATIENT_SESSION_OTRNERROR,
-        JSON.stringify(event)
+        JSON.stringify(error)
       );
       AsyncStorage.getItem('callDisconnected').then((data) => {
         if (!JSON.parse(data || 'false')) {
