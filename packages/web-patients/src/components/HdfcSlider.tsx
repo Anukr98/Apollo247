@@ -29,34 +29,49 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 10,
       height: 172,
       [theme.breakpoints.down('sm')]: {
-        height: 155,
+        height: 125,
         backgroundSize: 'contain',
-        backgroundPosition: 'center',
         boxShadow: 'none',
+        backgroundColor: 'transparent !important',
+      },
+      [theme.breakpoints.down('xs')]: {
+        height: 155,
       },
     },
     slide1: {
       background: `#fff url(${require('images/hdfc/banners/slide1.png')}) no-repeat 0 0`,
       [theme.breakpoints.down('sm')]: {
-        background: `url(${require('images/hdfc/banners/mweb_slide1.png')}) no-repeat 0 0`,
+        backgroundSize: 'contain',
+      },
+      [theme.breakpoints.down('xs')]: {
+        background: `transparent url(${require('images/hdfc/banners/mweb_slide1.png')}) no-repeat center center`,
       },
     },
     slide2: {
       background: `#fff url(${require('images/hdfc/banners/slide2.png')}) no-repeat 0 0`,
       [theme.breakpoints.down('sm')]: {
-        background: `url(${require('images/hdfc/banners/mweb_slide2.png')}) no-repeat 0 0`,
+        backgroundSize: 'contain',
+      },
+      [theme.breakpoints.down('xs')]: {
+        background: `url(${require('images/hdfc/banners/mweb_slide2.png')}) no-repeat  center center`,
       },
     },
     slide3: {
       background: `#fff url(${require('images/hdfc/banners/slide3.png')}) no-repeat 0 0`,
       [theme.breakpoints.down('sm')]: {
-        background: `url(${require('images/hdfc/banners/mweb_slide3.png')}) no-repeat 0 0`,
+        backgroundSize: 'contain',
+      },
+      [theme.breakpoints.down('xs')]: {
+        background: `url(${require('images/hdfc/banners/mweb_slide3.png')}) no-repeat  center center`,
       },
     },
     slide4: {
       background: `#fff url(${require('images/hdfc/banners/slide4.png')}) no-repeat 0 0`,
       [theme.breakpoints.down('sm')]: {
-        background: `url(${require('images/hdfc/banners/mweb_slide4.png')}) no-repeat 0 0`,
+        backgroundSize: 'contain',
+      },
+      [theme.breakpoints.down('xs')]: {
+        background: `url(${require('images/hdfc/banners/mweb_slide4.png')}) no-repeat  center center`,
       },
     },
     connectDoctorContent: {
@@ -118,13 +133,17 @@ const useStyles = makeStyles((theme: Theme) => {
     slickCase: {
       padding: 20,
       [theme.breakpoints.down('sm')]: {
-        // margin: 10,
+        padding: 10,
+      },
+      [theme.breakpoints.down('xs')]: {
+        display: 'flex',
+        alignItems: 'center',
+        justifycontent: 'center',
       },
     },
     slider: {
       padding: '20px 0',
       '& >.slick-list': {
-        // overflow: 'visible',
         '& .slick-track': {
           display: 'flex',
         },
@@ -136,6 +155,10 @@ const useStyles = makeStyles((theme: Theme) => {
         position: 'static !important',
         margin: '0 0 0 40px',
         textAlign: 'left',
+        [theme.breakpoints.down('sm')]: {
+          margin: 0,
+          textAlign: 'center',
+        },
         '& li': {
           width: 'auto',
           height: 'auto',
@@ -169,6 +192,13 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'flex !important',
         alignItems: 'center',
         justifyContent: 'center',
+        [theme.breakpoints.down('sm')]: {
+          width: 40,
+          height: 40,
+        },
+        [theme.breakpoints.down('xs')]: {
+          display: 'none !important',
+        },
       },
       '& .slick-prev': {
         left: 0,
@@ -214,7 +244,7 @@ export const HdfcSlider: React.FC<HdfcSliderProps> = (props) => {
     slidesToShow: 1,
     slidesToScroll: 1,
     autoPlaySpeed: 5000,
-    autoplay: true,
+    autoplay: false,
   };
 
   const handleDoctorCall = () => {
