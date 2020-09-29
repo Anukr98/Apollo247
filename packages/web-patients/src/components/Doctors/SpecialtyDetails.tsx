@@ -569,7 +569,7 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
           });
       });
 
-      /*gtmTracking({
+      gtmTracking({
         category: 'Consultations',
         action: 'Specialty Page',
         label: 'Specialty Details Page Viewed',
@@ -580,14 +580,14 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
             items: ecommItems,
           },
         },
-      });*/
+      });
       window.dataLayer.push({
         event: 'pageviewEvent',
         pagePath: window.location.href,
         pageName: `${readableParam(specialtyName)} Listing Page`,
         pageLOB: 'Consultation',
         pageType: 'Index',
-        productlist: JSON.stringify(ecommItems),
+        productlist: JSON.stringify(doctorData),
       });
     }
   }, [doctorData]);
