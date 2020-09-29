@@ -278,7 +278,7 @@ const useStyles = makeStyles((theme: Theme) => {
     followUpText: {
       backgroundColor: '#DBEBEE',
       borderRadius: 5,
-      padding: '10px 12px',
+      padding: 9,
       fontSize: 12,
       fontFamily: 'IBM Plex Sans',
       lineHeight: '18px',
@@ -315,10 +315,10 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
     doctorAvailableOnlineSlot.length > 0 && doctorAvailablePhysicalSlots.length > 0
       ? ConsultMode.BOTH
       : doctorAvailableOnlineSlot.length > 0
-        ? ConsultMode.ONLINE
-        : doctorAvailablePhysicalSlots.length > 0
-          ? ConsultMode.PHYSICAL
-          : null;
+      ? ConsultMode.ONLINE
+      : doctorAvailablePhysicalSlots.length > 0
+      ? ConsultMode.PHYSICAL
+      : null;
 
   const saveSearchMutation = useMutation<SaveSearch, SaveSearchVariables>(SAVE_PATIENT_SEARCH);
 
@@ -344,8 +344,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
   return (
     <div className={classes.root}>
       <div className={classes.followUpText}>
-        {doctorDetails.fullName} is available for a minimum of {doctorDetails.chatDays}
-        days for free follow-up text post Consult. However, doctor can decide to increase the
+        {doctorDetails.fullName} is available for a minimum of {doctorDetails.chatDays} days for free follow-up text post Consult. However, doctor can decide to increase the
         follow-up text days as per case basis.
       </div>
       <div className={classes.headerGroup}>
@@ -365,7 +364,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                 <span
                   className={`${classes.availability} ${
                     differenceInOnlineMinutes < 15 ? classes.availableNow : null
-                    }`}
+                  }`}
                 >
                   {availabilityMarkup('online')}
                 </span>
@@ -387,7 +386,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                 <span
                   className={`${classes.availability} ${
                     differenceInPhysicalMinutes < 15 ? classes.availableNow : null
-                    }`}
+                  }`}
                 >
                   {availabilityMarkup('physical')}
                 </span>
@@ -418,8 +417,8 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                       ? classes.availableSoon
                       : ''
                     : differenceInOnlineMinutes < 15
-                      ? classes.availableSoon
-                      : ''
+                    ? classes.availableSoon
+                    : ''
                 }
               >
                 {availabilityMarkup(physicalDirection ? 'physical' : 'online')}
@@ -549,7 +548,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
               }}
               // fullWidth
               color="primary"
-            // className={classes.bottomActions}
+              // className={classes.bottomActions}
             >
               {popupLoading ? <CircularProgress size={22} color="secondary" /> : 'BOOK APPOINTMENT'}
             </AphButton>

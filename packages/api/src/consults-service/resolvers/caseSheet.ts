@@ -54,6 +54,7 @@ import { NotificationBinRepository } from 'notifications-service/repositories/no
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
 import { getCache, setCache, delCache } from 'consults-service/database/connectRedis';
+import _ from 'lodash';
 
 export type DiagnosisJson = {
   name: string;
@@ -859,19 +860,19 @@ const modifyCaseSheet: Resolver<
       }),
   ];
 
-  delete getCaseSheetData.status;
+  const getCaseSheetDataWithoutStatus = _.omit(getCaseSheetData, 'status');
   //medicalHistory upsert ends
-  const caseSheetAttrs: Omit<Partial<CaseSheet>, 'id'> = getCaseSheetData;  
+  const caseSheetAttrs: Omit<Partial<CaseSheet>, 'id'> = getCaseSheetDataWithoutStatus;  
   promises.push(
     caseSheetRepo
-      .updateCaseSheet(inputArguments.id, caseSheetAttrs, getCaseSheetData)
+      .updateCaseSheetWithPartialData(inputArguments.id, caseSheetAttrs, getCaseSheetDataWithoutStatus)
       .catch((error: any) => {
         throw new AphError(AphErrorMessages.UPDATE_CASESHEET_ERROR, undefined, { error });
       })
   );
   promises.push(
     appointmentRepo
-      .caseSheetAppointmentHistoryUpdate(getCaseSheetData.appointment, caseSheetAttrs)
+      .caseSheetAppointmentHistoryUpdate(getCaseSheetDataWithoutStatus.appointment, caseSheetAttrs)
       .catch((error: any) => {
         throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_HISTORY_ERROR, undefined, { error });
       })
@@ -1170,6 +1171,9 @@ const submitJDCaseSheet: Resolver<
       casesheetAttrsToUpdate,
       juniorDoctorcaseSheet
     );
+
+    //update all existing JDcassheets to completed
+    await caseSheetRepo.updateAllJDCaseSheet(juniorDoctorcaseSheet.appointment.id);
   } else {
     const casesheetAttrsToAdd = {
       createdDate: createdDate,

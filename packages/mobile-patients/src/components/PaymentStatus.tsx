@@ -342,7 +342,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
         orderAutoId,
       });
     } else if (status == failure || status == aborted) {
-      navigate(AppRoutes.YourCart);
+      navigate(AppRoutes.MedicineCart);
     } else {
       props.navigation.dispatch(
         StackActions.reset({

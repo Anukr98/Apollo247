@@ -14,6 +14,7 @@ import { getCache, setCache } from 'profiles-service/database/connectRedis';
 export const getPatinetAppointmentsTypeDefs = gql`
   type PatinetAppointments {
     id: ID!
+    hideHealthRecordNudge: Boolean
     patientId: ID!
     doctorId: ID!
     appointmentDateTime: DateTime!

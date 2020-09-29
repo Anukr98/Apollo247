@@ -6,6 +6,7 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import Slider from 'react-slick';
 import { DealsOfTheDaySection } from '../../../helpers/MedicineApiCalls';
 import { LazyIntersection } from '../../lib/LazyIntersection';
+import { getSlidesToScroll } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -79,13 +80,25 @@ interface DayDealsProps {
 
 export const DayDeals: React.FC<DayDealsProps> = (props) => {
   const classes = useStyles({});
+  const [currIndex, setCurrIndex] = useState(0);
   const sliderSettings = {
     infinite: false,
     speed: 500,
     slidesToShow: 3,
-    slidesToScroll: 2,
-    nextArrow: <img src={require('images/ic_arrow_right.svg')} alt="" />,
-    prevArrow: <img src={require('images/ic_arrow_left.svg')} alt="" />,
+    slidesToScroll: getSlidesToScroll(props.data.length),
+    nextArrow: (
+      <div>
+        {currIndex !== props.data.length - 3 && (
+          <img src={require('images/ic_arrow_right.svg')} alt="" />
+        )}
+      </div>
+    ),
+    prevArrow: (
+      <div>{currIndex !== 0 && <img src={require('images/ic_arrow_left.svg')} alt="" />}</div>
+    ),
+    afterChange: (currentIndex: number) => {
+      setCurrIndex(currentIndex);
+    },
     responsive: [
       {
         breakpoint: 992,

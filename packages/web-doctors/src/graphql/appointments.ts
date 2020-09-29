@@ -37,3 +37,26 @@ export const SUBMIT_JD_CASESHEET = gql`
     submitJDCaseSheet(appointmentId: $appointmentId)
   }
 `;
+
+export const GET_PAST_CONSULT_QUEUE = gql`
+  query GetPastConsultQueue($doctorId: String!, $limit: Int, $offset: Int) {
+    getPastConsultQueue(doctorId: $doctorId, limit: $limit, offset: $offset) {
+      consultQueue {
+        id
+        isActive
+        patient {
+          firstName
+          lastName
+          uhid
+          photoUrl
+          id
+        }
+        appointment {
+          id
+          appointmentType
+          appointmentDateTime
+        }
+      }
+    }
+  }
+`;

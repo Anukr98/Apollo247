@@ -135,7 +135,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 12
-        versionName "1.0501"
+        versionName "1.0502"
         ndk {
             abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
         }
@@ -210,14 +210,12 @@ dependencies {
     implementation project(':react-native-pdf')
     implementation project(':bugsnag-react-native')
     implementation project(':react-native-image-crop-picker')
-    implementation project(':react-native-image-picker')
     implementation project(':react-native-firebase')
     implementation project(':@react-native-community_async-storage')
     implementation fileTree(dir: "libs", include: ["*.jar", "*.aar"])
     implementation 'me.leolin:ShortcutBadger:1.1.21@aar' // <-- Add this line if you wish to use badge on Android
     implementation project(':react-native-document-picker')
     implementation project(':react-native-splash-screen')
-    implementation project(':react-native-vector-icons')
     implementation project(':react-native-gesture-handler')
     implementation project(':@react-native-community_geolocation')
     implementation project(':@react-native-community_netinfo')

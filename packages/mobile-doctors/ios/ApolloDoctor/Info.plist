@@ -74,7 +74,6 @@
 	<string>${PRODUCT_NAME} need access to the photos for image upload.</string>
 	<key>UIAppFonts</key>
 	<array>
-		<string>MaterialIcons-Regular.ttf</string>
 		<string>IBMPlexSans-ThinItalic.ttf</string>
 		<string>IBMPlexSans-Thin.ttf</string>
 		<string>IBMPlexSans-SemiBoldItalic.ttf</string>
@@ -89,21 +88,6 @@
 		<string>IBMPlexSans-ExtraLight.ttf</string>
 		<string>IBMPlexSans-Bold.ttf</string>
 		<string>IBMPlexSans-BoldItalic.ttf</string>
-		<string>AntDesign.ttf</string>
-		<string>Entypo.ttf</string>
-		<string>EvilIcons.ttf</string>
-		<string>Feather.ttf</string>
-		<string>FontAwesome.ttf</string>
-		<string>FontAwesome5_Brands.ttf</string>
-		<string>FontAwesome5_Regular.ttf</string>
-		<string>FontAwesome5_Solid.ttf</string>
-		<string>Foundation.ttf</string>
-		<string>Ionicons.ttf</string>
-		<string>MaterialCommunityIcons.ttf</string>
-		<string>MaterialIcons.ttf</string>
-		<string>Octicons.ttf</string>
-		<string>SimpleLineIcons.ttf</string>
-		<string>Zocial.ttf</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>
@@ -123,6 +107,8 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>WEGEnvironment</key>
+	<string>IN</string>
 	<key>WEGLicenseCode</key>
 	<!-- staging -->
 	<string>in~d3a49d39</string>
@@ -130,8 +116,6 @@
 	<!-- <string>in~11b5643cb</string> -->
 	<key>WEGLogLevel</key>
 	<string>VERBOSE</string>
-	<key>WEGEnvironment</key>
-	<string>IN</string>
 	<key>WEGManualIntegration</key>
 	<true/>
 </dict>
