@@ -18,7 +18,7 @@ export async function fetchUserSubscription(mobileNumber: string) {
   const url = `http://${process.env.SUBSCRIPTION_SERVICE_HOST}:${process.env.SUBSCRIPTION_SERVICE_PORT}`;
   const requestJSON = {
     query: `query{
-    GetSubscriptionsOfUserByStatus(mobile_number: ${mobileNumber},status: ["active"])
+    GetSubscriptionsOfUserByStatus(mobile_number: "${mobileNumber}",status: ["active"])
     {
       response
       {

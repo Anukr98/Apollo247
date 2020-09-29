@@ -58,7 +58,7 @@ export async function generateOtp(mobile: String) {
   const messageHash = `static:genpwdreq:06:${shaMessageHash}`;
   const requestBeforeEncryption = {
     ccotpserviceRequest: {
-      Trace_Number: '',
+      Trace_Number: refNoGenerator(),
       Transaction_DateTimeStamp: '',
       ATM_POS_IVR_ID: 'CCIVR1',
       Credit_Card_Number: linkData,
