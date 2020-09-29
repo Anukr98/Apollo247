@@ -223,6 +223,9 @@ const makeAppointmentPayment: Resolver<
       transactionId: paymentInput.paymentRefId,
       sourceTransactionIdentifier: `${paymentInput.orderId}`,
       mobileNumber: patientDetails.mobileNumber,
+      dob: patientDetails.dateOfBirth,
+      email: patientDetails.emailAddress,
+      partnerId: patientDetails.partnerId,
     });
 
     if (processingAppointment.couponCode) {

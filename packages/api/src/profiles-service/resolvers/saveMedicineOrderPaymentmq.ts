@@ -296,6 +296,9 @@ const SaveMedicineOrderPaymentMq: Resolver<
         transactionId: medicinePaymentMqInput.paymentRefId,
         sourceTransactionIdentifier: `${medicinePaymentMqInput.orderAutoId}`,
         mobileNumber: orderDetails.patient.mobileNumber,
+        email: orderDetails.patient.emailAddress,
+        dob: orderDetails.patient.dateOfBirth,
+        partnerId: orderDetails.patient.partnerId,
       });
     }
     if (
