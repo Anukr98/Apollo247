@@ -593,12 +593,13 @@ const getJuniorDoctorCaseSheet: Resolver<
 
   //get patient info
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findByIdWithRelations(appointmentData.patientId, [
-    PATIENT_REPO_RELATIONS.PATIENT_ADDRESS,
-    PATIENT_REPO_RELATIONS.FAMILY_HISTORY,
-    PATIENT_REPO_RELATIONS.LIFESTYLE,
-    PATIENT_REPO_RELATIONS.PATIENT_MEDICAL_HISTORY,
-  ]);
+  // const patientDetails = await patientRepo.findByIdWithRelations(appointmentData.patientId, [
+  //   PATIENT_REPO_RELATIONS.PATIENT_ADDRESS,
+  //   PATIENT_REPO_RELATIONS.FAMILY_HISTORY,
+  //   PATIENT_REPO_RELATIONS.LIFESTYLE,
+  //   PATIENT_REPO_RELATIONS.PATIENT_MEDICAL_HISTORY,
+  // ]);
+  const patientDetails = await patientRepo.getPatientDetailsForConsult(appointmentData.patientId);
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
   const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientDetails });
@@ -665,13 +666,13 @@ const getCaseSheet: Resolver<
 
   //get patient info
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findByIdWithRelations(appointmentData.patientId, [
-    PATIENT_REPO_RELATIONS.PATIENT_ADDRESS,
-    PATIENT_REPO_RELATIONS.FAMILY_HISTORY,
-    PATIENT_REPO_RELATIONS.LIFESTYLE,
-    PATIENT_REPO_RELATIONS.PATIENT_MEDICAL_HISTORY,
-  ]);
-
+  // const patientDetails = await patientRepo.findByIdWithRelations(appointmentData.patientId, [
+  //   PATIENT_REPO_RELATIONS.PATIENT_ADDRESS,
+  //   PATIENT_REPO_RELATIONS.FAMILY_HISTORY,
+  //   PATIENT_REPO_RELATIONS.LIFESTYLE,
+  //   PATIENT_REPO_RELATIONS.PATIENT_MEDICAL_HISTORY,
+  // ]);
+  const patientDetails = await patientRepo.getPatientDetailsForConsult(appointmentData.patientId);
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
   //check if logged in mobile number is associated with doctor
   //const secretaryRepo = doctorsDb.getCustomRepository(SecretaryRepository);
@@ -798,7 +799,9 @@ const modifyCaseSheet: Resolver<
   CaseSheet
 > = async (parent, { ModifyCaseSheetInput }, { consultsDb, doctorsDb, patientsDb }) => {
   const inputArguments = ModifyCaseSheetInput;
-
+  let patientFamilyHistory: any = [],
+    patientLifeStyle: any = [],
+    patientMedicalHistory: any = [];
   //validate casesheetid
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
   const getCaseSheetDetails = await caseSheetRepo.getCaseSheetById(inputArguments.id);
@@ -814,12 +817,13 @@ const modifyCaseSheet: Resolver<
   }
 
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientData = await patientRepo.findByIdWithRelations(getCaseSheetData.patientId, [
-    // PATIENT_REPO_RELATIONS.PATIENT_ADDRESS,
-    PATIENT_REPO_RELATIONS.FAMILY_HISTORY,
-    PATIENT_REPO_RELATIONS.LIFESTYLE,
-    PATIENT_REPO_RELATIONS.PATIENT_MEDICAL_HISTORY,
-  ]);
+  // const patientData = await patientRepo.findByIdWithRelations(getCaseSheetData.patientId, [
+  //   // PATIENT_REPO_RELATIONS.PATIENT_ADDRESS,
+  //   PATIENT_REPO_RELATIONS.FAMILY_HISTORY,
+  //   PATIENT_REPO_RELATIONS.LIFESTYLE,
+  //   PATIENT_REPO_RELATIONS.PATIENT_MEDICAL_HISTORY,
+  // ]);
+  const patientData = await patientRepo.getPatientDetailsForConsult(getCaseSheetData.patientId);
   if (patientData == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
   const familyHistoryRepo = patientsDb.getCustomRepository(PatientFamilyHistoryRepository);
@@ -872,7 +876,19 @@ const modifyCaseSheet: Resolver<
         throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_HISTORY_ERROR, undefined, { error });
       })
   );
-  await Promise.all(promises);
+
+  await Promise.all(promises).then((res) => {
+    [patientFamilyHistory, patientLifeStyle, patientMedicalHistory] = res;
+  });
+
+  delete patientFamilyHistory.patient;
+  delete patientLifeStyle.patient;
+  delete patientMedicalHistory.patient;
+
+  patientData.familyHistory = patientFamilyHistory;
+  patientData.lifeStyle = patientLifeStyle;
+  patientData.patientMedicalHistory = patientMedicalHistory;
+  patientRepo.updatePatientDetailsConsultCache(patientData);
 
   return getCaseSheetData;
 };
@@ -1184,7 +1200,8 @@ const submitJDCaseSheet: Resolver<
 
   //post event to webengage
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findByIdWithRelations(appointmentData.patientId, []);
+//  const patientDetails = await patientRepo.findByIdWithRelations(appointmentData.patientId, []);
+  const patientDetails = await patientRepo.getPatientDetailsForConsult(appointmentData.patientId);
 
   const postBody: Partial<WebEngageInput> = {
     userId: patientDetails ? patientDetails.mobileNumber : '',
@@ -1219,9 +1236,10 @@ const updatePatientPrescriptionSentStatus: Resolver<
   if (getCaseSheetData == null) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID);
 
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientData = await patientRepo.findByIdWithRelations(getCaseSheetData.patientId, [
-    PATIENT_REPO_RELATIONS.PATIENT_MEDICAL_HISTORY,
-  ]);
+  // const patientData = await patientRepo.findByIdWithRelations(getCaseSheetData.patientId, [
+  //   PATIENT_REPO_RELATIONS.PATIENT_MEDICAL_HISTORY,
+  // ]);
+  const patientData = await patientRepo.getPatientDetailsForConsult(getCaseSheetData.patientId);
   if (patientData == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
   let caseSheetAttrs: Partial<CaseSheet> = {
@@ -1433,13 +1451,13 @@ const getSDLatestCompletedCaseSheet: Resolver<
 
   //get patient info
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findByIdWithRelations(appointmentData.patientId, [
-    PATIENT_REPO_RELATIONS.PATIENT_ADDRESS,
-    PATIENT_REPO_RELATIONS.FAMILY_HISTORY,
-    PATIENT_REPO_RELATIONS.LIFESTYLE,
-    PATIENT_REPO_RELATIONS.PATIENT_MEDICAL_HISTORY,
-  ]);
-
+  // const patientDetails = await patientRepo.findByIdWithRelations(appointmentData.patientId, [
+  //   PATIENT_REPO_RELATIONS.PATIENT_ADDRESS,
+  //   PATIENT_REPO_RELATIONS.FAMILY_HISTORY,
+  //   PATIENT_REPO_RELATIONS.LIFESTYLE,
+  //   PATIENT_REPO_RELATIONS.PATIENT_MEDICAL_HISTORY,
+  // ]);
+  const patientDetails = await patientRepo.getPatientDetailsForConsult(appointmentData.patientId);
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
   //check if logged in mobile number is associated with doctor
   const secretaryRepo = doctorsDb.getCustomRepository(SecretaryRepository);
