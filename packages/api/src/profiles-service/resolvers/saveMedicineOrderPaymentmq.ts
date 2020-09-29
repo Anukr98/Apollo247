@@ -307,7 +307,7 @@ const SaveMedicineOrderPaymentMq: Resolver<
           mobile: orderDetails.patient.mobileNumber.replace('+91', ''),
           coupon: orderDetails.coupon,
         };
-        acceptCoupon(payload);
+        await acceptCoupon(payload);
       }
     }
     await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
