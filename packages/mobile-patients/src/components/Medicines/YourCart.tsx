@@ -72,6 +72,7 @@ import {
   postPharmacyAddNewAddressCompleted,
 } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
+  ProductPageViewedSource,
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
@@ -979,20 +980,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     );
   };
 
-  const postwebEngageProductClickedEvent = ({ name, id }: ShoppingCartItem) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PRODUCT_CLICKED] = {
-      'product name': name,
-      'product id': id,
-      Brand: '',
-      'Brand ID': '',
-      'category name': '',
-      'category ID': '',
-      Source: 'List',
-      'Section Name': 'CART',
-    };
-    postWebEngageEvent(WebEngageEventName.PHARMACY_PRODUCT_CLICKED, eventAttributes);
-  };
-
   const renderItemsInCart = () => {
     // console.log('cartItems >>', cartItems);
     const cartItemsCount =
@@ -1047,11 +1034,11 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               containerStyle={medicineCardContainerStyle}
               key={medicine.id}
               onPress={() => {
-                postwebEngageProductClickedEvent(medicine);
                 CommonLogEvent(AppRoutes.YourCart, 'Navigate to medicine details scene');
                 props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
                   sku: medicine.id,
                   title: medicine.name,
+                  movedFrom: ProductPageViewedSource.CART,
                 });
               }}
               medicineName={medicine.name}

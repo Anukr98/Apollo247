@@ -111,20 +111,6 @@ export function postTatResponseFailureEvent(
   postWebEngageEvent(WebEngageEventName.TAT_API_FAILURE, eventAttributes);
 }
 
-export function postwebEngageProductClickedEvent(cartItem: ShoppingCartItem) {
-  const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PRODUCT_CLICKED] = {
-    'product name': cartItem.name,
-    'product id': cartItem.id,
-    Brand: '',
-    'Brand ID': '',
-    'category name': '',
-    'category ID': '',
-    Source: 'List',
-    'Section Name': 'CART',
-  };
-  postWebEngageEvent(WebEngageEventName.PHARMACY_PRODUCT_CLICKED, eventAttributes);
-}
-
 export function postwebEngageProductRemovedEvent(cartItem: ShoppingCartItem, id: string) {
   const eventAttributes: WebEngageEvents[WebEngageEventName.ITEMS_REMOVED_FROM_CART] = {
     'Customer ID': id,

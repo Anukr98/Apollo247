@@ -25,6 +25,13 @@ import com.facebook.soloader.SoLoader;
 import com.masteratul.exceptionhandler.NativeExceptionHandlerIfc;
 import com.masteratul.exceptionhandler.ReactNativeExceptionHandlerModule;
 
+import android.graphics.Color;
+import android.os.Bundle;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
+import com.webengage.sdk.android.WebEngage;
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
@@ -69,12 +76,28 @@ public class MainApplication extends Application implements ReactApplication {
     @Override
     public void onCreate() {
         super.onCreate();
+        try {
+            FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener( new OnSuccessListener<InstanceIdResult>() {
+                @Override
+                public void onSuccess(InstanceIdResult instanceIdResult) {
+                    String token = instanceIdResult.getToken();
+                    WebEngage.get().setRegistrationID(token);
+                }
+            });
+        } catch (Exception e) {
+            // Handle exception
+        }
+        
         SoLoader.init(this, /* native exopackage */ false);
         initializeFlipper(this); // Remove this line if you don't want Flipper enabled
 
         WebEngageConfig webEngageConfig = new WebEngageConfig.Builder()
                 .setWebEngageKey("in~d3a49d39") //staging
                 // .setWebEngageKey("in~11b5643cb") //prod
+                .setPushSmallIcon(R.drawable.ic_notification_white)
+                .setPushLargeIcon(R.drawable.ic_notification_white)
+                .setPushAccentColor(Color.parseColor("#0087BA"))
+                .setAutoGCMRegistrationFlag(false)
                 .setDebugMode(false) // only in development mode
                 .build();
         registerActivityLifecycleCallbacks(new WebEngageActivityLifeCycleCallbacks(this, webEngageConfig));

@@ -954,3 +954,17 @@ export const UPDATE_WHATSAPP_STATUS = gql`
     }
   }
 `;
+
+export const GET_ONEAPOLLO_USERTXNS = gql`
+  query getOneApolloUserTransactions {
+    getOneApolloUserTransactions {
+      earnedHC
+      transactionDate
+      grossAmount
+      netAmount
+      transactionDate
+      businessUnit
+      redeemedHC
+    }
+  }
+`;

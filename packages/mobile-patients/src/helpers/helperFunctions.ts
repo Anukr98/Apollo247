@@ -1013,13 +1013,9 @@ const webengage = new WebEngage();
 
 export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Object) => {
   try {
-    console.log('\n********* WebEngageEvent Start *********\n');
-    console.log(`WebEngageEvent ${eventName}`, { eventName, attributes });
-    console.log('\n********* WebEngageEvent End *********\n');
-    // if (getBuildEnvironment() !== 'DEV') {
-    // Don't post events in DEV environment
+    const logContent = `[WebEngage] Event: ${eventName}\n`
+    console.log(logContent, '\n',/*attributes, '\n'*/);
     webengage.track(eventName, attributes);
-    // }
   } catch (error) {
     console.log('********* Unable to post WebEngageEvent *********', { error });
   }
@@ -1312,13 +1308,9 @@ export const postAppsFlyerAddToCartEvent = (
 
 export const postFirebaseEvent = (eventName: FirebaseEventName, attributes: Object) => {
   try {
-    console.log('\n********* FirebaseEvent Start *********\n');
-    console.log(`FirebaseEvent ${eventName}`, { eventName, attributes });
-    console.log('\n********* FirebaseEvent End *********\n');
-    // if (getBuildEnvironment() !== 'DEV') {
-    // Don't post events in DEV environment
+    const logContent = `[Firebase] Event: ${eventName}\n`
+    console.log(logContent, '\n',/*attributes, '\n'*/);
     firebase.analytics().logEvent(eventName, attributes);
-    // }
   } catch (error) {
     console.log('********* Unable to post FirebaseEvent *********', { error });
   }
@@ -1416,6 +1408,35 @@ export const getMaxQtyForMedicineItem = (qty?: number | string) => {
   return qty ? Number(qty) : AppConfig.Configuration.CART_ITEM_MAX_QUANTITY;
 };
 
+export const formatToCartItem = ({
+  sku,
+  name,
+  price,
+  special_price,
+  mou,
+  is_prescription_required,
+  MaxOrderQty,
+  type_id,
+  is_in_stock,
+  thumbnail,
+  image,
+}: MedicineProduct): ShoppingCartItem => {
+  return {
+    id: sku,
+    name: name,
+    price: price,
+    specialPrice: Number(special_price) || undefined,
+    mou: mou,
+    quantity: 1,
+    prescriptionRequired: is_prescription_required == '1',
+    isMedicine: (type_id || '').toLowerCase() == 'pharma',
+    thumbnail: thumbnail || image,
+    maxOrderQty: MaxOrderQty,
+    productType: type_id,
+    isInStock: is_in_stock == 1,
+  };
+};
+
 export const addPharmaItemToCart = (
   cartItem: ShoppingCartItem,
   pincode: string,
@@ -1434,7 +1455,7 @@ export const addPharmaItemToCart = (
   const outOfStockMsg = 'Sorry, this item is out of stock in your area.';
 
   const navigate = () => {
-    navigation.navigate(AppRoutes.MedicineDetailsScene, {
+    navigation.push(AppRoutes.MedicineDetailsScene, {
       sku: cartItem.id,
       deliveryError: outOfStockMsg,
     });

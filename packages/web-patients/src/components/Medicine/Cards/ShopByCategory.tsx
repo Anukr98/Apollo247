@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { Link } from 'react-router-dom';
@@ -8,6 +8,7 @@ import { MedicinePageSection } from '../../../helpers/MedicineApiCalls';
 import _lowerCase from 'lodash/lowerCase';
 import _replace from 'lodash/replace';
 import { LazyIntersection } from '../../lib/LazyIntersection';
+import { getSlidesToScroll } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -61,13 +62,25 @@ interface ShopByCategoryProps {
 
 export const ShopByCategory: React.FC<ShopByCategoryProps> = (props) => {
   const classes = useStyles({});
+  const [currIndex, setCurrIndex] = useState(0);
   const sliderSettings = {
     infinite: false,
     speed: 500,
     slidesToShow: 6,
-    slidesToScroll: 3,
-    nextArrow: <img src={require('images/ic_arrow_right.svg')} alt="" />,
-    prevArrow: <img src={require('images/ic_arrow_left.svg')} alt="" />,
+    slidesToScroll: getSlidesToScroll(props.data.length),
+    nextArrow: (
+      <div>
+        {currIndex !== props.data.length - 6 && (
+          <img src={require('images/ic_arrow_right.svg')} alt="" />
+        )}
+      </div>
+    ),
+    prevArrow: (
+      <div>{currIndex !== 0 && <img src={require('images/ic_arrow_left.svg')} alt="" />}</div>
+    ),
+    afterChange: (currentIndex: number) => {
+      setCurrIndex(currentIndex);
+    },
     responsive: [
       {
         breakpoint: 992,

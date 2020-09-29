@@ -546,7 +546,25 @@ const deepLinkUtil = (deepLinkPattern: string) => {
   }
 };
 
+const isPrime = (num: number) => {
+  for (let i = 2; i < num; i++) if (num % i === 0) return false;
+  return num > 1;
+};
+
+const isDivisibleByTwo = (num: number) => {
+  return num % 2 === 0;
+};
+
+const isDivisibleByThree = (num: number) => {
+  return num % 3 === 0;
+};
+
+const getSlidesToScroll = (num: number) => {
+  return isPrime(num) ? 1 : isDivisibleByThree(num) ? 3 : 2;
+};
+
 export {
+  getSlidesToScroll,
   deepLinkUtil,
   HEALTH_RECORDS_NO_DATA_FOUND,
   removeGraphQLKeyword,

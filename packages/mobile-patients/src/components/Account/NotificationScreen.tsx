@@ -12,6 +12,7 @@ import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { notifcationsApi } from '../../helpers/apiCalls';
 import { AppRoutes } from '../NavigatorContainer';
 import { useAppCommonData } from '../AppCommonDataProvider';
+import { ProductPageViewedSource } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   titleStyle: {
@@ -586,6 +587,7 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
         console.log('MedicineDetail');
         props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
           sku: id,
+          movedFrom: ProductPageViewedSource.NOTIFICATION,
         });
         break;
 
