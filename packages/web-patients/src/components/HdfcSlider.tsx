@@ -195,7 +195,7 @@ export const HdfcSlider: React.FC<HdfcSliderProps> = (props) => {
         let benefits = response.data.GetAllUserSubscriptionsWithPlanBenefits.response[0].benefits;
         benefits.map((item: any) => {
           if (item.cta_action.type == 'CALL_API') {
-            if (item.available_count > 0) {
+            if (item.attribute_type.remaining > 0) {
               setExotelBenefitId(item._id);
               setCallDoctorPopup(true);
             } else {

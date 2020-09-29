@@ -898,7 +898,7 @@ export const MembershipPlanDetail: React.FC = (props) => {
     } else if (cta_action.type == 'CALL_API') {
       if (cta_action.meta.action == 'CALL_EXOTEL_API') {
         console.log('call exotel api');
-        if (item.available_count > 0) {
+        if (item.attribute_type.remaining > 0) {
           setExotelBenefitId(item._id);
           setCallDoctorPopup(true);
         } else {
