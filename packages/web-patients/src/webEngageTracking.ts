@@ -910,6 +910,19 @@ export const callReceiveClickTracking = (data: any) => {
   }
 };
 
+export const callEndedClickTracking = (data: any) => {
+  if (typeof window !== 'undefined') {
+    try {
+      window.webengage.track(
+        'Patient ended the consult (web)',
+        consultWebengageEventsCommonInfo(data)
+      );
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
 export const prescriptionReceivedTracking = (data: any) => {
   if (typeof window !== 'undefined') {
     try {

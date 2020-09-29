@@ -325,3 +325,16 @@ export const GET_PATIENT_FEEDBACK = gql`
     }
   }
 `;
+
+export const GET_ONE_APOLLO = gql`
+  query GetOneApollo($patientId: String) {
+    getOneApolloUser(patientId: $patientId) {
+      availableHC
+      name
+      earnedHC
+      tier
+      burnedCredits
+      blockedCredits
+    }
+  }
+`;

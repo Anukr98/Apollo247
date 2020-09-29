@@ -136,35 +136,38 @@ export const formatAddress = (address: savePatientAddress_savePatientAddress_pat
     .filter((item, idx, array) => array.indexOf(item) === idx)
     .join(', ');
   const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
-    return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
+  return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
 };
 
-export const formatAddressWithLandmark = (address: savePatientAddress_savePatientAddress_patientAddress) => {
-  const addrLine1 = removeConsecutiveComma([address.addressLine1, address.addressLine2].filter((v) => v).join(', '));
+export const formatAddressWithLandmark = (
+  address: savePatientAddress_savePatientAddress_patientAddress
+) => {
+  const addrLine1 = removeConsecutiveComma(
+    [address.addressLine1, address.addressLine2].filter((v) => v).join(', ')
+  );
   const landmark = [address.landmark];
   // to handle state value getting twice
-  const addrLine2 = removeConsecutiveComma([address.city, address.state]
-    .filter((v) => v)
-    .join(', ')
-    .split(',')
-    .map((v) => v.trim())
-    .filter((item, idx, array) => array.indexOf(item) === idx)
-    .join(', '));
+  const addrLine2 = removeConsecutiveComma(
+    [address.city, address.state]
+      .filter((v) => v)
+      .join(', ')
+      .split(',')
+      .map((v) => v.trim())
+      .filter((item, idx, array) => array.indexOf(item) === idx)
+      .join(', ')
+  );
   const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
-  if(address.landmark!=''){
+  if (address.landmark != '') {
     return `${addrLine1},\nLandmark: ${landmark}\n${addrLine2}${formattedZipcode}`;
-  }
-  else{
+  } else {
     return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
   }
-    
 };
 
 export const formatNameNumber = (address: savePatientAddress_savePatientAddress_patientAddress) => {
-  if(address.name!){
+  if (address.name!) {
     return `${address.name}\n${address.mobileNumber}`;
-  }
-  else{
+  } else {
     return `${address.mobileNumber}`;
   }
 };
@@ -195,6 +198,22 @@ export const formatOrderAddress = (
     .join(', ');
   const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
   return `${addrLine}${formattedZipcode}`;
+};
+
+export const formatSelectedAddress = (
+  address: savePatientAddress_savePatientAddress_patientAddress
+) => {
+  const formattedAddress =
+    (address.addressLine1 && address.addressLine1 + ', ') +
+    '' +
+    (address.addressLine2 && address.addressLine2 + ', ') +
+    '' +
+    (address.city && address.city + ',') +
+    '' +
+    (address.state && address.state + ',') +
+    '' +
+    (address.zipcode && address.zipcode);
+  return formattedAddress;
 };
 
 export const getUuidV4 = () => {
@@ -996,13 +1015,9 @@ const webengage = new WebEngage();
 
 export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Object) => {
   try {
-    console.log('\n********* WebEngageEvent Start *********\n');
-    console.log(`WebEngageEvent ${eventName}`, { eventName, attributes });
-    console.log('\n********* WebEngageEvent End *********\n');
-    // if (getBuildEnvironment() !== 'DEV') {
-    // Don't post events in DEV environment
+    const logContent = `[WebEngage] Event: ${eventName}\n`
+    console.log(logContent, '\n',/*attributes, '\n'*/);
     webengage.track(eventName, attributes);
-    // }
   } catch (error) {
     console.log('********* Unable to post WebEngageEvent *********', { error });
   }
@@ -1295,13 +1310,9 @@ export const postAppsFlyerAddToCartEvent = (
 
 export const postFirebaseEvent = (eventName: FirebaseEventName, attributes: Object) => {
   try {
-    console.log('\n********* FirebaseEvent Start *********\n');
-    console.log(`FirebaseEvent ${eventName}`, { eventName, attributes });
-    console.log('\n********* FirebaseEvent End *********\n');
-    // if (getBuildEnvironment() !== 'DEV') {
-    // Don't post events in DEV environment
+    const logContent = `[Firebase] Event: ${eventName}\n`
+    console.log(logContent, '\n',/*attributes, '\n'*/);
     firebase.analytics().logEvent(eventName, attributes);
-    // }
   } catch (error) {
     console.log('********* Unable to post FirebaseEvent *********', { error });
   }
@@ -1455,7 +1466,7 @@ export const addPharmaItemToCart = (
   const outOfStockMsg = 'Sorry, this item is out of stock in your area.';
 
   const navigate = () => {
-    navigation.navigate(AppRoutes.MedicineDetailsScene, {
+    navigation.push(AppRoutes.MedicineDetailsScene, {
       sku: cartItem.id,
       deliveryError: outOfStockMsg,
     });
@@ -1527,6 +1538,6 @@ export const dataSavedUserID = async (key: string) => {
 export const setWebEngageScreenNames = (screenName: string) => {
   webengage.screen(screenName);
 };
-export const removeConsecutiveComma = (value: string) =>{
-  return value.replace(/^,|,$|,(?=,)/g, '')
+export const removeConsecutiveComma = (value: string) => {
+  return value.replace(/^,|,$|,(?=,)/g, '');
 };

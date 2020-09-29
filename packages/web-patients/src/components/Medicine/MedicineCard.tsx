@@ -81,16 +81,18 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     addToCartBtn: {
-      color: '#fc9916',
       boxShadow: 'none',
-      backgroundColor: 'transparent',
+      backgroundColor: '#fc9916',
       minWidth: 'auto',
       textAlign: 'center',
-      padding: 0,
-      marginTop: 10,
+      padding: 8,
+      color: '#fff',
+      margin: '10px -10px -10px -10px',
+      borderRadius: '0 0 8px 8px',
+      width: 'calc(100% + 20px)',
       '&:hover': {
-        backgroundColor: 'transparent',
-        color: '#fc9916',
+        backgroundColor: '#fc9916',
+        color: '#fff',
       },
       [theme.breakpoints.down('xs')]: {
         margin: 0,
@@ -198,6 +200,16 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: '5px !important',
       },
     },
+    notForSale: {
+      backgroundColor: 'rgba(137,0,0,0.5)',
+      fontSize: 12,
+      fontWeight: 600,
+      padding: 8,
+      color: '#fff',
+      margin: '10px -10px -10px -10px',
+      borderRadius: '0 0 8px 8px',
+      height: 38,
+    },
   };
 });
 export interface products {
@@ -291,7 +303,7 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                     (!product.is_in_stock && !currentPatient && !!product.sell_online ? (
                       <div className={classes.noStock}>Out Of Stock</div>
                     ) : !product.sell_online ? (
-                      <div>NOT FOR SALE</div>
+                      <div className={classes.notForSale}>NOT FOR SALE</div>
                     ) : (
                       <AphButton
                         className={classes.addToCartBtn}

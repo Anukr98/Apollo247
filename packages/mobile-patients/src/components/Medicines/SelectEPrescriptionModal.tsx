@@ -36,8 +36,7 @@ import {
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response,
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response,
 } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords';
-import { CheckedIcon, UnCheck } from '../ui/Icons';
-import { MedicalTest } from '../HealthRecords/AddRecord';
+import { CheckedIcon, UnCheck } from '@aph/mobile-patients/src/components/ui/Icons';
 
 const styles = StyleSheet.create({
   noDataCard: {
@@ -525,7 +524,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
                       } else if (type === 'medical') {
                         date = data.testDate;
                         name = data.testName;
-                        const unit = MedicalTest.find((itm) => itm.key === data.unit);
+                        const unit = data?.unit;
                         message = `${data.recordType.replace(/_/g, ' ')} Report\n`;
                         message += `Test Name: ${name}\n`;
                         message += `UHID: ${(currentPatient && currentPatient.uhid) || '-'}\n`;
@@ -541,9 +540,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
                           if (record) {
                             message += `${record.parameterName}\n`;
                             message += `${
-                              record.result
-                                ? `Result: ${record.result} ${unit ? unit.value : ''}\n`
-                                : ``
+                              record.result ? `Result: ${record.result} ${unit || ''}\n` : ``
                             }`;
                           }
                         });

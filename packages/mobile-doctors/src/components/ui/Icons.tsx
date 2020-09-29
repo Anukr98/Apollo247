@@ -413,13 +413,6 @@ export const UserPlaceHolder: React.FC<IconProps> = (props) => (
     source={require('../../images/icons/user_placeholder.png')}
   />
 );
-export const PatientPlaceHolderImage: React.FC<IconProps> = (props) => (
-  <IconBase
-    style={{ height: 178, width: '100%' }}
-    {...props}
-    source={require('../../images/icons/patient_01.png')}
-  />
-);
 
 export const NoCalenderData: React.FC<IconProps> = (props) => (
   <IconBase
@@ -433,20 +426,6 @@ export const StartConsult: React.FC<IconProps> = (props) => (
     style={{ height: 39, width: 149 }}
     {...props}
     source={require('../../images/icons/start_consult.png')}
-  />
-);
-export const PlaceHolderDoctor: React.FC<IconProps> = (props) => (
-  <IconBase
-    style={{ height: 44, width: 44 }}
-    {...props}
-    source={require('../../images/icons/placeholderdoctor.png')}
-  />
-);
-export const PlaceHolderDoctors: React.FC<IconProps> = (props) => (
-  <IconBase
-    style={{ height: 44, width: 44 }}
-    {...props}
-    source={require('../../images/icons/PlaceHolderDoctor2.png')}
   />
 );
 
@@ -623,13 +602,6 @@ export const End: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('../../images/icons/end.png')} />
 );
 
-export const SampleImage: React.FC<IconProps> = (props) => (
-  <IconBase
-    style={{ height: 90, width: 90 }}
-    {...props}
-    source={require('../../images/icons/sampleimage.png')}
-  />
-);
 export const ChatCallIcon: React.FC<IconProps> = (props) => (
   <IconBase size="xs" {...props} source={require('../../images/icons/ChatCall.png')} />
 );
@@ -991,10 +963,23 @@ export const LeftPointer: React.FC<IconProps> = (props) => (
     source={require('../../images/icons/left_pointer.png')}
   />
 );
+
 export const TickOrange: React.FC<IconProps> = (props) => (
   <IconBase
     style={{ width: 12, height: 9 }}
     {...props}
     source={require('../../images/icons/tick_orange.png')}
   />
+);
+
+export const ZoomIn: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('../../images/icons/ZoomIn.png')} />
+);
+
+export const ZoomOut: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('../../images/icons/ZoomOut.png')} />
+);
+
+export const Rotate: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('../../images/icons/Rotate.png')} />
 );

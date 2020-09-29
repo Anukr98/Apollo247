@@ -114,7 +114,7 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
       ? `${(patientDetails.firstName || '').trim()} ${(
           patientDetails.lastName || ''
         ).trim()} | ${patientDetails.gender || '-'} | ${
-          age > -1 ? Math.round(age).toString() : '-'
+          age > -1 ? Math.floor(age).toString() : '-'
         }`
       : '',
     contact: patientDetails

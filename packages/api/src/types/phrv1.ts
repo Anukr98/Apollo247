@@ -58,6 +58,7 @@ export interface LabResultsDownloadResponse {
     id: string;
     fileUrl: string; //this is not given by PHR. Added for internal purpose
     date: Date; //this is not given by PHR. Added for internal purpose
+    dateTime: Date; //this is not given by PHR. Added for internal purpose
     labTestName: string;
     labTestSource: string;
     packageId: string;
@@ -147,6 +148,7 @@ export interface PrescriptionDownloadResponse {
     userId: string;
     fileUrl: string; //this is not given by PHR. Added for internal purpose
     date: Date; //this is not given by PHR. Added for internal purpose
+    dateTime: Date; //this is not given by PHR. Added for internal purpose
     id: string;
     prescriptionName: string;
     dateOfPrescription: number;
@@ -198,6 +200,7 @@ export interface HealthChecksResponse {
     id: string;
     fileUrl: string; //this is not given by PHR. Added for internal purpose
     date: Date; //this is not given by PHR. Added for internal purpose
+    dateTime: Date; //this is not given by PHR. Added for internal purpose
     healthCheckName: string;
     healthCheckDate: number;
     healthCheckSummary: string;
@@ -251,6 +254,7 @@ export interface DischargeSummaryResponse {
       id: string,
       fileUrl: string; //this is not given by PHR. Added for internal purpose
       date: Date; //this is not given by PHR. Added for internal purpose
+      dateTime: Date; //this is not given by PHR. Added for internal purpose
       hospitalizationDate: Date;
       dateOfHospitalization: number,
       hospitalName: string,

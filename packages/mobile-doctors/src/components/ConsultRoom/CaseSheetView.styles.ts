@@ -267,7 +267,12 @@ export const styles = StyleSheet.create({
     height: 100,
     width: 100,
     resizeMode: 'cover',
-    borderRadius: 10,
+    borderRadius: 5,
+  },
+  imageHeadingText: {
+    ...theme.viewStyles.text('R', 10, '#4A4A4A'),
+    marginRight: 16,
+    marginBottom: 4,
   },
   materialContainer: {
     alignItems: 'flex-end',

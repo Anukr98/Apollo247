@@ -384,6 +384,8 @@ interface ConsultRoomProps {
   setSubscriberError: (error: any) => void;
   setIscall: (value: boolean) => void;
   isCall: boolean;
+  setUserMessageOnCall: (msg: string) => void;
+  userMessageOnCall: string;
 }
 
 export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
@@ -1014,6 +1016,8 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
             setSubscriberError={props.setSubscriberError}
             isCall={props.isCall}
             setIscall={props.setIscall}
+            setUserMessageOnCall={props.setUserMessageOnCall}
+            userMessageOnCall={props.userMessageOnCall}
           />
         )}
         {(!showVideo || showVideoChat) && (

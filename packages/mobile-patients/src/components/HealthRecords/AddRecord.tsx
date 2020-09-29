@@ -22,9 +22,7 @@ import { addPatientLabTestRecord } from '@aph/mobile-patients/src/graphql/types/
 import { addPatientHealthCheckRecord } from '@aph/mobile-patients/src/graphql/types/addPatientHealthCheckRecord';
 import { addPatientHospitalizationRecord } from '@aph/mobile-patients/src/graphql/types/addPatientHospitalizationRecord';
 import {
-  AddMedicalRecordParametersInput,
   LabTestParameters,
-  MedicalTestUnit,
   mediaPrescriptionSource,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
@@ -135,31 +133,6 @@ const RecordType: RecordTypeType[] = [
   },
 ];
 
-const charactersList = {
-  _PERCENT_: '%',
-  _SLASH_: '/',
-};
-
-export const MedicalTest: RecordTypeType[] = [
-  { value: 'gm', key: MedicalTestUnit.GM },
-  {
-    value: 'gm/dl',
-    key: MedicalTestUnit.GM_SLASH_DL,
-  },
-  {
-    value: '%', //replaceStringWithChar(MedicalTestUnit._PERCENT_),
-    key: MedicalTestUnit._PERCENT_,
-  },
-];
-
-const MedicalRecordInitialValues: AddMedicalRecordParametersInput = {
-  parameterName: '',
-  unit: MedicalTestUnit._PERCENT_,
-  result: 0,
-  minimum: 0,
-  maximum: 0,
-};
-
 const TestRecordInitialValues: LabTestParameters = {
   parameterName: '',
   unit: '',
@@ -186,9 +159,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const [referringDoctor, setreferringDoctor] = useState<string>('');
   const [observations, setobservations] = useState<string>('');
   const [additionalNotes, setadditionalNotes] = useState<string>('');
-  const [medicalRecordParameters, setmedicalRecordParameters] = useState<
-    AddMedicalRecordParametersInput[]
-  >([MedicalRecordInitialValues]);
   const [testRecordParameters, setTestRecordParameters] = useState<LabTestParameters[]>([
     TestRecordInitialValues,
   ]);
@@ -213,28 +183,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   }, [currentPatient]);
 
   const client = useApolloClient();
-
-  const isRecordParameterFilled = () => {
-    const medicalRecordsVaild = medicalRecordParameters
-      .map((item) => {
-        return item !== MedicalRecordInitialValues
-          ? {
-              ...item,
-              result: parseFloat(((item && item.result) || 0).toString()),
-              maximum: parseFloat(((item && item.maximum) || 0).toString()),
-              minimum: parseFloat(((item && item.minimum) || 0).toString()),
-            }
-          : undefined;
-      })
-      .filter((item) => item !== undefined) as AddMedicalRecordParametersInput[];
-
-    if (medicalRecordsVaild.length > 0) {
-      setmedicalRecordParameters(medicalRecordsVaild);
-      return medicalRecordsVaild;
-    } else {
-      return [];
-    }
-  };
 
   const isTestRecordParameterFilled = () => {
     const testRecordsVaild = testRecordParameters
@@ -268,30 +216,17 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     const validRecordDetails4 =
       typeofRecord && testName && dateOfTest && locationName ? true : false;
 
-    const valid =
-      typeofRecord === MedicRecordType.PRESCRIPTION
-        ? isRecordParameterFilled().map((item) => {
-            return {
-              maxmin: (item.maximum || item.minimum) && item.maximum! > item.minimum!,
-              changed: true,
-              notinitial:
-                item.parameterName === '' &&
-                item.result === 0 &&
-                item.maximum === 0 &&
-                item.minimum === 0,
-            };
-          })
-        : isTestRecordParameterFilled().map((item) => {
-            return {
-              maxmin: (item.maximum || item.minimum) && item.maximum! > item.minimum!,
-              changed: true,
-              notinitial:
-                item.parameterName === '' &&
-                item.result === 0 &&
-                item.maximum === 0 &&
-                item.minimum === 0,
-            };
-          });
+    const valid = isTestRecordParameterFilled().map((item) => {
+      return {
+        maxmin: (item.maximum || item.minimum) && item.maximum! > item.minimum!,
+        changed: true,
+        notinitial:
+          item.parameterName === '' &&
+          item.result === 0 &&
+          item.maximum === 0 &&
+          item.minimum === 0,
+      };
+    });
 
     let message = typeofRecord
       ? testName || docName || locationName
@@ -345,15 +280,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     };
   };
 
-  const setParametersData = (key: string, value: string, i: number, isNumber?: boolean) => {
-    const dataCopy = [...medicalRecordParameters];
-    dataCopy[i] = {
-      ...dataCopy[i],
-      [key]: isNumber ? formatNumber(value) : value,
-    };
-    setmedicalRecordParameters(dataCopy);
-  };
-
   const setTestParametersData = (key: string, value: string, i: number, isNumber?: boolean) => {
     const dataCopy = [...testRecordParameters];
     dataCopy[i] = {
@@ -384,11 +310,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             testDate:
               dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
             recordType: typeofRecord,
-            referringDoctor: referringDoctor,
             sourceName: mediaPrescriptionSource.SELF,
-            observations: observations,
-            additionalNotes: additionalNotes,
-            medicalRecordParameters: showReportDetails ? isRecordParameterFilled() : [],
             documentURLs: '',
             prismFileIds: '',
             testResultFiles: {
@@ -405,11 +327,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             testDate:
               dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
             recordType: typeofRecord,
-            referringDoctor: referringDoctor,
             sourceName: mediaPrescriptionSource.SELF,
-            observations: observations,
-            additionalNotes: additionalNotes,
-            medicalRecordParameters: showReportDetails ? isRecordParameterFilled() : [],
             documentURLs: '',
             prismFileIds: '',
           };
@@ -1099,186 +1017,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     );
   };
 
-  const renderReportDetails = () => {
-    return (
-      <View>
-        <CollapseCard
-          heading="REPORT DETAILS (Optional)"
-          collapse={showReportDetails}
-          onPress={() => setshowReportDetails(!showReportDetails)}
-        >
-          <View
-            style={[
-              //   styles.cardViewStyle,
-              {
-                ...theme.viewStyles.cardContainer,
-                marginTop: 15,
-                paddingHorizontal: 20,
-                paddingTop: 16,
-                paddingBottom: 20,
-              },
-            ]}
-          >
-            <View>
-              <View style={styles.labelViewStyle}>
-                <Text style={styles.labelStyle}>Parameters</Text>
-              </View>
-              {medicalRecordParameters.map((item, i) => (
-                <View
-                  key={i}
-                  style={{
-                    marginTop: 16,
-                    ...theme.viewStyles.cardViewStyle,
-                    shadowRadius: 4,
-                    paddingHorizontal: 16,
-                    paddingTop: 6,
-                    paddingBottom: 5,
-                  }}
-                >
-                  <TextInputComponent
-                    label={'Name of Parameter'}
-                    placeholder={'Enter name'}
-                    value={item.parameterName || ''}
-                    onChangeText={(value) => {
-                      if (isValidText(value)) {
-                        setParametersData('parameterName', value, i);
-                      }
-                    }}
-                  />
-                  <View style={{ flexDirection: 'row' }}>
-                    <View style={{ flex: 1, marginRight: 8 }}>
-                      <TextInputComponent
-                        label={'Result'}
-                        placeholder={'Enter value'}
-                        value={(item.result || '').toString()}
-                        onChangeText={(value) => setParametersData('result', value, i, true)}
-                        keyboardType={'numbers-and-punctuation'}
-                      />
-                    </View>
-                    <View style={{ flex: 1, marginLeft: 8 }}>
-                      <MaterialMenu
-                        options={MedicalTest}
-                        selectedText={typeofRecord}
-                        onPress={(data) => {
-                          setParametersData('unit', data.key as MedicalTestUnit, i);
-                        }}
-                      >
-                        <TextInputComponent
-                          label={'Unit'}
-                          noInput={true}
-                          conatinerstyles={{
-                            paddingBottom: 3,
-                          }}
-                        />
-                        <View style={{ flexDirection: 'row', marginBottom: 8 }}>
-                          <View style={[styles.placeholderViewStyle]}>
-                            <Text
-                              style={[
-                                styles.placeholderTextStyle,
-                                item.unit !== null && item.unit !== undefined
-                                  ? null
-                                  : styles.placeholderStyle,
-                              ]}
-                            >
-                              {item.unit !== null && item.unit !== undefined
-                                ? MedicalTest.find((itm) => itm.key === item.unit)!.value
-                                : 'Select unit'}
-                            </Text>
-                            <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
-                              <DropdownGreen />
-                            </View>
-                          </View>
-                        </View>
-                      </MaterialMenu>
-                    </View>
-                  </View>
-                  <View style={{ flexDirection: 'row' }}>
-                    <View style={{ flex: 1, marginRight: 8 }}>
-                      <TextInputComponent
-                        label={'Min'}
-                        placeholder={'Enter value'}
-                        value={(item.minimum || '').toString()}
-                        onChangeText={(value) => setParametersData('minimum', value, i, true)}
-                        keyboardType={'numbers-and-punctuation'}
-                      />
-                    </View>
-                    <View style={{ flex: 1, marginLeft: 8 }}>
-                      <TextInputComponent
-                        label={'Max'}
-                        placeholder={'Enter value'}
-                        value={(item.maximum || '').toString()}
-                        onChangeText={(value) => setParametersData('maximum', value, i, true)}
-                        keyboardType={'numbers-and-punctuation'}
-                      />
-                    </View>
-                  </View>
-                </View>
-              ))}
-            </View>
-            <Text
-              style={{ ...theme.viewStyles.yellowTextStyle, textAlign: 'right', paddingTop: 16 }}
-              onPress={() => {
-                const dataCopy = [...medicalRecordParameters];
-                dataCopy.push(MedicalRecordInitialValues);
-                setmedicalRecordParameters(dataCopy);
-              }}
-            >
-              ADD PARAMETER
-            </Text>
-            <View>
-              <View style={styles.labelViewStyle}>
-                <Text style={[styles.labelStyle, { paddingTop: 20 }]}>Observation Details</Text>
-              </View>
-              <View
-                style={{
-                  marginTop: 16,
-                  ...theme.viewStyles.cardViewStyle,
-                  shadowRadius: 4,
-                  paddingHorizontal: 16,
-                  paddingTop: 6,
-                  paddingBottom: 5,
-                }}
-              >
-                <TextInputComponent
-                  label={'Referring Doctor'}
-                  placeholder={'Enter name'}
-                  value={referringDoctor}
-                  showDrPrefix={true}
-                  inputStyle={{ flex: 1 }}
-                  onChangeText={(referringDoctor) => {
-                    if (isValidText(referringDoctor)) {
-                      setreferringDoctor(referringDoctor);
-                    }
-                  }}
-                />
-                <TextInputComponent
-                  label={'Observations / Impressions'}
-                  placeholder={'Enter observations'}
-                  value={observations}
-                  onChangeText={(observations) => {
-                    if (isValidText(observations)) {
-                      setobservations(observations);
-                    }
-                  }}
-                />
-                <TextInputComponent
-                  label={'Additional Notes'}
-                  placeholder={'Enter notes'}
-                  value={additionalNotes}
-                  onChangeText={(additionalNotes) => {
-                    if (isValidText(additionalNotes)) {
-                      setadditionalNotes(additionalNotes);
-                    }
-                  }}
-                />
-              </View>
-            </View>
-          </View>
-        </CollapseCard>
-      </View>
-    );
-  };
-
   const renderData = () => {
     return (
       <View
@@ -1289,7 +1027,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         {renderUploadedImages()}
         {renderRecordDetails()}
         {typeofRecord === MedicRecordType.TEST_REPORT ? renderTestReportDetails() : null}
-        {typeofRecord === MedicRecordType.PRESCRIPTION ? renderReportDetails() : null}
       </View>
     );
   };
@@ -1298,7 +1035,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     return (
       <StickyBottomComponent defaultBG>
         <Button
-          title="ADD RECORD"
+          title="SAVE RECORD"
           style={{ flex: 1, marginHorizontal: 60 }}
           onPress={onSavePress}
         />

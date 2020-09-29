@@ -32,6 +32,7 @@ export class SearchHistoryRepository extends Repository<SearchHistory> {
       {
         updatedDate: new Date(),
         typeName: saveSearchAttrs.typeName,
+        image: saveSearchAttrs.image,
       }
     ).catch((saveSearchError) => {
       throw new AphError(AphErrorMessages.SAVE_SEARCH_ERROR, undefined, {

@@ -102,6 +102,32 @@ export class AppointmentRepository extends Repository<Appointment> {
     return appointment;
   }
 
+  updateAppointmentAttributes(id: string, updateAttrs: Partial<Appointment>) {
+    return this.update(id, updateAttrs);
+  }
+
+  getlimitedHoursFutureAppointments(currentDate: Date, limitedHoursFutureDate: Date) {
+    return this.createQueryBuilder('appointment')
+      .leftJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
+      .where('appointment.appointmentDateTime > :currentDate', { currentDate })
+      .andWhere('appointment.appointmentDateTime <= :limitedHoursFutureDate', {
+        limitedHoursFutureDate,
+      })
+      .andWhere(
+        'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',
+        {
+          status1: STATUS.CANCELLED,
+          status2: STATUS.PAYMENT_PENDING,
+          status3: STATUS.UNAVAILABLE_MEDMANTRA,
+          status4: STATUS.PAYMENT_FAILED,
+          status5: STATUS.PAYMENT_PENDING_PG,
+          status6: STATUS.PAYMENT_ABORTED,
+        }
+      )
+      .orderBy('appointment.appointmentDateTime', 'ASC')
+      .getMany();
+  }
+
   getAppointmentsCount(doctorId: string, patientId: string) {
     return this.createQueryBuilder('appointment')
       .andWhere('appointment.patientId = :patientId', { patientId })
@@ -556,7 +582,7 @@ export class AppointmentRepository extends Repository<Appointment> {
   getDoctorAppointments(doctorId: string, startDate: Date, endDate: Date) {
     //const newStartDate = new Date(format(addDays(startDate, -1), 'yyyy-MM-dd') + '18:30');
     const newStartDate = new Date(format(addDays(startDate, -1), 'yyyy-MM-dd') + 'T18:30');
-    const newEndDate = new Date(format(endDate, 'yyyy-MM-dd') + 'T18:30');
+    const newEndDate = new Date(format(endDate, 'yyyy-MM-dd') + 'T18:29');
 
     /*return this.find({
       where: {
@@ -982,9 +1008,9 @@ export class AppointmentRepository extends Repository<Appointment> {
         .getUTCHours()
         .toString()
         .padStart(2, '0')}:${appointmentDate
-        .getUTCMinutes()
-        .toString()
-        .padStart(2, '0')}:00.000Z`;
+          .getUTCMinutes()
+          .toString()
+          .padStart(2, '0')}:00.000Z`;
       if (availableSlots.indexOf(sl) >= 0) {
         consultFlag = CONSULTFLAG.INCONSULTHOURS;
       }
@@ -1137,9 +1163,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${doctorAppointment.appointmentDateTime
-            .getUTCMinutes()
-            .toString()
-            .padStart(2, '0')}:00.000Z`;
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0')}:00.000Z`;
           if (availableSlots.indexOf(aptSlot) >= 0) {
             availableSlots.splice(availableSlots.indexOf(aptSlot), 1);
           }
@@ -1490,9 +1516,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${blockedSlot.start
-            .getUTCMinutes()
-            .toString()
-            .padStart(2, '0')}:00.000Z`;
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0')}:00.000Z`;
 
           let blockedSlotsCount =
             (Math.abs(differenceInMinutes(blockedSlot.end, blockedSlot.start)) / 60) * duration;
@@ -1549,9 +1575,9 @@ export class AppointmentRepository extends Repository<Appointment> {
               .getUTCHours()
               .toString()
               .padStart(2, '0')}:${slot
-              .getUTCMinutes()
-              .toString()
-              .padStart(2, '0')}:00.000Z`;
+                .getUTCMinutes()
+                .toString()
+                .padStart(2, '0')}:00.000Z`;
           }
 
           Array(blockedSlotsCount)
