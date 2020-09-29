@@ -26,7 +26,7 @@ import {
   postWebEngageEvent,
   g,
   followUpChatDaysCaseSheet,
-  overlyPermissionAndroid,
+  overlyCallPermissions,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -392,7 +392,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                     callPermissions();
                   } else {
                     callPermissions(() => {
-                      overlyPermissionAndroid(
+                      overlyCallPermissions(
                         currentPatient!.firstName!,
                         activeAppointments[0].doctorInfo.displayName,
                         showAphAlert,

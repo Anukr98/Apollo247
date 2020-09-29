@@ -1496,7 +1496,7 @@ export const setWebEngageScreenNames = (screenName: string) => {
   webengage.screen(screenName);
 };
 
-export const overlyPermissionAndroid = (
+export const overlyCallPermissions = (
   patientName: string,
   doctorName: string,
   showAphAlert: any,

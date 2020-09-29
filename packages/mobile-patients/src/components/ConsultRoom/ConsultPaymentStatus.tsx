@@ -13,7 +13,7 @@ import {
   postAppsFlyerEvent,
   postFirebaseEvent,
   postWebEngageEvent,
-  overlyPermissionAndroid,
+  overlyCallPermissions,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
@@ -51,7 +51,6 @@ import firebase from 'react-native-firebase';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { NotificationPermissionAlert } from '@aph/mobile-patients/src/components/ui/NotificationPermissionAlert';
 import { Snackbar } from 'react-native-paper';
-import { ConsultationPermission } from '@aph/mobile-patients/src/components/ui/ConsultationPermission';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -94,7 +93,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     });
 
   useEffect(() => {
-    overlyPermissionAndroid(currentPatient.firstName, doctorName, showAphAlert, hideAphAlert, true);
+    overlyCallPermissions(currentPatient.firstName, doctorName, showAphAlert, hideAphAlert, true);
   }, []);
 
   useEffect(() => {

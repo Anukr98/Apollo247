@@ -75,7 +75,7 @@ import {
   postWebEngageEvent,
   UnInstallAppsFlyer,
   setWebEngageScreenNames,
-  overlyPermissionAndroid,
+  overlyCallPermissions,
   followUpChatDaysCaseSheet,
   checkPermissions,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -425,6 +425,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   useEffect(() => {
     const params = props.navigation.state.params;
     if (!params?.isReset && currentPatient) {
+      // reset will be true only from the payment screen
       fetchAppointments();
     }
     if (params?.isFreeConsult) {
@@ -872,7 +873,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             return item.status !== STATUS.COMPLETED;
           });
           if (inProgressAppointments && inProgressAppointments.length > 0) {
-            overlyPermissionAndroid(
+            overlyCallPermissions(
               currentPatient!.firstName!,
               activeAppointments[0].doctorInfo.displayName,
               showAphAlert,
