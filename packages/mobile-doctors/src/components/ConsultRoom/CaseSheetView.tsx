@@ -2646,8 +2646,8 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               width: width,
               alignItems: 'center',
               backgroundColor: 'white',
-              resizeMode: 'contain',
             }}
+            resizeMode="contain"
           />
         )}
       </View>

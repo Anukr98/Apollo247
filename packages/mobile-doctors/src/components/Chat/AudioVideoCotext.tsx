@@ -408,6 +408,7 @@ export const AudioVideoProvider: React.FC = (props) => {
             style={
               isMinimized ? styles.placeHolderImageMimimizedStyle : styles.placeHolderImageStyle
             }
+            resizeMode={'contain'}
           />
         )}
       </View>
