@@ -29,7 +29,9 @@
     "waitForDoctirToJoinCall": "doctor_name is not in the room yet.\nPlease wait for few seconds while doctor joins the call....",
     "exotelMessage": " is trying to call you from the number ",
     "requestMessage": ". Request you to answer the call.",
-    "consultCompleteMessage": "Please wait while {0} is preparing your prescription. The prescription will be sent here in the consult room itself. However, this might take a while!"
+    "consultCompleteMessage": "Please wait while {0} is preparing your prescription. The prescription will be sent here in the consult room itself. However, this might take a while!",
+    "customerCareNumber": 4041894343,
+    "customerCareHelpText": "I need help with my order",
   },
   "consultType": {
     "mainHeading": "How would you like to consult with",

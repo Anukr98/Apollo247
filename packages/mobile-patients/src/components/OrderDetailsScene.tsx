@@ -110,6 +110,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/GetPatientFeedback';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { RefundDetails } from '@aph/mobile-patients/src/components/RefundDetails';
+const whatsappScheme = `whatsapp://send?text=${AppConfig.Configuration.CUSTOMER_CARE_HELP_TEXT}&phone=91${AppConfig.Configuration.CUSTOMER_CARE_NUMBER}`;
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -1092,9 +1093,15 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           <TouchableOpacity
             style={styles.chatWithUsTouch}
             onPress={() => {
-              Linking.openURL(
-                AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK
-              ).catch((err) => CommonBugFender(`${AppRoutes.OrderModifiedScreen}_TATBreach`, err));
+              Linking.canOpenURL(whatsappScheme)
+                .then((supported) =>
+                  Linking.openURL(
+                    supported
+                      ? whatsappScheme
+                      : AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK
+                  )
+                )
+                .catch((err) => CommonBugFender(`${AppRoutes.OrderModifiedScreen}_TATBreach`, err));
             }}
           >
             <WhatsAppIcon style={styles.whatsappIconStyle} />
