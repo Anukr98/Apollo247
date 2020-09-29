@@ -53,8 +53,10 @@ export const clientRoutes = {
   partnerSBI: () => '/partners/sbi',
   contactUs: () => '/contact',
   covidLanding: () => '/covid19',
+  knowledgeBaseLanding: () => '/knowledge-base',
   kavachLanding: () => '/covid19/kavach',
   covidDetails: () => '/covid19/*',
+  articleDetails: () => '/knowledge-base/*',
   aboutUs: () => '/aboutUs',
   needHelp: () => '/needHelp',
   myPayments: () => '/my-payments',
@@ -77,7 +79,6 @@ export const clientRoutes = {
   childSitemap: (sitemap: string, pageNo: string) => `/static/${sitemap}/${pageNo}`,
   // sitemap: (sitemap: string) => `/${sitemap}`,
   // childSitemap: (sitemap: string, pageNo: string) => `/${sitemap}/${pageNo}`,
-  knowledgeBaseLanding: () => '/knowledge-base',
 };
 
 export const clientBaseUrl = () => webPatientsBaseUrl();
