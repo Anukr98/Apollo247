@@ -905,6 +905,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         })
       }
       const upgradeToPlan = g(plan, 'can_upgrade_to');
+      const isActive = plan!.subscriptionStatus === hdfc_values.ACTIVE_STATUS;
       const subscription: SubscriptionData = {
         _id: plan!._id || '',
         name: plan!.name || '',
@@ -915,13 +916,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         minTransactionValue: plan!.min_transaction_value,
         status: plan!.status || '',
         subscriptionStatus: plan!.subscriptionStatus || '',
-        isActive: plan!.subscriptionStatus === hdfc_values.ACTIVE_STATUS,
+        isActive,
         group: groupData,
         benefits: planBenefits,
         coupons: plan!.coupons ? plan!.coupons : [],
         canUpgradeTo: g(upgradeToPlan, '_id') ? setSubscriptionData(upgradeToPlan) : {},
         upgradeTransactionValue: plan!.upgrade_transaction_value,
-        isFreeDelivery: isFreeDelivery,
+        isFreeDelivery: isFreeDelivery && isActive ? true : false,
       }
       return subscription;
     } catch (e) {

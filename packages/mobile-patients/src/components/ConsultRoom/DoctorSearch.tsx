@@ -1386,7 +1386,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               key={rowID}
             >
               <View style={styles.listSpecialistView}>
-                {(rowData.image !== '') && (
+                {!!rowData.image && (
                   <Image
                     source={{
                       // uri: 'https://apollouatstg.blob.core.windows.net/hospitals/ic_cardiology.png',
