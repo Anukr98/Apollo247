@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography, CircularProgress } from '@material-ui/core';
-import { useHistory } from 'react-router-dom';
+// import { useHistory } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { useLoginPopupState, useAuth, useAllCurrentPatients } from 'hooks/authHooks';
 import WarningModel from 'components/WarningModel';
@@ -451,10 +451,10 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     couponCard: {
       background: '#fafafa',
-      padding: 16,
+      padding: '16px 16px 40px 16px',
       borderRadius: 10,
       transition: '0.5s ease-in-out',
-      height: 220,
+      height: 180,
       overflow: 'hidden',
       position: 'relative',
       textAlign: 'center',
@@ -486,7 +486,7 @@ const useStyles = makeStyles((theme: Theme) => {
         lineHeight: '18px',
       },
       '&:hover': {
-        boxShadow: ' 0px 1px 12px rgba(128, 128, 128, 0.2)',
+        boxShadow: ' 0px 1px 12px rgba(128, 128, 128, 0.4)',
         '& a, button': {
           background: '#FC9916',
           color: '#FFF',
@@ -741,6 +741,9 @@ const useStyles = makeStyles((theme: Theme) => {
         width: '90%',
       },
     },
+    pb16: {
+      paddingBottom: 16,
+    },
   };
 });
 interface TabPanelProps {
@@ -781,7 +784,7 @@ export const MembershipPlanDetail: React.FC = (props) => {
   const [exotelBenefitId, setExotelBenefitId] = React.useState<string>('');
 
   const apolloClient = useApolloClient();
-  const history = useHistory();
+  // const history = useHistory();
 
   const handleChange = (panel: string) => (event: React.ChangeEvent<{}>, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false);
@@ -875,41 +878,41 @@ export const MembershipPlanDetail: React.FC = (props) => {
   };
 
   const handleCTAClick = (item: any) => {
-    const cta_action = item.cta_action;
-    if (cta_action.type == 'REDIRECT') {
-      if (cta_action.meta.action == 'SPECIALITY_LISTING') {
-        history.push(clientRoutes.specialityListing());
-      } else if (cta_action.meta.action == 'PHARMACY_LANDING') {
-        history.push(clientRoutes.medicines());
-      } else if (cta_action.meta.action == 'PHR') {
-        history.push(clientRoutes.healthRecords());
-      } else if (cta_action.meta.action == 'DOC_LISTING_WITH_PAYROLL_DOCS_SELECTED') {
-        history.push(clientRoutes.specialityListing());
-      } else if (cta_action.meta.action == 'DIAGNOSTICS_LANDING') {
-        history.push(clientRoutes.welcome());
-      } else if (cta_action.meta.action == 'DIETECIAN_LANDING') {
-        history.push(clientRoutes.dietetics());
-      } else {
-        history.push(clientRoutes.welcome());
-      }
-    } else if (cta_action.type == 'CALL_API') {
-      if (cta_action.meta.action == 'CALL_EXOTEL_API') {
-        console.log('call exotel api');
-        if (item.available_count > 0) {
-          setExotelBenefitId(item._id);
-          setCallDoctorPopup(true);
-        } else {
-          setSuccessMessage({
-            message: `Hey, looks like you have exhausted the monthly usage limit for this benefit. If you feel this is an error, please raise a ticket on the Help section.`,
-          });
-        }
-        // initiateExotelCall(localStorage.getItem('userMobileNo'), item._id);
-      }
-    } else if (cta_action.type == 'WHATSAPP_OPEN_CHAT') {
-      handleWhatsappChat(cta_action.meta.action, cta_action.meta.message);
-    } else {
-      history.push(clientRoutes.welcome());
-    }
+    // const cta_action = item.cta_action;
+    // if (cta_action.type == 'REDIRECT') {
+    //   if (cta_action.meta.action == 'SPECIALITY_LISTING') {
+    //     history.push(clientRoutes.specialityListing());
+    //   } else if (cta_action.meta.action == 'PHARMACY_LANDING') {
+    //     history.push(clientRoutes.medicines());
+    //   } else if (cta_action.meta.action == 'PHR') {
+    //     history.push(clientRoutes.healthRecords());
+    //   } else if (cta_action.meta.action == 'DOC_LISTING_WITH_PAYROLL_DOCS_SELECTED') {
+    //     history.push(clientRoutes.specialityListing());
+    //   } else if (cta_action.meta.action == 'DIAGNOSTICS_LANDING') {
+    //     history.push(clientRoutes.welcome());
+    //   } else if (cta_action.meta.action == 'DIETECIAN_LANDING') {
+    //     history.push(clientRoutes.dietetics());
+    //   } else {
+    //     history.push(clientRoutes.welcome());
+    //   }
+    // } else if (cta_action.type == 'CALL_API') {
+    //   if (cta_action.meta.action == 'CALL_EXOTEL_API') {
+    //     console.log('call exotel api');
+    //     if (item.available_count > 0) {
+    //       setExotelBenefitId(item._id);
+    //       setCallDoctorPopup(true);
+    //     } else {
+    //       setSuccessMessage({
+    //         message: `Hey, looks like you have exhausted the monthly usage limit for this benefit. If you feel this is an error, please raise a ticket on the Help section.`,
+    //       });
+    //     }
+    //     // initiateExotelCall(localStorage.getItem('userMobileNo'), item._id);
+    //   }
+    // } else if (cta_action.type == 'WHATSAPP_OPEN_CHAT') {
+    //   handleWhatsappChat(cta_action.meta.action, cta_action.meta.message);
+    // } else {
+    //   history.push(clientRoutes.welcome());
+    // }
   };
 
   return (
@@ -1044,7 +1047,11 @@ export const MembershipPlanDetail: React.FC = (props) => {
                         subscriptionInclusions[0].benefits.map((item: any, index: any) => {
                           return (
                             <li key={index}>
-                              <div className={classes.couponCard}>
+                              <div
+                                className={`${classes.couponCard} ${
+                                  item.cta_label == 'NULL' ? classes.pb16 : ''
+                                }`}
+                              >
                                 <img
                                   src={item.icon}
                                   className={classes.benefitIcon}
