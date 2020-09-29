@@ -24,6 +24,8 @@ import { sendMail } from 'notifications-service/resolvers/email';
 import { ApiConstants, TransactionType } from 'ApiConstants';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { log } from 'customWinstonLogger';
+import { acceptCoupon } from 'helpers/couponServices';
+import { AcceptCouponRequest } from 'types/coupons';
 import {
   BlockOneApolloPointsRequest,
   BlockUserPointsResponse,
@@ -295,6 +297,18 @@ const SaveMedicineOrderPaymentMq: Resolver<
         sourceTransactionIdentifier: `${medicinePaymentMqInput.orderAutoId}`,
         mobileNumber: orderDetails.patient.mobileNumber,
       });
+    }
+    if (
+      currentStatus == MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS ||
+      currentStatus == MEDICINE_ORDER_STATUS.ORDER_INITIATED
+    ) {
+      if (orderDetails.coupon) {
+        const payload: AcceptCouponRequest = {
+          mobile: orderDetails.patient.mobileNumber.replace('+91', ''),
+          coupon: orderDetails.coupon,
+        };
+        acceptCoupon(payload);
+      }
     }
     await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
     await medicineOrdersRepo.updateMedicineOrder(orderDetails.id, orderDetails.orderAutoId, {
