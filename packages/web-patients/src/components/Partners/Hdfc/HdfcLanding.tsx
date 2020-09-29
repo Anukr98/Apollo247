@@ -168,22 +168,22 @@ const useStyles = makeStyles((theme: Theme) => {
         alignItems: 'flex-start',
         padding: '20px 0 20px 60px',
         position: 'relative',
+        [theme.breakpoints.down('sm')]: {
+          padding: '10px 0 10px 35px',
+        },
         '& img': {
           width: 36,
           position: 'absolute',
           top: 20,
           left: 0,
+          [theme.breakpoints.down('sm')]: {
+            width: '20px !important',
+            top: 10,
+          },
         },
       },
       [theme.breakpoints.down('sm')]: {
         display: 'block',
-        '& li': {
-          padding: '10px 0',
-          '& img': {
-            width: '20px !important',
-            margin: '0 20px 0 0',
-          },
-        },
       },
     },
     benefitDetails: {
