@@ -666,6 +666,74 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     postWebEngageEvent(type, eventAttributes);
   };
 
+  const openTokWebEngageEvents = (
+    type:
+      | WebEngageEventName.DOCTOR_SUBSCRIBER_DISCONNECTED
+      | WebEngageEventName.DOCTOR_SUBSCRIBER_CONNECTED
+      | WebEngageEventName.DOCTOR_SUBSCRIBER_VIDEO_DISABLED
+      | WebEngageEventName.DOCTOR_SUBSCRIBER_VIDEO_ENABLED
+      | WebEngageEventName.PATIENT_PUBLISHER_STREAM_CREATED
+      | WebEngageEventName.PATIENT_PUBLISHER_STREAM_DESTROYED
+      | WebEngageEventName.PATIENT_SESSION_CONNECTION_CREATED
+      | WebEngageEventName.PATIENT_SESSION_CONNECTION_DESTROYED
+      | WebEngageEventName.PATIENT_SESSION_CONNECTED
+      | WebEngageEventName.PATIENT_SESSION_DISCONNECTED
+      | WebEngageEventName.PATIENT_SESSION_RECONNECTED
+      | WebEngageEventName.PATIENT_SESSION_RECONNECTING
+      | WebEngageEventName.PATIENT_SESSION_STREAM_CREATED
+      | WebEngageEventName.PATIENT_SESSION_STREAM_DESTROYED
+      | WebEngageEventName.PATIENT_SESSION_STREAM_PROPERTY_CHANGED,
+    data: string
+  ) => {
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.DOCTOR_SUBSCRIBER_DISCONNECTED]
+      | WebEngageEvents[WebEngageEventName.DOCTOR_SUBSCRIBER_CONNECTED]
+      | WebEngageEvents[WebEngageEventName.DOCTOR_SUBSCRIBER_VIDEO_DISABLED]
+      | WebEngageEvents[WebEngageEventName.DOCTOR_SUBSCRIBER_VIDEO_ENABLED]
+      | WebEngageEvents[WebEngageEventName.PATIENT_PUBLISHER_STREAM_CREATED]
+      | WebEngageEvents[WebEngageEventName.PATIENT_PUBLISHER_STREAM_DESTROYED]
+      | WebEngageEvents[WebEngageEventName.PATIENT_SESSION_CONNECTION_CREATED]
+      | WebEngageEvents[WebEngageEventName.PATIENT_SESSION_CONNECTION_DESTROYED]
+      | WebEngageEvents[WebEngageEventName.PATIENT_SESSION_CONNECTED]
+      | WebEngageEvents[WebEngageEventName.PATIENT_SESSION_DISCONNECTED]
+      | WebEngageEvents[WebEngageEventName.PATIENT_SESSION_RECONNECTED]
+      | WebEngageEvents[WebEngageEventName.PATIENT_SESSION_RECONNECTING]
+      | WebEngageEvents[WebEngageEventName.PATIENT_SESSION_STREAM_CREATED]
+      | WebEngageEvents[WebEngageEventName.PATIENT_SESSION_STREAM_DESTROYED]
+      | WebEngageEvents[WebEngageEventName.PATIENT_SESSION_STREAM_PROPERTY_CHANGED] = {
+      'Doctor ID': doctorId,
+      'Patient Id': patientId,
+      'Appointment ID': channel,
+      event: data,
+    };
+    postWebEngageEvent(type, eventAttributes);
+  };
+
+  const openTokErrorWebEngageEvents = (
+    type:
+      | WebEngageEventName.DOCTOR_SUBSCRIBER_ERROR
+      | WebEngageEventName.DOCTOR_SUBSCRIBER_OTRNERROR
+      | WebEngageEventName.PATIENT_PUBLISHER_ERROR
+      | WebEngageEventName.PATIENT_PUBLISHER_OTRNERROR
+      | WebEngageEventName.PATIENT_SESSION_ERROR
+      | WebEngageEventName.PATIENT_SESSION_OTRNERROR,
+    data: string
+  ) => {
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.DOCTOR_SUBSCRIBER_ERROR]
+      | WebEngageEvents[WebEngageEventName.DOCTOR_SUBSCRIBER_OTRNERROR]
+      | WebEngageEvents[WebEngageEventName.PATIENT_PUBLISHER_ERROR]
+      | WebEngageEvents[WebEngageEventName.PATIENT_PUBLISHER_OTRNERROR]
+      | WebEngageEvents[WebEngageEventName.PATIENT_SESSION_ERROR]
+      | WebEngageEvents[WebEngageEventName.PATIENT_SESSION_OTRNERROR] = {
+      'Doctor ID': doctorId,
+      'Patient Id': patientId,
+      'Appointment ID': channel,
+      error: data,
+    };
+    postWebEngageEvent(type, eventAttributes);
+  };
+
   useEffect(() => {
     if (!currentPatient) {
       console.log('No current patients available');
@@ -1577,20 +1645,37 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const publisherEventHandlers = {
     streamCreated: (event: string) => {
       console.log('Publisher stream created!', event);
+      openTokWebEngageEvents(
+        WebEngageEventName.PATIENT_PUBLISHER_STREAM_CREATED,
+        JSON.stringify(event)
+      );
       stopSound();
     },
     streamDestroyed: (event: string) => {
       console.log('Publisher stream destroyed!', event);
+      openTokWebEngageEvents(
+        WebEngageEventName.PATIENT_PUBLISHER_STREAM_DESTROYED,
+        JSON.stringify(event)
+      );
+
       patientJoinedCall.current = false;
       subscriberConnected.current = false;
       endVoipCall();
     },
     error: (error: string) => {
+      openTokErrorWebEngageEvents(
+        WebEngageEventName.PATIENT_PUBLISHER_ERROR,
+        JSON.stringify(error)
+      );
       AsyncStorage.setItem('callDisconnected', 'true');
       setSnackBar();
       console.log(`There was an error with the publisherEventHandlers: ${JSON.stringify(error)}`);
     },
     otrnError: (error: string) => {
+      openTokErrorWebEngageEvents(
+        WebEngageEventName.PATIENT_PUBLISHER_OTRNERROR,
+        JSON.stringify(error)
+      );
       AsyncStorage.setItem('callDisconnected', 'true');
       setSnackBar();
       console.log(`There was an error with the publisherEventHandlers: ${JSON.stringify(error)}`);
@@ -1601,8 +1686,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     error: (error: string) => {
       setSnackBar();
       console.log(`There was an error with the subscriberEventHandlers: ${JSON.stringify(error)}`);
+      openTokErrorWebEngageEvents(
+        WebEngageEventName.DOCTOR_SUBSCRIBER_ERROR,
+        JSON.stringify(error)
+      );
     },
     connected: (event: string) => {
+      openTokWebEngageEvents(WebEngageEventName.DOCTOR_SUBSCRIBER_CONNECTED, JSON.stringify(event));
       setSnackbarState(false);
       console.log('Subscribe stream connected!', event);
       subscriberConnected.current = true;
@@ -1611,18 +1701,30 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     disconnected: (event: string) => {
       // setSnackbarState(true);
       // setHandlerMessage('Falling back to audio due to bad network!!');
+      openTokWebEngageEvents(
+        WebEngageEventName.DOCTOR_SUBSCRIBER_DISCONNECTED,
+        JSON.stringify(event)
+      );
       console.log('Subscribe stream disconnected!', event);
       patientJoinedCall.current = false;
       subscriberConnected.current = false;
       endVoipCall();
     },
     otrnError: (error: string) => {
+      openTokErrorWebEngageEvents(
+        WebEngageEventName.DOCTOR_SUBSCRIBER_OTRNERROR,
+        JSON.stringify(error)
+      );
       setSnackBar();
       console.log(`There was an error with the subscriberEventHandlers: ${JSON.stringify(error)}`);
     },
     videoDisabled: (error: any) => {
       console.log(`videoDisabled subscriberEventHandlers: ${JSON.stringify(error)}`, error.reason);
       console.log('error.reason', error.reason, error.reason === 'quality');
+      openTokWebEngageEvents(
+        WebEngageEventName.DOCTOR_SUBSCRIBER_VIDEO_DISABLED,
+        JSON.stringify(error)
+      );
       if (error.reason === 'quality') {
         setSnackbarState(true);
         setHandlerMessage('Falling back to audio due to bad network!!');
@@ -1631,6 +1733,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     },
     videoEnabled: (error: any) => {
       console.log(`videoEnabled: ${JSON.stringify(error)}`);
+      openTokWebEngageEvents(
+        WebEngageEventName.DOCTOR_SUBSCRIBER_VIDEO_ENABLED,
+        JSON.stringify(error)
+      );
       if (error.reason === 'quality') {
         setSnackbarState(false);
         setDowngradeToAudio(false);
@@ -1661,6 +1767,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           1021,
         ].includes(error.code)
       ) {
+        openTokErrorWebEngageEvents(
+          WebEngageEventName.PATIENT_SESSION_ERROR,
+          JSON.stringify(error)
+        );
         eventsAfterConnectionDestroyed();
         setTimeout(() => {
           setSnackbarState(true);
@@ -1672,10 +1782,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       console.log(`There was an error with the sessionEventHandlers: ${JSON.stringify(error)}`);
     },
     connectionCreated: (event: string) => {
+      openTokWebEngageEvents(
+        WebEngageEventName.PATIENT_SESSION_CONNECTION_CREATED,
+        JSON.stringify(event)
+      );
       setSnackbarState(false);
       console.log('session stream connectionCreated!', event);
     },
     connectionDestroyed: (event: string) => {
+      openTokWebEngageEvents(
+        WebEngageEventName.PATIENT_SESSION_CONNECTION_DESTROYED,
+        JSON.stringify(event)
+      );
       setTimeout(() => {
         AsyncStorage.getItem('callDisconnected').then((data) => {
           if (!JSON.parse(data || 'false')) {
@@ -1688,21 +1806,31 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       eventsAfterConnectionDestroyed();
     },
     sessionConnected: (event: string) => {
+      openTokWebEngageEvents(WebEngageEventName.PATIENT_SESSION_CONNECTED, JSON.stringify(event));
       setSnackbarState(false);
       console.log('session stream sessionConnected!', event);
       KeepAwake.activate();
     },
     sessionDisconnected: (event: string) => {
+      openTokWebEngageEvents(
+        WebEngageEventName.PATIENT_SESSION_DISCONNECTED,
+        JSON.stringify(event)
+      );
       console.log('session stream sessionDisconnected!', event);
       eventsAfterConnectionDestroyed();
       // disconnectCallText();
     },
     sessionReconnected: (event: string) => {
+      openTokWebEngageEvents(WebEngageEventName.PATIENT_SESSION_RECONNECTED, JSON.stringify(event));
       setSnackbarState(false);
       console.log('session stream sessionReconnected!', event);
       KeepAwake.activate();
     },
     sessionReconnecting: (event: string) => {
+      openTokWebEngageEvents(
+        WebEngageEventName.PATIENT_SESSION_RECONNECTING,
+        JSON.stringify(event)
+      );
       console.log('session stream sessionReconnecting!', event);
       setSessionReconnectMsg();
       KeepAwake.activate();
@@ -1711,14 +1839,26 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       console.log('session stream signal!', event);
     },
     streamCreated: (event: string) => {
+      openTokWebEngageEvents(
+        WebEngageEventName.PATIENT_SESSION_STREAM_CREATED,
+        JSON.stringify(event)
+      );
       console.log('session streamCreated created!', event);
     },
     streamDestroyed: (event: string) => {
+      openTokWebEngageEvents(
+        WebEngageEventName.PATIENT_SESSION_STREAM_DESTROYED,
+        JSON.stringify(event)
+      );
       console.log('session streamDestroyed destroyed!', event); // is called when the doctor network is disconnected
       eventsAfterConnectionDestroyed();
       // disconnectCallText();
     },
     streamPropertyChanged: (event: OptntokChangeProp) => {
+      openTokWebEngageEvents(
+        WebEngageEventName.PATIENT_SESSION_STREAM_PROPERTY_CHANGED,
+        JSON.stringify(event)
+      );
       console.log('session streamPropertyChanged!', event); // is called when the doctor network is disconnected
       if (event.stream.name !== (g(currentPatient, 'firstName') || 'patient')) {
         setCallerAudio(event.stream.hasAudio);
@@ -1726,6 +1866,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }
     },
     otrnError: (error: string) => {
+      openTokErrorWebEngageEvents(
+        WebEngageEventName.PATIENT_SESSION_OTRNERROR,
+        JSON.stringify(event)
+      );
       AsyncStorage.getItem('callDisconnected').then((data) => {
         if (!JSON.parse(data || 'false')) {
           setSnackBar();
