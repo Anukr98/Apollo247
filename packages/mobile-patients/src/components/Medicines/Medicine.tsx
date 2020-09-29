@@ -1034,7 +1034,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       if (unavailableItems.length) {
         setReOrderDetails({ total: totalItemsCount, unavailable: unavailableItems });
       } else {
-        props.navigation.navigate(AppRoutes.YourCart);
+        props.navigation.navigate(AppRoutes.MedicineCart);
       }
     } catch (error) {
       CommonBugFender(`${AppRoutes.OrderDetailsScene}_reOrder`, error);
@@ -1054,7 +1054,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           itemDetails={{ total, unavailable }}
           onContinue={() => {
             setReOrderDetails({ total: 0, unavailable: [] });
-            props.navigation.navigate(AppRoutes.YourCart);
+            props.navigation.navigate(AppRoutes.MedicineCart);
           }}
           onClose={() => {
             setReOrderDetails({ total: 0, unavailable: [] });

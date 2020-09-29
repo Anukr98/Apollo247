@@ -568,7 +568,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         title={'YOUR CART'}
         rightComponent={headerRightComponent()}
         onPressLeftIcon={() => {
-          CommonLogEvent(AppRoutes.YourCart, 'Go back to add items');
+          CommonLogEvent(AppRoutes.MedicineCart, 'Go back to add items');
           setCoupon!(null);
           if (couponProducts.length) {
             removeFreeProductsFromCart();

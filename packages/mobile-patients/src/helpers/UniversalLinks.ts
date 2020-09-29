@@ -211,7 +211,7 @@ const pushTheView = (
       break;
 
     case 'MedicineCart':
-      navigation.navigate(AppRoutes.YourCart, {
+      navigation.navigate(AppRoutes.MedicineCart, {
         movedFrom: 'splashscreen',
       });
       break;
