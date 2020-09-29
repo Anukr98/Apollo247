@@ -382,10 +382,10 @@ const bookRescheduleAppointment: Resolver<
   if (!apptDetails) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
-  const oldApptDate = format(
-    addMinutes(new Date(apptDetails.appointmentDateTime), +330),
-    'yyyy-MM-dd hh:mm a'
-  );
+  // const oldApptDate = format(
+  //   addMinutes(new Date(apptDetails.appointmentDateTime), +330),
+  //   'yyyy-MM-dd hh:mm a'
+  // );
   const rescheduleDetails = await rescheduleApptRepo.getRescheduleDetails(
     bookRescheduleAppointmentInput.appointmentId
   );
@@ -660,7 +660,6 @@ const bookRescheduleAppointment: Resolver<
   if (!rescheduledapptDetails) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
-  console.log('docdetails', docDetails.doctorHospital);
   let facilityDetsString = 'N/A';
   let hospitalCity = 'N/A';
   if (docDetails.doctorHospital.length > 0) {
@@ -676,7 +675,7 @@ const bookRescheduleAppointment: Resolver<
   ); //format(istDateTime, 'dd/MM/yyyy');
   const apptTime = format(
     addMinutes(new Date(rescheduledapptDetails.appointmentDateTime), +330),
-    'hh:mm:aa'
+    'hh:mm aa'
   ); // format(istDateTime, 'hh:mm aa');
   const mailContent = rescheduleAppointmentEmailTemplate({
     hospitalCity: hospitalCity || 'N/A',
@@ -694,7 +693,6 @@ const bookRescheduleAppointment: Resolver<
       patientDetails.uhid,
       docDetails.salutation + ' ' + docDetails.firstName,
       facilityDetsString,
-      oldApptDate,
       apptDate,
       apptTime,
       rescheduledapptDetails.appointmentType,

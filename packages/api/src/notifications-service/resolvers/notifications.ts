@@ -182,15 +182,15 @@ const sendDailyAppointmentSummary: Resolver<
         //console.log('came here', onlineAppointments, fileName);
         fileStream = fs.createWriteStream(uploadPath);
         pdfDoc.pipe(fileStream);
-        rowHeadx = 90;
-        rowx = 87;
+        rowHeadx = 45;
+        rowx = 53;
         writeRow(pdfDoc, rowHeadx);
-        textInRow(pdfDoc, 'Patient Name', 100, 30);
-        textInRow(pdfDoc, 'Appointment Date Time', 100, 201);
-        textInRow(pdfDoc, 'Appointment Type', 94, 346);
-        textInRow(pdfDoc, 'Display ID', 109, 446);
-        textInRow(pdfDoc, '(Online/Physical)', 109, 334);
-        textInRow(pdfDoc, 'Appointment', 94, 441);
+        textInRow(pdfDoc, 'Patient Name', 55, 30);
+        textInRow(pdfDoc, 'Appointment Date Time', 55, 201);
+        textInRow(pdfDoc, 'Appointment Type', 48, 342);
+        textInRow(pdfDoc, 'Display ID', 63, 467);
+        textInRow(pdfDoc, '(Online/Physical)', 63, 344);
+        textInRow(pdfDoc, 'Appointment', 48, 460);
         flag = 1;
       }
       if (rowHeadx == 45) {
@@ -198,7 +198,7 @@ const sendDailyAppointmentSummary: Resolver<
       }
       rowHeadx += 30;
       rowx += 30;
-      if (index % 21 == 0 && index > 0) {
+      if (index % 20 == 0 && index > 0) {
         pdfDoc.addPage();
         rowHeadx = 45;
         rowx = 52;
@@ -225,12 +225,12 @@ const sendDailyAppointmentSummary: Resolver<
         const totalAppointments = onlineAppointments + physicalAppointments;
         pdfDoc
           .lineCap('butt')
-          .moveTo(200, 90)
+          .moveTo(200, 45)
           .lineTo(200, rowHeadx + 30)
-          .moveTo(340, 90)
+          .moveTo(340, 45)
           .lineTo(340, rowHeadx + 30)
-          .moveTo(440, 90)
-          .lineTo(440, rowHeadx + 30)
+          .moveTo(450, 45)
+          .lineTo(450, rowHeadx + 30)
           .stroke();
         pdfDoc.end();
         const fp = `${uploadPath}$${fileName}$${totalAppointments}$${doctorDetails[0].mobileNumber}$${doctorDetails[0].firstName}`;
@@ -383,17 +383,16 @@ const sendAppointmentSummaryOps: Resolver<
           fileStream = fs.createWriteStream(uploadPath);
           pdfDoc.pipe(fileStream);
           rowHeadx = 45;
-          rowx = 35;
-          pdfDoc.fontSize(12);
+          rowx = 53;
           writeBigRow(pdfDoc, rowHeadx);
-          textInRow(pdfDoc, 'Doctor Name', 50, 25);
-          textInRow(pdfDoc, 'Patient Name', 50, 195);
-          textInRow(pdfDoc, 'Appointment Date Time', 50, 318);
-          textInRow(pdfDoc, 'Appt. Display ID', 50, 450);
-          textInRow(pdfDoc, 'Appt. Status', 50, 544);
-          textInRow(pdfDoc, 'Doctor Type', 50, 785);
-          textInRow(pdfDoc, 'Doctor Specialization', 50, 637);
-          textInRow(pdfDoc, 'Doctor Hospital Name', 50, 920);
+          textInRow(pdfDoc, 'Doctor Name', 55, 28);
+          textInRow(pdfDoc, 'Patient Name', 55, 190);
+          textInRow(pdfDoc, 'Appointment Date Time', 55, 318);
+          textInRow(pdfDoc, 'Appt. Display ID', 55, 450);
+          textInRow(pdfDoc, 'Appt. Status', 55, 544);
+          textInRow(pdfDoc, 'Doctor Type', 55, 785);
+          textInRow(pdfDoc, 'Doctor Specialization', 55, 639);
+          textInRow(pdfDoc, 'Doctor Hospital Name', 55, 920);
           //get all the doctors associated with the admin id
           const doctorDetails: Doctor[] = [];
           allAdminDetails.filter((item) => {
@@ -421,14 +420,14 @@ const sendAppointmentSummaryOps: Resolver<
               totalAppointments = totalAppointments + docApptDetails.length;
               docApptDetails.forEach((docAppointment, index) => {
                 if (rowHeadx == 45) {
-                  rowx += 23;
+                  rowx = rowx;
                 }
                 rowHeadx += 38;
                 rowx += 38;
                 if (index % 25 == 0 && index > 0) {
                   pdfDoc.addPage();
-                  rowHeadx = 42;
-                  rowx = 58;
+                  rowHeadx = 45;
+                  rowx = 52;
                 }
                 writeBigRow(pdfDoc, rowHeadx);
                 textInRow(pdfDoc, doctorDetails[0].displayName, rowx, 28);
