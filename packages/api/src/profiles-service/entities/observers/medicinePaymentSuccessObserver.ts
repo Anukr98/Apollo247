@@ -16,10 +16,7 @@ export class MedicineEntitySubscriber implements EntitySubscriberInterface<Medic
       );
 
       const currentMedicinePayment = MedicineOrders.create(event.entity as MedicineOrders);
-      if (
-        oldMedicinePayment.currentStatus !== MEDICINE_ORDER_STATUS.ORDER_BILLED &&
-        currentMedicinePayment.currentStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED
-      ) {
+      if ( isOrderPlaced(currentMedicinePayment, oldMedicinePayment) ) {
         transactionSuccessTrigger({
           amount: `${currentMedicinePayment.paymentInfo.amountPaid}`,
           transactionType: TransactionType.CONSULT,
@@ -43,4 +40,14 @@ export class MedicineEntitySubscriber implements EntitySubscriberInterface<Medic
       throw new AphError(AphErrorMessages.AFTER_UPDATE_MEDICINE_ERROR, undefined, { error });
     }
   }
+}
+
+const isOrderPlaced = function(currentMedicinePayment, oldMedicinePayment){
+  return (oldMedicinePayment.currentStatus !== MEDICINE_ORDER_STATUS.ORDER_BILLED &&
+    currentMedicinePayment.currentStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED) ||
+    (oldMedicinePayment.currentStatus !== MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS &&
+      currentMedicinePayment.currentStatus == MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS) ||
+      (oldMedicinePayment.currentStatus !== MEDICINE_ORDER_STATUS.ORDER_INITIATED && 
+        currentMedicinePayment.currentStatus == MEDICINE_ORDER_STATUS.ORDER_INITIATED);
+ 
 }
