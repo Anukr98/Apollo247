@@ -36,7 +36,6 @@ export interface SubscriptionData {
   coupons: PlanCoupons[];
   isActive: boolean; 
   upgradeTransactionValue?: number | null;
-  isFreeDelivery?: boolean;
 }
 
 export interface GroupPlan {

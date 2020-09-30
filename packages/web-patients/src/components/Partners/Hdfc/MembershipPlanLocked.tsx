@@ -741,7 +741,8 @@ export const MembershipPlanLocked: React.FC = (props) => {
                   <div className={`${classes.detailsContent} ${classes.availContent}`}>
                     <Typography>
                       Complete transactions worth Rs. {upgradableTransactionValue} or more on the
-                      Apollo 24|7 app to unlock platinum+ plan membership
+                      Apollo 24|7 app to unlock{' '}
+                      {upgradableSubscription && upgradableSubscription.name} membership
                     </Typography>
                   </div>
                 </ExpansionPanelDetails>

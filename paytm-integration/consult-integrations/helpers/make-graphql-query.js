@@ -21,8 +21,11 @@ const consultsOrderQuery = (payload) => {
     paymentDateTime: "${txnDate}", 
     responseCode: "${payload.RESPCODE}", 
     responseMessage: "${payload.RESPMSG}", 
-    bankTxnId: "${payload.BANKTXNID}",
-    partnerInfo: "${partnerInfo}"`;
+    bankTxnId: "${payload.BANKTXNID}"`;
+
+  if (partnerInfo) {
+    params += `, partnerInfo: "${partnerInfo}"`;
+  }
 
   if (payload.REFUNDAMT) {
     params += `, refundAmount: ${payload.REFUNDAMT}`;

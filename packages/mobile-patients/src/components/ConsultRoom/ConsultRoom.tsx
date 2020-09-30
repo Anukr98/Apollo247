@@ -277,7 +277,19 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('B', 15, '#FC9916', 1, 35, 0.35),
     textAlign: 'right',
     marginTop: 10,
-  }
+  },
+  hdfcBanner: {
+    ...theme.viewStyles.cardViewStyle,
+    backgroundColor: theme.colors.CLEAR,
+    borderRadius: 12,
+    elevation: 15,
+    marginTop: 10,
+    marginHorizontal: 28,
+    marginBottom: 30,
+    padding: 0,
+    height: 140,
+    alignSelf: 'auto'
+  },
 });
 
 type menuOptions = {
@@ -434,7 +446,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         if (g(hdfcUserSubscriptions, 'isActive')) {
           setHdfcPlanName && setHdfcPlanName(subscriptionName);
         }
-        if(g(hdfcUserSubscriptions, 'isFreeDelivery')) {
+        if(subscriptionName === hdfc_values.PLATINUM_PLAN && !!g(hdfcUserSubscriptions, 'isActive')) {
           setIsFreeDelivery && setIsFreeDelivery(true);
         }
         setShowHdfcWidget(false);
@@ -899,7 +911,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       };
       const benefits = plan.benefits;
       const planBenefits: PlanBenefits[] = [];
-      let isFreeDelivery = false;
       if (benefits && benefits.length) {
         benefits.forEach((item) =>{
           const ctaAction = g(item, 'cta_action');
@@ -908,9 +919,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             action: g(ctaAction, 'meta', 'action'),
             message: g(ctaAction, 'meta', 'message'),
           };
-          if (g(ctaAction, 'meta', 'action') === 'PHARMACY_LANDING') {
-            isFreeDelivery = true;
-          }
           const benefit: PlanBenefits = {
             _id: item!._id,
             attribute: item!.attribute,
@@ -945,8 +953,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         coupons: plan!.coupons ? plan!.coupons : [],
         canUpgradeTo: g(upgradeToPlan, '_id') ? setSubscriptionData(upgradeToPlan) : {},
         upgradeTransactionValue: plan!.upgrade_transaction_value,
-        isFreeDelivery: isFreeDelivery && isActive ? true : false,
-      }
+      };
       return subscription;
     } catch (e) {
       console.log('ERROR: ', e);
@@ -1650,7 +1657,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       <View>
         <HdfcBankLogoPresents style={styles.hdfcLogo} />
         <Text style={{
-          ...theme.viewStyles.text('B', 11, '#005CA8', 1, 20, 0.35),
+          ...theme.viewStyles.text('B', 11, '#164884', 1, 20, 0.35),
           marginBottom: 10,
         }}>
           #ApolloHealthyLife
@@ -1995,14 +2002,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     return mPath;
   };
 
-  const renderHdfcSliderItem = ({ item, index }) => {
+  const renderHdfcSliderItem = ({ item }) => {
     const {cta_action} = item;
 
     const bannerUri = getMobileURL(item.banner);
-    let imageWidth = 320;
     let imageHeight = 144;
     Image.getSize(bannerUri, (width, height) => {
-      imageWidth = width;
       imageHeight = height;
     },
     (error) => {console.log(error)}
@@ -2011,18 +2016,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       <TouchableOpacity
         activeOpacity={1}
         onPress={() => handleOnBannerClick(cta_action.type, cta_action.meta.action, cta_action.meta.message)}
-        style={{
-          ...theme.viewStyles.cardViewStyle,
-          backgroundColor: theme.colors.CLEAR,
-          borderRadius: 12,
-          elevation: 15,
-          marginTop: 10,
-          marginHorizontal: 28,
-          marginBottom: 23,
-          padding: 0,
-          height: 140,
-          alignSelf: 'auto'
-        }}>
+        style={styles.hdfcBanner}>
         <Image
           style={{
             height: imageHeight,

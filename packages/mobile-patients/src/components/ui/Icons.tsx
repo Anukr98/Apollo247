@@ -999,18 +999,6 @@ export const EllipseBulletPoint: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/Ellipse.png')} />
 );
 
-// export const HdfcGoldMedal: React.FC<IconProps> = (props) => (
-//   <IconBase {...props} source={require('./icons/medal_gold.png')} />
-// );
-
-// export const HdfcPlatinumMedal: React.FC<IconProps> = (props) => (
-//   <IconBase {...props} source={require('./icons/medal_platinum.png')} />
-// );
-
-// export const HdfcSilverMedal: React.FC<IconProps> = (props) => (
-//   <IconBase {...props} source={require('./icons/medal_silver.png')} />
-// );
-
 export const LockIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/lock.png')} />
 );

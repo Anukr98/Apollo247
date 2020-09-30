@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
   membershipCardContainer: {
     flexDirection: 'row',
     paddingHorizontal: 16,
-    paddingTop: 16,
+    paddingTop: 10,
   },
   planName: {
     ...theme.viewStyles.text('B', 14, '#00B38E', 1, 20, 0.35), 
@@ -92,15 +92,15 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   healthyLifeContainer: {
-    marginHorizontal: 20,
-    marginBottom: 10,
+    marginHorizontal: 16,
+    marginTop: 10,
     flexDirection: 'row',
     justifyContent: 'space-between'
   },
   hdfcLogo: {
     resizeMode: 'contain',
     width: 100,
-    height: 30,
+    height: 20,
   },
   currentBenefits: {
     ...theme.viewStyles.text('B', 14, '#02475B', 1, 20, 0.35),
@@ -128,7 +128,6 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
   const [showAvailPopup, setShowAvailPopup] = useState<boolean>(false);
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [upgradeTransactionValue, setUpgradeTransactionValue] = useState<number>(0);
-  const hdfc_values = string.Hdfc_values;
 
   useEffect(() => {
     if (hdfcUserSubscriptions && g(hdfcUserSubscriptions, '_id')) {
@@ -145,11 +144,11 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
     );
   };
 
-  const renderCardBody = (benefits: PlanBenefits[], subscriptionName: string) => {
+  const renderCardBody = (benefits: PlanBenefits[], subscriptionName: string, isCanUpgradeToPlan: boolean) => {
     return (
       <View style={styles.subTextContainer}>
         <Text style={[theme.viewStyles.text('R', 12, '#000000', 1, 20, 0.35), {marginBottom: 5}]}>
-          'Benefits Available'
+          {isCanUpgradeToPlan ? `Key Benefits you get...` : `Benefits Available`}
         </Text>
         {
           benefits.slice(0, 3).map((value, index) => {
@@ -215,19 +214,15 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
   };
 
   const renderMembershipCard = (subscription: any, isCanUpgradeToPlan: boolean) => {
-    const isSilver = subscription!.name === hdfc_values.SILVER_PLAN;
-    const isGold = subscription!.name === hdfc_values.GOLD_PLAN;
-    const isPlatinum = subscription!.name === hdfc_values.PLATINUM_PLAN;
     return (
       <View style={styles.cardStyle}>
+        <View style={styles.healthyLifeContainer}>
+          <Text style={theme.viewStyles.text('B', 12, '#164884', 1, 20, 0.35)}>
+            #ApolloHealthyLife
+          </Text>
+          <HdfcBankLogo style={styles.hdfcLogo}/>
+        </View>
         <View style={styles.membershipCardContainer}>
-          {/* <HdfcBankLogoSmall 
-            style={{
-              width: 20,
-              height: 20,
-              marginRight: 10,
-            }} 
-          /> */}
           <Text style={styles.planName}>
             {subscription!.name}
           </Text>
@@ -235,15 +230,11 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
             (isCanUpgradeToPlan || !isActive) ? (
               <LockIcon style={styles.lockIcon} />
             ) : (
-              <>
-              {/* {isGold && <HdfcGoldMedal style={styles.medalIcon} />}
-              {isPlatinum && <HdfcPlatinumMedal style={styles.medalIcon} />}
-              {isSilver && <HdfcSilverMedal style={styles.medalIcon} />} */}
-              </>
+              <></>
             )
           }
         </View>
-        {renderCardBody(subscription!.benefits, subscription!.name)}
+        {renderCardBody(subscription!.benefits, subscription!.name, isCanUpgradeToPlan)}
         {renderBottomButtons(subscription!.isActive, subscription!.name, isCanUpgradeToPlan)}
       </View>
     );
@@ -273,12 +264,6 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
           showSubscriptions && 
           <ScrollView bounces={false}>
             <View>
-              <View style={styles.healthyLifeContainer}>
-                <Text style={theme.viewStyles.text('B', 12, '#005CA8', 1, 20, 0.35)}>
-                  #ApolloHealthyLife
-                </Text>
-                <HdfcBankLogo style={styles.hdfcLogo}/>
-              </View>
               <View>
                   <Text style={styles.currentBenefits}>
                     CURRENT BENEFITS
