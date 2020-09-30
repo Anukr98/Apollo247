@@ -37,10 +37,17 @@ export async function fetchUserSubscription(mobileNumber: string) {
     }
   }`,
   };
-  const response = await axios.post(url, requestJSON);
-  if (response?.data?.data?.GetSubscriptionsOfUserByStatus?.response[0].group_plan) {
-    return `${response.data.data.GetSubscriptionsOfUserByStatus.response[0].group_plan.group.name}:${response.data.data.GetSubscriptionsOfUserByStatus.response[0].group_plan.plan_id}`;
-  } else return '';
+  try {
+    const response = await axios.post(url, requestJSON);
+    if (
+      response?.data?.data?.GetSubscriptionsOfUserByStatus?.response &&
+      response?.data?.data?.GetSubscriptionsOfUserByStatus?.response?.length > 0
+    ) {
+      return `${response.data.data.GetSubscriptionsOfUserByStatus.response[0].group_plan.group.name}:${response.data.data.GetSubscriptionsOfUserByStatus.response[0].group_plan.plan_id}`;
+    } else return '';
+  } catch (error) {
+    return '';
+  }
 }
 export async function transactionSuccessTrigger(args: SuccessTransactionInputForSubscription) {
   const {
