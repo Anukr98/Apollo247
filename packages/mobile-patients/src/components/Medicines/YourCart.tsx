@@ -424,7 +424,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             mou: medicineDetails.mou,
             name: medicineDetails!.name,
             price: medicineDetails.price,
-            specialPrice: Number(couponProducts[index]!.mrp), // special price as coupon product price
+            specialPrice: Number(couponProducts[index]!.specialPrice),
             quantity: couponProducts[index]!.quantity,
             prescriptionRequired: medicineDetails.is_prescription_required == '1',
             isMedicine: (medicineDetails.type_id || '').toLowerCase() == 'pharma',
@@ -432,6 +432,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             isInStock: !!medicineDetails.is_in_stock,
             maxOrderQty: medicineDetails.MaxOrderQty,
             productType: medicineDetails.type_id,
+            isFreeCouponProduct: couponProducts[index]!.couponFree,
           } as ShoppingCartItem;
         });
         addMultipleCartItems!(medicinesAll as ShoppingCartItem[]);
@@ -482,17 +483,15 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             showUnServiceableItemsAlert(updatedCartItems);
           }
 
-          const availableItems = updatedCartItems
-            .filter(({ id }) => !unserviceableSkus.find((item) => id === item))
-            .map((item) => {
-              return { sku: item.id, qty: item.quantity };
-            });
+          const availableItems = updatedCartItems.filter(
+            ({ id }) => !unserviceableSkus.find((item) => id === item)
+          );
 
           const tatApiInput247: TatApiInput247 = {
-            items: availableItems,
+            items: availableItems.map(({ id, quantity }) => ({ sku: id, qty: quantity })),
             pincode: selectedAddress.zipcode || '',
             lat: selectedAddress?.latitude!,
-            lng: selectedAddress?.longitude!
+            lng: selectedAddress?.longitude!,
           };
           const tatRes = await getDeliveryTAT247(tatApiInput247);
 
@@ -510,18 +509,17 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               });
               if (serviceableSkus.length && !unserviceableSkus.length) {
                 const inventoryDataRes = g(tatRes, 'data', 'response', 'items') || [];
-                const availableInventory = inventoryDataRes
-                  .map((item) => {
-                    const availableItem = availableItems.filter(({sku}) => sku === item.sku)[0]
-                    return {
-                      itemId: item.sku,
-                      qty: availableItem ? availableItem.qty : item.qty,
-                      mrp: item.mrp,
-                    };
-                  });
+                const availableInventory = inventoryDataRes.map((item) => {
+                  const availableItem = availableItems.filter(({ sku }) => sku === item.sku)[0];
+                  return {
+                    itemId: item.sku,
+                    qty: availableItem ? availableItem.qty : item.qty,
+                    mrp: item.mrp,
+                  };
+                });
                 if (availableInventory && availableInventory.length) {
                   setStoreType(tatRes?.data?.response?.storeType);
-                  setShopId(tatRes?.data?.response?.storeCode)
+                  setShopId(tatRes?.data?.response?.storeCode);
                   fetchInventoryAndUpdateCartPricesAfterTat(updatedCartItems, availableInventory);
                   updateserviceableItemsTat(deliveryDate, lookUp);
                 } else {
@@ -540,11 +538,51 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             setshowDeliverySpinner(false);
             setLoading!(false);
           }
+          try {
+            const response = tatRes.data.response;
+            const item = response.items[0];
+            const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_TAT_API_CALLED] = {
+              Source: 'Cart',
+              Input_sku: availableItems[0]?.id,
+              Input_qty: availableItems[0]?.quantity,
+              Input_lat: selectedAddress.latitude!,
+              Input_long: selectedAddress.longitude!,
+              Input_pincode: selectedAddress.zipcode!,
+              Input_MRP: availableItems[0]?.price,
+              No_of_items_in_the_cart: availableItems.length,
+              Response_Exist: item.exist ? 'Yes' : 'No',
+              Response_MRP: item.mrp,
+              Response_Qty: item.qty,
+              Response_lat: response.lat,
+              Response_lng: response.lng,
+              Response_ordertime: response.ordertime,
+              Response_pincode: `${response.pincode}`,
+              Response_storeCode: response.storeCode,
+              Response_storeType: response.storeType,
+              Response_tat: response.tat,
+              Response_tatU: response.tatU,
+            };
+            postWebEngageEvent(WebEngageEventName.PHARMACY_TAT_API_CALLED, eventAttributes);
+          } catch (error) {}
         } else {
           showGenericTatDate(lookUp);
           setshowDeliverySpinner(false);
           setLoading!(false);
         }
+        try {
+          const { mrp, exist, qty } = checkAvailabilityRes.data.response[0];
+          const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED] = {
+            Source: 'PDP',
+            Input_SKU: cartItems[0]?.id,
+            Input_Pincode: selectedAddress.zipcode || '',
+            Input_MRP: cartItems[0]?.price,
+            No_of_items_in_the_cart: cartItems.length,
+            Response_Exist: exist ? 'Yes' : 'No',
+            Response_MRP: mrp,
+            Response_Qty: qty,
+          };
+          postWebEngageEvent(WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED, eventAttributes);
+        } catch (error) {}
       } catch (err) {
         CommonBugFender('YourCart_getDeliveryTime', err);
         if (!Axios.isCancel(err) || g(err, 'code') === 'ECONNABORTED') {
@@ -823,7 +861,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         categoryId: item.productType,
         mrp: item.price,
         quantity: item.quantity,
-        specialPrice: item.specialPrice !== undefined ? item.specialPrice : item.price,
+        specialPrice: item.specialPrice ? item.specialPrice : item.price,
       })),
     };
     validateConsultCoupon(data)
@@ -1805,13 +1843,13 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         deliveryTime,
         isChennaiOrder: true,
         tatType: storeType,
-        shopId: shopId
+        shopId: shopId,
       });
     } else {
       props.navigation.navigate(AppRoutes.CheckoutSceneNew, {
         deliveryTime,
         tatType: storeType,
-        shopId: shopId
+        shopId: shopId,
       });
     }
   };

@@ -108,6 +108,7 @@ export const ADD_NEW_PROFILE = gql`
         lastName
         emailAddress
         gender
+        dateOfBirth
       }
     }
   }
@@ -1465,9 +1466,19 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
 `;
 
 export const GET_DIAGNOSTICS_HC_CHARGES = gql`
-  query getDiagnosticsHCCharges($itemIDs: [Int]!, $totalCharges: Int!,  $slotID: String!, $pincode: Int!) {
-    getDiagnosticsHCCharges(itemIDs: $itemIDs, totalCharges: $totalCharges, slotID: $slotID, pincode: $pincode) {
-        charges
+  query getDiagnosticsHCCharges(
+    $itemIDs: [Int]!
+    $totalCharges: Int!
+    $slotID: String!
+    $pincode: Int!
+  ) {
+    getDiagnosticsHCCharges(
+      itemIDs: $itemIDs
+      totalCharges: $totalCharges
+      slotID: $slotID
+      pincode: $pincode
+    ) {
+      charges
     }
   }
 `;
@@ -2426,6 +2437,7 @@ export const ADD_TO_CONSULT_QUEUE = gql`
       }
       totalJuniorDoctors
       isJdAllowed
+      isJdAssigned
     }
   }
 `;
@@ -2660,6 +2672,7 @@ export const AUTOMATED_QUESTIONS = gql`
       }
       totalJuniorDoctors
       isJdAllowed
+      isJdAssigned
     }
   }
 `;

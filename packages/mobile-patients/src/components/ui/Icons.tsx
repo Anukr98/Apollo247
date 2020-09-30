@@ -958,10 +958,6 @@ export const SearchIcon: React.FC<IconProps> = (props) => (
   />
 );
 
-export const LinkUHIDReadMore: React.FC<IconProps> = (props) => (
-  <IconBase size="lg" {...props} source={require('./icons/read-more.png')} />
-);
-
 export const RectangularIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/rectangleIcon.png')} />
 );
@@ -1002,3 +998,16 @@ export const PlusIconWhite: React.FC<IconProps> = (props) => (
 export const MinusIconWhite: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/minus-icon-white.png')} />
 );
+
+export const BotIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/bot.png')} />
+);
+
+export const InfoIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/info.png')} />
+);
+
+export const MinusIconOrange: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/minus-icon-orange.png')} />
+);
+

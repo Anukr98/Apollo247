@@ -19,6 +19,7 @@ import { GET_RECOMMENDED_PRODUCTS_LIST } from 'graphql/profiles';
 import { getRecommendedProductsList_getRecommendedProductsList_recommendedProducts as recommendedProductsType } from 'graphql/types/getRecommendedProductsList';
 import { gtmTracking } from 'gtmTracking';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { getImageUrl, deepLinkUtil, readableParam } from 'helpers/commonHelpers';
 import { useCurrentPatient } from 'hooks/authHooks';
 import { useParams } from 'hooks/routerHooks';
 import _replace from 'lodash/replace';
@@ -34,7 +35,6 @@ import {
   uploadPrescriptionTracking,
 } from 'webEngageTracking';
 import { MedicineProduct } from './../../helpers/MedicineApiCalls';
-import { getImageUrl, readableParam } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -282,6 +282,10 @@ const SearchByMedicine: React.FC = (props) => {
   const [heading, setHeading] = React.useState<string>('');
   const { cartItems } = useShoppingCart();
   const { diagnosticsCartItems } = useDiagnosticsCart();
+
+  useEffect(() => {
+    deepLinkUtil(`MedicineSearch?${categoryId},${params.searchText}`);
+  }, [categoryId]);
 
   const getTitle = () => {
     let title = params.searchMedicineType;
@@ -661,6 +665,7 @@ const SearchByMedicine: React.FC = (props) => {
     title: getMetaTitle,
     description: getMetaDescription,
     canonicalLink: window && window.location && window.location && window.location.href,
+    deepLink: window.location.href,
   };
 
   return (

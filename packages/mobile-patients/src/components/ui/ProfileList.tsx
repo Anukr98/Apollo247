@@ -51,6 +51,8 @@ export interface ProfileListProps {
   showList?: boolean;
   menuHidden?: () => void;
   onProfileChange?: (profile: GetCurrentPatients_getCurrentPatients_patients) => void;
+  screenName?: string;
+  editProfileCallback?: (patient: any) => void;
 }
 
 export const ProfileList: React.FC<ProfileListProps> = (props) => {
@@ -284,6 +286,8 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
               isEdit: false,
               isPoptype: true,
               mobileNumber: currentPatient && currentPatient!.mobileNumber,
+              screenName: props.screenName,
+              goBackCallback: props.editProfileCallback,
             });
             setDisplayAddProfile && setDisplayAddProfile(true);
           } else {

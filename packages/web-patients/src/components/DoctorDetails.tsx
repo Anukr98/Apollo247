@@ -41,7 +41,7 @@ import { NavigationBottom } from 'components/NavigationBottom';
 import { GetDoctorNextAvailableSlot } from 'graphql/types/GetDoctorNextAvailableSlot';
 import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetailsType } from 'graphql/types/GetDoctorDetailsById';
 import { doctorProfileViewTracking } from 'webEngageTracking';
-import { getDiffInMinutes } from 'helpers/commonHelpers';
+import { getDiffInMinutes, deepLinkUtil } from 'helpers/commonHelpers';
 import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
 import { SAVE_PATIENT_SEARCH } from 'graphql/pastsearches';
 import { useLocation } from 'react-router';
@@ -251,6 +251,10 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots &&
     doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots.length > 0 &&
     doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0];
+
+  useEffect(() => {
+    deepLinkUtil(`Doctor?${doctorId}`);
+  }, []);
 
   useEffect(() => {
     if (doctorSlots && doctorSlots.availableSlot) {
