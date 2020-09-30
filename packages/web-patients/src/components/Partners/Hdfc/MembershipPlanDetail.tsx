@@ -469,6 +469,8 @@ const useStyles = makeStyles((theme: Theme) => {
         width: '100%',
         textAlign: 'left',
         height: 'auto',
+        minHeight: 100,
+        padding: 16,
         boxShadow: '0px 0px 32px rgba(0, 0, 0, 0.1)',
         '& p': {
           width: '80%',
@@ -516,6 +518,7 @@ const useStyles = makeStyles((theme: Theme) => {
           display: 'block',
           width: 'auto',
           bottom: 10,
+          left: 'auto',
           '&:hover': {
             background: '#fff',
             color: '#FC9916',
@@ -740,7 +743,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     beneContent: {
       [theme.breakpoints.down('sm')]: {
-        width: '90%',
+        width: '85%',
       },
     },
     pb16: {
