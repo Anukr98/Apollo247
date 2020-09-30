@@ -6,6 +6,7 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { getAuthToken } from 'helpers/phrV1Services';
 import { AppointmentDocumentRepository } from 'consults-service/repositories/appointmentDocumentRepository';
+import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 
 export const downloadDocumentsTypeDefs = gql`
   input DownloadDocumentsInput {
@@ -31,7 +32,6 @@ export type DownloadDocumentsInput = {
 
 type DownloadDocsInputArgs = { downloadDocumentsInput: DownloadDocumentsInput };
 
-//not in use, preserved for backward compatability
 export const downloadDocuments: Resolver<
   null,
   DownloadDocsInputArgs,
@@ -44,10 +44,20 @@ export const downloadDocuments: Resolver<
 
   const getToken = await getAuthToken(patientDetails.uhid);
 
+  //get patient related all appointments
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const appointmentIds = await appointmentRepo.getAppointmentIdsByPatientId(
+    downloadDocumentsInput.patientId
+  );
+
+  const appointmentList: string[] = [];
+  appointmentIds.forEach((appointment) => appointmentList.push(appointment.id));
+
   //get appointment record details related to fileID
-  const appointmentRepo = consultsDb.getCustomRepository(AppointmentDocumentRepository);
-  const appointmentDocuments = await appointmentRepo.getDocumentDataByPrismFileIds(
-    downloadDocumentsInput.fileIds
+  const appointmentDocumnetRepo = consultsDb.getCustomRepository(AppointmentDocumentRepository);
+  const appointmentDocuments = await appointmentDocumnetRepo.getDocumentDataByPrismFileIds(
+    downloadDocumentsInput.fileIds,
+    appointmentList
   );
 
   const downloadPaths = downloadDocumentsInput.fileIds.map((fileIdName) => {
