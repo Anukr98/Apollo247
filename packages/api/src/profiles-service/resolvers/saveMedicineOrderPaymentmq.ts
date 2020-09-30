@@ -290,7 +290,6 @@ const SaveMedicineOrderPaymentMq: Resolver<
     };
 
    
-    await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
 
     if (
       currentStatus == MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS ||
