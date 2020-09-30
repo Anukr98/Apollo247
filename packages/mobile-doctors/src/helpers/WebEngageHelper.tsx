@@ -75,6 +75,9 @@ export enum WebEngageEventName {
   DOCTOR_CALENDAR_ERROR = 'Front_end - Doctor API-Error on Calendar',
   DOCTOR_CASESHEET_ERROR = 'Front_end - Doctor API-Error on Casesheet',
   DOCTOR_PREVIEWCASESHEET_ERROR = 'Front_end - Doctor API-Error on Prescription Preview',
+  DOCTOR_OPENTOK_SESSION_EVENTS = 'Front_end - Doctor Session Event',
+  DOCTOR_OPENTOK_PUBLISHER_EVENTS = 'Front_end - Doctor Publisher Event',
+  DOCTOR_OPENTOK_SUBSCRIBER_EVENTS = 'Front_end - Doctor Subscriber Event',
 }
 
 export interface WebEngageEvents {
@@ -326,6 +329,18 @@ export interface WebEngageEvents {
     ErrorDetails: string;
     'Consultation Display ID': string;
     'Consult ID': string;
+  };
+  [WebEngageEventName.DOCTOR_OPENTOK_SESSION_EVENTS]: {
+    'Event Name': string;
+    'Event Details': Object;
+  };
+  [WebEngageEventName.DOCTOR_OPENTOK_PUBLISHER_EVENTS]: {
+    'Event Name': string;
+    'Event Details': Object;
+  };
+  [WebEngageEventName.DOCTOR_OPENTOK_SUBSCRIBER_EVENTS]: {
+    'Event Name': string;
+    'Event Details': Object;
   };
 }
 
