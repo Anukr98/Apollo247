@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
-import { Theme, Tabs, Tab, Typography } from '@material-ui/core';
 import { AphButton, AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-ui-components';
+import { Tab, Tabs, Theme, Typography } from '@material-ui/core';
 import { Helmet } from 'react-helmet';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import Scrollbars from 'react-custom-scrollbars';
@@ -9,18 +10,20 @@ import { MedicineImageGallery } from 'components/Medicine/MedicineImageGallery';
 import { MedicineInformation } from 'components/Medicine/MedicineInformation';
 import { useParams } from 'hooks/routerHooks';
 import axios from 'axios';
+import { Alerts } from 'components/Alerts/Alerts';
 import { MedicineProductDetails, PharmaOverview } from '../../helpers/MedicineApiCalls';
 import { ManageProfile } from 'components/ManageProfile';
 import { MedicinesCartContext, useShoppingCart } from 'components/MedicinesCartProvider';
 import { NavigationBottom } from 'components/NavigationBottom';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import { Alerts } from 'components/Alerts/Alerts';
 import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
 import { gtmTracking } from '../../gtmTracking';
 import { SchemaMarkup } from 'SchemaMarkup';
 import { BottomLinks } from 'components/BottomLinks';
 import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
+import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
+import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { getPackOfMedicine, deepLinkUtil } from 'helpers/commonHelpers';
 import { useCurrentPatient } from 'hooks/authHooks';
 import stripHtml from 'string-strip-html';
 import {
@@ -28,14 +31,11 @@ import {
   pharmacyPdpOverviewTracking,
   pharmacyProductViewTracking,
 } from 'webEngageTracking';
-import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
-import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
 import { MetaTagsComp } from 'MetaTagsComp';
 import moment from 'moment';
 import { useHistory } from 'react-router';
 import { Link } from 'react-router-dom';
 import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
-import { getPackOfMedicine } from 'helpers/commonHelpers';
 import { HotSellers } from 'components/Medicine/Cards/HotSellers';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -606,6 +606,9 @@ const MedicineDetails: React.FC = (props) => {
   const [isSkuVersion, setIsSkuVersion] = React.useState<boolean>(false);
   const { cartItems } = useShoppingCart();
   const { diagnosticsCartItems } = useDiagnosticsCart();
+  useEffect(() => {
+    deepLinkUtil(`MedicineDetail?${params.sku}`);
+  });
 
   const apiDetails = {
     skuUrl: process.env.PHARMACY_MED_PROD_SKU_URL,
@@ -1086,7 +1089,10 @@ const MedicineDetails: React.FC = (props) => {
 
   return (
     <div className={classes.root}>
-      <Helmet>{isSkuVersion && <meta name="robots" content="noindex, nofollow" />}</Helmet>
+      <Helmet>
+        <link rel="alternate" href={`apollopatients://MedicineDetail?${params.sku}`} />
+        {isSkuVersion && <meta name="robots" content="noindex, nofollow" />}
+      </Helmet>
       <MetaTagsComp {...metaTagProps} />
 
       {productSchemaJSON && <SchemaMarkup structuredJSON={productSchemaJSON} />}

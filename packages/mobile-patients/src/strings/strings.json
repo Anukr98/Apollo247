@@ -28,7 +28,8 @@
     "joinConsultRoomDescription": "Please click on 'Join' to start the\nconsult with",
     "waitForDoctirToJoinCall": "doctor_name is not in the room yet.\nPlease wait for few seconds while doctor joins the call....",
     "exotelMessage": " is trying to call you from the number ",
-    "requestMessage": ". Request you to answer the call."
+    "requestMessage": ". Request you to answer the call.",
+    "jdAssignedMessage": "A doctor from {0}’s team will join you shortly to collect your medical details. These details are essential for {0} to help you and will take around 3-5 minutes."
   },
   "consultType": {
     "mainHeading": "How would you like to consult with",
@@ -430,5 +431,32 @@
     "CALL_EXOTEL_API": "CALL_EXOTEL_API",
     "DIETICS_SPECIALITY_ID": "dca9dcf1-20f7-40cc-8eac-c1f95d4a48b6",
     "DIETICS_SPECIALITY_NAME": "Dietetics"
+  },
+  "symptomChecker": {
+    "howItWorks": "HOW IT WORKS?",
+    "patientDetails": "Patient Details",
+    "name": "Name",
+    "age": "Age",
+    "gender": "Gender",
+    "selectAnotherMember": "Select Another Member",
+    "typeSymptomOrChooseFromList": "Type symptom here or choose from the list",
+    "addSelectedSymptom": "ADD SELECTED SYMPTOMS",
+    "symptoms": "Symptoms",
+    "noOtherSymptoms": "NO OTHER SYMPTOM",
+    "thanksForGivingAnswers": "Thanks {{name}}, for helping us with your answers.\n\nBelow is a summary of your symptoms.",
+    "restart": "RESTART",
+    "consultDoctor": "Consult Doctor",
+    "restartSymptomTrackerDiscription": "This will end your symptom tracking and you’ll have to start it again. Do you want to continue tracking your symptoms or go back?",
+    "symptomTracker": "Symptom Tracker",
+    "addAnotherSymptom": "Would you like to report another symptom?"
+  },
+  "callRelatedPermissions": {
+    "allPermissions": "For a smooth consultation experience with {0} and to ensure that you do not miss out your doctor's call, Apollo 247 needs your camera, microphone and call display permissions.",
+    "onlyOverlayPermission": "To make sure that you do not miss the call from {0} for your consultation, Apollo 247 need to have permission to display full screen notifications.",
+    "camAndMPPermission": "For a smooth consultation experience with {0}, Apollo 247 needs your camera and microphone permissions.",
+    "camAndOverlayPermission": "For a smooth consultation experience with {0} and to ensure that you do not miss out your doctor's call, Apollo 247 needs your camera and call display permissions.",
+    "mpAndOverlayPermission": "For a smooth consultation experience with {0} and to ensure that you do not miss out your doctor's call, Apollo 247 needs your microphone and call display permissions.",
+    "onlyCameraPermission": "For a smooth consultation experience with {0}, Apollo 247 needs your camera permission.",
+    "onlyMPPermission": "For a smooth consultation experience with {0}, Apollo 247 needs your microphone permission."
   }
 }
