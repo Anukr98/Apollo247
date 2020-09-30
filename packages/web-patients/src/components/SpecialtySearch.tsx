@@ -1,9 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { Theme, CircularProgress, Popover, Typography } from '@material-ui/core';
-import {
-  readableParam,
-  SPECIALTY_SEARCH_PAGE_SIZE,
-} from 'helpers/commonHelpers';
+import { readableParam, SPECIALTY_SEARCH_PAGE_SIZE } from 'helpers/commonHelpers';
 import { makeStyles } from '@material-ui/styles';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
@@ -275,67 +272,67 @@ export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
                 {searchLoading ? (
                   <CircularProgress />
                 ) : (
-                    <>
-                      {searchSpecialty && searchSpecialty.length > 0 && (
-                        <div className={classes.sContent}>
-                          <Typography component="h6">Specialities</Typography>
-                          <ul className={classes.sList}>
-                            {searchSpecialty.map(
-                              (specialty: GetDoctorList_getDoctorList_specialties) => (
-                                <Link
-                                  key={specialty.id}
-                                  to={
-                                    selectedCity === ''
-                                      ? clientRoutes.specialties(readableParam(specialty.name))
-                                      : clientRoutes.citySpecialties(
+                  <>
+                    {searchSpecialty && searchSpecialty.length > 0 && (
+                      <div className={classes.sContent}>
+                        <Typography component="h6">Specialities</Typography>
+                        <ul className={classes.sList}>
+                          {searchSpecialty.map(
+                            (specialty: GetDoctorList_getDoctorList_specialties) => (
+                              <Link
+                                key={specialty.id}
+                                to={
+                                  selectedCity === ''
+                                    ? clientRoutes.specialties(readableParam(specialty.name))
+                                    : clientRoutes.citySpecialties(
                                         _lowerCase(selectedCity),
                                         readableParam(specialty.name)
                                       )
-                                  }
-                                >
-                                  <li key={specialty.id} onClick={() => setSearchKeyword('')}>
-                                    {specialty.name}
-                                  </li>
-                                </Link>
-                              )
-                            )}
-                          </ul>
-                        </div>
-                      )}
-                      {searchDoctors && searchDoctors.length > 0 && (
-                        <div className={classes.docContent}>
-                          <Typography component="h6">Doctors</Typography>
-                          <ul className={classes.doctorList}>
-                            {searchDoctors.map((doctor: DoctorDetails) => (
-                              <li key={doctor.id}>
-                                <Link
-                                  key={doctor.id}
-                                  to={clientRoutes.doctorDetails(
-                                    readableParam(doctor.displayName),
-                                    doctor.id
-                                  )}
-                                >
-                                  <div className={classes.doctorContent}>
-                                    <div className={classes.dImg}>
-                                      <img src={doctor.photoUrl} />
-                                    </div>
-                                    <div className={classes.doctorDetails}>
-                                      <Typography component="h2">{doctor.displayName}</Typography>
-                                      <Typography>
-                                        {_get(doctor, 'specialistSingularTerm', '')} |{' '}
-                                        {getDoctorAvailability(doctor.earliestSlotInMinutes)} |{' '}
-                                        {doctor.fee} | {doctor.doctorfacility}
-                                      </Typography>
-                                    </div>
+                                }
+                              >
+                                <li key={specialty.id} onClick={() => setSearchKeyword('')}>
+                                  {specialty.name}
+                                </li>
+                              </Link>
+                            )
+                          )}
+                        </ul>
+                      </div>
+                    )}
+                    {searchDoctors && searchDoctors.length > 0 && (
+                      <div className={classes.docContent}>
+                        <Typography component="h6">Doctors</Typography>
+                        <ul className={classes.doctorList}>
+                          {searchDoctors.map((doctor: DoctorDetails) => (
+                            <li key={doctor.id}>
+                              <Link
+                                key={doctor.id}
+                                to={clientRoutes.doctorDetails(
+                                  readableParam(doctor.displayName),
+                                  doctor.id
+                                )}
+                              >
+                                <div className={classes.doctorContent}>
+                                  <div className={classes.dImg}>
+                                    <img src={doctor.photoUrl} />
                                   </div>
-                                </Link>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </>
-                  )}
+                                  <div className={classes.doctorDetails}>
+                                    <Typography component="h2">{doctor.displayName}</Typography>
+                                    <Typography>
+                                      {_get(doctor, 'specialistSingularTerm', '')} |{' '}
+                                      {getDoctorAvailability(doctor.earliestSlotInMinutes)} |{' '}
+                                      {doctor.fee} | {doctor.doctorfacility}
+                                    </Typography>
+                                  </div>
+                                </div>
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </>
+                )}
                 {!searchLoading &&
                   searchDoctors &&
                   searchDoctors.length === 0 &&
