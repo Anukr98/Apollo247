@@ -146,6 +146,9 @@ const saveDiagnosticOrderPayment: Resolver<
         transactionId: diagnosticPaymentInput.txnId,
         sourceTransactionIdentifier: diagnosticPaymentInput.diagnosticOrderId,
         mobileNumber: diagnosticOrder.patient.mobileNumber,
+        dob:  diagnosticOrder.patient.dateOfBirth,
+        email:  diagnosticOrder.patient.emailAddress,
+        partnerId:  diagnosticOrder.patient.partnerId,
       });
     diagnosticOrdersRepo.callDiagnosticFareEyeAPIs(diagnosticOrder, profilesDb);
 

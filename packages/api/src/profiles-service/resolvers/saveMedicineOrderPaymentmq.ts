@@ -289,7 +289,14 @@ const SaveMedicineOrderPaymentMq: Resolver<
       statusMessage: statusMsg,
     };
 
-    if (currentStatus == MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS) {
+   
+    await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
+
+    if (
+      currentStatus == MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS ||
+      currentStatus == MEDICINE_ORDER_STATUS.ORDER_INITIATED
+    ) {
+
       transactionSuccessTrigger({
         amount: `${medicinePaymentMqInput.amountPaid}`,
         transactionType: TransactionType.PHARMA,
@@ -301,13 +308,6 @@ const SaveMedicineOrderPaymentMq: Resolver<
         email: orderDetails.patient.emailAddress,
         partnerId: orderDetails.patient.partnerId,
       });
-    }
-    await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
-
-    if (
-      currentStatus == MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS ||
-      currentStatus == MEDICINE_ORDER_STATUS.ORDER_INITIATED
-    ) {
       if (orderDetails.coupon) {
         const payload: AcceptCouponRequest = {
           mobile: orderDetails.patient.mobileNumber.replace('+91', ''),
