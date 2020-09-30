@@ -63,7 +63,7 @@ export async function transactionSuccessTrigger(args: SuccessTransactionInputFor
        user_subscription_id: "${userSubscriptionId || ''}"
        subscription_inclusion_id: "${subscriptionInclusionId || ''}"
        transaction_type: ${transactionType}
-       transaction_date: "${format(addMinutes(new Date(transactionId), +330), 'yyyy-MM-dd hh:mm')}"
+       transaction_date: "${format(addMinutes(new Date(transactionDate), +330), 'yyyy-MM-dd hh:mm')}"
        amount: ${parseFloat(amount)}
        source_transaction_indentifier: "${sourceTransactionIdentifier || ''} "
        mobile_number:"${mobileNumber}"
