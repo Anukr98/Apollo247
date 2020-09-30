@@ -747,7 +747,7 @@ const SpecialityListing: React.FC = (props) => {
     description:
       'Online doctor consultation in 15 mins with 1000+ Top Specialist Doctors. Video Call or Chat with a Doctor from 100+ Specialties including General Physicians, Pediatricians, Dermatologists, Gynaecologists & more.',
     canonicalLink:
-      window && window.location && `${window.location.host}${window.location.pathname}`,
+      window && window.location && `${window.location.origin}${window.location.pathname}`,
   };
 
   const breadcrumbJSON = {

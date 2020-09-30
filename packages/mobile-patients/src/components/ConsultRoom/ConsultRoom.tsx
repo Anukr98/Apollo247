@@ -316,8 +316,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [consultations, setconsultations] = useState<
     getPatientAllAppointments_getPatientAllAppointments_appointments[]
   >([]);
-  const [showFreeConsultOverlay, setShowFreeConsultOverlay] = useState<boolean>(false);
-  const [freeConsultDoctorName, setFreeConsultDoctorName] = useState<string>('');
   const [profileChange, setProfileChange] = useState<boolean>(false);
 
   const webengage = new WebEngage();
@@ -424,16 +422,28 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   useEffect(() => {
     const params = props.navigation.state.params;
-    if (!params?.isReset && currentPatient) {
+    if (!params?.isFreeConsult && !params?.isReset && currentPatient) {
       // reset will be true only from the payment screen(fill medical details)
       fetchAppointments();
     }
     if (params?.isFreeConsult) {
-      setFreeConsultDoctorName(params?.doctorName);
       checkPermissions(['camera', 'microphone']).then((response: any) => {
         const { camera, microphone } = response;
         if (camera === 'authorized' && microphone === 'authorized') {
-          setShowFreeConsultOverlay(true);
+          showFreeConsultOverlay(params?.doctorName);
+        } else {
+          overlyCallPermissions(
+            currentPatient!.firstName!,
+            params?.doctorName,
+            showAphAlert,
+            hideAphAlert,
+            true,
+            () => {
+              if (params?.doctorName) {
+                showFreeConsultOverlay(params?.doctorName);
+              }
+            }
+          );
         }
       });
     }
@@ -447,6 +457,33 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       }
     } catch (e) {}
   }, [currentPatient]);
+
+  const showFreeConsultOverlay = (doctorName: string) => {
+    showAphAlert!({
+      unDismissable: true,
+      title: 'Appointment Confirmation',
+      description: `Your appointment has been successfully booked with Dr. ${doctorName}. Please go to consult room 10-15 minutes prior to your appointment. Answering a few medical questions in advance will make your appointment process quick and smooth :)`,
+      children: (
+        <View style={{ height: 60, alignItems: 'flex-end' }}>
+          <TouchableOpacity
+            activeOpacity={1}
+            style={{
+              height: 60,
+              paddingRight: 25,
+              backgroundColor: 'transparent',
+              justifyContent: 'center',
+            }}
+            onPress={() => {
+              hideAphAlert!();
+              props.navigation.navigate(AppRoutes.TabBar);
+            }}
+          >
+            <Text style={theme.viewStyles.yellowTextStyle}>GO TO CONSULT ROOM</Text>
+          </TouchableOpacity>
+        </View>
+      ),
+    });
+  };
 
   const setWEGUserAttributes = () => {
     webengage.user.setFirstName(g(currentPatient, 'firstName'));
@@ -878,10 +915,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               activeAppointments[0].doctorInfo.displayName,
               showAphAlert,
               hideAphAlert,
-              true,
-              () => {
-                setShowFreeConsultOverlay(true);
-              }
+              true
             );
           }
         } else {
@@ -1764,33 +1798,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
-  const renderFreeConsultOverlay = () => {
-    return (
-      <BottomPopUp
-        title={`Appointment Confirmation`}
-        description={`Your appointment has been successfully booked with Dr. ${freeConsultDoctorName}. Please go to consult room 10-15 minutes prior to your appointment. Answering a few medical questions in advance will make your appointment process quick and smooth :)`}
-      >
-        <View style={{ height: 60, alignItems: 'flex-end' }}>
-          <TouchableOpacity
-            activeOpacity={1}
-            style={{
-              height: 60,
-              paddingRight: 25,
-              backgroundColor: 'transparent',
-              justifyContent: 'center',
-            }}
-            onPress={() => {
-              hideAphAlert!();
-              props.navigation.navigate(AppRoutes.TabBar);
-            }}
-          >
-            <Text style={theme.viewStyles.yellowTextStyle}>GO TO CONSULT ROOM</Text>
-          </TouchableOpacity>
-        </View>
-      </BottomPopUp>
-    );
-  };
-
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
@@ -1864,7 +1871,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         />
       )}
       <NotificationListener navigation={props.navigation} />
-      {showFreeConsultOverlay && freeConsultDoctorName ? renderFreeConsultOverlay() : null}
     </View>
   );
 };
