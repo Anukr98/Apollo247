@@ -204,7 +204,7 @@ export const DoctorTimings: React.FC<DoctorTimingsProps> = (props) => {
             {sortedPhysicalList &&
               sortedPhysicalList.length > 0 &&
               sortedPhysicalList.length > 0 &&
-              consultModePhysical.map((item: any, index: number) => {
+              sortedPhysicalList.map((item: any, index: number) => {
                 const actualDay = item.actualDay;
                 const weeDaysStartTime = moment(`${today} ${item.startTime}`)
                   .add(5.5, 'hours')
