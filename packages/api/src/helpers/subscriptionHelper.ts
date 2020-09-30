@@ -71,7 +71,7 @@ export async function transactionSuccessTrigger(args: SuccessTransactionInputFor
        coupon_availed: "${couponAvailed || false}"
        dob: "${dob || ''}"
        email:"${email || ''}"
-       partnerId:"${partnerId}
+       partnerId:"${partnerId || ''}"
      }){
        success,
        message
