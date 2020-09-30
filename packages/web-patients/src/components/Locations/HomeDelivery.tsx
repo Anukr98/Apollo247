@@ -220,6 +220,7 @@ const useStyles = makeStyles((theme: Theme) => {
         '& >div': {
           maxWidth: 400,
           margin: '30px auto 0',
+          height: 540,
           [theme.breakpoints.down('xs')]: {
             borderRadius: 0,
             margin: 0,
