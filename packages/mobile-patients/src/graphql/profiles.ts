@@ -3110,3 +3110,13 @@ export const CREATE_ONE_APOLLO_USER = gql`
     }
   }
 `;
+export const GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES = gql`
+  query getPincodeServiceability ($pincode: Int!) {
+    getPincodeServiceability(pincode: $pincode) {
+      cityID
+      cityName
+      stateID
+      stateName
+    }
+  }
+`;

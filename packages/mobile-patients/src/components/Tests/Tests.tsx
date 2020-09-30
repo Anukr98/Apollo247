@@ -33,6 +33,7 @@ import {
   SEARCH_DIAGNOSTICS,
   SAVE_SEARCH,
   SEARCH_DIAGNOSTICS_BY_ID,
+  GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
@@ -111,6 +112,10 @@ import moment from 'moment';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import _ from 'lodash';
+import {
+  getPincodeServiceability,
+  getPincodeServiceabilityVariables,
+} from '../../graphql/types/getPincodeServiceability';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -211,10 +216,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [testPackages, setTestPackages] = useState<TestPackage[]>([]);
   const [locationError, setLocationError] = useState(false);
   const [showLocations, setshowLocations] = useState<boolean>(false);
+  const [pincode, setPinCode] = useState<string>();
   const [searchQuery, setSearchQuery] = useState({});
 
   useEffect(() => {
-    console.log(locationDetails, 'locationDetails');
+    console.log(locationDetails, 'locationDetails.....s');
     locationDetails && setcurrentLocation(locationDetails.displayName);
   }, [locationDetails]);
 
@@ -576,7 +582,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
           };
 
           setLocationDetails!(locationData);
-
           getPlaceInfoByLatLng(lat, lng)
             .then((response) => {
               const addrComponents =
@@ -587,6 +592,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
                   pincode: findAddrComponents('postal_code', addrComponents),
                   lastUpdated: new Date().getTime(),
                 });
+                setPinCode!(findAddrComponents('postal_code', addrComponents));
+                checkIsPinCodeServiceable(findAddrComponents('postal_code', addrComponents));
               }
             })
             .catch((error) => {
@@ -633,14 +640,19 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 ...theme.fonts.IBMPlexSansMedium(14),
               }}
             >
-              Current Location
+              Current Pincode
             </Text>
             <View style={{ flexDirection: 'row' }}>
               <View style={{ flex: 7 }}>
                 <TextInputComponent
                   textInputprops={{ autoFocus: true }}
+                  placeholder={'Enter Pincode'}
+                  keyboardType={'numeric'}
                   value={currentLocation}
                   onChangeText={(value) => {
+                    // if (value == '' || /^[1-9]{1}\d{0,9}$/.test(value)) {
+                    //   setcurrentLocation(value);
+                    // }
                     setcurrentLocation(value);
                     if (value.length > 2) {
                       const locSearch = _.debounce(autoSearch, 300);
@@ -704,6 +716,30 @@ export const Tests: React.FC<TestsProps> = (props) => {
           </View>
         </TouchableOpacity>
       );
+    }
+  };
+
+  /**
+   * check for the pincode serviceability
+   */
+  const checkIsPinCodeServiceable = async (pincode: string) => {
+    if (!!pincode) {
+      client
+        .query<getPincodeServiceability, getPincodeServiceabilityVariables>({
+          query: GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
+          variables: {
+            pincode: parseInt(pincode, 10),
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then(({ data }) => {
+          console.log('data...' + data.getPincodeServiceability.cityName);
+          const serviceableData = g(data, 'getPincodeServiceability') || [];
+        })
+        .catch((e) => {
+          CommonBugFender('Tests_onCheckSericeability', e);
+          // aphConsole.log({ e });
+        });
     }
   };
 
@@ -1246,7 +1282,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const errorAlert = () => {
     showAphAlert!({
       title: 'Uh oh! :(',
-      description: 'Unable to fetch pakage details.',
+      description: 'Unable to fetch package details.',
     });
   };
 
