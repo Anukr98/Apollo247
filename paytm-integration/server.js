@@ -993,7 +993,7 @@ app.get('/processOmsOrders', (req, res) => {
         const [prefix, orderAutoId, patientId] = queueMessage.split(':');
         axios.defaults.headers.common['authorization'] = 'Bearer 3d1833da7020e0602165529446587434';
         axios({
-          url: process.env.API_URL,
+          url: process.env.WEB_API_URL,
           method: 'post',
           data: {
             query: getMedicineOrderQuery(
@@ -1246,7 +1246,7 @@ app.get('/processOmsOrders', (req, res) => {
                         query: `mutation { saveOrderPlacedStatus(orderPlacedInput: { orderAutoId: ${orderDetails.orderAutoId}, referenceNo: "${resp.data.ReferenceNo}" }){ message }}`,
                       };
                       axios
-                        .post(process.env.API_URL, requestJSON)
+                        .post(process.env.WEB_API_URL, requestJSON)
                         .then((placedResponse) => {
                           console.log('placed order in apollo 247', placedResponse.data);
                           azureServiceBus.deleteMessage(result, (deleteError) => {
