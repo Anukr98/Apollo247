@@ -14,19 +14,21 @@ export class MedicineEntitySubscriber implements EntitySubscriberInterface<Medic
       // const oldMedicinePayment: MedicineOrders = MedicineOrders.create(
       //   event.databaseEntity as MedicineOrders
       // );
-
       // const currentMedicinePayment = MedicineOrders.create(event.entity as MedicineOrders);
-      // if ( isOrderPlaced(currentMedicinePayment, oldMedicinePayment) ) {
+      // if (
+      //   oldMedicinePayment.currentStatus !== MEDICINE_ORDER_STATUS.ORDER_BILLED &&
+      //   currentMedicinePayment.currentStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED
+      // ) {
       //   transactionSuccessTrigger({
       //     amount: `${currentMedicinePayment.paymentInfo.amountPaid}`,
-      //     transactionType: TransactionType.PHARMA,
+      //     transactionType: TransactionType.CONSULT,
       //     transactionDate: currentMedicinePayment.paymentInfo.paymentDateTime || new Date(),
       //     transactionId: currentMedicinePayment.paymentInfo.paymentRefId,
       //     sourceTransactionIdentifier: `${currentMedicinePayment.orderAutoId}`,
       //     mobileNumber: currentMedicinePayment.patient.mobileNumber,
       //     dob: currentMedicinePayment.patient.dateOfBirth,
-      //     email: currentMedicinePayment.patient.emailAddress,
-      //     partnerId: currentMedicinePayment.patient.partnerId,
+      //     email: currentMedicinePayment.patient.mobileNumber,
+      //     partnerId: currentMedicinePayment.patient.mobileNumber,
       //   });
       // }
     } catch (error) {
@@ -42,12 +44,16 @@ export class MedicineEntitySubscriber implements EntitySubscriberInterface<Medic
   }
 }
 
-const isOrderPlaced = function(currentMedicinePayment: MedicineOrders, oldMedicinePayment: MedicineOrders){
-  return (oldMedicinePayment.currentStatus !== MEDICINE_ORDER_STATUS.ORDER_BILLED &&
-    currentMedicinePayment.currentStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED) ||
+const isOrderPlaced = function(
+  currentMedicinePayment: MedicineOrders,
+  oldMedicinePayment: MedicineOrders
+) {
+  return (
+    (oldMedicinePayment.currentStatus !== MEDICINE_ORDER_STATUS.ORDER_BILLED &&
+      currentMedicinePayment.currentStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED) ||
     (oldMedicinePayment.currentStatus !== MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS &&
       currentMedicinePayment.currentStatus == MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS) ||
-      (oldMedicinePayment.currentStatus !== MEDICINE_ORDER_STATUS.ORDER_INITIATED && 
-        currentMedicinePayment.currentStatus == MEDICINE_ORDER_STATUS.ORDER_INITIATED);
- 
-}
+    (oldMedicinePayment.currentStatus !== MEDICINE_ORDER_STATUS.ORDER_INITIATED &&
+      currentMedicinePayment.currentStatus == MEDICINE_ORDER_STATUS.ORDER_INITIATED)
+  );
+};

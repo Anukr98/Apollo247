@@ -137,18 +137,19 @@ const saveDiagnosticOrderPayment: Resolver<
   );
 
   //call far-eye api's if payment is success
+
   if (diagnosticPaymentInput.paymentStatus == 'success') {
-      transactionSuccessTrigger({
-        amount: diagnosticPaymentInput.amountPaid,
-        transactionType: TransactionType.DIAGNOSTICS,
-        transactionDate: diagnosticPaymentInput.paymentDateTime,
-        transactionId: diagnosticPaymentInput.txnId,
-        sourceTransactionIdentifier: diagnosticPaymentInput.diagnosticOrderId,
-        mobileNumber: diagnosticOrder.patient.mobileNumber,
-        dob: diagnosticOrder.patient.dateOfBirth,
-        email: diagnosticOrder.patient.emailAddress,
-        partnerId: diagnosticOrder.patient.partnerId,
-      });
+    transactionSuccessTrigger({
+      amount: diagnosticPaymentInput.amountPaid,
+      transactionType: TransactionType.DIAGNOSTICS,
+      transactionDate: diagnosticPaymentInput.paymentDateTime,
+      transactionId: diagnosticPaymentInput.txnId,
+      sourceTransactionIdentifier: diagnosticPaymentInput.diagnosticOrderId,
+      mobileNumber: diagnosticOrder.patient.mobileNumber,
+      dob: diagnosticOrder.patient.dateOfBirth,
+      email: diagnosticOrder.patient.emailAddress,
+      partnerId: diagnosticOrder.patient.partnerId,
+    });
     diagnosticOrdersRepo.callDiagnosticFareEyeAPIs(diagnosticOrder, profilesDb);
 
     //send order payment success notification

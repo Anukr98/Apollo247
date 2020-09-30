@@ -26,6 +26,7 @@ import { EmailMessage } from 'types/notificationMessageTypes';
 import { log } from 'customWinstonLogger';
 import { acceptCoupon } from 'helpers/couponServices';
 import { AcceptCouponRequest } from 'types/coupons';
+
 import {
   BlockOneApolloPointsRequest,
   BlockUserPointsResponse,
@@ -288,7 +289,6 @@ const SaveMedicineOrderPaymentMq: Resolver<
       statusMessage: statusMsg,
     };
 
-    
     if (
       currentStatus == MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS ||
       currentStatus == MEDICINE_ORDER_STATUS.ORDER_INITIATED
