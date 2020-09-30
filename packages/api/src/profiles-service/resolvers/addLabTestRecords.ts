@@ -140,16 +140,18 @@ const addPatientLabTestRecord: Resolver<
 
     const labTestResultsInput: PrismLabTestParameters[] = [];
 
-    addLabTestRecordInput.labTestResults.map((item) => {
-        labTestResultsInput.push({
-            parameterName: item.parameterName,
-            result: item.result.toString(),
-            unit: item.unit,
-            range: item.minimum && item.maximum ? item.minimum + '-' + item.maximum : '',
-            outOfRange: false,
-            resultDate: getUnixTime(new Date(addLabTestRecordInput.labTestDate)) * 1000,
+    if (addLabTestRecordInput.labTestResults && addLabTestRecordInput.labTestResults.length) {
+        addLabTestRecordInput.labTestResults.map((item) => {
+            labTestResultsInput.push({
+                parameterName: item.parameterName,
+                result: item.result.toString(),
+                unit: item.unit,
+                range: item.minimum && item.maximum ? item.minimum + '-' + item.maximum : '',
+                outOfRange: false,
+                resultDate: getUnixTime(new Date(addLabTestRecordInput.labTestDate)) * 1000,
+            });
         });
-    });
+    }
 
     const labResultsInputArgs: LabResultsInputArgs = {
         labResultsInput: {
