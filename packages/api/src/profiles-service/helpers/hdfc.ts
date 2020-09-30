@@ -10,8 +10,8 @@ import { debugLog } from 'customWinstonLogger';
 const INSTANCE_ID = '8888';
 const assetsDir = <string>process.env.ASSETS_DIRECTORY;
 const options = {
-  //cert: fs.readFileSync(path.resolve(assetsDir, `${process.env.APOLLO_CERTIFICATE}`), `utf-8`),
-  //key: fs.readFileSync(path.resolve(assetsDir, `${process.env.APOLLO_CERTIFICATE_KEY}`), 'utf-8'),
+  cert: fs.readFileSync(path.resolve(assetsDir, `${process.env.APOLLO_CERTIFICATE}`), `utf-8`),
+  key: fs.readFileSync(path.resolve(assetsDir, `${process.env.APOLLO_CERTIFICATE_KEY}`), 'utf-8'),
   passphrase: `${process.env.APOLLO_CERTIFICATE_PASSWORD}`,
   rejectUnauthorized: true,
   keepAlive: false,
@@ -380,6 +380,7 @@ function checkStatus(response: any) {
   if (response.status >= 200 && response.status < 300) {
     return response;
   } else {
-    return false;
+    return response;
+    console.log('error:', response.status);
   }
 }
