@@ -10,8 +10,8 @@ import { debugLog } from 'customWinstonLogger';
 const INSTANCE_ID = '8888';
 const assetsDir = <string>process.env.ASSETS_DIRECTORY;
 const options = {
-  cert: fs.readFileSync(path.resolve(assetsDir, `${process.env.APOLLO_CERTIFICATE}`), `utf-8`),
-  key: fs.readFileSync(path.resolve(assetsDir, `${process.env.APOLLO_CERTIFICATE_KEY}`), 'utf-8'),
+  //cert: fs.readFileSync(path.resolve(assetsDir, `${process.env.APOLLO_CERTIFICATE}`), `utf-8`),
+  //key: fs.readFileSync(path.resolve(assetsDir, `${process.env.APOLLO_CERTIFICATE_KEY}`), 'utf-8'),
   passphrase: `${process.env.APOLLO_CERTIFICATE_PASSWORD}`,
   rejectUnauthorized: true,
   keepAlive: false,
@@ -234,8 +234,8 @@ async function highRequest(base_request: any, url: String, historyToken: string 
     `utf-8`
   );
   const jwt_request = jwt.sign(base_request, privateKey, { algorithm: 'RS256' });
-  let iv = randomStringGenerator(16);
-  let RequestSignatureEncryptedValue = cryptojs.AES.encrypt(
+  const iv = randomStringGenerator(16);
+  const RequestSignatureEncryptedValue = cryptojs.AES.encrypt(
     `${iv}${jwt_request}`,
     cryptojs.enc.Utf8.parse(key),
     {
@@ -263,8 +263,8 @@ async function highRequest(base_request: any, url: String, historyToken: string 
   }).then(checkStatus);
   if (response) {
     const responseJson = JSON.parse((await response.text()).replace(/(\r\n|\n|\r)/gm, ''));
-    let stringRequest = JSON.stringify(request);
-    let stringResponse = JSON.stringify(responseJson);
+    const stringRequest = JSON.stringify(request);
+    const stringResponse = JSON.stringify(responseJson);
     dLogger(
       new Date(),
       `HDFC HIGH REQUEST ${url}`,
@@ -296,7 +296,7 @@ async function decryptMediumResponse(response: any) {
 
 async function mediumRequest(base_request: any, url: String, historyToken: String = '') {
   const key = randomStringGenerator(32);
-  let iv = randomStringGenerator(16);
+  const iv = randomStringGenerator(16);
   const RequestEncryptedValue = cryptojs.AES.encrypt(
     `${iv}${JSON.stringify(base_request)}`,
     cryptojs.enc.Utf8.parse(key),
