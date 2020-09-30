@@ -2484,7 +2484,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             message: {
               message: firstMessage,
               automatedText: strings.common.jdAssignedMessage.replace(
-                '{0}',
+                /0/gi,
                 appointmentData.doctorInfo.displayName
               ),
               id: doctorId,
