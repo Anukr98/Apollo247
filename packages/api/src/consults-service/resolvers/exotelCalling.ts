@@ -9,7 +9,7 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { ExotelDetailsRepository } from 'consults-service/repositories/exotelDetailsRepository';
 import { uploadFileToBlobStorage } from 'helpers/uploadFileToBlob';
-import { checkDocOnCallAvailable } from 'helpers/subscriptionBenefits';
+import { checkDocOnCallAvailable } from 'helpers/subscriptionHelper';
 import { DEVICETYPE, Appointment } from 'consults-service/entities';
 import { ApiConstants } from 'ApiConstants';
 import { URLSearchParams } from 'url';
