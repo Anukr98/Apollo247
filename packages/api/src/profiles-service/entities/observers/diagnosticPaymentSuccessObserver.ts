@@ -31,7 +31,7 @@ export class DiagnosticEntitySubscriber
           sourceTransactionIdentifier: `${currentDiagnosticPayment.id}`,
           mobileNumber: currentDiagnosticPayment.diagnosticOrders.patient.mobileNumber,
           dob: currentDiagnosticPayment.diagnosticOrders.patient.dateOfBirth,
-          email: currentDiagnosticPayment.diagnosticOrders.patient.email,
+          email: currentDiagnosticPayment.diagnosticOrders.patient.emailAddress,
           partnerId: currentDiagnosticPayment.diagnosticOrders.patient.partnerId,
         });
       }

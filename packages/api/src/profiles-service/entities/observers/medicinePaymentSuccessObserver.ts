@@ -25,7 +25,7 @@ export class MedicineEntitySubscriber implements EntitySubscriberInterface<Medic
           sourceTransactionIdentifier: `${currentMedicinePayment.orderAutoId}`,
           mobileNumber: currentMedicinePayment.patient.mobileNumber,
           dob: currentMedicinePayment.patient.dateOfBirth,
-          email: currentMedicinePayment.patient.email,
+          email: currentMedicinePayment.patient.emailAddress,
           partnerId: currentMedicinePayment.patient.partnerId,
         });
       }
