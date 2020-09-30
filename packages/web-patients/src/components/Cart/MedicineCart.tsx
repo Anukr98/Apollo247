@@ -733,6 +733,18 @@ export const MedicineCart: React.FC = (props) => {
   const [longitude, setLongitude] = React.useState<string>('');
   const [quantityUpdated, setQuantityUpdated] = React.useState<boolean>(true);
 
+  const userSubscriptions = JSON.parse(localStorage.getItem('userSubscriptions'));
+  var packageId: string;
+  if (userSubscriptions && userSubscriptions[0] && userSubscriptions[0].status == 'ACTIVE') {
+    packageId = `${userSubscriptions[0].group_plan.group.name}:${userSubscriptions[0].group_plan.plan_id}`;
+  }
+  const freeDelivery =
+    userSubscriptions &&
+    userSubscriptions[0] &&
+    userSubscriptions[0].status == 'ACTIVE' &&
+    userSubscriptions[0].group_plan &&
+    userSubscriptions[0].group_plan.name == 'PLATINUM+ PLAN';
+
   const apiDetails = {
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     bulk_product_info_url: process.env.PHARMACY_MED_BULK_PRODUCT_INFO_URL,
@@ -929,6 +941,7 @@ export const MedicineCart: React.FC = (props) => {
   //   });
   //   return sum;
   // };
+
   const mrpTotal = getMRPTotal();
   // const couponDiscountTotal = getCouponDiscountTotal();
   let productDiscount = mrpTotal - cartTotal;
@@ -939,12 +952,13 @@ export const MedicineCart: React.FC = (props) => {
     validateCouponResult.discount >= productDiscount
       ? Number(cartTotal) - couponDiscount
       : Number(cartTotal);
-  const deliveryCharges =
-    modifiedAmountForCharges >= Number(pharmacyMinDeliveryValue) ||
-    modifiedAmountForCharges <= 0 ||
-    tabValue === 1
-      ? 0
-      : Number(pharmacyDeliveryCharges);
+  const deliveryCharges = freeDelivery
+    ? 0
+    : modifiedAmountForCharges >= Number(pharmacyMinDeliveryValue) ||
+      modifiedAmountForCharges <= 0 ||
+      tabValue === 1
+    ? 0
+    : Number(pharmacyDeliveryCharges);
   const totalAmount = (cartTotal + Number(deliveryCharges)).toFixed(2);
   const totalWithCouponDiscount =
     validateCouponResult &&
@@ -1037,6 +1051,8 @@ export const MedicineCart: React.FC = (props) => {
       const data = {
         mobile: localStorage.getItem('userMobileNo'),
         billAmount: cartTotal.toFixed(2),
+        email: currentPatient && currentPatient.emailAddress,
+        packageId: packageId,
         coupon: couponCode,
         pinCode: localStorage.getItem('pharmaPincode'),
         products: cartItems.map((item) => {
@@ -1051,6 +1067,9 @@ export const MedicineCart: React.FC = (props) => {
           };
         }),
       };
+      const fetchCouponUrl = `${process.env.VALIDATE_CONSULT_COUPONS}?mobile=${
+        currentPatient.mobileNumber
+      }&email=${currentPatient.emailAddress}&packageId=${userSubscriptions ? packageId : ''}`;
       fetchUtil(process.env.VALIDATE_CONSULT_COUPONS, 'POST', data, '', false)
         .then((resp: any) => {
           if (resp.errorCode == 0) {

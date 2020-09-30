@@ -174,10 +174,18 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
   const [muationLoading, setMuationLoading] = useState<boolean>(false);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  var packageId: string;
+  const userSubscriptions = JSON.parse(localStorage.getItem('userSubscriptions'));
+  if (userSubscriptions && userSubscriptions[0] && userSubscriptions[0].status == 'ACTIVE') {
+    packageId = `${userSubscriptions[0].group_plan.group.name}:${userSubscriptions[0].group_plan.plan_id}`;
+  }
 
   useEffect(() => {
     setIsLoading(true);
-    fetchUtil(process.env.GET_CONSULT_COUPONS, 'GET', {}, '', false)
+    const fetchCouponUrl = `${process.env.GET_CONSULT_COUPONS}?mobile=${
+      currentPatient.mobileNumber
+    }&email=${currentPatient.emailAddress}&packageId=${userSubscriptions ? packageId : ''}`;
+    fetchUtil(fetchCouponUrl, 'GET', {}, '', false)
       .then((data: any) => {
         if (data && data.response && data.response.length > 0) {
           setAvailableCoupons(data.response);
@@ -192,6 +200,8 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
   const validateCouponBody = {
     mobile: currentPatient && currentPatient.mobileNumber,
     billAmount: Number(props.cartValue),
+    email: currentPatient && currentPatient.emailAddress,
+    packageId: packageId,
     coupon: selectCouponCode,
     pinCode: currentPincode ? currentPincode : localStorage.getItem('currentPincode') || '',
     consultations: [
@@ -210,7 +220,10 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
   const verifyCoupon = () => {
     if (currentPatient && currentPatient.id) {
       setMuationLoading(true);
-      fetchUtil(process.env.VALIDATE_CONSULT_COUPONS, 'POST', validateCouponBody, '', false)
+      const fetchCouponUrl = `${process.env.VALIDATE_CONSULT_COUPONS}?mobile=${
+        currentPatient.mobileNumber
+      }&email=${currentPatient.emailAddress}&packageId=${userSubscriptions ? packageId : ''}`;
+      fetchUtil(fetchCouponUrl, 'POST', validateCouponBody, '', false)
         .then((data: any) => {
           if (data && data.response) {
             const couponValidateResult = data.response;

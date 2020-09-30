@@ -987,6 +987,10 @@ export const RetryButtonIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/retryButton.png')} resizeMode="contain" />
 );
 
+export const DeleteIconOrange: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/remove-icon-orange.png')} />
+);
+
 export const DeleteIconWhite: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/remove-icon-white.png')} />
 );
@@ -1005,4 +1009,8 @@ export const BotIcon: React.FC<IconProps> = (props) => (
 
 export const InfoIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/info.png')} />
+);
+
+export const MinusIconOrange: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/minus-icon-orange.png')} />
 );

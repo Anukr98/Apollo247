@@ -174,7 +174,7 @@ module.exports = {
         loader: 'file-loader',
         options: {
           publicPath: (url, resourcePath, context) => {
-            const imageName = resourcePath.split('/').pop();
+            const imageName = resourcePath.split('images/').pop();
             if (isProduction || isStaging) {
               // console.log('resourcePath', resourcePath.split('/').pop());
               return `${imageCdnBaseUrl}/${imageName}`;

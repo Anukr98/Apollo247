@@ -174,6 +174,7 @@ export const AuthProvider: React.FC = (props) => {
         /*webengage code end */
         localStorage.removeItem('currentUser');
         localStorage.removeItem('userMobileNo');
+        localStorage.removeItem('userSubscriptions');
         window.location.reload();
       });
 

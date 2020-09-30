@@ -27,4 +27,12 @@ module.exports = Object.freeze({
   DOCTORS_DEEPLINK_GENERATE: `mutation{ generateDeepLinksByCron }`,
   CALL_START_NOTIFICATION: `query {sendCallStartNotification{ status }}`,
   SAVE_MEDICINE_INFO: `mutation{updateMedicineDataRedisFromMagento(saveMedicineInfoInput:{sku: "{0}",  name: "{1}",  status: "{2}",  price: "{3}",  special_price: "{4}",  special_price_from: "{5}",  special_price_to: "{6}",  qty: {7},  description: "{8}",  url_key: "{9}",  base_image: "{10}",  is_prescription_required: "{11}",  category_name: "{12}",  product_discount_category: "{13}",  sell_online: "{14}",  molecules: "{15}",  mou: {16},  gallery_images: "{17}",  manufacturer: "{18}"}){status}}`,
+  EXOTEL_CALL_END_STATUS: {
+    COMPLETED: 'completed',
+    IN_PROGRESS: 'in-progress',
+    QUEUED: 'queued',
+    FAILED: 'failed',
+    BUSY: 'busy',
+    NO_ANSWER: 'no-answer',
+  },
 });

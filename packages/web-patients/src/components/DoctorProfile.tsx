@@ -115,6 +115,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingLeft: 14,
       paddingRight: 10,
       lineHeight: 1.5,
+      wordBreak: 'break-word',
       [theme.breakpoints.down('xs')]: {
         fontSize: 12,
         paddingLeft: 0,
