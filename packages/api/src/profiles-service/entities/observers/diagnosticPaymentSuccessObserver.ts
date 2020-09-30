@@ -25,14 +25,14 @@ export class DiagnosticEntitySubscriber
       ) {
         transactionSuccessTrigger({
           amount: `${currentDiagnosticPayment.amountPaid}`,
-          transactionType: TransactionType.CONSULT,
+          transactionType: TransactionType.DIAGNOSTICS,
           transactionDate: currentDiagnosticPayment.paymentDateTime || new Date(),
           transactionId: currentDiagnosticPayment.txnId,
           sourceTransactionIdentifier: `${currentDiagnosticPayment.id}`,
           mobileNumber: currentDiagnosticPayment.diagnosticOrders.patient.mobileNumber,
           dob: currentDiagnosticPayment.diagnosticOrders.patient.dateOfBirth,
-          email: currentDiagnosticPayment.diagnosticOrders.patient.mobileNumber,
-          partnerId: currentDiagnosticPayment.diagnosticOrders.patient.mobileNumber,
+          email: currentDiagnosticPayment.diagnosticOrders.patient.email,
+          partnerId: currentDiagnosticPayment.diagnosticOrders.patient.partnerId,
         });
       }
     } catch (error) {
