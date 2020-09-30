@@ -227,7 +227,7 @@ const GallerySlider: React.FC<GallerySliderProps> = ({
               />
               {isPdf ? <PDFViewer file={docPrevUrl} /> : <ReactPanZoom image={docPrevUrl} alt="" />}
             </div>
-            <div className={classes.modalFooter}></div>
+            {!isPdf && <div className={classes.modalFooter}></div>}
           </div>
         </div>
       </div>
