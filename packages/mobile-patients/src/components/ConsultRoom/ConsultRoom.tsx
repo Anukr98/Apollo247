@@ -1763,7 +1763,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             height: 70,
             marginRight: 20,
           }} />
-          <Text style={theme.viewStyles.text('B', 20, '#01475B', 1, 30, 0.35)}>
+          <Text style={theme.viewStyles.text('B', 19, '#01475B', 1, 30, 0.35)}>
             One last step to start your HealthyLife journey
           </Text>
         </View>
