@@ -24,7 +24,7 @@ import {
   PaginateParams,
   CaseSheet,
   APPOINTMENT_UPDATED_BY,
-  VALUE_TYPE
+  VALUE_TYPE,
 } from 'consults-service/entities';
 import { AppointmentDateTime } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import { AphError } from 'AphError';
@@ -55,7 +55,7 @@ export class AppointmentRepository extends Repository<Appointment> {
   async findById(id: string) {
     const cache = await getCache(`${REDIS_APPOINTMENT_ID_KEY_PREFIX}${id}`);
     if (cache && typeof cache === 'string') {
-      let cacheAppointment: Appointment = JSON.parse(cache);
+      const cacheAppointment: Appointment = JSON.parse(cache);
       if (cacheAppointment.sdConsultationDate) {
         cacheAppointment.sdConsultationDate = new Date(cacheAppointment.sdConsultationDate);
       }
@@ -1011,9 +1011,9 @@ export class AppointmentRepository extends Repository<Appointment> {
         .getUTCHours()
         .toString()
         .padStart(2, '0')}:${appointmentDate
-          .getUTCMinutes()
-          .toString()
-          .padStart(2, '0')}:00.000Z`;
+        .getUTCMinutes()
+        .toString()
+        .padStart(2, '0')}:00.000Z`;
       if (availableSlots.indexOf(sl) >= 0) {
         consultFlag = CONSULTFLAG.INCONSULTHOURS;
       }
@@ -1166,9 +1166,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${doctorAppointment.appointmentDateTime
-              .getUTCMinutes()
-              .toString()
-              .padStart(2, '0')}:00.000Z`;
+            .getUTCMinutes()
+            .toString()
+            .padStart(2, '0')}:00.000Z`;
           if (availableSlots.indexOf(aptSlot) >= 0) {
             availableSlots.splice(availableSlots.indexOf(aptSlot), 1);
           }
@@ -1519,9 +1519,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${blockedSlot.start
-              .getUTCMinutes()
-              .toString()
-              .padStart(2, '0')}:00.000Z`;
+            .getUTCMinutes()
+            .toString()
+            .padStart(2, '0')}:00.000Z`;
 
           let blockedSlotsCount =
             (Math.abs(differenceInMinutes(blockedSlot.end, blockedSlot.start)) / 60) * duration;
@@ -1578,9 +1578,9 @@ export class AppointmentRepository extends Repository<Appointment> {
               .getUTCHours()
               .toString()
               .padStart(2, '0')}:${slot
-                .getUTCMinutes()
-                .toString()
-                .padStart(2, '0')}:00.000Z`;
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0')}:00.000Z`;
           }
 
           Array(blockedSlotsCount)
@@ -2109,6 +2109,13 @@ export class AppointmentRepository extends Repository<Appointment> {
     return AppointmentUpdateHistory.create(historyAttrs).save();
   }
 
+  getAppointmentIdsByPatientId(patientId: string) {
+    return this.createQueryBuilder('appointment')
+      .select(['id'])
+      .andWhere('appointment.patientId = :patientId', { patientId: patientId })
+      .getRawMany();
+  }
+
   async getAppointmenIdsFromPatientID(patientId: string) {
     return this.find({
       select: ['id'],
@@ -2121,7 +2128,10 @@ export class AppointmentRepository extends Repository<Appointment> {
       });
     });
   }
-  caseSheetAppointmentHistoryUpdate(appointmentData:Appointment,caseSheetAttrs: Partial<CaseSheet>){
+  caseSheetAppointmentHistoryUpdate(
+    appointmentData: Appointment,
+    caseSheetAttrs: Partial<CaseSheet>
+  ) {
     let response: any;
     if (appointmentData) {
       let reason = ApiConstants.CASESHEET_MODIFIED_HISTORY.toString();

@@ -23009,6 +23009,18 @@
             "deprecationReason": null
           },
           {
+            "name": "hideHealthRecordNudge",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "Boolean",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "patientId",
             "description": null,
             "args": [],
