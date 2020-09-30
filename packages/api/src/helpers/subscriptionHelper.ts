@@ -1,6 +1,6 @@
 const axios = require('axios');
 import { TransactionType } from 'ApiConstants';
-import { format } from 'date-fns';
+import { format, addMinutes } from 'date-fns';
 import { log } from 'customWinstonLogger';
 
 type SuccessTransactionInputForSubscription = {
@@ -63,7 +63,7 @@ export async function transactionSuccessTrigger(args: SuccessTransactionInputFor
        user_subscription_id: "${userSubscriptionId || ''}"
        subscription_inclusion_id: "${subscriptionInclusionId || ''}"
        transaction_type: ${transactionType}
-       transaction_date: "${format(new Date(transactionDate), 'yyyy-MM-dd hh:mm')}"
+       transaction_date: "${format(addMinutes(new Date(transactionId), +330), 'yyyy-MM-dd hh:mm')}"
        amount: ${parseFloat(amount)}
        source_transaction_indentifier: "${sourceTransactionIdentifier || ''} "
        mobile_number:"${mobileNumber}"
