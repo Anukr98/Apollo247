@@ -46,7 +46,7 @@ echo -e "\nbuilding notifications-service..."
 cd packages/api
 npm run start:notifications-service || exit 2
 cd -
-
+: '
 echo -e "\nbuilding web-patients..."
 cd packages/web-patients
 npm run build || exit 2
@@ -56,7 +56,7 @@ echo -e "\nbuilding web-doctors..."
 cd packages/web-doctors
 npm run build || exit 2
 cd -
-
+'
 echo -e "\ncopying all api files..."
 mkdir -pv skeleton/apollo-hospitals/packages/api/dist || exit 2
 cp -Rv packages/api/dist/* skeleton/apollo-hospitals/packages/api/ || exit 2
@@ -65,7 +65,7 @@ cp -Rv packages/api/src/**/*.sql skeleton/apollo-hospitals/packages/api/ || exit
 echo "'packages/api/node_modules' -> 'skeleton/apollo-hospitals/packages/api/node_modules'"
 cp -RL packages/api/node_modules skeleton/apollo-hospitals/packages/api/ || exit 2
 cp packages/api/firebase-secrets.json skeleton/apollo-hospitals/packages/api/ || exit 2
-
+:'
 echo -e "\ncopying web-patients files..."
 mkdir -pv skeleton/apollo-hospitals/packages/web-patients/ || exit 2
 cp -Rv packages/web-patients/dist/* skeleton/apollo-hospitals/packages/web-patients/ || exit 2
@@ -73,7 +73,7 @@ cp -Rv packages/web-patients/dist/* skeleton/apollo-hospitals/packages/web-patie
 echo -e "\ncopying web-doctors files..."
 mkdir -pv skeleton/apollo-hospitals/packages/web-doctors/ || exit 2
 cp -Rv packages/web-doctors/dist/* skeleton/apollo-hospitals/packages/web-doctors/ || exit 2
-
+'
 echo -e "\ncopying universal files..."
 mkdir -pv skeleton/apollo-hospitals/packages/universal/ || exit 2
 cp -Rv packages/universal/dist/* skeleton/apollo-hospitals/packages/universal/ || exit 2
