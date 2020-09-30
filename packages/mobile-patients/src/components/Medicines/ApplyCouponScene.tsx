@@ -115,7 +115,13 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
   const [couponError, setCouponError] = useState<string>('');
   const [couponList, setcouponList] = useState<pharma_coupon[]>([]);
   const { currentPatient } = useAllCurrentPatients();
-  const { setCoupon, coupon: cartCoupon, cartItems, cartTotal, setCouponProducts } = useShoppingCart();
+  const {
+    setCoupon,
+    coupon: cartCoupon,
+    cartItems,
+    cartTotal,
+    setCouponProducts,
+  } = useShoppingCart();
   const { showAphAlert } = useUIElements();
   const [loading, setLoading] = useState<boolean>(true);
   const client = useApolloClient();
@@ -124,7 +130,8 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
 
   let packageId = '';
   if (!!g(hdfcUserSubscriptions, '_id') && !!g(hdfcUserSubscriptions, 'isActive')) {
-    packageId = g(hdfcUserSubscriptions, 'group', 'name') + ':' + g(hdfcUserSubscriptions, 'planId');
+    packageId =
+      g(hdfcUserSubscriptions, 'group', 'name') + ':' + g(hdfcUserSubscriptions, 'planId');
   }
 
   useEffect(() => {
@@ -160,7 +167,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
         quantity: item.quantity,
         specialPrice: item.specialPrice || item.price,
       })),
-      packageId: packageId
+      packageId: packageId,
     };
     validateConsultCoupon(data)
       .then((resp: any) => {
@@ -173,7 +180,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
           }
 
           const products = g(resp.data, 'response', 'products');
-          if(products && products.length) {
+          if (products && products.length) {
             const freeProducts = products.filter((product) => {
               return product.couponFree === true;
             });

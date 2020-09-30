@@ -22,19 +22,19 @@ export interface LocationData {
 
 export interface SubscriptionData {
   _id: string | '';
-  name: string | ''; 
-  planId: string | ''; 
+  name: string | '';
+  planId: string | '';
   benefitsWorth: string | '';
   activationModes: string[];
   price: number | null;
   minTransactionValue: number;
-  status: string | ''; 
+  status: string | '';
   subscriptionStatus: string | '';
   canUpgradeTo?: SubscriptionData | {};
   group: GroupPlan;
   benefits: PlanBenefits[];
   coupons: PlanCoupons[];
-  isActive: boolean; 
+  isActive: boolean;
   upgradeTransactionValue?: number | null;
 }
 
@@ -51,7 +51,7 @@ export interface bannerType {
   banner_template_info?: null;
   cta_action?: (() => void) | null;
   meta?: {} | null;
-};
+}
 
 export interface PlanBenefits {
   _id: string;
@@ -172,7 +172,7 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   savePatientDetails: [],
   setSavePatientDetails: null,
   doctorJoinedChat: false,
-  setDoctorJoinedChat: null
+  setDoctorJoinedChat: null,
 });
 
 export const AppCommonDataProvider: React.FC = (props) => {
@@ -243,7 +243,9 @@ export const AppCommonDataProvider: React.FC = (props) => {
     });
   };
 
-  const setHdfcUserSubscriptions: AppCommonDataContextProps['setHdfcUserSubscriptions'] = (hdfcUserSubscriptions) => {
+  const setHdfcUserSubscriptions: AppCommonDataContextProps['setHdfcUserSubscriptions'] = (
+    hdfcUserSubscriptions
+  ) => {
     _setHdfcUserSubscriptions(hdfcUserSubscriptions);
   };
 
@@ -347,7 +349,7 @@ export const AppCommonDataProvider: React.FC = (props) => {
         savePatientDetails,
         setSavePatientDetails,
         doctorJoinedChat,
-        setDoctorJoinedChat
+        setDoctorJoinedChat,
       }}
     >
       {props.children}

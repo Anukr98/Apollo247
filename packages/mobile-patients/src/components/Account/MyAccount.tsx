@@ -152,7 +152,11 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     GetCurrentPatients_getCurrentPatients_patients | null | undefined
   >(currentPatient);
   const { signOut, getPatientApiCall } = useAuth();
-  const { setSavePatientDetails, setAppointmentsPersonalized, hdfcUserSubscriptions } = useAppCommonData();
+  const {
+    setSavePatientDetails,
+    setAppointmentsPersonalized,
+    hdfcUserSubscriptions,
+  } = useAppCommonData();
 
   useEffect(() => {
     updateCodePushVersioninUi();
@@ -458,8 +462,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             props.navigation.navigate(AppRoutes.OneApolloMembership);
           }}
         />
-        {  
-          (hdfcUserSubscriptions && g(hdfcUserSubscriptions, '_id')) &&
+        {hdfcUserSubscriptions && g(hdfcUserSubscriptions, '_id') && (
           <ListCard
             title={'My Memberships'}
             leftIcon={<MyMembershipIcon style={{ height: 20, width: 26 }} />}
@@ -467,7 +470,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
               props.navigation.navigate(AppRoutes.MyMembership);
             }}
           />
-        }
+        )}
         <ListCard
           title={'Need Help'}
           leftIcon={<NeedHelpIcon />}

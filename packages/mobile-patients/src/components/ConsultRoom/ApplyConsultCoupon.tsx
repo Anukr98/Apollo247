@@ -115,11 +115,12 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
   const [loading, setLoading] = useState<boolean>(true);
   const [validating, setValidating] = useState<boolean>(false);
   const { showAphAlert } = useUIElements();
-  const {hdfcUserSubscriptions} = useAppCommonData();
+  const { hdfcUserSubscriptions } = useAppCommonData();
 
   let packageId = '';
   if (!!g(hdfcUserSubscriptions, '_id') && !!g(hdfcUserSubscriptions, 'isActive')) {
-    packageId = g(hdfcUserSubscriptions, 'group', 'name') + ':' + g(hdfcUserSubscriptions, 'planId');
+    packageId =
+      g(hdfcUserSubscriptions, 'group', 'name') + ':' + g(hdfcUserSubscriptions, 'planId');
   }
 
   const renderErrorPopup = (desc: string) =>

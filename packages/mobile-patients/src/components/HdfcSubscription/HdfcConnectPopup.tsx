@@ -8,7 +8,10 @@ import { AppConfig } from '../../strings/AppConfig';
 import { useUIElements } from '../UIElementsProvider';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useApolloClient } from 'react-apollo-hooks';
-import { initiateCallForPartner, initiateCallForPartnerVariables } from '../../graphql/types/initiateCallForPartner';
+import {
+  initiateCallForPartner,
+  initiateCallForPartnerVariables,
+} from '../../graphql/types/initiateCallForPartner';
 import { INITIATE_CALL_FOR_PARTNER } from '../../graphql/profiles';
 
 const styles = StyleSheet.create({
@@ -21,7 +24,7 @@ const styles = StyleSheet.create({
   popupContainerView: {
     flexDirection: 'row',
     padding: 20,
-    top: Dimensions.get('window').height * 0.10,
+    top: Dimensions.get('window').height * 0.1,
   },
   popupView: {
     width: '90%',
@@ -65,15 +68,15 @@ const styles = StyleSheet.create({
     marginTop: 20,
     padding: 10,
     borderRadius: 10,
-    alignItems: 'center'
+    alignItems: 'center',
   },
   connectButton: {
     backgroundColor: '#FC9916',
     marginTop: 20,
     padding: 10,
     borderRadius: 10,
-    alignItems: 'center'
-  }
+    alignItems: 'center',
+  },
 });
 
 export interface HdfcConnectPopupProps {
@@ -83,7 +86,7 @@ export interface HdfcConnectPopupProps {
 
 export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
-  const mobileNumber = g(currentPatient, 'mobileNumber')
+  const mobileNumber = g(currentPatient, 'mobileNumber');
   const { showAphAlert, setLoading: globalLoading } = useUIElements();
   const [showConnectMessage, setShowConnectMessage] = useState<boolean>(false);
   const [disableButton, setDisableButton] = useState<boolean>(false);
@@ -95,9 +98,9 @@ export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
     client
       .query<initiateCallForPartner, initiateCallForPartnerVariables>({
         query: INITIATE_CALL_FOR_PARTNER,
-        variables: { 
+        variables: {
           mobileNumber,
-          benefitId: props.benefitId
+          benefitId: props.benefitId,
         },
         fetchPolicy: 'no-cache',
       })
@@ -117,14 +120,16 @@ export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
           description: 'We could not connect to the doctor now. Please try later.',
         });
         console.log('initiateCallForPartner error', e);
-      })
+      });
   };
 
   const renderConnectSteps = () => {
     return (
-      <View style={{
-        marginTop: 10,
-      }}>
+      <View
+        style={{
+          marginTop: 10,
+        }}
+      >
         <View style={styles.containerRow}>
           <View style={styles.stepsContainer}>
             <CallConnectIcon />
@@ -134,22 +139,18 @@ export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
           </View>
           <View style={styles.stepsContainer}>
             <CallRingIcon style={styles.callIcon} />
-            <Text style={styles.stepsText}>
-              The same call will connect to the Doctor.
-            </Text>
+            <Text style={styles.stepsText}>The same call will connect to the Doctor.</Text>
           </View>
         </View>
         <View style={[styles.containerRow, { marginTop: 8 }]}>
           <View style={styles.stepsContainer}>
             <GroupCallIcon style={styles.callIcon} />
-            <Text style={styles.stepsText}>
-              Wait for the Doctor  to connect over the call.
-            </Text>
+            <Text style={styles.stepsText}>Wait for the Doctor to connect over the call.</Text>
           </View>
           <View style={styles.lastStepContainer}>
             <Text style={styles.noteText}>*Note :</Text>
             <Text style={theme.viewStyles.text('M', 12, '#01475B', 1, 20, 0.35)}>
-              Your personal phone number will not be  shared.
+              Your personal phone number will not be shared.
             </Text>
           </View>
         </View>
@@ -158,35 +159,35 @@ export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
   };
 
   const renderButtons = () => {
-    return (
-      showConnectMessage ? 
-        <Text style={{
+    return showConnectMessage ? (
+      <Text
+        style={{
           ...theme.viewStyles.text('SB', 15, '#01475B', 1, 30, 0.35),
           textAlign: 'center',
           marginTop: 20,
-        }}>
-          You will receive the call shortly.
-        </Text> :
-        <View style={styles.buttonsContainer}>
-          <TouchableOpacity
-            disabled={disableButton}
-            style={styles.cancelButton}
-            onPress={props.onClose}
-          >
-            <Text style={theme.viewStyles.text('B', 13, '#FC9916', 1, 20, 0.35)}>
-              CANCEL
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            disabled={disableButton}
-            style={styles.connectButton}
-            onPress={() => fireExotelApi()}
-          >
-            <Text style={theme.viewStyles.text('B', 13, '#FFFFFF', 1, 20, 0.35)}>
-              PROCEED TO CONNECT
-            </Text>
-          </TouchableOpacity>
-        </View>
+        }}
+      >
+        You will receive the call shortly.
+      </Text>
+    ) : (
+      <View style={styles.buttonsContainer}>
+        <TouchableOpacity
+          disabled={disableButton}
+          style={styles.cancelButton}
+          onPress={props.onClose}
+        >
+          <Text style={theme.viewStyles.text('B', 13, '#FC9916', 1, 20, 0.35)}>CANCEL</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          disabled={disableButton}
+          style={styles.connectButton}
+          onPress={() => fireExotelApi()}
+        >
+          <Text style={theme.viewStyles.text('B', 13, '#FFFFFF', 1, 20, 0.35)}>
+            PROCEED TO CONNECT
+          </Text>
+        </TouchableOpacity>
+      </View>
     );
   };
 

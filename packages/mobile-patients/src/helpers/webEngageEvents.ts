@@ -167,7 +167,7 @@ export enum WebEngageEventName {
   HDFC_OTP_VERIFY_CLICKED = 'HDFC Verify OTP Clicked',
   HDFC_EXPLORE_BENEFITS_CLICKED = 'HDFC Explore Benefits Clicked',
   HDFC_HOMEPAGE_CAROUSEL_CLICKED = 'HDFC Home Page Carousel Clicked',
-  
+
   // Opentok Events
   DOCTOR_SUBSCRIBER_ERROR = 'Doctor Subscriber Error',
   DOCTOR_SUBSCRIBER_OTRNERROR = 'Doctor Subscriber Otrnerror',
@@ -240,13 +240,13 @@ export interface HdfcCustomerInfo {
   'Patient Name': string;
   'Mobile Number': string;
   'Date of Birth': Date | string;
-  'Email': string;
+  Email: string;
 }
 
 export interface HdfcCustomerPlanInfo extends HdfcCustomerInfo {
   'Partner ID': string;
-  'HDFCMembershipLevel': 'SILVER' | 'GOLD' | 'PLATINUM';
-  'HDFCMembershipState': 'Active' | 'Inactive';
+  HDFCMembershipLevel: 'SILVER' | 'GOLD' | 'PLATINUM';
+  HDFCMembershipState: 'Active' | 'Inactive';
 }
 
 export interface PatientInfoWithConsultId extends PatientInfo {

@@ -1085,4 +1085,3 @@ export const InfoIcon: React.FC<IconProps> = (props) => (
 export const MinusIconOrange: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/minus-icon-orange.png')} />
 );
-

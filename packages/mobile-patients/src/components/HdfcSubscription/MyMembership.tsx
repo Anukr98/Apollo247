@@ -4,12 +4,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { 
-  HelpIcon, 
-  EllipseBulletPoint, 
-  LockIcon,
-  HdfcBankLogo,
-} from '../ui/Icons';
+import { HelpIcon, EllipseBulletPoint, LockIcon, HdfcBankLogo } from '../ui/Icons';
 import { useAppCommonData, PlanBenefits } from '../AppCommonDataProvider';
 import { g } from '../../helpers/helperFunctions';
 import { AvailNowPopup } from './AvailNowPopup';
@@ -44,8 +39,8 @@ const styles = StyleSheet.create({
     paddingTop: 10,
   },
   planName: {
-    ...theme.viewStyles.text('B', 14, '#00B38E', 1, 20, 0.35), 
-    marginRight: 10
+    ...theme.viewStyles.text('B', 14, '#00B38E', 1, 20, 0.35),
+    marginRight: 10,
   },
   medalIcon: {
     width: 30,
@@ -95,7 +90,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginTop: 10,
     flexDirection: 'row',
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
   },
   hdfcLogo: {
     resizeMode: 'contain',
@@ -112,7 +107,7 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingLeft: 20,
     paddingBottom: 10,
-  }
+  },
 });
 
 export interface MyMembershipProps extends NavigationScreenProps {}
@@ -120,7 +115,7 @@ export interface MyMembershipProps extends NavigationScreenProps {}
 export const MyMembership: React.FC<MyMembershipProps> = (props) => {
   const { hdfcUserSubscriptions } = useAppCommonData();
   const showSubscriptions = !!(hdfcUserSubscriptions && hdfcUserSubscriptions.name);
-  const canUpgradeToPlans = g(hdfcUserSubscriptions, 'canUpgradeTo')
+  const canUpgradeToPlans = g(hdfcUserSubscriptions, 'canUpgradeTo');
   const canUpgradeMultiplePlans = !!g(canUpgradeToPlans, 'canUpgradeTo', 'name');
   const premiumPlan = canUpgradeMultiplePlans ? g(canUpgradeToPlans, 'canUpgradeTo') : {};
   const canUpgrade = !!g(canUpgradeToPlans, 'name');
@@ -137,25 +132,27 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
 
   const getEllipseBulletPoint = (text: string, index: number) => {
     return (
-      <View style={[styles.ellipseBulletContainer, index === 2 ? {width: '80%'} : {}]}>
+      <View style={[styles.ellipseBulletContainer, index === 2 ? { width: '80%' } : {}]}>
         <EllipseBulletPoint style={styles.ellipseBullet} />
         <Text style={theme.viewStyles.text('B', 13, '#007C9D', 1, 20, 0.35)}>{text}</Text>
       </View>
     );
   };
 
-  const renderCardBody = (benefits: PlanBenefits[], subscriptionName: string, isCanUpgradeToPlan: boolean) => {
+  const renderCardBody = (
+    benefits: PlanBenefits[],
+    subscriptionName: string,
+    isCanUpgradeToPlan: boolean
+  ) => {
     return (
       <View style={styles.subTextContainer}>
-        <Text style={[theme.viewStyles.text('R', 12, '#000000', 1, 20, 0.35), {marginBottom: 5}]}>
+        <Text style={[theme.viewStyles.text('R', 12, '#000000', 1, 20, 0.35), { marginBottom: 5 }]}>
           {isCanUpgradeToPlan ? `Key Benefits you get...` : `Benefits Available`}
         </Text>
-        {
-          benefits.slice(0, 3).map((value, index) => {
-            return getEllipseBulletPoint(value.headerContent, index)
-          })
-        }
-        <Text 
+        {benefits.slice(0, 3).map((value, index) => {
+          return getEllipseBulletPoint(value.headerContent, index);
+        })}
+        <Text
           onPress={() => {
             props.navigation.navigate(AppRoutes.MembershipDetails, {
               membershipType: subscriptionName,
@@ -170,19 +167,25 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
     );
   };
 
-  const renderBottomButtons = (isActive: boolean, subscriptionName: string, isCanUpgradeToPlan: boolean) => {
-    const buttonText = isCanUpgradeToPlan ? 'HOW TO AVAIL' : (isActive ? 'EXPLORE' : 'ACTIVATE NOW');
+  const renderBottomButtons = (
+    isActive: boolean,
+    subscriptionName: string,
+    isCanUpgradeToPlan: boolean
+  ) => {
+    const buttonText = isCanUpgradeToPlan ? 'HOW TO AVAIL' : isActive ? 'EXPLORE' : 'ACTIVATE NOW';
     const upgradePlanName = g(hdfcUserSubscriptions, 'canUpgradeTo', 'name');
     const premiumPlanName = g(hdfcUserSubscriptions, 'canUpgradeTo', 'canUpgradeTo', 'name');
 
-    const transactionValue = 
-    subscriptionName === upgradePlanName ? g(hdfcUserSubscriptions, 'upgradeTransactionValue') :
-      subscriptionName === premiumPlanName ? g(hdfcUserSubscriptions, 'canUpgradeTo', 'upgradeTransactionValue') :
-      0;
+    const transactionValue =
+      subscriptionName === upgradePlanName
+        ? g(hdfcUserSubscriptions, 'upgradeTransactionValue')
+        : subscriptionName === premiumPlanName
+        ? g(hdfcUserSubscriptions, 'canUpgradeTo', 'upgradeTransactionValue')
+        : 0;
     return (
       <View style={styles.membershipButtons}>
-        <TouchableOpacity 
-        style={{ padding: 10 }}
+        <TouchableOpacity
+          style={{ padding: 10 }}
           onPress={() => {
             props.navigation.navigate(AppRoutes.MembershipDetails, {
               membershipType: subscriptionName,
@@ -190,11 +193,9 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
             });
           }}
         >
-          <Text style={theme.viewStyles.text('B', 12, '#FFFFFF', 1, 20, 0.35)}>
-            VIEW DETAILS
-          </Text>
+          <Text style={theme.viewStyles.text('B', 12, '#FFFFFF', 1, 20, 0.35)}>VIEW DETAILS</Text>
         </TouchableOpacity>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={{ padding: 10 }}
           onPress={() => {
             if (isCanUpgradeToPlan) {
@@ -205,9 +206,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
             }
           }}
         >
-          <Text style={theme.viewStyles.text('B', 12, '#FFFFFF', 1, 20, 0.35)}>
-            {buttonText}
-          </Text>
+          <Text style={theme.viewStyles.text('B', 12, '#FFFFFF', 1, 20, 0.35)}>{buttonText}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -220,19 +219,11 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
           <Text style={theme.viewStyles.text('B', 12, '#164884', 1, 20, 0.35)}>
             #ApolloHealthyLife
           </Text>
-          <HdfcBankLogo style={styles.hdfcLogo}/>
+          <HdfcBankLogo style={styles.hdfcLogo} />
         </View>
         <View style={styles.membershipCardContainer}>
-          <Text style={styles.planName}>
-            {subscription!.name}
-          </Text>
-          {
-            (isCanUpgradeToPlan || !isActive) ? (
-              <LockIcon style={styles.lockIcon} />
-            ) : (
-              <></>
-            )
-          }
+          <Text style={styles.planName}>{subscription!.name}</Text>
+          {isCanUpgradeToPlan || !isActive ? <LockIcon style={styles.lockIcon} /> : <></>}
         </View>
         {renderCardBody(subscription!.benefits, subscription!.name, isCanUpgradeToPlan)}
         {renderBottomButtons(subscription!.isActive, subscription!.name, isCanUpgradeToPlan)}
@@ -242,9 +233,9 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
 
   const renderAvailNowPopup = () => {
     return (
-      <AvailNowPopup 
-        onClose={() => setShowAvailPopup(false)} 
-        transactionAmount={upgradeTransactionValue} 
+      <AvailNowPopup
+        onClose={() => setShowAvailPopup(false)}
+        transactionAmount={upgradeTransactionValue}
         navigation={props.navigation}
       />
     );
@@ -260,34 +251,25 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
           container={styles.headerContainer}
           onPressLeftIcon={() => props.navigation.goBack()}
         />
-        {
-          showSubscriptions && 
+        {showSubscriptions && (
           <ScrollView bounces={false}>
             <View>
               <View>
-                  <Text style={styles.currentBenefits}>
-                    CURRENT BENEFITS
-                  </Text>
-                  {renderMembershipCard(hdfcUserSubscriptions, false)}
-                </View>
-              {
-                canUpgrade &&
+                <Text style={styles.currentBenefits}>CURRENT BENEFITS</Text>
+                {renderMembershipCard(hdfcUserSubscriptions, false)}
+              </View>
+              {canUpgrade && (
                 <View>
-                  <Text style={styles.otherPlans}>
-                    OTHER PLANS
-                  </Text>
+                  <Text style={styles.otherPlans}>OTHER PLANS</Text>
                   {renderMembershipCard(hdfcUserSubscriptions!.canUpgradeTo, true)}
-                  <View style={{marginTop: 15}} />
+                  <View style={{ marginTop: 15 }} />
                   {canUpgradeMultiplePlans && renderMembershipCard(premiumPlan, true)}
                 </View>
-              }
+              )}
             </View>
           </ScrollView>
-        }
-        {
-          showAvailPopup && 
-          renderAvailNowPopup()
-        }
+        )}
+        {showAvailPopup && renderAvailNowPopup()}
         {showSpinner && <Spinner />}
       </SafeAreaView>
     </View>

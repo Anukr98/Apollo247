@@ -253,7 +253,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
   let packageId = '';
   if (!!g(hdfcUserSubscriptions, '_id') && !!g(hdfcUserSubscriptions, 'isActive')) {
-    packageId = g(hdfcUserSubscriptions, 'group', 'name') + ':' + g(hdfcUserSubscriptions, 'planId');
+    packageId =
+      g(hdfcUserSubscriptions, 'group', 'name') + ':' + g(hdfcUserSubscriptions, 'planId');
   }
 
   // To remove applied coupon and selected storeId from cart when user goes back.

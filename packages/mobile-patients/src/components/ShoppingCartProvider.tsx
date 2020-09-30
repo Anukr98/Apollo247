@@ -258,7 +258,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [coupon, setCoupon] = useState<ShoppingCartContextProps['coupon']>(null);
   const [deliveryType, setDeliveryType] = useState<ShoppingCartContextProps['deliveryType']>(null);
   const [hdfcPlanName, _setHdfcPlanName] = useState<ShoppingCartContextProps['hdfcPlanName']>('');
-  const [isFreeDelivery, setIsFreeDelivery] = useState<ShoppingCartContextProps['isFreeDelivery']>(false);
+  const [isFreeDelivery, setIsFreeDelivery] = useState<ShoppingCartContextProps['isFreeDelivery']>(
+    false
+  );
   const [showPrescriptionAtStore, setShowPrescriptionAtStore] = useState<
     ShoppingCartContextProps['showPrescriptionAtStore']
   >(false);
@@ -383,9 +385,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
   );
 
   const deliveryCharges =
-    !deliveryType || 
-    deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP || 
-    isFreeDelivery
+    !deliveryType || deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP || isFreeDelivery
       ? 0
       : deliveryType == MEDICINE_DELIVERY_TYPE.HOME_DELIVERY &&
         cartTotal > 0 &&

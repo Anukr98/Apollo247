@@ -60,21 +60,24 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface AvailNowPopupProps extends NavigationScreenProps{
+export interface AvailNowPopupProps extends NavigationScreenProps {
   transactionAmount: number;
   onClose: () => void;
 }
 
 export const AvailNowPopup: React.FC<AvailNowPopupProps> = (props) => {
-
   const renderHowToAvailContent = () => {
     return (
-      <View style={{
-        marginTop: 15,
-      }}>
+      <View
+        style={{
+          marginTop: 15,
+        }}
+      >
         <View>
           <Text style={theme.viewStyles.text('SB', 13, '#007C9D', 1, 20, 0.35)}>
-            {`Complete transactions worth Rs.${props!.transactionAmount} or more on the Apollo 24|7 app to unlock platinum+ plan membership​`}
+            {`Complete transactions worth Rs.${
+              props!.transactionAmount
+            } or more on the Apollo 24|7 app to unlock platinum+ plan membership​`}
           </Text>
         </View>
       </View>
@@ -89,9 +92,7 @@ export const AvailNowPopup: React.FC<AvailNowPopupProps> = (props) => {
           props.navigation.navigate(AppRoutes.ConsultRoom, {});
         }}
       >
-        <Text style={theme.viewStyles.text('B', 13, '#FFFFFF', 1, 20, 0.35)}>
-          AVAIL NOW
-        </Text>
+        <Text style={theme.viewStyles.text('B', 13, '#FFFFFF', 1, 20, 0.35)}>AVAIL NOW</Text>
       </TouchableOpacity>
     );
   };
@@ -101,25 +102,30 @@ export const AvailNowPopup: React.FC<AvailNowPopupProps> = (props) => {
       <View style={styles.popupContainerView}>
         <View style={{ width: '5.72%' }} />
         <View style={styles.popupView}>
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => {
               props.onClose();
-            }} 
-            style={styles.sectionsHeading}>
-            <View style={{
-              flexDirection: 'row'
-            }}>
-              <ExclamationGreen style={{
-                width: 20,
-                height: 20,
-                resizeMode: 'contain',
-                marginRight: 10,
-              }} />
+            }}
+            style={styles.sectionsHeading}
+          >
+            <View
+              style={{
+                flexDirection: 'row',
+              }}
+            >
+              <ExclamationGreen
+                style={{
+                  width: 20,
+                  height: 20,
+                  resizeMode: 'contain',
+                  marginRight: 10,
+                }}
+              />
               <Text style={theme.viewStyles.text('SB', 15, '#00B38E', 1, 20, 0.35)}>
                 How To Avail
               </Text>
             </View>
-            <RoundCancelIcon style={styles.crossIconStyle}/>
+            <RoundCancelIcon style={styles.crossIconStyle} />
           </TouchableOpacity>
           {renderHowToAvailContent()}
         </View>
