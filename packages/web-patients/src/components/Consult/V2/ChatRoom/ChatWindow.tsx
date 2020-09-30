@@ -2386,7 +2386,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                   const cardType = getCardType(messageDetails);
                   const message =
                     messageDetails && messageDetails.message ? messageDetails.message : '';
-                  // console.log(message, 'message is......................');
                   if (
                     messageDetails.message === autoMessageStrings.typingMsg ||
                     messageDetails.message === autoMessageStrings.endCallMsg ||
