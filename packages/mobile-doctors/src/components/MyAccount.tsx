@@ -27,6 +27,11 @@ import {
   updateDoctorChatDaysVariables,
 } from '@aph/mobile-doctors/src/graphql/types/updateDoctorChatDays';
 import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import {
+  postWebEngageEvent,
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-doctors/src/helpers/WebEngageHelper';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import { string } from '@aph/mobile-doctors/src/strings/string';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
@@ -407,6 +412,10 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           fetchPolicy: 'no-cache',
         })
         .then(({ data }) => {
+          postWebEngageEvent(WebEngageEventName.DOCTOR_CHANGED_CHATDAYS, {
+            'Old Chat Days': g(doctorDetails, 'chatDays') || '',
+            'New Chat Days': followUpDays.key,
+          } as WebEngageEvents[WebEngageEventName.DOCTOR_CHANGED_CHATDAYS]);
           setLoading && setLoading(false);
           if (!g(data, 'updateDoctorChatDays', 'isError')) {
             getDoctorDetailsApi && getDoctorDetailsApi();
@@ -453,6 +462,22 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           },
         })
         .then(({ data }) => {
+          postWebEngageEvent(WebEngageEventName.DOCTOR_CHANGED_IVR, {
+            'Old IVR option': g(doctorDetails, 'isIvrSet') ? 'YES' : 'NO',
+            'Old Consult Type': g(doctorDetails, 'ivrConsultType') || null,
+            'Old Online Time': g(doctorDetails, 'ivrCallTimeOnline') || 'No-Data',
+            'Old In-Person Time': g(doctorDetails, 'ivrCallTimePhysical') || 'No-Data',
+            'New IVR option': ivrSwitch ? 'YES' : 'NO',
+            'New Consult Type': ivrSwitch ? appointmentType : null,
+            'New Online Time':
+              appointmentType !== ConsultMode.PHYSICAL && ivrSwitch
+                ? onlineAppointmentTime.value
+                : 'Selected Only Physical Consultation',
+            'New In-Person Time':
+              appointmentType !== ConsultMode.ONLINE && ivrSwitch
+                ? inpersonAppointmentTime.value
+                : 'Selected Only Online Consultation',
+          } as WebEngageEvents[WebEngageEventName.DOCTOR_CHANGED_IVR]);
           setLoading && setLoading(false);
           if (!g(data, 'setAppointmentReminderIvr', 'isError')) {
             getDoctorDetailsApi && getDoctorDetailsApi();
