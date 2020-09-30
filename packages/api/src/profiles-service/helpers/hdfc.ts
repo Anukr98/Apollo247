@@ -169,7 +169,7 @@ export async function customerIdentification(mobile: String, dateOfBirth: Date) 
       bankCode: '08',
       userId: 'DevUser01',
       transactionBranch: '089999',
-      userReferenceNumber: refNoGenerator(),
+      userReferenceNumber: externalReferenceNoGenerator(),
     },
   };
   const response = await mediumRequest(requestBeforeEncryption, '/API/CustomerIdentification');
@@ -178,7 +178,7 @@ export async function customerIdentification(mobile: String, dateOfBirth: Date) 
 
 export async function fetchEthnicCode(dateOfBirth: Date, mobile: String, historyToken: String) {
   const formattedMobile = mobile.substr(mobile.length - 10);
-  const externalReferenceNo = refNoGenerator();
+  const externalReferenceNo = externalReferenceNoGenerator();
   const formattedDateOfBirth = `${dateOfBirth.getFullYear()}${(
     '0' +
     (dateOfBirth.getMonth() + 1)
@@ -369,6 +369,11 @@ function randomStringGenerator(length: number): string {
     .slice(0, length);
 }
 
+function externalReferenceNoGenerator() {
+  `81${refNoGenerator()
+    .toString()
+    .slice(-2)}`;
+}
 function checkStatus(response: any) {
   dLogger(new Date(), `HDFC CheckStatus response status ${response.status}`, ` `);
   if (response.status >= 200 && response.status < 300) {
