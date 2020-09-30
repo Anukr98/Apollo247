@@ -675,6 +675,14 @@ export const SearchSendIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_send.png')} />
 );
 
+export const PhysicalConsultDarkBlueIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_hospital_dark_blue.png')} />
+);
+
+export const ChatBlueIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_chat_blue.png')} />
+);
+
 export const WhiteSearchIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/ic_search.png')} />
 );
