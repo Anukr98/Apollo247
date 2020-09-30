@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { Theme, CircularProgress, Popover, Typography } from '@material-ui/core';
-import { readableParam } from 'helpers/commonHelpers';
+import { readableParam, SPECIALTY_SEARCH_PAGE_SIZE } from 'helpers/commonHelpers';
 import { makeStyles } from '@material-ui/styles';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
@@ -176,6 +176,10 @@ interface SpecialtySearchProps {
   searchLoading?: boolean;
   setLocationPopup: (locationPopup: boolean) => void;
   locationPopup: boolean;
+  currentPage?: number;
+  apolloDoctorCount?: number;
+  partnerDoctorCount?: number;
+  setPageNo?: (pageNo: number) => void;
 }
 
 export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
@@ -190,6 +194,10 @@ export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
     searchKeyword,
     locationPopup,
     setSelectedCity,
+    currentPage,
+    apolloDoctorCount,
+    partnerDoctorCount,
+    setPageNo,
   } = props;
 
   const getDoctorAvailability = (slot: number) => {
@@ -206,7 +214,8 @@ export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
     }
     return slot || '';
   };
-  const searchRef = useRef(null);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const pathCondition = location.pathname === clientRoutes.specialityListing();
 
   useEffect(() => {
@@ -223,12 +232,14 @@ export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
     }
   }, [searchRef]);
 
-  const getConsultationFees = (onlineFees: string, physicalFees: string) => {
-    return onlineFees && physicalFees
-      ? onlineFees > physicalFees
-        ? physicalFees
-        : onlineFees
-      : onlineFees || physicalFees || '';
+  const onScrollHandle = () => {
+    const scrollTop = scrollRef && scrollRef.current.scrollTop;
+    const scrollHeight = scrollRef && scrollRef.current.scrollHeight;
+    if (scrollTop + 300 === scrollHeight) {
+      if ((currentPage - 1) * SPECIALTY_SEARCH_PAGE_SIZE < apolloDoctorCount + partnerDoctorCount) {
+        setPageNo(currentPage);
+      }
+    }
   };
 
   return (
@@ -257,7 +268,7 @@ export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
           {(searchSpecialty || searchDoctors || searchLoading) &&
             searchKeyword.length > 0 &&
             pathCondition && (
-              <div className={classes.searchContent}>
+              <div className={classes.searchContent} onScroll={onScrollHandle} ref={scrollRef}>
                 {searchLoading ? (
                   <CircularProgress />
                 ) : (

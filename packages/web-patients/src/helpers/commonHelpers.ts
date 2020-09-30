@@ -1,4 +1,4 @@
-import { DEVICETYPE } from 'graphql/types/globalTypes';
+import { DEVICETYPE, ConsultMode } from 'graphql/types/globalTypes';
 import { GetDoctorDetailsById_getDoctorDetailsById_consultHours } from 'graphql/types/GetDoctorDetailsById';
 import moment from 'moment';
 import { GooglePlacesType } from 'components/LocationProvider';
@@ -214,6 +214,7 @@ const OUT_OF_STOCK = 'Out Of Stock';
 const NOTIFY_WHEN_IN_STOCK = 'Notify when in stock';
 const PINCODE_MAXLENGTH = 6;
 const SPECIALTY_DETAIL_LISTING_PAGE_SIZE = 50;
+const SPECIALTY_SEARCH_PAGE_SIZE = 20;
 
 const findAddrComponents = (
   proptoFind: GooglePlacesType,
@@ -264,6 +265,7 @@ interface SearchObject {
   dateSelected: string;
   specialtyName: string;
   prakticeSpecialties: string | null;
+  consultMode: ConsultMode | null;
 }
 
 interface AppointmentFilterObject {
@@ -619,4 +621,5 @@ export {
   PINCODE_MAXLENGTH,
   SPECIALTY_DETAIL_LISTING_PAGE_SIZE,
   HEALTH_RECORDS_NOTE,
+  SPECIALTY_SEARCH_PAGE_SIZE,
 };
