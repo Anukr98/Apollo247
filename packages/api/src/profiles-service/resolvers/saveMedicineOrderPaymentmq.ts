@@ -26,6 +26,7 @@ import { EmailMessage } from 'types/notificationMessageTypes';
 import { log } from 'customWinstonLogger';
 import { acceptCoupon } from 'helpers/couponServices';
 import { AcceptCouponRequest } from 'types/coupons';
+
 import {
   BlockOneApolloPointsRequest,
   BlockUserPointsResponse,
@@ -34,6 +35,7 @@ import {
 import { OneApollo } from 'helpers/oneApollo';
 import { getStoreCodeFromDevice } from 'profiles-service/helpers/OneApolloTransactionHelper';
 import { calculateRefund } from 'profiles-service/helpers/refundHelper';
+import { transactionSuccessTrigger } from 'helpers/subscriptionHelper';
 
 export const saveMedicineOrderPaymentMqTypeDefs = gql`
   enum CODCity {
@@ -286,6 +288,21 @@ const SaveMedicineOrderPaymentMq: Resolver<
       statusDate: new Date(),
       statusMessage: statusMsg,
     };
+
+    if (currentStatus == MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS) {
+      transactionSuccessTrigger({
+        amount: `${medicinePaymentMqInput.amountPaid}`,
+        transactionType: TransactionType.PHARMA,
+        transactionDate: medicinePaymentMqInput.paymentDateTime || new Date(),
+        transactionId: medicinePaymentMqInput.paymentRefId,
+        sourceTransactionIdentifier: `${medicinePaymentMqInput.orderAutoId}`,
+        mobileNumber: orderDetails.patient.mobileNumber,
+        dob: orderDetails.patient.dateOfBirth,
+        email: orderDetails.patient.emailAddress,
+        partnerId: orderDetails.patient.partnerId,
+      });
+    }
+    await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
 
     if (
       currentStatus == MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS ||
