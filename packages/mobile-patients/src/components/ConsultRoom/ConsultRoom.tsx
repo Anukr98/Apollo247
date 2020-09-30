@@ -868,6 +868,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   }, [currentPatient, analytics, props.navigation.state.params]);
 
   const fetchAppointments = async () => {
+    setLoading && setLoading(true);
     let userId: any = await AsyncStorage.getItem('selectedProfileId');
     userId = JSON.parse(userId);
     client
@@ -926,9 +927,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         } else {
           setconsultations([]);
         }
-        // setLoading && setLoading(false);
+        setLoading && setLoading(false);
       })
       .catch((e) => {
+        setLoading && setLoading(false);
         CommonBugFender('Consult_fetchAppointments', e);
         console.log('Error occured in GET_PATIENT_ALL_APPOINTMENTS', e);
       });
