@@ -44,8 +44,6 @@ export const downloadDocuments: Resolver<
   const patientDetails = await patientsRepo.getPatientDetails(downloadDocumentsInput.patientId);
   if (patientDetails == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
-  const getToken = await getAuthToken(patientDetails.uhid);
-
   //get patient related all appointments
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointmentIds = await appointmentRepo.getAppointmentIdsByPatientId(
@@ -63,6 +61,8 @@ export const downloadDocuments: Resolver<
   );
 
   if (appointmentDocuments.length == 0) return { downloadPaths: [] };
+
+  const getToken = await getAuthToken(patientDetails.uhid);
 
   const downloadPaths = downloadDocumentsInput.fileIds.map((fileIdName) => {
     const filePaths = appointmentDocuments.filter((item) => item.prismFileId == fileIdName);
