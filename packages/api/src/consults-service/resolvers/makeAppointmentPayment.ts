@@ -25,7 +25,6 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { Connection } from 'typeorm';
 import { sendMail } from 'notifications-service/resolvers/email';
 import { EmailMessage } from 'types/notificationMessageTypes';
-import { ApiConstants, TransactionType } from 'ApiConstants';
 import { addMilliseconds, format, differenceInSeconds } from 'date-fns';
 import {
   sendNotification,
@@ -41,6 +40,7 @@ import { acceptCoupon } from 'helpers/couponServices';
 import { AcceptCouponRequest } from 'types/coupons';
 import { updateDoctorSlotStatusES } from 'doctors-service/entities/doctorElastic';
 import { transactionSuccessTrigger } from 'helpers/subscriptionHelper';
+import { ApiConstants, TransactionType } from 'ApiConstants';
 
 export const makeAppointmentPaymentTypeDefs = gql`
   enum APPOINTMENT_PAYMENT_TYPE {
