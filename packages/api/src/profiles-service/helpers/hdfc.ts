@@ -174,6 +174,7 @@ export async function customerIdentification(mobile: String, dateOfBirth: Date) 
     },
   };
   const response = await mediumRequest(requestBeforeEncryption, '/API/CustomerIdentification');
+
   return response;
 }
 
@@ -371,9 +372,9 @@ function randomStringGenerator(length: number): string {
 }
 
 function externalReferenceNoGenerator(referenceStart: string) {
-  `${referenceStart}${refNoGenerator()
+  return `${referenceStart}${refNoGenerator()
     .toString()
-    .slice(-2)}`;
+    .slice(-3)}`;
 }
 function checkStatus(response: any) {
   dLogger(new Date(), `HDFC CheckStatus response status ${response.status}`, ` `);
