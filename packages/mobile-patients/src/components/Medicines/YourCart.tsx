@@ -239,7 +239,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   // const [deliveryError, setdeliveryError] = useState<string>('');
   const [showDeliverySpinner, setshowDeliverySpinner] = useState<boolean>(true);
   const [showDriveWayPopup, setShowDriveWayPopup] = useState<boolean>(false);
-  const { locationDetails, pharmacyLocation } = useAppCommonData();
+  const { locationDetails, pharmacyLocation, hdfcUserSubscriptions } = useAppCommonData();
   const [lastCartItemsReplica, setLastCartItemsReplica] = useState('');
   const [lastCartItemsReplicaForStorePickup, setLastCartItemsReplicaForStorePickup] = useState('');
   const [lastPincodeReplica, setLastPincodeReplica] = useState('');
@@ -250,6 +250,12 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const [shopId, setShopId] = useState('');
 
   const navigatedFrom = props.navigation.getParam('movedFrom') || '';
+
+  let packageId = '';
+  if (!!g(hdfcUserSubscriptions, '_id') && !!g(hdfcUserSubscriptions, 'isActive')) {
+    packageId =
+      g(hdfcUserSubscriptions, 'group', 'name') + ':' + g(hdfcUserSubscriptions, 'planId');
+  }
 
   // To remove applied coupon and selected storeId from cart when user goes back.
   useEffect(() => {
@@ -863,6 +869,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         quantity: item.quantity,
         specialPrice: item.specialPrice ? item.specialPrice : item.price,
       })),
+      packageId: packageId,
     };
     validateConsultCoupon(data)
       .then((resp: any) => {

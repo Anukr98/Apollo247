@@ -20,7 +20,68 @@ export interface LocationData {
   lastUpdated?: number; //timestamp
 }
 
+export interface SubscriptionData {
+  _id: string | '';
+  name: string | '';
+  planId: string | '';
+  benefitsWorth: string | '';
+  activationModes: string[];
+  price: number | null;
+  minTransactionValue: number;
+  status: string | '';
+  subscriptionStatus: string | '';
+  canUpgradeTo?: SubscriptionData | {};
+  group: GroupPlan;
+  benefits: PlanBenefits[];
+  coupons: PlanCoupons[];
+  isActive: boolean;
+  upgradeTransactionValue?: number | null;
+}
+
+export interface GroupPlan {
+  _id: string;
+  name: string;
+  isActive: boolean;
+}
+
+export interface bannerType {
+  _id: string | null;
+  is_active: boolean;
+  banner: string;
+  banner_template_info?: null;
+  cta_action?: (() => void) | null;
+  meta?: {} | null;
+}
+
+export interface PlanBenefits {
+  _id: string;
+  attribute: string;
+  headerContent: string;
+  description: string;
+  ctaLabel: string;
+  ctaAction: string;
+  benefitCtaAction: BenefitCtaAction;
+  attributeType: string;
+  availableCount: number;
+  refreshFrequency: number;
+  icon: string | null;
+}
+
+export interface BenefitCtaAction {
+  type: string;
+  action: string;
+  message: string;
+}
+
+export interface PlanCoupons {
+  coupon: string;
+  message: string;
+  applicable: string;
+}
+
 export interface AppCommonDataContextProps {
+  hdfcUserSubscriptions: SubscriptionData | null;
+  setHdfcUserSubscriptions: ((items: SubscriptionData) => void) | null;
   locationDetails: LocationData | null;
   pharmacyLocation: LocationData | null;
   setLocationDetails: ((items: LocationData) => void) | null;
@@ -71,6 +132,8 @@ export interface AppCommonDataContextProps {
 }
 
 export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
+  hdfcUserSubscriptions: null,
+  setHdfcUserSubscriptions: null,
   locationDetails: null,
   pharmacyLocation: null,
   setLocationDetails: null,
@@ -109,7 +172,7 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   savePatientDetails: [],
   setSavePatientDetails: null,
   doctorJoinedChat: false,
-  setDoctorJoinedChat: null
+  setDoctorJoinedChat: null,
 });
 
 export const AppCommonDataProvider: React.FC = (props) => {
@@ -119,6 +182,10 @@ export const AppCommonDataProvider: React.FC = (props) => {
 
   const [locationDetails, _setLocationDetails] = useState<
     AppCommonDataContextProps['locationDetails']
+  >(null);
+
+  const [hdfcUserSubscriptions, _setHdfcUserSubscriptions] = useState<
+    AppCommonDataContextProps['hdfcUserSubscriptions']
   >(null);
 
   const [pharmacyLocation, _setPharmacyLocation] = useState<
@@ -174,6 +241,12 @@ export const AppCommonDataProvider: React.FC = (props) => {
     AsyncStorage.setItem('locationDetails', JSON.stringify(locationDetails)).catch(() => {
       console.log('Failed to save location in local storage.');
     });
+  };
+
+  const setHdfcUserSubscriptions: AppCommonDataContextProps['setHdfcUserSubscriptions'] = (
+    hdfcUserSubscriptions
+  ) => {
+    _setHdfcUserSubscriptions(hdfcUserSubscriptions);
   };
 
   const setPharmacyLocation: AppCommonDataContextProps['setPharmacyLocation'] = (
@@ -240,6 +313,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setCurrentLocationFetched,
         locationDetails,
         setLocationDetails,
+        hdfcUserSubscriptions,
+        setHdfcUserSubscriptions,
         pharmacyLocation,
         setPharmacyLocation,
         isPharmacyLocationServiceable,
@@ -274,7 +349,7 @@ export const AppCommonDataProvider: React.FC = (props) => {
         savePatientDetails,
         setSavePatientDetails,
         doctorJoinedChat,
-        setDoctorJoinedChat
+        setDoctorJoinedChat,
       }}
     >
       {props.children}

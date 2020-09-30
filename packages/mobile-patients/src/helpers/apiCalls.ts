@@ -800,9 +800,12 @@ export const getTxnStatus = (orderID: string): Promise<AxiosResponse<any>> => {
   return Axios.post(url, { orderID: orderID });
 };
 
-export const fetchConsultCoupons = (): Promise<AxiosResponse<any>> => {
+export const fetchConsultCoupons = (packageId: string): Promise<AxiosResponse<any>> => {
   const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
-  const url = `${baseUrl}/frontend`;
+  let url = `${baseUrl}/frontend`;
+  if (!!packageId) {
+    url += `?packageId=${packageId}`;
+  }
   return Axios.get(url);
 };
 
