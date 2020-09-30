@@ -2408,7 +2408,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     messageDetails.message === autoMessageStrings.exotelCall ||
                     messageDetails.message === autoMessageStrings.firstMessage ||
                     messageDetails.message === autoMessageStrings.secondMessage ||
-                    messageDetails.message === autoMessageStrings.vitalsCompletedByPatient
+                    messageDetails.message === autoMessageStrings.vitalsCompletedByPatient ||
+                    messageDetails.message === autoMessageStrings.leaveChatRoom
                   ) {
                     props.setSrDoctorJoined(
                       messageDetails.message === autoMessageStrings.startConsultMsg
