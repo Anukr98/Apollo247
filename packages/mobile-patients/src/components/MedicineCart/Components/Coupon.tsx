@@ -10,7 +10,7 @@ export interface CouponProps {
 }
 
 export const Coupon: React.FC<CouponProps> = (props) => {
-  const { coupon } = useShoppingCart();
+  const { coupon, couponDiscount } = useShoppingCart();
   const { onPressApplyCoupon, onPressRemove } = props;
 
   const renderApplyCoupon = () => {
@@ -32,7 +32,13 @@ export const Coupon: React.FC<CouponProps> = (props) => {
           <CouponIcon />
           <View style={{ marginLeft: 10, marginVertical: 4 }}>
             <Text style={styles.couponAppliedText}>{`Coupon Applied : ${coupon?.coupon}`} </Text>
-            <Text style={styles.applicable}>(Applicable on pharma items only) </Text>
+            <Text style={styles.applicable}>
+              {couponDiscount > 0
+                ? coupon?.message
+                  ? `(${coupon?.message})`
+                  : `(Savings of ₹ ${Number(couponDiscount).toFixed(2)})`
+                : '(Coupon not applicable on your cart item(s) or item(s) with already higher discounts)'}
+            </Text>
           </View>
         </View>
         <TouchableOpacity style={{ marginTop: 10 }} onPress={onPressRemove}>
@@ -82,10 +88,12 @@ const styles = StyleSheet.create({
   applicable: {
     ...theme.fonts.IBMPlexSansRegular(12),
     color: '#01475B',
-    lineHeight: 24,
+    marginVertical: 5,
+    lineHeight: 18,
   },
   rowStyle: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
   },
 });
