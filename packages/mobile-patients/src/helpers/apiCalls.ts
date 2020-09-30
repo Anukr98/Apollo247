@@ -720,7 +720,7 @@ export const fetchConsultCoupons = (): Promise<AxiosResponse<any>> => {
 
 export const validateConsultCoupon = (data: any): Promise<AxiosResponse<any>> => {
   const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
-  let url = `${baseUrl}/validate`;
+  const url = `${baseUrl}/validate`;
   return Axios.post(url, data);
 };
 
