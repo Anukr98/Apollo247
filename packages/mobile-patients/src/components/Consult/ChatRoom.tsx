@@ -2430,7 +2430,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (appointmentData.isJdQuestionsComplete) {
       console.log({});
       requestToJrDoctor();
-      if (!disableChat && status !== STATUS.COMPLETED && !appointmentData.hideHealthRecordNudge) {
+      if (
+        !disableChat &&
+        status !== STATUS.COMPLETED &&
+        !appointmentData.hideHealthRecordNudge &&
+        !isVoipCall &&
+        !fromIncomingCall
+      ) {
         showAndUpdateNudgeScreenVisibility();
       }
       // startJoinTimer(0);
