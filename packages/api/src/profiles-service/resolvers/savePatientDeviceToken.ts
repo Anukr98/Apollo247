@@ -31,6 +31,7 @@ export const saveDeviceTokenTypeDefs = gql`
 
   type DeleteTokenResult {
     status: Boolean!
+    response: String
   }
 
   extend type Mutation {
@@ -75,15 +76,15 @@ const saveDeviceToken: Resolver<
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
 
-  if(SaveDeviceTokenInput.deviceType == DEVICE_TYPE.IOS){
+  if (SaveDeviceTokenInput.deviceType == DEVICE_TYPE.IOS) {
     const devPushToken = await deviceTokenRepo.getDeviceVoipPushToken(
       SaveDeviceTokenInput.patientId,
       DEVICE_TYPE.IOS
     );
-  
-    for(let len = devPushToken.length; len > 0 ; len--){
-      if(devPushToken[len-1].deviceVoipPushToken){
-        Object.assign(SaveDeviceTokenInput, {deviceVoipPushToken: devPushToken[len-1].deviceVoipPushToken});
+
+    for (let len = devPushToken.length; len > 0; len--) {
+      if (devPushToken[len - 1].deviceVoipPushToken) {
+        Object.assign(SaveDeviceTokenInput, { deviceVoipPushToken: devPushToken[len - 1].deviceVoipPushToken });
         break;
       }
     }
@@ -100,6 +101,7 @@ const saveDeviceToken: Resolver<
 
 type DeleteTokenResult = {
   status: Boolean;
+  response: string;
 };
 
 const deleteDeviceToken: Resolver<
@@ -108,12 +110,23 @@ const deleteDeviceToken: Resolver<
   ProfilesServiceContext,
   DeleteTokenResult
 > = async (parent, args, { profilesDb }) => {
-  const deviceTokenRepo = profilesDb.getCustomRepository(PatientDeviceTokenRepository);
-  const tokenDetails = await deviceTokenRepo.findDeviceToken(args.patientId, args.deviceToken);
-  if (tokenDetails == null)
-    throw new AphError(AphErrorMessages.NO_DEVICE_TOKEN_EXIST, undefined, {});
-  await deviceTokenRepo.deleteDeviceToken(tokenDetails.deviceToken);
-  return { status: true };
+  try {
+    const profilesRepository = profilesDb.getCustomRepository(PatientRepository);
+    let profiles = await profilesRepository.getPatientDetailsByIds([args.patientId]);
+    if (!profiles.length || !profiles[0].mobileNumber) {
+      throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
+    }
+    profiles = await profilesRepository.getIdsByMobileNumber(profiles[0].mobileNumber);
+
+    for (let index = 0; index < profiles.length; index++) {
+      const devTokenRepository = profilesDb.getCustomRepository(PatientDeviceTokenRepository);
+      await devTokenRepository.deleteDeviceTokenWhere({ patient: profiles[index] });
+    }
+    return { status: true, response: "Tokens Deleted Successfully" };
+  } catch (err) {
+    console.error("error in deleting tokens > ", err);
+    return { status: false, response: "Tokens Not Deleted" };
+  }
 };
 
 export const saveDeviceTokenResolvers = {
