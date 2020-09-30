@@ -18,6 +18,7 @@ import {
   availabilityList,
 } from 'helpers/commonHelpers';
 import _cloneDeep from 'lodash/cloneDeep';
+import { ConsultMode } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -146,7 +147,6 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingBottom: 4,
         paddingLeft: 9,
       },
-
     },
     filterBtns: {
       '& button': {
@@ -253,7 +253,7 @@ const useStyles = makeStyles((theme: Theme) => {
         [theme.breakpoints.down('xs')]: {
           fontSize: 12,
           lineHeight: '16px',
-          width: '40%'
+          width: '40%',
         },
       },
     },
@@ -268,7 +268,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '& input': {
         paddingLeft: 30,
-      }
+      },
     },
     searchContainer: {
       display: 'flex',
@@ -476,132 +476,73 @@ export const Filters: React.FC<FilterProps> = (props) => {
                     <img src={require('images/ic-search.svg')} alt="" />
                     <AphInput
                       className={classes.searchInput}
-                      type="search" placeholder="Search City"
+                      type="search"
+                      placeholder="Search City"
                     />
                   </div>
                   <div className={classes.stateValues}>
                     <div className={classes.stateName}>Telangana</div>
-                    <FormControlLabel className={classes.stateList}
-                      control={
-                        <AphCheckbox
-                          color="primary"
-                          name="onlineconsults"
-                          checked
-                        />
-                      }
+                    <FormControlLabel
+                      className={classes.stateList}
+                      control={<AphCheckbox color="primary" name="onlineconsults" checked />}
                       label="Hyderabad"
                     />
-                    <FormControlLabel className={classes.stateList}
-                      control={
-                        <AphCheckbox
-                          color="primary"
-                          name="inperson"
-                          checked
-                        />
-                      }
+                    <FormControlLabel
+                      className={classes.stateList}
+                      control={<AphCheckbox color="primary" name="inperson" checked />}
                       label="Karimnagar"
                     />
-                    <FormControlLabel className={classes.stateList}
-                      control={
-                        <AphCheckbox
-                          color="primary"
-                          name="inperson"
-                          checked
-                        />
-                      }
+                    <FormControlLabel
+                      className={classes.stateList}
+                      control={<AphCheckbox color="primary" name="inperson" checked />}
                       label="Nizamabad"
                     />
-                    <FormControlLabel className={classes.stateList}
-                      control={
-                        <AphCheckbox
-                          color="primary"
-                          name="inperson"
-                          checked
-                        />
-                      }
+                    <FormControlLabel
+                      className={classes.stateList}
+                      control={<AphCheckbox color="primary" name="inperson" checked />}
                       label="Karimnagar"
                     />
-                    <FormControlLabel className={classes.stateList}
-                      control={
-                        <AphCheckbox
-                          color="primary"
-                          name="inperson"
-                          checked
-                        />
-                      }
+                    <FormControlLabel
+                      className={classes.stateList}
+                      control={<AphCheckbox color="primary" name="inperson" checked />}
                       label="Nalgonda"
                     />
-                    <FormControlLabel className={classes.stateList}
-                      control={
-                        <AphCheckbox
-                          color="primary"
-                          name="inperson"
-                          checked
-                        />
-                      }
+                    <FormControlLabel
+                      className={classes.stateList}
+                      control={<AphCheckbox color="primary" name="inperson" checked />}
                       label="Hyderabad"
                     />
                   </div>
                   <div className={classes.stateValues}>
                     <div className={classes.stateName}>Andhra Pradesh</div>
-                    <FormControlLabel className={classes.stateList}
-                      control={
-                        <AphCheckbox
-                          color="primary"
-                          name="onlineconsults"
-                          checked
-                        />
-                      }
+                    <FormControlLabel
+                      className={classes.stateList}
+                      control={<AphCheckbox color="primary" name="onlineconsults" checked />}
                       label="Guntur"
                     />
-                    <FormControlLabel className={classes.stateList}
-                      control={
-                        <AphCheckbox
-                          color="primary"
-                          name="inperson"
-                          checked
-                        />
-                      }
+                    <FormControlLabel
+                      className={classes.stateList}
+                      control={<AphCheckbox color="primary" name="inperson" checked />}
                       label="Tanuku"
                     />
-                    <FormControlLabel className={classes.stateList}
-                      control={
-                        <AphCheckbox
-                          color="primary"
-                          name="inperson"
-                          checked
-                        />
-                      }
+                    <FormControlLabel
+                      className={classes.stateList}
+                      control={<AphCheckbox color="primary" name="inperson" checked />}
                       label="Amaravathi"
                     />
-                    <FormControlLabel className={classes.stateList}
-                      control={
-                        <AphCheckbox
-                          color="primary"
-                          name="inperson"
-                          checked
-                        />
-                      }
+                    <FormControlLabel
+                      className={classes.stateList}
+                      control={<AphCheckbox color="primary" name="inperson" checked />}
                       label="Amaravathi"
                     />
-                    <FormControlLabel className={classes.stateList}
-                      control={
-                        <AphCheckbox
-                          color="primary"
-                          name="inperson"
-                          checked
-                        />
-                      }
+                    <FormControlLabel
+                      className={classes.stateList}
+                      control={<AphCheckbox color="primary" name="inperson" checked />}
                       label="Amaravathi"
                     />
-                    <FormControlLabel className={classes.stateList}
-                      control={
-                        <AphCheckbox
-                          color="primary"
-                          name="inperson"
-                          checked
-                        />
-                      }
+                    <FormControlLabel
+                      className={classes.stateList}
+                      control={<AphCheckbox color="primary" name="inperson" checked />}
                       label="Amaravathi"
                     />
                   </div>
@@ -829,6 +770,7 @@ export const Filters: React.FC<FilterProps> = (props) => {
                     dateSelected: '',
                     specialtyName: '',
                     prakticeSpecialties: '',
+                    consultMode: ConsultMode.BOTH,
                   };
                   setLocalFilter(filterInitialValues);
                   setFilter(filterInitialValues);

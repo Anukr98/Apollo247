@@ -1,4 +1,4 @@
-import { DEVICETYPE } from 'graphql/types/globalTypes';
+import { DEVICETYPE, ConsultMode } from 'graphql/types/globalTypes';
 import { GetDoctorDetailsById_getDoctorDetailsById_consultHours } from 'graphql/types/GetDoctorDetailsById';
 import moment from 'moment';
 import { GooglePlacesType } from 'components/LocationProvider';
@@ -70,8 +70,8 @@ const getDeviceType = (): DEVICETYPE => {
     return /Android/i.test(userAgent)
       ? DEVICETYPE.ANDROID
       : /iPhone/i.test(userAgent)
-      ? DEVICETYPE.IOS
-      : null;
+        ? DEVICETYPE.IOS
+        : null;
   } else {
     return DEVICETYPE.DESKTOP;
   }
@@ -214,6 +214,7 @@ const OUT_OF_STOCK = 'Out Of Stock';
 const NOTIFY_WHEN_IN_STOCK = 'Notify when in stock';
 const PINCODE_MAXLENGTH = 6;
 const SPECIALTY_DETAIL_LISTING_PAGE_SIZE = 50;
+const SPECIALTY_SEARCH_PAGE_SIZE = 20;
 
 const findAddrComponents = (
   proptoFind: GooglePlacesType,
@@ -264,6 +265,7 @@ interface SearchObject {
   dateSelected: string;
   specialtyName: string;
   prakticeSpecialties: string | null;
+  consultMode: ConsultMode | null;
 }
 
 interface AppointmentFilterObject {
@@ -396,7 +398,7 @@ const getAvailability = (nextAvailability: string, differenceInMinutes: number, 
   } else if (isAvailableAfterTomorrow) {
     return `${message} in ${
       nextAvailabilityMoment.diff(tomorrowAvailabilityTime, 'days') + 1 // intentionally added + 1 as we need to consider 6 am as next day
-    } days`;
+      } days`;
   } else if (!isAvailableTomorrow && differenceInMinutes >= 60) {
     return `${message} at ${nextAvailabilityMoment.format('hh:mm A')}`;
   } else {
@@ -422,7 +424,7 @@ const getPackOfMedicine = (medicineDetail: MedicineProductDetails) => {
     medicineDetail.PharmaOverview && medicineDetail.PharmaOverview.length > 0
       ? medicineDetail.PharmaOverview[0].Doseform
       : ''
-  }${medicineDetail.mou && parseFloat(medicineDetail.mou) !== 1 ? 'S' : ''}`;
+    }${medicineDetail.mou && parseFloat(medicineDetail.mou) !== 1 ? 'S' : ''}`;
 };
 
 const getImageUrl = (imageUrl: string) => {
@@ -465,8 +467,8 @@ const getAvailableFreeChatDays = (appointmentTime: string, followUpInDays: numbe
     return diffInHours > 0
       ? `Valid for ${diffInHours} ${diffInHours === 1 ? 'hour' : 'hours'}`
       : diffInMinutes > 0
-      ? `Valid for ${diffInMinutes} ${diffInMinutes === 1 ? 'minute' : 'minutes'}`
-      : '';
+        ? `Valid for ${diffInMinutes} ${diffInMinutes === 1 ? 'minute' : 'minutes'}`
+        : '';
   } else if (diffInDays > 0) {
     return `Valid for ${diffInDays} ${diffInDays === 1 ? 'day' : 'days'}`;
   } else {
@@ -619,4 +621,5 @@ export {
   PINCODE_MAXLENGTH,
   SPECIALTY_DETAIL_LISTING_PAGE_SIZE,
   HEALTH_RECORDS_NOTE,
+  SPECIALTY_SEARCH_PAGE_SIZE,
 };

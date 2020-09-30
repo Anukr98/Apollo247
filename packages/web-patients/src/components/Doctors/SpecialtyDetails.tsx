@@ -417,6 +417,7 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     dateSelected: '',
     specialtyName: '',
     prakticeSpecialties: '',
+    consultMode: ConsultMode.BOTH,
   };
   const classes = useStyles({});
   const onePrimaryUser = hasOnePrimaryUser();
@@ -689,6 +690,7 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
       prakticeSDKSpecialties && prakticeSDKSpecialties.length > 0 ? 'NAME' : 'ID',
     pincode: currentPincode ? currentPincode : localStorage.getItem('currentPincode') || '',
     searchText: filter.searchKeyword,
+    consultMode: filter.consultMode,
   };
 
   useEffect(() => {
@@ -801,24 +803,18 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     });
   };
   useEffect(() => {
-    if (doctorData) {
-      setLoading(true);
-      let filterDoctorsData = doctorData;
-      if (isOnlineSelected || isPhysicalSelected) {
-        filterDoctorsData = getConsultModeDoctorList(filterDoctorsData);
-        if (filterDoctorsData.length > 0) {
-          const filteredObj = getDoctorObject(filterDoctorsData);
-          setFilteredDoctorData(filteredObj);
-        } else {
-          setFilteredDoctorData(null);
-        }
-      } else {
-        setFilteredDoctorData(null);
-      }
-
-      setLoading(false);
+    if (isOnlineSelected && isPhysicalSelected) {
+      setFilter({ ...filter, consultMode: ConsultMode.BOTH });
+    } else if (isOnlineSelected && !isPhysicalSelected) {
+      setFilter({ ...filter, consultMode: ConsultMode.ONLINE });
+    } else if (!isOnlineSelected && isPhysicalSelected) {
+      setFilter({ ...filter, consultMode: ConsultMode.PHYSICAL });
+    } else {
+      setFilteredDoctorData(null);
+      apolloDoctorCount = 0;
+      partnerDoctorCount = 0;
     }
-  }, [isOnlineSelected, isPhysicalSelected, doctorData]);
+  }, [isOnlineSelected, isPhysicalSelected]);
 
   const metaTagProps = {
     title: (faqData && faqData[0].specialtyMetaTitle) || '',

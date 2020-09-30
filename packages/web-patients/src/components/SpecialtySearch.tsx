@@ -1,6 +1,9 @@
 import React, { useRef, useEffect } from 'react';
 import { Theme, CircularProgress, Popover, Typography } from '@material-ui/core';
-import { readableParam } from 'helpers/commonHelpers';
+import {
+  readableParam,
+  SPECIALTY_SEARCH_PAGE_SIZE,
+} from 'helpers/commonHelpers';
 import { makeStyles } from '@material-ui/styles';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
@@ -176,6 +179,10 @@ interface SpecialtySearchProps {
   searchLoading?: boolean;
   setLocationPopup: (locationPopup: boolean) => void;
   locationPopup: boolean;
+  currentPage?: number;
+  apolloDoctorCount?: number;
+  partnerDoctorCount?: number;
+  setPageNo?: (pageNo: number) => void;
 }
 
 export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
@@ -190,6 +197,10 @@ export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
     searchKeyword,
     locationPopup,
     setSelectedCity,
+    currentPage,
+    apolloDoctorCount,
+    partnerDoctorCount,
+    setPageNo,
   } = props;
 
   const getDoctorAvailability = (slot: number) => {
@@ -206,7 +217,8 @@ export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
     }
     return slot || '';
   };
-  const searchRef = useRef(null);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const pathCondition = location.pathname === clientRoutes.specialityListing();
 
   useEffect(() => {
@@ -223,12 +235,14 @@ export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
     }
   }, [searchRef]);
 
-  const getConsultationFees = (onlineFees: string, physicalFees: string) => {
-    return onlineFees && physicalFees
-      ? onlineFees > physicalFees
-        ? physicalFees
-        : onlineFees
-      : onlineFees || physicalFees || '';
+  const onScrollHandle = () => {
+    const scrollTop = scrollRef && scrollRef.current.scrollTop;
+    const scrollHeight = scrollRef && scrollRef.current.scrollHeight;
+    if (scrollTop + 300 === scrollHeight) {
+      if ((currentPage - 1) * SPECIALTY_SEARCH_PAGE_SIZE < apolloDoctorCount + partnerDoctorCount) {
+        setPageNo(currentPage);
+      }
+    }
   };
 
   return (
@@ -257,71 +271,71 @@ export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
           {(searchSpecialty || searchDoctors || searchLoading) &&
             searchKeyword.length > 0 &&
             pathCondition && (
-              <div className={classes.searchContent}>
+              <div className={classes.searchContent} onScroll={onScrollHandle} ref={scrollRef}>
                 {searchLoading ? (
                   <CircularProgress />
                 ) : (
-                  <>
-                    {searchSpecialty && searchSpecialty.length > 0 && (
-                      <div className={classes.sContent}>
-                        <Typography component="h6">Specialities</Typography>
-                        <ul className={classes.sList}>
-                          {searchSpecialty.map(
-                            (specialty: GetDoctorList_getDoctorList_specialties) => (
-                              <Link
-                                key={specialty.id}
-                                to={
-                                  selectedCity === ''
-                                    ? clientRoutes.specialties(readableParam(specialty.name))
-                                    : clientRoutes.citySpecialties(
+                    <>
+                      {searchSpecialty && searchSpecialty.length > 0 && (
+                        <div className={classes.sContent}>
+                          <Typography component="h6">Specialities</Typography>
+                          <ul className={classes.sList}>
+                            {searchSpecialty.map(
+                              (specialty: GetDoctorList_getDoctorList_specialties) => (
+                                <Link
+                                  key={specialty.id}
+                                  to={
+                                    selectedCity === ''
+                                      ? clientRoutes.specialties(readableParam(specialty.name))
+                                      : clientRoutes.citySpecialties(
                                         _lowerCase(selectedCity),
                                         readableParam(specialty.name)
                                       )
-                                }
-                              >
-                                <li key={specialty.id} onClick={() => setSearchKeyword('')}>
-                                  {specialty.name}
-                                </li>
-                              </Link>
-                            )
-                          )}
-                        </ul>
-                      </div>
-                    )}
-                    {searchDoctors && searchDoctors.length > 0 && (
-                      <div className={classes.docContent}>
-                        <Typography component="h6">Doctors</Typography>
-                        <ul className={classes.doctorList}>
-                          {searchDoctors.map((doctor: DoctorDetails) => (
-                            <li key={doctor.id}>
-                              <Link
-                                key={doctor.id}
-                                to={clientRoutes.doctorDetails(
-                                  readableParam(doctor.displayName),
-                                  doctor.id
-                                )}
-                              >
-                                <div className={classes.doctorContent}>
-                                  <div className={classes.dImg}>
-                                    <img src={doctor.photoUrl} />
+                                  }
+                                >
+                                  <li key={specialty.id} onClick={() => setSearchKeyword('')}>
+                                    {specialty.name}
+                                  </li>
+                                </Link>
+                              )
+                            )}
+                          </ul>
+                        </div>
+                      )}
+                      {searchDoctors && searchDoctors.length > 0 && (
+                        <div className={classes.docContent}>
+                          <Typography component="h6">Doctors</Typography>
+                          <ul className={classes.doctorList}>
+                            {searchDoctors.map((doctor: DoctorDetails) => (
+                              <li key={doctor.id}>
+                                <Link
+                                  key={doctor.id}
+                                  to={clientRoutes.doctorDetails(
+                                    readableParam(doctor.displayName),
+                                    doctor.id
+                                  )}
+                                >
+                                  <div className={classes.doctorContent}>
+                                    <div className={classes.dImg}>
+                                      <img src={doctor.photoUrl} />
+                                    </div>
+                                    <div className={classes.doctorDetails}>
+                                      <Typography component="h2">{doctor.displayName}</Typography>
+                                      <Typography>
+                                        {_get(doctor, 'specialistSingularTerm', '')} |{' '}
+                                        {getDoctorAvailability(doctor.earliestSlotInMinutes)} |{' '}
+                                        {doctor.fee} | {doctor.doctorfacility}
+                                      </Typography>
+                                    </div>
                                   </div>
-                                  <div className={classes.doctorDetails}>
-                                    <Typography component="h2">{doctor.displayName}</Typography>
-                                    <Typography>
-                                      {_get(doctor, 'specialistSingularTerm', '')} |{' '}
-                                      {getDoctorAvailability(doctor.earliestSlotInMinutes)} |{' '}
-                                      {doctor.fee} | {doctor.doctorfacility}
-                                    </Typography>
-                                  </div>
-                                </div>
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </>
-                )}
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </>
+                  )}
                 {!searchLoading &&
                   searchDoctors &&
                   searchDoctors.length === 0 &&
