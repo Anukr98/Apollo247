@@ -169,7 +169,8 @@ export async function customerIdentification(mobile: String, dateOfBirth: Date) 
       bankCode: '08',
       userId: 'DevUser01',
       transactionBranch: '089999',
-      userReferenceNumber: externalReferenceNoGenerator(),
+      userReferenceNumber: refNoGenerator(),
+      externalReferenceNo: externalReferenceNoGenerator('AP1'),
     },
   };
   const response = await mediumRequest(requestBeforeEncryption, '/API/CustomerIdentification');
@@ -178,7 +179,7 @@ export async function customerIdentification(mobile: String, dateOfBirth: Date) 
 
 export async function fetchEthnicCode(dateOfBirth: Date, mobile: String, historyToken: String) {
   const formattedMobile = mobile.substr(mobile.length - 10);
-  const externalReferenceNo = externalReferenceNoGenerator();
+  const externalReferenceNo = externalReferenceNoGenerator('AP2');
   const formattedDateOfBirth = `${dateOfBirth.getFullYear()}${(
     '0' +
     (dateOfBirth.getMonth() + 1)
@@ -369,8 +370,8 @@ function randomStringGenerator(length: number): string {
     .slice(0, length);
 }
 
-function externalReferenceNoGenerator() {
-  `81${refNoGenerator()
+function externalReferenceNoGenerator(referenceStart: string) {
+  `${referenceStart}${refNoGenerator()
     .toString()
     .slice(-2)}`;
 }
