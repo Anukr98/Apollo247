@@ -42,7 +42,7 @@ export class MedicineEntitySubscriber implements EntitySubscriberInterface<Medic
   }
 }
 
-const isOrderPlaced = function(currentMedicinePayment, oldMedicinePayment){
+const isOrderPlaced = function(currentMedicinePayment: MedicineOrders, oldMedicinePayment: MedicineOrders){
   return (oldMedicinePayment.currentStatus !== MEDICINE_ORDER_STATUS.ORDER_BILLED &&
     currentMedicinePayment.currentStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED) ||
     (oldMedicinePayment.currentStatus !== MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS &&
