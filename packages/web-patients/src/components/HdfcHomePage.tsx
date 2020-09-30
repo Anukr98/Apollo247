@@ -105,8 +105,10 @@ export const HdfcHomePage: React.FC<HdfcHomePageProps> = (props) => {
               You are missing out on a world of exclusive benefits
             </Typography>
             <Typography>
-              Just book a Doctor Consultation or order Pharmacy products worth Rs 499 or more to
-              join the club!
+              Just book a Doctor Consultation or order Pharmacy products to join the club!
+            </Typography>
+            <Typography style={{ color: 'red', fontSize: 12, marginTop: 5 }}>
+              *Check your Membership Page for minimum transaction value
             </Typography>
             <AphButton
               onClick={() => {
