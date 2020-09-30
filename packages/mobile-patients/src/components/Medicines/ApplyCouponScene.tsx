@@ -120,10 +120,15 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(true);
   const client = useApolloClient();
   const isEnableApplyBtn = couponText.length >= 4;
-  const { locationDetails } = useAppCommonData();
+  const { locationDetails, hdfcUserSubscriptions } = useAppCommonData();
+
+  let packageId = '';
+  if (!!g(hdfcUserSubscriptions, '_id') && !!g(hdfcUserSubscriptions, 'isActive')) {
+    packageId = g(hdfcUserSubscriptions, 'group', 'name') + ':' + g(hdfcUserSubscriptions, 'planId');
+  }
 
   useEffect(() => {
-    fetchConsultCoupons()
+    fetchConsultCoupons(packageId)
       .then((res: any) => {
         console.log(JSON.stringify(res.data), 'objobj');
         setcouponList(res.data.response);
@@ -155,6 +160,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
         quantity: item.quantity,
         specialPrice: item.specialPrice || item.price,
       })),
+      packageId: packageId
     };
     validateConsultCoupon(data)
       .then((resp: any) => {
