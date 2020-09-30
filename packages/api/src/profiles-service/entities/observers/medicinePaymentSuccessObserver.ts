@@ -19,14 +19,14 @@ export class MedicineEntitySubscriber implements EntitySubscriberInterface<Medic
       if ( isOrderPlaced(currentMedicinePayment, oldMedicinePayment) ) {
         transactionSuccessTrigger({
           amount: `${currentMedicinePayment.paymentInfo.amountPaid}`,
-          transactionType: TransactionType.CONSULT,
+          transactionType: TransactionType.PHARMA,
           transactionDate: currentMedicinePayment.paymentInfo.paymentDateTime || new Date(),
           transactionId: currentMedicinePayment.paymentInfo.paymentRefId,
           sourceTransactionIdentifier: `${currentMedicinePayment.orderAutoId}`,
           mobileNumber: currentMedicinePayment.patient.mobileNumber,
           dob: currentMedicinePayment.patient.dateOfBirth,
-          email: currentMedicinePayment.patient.mobileNumber,
-          partnerId: currentMedicinePayment.patient.mobileNumber,
+          email: currentMedicinePayment.patient.email,
+          partnerId: currentMedicinePayment.patient.partnerId,
         });
       }
     } catch (error) {
