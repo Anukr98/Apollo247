@@ -15,7 +15,6 @@ export class DiagnosticEntitySubscriber
       // const oldDiagnosticPayment: DiagnosticOrderPayments = DiagnosticOrderPayments.create(
       //   event.databaseEntity as DiagnosticOrderPayments
       // );
-
       // const currentDiagnosticPayment = DiagnosticOrderPayments.create(
       //   event.entity as DiagnosticOrderPayments
       // );
@@ -25,23 +24,17 @@ export class DiagnosticEntitySubscriber
       // ) {
       //   transactionSuccessTrigger({
       //     amount: `${currentDiagnosticPayment.amountPaid}`,
-<<<<<<< HEAD
       //     transactionType: TransactionType.DIAGNOSTICS,
-=======
       //     transactionType: TransactionType.CONSULT,
->>>>>>> a8dbc702bbad51b9832327c34b202377de101077
       //     transactionDate: currentDiagnosticPayment.paymentDateTime || new Date(),
       //     transactionId: currentDiagnosticPayment.txnId,
       //     sourceTransactionIdentifier: `${currentDiagnosticPayment.id}`,
       //     mobileNumber: currentDiagnosticPayment.diagnosticOrders.patient.mobileNumber,
       //     dob: currentDiagnosticPayment.diagnosticOrders.patient.dateOfBirth,
-<<<<<<< HEAD
       //     email: currentDiagnosticPayment.diagnosticOrders.patient.emailAddress,
       //     partnerId: currentDiagnosticPayment.diagnosticOrders.patient.partnerId,
-=======
       //     email: currentDiagnosticPayment.diagnosticOrders.patient.mobileNumber,
       //     partnerId: currentDiagnosticPayment.diagnosticOrders.patient.mobileNumber,
->>>>>>> a8dbc702bbad51b9832327c34b202377de101077
       //   });
       // }
     } catch (error) {
