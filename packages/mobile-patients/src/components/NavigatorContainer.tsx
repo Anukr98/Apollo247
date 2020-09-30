@@ -519,11 +519,15 @@ const stackConfig: StackNavigatorConfig = {
   headerMode: 'none',
   cardStyle: { backgroundColor: 'transparent' },
   mode: 'card',
-  transitionConfig: (sceneProps) => {
+  transitionConfig: (sceneProps, prevSceneProps) => {
     try {
-      AsyncStorage.setItem('setCurrentName', sceneProps.scene.route.routeName);
-      CommonScreenLog(sceneProps.scene.route.routeName, sceneProps.scene.route.routeName);
-      logTabEvents(sceneProps.scene.route);
+      const currentRoute = sceneProps.scene.route.routeName;
+      const prevRoute = prevSceneProps.scene.route.routeName;
+      if (currentRoute !== prevRoute) {
+        AsyncStorage.setItem('setCurrentName', currentRoute);
+        CommonScreenLog(currentRoute, currentRoute);
+        logTabEvents(sceneProps.scene.route);
+      }
     } catch (error) {
       CommonBugFender('NavigatorContainer_stackConfig_try', error);
       console.log('sceneProps error', error);
