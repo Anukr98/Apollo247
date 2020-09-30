@@ -424,7 +424,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     const params = props.navigation.state.params;
     if (!params?.isFreeConsult && !params?.isReset && currentPatient) {
       // reset will be true only from the payment screen(fill medical details)
-      fetchAppointments();
+      checkPermissions(['camera', 'microphone']).then((response: any) => {
+        const { camera, microphone } = response;
+        if (camera !== 'authorized' || microphone !== 'authorized') {
+          fetchAppointments();
+        }
+      });
     }
     if (params?.isFreeConsult) {
       checkPermissions(['camera', 'microphone']).then((response: any) => {
