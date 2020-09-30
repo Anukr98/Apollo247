@@ -109,7 +109,7 @@ export async function transactionSuccessTrigger(args: SuccessTransactionInputFor
 }
 
 
-export const checkDocOnCallAvailable = async function (mobileNumber, benefitId) {
+export const checkDocOnCallAvailable = async function (mobileNumber: string, benefitId: string) {
   const url = `http://${process.env.SUBSCRIPTION_SERVICE_HOST}:${process.env.SUBSCRIPTION_SERVICE_PORT}`;
   const requestJSON = {
     query: `query {
