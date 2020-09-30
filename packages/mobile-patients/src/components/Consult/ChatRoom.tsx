@@ -7416,7 +7416,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           navigation={props.navigation}
         />
       )}
-      {showConnectAlertPopup && (
+      {showConnectAlertPopup && !callAccepted && (
         <CustomAlert
           description={`Have you consulted with ${appointmentData.doctorInfo.displayName} before?`}
           onNoPress={() => {
