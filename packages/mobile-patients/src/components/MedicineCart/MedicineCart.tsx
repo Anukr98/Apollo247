@@ -149,7 +149,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
 
   useEffect(() => {
     if (coupon && cartTotal > 0) {
-      validateCoupon(coupon.coupon);
+      validateCoupon(coupon.coupon, coupon.message);
     }
   }, [cartTotal]);
 
@@ -193,7 +193,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           let couponList = resp.data.response;
           if (typeof couponList != null && couponList.length) {
             const coupon = couponList[0].coupon;
-            validateCoupon(coupon, true);
+            const msg = couponList[0].message;
+            validateCoupon(coupon, msg, true);
           }
         }
       })
@@ -353,7 +354,11 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     renderAlert(message);
   };
 
-  const validateCoupon = async (coupon: string, autoApply?: boolean) => {
+  const validateCoupon = async (
+    coupon: string,
+    message: string | undefined,
+    autoApply?: boolean
+  ) => {
     CommonLogEvent(AppRoutes.ApplyCouponScene, 'Apply coupon');
     console.log('inside validate');
     setloading!(true);
@@ -375,7 +380,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       setloading!(false);
       if (response.data.errorCode == 0) {
         if (response.data.response.valid) {
-          setCoupon!(g(response.data, 'response')!);
+          setCoupon!({ ...g(response.data, 'response')!, message: message ? message : '' });
         } else {
           !autoApply && removeCouponWithAlert(g(response.data, 'response', 'reason'));
         }
