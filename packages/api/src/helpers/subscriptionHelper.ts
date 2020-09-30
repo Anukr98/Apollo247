@@ -13,11 +13,15 @@ type SuccessTransactionInputForSubscription = {
   couponAvailed?: boolean;
   userSubscriptionId?: string;
   subscriptionInclusionId?: string;
+  dob?: Date;
+  email?: string;
+  partnerId: string;
 };
 export async function fetchUserSubscription(mobileNumber: string) {
   const url = `http://${process.env.SUBSCRIPTION_SERVICE_HOST}:${process.env.SUBSCRIPTION_SERVICE_PORT}`;
-  const query = `query{
-    GetSubscriptionsOfUserByStatus(mobile_number: ${mobileNumber},status: ["active"])
+  const requestJSON = {
+    query: `query{
+    GetSubscriptionsOfUserByStatus(mobile_number: "${mobileNumber}",status: ["active"])
     {
       response
       {
@@ -31,40 +35,12 @@ export async function fetchUserSubscription(mobileNumber: string) {
         }
       }
     }
-  }`;
-
-  const response = await axios({
-    url,
-    method: 'post',
-    data: {
-      query,
-    },
-    headers: {
-      Authorization: process.env.SUBSCRIPTION_SERVICE_AUTH_TOKEN,
-    },
-  })
-    .then((response: any) => {
-      log(
-        'consultServiceLogger',
-        'transactionSuccessTrigger=>success',
-        `mobile_number:${mobileNumber || ''}`,
-        response.data,
-        ''
-      );
-      console.log('fetchUserSubscription', response);
-      return `${response.data.response[0].group_plan.group.name}:${response.data.response[0].group_plan.plan_id}`;
-    })
-    .catch((error: any) => {
-      log(
-        'consultServiceLogger',
-        'transactionSuccessTrigger=>failed',
-        `mobile_number:${mobileNumber || ''}`,
-        '',
-        JSON.stringify(error)
-      );
-      return '';
-    });
-  console.log('fetchUserSubscription', response);
+  }`,
+  };
+  const response = await axios.post(url, requestJSON);
+  if (response?.data?.data?.GetSubscriptionsOfUserByStatus?.response[0].group_plan) {
+    return `${response.data.data.GetSubscriptionsOfUserByStatus.response[0].group_plan.group.name}:${response.data.data.GetSubscriptionsOfUserByStatus.response[0].group_plan.plan_id}`;
+  } else return '';
 }
 export async function transactionSuccessTrigger(args: SuccessTransactionInputForSubscription) {
   const {
@@ -77,6 +53,9 @@ export async function transactionSuccessTrigger(args: SuccessTransactionInputFor
     couponAvailed,
     userSubscriptionId,
     subscriptionInclusionId,
+    dob,
+    email,
+    partnerId,
   } = args;
   const url = `http://${process.env.SUBSCRIPTION_SERVICE_HOST}:${process.env.SUBSCRIPTION_SERVICE_PORT}`;
   const query = `mutation {
@@ -90,6 +69,9 @@ export async function transactionSuccessTrigger(args: SuccessTransactionInputFor
        mobile_number:"${mobileNumber}"
        payment_reference_id: "${transactionId || ''}",
        coupon_availed: "${couponAvailed || false}"
+       dob: "${dob || ''}"
+       email:"${email || ''}"
+       partnerId:"${partnerId}
      }){
        success,
        message

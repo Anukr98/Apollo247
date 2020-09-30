@@ -3,6 +3,9 @@ import { Theme, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphButton } from '@aph/web-ui-components';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { useHistory } from 'react-router-dom';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import { HDFCHomePageCardClicked } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -83,6 +86,10 @@ export interface HdfcHomePageProps {
 export const HdfcHomePage: React.FC<HdfcHomePageProps> = (props) => {
   const classes = useStyles({});
   const [showJoinClub, setShowJoinClub] = React.useState<boolean>(true);
+  const { allCurrentPatients, currentPatient } = useAllCurrentPatients();
+  const history = useHistory();
+
+  const userSubscriptions = JSON.parse(localStorage.getItem('userSubscriptions'));
 
   return (
     <div className={`${classes.hdcContainer} ${showJoinClub ? classes.overflowHidden : ''} `}>
@@ -101,7 +108,24 @@ export const HdfcHomePage: React.FC<HdfcHomePageProps> = (props) => {
               Just book a Doctor Consultation or order Pharmacy products worth Rs 499 or more to
               join the club!
             </Typography>
-            <AphButton href={clientRoutes.membershipPlanDetail()}>Tell Me More</AphButton>
+            <AphButton
+              onClick={() => {
+                /*****WebEngage*******/
+                const data = {
+                  mobileNumber: currentPatient.mobileNumber,
+                  DOB: currentPatient.dateOfBirth,
+                  emailId: currentPatient.emailAddress,
+                  PartnerId: currentPatient.partnerId,
+                  planName: userSubscriptions[0].group_plan.name,
+                  planStatus: userSubscriptions[0].status,
+                };
+                HDFCHomePageCardClicked(data);
+                /*****WebEngage*******/
+                history.push(clientRoutes.membershipPlanDetail());
+              }}
+            >
+              Tell Me More
+            </AphButton>
           </div>
         )}
       </div>

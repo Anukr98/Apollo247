@@ -13,8 +13,8 @@ import { debugLog } from 'customWinstonLogger';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { Patient } from 'profiles-service/entities';
 const dLogger = debugLog(
-  'DoctorServiceLogger',
-  'RedisConnect',
+  'profileServiceLogger',
+  'hdfcCustomerValidation',
   Math.floor(Math.random() * 100000000)
 );
 export const validateHDFCCustomerTypeDefs = gql`

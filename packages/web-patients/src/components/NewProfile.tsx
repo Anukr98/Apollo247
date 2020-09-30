@@ -20,7 +20,11 @@ import _toLower from 'lodash/toLower';
 import _upperFirst from 'lodash/upperFirst';
 import { Alerts } from 'components/Alerts/Alerts';
 import { Route } from 'react-router-dom';
-import { webengageUserLoginTracking, webengageUserDetailTracking } from '../webEngageTracking';
+import {
+  webengageUserLoginTracking,
+  webengageUserDetailTracking,
+  HdfcUserSignupDetailTracking,
+} from '../webEngageTracking';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { PARTNER_TP_REF_CODES } from 'helpers/constants';
 import { LazyIntersection } from './lib/LazyIntersection';
@@ -289,6 +293,14 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                   });
                   /* webengage code end */
                   if (props.customSignUp.referral === 'HDFCBANK') {
+                    HdfcUserSignupDetailTracking({
+                      firstName: values.firstName,
+                      lastName: values.lastName,
+                      gender: values.gender,
+                      emailAddress: values.emailAddress,
+                      dateOfBirth: values.dateOfBirth,
+                      mobileNumber: patient.mobileNumber,
+                    });
                     history.push(clientRoutes.welcome());
                   } else {
                     setShowProfileSuccess(true);

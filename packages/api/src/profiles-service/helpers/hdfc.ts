@@ -6,8 +6,6 @@ import * as crypto from 'crypto';
 import * as cryptojs from 'crypto-js';
 import * as jwt from 'jsonwebtoken';
 import { debugLog } from 'customWinstonLogger';
-import { FetchMessagesResponse } from 'pubnub';
-import { Callback } from 'redis';
 
 const INSTANCE_ID = '8888';
 const assetsDir = <string>process.env.ASSETS_DIRECTORY;
@@ -18,11 +16,7 @@ const options = {
   rejectUnauthorized: true,
   keepAlive: false,
 };
-const dLogger = debugLog(
-  'DoctorServiceLogger',
-  'RedisConnect',
-  Math.floor(Math.random() * 100000000)
-);
+const dLogger = debugLog('profileServiceLogger', 'HDFC', Math.floor(Math.random() * 100000000));
 const sslConfiguredAgent = new https.Agent(options);
 
 async function generateAuthToken() {
@@ -64,8 +58,8 @@ export async function generateOtp(mobile: String) {
   const messageHash = `static:genpwdreq:06:${shaMessageHash}`;
   const requestBeforeEncryption = {
     ccotpserviceRequest: {
-      Trace_Number: '',
-      Transaction_DateTimeStamp: '',
+      Trace_Number: refNo,
+      Transaction_DateTimeStamp: new Date().toISOString(),
       ATM_POS_IVR_ID: 'CCIVR1',
       Credit_Card_Number: linkData,
       callerId: process.env.HDFC_CALLER_ID,
@@ -82,7 +76,7 @@ export async function generateOtp(mobile: String) {
       mobilenumber: `91${formattedMobile}`,
       msgtxt: process.env.HDFC_SMS_TEXT,
       departmentcode: process.env.HDFC_DEPARTMENT_CODE,
-      submitdate: '',
+      submitdate: new Date().toISOString(),
       author: '',
       subAuthor: '',
       broadcastname: process.env.HDFC_BROADCAST_NAME,
@@ -167,7 +161,7 @@ export async function customerIdentification(mobile: String, dateOfBirth: Date) 
   ).slice(-2)}${('0' + dateOfBirth.getDate()).slice(-2)}`;
   const requestBeforeEncryption = {
     FetchCustomerCASADetailsReqDTO: {
-      mobileNumber: `${formattedMobile}`,
+      mobileNumber: `91${formattedMobile}`,
       dateOfBirth: formattedDateOfBirth,
     },
     sessionContext: {
@@ -192,7 +186,7 @@ export async function fetchEthnicCode(dateOfBirth: Date, mobile: String, history
   const requestBeforeEncryption = {
     FetchCustomerCASADetailsReqDTO: {
       dateOfBirth: formattedDateOfBirth,
-      mobileNumber: `${formattedMobile}`,
+      mobileNumber: `91${formattedMobile}`,
       panNumber: '',
     },
     sessionContext: {
@@ -269,7 +263,13 @@ async function highRequest(base_request: any, url: String, historyToken: string 
   }).then(checkStatus);
   if (response) {
     const responseJson = JSON.parse((await response.text()).replace(/(\r\n|\n|\r)/gm, ''));
-    dLogger(new Date(), `HDFC HIGH REQUEST ${url}`, `request ${request} response ${responseJson} `);
+    let stringRequest = JSON.stringify(request);
+    let stringResponse = JSON.stringify(responseJson);
+    dLogger(
+      new Date(),
+      `HDFC HIGH REQUEST ${url}`,
+      `request ${stringRequest} response ${stringResponse} `
+    );
     const decryptedResponse = await decryptHighResponse(responseJson);
     return decryptedResponse;
   } else return { decryptedResponse: null, historyToken: null };
@@ -328,7 +328,7 @@ async function mediumRequest(base_request: any, url: String, historyToken: Strin
     dLogger(
       new Date(),
       `HDFC Medium REQUEST ${url}`,
-      `request ${request} response ${responseJson} `
+      `request ${JSON.stringify(request)} response ${JSON.stringify(responseJson)} `
     );
     const decryptedResponse = decryptMediumResponse(responseJson);
     return decryptedResponse;
@@ -370,17 +370,10 @@ function randomStringGenerator(length: number): string {
 }
 
 function checkStatus(response: any) {
+  dLogger(new Date(), `HDFC CheckStatus response status ${response.status}`, ` `);
   if (response.status >= 200 && response.status < 300) {
     return response;
   } else {
     return false;
   }
 }
-// async function executeTestRun() {
-//     await fetchEthnicCode(
-//       new Date('06-10-1960'),
-//       '9930207495',
-//       'LBaersZSbFV8Mf-duaThViD3KJUhYDMfcqu7iNrtJHYZ-ZcF6ETOotkozensvZTd18yXNuejSxfi4tdPHL21T6QVomCrg9kOfrpOhOHdLjaWRqdLeokxlz5E-cuAcrnR-R0CHRGK1xJ97-oE1QxAAoBV2CWP1s81t94zglpwAWt4j3KV1d3Y4tJynCxn84lFV7_fokBJYepcNlLsUizB9tZFE7P8yypgO_DEdfK4VbAQcygTEIdp2qdePoiIdoxy50Y3gCj_v2-t0l-Oi90XVmXC6QLWOEXeb4PDbKdgKYG7I9r9cNPKYNnJFBn_B4TPWbOhQU9Z72BJSDKiioNIow.tLMxA8wle2g_nj2qUNAxjw.v4kGry4WLntw5tOHi5K94ZLIfUXa3HYH66MIteD4LX80YX_aszPq2I9seTy4hA81g58aMQU2JLTmpSymTZLCSQJ0xaf6DS8dpkJdUZzIIdF8AYEVIhOpZS_F91yyW0CvFcv3SR_a-yoFpHOSnxmWBxfVGv5AlB47B8xF0TdGFOP_JPvR5vD_Mql3qrwR9PUEcUvneajUK-qNJY11mp35UYyi6QiXEWa8RZpzJX-3NqbXzz2aBBcdNvAXDABEB--Ju0QPQXlrvkJNlPZT0sfdIZpPac7KkA7ZMuD0--Ln5q946xB7OBt0GWDokXpc1xLVlhwYrNagVn0orr1NYtJQr74REFeThPsXl8tcNxrkbXlyvYv6OOJ3VuEd98pAJc1yoBzRDNsH59mi-e-r4nPu19LWrcU0bHL5Tc2WxurnGZJNYEOjnKxo7epV5ZF_MQA4-z5HztFJss-h6sT4-xjvHkcVD12B9KchWE2zaZ56nZyp22TWk2C3HY4-F1cV-87DWKWBHPaUA14NqBr6MAdEzyQisxFcvKJmod6NVRH8Bm7n5cud9woHWSxMtW0L-timEvhIHAO4ZEFzF5OxWB_neXBjDJIv4bd5M0bT_SFMMdJU4sP60eTjBKxCIMfCAYNi8qtJl1FYAr7M06q-7NYczSFnwHQRh-7_3pN3AEq4sREZ-ilK20-Vxc-EALtXUAskqaQPcwUqetd_gxGv4RfvLjYib56l6oSLpDXJT2LPG4HOsA_A0232FAFqbXh-fEo8AM9N2LuQFYUgqQT5XEXsA0KLRbEk3Zs72ZPQiNybf7xtSTwC5kkpWY-cWk0axhNBsflarXVDeBS2n3H2ZXNwYWoV5IAHMCPsSxWi2PyQp8g.qUdeRV7hUS-1BCkGNHrbFw'
-//     )
-//   );
-// }

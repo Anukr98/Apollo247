@@ -56,6 +56,10 @@ export interface DiagnosticsCartContextProps {
   cartTotal: number;
   couponDiscount: number;
   deliveryCharges: number;
+
+  hcCharges: number;
+  setHcCharges: ((id: number) => void) | null;
+
   grandTotal: number;
 
   uploadPrescriptionRequired: boolean;
@@ -119,6 +123,10 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   cartTotal: 0,
   couponDiscount: 0,
   deliveryCharges: 0,
+
+  hcCharges: 0,
+  setHcCharges: null,
+
   grandTotal: 0,
 
   uploadPrescriptionRequired: false,
@@ -194,6 +202,8 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   const [deliveryAddressId, _setDeliveryAddressId] = useState<
     DiagnosticsCartContextProps['deliveryAddressId']
   >('');
+
+  const [hcCharges, setHcCharges] = useState<DiagnosticsCartContextProps['hcCharges']>(0);
 
   const [deliveryType, setDeliveryType] = useState<DiagnosticsCartContextProps['deliveryType']>(
     null
@@ -319,11 +329,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   );
 
   const deliveryCharges =
-    deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-      ? 0
-      : cartTotal > 0 && cartTotal < AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY
-      ? AppConfig.Configuration.DIASGNOS_DELIVERY_CHARGES
-      : 0;
+    deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP ? 0 : cartTotal > 0 ? hcCharges : 0;
 
   const grandTotal = parseFloat((cartTotal + deliveryCharges - couponDiscount).toFixed(2));
 
@@ -447,6 +453,8 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         grandTotal,
         couponDiscount,
         deliveryCharges,
+        hcCharges,
+        setHcCharges,
 
         uploadPrescriptionRequired: false,
 
