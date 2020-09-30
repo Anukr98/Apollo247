@@ -2,7 +2,8 @@ import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React from 'react';
 import moment from 'moment';
-import { GetDoctorDetailsById_getDoctorDetailsById_consultHours } from 'graphql/types/GetDoctorDetailsById';
+import { GetDoctorDetailsById_getDoctorDetailsById_consultHours as ConsultHours } from 'graphql/types/GetDoctorDetailsById';
+import { WeekDay, ConsultMode, ConsultType } from 'graphql/types/globalTypes';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
@@ -70,10 +71,13 @@ const useStyles = makeStyles((theme: Theme) => {
         color: '#0087ba',
       },
     },
+    hideDay: {
+      visibility: 'hidden',
+    },
   };
 });
 interface DoctorTimingsProps {
-  doctorTimings: (GetDoctorDetailsById_getDoctorDetailsById_consultHours | null)[] | null;
+  doctorTimings: (ConsultHours | null)[] | null;
 }
 
 export const DoctorTimings: React.FC<DoctorTimingsProps> = (props) => {
@@ -83,16 +87,74 @@ export const DoctorTimings: React.FC<DoctorTimingsProps> = (props) => {
     2,
     '0'
   )}-${new Date().getDate()}`;
-  const consultModeOnline: any = [];
-  const consultModePhysical: any = [];
+  const consultModeOnline: ConsultHours[] = [];
+  const consultModePhysical: ConsultHours[] = [];
+  const weekDays = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
+  const sortDays = {
+    MONDAY: 1,
+    TUESDAY: 2,
+    WEDNESDAY: 3,
+    THURSDAY: 4,
+    FRIDAY: 5,
+    SATURDAY: 6,
+    SUNDAY: 7,
+  };
   doctorTimings.map((item: any) => {
     if (item.consultMode === 'PHYSICAL' || item.consultMode === 'BOTH') {
-      consultModePhysical.push(item.consultMode);
+      consultModePhysical.push(item);
     }
     if (item.consultMode === 'ONLINE' || item.consultMode === 'BOTH') {
-      consultModeOnline.push(item.consultMode);
+      consultModeOnline.push(item);
     }
   });
+
+  consultModeOnline.length > 0 &&
+    weekDays.forEach((weekDay: WeekDay) => {
+      const found = consultModeOnline.some((key) => key.actualDay === weekDay);
+      !found &&
+        consultModeOnline.push({
+          actualDay: weekDay,
+          consultMode: ConsultMode.BOTH,
+          consultType: ConsultType.FIXED,
+          endTime: '',
+          id: '',
+          startTime: '',
+          weekDay: WeekDay.SUNDAY,
+          isActive: true,
+        } as ConsultHours);
+    });
+
+  consultModePhysical.length > 0 &&
+    weekDays.forEach((weekDay: WeekDay) => {
+      const found = consultModePhysical.some((key) => key.actualDay === weekDay);
+      !found &&
+        consultModePhysical.push({
+          actualDay: weekDay,
+          consultMode: ConsultMode.BOTH,
+          consultType: ConsultType.FIXED,
+          endTime: '',
+          id: '',
+          startTime: '',
+          weekDay: WeekDay.SUNDAY,
+          isActive: true,
+        } as ConsultHours);
+    });
+
+  const sortedOnlineList =
+    consultModeOnline.length > 0 &&
+    consultModeOnline.sort((a, b) => {
+      const day1 = a.actualDay;
+      const day2 = b.actualDay;
+      return sortDays[day1] - sortDays[day2];
+    });
+
+  const sortedPhysicalList =
+    consultModePhysical.length > 0 &&
+    consultModePhysical.sort((a, b) => {
+      const day1 = a.actualDay;
+      const day2 = b.actualDay;
+      return sortDays[day1] - sortDays[day2];
+    });
 
   return (
     <div className={classes.root}>
@@ -102,7 +164,47 @@ export const DoctorTimings: React.FC<DoctorTimingsProps> = (props) => {
           {consultModeOnline.length > 0 && <div className={classes.label}>Online:</div>}
           <div className={classes.rightGroup}>
             <ul className={classes.timingList}>
-              {doctorTimings.map((item: any) => {
+              {sortedOnlineList &&
+                sortedOnlineList.length > 0 &&
+                sortedOnlineList.map((item: any, index: number) => {
+                  const actualDay = item.actualDay;
+                  const weeDaysStartTime = moment(`${today} ${item.startTime}`)
+                    .add(5.5, 'hours')
+                    .local()
+                    .format('hh:mm a');
+                  const weeDaysEndTime = moment(`${today} ${item.endTime}`)
+                    .add(5.5, 'hours')
+                    .local()
+                    .format('hh:mm a');
+                  return (
+                    <li>
+                      <span
+                        className={
+                          index > 0 && sortedOnlineList[index - 1].actualDay === item.actualDay
+                            ? classes.hideDay
+                            : ''
+                        }
+                      >
+                        {actualDay}
+                      </span>
+                      <span>
+                        {item.startTime.length > 0
+                          ? `${weeDaysStartTime} - ${weeDaysEndTime}`
+                          : 'No slots available'}
+                      </span>
+                    </li>
+                  );
+                })}
+            </ul>
+          </div>
+        </div>
+        <div className={classes.timingsRow}>
+          {consultModePhysical.length > 0 && <div className={classes.label}>Clinic:</div>}
+          <div className={classes.rightGroup}>
+            {sortedPhysicalList &&
+              sortedPhysicalList.length > 0 &&
+              sortedPhysicalList.length > 0 &&
+              consultModePhysical.map((item: any, index: number) => {
                 const actualDay = item.actualDay;
                 const weeDaysStartTime = moment(`${today} ${item.startTime}`)
                   .add(5.5, 'hours')
@@ -113,41 +215,26 @@ export const DoctorTimings: React.FC<DoctorTimingsProps> = (props) => {
                   .local()
                   .format('hh:mm a');
                 return (
-                  (item.consultMode === 'ONLINE' || item.consultMode === 'BOTH') && (
-                    <li>
-                      <span>{actualDay}</span>
-                      <span>{`${weeDaysStartTime} - ${weeDaysEndTime}`}</span>
-                    </li>
-                  )
-                );
-              })}
-            </ul>
-          </div>
-        </div>
-        <div className={classes.timingsRow}>
-          {consultModePhysical.length > 0 && <div className={classes.label}>Clinic:</div>}
-          <div className={classes.rightGroup}>
-            {doctorTimings.map((item: any) => {
-              const actualDay = item.actualDay;
-              const weeDaysStartTime = moment(`${today} ${item.startTime}`)
-                .add(5.5, 'hours')
-                .local()
-                .format('hh:mm a');
-              const weeDaysEndTime = moment(`${today} ${item.endTime}`)
-                .add(5.5, 'hours')
-                .local()
-                .format('hh:mm a');
-              return (
-                (item.consultMode === 'PHYSICAL' || item.consultMode === 'BOTH') && (
                   <ul className={classes.timingList}>
                     <li>
-                      <span>{actualDay}</span>
-                      <span>{`${weeDaysStartTime} - ${weeDaysEndTime}`}</span>
+                      <span
+                        className={
+                          index > 0 && sortedPhysicalList[index - 1].actualDay === item.actualDay
+                            ? classes.hideDay
+                            : ''
+                        }
+                      >
+                        {actualDay}
+                      </span>
+                      <span>
+                        {item.startTime.length > 0
+                          ? `${weeDaysStartTime} - ${weeDaysEndTime}`
+                          : 'No slots available'}
+                      </span>
                     </li>
                   </ul>
-                )
-              );
-            })}
+                );
+              })}
           </div>
         </div>
       </div>
