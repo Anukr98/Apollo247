@@ -9,6 +9,7 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { ExotelDetailsRepository } from 'consults-service/repositories/exotelDetailsRepository';
 import { uploadFileToBlobStorage } from 'helpers/uploadFileToBlob';
+import { checkDocOnCallAvailable } from 'helpers/subscriptionBenefits';
 import { DEVICETYPE, Appointment } from 'consults-service/entities';
 import { ApiConstants } from 'ApiConstants';
 import { URLSearchParams } from 'url';
@@ -271,6 +272,11 @@ const initiateCallForPartner: Resolver<
   null,
   ExotelCallFlowResponse
 > = async (parent, { mobileNumber, benefitId }) => {
+
+  const isDocOnCallAvailable = await checkDocOnCallAvailable(mobileNumber, benefitId);
+  if (!isDocOnCallAvailable) {
+    throw new AphError(AphErrorMessages.NO_DOCTOR_ON_CALL_BENEFIT);
+  }
   const apiBaseUrl = `https://${process.env.EXOTEL_HDFC_API_KEY}:${process.env.EXOTEL_HDFC_API_TOKEN}@${process.env.EXOTEL_SUB_DOMAIN}`;
   const apiUrl = `${apiBaseUrl}/v1/Accounts/${process.env.EXOTEL_SID}/Calls/connect.json`;
   const params: { [index: string]: string } = {
@@ -455,6 +461,10 @@ const getCallDetailsByAppintment: Resolver<
 
   return { calls: callsArray };
 };
+
+
+
+
 
 export const exotelCallingResolvers = {
   Query: {

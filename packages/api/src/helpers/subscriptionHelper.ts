@@ -107,3 +107,23 @@ export async function transactionSuccessTrigger(args: SuccessTransactionInputFor
       );
     });
 }
+
+
+export const checkDocOnCallAvailable = async function (mobileNumber, benefitId) {
+  const url = `http://${process.env.SUBSCRIPTION_SERVICE_HOST}:${process.env.SUBSCRIPTION_SERVICE_PORT}`;
+  const requestJSON = {
+    query: `query {
+      GetAllUserSubscriptionsWithPlanBenefits(mobile_number:"${mobileNumber}"){
+       response   
+      }
+    }`,
+  };
+  const response = await axios.post(url, requestJSON);
+  let benefits = response?.data?.data?.GetAllUserSubscriptionsWithPlanBenefits?.response[0]?.benefits;
+  if (benefits) {
+    return benefits.filter(el => {
+      return (el._id == benefitId && el.attribute == "Doc on Call") ? true : false;
+    }).length > 0;
+  }
+  return false;
+}
