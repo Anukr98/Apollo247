@@ -1531,6 +1531,7 @@ export const overlyCallPermissions = (
                     type: 'orange-link',
                     onPress: () => {
                       hideAphAlert!();
+                      callback && callback();
                       callPermissions(() => {
                         RNAppSignatureHelper.requestOverlayPermission();
                       });
@@ -1553,6 +1554,7 @@ export const overlyCallPermissions = (
                     type: 'orange-link',
                     onPress: () => {
                       hideAphAlert!();
+                      callback && callback();
                       callPermissions();
                     },
                   },
@@ -1577,6 +1579,7 @@ export const overlyCallPermissions = (
                     type: 'orange-link',
                     onPress: () => {
                       hideAphAlert!();
+                      callback && callback();
                       callPermissions(() => {
                         RNAppSignatureHelper.requestOverlayPermission();
                       });
@@ -1599,6 +1602,7 @@ export const overlyCallPermissions = (
                     type: 'orange-link',
                     onPress: () => {
                       hideAphAlert!();
+                      callback && callback();
                       callPermissions();
                     },
                   },
@@ -1623,6 +1627,7 @@ export const overlyCallPermissions = (
                     type: 'orange-link',
                     onPress: () => {
                       hideAphAlert!();
+                      callback && callback();
                       callPermissions(() => {
                         RNAppSignatureHelper.requestOverlayPermission();
                       });
@@ -1645,6 +1650,7 @@ export const overlyCallPermissions = (
                     type: 'orange-link',
                     onPress: () => {
                       hideAphAlert!();
+                      callback && callback();
                       callPermissions();
                     },
                   },
@@ -1669,6 +1675,7 @@ export const overlyCallPermissions = (
                     type: 'orange-link',
                     onPress: () => {
                       hideAphAlert!();
+                      callback && callback();
                       RNAppSignatureHelper.requestOverlayPermission();
                     },
                   },
