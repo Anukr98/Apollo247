@@ -582,6 +582,12 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       padding: 20,
     },
+    myImageClass: {
+      zIndex: 1,
+      position: 'absolute',
+      top: 20,
+      left: 320,
+    },
   };
 });
 
@@ -1206,10 +1212,13 @@ const MedicineDetails: React.FC = (props) => {
                         >
                           <div className={classes.productInformation}>
                             {medicineDetails.image && medicineDetails.image.length > 0 ? (
-                              <MedicineImageGallery
-                                data={medicineDetails}
-                                setImageClick={setImageClick}
-                              />
+                              <>
+                                <MedicineImageGallery
+                                  data={medicineDetails}
+                                  setImageClick={setImageClick}
+                                />
+                                <div id="myImage" className={classes.myImageClass} />
+                              </>
                             ) : (
                               <div className={classes.noImageWrapper}>
                                 <img
