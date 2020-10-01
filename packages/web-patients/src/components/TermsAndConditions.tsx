@@ -91,12 +91,15 @@ const useStyles = makeStyles((theme: Theme) => {
 const TermsAndConditions: React.FC = () => {
   const classes = useStyles({});
   const [metaTagProps, setMetaTagProps] = useState(null);
-  setMetaTagProps({
-    title: 'Apollo 247 - Terms and Conditions - Apollo Hospitals',
-    description:
-      'Apollo 247 - Read all of our terms and conditions. Apollo 24|7 is a part of the multi-specialty healthcare group Apollo Hospitals.',
-    canonicalLink: typeof window !== 'undefined' && window.location && window.location.href,
+  useState(() => {
+    setMetaTagProps({
+      title: 'Apollo 247 - Terms and Conditions - Apollo Hospitals',
+      description:
+        'Apollo 247 - Read all of our terms and conditions. Apollo 24|7 is a part of the multi-specialty healthcare group Apollo Hospitals.',
+      canonicalLink: typeof window !== 'undefined' && window.location && window.location.href,
+    });
   });
+
   return (
     <div className={classes.root}>
       {metaTagProps && <MetaTagsComp {...metaTagProps} />}
