@@ -33,6 +33,7 @@ export const FreeDelivery: React.FC<FreeDeliveryProps> = (props) => {
         style={{
           ...theme.viewStyles.text('M', 12, '#02475B', 1, 20, 0),
           alignSelf: 'center',
+          flex: 1,
         }}
       >
         Add
