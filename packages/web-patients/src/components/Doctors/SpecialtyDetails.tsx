@@ -494,7 +494,6 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
       setFilter({
         ...filterObject,
       });
-      console.log(filterObject);
     } else {
       setFilter(filterObject);
     }
