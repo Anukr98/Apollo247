@@ -501,6 +501,7 @@ export const ConsultTabs: React.FC = () => {
       //withPresence: true,
     });
     getHistory(0);
+    console.log('messages in use Effect call', messages);
     pubnub.addListener({
       status(statusEvent: any) {},
       message(message: any) {
@@ -601,6 +602,8 @@ export const ConsultTabs: React.FC = () => {
       });
   };
   const getPrismUrls = (client: ApolloClient<object>, patientId: string, fileIds: string[]) => {
+    console.log('In get Prism Url', { patientId: patientId, fileIds: fileIds });
+
     return new Promise((res, rej) => {
       client
         .query<downloadDocuments>({
@@ -622,6 +625,7 @@ export const ConsultTabs: React.FC = () => {
     });
   };
   const getHistory = (timetoken: number) => {
+    console.log('In get history, about to fetch response from pubnub with time token', timetoken);
     pubnub.history(
       {
         channel: appointmentId,
@@ -632,6 +636,7 @@ export const ConsultTabs: React.FC = () => {
       },
       (status: any, res: any) => {
         const newmessage: MessagesObjectProps[] = messages;
+        console.log('In get history, response from pubnub', res);
         res.messages.forEach((element: any, index: number) => {
           const item = element.entry;
           if (item.prismId) {
@@ -648,6 +653,7 @@ export const ConsultTabs: React.FC = () => {
         const end: number = res.endTimeToken ? res.endTimeToken : 1;
         if (res.messages.length == 100) {
           getHistory(end);
+          console.log('In If of gethistory in consult tab');
         }
       }
     );
