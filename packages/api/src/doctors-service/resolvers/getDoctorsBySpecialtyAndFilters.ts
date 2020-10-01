@@ -740,7 +740,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     doctors: doctors,
     doctorsNextAvailability: finalDoctorNextAvailSlots,
     doctorsAvailability: finalDoctorsConsultModeAvailability,
-    specialty: doctors[0].specialty,
+    specialty: doctors.length > 0 ? doctors[0].specialty : [],
     sort: args.filterInput.sort,
     filters: filters,
     apolloDoctorCount,
