@@ -11,15 +11,13 @@ import {
   Link,
   Logout,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
-import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 import { GetDoctorDetails_getDoctorDetails } from '@aph/mobile-doctors/src/graphql/types/GetDoctorDetails';
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
-  Image,
   SafeAreaView,
   Text,
   TouchableOpacity,
@@ -35,7 +33,6 @@ import {
   StackActions,
   NavigationActions,
 } from 'react-navigation';
-import { apiRoutes } from '@aph/mobile-doctors/src/helpers/apiRoutes';
 import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
 import { getBuildEnvironment, g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import { string } from '@aph/mobile-doctors/src/strings/string';
@@ -54,6 +51,7 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-doctors/src/helpers/WebEngageHelper';
+import FastImage from 'react-native-fast-image';
 
 const { width } = Dimensions.get('window');
 const styles = BasicAccountStyles;
@@ -287,11 +285,12 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
         <SafeAreaView style={theme.viewStyles.container}>
           <View style={{ flex: 1 }}>
             {doctorDetails && doctorDetails.photoUrl ? (
-              <Image
+              <FastImage
                 style={styles.imageStyle}
                 source={{
                   uri: doctorDetails.photoUrl,
                 }}
+                resizeMode="contain"
               />
             ) : (
               <UserPlaceHolder style={styles.imageStyle} />

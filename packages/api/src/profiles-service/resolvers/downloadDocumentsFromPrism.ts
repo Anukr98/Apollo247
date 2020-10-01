@@ -38,11 +38,11 @@ export const downloadDocuments: Resolver<
   ProfilesServiceContext,
   DownloadDocumentsResult
 > = async (parent, { downloadDocumentsInput }, { mobileNumber, profilesDb, consultsDb }) => {
+  if (downloadDocumentsInput.fileIds.length == 0) return { downloadPaths: [] };
+
   const patientsRepo = profilesDb.getCustomRepository(PatientRepository);
   const patientDetails = await patientsRepo.getPatientDetails(downloadDocumentsInput.patientId);
   if (patientDetails == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
-
-  const getToken = await getAuthToken(patientDetails.uhid);
 
   //get patient related all appointments
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
@@ -60,15 +60,20 @@ export const downloadDocuments: Resolver<
     appointmentList
   );
 
+  if (appointmentDocuments.length == 0) return { downloadPaths: [] };
+
+  const getToken = await getAuthToken(patientDetails.uhid);
+
   const downloadPaths = downloadDocumentsInput.fileIds.map((fileIdName) => {
-    const filePaths = appointmentDocuments.filter(
-      (item) => item.prismFileId == fileIdName && item.prismFilePath
-    );
+    const filePaths = appointmentDocuments.filter((item) => item.prismFileId == fileIdName);
+    if (filePaths.length == 0) return '';
+    const firstFilePath = filePaths[0];
 
-    let prismFileUrl = '';
-    if (filePaths && filePaths.length > 0) prismFileUrl = filePaths[0].prismFilePath;
+    const prismFileUrl =
+      firstFilePath.prismFilePath && firstFilePath.prismFilePath.length > 0
+        ? firstFilePath.prismFilePath
+        : '';
 
-    if (fileIdName == '') return '';
     const fileIdNameArray = fileIdName.split('_');
     const fileId = fileIdNameArray.shift();
     const fileName = fileIdNameArray.join('_');

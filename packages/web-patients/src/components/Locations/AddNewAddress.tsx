@@ -22,10 +22,12 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     addAddressContainer: {
       height: '100%',
+			maxBlockSize: 500,
+			overflow: 'hidden'
     },
     addAddressContent: {
       padding: 20,
-      height: 500,
+      height: 400,
       overflow: 'auto',
       '&::-webkit-scrollbar': {
         width: 4,

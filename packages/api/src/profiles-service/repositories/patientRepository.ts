@@ -238,13 +238,16 @@ export class PatientRepository extends Repository<Patient> {
 
   async getPatientConsultCache(id: string) {
     const cache = await getCache(`${REDIS_PATIENT_CONSULT_KEY_PREFIX}${id}`);
+    let patient: Patient;
     if (cache && typeof cache === 'string') {
-      const patient: Patient = JSON.parse(cache);
-      return patient;
+      patient = JSON.parse(cache);
     } else {
-      const patient: Patient = JSON.parse(await this.setPatientConsultCache(id));
-      return patient;
+      patient = JSON.parse(await this.setPatientConsultCache(id));
+    } 
+    if (patient.dateOfBirth) {
+      patient.dateOfBirth = new Date(patient.dateOfBirth);
     }
+    return patient;
   }
 
   async getPatientDetailsForConsult(id: string) {

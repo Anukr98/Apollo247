@@ -47,6 +47,7 @@ import {
   ADD_CHAT_DOCUMENTS,
   UPLOAD_MEDIA_DOCUMENT_PRISM,
   SEND_PATIENT_WAIT_NOTIFICATION,
+  UPDATE_HEALTH_RECORD_NUDGE_STATUS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   bookRescheduleAppointment,
@@ -56,6 +57,10 @@ import {
   bookTransferAppointment,
   bookTransferAppointmentVariables,
 } from '@aph/mobile-patients/src/graphql/types/bookTransferAppointment';
+import {
+  updateHealthRecordNudgeStatus,
+  updateHealthRecordNudgeStatusVariables,
+} from '@aph/mobile-patients/src/graphql/types/updateHealthRecordNudgeStatus';
 import { getAppointmentData_getAppointmentData_appointmentsHistory } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
 import { getPatinetAppointments_getPatinetAppointments_patinetAppointments } from '@aph/mobile-patients/src/graphql/types/getPatinetAppointments';
 import {
@@ -1343,15 +1348,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
   };
 
-  const checkNudgeScreenVisibility = async () => {
-    const hideNudgeScreenappointmentID = (await AsyncStorage.getItem(appointmentData.id)) || '';
-    // console.log('hideNudgeScreenappointmentID', hideNudgeScreenappointmentID);
-    if (hideNudgeScreenappointmentID != appointmentData.id) {
-      setDisplayUploadHealthRecords(true);
-      console.log('if hideNudgeScreenappointmentID', hideNudgeScreenappointmentID);
-    } else {
-      setDisplayUploadHealthRecords(false);
-      console.log('else hideNudgeScreenappointmentID', hideNudgeScreenappointmentID);
+  const showAndUpdateNudgeScreenVisibility = async () => {
+    setDisplayUploadHealthRecords(true);
+    const input = {
+      appointmentId: appointmentData.id,
+      hideHealthRecordNudge: true,
+    };
+    try {
+      await client.mutate<updateHealthRecordNudgeStatus, updateHealthRecordNudgeStatusVariables>({
+        mutation: UPDATE_HEALTH_RECORD_NUDGE_STATUS,
+        variables: input,
+      });
+    } catch (error) {
+      CommonBugFender('ChatRoom_updateHealthRecordNudgeStatus', error);
     }
   };
 
@@ -2421,8 +2430,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (appointmentData.isJdQuestionsComplete) {
       console.log({});
       requestToJrDoctor();
-      if (!disableChat && status !== STATUS.COMPLETED) {
-        checkNudgeScreenVisibility();
+      if (
+        !disableChat &&
+        status !== STATUS.COMPLETED &&
+        !appointmentData.hideHealthRecordNudge &&
+        !isVoipCall &&
+        !fromIncomingCall
+      ) {
+        showAndUpdateNudgeScreenVisibility();
       }
       // startJoinTimer(0);
       // thirtySecondCall();

@@ -157,7 +157,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 resizeMode={FastImage.resizeMode.contain}
               />
             ) : (
-              <FileBig style={styles.documentImageStyle} />
+              <FileBig
+                style={styles.documentImageStyle}
+                resizeMode={FastImage.resizeMode.contain}
+              />
             )}
           </View>
         </TouchableOpacity>

@@ -30,7 +30,11 @@ import { SchemaMarkup } from 'SchemaMarkup';
 import _debounce from 'lodash/debounce';
 import { DoctorDetails } from 'components/Doctors/SpecialtyDetails';
 import { GetDoctorList_getDoctorList_specialties } from 'graphql/types/GetDoctorList';
+import { SPECIALTY_SEARCH_PAGE_SIZE } from 'helpers/commonHelpers';
 
+let currentPage = 1;
+let apolloDoctorCount = 0;
+let partnerDoctorCount = 0;
 const useStyles = makeStyles((theme: Theme) => {
   return {
     slContainer: {},
@@ -634,6 +638,8 @@ const SpecialityListing: React.FC = (props) => {
   const [selectedCity, setSelectedCity] = useState<string>('');
   const [faqSchema, setFaqSchema] = useState(null);
   const [searchQuery, setSearchQuery] = useState<any>({});
+  const [pageNo, setPageNo] = useState<number>(1);
+  const [intialLoad, setInitalLoad] = useState<boolean>(true);
   const onePrimaryUser =
     allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
 
@@ -699,17 +705,22 @@ const SpecialityListing: React.FC = (props) => {
       .query({
         query: GET_DOCTOR_LIST,
         variables: {
-          filterInput: { searchText: searchKeyword },
+          filterInput: { searchText: searchKeyword, pageNo, pageSize: SPECIALTY_SEARCH_PAGE_SIZE },
         },
         fetchPolicy: 'no-cache',
       })
       .then((response) => {
         const specialtiesAndDoctorsList = response && response.data && response.data.getDoctorList;
+        currentPage = currentPage + 1;
         if (specialtiesAndDoctorsList) {
+          apolloDoctorCount = specialtiesAndDoctorsList.apolloDoctorCount;
+          partnerDoctorCount = specialtiesAndDoctorsList.partnerDoctorCount;
           const doctorsArray = specialtiesAndDoctorsList.doctors || [];
           const specialtiesArray = specialtiesAndDoctorsList.specialties || [];
           setSearchSpecialty(specialtiesArray);
-          setSearchDoctors(doctorsArray);
+          intialLoad
+            ? setSearchDoctors(doctorsArray)
+            : setSearchDoctors(searchDoctors.concat(doctorsArray));
         }
       })
       .catch((e) => {
@@ -719,6 +730,9 @@ const SpecialityListing: React.FC = (props) => {
       })
       .finally(() => {
         setSearchLoading(false);
+        if (intialLoad) {
+          setInitalLoad(false);
+        }
       });
   };
 
@@ -734,7 +748,7 @@ const SpecialityListing: React.FC = (props) => {
 
   useEffect(() => {
     if (searchKeyword.length > 2 || selectedCity.length) {
-      setSearchLoading(true);
+      intialLoad && setSearchLoading(true);
       const search = _debounce(fetchData, 500);
       setSearchQuery((prevSearch: any) => {
         if (prevSearch.cancel) {
@@ -749,7 +763,7 @@ const SpecialityListing: React.FC = (props) => {
       debounceTracking(searchKeyword);
       /**Gtm code start end */
     }
-  }, [searchKeyword, selectedCity]);
+  }, [searchKeyword, selectedCity, pageNo]);
 
   const metaTagProps = {
     title: 'Online Doctor Consultation via Video Call / Audio / Chat - Apollo 247',
@@ -814,6 +828,10 @@ const SpecialityListing: React.FC = (props) => {
                     setLocationPopup={setLocationPopup}
                     locationPopup={locationPopup}
                     setSelectedCity={setSelectedCity}
+                    currentPage={currentPage}
+                    apolloDoctorCount={apolloDoctorCount}
+                    partnerDoctorCount={partnerDoctorCount}
+                    setPageNo={setPageNo}
                   />
                   {currentPatient && currentPatient.id && searchKeyword.length <= 0 && (
                     <PastSearches />
