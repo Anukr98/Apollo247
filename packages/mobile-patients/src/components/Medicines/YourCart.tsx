@@ -557,7 +557,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               Input_MRP: availableItems[0]?.price,
               No_of_items_in_the_cart: availableItems.length,
               Response_Exist: item.exist ? 'Yes' : 'No',
-              Response_MRP: item.mrp,
+              Response_MRP: item.mrp * getPackSize(item.sku, cartItems),
               Response_Qty: item.qty,
               Response_lat: response.lat,
               Response_lng: response.lng,
@@ -601,6 +601,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       setLoading!(false);
     }
   };
+
+  const getPackSize = (sku: string, cartItems: ShoppingCartItem[]) =>
+    Number(cartItems.find(({ id }) => id === sku)?.mou || 1);
 
   const showUnserviceableAlert = (cartItems: ShoppingCartItem[]) => {
     showUnServiceableItemsAlert(cartItems);
