@@ -236,20 +236,20 @@ const KnowledgeArticleLanding: React.FC = (props: any) => {
   const isDesktopOnly = useMediaQuery('(min-width:768px)');
   const headingArr = [
     {
-      heading: 'Diabetes',
-      subheading: 'Articles about prevention and managing Diabetes.',
+      heading: 'Diabetes Management',
+      subheading: 'Explore and learn how to keep your blood sugar levels controlled',
       category: 'diabetes-management',
       defaultExpanded: true,
     },
     {
       heading: 'Heart health',
-      subheading: 'Everything you need to know about heart disease, prevention and treatment.',
+      subheading: 'Get expert advice on how to keep your heart healthy and strong',
       category: 'heart-health',
       defaultExpanded: false,
     },
     {
       heading: 'Respiratory conditions',
-      subheading: 'Know more about Respiratory Illnesses and Diseases and how to prevent them.',
+      subheading: 'Know how to manage respiratory conditions effectively',
       category: 'respiratory-conditions',
       defaultExpanded: false,
     },
