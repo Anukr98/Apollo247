@@ -5,18 +5,21 @@ import {
   ExpansionPanel,
   ExpansionPanelSummary,
   ExpansionPanelDetails,
+  FormControlLabel,
+  RadioGroup,
 } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import React, { useState, useContext } from 'react';
 import { AuthContext, AuthContextProps } from 'components/AuthProvider';
 import { FollowUp } from 'components/case-sheet/panels';
-import { AphButton } from '@aph/web-ui-components';
+import { AphButton, AphSwitch, AphRadio } from '@aph/web-ui-components';
 import {
   UpdateDoctorChatDays,
   UpdateDoctorChatDaysVariables,
 } from 'graphql/types/UpdateDoctorChatDays';
 import { useApolloClient } from 'react-apollo-hooks';
 import { UPDATE_DOCTOR_CHAT_DAYS } from 'graphql/profiles';
+import { APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -106,33 +109,128 @@ const useStyles = makeStyles((theme: Theme) => {
       marginTop: '36%',
       float: 'right',
     },
+    ivrRadioGroup: {
+      marginTop: 12,
+      marginLeft: 10,
+      '& label:nth-child(2),& label:nth-child(3)': {
+        marginLeft: 46,
+      },
+    },
   };
 });
+
+interface Expansion {
+  followUpExpand: boolean;
+  ivrExpanded: boolean;
+}
 
 export const MyAccountSettings: React.FC = () => {
   const apolloClient = useApolloClient();
   const classes = useStyles({});
-  const [followUpExpand, setFollowUpExpand] = useState<boolean>(false);
+  const expansionDefaultState = {
+    followUpExpand: false,
+    ivrExpanded: false,
+  };
+  const [expansionState, setExpansionState] = useState<Expansion>({
+    followUpExpand: false,
+    ivrExpanded: false,
+  });
+  const [ivrState, setIvrState] = useState<any>({
+    setUpIvr: false,
+    consultationMode: '',
+  });
+
   const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
   const { chatDays, setChatDays, currentUser } = useAuthContext();
-  // const [chatValue, setChatValue] = useState<number>(chatDays);
   const items = [
     {
-      key: 'followUp',
-      value: followUpExpand ? (
-        <div>{'Set your patient follow Up days'}</div>
-      ) : (
+      key: 'IVR',
+      value: <div>{'Set-up an IVR as a reminder for appointment booking'}</div>,
+      state: expansionState.ivrExpanded,
+      component: (
         <div>
-          <div>{'Set your patient follow Up days'}</div>
-          <div className={classes.expansionText}>
-            {'Default value set at '}
-            <span
-              style={{ fontSize: 18, fontWeight: 600, color: '#00B38E' }}
-            >{`${chatDays} days`}</span>
-          </div>
+          {ivrState.setUpIvr ? 'YES' : 'NO'}
+          <AphSwitch
+            checked={ivrState.setUpIvr}
+            onChange={() => {
+              setIvrState({ ...ivrState, setUpIvr: !ivrState.setUpIvr });
+            }}
+          />
+          {ivrState.setUpIvr && (
+            <>
+              <div
+                style={{
+                  position: 'relative',
+                  width: '678px',
+                  height: '0px',
+                  marginTop: 15,
+                  marginBottom: 10,
+                  opacity: '0.1',
+                  border: '1px solid #000000',
+                }}
+              />
+              <div>
+                {'Select the type of appointment for '}
+                <RadioGroup
+                  className={classes.ivrRadioGroup}
+                  value={ivrState.consultationMode}
+                  onChange={(e) => {
+                    setIvrState({ ...ivrState, consultationMode: e.target.value });
+                  }}
+                  row
+                >
+                  <FormControlLabel
+                    value={APPOINTMENT_TYPE.ONLINE}
+                    label="Online"
+                    // disabled={freeTextSwitch ? true : false}
+                    control={<AphRadio title="Online" />}
+                  />
+                  <FormControlLabel
+                    value={APPOINTMENT_TYPE.PHYSICAL}
+                    label="In-person"
+                    // disabled={freeTextSwitch ? true : false}
+                    control={<AphRadio title="Physical" />}
+                  />
+                  <FormControlLabel
+                    value={APPOINTMENT_TYPE.BOTH}
+                    label="Both"
+                    // disabled={freeTextSwitch ? true : false}
+                    control={<AphRadio title="Both" />}
+                  />
+                </RadioGroup>
+                <div style={{ display: 'flex', marginTop: 35 }}>
+                  <div style={{ width: '50%' }}>
+                    {'Select the time of call before online appointment. '}
+                  </div>
+                  <div style={{ width: '50%' }}>
+                    {'Select the time of call before in-person appointment. '}
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       ),
-      state: followUpExpand,
+    },
+
+    {
+      key: 'followUp',
+      value: (
+        <div>
+          <div>{'Set your patient follow Up days'}</div>
+          {!expansionState.followUpExpand && (
+            <div>
+              <div className={classes.expansionText}>
+                {'Default value set at '}
+                <span
+                  style={{ fontSize: 18, fontWeight: 600, color: '#00B38E' }}
+                >{`${chatDays} days`}</span>
+              </div>
+            </div>
+          )}
+        </div>
+      ),
+      state: expansionState.followUpExpand,
       component: (
         <FollowUp
           origin={'settings'}
@@ -149,15 +247,38 @@ export const MyAccountSettings: React.FC = () => {
   ];
 
   const handlePanelExpansion = (expansionKey: string) => {
+    const collapsed = { ...expansionDefaultState };
+
     switch (expansionKey) {
       case 'followUp':
-        setFollowUpExpand((expand) => !expand);
+        setExpansionState({ ...collapsed, followUpExpand: !expansionState.followUpExpand });
+        break;
+
+      case 'IVR':
+        setExpansionState({ ...collapsed, ivrExpanded: !expansionState.ivrExpanded });
         break;
     }
   };
 
+  const saveChanges = () => {
+    if (expansionState.followUpExpand) {
+      apolloClient
+        .mutate<UpdateDoctorChatDays, UpdateDoctorChatDaysVariables>({
+          mutation: UPDATE_DOCTOR_CHAT_DAYS,
+          fetchPolicy: 'no-cache',
+          variables: { doctorId: currentUser.id, chatDays: chatDays },
+        })
+        .then((_data) => {
+          alert(_data.data.updateDoctorChatDays.response);
+        });
+    } else if (expansionState.ivrExpanded) {
+      console.log('IVR API calling');
+    }
+  };
+
   return (
-    <div style={{ height: 500 }}>
+    <div style={{ height: 800 }}>
+      {console.log(ivrState)}
       {items.map((item) => (
         <ExpansionPanel
           key={item.key}
@@ -172,22 +293,13 @@ export const MyAccountSettings: React.FC = () => {
         </ExpansionPanel>
       ))}
 
-      {followUpExpand && (
+      {Object.values(expansionState).includes(true) && (
         <AphButton
           variant="contained"
           color="primary"
           classes={{ root: classes.saveButton }}
           onClick={() => {
-            console.log(currentUser);
-            apolloClient
-              .mutate<UpdateDoctorChatDays, UpdateDoctorChatDaysVariables>({
-                mutation: UPDATE_DOCTOR_CHAT_DAYS,
-                fetchPolicy: 'no-cache',
-                variables: { doctorId: currentUser.id, chatDays: chatDays },
-              })
-              .then((_data) => {
-                alert(_data.data.updateDoctorChatDays.response);
-              });
+            saveChanges();
           }}
         >
           SAVE CHANGES
