@@ -506,6 +506,7 @@ const useStyles = makeStyles((theme: Theme) => {
     modalDialog: {
       maxWidth: 526,
       margin: 'auto',
+      display: 'none',
     },
   };
 });
