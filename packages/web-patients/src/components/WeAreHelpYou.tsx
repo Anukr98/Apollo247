@@ -237,6 +237,7 @@ const useStyles = makeStyles((theme: Theme) => {
 export const WeAreHelpYou: React.FC = (props) => {
   const classes = useStyles({});
   const covidScannerUrl = process.env.COVID_RISK_CALCULATOR_URL;
+  const mentalScannerUrl = process.env.MENTAL_HEALTH_SCAN_URL;
   const [iscoronaDialogOpen, setIscoronaDialogOpen] = useState<boolean>(false);
 
   return (
@@ -310,10 +311,16 @@ export const WeAreHelpYou: React.FC = (props) => {
               </div>
 
               <div className={classes.serviceCard}>
-                <span>
-                  <img src={require('images/ic_psychologist.svg')} alt="" />
-                </span>
-                <span>Take a mental health scan</span>
+                <a href={mentalScannerUrl} target={'_blank'}>
+                  <span>
+                    <LazyIntersection
+                      style={{ width: '24px' }}
+                      src={require('images/ic_psychologist.svg')}
+                      alt=""
+                    />
+                  </span>
+                  <span>Take a mental health scan</span>
+                </a>
               </div>
 
               <div

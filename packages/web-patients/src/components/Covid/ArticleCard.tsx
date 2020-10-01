@@ -120,7 +120,7 @@ const ArticleItem: React.FC<ArticleItemProps> = (props) => {
   } = props.item;
   const image = screen.width > 768 ? thumbnailWeb : thumbnailMobile;
   const linkTo = () => {
-    const baseUrl = props.pageType === 'covid' ? 'covid19' : 'knowledge-base';
+    const baseUrl = props.pageType === 'covid' ? 'covid19' : 'blog';
     return type.toLowerCase() === 'video' || type.toLowerCase() === 'infographic'
       ? '#'
       : !props.isWebView
