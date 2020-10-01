@@ -176,6 +176,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const [showHdfcConnectPopup, setShowHdfcConnectPopup] = useState<boolean>(false);
   const [showAvailPopup, setShowAvailPopup] = useState<boolean>(false);
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
+  const [benefitId, setBenefitId] = useState<string>('');
   const { TnC, SILVER_PLAN, GOLD_PLAN, PLATINUM_PLAN } = Hdfc_values;
 
   const upgradeTransactionValue =
@@ -231,7 +232,8 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
           message,
           type,
           icon,
-          availableCount
+          availableCount,
+          value._id
         );
       })
     );
@@ -312,7 +314,8 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     message: string,
     type: string,
     icon: string | null,
-    availableCount: number
+    availableCount: number,
+    id: string,
   ) => {
     return (
       <View style={[styles.cardStyle, { marginVertical: 10 }]}>
@@ -320,7 +323,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         {ctaLabel !== 'NULL' && (
           <TouchableOpacity
             onPress={() => {
-              handleCtaClick(type, action, message, availableCount);
+              handleCtaClick(type, action, message, availableCount, id);
             }}
           >
             <Text style={styles.redeemButtonText}>{ctaLabel}</Text>
@@ -344,7 +347,8 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     type: string,
     action: string,
     message: string,
-    availableCount: number
+    availableCount: number,
+    id: string,
   ) => {
     if (type == Hdfc_values.REDIRECT) {
       if (action == Hdfc_values.SPECIALITY_LISTING) {
@@ -368,6 +372,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     } else if (type == Hdfc_values.CALL_API) {
       if (action == Hdfc_values.CALL_EXOTEL_API) {
         if (availableCount > 0) {
+          setBenefitId(id);
           setShowHdfcConnectPopup(true);
         } else {
           renderAlert(
@@ -762,7 +767,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
       {showHdfcConnectPopup && (
         <HdfcConnectPopup
           onClose={() => setShowHdfcConnectPopup(false)}
-          benefitId={membershipDetails!._id || ''}
+          benefitId={benefitId || ''}
         />
       )}
       {showAvailPopup && (
