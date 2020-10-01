@@ -359,3 +359,20 @@ export const GET_APPOINTMENT_DOCTOR_RESCHEDULED_DETAILS = gql`
     }
   }
 `;
+
+export const INSERT_MESSAGE_POST_CONSULT = gql`
+  mutation InsertMessage($messageInput: MessageInput) {
+    insertMessage(messageInput: $messageInput) {
+      notificationData {
+        fromId
+        toId
+        eventName
+        eventId
+        message
+        status
+        type
+        id
+      }
+    }
+  }
+`;
