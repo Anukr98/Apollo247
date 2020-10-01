@@ -7,7 +7,7 @@ import axios, { AxiosError, AxiosResponse } from 'axios';
 const apiDetails = {
   authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
   service_url: process.env.PHARMACY_SERVICE_AVAILABILITY,
-  cartItemDetails: process.env.PHARMACY_MED_CART_ITEM_DETAILS,
+  cartItemDetails: process.env.PHARMACY_MED_BULK_PRODUCT_INFO_URL,
   medicineDetails: process.env.PHARMACY_MED_PROD_DETAIL_URL,
 };
 
