@@ -522,8 +522,8 @@ const stackConfig: StackNavigatorConfig = {
   transitionConfig: (sceneProps, prevSceneProps) => {
     try {
       const currentRoute = sceneProps.scene.route.routeName;
-      const prevRoute = prevSceneProps.scene.route.routeName;
-      if (currentRoute !== prevRoute) {
+      const prevRoute = prevSceneProps?.scene?.route?.routeName;
+      if (prevRoute && prevRoute !== currentRoute) {
         AsyncStorage.setItem('setCurrentName', currentRoute);
         CommonScreenLog(currentRoute, currentRoute);
         logTabEvents(sceneProps.scene.route);
