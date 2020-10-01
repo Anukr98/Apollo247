@@ -1,13 +1,32 @@
-import * as React from 'react';
+import React, { useState } from 'react';
 import { NavigatorContainer } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import { AuthProvider } from '@aph/mobile-doctors/src/components/AuthProvider';
 import { UIElementsProvider } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
-import { Alert } from 'react-native';
+import { Alert, Platform } from 'react-native';
 import { setJSExceptionHandler, setNativeExceptionHandler } from 'react-native-exception-handler';
 import { getBuildEnvironment } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import RNExitApp from 'react-native-exit-app';
 import { NotificationProvider } from '@aph/mobile-doctors/src/components/Notification/NotificationContext';
 import { AudioVideoProvider } from '@aph/mobile-doctors/src/components/Chat/AudioVideoCotext';
+import codePush, { CodePushOptions, DownloadProgress } from 'react-native-code-push';
+import { CodePushInfoUi } from '@aph/mobile-doctors/src/components/CodePushInfoUi';
+import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
+
+const codePushOptions: CodePushOptions = {
+  checkFrequency: codePush.CheckFrequency.ON_APP_RESUME,
+  installMode: codePush.InstallMode.ON_NEXT_RESTART,
+  mandatoryInstallMode: codePush.InstallMode.ON_NEXT_RESTART,
+  deploymentKey:
+    Platform.OS == 'android'
+      ? AppConfig.Configuration.CODE_PUSH_DEPLOYMENT_KEY_ANDROID
+      : AppConfig.Configuration.CODE_PUSH_DEPLOYMENT_KEY_IOS,
+  updateDialog: {},
+};
+
+export type CodePushInfo = {
+  syncStatus?: codePush.SyncStatus;
+  downloadProgress?: DownloadProgress;
+};
 
 const reporter = (error: Error, type: 'JS' | 'Native') => {
   // Logic for reporting to devs
@@ -60,17 +79,39 @@ setNativeExceptionHandler((exceptionString) => {
   //WILL NOT WORK in case of NATIVE ERRORS.
 });
 
-export const AppContainer: React.FC = () => {
+interface AppContainerState {
+  codePushInfo: CodePushInfo;
+}
+
+const AppContainer: React.FC<AppContainerState> = () => {
   console.disableYellowBox = true;
+
+  const [codePushInfo, setCodePushInfo] = useState({});
+
+  const codePushStatusDidChange = (status: codePush.SyncStatus) => {
+    setCodePushInfo({ codePushInfo: { ...codePushInfo, syncStatus: status } });
+  };
+
+  const codePushDownloadDidProgress = (progress: DownloadProgress) => {
+    setCodePushInfo({ codePushInfo: { ...codePushInfo, downloadProgress: progress } });
+  };
+
+  const renderCodePushUi = () => {
+    return <CodePushInfoUi codePushInfo={codePushInfo} />;
+  };
+
   return (
     <AuthProvider>
       <UIElementsProvider>
         <NotificationProvider>
           <AudioVideoProvider>
             <NavigatorContainer />
+            {renderCodePushUi()}
           </AudioVideoProvider>
         </NotificationProvider>
       </UIElementsProvider>
     </AuthProvider>
   );
 };
+
+export default codePush(codePushOptions)(AppContainer);
