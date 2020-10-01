@@ -1423,6 +1423,7 @@ export const ConsultTabs: React.FC = () => {
 
   const sendCallNotificationFn = (callType: APPT_CALL_TYPE, isCall: boolean) => {
     pubnubPresence((patient: number, doctor: number) => {
+      console.log('Inside sendCallNotificationFn', { patient, doctor, sum: patient + doctor });
       sendCallNotificationFnWithCheck(callType, isCall, patient + doctor);
     });
   };
@@ -1832,6 +1833,7 @@ export const ConsultTabs: React.FC = () => {
 
   const endCallNotificationAction = (isCall: boolean) => {
     pubnubPresence((patient: number, doctor: number) => {
+      console.log('Inside endCallNotificationAction', { patient, doctor, sum: patient + doctor });
       endCallNotificationActionCheckFn(isCall, patient + doctor);
     });
   };
@@ -1851,6 +1853,7 @@ export const ConsultTabs: React.FC = () => {
             doctorCount = 1;
           }
         });
+        console.log('Inside hereNow', { doctorCount, paientsCount });
         callBack(paientsCount, doctorCount);
       })
       .catch((error) => {
