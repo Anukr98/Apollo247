@@ -3,7 +3,7 @@ export interface InventorySyncRequest {
   orderId: string;
   pincode: string;
   lat: number;
-  long: number;
+  lng: number;
   items: Items[];
 }
 export interface Items {
