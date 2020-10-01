@@ -2538,15 +2538,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const onPressKavach = () => {
     postHomeWEGEvent(WebEngageEventName.APOLLO_KAVACH_PROGRAM);
-
     try {
       const openUrl = AppConfig.Configuration.KAVACH_URL;
-      Linking.canOpenURL(openUrl).then((supported) => {
-        if (supported) {
-          Linking.openURL(openUrl);
-        } else {
-          setBugFenderLog('CONSULT_ROOM_FAILED_OPEN_URL', openUrl);
-        }
+      props.navigation.navigate(AppRoutes.CovidScan, {
+        covidUrl: openUrl,
       });
     } catch (e) {}
   };
