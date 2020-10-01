@@ -243,7 +243,7 @@ export class PatientRepository extends Repository<Patient> {
       patient = JSON.parse(cache);
     } else {
       patient = JSON.parse(await this.setPatientConsultCache(id));
-    } 
+    }
     if (patient.dateOfBirth) {
       patient.dateOfBirth = new Date(patient.dateOfBirth);
     }
