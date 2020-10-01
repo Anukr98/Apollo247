@@ -217,6 +217,8 @@ const styles = StyleSheet.create({
   stickyBottomComponent: { height: 'auto', flexDirection: 'column' },
 });
 
+type PharmacyTatApiCalled = WebEngageEvents[WebEngageEventName.PHARMACY_TAT_API_CALLED]
+
 export interface MedicineDetailsSceneProps
   extends NavigationScreenProps<{
     sku: string;
@@ -232,6 +234,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const [medicineDetails, setmedicineDetails] = useState<MedicineProductDetails>(
     {} as MedicineProductDetails
   );
+  const [tatEventData, setTatEventData] = useState<PharmacyTatApiCalled>();
   const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
   const pharmacyPincode = g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
@@ -403,6 +406,19 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     }
   }, [deliveryTime, deliveryError]);
 
+  useEffect(() => {
+    try {
+      if (medicineDetails?.price && tatEventData) {
+        const eventAttributes: PharmacyTatApiCalled = {
+          ...tatEventData,
+          Input_MRP: medicineDetails.price,
+          Response_MRP: tatEventData.Response_MRP * Number(medicineDetails.mou || 1),
+        };
+        postWebEngageEvent(WebEngageEventName.PHARMACY_TAT_API_CALLED, eventAttributes);
+      }
+    } catch (error) {}
+  }, [medicineDetails, tatEventData]);
+
   const trackTagalysViewEvent = (details: MedicineProductDetails) => {
     try {
       trackTagalysEvent(
@@ -560,17 +576,17 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           try {
             const response = res.data.response;
             const item = response.items[0];
-            const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_TAT_API_CALLED] = {
+            const eventAttributes: PharmacyTatApiCalled = {
               Source: 'PDP',
               Input_sku: sku,
               Input_qty: getItemQuantity(sku) || 1,
               Input_lat: lattitude,
               Input_long: longitude,
               Input_pincode: pincode,
-              Input_MRP: medicineDetails?.price,
+              Input_MRP: medicineDetails?.price, // overriding this value after PDP API call
               No_of_items_in_the_cart: 1,
               Response_Exist: item.exist ? 'Yes' : 'No',
-              Response_MRP: item.mrp,
+              Response_MRP: item.mrp, // overriding this value after PDP API call
               Response_Qty: item.qty,
               Response_lat: response.lat,
               Response_lng: response.lng,
@@ -581,7 +597,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
               Response_tat: response.tat,
               Response_tatU: response.tatU,
             };
-            postWebEngageEvent(WebEngageEventName.PHARMACY_TAT_API_CALLED, eventAttributes);
+            setTatEventData(eventAttributes);
           } catch (error) {}
         })
         .catch(() => {
