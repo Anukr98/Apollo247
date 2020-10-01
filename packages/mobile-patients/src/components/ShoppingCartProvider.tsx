@@ -376,9 +376,11 @@ export const ShoppingCartProvider: React.FC = (props) => {
   );
 
   const deliveryCharges =
-    cartTotal > 0 &&
-    cartTotal - productDiscount - couponDiscount <
-      AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY
+    deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+      ? 0
+      : cartTotal > 0 &&
+        cartTotal - productDiscount - couponDiscount <
+          AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY
       ? AppConfig.Configuration.DELIVERY_CHARGES
       : 0;
 
