@@ -362,7 +362,11 @@ export const reOrderItems = async (
             ? Math.ceil(lineItems[index].price / lineItems[index].mrp / lineItems[index].quantity)
             : item.mou,
           quantity: Math.ceil(
-            (billedLineItems ? billedLineItems[index].issuedQty : lineItems[index].quantity) || 1
+            (billedLineItems
+              ? billedLineItems[index].issuedQty
+              : item.MaxOrderQty < lineItems[index].quantity
+              ? item.MaxOrderQty
+              : lineItems[index].quantity) || 1
           ),
           isShippable: true,
         } as MedicineCartItem)
