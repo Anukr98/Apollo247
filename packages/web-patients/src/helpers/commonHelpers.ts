@@ -5,7 +5,7 @@ import { GooglePlacesType } from 'components/LocationProvider';
 import { CouponCategoryApplicable } from 'graphql/types/globalTypes';
 import _lowerCase from 'lodash/lowerCase';
 import _upperFirst from 'lodash/upperFirst';
-import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
+import { MEDICINE_ORDER_STATUS, DoctorType } from 'graphql/types/globalTypes';
 import { MedicineProductDetails } from 'helpers/MedicineApiCalls';
 import fetchUtil from 'helpers/fetch';
 import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
@@ -266,6 +266,7 @@ interface SearchObject {
   specialtyName: string;
   prakticeSpecialties: string | null;
   consultMode: ConsultMode | null;
+  brand: string[] | null;
 }
 
 interface AppointmentFilterObject {
@@ -275,7 +276,25 @@ interface AppointmentFilterObject {
   specialtyList: string[] | null;
 }
 
-const feeInRupees = ['100 - 500', '500 - 1000', '1000+'];
+const brandList = [
+  { key: DoctorType.APOLLO, value: 'Apollo' },
+  { key: DoctorType.APOLLO_HOMECARE, value: 'Apollo Homecare' },
+  { key: DoctorType.CLINIC, value: 'Clinic' },
+  { key: DoctorType.CRADLE, value: 'Cradle' },
+  { key: DoctorType.DOCTOR_CONNECT, value: 'Doctor Connect' },
+  { key: DoctorType.FERTILITY, value: 'Fertility' },
+  { key: DoctorType.JUNIOR, value: 'Junior' },
+  { key: DoctorType.PAYROLL, value: 'Payroll' },
+  { key: DoctorType.SPECTRA, value: 'Spectra' },
+  { key: DoctorType.STAR_APOLLO, value: 'Star Apollo' },
+  { key: DoctorType.SUGAR, value: 'Sugar' },
+  { key: DoctorType.WHITE_DENTAL, value: 'White Dental' },
+];
+const feeInRupees = [
+  { key: '100-500', value: '100 - 500' },
+  { key: '500-1000', value: '500 - 1000' },
+  { key: '1000+', value: '1000+' },
+];
 const experienceList = [
   { key: '0-5', value: '0 - 5' },
   { key: '6-10', value: '6 - 10' },
@@ -565,7 +584,11 @@ const getSlidesToScroll = (num: number) => {
   return isPrime(num) ? 1 : isDivisibleByThree(num) ? 3 : 2;
 };
 
+const disablingActionsTimeBeforeConsultation = 16;
+
 export {
+  disablingActionsTimeBeforeConsultation,
+  brandList,
   getSlidesToScroll,
   deepLinkUtil,
   HEALTH_RECORDS_NO_DATA_FOUND,
