@@ -18,7 +18,13 @@ import WarningModel from 'components/WarningModel';
 import { PatientCard } from 'components/Consult/V2/ChatRoom/PatientCard';
 import { DoctorCard } from 'components/Consult/V2/ChatRoom/DoctorCard';
 import { WelcomeCard } from 'components/Consult/V2/ChatRoom/WelcomeCard';
-import { BookRescheduleAppointmentInput, STATUS } from 'graphql/types/globalTypes';
+import {
+  BookRescheduleAppointmentInput,
+  STATUS,
+  notificationEventName,
+  notificationStatus,
+  notificationType,
+} from 'graphql/types/globalTypes';
 // import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import PubNub, { PubnubStatus, PublishResponse, HistoryResponse } from 'pubnub';
@@ -30,6 +36,7 @@ import {
   UPDATE_APPOINTMENT_SESSION,
   PAST_APPOINTMENTS_COUNT,
   UPDATE_SAVE_EXTERNAL_CONNECT,
+  INSERT_MESSAGE_POST_CONSULT,
 } from 'graphql/consult';
 import { downloadDocuments } from 'graphql/types/downloadDocuments';
 import { DOWNLOAD_DOCUMENT } from 'graphql/profiles';
@@ -59,6 +66,8 @@ import { useParams } from 'hooks/routerHooks';
 import { GetAppointmentData_getAppointmentData_appointmentsHistory as AppointmentHistory } from 'graphql/types/GetAppointmentData';
 import { DoctorJoinedMessageCard } from 'components/Consult/V2/ChatRoom/DoctorJoinedMessageCard';
 import { DoctorType } from 'graphql/types/globalTypes';
+import CryptoJS from 'crypto-js';
+import { InsertMessage, InsertMessageVariables } from 'graphql/types/InsertMessage';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -958,6 +967,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     UpdateSaveExternalConnect,
     UpdateSaveExternalConnectVariables
   >(UPDATE_SAVE_EXTERNAL_CONNECT);
+
+  const mutationChatPostConsultWithDoctor = useMutation<InsertMessage, InsertMessageVariables>(
+    INSERT_MESSAGE_POST_CONSULT
+  );
 
   const getPrismUrls = (patientId: string, fileIds: string[]) => {
     return new Promise((res, rej) => {
@@ -2254,6 +2267,28 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                           cardType: 'patient',
                         };
                         publishMessage(appointmentId, composeMessage);
+                        if (appointmentDetails.status === STATUS.COMPLETED) {
+                          /* insert message post consult */
+                          const ciphertext = CryptoJS.AES.encrypt(
+                            e.target.value,
+                            process.env.NOTIFICATION_SMS_SECRECT_KEY
+                          ).toString();
+                          mutationChatPostConsultWithDoctor({
+                            variables: {
+                              messageInput: {
+                                fromId: currentPatient && currentPatient.id,
+                                toId: appointmentDetails.doctorId,
+                                eventName: notificationEventName.APPOINTMENT,
+                                eventId: appointmentDetails.id,
+                                message: ciphertext,
+                                status: notificationStatus.UNREAD,
+                                type: notificationType.CHAT,
+                              },
+                            },
+                          }).catch((e) => {
+                            console.log('Error in sending notification to Doctor', e);
+                          });
+                        }
                         setUserMessage('');
                       }
                     }}
