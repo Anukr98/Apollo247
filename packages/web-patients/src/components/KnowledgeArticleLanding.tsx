@@ -230,28 +230,27 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-const CovidLanding: React.FC = (props: any) => {
+const KnowledgeArticleLanding: React.FC = (props: any) => {
   const classes = useStyles({});
   const onePrimaryUser = hasOnePrimaryUser();
   const isDesktopOnly = useMediaQuery('(min-width:768px)');
   const headingArr = [
     {
-      heading: 'How can I stay safe?',
-      subheading:
-        'Articles and videos on precautions and protective measures to avoid Coronavirus.',
-      category: 'stay-safe',
+      heading: 'Diabetes Management',
+      subheading: 'Explore and learn how to keep your blood sugar levels controlled',
+      category: 'diabetes-management',
       defaultExpanded: true,
     },
     {
-      heading: 'What to do if I have symptoms',
-      subheading: 'Know more about symptoms of Coronavirus and what to do if infected.',
-      category: 'covid-symptoms',
+      heading: 'Heart health',
+      subheading: 'Get expert advice on how to keep your heart healthy and strong',
+      category: 'heart-health',
       defaultExpanded: false,
     },
     {
-      heading: 'How are we getting ahead?',
-      subheading: 'Learn about the efforts around the world to win over Coronavirus.',
-      category: 'going-ahead',
+      heading: 'Respiratory conditions',
+      subheading: 'Know how to manage respiratory conditions effectively',
+      category: 'respiratory-conditions',
       defaultExpanded: false,
     },
   ];
@@ -298,15 +297,17 @@ const CovidLanding: React.FC = (props: any) => {
     }
   }, []);
   useEffect(() => {
-    fetchUtil(covidArticleBaseUrl!, 'GET', {}, '', true).then((res: any) => {
+    fetchUtil(process.env.BLOG_ARTICLE_LIST_URL, 'GET', {}, '', true).then((res: any) => {
       const body = res.data;
-      const sortedStaySafeData = !_isEmpty(body['stay-safe']) && body['stay-safe'];
-      const sortedCovidSymptomsData = !_isEmpty(body['covid-symptoms']) && body['covid-symptoms'];
-      const sortedGoingAheadData = !_isEmpty(body['going-ahead']) && body['going-ahead'];
+      const sortedStaySafeData =
+        !_isEmpty(body['diabetes-management']) && body['diabetes-management'];
+      const sortedCovidSymptomsData = !_isEmpty(body['heart-health']) && body['heart-health'];
+      const sortedGoingAheadData =
+        !_isEmpty(body['respiratory-conditions']) && body['respiratory-conditions'];
       let covidObj: CovidContentInterface = {};
-      covidObj['stay-safe'] = sortedStaySafeData;
-      covidObj['covid-symptoms'] = sortedCovidSymptomsData;
-      covidObj['going-ahead'] = sortedGoingAheadData;
+      covidObj['diabetes-management'] = sortedStaySafeData;
+      covidObj['heart-health'] = sortedCovidSymptomsData;
+      covidObj['respiratory-conditions'] = sortedGoingAheadData;
       covidObj['total-term'] = body['totalterm'];
       setCovidContent(covidObj);
     });
@@ -316,7 +317,7 @@ const CovidLanding: React.FC = (props: any) => {
     if (didMount.current && categoryToFetch !== '') {
       const currentOffset = covidContent[categoryToFetch].length;
       fetchUtil(
-        `${covidArticleBaseUrl}?catid=${categoryToFetch}&limit=3&offset=${currentOffset}`,
+        `${process.env.BLOG_ARTICLE_LIST_URL}?catid=${categoryToFetch}&limit=3&offset=${currentOffset}`,
         'GET',
         {},
         '',
@@ -347,10 +348,9 @@ const CovidLanding: React.FC = (props: any) => {
       <div className={classes.container}>
         <div className={classes.pageContainer} ref={scrollToRef}>
           <Banner
-            title={'Coronavirus (Covid-19)'}
-            subtitle={
-              'Learn more about Coronavirus, how to stay safe, and what to do if you have symptoms.'
-            }
+            isBlog={true}
+            title={'Healthcare Articles and Resources'}
+            subtitle={''}
             isWebView={isWebView}
           />
           <div className={classes.sectionGroup}>
@@ -373,7 +373,7 @@ const CovidLanding: React.FC = (props: any) => {
                     <h3>{parentCat.heading}</h3>
                     <p>{parentCat.subheading}</p>
                   </ExpansionPanelSummary>
-                  {_isEmpty(covidContent['stay-safe']) ? (
+                  {_isEmpty(covidContent['diabetes-management']) ? (
                     <div className={classes.progressLoader}>
                       <CircularProgress size={30} />
                     </div>
@@ -386,7 +386,7 @@ const CovidLanding: React.FC = (props: any) => {
                             isWebView={isWebView}
                             handleInfographicClick={(data) => handleInfographicClick(data)}
                             content={covidContent[parentCat.category]}
-                            pageType="covid"
+                            pageType="blog"
                           />
                         )}
                       {moreContentLoading ? (
@@ -487,4 +487,4 @@ const CovidLanding: React.FC = (props: any) => {
   );
 };
 
-export default CovidLanding;
+export default KnowledgeArticleLanding;
