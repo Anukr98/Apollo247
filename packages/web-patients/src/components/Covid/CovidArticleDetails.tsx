@@ -363,6 +363,11 @@ const CovidArticleDetails: React.FC = (props: any) => {
                   source={source}
                   type={type}
                   isWebView={isWebView}
+                  pageType={
+                    window.location.pathname.split('/').slice(1)[0] === 'covid19'
+                      ? 'covid'
+                      : 'knowledge-base'
+                  }
                 />
                 <div className={classes.imageBanner}>
                   <img className={classes.mobileBanner} src={thumbnailMobile} alt="" />

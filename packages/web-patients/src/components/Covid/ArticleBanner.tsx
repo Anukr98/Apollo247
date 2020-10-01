@@ -284,6 +284,7 @@ interface ArticleBannerProps {
   source: string;
   isWebView: boolean;
   slug: string;
+  pageType: string;
 }
 
 export const ArticleBanner: React.FC<ArticleBannerProps> = (props) => {
@@ -291,18 +292,16 @@ export const ArticleBanner: React.FC<ArticleBannerProps> = (props) => {
   const subRef = React.useRef(null);
   const [openSubscriptionForm, setOpenSubscriptionForm] = useState(false);
   const [showShareWidget, setShowShareWidget] = useState(false);
-
-  const { title, type, source, isWebView } = props;
+  const { title, type, source, isWebView, pageType } = props;
+  const getBackLink = () => {
+    const baseLink =
+      pageType === 'covid' ? clientRoutes.covidLanding() : clientRoutes.knowledgeBaseLanding();
+    return !isWebView ? baseLink : `${baseLink}?utm_source=mobile_app`;
+  };
   return (
     <div className={classes.root}>
       <div className={classes.bannerTop}>
-        <Link
-          to={
-            !isWebView
-              ? clientRoutes.covidLanding()
-              : `${clientRoutes.covidLanding()}?utm_source=mobile_app`
-          }
-        >
+        <Link to={getBackLink()}>
           <div className={classes.backArrow}>
             <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
             <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
