@@ -371,7 +371,12 @@ export const Filters: React.FC<FilterProps> = (props) => {
       specialtyName: '',
       prakticeSpecialties: '',
       brand: [],
-      consultMode: ConsultMode.BOTH,
+      consultMode:
+        isOnlineSelected && isPhysicalSelected
+          ? ConsultMode.BOTH
+          : isOnlineSelected
+          ? ConsultMode.ONLINE
+          : ConsultMode.PHYSICAL,
     };
     setLocalFilter(filterInitialValues);
     setFilter(filterInitialValues);

@@ -477,7 +477,15 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   };
 
   useEffect(() => {
-    let filterObject: SearchObject = { ...searchObject };
+    let filterObject: SearchObject = {
+      ...searchObject,
+      consultMode:
+        isOnlineSelected && isPhysicalSelected
+          ? ConsultMode.BOTH
+          : isOnlineSelected
+          ? ConsultMode.ONLINE
+          : ConsultMode.PHYSICAL,
+    };
     if (searchParams.length > 0) {
       const search = searchParams.substring(1);
 
@@ -497,7 +505,7 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     } else {
       setFilter(filterObject);
     }
-  }, [searchParams]);
+  }, [searchParams, isOnlineSelected, isPhysicalSelected]);
 
   useEffect(() => {
     deepLinkUtil(`Speciality?${specialtyId}`);
@@ -853,19 +861,6 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
       return false;
     });
   };
-  // useEffect(() => {
-  //   if (isOnlineSelected && isPhysicalSelected) {
-  //     setFilter({ ...filter, consultMode: ConsultMode.BOTH });
-  //   } else if (isOnlineSelected && !isPhysicalSelected) {
-  //     setFilter({ ...filter, consultMode: ConsultMode.ONLINE });
-  //   } else if (!isOnlineSelected && isPhysicalSelected) {
-  //     setFilter({ ...filter, consultMode: ConsultMode.PHYSICAL });
-  //   } else {
-  //     setFilteredDoctorData(null);
-  //     apolloDoctorCount = 0;
-  //     partnerDoctorCount = 0;
-  //   }
-  // }, [isOnlineSelected, isPhysicalSelected]);
 
   const metaTagProps = {
     title: (faqData && faqData[0].specialtyMetaTitle) || '',
