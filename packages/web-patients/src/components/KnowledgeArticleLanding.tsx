@@ -347,7 +347,12 @@ const KnowledgeArticleLanding: React.FC = (props: any) => {
       </div>
       <div className={classes.container}>
         <div className={classes.pageContainer} ref={scrollToRef}>
-          <Banner title={'Healthcare Articles and Resources'} subtitle={''} isWebView={isWebView} />
+          <Banner
+            isBlog={true}
+            title={'Healthcare Articles and Resources'}
+            subtitle={''}
+            isWebView={isWebView}
+          />
           <div className={classes.sectionGroup}>
             <div className={classes.panelsGroup}>
               {headingArr.map((parentCat) => (
