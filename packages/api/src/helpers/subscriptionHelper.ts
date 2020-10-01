@@ -1,6 +1,6 @@
 const axios = require('axios');
 import { TransactionType } from 'ApiConstants';
-import { format } from 'date-fns';
+import { format, addMinutes } from 'date-fns';
 import { log } from 'customWinstonLogger';
 
 type SuccessTransactionInputForSubscription = {
@@ -70,7 +70,7 @@ export async function transactionSuccessTrigger(args: SuccessTransactionInputFor
        user_subscription_id: "${userSubscriptionId || ''}"
        subscription_inclusion_id: "${subscriptionInclusionId || ''}"
        transaction_type: ${transactionType}
-       transaction_date: "${format(new Date(transactionDate), 'yyyy-MM-dd hh:mm')}"
+       transaction_date: "${format(addMinutes(new Date(transactionDate), +330), 'yyyy-MM-dd hh:mm')}"
        amount: ${parseFloat(amount)}
        source_transaction_indentifier: "${sourceTransactionIdentifier || ''} "
        mobile_number:"${mobileNumber}"
@@ -113,4 +113,24 @@ export async function transactionSuccessTrigger(args: SuccessTransactionInputFor
         JSON.stringify(error)
       );
     });
+}
+
+
+export const checkDocOnCallAvailable = async function (mobileNumber: string, benefitId: string) {
+  const url = `http://${process.env.SUBSCRIPTION_SERVICE_HOST}:${process.env.SUBSCRIPTION_SERVICE_PORT}`;
+  const requestJSON = {
+    query: `query {
+      GetAllUserSubscriptionsWithPlanBenefits(mobile_number:"${mobileNumber}"){
+       response   
+      }
+    }`,
+  };
+  const response = await axios.post(url, requestJSON);
+  let benefits = response?.data?.data?.GetAllUserSubscriptionsWithPlanBenefits?.response[0]?.benefits;
+  if (benefits) {
+    return benefits.filter((el: any) => {
+      return (el._id == benefitId && el.attribute == "Doc on Call") ? true : false;
+    }).length > 0;
+  }
+  return false;
 }

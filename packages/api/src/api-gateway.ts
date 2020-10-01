@@ -69,6 +69,12 @@ export type Resolver<Parent, Args, Context, Result> = (
           process.env.SUBSCRIPTION_SERVICE_PORT ? process.env.SUBSCRIPTION_SERVICE_PORT : '80'
         )}/graphql`,
       },
+      {
+        name: 'diagnostics',
+        url: `http://${process.env.DIAGNOSTICS_SERVICE_HOST}${getPortStr(
+          process.env.DIAGNOSTICS_SERVICE_PORT ? process.env.DIAGNOSTICS_SERVICE_PORT : '80'
+        )}/graphql`,
+      },
     ],
     buildService({ name, url }) {
       return new RemoteGraphQLDataSource({
@@ -211,7 +217,10 @@ export type Resolver<Parent, Args, Context, Result> = (
         };
       }
       /* Add jwt token to context */
-      gatewayContext["authorization"] = req && req.headers && req.headers.authorization ? req && req.headers && req.headers.authorization : ''
+      gatewayContext['authorization'] =
+        req && req.headers && req.headers.authorization
+          ? req && req.headers && req.headers.authorization
+          : '';
       return gatewayContext;
     },
     plugins: [

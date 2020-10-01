@@ -170,15 +170,17 @@ export async function customerIdentification(mobile: String, dateOfBirth: Date) 
       userId: 'DevUser01',
       transactionBranch: '089999',
       userReferenceNumber: refNoGenerator(),
+      externalReferenceNo: externalReferenceNoGenerator('AP1'),
     },
   };
   const response = await mediumRequest(requestBeforeEncryption, '/API/CustomerIdentification');
+
   return response;
 }
 
 export async function fetchEthnicCode(dateOfBirth: Date, mobile: String, historyToken: String) {
   const formattedMobile = mobile.substr(mobile.length - 10);
-  const externalReferenceNo = refNoGenerator();
+  const externalReferenceNo = externalReferenceNoGenerator('AP2');
   const formattedDateOfBirth = `${dateOfBirth.getFullYear()}${(
     '0' +
     (dateOfBirth.getMonth() + 1)
@@ -234,8 +236,8 @@ async function highRequest(base_request: any, url: String, historyToken: string 
     `utf-8`
   );
   const jwt_request = jwt.sign(base_request, privateKey, { algorithm: 'RS256' });
-  let iv = randomStringGenerator(16);
-  let RequestSignatureEncryptedValue = cryptojs.AES.encrypt(
+  const iv = randomStringGenerator(16);
+  const RequestSignatureEncryptedValue = cryptojs.AES.encrypt(
     `${iv}${jwt_request}`,
     cryptojs.enc.Utf8.parse(key),
     {
@@ -263,8 +265,8 @@ async function highRequest(base_request: any, url: String, historyToken: string 
   }).then(checkStatus);
   if (response) {
     const responseJson = JSON.parse((await response.text()).replace(/(\r\n|\n|\r)/gm, ''));
-    let stringRequest = JSON.stringify(request);
-    let stringResponse = JSON.stringify(responseJson);
+    const stringRequest = JSON.stringify(request);
+    const stringResponse = JSON.stringify(responseJson);
     dLogger(
       new Date(),
       `HDFC HIGH REQUEST ${url}`,
@@ -296,7 +298,7 @@ async function decryptMediumResponse(response: any) {
 
 async function mediumRequest(base_request: any, url: String, historyToken: String = '') {
   const key = randomStringGenerator(32);
-  let iv = randomStringGenerator(16);
+  const iv = randomStringGenerator(16);
   const RequestEncryptedValue = cryptojs.AES.encrypt(
     `${iv}${JSON.stringify(base_request)}`,
     cryptojs.enc.Utf8.parse(key),
@@ -369,11 +371,17 @@ function randomStringGenerator(length: number): string {
     .slice(0, length);
 }
 
+function externalReferenceNoGenerator(referenceStart: string) {
+  return `${referenceStart}${refNoGenerator()
+    .toString()
+    .slice(-3)}`;
+}
 function checkStatus(response: any) {
   dLogger(new Date(), `HDFC CheckStatus response status ${response.status}`, ` `);
   if (response.status >= 200 && response.status < 300) {
     return response;
   } else {
-    return false;
+    return response;
+    console.log('error:', response.status);
   }
 }

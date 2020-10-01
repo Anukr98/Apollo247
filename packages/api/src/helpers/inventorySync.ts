@@ -35,7 +35,7 @@ export async function syncInventory(orderDatails: MedicineOrders, syncType: SYNC
     storeCode: orderDatails.shopId,
     pincode: medicineOrderAddress.zipcode,
     lat: medicineOrderAddress.latitude,
-    long: medicineOrderAddress.longitude,
+    lng: medicineOrderAddress.longitude,
     items: itemdetails,
   };
 

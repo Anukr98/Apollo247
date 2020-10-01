@@ -70,6 +70,8 @@ import { EditProfile } from '@aph/mobile-patients/src/components/Account/EditPro
 import { ManageProfile } from '@aph/mobile-patients/src/components/Account/ManageProfile';
 import { LinkUHID } from '@aph/mobile-patients/src/components/Account/LinkUHID';
 import { ReadMoreLinkUHID } from '@aph/mobile-patients/src/components/Account/ReadMoreLinkUHID';
+import { MyMembership } from '@aph/mobile-patients/src/components/HdfcSubscription/MyMembership';
+import { MembershipDetails } from '@aph/mobile-patients/src/components/HdfcSubscription/MembershipDetails';
 import { TestsByCategory } from '@aph/mobile-patients/src/components/Medicines/TestsByCategory';
 import { RenderPdf } from '@aph/mobile-patients/src/components/ui/RenderPdf';
 import { TestPayment } from '@aph/mobile-patients/src/components/Tests/TestPayment';
@@ -90,7 +92,10 @@ import PaymentStatusScreen from '@aph/mobile-patients/src/components/MyPayments/
 import { ConsultTypeScreen } from './ConsultRoom/ConsultTypeScreen';
 import { CommonWebView } from '@aph/mobile-patients/src/components/CommonWebView';
 import { RefundStatus } from '@aph/mobile-patients/src/components/RefundStatus';
-import {Maps} from '@aph/mobile-patients/src/components/ui/Maps'
+import { Maps } from '@aph/mobile-patients/src/components/ui/Maps';
+import { SymptomTracker } from '@aph/mobile-patients/src/components/SymptomTracker';
+import { SymptomSelection } from '@aph/mobile-patients/src/components/SymptomSelection';
+
 export enum AppRoutes {
   Login = 'Login',
   ConsultRoom = 'ConsultRoom',
@@ -152,6 +157,8 @@ export enum AppRoutes {
   ManageProfile = 'ManageProfile',
   LinkUHID = 'LinkUHID',
   ReadMoreLinkUHID = 'ReadMoreLinkUHID',
+  MyMembership = 'MyMembership',
+  MembershipDetails = 'MembershipDetails',
   YourOrdersTest = 'YourOrdersTest',
   TestOrderDetails = 'TestOrderDetails',
   ClinicSelection = 'ClinicSelection',
@@ -171,7 +178,9 @@ export enum AppRoutes {
   ConsultTypeScreen = 'ConsultTypeScreen',
   CommonWebView = 'CommonWebView',
   RefundStatus = 'RefundStatus',
-  Maps = 'Maps'
+  Maps = 'Maps',
+  SymptomTracker = 'SymptomTracker',
+  SymptomSelection = 'SymptomSelection',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -393,6 +402,12 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.ReadMoreLinkUHID]: {
     screen: ReadMoreLinkUHID,
   },
+  [AppRoutes.MyMembership]: {
+    screen: MyMembership,
+  },
+  [AppRoutes.MembershipDetails]: {
+    screen: MembershipDetails,
+  },
   [AppRoutes.YourOrdersTest]: {
     screen: YourOrdersTest,
   },
@@ -448,9 +463,15 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.RefundStatus]: {
     screen: RefundStatus,
   },
-  [AppRoutes.Maps]:{
-    screen : Maps
-  }
+  [AppRoutes.Maps]: {
+    screen: Maps,
+  },
+  [AppRoutes.SymptomTracker]: {
+    screen: SymptomTracker,
+  },
+  [AppRoutes.SymptomSelection]: {
+    screen: SymptomSelection,
+  },
 };
 
 const logTabEvents = (routing: any) => {

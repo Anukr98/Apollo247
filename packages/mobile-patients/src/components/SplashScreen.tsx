@@ -35,6 +35,7 @@ import {
   APPStateInActive,
   APPStateActive,
   postWebEngageEvent,
+  callPermissions,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -133,6 +134,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     DeviceEventEmitter.addListener('accept', (params) => {
       console.log('Accept Params', params);
       voipCallType.current = params.call_type;
+      callPermissions();
       getAppointmentDataAndNavigate(params.appointment_id, true);
     });
     DeviceEventEmitter.addListener('reject', (params) => {
@@ -332,6 +334,15 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
         case 'ChatRoom':
           if (data.length === 2) getAppointmentDataAndNavigate(linkId, false);
+          break;
+
+        case 'DoctorCall':
+          if (data.length === 2) {
+            const params = linkId.split('+');
+            voipCallType.current = params[1];
+            callPermissions();
+            getAppointmentDataAndNavigate(params[0], true);
+          }
           break;
 
         case 'Order':
@@ -681,6 +692,15 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           CaseSheet: id,
         });
         break;
+      case 'DoctorCall':
+        props.navigation.navigate(AppRoutes.ChatRoom, {
+          data: id,
+          callType: voipCallType.current ? voipCallType.current.toUpperCase() : '',
+          prescription: '',
+          isCall: true,
+          isVoipCall: false,
+        });
+        break;
 
       default:
         break;
@@ -705,28 +725,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   //   SplashScreenView.hide();
   // }, [props.navigation, signInError, signOut]);
 
-  const buildName = () => {
-    switch (apiRoutes.graphql()) {
-      case 'https://aph.dev.api.popcornapps.com//graphql':
-        return 'DEV';
-      case 'https://aph.staging.api.popcornapps.com//graphql':
-        return 'QA';
-      case 'https://stagingapi.apollo247.com//graphql':
-        return 'STAGING';
-      case 'https://aph.uat.api.popcornapps.com//graphql':
-        return 'UAT';
-      case 'https://aph.vapt.api.popcornapps.com//graphql':
-        return 'VAPT';
-      case 'https://api.apollo247.com//graphql':
-        return 'PROD';
-      case 'https://asapi.apollo247.com//graphql':
-        return 'PRF';
-      case 'https://devapi.apollo247.com//graphql':
-        return 'DEVReplica';
-      default:
-        return '';
-    }
-  };
   const {
     setLocationDetails,
     setNeedHelpToContactInMessage,

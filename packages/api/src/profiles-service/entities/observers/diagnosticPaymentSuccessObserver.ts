@@ -15,7 +15,6 @@ export class DiagnosticEntitySubscriber
       // const oldDiagnosticPayment: DiagnosticOrderPayments = DiagnosticOrderPayments.create(
       //   event.databaseEntity as DiagnosticOrderPayments
       // );
-
       // const currentDiagnosticPayment = DiagnosticOrderPayments.create(
       //   event.entity as DiagnosticOrderPayments
       // );
@@ -25,12 +24,15 @@ export class DiagnosticEntitySubscriber
       // ) {
       //   transactionSuccessTrigger({
       //     amount: `${currentDiagnosticPayment.amountPaid}`,
+      //     transactionType: TransactionType.DIAGNOSTICS,
       //     transactionType: TransactionType.CONSULT,
       //     transactionDate: currentDiagnosticPayment.paymentDateTime || new Date(),
       //     transactionId: currentDiagnosticPayment.txnId,
       //     sourceTransactionIdentifier: `${currentDiagnosticPayment.id}`,
       //     mobileNumber: currentDiagnosticPayment.diagnosticOrders.patient.mobileNumber,
       //     dob: currentDiagnosticPayment.diagnosticOrders.patient.dateOfBirth,
+      //     email: currentDiagnosticPayment.diagnosticOrders.patient.emailAddress,
+      //     partnerId: currentDiagnosticPayment.diagnosticOrders.patient.partnerId,
       //     email: currentDiagnosticPayment.diagnosticOrders.patient.mobileNumber,
       //     partnerId: currentDiagnosticPayment.diagnosticOrders.patient.mobileNumber,
       //   });

@@ -22,6 +22,7 @@ import {
   DOCTOR_CATEGORY,
   SearchObject,
   SPECIALTY_DETAIL_LISTING_PAGE_SIZE as PAGE_SIZE,
+  deepLinkUtil,
   isAlternateVersion,
 } from 'helpers/commonHelpers';
 import { useLocationDetails } from 'components/LocationProvider';
@@ -440,6 +441,10 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const [slugName, setSlugName] = useState<string>('');
   const [faqData, setFaqData] = useState<any>();
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    deepLinkUtil(`Speciality?${specialtyId}`);
+  }, [specialtyId]);
 
   useEffect(() => {
     if (!intialLoad) {

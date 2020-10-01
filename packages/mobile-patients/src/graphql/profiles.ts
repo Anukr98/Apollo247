@@ -65,6 +65,14 @@ export const UPDATE_PATIENT = gql`
   }
 `;
 
+export const INITIATE_CALL_FOR_PARTNER = gql`
+  query initiateCallForPartner($mobileNumber: String!, $benefitId: String!) {
+    initiateCallForPartner(mobileNumber: $mobileNumber, benefitId: $benefitId) {
+      success
+    }
+  }
+`;
+
 // export const GET_PATIENTS = gql`
 //   query getPatients {
 //     getPatients {
@@ -108,6 +116,7 @@ export const ADD_NEW_PROFILE = gql`
         lastName
         emailAddress
         gender
+        dateOfBirth
       }
     }
   }
@@ -1465,9 +1474,19 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
 `;
 
 export const GET_DIAGNOSTICS_HC_CHARGES = gql`
-  query getDiagnosticsHCCharges($itemIDs: [Int]!, $totalCharges: Int!,  $slotID: String!, $pincode: Int!) {
-    getDiagnosticsHCCharges(itemIDs: $itemIDs, totalCharges: $totalCharges, slotID: $slotID, pincode: $pincode) {
-        charges
+  query getDiagnosticsHCCharges(
+    $itemIDs: [Int]!
+    $totalCharges: Int!
+    $slotID: String!
+    $pincode: Int!
+  ) {
+    getDiagnosticsHCCharges(
+      itemIDs: $itemIDs
+      totalCharges: $totalCharges
+      slotID: $slotID
+      pincode: $pincode
+    ) {
+      charges
     }
   }
 `;
@@ -2426,6 +2445,7 @@ export const ADD_TO_CONSULT_QUEUE = gql`
       }
       totalJuniorDoctors
       isJdAllowed
+      isJdAssigned
     }
   }
 `;
@@ -2660,6 +2680,7 @@ export const AUTOMATED_QUESTIONS = gql`
       }
       totalJuniorDoctors
       isJdAllowed
+      isJdAssigned
     }
   }
 `;
@@ -2741,6 +2762,7 @@ export const GET_PATIENTS_MOBILE = gql`
         isUhidPrimary
         primaryUhid
         primaryPatientId
+        partnerId
       }
     }
   }
@@ -3008,6 +3030,73 @@ export const SAVE_VOIP_DEVICE_TOKEN = gql`
       response
       patientId
       voipToken
+    }
+  }
+`;
+
+export const GET_ALL_USER_SUSBSCRIPTIONS_WITH_PLAN_BENEFITS = gql`
+  query GetAllUserSubscriptionsWithPlanBenefits($mobile_number: String!) {
+    GetAllUserSubscriptionsWithPlanBenefits(mobile_number: $mobile_number) {
+      code
+      success
+      message
+      response
+    }
+  }
+`;
+
+export const IDENTIFY_HDFC_CUSTOMER = gql`
+  query identifyHdfcCustomer($mobileNumber: String!, $DOB: Date!) {
+    identifyHdfcCustomer(mobileNumber: $mobileNumber, DOB: $DOB) {
+      status
+      token
+    }
+  }
+`;
+
+export const VALIDATE_HDFC_OTP = gql`
+  query validateHdfcOTP($otp: String!, $token: String!, $dateOfBirth: Date!) {
+    validateHdfcOTP(otp: $otp, token: $token, dateOfBirth: $dateOfBirth) {
+      status
+      defaultPlan
+    }
+  }
+`;
+
+export const CREATE_USER_SUBSCRIPTION = gql`
+  mutation CreateUserSubscription($userSubscription: CreateUserSubscriptionInput!) {
+    CreateUserSubscription(UserSubscription: $userSubscription) {
+      code
+      success
+      message
+      response {
+        mobile_number
+        status
+        start_date
+        end_date
+        group_plan {
+          name
+          plan_id
+        }
+      }
+    }
+  }
+`;
+
+export const GET_ALL_GROUP_BANNERS_OF_USER = gql`
+  query GetAllGroupBannersOfUser($mobile_number: String!) {
+    GetAllGroupBannersOfUser(mobile_number: $mobile_number) {
+      code
+      success
+      message
+      response {
+        _id
+        is_active
+        banner
+        banner_template_info
+        cta_action
+        meta
+      }
     }
   }
 `;

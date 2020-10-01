@@ -289,13 +289,10 @@ const SaveMedicineOrderPaymentMq: Resolver<
       statusMessage: statusMsg,
     };
 
-   
-
     if (
       currentStatus == MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS ||
       currentStatus == MEDICINE_ORDER_STATUS.ORDER_INITIATED
     ) {
-
       transactionSuccessTrigger({
         amount: `${medicinePaymentMqInput.amountPaid}`,
         transactionType: TransactionType.PHARMA,

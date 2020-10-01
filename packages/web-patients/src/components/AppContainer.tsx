@@ -76,6 +76,7 @@ const AddressBook = loadable(() => import('components/MyAccount/AddressBook'));
 const MyAccount = loadable(() => import('components/MyAccount/MyAccount'));
 const MyPayments = loadable(() => import('components/MyAccount/MyPayments'));
 const Sitemap = loadable(() => import('components/Sitemap'));
+const KnowledgeArticleLanding = loadable(() => import('components/KnowledgeArticleLanding'));
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -104,8 +105,6 @@ const useStyles = makeStyles((theme: Theme) => {
 const App: React.FC = () => {
   const classes = useStyles({});
   const { signInError, isSignedIn } = useAuth();
-  const currentPath = window.location.pathname;
-  const pageName = window.location.pathname;
 
   useEffect(() => {
     if (signInError) console.log('Error signing in :(');
@@ -122,6 +121,7 @@ const App: React.FC = () => {
         <Route exact path={clientRoutes.welcome()} component={Welcome} />
         <Route exact path={clientRoutes.aboutUs()} component={AboutUs} />
         <Route exact path={clientRoutes.covidLanding()} component={CovidLanding} />
+        <Route exact path={clientRoutes.articleDetails()} component={CovidArticleDetails} />
         <Route exact path={clientRoutes.kavachLanding()} component={KavachLanding} />
         <Route exact path={clientRoutes.covidDetails()} component={CovidArticleDetails} />
         <Route exact path={clientRoutes.patients()} component={PatientsList} />
@@ -225,6 +225,11 @@ const App: React.FC = () => {
         <Route exact path={clientRoutes.membershipPlanDetail()} component={MembershipPlanDetail} />
         <Route exact path={clientRoutes.sitemap(':sitemap')} component={Sitemap} />
         <Route exact path={clientRoutes.childSitemap(':sitemap', ':pageNo')} component={Sitemap} />
+        <Route
+          exact
+          path={clientRoutes.knowledgeBaseLanding()}
+          component={KnowledgeArticleLanding}
+        />
       </Switch>
     </div>
   );

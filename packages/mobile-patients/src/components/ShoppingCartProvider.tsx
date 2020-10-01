@@ -29,6 +29,7 @@ export interface ShoppingCartItem {
   unserviceable?: boolean;
   isMedicine: boolean;
   productType?: 'FMCG' | 'Pharma' | 'PL';
+  isFreeCouponProduct?: boolean;
 }
 
 export interface CouponProducts {
@@ -40,6 +41,7 @@ export interface CouponProducts {
   sku: string;
   specialPrice: number;
   subCategoryId: any;
+  couponFree: boolean;
 }
 
 export interface PhysicalPrescription {
@@ -82,6 +84,7 @@ export interface CartProduct {
   quantity: number;
   discountAmt: number;
   onMrp: boolean;
+  couponFree?: boolean;
 }
 export type EPrescriptionDisableOption = 'CAMERA_AND_GALLERY' | 'E-PRESCRIPTION' | 'NONE';
 
@@ -104,6 +107,8 @@ export interface ShoppingCartContextProps {
   packagingCharges: number;
   grandTotal: number;
   uploadPrescriptionRequired: boolean;
+  isFreeDelivery: boolean;
+  setIsFreeDelivery: ((value: boolean) => void) | null;
   showPrescriptionAtStore: boolean;
   setShowPrescriptionAtStore: ((value: boolean) => void) | null;
   stores: Store[];
@@ -149,6 +154,9 @@ export interface ShoppingCartContextProps {
 
   deliveryType: MEDICINE_DELIVERY_TYPE | null;
   clearCartInfo: (() => void) | null;
+
+  hdfcPlanName: string;
+  setHdfcPlanName: ((id: string) => void) | null;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -187,6 +195,9 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   storesInventory: [],
   setStoresInventory: null,
 
+  isFreeDelivery: false,
+  setIsFreeDelivery: null,
+
   showPrescriptionAtStore: false,
   setShowPrescriptionAtStore: null,
   pinCode: '',
@@ -207,6 +218,9 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setStoreId: null,
   deliveryType: null,
   clearCartInfo: null,
+
+  hdfcPlanName: '',
+  setHdfcPlanName: null,
 });
 
 const AsyncStorageKeys = {
@@ -243,11 +257,17 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [storeId, _setStoreId] = useState<ShoppingCartContextProps['storeId']>('');
   const [coupon, setCoupon] = useState<ShoppingCartContextProps['coupon']>(null);
   const [deliveryType, setDeliveryType] = useState<ShoppingCartContextProps['deliveryType']>(null);
+  const [hdfcPlanName, _setHdfcPlanName] = useState<ShoppingCartContextProps['hdfcPlanName']>('');
+  const [isFreeDelivery, setIsFreeDelivery] = useState<ShoppingCartContextProps['isFreeDelivery']>(
+    false
+  );
   const [showPrescriptionAtStore, setShowPrescriptionAtStore] = useState<
     ShoppingCartContextProps['showPrescriptionAtStore']
   >(false);
 
-  const [couponProducts, _setCouponProducts] = useState<ShoppingCartContextProps['couponProducts']>([]);
+  const [couponProducts, _setCouponProducts] = useState<ShoppingCartContextProps['couponProducts']>(
+    []
+  );
 
   const [physicalPrescriptions, _setPhysicalPrescriptions] = useState<
     ShoppingCartContextProps['physicalPrescriptions']
@@ -365,7 +385,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
   );
 
   const deliveryCharges =
-    !deliveryType || deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+    !deliveryType || deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP || isFreeDelivery
       ? 0
       : deliveryType == MEDICINE_DELIVERY_TYPE.HOME_DELIVERY &&
         cartTotal > 0 &&
@@ -399,6 +419,10 @@ export const ShoppingCartProvider: React.FC = (props) => {
     setDeliveryType(id ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY : null);
     _setDeliveryAddressId(id);
     _setStoreId('');
+  };
+
+  const setHdfcPlanName = (plan: ShoppingCartContextProps['hdfcPlanName']) => {
+    _setHdfcPlanName(plan);
   };
 
   const setNewAddressAdded = (id: ShoppingCartContextProps['newAddressAdded']) => {
@@ -443,6 +467,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     setAddresses([]);
     setCoupon(null);
     setCouponProducts([]);
+    setHdfcPlanName('');
   };
 
   useEffect(() => {
@@ -506,7 +531,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
         g(coupon, 'discount') > deductProductDiscount(coupon.products)
       ) {
         setCouponDiscount(g(coupon, 'discount') - deductProductDiscount(coupon.products) || 0);
-        setProductDiscount(getProductDiscount(coupon.products) || 0);
+        setProductDiscount(productDiscount);
         setCartItems(
           cartItems.map((item) => ({
             ...item,
@@ -515,7 +540,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
         );
       } else {
         setCouponDiscount(0);
-        setProductDiscount(getProductDiscount(coupon.products) || 0);
+        setProductDiscount(productDiscount);
         setCartItems(
           cartItems.map((item) => ({
             ...item,
@@ -534,8 +559,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
     let discount = 0;
     products &&
       products.forEach((item) => {
-        if (item.mrp != item.specialPrice && item.onMrp) {
-          discount = discount + (item.mrp - item.specialPrice) * item.quantity;
+        if (item.onMrp) {
+          discount = discount + (item.mrp - (item.specialPrice || item.mrp)) * item.quantity;
         }
       });
     return discount;
@@ -545,8 +570,12 @@ export const ShoppingCartProvider: React.FC = (props) => {
     let discount = 0;
     products &&
       products.forEach((item) => {
-        if (item.mrp != item.specialPrice) {
-          discount = discount + (item.mrp - item.specialPrice) * item.quantity;
+        let quantity = item.quantity;
+        if (item.couponFree) {
+          quantity = 1; // one free product
+          discount = discount + item.mrp * quantity;
+        } else if (item.mrp != item.specialPrice) {
+          discount = discount + (item.mrp - item.specialPrice) * quantity;
         }
       });
     return discount;
@@ -613,6 +642,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setStoresInventory,
         storeId,
         setStoreId,
+        isFreeDelivery,
+        setIsFreeDelivery,
         showPrescriptionAtStore,
         setShowPrescriptionAtStore,
 
@@ -624,6 +655,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
 
         deliveryType,
         clearCartInfo,
+
+        hdfcPlanName,
+        setHdfcPlanName,
       }}
     >
       {props.children}
