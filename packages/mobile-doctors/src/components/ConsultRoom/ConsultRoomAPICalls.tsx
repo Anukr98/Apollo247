@@ -30,7 +30,12 @@ export const getFavoutires = (
   ) => void,
   setFavTest: (
     data: (GetDoctorFavouriteTestList_getDoctorFavouriteTestList_testList | null)[] | null
-  ) => void
+  ) => void,
+  postWebEngageError: (
+    apiname: string,
+    errorData: string,
+    screen?: 'ConsultRoom' | 'PrescriptionPreview'
+  ) => Promise<void>
 ) => {
   client
     .query<GetDoctorFavouriteAdviceList>({ query: GET_DOCTOR_FAVOURITE_ADVICE_LIST })
@@ -40,6 +45,9 @@ export const getFavoutires = (
           .filter((item) => item && item.instruction)
           .sort((a, b) => (a && b ? a.instruction.localeCompare(b.instruction) : -1))
       );
+    })
+    .catch((error) => {
+      postWebEngageError('getDoctorFavouriteAdviceList', JSON.stringify(error), 'ConsultRoom');
     });
   client
     .query<GetDoctorFavouriteMedicineList>({ query: GET_DOCTOR_FAVOURITE_MEDICINE_LIST })
@@ -51,6 +59,9 @@ export const getFavoutires = (
             a && b ? (a.medicineName || '').localeCompare(b.medicineName || '') : -1
           )
       );
+    })
+    .catch((error) => {
+      postWebEngageError('getDoctorFavouriteMedicineList', JSON.stringify(error), 'ConsultRoom');
     });
   client
     .query<GetDoctorFavouriteTestList>({ query: GET_DOCTOR_FAVOURITE_TEST_LIST })
@@ -60,5 +71,8 @@ export const getFavoutires = (
           .filter((item) => item && item.itemname)
           .sort((a, b) => (a && b ? a.itemname.localeCompare(b.itemname) : -1))
       );
+    })
+    .catch((error) => {
+      postWebEngageError('getDoctorFavouriteTestList', JSON.stringify(error), 'ConsultRoom');
     });
 };

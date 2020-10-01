@@ -108,8 +108,8 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
               width: width,
               alignItems: 'center',
               backgroundColor: 'white',
-              resizeMode: 'contain',
             }}
+            resizeMode="contain"
           />
         )}
       </View>
