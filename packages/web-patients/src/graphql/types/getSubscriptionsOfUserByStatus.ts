@@ -17,6 +17,7 @@ export interface getSubscriptionsOfUserByStatus_GetSubscriptionsOfUserByStatus_r
 export interface getSubscriptionsOfUserByStatus_GetSubscriptionsOfUserByStatus_response_group_plan {
   __typename: "GroupPlanType";
   group: getSubscriptionsOfUserByStatus_GetSubscriptionsOfUserByStatus_response_group_plan_group;
+  min_transaction_value: number;
   _id: string | null;
   plan_id: string;
   name: string;

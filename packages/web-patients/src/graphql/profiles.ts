@@ -882,6 +882,7 @@ export const GET_SUBSCRIPTIONS_OF_USER_BY_STATUS = gql`
           plan_id
           name
           status
+          min_transaction_value
         }
       }
     }

@@ -90,6 +90,11 @@ export const HdfcHomePage: React.FC<HdfcHomePageProps> = (props) => {
   const history = useHistory();
 
   const userSubscriptions = JSON.parse(localStorage.getItem('userSubscriptions'));
+  let minTrans =
+    userSubscriptions &&
+    userSubscriptions[0] &&
+    userSubscriptions[0].group_plan &&
+    userSubscriptions[0].group_plan.min_transaction_value;
 
   return (
     <div className={`${classes.hdcContainer} ${showJoinClub ? classes.overflowHidden : ''} `}>
@@ -105,10 +110,8 @@ export const HdfcHomePage: React.FC<HdfcHomePageProps> = (props) => {
               You are missing out on a world of exclusive benefits
             </Typography>
             <Typography>
-              Just book a Doctor Consultation or order Pharmacy products to join the club!
-            </Typography>
-            <Typography style={{ color: 'red', fontSize: 12, marginTop: 5 }}>
-              *Check your Membership Page for minimum transaction value
+              Just book a Doctor Consultation or order Pharmacy products worth Rs {minTrans} or more
+              to join the club!
             </Typography>
             <AphButton
               onClick={() => {
