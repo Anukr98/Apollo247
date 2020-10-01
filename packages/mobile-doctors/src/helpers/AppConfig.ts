@@ -49,8 +49,8 @@ const ConfigurationProd = {
   PRO_TOKBOX_KEY: '46422952', // PRODUCTION
   PRO_PUBNUB_PUBLISH: 'pub-c-e275fde3-09e1-44dd-bc32-5c3d04c3b2ef', // PRODUCTION
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-517dafbc-d955-11e9-aa3a-6edd521294c5', // PRODUCTION
-  iOS_Version: '1.05',
-  Android_Version: '1.05',
+  iOS_Version: '4.2.0',
+  Android_Version: '4.2.0',
 };
 
 const Configuration =
