@@ -159,7 +159,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   );
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
-  const { locationDetails } = useAppCommonData();
+  const { locationDetails, hdfcUserSubscriptions } = useAppCommonData();
   const { getPatientApiCall } = useAuth();
 
   const renderErrorPopup = (desc: string) =>
@@ -849,6 +849,11 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   };
 
   const validateCoupon = (coupon: string, fireEvent?: boolean) => {
+    let packageId = '';
+    if (!!g(hdfcUserSubscriptions, '_id') && !!g(hdfcUserSubscriptions, 'isActive')) {
+      packageId =
+        g(hdfcUserSubscriptions, 'group', 'name') + ':' + g(hdfcUserSubscriptions, 'planId');
+    }
     const timeSlot =
       tabs[0].title === selectedTab &&
       isConsultOnline &&
@@ -876,6 +881,8 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           rescheduling: false,
         },
       ],
+      packageId: packageId,
+      email: g(currentPatient, 'emailAddress')
     };
 
     return new Promise((res, rej) => {
