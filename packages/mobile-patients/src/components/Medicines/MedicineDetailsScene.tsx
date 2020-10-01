@@ -359,19 +359,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         const productDetails = g(data, 'productdp', '0' as any);
         if (productDetails) {
           setmedicineDetails(productDetails || {});
-          const showOutOfStockView = productDetails?.sell_online
-            ? (!showDeliverySpinner && !deliveryTime) || deliveryError || isOutOfStock
-            : false;
-          if (typeof movedFrom !== 'undefined' && typeof isOutOfStock !== 'undefined') {
-            // webengage event when page is opened from different sources
-            const eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED] = {
-              source: movedFrom,
-              ProductId: sku,
-              ProductName: medicineName,
-              'Stock availability': showOutOfStockView ? 'No' : 'Yes',
-            };
-            postWebEngageEvent(WebEngageEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
-          }
           trackTagalysViewEvent(productDetails);
           if (_deliveryError) {
             setTimeout(() => {
@@ -418,6 +405,19 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       }
     } catch (error) {}
   }, [medicineDetails, tatEventData]);
+
+  const productViewWebengage = (stockAvailability: boolean) => {
+    if (typeof movedFrom !== 'undefined' && typeof isOutOfStock !== 'undefined') {
+      // webengage event when page is opened from different sources
+      const eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED] = {
+        source: movedFrom,
+        ProductId: sku,
+        ProductName: medicineName,
+        'Stock availability': stockAvailability ? 'Yes' : 'No',
+      };
+      postWebEngageEvent(WebEngageEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
+    }
+  };
 
   const trackTagalysViewEvent = (details: MedicineProductDetails) => {
     try {
@@ -482,6 +482,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   };
 
   const fetchDeliveryTime = async (checkButtonClicked?: boolean) => {
+    let stockAvailability = true;
     if (!pincode) return;
     const unServiceableMsg = 'Sorry, not serviceable in your area.';
     const pincodeServiceableItemOutOfStockMsg = 'Sorry, this item is out of stock in your area.';
@@ -505,6 +506,10 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         setdeliveryTime('');
         setdeliveryError(unServiceableMsg);
         setshowDeliverySpinner(false);
+        // call webengage event function for stock availability
+        if (!checkButtonClicked) {
+          productViewWebengage(false);
+        }
         return;
       }
 
@@ -529,6 +534,10 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         setdeliveryTime('');
         setdeliveryError(pincodeServiceableItemOutOfStockMsg);
         setshowDeliverySpinner(false);
+        // call webengage event function for stock availability
+        if (!checkButtonClicked) {
+          productViewWebengage(false);
+        }
         return;
       }
 
@@ -572,7 +581,14 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         } else {
           setdeliveryError(pincodeServiceableItemOutOfStockMsg);
           setdeliveryTime('');
+          stockAvailability = false;
         }
+
+        // call webengage event function for stock availability
+        if (!checkButtonClicked) {
+          productViewWebengage(stockAvailability);
+        }
+
           try {
             const response = res.data.response;
             const item = response.items[0];
@@ -611,6 +627,10 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       setdeliveryError(pincodeServiceableItemOutOfStockMsg);
       setdeliveryTime('');
       setshowDeliverySpinner(false)
+      // call webengage event function for stock availability
+      if (!checkButtonClicked) {
+        productViewWebengage(false);
+      }
     }
   };
 
