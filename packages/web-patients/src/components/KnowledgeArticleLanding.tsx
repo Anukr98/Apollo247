@@ -236,21 +236,20 @@ const KnowledgeArticleLanding: React.FC = (props: any) => {
   const isDesktopOnly = useMediaQuery('(min-width:768px)');
   const headingArr = [
     {
-      heading: 'How can I stay safe?',
-      subheading:
-        'Articles and videos on precautions and protective measures to avoid Coronavirus.',
+      heading: 'Diabetes',
+      subheading: 'Articles about prevention and managing Diabetes.',
       category: 'diabetes-management',
       defaultExpanded: true,
     },
     {
-      heading: 'What to do if I have symptoms',
-      subheading: 'Know more about symptoms of Coronavirus and what to do if infected.',
+      heading: 'Heart health',
+      subheading: 'Everything you need to know about heart disease, prevention and treatment.',
       category: 'heart-health',
       defaultExpanded: false,
     },
     {
-      heading: 'How are we getting ahead?',
-      subheading: 'Learn about the efforts around the world to win over Coronavirus.',
+      heading: 'Respiratory conditions',
+      subheading: 'Know more about Respiratory Illnesses and Diseases and how to prevent them.',
       category: 'respiratory-conditions',
       defaultExpanded: false,
     },
@@ -298,29 +297,27 @@ const KnowledgeArticleLanding: React.FC = (props: any) => {
     }
   }, []);
   useEffect(() => {
-    fetchUtil('https://uatcms.apollo247.com/api/otherarticlelist', 'GET', {}, '', true).then(
-      (res: any) => {
-        const body = res.data;
-        const sortedStaySafeData =
-          !_isEmpty(body['diabetes-management']) && body['diabetes-management'];
-        const sortedCovidSymptomsData = !_isEmpty(body['heart-health']) && body['heart-health'];
-        const sortedGoingAheadData =
-          !_isEmpty(body['respiratory-conditions']) && body['respiratory-conditions'];
-        let covidObj: CovidContentInterface = {};
-        covidObj['diabetes-management'] = sortedStaySafeData;
-        covidObj['heart-health'] = sortedCovidSymptomsData;
-        covidObj['respiratory-conditions'] = sortedGoingAheadData;
-        covidObj['total-term'] = body['totalterm'];
-        setCovidContent(covidObj);
-      }
-    );
+    fetchUtil(process.env.BLOG_ARTICLE_LIST_URL, 'GET', {}, '', true).then((res: any) => {
+      const body = res.data;
+      const sortedStaySafeData =
+        !_isEmpty(body['diabetes-management']) && body['diabetes-management'];
+      const sortedCovidSymptomsData = !_isEmpty(body['heart-health']) && body['heart-health'];
+      const sortedGoingAheadData =
+        !_isEmpty(body['respiratory-conditions']) && body['respiratory-conditions'];
+      let covidObj: CovidContentInterface = {};
+      covidObj['diabetes-management'] = sortedStaySafeData;
+      covidObj['heart-health'] = sortedCovidSymptomsData;
+      covidObj['respiratory-conditions'] = sortedGoingAheadData;
+      covidObj['total-term'] = body['totalterm'];
+      setCovidContent(covidObj);
+    });
   }, []);
 
   useEffect(() => {
     if (didMount.current && categoryToFetch !== '') {
       const currentOffset = covidContent[categoryToFetch].length;
       fetchUtil(
-        `https://uatcms.apollo247.com/api/otherarticlelist?catid=${categoryToFetch}&limit=3&offset=${currentOffset}`,
+        `${process.env.BLOG_ARTICLE_LIST_URL}?catid=${categoryToFetch}&limit=3&offset=${currentOffset}`,
         'GET',
         {},
         '',
@@ -350,7 +347,7 @@ const KnowledgeArticleLanding: React.FC = (props: any) => {
       </div>
       <div className={classes.container}>
         <div className={classes.pageContainer} ref={scrollToRef}>
-          <Banner title={'Knowledge Base'} subtitle={'lorem ipsom'} isWebView={isWebView} />
+          <Banner title={'Healthcare Articles and Resources'} subtitle={''} isWebView={isWebView} />
           <div className={classes.sectionGroup}>
             <div className={classes.panelsGroup}>
               {headingArr.map((parentCat) => (
@@ -384,7 +381,7 @@ const KnowledgeArticleLanding: React.FC = (props: any) => {
                             isWebView={isWebView}
                             handleInfographicClick={(data) => handleInfographicClick(data)}
                             content={covidContent[parentCat.category]}
-                            pageType="knowledge-base"
+                            pageType="blog"
                           />
                         )}
                       {moreContentLoading ? (
