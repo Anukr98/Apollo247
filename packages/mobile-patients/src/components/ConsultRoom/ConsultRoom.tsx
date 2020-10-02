@@ -2289,6 +2289,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         props.navigation.navigate(AppRoutes.DoctorSearch);
       } else if (action == hdfc_values.DIAGNOSTICS_LANDING) {
         props.navigation.navigate('TESTS');
+      } else if (action == hdfc_values.MEMBERSHIP_DETAIL) {
+        props.navigation.navigate(AppRoutes.MembershipDetails, {
+          membershipType: g(hdfcUserSubscriptions, 'name'),
+          isActive: g(hdfcUserSubscriptions, 'isActive'),
+        });
       } else if ((action = hdfc_values.DIETECIAN_LANDING)) {
         props.navigation.navigate('DoctorSearchListing', {
           specialityId: hdfc_values.DIETICS_SPECIALITY_ID,
