@@ -363,7 +363,6 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         props.navigation.navigate('TESTS');
       } else if ((action = Hdfc_values.DIETECIAN_LANDING)) {
         props.navigation.navigate('DoctorSearchListing', {
-          specialityId: Hdfc_values.DIETICS_SPECIALITY_ID,
           specialityName: Hdfc_values.DIETICS_SPECIALITY_NAME,
         });
       } else {
@@ -626,6 +625,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const renderHowToAvailContent = () => {
     const canUpgradeMembership = upgradePlanName;
     const smallCaseName = canUpgradeMembership ? canUpgradeMembership.toLowerCase() : '';
+    const displayPlanName = !!smallCaseName ? smallCaseName.charAt(0).toUpperCase() + smallCaseName.slice(1) : ''; // capitalize first character
     return (
       <View
         style={{
@@ -633,7 +633,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         }}
       >
         <Text style={theme.viewStyles.text('SB', 13, '#007C9D', 1, 20, 0.35)}>
-          {`Complete transactions worth Rs.${upgradeTransactionValue} or more on the Apollo 24|7 app to unlock ${smallCaseName} membership​`}
+          {`Complete transactions worth Rs.${upgradeTransactionValue} or more on the Apollo 24|7 app to unlock ${displayPlanName} membership​`}
         </Text>
       </View>
     );
@@ -774,6 +774,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         <AvailNowPopup
           onClose={() => setShowAvailPopup(false)}
           transactionAmount={upgradeTransactionValue}
+          planName={upgradePlanName}
           navigation={props.navigation}
         />
       )}
