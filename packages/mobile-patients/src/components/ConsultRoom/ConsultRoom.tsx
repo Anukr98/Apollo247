@@ -298,7 +298,8 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     padding: 0,
     height: 140,
-    alignSelf: 'auto',
+    width: 330,
+    alignSelf: 'center',
   },
 });
 
@@ -2296,7 +2297,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         });
       } else if ((action = hdfc_values.DIETECIAN_LANDING)) {
         props.navigation.navigate('DoctorSearchListing', {
-          specialityId: hdfc_values.DIETICS_SPECIALITY_ID,
           specialityName: hdfc_values.DIETICS_SPECIALITY_NAME,
         });
       } else {

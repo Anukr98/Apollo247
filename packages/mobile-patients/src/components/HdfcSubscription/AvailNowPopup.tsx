@@ -61,11 +61,15 @@ const styles = StyleSheet.create({
 });
 
 export interface AvailNowPopupProps extends NavigationScreenProps {
+  planName: string;
   transactionAmount: number;
   onClose: () => void;
 }
 
 export const AvailNowPopup: React.FC<AvailNowPopupProps> = (props) => {
+  const plan = props!.planName || '';
+  const planName = !!plan ? plan.toLowerCase() : '';
+  const displayPlanName = !!planName ? planName.charAt(0).toUpperCase() + planName.slice(1) : ''; // capitalize first character
   const renderHowToAvailContent = () => {
     return (
       <View
@@ -77,7 +81,7 @@ export const AvailNowPopup: React.FC<AvailNowPopupProps> = (props) => {
           <Text style={theme.viewStyles.text('SB', 13, '#007C9D', 1, 20, 0.35)}>
             {`Complete transactions worth Rs.${
               props!.transactionAmount
-            } or more on the Apollo 24|7 app to unlock platinum+ plan membership​`}
+            } or more on the Apollo 24|7 app to unlock ${displayPlanName} membership​`}
           </Text>
         </View>
       </View>
