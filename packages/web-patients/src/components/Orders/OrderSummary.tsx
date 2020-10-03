@@ -675,7 +675,7 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
           {orderPayment && (
             <div>
               <p>Payment Method</p>
-              {orderPayment.healthCreditsRedeemed != 0 || orderPayment.refundAmount != 0 ? (
+              {orderPayment.healthCreditsRedeemed != 0 || orderPayment.refundAmount != null ? (
                 <div>
                   <div className={`${classes.priceRow} ${classes.lastRow} ${classes.alignStart}`}>
                     <label>
@@ -685,7 +685,7 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
                       </span>
                       <span className={classes.infoText}>(Will be Redeemed after delivery)</span>
                     </label>
-                    <span>
+                    <span>Rs. 
                       {orderPayment.healthCreditsRedeemed != 0
                         ? (orderPayment.healthCreditsRedeemed || 0).toFixed(2)
                         : (orderPayment.healthCreditsRedemptionRequest.RedeemedPoints || 0).toFixed(
