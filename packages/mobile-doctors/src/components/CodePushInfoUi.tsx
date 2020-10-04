@@ -53,11 +53,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   text: {
-    ...theme.viewStyles.text('M', 14, '#02475b'),
+    ...theme.viewStyles.text('M', 13, '#02475b'),
     width: '75%',
   },
   rightTitleStyle: {
-    ...theme.viewStyles.text('M', 14, '#fcb716'),
+    ...theme.viewStyles.text('M', 13, '#fcb716'),
   },
   rightTitleView: {
     height: 30,

@@ -35,7 +35,7 @@ const ConfigurationDev = {
   ...commonConfigs,
   LOG_ENVIRONMENT: 'debug',
   ENABLE_WEBENGAGE: true,
-  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: '',
+  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: 'P3v8iM-UyGXqiCAJQRGBafA6fAgmtsqe5GWVZ',
   CODE_PUSH_DEPLOYMENT_KEY_IOS: 'rIc46hTlgxeNY0zcnghZGdE7JBHrvNNIliv-7',
 };
 
@@ -43,7 +43,7 @@ const ConfigurationDev = {
 const ConfigurationQA = {
   ...commonConfigs,
   LOG_ENVIRONMENT: 'release',
-  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: '',
+  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: '92aMp2ig2nAE_hhikkVjPl5pRodcAyuOSFIhC',
   CODE_PUSH_DEPLOYMENT_KEY_IOS: '9sv6RjotCjBypmJlvVqhZ45lmbFa2MmCmFl6K',
 };
 
@@ -55,7 +55,7 @@ const ConfigurationProd = {
   PRO_TOKBOX_KEY: '46422952', // PRODUCTION
   PRO_PUBNUB_PUBLISH: 'pub-c-e275fde3-09e1-44dd-bc32-5c3d04c3b2ef', // PRODUCTION
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-517dafbc-d955-11e9-aa3a-6edd521294c5', // PRODUCTION
-  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: '',
+  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: 'KxH39pCo6oa0qHrp0n3zf3Kyemn9QnoIzm4T_',
   CODE_PUSH_DEPLOYMENT_KEY_IOS: 'K7emdXkQrTCpo_HDPs5NZCE0A9f1mGErBJyaR',
 };
 
