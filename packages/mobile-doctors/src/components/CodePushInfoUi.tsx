@@ -1,4 +1,4 @@
-import { View, Text } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { CodePushInfo } from '@aph/mobile-doctors/src/components/AppContainer';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
@@ -19,27 +19,48 @@ export const CodePushInfoUi: React.FC<CodePushInfoUiProps> = ({
   const isUiToBeShown =
     syncStatus === codePush.SyncStatus.DOWNLOADING_PACKAGE ||
     syncStatus === codePush.SyncStatus.UPDATE_INSTALLED;
-
+  console.log('codePushInfo', syncStatus);
+  const title =
+    syncStatus === codePush.SyncStatus.DOWNLOADING_PACKAGE
+      ? `Downloading updates... ${downloadProgress ? getDownloadProgress(downloadProgress) : ''}`
+      : syncStatus === codePush.SyncStatus.UPDATE_INSTALLED
+      ? "We've finished downloading an update"
+      : '';
   return isUiToBeShown ? (
-    <View>
-      <Text>Downloading updates</Text>
+    <View style={styles.container}>
+      <Text style={styles.text}>{title}</Text>
+      <TouchableOpacity
+        style={styles.rightTitleView}
+        onPress={() => {
+          codePush.restartApp();
+        }}
+      >
+        <Text style={styles.rightTitleStyle}>
+          {syncStatus === codePush.SyncStatus.UPDATE_INSTALLED ? 'RESTART' : ''}
+        </Text>
+      </TouchableOpacity>
     </View>
-  ) : // <ListItem
-  //   containerStyle={{ backgroundColor: '#f7f8f5' }}
-  //   titleStyle={theme.viewStyles.text('M', 14, '#02475b')}
-  //   rightContentContainerStyle={{ flexGrow: 0.35 }}
-  //   title={
-  //     syncStatus === codePush.SyncStatus.DOWNLOADING_PACKAGE
-  //       ? `Downloading updates... ${
-  //           downloadProgress ? getDownloadProgress(downloadProgress) : ''
-  //         }`
-  //       : syncStatus === codePush.SyncStatus.UPDATE_INSTALLED
-  //       ? "We've finished downloading an update"
-  //       : ''
-  //   }
-  //   rightTitleStyle={theme.viewStyles.text('M', 14, '#fcb716')}
-  //   rightTitleProps={{ onPress: () => codePush.restartApp() }}
-  //   rightTitle={syncStatus === codePush.SyncStatus.UPDATE_INSTALLED ? 'RESTART' : ''}
-  // />
-  null;
+  ) : null;
 };
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: '#f7f8f5',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  text: {
+    ...theme.viewStyles.text('M', 14, '#02475b'),
+    width: '75%',
+  },
+  rightTitleStyle: {
+    ...theme.viewStyles.text('M', 14, '#fcb716'),
+  },
+  rightTitleView: {
+    height: 30,
+    justifyContent: 'center',
+  },
+});

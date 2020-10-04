@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { NavigatorContainer } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import { AuthProvider } from '@aph/mobile-doctors/src/components/AuthProvider';
 import { UIElementsProvider } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
@@ -82,36 +82,40 @@ setNativeExceptionHandler((exceptionString) => {
 interface AppContainerState {
   codePushInfo: CodePushInfo;
 }
+interface AppContainerProps {}
 
-const AppContainer: React.FC<AppContainerState> = () => {
-  console.disableYellowBox = true;
+class AppContainer extends React.Component<AppContainerProps, AppContainerState> {
+  constructor(props: AppContainerState) {
+    super(props);
+    this.state = { codePushInfo: {} };
+  }
 
-  const [codePushInfo, setCodePushInfo] = useState({});
+  codePushStatusDidChange(status: codePush.SyncStatus) {
+    this.setState({ codePushInfo: { ...this.state.codePushInfo, syncStatus: status } });
+  }
 
-  const codePushStatusDidChange = (status: codePush.SyncStatus) => {
-    setCodePushInfo({ codePushInfo: { ...codePushInfo, syncStatus: status } });
+  codePushDownloadDidProgress(progress: DownloadProgress) {
+    this.setState({ codePushInfo: { ...this.state.codePushInfo, downloadProgress: progress } });
+  }
+
+  renderCodePushUi = () => {
+    return <CodePushInfoUi codePushInfo={this.state.codePushInfo} />;
   };
 
-  const codePushDownloadDidProgress = (progress: DownloadProgress) => {
-    setCodePushInfo({ codePushInfo: { ...codePushInfo, downloadProgress: progress } });
-  };
-
-  const renderCodePushUi = () => {
-    return <CodePushInfoUi codePushInfo={codePushInfo} />;
-  };
-
-  return (
-    <AuthProvider>
-      <UIElementsProvider>
-        <NotificationProvider>
-          <AudioVideoProvider>
-            <NavigatorContainer />
-            {renderCodePushUi()}
-          </AudioVideoProvider>
-        </NotificationProvider>
-      </UIElementsProvider>
-    </AuthProvider>
-  );
-};
+  render() {
+    return (
+      <AuthProvider>
+        <UIElementsProvider>
+          <NotificationProvider>
+            <AudioVideoProvider>
+              <NavigatorContainer />
+              {this.renderCodePushUi()}
+            </AudioVideoProvider>
+          </NotificationProvider>
+        </UIElementsProvider>
+      </AuthProvider>
+    );
+  }
+}
 
 export default codePush(codePushOptions)(AppContainer);
