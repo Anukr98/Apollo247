@@ -408,6 +408,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [showNotHdfcCustomer, setShowNotHdfcCustomer] = useState<boolean>(false);
   const [slideIndex, setSlideIndex] = useState(0);
   const [benefitId, setbenefitId] = useState<string>('');
+  const [showSavingsAccountButton, setShowSavingsAccountButton] = useState<boolean>(false);
 
   const webengage = new WebEngage();
   const client = useApolloClient();
@@ -835,10 +836,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             setShowHdfcOtpView(true);
             setShowNotHdfcCustomer(true);
             if (hdfcStatus === hdfc_values.OTP_NOT_GENERATED) {
+              setShowSavingsAccountButton(true);
               setHdfcErrorMessage(
                 'Looks like your details are not matching with HDFC Bank records.​ Please retry or enroll yourself with HDFC\'s Bank'
               );
             } else {
+              setShowSavingsAccountButton(false);
               setHdfcErrorMessage(
                 'Due to a technical glitch, we are unable to verify your details with HDFC Bank right now. Please try again in sometime'
               );
@@ -2106,20 +2109,23 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             marginTop: 10,
           }}
         >
-          <TouchableOpacity
-            onPress={() => {
-              Linking.openURL(hdfc_values.ENROLL_URL);
-            }}
-          >
-            <Text
-              style={{
-                ...theme.viewStyles.text('B', 15, '#FC9916', 1, 35, 0.35),
-                marginRight: 20,
+          {
+            showSavingsAccountButton && 
+            <TouchableOpacity
+              onPress={() => {
+                Linking.openURL(hdfc_values.ENROLL_URL);
               }}
             >
-              OPEN SAVINGS ACCOUNT
-            </Text>
-          </TouchableOpacity>
+              <Text
+                style={{
+                  ...theme.viewStyles.text('B', 15, '#FC9916', 1, 35, 0.35),
+                  marginRight: 20,
+                }}
+              >
+                OPEN SAVINGS ACCOUNT
+              </Text>
+            </TouchableOpacity>
+          }
           <TouchableOpacity
             onPress={() => {
               identifyHdfcCustomer();
