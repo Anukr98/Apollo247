@@ -836,7 +836,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             setShowNotHdfcCustomer(true);
             if (hdfcStatus === hdfc_values.OTP_NOT_GENERATED) {
               setHdfcErrorMessage(
-                'Looks like your details are not matching with HDFC Bank records.​ Please retry or enroll yourself with HDFC\' Bank'
+                'Looks like your details are not matching with HDFC Bank records.​ Please retry or enroll yourself with HDFC\'s Bank'
               );
             } else {
               setHdfcErrorMessage(
