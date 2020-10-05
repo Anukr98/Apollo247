@@ -15,12 +15,14 @@ import {
   FilterDarkBlueIcon,
   ChatBlueIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import { AppointmentFilterScene } from '@aph/mobile-patients/src/components/ConsultRoom/AppointmentFilterScene';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import {
   CommonBugFender,
   CommonLogEvent,
   isIphone5s,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
 import { GET_PATIENT_ALL_APPOINTMENTS } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { getPatinetAppointments_getPatinetAppointments_patinetAppointments } from '@aph/mobile-patients/src/graphql/types/getPatinetAppointments';
@@ -30,6 +32,7 @@ import {
   postWebEngageEvent,
   g,
   followUpChatDaysCaseSheet,
+  getDiffInMinutes,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -74,6 +77,7 @@ import {
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { NotificationListener } from '@aph/mobile-patients/src/components/NotificationListener';
+import _ from 'lodash';
 
 const { width, height } = Dimensions.get('window');
 
@@ -244,6 +248,14 @@ export interface ConsultProps extends NavigationScreenProps {
   FollowupDateTime: any;
   DoctorName: any;
 }
+
+export interface AppointmentFilterObject {
+  appointmentStatus: string[] | null;
+  availability: string[] | null;
+  doctorsList: string[] | null;
+  specialtyList: string[] | null;
+}
+
 export const Consult: React.FC<ConsultProps> = (props) => {
   const thingsToDo = string.consult_room.things_to_do.data;
   const articles = string.consult_room.articles.data;
@@ -266,6 +278,23 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const [todaysConsultations, setTodaysConsultations] = useState<
     { type: string; data: getPatientAllAppointments_getPatientAllAppointments_appointments }[] | any
   >();
+  const initialAppointmentFilterObject: AppointmentFilterObject = {
+    appointmentStatus: [],
+    availability: [],
+    doctorsList: [],
+    specialtyList: [],
+  };
+  const [filterDoctorsList, setFilterDoctorsList] = React.useState<string[]>([]);
+  const [filterSpecialtyList, setFilterSpecialtyList] = React.useState<string[]>([]);
+  const [filter, setFilter] = React.useState<AppointmentFilterObject>(
+    initialAppointmentFilterObject
+  );
+  const [isFilterOpen, setIsFilterOpen] = React.useState<boolean>(false);
+  const [filteredAppointmentsList, setFilteredAppointmentsList] = React.useState<
+    getPatientAllAppointments_getPatientAllAppointments_appointments[]
+  >([]);
+  const [selectedDate, setSelectedDate] = React.useState<Date | null>(null);
+  const [displayFilter, setDisplayFilter] = useState<boolean>(false);
 
   const { loading, setLoading } = useUIElements();
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
@@ -340,6 +369,157 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       setNewRescheduleCount(1);
     }
   }, [currentPatient]);
+
+  useEffect(() => {
+    const { availability, appointmentStatus, doctorsList, specialtyList } = filter;
+    if (
+      filter.appointmentStatus === [] &&
+      filter.availability === [] &&
+      filter.doctorsList === [] &&
+      filter.specialtyList === []
+    ) {
+      setFilteredAppointmentsList(consultations || []);
+    } else {
+      let localFilteredList: getPatientAllAppointments_getPatientAllAppointments_appointments[] =
+        consultations || [];
+      if (appointmentStatus && appointmentStatus?.length > 0) {
+        localFilteredList = getAppointmentStatusFilteredList(appointmentStatus, localFilteredList);
+      }
+      if (availability && availability?.length > 0) {
+        localFilteredList = getAvailabilityFilteredList(availability, localFilteredList);
+      }
+      if (doctorsList && doctorsList?.length > 0) {
+        localFilteredList = getGenericFilteredList(doctorsList, localFilteredList, 'doctor');
+      }
+      if (specialtyList && specialtyList?.length > 0) {
+        localFilteredList = getGenericFilteredList(specialtyList, localFilteredList, 'specialty');
+      }
+      setFilteredAppointmentsList(localFilteredList);
+    }
+  }, [filter]);
+
+  const getAppointmentStatusFilteredList = (
+    appointmentStatus: string[],
+    localFilteredAppointmentsList: getPatientAllAppointments_getPatientAllAppointments_appointments[]
+  ) => {
+    let finalList: getPatientAllAppointments_getPatientAllAppointments_appointments[] = [];
+    if (appointmentStatus.includes('Active')) {
+      finalList = localFilteredAppointmentsList.filter(
+        (appointment) => appointment.appointmentState === APPOINTMENT_STATE.NEW
+      );
+    }
+    if (appointmentStatus.includes('Rescheduled')) {
+      const filteredList = localFilteredAppointmentsList.filter(
+        (appointment) => appointment.appointmentState === APPOINTMENT_STATE.RESCHEDULE
+      );
+      finalList = [...finalList, ...filteredList];
+    }
+    if (appointmentStatus.includes('Cancelled')) {
+      const filteredList = localFilteredAppointmentsList.filter(
+        (appointment) => appointment.status === STATUS.CANCELLED
+      );
+      finalList = [...finalList, ...filteredList];
+    }
+    if (appointmentStatus.includes('Completed')) {
+      const filteredList = localFilteredAppointmentsList.filter(
+        (appointment) => appointment.status === STATUS.COMPLETED
+      );
+      finalList = [...finalList, ...filteredList];
+    }
+    if (appointmentStatus.includes('Follow-Up')) {
+      const filteredList = localFilteredAppointmentsList.filter(
+        (appointment) =>
+          appointment.status === STATUS.COMPLETED &&
+          !isPastAppointment(appointment.caseSheet, appointment)
+      );
+      finalList = [...finalList, ...filteredList];
+    }
+    return _.uniq(finalList);
+  };
+
+  const getGenericFilteredList = (
+    list: string[],
+    localFilteredAppointmentsList: getPatientAllAppointments_getPatientAllAppointments_appointments[],
+    type: string
+  ) => {
+    const finalList = localFilteredAppointmentsList.filter((appointment) => {
+      switch (type) {
+        case 'doctor':
+          return list.includes(appointment?.doctorInfo?.fullName || '');
+        case 'specialty':
+          return list.includes(appointment?.doctorInfo?.specialty?.name || '');
+        default:
+          return false;
+      }
+    });
+    return finalList;
+  };
+
+  const getAvailabilityFilteredList = (
+    availabilityList: string[],
+    localFilteredAppointmentsList: getPatientAllAppointments_getPatientAllAppointments_appointments[]
+  ) => {
+    let finalList: getPatientAllAppointments_getPatientAllAppointments_appointments[] = [];
+    if (availabilityList.includes('Now')) {
+      finalList = localFilteredAppointmentsList.filter((appointment) => {
+        const diffInMinutes = getDiffInMinutes(appointment.appointmentDateTime);
+        return diffInMinutes < 15 && diffInMinutes >= 0;
+      });
+    }
+    if (
+      availabilityList.includes('Today') ||
+      availabilityList.includes('Tomorrow') ||
+      availabilityList.includes('Next 3 days')
+    ) {
+      const tomorrowAvailabilityHourTime = moment('00:00', 'HH:mm');
+      const tomorrowAvailabilityTime = moment()
+        .add('days', 1)
+        .set({
+          hour: tomorrowAvailabilityHourTime.get('hour'),
+          minute: tomorrowAvailabilityHourTime.get('minute'),
+        });
+      if (availabilityList.includes('Today')) {
+        const filteredList = localFilteredAppointmentsList.filter((appointment) => {
+          const diffInHoursForTomorrowAvailabilty = tomorrowAvailabilityTime.diff(
+            moment(appointment.appointmentDateTime),
+            'minutes'
+          );
+          return diffInHoursForTomorrowAvailabilty >= 0 && diffInHoursForTomorrowAvailabilty < 1440;
+        });
+        finalList = [...finalList, ...filteredList];
+      }
+      if (availabilityList.includes('Tomorrow')) {
+        const filteredList = localFilteredAppointmentsList.filter((appointment) => {
+          const diffInHoursForTomorrowAvailabilty = moment(appointment.appointmentDateTime).diff(
+            tomorrowAvailabilityTime,
+            'minutes'
+          );
+          return diffInHoursForTomorrowAvailabilty >= 0 && diffInHoursForTomorrowAvailabilty < 1440;
+        });
+        finalList = [...finalList, ...filteredList];
+      }
+      if (availabilityList.includes('Next 3 days')) {
+        const filteredList = localFilteredAppointmentsList.filter((appointment) => {
+          const differenceInDays = moment(appointment.appointmentDateTime).diff(
+            tomorrowAvailabilityTime,
+            'days'
+          );
+          const differenceInMinutes = moment(appointment.appointmentDateTime).diff(
+            tomorrowAvailabilityTime,
+            'minutes'
+          );
+          return differenceInMinutes >= 0 && differenceInDays < 4 && differenceInDays >= 0;
+        });
+        finalList = [...finalList, ...filteredList];
+      }
+    } else if (selectedDate) {
+      const filteredList = localFilteredAppointmentsList.filter((appointment) => {
+        return moment(appointment.appointmentDateTime).date() === moment(selectedDate).date();
+      });
+      finalList = [...finalList, ...filteredList];
+    }
+    return _.uniq(finalList);
+  };
 
   const postConsultCardEvents = (
     type: 'Card Click' | 'Continue Consult' | 'Chat with Doctor' | 'Fill Medical Details',
@@ -430,6 +610,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                   | getPatientAllAppointments_getPatientAllAppointments_appointments
                   | any = [];
                 let combinationActiveFollowUp: any = [];
+                let doctorsList: string[] = [];
+                let specialtyList: string[] = [];
                 data.getPatientAllAppointments.appointments.forEach((item) => {
                   const caseSheet = followUpChatDaysCaseSheet(item.caseSheet);
                   const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpAfterInDays');
@@ -439,6 +621,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                         ? 0
                         : Number(caseSheetChatDays) - 1
                       : 6;
+
+                  doctorsList.push(item?.doctorInfo?.fullName || '');
+                  specialtyList.push(item?.doctorInfo?.specialty?.name || '');
+
                   if (
                     item?.status === STATUS.CANCELLED ||
                     !moment(new Date(item?.appointmentDateTime))
@@ -473,6 +659,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                   type: 'Follow-up Chat',
                   data: followUpAppointments,
                 });
+                setFilterDoctorsList(_.uniq(doctorsList));
+                setFilterSpecialtyList(_.uniq(specialtyList));
                 setTodaysConsultations(combinationActiveFollowUp);
                 setUpcomingConsultatons(
                   upcomingAppointments.sort(
@@ -485,11 +673,14 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                         .getTime()
                   )
                 );
+                setFilter(initialAppointmentFilterObject);
+                setFilteredAppointmentsList(data.getPatientAllAppointments.appointments);
                 setconsultations(data.getPatientAllAppointments.appointments);
                 setActiveConsultations(activeAppointments);
                 setPastConsultations(pastAppointments);
               } else {
                 setconsultations([]);
+                setFilteredAppointmentsList([]);
               }
               // setLoading && setLoading(false);
             })
@@ -509,6 +700,28 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       .catch((e) => {
         CommonBugFender('Consult_getNetStatus', e);
       });
+  };
+
+  const isPastAppointment = (
+    caseSheet:
+      | (getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet | null)[]
+      | null,
+    item: getPatientAllAppointments_getPatientAllAppointments_appointments
+  ) => {
+    const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpAfterInDays');
+    const followUpAfterInDays =
+      caseSheetChatDays || caseSheetChatDays === '0'
+        ? caseSheetChatDays === '0'
+          ? 0
+          : Number(caseSheetChatDays) - 1
+        : 6;
+    return (
+      item?.status === STATUS.CANCELLED ||
+      !moment(new Date(item?.appointmentDateTime))
+        .add(followUpAfterInDays, 'days')
+        .startOf('day')
+        .isSameOrAfter(moment(new Date()).startOf('day'))
+    );
   };
 
   const isTomorrow = (date: Moment) => {
@@ -1151,10 +1364,17 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             marginLeft: 10,
           }}
         >
-          <TouchableOpacity activeOpacity={1}>
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() =>
+              props.navigation.navigate(AppRoutes.SearchAppointmentScreen, {
+                allAppointments: consultations,
+              })
+            }
+          >
             <SearchGreenIcon style={{ width: 23, height: 23, marginTop: 8 }} />
           </TouchableOpacity>
-          <TouchableOpacity activeOpacity={1}>
+          <TouchableOpacity activeOpacity={1} onPress={() => setIsFilterOpen(true)}>
             <FilterDarkBlueIcon style={{ width: 17, height: 18, marginTop: 8 }} />
           </TouchableOpacity>
         </View>
@@ -1219,6 +1439,21 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       />
     );
   };
+
+  const renderAppointmentFilterScreen = () => {
+    return isFilterOpen ? (
+      <AppointmentFilterScene
+        filter={filter}
+        setFilter={setFilter}
+        setIsFilterOpen={setIsFilterOpen}
+        filterDoctorsList={filterDoctorsList}
+        filterSpecialtyList={filterSpecialtyList}
+        selectedDate={selectedDate}
+        setSelectedDate={setSelectedDate}
+      />
+    ) : null;
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <NavigationEvents
@@ -1488,6 +1723,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       {/* {loading && <Spinner />} */}
       {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
       <NotificationListener navigation={props.navigation} />
+      {renderAppointmentFilterScreen()}
     </View>
   );
 };
