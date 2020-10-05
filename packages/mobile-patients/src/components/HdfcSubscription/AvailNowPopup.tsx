@@ -39,8 +39,8 @@ const styles = StyleSheet.create({
   },
   crossIconStyle: {
     resizeMode: 'contain',
-    width: 20,
-    height: 20,
+    width: 22,
+    height: 23,
   },
   howToAvail: {
     flexDirection: 'row',
