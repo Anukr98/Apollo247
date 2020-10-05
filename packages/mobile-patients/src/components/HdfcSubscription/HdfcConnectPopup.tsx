@@ -134,7 +134,7 @@ export const HdfcConnectPopup: React.FC<HdfcConnectPopupProps> = (props) => {
           <View style={styles.stepsContainer}>
             <CallConnectIcon />
             <Text style={styles.stepsText}>
-              {`Answer the call from ${AppConfig.Configuration.HDFC_CONNECT_EXOTEL_CALL_NUMBER} to connect.`}
+              {`Answer the call from 040-482-17258 to connect.`}
             </Text>
           </View>
           <View style={styles.stepsContainer}>

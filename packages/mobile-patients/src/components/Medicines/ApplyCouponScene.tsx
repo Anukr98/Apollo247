@@ -168,6 +168,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
         specialPrice: item.specialPrice || item.price,
       })),
       packageId: packageId,
+      email: g(currentPatient, 'emailAddress'),
     };
     validateConsultCoupon(data)
       .then((resp: any) => {

@@ -298,7 +298,8 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     padding: 0,
     height: 140,
-    alignSelf: 'auto',
+    width: 330,
+    alignSelf: 'center',
   },
 });
 
@@ -2289,9 +2290,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         props.navigation.navigate(AppRoutes.DoctorSearch);
       } else if (action == hdfc_values.DIAGNOSTICS_LANDING) {
         props.navigation.navigate('TESTS');
+      } else if (action == hdfc_values.MEMBERSHIP_DETAIL) {
+        props.navigation.navigate(AppRoutes.MembershipDetails, {
+          membershipType: g(hdfcUserSubscriptions, 'name'),
+          isActive: g(hdfcUserSubscriptions, 'isActive'),
+        });
       } else if ((action = hdfc_values.DIETECIAN_LANDING)) {
         props.navigation.navigate('DoctorSearchListing', {
-          specialityId: hdfc_values.DIETICS_SPECIALITY_ID,
           specialityName: hdfc_values.DIETICS_SPECIALITY_NAME,
         });
       } else {
