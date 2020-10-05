@@ -176,6 +176,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const [showHdfcConnectPopup, setShowHdfcConnectPopup] = useState<boolean>(false);
   const [showAvailPopup, setShowAvailPopup] = useState<boolean>(false);
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
+  const [benefitId, setBenefitId] = useState<string>('');
   const { TnC, SILVER_PLAN, GOLD_PLAN, PLATINUM_PLAN } = Hdfc_values;
 
   const upgradeTransactionValue =
@@ -231,7 +232,8 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
           message,
           type,
           icon,
-          availableCount
+          availableCount,
+          value._id
         );
       })
     );
@@ -312,7 +314,8 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     message: string,
     type: string,
     icon: string | null,
-    availableCount: number
+    availableCount: number,
+    id: string,
   ) => {
     return (
       <View style={[styles.cardStyle, { marginVertical: 10 }]}>
@@ -320,7 +323,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         {ctaLabel !== 'NULL' && (
           <TouchableOpacity
             onPress={() => {
-              handleCtaClick(type, action, message, availableCount);
+              handleCtaClick(type, action, message, availableCount, id);
             }}
           >
             <Text style={styles.redeemButtonText}>{ctaLabel}</Text>
@@ -344,7 +347,8 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     type: string,
     action: string,
     message: string,
-    availableCount: number
+    availableCount: number,
+    id: string,
   ) => {
     if (type == Hdfc_values.REDIRECT) {
       if (action == Hdfc_values.SPECIALITY_LISTING) {
@@ -359,7 +363,6 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         props.navigation.navigate('TESTS');
       } else if ((action = Hdfc_values.DIETECIAN_LANDING)) {
         props.navigation.navigate('DoctorSearchListing', {
-          specialityId: Hdfc_values.DIETICS_SPECIALITY_ID,
           specialityName: Hdfc_values.DIETICS_SPECIALITY_NAME,
         });
       } else {
@@ -368,6 +371,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     } else if (type == Hdfc_values.CALL_API) {
       if (action == Hdfc_values.CALL_EXOTEL_API) {
         if (availableCount > 0) {
+          setBenefitId(id);
           setShowHdfcConnectPopup(true);
         } else {
           renderAlert(
@@ -621,6 +625,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const renderHowToAvailContent = () => {
     const canUpgradeMembership = upgradePlanName;
     const smallCaseName = canUpgradeMembership ? canUpgradeMembership.toLowerCase() : '';
+    const displayPlanName = !!smallCaseName ? smallCaseName.charAt(0).toUpperCase() + smallCaseName.slice(1) : ''; // capitalize first character
     return (
       <View
         style={{
@@ -628,7 +633,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         }}
       >
         <Text style={theme.viewStyles.text('SB', 13, '#007C9D', 1, 20, 0.35)}>
-          {`Complete transactions worth Rs.${upgradeTransactionValue} or more on the Apollo 24|7 app to unlock ${smallCaseName} membership​`}
+          {`Complete transactions worth Rs.${upgradeTransactionValue} or more on the Apollo 24|7 app to unlock ${displayPlanName} membership​`}
         </Text>
       </View>
     );
@@ -647,7 +652,6 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     return (
       <Header
         leftIcon="backArrow"
-        rightComponent={<HelpIcon style={styles.arrowStyle} />}
         title={'MEMBERSHIP PLAN DETAIL'}
         container={{
           ...theme.viewStyles.cardViewStyle,
@@ -682,14 +686,17 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         <Text style={theme.viewStyles.text('M', 14, '#02475B', 1, 17, 0.35)}>
           Complete your first transaction to unlock your benefits
         </Text>
-        <Text style={theme.viewStyles.text('M', 14, '#02475B', 1, 27, 0.35)}>How to Unlock</Text>
+        <Text style={{
+          ...theme.viewStyles.text('M', 14, '#02475B', 1, 27, 0.35),
+          marginTop: 5,
+        }}>How to Unlock</Text>
         <Text
           style={{
             ...theme.viewStyles.text('R', 13, '#007C9D', 1, 17, 0.35),
             marginTop: 6,
           }}
         >
-          {`Transact for Rs ${
+          {`Make a single transaction worth Rs ${
             membershipDetails!.minTransactionValue
           } or more on Virtual Consultations or Pharmacy Orders`}
         </Text>
@@ -762,13 +769,14 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
       {showHdfcConnectPopup && (
         <HdfcConnectPopup
           onClose={() => setShowHdfcConnectPopup(false)}
-          benefitId={membershipDetails!._id || ''}
+          benefitId={benefitId || ''}
         />
       )}
       {showAvailPopup && (
         <AvailNowPopup
           onClose={() => setShowAvailPopup(false)}
           transactionAmount={upgradeTransactionValue}
+          planName={upgradePlanName}
           navigation={props.navigation}
         />
       )}

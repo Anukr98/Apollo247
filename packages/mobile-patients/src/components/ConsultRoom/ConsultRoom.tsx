@@ -298,7 +298,8 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     padding: 0,
     height: 140,
-    alignSelf: 'auto',
+    width: 330,
+    alignSelf: 'center',
   },
 });
 
@@ -359,6 +360,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setAppointmentsPersonalized,
     setHdfcUserSubscriptions,
     hdfcUserSubscriptions,
+    bannerData,
+    setBannerData,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
@@ -404,7 +407,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [isValidOtp, setIsValidOtp] = useState<boolean>(false);
   const [showNotHdfcCustomer, setShowNotHdfcCustomer] = useState<boolean>(false);
   const [slideIndex, setSlideIndex] = useState(0);
-  const [bannerData, setBannerData] = useState<bannerType[]>([]);
   const [benefitId, setbenefitId] = useState<string>('');
 
   const webengage = new WebEngage();
@@ -452,29 +454,23 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   }, [locationDetails, currentPatient]);
 
   useEffect(() => {
-    if (g(currentPatient, 'partnerId') === hdfc_values.REFERRAL_CODE) {
-      if (hdfcUserSubscriptions && g(hdfcUserSubscriptions, '_id')) {
-        getUserBanners();
-        const subscriptionName = g(hdfcUserSubscriptions, 'name')
-          ? g(hdfcUserSubscriptions, 'name')
-          : '';
-        const subscriptionId = g(hdfcUserSubscriptions, '_id')
-          ? g(hdfcUserSubscriptions, '_id')
-          : '';
-        if (g(hdfcUserSubscriptions, 'isActive')) {
-          setHdfcPlanName && setHdfcPlanName(subscriptionName);
-        }
-        if (
-          subscriptionName === hdfc_values.PLATINUM_PLAN &&
-          !!g(hdfcUserSubscriptions, 'isActive')
-        ) {
-          setIsFreeDelivery && setIsFreeDelivery(true);
-        }
-        setShowHdfcWidget(false);
-        setShowHdfcConnectWidget(true);
-      } else {
-        setShowHdfcWidget(true);
+    if (hdfcUserSubscriptions && g(hdfcUserSubscriptions, '_id')) {
+      const subscriptionName = g(hdfcUserSubscriptions, 'name')
+        ? g(hdfcUserSubscriptions, 'name')
+        : '';
+      if (g(hdfcUserSubscriptions, 'isActive')) {
+        setHdfcPlanName && setHdfcPlanName(subscriptionName);
       }
+      if (
+        subscriptionName === hdfc_values.PLATINUM_PLAN &&
+        !!g(hdfcUserSubscriptions, 'isActive')
+      ) {
+        setIsFreeDelivery && setIsFreeDelivery(true);
+      }
+      setShowHdfcWidget(false);
+      setShowHdfcConnectWidget(true);
+    } else if (g(currentPatient, 'partnerId') === hdfc_values.REFERRAL_CODE) {
+      setShowHdfcWidget(true);
     }
   }, [hdfcUserSubscriptions]);
 
@@ -578,13 +574,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         setWEGFired(true);
         setWEGUserAttributes();
       }
-      if (currentPatient && g(currentPatient, 'partnerId') === hdfc_values.REFERRAL_CODE) {
-        getUserSubscriptionsWithBenefits();
-      } else {
-        setHdfcUserSubscriptions && setHdfcUserSubscriptions(null);
-        setIsFreeDelivery && setIsFreeDelivery(false);
-        setHdfcPlanName && setHdfcPlanName('');
-      }
+      getUserSubscriptionsWithBenefits();
+      getUserBanners();
     } catch (e) {}
   }, [currentPatient]);
 
@@ -845,7 +836,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             setShowNotHdfcCustomer(true);
             if (hdfcStatus === hdfc_values.OTP_NOT_GENERATED) {
               setHdfcErrorMessage(
-                'Looks like your details are not matching with HDFC Bank records.​ Please retry or enroll yourself with HDFC Bank'
+                'Looks like your details are not matching with HDFC Bank records.​ Please retry or enroll yourself with HDFC\'s Bank'
               );
             } else {
               setHdfcErrorMessage(
@@ -954,7 +945,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 meta,
               });
             });
-            setBannerData(banners);
+            setBannerData && setBannerData(banners);
           }
         })
         .catch((e) => {
@@ -982,8 +973,22 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           if (groupPlans && groupPlans.length) {
             const plan = groupPlans[0];
             const subscription = setSubscriptionData(plan);
-            // console.log('GetAllUserSubscriptionsWithPlanBenefits: ', JSON.stringify(subscription));
             setHdfcUserSubscriptions && setHdfcUserSubscriptions(subscription);
+            const subscriptionName = g(subscription, 'name')
+              ? g(subscription, 'name')
+              : '';
+            if (g(subscription, 'isActive')) {
+              setHdfcPlanName && setHdfcPlanName(subscriptionName);
+            }
+            if (
+              subscriptionName === hdfc_values.PLATINUM_PLAN &&
+              !!g(subscription, 'isActive')
+            ) {
+              setIsFreeDelivery && setIsFreeDelivery(true);
+            }
+            getUserBanners();
+            setShowHdfcWidget(false);
+            setShowHdfcConnectWidget(true);
           }
         })
         .catch((e) => {
@@ -1947,9 +1952,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               marginRight: 20,
             }}
           />
-          <Text style={theme.viewStyles.text('B', 19, '#01475B', 1, 30, 0.35)}>
-            One last step to start your HealthyLife journey
-          </Text>
+          <View>
+            <Text style={theme.viewStyles.text('B', 17, '#01475B', 1, 30, 0.35)}>
+              One last step to start your
+            </Text>
+            <Text style={theme.viewStyles.text('B', 17, '#01475B', 1, 30, 0.35)}>
+              HealthyLife journey
+            </Text>
+          </View>
         </View>
         <TouchableOpacity
           onPress={() => {
@@ -2107,7 +2117,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 marginRight: 20,
               }}
             >
-              ENROLL
+              OPEN SAVINGS ACCOUNT
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -2170,30 +2180,33 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderHdfcCarousel = () => {
-    return (
-      <View>
-        <Carousel
-          onSnapToItem={setSlideIndex}
-          data={bannerData}
-          renderItem={renderHdfcSliderItem}
-          sliderWidth={width}
-          itemWidth={width}
-          loop={true}
-          autoplay={false}
-        />
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'center',
-            position: 'absolute',
-            bottom: 10,
-            alignSelf: 'center',
-          }}
-        >
-          {bannerData.map((_, index) => (index == slideIndex ? renderDot(true) : renderDot(false)))}
+    const showBanner = bannerData && bannerData.length ? true : false;
+    if (showBanner) {
+      return (
+        <View>
+          <Carousel
+            onSnapToItem={setSlideIndex}
+            data={bannerData}
+            renderItem={renderHdfcSliderItem}
+            sliderWidth={width}
+            itemWidth={width}
+            loop={true}
+            autoplay={false}
+          />
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'center',
+              position: 'absolute',
+              bottom: 10,
+              alignSelf: 'center',
+            }}
+          >
+              {bannerData.map((_, index) => (index == slideIndex ? renderDot(true) : renderDot(false)))}
+          </View>
         </View>
-      </View>
-    );
+      );
+    }
   };
 
   const renderDot = (active: boolean) => (
@@ -2289,9 +2302,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         props.navigation.navigate(AppRoutes.DoctorSearch);
       } else if (action == hdfc_values.DIAGNOSTICS_LANDING) {
         props.navigation.navigate('TESTS');
+      } else if (action == hdfc_values.MEMBERSHIP_DETAIL) {
+        props.navigation.navigate(AppRoutes.MembershipDetails, {
+          membershipType: g(hdfcUserSubscriptions, 'name'),
+          isActive: g(hdfcUserSubscriptions, 'isActive'),
+        });
       } else if ((action = hdfc_values.DIETECIAN_LANDING)) {
         props.navigation.navigate('DoctorSearchListing', {
-          specialityId: hdfc_values.DIETICS_SPECIALITY_ID,
           specialityName: hdfc_values.DIETICS_SPECIALITY_NAME,
         });
       } else {

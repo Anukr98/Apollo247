@@ -120,6 +120,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
   const premiumPlan = canUpgradeMultiplePlans ? g(canUpgradeToPlans, 'canUpgradeTo') : {};
   const canUpgrade = !!g(canUpgradeToPlans, 'name');
   const isActive = !!(hdfcUserSubscriptions && hdfcUserSubscriptions.isActive);
+  const upgradePlanName = g(hdfcUserSubscriptions, 'canUpgradeTo', 'name');
   const [showAvailPopup, setShowAvailPopup] = useState<boolean>(false);
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [upgradeTransactionValue, setUpgradeTransactionValue] = useState<number>(0);
@@ -173,7 +174,6 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
     isCanUpgradeToPlan: boolean
   ) => {
     const buttonText = isCanUpgradeToPlan ? 'HOW TO AVAIL' : isActive ? 'EXPLORE' : 'ACTIVATE NOW';
-    const upgradePlanName = g(hdfcUserSubscriptions, 'canUpgradeTo', 'name');
     const premiumPlanName = g(hdfcUserSubscriptions, 'canUpgradeTo', 'canUpgradeTo', 'name');
 
     const transactionValue =
@@ -236,6 +236,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
       <AvailNowPopup
         onClose={() => setShowAvailPopup(false)}
         transactionAmount={upgradeTransactionValue}
+        planName={upgradePlanName}
         navigation={props.navigation}
       />
     );
@@ -246,7 +247,6 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
       <SafeAreaView style={theme.viewStyles.container}>
         <Header
           leftIcon="backArrow"
-          rightComponent={<HelpIcon style={styles.helpIconStyle} />}
           title={'MY MEMBERSHIP'}
           container={styles.headerContainer}
           onPressLeftIcon={() => props.navigation.goBack()}

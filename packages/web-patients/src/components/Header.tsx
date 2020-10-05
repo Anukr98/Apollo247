@@ -32,6 +32,7 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
       backgroundColor: theme.palette.common.white,
       padding: '0 20px',
+      position: 'relative',
       [theme.breakpoints.down('xs')]: {
         padding: '0 10px',
         boxShadow: '0 0.5px 2px 0 rgba(0, 0, 0, 0.1)',
@@ -286,7 +287,7 @@ const useStyles = makeStyles((theme: Theme) => {
     backArrow: {
       position: 'absolute',
       top: 90,
-      left: 70,
+      left: -70,
       width: 48,
       height: 48,
       lineHeight: '36px',
@@ -654,18 +655,18 @@ export const Header: React.FC<HeaderProps> = (props) => {
               </div>
             </div>
           </div>
-        </header>
-        {props.backArrowVisible && (
-          <>
-            {!props.isWebView && (
-              <Link to={props.backLocation || clientRoutes.welcome()}>
+          {props.backArrowVisible && (
+            <>
+              {!props.isWebView && (
                 <div className={classes.backArrow}>
-                  <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
+                  <Link to={props.backLocation || clientRoutes.welcome()}>
+                    <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
+                  </Link>
                 </div>
-              </Link>
-            )}
-          </>
-        )}
+              )}
+            </>
+          )}
+        </header>
       </div>
     </div>
   );
