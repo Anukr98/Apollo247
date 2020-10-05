@@ -481,40 +481,41 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                           )}
                         />
 
-                        <Field
-                          name="emailAddress"
-                          validate={(email: string) =>
-                            _isEmpty(email) || isEmailValid(email)
-                              ? undefined
-                              : 'Invalid email address'
-                          }
-                          render={({ field }: FieldProps<{ emailAddress: string }>) => (
-                            <FormControl className={classes.formControl} fullWidth>
-                              <AphTextField
-                                {...field}
-                                label="Email Address (Optional)"
-                                placeholder="name@email.com"
-                                error={showError('emailAddress')}
-                              />
-                              {showError('emailAddress') ? (
-                                <FormHelperText
-                                  className={
-                                    showError('emailAddress')
-                                      ? classes.showMessage
-                                      : classes.hideMessage
-                                  }
-                                  component="div"
-                                  error={true}
-                                >
-                                  {errors.emailAddress}
-                                </FormHelperText>
-                              ) : (
-                                ''
-                              )}
-                            </FormControl>
-                          )}
-                        />
-
+                        {!props.customSignUp && (
+                          <Field
+                            name="emailAddress"
+                            validate={(email: string) =>
+                              _isEmpty(email) || isEmailValid(email)
+                                ? undefined
+                                : 'Invalid email address'
+                            }
+                            render={({ field }: FieldProps<{ emailAddress: string }>) => (
+                              <FormControl className={classes.formControl} fullWidth>
+                                <AphTextField
+                                  {...field}
+                                  label="Email Address (Optional)"
+                                  placeholder="name@email.com"
+                                  error={showError('emailAddress')}
+                                />
+                                {showError('emailAddress') ? (
+                                  <FormHelperText
+                                    className={
+                                      showError('emailAddress')
+                                        ? classes.showMessage
+                                        : classes.hideMessage
+                                    }
+                                    component="div"
+                                    error={true}
+                                  >
+                                    {errors.emailAddress}
+                                  </FormHelperText>
+                                ) : (
+                                  ''
+                                )}
+                              </FormControl>
+                            )}
+                          />
+                        )}
                         <div className={classes.referralCodeWrapper}>
                           <img src={require('images/ic_gift.svg')} alt="" />
                           <div className={classes.enterCode}>

@@ -873,6 +873,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         specialPrice: item.specialPrice ? item.specialPrice : item.price,
       })),
       packageId: packageId,
+      email: g(currentPatient, 'emailAddress')
     };
     validateConsultCoupon(data)
       .then((resp: any) => {

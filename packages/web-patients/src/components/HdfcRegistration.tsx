@@ -658,11 +658,11 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
               <Typography>
                 {showOtpFail
                   ? 'Due to a technical glitch, we are unable to verify your details with HDFC Bank right now. Please try again in sometime'
-                  : 'Looks like your details are not matching with HDFC Bank records.​ Please retry or enroll yourself with HDFC Bank'}
+                  : `Looks like your details are not matching with HDFC Bank's records.​ Please retry or enroll yourself with HDFC Bank`}
               </Typography>
             </div>
             <div className={classes.btnContainer}>
-              {!showOtpFail && <AphButton href={HDFC_ENROLL_LINK}>Enroll</AphButton>}
+              {!showOtpFail && <AphButton href={HDFC_ENROLL_LINK}>Open Savings Account</AphButton>}
               <AphButton onClick={() => queryIdentifyHDFCCustomer()}>
                 {loading ? <CircularProgress size={30} /> : 'Recheck Otp'}
               </AphButton>

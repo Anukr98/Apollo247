@@ -1818,7 +1818,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     } else {
       setStartAppointmentButton(true);
     }
-    startBtnInformationCheck();
+    appointmentInfo!.status !== 'COMPLETED' && startBtnInformationCheck();
   };
   const client = useApolloClient();
   const stopInterval = () => {
@@ -1872,7 +1872,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const pubnub = props.pubnub;
 
   useEffect(() => {
-    countdowntimer = setInterval(startConstultCheck, 1000);
+    countdowntimer =
+      appointmentInfo!.status !== 'COMPLETED' && setInterval(startConstultCheck, 1000);
     return function cleanup() {
       clearInterval(intervalcallId);
       clearInterval(intervalCallAbundant);

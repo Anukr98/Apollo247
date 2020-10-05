@@ -810,8 +810,12 @@ export const fetchConsultCoupons = (packageId: string): Promise<AxiosResponse<an
 };
 
 export const validateConsultCoupon = (data: any): Promise<AxiosResponse<any>> => {
+  const { mobile, packageId, email } = data;
   const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
-  const url = `${baseUrl}/validate`;
+  let url = `${baseUrl}/validate?mobile=${mobile}&email=${email}`;
+  if (!!packageId) {
+    url += `&packageId=${packageId}`;
+  }
   return Axios.post(url, data);
 };
 
