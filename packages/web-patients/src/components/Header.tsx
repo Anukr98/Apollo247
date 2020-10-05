@@ -367,33 +367,27 @@ export const Header: React.FC<HeaderProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    // const userSubscriptionsLocalStorage = JSON.parse(localStorage.getItem('userSubscriptions'));
-    // userSubscriptionsLocalStorage ? setUserSubscriptions(userSubscriptionsLocalStorage) : '';
-    if (
-      isSignedIn &&
-      userSubscriptions.length == 0
-      // &&  (userSubscriptionsLocalStorage == null || userSubscriptionsLocalStorage.length == 0)
-    ) {
-      apolloClient
-        .query<getSubscriptionsOfUserByStatus, getSubscriptionsOfUserByStatusVariables>({
-          query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
-          variables: {
-            mobile_number: localStorage.getItem('userMobileNo'),
-            status: ['active', 'deferred_inactive'],
-          },
-          fetchPolicy: 'no-cache',
-        })
-        .then((response) => {
-          setUserSubscriptions(response.data.GetSubscriptionsOfUserByStatus.response);
-          localStorage.setItem(
-            'userSubscriptions',
-            JSON.stringify(response.data.GetSubscriptionsOfUserByStatus.response)
-          );
-        })
-        .catch((error) => {
-          alert('Something went wrong :(');
-        });
-    }
+    const userSubscriptionsLocalStorage = JSON.parse(localStorage.getItem('userSubscriptions'));
+    userSubscriptionsLocalStorage ? setUserSubscriptions(userSubscriptionsLocalStorage) : '';
+    apolloClient
+      .query<getSubscriptionsOfUserByStatus, getSubscriptionsOfUserByStatusVariables>({
+        query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+        variables: {
+          mobile_number: localStorage.getItem('userMobileNo'),
+          status: ['active', 'deferred_inactive'],
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((response) => {
+        setUserSubscriptions(response.data.GetSubscriptionsOfUserByStatus.response);
+        localStorage.setItem(
+          'userSubscriptions',
+          JSON.stringify(response.data.GetSubscriptionsOfUserByStatus.response)
+        );
+      })
+      .catch((error) => {
+        console.error('Something went wrong :( ' + error);
+      });
   }, [currentPatient]);
 
   const MedicineRoutes = [

@@ -1005,8 +1005,8 @@ export const MembershipPlanDetail: React.FC = (props) => {
                       </Typography>
                       <Typography component="h5">How to Unlock</Typography>
                       <Typography>
-                        Transact for Rs. {minimumTransactionValue} or more on Virtual Consultations
-                        or Pharmacy Orders
+                        Make s single transaction worth Rs. {minimumTransactionValue} or more on
+                        Virtual Consultations or Pharmacy Orders
                       </Typography>
                     </div>
                   </div>

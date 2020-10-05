@@ -283,10 +283,6 @@ const SearchByMedicine: React.FC = (props) => {
   const { cartItems } = useShoppingCart();
   const { diagnosticsCartItems } = useDiagnosticsCart();
 
-  useEffect(() => {
-    deepLinkUtil(`MedicineSearch?${categoryId},${params.searchText}`);
-  }, [categoryId]);
-
   const getTitle = () => {
     let title = params.searchMedicineType;
     if (params.searchMedicineType.includes('-')) {
@@ -343,6 +339,7 @@ const SearchByMedicine: React.FC = (props) => {
       )
       .then((res) => {
         setCategoryId(res.data.category_id || paramSearchText);
+        deepLinkUtil(`MedicineSearch?${res.data.category_id || paramSearchText},${params.searchText}`);
         axios
           .post(
             apiDetails.url || '',
