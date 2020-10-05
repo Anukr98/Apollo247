@@ -473,7 +473,7 @@ export const Filters: React.FC<FilterProps> = (props) => {
                   root: classes.tabRoot,
                   selected: classes.tabSelected,
                 }}
-                label={`Brands ${localFilter.brand.length || ''}`}
+                label="Brands"
                 title="Brands"
               />
               <Tab

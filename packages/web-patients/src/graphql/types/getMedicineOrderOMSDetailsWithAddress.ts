@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { MEDICINE_ORDER_TYPE, MEDICINE_DELIVERY_TYPE, MEDICINE_ORDER_STATUS, MEDICINE_ORDER_PAYMENT_TYPE } from "./globalTypes";
+import { MEDICINE_ORDER_TYPE, MEDICINE_DELIVERY_TYPE, MEDICINE_ORDER_STATUS, MEDICINE_ORDER_PAYMENT_TYPE, PAYMENT_METHODS_REVERSE, REFUND_STATUS } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getMedicineOrderOMSDetailsWithAddress
@@ -21,6 +21,17 @@ export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetail
   isPrescriptionNeeded: number | null;
 }
 
+export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderPayments_healthCreditsRedemptionRequest {
+  __typename: "BlockUserPointsResponse";
+  Success: boolean | null;
+  Message: string | null;
+  RequestNumber: string | null;
+  AvailablePoints: number | null;
+  BalancePoints: number | null;
+  RedeemedPoints: number | null;
+  PointsValue: number | null;
+}
+
 export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderPayments {
   __typename: "MedicineOrderOMSPayments";
   id: string;
@@ -32,6 +43,19 @@ export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetail
   responseCode: string | null;
   responseMessage: string | null;
   bankTxnId: string | null;
+  healthCreditsRedeemed: number | null;
+  healthCreditsRedemptionRequest: getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderPayments_healthCreditsRedemptionRequest | null;
+  paymentMode: PAYMENT_METHODS_REVERSE | null;
+  refundAmount: number | null;
+}
+
+export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderRefunds {
+  __typename: "MedicineOrderOMSRefunds";
+  refundAmount: number | null;
+  refundStatus: REFUND_STATUS | null;
+  refundId: string | null;
+  orderId: string | null;
+  createdDate: any | null;
 }
 
 export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus {
@@ -130,6 +154,7 @@ export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetail
   alertStore: boolean | null;
   medicineOrderLineItems: (getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderLineItems | null)[] | null;
   medicineOrderPayments: (getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderPayments | null)[] | null;
+  medicineOrderRefunds: (getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderRefunds | null)[] | null;
   medicineOrdersStatus: (getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus | null)[] | null;
   medicineOrderShipments: (getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderShipments | null)[] | null;
   patient: getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_patient | null;
