@@ -18,6 +18,7 @@ import { getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescri
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import { ToplineReport } from 'components/HealthRecords/ToplineReport';
 import { HEALTH_RECORDS_NO_DATA_FOUND, HEALTH_RECORDS_NOTE } from 'helpers/commonHelpers';
+import { phrDownloadingPrescriptionFileTracking } from '../../webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -572,7 +573,13 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
               <div className={classes.headerActions}>
                 {/* <AphButton>View Consult</AphButton>  */}
                 {activeConsult && activeConsult.patientId && (
-                  <div className={classes.downloadIcon} onClick={() => downloadPrescription()}>
+                  <div
+                    className={classes.downloadIcon}
+                    onClick={() => {
+                      phrDownloadingPrescriptionFileTracking('Prescription');
+                      downloadPrescription();
+                    }}
+                  >
                     <img src={require('images/ic_download.svg')} alt="" />
                   </div>
                 )}
