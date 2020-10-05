@@ -19,7 +19,6 @@ export const CodePushInfoUi: React.FC<CodePushInfoUiProps> = ({
   const isUiToBeShown =
     syncStatus === codePush.SyncStatus.DOWNLOADING_PACKAGE ||
     syncStatus === codePush.SyncStatus.UPDATE_INSTALLED;
-  console.log('codePushInfo', syncStatus);
   const title =
     syncStatus === codePush.SyncStatus.DOWNLOADING_PACKAGE
       ? `Downloading updates... ${downloadProgress ? getDownloadProgress(downloadProgress) : ''}`
@@ -28,7 +27,16 @@ export const CodePushInfoUi: React.FC<CodePushInfoUiProps> = ({
       : '';
   return isUiToBeShown ? (
     <View style={styles.container}>
-      <Text style={styles.text}>{title}</Text>
+      <Text
+        style={[
+          styles.text,
+          {
+            width: syncStatus === codePush.SyncStatus.DOWNLOADING_PACKAGE ? '100%' : '75%',
+          },
+        ]}
+      >
+        {title}
+      </Text>
       <TouchableOpacity
         style={styles.rightTitleView}
         onPress={() => {
@@ -53,11 +61,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   text: {
-    ...theme.viewStyles.text('M', 13, '#02475b'),
-    width: '75%',
+    ...theme.viewStyles.text('M', 14, '#02475b'),
   },
   rightTitleStyle: {
-    ...theme.viewStyles.text('M', 13, '#fcb716'),
+    ...theme.viewStyles.text('M', 14, '#fcb716'),
   },
   rightTitleView: {
     height: 30,
