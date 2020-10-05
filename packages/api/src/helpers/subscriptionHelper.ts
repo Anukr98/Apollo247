@@ -2,6 +2,7 @@ const axios = require('axios');
 import { TransactionType } from 'ApiConstants';
 import { format, addMinutes } from 'date-fns';
 import { log } from 'customWinstonLogger';
+import { getPortStr } from '@aph/universal/src/aphRoutes';
 
 type SuccessTransactionInputForSubscription = {
   amount: string;
@@ -57,7 +58,9 @@ export async function transactionSuccessTrigger(args: SuccessTransactionInputFor
     email,
     partnerId,
   } = args;
-  const url = `http://${process.env.SUBSCRIPTION_SERVICE_HOST}:${process.env.SUBSCRIPTION_SERVICE_PORT}`;
+  const url = `http://${process.env.SUBSCRIPTION_SERVICE_HOST}${getPortStr(
+    process.env.SUBSCRIPTION_SERVICE_PORT ? process.env.SUBSCRIPTION_SERVICE_PORT : '80'
+  )}`;
   const query = `mutation {
       CreateUserSubscriptionTransactions(UserSubscriptionTransactions:{
        user_subscription_id: "${userSubscriptionId || ''}"
@@ -65,7 +68,7 @@ export async function transactionSuccessTrigger(args: SuccessTransactionInputFor
        transaction_type: ${transactionType}
        transaction_date: "${format(addMinutes(new Date(transactionDate), +330), 'yyyy-MM-dd hh:mm')}"
        amount: ${parseFloat(amount)}
-       source_transaction_indentifier: "${sourceTransactionIdentifier || ''} "
+       source_transaction_indentifier: "${sourceTransactionIdentifier || ''}"
        mobile_number:"${mobileNumber}"
        payment_reference_id: "${transactionId || ''}",
        coupon_availed: "${couponAvailed || false}"
