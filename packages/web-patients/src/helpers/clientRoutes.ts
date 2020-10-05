@@ -69,6 +69,7 @@ export const clientRoutes = {
   covidProtocol: () => '/medical-condition',
   prescription: (appointmentId: string) => `/prescription/${appointmentId}`,
   oneApolloMembership: () => '/oneapollo-membership',
+  pageNotFound: () => '/page-not-found',
   // sitemap: (sitemap: string) => `/${sitemap}`,
   // childSitemap: (sitemap: string, pageNo: string) => `/${sitemap}/${pageNo}`,
 };

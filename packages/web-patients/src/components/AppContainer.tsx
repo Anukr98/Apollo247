@@ -72,6 +72,7 @@ const AddressBook = loadable(() => import('components/MyAccount/AddressBook'));
 const MyAccount = loadable(() => import('components/MyAccount/MyAccount'));
 const MyPayments = loadable(() => import('components/MyAccount/MyPayments'));
 const KnowledgeArticleLanding = loadable(() => import('components/KnowledgeArticleLanding'));
+const PageNotFound = loadable(() => import('components/PageNotFound'));
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -227,6 +228,7 @@ const App: React.FC = () => {
           path={clientRoutes.knowledgeBaseLanding()}
           component={KnowledgeArticleLanding}
         />
+        <Route exact path={clientRoutes.pageNotFound()} component={PageNotFound} />
       </Switch>
     </div>
   );
