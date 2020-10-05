@@ -1319,6 +1319,9 @@ export class SearchHistory extends BaseEntity {
   @Column()
   type: SEARCH_TYPE;
 
+  @Column()
+  image: string;
+
   @Index()
   @Column()
   typeId: string;
@@ -1358,6 +1361,9 @@ export class PatientAddress extends BaseEntity {
 
   @Column({ nullable: true })
   addressType: PATIENT_ADDRESS_TYPE;
+
+  @Column({ nullable: true, default: false })
+  defaultAddress: boolean;
 
   @Column({ nullable: true })
   city: string;

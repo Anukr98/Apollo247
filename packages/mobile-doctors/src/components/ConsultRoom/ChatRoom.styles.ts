@@ -141,6 +141,7 @@ export const ChatRoomStyles = StyleSheet.create({
     backgroundColor: 'transparent',
     borderRadius: 10,
     maxWidth: '90%',
+    marginLeft: 38,
   },
   imageMainContainer: {
     backgroundColor: 'transparent',
@@ -156,7 +157,6 @@ export const ChatRoomStyles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   documentImageStyle: {
-    resizeMode: 'contain',
     width: '100%',
     height: '100%',
     borderTopLeftRadius: 10,
@@ -165,7 +165,6 @@ export const ChatRoomStyles = StyleSheet.create({
   },
   messageTextContainer: {
     backgroundColor: 'white',
-    marginLeft: 38,
     borderRadius: 10,
   },
   messageTextStyle: {

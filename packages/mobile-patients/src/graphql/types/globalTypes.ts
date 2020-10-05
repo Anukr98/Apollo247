@@ -452,6 +452,16 @@ export enum UPLOAD_FILE_TYPES {
   PNG = "PNG",
 }
 
+export enum USER_STATUS {
+  ENTERING = "ENTERING",
+  LEAVING = "LEAVING",
+}
+
+export enum USER_TYPE {
+  DOCTOR = "DOCTOR",
+  PATIENT = "PATIENT",
+}
+
 export enum WeekDay {
   FRIDAY = "FRIDAY",
   MONDAY = "MONDAY",
@@ -815,7 +825,7 @@ export interface MedicineCartOMSInput {
 export interface MedicineCartOMSItem {
   medicineSKU?: string | null;
   medicineName?: string | null;
-  couponFree?: boolean | null;
+  couponFree?: number | null;
   price?: number | null;
   quantity?: number | null;
   mrp?: number | null;
@@ -870,7 +880,7 @@ export interface OrderLineItems {
   productType: CouponCategoryApplicable;
   quantity: number;
   specialPrice: number;
-  couponFree?: boolean | null;
+  couponFree?: number | null;
 }
 
 export interface OtpVerificationInput {
@@ -990,6 +1000,7 @@ export interface SaveSearchInput {
   type?: SEARCH_TYPE | null;
   typeId: string;
   typeName?: string | null;
+  image?: string | null;
   patient: string;
 }
 

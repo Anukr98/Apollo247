@@ -112,6 +112,7 @@ const styles = StyleSheet.create({
 });
 
 export interface DoctorCardProps extends NavigationScreenProps {
+  rowId?: number;
   rowData:
     | SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors
     | getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors
@@ -537,6 +538,9 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                         'Patient Gender': currentPatient.gender,
                         'Customer ID': currentPatient.id,
                       };
+                      if (props.rowId) {
+                        eventAttributes['Rank'] = props.rowId;
+                      }
                       postWebEngageEvent(
                         WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK,
                         eventAttributes

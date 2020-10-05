@@ -47,6 +47,7 @@ import {
   ADD_CHAT_DOCUMENTS,
   UPLOAD_MEDIA_DOCUMENT_PRISM,
   SEND_PATIENT_WAIT_NOTIFICATION,
+  UPDATE_HEALTH_RECORD_NUDGE_STATUS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   bookRescheduleAppointment,
@@ -56,6 +57,10 @@ import {
   bookTransferAppointment,
   bookTransferAppointmentVariables,
 } from '@aph/mobile-patients/src/graphql/types/bookTransferAppointment';
+import {
+  updateHealthRecordNudgeStatus,
+  updateHealthRecordNudgeStatusVariables,
+} from '@aph/mobile-patients/src/graphql/types/updateHealthRecordNudgeStatus';
 import { getAppointmentData_getAppointmentData_appointmentsHistory } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
 import { getPatinetAppointments_getPatinetAppointments_patinetAppointments } from '@aph/mobile-patients/src/graphql/types/getPatinetAppointments';
 import {
@@ -75,6 +80,7 @@ import {
   mediaPrescriptionSource,
   MediaPrescriptionFileProperties,
   Gender,
+  USER_STATUS,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   updateAppointmentSession,
@@ -92,6 +98,7 @@ import {
   getPastAppoinmentCount,
   updateExternalConnect,
   getSecretaryDetailsByDoctor,
+  getParticipantsLiveStatus,
 } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
   WebEngageEventName,
@@ -161,6 +168,7 @@ import { ChatRoom_NotRecorded_Value } from '@aph/mobile-patients/src/strings/str
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import RNCallKeep from 'react-native-callkeep';
 import VoipPushNotification from 'react-native-voip-push-notification';
+import { convertMinsToHrsMins } from '@aph/mobile-patients/src/utils/dateUtil';
 
 interface OpentokStreamObject {
   connection: {
@@ -368,10 +376,43 @@ const styles = StyleSheet.create({
   textInputContainerStyles: {
     backgroundColor: 'white',
     alignItems: 'center',
+    paddingBottom: 15,
+  },
+  inputMainContainer: {
+    width: width,
+    minHeight: 66,
+    backgroundColor: 'white',
     position: 'absolute',
     left: 0,
     right: 0,
-    bottom: 15,
+    bottom: 20,
+  },
+  inputStyles: {
+    marginLeft: 20,
+    marginTop: 5,
+    width: width - 130,
+    ...theme.fonts.IBMPlexSansMedium(16),
+    display: 'flex',
+    flexGrow: 1,
+    flexWrap: 'wrap',
+    alignSelf: 'center',
+  },
+  sendButtonStyles: {
+    width: 50,
+    height: 50,
+    position: 'absolute',
+    right: 5,
+    bottom: 30,
+  },
+  uploadButtonStyles: {
+    width: 65,
+    height: 60,
+    position: 'absolute',
+    zIndex: 900,
+    left: 5,
+    bottom: 20,
+    alignItems: 'center',
+    paddingVertical: 5,
   },
 });
 
@@ -382,7 +423,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
   const fromIncomingCall = props.navigation.state.params!.isCall;
   const { isIphoneX } = DeviceHelper();
-  const [contentHeight, setContentHeight] = useState(0);
+  const [contentHeight, setContentHeight] = useState(40);
 
   let appointmentData: any = props.navigation.getParam('data');
   const caseSheet = followUpChatDaysCaseSheet(appointmentData.caseSheet);
@@ -599,7 +640,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       | WebEngageEventName.SD_CONSULTATION_STARTED
       | WebEngageEventName.SD_VIDEO_CALL_STARTED
       | WebEngageEventName.DOWNLOAD_PRESCRIPTION
-      | WebEngageEventName.VIEW_PRESCRIPTION_IN_CONSULT_DETAILS,
+      | WebEngageEventName.VIEW_PRESCRIPTION_IN_CONSULT_DETAILS
+      | WebEngageEventName.PATIENT_JOINED_CONSULT
+      | WebEngageEventName.PATIENT_ENDED_CONSULT,
     data:
       | getAppointmentData_getAppointmentData_appointmentsHistory
       | getPatinetAppointments_getPatinetAppointments_patinetAppointments = appointmentData
@@ -611,7 +654,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       | WebEngageEvents[WebEngageEventName.SD_CONSULTATION_STARTED]
       | WebEngageEvents[WebEngageEventName.SD_VIDEO_CALL_STARTED]
       | WebEngageEvents[WebEngageEventName.DOWNLOAD_PRESCRIPTION]
-      | WebEngageEvents[WebEngageEventName.VIEW_PRESCRIPTION_IN_CONSULT_DETAILS] = {
+      | WebEngageEvents[WebEngageEventName.VIEW_PRESCRIPTION_IN_CONSULT_DETAILS]
+      | WebEngageEvents[WebEngageEventName.PATIENT_JOINED_CONSULT]
+      | WebEngageEvents[WebEngageEventName.PATIENT_ENDED_CONSULT] = {
       'Doctor Name': g(data, 'doctorInfo', 'fullName')!,
       'Speciality ID': g(data, 'doctorInfo', 'specialty', 'id')!,
       'Speciality Name': g(data, 'doctorInfo', 'specialty', 'name')!,
@@ -765,7 +810,26 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (isVoipCall || fromIncomingCall) {
       joinCallHandler();
     }
+    updateNumberOfParticipants();
   }, []);
+
+  const updateNumberOfParticipants = async (status: USER_STATUS = USER_STATUS.ENTERING) => {
+    /**
+     * This relation is for patient and senior doctor only(not for JD)
+     */
+    const res: any = await getParticipantsLiveStatus(client, channel, status);
+    if (res?.data?.setAndGetNumberOfParticipants?.NUMBER_OF_PARTIPANTS) {
+      const totalParticipants: number = res.data.setAndGetNumberOfParticipants.NUMBER_OF_PARTIPANTS;
+      if (totalParticipants > 1) {
+        jrDoctorJoined.current = false;
+        setDoctorJoined(true);
+        setDoctorJoinedChat && setDoctorJoinedChat(true);
+        setTimeout(() => {
+          setDoctorJoined(false);
+        }, 10000);
+      }
+    }
+  };
 
   const backDataFunctionality = () => {
     try {
@@ -800,9 +864,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     getSecretaryData();
     // requestToJrDoctor();
     // updateSessionAPI();
-    setTimeout(() => {
-      CheckDoctorPresentInChat();
-    }, 2000);
     if (isIos()) {
       handleCallkitEventListeners();
       handleVoipEventListeners();
@@ -1287,15 +1348,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
   };
 
-  const checkNudgeScreenVisibility = async () => {
-    const hideNudgeScreenappointmentID = (await AsyncStorage.getItem(appointmentData.id)) || '';
-    // console.log('hideNudgeScreenappointmentID', hideNudgeScreenappointmentID);
-    if (hideNudgeScreenappointmentID != appointmentData.id) {
-      setDisplayUploadHealthRecords(true);
-      console.log('if hideNudgeScreenappointmentID', hideNudgeScreenappointmentID);
-    } else {
-      setDisplayUploadHealthRecords(false);
-      console.log('else hideNudgeScreenappointmentID', hideNudgeScreenappointmentID);
+  const showAndUpdateNudgeScreenVisibility = async () => {
+    setDisplayUploadHealthRecords(true);
+    const input = {
+      appointmentId: appointmentData.id,
+      hideHealthRecordNudge: true,
+    };
+    try {
+      await client.mutate<updateHealthRecordNudgeStatus, updateHealthRecordNudgeStatusVariables>({
+        mutation: UPDATE_HEALTH_RECORD_NUDGE_STATUS,
+        variables: input,
+      });
+    } catch (error) {
+      CommonBugFender('ChatRoom_updateHealthRecordNudgeStatus', error);
     }
   };
 
@@ -1545,6 +1610,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const CheckDoctorPresentInChat = () => {
     if (status === STATUS.COMPLETED) return; // no need to show join button if consultation has been completed
 
+    updateNumberOfParticipants(USER_STATUS.ENTERING);
     pubnub
       .hereNow({
         channels: [channel],
@@ -1556,12 +1622,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           response.channels &&
           response.channels[appointmentData.id] &&
           response.channels[appointmentData.id].occupants;
-        const occupancyDoctor =
-          data &&
-          data.length > 0 &&
-          data.filter((obj: any) => {
-            return obj.uuid === 'DOCTOR' || obj.uuid.indexOf('DOCTOR_') > -1;
-          });
         const occupancyJrDoctor =
           data &&
           data.length > 0 &&
@@ -1570,14 +1630,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           });
         if (occupancyJrDoctor && occupancyJrDoctor.length >= 1) {
           jrDoctorJoined.current = true;
-        }
-        if (occupancyDoctor && occupancyDoctor.length >= 1 && response.totalOccupancy >= 2) {
-          jrDoctorJoined.current = false;
-          setDoctorJoined(true);
-          setDoctorJoinedChat && setDoctorJoinedChat(true);
-          setTimeout(() => {
-            setDoctorJoined(false);
-          }, 10000);
         }
       })
       .catch((error) => {
@@ -1787,7 +1839,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     sessionDisconnected: (event: string) => {
       console.log('session stream sessionDisconnected!', event);
       eventsAfterConnectionDestroyed();
-      // disconnectCallText();
     },
     sessionReconnected: (event: string) => {
       setSnackbarState(false);
@@ -1808,7 +1859,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     streamDestroyed: (event: string) => {
       console.log('session streamDestroyed destroyed!', event); // is called when the doctor network is disconnected
       eventsAfterConnectionDestroyed();
-      // disconnectCallText();
     },
     streamPropertyChanged: (event: OptntokChangeProp) => {
       console.log('session streamPropertyChanged!', event); // is called when the doctor network is disconnected
@@ -2010,6 +2060,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       abondmentStarted = false;
       stopJoinTimer();
       // stopCallAbondmentTimer();
+      updateNumberOfParticipants(USER_STATUS.LEAVING);
       try {
         AppState.removeEventListener('change', _handleAppStateChange);
         BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
@@ -2340,11 +2391,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const automatedTextFromPatient = () => {
+    const chatDays = appointmentData?.doctorInfo?.chatDays;
     let step5;
-    if (followUpAfterInDays > 0) {
-      step5 = `Follow up via text (valid for ${followUpAfterInDays} ${
-        followUpAfterInDays === 1 ? 'day' : 'days'
-      })`;
+
+    if (chatDays > 0) {
+      step5 = `Follow up via text (valid for ${chatDays} ${chatDays === 1 ? 'day' : 'days'})`;
     } else {
       step5 = `No follow Up via text is provided`;
     }
@@ -2379,8 +2430,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (appointmentData.isJdQuestionsComplete) {
       console.log({});
       requestToJrDoctor();
-      if (!disableChat && status !== STATUS.COMPLETED) {
-        checkNudgeScreenVisibility();
+      if (
+        !disableChat &&
+        status !== STATUS.COMPLETED &&
+        !appointmentData.hideHealthRecordNudge &&
+        !isVoipCall &&
+        !fromIncomingCall
+      ) {
+        showAndUpdateNudgeScreenVisibility();
       }
       // startJoinTimer(0);
       // thirtySecondCall();
@@ -5014,20 +5071,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const renderChatHeader = () => {
     let time = '';
-    const diffMin = Math.ceil(
-      moment(appointmentData.appointmentDateTime).diff(moment(), 'minutes', true)
-    );
-    const diffHours = Math.ceil(
-      moment(appointmentData.appointmentDateTime).diff(moment(), 'hours', true)
-    );
-    const diffDays = Math.ceil(
-      moment(appointmentData.appointmentDateTime).diff(moment(), 'days', true)
-    );
-    const diffMonths = Math.ceil(
-      moment(appointmentData.appointmentDateTime).diff(moment(), 'months', true)
-    );
+    const appointmentTime = appointmentData.appointmentDateTime;
+    const diffMin = Math.ceil(moment(appointmentTime).diff(moment(), 'minutes', true));
+    const diffHours = Math.floor(moment(appointmentTime).diff(moment(), 'hours', true));
+    const diffDays = Math.round(moment(appointmentTime).diff(moment(), 'days', true));
     // console.log(diffMin, diffHours, diffDays, diffMonths, 'difference');
-
     if (textChange && !jrDoctorJoined.current) {
       time = 'Consult is In-progress';
     } else {
@@ -5036,13 +5084,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       } else if (diffMin <= 0) {
         time = `Will be joining soon`;
       } else if (diffMin > 0 && diffMin < 60 && diffHours <= 1) {
-        time = `Joining in Some time`;
-      } else if (diffHours > 0 && diffHours < 24 && diffDays <= 1) {
-        time = `Joining in Some time`;
-      } else if (diffDays > 0 && diffDays < 31 && diffMonths <= 1) {
-        time = `Joining in Some time`;
+        time = `Joining in ${diffMin} minute${diffMin === 1 ? '' : 's'}`;
+      } else if (diffHours >= 0 && diffHours < 24 && diffDays <= 1) {
+        time = `Joining in ${convertMinsToHrsMins(diffMin)}`;
       } else {
-        time = `Joining in Some time`;
+        time = `Consult on ${moment(appointmentTime).format('DD/MM')} at ${moment(
+          appointmentTime
+        ).format('h:mm A')}`;
       }
     }
     return (
@@ -5100,6 +5148,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             onPress={() => {
               patientJoinedCall.current = true;
               joinCallHandler();
+              postAppointmentWEGEvent(WebEngageEventName.PATIENT_JOINED_CONSULT);
             }}
           />
         </View>
@@ -5231,7 +5280,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         <FlatList
           style={{
             flex: 1,
-            marginBottom: 30,
+            marginBottom: 80,
           }}
           // ListHeaderComponent={renderChatHeader()}
           keyboardShouldPersistTaps="always"
@@ -5794,7 +5843,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               setIsPublishAudio(true);
               setShowVideo(true);
               setCameraPosition('front');
-
+              postAppointmentWEGEvent(WebEngageEventName.PATIENT_ENDED_CONSULT);
               pubnub.publish(
                 {
                   message: {
@@ -5871,7 +5920,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setCameraPosition('front');
             stopTimer();
             setHideStatusBar(false);
-
+            postAppointmentWEGEvent(WebEngageEventName.PATIENT_ENDED_CONSULT);
             pubnub.publish(
               {
                 message: {
@@ -6091,7 +6140,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     stopTimer();
     setHideStatusBar(false);
     setChatReceived(false);
-
+    postAppointmentWEGEvent(WebEngageEventName.PATIENT_ENDED_CONSULT);
     pubnub.publish(
       {
         message: {
@@ -6212,6 +6261,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 APICallAgain();
               }
             });
+            postAppointmentWEGEvent(WebEngageEventName.PATIENT_JOINED_CONSULT);
           }}
         >
           <PickCallIcon
@@ -6278,37 +6328,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setIsCall(true);
     }
     setLoading(false);
-  };
-
-  const disconnectCallText = () => {
-    pubnub.publish(
-      {
-        message: {
-          isTyping: true,
-          message: isAudio.current ? 'Audio call ended' : 'Video call ended',
-          duration: callTimerStarted,
-          id: patientId,
-          messageDate: new Date(),
-        },
-        channel: channel,
-        storeInHistory: true,
-      },
-      (status, response) => {}
-    );
-
-    pubnub.publish(
-      {
-        message: {
-          isTyping: true,
-          message: endCallMsg,
-          id: patientId,
-          messageDate: new Date(),
-        },
-        channel: channel,
-        storeInHistory: true,
-      },
-      (status, response) => {}
-    );
   };
 
   const options = {
@@ -6930,27 +6949,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         ) : null}
         {renderChatView()}
         {Platform.OS == 'ios' ? (
-          <View
-            style={{
-              width: width,
-              height: 66,
-              backgroundColor: 'white',
-              bottom: isIphoneX() ? 36 : 0,
-              top: isIphoneX() ? 2 : 0,
-              opacity: disableChat ? 0.5 : 1,
-            }}
-          >
-            <View style={{ flexDirection: 'row', width: width }}>
+          <>
+            {!displayChatQuestions ? (
               <TouchableOpacity
                 activeOpacity={1}
-                style={{
-                  width: 58,
-                  height: 50,
-                  marginLeft: 5,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  zIndex: 1000,
-                }}
+                style={[styles.uploadButtonStyles, { opacity: disableChat ? 0.5 : 1 }]}
                 onPress={async () => {
                   if (!disableChat) {
                     CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
@@ -6971,22 +6974,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   {'Upload Records'}
                 </Text>
               </TouchableOpacity>
+            ) : null}
+            <View style={[styles.inputMainContainer, { opacity: disableChat ? 0.5 : 1 }]}>
               <View style={styles.textInputContainerStyles}>
                 <TextInput
                   autoCorrect={false}
                   placeholder="Type here…"
                   multiline={true}
-                  style={{
-                    marginLeft: 6,
-                    marginTop: 5,
-                    height: Math.max(35, contentHeight),
-                    width: width - 120,
-                    ...theme.fonts.IBMPlexSansMedium(16),
-                    display: 'flex',
-                    flexGrow: 1,
-                    flexWrap: 'wrap',
-                    alignSelf: 'center',
-                  }}
+                  style={[styles.inputStyles, { height: Math.max(40, contentHeight) }]}
                   onContentSizeChange={(event) => {
                     setContentHeight(event.nativeEvent.contentSize.height);
                   }}
@@ -7003,23 +6998,32 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 />
                 <View
                   style={{
-                    marginLeft: 6,
+                    marginLeft: 20,
                     marginTop: 0,
                     height: 2,
-                    width: width - 120,
+                    width: width - 130,
                     backgroundColor: '#00b38e',
                   }}
                 />
               </View>
+              {displayChatQuestions && Platform.OS === 'ios' && (
+                <ChatQuestions
+                  onItemDone={(value: { k: string; v: string[] }) => {
+                    console.log('and....', value);
+                    setAnswerData([value]);
+                  }}
+                  onDonePress={(values: { k: string; v: string[] }[]) => {
+                    setAnswerData(values);
+                    setDisplayChatQuestions(false);
+                    setDisplayUploadHealthRecords(true);
+                  }}
+                />
+              )}
+            </View>
+            {!displayChatQuestions ? (
               <TouchableOpacity
                 activeOpacity={1}
-                style={{
-                  width: 50,
-                  height: 50,
-                  position: 'absolute',
-                  top: 10,
-                  right: 5,
-                }}
+                style={[styles.sendButtonStyles, { opacity: disableChat ? 0.5 : 1 }]}
                 onPress={async () => {
                   if (!disableChat) {
                     const textMessage = messageText.trim();
@@ -7032,86 +7036,49 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     CommonLogEvent(AppRoutes.ChatRoom, 'Message sent clicked');
 
                     send(textMessage);
-                    setContentHeight(35);
+                    setContentHeight(40);
                   }
                 }}
               >
                 <ChatSend style={{ width: 24, height: 24, marginTop: 8, marginLeft: 14 }} />
               </TouchableOpacity>
-            </View>
-            {displayChatQuestions && Platform.OS === 'ios' && (
-              <ChatQuestions
-                onItemDone={(value: { k: string; v: string[] }) => {
-                  console.log('and....', value);
-                  setAnswerData([value]);
-                }}
-                onDonePress={(values: { k: string; v: string[] }[]) => {
-                  setAnswerData(values);
-                  setDisplayChatQuestions(false);
-                  setDisplayUploadHealthRecords(true);
-                }}
-              />
-            )}
-          </View>
+            ) : null}
+          </>
         ) : (
-          //  <KeyboardAvoidingView behavior="padding" enabled>
-          <View
-            style={{
-              width: width,
-              height: 66,
-              backgroundColor: 'white',
-              bottom: isIphoneX() ? 36 : 0,
-              opacity: disableChat ? 0.5 : 1,
-            }}
-          >
-            <View style={{ flexDirection: 'row', width: width }}>
-              <TouchableOpacity
-                activeOpacity={1}
+          <>
+            <TouchableOpacity
+              activeOpacity={1}
+              style={[styles.uploadButtonStyles, { bottom: 0, opacity: disableChat ? 0.5 : 1 }]}
+              onPress={async () => {
+                if (!disableChat) {
+                  consultWebEngageEvents(WebEngageEventName.UPLOAD_RECORDS_CLICK_CHATROOM);
+                  CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
+                  setDropdownVisible(!isDropdownVisible);
+                }
+              }}
+            >
+              <UploadHealthRecords
+                style={{ width: 21, height: 21, backgroundColor: 'transparent' }}
+              />
+              <Text
                 style={{
-                  width: 58,
-                  height: 50,
-                  marginLeft: 5,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  zIndex: 1000,
-                }}
-                onPress={async () => {
-                  if (!disableChat) {
-                    consultWebEngageEvents(WebEngageEventName.UPLOAD_RECORDS_CLICK_CHATROOM);
-                    CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
-                    setDropdownVisible(!isDropdownVisible);
-                  }
+                  ...theme.viewStyles.text('M', 7, '#01475b', 1, undefined, -0.03),
+                  marginTop: 2,
+                  textAlign: 'center',
                 }}
               >
-                <UploadHealthRecords
-                  style={{ width: 21, height: 21, backgroundColor: 'transparent' }}
-                />
-                <Text
-                  style={{
-                    ...theme.viewStyles.text('M', 7, '#01475b', 1, undefined, -0.03),
-                    marginTop: 2,
-                    textAlign: 'center',
-                  }}
-                >
-                  {'Upload Records'}
-                </Text>
-              </TouchableOpacity>
+                {'Upload Records'}
+              </Text>
+            </TouchableOpacity>
+            <View
+              style={[styles.inputMainContainer, { bottom: 0, opacity: disableChat ? 0.5 : 1 }]}
+            >
               <View style={styles.textInputContainerStyles}>
                 <TextInput
                   autoCorrect={false}
                   placeholder="Type here…"
                   multiline={true}
-                  style={{
-                    marginLeft: 6,
-                    marginTop: 5,
-                    height: Math.max(35, contentHeight),
-                    width: width - 120,
-                    ...theme.fonts.IBMPlexSansMedium(16),
-                    display: 'flex',
-                    flexGrow: 1,
-                    flexWrap: 'wrap',
-                    alignSelf: 'center',
-                  }}
+                  style={[styles.inputStyles, { height: Math.max(40, contentHeight) }]}
                   onContentSizeChange={(event) => {
                     setContentHeight(event.nativeEvent.contentSize.height);
                   }}
@@ -7128,46 +7095,38 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 />
                 <View
                   style={{
-                    marginLeft: 6,
+                    marginLeft: 20,
                     marginTop: 0,
                     height: 2,
-                    width: width - 120,
+                    width: width - 130,
                     backgroundColor: '#00b38e',
                   }}
                 />
               </View>
-              <TouchableOpacity
-                activeOpacity={1}
-                style={{
-                  width: 50,
-                  height: 50,
-                  position: 'absolute',
-                  top: 10,
-                  right: 5,
-                }}
-                onPress={async () => {
-                  if (!disableChat) {
-                    const textMessage = messageText.trim();
-
-                    if (textMessage.length == 0) {
-                      Alert.alert('Apollo', 'Please write something to send message.');
-                      CommonLogEvent(AppRoutes.ChatRoom, 'Please write something to send message.');
-                      return;
-                    }
-                    CommonLogEvent(AppRoutes.ChatRoom, 'Message sent clicked');
-
-                    send(textMessage);
-                    setContentHeight(35);
-                  }
-                }}
-              >
-                <ChatSend style={{ width: 24, height: 24, marginTop: 8, marginLeft: 14 }} />
-              </TouchableOpacity>
             </View>
-          </View>
-        )
-        // </KeyboardAvoidingView>
-        }
+            <TouchableOpacity
+              activeOpacity={1}
+              style={[styles.sendButtonStyles, { bottom: 0, opacity: disableChat ? 0.5 : 1 }]}
+              onPress={async () => {
+                if (!disableChat) {
+                  const textMessage = messageText.trim();
+
+                  if (textMessage.length == 0) {
+                    Alert.alert('Apollo', 'Please write something to send message.');
+                    CommonLogEvent(AppRoutes.ChatRoom, 'Please write something to send message.');
+                    return;
+                  }
+                  CommonLogEvent(AppRoutes.ChatRoom, 'Message sent clicked');
+
+                  send(textMessage);
+                  setContentHeight(40);
+                }
+              }}
+            >
+              <ChatSend style={{ width: 24, height: 24, marginTop: 8, marginLeft: 14 }} />
+            </TouchableOpacity>
+          </>
+        )}
 
         {displayChatQuestions && Platform.OS === 'android' && (
           <ChatQuestions

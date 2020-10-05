@@ -306,6 +306,17 @@ export enum PAYMENT_METHODS {
   UPI = "UPI",
 }
 
+export enum PAYMENT_METHODS_REVERSE {
+  COD = "COD",
+  CREDIT_CARD = "CREDIT_CARD",
+  CREDIT_CARD_EMI = "CREDIT_CARD_EMI",
+  DEBIT_CARD = "DEBIT_CARD",
+  NET_BANKING = "NET_BANKING",
+  PAYTM_POSTPAID = "PAYTM_POSTPAID",
+  PAYTM_WALLET = "PAYTM_WALLET",
+  UPI = "UPI",
+}
+
 export enum PRISM_DOCUMENT_CATEGORY {
   HealthChecks = "HealthChecks",
   OpSummary = "OpSummary",
@@ -315,6 +326,13 @@ export enum PRISM_DOCUMENT_CATEGORY {
 export enum PharmaDiscountApplicableOn {
   MRP = "MRP",
   SPECIAL_PRICE = "SPECIAL_PRICE",
+}
+
+export enum REFUND_STATUS {
+  REFUND_FAILED = "REFUND_FAILED",
+  REFUND_REQUEST_NOT_RAISED = "REFUND_REQUEST_NOT_RAISED",
+  REFUND_REQUEST_RAISED = "REFUND_REQUEST_RAISED",
+  REFUND_SUCCESSFUL = "REFUND_SUCCESSFUL",
 }
 
 export enum REQUEST_ROLES {
@@ -738,7 +756,7 @@ export interface MedicineCartOMSInput {
 export interface MedicineCartOMSItem {
   medicineSKU?: string | null;
   medicineName?: string | null;
-  couponFree?: boolean | null;
+  couponFree?: number | null;
   price?: number | null;
   quantity?: number | null;
   mrp?: number | null;
@@ -801,7 +819,7 @@ export interface OrderLineItems {
   productType: CouponCategoryApplicable;
   quantity: number;
   specialPrice: number;
-  couponFree?: boolean | null;
+  couponFree?: number | null;
 }
 
 export interface OtpVerificationInput {
@@ -911,6 +929,7 @@ export interface SaveSearchInput {
   type?: SEARCH_TYPE | null;
   typeId: string;
   typeName?: string | null;
+  image?: string | null;
   patient: string;
 }
 

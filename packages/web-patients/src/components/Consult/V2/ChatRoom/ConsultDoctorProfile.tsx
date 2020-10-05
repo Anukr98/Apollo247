@@ -24,6 +24,7 @@ import {
   isPastAppointment,
   getDiffInMinutes,
   getAvailableFreeChatDays,
+  disablingActionsTimeBeforeConsultation,
 } from 'helpers/commonHelpers';
 import { useApolloClient } from 'react-apollo-hooks';
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -409,6 +410,8 @@ interface ConsultDoctorProfileProps {
   srDoctorJoined: boolean;
   isConsultCompleted: boolean;
   secretaryData: getSecretaryDetailsByDoctorId;
+  setDisableActions: (disableActions: boolean) => void;
+  disableActions: boolean;
 }
 
 type Params = { appointmentId: string; doctorId: string };
@@ -430,6 +433,8 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
     handleRescheduleOpen,
     appointmentDetails,
     secretaryData,
+    setDisableActions,
+    disableActions,
   } = props;
 
   const [showMore, setShowMore] = useState<boolean>(true);
@@ -527,6 +532,10 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
     };
 
     const differenceInMinutes = getDiffInMinutes(appointmentDetails.appointmentDateTime);
+
+    if (differenceInMinutes < disablingActionsTimeBeforeConsultation) {
+      setDisableActions(true);
+    }
     shouldRefreshComponent(differenceInMinutes);
     const specialityName = (specialty && specialty.name) || '';
 
@@ -600,7 +609,8 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
             {appointmentDetails.status !== STATUS.COMPLETED &&
               appointmentDetails.status !== STATUS.CANCELLED &&
               !appointmentDetails.isSeniorConsultStarted &&
-              !props.srDoctorJoined && (
+              !props.srDoctorJoined &&
+              !disableActions && (
                 <div
                   onClick={() => setIsCancelPopoverOpen(true)}
                   ref={cancelAppointRef}
@@ -707,7 +717,8 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                       <div className={classes.joinInSection}>
                         <span>Doctor Joining In</span>
                         <span className={classes.joinTime}>
-                          {differenceInMinutes > 0 && differenceInMinutes <= 15
+                          {differenceInMinutes > 0 &&
+                          differenceInMinutes < disablingActionsTimeBeforeConsultation
                             ? `${differenceInMinutes} minutes`
                             : differenceInWords}
                         </span>
@@ -827,7 +838,11 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
             horizontal: 'right',
           }}
         >
-          <AphButton onClick={() => setShowCancelPopup(true)} className={classes.cancelBtn}>
+          <AphButton
+            disabled={disableActions}
+            onClick={() => setShowCancelPopup(true)}
+            className={classes.cancelBtn}
+          >
             Cancel Appointment
           </AphButton>
         </Popover>

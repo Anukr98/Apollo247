@@ -181,6 +181,8 @@ interface ConsultProps {
   setPublisherError: (error: any) => void;
   setSubscriberError: (error: any) => void;
   setGiveRating?: (flag: boolean) => void;
+  setUserMessageOnCall: (msg: string) => void;
+  userMessageOnCall: string;
 }
 function getCookieValue() {
   const name = 'action=';
@@ -286,6 +288,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     },
     connected: (event: string) => {
       console.log('Subscribe stream connected!', event);
+      props.setUserMessageOnCall('Patient Joined');
+      setTimeout(() => {
+        props.setUserMessageOnCall('');
+      }, 3000);
     },
     disconnected: (event: string) => {
       console.log('Subscribe stream disconnected!', event);
@@ -361,6 +367,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                     ? '0' + props.timerSeconds
                     : props.timerSeconds
                 }`}
+              {props.userMessageOnCall && props.userMessageOnCall !== ''  && (<p className={classes.audioVideoState}>{props.userMessageOnCall}</p>) }
               <p className={classes.audioVideoState}>{checkReconnecting()}</p>
               <p className={classes.audioVideoState}>{checkDowngradeToAudio()}</p>
               <p className={classes.audioVideoState}>{isPaused()}</p>

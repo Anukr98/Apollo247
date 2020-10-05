@@ -72,6 +72,7 @@ import {
   postPharmacyAddNewAddressCompleted,
 } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
+  ProductPageViewedSource,
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
@@ -424,7 +425,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             mou: medicineDetails.mou,
             name: medicineDetails!.name,
             price: medicineDetails.price,
-            specialPrice: Number(couponProducts[index]!.mrp), // special price as coupon product price
+            specialPrice: Number(couponProducts[index]!.specialPrice),
             quantity: couponProducts[index]!.quantity,
             prescriptionRequired: medicineDetails.is_prescription_required == '1',
             isMedicine: (medicineDetails.type_id || '').toLowerCase() == 'pharma',
@@ -432,6 +433,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             isInStock: !!medicineDetails.is_in_stock,
             maxOrderQty: medicineDetails.MaxOrderQty,
             productType: medicineDetails.type_id,
+            isFreeCouponProduct: couponProducts[index]!.couponFree,
           } as ShoppingCartItem;
         });
         addMultipleCartItems!(medicinesAll as ShoppingCartItem[]);
@@ -823,7 +825,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         categoryId: item.productType,
         mrp: item.price,
         quantity: item.quantity,
-        specialPrice: item.specialPrice !== undefined ? item.specialPrice : item.price,
+        specialPrice: item.specialPrice ? item.specialPrice : item.price,
       })),
     };
     validateConsultCoupon(data)
@@ -978,20 +980,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     );
   };
 
-  const postwebEngageProductClickedEvent = ({ name, id }: ShoppingCartItem) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PRODUCT_CLICKED] = {
-      'product name': name,
-      'product id': id,
-      Brand: '',
-      'Brand ID': '',
-      'category name': '',
-      'category ID': '',
-      Source: 'List',
-      'Section Name': 'CART',
-    };
-    postWebEngageEvent(WebEngageEventName.PHARMACY_PRODUCT_CLICKED, eventAttributes);
-  };
-
   const renderItemsInCart = () => {
     // console.log('cartItems >>', cartItems);
     const cartItemsCount =
@@ -1046,11 +1034,11 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               containerStyle={medicineCardContainerStyle}
               key={medicine.id}
               onPress={() => {
-                postwebEngageProductClickedEvent(medicine);
                 CommonLogEvent(AppRoutes.YourCart, 'Navigate to medicine details scene');
                 props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
                   sku: medicine.id,
                   title: medicine.name,
+                  movedFrom: ProductPageViewedSource.CART,
                 });
               }}
               medicineName={medicine.name}

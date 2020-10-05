@@ -8,6 +8,11 @@ import { useQuery } from 'react-apollo-hooks';
 import { GET_CONSULT_QUEUE } from 'graphql/consults';
 import { useCurrentPatient } from 'hooks/authHooks';
 import { GetConsultQueueVariables, GetConsultQueue } from 'graphql/types/GetConsultQueue';
+import { GET_PAST_CONSULT_QUEUE } from 'graphql/appointments';
+import {
+  GetPastConsultQueueVariables,
+  GetPastConsultQueue,
+} from 'graphql/types/GetPastConsultQueue';
 import _isEmpty from 'lodash/isEmpty';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
@@ -93,26 +98,27 @@ export const JuniorDoctorPast: React.FC = (props) => {
   const currentDoctor = useCurrentPatient();
   const { isSigningIn } = useAuth();
 
-  const { data, loading, error, stopPolling } = useQuery<GetConsultQueue, GetConsultQueueVariables>(
-    GET_CONSULT_QUEUE,
-    {
-      skip: !currentDoctor,
-      variables: {
-        doctorId: currentDoctor!.id,
-        isActive: false,
-      },
-      pollInterval: 180 * 1000,
-      notifyOnNetworkStatusChange: true,
-    }
-  );
+  const { data, loading, error, stopPolling } = useQuery<
+    GetPastConsultQueue,
+    GetPastConsultQueueVariables
+  >(GET_PAST_CONSULT_QUEUE, {
+    skip: !currentDoctor,
+    variables: {
+      doctorId: currentDoctor!.id,
+      limit: parseInt(process.env.INACTIVE_CONSULT_QUEUE_LIMIT),
+      offset: 0,
+    },
+    pollInterval: 180 * 1000,
+    notifyOnNetworkStatusChange: true,
+  });
 
   let content: React.ReactNode = null;
   let isPastConsultsAvailable = false;
 
   if (error) content = <div>An error occured :(</div>;
   if (loading && _isEmpty(data)) content = <AphLinearProgress />;
-  if (data && data.getConsultQueue) {
-    const { consultQueue } = data.getConsultQueue;
+  if (data && data.getPastConsultQueue) {
+    const { consultQueue } = data.getPastConsultQueue;
     const allConsults = consultQueue.map((consult) => ({
       ...consult,
       appointment: {
@@ -121,7 +127,9 @@ export const JuniorDoctorPast: React.FC = (props) => {
       },
     }));
 
-    const pastConsults = allConsults.reverse();
+    //const pastConsults = allConsults.reverse();
+
+    const pastConsults = allConsults;
 
     content = (
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 320px'}>

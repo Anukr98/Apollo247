@@ -255,10 +255,13 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 'bold',
     },
     medicineNoOnline: {
-      color: '#890000',
-      lineHeight: '32px',
-      fontWeight: 'bold',
-      boxShadow: '0 2px 4px 0 rgba(0,0,0, 0.2)',
+      lineHeight: '18px',
+      backgroundColor: 'rgba(137,0,0,0.5)',
+      fontSize: 12,
+      fontWeight: 600,
+      padding: '3px 8px',
+      color: '#fff',
+      display: 'inline-block',
     },
     selectMenuItem: {
       backgroundColor: 'transparent',
@@ -362,6 +365,14 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         display: 'block',
       },
+    },
+    calltoOrder: {
+      position: 'absolute',
+      bottom: 20,
+      textAlign: 'center',
+      fontSize: 17,
+      fontWeight: 500,
+      color: '#0087ba',
     },
   });
 });
@@ -682,6 +693,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
     ) : (
       <div className={classes.outOfOnline}>
         <div className={classes.medicineNoOnline}>{NO_ONLINE_SERVICE}</div>
+        <div className={classes.calltoOrder}>Please call 1860-500-0101 to order</div>
       </div>
     );
   };

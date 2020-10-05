@@ -199,13 +199,11 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
-    flexDirection: 'row',
   },
   cancelReasonHeadingText: {
     ...theme.fonts.IBMPlexSansMedium(16),
     color: theme.colors.SHERPA_BLUE,
     textAlign: 'center',
-    marginHorizontal: '20%',
   },
   cancelReasonContentHeading: {
     marginBottom: 12,
@@ -620,9 +618,29 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
     );
 
     const heading = (
-      <View style={styles.cancelReasonHeadingView}>
-        <BackArrow />
-        <Text style={styles.cancelReasonHeadingText}>{string.cancelConsultationHeading}</Text>
+      <View
+        style={[
+          styles.cancelReasonHeadingView,
+          { flexDirection: selectedReason == OTHER_REASON ? 'row' : 'column' },
+        ]}
+      >
+        {selectedReason == OTHER_REASON ? (
+          <TouchableOpacity
+            onPress={() => {
+              resetReasonForCancelFields();
+            }}
+          >
+            <BackArrow />
+          </TouchableOpacity>
+        ) : null}
+        <Text
+          style={[
+            styles.cancelReasonHeadingText,
+            { marginHorizontal: selectedReason == OTHER_REASON ? '20%' : 0 },
+          ]}
+        >
+          {string.cancelConsultationHeading}
+        </Text>
       </View>
     );
 
@@ -707,6 +725,11 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
         </View>
       )
     );
+  };
+
+  const resetReasonForCancelFields = () => {
+    setSelectedReason('');
+    setComment('');
   };
 
   const postAppointmentWEGEvents = (

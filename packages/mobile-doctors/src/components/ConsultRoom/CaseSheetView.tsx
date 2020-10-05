@@ -108,7 +108,7 @@ import {
   StyleProp,
   ViewStyle,
 } from 'react-native';
-import { Image } from 'react-native-elements';
+import { FastImageLoading } from '@aph/mobile-doctors/src/components/ui/FastImageLoading';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import {
   NavigationParams,
@@ -126,6 +126,7 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-doctors/src/helpers/WebEngageHelper';
+import FastImage from 'react-native-fast-image';
 
 const { width } = Dimensions.get('window');
 
@@ -139,7 +140,7 @@ export interface CaseSheetViewProps extends NavigationScreenProps {
   inCall: boolean;
   onStartConsult: (successCallback?: () => void) => void;
   onEndConsult: () => void;
-  onStopConsult: () => void;
+  onStopConsult: (screen: 'ConsultRoom' | 'PrescriptionPreview') => void;
   startConsult: boolean;
   navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
   overlayDisplay: (renderDisplay: React.ReactNode) => void;
@@ -164,7 +165,8 @@ export interface CaseSheetViewProps extends NavigationScreenProps {
   setShowEditPreviewButtons: Dispatch<React.SetStateAction<boolean>>;
   getdetails: () => void;
   saveDetails: (
-    showLoading: boolean,
+    loadingShown: boolean,
+    screen: 'ConsultRoom' | 'PrescriptionPreview',
     inputdata?: ModifyCaseSheetInput,
     callBack?: () => void
   ) => void;
@@ -264,18 +266,21 @@ export interface CaseSheetViewProps extends NavigationScreenProps {
   setDisplayId: React.Dispatch<React.SetStateAction<string>>;
   prescriptionPdf: string;
   setPrescriptionPdf: React.Dispatch<React.SetStateAction<string>>;
-  chatFiles?: {
-    prismId: string | null;
-    url: string;
-    fileType: 'image' | 'pdf';
-  }[];
-  setShowPDF: Dispatch<SetStateAction<boolean>>;
-  setPatientImageshow: Dispatch<SetStateAction<boolean>>;
-  setUrl: Dispatch<SetStateAction<string>>;
+  openFiles: (
+    url?: string | undefined,
+    type?: 'pdf' | 'image' | 'other' | undefined,
+    isChatRoom?: boolean | undefined
+  ) => void;
+  chatFiles?: any[];
   selectedReferral: OptionsObject;
   setSelectedReferral: React.Dispatch<React.SetStateAction<OptionsObject>>;
   referralReason: string;
   setReferralReason: React.Dispatch<React.SetStateAction<string>>;
+  postWebEngageError: (
+    apiname: string,
+    errorData: string,
+    screen?: 'ConsultRoom' | 'PrescriptionPreview'
+  ) => Promise<void>;
 }
 
 export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
@@ -349,9 +354,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     prescriptionPdf,
     setPrescriptionPdf,
     chatFiles,
-    setShowPDF,
-    setPatientImageshow,
-    setUrl,
+    openFiles,
     selectedReferral,
     setSelectedReferral,
     referralReason,
@@ -361,6 +364,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     existingMedicineId,
     removedMedicinePrescriptionData,
     setRemovedMedicinePrescriptionData,
+    postWebEngageError,
   } = props;
 
   const basicAppointmentData = {
@@ -431,6 +435,11 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       })
       .catch((e) => {
         setLoading && setLoading(false);
+        postWebEngageError(
+          'UpdatePatientPrescriptionSentStatus',
+          JSON.stringify(e),
+          'PrescriptionPreview'
+        );
         showAphAlert &&
           showAphAlert({
             title: strings.common.uh_oh,
@@ -518,9 +527,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         },
         onSendPress: () => {
           setShowButtons(true);
-          saveDetails(true, undefined, () => {
+          saveDetails(true, 'PrescriptionPreview', undefined, () => {
             sendToPatientAction(() => {
-              props.onStopConsult();
+              props.onStopConsult('PrescriptionPreview');
             });
           });
         },
@@ -567,6 +576,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       .catch((e) => {
         setLoading && setLoading(false);
         props.overlayDisplay(null);
+        postWebEngageError('EndAppointmentSession', JSON.stringify(e), 'ConsultRoom');
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
         showAphAlert &&
@@ -615,7 +625,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               <Button
                 onPress={() => {
                   setShowButtons(true);
-                  saveDetails(true);
+                  saveDetails(true, 'ConsultRoom');
                 }}
                 title={strings.buttons.save}
                 titleTextStyle={styles.buttonTextStyle}
@@ -726,7 +736,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   (selectedReferral.key !== '-1' && referralReason)
                 ) {
                   setShowButtons(true);
-                  saveDetails(true, undefined, () => {
+                  saveDetails(true, 'ConsultRoom', undefined, () => {
                     props.setCaseSheetEdit(false);
                     setLoading && setLoading(false);
                   });
@@ -754,7 +764,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                 (selectedReferral.key !== '-1' && referralReason)
               ) {
                 setShowButtons(true);
-                saveDetails(false);
+                saveDetails(false, 'PrescriptionPreview');
                 prescriptionView();
               } else {
                 showAphAlert &&
@@ -2018,7 +2028,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                           )}
                         >
                           {moment(i.sdConsultationDate || i.appointmentDateTime).format(
-                            'D MMM YYYY, HH:MM A'
+                            'D MMM YYYY, hh:MM A'
                           )}
                         </Text>
                         <View style={{ flexDirection: 'row' }}>
@@ -2035,103 +2045,107 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       </View>
     );
   };
-  const renderRecordImages = (urls: (string | null)[], isImage: boolean) => {
+  const renderRecordImages = (files: { url: string | null; name: string }[], isImage: boolean) => {
     return (
       <View style={styles.healthvaultMainContainer}>
-        {urls.map((url) => {
-          if (url) {
-            return (
-              <View style={styles.healthvaultImageContainer}>
-                {isImage ? (
-                  <TouchableOpacity
-                    activeOpacity={1}
-                    onPress={() => {
-                      setUrl(url);
-                      setPatientImageshow(true);
-                    }}
-                  >
-                    <Image source={{ uri: url }} style={styles.healthvaultImage} />
-                  </TouchableOpacity>
-                ) : (
-                  <TouchableOpacity
-                    activeOpacity={1}
-                    onPress={() => {
-                      setUrl(url);
-                      setShowPDF(true);
-                    }}
-                  >
-                    <FileBig style={styles.healthvaultImage} />
-                  </TouchableOpacity>
-                )}
-              </View>
-            );
-          } else {
-            return null;
-          }
-        })}
+        <ScrollView bounces={false} horizontal showsHorizontalScrollIndicator={false}>
+          {files.map((file, index) => {
+            if (file.url) {
+              return (
+                <View style={styles.healthvaultImageContainer} key={index}>
+                  {isImage ? (
+                    <TouchableOpacity
+                      activeOpacity={1}
+                      onPress={() => {
+                        openFiles(file.url || '', 'image', false);
+                      }}
+                    >
+                      <View style={{ maxWidth: 100 }}>
+                        <Text style={styles.imageHeadingText} numberOfLines={1}>
+                          {file.name}
+                        </Text>
+                        <FastImage
+                          source={{ uri: file.url }}
+                          style={styles.healthvaultImage}
+                          resizeMode={FastImage.resizeMode.cover}
+                        />
+                      </View>
+                    </TouchableOpacity>
+                  ) : (
+                    <TouchableOpacity
+                      activeOpacity={1}
+                      onPress={() => {
+                        openFiles(file.url || '', 'pdf', false);
+                      }}
+                    >
+                      <View style={{ maxWidth: 100 }}>
+                        <Text style={styles.imageHeadingText} numberOfLines={1}>
+                          {file.name}
+                        </Text>
+                        <FileBig style={styles.healthvaultImage} />
+                      </View>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              );
+            } else {
+              return null;
+            }
+          })}
+        </ScrollView>
       </View>
     );
   };
-  const [patientImages, setPatientImages] = useState<(string | null)[]>([]);
-  const [records, setRecords] = useState<(string | null)[]>([]);
+  const [patientImages, setPatientImages] = useState<{ url: string | null; name: string }[]>([]);
+  const [records, setRecords] = useState<{ url: string | null; name: string }[]>([]);
 
   useEffect(() => {
     const images =
-      (healthWalletArrayData && healthWalletArrayData.map((i) => i && i.imageUrls)) || [];
+      (healthWalletArrayData &&
+        healthWalletArrayData.map((i) => {
+          return { url: i && i.imageUrls, name: 'Image.jpeg' };
+        })) ||
+      [];
     const record =
-      (healthWalletArrayData && healthWalletArrayData.map((i) => i && i.reportUrls)) || [];
+      (healthWalletArrayData &&
+        healthWalletArrayData.map((i) => {
+          return { url: i && i.reportUrls, name: 'Document.pdf' };
+        })) ||
+      [];
 
     if (chatFiles) {
-      const prismImageIds: string[] = chatFiles
-        .map((i) => (i.fileType === 'image' ? i.prismId || '' : ''))
-        .filter((i) => i !== '');
-      const prismPdfIds: string[] = chatFiles
-        .map((i) => (i.fileType === 'pdf' ? i.prismId || '' : ''))
-        .filter((i) => i !== '');
-      const onlyImageUrl: string[] = chatFiles
-        .filter((i) => (i.fileType === 'image' && i.prismId === null) || i.prismId === '')
-        .map((i) => i.url);
-      const onlyPdfUrl: string[] = chatFiles
-        .filter((i) => (i.fileType === 'pdf' && i.prismId === null) || i.prismId === '')
-        .map((i) => i.url);
+      const onlyImageUrl: { url: string | null; name: string }[] = chatFiles
+        .filter(
+          (i) =>
+            i.fileType === 'image' &&
+            i.id === (g(patientDetails, 'id') || g(caseSheet, 'patientDetails', 'id'))
+        )
+        .map((i) => {
+          return {
+            url: i.url,
+            name:
+              i.fileName ||
+              `Image_${moment(Number(i.timetoken) / 10000).format('DD_MM_YYYY')}.jpeg`,
+          };
+        });
+      const onlyPdfUrl: { url: string | null; name: string }[] = chatFiles
+        .filter(
+          (i) =>
+            i.fileType === 'pdf' &&
+            i.id === (g(patientDetails, 'id') || g(caseSheet, 'patientDetails', 'id'))
+        )
+        .map((i) => {
+          return {
+            url: i.url,
+            name:
+              i.fileName ||
+              `Document_${moment(Number(i.timetoken) / 10000).format('DD_MM_YYYY')}.pdf`,
+          };
+        });
       images.push(...onlyImageUrl);
       record.push(...onlyPdfUrl);
-      if (prismImageIds.length > 0) {
-        getPrismUrls(
-          client,
-          (patientDetails && patientDetails.id) || (doctorDetails && doctorDetails.id) || '',
-          prismImageIds
-        )
-          .then((data) => {
-            if (data && data.urls) {
-              images.push(...data.urls);
-            }
-            setPatientImages(images);
-          })
-          .catch((e) => {
-            setPatientImages(images);
-          });
-      } else {
-        setPatientImages(images);
-      }
-      if (prismPdfIds.length > 0) {
-        getPrismUrls(
-          client,
-          (patientDetails && patientDetails.id) || (doctorDetails && doctorDetails.id) || '',
-          prismPdfIds
-        )
-          .then((data) => {
-            if (data && data.urls) {
-              record.push(...data.urls);
-            }
-            setRecords(record);
-          })
-          .catch((e) => {
-            setRecords(record);
-          });
-      } else {
-        setRecords(record);
-      }
+      setPatientImages(images);
+      setRecords(record);
     } else {
       setPatientImages(images);
       setRecords(record);
@@ -2330,7 +2344,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               setyesorno(false);
               setLoading && setLoading(true);
               setShowButtons(true);
-              saveDetails(true);
+              saveDetails(true, 'ConsultRoom');
               endConsult();
             }}
           >
@@ -2575,7 +2589,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
             </Text>
             <View style={styles.line}></View>
             <Text style={styles.agetext}>
-              {age > -1 ? Math.round(age).toString() : '-'}
+              {age > -1 ? Math.floor(age).toString() : '-'}
               {patientDetails.gender ? `, ${patientDetails.gender.charAt(0)}` : ''}
               {patientDetails.patientAddress &&
               patientDetails.patientAddress[0] &&
@@ -2633,28 +2647,10 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     return (
       <View style={{ marginBottom: 20 }}>
         {patientDetails && patientDetails.photoUrl ? (
-          <Image
-            source={{
-              uri: (patientDetails && patientDetails.photoUrl) || '',
-            }}
-            style={{ height: width, width: width, backgroundColor: theme.colors.WHITE }}
+          <FastImageLoading
+            uri={(patientDetails && patientDetails.photoUrl) || ''}
+            imageStyle={{ height: width, width: width, backgroundColor: theme.colors.WHITE }}
             resizeMode={'contain'}
-            placeholderStyle={{
-              height: width,
-              width: width,
-              alignItems: 'center',
-              backgroundColor: 'transparent',
-            }}
-            PlaceholderContent={
-              loading ? (
-                <></>
-              ) : (
-                <Spinner
-                  style={{ backgroundColor: 'transparent' }}
-                  message={strings.common.imageLoading}
-                />
-              )
-            }
           />
         ) : (
           <UserPlaceHolder
@@ -2663,8 +2659,8 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               width: width,
               alignItems: 'center',
               backgroundColor: 'white',
-              resizeMode: 'contain',
             }}
+            resizeMode="contain"
           />
         )}
       </View>

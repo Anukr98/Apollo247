@@ -30,24 +30,26 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { Image, Image as ImageNative } from 'react-native-elements';
+import { FastImageLoading } from '@aph/mobile-doctors/src/components/ui/FastImageLoading';
 import { isIphoneX } from 'react-native-iphone-x-helper';
 import { NavigationScreenProps } from 'react-navigation';
+import FastImage from 'react-native-fast-image';
 
 const { height, width } = Dimensions.get('window');
 
 const styles = ChatRoomStyles;
 
 export interface ChatRoomProps extends NavigationScreenProps {
-  setChatReceived: Dispatch<SetStateAction<boolean>>;
-  messages: never[];
+  messages: any[];
   send: (messageText: any) => void;
   flatListRef: React.MutableRefObject<FlatList<never> | null | undefined>;
-  setShowPDF: Dispatch<SetStateAction<boolean>>;
-  setPatientImageshow: Dispatch<SetStateAction<boolean>>;
+  openFiles: (
+    url?: string | undefined,
+    type?: 'pdf' | 'image' | 'other' | undefined,
+    isChatRoom?: boolean | undefined
+  ) => void;
   isDropdownVisible: boolean;
   setDropdownVisible: Dispatch<SetStateAction<boolean>>;
-  setUrl: Dispatch<SetStateAction<string>>;
   patientDetails: GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails | null | undefined;
   extendedHeader?: boolean;
   patientId: string;
@@ -60,7 +62,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   let rightComponent = 0;
   const client = useApolloClient();
   const { setLoading } = useUIElements();
-  const { patientDetails } = props;
+  const { patientDetails, openFiles } = props;
   const Appintmentdatetime = props.navigation.getParam('Appintmentdatetime');
   const doctorId = props.navigation.getParam('DoctorId');
   const patientId = props.patientId || props.navigation.getParam('PatientId');
@@ -68,7 +70,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const iPhoneHeight = isIphoneX() ? 45 : Platform.OS === 'ios' ? -6 : 0;
 
   const patientImage = patientDetails && (
-    <Image style={styles.imageStyle} source={{ uri: patientDetails.photoUrl || '' }} />
+    <FastImageLoading
+      imageStyle={styles.imageStyle}
+      uri={patientDetails.photoUrl || ''}
+      resizeMode={'contain'}
+    />
   );
   const { messages, messageText, setMessageText, flatListRef } = props;
   const [keyboardHeight, setKeyBoardHeight] = useState<number>(0);
@@ -110,65 +116,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, [messages]);
 
   const openPopUp = (rowData: any) => {
-    setLoading && setLoading(true);
     if (rowData.url.match(/\.(pdf)$/) || (rowData.fileType && rowData.fileType === 'pdf')) {
-      if (rowData.prismId) {
-        getPrismUrls(client, rowData.id, rowData.prismId)
-          .then((data: any) => {
-            props.setUrl((data && data.urls[0]) || rowData.url);
-          })
-          .catch(() => {
-            props.setUrl(rowData.url);
-          })
-          .finally(() => {
-            setLoading && setLoading(false);
-            props.setShowPDF(true);
-          });
-      } else {
-        props.setUrl(rowData.url);
-        setLoading && setLoading(false);
-        props.setShowPDF(true);
-      }
+      openFiles(rowData.url, 'pdf', true);
     } else if (
       rowData.url.match(/\.(jpeg|jpg|gif|png)$/) ||
       (rowData.fileType && rowData.fileType === 'image')
     ) {
-      if (rowData.prismId) {
-        getPrismUrls(client, rowData.id, rowData.prismId)
-          .then((data: any) => {
-            props.setUrl((data && data.urls[0]) || rowData.url);
-          })
-          .catch(() => {
-            props.setUrl(rowData.url);
-          })
-          .finally(() => {
-            setLoading && setLoading(false);
-            props.setPatientImageshow(true);
-          });
-      } else {
-        props.setUrl(rowData.url);
-        setLoading && setLoading(false);
-        props.setPatientImageshow(true);
-      }
+      openFiles(rowData.url, 'image', true);
     } else {
-      if (rowData.prismId) {
-        getPrismUrls(client, rowData.id, rowData.prismId)
-          .then((data: any) => {
-            Linking.openURL((data && data.urls[0]) || rowData.url).catch((err) =>
-              console.error('An error occurred', err)
-            );
-          })
-          .catch(() => {
-            Linking.openURL(rowData.url).catch((err) => console.error('An error occurred', err));
-          })
-          .finally(() => {
-            setLoading && setLoading(false);
-            // props.setPatientImageshow(true);
-          });
-      } else {
-        setLoading && setLoading(false);
-        Linking.openURL(rowData.url).catch((err) => console.error('An error occurred', err));
-      }
+      openFiles(rowData.url, 'other', true);
     }
   };
 
@@ -193,21 +149,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         <TouchableOpacity onPress={onPress} activeOpacity={1}>
           <View style={styles.imageMainContainer}>
             {isMatched ? (
-              <ImageNative
-                placeholderStyle={styles.imagePlaceHolderStyle}
-                PlaceholderContent={
-                  <Spinner
-                    style={{ backgroundColor: 'transparent' }}
-                    message={strings.common.imageLoading}
-                  />
-                }
+              <FastImage
                 source={{
                   uri: rowData.url,
                 }}
                 style={styles.documentImageStyle}
+                resizeMode={FastImage.resizeMode.contain}
               />
             ) : (
-              <FileBig style={styles.documentImageStyle} />
+              <FileBig
+                style={styles.documentImageStyle}
+                resizeMode={FastImage.resizeMode.contain}
+              />
             )}
           </View>
         </TouchableOpacity>
@@ -223,12 +176,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       rowData.url.match(/\.(jpeg|jpg|gif|png)$/) ||
       (rowData.fileType && rowData.fileType === 'image');
     return renderCommonImageView(rowData, isMatched, () => {
-      if (isMatched) {
-        openPopUp(rowData);
-        props.setPatientImageshow(true);
-      } else {
-        openPopUp(rowData);
-      }
+      openPopUp(rowData);
     });
   };
 

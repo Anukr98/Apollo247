@@ -1469,6 +1469,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     otherError: false,
   });
   // audioVideoChat start
+  const [userMessageOnCall, setUserMessageOnCall] = useState<string>('');
   const [showVideoChat, setShowVideoChat] = useState<boolean>(false);
   const [isVideoCall, setIsVideoCall] = useState<boolean>(false);
   const [isNewMsg, setIsNewMsg] = useState<boolean>(false);
@@ -1649,6 +1650,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     );
     {
       joinPrompt || floatingJoinPrompt ? setPlayRingtone(false) : setPlayRingtone(true);
+    }
+    if (!(joinPrompt || floatingJoinPrompt)) {
+      setUserMessageOnCall('Connecting…');
     }
 
     actionBtn();
@@ -1960,23 +1964,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   };
 
   const onStartConsult = () => {
-    const text = {
-      id: props.doctorId,
-      message: startConsult,
-      isTyping: true,
-      automatedText: currentPatient!.displayName + ' has joined the consult room!',
-      messageDate: new Date(),
-      sentBy: REQUEST_ROLES.DOCTOR,
-    };
     subscribeBrowserButtonsListener();
-    pubnub.publish(
-      {
-        message: text,
-        channel: channel,
-        storeInHistory: true,
-      },
-      (status: any, response: any) => {}
-    );
   };
   const onStopConsult = (isResend: boolean) => {
     const text = {
@@ -2411,23 +2399,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           {(props.appointmentStatus !== STATUS.COMPLETED || props.isClickedOnEdit) && (
             <Prompt message="Are you sure to exit?" when={props.startAppointment}></Prompt>
           )}
-          <Link
-            to={localStorage.getItem('callBackUrl')}
-            onClick={() => {
-              pubnub.publish(
-                {
-                  message: {
-                    isTyping: true,
-                    message: leaveChatRoom,
-                  },
-                  channel: channel,
-                  storeInHistory: false,
-                  sendByPost: false,
-                },
-                (status: any, response: any) => {}
-              );
-            }}
-          >
+          <Link to={localStorage.getItem('callBackUrl')}>
             <div className={classes.backArrow}>
               <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
               <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
@@ -3532,6 +3504,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               setSubscriberError={setSubscriberError}
               isCall={isCall}
               setIscall={setIscall}
+              setUserMessageOnCall={setUserMessageOnCall}
+              userMessageOnCall={userMessageOnCall}
             />
           )}
         </div>
@@ -3967,7 +3941,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               onClick={() => {
                 handleClose();
                 autoSend(videoCallMsg);
-                setIsVideoCall(true);
+                setIsVideoCall(false);
                 setDisableOnCancel(true);
                 setIscall(true);
                 setJoinPrompt(false);
@@ -4000,7 +3974,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   verticalAlign: 'middle',
                 }}
               />
-              {'COLLAPSE'}
+              {'Not Now'}
             </span>
           </div>
         </Box>

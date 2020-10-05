@@ -34,6 +34,10 @@ export const GET_DOCTOR_DETAILS = gql`
       streetLine3
       zip
       signature
+      isIvrSet
+      ivrConsultType
+      ivrCallTimeOnline
+      ivrCallTimePhysical
       specialty {
         id
         name
@@ -1785,6 +1789,47 @@ export const SAVE_APPOINTMENT_CALL_FEEDBACK = gql`
 export const UPDATE_CHAT_DAYS = gql`
   mutation updateDoctorChatDays($doctorId: String!, $chatDays: Int) {
     updateDoctorChatDays(doctorId: $doctorId, chatDays: $chatDays) {
+      isError
+      response
+    }
+  }
+`;
+
+export const GET_PARTICIPANTS_LIVE_STATUS = gql`
+  query setAndGetNumberOfParticipants(
+    $appointmentId: String
+    $userType: USER_TYPE
+    $sourceType: BOOKINGSOURCE
+    $deviceType: DEVICETYPE
+    $userStatus: USER_STATUS
+  ) {
+    setAndGetNumberOfParticipants(
+      appointmentId: $appointmentId
+      userType: $userType
+      sourceType: $sourceType
+      deviceType: $deviceType
+      userStatus: $userStatus
+    ) {
+      NUMBER_OF_PARTIPANTS
+    }
+  }
+`;
+
+export const SET_APPOINTMENT_REMINDER_IVR = gql`
+  mutation setAppointmentReminderIvr(
+    $doctorId: String!
+    $isIvrSet: Boolean
+    $ivrConsultType: ConsultMode
+    $ivrCallTimeOnline: Int
+    $ivrCallTimePhysical: Int
+  ) {
+    setAppointmentReminderIvr(
+      doctorId: $doctorId
+      isIvrSet: $isIvrSet
+      ivrConsultType: $ivrConsultType
+      ivrCallTimeOnline: $ivrCallTimeOnline
+      ivrCallTimePhysical: $ivrCallTimePhysical
+    ) {
       isError
       response
     }

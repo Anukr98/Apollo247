@@ -82,7 +82,6 @@ export const MyAccountProfileStyles = StyleSheet.create({
     minHeight: 141,
     maxHeight: width - 32,
     width: width - 32,
-    resizeMode: 'contain',
   },
   profileContainerStyle: {
     overflow: 'hidden',

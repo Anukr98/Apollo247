@@ -34,6 +34,17 @@ import {
 import fetch from 'node-fetch';
 
 export const saveMedicineOrderOMSTypeDefs = gql`
+  enum BOOKINGSOURCE {
+    MOBILE
+    WEB
+  }
+
+  enum DEVICETYPE {
+    IOS
+    ANDROID
+    DESKTOP
+  }
+
   input MedicineCartOMSInput {
     quoteId: String
     shopId: String
@@ -115,7 +126,7 @@ export const saveMedicineOrderOMSTypeDefs = gql`
   input MedicineCartOMSItem {
     medicineSKU: String
     medicineName: String
-    couponFree: Boolean
+    couponFree: Int
     price: Float
     quantity: Int
     mrp: Float
@@ -183,7 +194,7 @@ type MedicineCartOMSItem = {
   mou: number;
   isMedicine: string;
   specialPrice: number;
-  couponFree: boolean;
+  couponFree: number;
 };
 
 type SaveMedicineOrderResult = {
@@ -320,6 +331,13 @@ const saveMedicineOrderOMS: Resolver<
   };
   if (medicineCartOMSInput.shopId) {
     storeDetails = await getStoreDetails(medicineCartOMSInput.shopId);
+  }
+
+  if (medicineCartOMSInput.prescriptionImageUrl) {
+    const imgUrls = medicineCartOMSInput.prescriptionImageUrl.split(',');
+    if (imgUrls.some((url) => url.split('/').pop() == 'null')) {
+      throw new AphError(AphErrorMessages.INVALID_MEDICINE_PRESCRIPTION_URL, undefined, {});
+    }
   }
 
   const medicineOrderattrs: Partial<MedicineOrders> = {

@@ -110,6 +110,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/GetPatientFeedback';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { RefundDetails } from '@aph/mobile-patients/src/components/RefundDetails';
+const whatsappScheme = `whatsapp://send?text=${AppConfig.Configuration.CUSTOMER_CARE_HELP_TEXT}&phone=91${AppConfig.Configuration.CUSTOMER_CARE_NUMBER}`;
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -449,7 +450,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       if (unavailableItems.length) {
         setReOrderDetails({ total: totalItemsCount, unavailable: unavailableItems });
       } else {
-        props.navigation.navigate(AppRoutes.YourCart);
+        props.navigation.navigate(AppRoutes.MedicineCart);
       }
     } catch (error) {
       CommonBugFender(`${AppRoutes.OrderDetailsScene}_reOrder`, error);
@@ -651,6 +652,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     );
   };
 
+  const shouldScrollToSlot = (diffInDays: number) => {
+    diffInDays! < 0 ? null : scrollToSlots();
+  };
+
   const renderOrderHistory = () => {
     const isDelivered = orderStatusList.find(
       (item) =>
@@ -753,12 +758,15 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     const showExpectedDelivery =
       isDeliveryOrder && tatInfo && !isCancelled && !isDelivered && hours > 0;
 
+    const expectedDeliveryInDays = moment.duration(moment(tatInfo!).diff(moment()));
+    const diffInDays = expectedDeliveryInDays.asDays();
+
     let statusList = orderStatusList
       .filter(
         (item, idx, array) => array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
       )
       .concat([]);
-    scrollToSlots();
+    shouldScrollToSlot(diffInDays!);
 
     if (
       orderDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
@@ -770,7 +778,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           (item, idx, array) => array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
         )
         .concat([]);
-      scrollToSlots();
+      shouldScrollToSlot(diffInDays!);
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_INITIATED) {
       statusList = orderStatusList
         .filter(
@@ -828,7 +836,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                 } as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
               ]
         );
-      scrollToSlots();
+      shouldScrollToSlot(diffInDays!);
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED) {
       statusList = orderStatusList
         .filter(
@@ -877,7 +885,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                 } as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
               ]
         );
-      scrollToSlots();
+      shouldScrollToSlot(diffInDays!);
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_VERIFIED) {
       statusList = orderStatusList
         .filter(
@@ -915,7 +923,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                 } as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
               ]
         );
-      scrollToSlots();
+      shouldScrollToSlot(diffInDays!);
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.READY_AT_STORE) {
       statusList = orderStatusList
         .filter(
@@ -928,7 +936,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             orderStatus: MEDICINE_ORDER_STATUS.PICKEDUP,
           } as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
         ]);
-      scrollToSlots();
+      shouldScrollToSlot(diffInDays!);
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED) {
       statusList = orderStatusList
         .filter(
@@ -946,7 +954,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             orderStatus: MEDICINE_ORDER_STATUS.DELIVERED,
           } as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
         ]);
-      scrollToSlots();
+      shouldScrollToSlot(diffInDays!);
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY) {
       statusList = orderStatusList
         .filter(
@@ -959,7 +967,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             orderStatus: MEDICINE_ORDER_STATUS.DELIVERED,
           } as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
         ]);
-      scrollToSlots();
+      shouldScrollToSlot(diffInDays!);
     } else if (
       orderDetails.currentStatus == MEDICINE_ORDER_STATUS.DELIVERED ||
       orderDetails.currentStatus == MEDICINE_ORDER_STATUS.PICKEDUP
@@ -969,12 +977,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           (item, idx, array) => array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
         )
         .concat([]);
-      scrollToSlots();
+      shouldScrollToSlot(diffInDays!);
     }
-
-    const expectedDeliveryInDays = moment.duration(moment(tatInfo!).diff(moment()));
-    const diffInDays = expectedDeliveryInDays.asDays();
-
     return (
       <View>
         <View style={{ margin: 20 }}>
@@ -1089,9 +1093,15 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           <TouchableOpacity
             style={styles.chatWithUsTouch}
             onPress={() => {
-              Linking.openURL(
-                AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK
-              ).catch((err) => CommonBugFender(`${AppRoutes.OrderModifiedScreen}_TATBreach`, err));
+              Linking.canOpenURL(whatsappScheme)
+                .then((supported) =>
+                  Linking.openURL(
+                    supported
+                      ? whatsappScheme
+                      : AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK
+                  )
+                )
+                .catch((err) => CommonBugFender(`${AppRoutes.OrderModifiedScreen}_TATBreach`, err));
             }}
           >
             <WhatsAppIcon style={styles.whatsappIconStyle} />
@@ -1653,7 +1663,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           itemDetails={{ total, unavailable }}
           onContinue={() => {
             setReOrderDetails({ total: 0, unavailable: [] });
-            props.navigation.navigate(AppRoutes.YourCart);
+            props.navigation.navigate(AppRoutes.MedicineCart);
           }}
           onClose={() => {
             setReOrderDetails({ total: 0, unavailable: [] });
