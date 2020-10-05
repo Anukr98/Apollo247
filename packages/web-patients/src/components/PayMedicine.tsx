@@ -1116,7 +1116,7 @@ const PayMedicine: React.FC = (props) => {
 									</div>
 								) : (
                 <Paper className={`${classes.paper} ${classes.paperHeight}`}>
-                  {setOneApolloHCsResponse && setOneApolloHCsResponse.availableHC > 0 && (
+                  { params.payType === 'pharmacy' && setOneApolloHCsResponse && setOneApolloHCsResponse.availableHC > 0 && (
                     <div className={classes.healthCredit}>
                       <Typography component="h3">
                         Would you like to use Apollo Health Credits for this payment?
