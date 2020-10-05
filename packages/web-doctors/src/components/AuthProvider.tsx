@@ -92,8 +92,6 @@ export interface AuthContextProps<Doctor = GetDoctorDetails_getDoctorDetails> {
   sessionClient: any;
   chatDays: number | null;
   setChatDays: (days: number) => void;
-  ivrState: any;
-  setIvrState: (value: any) => void;
 }
 
 export const AuthContext = React.createContext<AuthContextProps>({
@@ -125,8 +123,6 @@ export const AuthContext = React.createContext<AuthContextProps>({
   sessionClient: sessionClient,
   chatDays: null,
   setChatDays: null,
-  ivrState: null,
-  setIvrState: null,
 });
 const isLocal = process.env.NODE_ENV === 'local';
 const isDevelopment = process.env.NODE_ENV === 'development';
