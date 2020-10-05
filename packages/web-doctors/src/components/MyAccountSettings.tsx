@@ -5,12 +5,9 @@ import {
   ExpansionPanel,
   ExpansionPanelSummary,
   ExpansionPanelDetails,
-  FormControlLabel,
-  RadioGroup,
-  MenuItem,
 } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { AuthContext, AuthContextProps } from 'components/AuthProvider';
 import { FollowUp } from 'components/case-sheet/panels';
 import { AphButton, AphSwitch, AphRadio, AphCustomDropdown } from '@aph/web-ui-components';
@@ -111,7 +108,7 @@ const useStyles = makeStyles((theme: Theme) => {
         background: '#FC9916',
         boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
       },
-      marginTop: '36%',
+      marginTop: '30px',
       float: 'right',
     },
   };
@@ -127,7 +124,6 @@ export const MyAccountSettings: React.FC = () => {
   const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
   const { chatDays, setChatDays, currentUser } = useAuthContext();
   const classes = useStyles({});
-
   const expansionDefaultState = {
     followUpExpand: false,
     ivrExpanded: false,
@@ -142,13 +138,21 @@ export const MyAccountSettings: React.FC = () => {
     ivrCallTimeOnline: currentUser.ivrCallTimeOnline,
     ivrCallTimePhysical: currentUser.ivrCallTimePhysical,
   });
+  const [enableSave, setEnableSave] = useState<boolean>(false);
 
   const items = [
     {
       key: 'IVR',
       value: <div>{'Set-up an IVR as a reminder for appointment booking'}</div>,
       state: expansionState.ivrExpanded,
-      component: <IVR ivrState={ivrState} setIvrState={setIvrState} />,
+      component: (
+        <IVR
+          ivrState={ivrState}
+          setIvrState={setIvrState}
+          setEnableSave={setEnableSave}
+          expanded={expansionState.ivrExpanded}
+        />
+      ),
     },
 
     {
@@ -179,6 +183,8 @@ export const MyAccountSettings: React.FC = () => {
           info={
             "This value will be default for all patient, However you can change the follow up chat day count on individual patient's Case-sheet"
           }
+          setEnableSave={setEnableSave}
+          expanded={expansionState.followUpExpand}
         />
       ),
     },
@@ -230,9 +236,14 @@ export const MyAccountSettings: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    const val = Object.values(expansionState);
+    if (!val.includes(true)) setEnableSave(false);
+    else setEnableSave(true);
+  }, [expansionState]);
+
   return (
     <div style={{ height: 800 }}>
-      {console.log(ivrState)}
       {items.map((item) => (
         <ExpansionPanel
           key={item.key}
@@ -247,7 +258,8 @@ export const MyAccountSettings: React.FC = () => {
         </ExpansionPanel>
       ))}
 
-      {Object.values(expansionState).includes(true) && (
+      {/* {Object.values(expansionState).includes(true) && ( */}
+      {enableSave && (
         <AphButton
           variant="contained"
           color="primary"
