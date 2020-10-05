@@ -2,11 +2,14 @@ import {
   LocationData,
   useAppCommonData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
 import { SectionHeader, Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { PincodePopup } from '@aph/mobile-patients/src/components/Medicines/PincodePopup';
 import {
   CartIcon,
   DropdownGreen,
@@ -19,12 +22,12 @@ import {
   HomeIcon,
   PrimaryIcon,
   LinkedUhidIcon,
+  PendingIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
   GET_DIAGNOSTICS_CITES,
@@ -58,23 +61,24 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
 import {
   autoCompletePlaceSearch,
-  getPlaceInfoByPlaceId,
   getTestsPackages,
   GooglePlacesType,
   TestPackage,
   PackageInclusion,
   getPackageData,
-  getPlaceInfoByLatLng,
+  getPlaceInfoByPincode,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   aphConsole,
   doRequestAndAccessLocation,
+  doRequestAndAccessLocationModified,
   g,
   getNetStatus,
   isValidSearch,
   postWebEngageEvent,
   postWEGNeedHelpEvent,
   setWebEngageScreenNames,
+  getFormattedLocation,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -117,6 +121,7 @@ import {
   getPincodeServiceabilityVariables,
 } from '../../graphql/types/getPincodeServiceability';
 
+const { width: winWidth } = Dimensions.get('window');
 const styles = StyleSheet.create({
   labelView: {
     position: 'absolute',
@@ -168,6 +173,36 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     ...theme.viewStyles.yellowTextStyle,
   },
+  menuItemContainer: {
+    marginHorizontal: 0,
+    padding: 0,
+    margin: 0,
+  },
+  menuMenuContainerStyle: {
+    marginLeft: winWidth * 0.25,
+    marginTop: 50,
+  },
+  menuScrollViewContainerStyle: { paddingVertical: 0 },
+  menuItemTextStyle: {
+    ...theme.viewStyles.text('M', 14, '#01475b'),
+    padding: 0,
+    margin: 0,
+  },
+  menuBottomPadding: { paddingBottom: 0 },
+  deliverToText: { ...theme.viewStyles.text('R', 11, '#01475b', 1, 16) },
+  locationText: { ...theme.viewStyles.text('M', 14, '#01475b', 1, 18) },
+  locationTextUnderline: {
+    height: 2,
+    backgroundColor: '#00b38e',
+    opacity: 1,
+  },
+  dropdownGreenContainer: { justifyContent: 'flex-end', marginBottom: -2 },
+  serviceabilityMsg: {
+    marginHorizontal: 10,
+    ...theme.viewStyles.text('R', 12, '#890000'),
+    justifyContent: 'center',
+    textAlign: 'left',
+  },
 });
 
 export interface TestsProps
@@ -186,9 +221,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [error, setError] = useState<boolean>(false);
   const [currentLocation, setcurrentLocation] = useState<string>('');
   const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
+  const [serviceabilityCity, setServiceabilityCity] = useState<string>('');
   const [locationSearchList, setlocationSearchList] = useState<{ name: string; placeId: string }[]>(
     []
   );
+  const [isPinCodeServiceable, setPincodeServiceable] = useState<boolean>(false);
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>(
     currentPatient!
   );
@@ -208,6 +245,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const {
     locationDetails,
     setLocationDetails,
+    diagnosticLocation,
+    setDiagnosticLocation,
     diagnosticsCities,
     setDiagnosticsCities,
     locationForDiagnostics,
@@ -216,14 +255,24 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [testPackages, setTestPackages] = useState<TestPackage[]>([]);
   const [locationError, setLocationError] = useState(false);
   const [showLocations, setshowLocations] = useState<boolean>(false);
-  const [pincode, setPinCode] = useState<string>();
   const [searchQuery, setSearchQuery] = useState({});
+  const [serviceabilityMsg, setServiceabilityMsg] = useState('');
+  const hasLocation = locationDetails;
 
+  const diagnosticPincode = g(diagnosticLocation, 'pincode') || g(locationDetails, 'pincode');
+
+  /**
+   * if any change in the location and pincode is changed
+   */
   useEffect(() => {
-    console.log(locationDetails, 'locationDetails.....s');
-    locationDetails && setcurrentLocation(locationDetails.displayName);
-  }, [locationDetails]);
+    if (diagnosticPincode) {
+      checkIsPinCodeServiceable(diagnosticPincode);
+    }
+  }, [diagnosticPincode]);
 
+  /**
+   * fetching the orders
+   */
   useEffect(() => {
     if (currentPatient && profile && profile.id !== currentPatient.id) {
       setLoadingContext!(true);
@@ -240,41 +289,15 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   }, [currentPatient]);
 
-  useEffect(() => {
-    if (diagnosticsCities.length) {
-      // Don't call getDiagnosticsCites API if already fetched
-      return;
-    }
+  // useEffect(() => {
+  //   if (g(currentPatient, 'id') && g(locationDetails, 'city')) {
+  //     //call the pincode service check
+  //   }
+  // }, [locationDetails, currentPatient]);
 
-    if (g(currentPatient, 'id') && g(locationDetails, 'city')) {
-      client
-        .query<getDiagnosticsCites, getDiagnosticsCitesVariables>({
-          query: GET_DIAGNOSTICS_CITES,
-          variables: {
-            cityName: locationDetails!.city,
-            patientId: currentPatient.id || '',
-          },
-        })
-        .then(({ data }) => {
-          console.log('getDiagnosticsCites\n', { data });
-          const cities = g(data, 'getDiagnosticsCites', 'diagnosticsCities') || [];
-          setDiagnosticsCities!(
-            cities as getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities[]
-          );
-        })
-        .catch((e) => {
-          CommonBugFender('Tests_GET_DIAGNOSTICS_CITES', e);
-          console.log('getDiagnosticsCites Error\n', { e });
-          showAphAlert!({
-            unDismissable: true,
-            title: 'Uh oh! :(',
-            description:
-              "Something went wrong. We're unable to check diagnostics serviceability for your location.",
-          });
-        });
-    }
-  }, [locationDetails, currentPatient, diagnosticsCities]);
-
+  /**
+   * if there is any change in the location yellow pop-up ,if location is present.
+   */
   useEffect(() => {
     checkLocation();
   }, [locationDetails]);
@@ -315,7 +338,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 setLoadingContext!(true);
                 doRequestAndAccessLocation()
                   .then((response) => {
-                    //console.log('response', { response });
                     setLoadingContext!(false);
                     response && setLocationDetails!(response);
                   })
@@ -325,9 +347,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
                     showAphAlert!({
                       title: 'Uh oh! :(',
                       description: 'Unable to access location.',
+                      onPressOk: () => {
+                        hideAphAlert!();
+                        setLocationError(true);
+                        // setshowLocationpopup(true); //same as medicine
+                      },
                     });
-                    setLocationError(true);
-                    setshowLocationpopup(true);
                   });
               }}
             />
@@ -335,18 +360,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
         ),
       });
   };
-
-  useEffect(() => {
-    if (
-      locationDetails &&
-      diagnosticsCities.length > 0 &&
-      !diagnosticsCities.find((item) => item!.cityname === locationDetails!.city)
-    ) {
-      renderLocationNotServingPopup();
-    }
-  }, [locationDetails && diagnosticsCities]);
-
-  const [n, sN] = useState(0);
 
   useEffect(() => {
     if (locationForDiagnostics && locationForDiagnostics.cityId) {
@@ -394,6 +407,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   }, [ordersLoading]);
 
+  /**
+   * web engage events.
+   */
   useEffect(() => {
     setWebEngageScreenNames('Diagnostic Home Page');
     hRefetch();
@@ -491,232 +507,75 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
-  const autoSearch = (searchText: string) => {
-    getNetStatus()
-      .then((status) => {
-        if (status) {
-          autoCompletePlaceSearch(searchText)
-            .then((obj) => {
-              console.log({});
-
-              try {
-                if (obj.data.predictions) {
-                  const address = obj.data.predictions.map(
-                    (item: {
-                      place_id: string;
-                      structured_formatting: {
-                        main_text: string;
-                      };
-                    }) => {
-                      return {
-                        name: item.structured_formatting.main_text,
-                        placeId: item.place_id,
-                      };
-                    }
-                  );
-                  setlocationSearchList(address);
-                }
-              } catch (e) {
-                CommonBugFender('Tests_autoSearch_try', e);
-              }
-            })
-            .catch((error) => {
-              CommonBugFender('Tests_autoSearch', error);
-              console.log(error);
-            });
-        }
-      })
-      .catch((e) => {
-        CommonBugFender('Tests_getNetStatus_autoSearch', e);
-      });
+  const handleUpdatePlaceInfoByPincodeError = (e: Error) => {
+    CommonBugFender('AddAddress_updateCityStateByPincode', e);
+    setError(true);
   };
 
-  const findAddrComponents = (
-    proptoFind: GooglePlacesType,
-    addrComponents: {
-      long_name: string;
-      short_name: string;
-      types: GooglePlacesType[];
-    }[]
-  ) => {
-    return (
-      (addrComponents.find((item) => item.types.indexOf(proptoFind) > -1) || {}).long_name || ''
-    );
-  };
-
-  const saveLatlong = (item: { name: string; placeId: string }) => {
-    console.log('placeId\n', {
-      placeId: item.placeId,
-    });
-    // update address to context here
-    getPlaceInfoByPlaceId(item.placeId)
-      .then((response) => {
-        const addrComponents = g(response, 'data', 'result', 'address_components') || [];
-        const { lat, lng } = g(response, 'data', 'result', 'geometry', 'location')! || {};
-        const city =
-          findAddrComponents('locality', addrComponents) ||
-          findAddrComponents('administrative_area_level_2', addrComponents);
-        if (
-          city.toLowerCase() !=
-          ((locationForDiagnostics && locationForDiagnostics.city) || '').toLowerCase()
-        ) {
-          clearCartInfo && clearCartInfo();
-        }
-        if (addrComponents.length > 0) {
-          const locationData: LocationData = {
-            displayName: item.name,
-            latitude: lat,
-            longitude: lng,
-            area: [
-              findAddrComponents('route', addrComponents),
-              findAddrComponents('sublocality_level_2', addrComponents),
-              findAddrComponents('sublocality_level_1', addrComponents),
-            ]
-              .filter((i) => i)
-              .join(', '),
-            city,
-            state: findAddrComponents('administrative_area_level_1', addrComponents),
-            country: findAddrComponents('country', addrComponents),
-            pincode: findAddrComponents('postal_code', addrComponents),
-            lastUpdated: new Date().getTime(),
-          };
-
-          setLocationDetails!(locationData);
-          getPlaceInfoByLatLng(lat, lng)
-            .then((response) => {
-              const addrComponents =
-                g(response, 'data', 'results', '0' as any, 'address_components') || [];
-              if (addrComponents.length > 0) {
-                setLocationDetails!({
-                  ...locationData,
-                  pincode: findAddrComponents('postal_code', addrComponents),
-                  lastUpdated: new Date().getTime(),
-                });
-                setPinCode!(findAddrComponents('postal_code', addrComponents));
-                checkIsPinCodeServiceable(findAddrComponents('postal_code', addrComponents));
-              }
-            })
-            .catch((error) => {
-              CommonBugFender('LocationSearchPopup_saveLatlong', error);
-            });
+  //change the city name which comes from serviceability
+  const updatePlaceInfoByPincode = (pincode: string) => {
+    getPlaceInfoByPincode(pincode)
+      .then(({ data }) => {
+        try {
+          const addrComponents = data.results[0].address_components || [];
+          const latLang = data.results[0].geometry.location || {};
+          const response = getFormattedLocation(addrComponents, latLang, pincode);
+          setDiagnosticLocation!(response);
+          !locationDetails && setLocationDetails!(response);
+        } catch (e) {
+          handleUpdatePlaceInfoByPincodeError(e);
         }
       })
-      .catch((error) => {
-        CommonBugFender('Tests_saveLatlong', error);
-        console.log('saveLatlong error\n', error);
-      });
+      .catch(handleUpdatePlaceInfoByPincodeError)
+      .finally(() => setLoadingContext!(false));
   };
 
   const renderPopup = () => {
-    if (showLocationpopup) {
-      return (
-        <TouchableOpacity
-          activeOpacity={1}
-          style={{
-            position: 'absolute',
-            left: 0,
-            right: 0,
-            top: 0,
-            bottom: 0,
-            alignItems: 'center',
-            zIndex: 15,
-            elevation: 15,
+    const onClose = (serviceable?: boolean, response?: LocationData) => {
+      setshowLocationpopup(false);
+      // if (serviceable) {
+      //   setServiceabilityMsg('');
+      //   setPharmacyLocationServiceable!(true);
+      // }
+    };
+
+    return (
+      showLocationpopup && (
+        <PincodePopup
+          onClickClose={() => {
+            onClose();
+            checkLocation();
           }}
-          onPress={() => {
-            setshowLocationpopup(false), checkLocation();
-          }}
-        >
-          <View
-            style={{
-              ...theme.viewStyles.cardViewStyle,
-              width: 235,
-              padding: 16,
-              marginTop: 40,
-            }}
-          >
-            <Text
-              style={{
-                color: theme.colors.CARD_HEADER,
-                ...theme.fonts.IBMPlexSansMedium(14),
-              }}
-            >
-              Current Pincode
-            </Text>
-            <View style={{ flexDirection: 'row' }}>
-              <View style={{ flex: 7 }}>
-                <TextInputComponent
-                  textInputprops={{ autoFocus: true }}
-                  placeholder={'Enter Pincode'}
-                  keyboardType={'numeric'}
-                  value={currentLocation}
-                  onChangeText={(value) => {
-                    // if (value == '' || /^[1-9]{1}\d{0,9}$/.test(value)) {
-                    //   setcurrentLocation(value);
-                    // }
-                    setcurrentLocation(value);
-                    if (value.length > 2) {
-                      const locSearch = _.debounce(autoSearch, 300);
-                      setSearchQuery((prevSearch: any) => {
-                        if (prevSearch.cancel) {
-                          prevSearch.cancel();
-                        }
-                        return locSearch;
-                      });
-                      locSearch(value);
-                      setshowLocations(true);
-                    } else {
-                      setshowLocations(false);
-                    }
-                  }}
-                />
-              </View>
-              <View
-                style={{
-                  marginLeft: 20,
-                  alignItems: 'flex-end',
-                  justifyContent: 'center',
-                  marginBottom: 10,
-                }}
-              >
-                <LocationOn />
-              </View>
-            </View>
-            {showLocations && (
-              <View>
-                {locationSearchList.map((item, i) => (
-                  <View
-                    key={i}
-                    style={{
-                      borderBottomWidth: 0.5,
-                      borderBottomColor: 'rgba(2, 71, 91, 0.2)',
-                      paddingVertical: 7,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: theme.colors.LIGHT_BLUE,
-                        ...theme.fonts.IBMPlexSansMedium(18),
-                      }}
-                      onPress={() => {
-                        setcurrentLocation(item.name);
-                        setshowLocationpopup(false);
-                        saveLatlong(item);
-                        setLocationDetails!({
-                          displayName: item.name,
-                          city: item.name,
-                        } as any);
-                      }}
-                    >
-                      {item.name}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            )}
-          </View>
-        </TouchableOpacity>
-      );
-    }
+          toBeShownOn={'Diagnostics'}
+          onComplete={onClose}
+          onPressSubmit={(pincode) => checkIsPinCodeServiceable(pincode)}
+          subText={'Allow us to serve you better by entering your area pincode below.'}
+        />
+      )
+    );
+  };
+
+  /**check current location */
+  const autoDetectLocation = () => {
+    setLoadingContext!(true);
+    doRequestAndAccessLocationModified()
+      .then((response) => {
+        setLoadingContext!(false);
+        response && setDiagnosticLocation!(response);
+        // response && WebEngageEventAutoDetectLocation(response.pincode, true);
+        response && !locationDetails && setLocationDetails!(response);
+      })
+      .catch((e) => {
+        CommonBugFender('Diagnostic__ALLOW_AUTO_DETECT', e);
+        setLoadingContext!(false);
+        e &&
+          typeof e == 'string' &&
+          !e.includes('denied') &&
+          showAphAlert!({
+            title: string.common.uhOh,
+            description: e,
+          });
+      });
   };
 
   /**
@@ -724,6 +583,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
    */
   const checkIsPinCodeServiceable = async (pincode: string) => {
     if (!!pincode) {
+      setLoadingContext!(true);
       client
         .query<getPincodeServiceability, getPincodeServiceabilityVariables>({
           query: GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
@@ -734,72 +594,32 @@ export const Tests: React.FC<TestsProps> = (props) => {
         })
         .then(({ data }) => {
           console.log('data...' + data.getPincodeServiceability.cityName);
-          const serviceableData = g(data, 'getPincodeServiceability') || [];
+          const serviceableData = g(data, 'getPincodeServiceability');
+          if (serviceableData && serviceableData?.cityName != '') {
+            updatePlaceInfoByPincode(pincode);
+            setshowLocationpopup(false);
+            setPincodeServiceable(true);
+            setServiceabilityMsg('');
+          } else {
+            setshowLocationpopup(false);
+            setPincodeServiceable(false);
+            setLoadingContext!(false);
+            renderLocationNotServingPopUpForPincode(pincode);
+            //red text shown below the text input field.
+          }
         })
         .catch((e) => {
-          CommonBugFender('Tests_onCheckSericeability', e);
-          // aphConsole.log({ e });
+          CommonBugFender('Tests_', e);
+          setLoadingContext!(false);
+          console.log('getDiagnosticsPincode serviceability Error\n', { e });
+          showAphAlert!({
+            unDismissable: true,
+            title: 'Uh oh! :(',
+            description:
+              "Something went wrong. We're unable to check diagnostics serviceability for your location.",
+          });
         });
     }
-  };
-
-  const renderLocation = () => {
-    return (
-      <View
-        style={{
-          flexDirection: 'row',
-          right: 35,
-        }}
-      >
-        {!locationDetails ? (
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => {
-              getNetStatus()
-                .then((status) => {
-                  if (status) {
-                    setshowLocationpopup(true);
-                    // fetchCurrentLocation();
-                  } else {
-                    setError(true);
-                  }
-                })
-                .catch((e) => {
-                  CommonBugFender('Tests_getNetStatus', e);
-                });
-            }}
-          >
-            <LocationOff />
-          </TouchableOpacity>
-        ) : (
-          <View>
-            <TouchableOpacity
-              activeOpacity={1}
-              onPress={() => setshowLocationpopup(true)}
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-              }}
-            >
-              {locationDetails ? (
-                <Text
-                  style={{
-                    color: theme.colors.SHERPA_BLUE,
-                    ...theme.fonts.IBMPlexSansSemiBold(13),
-                    textTransform: 'uppercase',
-                  }}
-                >
-                  {locationDetails.displayName && locationDetails.displayName.length > 15
-                    ? `${locationDetails.displayName.substring(0, 15)}...`
-                    : locationDetails.displayName}
-                </Text>
-              ) : null}
-              <LocationOn />
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
-    );
   };
 
   const renderTopView = () => {
@@ -831,14 +651,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
             );
           }}
         >
-          <HomeIcon />
+          {/* <HomeIcon /> */}
+          <ApolloLogo style={{ width: 57, height: 37 }} resizeMode="contain" />
         </TouchableOpacity>
         <View style={{ flexDirection: 'row' }}>
-          {renderLocation()}
+          {renderDeliverToLocationMenuAndCTA()}
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => props.navigation.navigate(AppRoutes.MedAndTestCart)}
-            // style={{ right: 20 }}
           >
             <CartIcon />
             {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
@@ -1796,6 +1616,90 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
+  const renderDeliverToLocationMenuAndCTA = () => {
+    const options = ['Auto Select Pincode', 'Enter Pincode Manually'].map((item) => ({
+      key: item,
+      value: item,
+    }));
+
+    return (
+      <MaterialMenu
+        options={options}
+        itemContainer={styles.menuItemContainer}
+        menuContainerStyle={[
+          styles.menuMenuContainerStyle,
+          {
+            marginTop: hasLocation ? winWidth * 0.08 : 35,
+            marginLeft: 10,
+          },
+        ]}
+        scrollViewContainerStyle={styles.menuScrollViewContainerStyle}
+        itemTextStyle={styles.menuItemTextStyle}
+        bottomPadding={styles.menuBottomPadding}
+        onPress={(item) => {
+          if (item.value == options[0].value) {
+            autoDetectLocation();
+          } else {
+            /**
+             * change these webengage events
+             */
+            // const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ENTER_DELIVERY_PINCODE_CLICKED] = {
+            //   'Patient UHID': currentPatient.uhid,
+            //   'Mobile Number': currentPatient.mobileNumber,
+            //   'Customer ID': currentPatient.id,
+            // };
+            // postWebEngageEvent(
+            //   WebEngageEventName.PHARMACY_ENTER_DELIVERY_PINCODE_CLICKED,
+            //   eventAttributes
+            // );
+            setshowLocationpopup(true);
+          }
+        }}
+      >
+        {renderDeliverToLocationCTA()}
+      </MaterialMenu>
+    );
+  };
+
+  const formatText = (text: string, count: number) =>
+    text.length > count ? `${text.slice(0, count)}...` : text;
+
+  const renderDeliverToLocationCTA = () => {
+    const location = locationDetails
+      ? `${formatText(g(locationDetails, 'city') || g(locationDetails, 'state') || '', 18)} ${g(
+          locationDetails,
+          'pincode'
+        )}`
+      : `${formatText(g(locationDetails, 'city') || g(locationDetails, 'state') || '', 18)} ${g(
+          locationDetails,
+          'pincode'
+        )}`;
+    return (
+      <View style={{ paddingLeft: 15, marginTop: 3.5 }}>
+        {hasLocation ? (
+          <View style={{ marginTop: -7.5, marginRight: 40 }}>
+            <View style={{ flexDirection: 'row' }}>
+              <View>
+                <Text style={styles.locationText}>{location}</Text>
+                {!serviceabilityMsg ? null : ( // <Spearator style={styles.locationTextUnderline} />
+                  <View style={{ height: 2 }} />
+                )}
+              </View>
+
+              <View style={styles.dropdownGreenContainer}>
+                <LocationOn />
+              </View>
+            </View>
+          </View>
+        ) : (
+          <View style={{ marginTop: -3, marginRight: 3 }}>
+            <LocationOff />
+          </View>
+        )}
+      </View>
+    );
+  };
+
   const renderBanner = () => {
     return (
       <View
@@ -1992,10 +1896,77 @@ export const Tests: React.FC<TestsProps> = (props) => {
     });
   };
 
+  const renderLocationNotServingPopUpForPincode = (pincode: string) => {
+    showAphAlert!({
+      title: `Hi ${currentPatient && currentPatient.firstName},`,
+      description: string.diagnostics.nonServiceableConfigPinCodeMsg.replace(
+        '{{pincode}}',
+        pincode
+      ),
+      CTAs: [
+        {
+          text: 'GO TO HOMEPAGE',
+          onPress: () => {
+            hideAphAlert!();
+            props.navigation.navigate(AppRoutes.ConsultRoom, {});
+          },
+          type: 'orange-link',
+        },
+        {
+          text: 'TRY ANOTHER PINCODE',
+          onPress: () => {
+            hideAphAlert!();
+            setshowLocationpopup(true);
+          },
+          type: 'orange-link',
+        },
+      ],
+    });
+
+    //bahar tap karne par
+    setServiceabilityMsg(
+      'Services currently unavailable in your area. Kindly try changing the location.'
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ ...viewStyles.container }}>
         {renderTopView()}
+        {!!serviceabilityMsg && (
+          <View style={{ backgroundColor: 'white' }}>
+            <View
+              style={{
+                marginLeft: 20,
+                marginRight: 20,
+                marginBottom: 10,
+                padding: 5,
+                borderColor: '#890000',
+                borderWidth: 1,
+                borderRadius: 5,
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: 'row',
+                  marginHorizontal: 10,
+                  justifyContent: 'space-between',
+                }}
+              >
+                <PendingIcon
+                  style={{
+                    height: 15,
+                    width: 15,
+                    resizeMode: 'contain',
+                    marginTop: '1%',
+                    tintColor: '#890000',
+                  }}
+                />
+                <Text style={styles.serviceabilityMsg}>{serviceabilityMsg}</Text>
+              </View>
+            </View>
+          </View>
+        )}
         <ScrollView
           keyboardShouldPersistTaps="always"
           showsVerticalScrollIndicator={false}
