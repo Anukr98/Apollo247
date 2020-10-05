@@ -162,11 +162,7 @@ export const DetailedFindings: React.FC<DetailedFindingsProps> = (props) => {
         <ExpansionPanelDetails className={classes.panelDetails}>
           <Grid container spacing={2}>
             <div className={classes.cardTitle}>
-              <img
-                className={classes.labtest}
-                src={require('images/ic_labtest.svg')}
-                alt=""
-              />
+              <img className={classes.labtest} src={require('images/ic_labtest.svg')} alt="" />
               Impressions
             </div>
             {activeData.labTestResults.map((detail: LabTestResultsType) => {

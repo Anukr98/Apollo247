@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import React from 'react';
+=======
+import React, { useEffect, useState } from 'react';
+>>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
 import { Theme } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
@@ -6,6 +10,7 @@ import { makeStyles } from '@material-ui/styles';
 import { BottomLinks } from 'components/BottomLinks';
 import { Header } from 'components/Header';
 import { NavigationBottom } from 'components/NavigationBottom';
+import { dataLayerTracking } from 'gtmTracking';
 import { MetaTagsComp } from 'MetaTagsComp';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -49,7 +54,25 @@ const useStyles = makeStyles((theme: Theme) => {
 
 const Privacy: React.FC = (props) => {
   const classes = useStyles({});
+<<<<<<< HEAD
   const metaTagProps = {
+=======
+
+  useEffect(() => {
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: 'Privacy Page',
+      pageLOB: 'Others',
+      pageType: 'Privacy Page',
+    });
+    /**Gtm code start end */
+  }, []);
+
+  const [metaTagProps, setMetaTagProps] = useState(null);
+  setMetaTagProps({
+>>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
     title: 'Apollo 247 - Privacy Policy - Apollo Hospitals',
     description:
       'Read the Privacy Policy of Apollo 247. Apollo 247 website and app ( “Website” /“App” respectively), respects your privacy, and seeks to comply with applicable legal requirements in respect of data collection, processing and transfer.',

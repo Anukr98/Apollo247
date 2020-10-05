@@ -65,6 +65,7 @@ export const getNotificationsTypeDefs = gql`
 
     testPushNotification(deviceToken: String): PushNotificationSuccessMessage
     sendDailyAppointmentSummary: String
+    sendAppointmentSummaryOps: String
     sendFollowUpNotification: String
     sendChatMessageToDoctor(
       appointmentId: String

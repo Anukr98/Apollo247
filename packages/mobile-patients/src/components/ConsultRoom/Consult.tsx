@@ -285,7 +285,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   ) => {
     const eventAttributes:
       | WebEngageEvents[WebEngageEventName.CONSULT_CARD_CLICKED]
-      | WebEngageEvents[WebEngageEventName.CHAT_WITH_DOCTOR]
       | WebEngageEvents[WebEngageEventName.CONTINUE_CONSULT_CLICKED]
       | WebEngageEvents[WebEngageEventName.FILL_MEDICAL_DETAILS] = {
       'Doctor Name': g(data, 'doctorInfo', 'fullName')!,
@@ -309,8 +308,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     postWebEngageEvent(
       type == 'Card Click'
         ? WebEngageEventName.CONSULT_CARD_CLICKED
-        : type == 'Chat with Doctor'
-        ? WebEngageEventName.CHAT_WITH_DOCTOR
         : type == 'Continue Consult'
         ? WebEngageEventName.CONTINUE_CONSULT_CLICKED
         : WebEngageEventName.FILL_MEDICAL_DETAILS,

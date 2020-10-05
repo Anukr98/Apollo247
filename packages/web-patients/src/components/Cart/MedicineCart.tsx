@@ -29,6 +29,7 @@ import {
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { getDeviceType, getCouponByUserMobileNumber } from 'helpers/commonHelpers';
+import { ConfigOneApolloData } from 'strings/AppConfig';
 import { ApplyCoupon } from 'components/Cart/ApplyCoupon';
 import _compact from 'lodash/compact';
 import _find from 'lodash/find';
@@ -73,7 +74,7 @@ import {
 import { ChennaiCheckout, submitFormType } from 'components/Cart/ChennaiCheckout';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { useParams } from 'hooks/routerHooks';
-import { gtmTracking, _obTracking } from '../../gtmTracking';
+import { gtmTracking, _obTracking, dataLayerTracking } from '../../gtmTracking';
 import { validatePharmaCoupon_validatePharmaCoupon } from 'graphql/types/validatePharmaCoupon';
 import { Route } from 'react-router-dom';
 import { getItemSpecialPrice } from '../PayMedicine';
@@ -641,6 +642,41 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    medicinesAddmore: {
+      fontWeight: 500,
+      fontSize: 14,
+      lineHeight: '20px',
+      padding: 10,
+      background: '#F7F8F5',
+      boxShadow: '0px 5px 20px rgba(128, 128, 128, 0.3)',
+      borderRadius: 5,
+      margin: '20px 15px 10px 20px',
+      '& img': {
+        position: 'relative',
+        top: 3,
+      },
+    },
+    addmoreAmount: {
+      color: '#FC9916',
+    },
+    nudgeAddMore: {
+      color: '#0087BA',
+      paddingLeft: 5,
+    },
+    oneApolloDetails: {
+      display: 'flex',
+      alignItems: 'flex-start',
+      padding: '10px 0 0',
+      '& img': {
+        margin: '0 10px 0 0',
+      },
+      '& p': {
+        fontSize: 13,
+        fontWeight: 500,
+        color: '#666666',
+        lineHeight: '17px',
+      },
+    },
   };
 });
 
@@ -778,6 +814,19 @@ export const MedicineCart: React.FC = (props) => {
       });
     }
   }, [showOrderPopup]);
+
+  useEffect(() => {
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: 'Pharmacy Cart Page',
+      pageLOB: 'Pharmacy',
+      pageType: 'Cart Page',
+      cartproductlist: JSON.stringify(cartItems),
+    });
+    /**Gtm code start end */
+  }, []);
 
   const checkForPriceUpdate = (tatRes: any) => {
     setShopId(tatRes.storeCode);
@@ -952,6 +1001,7 @@ export const MedicineCart: React.FC = (props) => {
     validateCouponResult.discount >= productDiscount
       ? Number(cartTotal) - couponDiscount
       : Number(cartTotal);
+<<<<<<< HEAD
   const deliveryCharges = freeDelivery
     ? 0
     : modifiedAmountForCharges >= Number(pharmacyMinDeliveryValue) ||
@@ -959,6 +1009,15 @@ export const MedicineCart: React.FC = (props) => {
       tabValue === 1
     ? 0
     : Number(pharmacyDeliveryCharges);
+=======
+
+  const deliveryCharges =
+    modifiedAmountForCharges >= Number(pharmacyMinDeliveryValue) ||
+    modifiedAmountForCharges <= 0 ||
+    tabValue === 1
+      ? 0
+      : Number(pharmacyDeliveryCharges);
+>>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
   const totalAmount = (cartTotal + Number(deliveryCharges)).toFixed(2);
   const totalWithCouponDiscount =
     validateCouponResult &&
@@ -1704,6 +1763,25 @@ export const MedicineCart: React.FC = (props) => {
                 </>
               ) : null}
             </div>
+            {deliveryCharges !== 0 && (
+              <div className={`${classes.medicineListGroup} ${classes.medicinesAddmore}`}>
+                <img src={require('images/ic_priority_high.svg')} alt="info icon" />
+                Add{' '}
+                <span className={classes.addmoreAmount}>
+                  {(Number(pharmacyMinDeliveryValue) - cartTotal).toFixed(2)}
+                </span>{' '}
+                of eligible items to your order to qualify for FREE Delivery.
+                <span>
+                  <Link
+                    className={classes.nudgeAddMore}
+                    to={clientRoutes.medicines()}
+                    title={'Add Items'}
+                  >
+                    Add Items
+                  </Link>
+                </span>
+              </div>
+            )}
           </Scrollbars>
         </div>
         <div className={classes.rightSection}>
@@ -1946,6 +2024,12 @@ export const MedicineCart: React.FC = (props) => {
                   </div>
                 </>
               )}
+              <div className={classes.oneApolloDetails}>
+                <img src={require('images/one-apollo.svg')} width="30" alt="One Apollo" />
+                <Typography>
+                  {ConfigOneApolloData.medicineCartString}
+                </Typography>
+              </div>
             </div>
           </Scrollbars>
           <div className={classes.checkoutBtn}>

@@ -1,3 +1,5 @@
+import { consultWebengageEventsCommonInfo } from 'helpers/commonHelpers';
+
 //PHR Consult & RX
 declare global {
   interface Window {
@@ -419,6 +421,11 @@ export const consultationBookTracking = (data: any) => {
       patientGender,
       specialisation,
       relation,
+      patientName,
+      secretaryName,
+      doctorNumber,
+      patientNumber,
+      secretaryNumber,
     } = data;
     try {
       window.webengage.track('Consultation booked - web', {
@@ -434,6 +441,11 @@ export const consultationBookTracking = (data: any) => {
         'Patient Gender': patientGender,
         specialisation: specialisation,
         Relation: relation,
+        'Patient Name': patientName,
+        'Secretary Name': secretaryName,
+        'Doctor Mobile number': doctorNumber,
+        'Patient mobile number': patientNumber,
+        'Secretary Mobile Number': secretaryNumber,
       });
     } catch (err) {
       console.log('WebEngage Err: ', err);
@@ -857,6 +869,7 @@ export const buyMedicineClickTracking = (result: string) => {
   }
 };
 
+<<<<<<< HEAD
 export const pharmaAvailabilityApiTracking = (data: any) => {
   if (typeof window !== 'undefined') {
     const {
@@ -931,32 +944,64 @@ export const pharmaTatApiTracking = (data: any) => {
         Response_tat: resTat,
         Response_tatU: resTatU,
       });
+=======
+// web consult events
+
+export const goConsultRoomTracking = (data: any) => {
+  if (typeof window !== 'undefined') {
+    try {
+      window.webengage.track(
+        'Go to consult room clicked (web)',
+        consultWebengageEventsCommonInfo(data)
+      );
+>>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
     } catch (err) {
       console.log('WebEngage Err: ', err);
     }
   }
 };
 
+<<<<<<< HEAD
 export const trackLanding = (location: any) => {
   if (typeof window !== 'undefined') {
     try {
       window.webengage.track(location, {});
+=======
+export const medicalDetailsFillTracking = (data: any) => {
+  if (typeof window !== 'undefined') {
+    try {
+      window.webengage.track(
+        'Medical details filled (web)',
+        consultWebengageEventsCommonInfo(data)
+      );
+>>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
     } catch (err) {
       console.log('WebEngage Err: ', err);
     }
   }
 };
 
+<<<<<<< HEAD
 export const hdfcUnlockNowTracking = (location: any) => {
   if (typeof window !== 'undefined') {
     try {
       window.webengage.track(location, {});
+=======
+export const callReceiveClickTracking = (data: any) => {
+  if (typeof window !== 'undefined') {
+    try {
+      window.webengage.track(
+        'Green button on call clicked (web)',
+        consultWebengageEventsCommonInfo(data)
+      );
+>>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
     } catch (err) {
       console.log('WebEngage Err: ', err);
     }
   }
 };
 
+<<<<<<< HEAD
 export const HdfcUserSignupDetailTracking = (userDetailData: UserDetail) => {
   const { emailAddress, dateOfBirth, mobileNumber, gender, firstName, lastName } = userDetailData;
   if (typeof window !== 'undefined') {
@@ -983,12 +1028,22 @@ export const HDFCGenerateOTPClicked = (data: any) => {
         emailId: emailId,
         PartnerId: PartnerId,
       });
+=======
+export const callEndedClickTracking = (data: any) => {
+  if (typeof window !== 'undefined') {
+    try {
+      window.webengage.track(
+        'Patient ended the consult (web)',
+        consultWebengageEventsCommonInfo(data)
+      );
+>>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
     } catch (err) {
       console.log('WebEngage Err: ', err);
     }
   }
 };
 
+<<<<<<< HEAD
 export const HDFCVerifyOtpClicked = (data: any) => {
   if (typeof window !== 'undefined') {
     const { mobileNumber, DOB, emailId, PartnerId } = data;
@@ -999,12 +1054,22 @@ export const HDFCVerifyOtpClicked = (data: any) => {
         emailId: emailId,
         PartnerId: PartnerId,
       });
+=======
+export const prescriptionReceivedTracking = (data: any) => {
+  if (typeof window !== 'undefined') {
+    try {
+      window.webengage.track(
+        'Prescription patient received successfully (web)',
+        consultWebengageEventsCommonInfo(data)
+      );
+>>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
     } catch (err) {
       console.log('WebEngage Err: ', err);
     }
   }
 };
 
+<<<<<<< HEAD
 export const HDFCExploreBenefitsClicked = (data: any) => {
   if (typeof window !== 'undefined') {
     const { mobileNumber, DOB, emailId, PartnerId, planName } = data;
@@ -1016,6 +1081,26 @@ export const HDFCExploreBenefitsClicked = (data: any) => {
         emailId: emailId,
         PartnerId: PartnerId,
         planName: planName,
+=======
+export const messageSentPostConsultTracking = (data: any) => {
+  if (typeof window !== 'undefined') {
+    const {
+      doctorName,
+      patientName,
+      secretaryName,
+      doctorNumber,
+      patientNumber,
+      secretaryNumber,
+    } = data;
+    try {
+      window.webengage.track('Patient sent chat message post consult (web)', {
+        'Doctor Name': doctorName,
+        'Patient Name': patientName,
+        'Secretary Name': secretaryName,
+        'Doctor Mobile number': doctorNumber,
+        'Patient mobile number': patientNumber,
+        'Secretary Mobile Number': secretaryNumber,
+>>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
       });
     } catch (err) {
       console.log('WebEngage Err: ', err);
@@ -1023,6 +1108,7 @@ export const HDFCExploreBenefitsClicked = (data: any) => {
   }
 };
 
+<<<<<<< HEAD
 export const HDFCPlanSubscribed = (data: any) => {
   if (typeof window !== 'undefined') {
     const { mobileNumber, DOB, emailId, PartnerId, planName } = data;
@@ -1034,6 +1120,26 @@ export const HDFCPlanSubscribed = (data: any) => {
         emailId: emailId,
         PartnerId: PartnerId,
         planName: planName,
+=======
+export const cancellationPatientTracking = (data: any) => {
+  if (typeof window !== 'undefined') {
+    const {
+      doctorName,
+      patientName,
+      secretaryName,
+      doctorNumber,
+      patientNumber,
+      secretaryNumber,
+    } = data;
+    try {
+      window.webengage.track('Cancellation by patient (web)', {
+        'Doctor Name': doctorName,
+        'Patient Name': patientName,
+        'Secretary Name': secretaryName,
+        'Doctor Mobile number': doctorNumber,
+        'Patient mobile number': patientNumber,
+        'Secretary Mobile Number': secretaryNumber,
+>>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
       });
     } catch (err) {
       console.log('WebEngage Err: ', err);
@@ -1041,6 +1147,7 @@ export const HDFCPlanSubscribed = (data: any) => {
   }
 };
 
+<<<<<<< HEAD
 export const HDFCHomePageCardClicked = (data: any) => {
   if (typeof window !== 'undefined') {
     const { mobileNumber, DOB, emailId, PartnerId, planName, planStatus } = data;
@@ -1054,6 +1161,26 @@ export const HDFCHomePageCardClicked = (data: any) => {
         PartnerId: PartnerId,
         planName: planName,
         planStatus: planStatus,
+=======
+export const reschedulePatientTracking = (data: any) => {
+  if (typeof window !== 'undefined') {
+    const {
+      doctorName,
+      patientName,
+      secretaryName,
+      doctorNumber,
+      patientNumber,
+      secretaryNumber,
+    } = data;
+    try {
+      window.webengage.track('Reschedule by the patient (web)', {
+        'Doctor Name': doctorName,
+        'Patient Name': patientName,
+        'Secretary Name': secretaryName,
+        'Doctor Mobile number': doctorNumber,
+        'Patient mobile number': patientNumber,
+        'Secretary Mobile Number': secretaryNumber,
+>>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
       });
     } catch (err) {
       console.log('WebEngage Err: ', err);
@@ -1061,6 +1188,7 @@ export const HDFCHomePageCardClicked = (data: any) => {
   }
 };
 
+<<<<<<< HEAD
 export const HDFCHomePageCarouselClicked = (data: any) => {
   if (typeof window !== 'undefined') {
     const { mobileNumber, DOB, emailId, PartnerId, planName, planStatus } = data;
@@ -1077,6 +1205,14 @@ export const HDFCHomePageCarouselClicked = (data: any) => {
       });
     } catch (err) {
       console.log('WebEngage Err: ', err);
+=======
+export const medicinePageOpenTracking = () => {
+  if (typeof window !== 'undefined') {
+    try {
+      window.webengage.track('Medicine Page Opened - Web', {});
+    } catch (err) {
+      console.log('Webengage Err: ', err);
+>>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
     }
   }
 };

@@ -2,11 +2,22 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { STATUS, APPOINTMENT_TYPE, APPOINTMENT_STATE, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION, ROUTE_OF_ADMINISTRATION, DoctorType, Relation, Gender } from "./globalTypes";
+import { STATUS, APPOINTMENT_TYPE, APPOINTMENT_STATE, DoctorType, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION, ROUTE_OF_ADMINISTRATION, Relation, Gender } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetDoctorAppointments
 // ====================================================
+
+export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_doctorInfo {
+  __typename: "DoctorDetailsWithStatusExclude";
+  id: string;
+  displayName: string | null;
+  mobileNumber: string;
+  firstName: string;
+  lastName: string;
+  fullName: string | null;
+  doctorType: DoctorType;
+}
 
 export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet_appointment {
   __typename: "Appointment";
@@ -30,6 +41,9 @@ export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory
   medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null;
   routeOfAdministration: ROUTE_OF_ADMINISTRATION | null;
   medicineCustomDosage: string | null;
+  medicineCustomDetails: string | null;
+  includeGenericNameInPrescription: boolean | null;
+  genericName: string | null;
 }
 
 export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet_removedMedicinePrescription {
@@ -49,6 +63,9 @@ export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory
   medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null;
   routeOfAdministration: ROUTE_OF_ADMINISTRATION | null;
   medicineCustomDosage: string | null;
+  medicineCustomDetails: string | null;
+  includeGenericNameInPrescription: boolean | null;
+  genericName: string | null;
 }
 
 export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet_otherInstructions {
@@ -73,6 +90,7 @@ export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory
 export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet_diagnosticPrescription {
   __typename: "DiagnosticPrescription";
   itemname: string | null;
+  testInstruction: string | null;
 }
 
 export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet {
@@ -138,6 +156,7 @@ export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory
   isFollowUp: boolean | null;
   followUpParentId: string | null;
   isJdQuestionsComplete: boolean | null;
+  doctorInfo: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_doctorInfo | null;
   caseSheet: (GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet | null)[] | null;
   patientInfo: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_patientInfo | null;
 }

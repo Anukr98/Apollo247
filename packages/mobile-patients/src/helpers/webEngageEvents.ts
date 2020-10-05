@@ -5,6 +5,21 @@ import {
 
 type YesOrNo = 'Yes' | 'No';
 
+export enum ProductPageViewedSource {
+  NOTIFICATION = 'notification',
+  DEEP_LINK = 'deeplink',
+  BANNER = 'banner',
+  REGISTRATION = 'registration',
+  CART = 'cart',
+  PARTIAL_SEARCH = 'partial search',
+  FULL_SEARCH = 'full search',
+  HOME_PAGE = 'home page',
+  CATEGORY_OR_LISTING = 'category or listing',
+  SUBSTITUTES = 'substitutes',
+  CROSS_SELLING_PRODUCTS = 'cross selling products',
+  SIMILAR_PRODUCTS = 'similar products',
+}
+
 export enum WebEngageEventName {
   MOBILE_ENTRY = 'Mobile Entry',
   MOBILE_NUMBER_ENTERED = 'Mobile Number Entered',
@@ -16,8 +31,6 @@ export enum WebEngageEventName {
   SEARCH = 'Pharmacy Search',
   SEARCH_ENTER_CLICK = 'Pharmacy Search Enter Clicked',
   PHARMACY_SEARCH_RESULTS = 'Pharmacy Search Results',
-  PHARMACY_PRODUCT_CLICKED = 'Pharmacy Product Clicked',
-  PHARMACY_PRODUCT_DETAIL_SUBSTITUTE_CLICKED = 'Pharmacy Product Detail Substitute Clicked',
   PRODUCT_DETAIL_TAB_CLICKED = 'Product Detail Tab Clicked',
   PRODUCT_DETAIL_PINCODE_CHECK = 'Product Detail Pincode Check',
   NOTIFY_ME = 'Notify Me',
@@ -144,12 +157,13 @@ export enum WebEngageEventName {
   TAKE_PHOTO_CLICK_CHATROOM = 'Take a photo in consult room clicked',
   GALLERY_UPLOAD_PHOTO_CLICK_CHATROOM = 'choose from gallery in consult room clicked',
   UPLOAD_PHR_CLICK_CHATROOM = 'Upload from PHR in consult room clicked',
+  PATIENT_JOINED_CONSULT = 'Patient Joined the consult with doctor',
+  PATIENT_ENDED_CONSULT = 'Patient ended the consult',
   // Medicine Events
   PHARMACY_AUTO_SELECT_LOCATION_CLICKED = 'Pharmacy Auto Select Location Clicked',
   PHARMACY_ENTER_DELIVERY_PINCODE_CLICKED = 'Pharmacy Enter Delivery Pincode Clicked',
   PHARMACY_ENTER_DELIVERY_PINCODE_SUBMITTED = 'Pharmacy Enter Delivery Pincode Submitted ',
   PHARMACY_PINCODE_NONSERVICABLE = 'Pharmacy location nonservicable',
-  PHARMACY_CATEGORY_SECTION_PRODUCT_CLICK = 'Pharmacy Category Section Product Click',
   PHARMACY_BANNER_CLICK = 'Pharmacy Homepage Banner click',
   CALL_THE_NEAREST_PHARMACY = 'Call the Nearest Pharmacy',
   // Payments Events
@@ -192,6 +206,8 @@ export enum WebEngageEventName {
   PATIENT_SESSION_STREAM_CREATED = 'Patient Session Stream Created',
   PATIENT_SESSION_STREAM_DESTROYED = 'Patient Session Stream Destroyed',
   PATIENT_SESSION_STREAM_PROPERTY_CHANGED = 'Patient Session Stream Property Changed',
+  //chatRoom Events
+  PATIENT_SENT_CHAT_MESSAGE_POST_CONSULT = 'Patient sent chat message post consult',
 }
 
 export interface PatientInfo {
@@ -336,16 +352,6 @@ export interface WebEngageEvents {
     keyword: string;
     Source: 'Pharmacy Home' | 'Pharmacy Search';
   };
-  [WebEngageEventName.PHARMACY_PRODUCT_CLICKED]: {
-    'product name': string;
-    'product id': string; // (SKUID)
-    Brand: string;
-    'Brand ID': string;
-    'category name': string;
-    'category ID': string;
-    Source: 'Home' | 'List' | 'Search';
-    'Section Name': string;
-  };
   [WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK]: {
     'product id': string; // (SKUID)
     'product name': string;
@@ -357,10 +363,6 @@ export interface WebEngageEvents {
   [WebEngageEventName.PRODUCT_DETAIL_TAB_CLICKED]: {
     tabName: string;
   };
-  [WebEngageEventName.PHARMACY_PRODUCT_DETAIL_SUBSTITUTE_CLICKED]: {
-    'product id': string; // (SKUID)
-    'product name': string;
-  };
   [WebEngageEventName.NOTIFY_ME]: {
     'product name': string;
     'product id': string; // (SKUID)
@@ -368,6 +370,7 @@ export interface WebEngageEvents {
     'Brand ID': string;
     'category name': string;
     'category ID': string;
+    pincode: string;
   };
 
   [WebEngageEventName.CATEGORY_CLICKED]: {
@@ -644,11 +647,6 @@ export interface WebEngageEvents {
     Pincode: string;
     Servicable: boolean;
   };
-  [WebEngageEventName.PHARMACY_CATEGORY_SECTION_PRODUCT_CLICK]: {
-    'Section Name': string;
-    ProductId: string;
-    ProductName: string;
-  };
   [WebEngageEventName.PHARMACY_BANNER_CLICK]: {
     BannerPosition: number;
   };
@@ -695,6 +693,9 @@ export interface WebEngageEvents {
     'Speciality ID': string;
     'Hospital Name': string;
     'Hospital City': string;
+    'Secretary Name': string;
+    'Secretary Mobile Number': string;
+    'Doctor Mobile Number': string;
   };
   [WebEngageEventName.TYPE_OF_CONSULT_SELECTED]: {
     'Consultation Type': string;
@@ -734,6 +735,7 @@ export interface WebEngageEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
+    Rank: number;
   };
   [WebEngageEventName.DOCTOR_CONNECT_CARD_CLICK]: {
     'Online Price': number;
@@ -793,6 +795,48 @@ export interface WebEngageEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Patient UHID': string;
+  };
+
+  //chat room
+  [WebEngageEventName.PATIENT_SENT_CHAT_MESSAGE_POST_CONSULT]: {
+    'Doctor Name': string;
+    'Speciality Name': string;
+    'Speciality ID': string;
+    'Doctor Category': DoctorType;
+    'Consult Date Time': Date;
+    'Consult Mode': 'Online' | 'Physical';
+    'Hospital Name': string;
+    'Hospital City': string;
+    'Consult ID': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Customer ID': string;
+    'Secretary Name': string;
+    'Secretary Mobile Number': string;
+    'Doctor Mobile Number': string;
+  };
+  [WebEngageEventName.CHAT_WITH_DOCTOR]: {
+    'Doctor Name': string;
+    'Speciality Name': string;
+    'Speciality ID': string;
+    'Doctor Category': DoctorType;
+    'Consult Date Time': Date;
+    'Consult Mode': 'Online' | 'Physical';
+    'Hospital Name': string;
+    'Hospital City': string;
+    'Consult ID': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Customer ID': string;
+    'Secretary Name': string;
+    'Secretary Mobile Number': string;
+    'Doctor Mobile Number': string;
   };
   // confirm the type of data for the below
   [WebEngageEventName.CONSULT_SCHEDULE_FOR_LATER_CLICKED]: {
@@ -1057,6 +1101,9 @@ export interface WebEngageEvents {
     'Patient Gender': string;
     'Mobile Number': string;
     'Customer ID': string;
+    'Secretary Name': string;
+    'Secretary Mobile Number': string;
+    'Doctor Mobile Number': string;
   };
 
   [WebEngageEventName.CONSULTATION_RESCHEDULED_BY_CUSTOMER]: {
@@ -1075,6 +1122,9 @@ export interface WebEngageEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
+    'Secretary Name': string;
+    'Secretary Mobile Number': string;
+    'Doctor Mobile Number': string;
   };
   [WebEngageEventName.FILL_MEDICAL_DETAILS]: {
     'Doctor Name': string;
@@ -1165,6 +1215,9 @@ export interface WebEngageEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
+    'Secretary Name': string;
+    'Secretary Mobile Number': string;
+    'Doctor Mobile Number': string;
   };
   [WebEngageEventName.CONTINUE_CONSULTATION_CLICKED]: {
     'Doctor Name': string;
@@ -1183,6 +1236,9 @@ export interface WebEngageEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
+    'Secretary Name': string;
+    'Secretary Mobile Number': string;
+    'Doctor Mobile Number': string;
   };
   [WebEngageEventName.CANCEL_CONSULTATION_CLICKED]: {
     'Doctor Name': string;
@@ -1201,6 +1257,9 @@ export interface WebEngageEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
+    'Secretary Name': string;
+    'Secretary Mobile Number': string;
+    'Doctor Mobile Number': string;
   };
   [WebEngageEventName.PRESCRIPTION_RECEIVED]: {
     'Doctor Name': string;
@@ -1219,6 +1278,7 @@ export interface WebEngageEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
+    City: string;
   };
   [WebEngageEventName.SD_CONSULTATION_STARTED]: {
     'Doctor Name': string;
@@ -1238,6 +1298,40 @@ export interface WebEngageEvents {
     'Customer ID': string;
   };
   [WebEngageEventName.SD_VIDEO_CALL_STARTED]: {
+    'Doctor Name': string;
+    'Speciality Name': string;
+    'Speciality ID': string;
+    'Doctor Category': DoctorType;
+    'Consult Date Time': Date;
+    'Consult Mode': 'Online' | 'Physical';
+    'Hospital Name': string;
+    'Hospital City': string;
+    'Consult ID': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Customer ID': string;
+  };
+  [WebEngageEventName.PATIENT_JOINED_CONSULT]: {
+    'Doctor Name': string;
+    'Speciality Name': string;
+    'Speciality ID': string;
+    'Doctor Category': DoctorType;
+    'Consult Date Time': Date;
+    'Consult Mode': 'Online' | 'Physical';
+    'Hospital Name': string;
+    'Hospital City': string;
+    'Consult ID': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Customer ID': string;
+  };
+  [WebEngageEventName.PATIENT_ENDED_CONSULT]: {
     'Doctor Name': string;
     'Speciality Name': string;
     'Speciality ID': string;
@@ -1323,23 +1417,6 @@ export interface WebEngageEvents {
     'Patient Gender': string;
     'Customer ID': string;
   };
-  [WebEngageEventName.CHAT_WITH_DOCTOR]: {
-    'Doctor Name': string;
-    'Speciality Name': string;
-    'Speciality ID': string;
-    'Doctor Category': DoctorType;
-    'Consult Date Time': Date;
-    'Consult Mode': 'Online' | 'Physical';
-    'Hospital Name': string;
-    'Hospital City': string;
-    'Consult ID': string;
-    'Patient Name': string;
-    'Patient UHID': string;
-    Relation: string;
-    'Patient Age': number;
-    'Patient Gender': string;
-    'Customer ID': string;
-  };
   [WebEngageEventName.NO_SLOTS_FOUND]: {
     'Doctor Name': string;
     'Speciality Name': string;
@@ -1366,7 +1443,7 @@ export interface WebEngageEvents {
     source: 'deeplink' | 'app home';
   };
   [WebEngageEventName.PRODUCT_PAGE_VIEWED]: {
-    source: 'deeplink' | 'widget' | 'search';
+    source: ProductPageViewedSource;
     ProductId: string;
     ProductName: string;
     'Stock availability': YesOrNo;

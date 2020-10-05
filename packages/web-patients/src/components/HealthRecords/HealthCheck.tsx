@@ -11,6 +11,7 @@ import moment from 'moment';
 import { RenderImage } from 'components/HealthRecords/RenderImage';
 import { getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecksNew_response as HealthCheckType } from '../../graphql/types/getPatientPrismMedicalRecords';
 import { HEALTH_RECORDS_NO_DATA_FOUND, HEALTH_RECORDS_NOTE } from 'helpers/commonHelpers';
+import { MedicalRecordType } from '../../graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -403,7 +404,10 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
       <div className={classes.leftSection}>
         <div className={classes.noteText}>{HEALTH_RECORDS_NOTE}</div>
         <div className={classes.tabsWrapper}>
-          <Link className={classes.addReportMobile} to={clientRoutes.addRecords()}>
+          <Link
+            className={classes.addReportMobile}
+            to={clientRoutes.addHealthRecords('healthCheck')}
+          >
             <img src={require('images/ic_addfile.svg')} />
           </Link>
         </div>
@@ -438,8 +442,8 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
                   <MedicalCard
                     deleteReport={deleteReport}
                     name={combinedData.healthCheckName || combinedData.healthCheckType || '-'}
-                    source={combinedData.healthCheckSummary || '-'}
-                    type={'HealthCheck'}
+                    source={combinedData.source || '-'}
+                    recordType={MedicalRecordType.HEALTHCHECK}
                     id={`HealthCheck-${combinedData.id}`}
                     isActiveCard={activeData && activeData.id === combinedData.id}
                   />
@@ -453,17 +457,17 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
             </div>
           )}
         </Scrollbars>
-        {/* <div className={classes.addReportActions}>
+        <div className={classes.addReportActions}>
           <AphButton
             color="primary"
             onClick={() => {
-              window.location.href = clientRoutes.addRecords();
+              window.location.href = clientRoutes.addHealthRecords('healthCheck');
             }}
             fullWidth
           >
             Add Record
           </AphButton>
-        </div> */}
+        </div>
       </div>
       <div
         className={`${classes.rightSection} ${

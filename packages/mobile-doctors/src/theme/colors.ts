@@ -8,6 +8,9 @@ const APP_Sherpa_Blue = '#01475b';
 const shadowGray = '#808080';
 const text_light_blue = 'rgba(2,71,91,0.6)';
 const pink = '#ff748e';
+const title_green = '#07AE8B';
+const rating_yellow = '#FCB716';
+const light_black = '#555555';
 
 const whiteColor = (opacity: number = 1) => `rgba(255,255,255,${opacity})`; //'#ffffff'
 const blackColor = (opacity: number = 1) => `rgba(0,0,0,${opacity})`; //'#000000'
@@ -59,6 +62,9 @@ const Common = {
   APP_RED: red,
   DARK_RED: darkRed,
   NOTIFICATION_DOT: pink,
+  TITLE_GREEN: title_green,
+  RATING_YELLOW: rating_yellow,
+  LIGHT_BLACK: light_black
 };
 
 const Header = {

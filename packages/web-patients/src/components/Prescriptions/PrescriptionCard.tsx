@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { AphButton, AphLinearProgress } from '@aph/web-ui-components';
+import { dataLayerTracking } from 'gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -59,6 +60,11 @@ export const PrescriptionCard: React.FC<PrescriptionCardProps> = (props) => {
   const [completed, setCompleted] = React.useState(0);
 
   useEffect(() => {
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'Prescription Uploaded',
+    });
+    /**Gtm code start end */
     function progress() {
       setCompleted((oldCompleted) => {
         if (oldCompleted === 100) {

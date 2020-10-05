@@ -13,13 +13,20 @@ import firebase from 'react-native-firebase';
 import SplashScreenView from 'react-native-splash-screen';
 import { NavigationScreenProps } from 'react-navigation';
 import moment from 'moment';
+import { TabRoutes } from '@aph/mobile-doctors/src/components/TabBar';
 
 const styles = SplashScreenStyles;
 
 export interface SplashScreenProps extends NavigationScreenProps {}
 
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
-  const { firebaseUser, doctorDetails, getDoctorDetailsApi, getSpecialties } = useAuth();
+  const {
+    firebaseUser,
+    doctorDetails,
+    getDoctorDetailsApi,
+    getSpecialties,
+    getHelplineNumbers,
+  } = useAuth();
   const { showAphAlert, hideAphAlert } = useUIElements();
 
   useEffect(() => {
@@ -27,6 +34,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       firebase.analytics().setAnalyticsCollectionEnabled(true);
       checkForVersionUpdate();
       AsyncStorage.removeItem('callDataSend');
+      AsyncStorage.setItem('AppointmentSelect', 'false');
       AppState.addEventListener('change', _handleAppStateChange);
       Linking.getInitialURL()
         .then((url) => {
@@ -51,8 +59,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const handleOpenURL = async (url: string) => {
     const route = url.replace('apollodoctors://', '');
     const data = route.split('?');
-    const multiData = data[1].split('&');
-
+    const multiData = data.length > 1 ? data[1].split('&') : '';
     console.log(url, data, 'deeplinkpress');
 
     const isLoggedIn = await AsyncStorage.getItem('isLoggedIn');
@@ -97,6 +104,20 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             }
           }
           break;
+        case 'myaccounts':
+          if (isLoggedIn) {
+            if (data.length == 1) {
+              props.navigation.navigate(TabRoutes.MyAccount);
+            } else if (data.length == 2) {
+              props.navigation.navigate(TabRoutes.MyAccount, { goToItem: data[1] });
+            }
+          }
+          break;
+        case 'patientlog':
+          if (isLoggedIn) {
+            props.navigation.navigate(TabRoutes.Patients);
+          }
+          break;
         default:
           break;
       }
@@ -128,6 +149,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       const isOnboardingDone = await AsyncStorage.getItem('isOnboardingDone');
       const isProfileFlowDone = await AsyncStorage.getItem('isProfileFlowDone');
       const isLoggedIn = await AsyncStorage.getItem('isLoggedIn');
+
       setTimeout(() => {
         console.log(firebaseUser);
         console.log('isLoggedIn', isLoggedIn, isOnboardingDone, isProfileFlowDone);
@@ -139,6 +161,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             props.navigation.replace(AppRoutes.ProfileSetup);
           }
           getSpecialties();
+          getHelplineNumbers();
         } else if (isOnboardingDone === 'true') {
           props.navigation.replace(AppRoutes.Login);
         } else {
@@ -187,40 +210,69 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           const getConfigData = (key: string) => {
             return (snapshot[key] || { val: () => null }).val();
           };
-          const Android_version = parseFloat(AppConfig.Configuration.Android_Version);
-          const iOS_version = parseFloat(AppConfig.Configuration.iOS_Version);
+          const fixVersion = (value: string, digits: number) => {
+            let modvalue = value;
+            if (value.length < digits) {
+              for (let i = value.length; i < digits; i++) {
+                modvalue += '0';
+              }
+            }
+            return Number(modvalue);
+          };
+          const Android_version = AppConfig.Configuration.Android_Version.replace(/\./g, '');
+          const iOS_version = AppConfig.Configuration.iOS_Version.replace(/\./g, '');
           const environment = AppConfig.APP_ENV;
-          const iosVersion = parseFloat(getConfigData('ios_doctor_Latest_version') || '1.0');
+          const iosVersion = (getConfigData('ios_doctor_Latest_version') || '1.0')
+            .toString()
+            .replace(/\./g, '');
           const iosMandatory = getConfigData('ios_doctor_mandatory');
-          const androidVersion = parseFloat(
-            getConfigData('android_doctor_latest_version') || '1.0'
-          );
+          const androidVersion = (getConfigData('android_doctor_latest_version') || '1.0')
+            .toString()
+            .replace(/\./g, '');
+
           const androidMandatory = getConfigData('Android_doctor_mandatory');
-          const qaiosVersion = parseFloat(getConfigData('QA_ios_doctor_latest_version') || '1.0');
+          const qaiosVersion = (getConfigData('QA_ios_doctor_latest_version') || '1.0')
+            .toString()
+            .replace(/\./g, '');
           const qaiosMandatory = getConfigData('QA_ios_doctor_mandatory');
-          const qaAndroidVersion = parseFloat(
-            getConfigData('QA_android_doctor_latest_version') || '1.0'
-          );
+          const qaAndroidVersion = (getConfigData('QA_android_doctor_latest_version') || '1.0')
+            .toString()
+            .replace(/\./g, '');
           const qaAndroidMandatory = getConfigData('QA_Doctor_Android_mandatory');
 
           if (Platform.OS === 'ios') {
             if (environment === AppEnv.PROD) {
-              if (iOS_version < iosVersion && (!reCheck || (reCheck && iosMandatory))) {
+              const versionLength = Math.max(iOS_version.length, iosVersion.length);
+              if (
+                fixVersion(iOS_version, versionLength) < fixVersion(iosVersion, versionLength) &&
+                (!reCheck || (reCheck && iosMandatory))
+              ) {
                 showUpdateAlert(iosMandatory);
               }
             } else {
-              if (iOS_version < qaiosVersion && (!reCheck || (reCheck && qaiosMandatory))) {
+              const versionLength = Math.max(iOS_version.length, qaiosVersion.length);
+              if (
+                fixVersion(iOS_version, versionLength) < fixVersion(qaiosVersion, versionLength) &&
+                (!reCheck || (reCheck && qaiosMandatory))
+              ) {
                 showUpdateAlert(qaiosMandatory);
               }
             }
           } else {
             if (environment === AppEnv.PROD) {
-              if (Android_version < androidVersion && (!reCheck || (reCheck && androidMandatory))) {
+              const versionLength = Math.max(Android_version.length, androidVersion.length);
+              if (
+                fixVersion(Android_version, versionLength) <
+                  fixVersion(androidVersion, versionLength) &&
+                (!reCheck || (reCheck && androidMandatory))
+              ) {
                 showUpdateAlert(androidMandatory);
               }
             } else {
+              const versionLength = Math.max(Android_version.length, qaAndroidVersion.length);
               if (
-                Android_version < qaAndroidVersion &&
+                fixVersion(Android_version, versionLength) <
+                  fixVersion(qaAndroidVersion, versionLength) &&
                 (!reCheck || (reCheck && qaAndroidMandatory))
               ) {
                 showUpdateAlert(qaAndroidMandatory);

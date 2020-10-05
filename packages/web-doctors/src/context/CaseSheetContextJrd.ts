@@ -35,6 +35,10 @@ export interface CaseSheetContextPropsJrd {
   notes: string | null;
   setNotes: React.Dispatch<React.SetStateAction<string | null>> | (() => void);
   juniorDoctorNotes: string | null;
+  diagnosticTestResult: string | null;
+  setDiagnosticTestResult: React.Dispatch<React.SetStateAction<string | null>> | (() => void);
+  clinicalObservationNotes: string | null;
+  setClinicalObservationNotes: React.Dispatch<React.SetStateAction<string | null>> | (() => void);
   diagnosis: GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis[] | null;
   setDiagnosis:
     | React.Dispatch<
@@ -138,6 +142,10 @@ export const CaseSheetContextJrd = createContext<CaseSheetContextPropsJrd>({
   setSymptoms: () => {},
   notes: null,
   setNotes: () => {},
+  diagnosticTestResult: null,
+  setDiagnosticTestResult: () => {},
+  clinicalObservationNotes: null,
+  setClinicalObservationNotes: () => {},
   juniorDoctorNotes: null,
   diagnosis: null,
   setDiagnosis: () => {},

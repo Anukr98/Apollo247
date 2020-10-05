@@ -293,6 +293,8 @@ export enum MEDICINE_UNIT {
 export enum MedicalRecordType {
   CONSULTATION = "CONSULTATION",
   EHR = "EHR",
+  HEALTHCHECK = "HEALTHCHECK",
+  HOSPITALIZATION = "HOSPITALIZATION",
   OPERATIVE_REPORT = "OPERATIVE_REPORT",
   PATHOLOGY_REPORT = "PATHOLOGY_REPORT",
   PHYSICAL_EXAMINATION = "PHYSICAL_EXAMINATION",
@@ -328,6 +330,17 @@ export enum PAYMENT_METHODS {
   UPI = "UPI",
 }
 
+export enum PAYMENT_METHODS_REVERSE {
+  COD = "COD",
+  CREDIT_CARD = "CREDIT_CARD",
+  CREDIT_CARD_EMI = "CREDIT_CARD_EMI",
+  DEBIT_CARD = "DEBIT_CARD",
+  NET_BANKING = "NET_BANKING",
+  PAYTM_POSTPAID = "PAYTM_POSTPAID",
+  PAYTM_WALLET = "PAYTM_WALLET",
+  UPI = "UPI",
+}
+
 export enum PRISM_DOCUMENT_CATEGORY {
   HealthChecks = "HealthChecks",
   OpSummary = "OpSummary",
@@ -337,6 +350,13 @@ export enum PRISM_DOCUMENT_CATEGORY {
 export enum PharmaDiscountApplicableOn {
   MRP = "MRP",
   SPECIAL_PRICE = "SPECIAL_PRICE",
+}
+
+export enum REFUND_STATUS {
+  REFUND_FAILED = "REFUND_FAILED",
+  REFUND_REQUEST_NOT_RAISED = "REFUND_REQUEST_NOT_RAISED",
+  REFUND_REQUEST_RAISED = "REFUND_REQUEST_RAISED",
+  REFUND_SUCCESSFUL = "REFUND_SUCCESSFUL",
 }
 
 export enum REQUEST_ROLES {
@@ -462,6 +482,7 @@ export enum mediaPrescriptionSource {
   SELF = "SELF",
 }
 
+<<<<<<< HEAD
 export enum notificationEventName {
   APPOINTMENT = "APPOINTMENT",
 }
@@ -473,6 +494,35 @@ export enum notificationStatus {
 
 export enum notificationType {
   CHAT = "CHAT",
+=======
+export interface AddHealthCheckRecordInput {
+  patientId: string;
+  recordType: MedicalRecordType;
+  healthCheckName: string;
+  healthCheckDate: any;
+  healthCheckFiles?: (HealthCheckFileProperties | null)[] | null;
+}
+
+export interface AddHospitalizationRecordInput {
+  patientId: string;
+  recordType: MedicalRecordType;
+  dischargeDate: any;
+  hospitalName: string;
+  doctorName: string;
+  hospitalizationFiles?: (HospitalizationFileProperties | null)[] | null;
+}
+
+export interface AddLabTestRecordInput {
+  patientId: string;
+  recordType: MedicalRecordType;
+  labTestName: string;
+  labTestDate: any;
+  referringDoctor?: string | null;
+  observations?: string | null;
+  additionalNotes?: string | null;
+  labTestResults?: (LabTestParameters | null)[] | null;
+  testResultFiles?: (LabTestFileProperties | null)[] | null;
+>>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
 }
 
 export interface AddMedicalRecordInput {
@@ -689,6 +739,12 @@ export interface Geolocation {
   longitude: number;
 }
 
+export interface HealthCheckFileProperties {
+  fileName?: string | null;
+  mimeType?: string | null;
+  content?: string | null;
+}
+
 export interface HelpEmailInput {
   category?: string | null;
   reason?: string | null;
@@ -697,10 +753,30 @@ export interface HelpEmailInput {
   email?: string | null;
 }
 
+export interface HospitalizationFileProperties {
+  fileName?: string | null;
+  mimeType?: string | null;
+  content?: string | null;
+}
+
 export interface LabResultFileProperties {
   fileName: string;
   mimeType: string;
   content: string;
+}
+
+export interface LabTestFileProperties {
+  fileName?: string | null;
+  mimeType?: string | null;
+  content?: string | null;
+}
+
+export interface LabTestParameters {
+  maximum?: number | null;
+  minimum?: number | null;
+  parameterName?: string | null;
+  result?: number | null;
+  unit?: string | null;
 }
 
 export interface MediaPrescriptionFileProperties {
@@ -929,6 +1005,7 @@ export interface SaveSearchInput {
   type?: SEARCH_TYPE | null;
   typeId: string;
   typeName?: string | null;
+  image?: string | null;
   patient: string;
 }
 

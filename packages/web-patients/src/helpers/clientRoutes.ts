@@ -28,7 +28,7 @@ export const clientRoutes = {
   chatRoom: (appointmentId: string, doctorId: string) => `/chat-room/${appointmentId}/${doctorId}`,
   myAccount: () => '/my-account',
   notificationSettings: () => '/settings',
-  addRecords: () => '/add-records',
+  addHealthRecords: (type: string) => `/add-record/${type}`,
   yourOrders: () => '/orders',
   medicineAllBrands: () => '/medicine/brands',
   medicineSearchByBrand: (id: string) => `/search-by-brand/${id}`,
@@ -75,8 +75,12 @@ export const clientRoutes = {
   covidProtocol: () => '/medical-condition',
   dietetics: () => 'specialties/dietetics',
   prescription: (appointmentId: string) => `/prescription/${appointmentId}`,
+<<<<<<< HEAD
   sitemap: (sitemap: string) => `/static/${sitemap}`,
   childSitemap: (sitemap: string, pageNo: string) => `/static/${sitemap}/${pageNo}`,
+=======
+  oneApolloMembership: () => '/oneapollo-membership',
+>>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
   // sitemap: (sitemap: string) => `/${sitemap}`,
   // childSitemap: (sitemap: string, pageNo: string) => `/${sitemap}/${pageNo}`,
 };

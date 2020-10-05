@@ -37,6 +37,7 @@ import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider, useMutation } from 'react-apollo-hooks';
 import _uniqueId from 'lodash/uniqueId';
 import bugsnag from '@bugsnag/js';
+import { webengageUserDetailTracking, webengageUserLoginTracking, webEngageEventTracking } from 'webEngageTracking';
 
 const bugsnagClient = bugsnag({
   apiKey: `${process.env.BUGSNAG_API_KEY}`,
@@ -377,9 +378,15 @@ export const AuthProvider: React.FC = (props) => {
       setIsVerifyingOtp(true);
       otpCheckApiCall(otp, loginId).then((res) => {
         if (!res) {
+          webEngageEventTracking({'Successful' : 'No'},	
+            'Front_end - Doctor OTP Verification'	
+          );
           setVerifyOtpError(true);
           setIsSigningIn(false);
         } else {
+          webEngageEventTracking({'Successful' : 'Yes'},	
+            'Front_end - Doctor OTP Verification'	
+          );
           setVerifyOtpError(false);
           app.auth().signInWithCustomToken(res);
         }
@@ -525,6 +532,13 @@ export const AuthProvider: React.FC = (props) => {
             setSignInError(false);
             setIsSigningIn(false);
           }
+          webengageUserLoginTracking(doctors.id);	
+          webengageUserDetailTracking({	
+            emailAddress: doctors && doctors.emailAddress ? doctors.emailAddress : '',	
+            firstName: doctors && doctors.firstName ? doctors.firstName : '',	
+            lastName: doctors && doctors.lastName ? doctors.lastName : '',	
+            mobileNumber: doctors && doctors.mobileNumber ? doctors.mobileNumber : '',	
+          });
         } else if (
           res.data &&
           res.data.findLoggedinUserDetails &&

@@ -6,7 +6,7 @@ target 'ApolloDoctor' do
 # use_frameworks!
 
 # Pods for ApolloPatient
-
+ pod 'WebEngage'
  pod 'FirebaseCore'
  pod 'FirebaseMessaging'
  pod 'GoogleIDFASupport', '~> 3.14.0'
@@ -17,8 +17,6 @@ target 'ApolloDoctor' do
  pod 'GoogleAppMeasurement'
  pod 'OpenTok', '~> 2.17.0'
   # pod 'react-native-splash-screen', :path => '../node_modules/react-native-splash-screen'
-
-  # pod 'react-native-image-picker', :path => '../node_modules/react-native-image-picker'
 
   pod 'FBLazyVector', :path => "../node_modules/react-native/Libraries/FBLazyVector"
   pod 'FBReactNativeSpec', :path => "../node_modules/react-native/Libraries/FBReactNativeSpec"
@@ -80,4 +78,21 @@ target 'ApolloDoctor' do
 
   pod 'ReactNativeIncallManager', :path => '../node_modules/react-native-incall-manager'
 
+  pod 'react-native-webengage', :path => '../node_modules/react-native-webengage'
+  pod 'RNDeviceInfo', :path => '../node_modules/react-native-device-info'
+
+  pod 'RNFastImage', :path => '../node_modules/react-native-fast-image'
+
+end
+
+# ServiceExtension Target
+target 'NotificationService' do
+    platform :ios, '10.0'
+    pod 'WebEngageBannerPush'
+end
+
+# ContentExtension Target
+target 'NotificationViewController' do
+  platform :ios, '10.0'
+  pod 'WebEngageAppEx/ContentExtension'
 end

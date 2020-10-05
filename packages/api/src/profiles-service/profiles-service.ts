@@ -209,10 +209,29 @@ import {
   patientDeviceVoipTokenTypeDefs,
   patientDeviceVoipTokenResolvers,
 } from 'profiles-service/resolvers/savepatientDeviceVoipToken';
+<<<<<<< HEAD
 import {
   validateHDFCCustomerTypeDefs,
   validateHDFCCustomer,
 } from 'profiles-service/resolvers/hdfcCustomerValidation';
+=======
+
+import {
+  addPatientHealthCheckRecordTypeDefs,
+  addPatientHealthCheckRecordsResolvers,
+} from 'profiles-service/resolvers/addHealthCheckRecords';
+
+import {
+  addPatientHospitalizationRecordTypeDefs,
+  addPatientHospitalizationRecordResolvers
+} from 'profiles-service/resolvers/addHospitalizationRecords';
+
+import {
+  addPatientLabTestRecordTypeDefs,
+  addPatientLabTestRecordResolvers
+} from 'profiles-service/resolvers/addLabTestRecords';
+
+>>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
 (async () => {
   await connect();
   const profilesLogger = winstonLogger.loggers.get('profileServiceLogger');
@@ -468,9 +487,23 @@ import {
         resolvers: patientDeviceVoipTokenResolvers,
       },
       {
+<<<<<<< HEAD
         typeDefs: validateHDFCCustomerTypeDefs,
         resolvers: validateHDFCCustomer,
       },
+=======
+        typeDefs: addPatientHealthCheckRecordTypeDefs,
+        resolvers: addPatientHealthCheckRecordsResolvers
+      },
+      {
+        typeDefs: addPatientHospitalizationRecordTypeDefs,
+        resolvers: addPatientHospitalizationRecordResolvers,
+      },
+      {
+        typeDefs: addPatientLabTestRecordTypeDefs,
+        resolvers: addPatientLabTestRecordResolvers
+      }
+>>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
     ]),
     plugins: [
       /* This plugin is defined in-line. */

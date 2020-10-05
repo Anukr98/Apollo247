@@ -19,6 +19,7 @@ import { useMutation } from 'react-apollo-hooks';
 import _toLower from 'lodash/toLower';
 import _upperFirst from 'lodash/upperFirst';
 import { Alerts } from 'components/Alerts/Alerts';
+<<<<<<< HEAD
 import { Route } from 'react-router-dom';
 import {
   webengageUserLoginTracking,
@@ -27,6 +28,10 @@ import {
 } from '../webEngageTracking';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { PARTNER_TP_REF_CODES } from 'helpers/constants';
+=======
+import { webengageUserLoginTracking, webengageUserDetailTracking } from '../webEngageTracking';
+import { useAuth, useLoginPopupState } from 'hooks/authHooks';
+>>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
 import { LazyIntersection } from './lib/LazyIntersection';
 
 const isoDatePattern = 'yyyy-MM-dd';
@@ -197,6 +202,10 @@ const useStyles = makeStyles((theme: Theme) => {
     required: {
       color: 'red',
     },
+    backArrow: {
+      cursor: 'pointer',
+      paddingLeft: 20,
+    },
   });
 });
 
@@ -234,6 +243,8 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
   const [alertMessage, setAlertMessage] = useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
   const orderedGenders = [Gender.MALE, Gender.FEMALE];
+  const { signOut } = useAuth();
+  const { setIsLoginPopupVisible: setLoginPopupVisible } = useLoginPopupState();
 
   if (showProfileSuccess) {
     return <ProfileSuccess onSubmitClick={() => props.onClose()} />;
@@ -255,6 +266,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
 
   return (
     <div className={classes.signUpPop} data-cypress="NewProfile">
+<<<<<<< HEAD
       <Route
         render={({ history }) => (
           <Formik
@@ -362,6 +374,153 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                             <FormControl
                               className={`${classes.formControl} ${classes.noMargin}`}
                               fullWidth
+=======
+      <Formik
+        initialValues={{
+          firstName: patient.firstName || '',
+          lastName: patient.lastName || '',
+          dateOfBirth: convertIsoDateToClientDate(patient.dateOfBirth) || '',
+          emailAddress: patient.emailAddress || '',
+          gender: patient.gender || null,
+        }}
+        onSubmit={(values) => {
+          return updatePatient({
+            variables: {
+              patientInput: {
+                id: patient.id,
+                firstName: values.firstName,
+                lastName: values.lastName,
+                gender: values.gender,
+                dateOfBirth: convertClientDateToIsoDate(values.dateOfBirth),
+                emailAddress: _isEmpty(values.emailAddress) ? null : values.emailAddress,
+                relation: Relation.ME,
+                referralCode: referralCode.length > 0 ? referralCode : null,
+              },
+            },
+          })
+            .then(() => {
+              /* webengage code start */
+              webengageUserLoginTracking(patient.mobileNumber);
+              webengageUserDetailTracking({
+                firstName: values.firstName,
+                lastName: values.lastName,
+                gender: values.gender,
+                emailAddress: values.emailAddress,
+                dateOfBirth: values.dateOfBirth,
+                mobileNumber: patient.mobileNumber,
+              });
+              /* webengage code end */
+              setShowProfileSuccess(true);
+            })
+            .catch((error) => {
+              console.error(error);
+              setIsAlertOpen(true);
+              setAlertMessage('Something went wrong :(');
+            });
+        }}
+        render={({
+          isSubmitting,
+          dirty,
+          touched,
+          errors,
+          values,
+          setFieldValue,
+        }: // handleSubmit,
+        FormikProps<FormValues>) => {
+          const showError = (fieldName: keyof FormValues) =>
+            !_isEmpty(values[fieldName]) && touched[fieldName] && Boolean(errors[fieldName]);
+          const requiredFields: (keyof FormValues)[] = [
+            'firstName',
+            'lastName',
+            'dateOfBirth',
+            'gender',
+          ];
+          const formIsUntouched = !dirty;
+          const formHasErrors = !_isEmpty(errors);
+          const someRequiredFieldsMissing = requiredFields.some((field) => _isEmpty(values[field]));
+          const submitIsDisabled =
+            formIsUntouched ||
+            formHasErrors ||
+            someRequiredFieldsMissing ||
+            (referralCode.length > 0 && !isValidReferralCode);
+          return (
+            <Form>
+              <div className={classes.mascotIcon}>
+                <LazyIntersection src={require('images/ic-mascot.png')} alt="" />
+              </div>
+              <div
+                className={classes.backArrow}
+                onClick={() => {
+                  signOut();
+                  setLoginPopupVisible(true);
+                }}
+              >
+                <img src={require('images/ic_loginback.svg')} />
+              </div>
+              <div className={classes.customScrollBar}>
+                <div className={classes.signinGroup}>
+                  <Typography variant="h2">
+                    welcome <br /> to apollo 24/7
+                  </Typography>
+                  <p>Let us quickly get to know you so that we can get you the best help :)</p>
+                  <div className={classes.formGroup}>
+                    <Field
+                      name="firstName"
+                      validate={(name: string) =>
+                        isNameValid(name) ? undefined : 'Invalid first name'
+                      }
+                      render={({ field }: FieldProps<{ firstName: string }>) => (
+                        <FormControl
+                          className={`${classes.formControl} ${classes.noMargin}`}
+                          fullWidth
+                        >
+                          <label>
+                            Full Name <span className={classes.required}>*</span>
+                          </label>
+                          <AphTextField
+                            {...field}
+                            placeholder="First Name"
+                            error={showError('firstName')}
+                            inputProps={{ maxLength: 20 }}
+                          />
+                          {showError('firstName') ? (
+                            <FormHelperText
+                              className={
+                                showError('firstName') ? classes.showMessage : classes.hideMessage
+                              }
+                              component="div"
+                              error={true}
+                            >
+                              {errors.firstName}
+                            </FormHelperText>
+                          ) : (
+                            ''
+                          )}
+                        </FormControl>
+                      )}
+                    />
+
+                    <Field
+                      name="lastName"
+                      validate={(name: string) =>
+                        isNameValid(name) ? undefined : 'Invalid last name'
+                      }
+                      render={({ field }: FieldProps<{ firstName: string }>) => (
+                        <FormControl className={classes.formControl} fullWidth>
+                          <AphTextField
+                            {...field}
+                            placeholder="Last Name"
+                            error={showError('lastName')}
+                            inputProps={{ maxLength: 20 }}
+                          />
+                          {showError('lastName') ? (
+                            <FormHelperText
+                              className={
+                                showError('lastName') ? classes.showMessage : classes.hideMessage
+                              }
+                              component="div"
+                              error={true}
+>>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
                             >
                               <AphTextField
                                 {...field}

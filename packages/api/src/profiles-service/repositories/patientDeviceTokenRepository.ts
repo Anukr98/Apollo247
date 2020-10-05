@@ -28,6 +28,10 @@ export class PatientDeviceTokenRepository extends Repository<PatientDeviceTokens
     return this.delete({ deviceToken });
   }
 
+  deleteDeviceTokenWhere(condition: Partial<PatientDeviceTokens>) {
+    return this.delete(condition);
+  }
+
   getTokensByMobileNumber(mobileNumber: string) {
     return this.createQueryBuilder('patient')
       .leftJoinAndSelect('patient.patient_device_tokens', 'patient_device_tokens')
@@ -53,4 +57,15 @@ export class PatientDeviceTokenRepository extends Repository<PatientDeviceTokens
   updateVoipPushToken(id: string, updateAttrs: Partial<PatientDeviceTokens>) {
     return this.update(id, updateAttrs);
   }
+<<<<<<< HEAD
+=======
+
+  async saveMultiplePatientDeviceToken(deviceTokenAttrs: Partial<PatientDeviceTokens>[]) {
+    return this.save(deviceTokenAttrs).catch((patientDeviceTokenError) => {
+      throw new AphError(AphErrorMessages.SAVE_PATIENT_DEVICE_TOKEN_ERROR, undefined, {
+        patientDeviceTokenError,
+      });
+    });
+  }
+>>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
 }

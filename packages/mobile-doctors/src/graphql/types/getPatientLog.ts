@@ -16,6 +16,7 @@ export interface getPatientLog_getPatientLog_patientLog_patientInfo_addressList 
 export interface getPatientLog_getPatientLog_patientLog_patientInfo {
   __typename: "Patient";
   firstName: string | null;
+  lastName: string | null;
   dateOfBirth: any | null;
   id: string;
   emailAddress: string | null;

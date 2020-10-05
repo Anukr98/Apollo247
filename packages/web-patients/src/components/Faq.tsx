@@ -14,6 +14,7 @@ import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { SchemaMarkup } from 'SchemaMarkup';
 import { MetaTagsComp } from 'MetaTagsComp';
+import { dataLayerTracking } from 'gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -229,6 +230,15 @@ const Faq: React.FC = (props) => {
   };
 
   useEffect(() => {
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: 'FAQ Page',
+      pageLOB: 'Others',
+      pageType: 'FAQ Page',
+    });
+    /**Gtm code start end */
     fetchUtil(process.env.APOLLO_247_FAQ_BASE_URL, 'GET', {}, '', true).then((res: any) => {
       if (res && res.data) {
         createFaqSchema(res.data);

@@ -1,4 +1,6 @@
 import { AphButton, AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-ui-components';
+
+import React, { useState, useEffect, useRef } from 'react';
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
@@ -17,7 +19,7 @@ import { UploadPrescription } from 'components/Prescriptions/UploadPrescription'
 import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
 import { GET_RECOMMENDED_PRODUCTS_LIST } from 'graphql/profiles';
 import { getRecommendedProductsList_getRecommendedProductsList_recommendedProducts as recommendedProductsType } from 'graphql/types/getRecommendedProductsList';
-import { gtmTracking } from 'gtmTracking';
+import { gtmTracking, dataLayerTracking } from 'gtmTracking';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { getImageUrl, deepLinkUtil, readableParam } from 'helpers/commonHelpers';
 import { useCurrentPatient } from 'hooks/authHooks';
@@ -25,7 +27,6 @@ import { useParams } from 'hooks/routerHooks';
 import _replace from 'lodash/replace';
 import { MetaTagsComp } from 'MetaTagsComp';
 import moment from 'moment';
-import React, { useEffect, useState } from 'react';
 import { useMutation } from 'react-apollo-hooks';
 import Scrollbars from 'react-custom-scrollbars';
 import { Link } from 'react-router-dom';
@@ -33,6 +34,7 @@ import {
   pharmacyCategoryClickTracking,
   pharmacySearchEnterTracking,
   uploadPrescriptionTracking,
+  medicinePageOpenTracking,
 } from 'webEngageTracking';
 import { MedicineProduct } from './../../helpers/MedicineApiCalls';
 
@@ -263,6 +265,7 @@ type DiscountFilter = { fromDiscount: string; toDiscount: string };
 
 const SearchByMedicine: React.FC = (props) => {
   const classes = useStyles({});
+  const scrollToRef = useRef<HTMLDivElement>(null);
   const patient = useCurrentPatient();
   const recommendedProductsMutation = useMutation(GET_RECOMMENDED_PRODUCTS_LIST);
   const [priceFilter, setPriceFilter] = useState<PriceFilter | null>(null);
@@ -285,6 +288,7 @@ const SearchByMedicine: React.FC = (props) => {
 
   useEffect(() => {
     deepLinkUtil(`MedicineSearch?${categoryId},${params.searchText}`);
+    medicinePageOpenTracking();
   }, [categoryId]);
 
   const getTitle = () => {
@@ -497,6 +501,9 @@ const SearchByMedicine: React.FC = (props) => {
   };
 
   useEffect(() => {
+    scrollToRef &&
+      scrollToRef.current &&
+      scrollToRef.current.scrollIntoView({ behavior: 'auto', block: 'end' });
     if (!medicineList && paramSearchType !== 'search-medicines') {
       setIsLoading(true);
       if (paramSearchText === 'recommended-products') {
@@ -668,11 +675,26 @@ const SearchByMedicine: React.FC = (props) => {
     deepLink: window.location.href,
   };
 
+  useEffect(() => {
+    if (medicineListFiltered && paramSearchText) {
+      /**Gtm code start start */
+      dataLayerTracking({
+        event: 'pageviewEvent',
+        pagePath: window.location.href,
+        pageName: `${paramSearchText} Listing Page`,
+        pageLOB: 'Pharmacy',
+        pageType: 'Index',
+        productlist: JSON.stringify(medicineListFiltered),
+      });
+      /**Gtm code start end */
+    }
+  }, [medicineListFiltered, paramSearchText]);
+
   return (
     <div className={classes.root}>
       {paramSearchType !== 'search-medicines' && <MetaTagsComp {...metaTagProps} />}
       <Header />
-      <div className={classes.container}>
+      <div className={classes.container} ref={scrollToRef}>
         <div className={classes.searchByBrandPage}>
           <div className={classes.breadcrumbs}>
             <a onClick={() => window.history.back()}>

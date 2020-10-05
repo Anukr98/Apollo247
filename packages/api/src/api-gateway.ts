@@ -8,7 +8,7 @@ import { AphAuthenticationError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { webPatientsBaseUrl, webDoctorsBaseUrl, getPortStr } from '@aph/universal/src/aphRoutes';
 import { winstonLogger } from 'customWinstonLogger';
-import { format, differenceInMilliseconds } from 'date-fns';
+import { format } from 'date-fns';
 
 //import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 // import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
@@ -64,12 +64,15 @@ export type Resolver<Parent, Args, Context, Result> = (
         )}/graphql`,
       },
       {
+<<<<<<< HEAD
         name: 'subscriptions',
         url: `http://${process.env.SUBSCRIPTION_SERVICE_HOST}${getPortStr(
           process.env.SUBSCRIPTION_SERVICE_PORT ? process.env.SUBSCRIPTION_SERVICE_PORT : '80'
         )}/graphql`,
       },
       {
+=======
+>>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
         name: 'diagnostics',
         url: `http://${process.env.DIAGNOSTICS_SERVICE_HOST}${getPortStr(
           process.env.DIAGNOSTICS_SERVICE_PORT ? process.env.DIAGNOSTICS_SERVICE_PORT : '80'

@@ -247,13 +247,18 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
             Doctors
           </Link> */}
           <Link
-            to={clientRoutes.specialityListing()}
-            className={
-              currentPath === clientRoutes.specialityListing() ? classes.menuItemActive : ''
-            }
-            title={'Doctors'}
+            to={clientRoutes.appointments()}
+            className={currentPath === clientRoutes.appointments() ? classes.menuItemActive : ''}
+            title={'Appointments'}
           >
-            Book Appointment
+            Appointments
+          </Link>
+          <Link
+            className={currentPath === clientRoutes.healthRecords() ? classes.menuItemActive : ''}
+            to={clientRoutes.healthRecords()}
+            title={'Health Records'}
+          >
+            Health Records
           </Link>
           <Link
             to={clientRoutes.medicines()}
@@ -265,21 +270,14 @@ export const Navigation: React.FC<NavigationProps> = (props) => {
             title={'Medicines'}
             onClick={() => buyMedicineClickTracking(currentPatient && currentPatient.id)}
           >
-            Buy Medicines
-          </Link>
-          <Link
-            className={currentPath === clientRoutes.appointments() ? classes.menuItemActive : ''}
-            to={clientRoutes.appointments()}
-            title={'Appointments'}
-          >
-            My Appointments
+            Medicines
           </Link>
           <Link
             className={currentPath === clientRoutes.covidLanding() ? classes.menuItemActive : ''}
             to={clientRoutes.covidLanding()}
-            title={'Covid 19'}
+            title={'COVID-19'}
           >
-            Covid 19
+            Covid-19
           </Link>
 
           {/* <Link

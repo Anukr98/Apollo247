@@ -134,13 +134,18 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
           _data.data.getDoctorFavouriteMedicineList &&
           _data.data.getDoctorFavouriteMedicineList.medicineList
         ) {
-          const tempmedicineList = _data.data.getDoctorFavouriteMedicineList!.medicineList;
+          const tempmedicineList = (
+            g(_data, 'data', 'getDoctorFavouriteMedicineList', 'medicineList') || []
+          )
+            .filter((item) => item && item.medicineName)
+            .sort((a, b) =>
+              a && b ? (a.medicineName || '').localeCompare(b.medicineName || '') : -1
+            );
           setAllowedDosages(
             (g(_data, 'data', 'getDoctorFavouriteMedicineList', 'allowedDosages') || [])
               .map((item) => item || '')
               .filter((i) => i !== '')
           );
-          console.log('MedicineList', tempmedicineList);
           AsyncStorage.setItem(
             'allowedDosages',
             JSON.stringify(g(_data, 'data', 'getDoctorFavouriteMedicineList', 'allowedDosages'))
@@ -170,10 +175,10 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
           _data.data.getDoctorFavouriteTestList &&
           _data.data.getDoctorFavouriteTestList.testList
         ) {
-          const TestList = _data.data.getDoctorFavouriteTestList!.testList;
-          console.log('TestList :', TestList);
+          const TestList = (g(_data, 'data', 'getDoctorFavouriteTestList', 'testList') || [])
+            .filter((item) => item && item.itemname)
+            .sort((a, b) => (a && b ? a.itemname.localeCompare(b.itemname) : -1));
           settestsList(TestList);
-          console.log(testsList);
         }
 
         setLoading(false);
@@ -199,9 +204,11 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
           _data.data.getDoctorFavouriteAdviceList &&
           _data.data.getDoctorFavouriteAdviceList.adviceList
         ) {
-          const GetAdviceList = _data.data.getDoctorFavouriteAdviceList!.adviceList;
-          console.log('Advice List : ', _data.data);
-          console.log('GetAdviceList  :', GetAdviceList);
+          const GetAdviceList = (
+            g(_data, 'data', 'getDoctorFavouriteAdviceList', 'adviceList') || []
+          )
+            .filter((item) => item && item.instruction)
+            .sort((a, b) => (a && b ? a.instruction.localeCompare(b.instruction) : -1));
           setadviceList(GetAdviceList);
         }
 
@@ -231,7 +238,9 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
         })
         .then((_data) => {
           setLoading(false);
-          settestsList(g(_data, 'data', 'updateDoctorFavouriteTest', 'testList') as (
+          settestsList((g(_data, 'data', 'updateDoctorFavouriteTest', 'testList') || [])
+            .filter((item) => item && item.itemname)
+            .sort((a, b) => (a && b ? a.itemname.localeCompare(b.itemname) : -1)) as (
             | (GetDoctorFavouriteTestList_getDoctorFavouriteTestList_testList | null)[]
             | null));
           setEditTestId('');
@@ -405,7 +414,9 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
           setLoading(false);
           setfavAdvice('');
           setIsAdvice(false);
-          setadviceList(g(_data, 'data', 'addDoctorFavouriteAdvice', 'adviceList') as (
+          setadviceList((g(_data, 'data', 'addDoctorFavouriteAdvice', 'adviceList') || [])
+            .filter((item) => item && item.instruction)
+            .sort((a, b) => (a && b ? a.instruction.localeCompare(b.instruction) : -1)) as (
             | (GetDoctorFavouriteAdviceList_getDoctorFavouriteAdviceList_adviceList | null)[]
             | null));
         })
@@ -437,7 +448,9 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
           setLoading(false);
           setfavAdvice('');
           setIsAdvice(false);
-          setadviceList(g(_data, 'data', 'updateDoctorFavouriteAdvice', 'adviceList') as (
+          setadviceList((g(_data, 'data', 'updateDoctorFavouriteAdvice', 'adviceList') || [])
+            .filter((item) => item && item.instruction)
+            .sort((a, b) => (a && b ? a.instruction.localeCompare(b.instruction) : -1)) as (
             | (GetDoctorFavouriteAdviceList_getDoctorFavouriteAdviceList_adviceList | null)[]
             | null));
         })
@@ -472,13 +485,11 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
       .then((_data) => {
         setLoading(false);
         const resp = _data.data;
-        console.log('Updated...:', resp);
-
-        setmedicineList(g(
-          resp,
-          'saveDoctorsFavouriteMedicine',
-          'medicineList'
-        ) as (GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList | null)[]);
+        setmedicineList((g(resp, 'saveDoctorsFavouriteMedicine', 'medicineList') || [])
+          .filter((item) => item && item.medicineName)
+          .sort((a, b) =>
+            a && b ? (a.medicineName || '').localeCompare(b.medicineName || '') : -1
+          ) as (GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList | null)[]);
         setIsAddMedicine(false);
       })
       .catch((error) => {
@@ -506,12 +517,11 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
       .then((_data) => {
         setLoading(false);
         const resp = _data.data;
-        console.log('Updated...:', resp);
-        setmedicineList(g(
-          resp,
-          'updateDoctorFavouriteMedicine',
-          'medicineList'
-        ) as (GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList | null)[]);
+        setmedicineList((g(resp, 'updateDoctorFavouriteMedicine', 'medicineList') || [])
+          .filter((item) => item && item.medicineName)
+          .sort((a, b) =>
+            a && b ? (a.medicineName || '').localeCompare(b.medicineName || '') : -1
+          ) as (GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList | null)[]);
       })
       .catch((error) => {
         setLoading(false);
@@ -534,7 +544,9 @@ export const SmartPrescription: React.FC<ProfileProps> = (props) => {
           })
           .then((_data) => {
             setLoading(false);
-            settestsList(g(_data, 'data', 'addDoctorFavouriteTest', 'testList') as (
+            settestsList((g(_data, 'data', 'addDoctorFavouriteTest', 'testList') || [])
+              .filter((item) => item && item.itemname)
+              .sort((a, b) => (a && b ? a.itemname.localeCompare(b.itemname) : -1)) as (
               | (GetDoctorFavouriteTestList_getDoctorFavouriteTestList_testList | null)[]
               | null));
             setisSearchTestListVisible(!isSearchTestListVisible);

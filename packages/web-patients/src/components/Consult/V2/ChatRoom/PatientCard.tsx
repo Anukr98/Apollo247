@@ -67,7 +67,6 @@ const useStyles = makeStyles((theme: Theme) => {
       marginLeft: 10,
       position: 'relative',
       top: -4,
-      display: 'inline',
       fontWeight: 500,
     },
     missedCall: {

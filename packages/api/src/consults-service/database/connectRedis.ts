@@ -12,7 +12,7 @@ const client = createClient({
   host: process.env.REDIS_HOST,
   password: process.env.REDIS_PASSWORD,
   db: process.env.REDIS_DB || 0,
-  retry_strategy: function(options) {
+  retry_strategy: function (options) {
     if (options.error) {
       dLogger(
         new Date(),

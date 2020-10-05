@@ -1027,6 +1027,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       return (
         <DoctorCard
           key={index}
+          rowId={index + 1}
           rowData={rowData}
           navigation={props.navigation}
           doctorsNextAvailability={doctorsNextAvailability}

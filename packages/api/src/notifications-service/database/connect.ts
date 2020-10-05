@@ -96,8 +96,13 @@ import {
 } from 'profiles-service/entities';
 import { AppointmentEntitySubscriber } from 'consults-service/entities/observers/appointmentObserver';
 import { AppointmentCallFeedback } from 'consults-service/entities/appointmentCallFeedbackEntity'
+<<<<<<< HEAD
 import { MedicineEntitySubscriber } from 'profiles-service/entities/observers/medicinePaymentSuccessObserver';
 import { DiagnosticEntitySubscriber } from 'profiles-service/entities/observers/diagnosticPaymentSuccessObserver';
+=======
+import { HealthCheckRecords } from 'profiles-service/entities/healthCheckRecordsEntity'
+import { HospitalizationRecords } from 'profiles-service/entities/hospitalizationRecordsEntity'
+>>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
 
 export const connect = async () => {
   return await createConnections([
@@ -221,6 +226,8 @@ export const connect = async () => {
         MedicineOrderCancelReason,
         PharmacologistConsult,
         MedicineOrderAddress,
+        HealthCheckRecords,
+        HospitalizationRecords
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,

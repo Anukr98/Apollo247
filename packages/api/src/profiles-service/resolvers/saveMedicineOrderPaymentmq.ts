@@ -24,6 +24,7 @@ import { sendMail } from 'notifications-service/resolvers/email';
 import { ApiConstants, TransactionType } from 'ApiConstants';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { log } from 'customWinstonLogger';
+<<<<<<< HEAD
 import { acceptCoupon } from 'helpers/couponServices';
 import { AcceptCouponRequest } from 'types/coupons';
 
@@ -32,6 +33,9 @@ import {
   BlockUserPointsResponse,
   ONE_APOLLO_STORE_CODE,
 } from 'types/oneApolloTypes';
+=======
+import { BlockOneApolloPointsRequest, BlockUserPointsResponse } from 'types/oneApolloTypes';
+>>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
 import { OneApollo } from 'helpers/oneApollo';
 import { getStoreCodeFromDevice } from 'profiles-service/helpers/OneApolloTransactionHelper';
 import { calculateRefund } from 'profiles-service/helpers/refundHelper';
@@ -469,15 +473,6 @@ const blockOneApolloUserPoints = async (
   userDetailInput: userDetailInput,
   profilesDb: Connection
 ) => {
-  let storeCode = ONE_APOLLO_STORE_CODE.WEBCUS;
-  switch (userDetailInput.deviceType) {
-    case DEVICE_TYPE.ANDROID:
-      storeCode = ONE_APOLLO_STORE_CODE.ANDCUS;
-      break;
-    case DEVICE_TYPE.IOS:
-      storeCode = ONE_APOLLO_STORE_CODE.IOSCUS;
-      break;
-  }
   const blockUserPointsInput: BlockOneApolloPointsRequest = {
     MobileNumber: +userDetailInput.mobileNumber,
     CreditsRedeemed: userDetailInput.creditsToBlock,
@@ -500,7 +495,7 @@ const handleOneApolloFailure = async (
   medicineOrdersRepo: MedicineOrdersRepository,
   profilesDb: Connection
 ) => {
-  let cancelOrderUpdates: Promise<MedicineOrdersStatus | UpdateResult>[] = [];
+  const cancelOrderUpdates: Promise<MedicineOrdersStatus | UpdateResult>[] = [];
 
   const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
     orderStatus: MEDICINE_ORDER_STATUS.CANCELLED,

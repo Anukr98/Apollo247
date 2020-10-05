@@ -5,10 +5,6 @@ import _forEach from 'lodash/forEach';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { AphButton } from '@aph/web-ui-components';
-import {
-  GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors as DoctorDetails,
-  GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_doctorHospital,
-} from 'graphql/types/GetDoctorsBySpecialtyAndFilters';
 import { SEARCH_TYPE, ConsultMode } from 'graphql/types/globalTypes';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useAuth } from 'hooks/authHooks';
@@ -21,8 +17,8 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { consultNowClickTracking } from 'webEngageTracking';
 import { readableParam, getAvailability } from 'helpers/commonHelpers';
-import { GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability as NextAvailabilityType } from 'graphql/types/GetDoctorsBySpecialtyAndFilters';
-import moment from 'moment';
+import { dataLayerTracking } from 'gtmTracking';
+import { DoctorDetails } from 'components/Doctors/SpecialtyDetails';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -172,66 +168,47 @@ const useStyles = makeStyles((theme: Theme) => {
 
 interface InfoCardProps {
   doctorInfo: DoctorDetails;
-  nextAvailability: NextAvailabilityType;
   doctorType: string;
-  consultMode: ConsultMode;
   specialityType?: string;
+  specialtyId: string;
 }
 
 export const InfoCard: React.FC<InfoCardProps> = (props) => {
-  const { doctorInfo, nextAvailability, doctorType, consultMode } = props;
-  const differenceInMinutes = nextAvailability ? nextAvailability.availableInMinutes : 0;
+  const { doctorInfo, doctorType, specialtyId } = props;
+  const consultMode = doctorInfo.consultMode;
+  const differenceInMinutes = (doctorInfo && doctorInfo.earliestSlotInMinutes) || 0;
   const { isSignedIn } = useAuth();
   const { currentPatient } = useAllCurrentPatients();
   const classes = useStyles({});
   const [popupLoading, setPopupLoading] = useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const doctorValue = doctorInfo.displayName.toLowerCase();
+<<<<<<< HEAD
   const specialityName =
     doctorInfo &&
     doctorInfo.specialty &&
     doctorInfo.specialty.name &&
     doctorInfo.specialty.name.toLowerCase();
+=======
+  const specialityName = doctorInfo && doctorInfo.specialistSingularTerm.toLowerCase();
+>>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
 
   const availabilityMarkupString = (type: string) =>
-    nextAvailability
-      ? getAvailability(
-          nextAvailability.onlineSlot.length > 0
-            ? nextAvailability.onlineSlot
-            : nextAvailability.physicalSlot,
-          differenceInMinutes,
-          type
-        )
-      : '';
+    doctorInfo.slot ? getAvailability(doctorInfo.slot, differenceInMinutes, type) : '';
 
   const availabilityMarkup = (type: string) => {
-    return nextAvailability ? (
-      type === 'markup' ? (
-        <div
-          className={`${classes.availability} ${
-            differenceInMinutes < 15 ? classes.availableNow : null
-          }`}
-        >
-          {availabilityMarkupString(type)}
-        </div>
-      ) : (
-        availabilityMarkupString(type)
-      )
-    ) : null;
+    return type === 'markup' ? (
+      <div
+        className={`${classes.availability} ${
+          differenceInMinutes < 15 ? classes.availableNow : null
+        }`}
+      >
+        {availabilityMarkupString(type)}
+      </div>
+    ) : (
+      availabilityMarkupString(type)
+    );
   };
-
-  const clinics: GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_doctorHospital[] = [];
-
-  doctorInfo &&
-    _forEach(doctorInfo.doctorHospital, (hospitalDetails) => {
-      if (
-        hospitalDetails &&
-        (hospitalDetails.facility.facilityType === 'CLINIC' ||
-          hospitalDetails.facility.facilityType === 'HOSPITAL')
-      ) {
-        clinics.push(hospitalDetails);
-      }
-    });
 
   const saveSearchMutation = useMutation<SaveSearch, SaveSearchVariables>(SAVE_PATIENT_SEARCH);
   return (
@@ -276,28 +253,19 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
             </div>
             <div className={classes.doctorName}>{`${doctorInfo.displayName}`}</div>
             <div className={classes.doctorType}>
-              <span title={'Specialty'}>{doctorInfo.specialty.name}</span>
+              <span title={'Specialty'}>{doctorInfo.specialistSingularTerm}</span>
               <span className={classes.doctorExp} title={'Experience'}>
-                {doctorInfo.experience} {doctorInfo.experience === '1' ? 'YR' : 'YRS'} Exp.
+                {doctorInfo.experience} {doctorInfo.experience === 1 ? 'YR' : 'YRS'} Exp.
               </span>
             </div>
             <div className={classes.doctorspecialty} title={'Specialty'}>
               <p>
-                Starts at{' '}
-                <span>
-                  ₹ {doctorInfo.onlineConsultationFees || doctorInfo.physicalConsultationFees}
-                </span>
+                Starts at <span>₹ {doctorInfo.fee}</span>
               </p>
             </div>
             <div className={classes.doctorDetails} title={'Location'}>
               <p>{doctorInfo.qualification}</p>
-              {
-                <p>
-                  {clinics && clinics.length > 0
-                    ? clinics[0].facility.name + ',' + clinics[0].facility.city
-                    : ''}
-                </p>
-              }
+              {<p>{(doctorInfo && doctorInfo.doctorfacility) || ''}</p>}
             </div>
           </div>
         </div>
@@ -307,15 +275,16 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
           <div className={classes.bottomAction}>
             <AphButton
               onClick={() => {
+                /**Gtm code start start */
+                dataLayerTracking({
+                  event: 'Consult Now Clicked',
+                  product: doctorInfo.id,
+                });
+                /**Gtm code start end */
                 if (!isSignedIn) {
                   protectWithLoginPopup();
                 } else {
-                  const hospitalName =
-                    doctorInfo &&
-                    doctorInfo.doctorHospital &&
-                    doctorInfo.doctorHospital.length &&
-                    doctorInfo.doctorHospital[0].facility &&
-                    doctorInfo.doctorHospital[0].facility.name;
+                  const hospitalName = doctorInfo && doctorInfo.doctorfacility;
                   const eventdata = {
                     availableInMins: differenceInMinutes,
                     docCategory: doctorType,
@@ -331,7 +300,7 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
                     variables: {
                       saveSearchInput: {
                         type: SEARCH_TYPE.SPECIALTY,
-                        typeId: doctorInfo && doctorInfo.specialty && doctorInfo.specialty.id,
+                        typeId: specialtyId,
                         patient: currentPatient ? currentPatient.id : '',
                       },
                     },
@@ -355,6 +324,12 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
                     })
                     .finally(() => {
                       setIsPopoverOpen(true);
+                      /**Gtm code start start */
+                      dataLayerTracking({
+                        event: 'Consult Now Pop-up Shown',
+                        product: doctorInfo.id,
+                      });
+                      /**Gtm code start end */
                     });
                 }
               }}

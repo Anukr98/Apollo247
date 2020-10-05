@@ -11,8 +11,15 @@ import { MedicineInformation } from 'components/Medicine/MedicineInformation';
 import { useParams } from 'hooks/routerHooks';
 import axios from 'axios';
 import { Alerts } from 'components/Alerts/Alerts';
+<<<<<<< HEAD
 import { MedicineProductDetails, PharmaOverview } from '../../helpers/MedicineApiCalls';
 import { ManageProfile } from 'components/ManageProfile';
+=======
+import { ManageProfile } from 'components/ManageProfile';
+import { gtmTracking, dataLayerTracking } from '../../gtmTracking';
+import { BottomLinks } from 'components/BottomLinks';
+import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
+>>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
 import { MedicinesCartContext, useShoppingCart } from 'components/MedicinesCartProvider';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
@@ -30,11 +37,19 @@ import {
   uploadPrescriptionTracking,
   pharmacyPdpOverviewTracking,
   pharmacyProductViewTracking,
+  medicinePageOpenTracking,
 } from 'webEngageTracking';
 import { MetaTagsComp } from 'MetaTagsComp';
 import moment from 'moment';
 import { useHistory } from 'react-router';
 import { Link } from 'react-router-dom';
+<<<<<<< HEAD
+=======
+import { SchemaMarkup } from 'SchemaMarkup';
+
+import { MedicineProductDetails, PharmaOverview } from '../../helpers/MedicineApiCalls';
+import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
+>>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
 import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
 import { HotSellers } from 'components/Medicine/Cards/HotSellers';
 
@@ -608,6 +623,7 @@ const MedicineDetails: React.FC = (props) => {
   const { diagnosticsCartItems } = useDiagnosticsCart();
   useEffect(() => {
     deepLinkUtil(`MedicineDetail?${params.sku}`);
+    medicinePageOpenTracking();
   });
 
   const apiDetails = {
@@ -826,6 +842,34 @@ const MedicineDetails: React.FC = (props) => {
                 },
               });
             /**Gtm code End  */
+
+            /**Gtm code start start */
+            dataLayerTracking({
+              event: 'pageviewEvent',
+              pagePath: window.location.href,
+              pageName: 'Pharmacy Details Page',
+              pageLOB: 'Pharmacy',
+              pageType: 'Details Page',
+              productlist: JSON.stringify([
+                {
+                  item_name: name, // Name or ID is required.
+                  item_id: sku,
+                  price: special_price || price,
+                  item_brand: manufacturer,
+                  item_category: 'Pharmacy',
+                  item_category_2: type_id
+                    ? type_id.toLowerCase() === 'pharma'
+                      ? 'Drugs'
+                      : 'FMCG'
+                    : null,
+                  item_variant: 'Default',
+                  index: 1,
+                  quantity: mou,
+                },
+              ]),
+            });
+            /**Gtm code start end */
+
             data &&
               data.productdp &&
               data.productdp.length &&

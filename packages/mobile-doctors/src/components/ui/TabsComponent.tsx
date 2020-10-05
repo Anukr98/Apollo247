@@ -30,6 +30,7 @@ export interface TabsComponentProps {
   tabViewStyle?: StyleProp<ViewStyle>;
   selectedTitleStyle?: StyleProp<TextStyle>;
   titleStyle?: StyleProp<TextStyle>;
+  isVerticalTextIcons?: boolean;
 }
 
 export const TabsComponent: React.FC<TabsComponentProps> = (props) => {
@@ -109,7 +110,7 @@ export const TabsComponent: React.FC<TabsComponentProps> = (props) => {
           {props.showIcons ? (
             renderImage(item, isSelected)
           ) : props.showTextIcons ? (
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View style={{ flexDirection: props.isVerticalTextIcons ? 'column' : 'row', alignItems: 'center' }}>
               {renderImage(item, isSelected)}
               {renderText(item, isSelected, index, true)}
             </View>

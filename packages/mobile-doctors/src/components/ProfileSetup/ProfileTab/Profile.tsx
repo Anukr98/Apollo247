@@ -25,9 +25,11 @@ import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { Alert, Image, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Text, TouchableOpacity, View } from 'react-native';
 import Highlighter from 'react-native-highlight-words';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { g } from '@aph/mobile-doctors/src/helpers/helperFunctions';
+import FastImage from 'react-native-fast-image';
 
 const styles = ProfileStyles;
 
@@ -206,7 +208,11 @@ export const Profile: React.FC<ProfileProps> = ({ profileData, scrollViewRef, on
           <View style={styles.profileDateView}>
             <View style={styles.profileContainerStyle}>
               {profileData.photoUrl ? (
-                <Image style={styles.imageview} source={{ uri: profileData.photoUrl }} />
+                <FastImage
+                  style={styles.imageview}
+                  source={{ uri: profileData.photoUrl }}
+                  resizeMode="contain"
+                />
               ) : (
                 <UserPlaceHolder style={styles.imageview} />
               )}
@@ -221,7 +227,9 @@ export const Profile: React.FC<ProfileProps> = ({ profileData, scrollViewRef, on
             </Text>
             <Text style={styles.drnametext}>
               {formatSpecialityAndExperience(
-                profileData!.specialty!.name,
+                g(profileData, 'specialty', 'specialistSingularTerm') ||
+                  g(profileData, 'specialty', 'name') ||
+                  '',
                 profileData!.experience || ''
               )}
             </Text>

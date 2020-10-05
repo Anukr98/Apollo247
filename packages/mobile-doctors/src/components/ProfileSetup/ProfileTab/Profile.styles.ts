@@ -78,7 +78,6 @@ export default StyleSheet.create({
     minHeight: 141,
     maxHeight: width - 32,
     width: width - 32,
-    resizeMode: 'contain',
   },
   drname: {
     ...theme.fonts.IBMPlexSansSemiBold(20),

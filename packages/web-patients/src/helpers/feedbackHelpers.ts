@@ -90,6 +90,7 @@ export const generalHelpSections = [
     category: 'Unsubscribe',
     options: ['Marketing SMSes', 'Marketing Push Notifications', 'Both'],
   },
+<<<<<<< HEAD
   {
     category: 'Membership',
     options: [
@@ -108,4 +109,6 @@ export const generalHelpSections = [
       'Membership Downgrade',
     ],
   },
+=======
+>>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
 ];
