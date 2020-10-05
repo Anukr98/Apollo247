@@ -434,6 +434,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         },
       },
     });
+    elasticSort.push(elasticDoctorDoctorTypeSort());
   
 
   if (!process.env.ELASTIC_INDEX_DOCTORS) {
