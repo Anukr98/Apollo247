@@ -537,7 +537,7 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
     const differenceInDays = getDiffInDays(appointmentDetails.appointmentDateTime);
     let completeText = '';
     if (differenceInDays === 0) {
-      const differenceInHours = getDiffInHours(appointmentDetails.appointmentDateTime) - 1;
+      const differenceInHours = getDiffInHours(appointmentDetails.appointmentDateTime) - 1; // removing 1hr as getDiffInHours has +1
       if (differenceInHours > 0) {
         completeText += `${differenceInHours} ${differenceInHours === 1 ? 'hr' : 'hrs'}`;
       }
