@@ -106,7 +106,6 @@ export const phrConsultTabClickTracking = (userData: any) => {
         Age: age,
       });
     } catch (err) {
-      console.log(window.location);
       console.log('WebEngage Err: ', err);
     }
   }
@@ -117,7 +116,7 @@ export const phrMedicalRecordsTabClickTracking = (userData: any) => {
   if (window.webengage) {
     const { id, mobileNumber, firstName, relation, gender, uhid, age } = userData;
     try {
-      window.webengage.track('PHR Medical Records - web', {
+      window.webengage.track('PHR Lab Test Records - web', {
         'Patient Name': firstName,
         'Patient UHID': uhid,
         Relation: relation,
@@ -161,7 +160,7 @@ export const addHealthCheckRecordClickTracking = (source: string) => {
 export const addMedicalRecordClickTracking = (source: string) => {
   // Medical Record
   try {
-    window.webengage.track('Add Medical Record - web', {
+    window.webengage.track('Add Lab Test Record - web', {
       Source: source,
     });
   } catch (err) {
@@ -216,7 +215,7 @@ export const phrDownloadingHealthCheckFileTracking = (source: string) => {
 
 export const phrDownloadingMedicalRecordFileTracking = (source: string) => {
   try {
-    window.webengage.track('Download Medical Record file - web', {
+    window.webengage.track('Download Lab Test Record file - web', {
       Source: source,
     });
   } catch (err) {
