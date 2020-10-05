@@ -25,6 +25,8 @@ import {
   getDiffInMinutes,
   getAvailableFreeChatDays,
   disablingActionsTimeBeforeConsultation,
+  getDiffInDays,
+  getDiffInHours,
 } from 'helpers/commonHelpers';
 import { useApolloClient } from 'react-apollo-hooks';
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -33,6 +35,7 @@ import { GetAppointmentData_getAppointmentData_appointmentsHistory as Appointmen
 import { cancellationPatientTracking } from 'webEngageTracking';
 import { getSecretaryDetailsByDoctorId } from 'graphql/types/getSecretaryDetailsByDoctorId';
 import { DoctorType } from 'graphql/types/globalTypes';
+import moment from 'moment';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -481,7 +484,6 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
     }
     const currentTime = new Date().getTime();
     const appointmentTime = new Date(appointmentDetails.appointmentDateTime);
-    const differenceInWords = formatDistanceStrict(appointmentTime, currentTime);
 
     const {
       firstName,
@@ -532,6 +534,18 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
     };
 
     const differenceInMinutes = getDiffInMinutes(appointmentDetails.appointmentDateTime);
+    const differenceInDays = getDiffInDays(appointmentDetails.appointmentDateTime);
+    let completeText = '';
+    if (differenceInDays === 0) {
+      const differenceInHours = getDiffInHours(appointmentDetails.appointmentDateTime) - 1; // removing 1hr as getDiffInHours has +1
+      if (differenceInHours > 0) {
+        completeText += `${differenceInHours} ${differenceInHours === 1 ? 'hr' : 'hrs'}`;
+      }
+      const finalDiffInMinutes = differenceInMinutes - differenceInHours * 60;
+      if (finalDiffInMinutes > 0) {
+        completeText += ` ${finalDiffInMinutes} ${finalDiffInMinutes === 1 ? 'min' : 'mins'}`;
+      }
+    }
 
     if (differenceInMinutes < disablingActionsTimeBeforeConsultation) {
       setDisableActions(true);
@@ -609,6 +623,7 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
             {appointmentDetails.status !== STATUS.COMPLETED &&
               appointmentDetails.status !== STATUS.CANCELLED &&
               !appointmentDetails.isSeniorConsultStarted &&
+              !props.isConsultCompleted &&
               !props.srDoctorJoined &&
               !disableActions && (
                 <div
@@ -715,13 +730,21 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                       </div>
                     ) : (
                       <div className={classes.joinInSection}>
-                        <span>Doctor Joining In</span>
-                        <span className={classes.joinTime}>
-                          {differenceInMinutes > 0 &&
-                          differenceInMinutes < disablingActionsTimeBeforeConsultation
-                            ? `${differenceInMinutes} minutes`
-                            : differenceInWords}
-                        </span>
+                        {differenceInDays >= 1 ? (
+                          <>
+                            <span>Consult On</span>
+                            <span className={classes.joinTime}>
+                              {moment(appointmentDetails.appointmentDateTime).format(
+                                'DD/MM hh:mm a'
+                              )}
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <span>Doctor Joining In</span>
+                            <span className={classes.joinTime}>{completeText}</span>
+                          </>
+                        )}
                       </div>
                     ))
                   ))}
@@ -839,7 +862,7 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
           }}
         >
           <AphButton
-            disabled={disableActions}
+            disabled={disableActions || props.isConsultCompleted}
             onClick={() => setShowCancelPopup(true)}
             className={classes.cancelBtn}
           >

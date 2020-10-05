@@ -746,6 +746,7 @@ const ChatRoom: React.FC = () => {
                   {appointmentDetails &&
                     appointmentDetails.status !== STATUS.CANCELLED &&
                     appointmentDetails.status !== STATUS.COMPLETED &&
+                    !isConsultCompleted &&
                     !disableActions &&
                     !srDoctorJoined && (
                       <div className={classes.headerActions}>
@@ -753,7 +754,8 @@ const ChatRoom: React.FC = () => {
                           disabled={
                             appointmentDetails.isSeniorConsultStarted ||
                             srDoctorJoined ||
-                            disableActions
+                            disableActions ||
+                            isConsultCompleted
                           }
                           classes={{
                             root: classes.viewButton,
