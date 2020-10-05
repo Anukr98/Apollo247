@@ -459,6 +459,28 @@ export const getNetStatus = async () => {
   return status;
 };
 
+export const getDiffInDays = (nextAvailability: string) => {
+  if (nextAvailability) {
+    const nextAvailabilityTime = moment(new Date(nextAvailability));
+    const currentTime = moment(new Date());
+    const differenceInDays = nextAvailabilityTime.diff(currentTime, 'days');
+    return differenceInDays;
+  } else {
+    return 0;
+  }
+};
+
+export const getDiffInMinutes = (doctorAvailableSlots: string) => {
+  if (doctorAvailableSlots && doctorAvailableSlots.length > 0) {
+    const nextAvailabilityTime = moment(doctorAvailableSlots);
+    const currentTime = moment(new Date());
+    const differenceInMinutes = currentTime.diff(nextAvailabilityTime, 'minutes') * -1;
+    return differenceInMinutes + 1; // for some reason moment is returning 1 second less. so that 1 is added.;
+  } else {
+    return 0;
+  }
+};
+
 export const nextAvailability = (nextSlot: string, type: 'Available' | 'Consult' = 'Available') => {
   const isValidTime = moment(nextSlot).isValid();
   if (isValidTime) {
@@ -1013,8 +1035,8 @@ const webengage = new WebEngage();
 
 export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Object) => {
   try {
-    const logContent = `[WebEngage] Event: ${eventName}\n`
-    console.log(logContent, '\n',/*attributes, '\n'*/);
+    const logContent = `[WebEngage] Event: ${eventName}\n`;
+    console.log(logContent, '\n' /*attributes, '\n'*/);
     webengage.track(eventName, attributes);
   } catch (error) {
     console.log('********* Unable to post WebEngageEvent *********', { error });
@@ -1308,8 +1330,8 @@ export const postAppsFlyerAddToCartEvent = (
 
 export const postFirebaseEvent = (eventName: FirebaseEventName, attributes: Object) => {
   try {
-    const logContent = `[Firebase] Event: ${eventName}\n`
-    console.log(logContent, '\n',/*attributes, '\n'*/);
+    const logContent = `[Firebase] Event: ${eventName}\n`;
+    console.log(logContent, '\n' /*attributes, '\n'*/);
     firebase.analytics().logEvent(eventName, attributes);
   } catch (error) {
     console.log('********* Unable to post FirebaseEvent *********', { error });
