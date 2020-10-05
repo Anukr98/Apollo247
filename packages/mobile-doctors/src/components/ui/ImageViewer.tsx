@@ -321,7 +321,12 @@ export const ImageViewer: React.FC<ImageViewerProps> = (props) => {
                   {(panEnabled && currentIndex === index) || !panEnabled ? (
                     <FastImage
                       source={{ uri: item.url }}
-                      style={styles.imageStyle}
+                      style={[
+                        styles.imageStyle,
+                        {
+                          backgroundColor: item.fileType === 'image' ? 'black' : 'white',
+                        },
+                      ]}
                       resizeMode={FastImage.resizeMode.contain}
                     />
                   ) : null}

@@ -2268,10 +2268,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         setOverlayDisplay(
           <ImageViewer
             scrollToURL={newUrl}
-            files={allFiles.filter(
-              (item) =>
-                item.fileType === 'image' && ((!isChatRoom && item.id === patientId) || isChatRoom)
-            )}
+            files={allFiles.filter((item) => (!isChatRoom && item.id === patientId) || isChatRoom)}
             onClose={() => setOverlayDisplay(null)}
           />
         );
