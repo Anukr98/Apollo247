@@ -156,15 +156,6 @@ import {
   saveMedicineOrderInvoiceTypeDefs,
   saveMedicineOrderInvoiceResolvers,
 } from 'profiles-service/resolvers/pharmaOrderInvoice';
-import { diagnosticsTypeDefs, diagnosticsResolvers } from 'profiles-service/resolvers/diagnostics';
-import {
-  saveDiagnosticOrderTypeDefs,
-  saveDiagnosticOrderResolvers,
-} from 'profiles-service/resolvers/saveDiagnosticOrders';
-import {
-  saveDiagnosticOrderPaymentTypeDefs,
-  saveDiagnosticOrderPaymentResolvers,
-} from 'profiles-service/resolvers/saveDiagnosticOrderPayment';
 import {
   cancelDiagnosticOrdersTypeDefs,
   cancelDiagnosticOrdersResolvers,
@@ -218,6 +209,21 @@ import {
   patientDeviceVoipTokenTypeDefs,
   patientDeviceVoipTokenResolvers,
 } from 'profiles-service/resolvers/savepatientDeviceVoipToken';
+
+import {
+  addPatientHealthCheckRecordTypeDefs,
+  addPatientHealthCheckRecordsResolvers,
+} from 'profiles-service/resolvers/addHealthCheckRecords';
+
+import {
+  addPatientHospitalizationRecordTypeDefs,
+  addPatientHospitalizationRecordResolvers
+} from 'profiles-service/resolvers/addHospitalizationRecords';
+
+import {
+  addPatientLabTestRecordTypeDefs,
+  addPatientLabTestRecordResolvers
+} from 'profiles-service/resolvers/addLabTestRecords';
 
 (async () => {
   await connect();
@@ -425,18 +431,6 @@ import {
         resolvers: saveMedicineOrderInvoiceResolvers,
       },
       {
-        typeDefs: diagnosticsTypeDefs,
-        resolvers: diagnosticsResolvers,
-      },
-      {
-        typeDefs: saveDiagnosticOrderTypeDefs,
-        resolvers: saveDiagnosticOrderResolvers,
-      },
-      {
-        typeDefs: saveDiagnosticOrderPaymentTypeDefs,
-        resolvers: saveDiagnosticOrderPaymentResolvers,
-      },
-      {
         typeDefs: cancelDiagnosticOrdersTypeDefs,
         resolvers: cancelDiagnosticOrdersResolvers,
       },
@@ -484,6 +478,18 @@ import {
         typeDefs: patientDeviceVoipTokenTypeDefs,
         resolvers: patientDeviceVoipTokenResolvers,
       },
+      {
+        typeDefs: addPatientHealthCheckRecordTypeDefs,
+        resolvers: addPatientHealthCheckRecordsResolvers
+      },
+      {
+        typeDefs: addPatientHospitalizationRecordTypeDefs,
+        resolvers: addPatientHospitalizationRecordResolvers,
+      },
+      {
+        typeDefs: addPatientLabTestRecordTypeDefs,
+        resolvers: addPatientLabTestRecordResolvers
+      }
     ]),
     plugins: [
       /* This plugin is defined in-line. */
@@ -535,6 +541,6 @@ import {
   });
 
   server.listen({ port: process.env.PROFILES_SERVICE_PORT }).then(({ url }) => {
-    console.log(`🚀 profiles-service ready`);
+    console.log(`🚀 profiles-service ready`, url);
   });
 })();

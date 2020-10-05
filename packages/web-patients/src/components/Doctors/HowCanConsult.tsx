@@ -13,6 +13,7 @@ import { useMutation } from 'react-apollo-hooks';
 import { SAVE_PATIENT_SEARCH } from 'graphql/pastsearches';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import { dataLayerTracking } from 'gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -274,6 +275,17 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
       top: 3,
     },
+    followUpText: {
+      backgroundColor: '#DBEBEE',
+      borderRadius: 5,
+      padding: 9,
+      fontSize: 12,
+      fontFamily: 'IBM Plex Sans',
+      lineHeight: '18px',
+      fontWeight: 'normal',
+      color: '#225E6F',
+      marginBottom: 15,
+    },
   });
 });
 interface HowCanConsultProps {
@@ -331,6 +343,10 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
   }, [consultMode]);
   return (
     <div className={classes.root}>
+      <div className={classes.followUpText}>
+        {doctorDetails.fullName} is available for a minimum of {doctorDetails.chatDays} days for free follow-up text post Consult. However, doctor can decide to increase the
+        follow-up text days as per case basis.
+      </div>
       <div className={classes.headerGroup}>
         <h3>How can I consult with {doctorName}:</h3>
         <ul className={classes.tabButtons}>
@@ -484,6 +500,11 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
           <div className={classes.bottomActions}>
             <AphButton
               onClick={() => {
+                /**Gtm code start start */
+                dataLayerTracking({
+                  event: 'Book Appointment Clicked',
+                });
+                /**Gtm code start end */
                 if (!isSignedIn) {
                   protectWithLoginPopup();
                 } else {
@@ -516,6 +537,11 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                       console.log(e);
                     })
                     .finally(() => {
+                      /**Gtm code start start */
+                      dataLayerTracking({
+                        event: 'Consult Now Pop-up Shown',
+                      });
+                      /**Gtm code start end */
                       setIsPopoverOpen(true);
                     });
                 }

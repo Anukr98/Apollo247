@@ -16,6 +16,7 @@ import { string } from '@aph/mobile-doctors/src/strings/string';
 import { GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import { GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteMedicineList';
 import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
+import { useRef, useEffect } from 'react';
 
 export const getBuildEnvironment = () => {
   return AppConfig.APP_ENV as string;
@@ -106,7 +107,7 @@ export const divideSlots = (availableSlots: string[], date: Date) => {
 
 export const getNetStatus = async () => {
   const status = await NetInfo.fetch().then((connectionInfo) => {
-    return connectionInfo.type !== 'none';
+    return connectionInfo.isConnected && connectionInfo.isInternetReachable;
   });
   return status;
 };
@@ -169,91 +170,94 @@ export const medicineDescription = (
     .filter((i) => i !== null);
   const unit: string =
     (medUnitFormatArray.find((i) => i.key === item.medicineUnit) || {}).value || 'others';
+  if (item.medicineCustomDetails) {
+    return `${item.medicineCustomDetails}`;
+  }
   return `${type + ' '}${
     customDosage.length > 0
       ? `${customDosage.join(' ' + unit + ' - ') + ' ' + unit + ' '}${
-      medicineTimings && medicineTimings.length
-        ? '(' +
-        (medicineTimings.length > 1
-          ? medicineTimings
-            .slice(0, -1)
-            .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
-            .join(', ') +
-          ' & ' +
-          nameFormater(medicineTimings[medicineTimings.length - 1] || '', 'lower')
-          : medicineTimings
-            .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
-            .join(', ')) +
-        ') '
-        : ''
-      }${
-      Number(item.medicineConsumptionDurationInDays || '')
-        ? `for ${item.medicineConsumptionDurationInDays} ${
-        item.medicineConsumptionDurationUnit
-          ? `${item.medicineConsumptionDurationUnit.slice(0, -1).toLowerCase()}(s) `
-          : ``
+          medicineTimings && medicineTimings.length
+            ? '(' +
+              (medicineTimings.length > 1
+                ? medicineTimings
+                    .slice(0, -1)
+                    .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
+                    .join(', ') +
+                  ' & ' +
+                  nameFormater(medicineTimings[medicineTimings.length - 1] || '', 'lower')
+                : medicineTimings
+                    .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
+                    .join(', ')) +
+              ') '
+            : ''
+        }${
+          Number(item.medicineConsumptionDurationInDays || '')
+            ? `for ${item.medicineConsumptionDurationInDays} ${
+                item.medicineConsumptionDurationUnit
+                  ? `${item.medicineConsumptionDurationUnit.slice(0, -1).toLowerCase()}(s) `
+                  : ``
+              }`
+            : item.medicineConsumptionDurationUnit ===
+              MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
+            ? `${nameFormater(item.medicineConsumptionDurationUnit, 'lower')} `
+            : ''
+        }${
+          item.medicineToBeTaken && item.medicineToBeTaken.length
+            ? item.medicineToBeTaken
+                .map((i: MEDICINE_TO_BE_TAKEN | null) => nameFormater(i || '', 'lower'))
+                .join(', ') + '.'
+            : ''
         }`
-        : item.medicineConsumptionDurationUnit ===
-          MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
-          ? `${nameFormater(item.medicineConsumptionDurationUnit, 'lower')} `
-          : ''
-      }${
-      item.medicineToBeTaken && item.medicineToBeTaken.length
-        ? item.medicineToBeTaken
-          .map((i: MEDICINE_TO_BE_TAKEN | null) => nameFormater(i || '', 'lower'))
-          .join(', ') + '.'
-        : ''
-      }`
       : `${item.medicineDosage ? item.medicineDosage + ' ' : ''}${
-      item.medicineUnit ? unit + ' ' : ''
-      }${
-      item.medicineFrequency
-        ? item.medicineFrequency === MEDICINE_FREQUENCY.STAT
-          ? 'STAT (Immediately) '
-          : nameFormater(item.medicineFrequency, 'lower') + ' '
-        : ''
-      }${
-      Number(item.medicineConsumptionDurationInDays || '')
-        ? `for ${item.medicineConsumptionDurationInDays} ${
-        item.medicineConsumptionDurationUnit
-          ? `${item.medicineConsumptionDurationUnit.slice(0, -1).toLowerCase()}(s) `
-          : ``
+          item.medicineUnit ? unit + ' ' : ''
+        }${
+          item.medicineFrequency
+            ? item.medicineFrequency === MEDICINE_FREQUENCY.STAT
+              ? 'STAT (Immediately) '
+              : nameFormater(item.medicineFrequency, 'lower') + ' '
+            : ''
+        }${
+          Number(item.medicineConsumptionDurationInDays || '')
+            ? `for ${item.medicineConsumptionDurationInDays} ${
+                item.medicineConsumptionDurationUnit
+                  ? `${item.medicineConsumptionDurationUnit.slice(0, -1).toLowerCase()}(s) `
+                  : ``
+              }`
+            : item.medicineConsumptionDurationUnit ===
+              MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
+            ? `${nameFormater(item.medicineConsumptionDurationUnit, 'lower')} `
+            : ''
+        }${
+          item.medicineToBeTaken && item.medicineToBeTaken.length
+            ? item.medicineToBeTaken
+                .map((i: MEDICINE_TO_BE_TAKEN | null) => nameFormater(i || '', 'lower'))
+                .join(', ') + ' '
+            : ''
+        }${
+          medicineTimings && medicineTimings.length
+            ? `${
+                medicineTimings.includes(MEDICINE_TIMINGS.AS_NEEDED) && medicineTimings.length === 1
+                  ? ''
+                  : 'in the '
+              }` +
+              (medicineTimings.length > 1
+                ? medicineTimings
+                    .slice(0, -1)
+                    .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
+                    .join(', ') +
+                  ' & ' +
+                  nameFormater(medicineTimings[medicineTimings.length - 1] || '', 'lower') +
+                  ' '
+                : medicineTimings
+                    .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
+                    .join(', ') + ' ')
+            : ''
         }`
-        : item.medicineConsumptionDurationUnit ===
-          MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
-          ? `${nameFormater(item.medicineConsumptionDurationUnit, 'lower')} `
-          : ''
-      }${
-      item.medicineToBeTaken && item.medicineToBeTaken.length
-        ? item.medicineToBeTaken
-          .map((i: MEDICINE_TO_BE_TAKEN | null) => nameFormater(i || '', 'lower'))
-          .join(', ') + ' '
-        : ''
-      }${
-      medicineTimings && medicineTimings.length
-        ? `${
-        medicineTimings.includes(MEDICINE_TIMINGS.AS_NEEDED) && medicineTimings.length === 1
-          ? ''
-          : 'in the '
-        }` +
-        (medicineTimings.length > 1
-          ? medicineTimings
-            .slice(0, -1)
-            .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
-            .join(', ') +
-          ' & ' +
-          nameFormater(medicineTimings[medicineTimings.length - 1] || '', 'lower') +
-          ' '
-          : medicineTimings
-            .map((i: MEDICINE_TIMINGS | null) => nameFormater(i || '', 'lower'))
-            .join(', ') + ' ')
-        : ''
-      }`
-    }${
+  }${
     item.routeOfAdministration
       ? `\nTo be taken: ${nameFormater(item.routeOfAdministration, 'title')}`
       : ''
-    }${item.medicineInstructions ? '\nInstructions: ' + item.medicineInstructions : ''}`;
+  }${item.medicineInstructions ? '\nInstructions: ' + item.medicineInstructions : ''}`;
 };
 
 export const formatInt = (value: string) => {
@@ -285,13 +289,17 @@ export const messageCodes = {
   appointmentComplete: '^^#appointmentComplete',
   cancelConsultInitiated: '^^#cancelConsultInitiated',
   autoResponse: '^^#doctorAutoResponse',
+  leaveChatRoom: '^^#leaveChatRoom',
+  patientJoined: '^^#patientJoinedMeetingRoom',
+  patientRejected: '^^#PATIENT_REJECTED_CALL',
+  exotelCall: '^^#exotelCall',
 };
 
 export const formatFloating = (value: string) => {
   const number =
     value.indexOf('.') === value.length - 1 ||
-      value.indexOf('0', value.length - 1) === value.length - 1 ||
-      value.indexOf('-') === value.length - 1
+    value.indexOf('0', value.length - 1) === value.length - 1 ||
+    value.indexOf('-') === value.length - 1
       ? value
       : parseFloat(value);
   return number || 0;
@@ -406,33 +414,39 @@ export function g(obj: any, ...props: string[]) {
 /*eslint-enable */
 
 export const permissionHandler = (
-  permission: Permission,
+  permission: Permission | undefined,
   deniedMessage: string,
   doRequest: () => void
 ) => {
-  Permissions.request(permission)
-    .then((message) => {
-      console.log(message, 'sdhu');
-
-      if (message === 'granted') {
-        doRequest();
-      } else if (message === 'denied' || message === 'blocked') {
-        Alert.alert((permission.split('.').pop() || 'permission').toUpperCase(), deniedMessage, [
-          {
-            text: 'Cancel',
-            onPress: () => { },
-          },
-          {
-            text: 'Ok',
-            onPress: () => {
-              Permissions.openSettings();
-              AsyncStorage.setItem('permissionHandler', 'true');
-            },
-          },
-        ]);
-      }
-    })
-    .catch((e) => console.log(e, 'dsvunacimkl'));
+  if (permission) {
+    Permissions.request(permission)
+      .then((message) => {
+        if (message === 'granted') {
+          doRequest();
+        } else if (message === 'denied' || message === 'blocked') {
+          Alert.alert(
+            nameFormater(permission.split('.').pop() || 'permission', 'upper'),
+            deniedMessage,
+            [
+              {
+                text: 'Cancel',
+                onPress: () => {},
+              },
+              {
+                text: 'Ok',
+                onPress: () => {
+                  Permissions.openSettings();
+                  AsyncStorage.setItem('permissionHandler', 'true');
+                },
+              },
+            ]
+          );
+        }
+      })
+      .catch((e) => {});
+  } else {
+    doRequest();
+  }
 };
 
 export const callPermissions = (doRequest?: () => void) => {
@@ -449,4 +463,12 @@ export const callPermissions = (doRequest?: () => void) => {
       );
     }
   );
+};
+
+export const usePrevious = <T>(value: T): T | undefined => {
+  const ref = useRef<T>();
+  useEffect(() => {
+    ref.current = value;
+  });
+  return ref.current;
 };

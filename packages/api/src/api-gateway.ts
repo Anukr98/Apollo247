@@ -8,7 +8,7 @@ import { AphAuthenticationError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { webPatientsBaseUrl, webDoctorsBaseUrl, getPortStr } from '@aph/universal/src/aphRoutes';
 import { winstonLogger } from 'customWinstonLogger';
-import { format, differenceInMilliseconds } from 'date-fns';
+import { format } from 'date-fns';
 
 //import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 // import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
@@ -60,6 +60,12 @@ export type Resolver<Parent, Args, Context, Result> = (
         name: 'notifications',
         url: `http://${process.env.NOTIFICATIONS_SERVICE_HOST}${getPortStr(
           process.env.NOTIFICATIONS_SERVICE_PORT ? process.env.NOTIFICATIONS_SERVICE_PORT : '80'
+        )}/graphql`,
+      },
+      {
+        name: 'diagnostics',
+        url: `http://${process.env.DIAGNOSTICS_SERVICE_HOST}${getPortStr(
+          process.env.DIAGNOSTICS_SERVICE_PORT ? process.env.DIAGNOSTICS_SERVICE_PORT : '80'
         )}/graphql`,
       },
     ],
@@ -115,7 +121,7 @@ export type Resolver<Parent, Args, Context, Result> = (
     'https://consult-qa.apollo247.com',
     'https://qathreepatients.apollo247.com',
     'https://qathreedoctors.apollo247.com',
-    'https://qathreepmt.apollo247.com'
+    'https://qathreepmt.apollo247.com',
   ];
 
   const logger = winstonLogger.loggers.get('apiGatewayLogger');
@@ -123,7 +129,6 @@ export type Resolver<Parent, Args, Context, Result> = (
   const server = new ApolloServer({
     cors: { origin: corsOrigins },
     schema,
-    introspection: false,
     validationRules: [],
     executor,
     engine: {
@@ -215,9 +220,9 @@ export type Resolver<Parent, Args, Context, Result> = (
           const reqStartTime = new Date();
           const reqStartTimeFormatted = format(reqStartTime, "yyyy-MM-dd'T'HH:mm:ss.SSSX");
           return {
-            parsingDidStart(requestContext) {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              /*const internalContext = (requestContext.context as any) as GatewayContext;
+            // parsingDidStart(requestContext) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            /*const internalContext = (requestContext.context as any) as GatewayContext;
 
              logger.log({
                 message: 'API Gateway Request Started for :' + internalContext.mobileNumber,
@@ -225,7 +230,7 @@ export type Resolver<Parent, Args, Context, Result> = (
                 operation: requestContext.request.query,
                 level: 'info',
               }); */
-            },
+            // },
             didEncounterErrors(requestContext) {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const internalContext = (requestContext.context as any) as GatewayContext;
@@ -237,20 +242,20 @@ export type Resolver<Parent, Args, Context, Result> = (
                 );
               });
             },
-            willSendResponse({ response }) {
-              const errorCount = (response.errors || []).length;
-              const responseLog = {
-                message: 'API Gateway Request Ended',
-                time: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSX"),
-                durationInMilliSeconds: differenceInMilliseconds(new Date(), reqStartTime),
-                errorCount,
-                level: 'info',
-                response: response,
-              };
-              //remove response if there is no error
-              if (errorCount === 0) delete responseLog.response;
-              //logger.log(responseLog);
-            },
+            // willSendResponse({ response }) {
+            //   const errorCount = (response.errors || []).length;
+            //   const responseLog = {
+            //     message: 'API Gateway Request Ended',
+            //     time: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSX"),
+            //     durationInMilliSeconds: differenceInMilliseconds(new Date(), reqStartTime),
+            //     errorCount,
+            //     level: 'info',
+            //     response: response,
+            //   };
+            //   //remove response if there is no error
+            //   if (errorCount === 0) delete responseLog.response;
+            //   //logger.log(responseLog);
+            // },
           };
         },
       },

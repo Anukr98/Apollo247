@@ -129,6 +129,7 @@ export interface getPatientAllAppointments_getPatientAllAppointments_appointment
   awards: string | null;
   city: string | null;
   country: string | null;
+  chatDays: number | null;
   dateOfBirth: string | null;
   displayName: string | null;
   doctorType: DoctorType;
@@ -179,6 +180,7 @@ export interface getPatientAllAppointments_getPatientAllAppointments_appointment
   __typename: "PatinetAppointments";
   appointmentPayments: (getPatientAllAppointments_getPatientAllAppointments_appointments_appointmentPayments | null)[] | null;
   id: string;
+  hideHealthRecordNudge: boolean | null;
   patientId: string;
   doctorId: string;
   appointmentDateTime: any;

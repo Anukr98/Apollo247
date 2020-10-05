@@ -36,6 +36,7 @@ import {
 import {
   savePatientAddress,
   savePatientAddressVariables,
+  savePatientAddress_savePatientAddress_patientAddress,
 } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
   updatePatientAddress,
@@ -162,6 +163,7 @@ export interface AddAddressProps
     DataAddress?: getPatientAddressList_getPatientAddressList_addressList;
     addOnly?: boolean;
     source: AddressSource;
+    ComingFrom?: string;
   }> {}
 
 type addressOptions = {
@@ -208,10 +210,17 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const addOnly = props.navigation.state.params ? props.navigation.state.params.addOnly : false;
 
   const addressData = props.navigation.getParam('DataAddress');
-  const { addAddress, setDeliveryAddressId, setNewAddressAdded } = useShoppingCart();
+  const {
+    addAddress,
+    setDeliveryAddressId,
+    setNewAddressAdded,
+    addresses,
+    setAddresses,
+  } = useShoppingCart();
   const {
     addAddress: addDiagnosticAddress,
     setDeliveryAddressId: setDiagnosticAddressId,
+    setAddresses: setTestAddresses,
   } = useDiagnosticsCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { locationDetails, pharmacyLocation } = useAppCommonData();
@@ -316,9 +325,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const onSavePress = async () => {
     CommonLogEvent(AppRoutes.AddAddress, 'On Save Press clicked');
     if (props.navigation.getParam('KeyName') == 'Update' && addressData) {
-      //from update and all fields are filled (check for lat-long)
       setEditProfile(false);
-      //update any value ~ change the lat-long
       if (!isChanged) {
         const finalStateCode =
           AppConfig.Configuration.PHARMA_STATE_CODE_MAPPING[
@@ -326,12 +333,12 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           ] || stateCode;
         const updateaddressInput: UpdatePatientAddressInput = {
           id: addressData.id,
-          addressLine1: addressLine1,
-          addressLine2: areaDetails,
+          addressLine1: addressLine1.trim(),
+          addressLine2: areaDetails.trim(),
           city: city || '',
           state: state || '',
           zipcode: pincode,
-          landmark: landMark,
+          landmark: landMark.trim() || '',
           mobileNumber: phoneNumber,
           addressType: addressType,
           otherAddressType: optionalAddress,
@@ -346,6 +353,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           isChanged: !isChanged,
           addOnly: addOnly,
           source: props.navigation.getParam('source'),
+          ComingFrom: props.navigation.getParam('ComingFrom'),
         });
       } else if (!areFieldsSame) {
         saveEditDetails();
@@ -360,13 +368,13 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         ] || stateCode;
       const addressInput: Object = {
         id: userId,
-        addressLine1: addressLine1,
-        addressLine2: areaDetails,
+        addressLine1: addressLine1.trim(),
+        addressLine2: areaDetails.trim(),
         city: city || '',
         state: state || '',
         /** look for the area details, attribute & name and phone number  ~ mobileNumber*/
         zipcode: pincode,
-        landmark: landMark || '',
+        landmark: landMark.trim() || '',
         mobileNumber: phoneNumber, //with respect to address
         addressType: addressType,
         otherAddressType: optionalAddress,
@@ -538,12 +546,12 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           ] || stateCode;
         const updateaddressInputForEdit: UpdatePatientAddressInput = {
           id: addressData.id,
-          addressLine1: addressLine1,
-          addressLine2: areaDetails,
+          addressLine1: addressLine1.trim(),
+          addressLine2: areaDetails.trim(),
           city: city || '',
           state: state || '',
           zipcode: pincode,
-          landmark: landMark,
+          landmark: landMark.trim() || '',
           mobileNumber: phoneNumber,
           addressType: addressType,
           otherAddressType: optionalAddress,
@@ -563,8 +571,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
             try {
               setshowSpinner(false);
               console.log('updateapicalled', _data);
-              props.navigation.pop(2, { immediate: true });
-              props.navigation.push(AppRoutes.AddressBook);
+              _navigateToScreen(_data.data.updatePatientAddress.patientAddress, 'fromUpdate');
             } catch (error) {
               CommonBugFender('AddAddress_onSavePress_try', error);
             }
@@ -578,6 +585,38 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
       } else {
         props.navigation.goBack();
       }
+    }
+  };
+
+  const setUpdatedAddressList = async (
+    updatedAddress: savePatientAddress_savePatientAddress_patientAddress,
+    keyName: string
+  ) => {
+    let newAddrList = [];
+    if (keyName == 'fromDelete') {
+      newAddrList = addresses.filter((item) => item.id != updatedAddress.id);
+    } else {
+      newAddrList = [
+        { ...updatedAddress },
+        ...addresses.filter((item) => item.id != updatedAddress.id),
+      ];
+    }
+
+    setAddresses!(newAddrList);
+    setTestAddresses!(newAddrList);
+  };
+
+  const _navigateToScreen = (
+    addressList: savePatientAddress_savePatientAddress_patientAddress,
+    keyName: string
+  ) => {
+    const screenName = props.navigation.getParam('ComingFrom')!;
+    if (screenName != '') {
+      setUpdatedAddressList(addressList, keyName);
+      props.navigation.pop(1, { immediate: true });
+    } else {
+      props.navigation.pop(2, { immediate: true });
+      props.navigation.push(AppRoutes.AddressBook);
     }
   };
 
@@ -995,8 +1034,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
                     setDeliveryAddressId!('');
                     setNewAddressAdded!('');
                     setDiagnosticAddressId!('');
-                    props.navigation.pop(2, { immediate: true });
-                    props.navigation.push(AppRoutes.AddressBook);
+                    _navigateToScreen(addressData!, 'fromDelete');
                   })
                   .catch((e) => {
                     CommonBugFender('AddAddress_DELETE_PATIENT_ADDRESS', e);

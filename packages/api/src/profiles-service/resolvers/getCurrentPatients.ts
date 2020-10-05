@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
-import { Patient, DEVICE_TYPE } from 'profiles-service/entities';
+import { Patient, DEVICE_TYPE, PatientDeviceTokens } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { Resolver } from 'api-gateway';
@@ -11,6 +11,7 @@ import { Gender } from 'doctors-service/entities';
 import { getRegisteredUsers } from 'helpers/phrV1Services';
 import { getCache, setCache, delCache } from 'profiles-service/database/connectRedis';
 import { ApiConstants } from 'ApiConstants';
+import { PatientDeviceTokenRepository } from 'profiles-service/repositories/patientDeviceTokenRepository';
 
 export const getCurrentPatientsTypeDefs = gql`
   enum Gender {
@@ -114,6 +115,8 @@ export const getCurrentPatientsTypeDefs = gql`
     temperature: String
     weight: String
     medicationHistory: String
+    diagnosticTestResult: String
+    clinicalObservationNotes: String
   }
 
   type GetCurrentPatientsResult {
@@ -121,7 +124,12 @@ export const getCurrentPatientsTypeDefs = gql`
   }
 
   extend type Query {
-    getCurrentPatients(appVersion: String, deviceType: DEVICE_TYPE): GetCurrentPatientsResult
+    getCurrentPatients(
+      appVersion: String
+      deviceType: DEVICE_TYPE
+      deviceToken: String
+      deviceOS: String
+    ): GetCurrentPatientsResult
   }
 `;
 const REDIS_PATIENT_LOCK_PREFIX = `patient:lock:`;
@@ -131,7 +139,7 @@ export type GetCurrentPatientsResult = {
 
 const getCurrentPatients: Resolver<
   null,
-  { appVersion: string; deviceType: DEVICE_TYPE },
+  { appVersion: string; deviceType: DEVICE_TYPE; deviceToken: string; deviceOS: string },
   ProfilesServiceContext,
   GetCurrentPatientsResult
 > = async (parent, args, { mobileNumber, profilesDb }) => {
@@ -203,6 +211,22 @@ const getCurrentPatients: Resolver<
 
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   const patients = await patientRepo.findByMobileNumberLogin(mobileNumber);
+
+  const deviceTokens: Partial<PatientDeviceTokens>[] = [];
+  patients.forEach((patientRecord) => {
+    const savePatientDeviceTokensAttrs: Partial<PatientDeviceTokens> = {
+      deviceType: args.deviceType,
+      deviceToken: args.deviceToken,
+      deviceOS: args.deviceOS,
+      patient: patientRecord,
+    };
+    deviceTokens.push(savePatientDeviceTokensAttrs);
+  });
+
+  if (deviceTokens.length > 0) {
+    const deviceTokenRepo = profilesDb.getCustomRepository(PatientDeviceTokenRepository);
+    await deviceTokenRepo.saveMultiplePatientDeviceToken(deviceTokens);
+  }
 
   return { patients };
 };

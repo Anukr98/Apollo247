@@ -20,6 +20,8 @@ const getMedicineOrderQuery = (method, patientId, orderId) => {
             quoteDateTime
             coupon
             customerComment
+            clusterId
+            allocationProfileName
             medicineOrderAddress {
               mobileNumber
               name

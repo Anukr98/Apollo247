@@ -7,6 +7,10 @@ import Paper from '@material-ui/core/Paper';
 import Modal from '@material-ui/core/Modal';
 import { AphButton } from '@aph/web-ui-components';
 import { MEDICINE_ORDER_PAYMENT_TYPE } from 'graphql/types/globalTypes';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import { goConsultRoomTracking } from 'webEngageTracking';
+import { consultWebengageEventsInfo } from 'helpers/commonHelpers';
+import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -235,11 +239,6 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-type doctorDetail = {
-  fullName: string;
-  doctorHospital: Array<any>;
-};
-
 interface OrderStatusDetail {
   paymentStatus: string;
   paymentInfo: string;
@@ -251,15 +250,17 @@ interface OrderStatusDetail {
   paymentDateTime?: string;
   type: string;
   bookingDateTime?: string;
-  doctorDetail?: doctorDetail;
+  doctorDetail?: DoctorDetails;
   consultMode?: string;
   onClose: () => void;
   ctaText: string;
   fetchConsultInvoice?: (fetchInvoice: boolean) => void;
+  doctorFullName?: string;
 }
 
 export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
   const classes = useStyles({});
+  const { currentPatient } = useAllCurrentPatients();
   const {
     paymentStatus,
     paymentInfo,
@@ -276,6 +277,7 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
     onClose,
     ctaText,
     fetchConsultInvoice,
+    doctorFullName,
   } = props;
   interface statusMap {
     [name: string]: string;
@@ -351,7 +353,9 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
                 <Grid item xs>
                   <div className={classes.details}>
                     <Typography component="h6">Doctor Name</Typography>
-                    <Typography component="p">{doctorDetail && doctorDetail.fullName}</Typography>
+                    <Typography component="p">
+                      {(doctorDetail && doctorDetail.fullName) || doctorFullName}
+                    </Typography>
                   </div>
                 </Grid>
                 <Grid item xs>
@@ -399,7 +403,14 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
           )}
         </div>
 
-        <AphButton className={classes.payBtn} onClick={() => orderStatusCallback()}>
+        <AphButton
+          className={classes.payBtn}
+          onClick={() => {
+            orderStatusCallback();
+            const eventInfo = consultWebengageEventsInfo(doctorDetail, currentPatient);
+            goConsultRoomTracking(eventInfo);
+          }}
+        >
           {ctaText}
         </AphButton>
       </div>

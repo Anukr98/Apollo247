@@ -25,7 +25,10 @@ import {
   SAVE_PRESCRIPTION_MEDICINE_ORDER_OMS,
   UPDATE_PATIENT_ADDRESS,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import { uploadDocument, uploadDocumentVariables } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
+import {
+  uploadDocument,
+  uploadDocumentVariables,
+} from '@aph/mobile-patients/src/graphql/types/uploadDocument';
 import { savePrescriptionMedicineOrderOMSVariables } from '@aph/mobile-patients/src/graphql/types/savePrescriptionMedicineOrderOMS';
 import { Store, getPlaceInfoByPincode } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
@@ -38,31 +41,35 @@ import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useRef, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import {
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  View,
-  Platform,
-  Image,
-} from 'react-native';
+import { SafeAreaView, StyleSheet, Text, View, Platform, Image } from 'react-native';
 import {
   NavigationScreenProps,
   ScrollView,
   StackActions,
   NavigationActions,
 } from 'react-navigation';
-import { PRISM_DOCUMENT_CATEGORY, UPLOAD_FILE_TYPES, MEDICINE_DELIVERY_TYPE, BOOKING_SOURCE, DEVICE_TYPE, NonCartOrderOMSCity } from '../../graphql/types/globalTypes';
+import {
+  PRISM_DOCUMENT_CATEGORY,
+  UPLOAD_FILE_TYPES,
+  MEDICINE_DELIVERY_TYPE,
+  BOOKING_SOURCE,
+  DEVICE_TYPE,
+  NonCartOrderOMSCity,
+} from '../../graphql/types/globalTypes';
 import { WhatsAppStatus } from '../ui/WhatsAppStatus';
 import { StoreDriveWayPickupPopup } from './StoreDriveWayPickupPopup';
 import { StorePickupOrAddressSelectionView } from './StorePickupOrAddressSelectionView';
 import { savePatientAddress_savePatientAddress_patientAddress } from '../../graphql/types/savePatientAddress';
-import { updatePatientAddress, updatePatientAddressVariables } from '../../graphql/types/updatePatientAddress';
+import {
+  updatePatientAddress,
+  updatePatientAddressVariables,
+} from '../../graphql/types/updatePatientAddress';
 import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
 import { FileBig, GreenTickIcon } from '../ui/Icons';
 import { TextInputComponent } from '../ui/TextInputComponent';
 import { EPrescriptionCard } from '../ui/EPrescriptionCard';
 import { Spinner } from '../ui/Spinner';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -131,6 +138,12 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.CARD_BG,
     marginHorizontal: 20,
   },
+  greenTickStyle: {
+    width: 20,
+    marginRight: 10,
+    marginLeft: 10,
+    paddingHorizontal: 8,
+  },
 });
 
 export interface YourCartUploadPrescriptionProps extends NavigationScreenProps {}
@@ -169,7 +182,9 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
 
   const prescriptionOption = props.navigation.getParam('prescriptionOptionSelected');
   const durationDay = props.navigation.getParam('durationDays');
-  const physicalPrescription: PhysicalPrescription[] = props.navigation.getParam('physicalPrescription');
+  const physicalPrescription: PhysicalPrescription[] = props.navigation.getParam(
+    'physicalPrescription'
+  );
   const ePrescription: EPrescription[] = props.navigation.getParam('ePrescription');
 
   // To remove applied coupon and selected storeId from cart when user goes back.
@@ -209,8 +224,8 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
   const disablePlaceOrder = !(
     !!(deliveryAddressId || storeId) &&
     ((storeId && showPrescriptionAtStore) ||
-    physicalPrescription.length > 0 ||
-    ePrescription.length > 0)
+      physicalPrescription.length > 0 ||
+      ePrescription.length > 0)
   );
 
   const renderPaymentMethod = () => {
@@ -289,6 +304,7 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
             mobileNumber: address.mobileNumber,
             addressType: address.addressType,
             otherAddressType: address.otherAddressType,
+            name: address.name,
             latitude: lat,
             longitude: lng,
             stateCode: finalStateCode,
@@ -357,14 +373,14 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
         : [];
 
       const phyPresUrls = uploadedPhyPrescriptions.map((item) => item!.filePath).filter((i) => i);
-      const phyPresPrismIds = physicalPrescription.map(
-        (item) => item.prismPrescriptionFileId
-      ).filter((i) => i);
+      const phyPresPrismIds = physicalPrescription
+        .map((item) => item.prismPrescriptionFileId)
+        .filter((i) => i);
 
       const ePresUrls = ePrescription.map((item) => item.uploadedUrl).filter((i) => i);
-      const ePresPrismIds = ePrescription.map((item) => item.prismPrescriptionFileId).filter(
-        (i) => i
-      );
+      const ePresPrismIds = ePrescription
+        .map((item) => item.prismPrescriptionFileId)
+        .filter((i) => i);
 
       const prescriptionMedicineInput: savePrescriptionMedicineOrderOMSVariables = {
         prescriptionMedicineOMSInput: {
@@ -372,7 +388,7 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
           medicineDeliveryType: deliveryAddressId
             ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
             : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
-          ...(storeId? {shopId: storeId}: {}),
+          ...(storeId ? { shopId: storeId } : {}),
           appointmentId: '',
           patinetAddressId: deliveryAddressId || '',
           prescriptionImageUrl: [...phyPresUrls, ...ePresUrls].join(','),
@@ -430,7 +446,7 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
       title: 'Uh oh.. :(',
       description: desc,
       unDismissable: true,
-  });
+    });
 
   const renderSuccessPopup = () => {
     showAphAlert!({
@@ -441,7 +457,7 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
         justifyContent: 'flex-end',
         marginVertical: 18,
       },
-      description: 'Your prescriptions have been submitted successfully. Our Pharmacists will validate the prescriptions and place your order.\n\nIf we require any clarifications, we will call you within one hour (Calling hours: 8AM to 8PM).',
+      description: string.Prescription_Success,
       unDismissable: true,
       CTAs: [
         {
@@ -545,12 +561,7 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
             value={item.title}
           />
         </View>
-        <GreenTickIcon style={{
-          width: 20,
-          marginRight: 10,
-          marginLeft: 10,
-          paddingHorizontal: 8,
-        }} />
+        <GreenTickIcon style={styles.greenTickStyle} />
       </View>
     );
   };

@@ -6,6 +6,7 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { getAuthToken } from 'helpers/phrV1Services';
 import { AppointmentDocumentRepository } from 'consults-service/repositories/appointmentDocumentRepository';
+import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 
 export const downloadDocumentsTypeDefs = gql`
   input DownloadDocumentsInput {
@@ -31,34 +32,48 @@ export type DownloadDocumentsInput = {
 
 type DownloadDocsInputArgs = { downloadDocumentsInput: DownloadDocumentsInput };
 
-//not in use, preserved for backward compatability
 export const downloadDocuments: Resolver<
   null,
   DownloadDocsInputArgs,
   ProfilesServiceContext,
   DownloadDocumentsResult
 > = async (parent, { downloadDocumentsInput }, { mobileNumber, profilesDb, consultsDb }) => {
+  if (downloadDocumentsInput.fileIds.length == 0) return { downloadPaths: [] };
+
   const patientsRepo = profilesDb.getCustomRepository(PatientRepository);
   const patientDetails = await patientsRepo.getPatientDetails(downloadDocumentsInput.patientId);
   if (patientDetails == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
-  const getToken = await getAuthToken(patientDetails.uhid);
-
-  //get appointment record details related to fileID
-  const appointmentRepo = consultsDb.getCustomRepository(AppointmentDocumentRepository);
-  const appointmentDocuments = await appointmentRepo.getDocumentDataByPrismFileIds(
-    downloadDocumentsInput.fileIds
+  //get patient related all appointments
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const appointmentIds = await appointmentRepo.getAppointmentIdsByPatientId(
+    downloadDocumentsInput.patientId
   );
 
+  const appointmentList: string[] = [];
+  appointmentIds.forEach((appointment) => appointmentList.push(appointment.id));
+
+  //get appointment record details related to fileID
+  const appointmentDocumnetRepo = consultsDb.getCustomRepository(AppointmentDocumentRepository);
+  const appointmentDocuments = await appointmentDocumnetRepo.getDocumentDataByPrismFileIds(
+    downloadDocumentsInput.fileIds,
+    appointmentList
+  );
+
+  if (appointmentDocuments.length == 0) return { downloadPaths: [] };
+
+  const getToken = await getAuthToken(patientDetails.uhid);
+
   const downloadPaths = downloadDocumentsInput.fileIds.map((fileIdName) => {
-    const filePaths = appointmentDocuments.filter(
-      (item) => item.prismFileId == fileIdName && item.prismFilePath
-    );
+    const filePaths = appointmentDocuments.filter((item) => item.prismFileId == fileIdName);
+    if (filePaths.length == 0) return '';
+    const firstFilePath = filePaths[0];
 
-    let prismFileUrl = '';
-    if (filePaths && filePaths.length > 0) prismFileUrl = filePaths[0].prismFilePath;
+    const prismFileUrl =
+      firstFilePath.prismFilePath && firstFilePath.prismFilePath.length > 0
+        ? firstFilePath.prismFilePath
+        : '';
 
-    if (fileIdName == '') return '';
     const fileIdNameArray = fileIdName.split('_');
     const fileId = fileIdNameArray.shift();
     const fileName = fileIdNameArray.join('_');

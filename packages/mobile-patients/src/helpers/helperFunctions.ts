@@ -134,32 +134,40 @@ export const formatAddress = (address: savePatientAddress_savePatientAddress_pat
     .filter((item, idx, array) => array.indexOf(item) === idx)
     .join(', ');
   const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
-    return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
+  return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
 };
 
-export const formatAddressWithLandmark = (address: savePatientAddress_savePatientAddress_patientAddress) => {
-  const addrLine1 = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');
+export const formatAddressWithLandmark = (
+  address: savePatientAddress_savePatientAddress_patientAddress
+) => {
+  const addrLine1 = removeConsecutiveComma(
+    [address.addressLine1, address.addressLine2].filter((v) => v).join(', ')
+  );
   const landmark = [address.landmark];
   // to handle state value getting twice
-  const addrLine2 = [address.city, address.state]
-    .filter((v) => v)
-    .join(', ')
-    .split(',')
-    .map((v) => v.trim())
-    .filter((item, idx, array) => array.indexOf(item) === idx)
-    .join(', ');
+  const addrLine2 = removeConsecutiveComma(
+    [address.city, address.state]
+      .filter((v) => v)
+      .join(', ')
+      .split(',')
+      .map((v) => v.trim())
+      .filter((item, idx, array) => array.indexOf(item) === idx)
+      .join(', ')
+  );
   const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
-  if(address.landmark!=''){
+  if (address.landmark != '') {
     return `${addrLine1},\nLandmark: ${landmark}\n${addrLine2}${formattedZipcode}`;
-  }
-  else{
+  } else {
     return `${addrLine1}\n${addrLine2}${formattedZipcode}`;
   }
-    
 };
 
 export const formatNameNumber = (address: savePatientAddress_savePatientAddress_patientAddress) => {
-  return `${address.name}\n${address.mobileNumber}`;
+  if (address.name!) {
+    return `${address.name}\n${address.mobileNumber}`;
+  } else {
+    return `${address.mobileNumber}`;
+  }
 };
 
 export const followUpChatDaysCaseSheet = (
@@ -188,6 +196,22 @@ export const formatOrderAddress = (
     .join(', ');
   const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
   return `${addrLine}${formattedZipcode}`;
+};
+
+export const formatSelectedAddress = (
+  address: savePatientAddress_savePatientAddress_patientAddress
+) => {
+  const formattedAddress =
+    (address.addressLine1 && address.addressLine1 + ', ') +
+    '' +
+    (address.addressLine2 && address.addressLine2 + ', ') +
+    '' +
+    (address.city && address.city + ',') +
+    '' +
+    (address.state && address.state + ',') +
+    '' +
+    (address.zipcode && address.zipcode);
+  return formattedAddress;
 };
 
 export const getUuidV4 = () => {
@@ -693,15 +717,15 @@ export const isValidName = (value: string) =>
     : value == '' || /^[a-zA-Z]+((['’ ][a-zA-Z])?[a-zA-Z]*)*$/.test(value)
     ? true
     : false;
-  
-export const isValidPhoneNumber = (value: string) =>{
-    const isValidNumber = !/^[6-9]{1}\d{0,9}$/.test(value)
-      ? !/^(234){1}\d{0,9}$/.test(value)
-        ? false
-        : true
-      : true;
-    return isValidNumber;
-}
+
+export const isValidPhoneNumber = (value: string) => {
+  const isValidNumber = !/^[6-9]{1}\d{0,9}$/.test(value)
+    ? !/^(234){1}\d{0,9}$/.test(value)
+      ? false
+      : true
+    : true;
+  return isValidNumber;
+};
 
 export const extractUrlFromString = (text: string): string | undefined => {
   const urlRegex = /(https?:\/\/[^ ]*)/;
@@ -880,7 +904,7 @@ export const getDiscountPercentage = (price: number | string, specialPrice?: num
     : Number(price) == Number(specialPrice)
     ? 0
     : ((Number(price) - Number(specialPrice)) / Number(price)) * 100;
-  return Math.ceil(discountPercent);
+  return discountPercent != 0 ? Number(discountPercent).toFixed(2) : 0;
 };
 
 export const getBuildEnvironment = () => {
@@ -930,6 +954,17 @@ export const getRelations = (self?: string) => {
 };
 
 export const formatTestSlot = (slotTime: string) => moment(slotTime, 'HH:mm').format('hh:mm A');
+
+export const formatTestSlotWithBuffer = (slotTime: string ) => {
+ 
+  const startTime = slotTime.split('-')[0];
+  const endTime = moment(startTime, 'HH:mm')
+    .add(30, 'minutes')
+    .format('HH:mm');
+
+  const newSlot = [startTime, endTime];
+  return newSlot.map((item) => moment(item.trim(), 'hh:mm').format('hh:mm A')).join(' - ');
+};
 
 export const isValidTestSlot = (
   slot: getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo,
@@ -989,13 +1024,9 @@ const webengage = new WebEngage();
 
 export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Object) => {
   try {
-    console.log('\n********* WebEngageEvent Start *********\n');
-    console.log(`WebEngageEvent ${eventName}`, { eventName, attributes });
-    console.log('\n********* WebEngageEvent End *********\n');
-    // if (getBuildEnvironment() !== 'DEV') {
-    // Don't post events in DEV environment
+    const logContent = `[WebEngage] Event: ${eventName}\n`;
+    console.log(logContent, '\n' /*attributes, '\n'*/);
     webengage.track(eventName, attributes);
-    // }
   } catch (error) {
     console.log('********* Unable to post WebEngageEvent *********', { error });
   }
@@ -1288,13 +1319,9 @@ export const postAppsFlyerAddToCartEvent = (
 
 export const postFirebaseEvent = (eventName: FirebaseEventName, attributes: Object) => {
   try {
-    console.log('\n********* FirebaseEvent Start *********\n');
-    console.log(`FirebaseEvent ${eventName}`, { eventName, attributes });
-    console.log('\n********* FirebaseEvent End *********\n');
-    // if (getBuildEnvironment() !== 'DEV') {
-    // Don't post events in DEV environment
+    const logContent = `[Firebase] Event: ${eventName}\n`;
+    console.log(logContent, '\n' /*attributes, '\n'*/);
     firebase.analytics().logEvent(eventName, attributes);
-    // }
   } catch (error) {
     console.log('********* Unable to post FirebaseEvent *********', { error });
   }
@@ -1392,6 +1419,35 @@ export const getMaxQtyForMedicineItem = (qty?: number | string) => {
   return qty ? Number(qty) : AppConfig.Configuration.CART_ITEM_MAX_QUANTITY;
 };
 
+export const formatToCartItem = ({
+  sku,
+  name,
+  price,
+  special_price,
+  mou,
+  is_prescription_required,
+  MaxOrderQty,
+  type_id,
+  is_in_stock,
+  thumbnail,
+  image,
+}: MedicineProduct): ShoppingCartItem => {
+  return {
+    id: sku,
+    name: name,
+    price: price,
+    specialPrice: Number(special_price) || undefined,
+    mou: mou,
+    quantity: 1,
+    prescriptionRequired: is_prescription_required == '1',
+    isMedicine: (type_id || '').toLowerCase() == 'pharma',
+    thumbnail: thumbnail || image,
+    maxOrderQty: MaxOrderQty,
+    productType: type_id,
+    isInStock: is_in_stock == 1,
+  };
+};
+
 export const addPharmaItemToCart = (
   cartItem: ShoppingCartItem,
   pincode: string,
@@ -1410,7 +1466,7 @@ export const addPharmaItemToCart = (
   const outOfStockMsg = 'Sorry, this item is out of stock in your area.';
 
   const navigate = () => {
-    navigation.navigate(AppRoutes.MedicineDetailsScene, {
+    navigation.push(AppRoutes.MedicineDetailsScene, {
       sku: cartItem.id,
       deliveryError: outOfStockMsg,
     });
@@ -1481,4 +1537,7 @@ export const dataSavedUserID = async (key: string) => {
 
 export const setWebEngageScreenNames = (screenName: string) => {
   webengage.screen(screenName);
+};
+export const removeConsecutiveComma = (value: string) => {
+  return value.replace(/^,|,$|,(?=,)/g, '');
 };

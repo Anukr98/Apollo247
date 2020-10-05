@@ -58,6 +58,7 @@ export interface LabResultsDownloadResponse {
     id: string;
     fileUrl: string; //this is not given by PHR. Added for internal purpose
     date: Date; //this is not given by PHR. Added for internal purpose
+    dateTime: Date; //this is not given by PHR. Added for internal purpose
     labTestName: string;
     labTestSource: string;
     packageId: string;
@@ -147,6 +148,7 @@ export interface PrescriptionDownloadResponse {
     userId: string;
     fileUrl: string; //this is not given by PHR. Added for internal purpose
     date: Date; //this is not given by PHR. Added for internal purpose
+    dateTime: Date; //this is not given by PHR. Added for internal purpose
     id: string;
     prescriptionName: string;
     dateOfPrescription: number;
@@ -198,6 +200,7 @@ export interface HealthChecksResponse {
     id: string;
     fileUrl: string; //this is not given by PHR. Added for internal purpose
     date: Date; //this is not given by PHR. Added for internal purpose
+    dateTime: Date; //this is not given by PHR. Added for internal purpose
     healthCheckName: string;
     healthCheckDate: number;
     healthCheckSummary: string;
@@ -216,6 +219,29 @@ export interface HealthChecksResponse {
   }[];
 }
 
+export interface HealthCheckUploadRequest {
+  healthCheckName: string;
+  healthCheckType: string;
+  healthCheckDate: string | number;
+  healthCheckSummary: string;
+  followupDate: string | number;
+  source: string;
+  healthCheckFiles: {
+    id: string;
+    fileName: string;
+    mimeType: string;
+    dateCreated: string | number;
+    content: string;
+  }[];
+}
+
+export interface HealthCheckUploadResponse {
+  errorCode: number;
+  errorMsg: string;
+  errorType: string;
+  response: string;
+}
+
 export interface DischargeSummaryResponse {
 
   errorCode: string,
@@ -228,6 +254,7 @@ export interface DischargeSummaryResponse {
       id: string,
       fileUrl: string; //this is not given by PHR. Added for internal purpose
       date: Date; //this is not given by PHR. Added for internal purpose
+      dateTime: Date; //this is not given by PHR. Added for internal purpose
       hospitalizationDate: Date;
       dateOfHospitalization: number,
       hospitalName: string,
@@ -250,4 +277,32 @@ export interface DischargeSummaryResponse {
     }
   ]
 
+}
+
+export interface DischargeSummaryUploadRequest {
+  hospitalName: string;
+  dateOfHospitalization: number | string,
+  doctorName: string;
+  reasonForAdmission: string;
+  diagnosisNotes: string;
+  dateOfDischarge: number;
+  dischargeSummary: string;
+  doctorInstruction: string;
+  dateOfNextVisit: number | string;
+  source: string;
+  hospitalizationFiles: {
+    id: string;
+    fileName: string;
+    mimeType: string;
+    dateCreated: number;
+    content: string
+  }[];
+
+}
+
+export interface DischargeSummaryUploadResponse {
+  errorCode: number;
+  errorMsg: string;
+  errorType: string;
+  response: string;
 }

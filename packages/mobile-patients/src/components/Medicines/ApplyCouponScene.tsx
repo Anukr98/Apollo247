@@ -112,10 +112,17 @@ export interface ApplyCouponSceneProps extends NavigationScreenProps {}
 export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
   // const isTest = props.navigation.getParam('isTest');
   const [couponText, setCouponText] = useState<string>('');
+  const [couponMsg, setcouponMsg] = useState<string>('');
   const [couponError, setCouponError] = useState<string>('');
   const [couponList, setcouponList] = useState<pharma_coupon[]>([]);
   const { currentPatient } = useAllCurrentPatients();
-  const { setCoupon, coupon: cartCoupon, cartItems, cartTotal, setCouponProducts } = useShoppingCart();
+  const {
+    setCoupon,
+    coupon: cartCoupon,
+    cartItems,
+    cartTotal,
+    setCouponProducts,
+  } = useShoppingCart();
   const { showAphAlert } = useUIElements();
   const [loading, setLoading] = useState<boolean>(true);
   const client = useApolloClient();
@@ -160,14 +167,15 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
       .then((resp: any) => {
         if (resp.data.errorCode == 0) {
           if (resp.data.response.valid) {
-            setCoupon!(g(resp.data, 'response')!);
+            console.log(g(resp.data, 'response'));
+            setCoupon!({ ...g(resp.data, 'response')!, message: couponMsg });
             props.navigation.goBack();
           } else {
             setCouponError(g(resp.data, 'response', 'reason'));
           }
 
           const products = g(resp.data, 'response', 'products');
-          if(products && products.length) {
+          if (products && products.length) {
             const freeProducts = products.filter((product) => {
               return product.couponFree === true;
             });
@@ -236,6 +244,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
             if (/^\S*$/.test(text)) {
               couponError && setCouponError('');
               setCouponText(text);
+              setcouponMsg('');
             }
           }}
           textInputprops={{
@@ -285,7 +294,10 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
         activeOpacity={1}
         style={styles.radioButtonContainer}
         key={i}
-        onPress={() => setCouponText(coupon!.coupon == couponText ? '' : coupon!.coupon!)}
+        onPress={() => {
+          setCouponText(coupon!.coupon == couponText ? '' : coupon!.coupon!);
+          setcouponMsg(coupon?.message);
+        }}
       >
         {coupon!.coupon == couponText ? <RadioButtonIcon /> : <RadioButtonUnselectedIcon />}
         <View style={styles.radioButtonTitleDescContainer}>

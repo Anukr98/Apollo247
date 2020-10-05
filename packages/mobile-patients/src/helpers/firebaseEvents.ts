@@ -11,7 +11,6 @@ export enum FirebaseEventName {
   SIGN_UP = 'sign_up',
   NUMBER_OF_PROFILES_FETCHED = 'Number of Profiles fetched',
   SEARCH = 'Pharmacy Search',
-  PHARMACY_PRODUCT_CLICKED = 'Pharmacy Product Clicked',
   NOTIFY_ME = 'Notify Me',
   CATEGORY_CLICKED = 'Pharmacy Category Clicked',
   PHARMACY_ADD_TO_CART = 'Pharmacy Add to cart',
@@ -164,16 +163,6 @@ export interface FirebaseEvents {
   [FirebaseEventName.SEARCH]: {
     keyword: string;
     Source: 'Pharmacy Home' | 'Pharmacy List';
-  };
-  [FirebaseEventName.PHARMACY_PRODUCT_CLICKED]: {
-    productname: string;
-    productid: string; // (SKUID)
-    Brand: string;
-    BrandID: string;
-    categoryname: string;
-    categoryID: string;
-    Source: 'Home' | 'List' | 'Search';
-    SectionName: string;
   };
   [FirebaseEventName.NOTIFY_ME]: {
     productname: string;

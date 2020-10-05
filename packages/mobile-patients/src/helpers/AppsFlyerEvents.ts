@@ -8,7 +8,6 @@ export enum AppsFlyerEventName {
   REGISTRATION_DONE = 'Registration Done',
   NUMBER_OF_PROFILES_FETCHED = 'Number of Profiles fetched',
   SEARCH = 'Pharmacy Search',
-  PHARMACY_PRODUCT_CLICKED = 'Pharmacy Product Clicked',
   CATEGORY_CLICKED = 'Pharmacy Category Clicked',
   PHARMACY_ADD_TO_CART = 'Pharmacy Add to cart',
   DIAGNOSTIC_ADD_TO_CART = 'Diagnostic Add to cart',
@@ -112,16 +111,6 @@ export interface AppsFlyerEvents {
   [AppsFlyerEventName.SEARCH]: {
     keyword: string;
     Source: 'Pharmacy Home' | 'Pharmacy List';
-  };
-  [AppsFlyerEventName.PHARMACY_PRODUCT_CLICKED]: {
-    'product name': string;
-    'product id': string; // (SKUID)
-    Brand: string;
-    'Brand ID': string;
-    'category name': string;
-    'category ID': string;
-    Source: 'Home' | 'List' | 'Search';
-    'Section Name': string;
   };
   [AppsFlyerEventName.CATEGORY_CLICKED]: {
     'category name': string;

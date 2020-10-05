@@ -5,7 +5,7 @@ import { AphRadio, AphTextField, AphButton } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 //import _each from 'lodash';
 import { useAllCurrentPatients } from 'hooks/authHooks';
-import { gtmTracking } from '../../gtmTracking';
+import { gtmTracking, dataLayerTracking } from '../../gtmTracking';
 import fetchUtil from 'helpers/fetch';
 import { useLocationDetails } from 'components/LocationProvider';
 
@@ -215,6 +215,16 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
           if (data && data.response) {
             const couponValidateResult = data.response;
             props.setValidityStatus(couponValidateResult.valid);
+
+            /**Gtm code start start */
+            dataLayerTracking({
+              event: 'Coupon Code Applied',
+              'GT-Coupon-Code': selectCouponCode,
+              'GT-Discount-Given': couponValidateResult.valid,
+              'GT-Discount': couponValidateResult.valid ? couponValidateResult.discount : 0,
+            });
+            /**Gtm code start end */
+
             if (couponValidateResult.valid) {
               props.setCouponCode(selectCouponCode);
               props.close(false);

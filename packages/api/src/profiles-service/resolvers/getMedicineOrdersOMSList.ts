@@ -72,6 +72,8 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     patient: Patient
     customerComment: String
     alertStore: Boolean
+    clusterId: String
+    allocationProfileName: String
   }
 
   type MedicineOrderOMSLineItems {

@@ -72,6 +72,7 @@ import {
   postPharmacyAddNewAddressCompleted,
 } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
+  ProductPageViewedSource,
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
@@ -424,7 +425,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             mou: medicineDetails.mou,
             name: medicineDetails!.name,
             price: medicineDetails.price,
-            specialPrice: Number(couponProducts[index]!.mrp), // special price as coupon product price
+            specialPrice: Number(couponProducts[index]!.specialPrice),
             quantity: couponProducts[index]!.quantity,
             prescriptionRequired: medicineDetails.is_prescription_required == '1',
             isMedicine: (medicineDetails.type_id || '').toLowerCase() == 'pharma',
@@ -432,6 +433,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             isInStock: !!medicineDetails.is_in_stock,
             maxOrderQty: medicineDetails.MaxOrderQty,
             productType: medicineDetails.type_id,
+            isFreeCouponProduct: couponProducts[index]!.couponFree,
           } as ShoppingCartItem;
         });
         addMultipleCartItems!(medicinesAll as ShoppingCartItem[]);
@@ -492,7 +494,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             items: availableItems,
             pincode: selectedAddress.zipcode || '',
             lat: selectedAddress?.latitude!,
-            lng: selectedAddress?.longitude!
+            lng: selectedAddress?.longitude!,
           };
           const tatRes = await getDeliveryTAT247(tatApiInput247);
 
@@ -510,18 +512,17 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               });
               if (serviceableSkus.length && !unserviceableSkus.length) {
                 const inventoryDataRes = g(tatRes, 'data', 'response', 'items') || [];
-                const availableInventory = inventoryDataRes
-                  .map((item) => {
-                    const availableItem = availableItems.filter(({sku}) => sku === item.sku)[0]
-                    return {
-                      itemId: item.sku,
-                      qty: availableItem ? availableItem.qty : item.qty,
-                      mrp: item.mrp,
-                    };
-                  });
+                const availableInventory = inventoryDataRes.map((item) => {
+                  const availableItem = availableItems.filter(({ sku }) => sku === item.sku)[0];
+                  return {
+                    itemId: item.sku,
+                    qty: availableItem ? availableItem.qty : item.qty,
+                    mrp: item.mrp,
+                  };
+                });
                 if (availableInventory && availableInventory.length) {
                   setStoreType(tatRes?.data?.response?.storeType);
-                  setShopId(tatRes?.data?.response?.storeCode)
+                  setShopId(tatRes?.data?.response?.storeCode);
                   fetchInventoryAndUpdateCartPricesAfterTat(updatedCartItems, availableInventory);
                   updateserviceableItemsTat(deliveryDate, lookUp);
                 } else {
@@ -605,7 +606,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
   const fetchAddresses = async () => {
     try {
-      if (addresses.length) {
+      /**added a condition to refresh the address page */
+      if (addresses.length && !props.navigation.getParam('isUpdate')) {
         return;
       }
       setLoading!(true);
@@ -823,7 +825,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         categoryId: item.productType,
         mrp: item.price,
         quantity: item.quantity,
-        specialPrice: item.specialPrice !== undefined ? item.specialPrice : item.price,
+        specialPrice: item.specialPrice ? item.specialPrice : item.price,
       })),
     };
     validateConsultCoupon(data)
@@ -978,20 +980,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     );
   };
 
-  const postwebEngageProductClickedEvent = ({ name, id }: ShoppingCartItem) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PRODUCT_CLICKED] = {
-      'product name': name,
-      'product id': id,
-      Brand: '',
-      'Brand ID': '',
-      'category name': '',
-      'category ID': '',
-      Source: 'List',
-      'Section Name': 'CART',
-    };
-    postWebEngageEvent(WebEngageEventName.PHARMACY_PRODUCT_CLICKED, eventAttributes);
-  };
-
   const renderItemsInCart = () => {
     // console.log('cartItems >>', cartItems);
     const cartItemsCount =
@@ -1046,11 +1034,11 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               containerStyle={medicineCardContainerStyle}
               key={medicine.id}
               onPress={() => {
-                postwebEngageProductClickedEvent(medicine);
                 CommonLogEvent(AppRoutes.YourCart, 'Navigate to medicine details scene');
                 props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
                   sku: medicine.id,
                   title: medicine.name,
+                  movedFrom: ProductPageViewedSource.CART,
                 });
               }}
               medicineName={medicine.name}
@@ -1147,6 +1135,14 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       .finally(() => {});
   };
 
+  const _navigateToEditAddress = (dataname: string, address: any, comingFrom: string) => {
+    props.navigation.push(AppRoutes.AddAddress, {
+      KeyName: dataname,
+      DataAddress: address,
+      ComingFrom: comingFrom,
+    });
+  };
+
   const renderHomeDelivery = () => {
     const deliveryTimeMomentFormat = moment(
       deliveryTime,
@@ -1185,6 +1181,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               }}
               containerStyle={{ marginTop: 16 }}
               hideSeparator={index + 1 === array.length}
+              showEditIcon={true}
+              onPressEdit={() => _navigateToEditAddress('Update', item, AppRoutes.YourCart)}
             />
           );
         })}
@@ -1653,7 +1651,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       cost: 'Rs. 120',
     },
   ];
-
   const renderMedicineItem = (
     item: { name: string; cost: string },
     index: number,
@@ -1681,7 +1678,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       </View>
     );
   };
-
   const renderMedicineSuggestions = () => {
     return (
       <View
@@ -1692,7 +1688,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         }}
       >
         {renderLabel('YOU SHOULD ALSO ADD')}
-
         <FlatList
           contentContainerStyle={{
             marginHorizontal: 14,
@@ -1805,13 +1800,13 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         deliveryTime,
         isChennaiOrder: true,
         tatType: storeType,
-        shopId: shopId
+        shopId: shopId,
       });
     } else {
       props.navigation.navigate(AppRoutes.CheckoutSceneNew, {
         deliveryTime,
         tatType: storeType,
-        shopId: shopId
+        shopId: shopId,
       });
     }
   };
@@ -1911,6 +1906,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             mobileNumber: address.mobileNumber,
             addressType: address.addressType,
             otherAddressType: address.otherAddressType,
+            name: address.name,
             latitude: lat,
             longitude: lng,
             stateCode: finalStateCode,

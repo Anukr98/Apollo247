@@ -277,12 +277,12 @@ function getCookieValue() {
   return '';
 }
 
-const loadOpentok = () => {
-  const script = document.createElement('script');
-  script.src = 'https://static.opentok.com/v2/js/opentok.min.js';
-  script.async = true;
-  document.body.appendChild(script);
-};
+// const loadOpentok = () => {
+//   const script = document.createElement('script');
+//   script.src = 'https://static.opentok.com/v2/js/opentok.min.js';
+//   script.async = true;
+//   document.body.appendChild(script);
+// };
 
 export const ChatVideo: React.FC<ConsultProps> = (props) => {
   const classes = useStyles({});
@@ -299,9 +299,9 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
   const isRetry = true;
   const { doctorDetails, videoCall } = props;
 
-  useEffect(() => {
-    loadOpentok();
-  }, []);
+  // useEffect(() => {
+  //   loadOpentok();
+  // }, []);
 
   const checkReconnecting = () => {
     if (reconnecting)

@@ -3,6 +3,7 @@ import { Theme, CircularProgress, Grid } from '@material-ui/core';
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { AphButton, AphDialog, AphDialogTitle } from '@aph/web-ui-components';
+import { AphCheckbox } from 'components/AphCheckbox';
 import { AphCalendar } from 'components/AphCalendar';
 import Scrollbars from 'react-custom-scrollbars';
 import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
@@ -36,9 +37,14 @@ import {
   ValidateConsultCouponVariables,
 } from 'graphql/types/ValidateConsultCoupon';
 import { Alerts } from 'components/Alerts/Alerts';
-import { gtmTracking, _cbTracking } from '../gtmTracking';
+import { gtmTracking, _cbTracking, dataLayerTracking } from '../gtmTracking';
 import { useApolloClient } from 'react-apollo-hooks';
 import { ShowSlots } from './ShowSlots';
+import {
+  UpdateWhatsAppStatus,
+  UpdateWhatsAppStatusVariables,
+} from 'graphql/types/UpdateWhatsAppStatus';
+import { UPDATE_WHATSAPP_STATUS } from 'graphql/profiles';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -74,6 +80,9 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 10,
       '& p': {
         marginTop: 0,
+      },
+      [theme.breakpoints.down('xs')]: {
+        padding: '16px 10px',
       },
     },
     consultNowInfo: {
@@ -132,18 +141,20 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 20,
       paddingLeft: 20,
       paddingRight: 20,
+      [theme.breakpoints.down('xs')]: {
+        paddingLeft: 10,
+        paddingRight: 10,
+      },
     },
     timeSlots: {
       paddingTop: 0,
     },
     scheduleCalendar: {
-      // display: 'none',
       padding: 10,
-      minHeight: 278,
+      minHeight: 318,
       marginBottom: 0,
     },
     scheduleTimeSlots: {
-      // display: 'none',
       padding: 10,
       minHeight: 278,
       marginBottom: 0,
@@ -186,6 +197,34 @@ const useStyles = makeStyles((theme: Theme) => {
         minWidth: 288,
       },
     },
+    marBottomMedium: {
+      marginBottom: 20,
+    },
+    checkbox: {
+      alignItems: 'baseline',
+      margin: '0 0 0 auto',
+      '&:hover': {
+        backgroundColor: 'transparent !important',
+      },
+      '&:focus': {
+        backgroundColor: 'transparent',
+      },
+    },
+    whatsupTxt: {
+      fontSize: 15,
+      lineHeight: '19px',
+      color: '#01475b',
+      fontWeight: 500,
+      marginLeft: 8,
+      '& img': {
+        margin: '0 3px',
+        position: 'relative',
+        top: 3,
+      },
+    },
+    whatsUpContent: {
+      margin: '10px 0',
+    },
   };
 });
 
@@ -227,9 +266,17 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [availableSlotsError, setAvailableSlotsError] = useState<boolean>(false);
   const [availableSlotsLoading, setAvailableSlotsLoading] = useState<boolean>(false);
+  const [whatsappStatusUpdate, setWhatsappStatusUpdate] = useState<boolean>(false);
+  const [whatsappStatusMutationLoading, setWhatsappStatusMutationLoading] = useState<boolean>(
+    false
+  );
 
   const couponMutation = useMutation<ValidateConsultCoupon, ValidateConsultCouponVariables>(
     VALIDATE_CONSULT_COUPON
+  );
+
+  const whatsappStatusMutation = useMutation<UpdateWhatsAppStatus, UpdateWhatsAppStatusVariables>(
+    UPDATE_WHATSAPP_STATUS
   );
 
   const { currentPatient } = useAllCurrentPatients();
@@ -588,7 +635,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     <div className={classes.root}>
       <Scrollbars autoHide={true} autoHeight autoHeightMax={isSmallScreen ? '50vh' : '65vh'}>
         <div className={classes.customScrollBar}>
-          <div className={classes.consultGroup}>
+          <div className={`${classes.consultGroup} ${classes.marBottomMedium}`}>
             <p>{`Dr. ${doctorName} is ${availabilityMarkup()}! Would you like to
                 consult now or schedule for later?`}</p>
             <div className={classes.actions}>
@@ -684,6 +731,37 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
             rights to visit a physician and opt for a physical examination at any point in time and
             I am free at any time during the consultation to request for the same.
           </p>
+          <div className={classes.whatsUpContent}>
+            <AphCheckbox
+              disabled={whatsappStatusMutationLoading}
+              className={classes.checkbox}
+              color="primary"
+              checked={whatsappStatusUpdate}
+              onChange={(e) => {
+                setWhatsappStatusMutationLoading(true);
+                setWhatsappStatusUpdate(e.target.checked);
+                // hit mutation
+                whatsappStatusMutation({
+                  variables: {
+                    whatsAppConsult: e.target.checked,
+                    patientId: currentPatient && currentPatient.id,
+                  },
+                })
+                  .then(() => {
+                    setWhatsappStatusMutationLoading(false);
+                  })
+                  .catch(() => {
+                    setWhatsappStatusMutationLoading(false);
+                    setAlertMessage('Unable to process your request. Please try again.');
+                    setIsAlertOpen(true);
+                  });
+              }}
+            />
+            <span className={classes.whatsupTxt}>
+              Receive status updates on <img src={require('images/ic_whatsup.svg')} alt="" />{' '}
+              Whatsapp
+            </span>
+          </div>
         </div>
       </Scrollbars>
       <div className={classes.bottomActions}>
@@ -749,6 +827,15 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                     speciality: getSpeciality(),
                   })
                 );
+                /**Gtm code start start */
+                dataLayerTracking({
+                  event: 'Pay Now Clicked',
+                  Price: revisedAmount,
+                  product: doctorId,
+                  Time: appointmentDateTime,
+                  Type: AppointmentType.ONLINE,
+                });
+                /**Gtm code start end */
               }}
               className={
                 disableSubmit ||

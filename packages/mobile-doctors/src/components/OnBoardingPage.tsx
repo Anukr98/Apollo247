@@ -9,7 +9,6 @@ import {
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import React, { useEffect, useState } from 'react';
 import {
-  Image,
   ImageSourcePropType,
   ImageStyle,
   SafeAreaView,
@@ -23,6 +22,7 @@ import AppIntroSlider from 'react-native-app-intro-slider';
 import firebase from 'react-native-firebase';
 import { NavigationScreenProps } from 'react-navigation';
 import AsyncStorage from '@react-native-community/async-storage';
+import FastImage from 'react-native-fast-image';
 
 const styles = OnBoardingPageStyles;
 
@@ -112,8 +112,11 @@ export const OnBoardingPage: React.FC<OnboardingPageProps> = (props) => {
               onSlideChange={onSlideChange}
               renderItem={(item: Slide) => (
                 <View style={styles.itemContainer}>
-                  <Image source={item.image} style={styles.imageStyle} resizeMode="contain" />
-
+                  <FastImage
+                    source={item.image as number}
+                    style={styles.imageStyle}
+                    resizeMode="contain"
+                  />
                   <View style={{ marginBottom: 53, marginTop: -90 }}>
                     <Text style={styles.titleStyle}>{item.title}</Text>
                     <Text style={styles.descptionText}>{item.text}</Text>

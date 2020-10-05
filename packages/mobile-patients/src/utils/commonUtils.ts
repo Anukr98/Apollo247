@@ -5,6 +5,7 @@ import {
   setBugFenderLog,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { ProductPageViewedSource } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 export const handleDeepLink = (navigationProps: any) => {
   try {
@@ -109,6 +110,7 @@ export const pushTheView = (navigationProps: any, routeName: String, id?: String
     case 'MedicineDetail':
       navigationProps.navigate(AppRoutes.MedicineDetailsScene, {
         sku: id,
+        movedFrom: ProductPageViewedSource.DEEP_LINK,
       });
       break;
 
@@ -151,7 +153,7 @@ export const pushTheView = (navigationProps: any, routeName: String, id?: String
       break;
 
     case 'MedicineCart':
-      navigationProps.navigate(AppRoutes.YourCart, {
+      navigationProps.navigate(AppRoutes.MedicineCart, {
         movedFrom: 'splashscreen',
       });
       break;

@@ -89,5 +89,5 @@ export const generalHelpSections = [
   {
     category: 'Unsubscribe',
     options: ['Marketing SMSes', 'Marketing Push Notifications', 'Both'],
-  }
+  },
 ];

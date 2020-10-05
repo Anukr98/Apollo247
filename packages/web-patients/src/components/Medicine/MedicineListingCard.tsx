@@ -5,7 +5,7 @@ import { AphButton, AphCustomDropdown } from '@aph/web-ui-components';
 import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { gtmTracking } from '../../gtmTracking';
+import { gtmTracking, dataLayerTracking } from '../../gtmTracking';
 import { validatePharmaCoupon_validatePharmaCoupon } from 'graphql/types/validatePharmaCoupon';
 import { removeFromCartTracking } from 'webEngageTracking';
 import { PharmaCoupon, CartProduct } from 'components/Cart/MedicineCart';
@@ -295,6 +295,35 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                             },
                           });
                           /* Gtm code end  */
+
+                          /**Gtm code start start */
+                          dataLayerTracking({
+                            event: 'Product Added to Cart',
+                            label: item.name,
+                            value: item.special_price || item.price,
+                            productlist: JSON.stringify([
+                              {
+                                item_name: item.name,
+                                item_id: item.sku,
+                                price: item.special_price || item.price,
+                                item_category: 'Pharmacy',
+                                item_category_2: item.type_id
+                                  ? item.type_id.toLowerCase() === 'pharma'
+                                    ? 'Drugs'
+                                    : 'FMCG'
+                                  : null,
+                                // 'item_category_4': '', // future reference
+                                item_variant: 'Default',
+                                index: 1,
+                                quantity:
+                                  quantity > item.quantity
+                                    ? quantity - item.quantity
+                                    : item.quantity - quantity,
+                              },
+                            ]),
+                          });
+                          /**Gtm code start end */
+
                           updateCartItemQty &&
                             updateCartItemQty({
                               MaxOrderQty: item.MaxOrderQty,
@@ -337,7 +366,6 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                     validateCouponResult.products[idx] &&
                     !validateCouponResult.products[idx].couponFree ? (
                       <>
-                        {/* {JSON.stringify(validateCouponResult.products[idx])} */}
                         <div className={`${classes.medicinePrice} ${classes.mrpPrice}`}>
                           {validateCouponResult.products[idx].specialPrice !==
                           validateCouponResult.products[idx].mrp ? (
@@ -423,6 +451,26 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                         },
                       });
                       /**Gtm code End  */
+
+                      /**Gtm code start start */
+                      dataLayerTracking({
+                        event: 'Product Removed from Cart',
+                        label: item.name,
+                        value: item.special_price || item.price,
+                        productlist: JSON.stringify([
+                          {
+                            item_name: item.name,
+                            item_id: item.sku,
+                            price: item.special_price || item.price,
+                            item_category: 'Pharmacy',
+                            item_variant: 'Default',
+                            index: 1,
+                            quantity: item.quantity,
+                          },
+                        ]),
+                      });
+                      /**Gtm code start end */
+
                       removeCartItemSku && removeCartItemSku(item.sku);
                     }}
                   >

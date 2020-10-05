@@ -31,6 +31,7 @@ import {
   INVALID_FILE_TYPE_ERROR,
   toBase64,
 } from 'helpers/commonHelpers';
+import { dataLayerTracking } from 'gtmTracking';
 import { MetaTagsComp } from 'MetaTagsComp';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -599,6 +600,18 @@ const PrescriptionReview: React.FC = (props: any) => {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
   useEffect(() => {
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: 'Pharmacy Prescription Review Page',
+      pageLOB: 'Pharmacy',
+      pageType: ' Prescription',
+    });
+    /**Gtm code start end */
+  }, []);
+
+  useEffect(() => {
     if (prescriptionUploaded && prescriptionUploaded.imageUrl) {
       setPrescriptionArr(prescriptionArr.concat([prescriptionUploaded]));
       setUploadPrescription(true);
@@ -676,7 +689,7 @@ const PrescriptionReview: React.FC = (props: any) => {
   const metaTagProps = {
     title: 'Consult A Pharmacologist Online and Check Medicine Interactions – Apollo 247',
     description:
-      'Consult a Pharmacologist online to check medicine interactions. Upload and get your doctor’s prescription validated to order medicines online in 3 easy steps: 1. Upload the precreciption. 2. Get it validated. 3. Order your medicine online. Guaranteed same day delivery of medicines within 4 hours.',
+      'Consult a Pharmacologist online to check medicine interactions. Upload and get your doctor’s prescription validated to order medicines online in 3 easy steps: 1. Upload the precreciption. 2. Get it validated. 3. Order your medicine online and experience the fastest home delivery.',
     canonicalLink: typeof window !== 'undefined' && window.location && window.location.href,
     robotsMeta: 'index,follow',
   };
@@ -956,6 +969,13 @@ const PrescriptionReview: React.FC = (props: any) => {
                           disabled={isPostSubmitDisable}
                           color="primary"
                           onClick={() => {
+                            /**Gtm code start start */
+                            dataLayerTracking({
+                              event: 'Prescription Uploaded',
+                              pageType: 'Index',
+                            });
+                            /**Gtm code start end */
+
                             !isSignedIn ? protectWithLoginPopup() : submitPrescriptionForReview();
                           }}
                         >
