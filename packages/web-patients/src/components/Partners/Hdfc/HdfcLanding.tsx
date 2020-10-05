@@ -187,6 +187,9 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'block',
       },
     },
+    concierge: {
+      fill: '#FFF',
+    },
     benefitDetails: {
       '& h3': {
         fontSize: 20,
@@ -677,19 +680,22 @@ export const HdfcLanding: React.FC = (props) => {
                 </div>
               </li>
               <li>
-                <img src={require('images/hdfc/diagnostics.svg')} alt="Access to Apollo Services" />
-                <div className={classes.benefitDetails}>
-                  <Typography component="h3">Diagnostic Tests</Typography>
-                  <Typography>Doorstep Sample Collection by Trained Experts</Typography>
-                </div>
-              </li>
-              <li>
                 <img src={require('images/hdfc/medicine-delivery.svg')} alt="Medicine Delivery" />
                 <div className={classes.benefitDetails}>
                   <Typography component="h3">Doorstep Medicine Delivery</Typography>
                   <Typography>
                     Get 10% off on medicines and upto 20% off on Apollo Branded products with free
                     home delivery​
+                  </Typography>
+                </div>
+              </li>
+              <li>
+                <img src={require('images/hdfc/concierge.svg')} alt="Conceirge Services" />
+                <div className={classes.benefitDetails}>
+                  <Typography component="h3">Concierge Services</Typography>
+                  <Typography>
+                    Get instant Whatsapp assistance on any of our services including consultations,
+                    medicine orders, etc.​
                   </Typography>
                 </div>
               </li>
@@ -704,17 +710,17 @@ export const HdfcLanding: React.FC = (props) => {
                 </div>
               </li>
               <li>
-                <img src={require('images/hdfc/health-records.svg')} alt="Health Records" />
+                <img src={require('images/hdfc/diagnostics.svg')} alt="Access to Apollo Services" />
                 <div className={classes.benefitDetails}>
-                  <Typography component="h3">Patients Health Records Vault</Typography>
-                  <Typography>Digitization and Access to your Health Records </Typography>
+                  <Typography component="h3">Diagnostic Tests</Typography>
+                  <Typography>Doorstep Sample Collection by Trained Experts</Typography>
                 </div>
               </li>
               <li>
-                <img src={require('images/hdfc/apollo_doctors.svg')} alt="Diabetes Program" />
+                <img src={require('images/hdfc/health-records.svg')} alt="Health Records" />
                 <div className={classes.benefitDetails}>
-                  <Typography component="h3">Access to 7000+ Apollo Doctors</Typography>
-                  <Typography>Doctors from over 70 specialities to consult with</Typography>
+                  <Typography component="h3">Secured Patients Health Records Vault</Typography>
+                  <Typography>Digitization and Access to your Health Records </Typography>
                 </div>
               </li>
             </ul>
