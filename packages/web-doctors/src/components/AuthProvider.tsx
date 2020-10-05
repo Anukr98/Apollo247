@@ -37,7 +37,11 @@ import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider, useMutation } from 'react-apollo-hooks';
 import _uniqueId from 'lodash/uniqueId';
 import bugsnag from '@bugsnag/js';
-import { webengageUserDetailTracking, webengageUserLoginTracking, webEngageEventTracking } from 'webEngageTracking';
+import {
+  webengageUserDetailTracking,
+  webengageUserLoginTracking,
+  webEngageEventTracking,
+} from 'webEngageTracking';
 
 const bugsnagClient = bugsnag({
   apiKey: `${process.env.BUGSNAG_API_KEY}`,
@@ -88,6 +92,8 @@ export interface AuthContextProps<Doctor = GetDoctorDetails_getDoctorDetails> {
   sessionClient: any;
   chatDays: number | null;
   setChatDays: (days: number) => void;
+  ivrState: any;
+  setIvrState: (value: any) => void;
 }
 
 export const AuthContext = React.createContext<AuthContextProps>({
@@ -119,6 +125,8 @@ export const AuthContext = React.createContext<AuthContextProps>({
   sessionClient: sessionClient,
   chatDays: null,
   setChatDays: null,
+  ivrState: null,
+  setIvrState: null,
 });
 const isLocal = process.env.NODE_ENV === 'local';
 const isDevelopment = process.env.NODE_ENV === 'development';
@@ -378,15 +386,11 @@ export const AuthProvider: React.FC = (props) => {
       setIsVerifyingOtp(true);
       otpCheckApiCall(otp, loginId).then((res) => {
         if (!res) {
-          webEngageEventTracking({'Successful' : 'No'},	
-            'Front_end - Doctor OTP Verification'	
-          );
+          webEngageEventTracking({ Successful: 'No' }, 'Front_end - Doctor OTP Verification');
           setVerifyOtpError(true);
           setIsSigningIn(false);
         } else {
-          webEngageEventTracking({'Successful' : 'Yes'},	
-            'Front_end - Doctor OTP Verification'	
-          );
+          webEngageEventTracking({ Successful: 'Yes' }, 'Front_end - Doctor OTP Verification');
           setVerifyOtpError(false);
           app.auth().signInWithCustomToken(res);
         }
@@ -532,12 +536,12 @@ export const AuthProvider: React.FC = (props) => {
             setSignInError(false);
             setIsSigningIn(false);
           }
-          webengageUserLoginTracking(doctors.id);	
-          webengageUserDetailTracking({	
-            emailAddress: doctors && doctors.emailAddress ? doctors.emailAddress : '',	
-            firstName: doctors && doctors.firstName ? doctors.firstName : '',	
-            lastName: doctors && doctors.lastName ? doctors.lastName : '',	
-            mobileNumber: doctors && doctors.mobileNumber ? doctors.mobileNumber : '',	
+          webengageUserLoginTracking(doctors.id);
+          webengageUserDetailTracking({
+            emailAddress: doctors && doctors.emailAddress ? doctors.emailAddress : '',
+            firstName: doctors && doctors.firstName ? doctors.firstName : '',
+            lastName: doctors && doctors.lastName ? doctors.lastName : '',
+            mobileNumber: doctors && doctors.mobileNumber ? doctors.mobileNumber : '',
           });
         } else if (
           res.data &&

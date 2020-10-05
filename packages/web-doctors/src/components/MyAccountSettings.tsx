@@ -7,19 +7,24 @@ import {
   ExpansionPanelDetails,
   FormControlLabel,
   RadioGroup,
+  MenuItem,
 } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import React, { useState, useContext } from 'react';
 import { AuthContext, AuthContextProps } from 'components/AuthProvider';
 import { FollowUp } from 'components/case-sheet/panels';
-import { AphButton, AphSwitch, AphRadio } from '@aph/web-ui-components';
+import { AphButton, AphSwitch, AphRadio, AphCustomDropdown } from '@aph/web-ui-components';
 import {
   UpdateDoctorChatDays,
   UpdateDoctorChatDaysVariables,
 } from 'graphql/types/UpdateDoctorChatDays';
+import {
+  SetAppointmentReminderIvrVariables,
+  SetAppointmentReminderIvr,
+} from 'graphql/types/SetAppointmentReminderIvr';
 import { useApolloClient } from 'react-apollo-hooks';
-import { UPDATE_DOCTOR_CHAT_DAYS } from 'graphql/profiles';
-import { APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
+import { UPDATE_DOCTOR_CHAT_DAYS, SET_APPOINTMENT_REMINDER_IVR } from 'graphql/profiles';
+import IVR from 'components/IVR';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -109,13 +114,6 @@ const useStyles = makeStyles((theme: Theme) => {
       marginTop: '36%',
       float: 'right',
     },
-    ivrRadioGroup: {
-      marginTop: 12,
-      marginLeft: 10,
-      '& label:nth-child(2),& label:nth-child(3)': {
-        marginLeft: 46,
-      },
-    },
   };
 });
 
@@ -126,7 +124,10 @@ interface Expansion {
 
 export const MyAccountSettings: React.FC = () => {
   const apolloClient = useApolloClient();
+  const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
+  const { chatDays, setChatDays, currentUser } = useAuthContext();
   const classes = useStyles({});
+
   const expansionDefaultState = {
     followUpExpand: false,
     ivrExpanded: false,
@@ -136,81 +137,18 @@ export const MyAccountSettings: React.FC = () => {
     ivrExpanded: false,
   });
   const [ivrState, setIvrState] = useState<any>({
-    setUpIvr: false,
-    consultationMode: '',
+    setUpIvr: currentUser.isIvrSet,
+    consultationMode: currentUser.ivrConsultType,
+    ivrCallTimeOnline: currentUser.ivrCallTimeOnline,
+    ivrCallTimePhysical: currentUser.ivrCallTimePhysical,
   });
 
-  const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
-  const { chatDays, setChatDays, currentUser } = useAuthContext();
   const items = [
     {
       key: 'IVR',
       value: <div>{'Set-up an IVR as a reminder for appointment booking'}</div>,
       state: expansionState.ivrExpanded,
-      component: (
-        <div>
-          {ivrState.setUpIvr ? 'YES' : 'NO'}
-          <AphSwitch
-            checked={ivrState.setUpIvr}
-            onChange={() => {
-              setIvrState({ ...ivrState, setUpIvr: !ivrState.setUpIvr });
-            }}
-          />
-          {ivrState.setUpIvr && (
-            <>
-              <div
-                style={{
-                  position: 'relative',
-                  width: '678px',
-                  height: '0px',
-                  marginTop: 15,
-                  marginBottom: 10,
-                  opacity: '0.1',
-                  border: '1px solid #000000',
-                }}
-              />
-              <div>
-                {'Select the type of appointment for '}
-                <RadioGroup
-                  className={classes.ivrRadioGroup}
-                  value={ivrState.consultationMode}
-                  onChange={(e) => {
-                    setIvrState({ ...ivrState, consultationMode: e.target.value });
-                  }}
-                  row
-                >
-                  <FormControlLabel
-                    value={APPOINTMENT_TYPE.ONLINE}
-                    label="Online"
-                    // disabled={freeTextSwitch ? true : false}
-                    control={<AphRadio title="Online" />}
-                  />
-                  <FormControlLabel
-                    value={APPOINTMENT_TYPE.PHYSICAL}
-                    label="In-person"
-                    // disabled={freeTextSwitch ? true : false}
-                    control={<AphRadio title="Physical" />}
-                  />
-                  <FormControlLabel
-                    value={APPOINTMENT_TYPE.BOTH}
-                    label="Both"
-                    // disabled={freeTextSwitch ? true : false}
-                    control={<AphRadio title="Both" />}
-                  />
-                </RadioGroup>
-                <div style={{ display: 'flex', marginTop: 35 }}>
-                  <div style={{ width: '50%' }}>
-                    {'Select the time of call before online appointment. '}
-                  </div>
-                  <div style={{ width: '50%' }}>
-                    {'Select the time of call before in-person appointment. '}
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-      ),
+      component: <IVR ivrState={ivrState} setIvrState={setIvrState} />,
     },
 
     {
@@ -272,7 +210,23 @@ export const MyAccountSettings: React.FC = () => {
           alert(_data.data.updateDoctorChatDays.response);
         });
     } else if (expansionState.ivrExpanded) {
-      console.log('IVR API calling');
+      const inputVariables = {
+        doctorId: currentUser.id,
+        isIvrSet: ivrState.setUpIvr,
+        ivrConsultType: ivrState.consultationMode,
+        ivrCallTimeOnline: parseInt(ivrState.ivrCallTimeOnline, 10),
+        ivrCallTimePhysical: parseInt(ivrState.ivrCallTimePhysical, 10),
+      };
+
+      apolloClient
+        .mutate<SetAppointmentReminderIvr, SetAppointmentReminderIvrVariables>({
+          mutation: SET_APPOINTMENT_REMINDER_IVR,
+          fetchPolicy: 'no-cache',
+          variables: inputVariables,
+        })
+        .then((_data) => {
+          alert('IVR changes updated successfully');
+        });
     }
   };
 
