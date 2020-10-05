@@ -247,7 +247,6 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
       <SafeAreaView style={theme.viewStyles.container}>
         <Header
           leftIcon="backArrow"
-          rightComponent={<HelpIcon style={styles.helpIconStyle} />}
           title={'MY MEMBERSHIP'}
           container={styles.headerContainer}
           onPressLeftIcon={() => props.navigation.goBack()}
