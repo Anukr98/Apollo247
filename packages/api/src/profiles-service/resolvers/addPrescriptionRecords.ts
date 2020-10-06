@@ -92,15 +92,15 @@ const addPatientPrescriptionRecord: Resolver<
         throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
     }
 
-    /* Add prescriptio record to PRISM */
+    /* Add prescription record to PRISM */
 
-    const prescriptioFilesInput: Array<PrismPrescriptionFileProperties> = [];
+    const prescriptionFilesInput: Array<PrismPrescriptionFileProperties> = [];
 
 
     if (addPrescriptionRecordInput.prescriptionFiles && addPrescriptionRecordInput.prescriptionFiles.length) {
         addPrescriptionRecordInput.prescriptionFiles.forEach((file) => {
             if (file && file.fileName) {
-                prescriptioFilesInput.push({
+                prescriptionFilesInput.push({
                     id: "",
                     fileName: file.fileName,
                     mimeType: file.mimeType,
@@ -124,7 +124,7 @@ const addPatientPrescriptionRecord: Resolver<
             notes: '',
             prescriptionSource: prescriptionSource.SELF,
             prescriptionDetail: [],
-            prescriptionFiles: prescriptioFilesInput,
+            prescriptionFiles: prescriptionFilesInput,
             speciality: '',
             hospital_name: '',
             hospitalId: '',
