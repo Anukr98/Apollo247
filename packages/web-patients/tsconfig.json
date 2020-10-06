@@ -1,0 +1,19 @@
+{
+  "extends": "./node_modules/@aph/tsconfig/tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "baseUrl": "src",
+    "traceResolution": false,
+    "skipLibCheck": true,
+    "jsx": "react",
+    "lib": ["dom", "dom.iterable", "es5", "es6", "scripthost"],
+    "esModuleInterop": true,
+    "downlevelIteration": true,
+    "module": "esnext",
+    "removeComments": false,
+    "moduleResolution": "node",
+    "strict": false,
+    "noImplicitAny": true
+  },
+  "exclude": ["node_modules", "dist", "src/cypress"]
+}
