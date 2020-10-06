@@ -65,7 +65,7 @@ import com.webengage.sdk.android.Analytics;
 // import io.github.elyx0.reactnativedocumentpicker.DocumentPickerPackage;
 // import com.opentokreactnative.OTPackage;
 // import org.devio.rn.splashscreen.SplashScreenReactPackage;
-// import io.invertase.firebase.RNFirebasePackage;
+import io.invertase.firebase.RNFirebasePackage;
 // import com.oblador.vectoricons.VectorIconsPackage;
 import io.invertase.firebase.analytics.RNFirebaseAnalyticsPackage; // <-- Add this line
 import io.invertase.firebase.auth.RNFirebaseAuthPackage;
@@ -112,7 +112,7 @@ public class MainApplication extends Application implements ReactApplication {
                     // packages.add(new DocumentPickerPackage());
                     // packages.add(new OTPackage());
                     // packages.add(new SplashScreenReactPackage());
-                    // packages.add(new RNFirebasePackage());
+                    packages.add(new RNFirebasePackage());
                     // packages.add(new VectorIconsPackage());
                     // packages.add(new RNGestureHandlerPackage());
                     packages.add(new RNFirebaseAnalyticsPackage());
