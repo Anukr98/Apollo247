@@ -1671,18 +1671,15 @@ export const Tests: React.FC<TestsProps> = (props) => {
           if (item.value == options[0].value) {
             autoDetectLocation();
           } else {
-            /**
-             * change these webengage events
-             */
-            // const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ENTER_DELIVERY_PINCODE_CLICKED] = {
-            //   'Patient UHID': currentPatient.uhid,
-            //   'Mobile Number': currentPatient.mobileNumber,
-            //   'Customer ID': currentPatient.id,
-            // };
-            // postWebEngageEvent(
-            //   WebEngageEventName.PHARMACY_ENTER_DELIVERY_PINCODE_CLICKED,
-            //   eventAttributes
-            // );
+            const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ENTER_DELIVERY_PINCODE_CLICKED] = {
+              'Patient UHID': currentPatient.uhid,
+              'Mobile Number': currentPatient.mobileNumber,
+              'Customer ID': currentPatient.id,
+            };
+            postWebEngageEvent(
+              WebEngageEventName.DIAGNOSTIC_ENTER_DELIVERY_PINCODE_CLICKED,
+              eventAttributes
+            );
             setshowLocationpopup(true);
           }
         }}
