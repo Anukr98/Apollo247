@@ -372,9 +372,7 @@ function randomStringGenerator(length: number): string {
 }
 
 function externalReferenceNoGenerator(referenceStart: string) {
-  return `${referenceStart}${refNoGenerator()
-    .toString()
-    .slice(-3)}`;
+  return `${referenceStart}${refNoGenerator()}`;
 }
 function checkStatus(response: any) {
   dLogger(new Date(), `HDFC CheckStatus response status ${response.status}`, ` `);
