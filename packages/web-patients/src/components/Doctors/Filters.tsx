@@ -371,17 +371,14 @@ export const Filters: React.FC<FilterProps> = (props) => {
       specialtyName: '',
       prakticeSpecialties: '',
       brand: [],
-      consultMode:
-        isOnlineSelected && isPhysicalSelected
-          ? ConsultMode.BOTH
-          : isOnlineSelected
-          ? ConsultMode.ONLINE
-          : ConsultMode.PHYSICAL,
+      consultMode: ConsultMode.BOTH,
     };
     setLocalFilter(filterInitialValues);
     setFilter(filterInitialValues);
     history.push(clientRoutes.specialties(params.specialty));
     setisFilterOpen(false);
+    setIsOnlineSelected(true);
+    setIsPhysicalSelected(true);
   };
 
   const [tabValue, setTabValue] = useState<number>(0);
