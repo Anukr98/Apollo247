@@ -568,7 +568,7 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
               </Typography>
             </div>
             <Typography className={classes.desc}>
-              This is required by HDFC Bank to verify your details
+              Please ensure your Mobile no. and DOB with Apollo 24|7 match HDFC Bank's records​
             </Typography>
             <AphButton onClick={() => queryIdentifyHDFCCustomer()}>
               {loading ? <CircularProgress size={30} /> : 'Generate Otp'}{' '}
@@ -658,7 +658,7 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
               <Typography>
                 {showOtpFail
                   ? 'Due to a technical glitch, we are unable to verify your details with HDFC Bank right now. Please try again in sometime'
-                  : `Looks like your details are not matching with HDFC Bank's records.​ Please retry or enroll yourself with HDFC Bank`}
+                  : `Please ensure your Mobile no. and DOB with Apollo 24|7 match HDFC Bank's records.​ If you are not an HDFC Bank customer, you can become one by opening a Savings account with HDFC Bank`}
               </Typography>
             </div>
             <div className={classes.btnContainer}>

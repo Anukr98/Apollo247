@@ -18,6 +18,7 @@ import { UPDATE_PATIENT } from 'graphql/profiles';
 import { ProfileSuccess } from 'components/ProfileSuccess';
 import { NewProfile } from 'components/NewProfile';
 import { trackLanding, hdfcUnlockNowTracking } from 'webEngageTracking';
+import { HDFC_REF_CODE } from 'helpers/constants';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -907,6 +908,10 @@ export const HdfcLanding: React.FC = (props) => {
           <NewProfile patient={defaultNewProfile} onClose={() => {}} customSignUp={customSignUp} />
         </AphDialog>
       )}
+
+      {hasExistingProfile && currentPatient.partnerId === HDFC_REF_CODE
+        ? (window.location.href = '/')
+        : ''}
 
       <AphDialog open={notEligible} maxWidth="sm">
         <div className={classes.dialogcontent}>
