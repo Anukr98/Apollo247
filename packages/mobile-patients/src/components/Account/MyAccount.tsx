@@ -156,6 +156,8 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     setSavePatientDetails,
     setAppointmentsPersonalized,
     hdfcUserSubscriptions,
+    setHdfcUserSubscriptions,
+    setBannerData,
   } = useAppCommonData();
 
   useEffect(() => {
@@ -275,6 +277,8 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       AsyncStorage.removeItem('deeplink');
       AsyncStorage.removeItem('deeplinkReferalCode');
       setSavePatientDetails && setSavePatientDetails('');
+      setHdfcUserSubscriptions && setHdfcUserSubscriptions(null);
+      setBannerData && setBannerData([]);
       setAppointmentsPersonalized && setAppointmentsPersonalized([]);
       signOut();
       setTagalysConfig(null);
