@@ -4,6 +4,8 @@ import android.app.Application;
 import android.content.Context;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
+import com.reactnativecommunity.androidprogressbar.RNCProgressBarPackage;
+import com.reactnativecommunity.progressview.RNCProgressViewPackage;
 import com.reactcommunity.rndatetimepicker.RNDateTimePickerPackage;
 import fr.bamlab.rnimageresizer.ImageResizerPackage;
 import com.microsoft.codepush.react.CodePush;
@@ -63,7 +65,7 @@ import com.webengage.sdk.android.Analytics;
 // import io.github.elyx0.reactnativedocumentpicker.DocumentPickerPackage;
 // import com.opentokreactnative.OTPackage;
 // import org.devio.rn.splashscreen.SplashScreenReactPackage;
-import io.invertase.firebase.RNFirebasePackage;
+// import io.invertase.firebase.RNFirebasePackage;
 // import com.oblador.vectoricons.VectorIconsPackage;
 import io.invertase.firebase.analytics.RNFirebaseAnalyticsPackage; // <-- Add this line
 import io.invertase.firebase.auth.RNFirebaseAuthPackage;
@@ -110,7 +112,7 @@ public class MainApplication extends Application implements ReactApplication {
                     // packages.add(new DocumentPickerPackage());
                     // packages.add(new OTPackage());
                     // packages.add(new SplashScreenReactPackage());
-                    packages.add(new RNFirebasePackage());
+                    // packages.add(new RNFirebasePackage());
                     // packages.add(new VectorIconsPackage());
                     // packages.add(new RNGestureHandlerPackage());
                     packages.add(new RNFirebaseAnalyticsPackage());
