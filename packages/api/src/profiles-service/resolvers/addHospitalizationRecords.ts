@@ -21,6 +21,7 @@ import { uploadFileToBlobStorage } from 'helpers/uploadFileToBlob';
 export const addPatientHospitalizationRecordTypeDefs = gql`
 
     input AddHospitalizationRecordInput {
+        id: String
         patientId: ID!
         recordType: MedicalRecordType!
         dischargeDate: Date!
@@ -51,6 +52,7 @@ type HospitalizationFileProperties = {
 }
 
 type AddHospitalizationRecordInput = {
+    id?: string;
     patientId: string;
     recordType: MedicalRecordType;
     dischargeDate: Date;
@@ -103,6 +105,7 @@ const addPatientHospitalizationRecord: Resolver<
     }
 
     const dischargeSummaryUploadArgs: DischargeSummaryUploadRequest = {
+        id: addHospitalizationRecordInput.id ? addHospitalizationRecordInput.id : '',
         hospitalName: addHospitalizationRecordInput.hospitalName,
         dateOfHospitalization: "",
         doctorName: addHospitalizationRecordInput.doctorName,
