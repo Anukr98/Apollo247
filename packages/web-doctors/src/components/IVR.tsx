@@ -100,21 +100,21 @@ const Dropdown = (props: any) => {
   );
 };
 
+const radioLabel: any = {
+  Online: 'ONLINE',
+  'In-person': 'PHYSICAL',
+  Both: 'BOTH',
+};
+
+const label: any = {
+  ONLINE: 'Online',
+  PHYSICAL: 'In-person',
+  BOTH: 'Both',
+};
+
 const IVR = (props: any) => {
   const classes = useStyles({});
   const [isEditable, setIsEditable] = useState<boolean>(false);
-
-  const radioLabel: any = {
-    Online: 'ONLINE',
-    'In-person': 'PHYSICAL',
-    Both: 'BOTH',
-  };
-
-  const label: any = {
-    ONLINE: 'Online',
-    PHYSICAL: 'In-person',
-    BOTH: 'Both',
-  };
 
   useEffect(() => {
     if (!props.expanded) {
@@ -140,7 +140,6 @@ const IVR = (props: any) => {
       />
       {props.ivrState.setUpIvr && (
         <>
-          {console.log(props)}
           <div className={classes.drawLine} />
           {isEditable ? (
             <div>
