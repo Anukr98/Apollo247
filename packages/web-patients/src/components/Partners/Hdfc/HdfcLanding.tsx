@@ -493,6 +493,14 @@ export const HdfcLanding: React.FC = (props) => {
 
   useEffect(() => {
     trackLanding('HDFC Landing Page loaded');
+    (window as any).dataLayer.push({
+      event: 'pageviewEvent',
+      pageName: 'HDFC Partner',
+      pageLOB: 'Others',
+      pageType: 'Partner',
+      'User ID': localStorage.getItem('userMobileNo'),
+      UserLoggedIn: isSignedIn ? 'Yes' : 'No',
+    });
   }, []);
 
   const customSignUp = {
@@ -560,8 +568,19 @@ export const HdfcLanding: React.FC = (props) => {
                         className={classes.unlockNow}
                         onClick={() => {
                           hdfcUnlockNowTracking('HDFC Unlock Now Clicked');
-                          if (!isSignedIn) setIsLoginPopupVisible(true);
-                          else {
+                          if (!isSignedIn) {
+                            /* GA Tracking */
+                            (window as any).dataLayer.push({
+                              event: 'Unlock Now Clicked',
+                            });
+                            /*******************/
+                            setIsLoginPopupVisible(true);
+                          } else {
+                            /* GA Tracking */
+                            (window as any).dataLayer.push({
+                              event: 'Explore Benefits Clicked',
+                            });
+                            /*******************/
                             setLoading(true);
                             updatePatient({
                               variables: {
@@ -784,6 +803,14 @@ export const HdfcLanding: React.FC = (props) => {
           <NewProfile patient={defaultNewProfile} onClose={() => {}} customSignUp={customSignUp} />
         </AphDialog>
       )}
+
+      {defaultNewProfile && !hasExistingProfile /* GA Tracking */
+        ? (window as any).dataLayer.push({
+            event: 'UserLoggedIn',
+            Type: 'Registration',
+            'User ID': localStorage.getItem('userMobileNo'),
+          })
+        : ''}
 
       {hasExistingProfile && currentPatient.partnerId === HDFC_REF_CODE
         ? (window.location.href = '/')
