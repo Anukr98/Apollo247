@@ -2599,6 +2599,29 @@ export const SEARCH_DIAGNOSTICS = gql`
   }
 `;
 
+export const SEARCH_DIAGNOSTICS_BY_CITY_ID = gql`
+  query searchDiagnosticsByCityID($cityID: Int!, $searchText: String!) {
+    searchDiagnosticsByCityID(cityID: $cityID, searchText: $searchText) {
+      diagnostics {
+        id
+        itemId
+        itemName
+        itemType
+        rate
+        itemType
+        gender
+        itemRemarks
+        city
+        state
+        collectionType
+        fromAgeInDays
+        toAgeInDays
+        testPreparationData
+      }
+    }
+  }
+`;
+
 export const SEARCH_DIAGNOSTICS_BY_ID = gql`
   query searchDiagnosticsById($itemIds: String) {
     searchDiagnosticsById(itemIds: $itemIds) {
@@ -3108,6 +3131,16 @@ export const CREATE_ONE_APOLLO_USER = gql`
     createOneApolloUser(patientId: $patientId) {
       success
       message
+    }
+  }
+`;
+export const GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES = gql`
+  query getPincodeServiceability ($pincode: Int!) {
+    getPincodeServiceability(pincode: $pincode) {
+      cityID
+      cityName
+      stateID
+      stateName
     }
   }
 `;

@@ -116,6 +116,8 @@ export enum WebEngageEventName {
   // Diagnostics Events
   FEATURED_TEST_CLICKED = 'Featured Test Clicked',
   BROWSE_PACKAGE = 'Browse Package',
+  DIAGNOSTIC_ENTER_DELIVERY_PINCODE_CLICKED = 'Diagnostic Enter Delivery Pincode Clicked',
+  DIAGNOSTIC_ENTER_DELIVERY_PINCODE_SUBMITTED = 'Diagnostic Enter Delivery Pincode Submitted ',
 
   // Health Records
   CONSULT_RX = 'PHR Consult & RX',
