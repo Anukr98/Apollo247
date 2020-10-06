@@ -26,6 +26,7 @@ import { getFileTypeFromMime } from 'helpers/generalFunctions';
 export const addPatientLabTestRecordTypeDefs = gql`
 
     input AddLabTestRecordInput {
+        id: String
         patientId: ID!
         recordType: MedicalRecordType!
         labTestName: String!
@@ -60,6 +61,7 @@ export const addPatientLabTestRecordTypeDefs = gql`
     }
 `
 type AddLabTestRecordInput = {
+    id?: string;
     patientId: string;
     recordType: MedicalRecordType;
     labTestName: string;
@@ -115,6 +117,7 @@ const addPatientLabTestRecord: Resolver<
 
     const patientsRepo = profilesDb.getCustomRepository(PatientRepository);
     const patient = await patientsRepo.getPatientDetails(addLabTestRecordInput.patientId);
+
     if (patient == null) {
         throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
     }
@@ -155,6 +158,7 @@ const addPatientLabTestRecord: Resolver<
 
     const labResultsInputArgs: LabResultsInputArgs = {
         labResultsInput: {
+            id: addLabTestRecordInput.id ? addLabTestRecordInput.id : '',
             labTestName: addLabTestRecordInput.labTestName,
             labTestDate: addLabTestRecordInput.labTestDate
                 ? getUnixTime(addLabTestRecordInput.labTestDate) * 1000
