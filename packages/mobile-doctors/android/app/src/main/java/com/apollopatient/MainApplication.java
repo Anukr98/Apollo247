@@ -22,6 +22,8 @@ import com.facebook.react.ReactPackage;
 import com.facebook.soloader.SoLoader;
 import com.masteratul.exceptionhandler.NativeExceptionHandlerIfc;
 import com.masteratul.exceptionhandler.ReactNativeExceptionHandlerModule;
+import com.reactnativecommunity.androidprogressbar.RNCProgressBarPackage;
+import com.reactnativecommunity.progressview.RNCProgressViewPackage;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
