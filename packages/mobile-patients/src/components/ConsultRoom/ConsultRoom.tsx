@@ -34,11 +34,11 @@ import {
   Symptomtracker,
   TestsCartIcon,
   TestsIcon,
-  HdfcBankLogoPresents,
   ThumbsUp,
   LastStepIcon,
   BackArrowWhite,
   SadFaceYellow,
+  HdfcBankLogo,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
@@ -288,7 +288,6 @@ const styles = StyleSheet.create({
   hdfcConnectButton: {
     ...theme.viewStyles.text('B', 15, '#FC9916', 1, 35, 0.35),
     textAlign: 'right',
-    marginTop: 10,
   },
   hdfcBanner: {
     ...theme.viewStyles.cardViewStyle,
@@ -859,11 +858,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               );
             } else {
               setShowSavingsAccountButton(true);
-              const errorMessage = `
-                ${hdfc_values.HDFC_CARD_CAPTION}
-                \n
-                ${hdfc_values.NOT_HDFC_CUSTOMER_MESSAGE}
-              `;
+              const errorMessage = `${hdfc_values.HDFC_CARD_CAPTION}. ${hdfc_values.NOT_HDFC_CUSTOMER_MESSAGE}`;
               setHdfcErrorMessage(
                 errorMessage
               );
@@ -1847,16 +1842,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const renderHdfcLogo = () => {
     return (
-      <View>
-        <HdfcBankLogoPresents style={styles.hdfcLogo} />
-        <Text
-          style={{
-            ...theme.viewStyles.text('B', 11, '#164884', 1, 20, 0.35),
-            marginBottom: 10,
-          }}
-        >
+      <View style={{
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 10,
+      }}>
+        <Text style={theme.viewStyles.text('B', 13, '#164884', 1, 28, 0.35)}>
           #ApolloHealthyLife
         </Text>
+        <HdfcBankLogo style={styles.hdfcLogo} />
       </View>
     );
   };
@@ -1994,10 +1988,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           <Text style={styles.hdfcConnectButton}>GENERATE OTP</Text>
         </TouchableOpacity>
         <Text
-          style={{
-            ...theme.viewStyles.text('LI', 12, '#01475B', 1, 20, 0.35),
-            textAlign: 'right',
-          }}
+          style={theme.viewStyles.text('LI', 12, '#01475B', 1, 20, 0.35)}
         >
           {hdfc_values.HDFC_CARD_CAPTION}
         </Text>
@@ -2073,7 +2064,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         </TouchableOpacity>
         {showErrorBottomLine && (
           <Text style={theme.viewStyles.text('SB', 13, '#ED1C24', 1, 20, 0.35)}>
-            Note : Please Enter Correct OTP
+            Oops ! Re-enter the OTP
           </Text>
         )}
         <TouchableOpacity
@@ -2154,7 +2145,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             }}
           >
             <Text style={theme.viewStyles.text('B', 14, '#FC9916', 1, 35, 0.35)}>
-              REGENERATE OTP
+              RECHECK OTP
             </Text>
           </TouchableOpacity>
         </View>
