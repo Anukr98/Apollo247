@@ -290,7 +290,11 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
               disabled={isSendingOtp || otp.length !== numOtpDigits}
               onClick={(e) => {
                 e.preventDefault();
-
+                /* GA Tracking */
+                (window as any).dataLayer.push({
+                  event: 'OTPSubmitted',
+                });
+                /*******************/
                 /**Gtm code start start */
                 gtmTracking({
                   category: 'Profile',
@@ -299,23 +303,39 @@ const OtpInput: React.FC<{ mobileNumber: string; setOtp: (otp: string) => void }
                 });
                 /**Gtm code start end */
 
-                verifyOtp(otp, customLoginId).then((authToken) => {
-                  if (!authToken) {
-                    setOtpSubmitCount(otpSubmitCount + 1);
-                  } else {
-                    let locationSearch =
-                      typeof window !== 'undefined' && window.location && window.location.search;
-                    const urlParams = new URLSearchParams(locationSearch);
-                    const redirectURL = urlParams.get('continue');
-                    if (redirectURL) {
-                      setIsLoading(true);
-                      setTimeout(() => {
-                        window.location.href = redirectURL;
-                        setIsLoading(false);
-                      }, 2000);
+                verifyOtp(otp, customLoginId)
+                  .then((authToken) => {
+                    if (!authToken) {
+                      setOtpSubmitCount(otpSubmitCount + 1);
+                    } else {
+                      let locationSearch =
+                        typeof window !== 'undefined' && window.location && window.location.search;
+                      const urlParams = new URLSearchParams(locationSearch);
+                      const redirectURL = urlParams.get('continue');
+                      if (redirectURL) {
+                        setIsLoading(true);
+                        setTimeout(() => {
+                          window.location.href = redirectURL;
+                          setIsLoading(false);
+                        }, 2000);
+                      }
                     }
-                  }
-                });
+                    /* GA Tracking */
+                    (window as any).dataLayer.push({
+                      event: 'UserLoggedIn',
+                      Type: 'Login', //pass Registration if the phone number entered by User is not registered
+                      'User ID': localStorage.getItem('userMobileNo'),
+                    });
+                    /*******************/
+                  })
+                  .catch((error) => {
+                    console.error('Verify otp error' + error);
+                    /* GA Tracking */
+                    (window as any).dataLayer.push({
+                      event: 'OTPValidation Failed',
+                    });
+                    /*******************/
+                  });
               }}
               title={'Login'}
             >
@@ -369,6 +389,11 @@ export const SignIn: React.FC<signInProps> = (props) => {
 
           const mobileNumberWithPrefix = `${mobileNumberPrefix}${mobileNumber}`;
           sendOtp(mobileNumberWithPrefix).then(() => setDisplayOtpInput(true));
+          /* GA Tracking */
+          (window as any).dataLayer.push({
+            event: 'OTPDemanded',
+          });
+          /*******************/
         }}
         render={({ errors, values }: FormikProps<{ mobileNumber: string }>) => {
           if (displayOtpInput)

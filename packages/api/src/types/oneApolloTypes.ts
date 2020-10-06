@@ -51,6 +51,8 @@ export type ONE_APOLLO_USER_REG = {
   BusinessUnit: string;
   StoreCode: string;
   CustomerId: string;
+  DOB?: string;
+  Email?: string;
 };
 
 export enum ONE_APOLLO_PRODUCT_CATEGORY {

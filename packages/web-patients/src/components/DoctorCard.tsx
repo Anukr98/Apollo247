@@ -64,8 +64,10 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 10,
       fontWeight: 600,
       color: '#0087ba',
-      textTransform: 'uppercase',
       letterSpacing: 0.25,
+      '& span': {
+        fontSize: 13,
+      },
     },
     doctorExp: {
       paddingLeft: 8,
@@ -273,11 +275,14 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               {doctorDetails && parseInt(doctorDetails.experience || '1', 10) > 1 ? 'YRS' : 'YEAR'}
             </span>
           </div>
-          <div className={classes.doctorspecialty} title={'Specialty'}>
+          <div className={classes.doctorspecialty} title={'Fees'}>
             <p>
-              {doctorDetails &&
-                doctorDetails.specialty &&
-                doctorDetails.specialty.userFriendlyNomenclature}
+              Starts at{' '}
+              <span>
+                ₹{' '}
+                {doctorDetails &&
+                  (doctorDetails.onlineConsultationFees || doctorDetails.physicalConsultationFees)}
+              </span>
             </p>
           </div>
           <div className={classes.doctorDetails} title={'Location'}>

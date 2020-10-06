@@ -239,6 +239,15 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
     return <ProfileSuccess onSubmitClick={() => props.onClose()} />;
   }
 
+  const handleDOBChange = (ev: any) => {
+    var ipLength = ev.target.value.length;
+    if (ev.keyCode != 8 && ev.keyCode != 46) {
+      if (ipLength === 2 || ipLength === 5) {
+        ev.target.value += '/';
+      }
+    }
+  };
+
   let signUpObject = {
     heading: 'Welcome to apollo 24|7',
     subHeading:
@@ -434,6 +443,9 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                                 placeholder="dd/mm/yyyy"
                                 error={showError('dateOfBirth')}
                                 inputProps={{ type: 'text', maxLength: 10 }}
+                                onKeyUp={(e) => {
+                                  handleDOBChange(e);
+                                }}
                               />
                               {showError('dateOfBirth') ? (
                                 <FormHelperText

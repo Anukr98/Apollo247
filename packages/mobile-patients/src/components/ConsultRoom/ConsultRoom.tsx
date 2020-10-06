@@ -34,11 +34,11 @@ import {
   Symptomtracker,
   TestsCartIcon,
   TestsIcon,
-  HdfcBankLogoPresents,
   ThumbsUp,
   LastStepIcon,
   BackArrowWhite,
   SadFaceYellow,
+  HdfcBankLogo,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
@@ -147,6 +147,8 @@ import {
   ViewStyle,
   TextInput,
   Image,
+  AppState,
+  AppStateStatus,
 } from 'react-native';
 import firebase from 'react-native-firebase';
 import { ScrollView } from 'react-native-gesture-handler';
@@ -286,7 +288,6 @@ const styles = StyleSheet.create({
   hdfcConnectButton: {
     ...theme.viewStyles.text('B', 15, '#FC9916', 1, 35, 0.35),
     textAlign: 'right',
-    marginTop: 10,
   },
   hdfcBanner: {
     ...theme.viewStyles.cardViewStyle,
@@ -413,6 +414,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const webengage = new WebEngage();
   const client = useApolloClient();
   const hdfc_values = string.Hdfc_values;
+
+  const _handleAppStateChange = (nextAppState: AppStateStatus) => {
+    if (nextAppState === 'active') {
+      getUserSubscriptionsWithBenefits();
+      getUserBanners();
+    }
+  };
 
   const updateLocation = async (locationDetails: LocationData) => {
     try {
@@ -792,6 +800,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   }, [enableCM]);
 
   useEffect(() => {
+    // call hdfc apis on appstate change
+    AppState.addEventListener('change', _handleAppStateChange);
+    return () => {
+      AppState.removeEventListener("change", _handleAppStateChange);
+    };
+  }, [])
+
+  useEffect(() => {
     AsyncStorage.removeItem('deeplink');
     AsyncStorage.removeItem('deeplinkReferalCode');
     storePatientDetailsTOBugsnag();
@@ -828,7 +844,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           const hdfcCustomerData = g(data, 'data', 'identifyHdfcCustomer');
           const hdfcStatus = g(hdfcCustomerData, 'status');
           const hdfcToken = g(hdfcCustomerData, 'token') || '';
-          if (hdfcStatus === hdfc_values.OTP_GENERATED_STATUS && !!hdfcToken) {
+          if (hdfcStatus === hdfc_values.OTP_GENERATED_STATUS) {
             setShowHdfcOtpView(true);
             setShowNotHdfcCustomer(false);
             setHdfcToken(hdfcToken);
@@ -836,14 +852,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             setShowHdfcOtpView(true);
             setShowNotHdfcCustomer(true);
             if (hdfcStatus === hdfc_values.OTP_NOT_GENERATED) {
-              setShowSavingsAccountButton(true);
-              setHdfcErrorMessage(
-                'Looks like your details are not matching with HDFC Bank records.​ Please retry or enroll yourself with HDFC\'s Bank'
-              );
-            } else {
               setShowSavingsAccountButton(false);
               setHdfcErrorMessage(
-                'Due to a technical glitch, we are unable to verify your details with HDFC Bank right now. Please try again in sometime'
+                hdfc_values.HDFC_ERROR_MESSAGE
+              );
+            } else {
+              setShowSavingsAccountButton(true);
+              const errorMessage = `${hdfc_values.HDFC_CARD_CAPTION}. ${hdfc_values.NOT_HDFC_CUSTOMER_MESSAGE}`;
+              setHdfcErrorMessage(
+                errorMessage
               );
             }
           }
@@ -1825,16 +1842,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const renderHdfcLogo = () => {
     return (
-      <View>
-        <HdfcBankLogoPresents style={styles.hdfcLogo} />
-        <Text
-          style={{
-            ...theme.viewStyles.text('B', 11, '#164884', 1, 20, 0.35),
-            marginBottom: 10,
-          }}
-        >
+      <View style={{
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 10,
+      }}>
+        <Text style={theme.viewStyles.text('B', 13, '#164884', 1, 28, 0.35)}>
           #ApolloHealthyLife
         </Text>
+        <HdfcBankLogo style={styles.hdfcLogo} />
       </View>
     );
   };
@@ -1972,12 +1988,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           <Text style={styles.hdfcConnectButton}>GENERATE OTP</Text>
         </TouchableOpacity>
         <Text
-          style={{
-            ...theme.viewStyles.text('LI', 12, '#01475B', 1, 20, 0.35),
-            textAlign: 'right',
-          }}
+          style={theme.viewStyles.text('LI', 12, '#01475B', 1, 20, 0.35)}
         >
-          This is required by HDFC Bank to verify your details
+          {hdfc_values.HDFC_CARD_CAPTION}
         </Text>
       </View>
     );
@@ -2051,7 +2064,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         </TouchableOpacity>
         {showErrorBottomLine && (
           <Text style={theme.viewStyles.text('SB', 13, '#ED1C24', 1, 20, 0.35)}>
-            Note : Please Enter Correct OTP
+            Oops ! Re-enter the OTP
           </Text>
         )}
         <TouchableOpacity
@@ -2118,7 +2131,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             >
               <Text
                 style={{
-                  ...theme.viewStyles.text('B', 15, '#FC9916', 1, 35, 0.35),
+                  ...theme.viewStyles.text('B', 14, '#FC9916', 1, 35, 0.35),
                   marginRight: 20,
                 }}
               >
@@ -2131,8 +2144,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               identifyHdfcCustomer();
             }}
           >
-            <Text style={theme.viewStyles.text('B', 15, '#FC9916', 1, 35, 0.35)}>
-              REGENERATE OTP
+            <Text style={theme.viewStyles.text('B', 14, '#FC9916', 1, 35, 0.35)}>
+              RECHECK OTP
             </Text>
           </TouchableOpacity>
         </View>
@@ -2315,7 +2328,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         });
       } else if ((action = hdfc_values.DIETECIAN_LANDING)) {
         props.navigation.navigate('DoctorSearchListing', {
-          specialityName: hdfc_values.DIETICS_SPECIALITY_NAME,
+          specialities: hdfc_values.DIETICS_SPECIALITY_NAME,
         });
       } else {
         props.navigation.navigate(AppRoutes.ConsultRoom);
