@@ -13,6 +13,7 @@ import {
   LinkedUhidIcon,
   SearchGreenIcon,
   FilterDarkBlueIcon,
+  FilterGreenIcon,
   ChatBlueIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppointmentFilterScene } from '@aph/mobile-patients/src/components/ConsultRoom/AppointmentFilterScene';
@@ -56,6 +57,7 @@ import {
   Platform,
   Dimensions,
 } from 'react-native';
+import { Badge } from 'react-native-elements';
 import { FlatList, NavigationEvents, NavigationScreenProps } from 'react-navigation';
 import {
   getPatientAllAppointments,
@@ -238,6 +240,21 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     marginBottom: 3,
   },
+  badgelabelView: {
+    position: 'absolute',
+    top: -3,
+    right: -3,
+    backgroundColor: '#FC9916',
+    height: 14,
+    width: 14,
+    borderRadius: 7,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  badgelabelText: {
+    ...theme.fonts.IBMPlexSansBold(9),
+    color: theme.colors.WHITE,
+  },
 });
 
 export interface ConsultProps extends NavigationScreenProps {
@@ -404,9 +421,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   ) => {
     let finalList: getPatientAllAppointments_getPatientAllAppointments_appointments[] = [];
     if (appointmentStatus.includes('Active')) {
-      finalList = localFilteredAppointmentsList.filter(
-        (appointment) => appointment.appointmentState === APPOINTMENT_STATE.NEW
-      );
+      finalList = activeConsultations;
     }
     if (appointmentStatus.includes('Rescheduled')) {
       const filteredList = localFilteredAppointmentsList.filter(
@@ -729,6 +744,18 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     return date.year == tomorrow.year && date.month == tomorrow.month && date.date == tomorrow.date;
   };
 
+  const { availability, appointmentStatus, doctorsList, specialtyList } = filter;
+
+  const filterLength =
+    (availability ? availability.length : 0) +
+    (appointmentStatus ? appointmentStatus.length : 0) +
+    (doctorsList ? doctorsList.length : 0) +
+    (specialtyList ? specialtyList.length : 0);
+
+  useEffect(() => {
+    filterLength === 0 && setSelectedDate(null);
+  }, [filterLength]);
+
   const renderSectionHeader = (section: any) => {
     return (
       <Text
@@ -864,7 +891,12 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         ? 'Tomorrow'
         : moment(appointmentDateTime).format('ddd, DD MMM YYYY');
     const showDateText = index === 0 ? true : displayTopDateTime;
-
+    const pastAppointmentItem =
+      item?.status === STATUS.CANCELLED ||
+      !moment(new Date(item?.appointmentDateTime))
+        .add(followUpAfterInDays, 'days')
+        .startOf('day')
+        .isSameOrAfter(moment(new Date()).startOf('day'));
     const renderPastConsultationButtons = () => {
       const cancelConsulations = getAppointmentStatusText() === 'Cancelled';
       return (
@@ -885,7 +917,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                       data: item,
                       callType: '',
                       prescription: '',
-                      disableChat: item.doctorInfo && selectedTab === tabs[2].title,
+                      disableChat: item.doctorInfo && pastAppointmentItem,
                     })
                   : props.navigation.navigate(AppRoutes.DoctorDetails, {
                       doctorId: g(item, 'doctorId') || '',
@@ -938,7 +970,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 data: item,
                 callType: '',
                 prescription: '',
-                disableChat: item.doctorInfo && selectedTab === tabs[2].title,
+                disableChat: item.doctorInfo && pastAppointmentItem,
               });
             }}
           >
@@ -1043,7 +1075,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 item
               );
               CommonLogEvent(AppRoutes.Consult, 'Prepare for Consult clicked');
-              if (item.doctorInfo && selectedTab !== tabs[2].title) {
+              if (item.doctorInfo && !pastAppointmentItem) {
                 CommonLogEvent(AppRoutes.Consult, 'Chat Room Move clicked');
                 props.navigation.navigate(AppRoutes.ChatRoom, {
                   data: item,
@@ -1105,7 +1137,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
 
     return (
       <View style={{}}>
-        {showDateText && selectedTab !== tabs[0].title ? (
+        {filterLength === 0 && showDateText && selectedTab !== tabs[0].title ? (
           <Text style={[styles.sectionHeaderTitleStyle, { marginTop: 10 }]}>
             {appointmentDateText}
           </Text>
@@ -1117,7 +1149,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           onPress={() => {
             postConsultCardEvents('Card Click', item);
             CommonLogEvent(AppRoutes.Consult, `Consult ${item.appointmentType} clicked`);
-            if (item.doctorInfo && selectedTab !== tabs[2].title) {
+            if (item.doctorInfo && pastAppointmentItem) {
               item.appointmentType === 'ONLINE'
                 ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
                     data: item,
@@ -1243,11 +1275,11 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 item.status == STATUS.NO_SHOW ||
                 item.status == STATUS.CALL_ABANDON
                   ? renderPickAnotherButton()
-                  : selectedTab === tabs[2].title
+                  : pastAppointmentItem
                   ? renderPastConsultationButtons()
                   : renderActiveUpcomingConsultButton()}
               </View>
-            ) : selectedTab === tabs[2].title ? (
+            ) : pastAppointmentItem ? (
               renderPastConsultationButtons()
             ) : item.appointmentType === 'ONLINE' ? (
               renderTextConsultButton()
@@ -1265,8 +1297,22 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       <FlatList
         keyExtractor={(_, index) => index.toString()}
         contentContainerStyle={{ padding: 12, paddingTop: 0, marginTop: 14 }}
-        // horizontal={true}
         data={selectedTab === tabs[1].title ? upcomingConsultations : pastConsultations}
+        bounces={false}
+        removeClippedSubviews={true}
+        showsHorizontalScrollIndicator={false}
+        ListEmptyComponent={renderNoAppointments()}
+        renderItem={({ item, index }) => renderConsultationCard(item, index)}
+      />
+    );
+  };
+
+  const renderFilterConsultations = () => {
+    return (
+      <FlatList
+        keyExtractor={(_, index) => index.toString()}
+        contentContainerStyle={{ padding: 12, paddingTop: 0, marginTop: 14 }}
+        data={filteredAppointmentsList}
         bounces={false}
         removeClippedSubviews={true}
         showsHorizontalScrollIndicator={false}
@@ -1350,7 +1396,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     return (
       <View style={{ flexDirection: 'row', flex: 1, marginRight: 20 }}>
         <Text style={styles.descriptionTextStyle}>
-          {selectedTab === tabs[0].title
+          {filterLength > 0
+            ? 'You have ' + (filteredAppointmentsList.length || 'no') + ' appointment(s)!'
+            : selectedTab === tabs[0].title
             ? 'You have ' + (activeConsultations.length || 'no') + ' active appointment(s)!'
             : selectedTab === tabs[1].title
             ? 'You have ' + (upcomingConsultations.length || 'no') + ' upcoming appointment(s)!'
@@ -1375,7 +1423,16 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             <SearchGreenIcon style={{ width: 23, height: 23, marginTop: 8 }} />
           </TouchableOpacity>
           <TouchableOpacity activeOpacity={1} onPress={() => setIsFilterOpen(true)}>
-            <FilterDarkBlueIcon style={{ width: 17, height: 18, marginTop: 8 }} />
+            {filterLength > 0 ? (
+              <>
+                <FilterGreenIcon style={{ width: 17, height: 18, marginTop: 8 }} />
+                <View style={[styles.badgelabelView]}>
+                  <Text style={styles.badgelabelText}>{filterLength}</Text>
+                </View>
+              </>
+            ) : (
+              <FilterDarkBlueIcon style={{ width: 17, height: 18, marginTop: 8 }} />
+            )}
           </TouchableOpacity>
         </View>
       </View>
@@ -1444,14 +1501,286 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     return isFilterOpen ? (
       <AppointmentFilterScene
         filter={filter}
-        setFilter={setFilter}
-        setIsFilterOpen={setIsFilterOpen}
+        setFilter={(appointment_filter) => {
+          setFilter(appointment_filter);
+        }}
+        setIsFilterOpen={(filterOpen) => {
+          setIsFilterOpen(filterOpen);
+        }}
         filterDoctorsList={filterDoctorsList}
         filterSpecialtyList={filterSpecialtyList}
         selectedDate={selectedDate}
-        setSelectedDate={setSelectedDate}
+        setSelectedDate={(date) => {
+          setSelectedDate(date);
+        }}
       />
     ) : null;
+  };
+
+  const renderSelectedFilters = () => {
+    return (
+      <View
+        style={{ flex: 1, paddingHorizontal: 20, paddingVertical: 10, backgroundColor: '#f0f1ec' }}
+      >
+        <View
+          style={{
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            maxWidth: '96%',
+            paddingBottom: 0,
+          }}
+        >
+          {appointmentStatus?.map((filterText) => (
+            <View
+              style={{
+                backgroundColor: '#00B38E',
+                height: 'auto',
+                borderRadius: 10,
+                width: 'auto',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexDirection: 'row',
+                shadowColor: 'rgba(0,0,0,0.2)',
+                shadowOffset: { width: 0, height: 3 },
+                shadowOpacity: 0.8,
+                shadowRadius: 2,
+                elevation: 3,
+                paddingLeft: 10,
+                marginRight: 12,
+                marginTop: 11,
+              }}
+            >
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 12, '#FFFFFF', 1, 16, -0.26),
+                  paddingVertical: 8,
+                }}
+              >
+                {filterText}
+              </Text>
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 12, '#FFFFFF', 1, 16, -0.26),
+                  paddingLeft: 8,
+                  paddingVertical: 8,
+                  paddingRight: 10,
+                }}
+                onPress={() => {
+                  const appointmentStatus =
+                    filter && filter?.appointmentStatus
+                      ? filter?.appointmentStatus?.filter((val) => val !== filterText)
+                      : null;
+                  setFilter({ ...filter, appointmentStatus });
+                }}
+              >
+                {'X'}
+              </Text>
+            </View>
+          ))}
+          {availability?.map((filterText) => (
+            <View
+              style={{
+                backgroundColor: '#00B38E',
+                height: 'auto',
+                borderRadius: 10,
+                width: 'auto',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexDirection: 'row',
+                shadowColor: 'rgba(0,0,0,0.2)',
+                shadowOffset: { width: 0, height: 3 },
+                shadowOpacity: 0.8,
+                shadowRadius: 2,
+                elevation: 3,
+                paddingLeft: 10,
+                marginRight: 12,
+                marginTop: 11,
+              }}
+            >
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 12, '#FFFFFF', 1, 16, -0.26),
+                  paddingVertical: 8,
+                }}
+              >
+                {filterText}
+              </Text>
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 12, '#FFFFFF', 1, 16, -0.26),
+                  paddingLeft: 8,
+                  paddingVertical: 8,
+                  paddingRight: 10,
+                }}
+                onPress={() => {
+                  const availability =
+                    filter && filter?.availability
+                      ? filter?.availability?.filter((val) => val !== filterText)
+                      : null;
+                  setFilter({ ...filter, availability });
+                }}
+              >
+                {'X'}
+              </Text>
+            </View>
+          ))}
+          {doctorsList?.map((filterText) => (
+            <View
+              style={{
+                backgroundColor: '#00B38E',
+                height: 'auto',
+                borderRadius: 10,
+                width: 'auto',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexDirection: 'row',
+                shadowColor: 'rgba(0,0,0,0.2)',
+                shadowOffset: { width: 0, height: 3 },
+                shadowOpacity: 0.8,
+                shadowRadius: 2,
+                elevation: 3,
+                paddingLeft: 10,
+                marginRight: 12,
+                marginTop: 11,
+              }}
+            >
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 12, '#FFFFFF', 1, 16, -0.26),
+                  paddingVertical: 8,
+                }}
+              >
+                {filterText}
+              </Text>
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 12, '#FFFFFF', 1, 16, -0.26),
+                  paddingLeft: 8,
+                  paddingVertical: 8,
+                  paddingRight: 10,
+                }}
+                onPress={() => {
+                  const doctorsList =
+                    filter && filter?.doctorsList
+                      ? filter?.doctorsList?.filter((val) => val !== filterText)
+                      : null;
+                  setFilter({ ...filter, doctorsList });
+                }}
+              >
+                {'X'}
+              </Text>
+            </View>
+          ))}
+          {specialtyList?.map((filterText) => (
+            <View
+              style={{
+                backgroundColor: '#00B38E',
+                height: 'auto',
+                borderRadius: 10,
+                width: 'auto',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexDirection: 'row',
+                shadowColor: 'rgba(0,0,0,0.2)',
+                shadowOffset: { width: 0, height: 3 },
+                shadowOpacity: 0.8,
+                shadowRadius: 2,
+                elevation: 3,
+                paddingLeft: 10,
+                marginRight: 12,
+                marginTop: 11,
+              }}
+            >
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 12, '#FFFFFF', 1, 16, -0.26),
+                  paddingVertical: 8,
+                }}
+              >
+                {filterText}
+              </Text>
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 12, '#FFFFFF', 1, 16, -0.26),
+                  paddingLeft: 8,
+                  paddingVertical: 8,
+                  paddingRight: 10,
+                }}
+                onPress={() => {
+                  const specialtyList =
+                    filter && filter?.specialtyList
+                      ? filter?.specialtyList?.filter((val) => val !== filterText)
+                      : null;
+                  setFilter({ ...filter, specialtyList });
+                }}
+              >
+                {'X'}
+              </Text>
+            </View>
+          ))}
+          <View
+            style={{
+              height: 'auto',
+              borderRadius: 10,
+              width: 'auto',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexDirection: 'row',
+              paddingLeft: 10,
+              marginRight: 12,
+              marginTop: 11,
+            }}
+          >
+            <Text
+              style={{
+                ...theme.viewStyles.text('M', 12, '#00B38E', 1, 16, -0.26),
+                paddingVertical: 8,
+              }}
+              onPress={() => setFilter(initialAppointmentFilterObject)}
+            >
+              {'REMOVE ALL'}
+            </Text>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
+  const renderSelectMemberView = () => {
+    return (
+      <View
+        style={{
+          flexDirection: 'row',
+          marginHorizontal: 20,
+          marginVertical: 14,
+          marginBottom: selectedTab === tabs[0].title ? undefined : 0,
+          alignItems: 'center',
+          flex: 1,
+        }}
+      >
+        <Text style={{ ...theme.viewStyles.text('M', isIphone5s() ? 10 : 12, '#02475B', 1, 16) }}>
+          {'View appointments of another member?'}
+        </Text>
+        <ProfileList
+          navigation={props.navigation}
+          saveUserChange={true}
+          childView={
+            <Text
+              style={{
+                ...theme.viewStyles.text('B', isIphone5s() ? 11 : 13, '#FC9916', 1, 24),
+                marginLeft: 8,
+              }}
+            >
+              {'SELECT MEMBER'}
+            </Text>
+          }
+          listContainerStyle={{ marginLeft: 6, marginTop: 22 }}
+          selectedProfile={profile}
+          setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+          unsetloaderDisplay={true}
+        ></ProfileList>
+      </View>
+    );
   };
 
   return (
@@ -1475,43 +1804,14 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           scrollEventThrottle={20}
         >
           {renderProfileChangeView()}
-          {renderTabSwitch()}
+          {filterLength > 0 ? renderSelectedFilters() : renderTabSwitch()}
           <View>
-            <View
-              style={{
-                flexDirection: 'row',
-                marginHorizontal: 20,
-                marginVertical: 14,
-                marginBottom: selectedTab === tabs[0].title ? undefined : 0,
-                alignItems: 'center',
-                flex: 1,
-              }}
-            >
-              <Text
-                style={{ ...theme.viewStyles.text('M', isIphone5s() ? 10 : 12, '#02475B', 1, 16) }}
-              >
-                {'View appointments of another member?'}
-              </Text>
-              <ProfileList
-                navigation={props.navigation}
-                saveUserChange={true}
-                childView={
-                  <Text
-                    style={{
-                      ...theme.viewStyles.text('B', isIphone5s() ? 11 : 13, '#FC9916', 1, 24),
-                      marginLeft: 8,
-                    }}
-                  >
-                    {'SELECT MEMBER'}
-                  </Text>
-                }
-                listContainerStyle={{ marginLeft: 6, marginTop: 22 }}
-                selectedProfile={profile}
-                setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
-                unsetloaderDisplay={true}
-              ></ProfileList>
-            </View>
-            {selectedTab === tabs[0].title ? renderTodaysConsultations() : renderConsultations()}
+            {filterLength === 0 ? renderSelectMemberView() : null}
+            {filterLength > 0
+              ? renderFilterConsultations()
+              : selectedTab === tabs[0].title
+              ? renderTodaysConsultations()
+              : renderConsultations()}
             {/* {renderThingsToDo()} */}
             {/* {renderArticles()} */}
           </View>

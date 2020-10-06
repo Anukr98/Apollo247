@@ -410,6 +410,10 @@ export const FilterDarkBlueIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" source={require('./icons/ic_filter_dark_blue.png')} {...props} />
 );
 
+export const FilterGreenIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" source={require('./icons/ic_filter_green.png')} {...props} />
+);
+
 export const ChatCallIcon: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/ChatCall.png')} />
 );

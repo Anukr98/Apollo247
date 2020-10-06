@@ -214,7 +214,7 @@ export const AppointmentFilterScene: React.FC<AppointmentFilterSceneProps> = (pr
     selectedDate,
     setSelectedDate,
   } = props;
-  const [availabilityList, setAvailabilityList] = useState(strings.appointments.availabilityList);
+  const availabilityList = strings.appointments.availabilityList;
   const appointmentStatus = strings.appointments.appointmentStatus;
   const [showCalander, setshowCalander] = useState<boolean>(false);
   const [localFilter, setLocalFilter] = useState<AppointmentFilterObject>(_.cloneDeep(filter));
@@ -246,7 +246,7 @@ export const AppointmentFilterScene: React.FC<AppointmentFilterSceneProps> = (pr
   };
 
   useEffect(() => {
-    selectedDate && setFilterValues('availability', moment(selectedDate).format('dd/MM/yyyy'));
+    selectedDate && setFilterValues('availability', moment(selectedDate).format('DD/MM/YYYY'));
   }, [selectedDate]);
 
   const [menuItems, setMenuItems] = useState([
@@ -280,6 +280,7 @@ export const AppointmentFilterScene: React.FC<AppointmentFilterSceneProps> = (pr
         : id === 2
         ? localFilter?.doctorsList
         : localFilter?.specialtyList;
+    const selectedDateText = selectedDate ? moment(selectedDate).format('DD-MMM-YYYY') : '';
     return (
       <>
         <View style={[styles.optionsView]}>
@@ -332,9 +333,8 @@ export const AppointmentFilterScene: React.FC<AppointmentFilterSceneProps> = (pr
                 styles={styles.calendarStyle}
                 date={date}
                 onPressDate={(date) => {
-                  const selectedDate = moment(date).format('YYYY-MM-DD');
-                  setAvailabilityList([...availabilityList, selectedDate]);
-                  setFilterValues('availability', selectedDate);
+                  const selectDate = moment(date).format('YYYY-MM-DD');
+                  setSelectedDate(date);
                   setshowCalander(false);
                 }}
                 showWeekView={false}
@@ -349,7 +349,6 @@ export const AppointmentFilterScene: React.FC<AppointmentFilterSceneProps> = (pr
                 isOptionSelected(optionsSelected || [], name)
                   ? { backgroundColor: theme.colors.APP_GREEN }
                   : null,
-                //   label === 'Availability' && id === 3 ? { marginRight: 10 } : null,
               ]}
               titleTextStyle={[
                 styles.buttonTextStyle,
@@ -362,6 +361,23 @@ export const AppointmentFilterScene: React.FC<AppointmentFilterSceneProps> = (pr
               }}
             />
           ))}
+          {id === 1 && selectedDate ? (
+            <Button
+              title={selectedDateText}
+              style={[
+                styles.buttonStyle,
+                selectedDate ? { backgroundColor: theme.colors.APP_GREEN } : null,
+              ]}
+              titleTextStyle={[
+                styles.buttonTextStyle,
+                selectedDate ? { color: theme.colors.WHITE } : null,
+              ]}
+              onPress={() => {
+                setFilterValues(filterTypeValue, moment(selectedDate).format('DD/MM/YYYY'));
+                setSelectedDate(null);
+              }}
+            />
+          ) : null}
           {id === 1 ? (
             <TouchableOpacity
               style={{ position: 'absolute', right: 10, top: 15 }}
@@ -456,8 +472,8 @@ export const AppointmentFilterScene: React.FC<AppointmentFilterSceneProps> = (pr
                 specialtyList: [],
               };
               setLocalFilter(initialAppointmentFilterObject);
-              setAvailabilityList(strings.appointments.availabilityList);
               setFilter(initialAppointmentFilterObject);
+              setSelectedDate(null);
             }}
           >
             <Reload />
