@@ -511,7 +511,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
         g(coupon, 'discount') > deductProductDiscount(coupon.products)
       ) {
         setCouponDiscount(g(coupon, 'discount') - deductProductDiscount(coupon.products) || 0);
-        setProductDiscount(productDiscount);
+        setProductDiscount(getProductDiscount(coupon.products) || 0);
         setCartItems(
           cartItems.map((item) => ({
             ...item,
@@ -520,7 +520,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
         );
       } else {
         setCouponDiscount(0);
-        setProductDiscount(productDiscount);
+        setProductDiscount(getProductDiscount(coupon.products) || 0);
         setCartItems(
           cartItems.map((item) => ({
             ...item,
@@ -539,8 +539,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
     let discount = 0;
     products &&
       products.forEach((item) => {
-        if (item.onMrp) {
-          discount = discount + (item.mrp - (item.specialPrice || item.mrp)) * item.quantity;
+        if (item.mrp != item.specialPrice && item.onMrp) {
+          discount = discount + (item.mrp - item.specialPrice) * item.quantity;
         }
       });
     return discount;
@@ -551,7 +551,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     products &&
       products.forEach((item) => {
         let quantity = item.quantity;
-        if (item.couponFree) {
+        if (!!item.couponFree) {
           quantity = 1; // one free product
           discount = discount + item.mrp * quantity;
         } else if (item.mrp != item.specialPrice) {

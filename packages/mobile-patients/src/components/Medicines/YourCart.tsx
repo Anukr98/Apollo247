@@ -393,10 +393,20 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     }
   }, [cartTotal]);
 
+  useEffect(() => {
+    const cartTotalAfterDiscount = Number(cartTotal.toFixed(2)) - Number(productDiscount.toFixed(2));
+    if (cartTotalAfterDiscount <= 0 && cartItems.length) {
+      setCoupon!(null);
+      removeFreeProductsFromCart();
+    }
+  }, [productDiscount, cartTotal]);
+
   const removeFreeProductsFromCart = () => {
     const updatedCartItems = cartItems.filter(
       (item) => !couponProducts.find((val) => val.sku == item.id)
     );
+    // console.log('couponProducts: ', JSON.stringify(couponProducts));
+    // console.log('updatedCartItems: ', JSON.stringify(updatedCartItems));
     setCartItems!(updatedCartItems);
     setCouponProducts!([]);
   };
@@ -432,14 +442,14 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             isInStock: !!medicineDetails.is_in_stock,
             maxOrderQty: medicineDetails.MaxOrderQty,
             productType: medicineDetails.type_id,
-            isFreeCouponProduct: couponProducts[index]!.couponFree,
+            isFreeCouponProduct: !!(couponProducts[index]!.couponFree),
           } as ShoppingCartItem;
         });
         addMultipleCartItems!(medicinesAll as ShoppingCartItem[]);
       })
       .catch((e) => {
         setLoading && setLoading(false);
-        console.log({ e });
+        // console.log({ e });
       });
   };
 
@@ -796,7 +806,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const fetchUserSpecificCoupon = () => {
     userSpecificCoupon(g(currentPatient, 'mobileNumber'))
       .then((resp: any) => {
-        console.log(resp.data);
+        // console.log(resp.data);
         if (resp.data.errorCode == 0) {
           let couponList = resp.data.response;
           if (typeof couponList != null && couponList.length) {
@@ -2079,11 +2089,11 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
     whatsAppUpdateAPICall(client, optedFor, optedFor, userId ? userId : g(currentPatient, 'id'))
       .then(({ data }: any) => {
-        console.log(data, 'whatsAppUpdateAPICall');
+        // console.log(data, 'whatsAppUpdateAPICall');
       })
       .catch((e: any) => {
         CommonBugFender('YourCart_whatsAppUpdateAPICall_error', e);
-        console.log('error', e);
+        // console.log('error', e);
       });
   };
 
