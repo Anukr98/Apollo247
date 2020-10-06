@@ -2599,6 +2599,29 @@ export const SEARCH_DIAGNOSTICS = gql`
   }
 `;
 
+export const SEARCH_DIAGNOSTICS_BY_CITY_ID = gql`
+  query searchDiagnosticsByCityID($cityID: Int!, $searchText: String!) {
+    searchDiagnosticsByCityID(cityID: $cityID, searchText: $searchText) {
+      diagnostics {
+        id
+        itemId
+        itemName
+        itemType
+        rate
+        itemType
+        gender
+        itemRemarks
+        city
+        state
+        collectionType
+        fromAgeInDays
+        toAgeInDays
+        testPreparationData
+      }
+    }
+  }
+`;
+
 export const SEARCH_DIAGNOSTICS_BY_ID = gql`
   query searchDiagnosticsById($itemIds: String) {
     searchDiagnosticsById(itemIds: $itemIds) {

@@ -30,13 +30,12 @@ import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList'
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
-  GET_DIAGNOSTICS_CITES,
   GET_DIAGNOSTIC_DATA,
   GET_DIAGNOSTIC_ORDER_LIST,
-  SEARCH_DIAGNOSTICS,
   SAVE_SEARCH,
   SEARCH_DIAGNOSTICS_BY_ID,
   GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
+  SEARCH_DIAGNOSTICS_BY_CITY_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
@@ -45,24 +44,18 @@ import {
   getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
 import {
-  getDiagnosticsCites,
-  getDiagnosticsCitesVariables,
-  getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities,
-} from '@aph/mobile-patients/src/graphql/types/getDiagnosticsCites';
-import {
   getDiagnosticsData,
   getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers,
   getDiagnosticsData_getDiagnosticsData_diagnosticOrgans,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticsData';
 import {
-  searchDiagnostics,
-  searchDiagnosticsVariables,
-  searchDiagnostics_searchDiagnostics_diagnostics,
-} from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
+  searchDiagnosticsByCityID,
+  searchDiagnosticsByCityIDVariables,
+  searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics,
+} from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
+
 import {
-  autoCompletePlaceSearch,
   getTestsPackages,
-  GooglePlacesType,
   TestPackage,
   PackageInclusion,
   getPackageData,
@@ -1377,7 +1370,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const [searchText, setSearchText] = useState<string>('');
   const [medicineList, setMedicineList] = useState<
-    searchDiagnostics_searchDiagnostics_diagnostics[]
+    searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
   >([]);
   const [searchSate, setsearchSate] = useState<'load' | 'success' | 'fail' | undefined>();
   const [isSearchFocused, setSearchFocused] = useState(false);
@@ -1397,19 +1390,20 @@ export const Tests: React.FC<TestsProps> = (props) => {
       }
       setsearchSate('load');
       client
-        .query<searchDiagnostics, searchDiagnosticsVariables>({
-          query: SEARCH_DIAGNOSTICS,
+        .query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
+          query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
           variables: {
+            cityID: parseInt(locationForDiagnostics?.cityId || '9', 10), //be default show of hyderabad
             searchText: _searchText,
-            city: locationForDiagnostics && locationForDiagnostics.city, //'Hyderabad' | 'Chennai,
-            patientId: (currentPatient && currentPatient.id) || '',
           },
           fetchPolicy: 'no-cache',
         })
         .then(({ data }) => {
           // aphConsole.log({ data });
-          const products = g(data, 'searchDiagnostics', 'diagnostics') || [];
-          setMedicineList(products as searchDiagnostics_searchDiagnostics_diagnostics[]);
+          const products = g(data, 'searchDiagnosticsByCityID', 'diagnostics') || [];
+          setMedicineList(
+            products as searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
+          );
           setsearchSate('success');
         })
         .catch((e) => {
@@ -1583,6 +1577,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       <>
         <Input
+          pointerEvents={isDiagnosticLocationServiceable ? 'auto' : 'none'}
           autoFocus={!locationDetails ? false : focusSearch}
           onSubmitEditing={() => {
             if (searchText.length > 2) {
@@ -1701,11 +1696,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
     text.length > count ? `${text.slice(0, count)}...` : text;
 
   const renderDeliverToLocationCTA = () => {
-    const location = locationDetails
-      ? `${formatText(g(locationDetails, 'city') || g(locationDetails, 'state') || '', 18)} ${g(
-          locationDetails,
-          'pincode'
-        )}`
+    const location = diagnosticLocation
+      ? `${formatText(
+          g(diagnosticLocation, 'city') || g(diagnosticLocation, 'state') || '',
+          18
+        )} ${g(diagnosticLocation, 'pincode')}`
       : `${formatText(g(locationDetails, 'city') || g(locationDetails, 'state') || '', 18)} ${g(
           locationDetails,
           'pincode'
@@ -1783,7 +1778,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     });
 
   const renderSearchSuggestionItemView = (
-    data: ListRenderItemInfo<searchDiagnostics_searchDiagnostics_diagnostics>
+    data: ListRenderItemInfo<searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics>
   ) => {
     const { index, item } = data;
     const imgUri = undefined; //`${config.IMAGES_BASE_URL[0]}${1}`;
@@ -1958,8 +1953,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
         },
       ],
     });
-
-    //bahar tap karne par
     setServiceabilityMsg(
       'Services currently unavailable in your area. Kindly try changing the location.'
     );
