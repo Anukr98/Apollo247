@@ -254,7 +254,6 @@ export const AppCommonDataProvider: React.FC = (props) => {
         _setDiagnosticLocation(JSON.parse(diagnosticLocation || 'null'));
       } catch (error) {
         console.log('Failed to get location from local storage.');
-        // CommonBugFender('AppCommonDataProvider_updateLocationFromStorage_try', error);
       }
     };
     updateLocationFromStorage();
