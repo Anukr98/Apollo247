@@ -225,6 +225,11 @@ import {
   addPatientLabTestRecordResolvers
 } from 'profiles-service/resolvers/addLabTestRecords';
 
+import {
+  deletePatientPrismMedicalRecordTypeDefs,
+  deletePatientPrismMedicalRecordResolvers
+} from 'profiles-service/resolvers/deletePatientPrismMedicalRecord'
+
 (async () => {
   await connect();
   const profilesLogger = winstonLogger.loggers.get('profileServiceLogger');
@@ -489,7 +494,11 @@ import {
       {
         typeDefs: addPatientLabTestRecordTypeDefs,
         resolvers: addPatientLabTestRecordResolvers
-      }
+      },
+      {
+        typeDefs: deletePatientPrismMedicalRecordTypeDefs,
+        resolvers: deletePatientPrismMedicalRecordResolvers
+      },
     ]),
     plugins: [
       /* This plugin is defined in-line. */
