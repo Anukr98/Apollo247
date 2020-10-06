@@ -250,6 +250,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
     diagnosticsCities,
     setDiagnosticsCities,
     locationForDiagnostics,
+    diagnosticServiceabilityData,
+    setDiagnosticServiceabilityData,
   } = useAppCommonData();
 
   const [testPackages, setTestPackages] = useState<TestPackage[]>([]);
@@ -596,6 +598,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
           console.log('data...' + data.getPincodeServiceability.cityName);
           const serviceableData = g(data, 'getPincodeServiceability');
           if (serviceableData && serviceableData?.cityName != '') {
+            let obj = {
+              cityId: serviceableData.cityID?.toString() || '',
+              stateId: serviceableData.stateID?.toString() || '',
+              state: serviceableData.stateName || '',
+              city: serviceableData.cityName || '',
+            };
+            setDiagnosticServiceabilityData!(obj);
             updatePlaceInfoByPincode(pincode);
             setshowLocationpopup(false);
             setPincodeServiceable(true);

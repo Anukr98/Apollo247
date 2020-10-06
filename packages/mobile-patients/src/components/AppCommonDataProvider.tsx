@@ -20,6 +20,13 @@ export interface LocationData {
   lastUpdated?: number; //timestamp
 }
 
+export interface DiagnosticData {
+  cityId: string;
+  stateId: string;
+  city: string;
+  state: string;
+}
+
 export interface AppCommonDataContextProps {
   locationDetails: LocationData | null;
   pharmacyLocation: LocationData | null;
@@ -35,7 +42,9 @@ export interface AppCommonDataContextProps {
   setDiagnosticsCities:
     | ((items: getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities[]) => void)
     | null;
-  locationForDiagnostics: { cityId: string; stateId: string; city: string; state: string } | null;
+  locationForDiagnostics: DiagnosticData | null;
+  diagnosticServiceabilityData: DiagnosticData | null;
+  setDiagnosticServiceabilityData: ((items: DiagnosticData) => void) | null;
   VirtualConsultationFee: string;
   setVirtualConsultationFee: ((arg0: string) => void) | null;
   generalPhysicians: { id: string; data: getDoctorsBySpecialtyAndFilters } | null | undefined;
@@ -88,6 +97,8 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   appointmentsPersonalized: [],
   setAppointmentsPersonalized: null,
   locationForDiagnostics: null,
+  diagnosticServiceabilityData: null,
+  setDiagnosticServiceabilityData: null,
   VirtualConsultationFee: '',
   setVirtualConsultationFee: null,
   generalPhysicians: null,
@@ -144,6 +155,10 @@ export const AppCommonDataProvider: React.FC = (props) => {
   const [diagnosticsCities, setDiagnosticsCities] = useState<
     AppCommonDataContextProps['diagnosticsCities']
   >([]);
+
+  const [diagnosticServiceabilityData, setDiagnosticServiceabilityData] = useState<
+    AppCommonDataContextProps['diagnosticServiceabilityData']
+  >(null);
 
   const [appointmentsPersonalized, setAppointmentsPersonalized] = useState<
     AppCommonDataContextProps['appointmentsPersonalized']
@@ -202,26 +217,30 @@ export const AppCommonDataProvider: React.FC = (props) => {
   };
 
   const locationForDiagnostics: AppCommonDataContextProps['locationForDiagnostics'] = {
-    cityId: ((
-      diagnosticsCities.find(
-        (item) => item!.cityname.toLowerCase() == (g(locationDetails, 'city') || '').toLowerCase()
-      ) || {}
-    ).cityid || '') as string,
-    city: ((
-      diagnosticsCities.find(
-        (item) => item!.cityname.toLowerCase() == (g(locationDetails, 'city') || '').toLowerCase()
-      ) || {}
-    ).cityname || '') as string,
-    state: ((
-      diagnosticsCities.find(
-        (item) => item!.cityname.toLowerCase() == (g(locationDetails, 'city') || '').toLowerCase()
-      ) || {}
-    ).statename || '') as string,
-    stateId: ((
-      diagnosticsCities.find(
-        (item) => item!.cityname.toLowerCase() == (g(locationDetails, 'city') || '').toLowerCase()
-      ) || {}
-    ).stateid || '') as string,
+    // cityId: ((
+    //   diagnosticsCities.find(
+    //     (item) => item!.cityname.toLowerCase() == (g(locationDetails, 'city') || '').toLowerCase()
+    //   ) || {}
+    // ).cityid || '') as string,
+    // city: ((
+    //   diagnosticsCities.find(
+    //     (item) => item!.cityname.toLowerCase() == (g(locationDetails, 'city') || '').toLowerCase()
+    //   ) || {}
+    // ).cityname || '') as string,
+    // state: ((
+    //   diagnosticsCities.find(
+    //     (item) => item!.cityname.toLowerCase() == (g(locationDetails, 'city') || '').toLowerCase()
+    //   ) || {}
+    // ).statename || '') as string,
+    // stateId: ((
+    //   diagnosticsCities.find(
+    //     (item) => item!.cityname.toLowerCase() == (g(locationDetails, 'city') || '').toLowerCase()
+    //   ) || {}
+    // ).stateid || '') as string,
+    cityId: (diagnosticServiceabilityData?.cityId || '') as string,
+    city: (diagnosticServiceabilityData?.city || '') as string,
+    state: (diagnosticServiceabilityData?.state || '') as string,
+    stateId: (diagnosticServiceabilityData?.stateId || '') as string,
   };
 
   const [notificationCount, setNotificationCount] = useState<number>(0);
@@ -247,7 +266,7 @@ export const AppCommonDataProvider: React.FC = (props) => {
         _setDiagnosticLocation(JSON.parse(diagnosticLocation || 'null'));
       } catch (error) {
         console.log('Failed to get location from local storage.');
-        CommonBugFender('AppCommonDataProvider_updateLocationFromStorage_try', error);
+        // CommonBugFender('AppCommonDataProvider_updateLocationFromStorage_try', error);
       }
     };
     updateLocationFromStorage();
@@ -271,6 +290,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         diagnosticsCities,
         setDiagnosticsCities,
         locationForDiagnostics,
+        diagnosticServiceabilityData,
+        setDiagnosticServiceabilityData,
         VirtualConsultationFee,
         setVirtualConsultationFee,
         generalPhysicians,
