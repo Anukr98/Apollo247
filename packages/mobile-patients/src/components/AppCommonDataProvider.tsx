@@ -45,6 +45,8 @@ export interface AppCommonDataContextProps {
   locationForDiagnostics: DiagnosticData | null;
   diagnosticServiceabilityData: DiagnosticData | null;
   setDiagnosticServiceabilityData: ((items: DiagnosticData) => void) | null;
+  isDiagnosticLocationServiceable?: boolean;
+  setDiagnosticLocationServiceable: ((value: boolean) => void) | null;
   VirtualConsultationFee: string;
   setVirtualConsultationFee: ((arg0: string) => void) | null;
   generalPhysicians: { id: string; data: getDoctorsBySpecialtyAndFilters } | null | undefined;
@@ -99,6 +101,8 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   locationForDiagnostics: null,
   diagnosticServiceabilityData: null,
   setDiagnosticServiceabilityData: null,
+  isDiagnosticLocationServiceable: false,
+  setDiagnosticLocationServiceable: null,
   VirtualConsultationFee: '',
   setVirtualConsultationFee: null,
   generalPhysicians: null,
@@ -159,6 +163,10 @@ export const AppCommonDataProvider: React.FC = (props) => {
   const [diagnosticServiceabilityData, setDiagnosticServiceabilityData] = useState<
     AppCommonDataContextProps['diagnosticServiceabilityData']
   >(null);
+
+  const [isDiagnosticLocationServiceable, setDiagnosticLocationServiceable] = useState<
+    AppCommonDataContextProps['isDiagnosticLocationServiceable']
+  >();
 
   const [appointmentsPersonalized, setAppointmentsPersonalized] = useState<
     AppCommonDataContextProps['appointmentsPersonalized']
@@ -292,6 +300,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         locationForDiagnostics,
         diagnosticServiceabilityData,
         setDiagnosticServiceabilityData,
+        isDiagnosticLocationServiceable,
+        setDiagnosticLocationServiceable,
         VirtualConsultationFee,
         setVirtualConsultationFee,
         generalPhysicians,

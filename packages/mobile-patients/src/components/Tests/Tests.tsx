@@ -225,7 +225,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [locationSearchList, setlocationSearchList] = useState<{ name: string; placeId: string }[]>(
     []
   );
-  const [isPinCodeServiceable, setPincodeServiceable] = useState<boolean>(false);
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>(
     currentPatient!
   );
@@ -252,6 +251,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
     locationForDiagnostics,
     diagnosticServiceabilityData,
     setDiagnosticServiceabilityData,
+    isDiagnosticLocationServiceable,
+    setDiagnosticLocationServiceable,
   } = useAppCommonData();
 
   const [testPackages, setTestPackages] = useState<TestPackage[]>([]);
@@ -607,11 +608,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
             setDiagnosticServiceabilityData!(obj);
             updatePlaceInfoByPincode(pincode);
             setshowLocationpopup(false);
-            setPincodeServiceable(true);
+            setDiagnosticLocationServiceable!(true);
             setServiceabilityMsg('');
           } else {
             setshowLocationpopup(false);
-            setPincodeServiceable(false);
+            setDiagnosticLocationServiceable!(false);
             setLoadingContext!(false);
             renderLocationNotServingPopUpForPincode(pincode);
             //red text shown below the text input field.
@@ -854,7 +855,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
           {renderDiscountedPrice()}
           <Text
             style={{
-              ...theme.viewStyles.text('B', 13, '#fc9916', 1, 24),
+              ...theme.viewStyles.text(
+                'B',
+                13,
+                isDiagnosticLocationServiceable ? '#fc9916' : '#FED984',
+                1,
+                24
+              ),
               textAlign: 'center',
             }}
             onPress={data.onAddOrRemoveCartItem}
@@ -873,6 +880,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const foundMedicineInCart = !!cartItems.find((item) => item.id == `${diagnostics!.itemId}`);
     const specialPrice = undefined;
     const addToCart = () => {
+      if (!isDiagnosticLocationServiceable) {
+        return;
+      }
       fetchPackageInclusion(`${diagnostics!.itemId}`, (tests) => {
         postDiagnosticAddToCartEvent(
           packageName!,
@@ -891,7 +901,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
         });
       });
     };
-    const removeFromCart = () => removeCartItem!(`${diagnostics!.itemId}`);
+    const removeFromCart = () => {
+      if (!isDiagnosticLocationServiceable) {
+        return;
+      }
+      removeCartItem!(`${diagnostics!.itemId}`);
+    };
     // const specialPrice = special_price
     //   ? typeof special_price == 'string'
     //     ? parseInt(special_price)
@@ -906,6 +921,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
       isAddedToCart: foundMedicineInCart,
       onAddOrRemoveCartItem: foundMedicineInCart ? removeFromCart : addToCart,
       onPress: () => {
+        if (!isDiagnosticLocationServiceable) {
+          return;
+        }
         postFeaturedTestEvent(packageName!, `${diagnostics!.itemId}`);
         props.navigation.navigate(AppRoutes.TestDetails, {
           testDetails: {
@@ -1212,6 +1230,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 !!cartItems.find((_item) => _item.id == item.ItemID),
                 () => {
                   fetchPackageDetails(item.ItemID, (product) => {
+                    if (!isDiagnosticLocationServiceable) {
+                      return;
+                    }
                     props.navigation.navigate(AppRoutes.TestDetails, {
                       testDetails: {
                         ...item,
@@ -1223,6 +1244,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 },
                 () => {
                   fetchPackageDetails(item.ItemID, (product) => {
+                    if (!isDiagnosticLocationServiceable) {
+                      return;
+                    }
                     addCartItem!({
                       id: item.ItemID,
                       name: item.ItemName,
@@ -1313,6 +1337,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 item.organName!,
                 item.organImage!,
                 () => {
+                  if (!isDiagnosticLocationServiceable) {
+                    return;
+                  }
                   postBrowsePackageEvent(item.organName!);
                   props.navigation.navigate(AppRoutes.TestsByCategory, {
                     title: `${item.organName || 'Products'}`.toUpperCase(),
