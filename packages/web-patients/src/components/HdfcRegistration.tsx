@@ -321,7 +321,7 @@ const useStyles = makeStyles((theme: Theme) => {
       width: '60%',
       [theme.breakpoints.down('sm')]: {
         width: '100%',
-        padding: '0 0 30px',
+        padding: '0 0 50px',
       },
       '& h2': {
         fontSize: 32,
