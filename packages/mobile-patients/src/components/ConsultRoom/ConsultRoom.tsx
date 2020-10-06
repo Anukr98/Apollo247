@@ -147,6 +147,8 @@ import {
   ViewStyle,
   TextInput,
   Image,
+  AppState,
+  AppStateStatus,
 } from 'react-native';
 import firebase from 'react-native-firebase';
 import { ScrollView } from 'react-native-gesture-handler';
@@ -408,10 +410,18 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [showNotHdfcCustomer, setShowNotHdfcCustomer] = useState<boolean>(false);
   const [slideIndex, setSlideIndex] = useState(0);
   const [benefitId, setbenefitId] = useState<string>('');
+  const [showSavingsAccountButton, setShowSavingsAccountButton] = useState<boolean>(false);
 
   const webengage = new WebEngage();
   const client = useApolloClient();
   const hdfc_values = string.Hdfc_values;
+
+  const _handleAppStateChange = (nextAppState: AppStateStatus) => {
+    if (nextAppState === 'active') {
+      getUserSubscriptionsWithBenefits();
+      getUserBanners();
+    }
+  };
 
   const updateLocation = async (locationDetails: LocationData) => {
     try {
@@ -791,6 +801,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   }, [enableCM]);
 
   useEffect(() => {
+    // call hdfc apis on appstate change
+    AppState.addEventListener('change', _handleAppStateChange);
+    return () => {
+      AppState.removeEventListener("change", _handleAppStateChange);
+    };
+  }, [])
+
+  useEffect(() => {
     AsyncStorage.removeItem('deeplink');
     AsyncStorage.removeItem('deeplinkReferalCode');
     storePatientDetailsTOBugsnag();
@@ -827,7 +845,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           const hdfcCustomerData = g(data, 'data', 'identifyHdfcCustomer');
           const hdfcStatus = g(hdfcCustomerData, 'status');
           const hdfcToken = g(hdfcCustomerData, 'token') || '';
-          if (hdfcStatus === hdfc_values.OTP_GENERATED_STATUS && !!hdfcToken) {
+          if (hdfcStatus === hdfc_values.OTP_GENERATED_STATUS) {
             setShowHdfcOtpView(true);
             setShowNotHdfcCustomer(false);
             setHdfcToken(hdfcToken);
@@ -835,12 +853,19 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             setShowHdfcOtpView(true);
             setShowNotHdfcCustomer(true);
             if (hdfcStatus === hdfc_values.OTP_NOT_GENERATED) {
+              setShowSavingsAccountButton(false);
               setHdfcErrorMessage(
-                'Looks like your details are not matching with HDFC Bank records.​ Please retry or enroll yourself with HDFC\'s Bank'
+                hdfc_values.HDFC_ERROR_MESSAGE
               );
             } else {
+              setShowSavingsAccountButton(true);
+              const errorMessage = `
+                ${hdfc_values.HDFC_CARD_CAPTION}
+                \n
+                ${hdfc_values.NOT_HDFC_CUSTOMER_MESSAGE}
+              `;
               setHdfcErrorMessage(
-                'Due to a technical glitch, we are unable to verify your details with HDFC Bank right now. Please try again in sometime'
+                errorMessage
               );
             }
           }
@@ -1974,7 +1999,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             textAlign: 'right',
           }}
         >
-          This is required by HDFC Bank to verify your details
+          {hdfc_values.HDFC_CARD_CAPTION}
         </Text>
       </View>
     );
@@ -2106,26 +2131,29 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             marginTop: 10,
           }}
         >
-          <TouchableOpacity
-            onPress={() => {
-              Linking.openURL(hdfc_values.ENROLL_URL);
-            }}
-          >
-            <Text
-              style={{
-                ...theme.viewStyles.text('B', 15, '#FC9916', 1, 35, 0.35),
-                marginRight: 20,
+          {
+            showSavingsAccountButton && 
+            <TouchableOpacity
+              onPress={() => {
+                Linking.openURL(hdfc_values.ENROLL_URL);
               }}
             >
-              OPEN SAVINGS ACCOUNT
-            </Text>
-          </TouchableOpacity>
+              <Text
+                style={{
+                  ...theme.viewStyles.text('B', 14, '#FC9916', 1, 35, 0.35),
+                  marginRight: 20,
+                }}
+              >
+                OPEN SAVINGS ACCOUNT
+              </Text>
+            </TouchableOpacity>
+          }
           <TouchableOpacity
             onPress={() => {
               identifyHdfcCustomer();
             }}
           >
-            <Text style={theme.viewStyles.text('B', 15, '#FC9916', 1, 35, 0.35)}>
+            <Text style={theme.viewStyles.text('B', 14, '#FC9916', 1, 35, 0.35)}>
               REGENERATE OTP
             </Text>
           </TouchableOpacity>
@@ -2309,7 +2337,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         });
       } else if ((action = hdfc_values.DIETECIAN_LANDING)) {
         props.navigation.navigate('DoctorSearchListing', {
-          specialityName: hdfc_values.DIETICS_SPECIALITY_NAME,
+          specialities: hdfc_values.DIETICS_SPECIALITY_NAME,
         });
       } else {
         props.navigation.navigate(AppRoutes.ConsultRoom);
