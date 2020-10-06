@@ -327,8 +327,6 @@ PODS:
     - React
   - react-native-geolocation (2.0.2):
     - React
-  - react-native-image-picker (2.2.1):
-    - React
   - react-native-keep-awake (4.0.0):
     - React
   - react-native-netinfo (5.9.5):
@@ -418,8 +416,6 @@ PODS:
     - React
   - RNSVG (11.0.1):
     - React
-  - RNVectorIcons (6.6.0):
-    - React
   - RSKImageCropper (2.2.3)
   - SDWebImage (5.8.4):
     - SDWebImage/Core (= 5.8.4)
@@ -430,6 +426,10 @@ PODS:
   - WebEngage (5.0.2):
     - WebEngage/Xcode11 (= 5.0.2)
   - WebEngage/Xcode11 (5.0.2)
+  - WebEngageAppEx/ContentExtension (0.9.0):
+    - WebEngageAppEx/CoreApi
+  - WebEngageAppEx/CoreApi (0.9.0)
+  - WebEngageBannerPush (0.9.0)
   - Yoga (1.14.0)
 
 DEPENDENCIES:
@@ -469,7 +469,6 @@ DEPENDENCIES:
   - React-jsinspector (from `../node_modules/react-native/ReactCommon/jsinspector`)
   - react-native-document-picker (from `../node_modules/react-native-document-picker`)
   - "react-native-geolocation (from `../node_modules/@react-native-community/geolocation`)"
-  - react-native-image-picker (from `../node_modules/react-native-image-picker`)
   - react-native-keep-awake (from `../node_modules/react-native-keep-awake`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-pdf (from `../node_modules/react-native-pdf`)
@@ -500,8 +499,9 @@ DEPENDENCIES:
   - RNPermissions (from `../node_modules/react-native-permissions`)
   - RNSound (from `../node_modules/react-native-sound`)
   - RNSVG (from `../node_modules/react-native-svg`)
-  - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
   - WebEngage
+  - WebEngageAppEx/ContentExtension
+  - WebEngageBannerPush
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -539,6 +539,8 @@ SPEC REPOS:
     - SDWebImage
     - SDWebImageWebPCoder
     - WebEngage
+    - WebEngageAppEx
+    - WebEngageBannerPush
 
 EXTERNAL SOURCES:
   BugsnagReactNative:
@@ -591,8 +593,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-document-picker"
   react-native-geolocation:
     :path: "../node_modules/@react-native-community/geolocation"
-  react-native-image-picker:
-    :path: "../node_modules/react-native-image-picker"
   react-native-keep-awake:
     :path: "../node_modules/react-native-keep-awake"
   react-native-netinfo:
@@ -651,8 +651,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-sound"
   RNSVG:
     :path: "../node_modules/react-native-svg"
-  RNVectorIcons:
-    :path: "../node_modules/react-native-vector-icons"
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
@@ -711,7 +709,6 @@ SPEC CHECKSUMS:
   React-jsinspector: a8939cc6909607eb5e8a5ecfff7c6226984e174d
   react-native-document-picker: c36bf5f067a581657ecaf7124dcd921a8be19061
   react-native-geolocation: cbd9d6bd06bac411eed2671810f454d4908484a8
-  react-native-image-picker: 7e19aefccd42aad840a758181e16ce05d4e95578
   react-native-keep-awake: eba3137546b10003361b37c761f6c429b59814ae
   react-native-netinfo: 7f3f3ed9e8f0e7ab3e7cac00cbfdc6997e25ecaf
   react-native-pdf: 29a09815e99c92743aa8459a90564aaddd4065e0
@@ -741,13 +738,14 @@ SPEC CHECKSUMS:
   RNPermissions: 8afd37dbc1be65748363c6a90caffd1806567651
   RNSound: c980916b596cc15c8dcd2f6ecd3b13c4881dbe20
   RNSVG: 67f1f12dae2cef6ed59a42cae74a6b8f5a9e7b46
-  RNVectorIcons: 0bb4def82230be1333ddaeee9fcba45f0b288ed4
   RSKImageCropper: a446db0e8444a036b34f3c43db01b2373baa4b2a
   SDWebImage: cf6922231e95550934da2ada0f20f2becf2ceba9
   SDWebImageWebPCoder: d0dac55073088d24b2ac1b191a71a8f8d0adac21
   WebEngage: b8f322ebfdd08c9cd56aec038f9d3c29c018335d
+  WebEngageAppEx: c36609d1bc25f78dc820fa6a75b4084d243c3d15
+  WebEngageBannerPush: 12b84f74718a2806ac6cc0c643574f6cd2f9f3fe
   Yoga: 02036f6383c0008edb7ef0773a0e6beb6ce82bd1
 
-PODFILE CHECKSUM: 2aad28bdf901bd34cf77203dc7d61bf57b68c623
+PODFILE CHECKSUM: 8eef9aced498d24169fe4753861a93cc2879b231
 
 COCOAPODS: 1.9.3

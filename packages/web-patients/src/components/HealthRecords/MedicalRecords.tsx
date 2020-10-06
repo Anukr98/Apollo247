@@ -24,6 +24,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import { Alerts } from 'components/Alerts/Alerts';
 import _lowerCase from 'lodash/lowerCase';
 import { MedicalRecordType } from '../../graphql/types/globalTypes';
+import { phrDownloadingMedicalRecordFileTracking } from '../../webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -800,7 +801,10 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
             <div className={classes.addReportActions}>
               <AphButton
                 color="primary"
-                onClick={() => downloadTestReport(activeData.id)}
+                onClick={() => {
+                  phrDownloadingMedicalRecordFileTracking('Medical Record');
+                  downloadTestReport(activeData.id);
+                }}
                 fullWidth
               >
                 {isDownloading ? (

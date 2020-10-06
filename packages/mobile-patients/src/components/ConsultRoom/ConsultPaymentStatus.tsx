@@ -438,8 +438,8 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const appointmentCard = () => {
     return (
       <View style={styles.appointmentCardStyle}>
-        <View style={{ flex: 0.5, paddingTop: 0.05 * windowWidth }}>
-          <View style={{ flex: 0.4, justifyContent: 'center' }}>
+        <View style={{ marginVertical: 20 }}>
+          <View style={{ justifyContent: 'center' }}>
             {textComponent(
               'Date & Time of Appointment',
               undefined,
@@ -447,9 +447,8 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
               false
             )}
           </View>
-          <View style={{ flex: 0.6, justifyContent: 'flex-start' }}>
+          <View style={{ justifyContent: 'flex-start', marginTop: 5 }}>
             {textComponent(
-              // appointmentDateTime.toDateString() + '  ' + appointmentDateTime.toLocaleTimeString(),
               getDate(appointmentDateTime),
               undefined,
               theme.colors.SHADE_CYAN_BLUE,
@@ -457,20 +456,20 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
             )}
           </View>
         </View>
-        <View style={{ flex: 0.5, flexDirection: 'row' }}>
+        <View style={{ flexDirection: 'row', marginBottom: 20 }}>
           <View style={{ flex: 0.5 }}>
-            <View style={{ flex: 0.4, justifyContent: 'center' }}>
+            <View style={{ justifyContent: 'center' }}>
               {textComponent('Doctor Name', undefined, theme.colors.ASTRONAUT_BLUE, false)}
             </View>
-            <View style={{ flex: 0.6, justifyContent: 'flex-start' }}>
+            <View style={{ justifyContent: 'flex-start', marginTop: 5 }}>
               {textComponent(doctorName, undefined, theme.colors.SHADE_CYAN_BLUE, false)}
             </View>
           </View>
-          <View style={{ flex: 0.5 }}>
-            <View style={{ flex: 0.4, justifyContent: 'center' }}>
+          <View style={{ flex: 0.5, marginLeft: 10 }}>
+            <View style={{ justifyContent: 'center' }}>
               {textComponent('Mode of Consult', undefined, theme.colors.ASTRONAUT_BLUE, false)}
             </View>
-            <View style={{ flex: 0.6, justifyContent: 'flex-start' }}>
+            <View style={{ justifyContent: 'flex-start', marginTop: 5 }}>
               {textComponent(appointmentType, undefined, theme.colors.SHADE_CYAN_BLUE, false)}
             </View>
           </View>
@@ -681,7 +680,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   appointmentCardStyle: {
-    height: 0.23 * windowHeight,
     marginVertical: 0.03 * windowWidth,
     paddingLeft: 0.06 * windowWidth,
     marginHorizontal: 0.06 * windowWidth,

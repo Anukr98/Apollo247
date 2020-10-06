@@ -1,4 +1,6 @@
-const axios = require('axios');
+//@ts-check
+'use strict';
+const { default: axios } = require('axios');
 const logger = require('../../winston-logger')('Consults-logs');
 const {
   initPayment,
@@ -29,7 +31,11 @@ module.exports = async (req, res) => {
       addParams['PAYMENT_MODE_ONLY'] = req.query.paymentModeOnly;
     }
 
-    axios.defaults.headers.common['authorization'] = process.env.API_TOKEN;
+    const axiosConfig = {
+      headers: {
+        'authorization': process.env.API_TOKEN
+      }
+    }
 
     const getAptRequestJson = {
       query:
@@ -37,7 +43,7 @@ module.exports = async (req, res) => {
         appointmentId +
         '"){ appointmentsHistory { discountedAmount patientId } } }',
     };
-    const aptResp = await axios.post(process.env.API_URL, getAptRequestJson);
+    const aptResp = await axios.post(process.env.API_URL, getAptRequestJson, axiosConfig);
 
     logger.info(`${appointmentId} - getAppointmentData - ${JSON.stringify(aptResp.data)}`);
 
@@ -66,7 +72,7 @@ module.exports = async (req, res) => {
         source +
         '"){ status } }',
     };
-    const updateResp = await axios.post(process.env.API_URL, requestJSON);
+    const updateResp = await axios.post(process.env.API_URL, requestJSON, axiosConfig);
 
     logger.info(`${appointmentId} - updatePaymentOrderId - ${JSON.stringify(updateResp.data)}`);
     if (updateResp.data.errors && updateResp.data.errors.length) {

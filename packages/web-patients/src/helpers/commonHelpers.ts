@@ -1,20 +1,22 @@
-import { DEVICETYPE } from 'graphql/types/globalTypes';
+import { DEVICETYPE, ConsultMode } from 'graphql/types/globalTypes';
 import { GetDoctorDetailsById_getDoctorDetailsById_consultHours } from 'graphql/types/GetDoctorDetailsById';
 import moment from 'moment';
 import { GooglePlacesType } from 'components/LocationProvider';
 import { CouponCategoryApplicable } from 'graphql/types/globalTypes';
 import _lowerCase from 'lodash/lowerCase';
 import _upperFirst from 'lodash/upperFirst';
-import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
+import { MEDICINE_ORDER_STATUS, DoctorType } from 'graphql/types/globalTypes';
 import { MedicineProductDetails } from 'helpers/MedicineApiCalls';
 import fetchUtil from 'helpers/fetch';
 import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
 import { GetPatientByMobileNumber_getPatientByMobileNumber_patients as CurrentPatient } from 'graphql/types/GetPatientByMobileNumber';
 
+import { getAppStoreLink } from 'helpers/dateHelpers';
 declare global {
   interface Window {
     opera: any;
     vendor: any;
+    dataLayer: any;
   }
 }
 
@@ -212,6 +214,7 @@ const OUT_OF_STOCK = 'Out Of Stock';
 const NOTIFY_WHEN_IN_STOCK = 'Notify when in stock';
 const PINCODE_MAXLENGTH = 6;
 const SPECIALTY_DETAIL_LISTING_PAGE_SIZE = 50;
+const SPECIALTY_SEARCH_PAGE_SIZE = 20;
 
 const findAddrComponents = (
   proptoFind: GooglePlacesType,
@@ -262,6 +265,8 @@ interface SearchObject {
   dateSelected: string;
   specialtyName: string;
   prakticeSpecialties: string | null;
+  consultMode: ConsultMode | null;
+  brand: string[] | null;
 }
 
 interface AppointmentFilterObject {
@@ -271,7 +276,25 @@ interface AppointmentFilterObject {
   specialtyList: string[] | null;
 }
 
-const feeInRupees = ['100 - 500', '500 - 1000', '1000+'];
+const brandList = [
+  { key: DoctorType.APOLLO, value: 'Apollo' },
+  { key: DoctorType.APOLLO_HOMECARE, value: 'Apollo Homecare' },
+  { key: DoctorType.CLINIC, value: 'Clinic' },
+  { key: DoctorType.CRADLE, value: 'Cradle' },
+  { key: DoctorType.DOCTOR_CONNECT, value: 'Doctor Connect' },
+  { key: DoctorType.FERTILITY, value: 'Fertility' },
+  { key: DoctorType.JUNIOR, value: 'Junior' },
+  { key: DoctorType.PAYROLL, value: 'Payroll' },
+  { key: DoctorType.SPECTRA, value: 'Spectra' },
+  { key: DoctorType.STAR_APOLLO, value: 'Star Apollo' },
+  { key: DoctorType.SUGAR, value: 'Sugar' },
+  { key: DoctorType.WHITE_DENTAL, value: 'White Dental' },
+];
+const feeInRupees = [
+  { key: '100-500', value: '100 - 500' },
+  { key: '500-1000', value: '500 - 1000' },
+  { key: '1000+', value: '1000+' },
+];
 const experienceList = [
   { key: '0-5', value: '0 - 5' },
   { key: '6-10', value: '6 - 10' },
@@ -534,8 +557,40 @@ export const consultWebengageEventsCommonInfo = (data: any) => {
     'Hospital City': hospitalCity,
   };
 };
+const deepLinkUtil = (deepLinkPattern: string) => {
+  if (getDeviceType() !== DEVICETYPE.DESKTOP && !sessionStorage.getItem('deepLinkAccessed')) {
+    window.location.href = `apollopatients://${deepLinkPattern}`;
+    setTimeout(() => {
+      window.location.href = getAppStoreLink();
+    }, 1000);
+    sessionStorage.setItem('deepLinkAccessed', '1');
+  }
+};
+
+const isPrime = (num: number) => {
+  for (let i = 2; i < num; i++) if (num % i === 0) return false;
+  return num > 1;
+};
+
+const isDivisibleByTwo = (num: number) => {
+  return num % 2 === 0;
+};
+
+const isDivisibleByThree = (num: number) => {
+  return num % 3 === 0;
+};
+
+const getSlidesToScroll = (num: number) => {
+  return isPrime(num) ? 1 : isDivisibleByThree(num) ? 3 : 2;
+};
+
+const disablingActionsTimeBeforeConsultation = 16;
 
 export {
+  disablingActionsTimeBeforeConsultation,
+  brandList,
+  getSlidesToScroll,
+  deepLinkUtil,
   HEALTH_RECORDS_NO_DATA_FOUND,
   removeGraphQLKeyword,
   getCouponByUserMobileNumber,
@@ -589,4 +644,5 @@ export {
   PINCODE_MAXLENGTH,
   SPECIALTY_DETAIL_LISTING_PAGE_SIZE,
   HEALTH_RECORDS_NOTE,
+  SPECIALTY_SEARCH_PAGE_SIZE,
 };

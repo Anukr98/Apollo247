@@ -108,7 +108,7 @@ import {
   StyleProp,
   ViewStyle,
 } from 'react-native';
-import { Image } from 'react-native-elements';
+import { FastImageLoading } from '@aph/mobile-doctors/src/components/ui/FastImageLoading';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import {
   NavigationParams,
@@ -140,7 +140,7 @@ export interface CaseSheetViewProps extends NavigationScreenProps {
   inCall: boolean;
   onStartConsult: (successCallback?: () => void) => void;
   onEndConsult: () => void;
-  onStopConsult: () => void;
+  onStopConsult: (screen: 'ConsultRoom' | 'PrescriptionPreview') => void;
   startConsult: boolean;
   navigation: NavigationScreenProp<NavigationRoute<NavigationParams>, NavigationParams>;
   overlayDisplay: (renderDisplay: React.ReactNode) => void;
@@ -165,7 +165,8 @@ export interface CaseSheetViewProps extends NavigationScreenProps {
   setShowEditPreviewButtons: Dispatch<React.SetStateAction<boolean>>;
   getdetails: () => void;
   saveDetails: (
-    showLoading: boolean,
+    loadingShown: boolean,
+    screen: 'ConsultRoom' | 'PrescriptionPreview',
     inputdata?: ModifyCaseSheetInput,
     callBack?: () => void
   ) => void;
@@ -275,6 +276,11 @@ export interface CaseSheetViewProps extends NavigationScreenProps {
   setSelectedReferral: React.Dispatch<React.SetStateAction<OptionsObject>>;
   referralReason: string;
   setReferralReason: React.Dispatch<React.SetStateAction<string>>;
+  postWebEngageError: (
+    apiname: string,
+    errorData: string,
+    screen?: 'ConsultRoom' | 'PrescriptionPreview'
+  ) => Promise<void>;
 }
 
 export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
@@ -358,6 +364,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     existingMedicineId,
     removedMedicinePrescriptionData,
     setRemovedMedicinePrescriptionData,
+    postWebEngageError,
   } = props;
 
   const basicAppointmentData = {
@@ -428,6 +435,11 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       })
       .catch((e) => {
         setLoading && setLoading(false);
+        postWebEngageError(
+          'UpdatePatientPrescriptionSentStatus',
+          JSON.stringify(e),
+          'PrescriptionPreview'
+        );
         showAphAlert &&
           showAphAlert({
             title: strings.common.uh_oh,
@@ -515,9 +527,9 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
         },
         onSendPress: () => {
           setShowButtons(true);
-          saveDetails(true, undefined, () => {
+          saveDetails(true, 'PrescriptionPreview', undefined, () => {
             sendToPatientAction(() => {
-              props.onStopConsult();
+              props.onStopConsult('PrescriptionPreview');
             });
           });
         },
@@ -564,6 +576,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
       .catch((e) => {
         setLoading && setLoading(false);
         props.overlayDisplay(null);
+        postWebEngageError('EndAppointmentSession', JSON.stringify(e), 'ConsultRoom');
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
         showAphAlert &&
@@ -612,7 +625,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               <Button
                 onPress={() => {
                   setShowButtons(true);
-                  saveDetails(true);
+                  saveDetails(true, 'ConsultRoom');
                 }}
                 title={strings.buttons.save}
                 titleTextStyle={styles.buttonTextStyle}
@@ -723,7 +736,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                   (selectedReferral.key !== '-1' && referralReason)
                 ) {
                   setShowButtons(true);
-                  saveDetails(true, undefined, () => {
+                  saveDetails(true, 'ConsultRoom', undefined, () => {
                     props.setCaseSheetEdit(false);
                     setLoading && setLoading(false);
                   });
@@ -751,7 +764,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
                 (selectedReferral.key !== '-1' && referralReason)
               ) {
                 setShowButtons(true);
-                saveDetails(false);
+                saveDetails(false, 'PrescriptionPreview');
                 prescriptionView();
               } else {
                 showAphAlert &&
@@ -2331,7 +2344,7 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               setyesorno(false);
               setLoading && setLoading(true);
               setShowButtons(true);
-              saveDetails(true);
+              saveDetails(true, 'ConsultRoom');
               endConsult();
             }}
           >
@@ -2634,28 +2647,10 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
     return (
       <View style={{ marginBottom: 20 }}>
         {patientDetails && patientDetails.photoUrl ? (
-          <Image
-            source={{
-              uri: (patientDetails && patientDetails.photoUrl) || '',
-            }}
-            style={{ height: width, width: width, backgroundColor: theme.colors.WHITE }}
+          <FastImageLoading
+            uri={(patientDetails && patientDetails.photoUrl) || ''}
+            imageStyle={{ height: width, width: width, backgroundColor: theme.colors.WHITE }}
             resizeMode={'contain'}
-            placeholderStyle={{
-              height: width,
-              width: width,
-              alignItems: 'center',
-              backgroundColor: 'transparent',
-            }}
-            PlaceholderContent={
-              loading ? (
-                <></>
-              ) : (
-                <Spinner
-                  style={{ backgroundColor: 'transparent' }}
-                  message={strings.common.imageLoading}
-                />
-              )
-            }
           />
         ) : (
           <UserPlaceHolder
@@ -2664,8 +2659,8 @@ export const CaseSheetView: React.FC<CaseSheetViewProps> = (props) => {
               width: width,
               alignItems: 'center',
               backgroundColor: 'white',
-              resizeMode: 'contain',
             }}
+            resizeMode="contain"
           />
         )}
       </View>

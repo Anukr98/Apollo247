@@ -1,5 +1,7 @@
 import WebEngage from 'react-native-webengage';
-import { AppConfig, AppEnv } from '@aph/mobile-doctors/src/helpers/AppConfig';
+import { AppConfig } from '@aph/mobile-doctors/src/helpers/AppConfig';
+import { GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet } from '@aph/mobile-doctors/src/graphql/types/GetDoctorAppointments';
+import { ConsultMode } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 
 export interface WebEngageType {
   init: (autoRegister: boolean) => void;
@@ -46,6 +48,7 @@ export enum WebEngageEventName {
   DOCTOR_APPOINTMENT_CLICKED = 'Front_end - Doctor Clicked on Appointment',
   DOCTOR_APPOINTMENT_FORCE_START_ACCEPT = 'Front_end - Doctor Accepted to  Force Start',
   DOCTOR_APPOINTMENT_FORCE_START_DECLINE = 'Front_end - Doctor Declined to Force start',
+  DOCTOR_APPOINTMENT_UNABLETO_FORCE_START = 'Front_end - Doctor unable to Force start consult',
   DOCTOR_APPOINTMETNT_CANCELLED = 'Front_end - Doctor cancelled appointment',
   DOCTOR_APPOINTMENT_RESCHEDULED = 'Front_end - Doctor rescheduled the appointment',
   DOCTOR_START_CONSULT = 'Front_end - Doctor started the consult',
@@ -67,6 +70,14 @@ export enum WebEngageEventName {
   DOCTOR_CLICKED_HELP = 'Front_end - Doctor Clicked on the help',
   DOCTOR_STARTED_TEST = 'Front_end - Doctor started test',
   DOCTOR_CLICKED_SETTINGS = 'Front_end - Doctor Clicked on the Settings',
+  DOCTOR_CHANGED_CHATDAYS = 'Front_end - Doctor Changed Chat Days(Settings)',
+  DOCTOR_CHANGED_IVR = 'Front_end - Doctor Changed IVR (Settings)',
+  DOCTOR_CALENDAR_ERROR = 'Front_end - Doctor API-Error on Calendar',
+  DOCTOR_CASESHEET_ERROR = 'Front_end - Doctor API-Error on Casesheet',
+  DOCTOR_PREVIEWCASESHEET_ERROR = 'Front_end - Doctor API-Error on Prescription Preview',
+  DOCTOR_OPENTOK_SESSION_EVENTS = 'Front_end - Doctor Session Event',
+  DOCTOR_OPENTOK_PUBLISHER_EVENTS = 'Front_end - Doctor Publisher Event',
+  DOCTOR_OPENTOK_SUBSCRIBER_EVENTS = 'Front_end - Doctor Subscriber Event',
 }
 
 export interface WebEngageEvents {
@@ -105,6 +116,11 @@ export interface WebEngageEvents {
   [WebEngageEventName.DOCTOR_APPOINTMENT_FORCE_START_DECLINE]: {
     'Appointment Date time': string;
     'Appointment ID': string;
+  };
+  [WebEngageEventName.DOCTOR_APPOINTMENT_UNABLETO_FORCE_START]: {
+    'Appointment Date time': string;
+    'Appointment ID': string;
+    'Jd casesheet': GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet | null;
   };
   [WebEngageEventName.DOCTOR_APPOINTMETNT_CANCELLED]: {
     'Doctor name': string;
@@ -284,6 +300,48 @@ export interface WebEngageEvents {
     'Doctor name': string;
     'Doctor Mobile number': string;
   };
+  [WebEngageEventName.DOCTOR_CHANGED_CHATDAYS]: {
+    'Old Chat Days': string;
+    'New Chat Days': string;
+  };
+  [WebEngageEventName.DOCTOR_CHANGED_IVR]: {
+    'Old IVR option': 'YES' | 'NO';
+    'Old Consult Type': ConsultMode | null;
+    'Old Online Time': string;
+    'Old In-Person Time': string;
+    'New IVR option': 'YES' | 'NO';
+    'New Consult Type': ConsultMode | null;
+    'New Online Time': string;
+    'New In-Person Time': string;
+  };
+  [WebEngageEventName.DOCTOR_CALENDAR_ERROR]: {
+    'Selected Calendar Day': string;
+    ErrorDetails: string;
+  };
+  [WebEngageEventName.DOCTOR_CASESHEET_ERROR]: {
+    'API name': string;
+    ErrorDetails: string;
+    'Consultation Display ID': string;
+    'Consult ID': string;
+  };
+  [WebEngageEventName.DOCTOR_PREVIEWCASESHEET_ERROR]: {
+    'API name': string;
+    ErrorDetails: string;
+    'Consultation Display ID': string;
+    'Consult ID': string;
+  };
+  [WebEngageEventName.DOCTOR_OPENTOK_SESSION_EVENTS]: {
+    'Event Name': string;
+    'Event Details': Object;
+  };
+  [WebEngageEventName.DOCTOR_OPENTOK_PUBLISHER_EVENTS]: {
+    'Event Name': string;
+    'Event Details': Object;
+  };
+  [WebEngageEventName.DOCTOR_OPENTOK_SUBSCRIBER_EVENTS]: {
+    'Event Name': string;
+    'Event Details': Object;
+  };
 }
 
 export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Object) => {
@@ -320,4 +378,8 @@ export const webEngageLogin = (id?: string) => {
       }
     }
   } catch (e) {}
+};
+
+export const setScreenName = (screenName: string) => {
+  webengage.screen(screenName);
 };

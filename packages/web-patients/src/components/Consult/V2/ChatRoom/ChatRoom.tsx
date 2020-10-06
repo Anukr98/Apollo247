@@ -46,6 +46,7 @@ import {
   getSecretaryDetailsByDoctorIdVariables,
 } from 'graphql/types/getSecretaryDetailsByDoctorId';
 import { reschedulePatientTracking } from 'webEngageTracking';
+import { dataLayerTracking } from 'gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -527,6 +528,7 @@ const ChatRoom: React.FC = () => {
   const [rescheduleCount, setRescheduleCount] = useState<number | null>(null);
   const [reschedulesRemaining, setReschedulesRemaining] = useState<number | null>(null);
   const [isConsultCompleted, setIsConsultCompleted] = useState<boolean>(false);
+  const [disableActions, setDisableActions] = useState<boolean>(false);
 
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
@@ -534,6 +536,18 @@ const ChatRoom: React.FC = () => {
 
   const [alertMessage, setAlertMessage] = useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: 'Chat Room Page',
+      pageLOB: 'Consultation',
+      pageType: 'Chat Room Page',
+    });
+    /**Gtm code start end */
+  }, []);
 
   const { data, loading, error } = useQueryWithSkip<
     GetDoctorDetailsById,
@@ -721,6 +735,8 @@ const ChatRoom: React.FC = () => {
                     srDoctorJoined={srDoctorJoined}
                     isConsultCompleted={isConsultCompleted}
                     secretaryData={secretaryData}
+                    setDisableActions={setDisableActions}
+                    disableActions={disableActions}
                   />
                 )}
               </div>
@@ -730,10 +746,17 @@ const ChatRoom: React.FC = () => {
                   {appointmentDetails &&
                     appointmentDetails.status !== STATUS.CANCELLED &&
                     appointmentDetails.status !== STATUS.COMPLETED &&
+                    !isConsultCompleted &&
+                    !disableActions &&
                     !srDoctorJoined && (
                       <div className={classes.headerActions}>
                         <AphButton
-                          disabled={appointmentDetails.isSeniorConsultStarted || srDoctorJoined}
+                          disabled={
+                            appointmentDetails.isSeniorConsultStarted ||
+                            srDoctorJoined ||
+                            disableActions ||
+                            isConsultCompleted
+                          }
                           classes={{
                             root: classes.viewButton,
                             disabled: classes.disabledButton,

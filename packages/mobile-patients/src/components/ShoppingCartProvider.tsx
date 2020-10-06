@@ -29,6 +29,7 @@ export interface ShoppingCartItem {
   unserviceable?: boolean;
   isMedicine: boolean;
   productType?: 'FMCG' | 'Pharma' | 'PL';
+  isFreeCouponProduct?: boolean;
 }
 
 export interface CouponProducts {
@@ -40,6 +41,7 @@ export interface CouponProducts {
   sku: string;
   specialPrice: number;
   subCategoryId: any;
+  couponFree: boolean;
 }
 
 export interface PhysicalPrescription {
@@ -67,6 +69,7 @@ export interface EPrescription {
 
 export interface PharmaCoupon extends validatePharmaCoupon_validatePharmaCoupon {
   coupon: string;
+  message?: string;
   discount: number;
   valid: boolean;
   reason: String;
@@ -82,6 +85,7 @@ export interface CartProduct {
   quantity: number;
   discountAmt: number;
   onMrp: boolean;
+  couponFree?: boolean;
 }
 export type EPrescriptionDisableOption = 'CAMERA_AND_GALLERY' | 'E-PRESCRIPTION' | 'NONE';
 
@@ -94,6 +98,7 @@ export interface ShoppingCartContextProps {
   updateCartItem:
     | ((itemUpdates: Partial<ShoppingCartItem> & { id: ShoppingCartItem['id'] }) => void)
     | null;
+  getCartItemQty: (id: string) => number;
   cartTotal: number;
   cartTotalOfRxProducts: number;
   couponDiscount: number;
@@ -158,6 +163,7 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   addMultipleCartItems: null,
   removeCartItem: null,
   updateCartItem: null,
+  getCartItemQty: () => 0,
   cartTotal: 0,
   cartTotalOfRxProducts: 0,
   couponDiscount: 0,
@@ -247,7 +253,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
     ShoppingCartContextProps['showPrescriptionAtStore']
   >(false);
 
-  const [couponProducts, _setCouponProducts] = useState<ShoppingCartContextProps['couponProducts']>([]);
+  const [couponProducts, _setCouponProducts] = useState<ShoppingCartContextProps['couponProducts']>(
+    []
+  );
 
   const [physicalPrescriptions, _setPhysicalPrescriptions] = useState<
     ShoppingCartContextProps['physicalPrescriptions']
@@ -347,6 +355,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
     }
   };
 
+  const getCartItemQty: ShoppingCartContextProps['getCartItemQty'] = (id) =>
+    cartItems.find(({ id: cId }) => cId == id)?.quantity || 0;
+
   const setCouponProducts: ShoppingCartContextProps['setCouponProducts'] = (items) => {
     _setCouponProducts(items);
   };
@@ -365,10 +376,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   );
 
   const deliveryCharges =
-    !deliveryType || deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+    deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
       ? 0
-      : deliveryType == MEDICINE_DELIVERY_TYPE.HOME_DELIVERY &&
-        cartTotal > 0 &&
+      : cartTotal > 0 &&
         cartTotal - productDiscount - couponDiscount <
           AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY
       ? AppConfig.Configuration.DELIVERY_CHARGES
@@ -469,12 +479,11 @@ export const ShoppingCartProvider: React.FC = (props) => {
     updateCartItemsFromStorage();
   }, []);
 
-  const getDiscountPrice = (
-    cartItem: ShoppingCartItem,
-    lineItems: validatePharmaCoupon_validatePharmaCoupon_pharmaLineItemsWithDiscountedPrice[]
-  ) => {
+  const getDiscountPrice = (cartItem: ShoppingCartItem, lineItems: CartProduct[]) => {
     const foundItem = lineItems.find((item) => item.sku == cartItem.id);
-    return foundItem
+    return foundItem &&
+      foundItem.discountAmt != 0 &&
+      foundItem.discountAmt > foundItem.mrp - foundItem.specialPrice
       ? foundItem.onMrp
         ? foundItem.mrp - foundItem.discountAmt
         : foundItem.specialPrice - foundItem.discountAmt
@@ -501,12 +510,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
       );
 
     if (coupon) {
-      if (
-        g(coupon, 'discount') != 0 &&
-        g(coupon, 'discount') > deductProductDiscount(coupon.products)
-      ) {
-        setCouponDiscount(g(coupon, 'discount') - deductProductDiscount(coupon.products) || 0);
-        setProductDiscount(getProductDiscount(coupon.products) || 0);
+      if (coupon?.discount != 0 && coupon?.discount > deductProductDiscount(coupon.products)) {
+        setCouponDiscount(coupon?.discount - deductProductDiscount(coupon.products) || 0);
+        setProductDiscount(productDiscount);
         setCartItems(
           cartItems.map((item) => ({
             ...item,
@@ -515,7 +521,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
         );
       } else {
         setCouponDiscount(0);
-        setProductDiscount(getProductDiscount(coupon.products) || 0);
+        setProductDiscount(productDiscount);
         setCartItems(
           cartItems.map((item) => ({
             ...item,
@@ -534,8 +540,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
     let discount = 0;
     products &&
       products.forEach((item) => {
-        if (item.mrp != item.specialPrice && item.onMrp) {
-          discount = discount + (item.mrp - item.specialPrice) * item.quantity;
+        if (item.onMrp) {
+          discount = discount + (item.mrp - (item.specialPrice || item.mrp)) * item.quantity;
         }
       });
     return discount;
@@ -545,8 +551,12 @@ export const ShoppingCartProvider: React.FC = (props) => {
     let discount = 0;
     products &&
       products.forEach((item) => {
-        if (item.mrp != item.specialPrice) {
-          discount = discount + (item.mrp - item.specialPrice) * item.quantity;
+        let quantity = item.quantity;
+        if (item.couponFree) {
+          quantity = 1; // one free product
+          discount = discount + item.mrp * quantity;
+        } else if (item.mrp != item.specialPrice) {
+          discount = discount + (item.mrp - item.specialPrice) * quantity;
         }
       });
     return discount;
@@ -575,6 +585,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
         addMultipleCartItems,
         removeCartItem,
         updateCartItem,
+        getCartItemQty,
         cartTotal, // MRP Total
         cartTotalOfRxProducts,
         grandTotal,

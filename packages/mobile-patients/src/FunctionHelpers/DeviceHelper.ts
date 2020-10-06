@@ -50,8 +50,6 @@ export const CommonLogEvent = async (stringName: string, parameterName: string) 
 export const CommonScreenLog = (stringName: string, parameterName: string) => {
   if (isReleaseOn) {
     try {
-      AsyncStorage.setItem('setCurrentName', stringName);
-
       firebase.analytics().setCurrentScreen(stringName, parameterName);
     } catch (error) {
       CommonBugFender('DeviceHelper_CommonScreenLog_try', error);

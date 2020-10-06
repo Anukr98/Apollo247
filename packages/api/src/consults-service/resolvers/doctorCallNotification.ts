@@ -84,7 +84,12 @@ export const doctorCallNotificationTypeDefs = gql`
       patientId: String
       isDev: Boolean
     ): NotificationResult!
-    endCallNotification(appointmentCallId: String, isDev: Boolean, patientId: String, numberOfParticipants: Int): EndCallResult!
+    endCallNotification(
+      appointmentCallId: String
+      isDev: Boolean
+      patientId: String
+      numberOfParticipants: Int
+    ): EndCallResult!
     sendApptNotification: ApptNotificationResult!
     getCallDetails(appointmentCallId: String): CallDetailsResult!
     sendPatientWaitNotification(appointmentId: String): sendPatientWaitNotificationResult
@@ -114,7 +119,7 @@ type CallDetailsResult = {
 
 const endCallNotification: Resolver<
   null,
-  { appointmentCallId: string; isDev: boolean, patientId: string, numberOfParticipants: number },
+  { appointmentCallId: string; isDev: boolean; patientId: string; numberOfParticipants: number },
   ConsultServiceContext,
   EndCallResult
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
@@ -145,25 +150,25 @@ const endCallNotification: Resolver<
 
   args.patientId = args.patientId || callDetails.appointment.patientId;
   const deviceTokenRepo = patientsDb.getCustomRepository(PatientDeviceTokenRepository);
-  let voipPushtoken = await deviceTokenRepo.getDeviceVoipPushToken(
-    args.patientId,
-    DEVICE_TYPE.IOS
-  );
+  let voipPushtoken = await deviceTokenRepo.getDeviceVoipPushToken(args.patientId, DEVICE_TYPE.IOS);
 
-  if (args.patientId != callDetails.appointment.patientId && (!voipPushtoken.length || !voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'])) {
+  if (
+    args.patientId != callDetails.appointment.patientId &&
+    (!voipPushtoken.length || !voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'])
+  ) {
     args.patientId = callDetails.appointment.patientId;
-    voipPushtoken = await deviceTokenRepo.getDeviceVoipPushToken(
-      args.patientId,
-      DEVICE_TYPE.IOS
-    );
+    voipPushtoken = await deviceTokenRepo.getDeviceVoipPushToken(args.patientId, DEVICE_TYPE.IOS);
   }
 
   if (!args.isDev) {
     args.isDev = false;
   }
 
-  if (voipPushtoken.length && voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'] &&
-    (!args.numberOfParticipants || (args.numberOfParticipants && args.numberOfParticipants < 2))) {
+  if (
+    voipPushtoken.length &&
+    voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'] &&
+    (!args.numberOfParticipants || (args.numberOfParticipants && args.numberOfParticipants < 2))
+  ) {
     hitCallKitCurl(
       voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'],
       doctorName,
@@ -250,7 +255,7 @@ const sendCallNotification: Resolver<
       appointmentCallDetails.id,
       args.isDev,
       args.numberOfParticipants,
-      args.patientId,
+      args.patientId
     );
   } else {
     const pushNotificationInput = {
@@ -267,7 +272,7 @@ const sendCallNotification: Resolver<
       appointmentCallDetails.id,
       args.isDev,
       args.numberOfParticipants,
-      args.patientId,
+      args.patientId
     );
   }
 
@@ -326,7 +331,7 @@ const sendPatientWaitNotification: Resolver<
   //const patientDetails = await patientRepo.getPatientDetails(appointment.patientId);
   //if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
   //const applicationLink = process.env.WHATSAPP_LINK_BOOK_APOINTMENT + '?' + appointment.id;
-  const devLink = process.env.DOCTOR_DEEP_LINK ? process.env.DOCTOR_DEEP_LINK : '';
+  const devLink = process.env.APPT_DOCTOR_DEEP_LINK ? process.env.APPT_DOCTOR_DEEP_LINK : '';
   if (appointment) {
     const templateData: string[] = [appointment.appointmentType, appointment.patientName, devLink];
     sendDoctorNotificationWhatsapp(
@@ -383,7 +388,7 @@ const sendCallStartNotification: Resolver<null, {}, ConsultServiceContext, EndCa
   const apptDetails = await apptRepo.getNotStartedAppointments();
   const devLink = process.env.DOCTOR_DEEP_LINK ? process.env.DOCTOR_DEEP_LINK : '';
   content += '\nappts length: ' + apptDetails.length.toString();
-  fs.appendFile(assetsDir + '/' + fileName, content, (err) => { });
+  fs.appendFile(assetsDir + '/' + fileName, content, (err) => {});
   if (apptDetails.length > 0) {
     const docRepo = doctorsDb.getCustomRepository(DoctorRepository);
     apptDetails.forEach(async (appt) => {
@@ -393,7 +398,7 @@ const sendCallStartNotification: Resolver<null, {}, ConsultServiceContext, EndCa
         //console.log(doctorDetails.id, doctorDetails.doctorSecretary, 'doc details');
         content +=
           doctorDetails.id + '-' + doctorDetails.doctorSecretary.secretary.mobileNumber + '\n';
-        fs.appendFile(assetsDir + '/' + fileName, content, (err) => { });
+        fs.appendFile(assetsDir + '/' + fileName, content, (err) => {});
         const templateData: string[] = [appt.appointmentType, appt.patientName, devLink];
         sendDoctorNotificationWhatsapp(
           ApiConstants.WHATSAPP_SD_CONSULT_DELAY,

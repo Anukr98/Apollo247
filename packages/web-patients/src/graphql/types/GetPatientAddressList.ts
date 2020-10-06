@@ -26,6 +26,7 @@ export interface GetPatientAddressList_getPatientAddressList_addressList {
   latitude: number | null;
   longitude: number | null;
   stateCode: string | null;
+  name: string | null;
 }
 
 export interface GetPatientAddressList_getPatientAddressList {

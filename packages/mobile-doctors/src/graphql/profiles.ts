@@ -34,6 +34,10 @@ export const GET_DOCTOR_DETAILS = gql`
       streetLine3
       zip
       signature
+      isIvrSet
+      ivrConsultType
+      ivrCallTimeOnline
+      ivrCallTimePhysical
       specialty {
         id
         name
@@ -1807,6 +1811,27 @@ export const GET_PARTICIPANTS_LIVE_STATUS = gql`
       userStatus: $userStatus
     ) {
       NUMBER_OF_PARTIPANTS
+    }
+  }
+`;
+
+export const SET_APPOINTMENT_REMINDER_IVR = gql`
+  mutation setAppointmentReminderIvr(
+    $doctorId: String!
+    $isIvrSet: Boolean
+    $ivrConsultType: ConsultMode
+    $ivrCallTimeOnline: Int
+    $ivrCallTimePhysical: Int
+  ) {
+    setAppointmentReminderIvr(
+      doctorId: $doctorId
+      isIvrSet: $isIvrSet
+      ivrConsultType: $ivrConsultType
+      ivrCallTimeOnline: $ivrCallTimeOnline
+      ivrCallTimePhysical: $ivrCallTimePhysical
+    ) {
+      isError
+      response
     }
   }
 `;

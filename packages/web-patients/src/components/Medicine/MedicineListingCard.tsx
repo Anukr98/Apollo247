@@ -366,7 +366,6 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                     validateCouponResult.products[idx] &&
                     !validateCouponResult.products[idx].couponFree ? (
                       <>
-                        {/* {JSON.stringify(validateCouponResult.products[idx])} */}
                         <div className={`${classes.medicinePrice} ${classes.mrpPrice}`}>
                           {validateCouponResult.products[idx].specialPrice !==
                           validateCouponResult.products[idx].mrp ? (

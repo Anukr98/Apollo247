@@ -28,9 +28,7 @@ import { NavigationScreenProps } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { string } from '@aph/mobile-patients/src/strings/string';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { MedicalTest } from '@aph/mobile-patients/src/components/HealthRecords/AddRecord';
@@ -129,7 +127,6 @@ export interface HealthRecordDetailsProps extends NavigationScreenProps {}
 export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) => {
   const [showtopLine, setshowtopLine] = useState<boolean>(true);
   const [showPrescription, setshowPrescription] = useState<boolean>(true);
-  const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const data = props.navigation.state.params ? props.navigation.state.params.data : {};
   const labResults = props.navigation.state.params
     ? props.navigation.state.params.labResults
@@ -141,13 +138,8 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
     ? props.navigation.state.params.hospitalization
     : false;
   const { currentPatient } = useAllCurrentPatients();
-  const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const { setLoading } = useUIElements();
   const client = useApolloClient();
-
-  useEffect(() => {
-    !!data.fileUrl ? setshowPopUp(false) : setshowPopUp(true);
-  }, []);
 
   useEffect(() => {
     Platform.OS === 'android' && requestReadSmsPermission();
@@ -275,7 +267,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
               (data.medicalRecordParameters && data.medicalRecordParameters) ||
               (data.labTestResults && data.labTestResults)
             ).map((item: any) => {
-              const unit = MedicalTest.find((itm) => itm.key === item.unit);
+              const unit = item?.unit;
               return (
                 <View
                   style={[styles.cardViewStyle, { marginTop: 4, marginBottom: 4, paddingTop: 16 }]}
@@ -293,7 +285,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
                     'Normal Range',
                     item.range ? item.range : `${item.minimum || ''} - ${item.maximum || 'N/A'}`
                   )}
-                  {detailRowView('Units', unit ? unit.value : item.unit || 'N/A')}
+                  {detailRowView('Units', unit || 'N/A')}
                   {detailRowView('Result', item.result || 'N/A')}
                 </View>
               );
@@ -535,26 +527,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
             {renderTestTopDetailsView()}
             {renderData()}
           </ScrollView>
-          {showSpinner && <Spinner />}
         </SafeAreaView>
-        {showPopUp && (
-          <BottomPopUp
-            title={`Hi ${(currentPatient && currentPatient.firstName!.toLowerCase()) || ''},`}
-            description={'You do not have any images'}
-          >
-            <View style={{ height: 60, alignItems: 'flex-end' }}>
-              <TouchableOpacity
-                activeOpacity={1}
-                style={styles.gotItStyles}
-                onPress={() => {
-                  setshowPopUp(false);
-                }}
-              >
-                <Text style={styles.gotItTextStyles}>{string.LocalStrings.ok}</Text>
-              </TouchableOpacity>
-            </View>
-          </BottomPopUp>
-        )}
       </View>
     );
   }

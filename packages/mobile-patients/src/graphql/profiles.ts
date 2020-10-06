@@ -409,6 +409,7 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
           orderId
         }
         id
+        hideHealthRecordNudge
         patientId
         doctorId
         appointmentDateTime
@@ -428,6 +429,7 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
           awards
           city
           country
+          chatDays
           dateOfBirth
           displayName
           doctorType
@@ -2413,6 +2415,7 @@ export const GET_APPOINTMENT_DATA = gql`
         doctorInfo {
           id
           salutation
+          chatDays
           firstName
           lastName
           displayName
@@ -3096,6 +3099,26 @@ export const GET_PARTICIPANTS_LIVE_STATUS = gql`
       userStatus: $userStatus
     ) {
       NUMBER_OF_PARTIPANTS
+    }
+  }
+`;
+
+export const CREATE_ONE_APOLLO_USER = gql`
+  mutation createOneApolloUser($patientId: String!) {
+    createOneApolloUser(patientId: $patientId) {
+      success
+      message
+    }
+  }
+`;
+
+export const UPDATE_HEALTH_RECORD_NUDGE_STATUS = gql`
+  mutation updateHealthRecordNudgeStatus($appointmentId: String!, $hideHealthRecordNudge: Boolean) {
+    updateHealthRecordNudgeStatus(
+      appointmentId: $appointmentId
+      hideHealthRecordNudge: $hideHealthRecordNudge
+    ) {
+      response
     }
   }
 `;

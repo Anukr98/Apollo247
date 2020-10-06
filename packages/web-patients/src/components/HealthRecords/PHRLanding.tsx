@@ -33,6 +33,8 @@ import { MyProfile } from 'components/MyAccount/MyProfile';
 import {
   phrConsultTabClickTracking,
   phrMedicalRecordsTabClickTracking,
+  phrViewHealthCheckTracking,
+  phrViewDischargeSummaryTracking,
 } from '../../webEngageTracking';
 import { BottomLinks } from 'components/BottomLinks';
 import { MedicalRecordType } from '../../graphql/types/globalTypes';
@@ -136,6 +138,8 @@ type LandingProps = {
 
 const PHRLanding: React.FC<LandingProps> = (props) => {
   const classes = useStyles({});
+  const patient = useCurrentPatient();
+  const age = patient && patient.dateOfBirth ? moment().diff(patient.dateOfBirth, 'years') : null;
   const [tabValue, setTabValue] = useState<number>(0);
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
@@ -187,6 +191,27 @@ const PHRLanding: React.FC<LandingProps> = (props) => {
     }
   }, [props]);
 
+  useEffect(() => {
+    if (patient) {
+      switch (tabValue) {
+        case 0:
+          phrConsultTabClickTracking({ ...patient, age });
+          return;
+        case 1:
+          phrMedicalRecordsTabClickTracking({ ...patient, age });
+          return;
+        case 2:
+          phrViewHealthCheckTracking({ ...patient, age });
+          return;
+        case 3:
+          phrViewDischargeSummaryTracking({ ...patient, age });
+          return;
+        default:
+          return;
+      }
+    }
+  }, [tabValue, patient]);
+
   const fetchPastConsultsData = () => {
     setConsultsLoading(true);
     if (currentPatient) {
@@ -231,7 +256,13 @@ const PHRLanding: React.FC<LandingProps> = (props) => {
       ) => {
         const date1 = moment(data1.date).toDate().getTime();
         const date2 = moment(data2.date).toDate().getTime();
-        return date1 > date2 ? -1 : date1 < date2 ? 1 : 0;
+        return date1 > date2
+          ? -1
+          : date1 < date2
+          ? 1
+          : isNaN(parseInt(data2.id))
+          ? 0
+          : parseInt(data2.id) - parseInt(data1.id);
       }
     );
   };
@@ -300,7 +331,13 @@ const PHRLanding: React.FC<LandingProps> = (props) => {
       const date2 = moment(b.bookingDate || b.date || b.quoteDateTime)
         .toDate()
         .getTime();
-      return date1 > date2 ? -1 : date1 < date2 ? 1 : a.id - b.id;
+      return date1 > date2
+        ? -1
+        : date1 < date2
+        ? 1
+        : isNaN(parseInt(b.id))
+        ? 0
+        : parseInt(b.id) - parseInt(a.id);
     });
   };
 
@@ -351,9 +388,6 @@ const PHRLanding: React.FC<LandingProps> = (props) => {
       });
   };
 
-  const patient = useCurrentPatient();
-  const age = patient && patient.dateOfBirth ? moment().diff(patient.dateOfBirth, 'years') : null;
-
   return (
     <div className={classes.root}>
       <Header />
@@ -370,11 +404,11 @@ const PHRLanding: React.FC<LandingProps> = (props) => {
                   classes={{ root: classes.tabsRoot, indicator: classes.tabsIndicator }}
                   onChange={(e, newValue) => {
                     setTabValue(newValue);
-                    if (newValue) {
-                      phrMedicalRecordsTabClickTracking({ ...patient, age });
-                    } else {
-                      phrConsultTabClickTracking({ ...patient, age });
-                    }
+                    // if (newValue === 1) {
+                    //   phrMedicalRecordsTabClickTracking({ ...patient, age });
+                    // } else if (newValue === 0) {
+                    //   phrConsultTabClickTracking({ ...patient, age });
+                    // }
                   }}
                 >
                   <Tab
