@@ -80,22 +80,22 @@ const Dropdown = (props: any) => {
   return (
     <div style={{ width: '50%' }}>
       <LightText data={props.data} />
-      <br />
-      <br />
-      <AphCustomDropdown
-        style={{
-          width: '146px',
-          borderBottom: '1px solid #00b38e',
-        }}
-        onChange={props.onChange}
-        value={props.value}
-      >
-        {[10, 30, 60].map((val, index) => (
-          <MenuItem key={val} value={val}>
-            {val + ' min'}
-          </MenuItem>
-        ))}
-      </AphCustomDropdown>
+      <div style={{ marginTop: 30 }}>
+        <AphCustomDropdown
+          style={{
+            width: '146px',
+            borderBottom: '1px solid #00b38e',
+          }}
+          onChange={props.onChange}
+          value={props.value}
+        >
+          {[10, 30, 60].map((val, index) => (
+            <MenuItem key={val} value={val}>
+              {val + ' min'}
+            </MenuItem>
+          ))}
+        </AphCustomDropdown>
+      </div>
     </div>
   );
 };
