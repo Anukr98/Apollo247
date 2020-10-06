@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { DoctorType, DOCTOR_ONLINE_STATUS, WeekDay, ConsultMode, ConsultType, AccountType } from "./globalTypes";
+import { ConsultMode, DoctorType, DOCTOR_ONLINE_STATUS, WeekDay, ConsultType, AccountType } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetDoctorDetails
@@ -115,6 +115,10 @@ export interface GetDoctorDetails_getDoctorDetails_starTeam {
 
 export interface GetDoctorDetails_getDoctorDetails {
   __typename: "DoctorDetails";
+  isIvrSet: boolean | null;
+  ivrConsultType: ConsultMode | null;
+  ivrCallTimeOnline: number | null;
+  ivrCallTimePhysical: number | null;
   chatDays: number | null;
   awards: string | null;
   city: string | null;
