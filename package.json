@@ -1,0 +1,35 @@
+{
+  "name": "apollo-hospitals",
+  "private": true,
+  "scripts": {
+    "bootstrap": "CYPRESS_INSTALL_BINARY=0 lerna exec npm install && lerna run build --scope @aph/web-ui-components --scope @aph/mobile-ui-components --scope @aph/shared-ui-components --scope @aph/universal",
+    "bootstrap:web": "CYPRESS_INSTALL_BINARY=0 lerna exec npm install --ignore @aph/mobile* && lerna run build --scope @aph/web-ui-components --scope @aph/shared-ui-components --scope @aph/universal",
+    "bootstrap:mobile": "CYPRESS_INSTALL_BINARY=0 lerna exec npm install --ignore @aph/web* && lerna run build --scope @aph/mobile-ui-components --scope @aph/shared-ui-components --scope @aph/universal && bash replace-script.sh",
+    "bootstrap:backend": "lerna exec npm install --scope @aph/api --scope @aph/universal && lerna run build --scope @aph/universal",
+    "clean": "lerna exec -- rm -rf dist/* && lerna clean",
+    "delete:package-lock": "lerna exec -- rm -rf package-lock.json",
+    "format": "lerna run format",
+    "lint": "lerna run lint",
+    "typecheck": "lerna run typecheck",
+    "reset": "npm run delete:package-lock && npm run bootstrap:web"
+  },
+  "devDependencies": {
+    "typescript": "3.5.2",
+    "lerna": "^3.15.0"
+  },
+  "dependencies": {
+    "@sendgrid/mail": "^7.1.1",
+    "@types/pubnub": "^4.28.1",
+    "async": "^3.2.0",
+    "csv-parse": "^4.12.0",
+    "dotenv": "^8.2.0",
+    "form-data": "^3.0.0",
+    "get-stream": "^6.0.0",
+    "node-fetch": "^2.6.0",
+    "pg": "^8.3.2",
+    "pubnub": "^4.29.2",
+    "sendgrid": "^5.2.3",
+    "uuid": "^8.2.0",
+    "webpack": "^4.44.1"
+  }
+}

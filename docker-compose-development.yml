@@ -1,0 +1,140 @@
+# This file is for NODE_ENV 'development'
+
+version: '3.4'
+
+services:
+  nginx:
+    image: nginx:1.16.0-alpine
+    tty: true
+    env_file: .env
+    command: ash -c "
+      envsubst '$$NODE_ENV $$API_GATEWAY_HOST $$API_GATEWAY_PORT' < /etc/nginx/conf.d/development.conf.template > /etc/nginx/conf.d/development.conf &&
+      nginx -t &&
+      nginx -g 'daemon off;'"
+    ports:
+      - 80:80
+    volumes:
+      - ./nginx/log/:/var/log/nginx
+      - ./nginx/conf.d/development.conf.template:/etc/nginx/conf.d/development.conf.template:ro
+      - ./packages/web-patients/:/usr/share/nginx/html/web-patients:ro
+      - ./packages/web-doctors/:/usr/share/nginx/html/web-doctors:ro
+
+  pgweb:
+    image: sosedoff/pgweb:0.11.2
+    ports:
+      - 8081:8081
+
+  rabbitmq:
+    image: rabbitmq:3.7.16-management-alpine
+    ports:
+      - 15672:15672
+      - ${RABBITMQ_PORT}:5672
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
+      - RABBITMQ_DEFAULT_VHOST=/
+    volumes:
+      - ./rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins:ro
+
+  storage:
+    image: mcr.microsoft.com/azure-storage/azurite:latest
+    command: azurite -l ./ -d ./debug.log --blobHost 0.0.0.0
+    ports:
+      - ${AZURE_STORAGE_EMULATOR_PORT}:${AZURE_STORAGE_EMULATOR_PORT}
+
+  api-gateway:
+    image: node:12.6.0
+    env_file: .env
+    working_dir: /apollo-hospitals/packages/api
+    command: bash -c "
+      while (
+      (! curl -s http://${PROFILES_SERVICE_HOST}:${PROFILES_SERVICE_PORT}/graphql) ||
+      (! curl -s http://${DOCTORS_SERVICE_HOST}:${DOCTORS_SERVICE_PORT}/graphql) ||
+      (! curl -s http://${CONSULTS_SERVICE_HOST}:${CONSULTS_SERVICE_PORT}/graphql)
+      ) > /dev/null;
+      do echo waiting for services to start...; sleep 5;
+      done;
+      node api-gateway.bundle.js"
+    volumes:
+      - ./:/apollo-hospitals:cached
+    depends_on:
+      - nginx
+      - profiles-service
+      - doctors-service
+      - consults-service
+      - storage
+
+  profiles-service:
+    image: node:12.6.0
+    env_file: .env
+    working_dir: /apollo-hospitals/packages/api
+    command: bash -c "
+      while ! < /dev/tcp/${PROFILES_DB_HOST}/${PROFILES_DB_PORT};
+      do echo waiting for ${PROFILES_DB_HOST}...; sleep 5;
+      done;
+      node profiles-service.bundle.js"
+    volumes:
+      - ./:/apollo-hospitals:cached
+    depends_on:
+      - profiles-db
+
+  profiles-db:
+    image: postgres:10.8-alpine
+    volumes:
+      - ./packages/api/init-profiles-db.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      - POSTGRES_USER=${PROFILES_DB_USER}
+      - POSTGRES_PASSWORD=${PROFILES_DB_PASSWORD}
+
+  doctors-service:
+    image: node:12.6.0
+    env_file: .env
+    working_dir: /apollo-hospitals/packages/api
+    command: bash -c "
+      while ! < /dev/tcp/${DOCTORS_DB_HOST}/${DOCTORS_DB_PORT};
+      do echo waiting for ${DOCTORS_DB_HOST}...; sleep 5;
+      done;
+      node doctors-service.bundle.js"
+    volumes:
+      - ./:/apollo-hospitals:cached
+    depends_on:
+      - doctors-db
+
+  doctors-db:
+    image: postgres:10.8-alpine
+    volumes:
+      - ./packages/api/init-doctors-db.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      - POSTGRES_USER=${DOCTORS_DB_USER}
+      - POSTGRES_PASSWORD=${DOCTORS_DB_PASSWORD}
+
+  consults-service:
+    image: node:12.6.0
+    env_file: .env
+    working_dir: /apollo-hospitals/packages/api
+    command: bash -c "
+      while  (!(< /dev/tcp/${CONSULTS_DB_HOST}/${CONSULTS_DB_PORT}) || !(< /dev/tcp/consults-db/${DOCTORS_DB_PORT}));
+      do echo waiting for ${CONSULTS_DB_HOST} and ${DOCTORS_DB_HOST}...; sleep 5;
+      done;
+      node consults-service.bundle.js"
+    volumes:
+      - ./:/apollo-hospitals:cached
+    depends_on:
+      - consults-db
+      - doctors-db
+
+  consults-db:
+    image: postgres:10.8-alpine
+    volumes:
+      - ./packages/api/init-consults-db.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      - POSTGRES_USER=${CONSULTS_DB_USER}
+      - POSTGRES_PASSWORD=${CONSULTS_DB_PASSWORD}
+
+  notifications-service:
+    image: node:12.6.0
+    env_file: .env
+    working_dir: /apollo-hospitals/packages/api
+    command: bash -c "npm run start:notifications-service"
+    volumes:
+      - ./:/apollo-hospitals:cached

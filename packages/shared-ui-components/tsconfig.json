@@ -1,0 +1,13 @@
+{
+  "extends": "./node_modules/@aph/tsconfig/tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "baseUrl": "src",
+    "allowJs": false,
+    "declaration": true,
+    "module": "commonjs",
+    "jsx": "react",
+    "lib": ["dom", "dom.iterable", "es5", "es6", "scripthost"]
+  },
+  "exclude": ["node_modules", "dist"]
+}
