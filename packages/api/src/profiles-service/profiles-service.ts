@@ -221,6 +221,11 @@ import {
 } from 'profiles-service/resolvers/addHospitalizationRecords';
 
 import {
+  addPatientPrescriptionRecordsTypeDefs,
+  addPatientPrescriptionRecordResolvers
+} from 'profiles-service/resolvers/addPrescriptionRecords'
+
+import {
   addPatientLabTestRecordTypeDefs,
   addPatientLabTestRecordResolvers
 } from 'profiles-service/resolvers/addLabTestRecords';
@@ -494,6 +499,10 @@ import {
       {
         typeDefs: addPatientLabTestRecordTypeDefs,
         resolvers: addPatientLabTestRecordResolvers
+      },
+      {
+        typeDefs: addPatientPrescriptionRecordsTypeDefs,
+        resolvers: addPatientPrescriptionRecordResolvers
       },
       {
         typeDefs: deletePatientPrismMedicalRecordTypeDefs,
