@@ -330,14 +330,10 @@ export async function createPrismUser(
     dob = getUnixTime(new Date(patientData.dateOfBirth)) * 1000;
   }
 
-  const queryParams = `securitykey=${
-    process.env.PHR_V1_CREATE_USER_SECURITYKEY
-    }&gender=${patientData.gender.toLowerCase()}&firstName=${patientData.firstName}&lastName=${
-    patientData.lastName
-    }&mobile=${patientData.mobileNumber.substr(3)}&uhid=${uhid}&CountryPhoneCode=${
-    ApiConstants.COUNTRY_CODE
-    }&dob=${dob}&sitekey=&martialStatus=&pincode=&email=${
-    patientData.emailAddress
+  const queryParams = `securitykey=${process.env.PHR_V1_CREATE_USER_SECURITYKEY
+    }&gender=${patientData.gender.toLowerCase()}&firstName=${patientData.firstName}&lastName=${patientData.lastName
+    }&mobile=${patientData.mobileNumber.substr(3)}&uhid=${uhid}&CountryPhoneCode=${ApiConstants.COUNTRY_CODE
+    }&dob=${dob}&sitekey=&martialStatus=&pincode=&email=${patientData.emailAddress
     }&state=&country=&city=&address=`;
 
   apiUrl = apiUrl + '?' + queryParams;
@@ -836,4 +832,209 @@ export async function saveDischargeSummaryToPrism(
       clearTimeout(timeout);
     });
 }
+
+export async function deletePrescriptionFromPrism(uhid: string, recordId: string) {
+  if (!process.env.PHR_V1_DELETE_PRESCRIPTION || !process.env.PHR_V1_ACCESS_TOKEN)
+    throw new AphError(AphErrorMessages.INVALID_PRISM_URL);
+
+  let apiUrl = process.env.PHR_V1_DELETE_PRESCRIPTION.toString();
+  apiUrl = apiUrl.replace('{ACCESS_KEY}', process.env.PHR_V1_ACCESS_TOKEN);
+  apiUrl = apiUrl.replace('{UHID}', uhid);
+  apiUrl = apiUrl.replace('{RECORDID}', recordId);
+
+  const reqStartTime = new Date();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => {
+    controller.abort();
+  }, prismTimeoutMillSeconds);
+
+  return await fetch(apiUrl, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json;charset=utf-8',
+    },
+    signal: controller.signal
+  })
+    .then((res) => res.json())
+    .then(
+      (data) => {
+        dLogger(
+          reqStartTime,
+          'deletePrescriptionFromPrism PRISM_DELETE_RECORDS_API_CALL___END',
+          `${apiUrl} --- ${JSON.stringify(data)}`
+        );
+        if (data.errorCode) throw new AphError(AphErrorMessages.FILE_DELETE_ERROR);
+        return data;
+      },
+      (err) => {
+        dLogger(
+          reqStartTime,
+          'deletePrescriptionFromPrism PRISM_DELETE_RECORDS_API_CALL___ERROR',
+          `${apiUrl} --- ${JSON.stringify(err)}`
+        );
+        if (err.name === 'AbortError') {
+          throw new AphError(AphErrorMessages.NO_RESPONSE_FROM_PRISM);
+        } else {
+          throw new AphError(AphErrorMessages.FILE_DELETE_ERROR);
+        }
+      }
+    )
+    .finally(() => {
+      clearTimeout(timeout);
+    });
+}
+
+export async function deleteLabTestFromPrism(uhid: string, recordId: string) {
+  if (!process.env.PHR_V1_DELETE_LABRESULT || !process.env.PHR_V1_ACCESS_TOKEN)
+    throw new AphError(AphErrorMessages.INVALID_PRISM_URL);
+
+  let apiUrl = process.env.PHR_V1_DELETE_LABRESULT.toString();
+  apiUrl = apiUrl.replace('{ACCESS_KEY}', process.env.PHR_V1_ACCESS_TOKEN);
+  apiUrl = apiUrl.replace('{UHID}', uhid);
+  apiUrl = apiUrl.replace('{RECORDID}', recordId);
+
+  const reqStartTime = new Date();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => {
+    controller.abort();
+  }, prismTimeoutMillSeconds);
+
+  return await fetch(apiUrl, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json;charset=utf-8',
+    },
+    signal: controller.signal
+  })
+    .then((res) => res.json())
+    .then(
+      (data) => {
+        dLogger(
+          reqStartTime,
+          'deleteLabTestFromPrism PRISM_DELETE_RECORDS_API_CALL___END',
+          `${apiUrl} --- ${JSON.stringify(data)}`
+        );
+        if (data.errorCode) throw new AphError(AphErrorMessages.FILE_DELETE_ERROR);
+        return data;
+      },
+      (err) => {
+        dLogger(
+          reqStartTime,
+          'deleteLabTestFromPrism PRISM_DELETE_RECORDS_API_CALL___ERROR',
+          `${apiUrl} --- ${JSON.stringify(err)}`
+        );
+        if (err.name === 'AbortError') {
+          throw new AphError(AphErrorMessages.NO_RESPONSE_FROM_PRISM);
+        } else {
+          throw new AphError(AphErrorMessages.FILE_DELETE_ERROR);
+        }
+      }
+    )
+    .finally(() => {
+      clearTimeout(timeout);
+    });
+}
+
+export async function deleteHealthCheckFromPrism(uhid: string, recordId: string) {
+  if (!process.env.PHR_V1_DELETE_HEALTHCHECK || !process.env.PHR_V1_ACCESS_TOKEN)
+    throw new AphError(AphErrorMessages.INVALID_PRISM_URL);
+
+  let apiUrl = process.env.PHR_V1_DELETE_HEALTHCHECK.toString();
+  apiUrl = apiUrl.replace('{ACCESS_KEY}', process.env.PHR_V1_ACCESS_TOKEN);
+  apiUrl = apiUrl.replace('{UHID}', uhid);
+  apiUrl = apiUrl.replace('{RECORDID}', recordId);
+
+  const reqStartTime = new Date();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => {
+    controller.abort();
+  }, prismTimeoutMillSeconds);
+
+  return await fetch(apiUrl, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json;charset=utf-8',
+    },
+    signal: controller.signal
+  })
+    .then((res) => res.json())
+    .then(
+      (data) => {
+        dLogger(
+          reqStartTime,
+          'deleteHealthCheckFromPrism PRISM_DELETE_RECORDS_API_CALL___END',
+          `${apiUrl} --- ${JSON.stringify(data)}`
+        );
+        if (data.errorCode) throw new AphError(AphErrorMessages.FILE_DELETE_ERROR);
+        return data;
+      },
+      (err) => {
+        dLogger(
+          reqStartTime,
+          'deleteHealthCheckFromPrism PRISM_DELETE_RECORDS_API_CALL___ERROR',
+          `${apiUrl} --- ${JSON.stringify(err)}`
+        );
+        if (err.name === 'AbortError') {
+          throw new AphError(AphErrorMessages.NO_RESPONSE_FROM_PRISM);
+        } else {
+          throw new AphError(AphErrorMessages.FILE_DELETE_ERROR);
+        }
+      }
+    )
+    .finally(() => {
+      clearTimeout(timeout);
+    });
+}
+
+export async function deleteDischargeSummaryFromPrism(uhid: string, recordId: string) {
+  if (!process.env.PHR_V1_DELETE_DISCHARGESUMMARY || !process.env.PHR_V1_ACCESS_TOKEN)
+    throw new AphError(AphErrorMessages.INVALID_PRISM_URL);
+
+  let apiUrl = process.env.PHR_V1_DELETE_DISCHARGESUMMARY.toString();
+  apiUrl = apiUrl.replace('{ACCESS_KEY}', process.env.PHR_V1_ACCESS_TOKEN);
+  apiUrl = apiUrl.replace('{UHID}', uhid);
+  apiUrl = apiUrl.replace('{RECORDID}', recordId);
+
+  const reqStartTime = new Date();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => {
+    controller.abort();
+  }, prismTimeoutMillSeconds);
+
+  return await fetch(apiUrl, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json;charset=utf-8',
+    },
+    signal: controller.signal
+  })
+    .then((res) => res.json())
+    .then(
+      (data) => {
+        dLogger(
+          reqStartTime,
+          'deleteDischargeSummaryFromPrism PRISM_DELETE_RECORDS_API_CALL___END',
+          `${apiUrl} --- ${JSON.stringify(data)}`
+        );
+        if (data.errorCode) throw new AphError(AphErrorMessages.FILE_DELETE_ERROR);
+        return data;
+      },
+      (err) => {
+        dLogger(
+          reqStartTime,
+          'deleteDischargeSummaryFromPrism PRISM_DELETE_RECORDS_API_CALL___ERROR',
+          `${apiUrl} --- ${JSON.stringify(err)}`
+        );
+        if (err.name === 'AbortError') {
+          throw new AphError(AphErrorMessages.NO_RESPONSE_FROM_PRISM);
+        } else {
+          throw new AphError(AphErrorMessages.FILE_DELETE_ERROR);
+        }
+      }
+    )
+    .finally(() => {
+      clearTimeout(timeout);
+    });
+}
+
 

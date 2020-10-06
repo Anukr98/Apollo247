@@ -83,6 +83,8 @@ target 'ApolloDoctor' do
 
   pod 'RNFastImage', :path => '../node_modules/react-native-fast-image'
 
+  pod 'CodePush', :path => '../node_modules/react-native-code-push'
+
 end
 
 # ServiceExtension Target
