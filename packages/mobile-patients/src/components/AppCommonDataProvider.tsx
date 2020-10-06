@@ -225,26 +225,6 @@ export const AppCommonDataProvider: React.FC = (props) => {
   };
 
   const locationForDiagnostics: AppCommonDataContextProps['locationForDiagnostics'] = {
-    // cityId: ((
-    //   diagnosticsCities.find(
-    //     (item) => item!.cityname.toLowerCase() == (g(locationDetails, 'city') || '').toLowerCase()
-    //   ) || {}
-    // ).cityid || '') as string,
-    // city: ((
-    //   diagnosticsCities.find(
-    //     (item) => item!.cityname.toLowerCase() == (g(locationDetails, 'city') || '').toLowerCase()
-    //   ) || {}
-    // ).cityname || '') as string,
-    // state: ((
-    //   diagnosticsCities.find(
-    //     (item) => item!.cityname.toLowerCase() == (g(locationDetails, 'city') || '').toLowerCase()
-    //   ) || {}
-    // ).statename || '') as string,
-    // stateId: ((
-    //   diagnosticsCities.find(
-    //     (item) => item!.cityname.toLowerCase() == (g(locationDetails, 'city') || '').toLowerCase()
-    //   ) || {}
-    // ).stateid || '') as string,
     cityId: (diagnosticServiceabilityData?.cityId || '') as string,
     city: (diagnosticServiceabilityData?.city || '') as string,
     state: (diagnosticServiceabilityData?.state || '') as string,
