@@ -24,7 +24,7 @@ import {
 import { uploadFileToBlobStorage } from 'helpers/uploadFileToBlob';
 import { getFileTypeFromMime } from 'helpers/generalFunctions';
 
-export const addPatientLabTestRecordTypeDefs = gql`
+export const addPatientPrescriptionRecordsTypeDefs = gql`
 
     input AddPrescriptionRecordInput {
         id: String
@@ -33,10 +33,10 @@ export const addPatientLabTestRecordTypeDefs = gql`
         issuingDoctor: String
         location: String
         dateOfPrescription: Date
-        prescriptionFiles: [prescriptionFileProperties]
+        prescriptionFiles: [prescriptionPrismFileProperties]
     }
 
-    input prescriptionFileProperties {
+    input prescriptionPrismFileProperties {
         fileName: String
         mimeType: String
         content: String
