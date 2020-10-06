@@ -27,6 +27,7 @@ import {
   addPharmaItemToCart,
   formatToCartItem,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { ProductPageViewedSource } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -185,7 +186,12 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
 
   const getMedListingProducts = (products: MedicineProduct[]): ProductProps[] => {
     const onPress = (sku: string) => {
-      navigation.navigate(AppRoutes.MedicineDetailsScene, { sku, movedFrom: 'search' });
+      navigation.navigate(AppRoutes.MedicineDetailsScene, {
+        sku,
+        movedFrom: searchText
+          ? ProductPageViewedSource.FULL_SEARCH
+          : ProductPageViewedSource.CATEGORY_OR_LISTING,
+      });
     };
 
     const onPressNotify = (name: string) => {

@@ -1,6 +1,5 @@
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { MedicineSearchSuggestionItemProps } from '@aph/mobile-patients/src/components/Medicines/MedicineSearchSuggestionItem';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { MedicineSearchEvents } from '@aph/mobile-patients/src/components/MedicineSearch/MedicineSearchEvents';
 import { MedSearchBar } from '@aph/mobile-patients/src/components/MedicineSearch/MedSearchBar';
 import { MedSearchSection } from '@aph/mobile-patients/src/components/MedicineSearch/MedSearchSection';
@@ -10,6 +9,7 @@ import {
 } from '@aph/mobile-patients/src/components/MedicineSearch/MedSearchSectionBadgeView';
 import { MedSearchSectionProductView } from '@aph/mobile-patients/src/components/MedicineSearch/MedSearchSectionProductView';
 import { MedSearchSuggestions } from '@aph/mobile-patients/src/components/MedicineSearch/MedSearchSuggestions';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -29,6 +29,7 @@ import {
   formatToCartItem,
   productsThumbnailUrl,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { ProductPageViewedSource } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import _ from 'lodash';
@@ -175,7 +176,10 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
 
   const renderProducts = (array: RecentSearch[]) => {
     const onPress = (sku: string) => {
-      navigation.navigate(AppRoutes.MedicineDetailsScene, { sku, movedFrom: 'search' });
+      navigation.navigate(AppRoutes.MedicineDetailsScene, {
+        sku,
+        movedFrom: ProductPageViewedSource.RECENT_SEARCH,
+      });
     };
 
     return array.map(({ typeId, name, image }) => (
@@ -241,7 +245,10 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
     if (!searchResults.length) return null;
 
     const onPress = (sku: string) => {
-      navigation.navigate(AppRoutes.MedicineDetailsScene, { sku, movedFrom: 'search' });
+      navigation.navigate(AppRoutes.MedicineDetailsScene, {
+        sku,
+        movedFrom: ProductPageViewedSource.PARTIAL_SEARCH,
+      });
     };
 
     const onPressNotify = (name: string) => {
