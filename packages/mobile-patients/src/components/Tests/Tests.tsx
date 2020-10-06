@@ -196,6 +196,30 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     textAlign: 'left',
   },
+  serviceabiltyMessageBackground: {
+    backgroundColor: 'white',
+  },
+  serviceabiltyMessageView: {
+    marginLeft: 20,
+    marginRight: 20,
+    marginBottom: 10,
+    padding: 5,
+    borderColor: '#890000',
+    borderWidth: 1,
+    borderRadius: 5,
+  },
+  serviceabiltyMessageInnerView: {
+    flexDirection: 'row',
+    marginHorizontal: 10,
+    justifyContent: 'space-between',
+  },
+  pendingIconStyle: {
+    height: 15,
+    width: 15,
+    resizeMode: 'contain',
+    marginTop: '1%',
+    tintColor: '#890000',
+  },
 });
 
 export interface TestsProps
@@ -1960,34 +1984,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
       <SafeAreaView style={{ ...viewStyles.container }}>
         {renderTopView()}
         {!!serviceabilityMsg && (
-          <View style={{ backgroundColor: 'white' }}>
-            <View
-              style={{
-                marginLeft: 20,
-                marginRight: 20,
-                marginBottom: 10,
-                padding: 5,
-                borderColor: '#890000',
-                borderWidth: 1,
-                borderRadius: 5,
-              }}
-            >
-              <View
-                style={{
-                  flexDirection: 'row',
-                  marginHorizontal: 10,
-                  justifyContent: 'space-between',
-                }}
-              >
-                <PendingIcon
-                  style={{
-                    height: 15,
-                    width: 15,
-                    resizeMode: 'contain',
-                    marginTop: '1%',
-                    tintColor: '#890000',
-                  }}
-                />
+          <View style={styles.serviceabiltyMessageBackground}>
+            <View style={styles.serviceabiltyMessageView}>
+              <View style={styles.serviceabiltyMessageInnerView}>
+                <PendingIcon style={styles.pendingIconStyle} />
                 <Text style={styles.serviceabilityMsg}>{serviceabilityMsg}</Text>
               </View>
             </View>
