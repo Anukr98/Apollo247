@@ -432,7 +432,9 @@
     "DIETICS_SPECIALITY_NAME": "Dietetics",
     "MEMBERSHIP_DETAIL": "MEMBERSHIP_DETAIL",
     "HDFC_ERROR_MESSAGE": "Due to a technical glitch, we are unable to verify your details with HDFC Bank right now. Please try again in sometime",
-    "NOT_HDFC_CUSTOMER_MESSAGE": "Looks like your details are not matching with HDFC Bank records.​ Please retry or enroll yourself with HDFC's Bank"
+    "NOT_HDFC_CUSTOMER_MESSAGE": "If you are not an HDFC Bank customer, you can become one by opening a Savings account with HDFC Bank",
+    "HDFC_CARD_CAPTION": "Please ensure your Mobile no. and DOB with Apollo 24|7 match HDFC Bank records",
+    "SAVINGS_ACCOUNT_CAPTION": "If you are not an HDFC Bank customer, you can become one by opening a Savings account with HDFC Bank",
   },
   "symptomChecker": {
     "howItWorks": "HOW IT WORKS?",

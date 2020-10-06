@@ -859,8 +859,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               );
             } else {
               setShowSavingsAccountButton(true);
+              const errorMessage = `
+                ${hdfc_values.HDFC_CARD_CAPTION}
+                \n
+                ${hdfc_values.NOT_HDFC_CUSTOMER_MESSAGE}
+              `;
               setHdfcErrorMessage(
-                hdfc_values.NOT_HDFC_CUSTOMER_MESSAGE
+                errorMessage
               );
             }
           }
@@ -1994,7 +1999,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             textAlign: 'right',
           }}
         >
-          This is required by HDFC Bank to verify your details
+          {hdfc_values.HDFC_CARD_CAPTION}
         </Text>
       </View>
     );
