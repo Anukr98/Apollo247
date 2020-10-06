@@ -109,6 +109,7 @@
     "react-native-highlight-words": "^1.0.1",
     "react-native-hyperlink": "0.0.19",
     "react-native-image-crop-picker": "^0.27.0",
+    "react-native-image-pan-zoom": "^2.1.12",
     "react-native-incall-manager": "^3.2.7",
     "react-native-iphone-x-helper": "^1.2.1",
     "react-native-keep-awake": "^4.0.0",

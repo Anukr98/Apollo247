@@ -7,6 +7,7 @@ import {
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 import { chatFilesType } from '@aph/mobile-doctors/src/helpers/dataTypes';
+import { get_url_extension } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useRef, useState } from 'react';
@@ -29,6 +30,8 @@ import {
 } from 'react-native-gesture-handler';
 import Carousel from 'react-native-snap-carousel';
 import { SafeAreaView } from 'react-navigation';
+import { RenderPdf } from '@aph/mobile-doctors/src/components/ui/RenderPdf';
+import ImageZoom from 'react-native-image-pan-zoom';
 
 const { width, height } = Dimensions.get('screen');
 const styles = StyleSheet.create({
@@ -51,7 +54,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginHorizontal: 20,
   },
-  mainContainer: { backgroundColor: 'black', marginTop: 16 },
+  mainContainer: { backgroundColor: 'black', marginTop: 6 },
   headerContainer: {
     backgroundColor: 'black',
     flexDirection: 'row',
@@ -72,7 +75,7 @@ const styles = StyleSheet.create({
   },
   previousContainer: {
     position: 'absolute',
-    top: '48%',
+    top: '55%',
     left: 2,
     zIndex: 100,
     elevation: 100,
@@ -88,7 +91,7 @@ const styles = StyleSheet.create({
   },
   nextContainer: {
     position: 'absolute',
-    top: '48%',
+    top: '55%',
     right: 2,
     zIndex: 100,
     elevation: 100,
@@ -111,7 +114,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 20,
   },
-  footerIconContainer: { justifyContent: 'center', alignItems: 'center' },
+  footerIconContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   footerText: theme.viewStyles.text('R', 14, theme.colors.WHITE, 1, 24),
   itemContainer: {
     width: width,
@@ -269,56 +275,33 @@ export const ImageViewer: React.FC<ImageViewerProps> = (props) => {
     return (
       <View style={styles.itemContainer}>
         <TouchableOpacity onPress={() => handleDoubleTap()} activeOpacity={1}>
-          <PanGestureHandler
-            ref={
-              dragRef as
-                | string
-                | ((instance: PanGestureHandler | null) => void)
-                | React.RefObject<PanGestureHandler>
-                | null
-                | undefined
-            }
-            simultaneousHandlers={[pinchRef]}
-            onGestureEvent={onGestureEvent}
-            minPointers={1}
-            enabled={panEnabled}
-            maxPointers={2}
-            onHandlerStateChange={onHandlerStateChange}
+          <Animated.View
+            style={[
+              { width: width, height: '100%' },
+              {
+                transform: [{ translateX: translateX }, { translateY: translateY }],
+              },
+            ]}
           >
             <Animated.View
               style={[
-                { width: width, height: '100%' },
+                styles.container,
                 {
-                  transform: [{ translateX: translateX }, { translateY: translateY }],
+                  transform: [{ scale: scale }, { rotate: currentIndex === index ? rotateStr : 0 }],
                 },
               ]}
+              collapsable={false}
             >
-              <PinchGestureHandler
-                ref={
-                  pinchRef as
-                    | string
-                    | ((instance: PinchGestureHandler | null) => void)
-                    | React.RefObject<PinchGestureHandler>
-                    | null
-                    | undefined
-                }
-                simultaneousHandlers={dragRef}
-                onGestureEvent={onPinchGestureEvent}
-                onHandlerStateChange={onPinchHandlerStateChange}
-              >
-                <Animated.View
-                  style={[
-                    styles.container,
-                    {
-                      transform: [
-                        { scale: scale },
-                        { rotate: currentIndex === index ? rotateStr : 0 },
-                      ],
-                    },
-                  ]}
-                  collapsable={false}
-                >
-                  {(panEnabled && currentIndex === index) || !panEnabled ? (
+              {(panEnabled && currentIndex === index) || !panEnabled ? (
+                get_url_extension(item.url) === 'pdf' ? (
+                  <RenderPdf uri={item.url} isPopup={false} navigation={props.navigation} />
+                ) : (
+                  <ImageZoom
+                    cropWidth={width}
+                    cropHeight={height}
+                    imageWidth={width - 12}
+                    imageHeight={height}
+                  >
                     <FastImage
                       source={{ uri: item.url }}
                       style={[
@@ -329,11 +312,11 @@ export const ImageViewer: React.FC<ImageViewerProps> = (props) => {
                       ]}
                       resizeMode={FastImage.resizeMode.contain}
                     />
-                  ) : null}
-                </Animated.View>
-              </PinchGestureHandler>
+                  </ImageZoom>
+                )
+              ) : null}
             </Animated.View>
-          </PanGestureHandler>
+          </Animated.View>
         </TouchableOpacity>
       </View>
     );
@@ -479,7 +462,7 @@ export const ImageViewer: React.FC<ImageViewerProps> = (props) => {
             sliderWidth={width}
             sliderHeight={height * 0.7}
             itemWidth={width}
-            scrollEnabled={!panEnabled}
+            // scrollEnabled={!panEnabled}
             onScrollToIndexFailed={(data) => {
               scrollToIndex();
             }}
@@ -492,8 +475,8 @@ export const ImageViewer: React.FC<ImageViewerProps> = (props) => {
               lastOffset.y = 0;
             }}
           />
-          {renderFooter()}
         </View>
+        {renderFooter()}
       </SafeAreaView>
     </View>
   );
