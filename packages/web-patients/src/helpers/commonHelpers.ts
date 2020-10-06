@@ -503,7 +503,7 @@ const HEALTH_RECORDS_NOTE =
 
 const deepLinkUtil = (deepLinkPattern: string) => {
   if (getDeviceType() !== DEVICETYPE.DESKTOP && !sessionStorage.getItem('deepLinkAccessed')) {
-    window.location.href = `apollopatients://${deepLinkPattern}`;
+    // window.location.href = `apollopatients://${deepLinkPattern}`;
     // setTimeout(() => {
     //   window.location.href = getAppStoreLink();
     // }, 1000);
