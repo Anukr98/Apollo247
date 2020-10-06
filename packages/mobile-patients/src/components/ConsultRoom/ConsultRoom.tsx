@@ -2315,7 +2315,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         });
       } else if ((action = hdfc_values.DIETECIAN_LANDING)) {
         props.navigation.navigate('DoctorSearchListing', {
-          specialityName: hdfc_values.DIETICS_SPECIALITY_NAME,
+          specialities: hdfc_values.DIETICS_SPECIALITY_NAME,
         });
       } else {
         props.navigation.navigate(AppRoutes.ConsultRoom);

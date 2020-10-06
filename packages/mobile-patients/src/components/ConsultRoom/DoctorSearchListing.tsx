@@ -609,7 +609,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     const FilterInput: FilterDoctorInput = {
       patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
       specialty: props.navigation.getParam('specialityId') || '',
-      specialtyName: props.navigation.getParam('specialityName') || '',
       // city: SearchData[0].selectedOptions,
       pincode: pinCode || g(locationDetails, 'pincode') || null,
       doctorType:
