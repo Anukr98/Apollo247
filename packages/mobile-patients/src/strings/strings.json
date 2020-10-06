@@ -430,7 +430,9 @@
     "DIAGNOSTICS_LANDING": "DIAGNOSTICS_LANDING",
     "CALL_EXOTEL_API": "CALL_EXOTEL_API",
     "DIETICS_SPECIALITY_NAME": "Dietetics",
-    "MEMBERSHIP_DETAIL": "MEMBERSHIP_DETAIL"
+    "MEMBERSHIP_DETAIL": "MEMBERSHIP_DETAIL",
+    "HDFC_ERROR_MESSAGE": "Due to a technical glitch, we are unable to verify your details with HDFC Bank right now. Please try again in sometime",
+    "NOT_HDFC_CUSTOMER_MESSAGE": "Looks like your details are not matching with HDFC Bank records.​ Please retry or enroll yourself with HDFC's Bank"
   },
   "symptomChecker": {
     "howItWorks": "HOW IT WORKS?",

@@ -855,12 +855,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             if (hdfcStatus === hdfc_values.OTP_NOT_GENERATED) {
               setShowSavingsAccountButton(false);
               setHdfcErrorMessage(
-                'Due to a technical glitch, we are unable to verify your details with HDFC Bank right now. Please try again in sometime'
+                hdfc_values.HDFC_ERROR_MESSAGE
               );
             } else {
               setShowSavingsAccountButton(true);
               setHdfcErrorMessage(
-                'Looks like your details are not matching with HDFC Bank records.​ Please retry or enroll yourself with HDFC\'s Bank'
+                hdfc_values.NOT_HDFC_CUSTOMER_MESSAGE
               );
             }
           }
