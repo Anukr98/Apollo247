@@ -583,10 +583,12 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 20,
     },
     myImageClass: {
-      zIndex: 1,
-      position: 'absolute',
-      top: 20,
-      left: 320,
+      [theme.breakpoints.up(768)]: {
+        zIndex: 1,
+        position: 'absolute',
+        top: 200,
+        left: 530,
+      },
     },
   };
 });
@@ -1212,13 +1214,10 @@ const MedicineDetails: React.FC = (props) => {
                         >
                           <div className={classes.productInformation}>
                             {medicineDetails.image && medicineDetails.image.length > 0 ? (
-                              <>
-                                <MedicineImageGallery
-                                  data={medicineDetails}
-                                  setImageClick={setImageClick}
-                                />
-                                <div id="myImage" className={classes.myImageClass} />
-                              </>
+                              <MedicineImageGallery
+                                data={medicineDetails}
+                                setImageClick={setImageClick}
+                              />
                             ) : (
                               <div className={classes.noImageWrapper}>
                                 <img
@@ -1340,6 +1339,7 @@ const MedicineDetails: React.FC = (props) => {
                       </div>
                       {renderSimilarProducts('mobileDisplay')}
                       <MedicineInformation data={medicineDetails} />
+                      <div id="myImage" className={classes.myImageClass} />
                     </div>
                     {renderSimilarProducts('webDisplay')}
                   </>

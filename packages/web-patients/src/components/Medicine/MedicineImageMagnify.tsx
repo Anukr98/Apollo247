@@ -16,10 +16,15 @@ export const MedicineImageMagnify: React.FC<MedicineImageMagnifyProps> = (props)
         },
         largeImage: {
           src: props.imageProps.original,
-          width: 640,
-          height: 640,
+          width: 1500,
+          height: 1500,
         },
         enlargedImagePortalId: 'myImage',
+        isEnlargedImagePortalEnabledForTouch: true,
+        enlargedImageContainerDimensions: {
+          width: '250%',
+          height: '200%',
+        },
       }}
     />
   );
