@@ -111,23 +111,13 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     imgcontainer: {
-      width: 150,
-      height: 160,
-      background: '#005CA8',
-      borderRadius: '50%',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       margin: '0 30px 0 0',
-      [theme.breakpoints.down('sm')]: {
-        width: 46,
-        height: 46,
-        margin: '0 15px 0 0',
-        flex: '1 0 auto',
-      },
       '& img': {
         [theme.breakpoints.down('sm')]: {
-          width: 20,
+          width: 100,
         },
       },
     },
@@ -229,74 +219,8 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: '0 20px',
       },
     },
-    apolloContainer: {
-      padding: '20px 0',
-    },
-    apolloCare: {
-      padding: 50,
-      boxShadow: '0px 0px 12px rgba(0, 0, 0, 0.16)',
-      // background: '#02475b',
-      display: 'flex',
-      alignItems: 'flex-start',
-      [theme.breakpoints.down('sm')]: {
-        padding: 20,
-        borderRadius: 10,
-        alignItems: 'center',
-      },
-      '& img': {
-        margin: '0 40px 0 0',
-        [theme.breakpoints.down('sm')]: {
-          margin: '0 20px 0 0',
-          width: 90,
-        },
-      },
-      '& h4': {
-        fontSize: 40,
-        fontWeight: 600,
-        lineHeight: '56px',
-        margin: '0 0 5px',
-        width: '60%',
-        [theme.breakpoints.down('sm')]: {
-          fontSize: 14,
-          width: '100%',
-          lineHeight: '16px',
-        },
-      },
-      '& p': {
-        fontSize: 18,
-        lineHeight: '24px',
-        width: '80%',
-        fontWeight: 400,
-        [theme.breakpoints.down('sm')]: {
-          display: 'none',
-        },
-      },
-    },
-    acContainer: {
-      position: 'relative',
 
-      '& button': {
-        position: 'absolute',
-        bottom: 0,
-        right: -100,
-        fontSize: 14,
-        boxShadow: 'none',
-        fontWeight: 700,
-        margin: '30px 0 0',
-        display: 'block',
-        [theme.breakpoints.down('sm')]: {
-          fontSize: 12,
-          margin: '30px 0 0 auto',
-          position: 'static',
-        },
-      },
-    },
-    tncContainer: {
-      // padding: 0,
-      // [theme.breakpoints.down('sm')]: {
-      //   padding: '0 16px',
-      // },
-    },
+    tncContainer: {},
     tncContent: {
       boxShadow: '0px 0px 8px rgba(0, 0, 0, 0.08)',
       padding: 20,
@@ -611,23 +535,22 @@ export const HdfcLanding: React.FC = (props) => {
                   width="100"
                 />
                 <img
-                  src={require('images/hdfc/hdfc-logo.svg')}
+                  src={require('images/hdfc/hdfc-health-first.svg')}
                   alt="HDFC Call Doctor"
                   width="100"
                 />
               </div>
               <div className={classes.bannerContent}>
                 <div className={classes.imgcontainer}>
-                  <img src={require('images/hdfc/call-doctor.svg')} alt="" />
+                  <img src={require('images/hdfc/join-apollo.svg')} alt="Apollo World of Care" />
                 </div>
 
                 <div className={classes.bannerDetails}>
-                  <Typography component="h1">Apollo Doctor on Call 24|7</Typography>
-                  <Typography>Complimentary on-call assistance by Apollo Doctors</Typography>
+                  <Typography component="h1">Apollo HealthyLife Program for you !</Typography>
                 </div>
               </div>
               <div className={classes.bannerFooter}>
-                <Typography>Offer exclusively for HDFC Bank customers</Typography>
+                <Typography>Exclusively for HDFC Bank customers</Typography>
                 {loading ? (
                   <CircularProgress size={30} />
                 ) : (
@@ -727,53 +650,6 @@ export const HdfcLanding: React.FC = (props) => {
             </ul>
           </div>
 
-          <div className={classes.apolloContainer}>
-            <div className={classes.apolloCare}>
-              <img src={require('images/hdfc/join-apollo.svg')} alt="Apollo World of Care" />
-              <div className={classes.acContainer}>
-                <Typography component="h4">Apollo HealthyLife Program for you !</Typography>
-
-                <Typography>Exclusively for HDFC Bank customers</Typography>
-                {loading ? (
-                  <CircularProgress size={30} />
-                ) : (
-                  <Route
-                    render={({ history }) => (
-                      <AphButton
-                        color="primary"
-                        onClick={() => {
-                          if (!isSignedIn) setIsLoginPopupVisible(true);
-                          else {
-                            setLoading(true);
-                            updatePatient({
-                              variables: {
-                                patientInput: {
-                                  id: currentPatient.id,
-                                  partnerId: currentPatient.partnerId
-                                    ? currentPatient.partnerId
-                                    : 'HDFCBANK',
-                                },
-                              },
-                            })
-                              .then(() => {
-                                setLoading(false);
-                                history.push(clientRoutes.welcome());
-                              })
-                              .catch((error) => {
-                                setLoading(false);
-                                console.error(error);
-                              });
-                          }
-                        }}
-                      >
-                        {isSignedIn ? 'Explore Benefits' : 'Unlock Now'}
-                      </AphButton>
-                    )}
-                  />
-                )}
-              </div>
-            </div>
-          </div>
           <div className={classes.tncContainer}>
             <div className={classes.tncContent}>
               <Typography component="h4">Terms &amp; Conditions</Typography>
