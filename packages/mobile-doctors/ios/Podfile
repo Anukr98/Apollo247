@@ -81,4 +81,8 @@ target 'ApolloDoctor' do
   pod 'ReactNativeIncallManager', :path => '../node_modules/react-native-incall-manager'
 
   pod 'react-native-webengage', :path => '../node_modules/react-native-webengage'
+  
+  pod 'react-native-progress-view', :path => '../node_modules/@react-native-community/progress-view'
+
+  pod 'react-native-progress-bar-android', :path => '../node_modules/@react-native-community/progress-bar-android'
 end
