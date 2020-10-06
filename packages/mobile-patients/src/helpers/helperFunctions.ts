@@ -955,8 +955,7 @@ export const getRelations = (self?: string) => {
 
 export const formatTestSlot = (slotTime: string) => moment(slotTime, 'HH:mm').format('hh:mm A');
 
-export const formatTestSlotWithBuffer = (slotTime: string ) => {
- 
+export const formatTestSlotWithBuffer = (slotTime: string) => {
   const startTime = slotTime.split('-')[0];
   const endTime = moment(startTime, 'HH:mm')
     .add(30, 'minutes')
@@ -1061,6 +1060,13 @@ export const postwebEngageAddToCartEvent = (
     'Section Name': sectionName || '',
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART, eventAttributes);
+};
+
+export const postWebEngagePHR = (source: string, webEngageEventName: WebEngageEventName) => {
+  const eventAttributes = {
+    Source: source,
+  };
+  postWebEngageEvent(webEngageEventName, eventAttributes);
 };
 
 export const postWEGNeedHelpEvent = (

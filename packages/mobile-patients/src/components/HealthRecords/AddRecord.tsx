@@ -29,6 +29,7 @@ import {
   g,
   isValidText,
   postWebEngageEvent,
+  postWebEngagePHR,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -49,11 +50,14 @@ import {
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
-import { WebEngageEventName, WebEngageEvents } from '../../helpers/webEngageEvents';
-import { string } from '../../strings/string';
-import { UploadPrescriprionPopup } from '../Medicines/UploadPrescriprionPopup';
-import { BottomPopUp } from '../ui/BottomPopUp';
-import { useUIElements } from '../UIElementsProvider';
+import { string } from '@aph/mobile-patients/src/strings/string';
+import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
+import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -342,6 +346,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         setshowSpinner(false);
         const status = g(data, 'addPatientMedicalRecord', 'status');
         if (status) {
+          postWebEngagePHR('Prescription', WebEngageEventName.PHR_ADD_PRESCRIPTIONS);
           props.navigation.goBack();
         }
       })
@@ -396,6 +401,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         setshowSpinner(false);
         const status = g(data, 'addPatientLabTestRecord', 'status');
         if (status) {
+          postWebEngagePHR('Lab Test', WebEngageEventName.PHR_ADD_LAB_TESTS);
           props.navigation.goBack();
         }
       })
@@ -442,6 +448,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         setshowSpinner(false);
         const status = g(data, 'addPatientHealthCheckRecord', 'status');
         if (status) {
+          postWebEngagePHR('Health Check Record', WebEngageEventName.PHR_ADD_HEALTH_CHECKS);
           props.navigation.goBack();
         }
       })
@@ -490,6 +497,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         setshowSpinner(false);
         const status = g(data, 'addPatientHospitalizationRecord', 'status');
         if (status) {
+          postWebEngagePHR('Discharge Summary Record', WebEngageEventName.PHR_ADD_HOSPITALIZATIONS);
           props.navigation.goBack();
         }
       })
