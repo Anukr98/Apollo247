@@ -69,6 +69,7 @@ export interface EPrescription {
 
 export interface PharmaCoupon extends validatePharmaCoupon_validatePharmaCoupon {
   coupon: string;
+  message?: string;
   discount: number;
   valid: boolean;
   reason: String;
@@ -375,10 +376,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   );
 
   const deliveryCharges =
-    !deliveryType || deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+    deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
       ? 0
-      : deliveryType == MEDICINE_DELIVERY_TYPE.HOME_DELIVERY &&
-        cartTotal > 0 &&
+      : cartTotal > 0 &&
         cartTotal - productDiscount - couponDiscount <
           AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY
       ? AppConfig.Configuration.DELIVERY_CHARGES
@@ -479,12 +479,11 @@ export const ShoppingCartProvider: React.FC = (props) => {
     updateCartItemsFromStorage();
   }, []);
 
-  const getDiscountPrice = (
-    cartItem: ShoppingCartItem,
-    lineItems: validatePharmaCoupon_validatePharmaCoupon_pharmaLineItemsWithDiscountedPrice[]
-  ) => {
+  const getDiscountPrice = (cartItem: ShoppingCartItem, lineItems: CartProduct[]) => {
     const foundItem = lineItems.find((item) => item.sku == cartItem.id);
-    return foundItem
+    return foundItem &&
+      foundItem.discountAmt != 0 &&
+      foundItem.discountAmt > foundItem.mrp - foundItem.specialPrice
       ? foundItem.onMrp
         ? foundItem.mrp - foundItem.discountAmt
         : foundItem.specialPrice - foundItem.discountAmt
@@ -511,11 +510,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
       );
 
     if (coupon) {
-      if (
-        g(coupon, 'discount') != 0 &&
-        g(coupon, 'discount') > deductProductDiscount(coupon.products)
-      ) {
-        setCouponDiscount(g(coupon, 'discount') - deductProductDiscount(coupon.products) || 0);
+      if (coupon?.discount != 0 && coupon?.discount > deductProductDiscount(coupon.products)) {
+        setCouponDiscount(coupon?.discount - deductProductDiscount(coupon.products) || 0);
         setProductDiscount(productDiscount);
         setCartItems(
           cartItems.map((item) => ({

@@ -409,6 +409,7 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
           orderId
         }
         id
+        hideHealthRecordNudge
         patientId
         doctorId
         appointmentDateTime
@@ -3117,6 +3118,17 @@ export const GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES = gql`
       cityName
       stateID
       stateName
+    }
+  }
+`;
+
+export const UPDATE_HEALTH_RECORD_NUDGE_STATUS = gql`
+  mutation updateHealthRecordNudgeStatus($appointmentId: String!, $hideHealthRecordNudge: Boolean) {
+    updateHealthRecordNudgeStatus(
+      appointmentId: $appointmentId
+      hideHealthRecordNudge: $hideHealthRecordNudge
+    ) {
+      response
     }
   }
 `;

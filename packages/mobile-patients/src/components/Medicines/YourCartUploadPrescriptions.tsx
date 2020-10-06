@@ -221,12 +221,10 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
     );
   };
 
-  const disablePlaceOrder = !(
-    !!(deliveryAddressId || storeId) &&
-    ((storeId && showPrescriptionAtStore) ||
-      physicalPrescription.length > 0 ||
-      ePrescription.length > 0)
-  );
+  const disablePlaceOrder =
+    loading ||
+    (physicalPrescription.length === 0 && ePrescription.length === 0) ||
+    (!deliveryAddressId && !storeId);
 
   const renderPaymentMethod = () => {
     return (
@@ -403,8 +401,6 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
           durationDays: durationDay,
         },
       };
-
-      setLoading!(false);
       submitPrescriptionMedicineOrder(prescriptionMedicineInput);
     } catch (error) {
       setLoading!(false);
@@ -647,7 +643,6 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
             style={{ flex: 1, marginHorizontal: 40 }}
           />
         </StickyBottomComponent>
-        {loading && <Spinner />}
       </SafeAreaView>
       {showDriveWayPopup && (
         <StoreDriveWayPickupPopup

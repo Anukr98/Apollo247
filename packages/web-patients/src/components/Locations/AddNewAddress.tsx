@@ -22,6 +22,7 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     addAddressContainer: {
       height: '100%',
+			maxBlockSize: 500
     },
     addAddressContent: {
       padding: 20,

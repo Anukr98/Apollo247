@@ -47,7 +47,12 @@ module.exports = async (req, res, next) => {
       process.env.NODE_ENV == 'local' ||
       transactionStatus == 'pending'
     ) {
-      axios.defaults.headers.common['authorization'] = process.env.API_TOKEN;
+      // axios.defaults.headers.common['authorization'] = process.env.API_TOKEN;
+      const axiosConfig = {
+        headers: {
+          'authorization': process.env.API_TOKEN
+        }
+      }
 
       logger.info(`pharma-response-${medicineOrderQuery(payload)}`);
 
@@ -57,7 +62,7 @@ module.exports = async (req, res, next) => {
       };
 
       /// write medicineorder
-      const response = await axios.post(process.env.API_URL, requestJSON);
+      const response = await axios.post(process.env.API_URL, requestJSON, axiosConfig);
       logger.info(
         `${payload.ORDERID} - SaveMedicineOrderPaymentMq - ${JSON.stringify(response.data)}`
       );

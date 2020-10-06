@@ -904,7 +904,7 @@ export const getDiscountPercentage = (price: number | string, specialPrice?: num
     : Number(price) == Number(specialPrice)
     ? 0
     : ((Number(price) - Number(specialPrice)) / Number(price)) * 100;
-  return Math.ceil(discountPercent);
+  return discountPercent != 0 ? Number(discountPercent).toFixed(2) : 0;
 };
 
 export const getBuildEnvironment = () => {
@@ -954,6 +954,17 @@ export const getRelations = (self?: string) => {
 };
 
 export const formatTestSlot = (slotTime: string) => moment(slotTime, 'HH:mm').format('hh:mm A');
+
+export const formatTestSlotWithBuffer = (slotTime: string ) => {
+ 
+  const startTime = slotTime.split('-')[0];
+  const endTime = moment(startTime, 'HH:mm')
+    .add(30, 'minutes')
+    .format('HH:mm');
+
+  const newSlot = [startTime, endTime];
+  return newSlot.map((item) => moment(item.trim(), 'hh:mm').format('hh:mm A')).join(' - ');
+};
 
 export const isValidTestSlot = (
   slot: getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo,
@@ -1013,8 +1024,8 @@ const webengage = new WebEngage();
 
 export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Object) => {
   try {
-    const logContent = `[WebEngage] Event: ${eventName}\n`
-    console.log(logContent, '\n',/*attributes, '\n'*/);
+    const logContent = `[WebEngage] Event: ${eventName}\n`;
+    console.log(logContent, '\n' /*attributes, '\n'*/);
     webengage.track(eventName, attributes);
   } catch (error) {
     console.log('********* Unable to post WebEngageEvent *********', { error });
@@ -1308,8 +1319,8 @@ export const postAppsFlyerAddToCartEvent = (
 
 export const postFirebaseEvent = (eventName: FirebaseEventName, attributes: Object) => {
   try {
-    const logContent = `[Firebase] Event: ${eventName}\n`
-    console.log(logContent, '\n',/*attributes, '\n'*/);
+    const logContent = `[Firebase] Event: ${eventName}\n`;
+    console.log(logContent, '\n' /*attributes, '\n'*/);
     firebase.analytics().logEvent(eventName, attributes);
   } catch (error) {
     console.log('********* Unable to post FirebaseEvent *********', { error });

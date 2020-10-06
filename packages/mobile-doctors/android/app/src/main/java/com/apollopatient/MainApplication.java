@@ -6,6 +6,7 @@ import android.content.Context;
 
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
+import com.microsoft.codepush.react.CodePush;
 import com.dylanvann.fastimage.FastImageViewPackage;
 import com.learnium.RNDeviceInfo.RNDeviceInfo;
 import com.webengage.WebengagePackage;
@@ -45,6 +46,11 @@ import io.invertase.firebase.config.RNFirebaseRemoteConfigPackage;
 public class MainApplication extends Application implements ReactApplication {
 
     private final ReactNativeHost mReactNativeHost = new ReactNativeHost(this) {
+        @Override
+        protected String getJSBundleFile() {
+            return CodePush.getJSBundleFile();
+        }
+
         @Override
         public boolean getUseDeveloperSupport() {
             return BuildConfig.DEBUG;

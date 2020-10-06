@@ -1362,6 +1362,9 @@ export class PatientAddress extends BaseEntity {
   @Column({ nullable: true })
   addressType: PATIENT_ADDRESS_TYPE;
 
+  @Column({ nullable: true, default: false })
+  defaultAddress: boolean;
+
   @Column({ nullable: true })
   city: string;
 

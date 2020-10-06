@@ -878,6 +878,7 @@ const modifyCaseSheet: Resolver<
       })
   );
 
+//  await Promise.all(promises);
   await Promise.all(promises).then((res) => {
     [patientFamilyHistory, patientLifeStyle, patientMedicalHistory] = res;
   });
@@ -886,8 +887,13 @@ const modifyCaseSheet: Resolver<
   delete patientLifeStyle.patient;
   delete patientMedicalHistory.patient;
 
-  patientData.familyHistory = patientFamilyHistory;
-  patientData.lifeStyle = patientLifeStyle;
+  patientData.familyHistory.map((familyHistory) => {
+    if (familyHistory.id === patientFamilyHistory.id)
+      Object.assign(familyHistory, patientFamilyHistory);
+  });
+  patientData.lifeStyle.map((lifestyle) => {
+    if (lifestyle.id === patientLifeStyle.id) Object.assign(lifestyle, patientLifeStyle);
+  });
   patientData.patientMedicalHistory = patientMedicalHistory;
   patientRepo.updatePatientDetailsConsultCache(patientData);
 

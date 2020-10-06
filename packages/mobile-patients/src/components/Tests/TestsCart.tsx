@@ -7,6 +7,7 @@ import {
   isValidTestSlot,
   TestSlot,
   formatTestSlot,
+  formatTestSlotWithBuffer,
   getUniqueTestSlots,
   getTestSlotDetailsByTime,
   postWebEngageEvent,
@@ -936,9 +937,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           <Text style={styles.dateTextStyle}>Time</Text>
           <Text style={styles.dateTextStyle}>
             {selectedTimeSlot
-              ? `${formatTestSlot(selectedTimeSlot.slotInfo.startTime!)} - ${formatTestSlot(
-                  selectedTimeSlot.slotInfo.endTime!
-                )}`
+              ? `${formatTestSlotWithBuffer(selectedTimeSlot.slotInfo.startTime!)}`
               : 'No slot selected'}
           </Text>
         </View>
