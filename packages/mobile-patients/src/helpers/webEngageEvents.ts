@@ -532,6 +532,7 @@ export interface WebEngageEvents {
   };
   [WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]: {
     Source: 'Take a Photo' | 'Choose Gallery' | 'E-Rx';
+    'Upload Source'?: 'Cart' | 'Upload Flow';
   };
   [WebEngageEventName.PHARMACY_SUBMIT_PRESCRIPTION]: {
     'Order ID': string | number;
