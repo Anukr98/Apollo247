@@ -33,15 +33,6 @@ export enum AppointmentType {
   PHYSICAL = "PHYSICAL",
 }
 
-/**
- * Indicates what type of attribute
- */
-export enum AttributeType {
-  LIMITED = "LIMITED",
-  RECURRING = "RECURRING",
-  UNLIMTED = "UNLIMTED",
-}
-
 export enum BOOKINGSOURCE {
   MOBILE = "MOBILE",
   WEB = "WEB",
@@ -149,21 +140,6 @@ export enum Gender {
   FEMALE = "FEMALE",
   MALE = "MALE",
   OTHER = "OTHER",
-}
-
-/**
- * Indicates the current status of the plan
- */
-export enum GroupPlanStatus {
-  ACTIVE = "ACTIVE",
-  DISCONTINUED = "DISCONTINUED",
-  INACTIVE = "INACTIVE",
-}
-
-export enum HDFC_CUSTOMER {
-  NOT_HDFC_CUSTOMER = "NOT_HDFC_CUSTOMER",
-  OTP_GENERATED = "OTP_GENERATED",
-  OTP_NOT_GENERATED = "OTP_NOT_GENERATED",
 }
 
 export enum LOGIN_TYPE {
@@ -293,6 +269,8 @@ export enum MEDICINE_UNIT {
 export enum MedicalRecordType {
   CONSULTATION = "CONSULTATION",
   EHR = "EHR",
+  HEALTHCHECK = "HEALTHCHECK",
+  HOSPITALIZATION = "HOSPITALIZATION",
   OPERATIVE_REPORT = "OPERATIVE_REPORT",
   PATHOLOGY_REPORT = "PATHOLOGY_REPORT",
   PHYSICAL_EXAMINATION = "PHYSICAL_EXAMINATION",
@@ -328,6 +306,17 @@ export enum PAYMENT_METHODS {
   UPI = "UPI",
 }
 
+export enum PAYMENT_METHODS_REVERSE {
+  COD = "COD",
+  CREDIT_CARD = "CREDIT_CARD",
+  CREDIT_CARD_EMI = "CREDIT_CARD_EMI",
+  DEBIT_CARD = "DEBIT_CARD",
+  NET_BANKING = "NET_BANKING",
+  PAYTM_POSTPAID = "PAYTM_POSTPAID",
+  PAYTM_WALLET = "PAYTM_WALLET",
+  UPI = "UPI",
+}
+
 export enum PRISM_DOCUMENT_CATEGORY {
   HealthChecks = "HealthChecks",
   OpSummary = "OpSummary",
@@ -337,6 +326,13 @@ export enum PRISM_DOCUMENT_CATEGORY {
 export enum PharmaDiscountApplicableOn {
   MRP = "MRP",
   SPECIAL_PRICE = "SPECIAL_PRICE",
+}
+
+export enum REFUND_STATUS {
+  REFUND_FAILED = "REFUND_FAILED",
+  REFUND_REQUEST_NOT_RAISED = "REFUND_REQUEST_NOT_RAISED",
+  REFUND_REQUEST_RAISED = "REFUND_REQUEST_RAISED",
+  REFUND_SUCCESSFUL = "REFUND_SUCCESSFUL",
 }
 
 export enum REQUEST_ROLES {
@@ -416,14 +412,6 @@ export enum SpecialtySearchType {
   NAME = "NAME",
 }
 
-export enum SubscriptionStatus {
-  ACTIVE = "ACTIVE",
-  CANCELLED = "CANCELLED",
-  DEFERRED_INACTIVE = "DEFERRED_INACTIVE",
-  DISABLED = "DISABLED",
-  UPGRADED = "UPGRADED",
-}
-
 export enum TEST_COLLECTION_TYPE {
   CENTER = "CENTER",
   HC = "HC",
@@ -462,17 +450,33 @@ export enum mediaPrescriptionSource {
   SELF = "SELF",
 }
 
-export enum notificationEventName {
-  APPOINTMENT = "APPOINTMENT",
+export interface AddHealthCheckRecordInput {
+  patientId: string;
+  recordType: MedicalRecordType;
+  healthCheckName: string;
+  healthCheckDate: any;
+  healthCheckFiles?: (HealthCheckFileProperties | null)[] | null;
 }
 
-export enum notificationStatus {
-  READ = "READ",
-  UNREAD = "UNREAD",
+export interface AddHospitalizationRecordInput {
+  patientId: string;
+  recordType: MedicalRecordType;
+  dischargeDate: any;
+  hospitalName: string;
+  doctorName: string;
+  hospitalizationFiles?: (HospitalizationFileProperties | null)[] | null;
 }
 
-export enum notificationType {
-  CHAT = "CHAT",
+export interface AddLabTestRecordInput {
+  patientId: string;
+  recordType: MedicalRecordType;
+  labTestName: string;
+  labTestDate: any;
+  referringDoctor?: string | null;
+  observations?: string | null;
+  additionalNotes?: string | null;
+  labTestResults?: (LabTestParameters | null)[] | null;
+  testResultFiles?: (LabTestFileProperties | null)[] | null;
 }
 
 export interface AddMedicalRecordInput {
@@ -576,26 +580,6 @@ export interface ConsultQueueInput {
   gender?: Gender | null;
 }
 
-export interface CreateUserSubscriptionInput {
-  plan_id: string;
-  payment_reference_id?: string | null;
-  coupon_availed?: string | null;
-  mobile_number: string;
-  order_id?: string | null;
-  transaction_date_time?: any | null;
-  status?: SubscriptionStatus | null;
-  start_date?: any | null;
-  end_date?: any | null;
-  deactivation_date?: any | null;
-  CustomerId?: string | null;
-  FirstName?: string | null;
-  LastName?: string | null;
-  Email?: string | null;
-  Gender?: string | null;
-  DOB?: any | null;
-  storeCode: string;
-}
-
 export interface DiagnosticLineItem {
   itemId?: number | null;
   price?: number | null;
@@ -689,6 +673,12 @@ export interface Geolocation {
   longitude: number;
 }
 
+export interface HealthCheckFileProperties {
+  fileName?: string | null;
+  mimeType?: string | null;
+  content?: string | null;
+}
+
 export interface HelpEmailInput {
   category?: string | null;
   reason?: string | null;
@@ -697,10 +687,30 @@ export interface HelpEmailInput {
   email?: string | null;
 }
 
+export interface HospitalizationFileProperties {
+  fileName?: string | null;
+  mimeType?: string | null;
+  content?: string | null;
+}
+
 export interface LabResultFileProperties {
   fileName: string;
   mimeType: string;
   content: string;
+}
+
+export interface LabTestFileProperties {
+  fileName?: string | null;
+  mimeType?: string | null;
+  content?: string | null;
+}
+
+export interface LabTestParameters {
+  maximum?: number | null;
+  minimum?: number | null;
+  parameterName?: string | null;
+  result?: number | null;
+  unit?: string | null;
 }
 
 export interface MediaPrescriptionFileProperties {
@@ -795,16 +805,6 @@ export interface MedicinePaymentMqInput {
   paymentMode?: PAYMENT_METHODS | null;
   healthCredits?: number | null;
   partnerInfo?: string | null;
-}
-
-export interface MessageInput {
-  fromId: string;
-  toId: string;
-  eventName: notificationEventName;
-  eventId: string;
-  message: string;
-  status: notificationStatus;
-  type: notificationType;
 }
 
 export interface OrderCancelInput {
@@ -929,6 +929,7 @@ export interface SaveSearchInput {
   type?: SEARCH_TYPE | null;
   typeId: string;
   typeName?: string | null;
+  image?: string | null;
   patient: string;
 }
 

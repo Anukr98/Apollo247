@@ -20,7 +20,6 @@ export interface UpdatePatient_updatePatient_patient {
   uhid: string | null;
   dateOfBirth: any | null;
   emailAddress: string | null;
-  partnerId: string | null;
 }
 
 export interface UpdatePatient_updatePatient {

@@ -21,6 +21,7 @@ import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/doctors';
 import { ValidateConsultCoupon_validateConsultCoupon } from 'graphql/types/ValidateConsultCoupon';
 import { Route } from 'react-router-dom';
 import { consultPayButtonClickTracking } from 'webEngageTracking';
+import { dataLayerTracking } from 'gtmTracking';
 import { getCouponByUserMobileNumber } from 'helpers/commonHelpers';
 import fetchUtil from 'helpers/fetch';
 import { gtmTracking } from '../../gtmTracking';
@@ -390,19 +391,41 @@ const OnlineCheckout: React.FC = () => {
     appointmentType,
     doctorName,
   } = pageData;
-  let newAppointmentDateTime = moment(appointmentDateTime).format('DD MMMM[,] LT').toString();
+  let newAppointmentDateTime = moment(appointmentDateTime)
+    .format('DD MMMM[,] LT')
+    .toString();
   const today = moment().endOf('day');
-  const tomorrow = moment().add(1, 'day').endOf('day');
+  const tomorrow = moment()
+    .add(1, 'day')
+    .endOf('day');
   const bookingTime = moment(appointmentDateTime);
   if (bookingTime < tomorrow) {
-    newAppointmentDateTime = `Tomorrow, ${moment(appointmentDateTime).format('LT').toString()}`;
+    newAppointmentDateTime = `Tomorrow, ${moment(appointmentDateTime)
+      .format('LT')
+      .toString()}`;
   }
   if (bookingTime < today) {
-    newAppointmentDateTime = `Today, ${moment(appointmentDateTime).format('LT').toString()}`;
+    newAppointmentDateTime = `Today, ${moment(appointmentDateTime)
+      .format('LT')
+      .toString()}`;
   }
 
   useEffect(() => {
     setLoading(true);
+
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: 'Consultation Cart Page',
+      pageLOB: 'Consultation',
+      pageType: 'Cart Page',
+      Time: appointmentDateTime,
+      Type: appointmentType,
+      cartproductlist: JSON.stringify(pageData),
+    });
+    /**Gtm code start end */
+
     apolloClient
       .query<GetDoctorDetailsById, GetDoctorDetailsByIdVariables>({
         query: GET_DOCTOR_DETAILS_BY_ID,
@@ -528,7 +551,7 @@ const OnlineCheckout: React.FC = () => {
   if (doctorDetails) {
     const {
       experience,
-      displayName,
+      fullName,
       photoUrl,
       onlineConsultationFees,
     } = doctorDetails.getDoctorDetailsById;
@@ -566,12 +589,12 @@ const OnlineCheckout: React.FC = () => {
         <div className={classes.container}>
           <div className={classes.pageContainer}>
             <div className={classes.pageHeader}>
-              <Link to={clientRoutes.specialityListing()}>
+              <a onClick={() => window.history.back()}>
                 <div className={classes.backArrow}>
                   <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                   <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
                 </div>
-              </Link>
+              </a>
               Checkout
             </div>
             <div className={classes.pageContent}>
@@ -581,7 +604,7 @@ const OnlineCheckout: React.FC = () => {
                     <img src={photoUrl} alt="" />
                   </div>
                   <div className={classes.doctorInfo}>
-                    <div className={classes.doctorName}>{displayName}</div>
+                    <div className={classes.doctorName}>{fullName}</div>
                     <div className={classes.doctorType}>
                       <span>
                         {speciality} | <span>{experience} Yrs. Exp</span>

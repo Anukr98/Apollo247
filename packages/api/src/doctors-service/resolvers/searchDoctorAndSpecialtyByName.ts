@@ -438,7 +438,6 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       if (!speciality['id']) {
         speciality['id'] = speciality['specialtyId'];
       }
-      if (speciality.image == '') speciality.image = null;
       return speciality;
     });
   } else {

@@ -16,13 +16,7 @@ import { MedicineLocationSearch } from 'components/MedicineLocationSearch';
 import { AphButton } from '@aph/web-ui-components';
 import { useParams } from 'hooks/routerHooks';
 import moment from 'moment';
-
-import { useApolloClient } from 'react-apollo-hooks';
-import { GET_SUBSCRIPTIONS_OF_USER_BY_STATUS } from 'graphql/profiles';
-import {
-  getSubscriptionsOfUserByStatus,
-  getSubscriptionsOfUserByStatusVariables,
-} from 'graphql/types/getSubscriptionsOfUserByStatus';
+import { dataLayerTracking } from 'gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -32,7 +26,6 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
       backgroundColor: theme.palette.common.white,
       padding: '0 20px',
-      position: 'relative',
       [theme.breakpoints.down('xs')]: {
         padding: '0 10px',
         boxShadow: '0 0.5px 2px 0 rgba(0, 0, 0, 0.1)',
@@ -287,7 +280,7 @@ const useStyles = makeStyles((theme: Theme) => {
     backArrow: {
       position: 'absolute',
       top: 90,
-      left: -70,
+      left: 70,
       width: 48,
       height: 48,
       lineHeight: '36px',
@@ -340,9 +333,6 @@ export const Header: React.FC<HeaderProps> = (props) => {
   const isMobileView = screen.width <= 768;
   const node = useRef(null);
 
-  const [userSubscriptions, setUserSubscriptions] = React.useState([]);
-  const apolloClient = useApolloClient();
-
   const params = useParams<{
     searchMedicineType: string;
     searchText: string;
@@ -365,30 +355,6 @@ export const Header: React.FC<HeaderProps> = (props) => {
       document.removeEventListener('mousedown', handleClick);
     };
   }, []);
-
-  useEffect(() => {
-    const userSubscriptionsLocalStorage = JSON.parse(localStorage.getItem('userSubscriptions'));
-    userSubscriptionsLocalStorage ? setUserSubscriptions(userSubscriptionsLocalStorage) : '';
-    apolloClient
-      .query<getSubscriptionsOfUserByStatus, getSubscriptionsOfUserByStatusVariables>({
-        query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
-        variables: {
-          mobile_number: localStorage.getItem('userMobileNo'),
-          status: ['active', 'deferred_inactive'],
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then((response) => {
-        setUserSubscriptions(response.data.GetSubscriptionsOfUserByStatus.response);
-        localStorage.setItem(
-          'userSubscriptions',
-          JSON.stringify(response.data.GetSubscriptionsOfUserByStatus.response)
-        );
-      })
-      .catch((error) => {
-        console.error('Something went wrong :( ' + error);
-      });
-  }, [currentPatient]);
 
   const MedicineRoutes = [
     clientRoutes.medicines(),
@@ -479,89 +445,179 @@ export const Header: React.FC<HeaderProps> = (props) => {
                             )}
                             <ul className={classes.userAccountList}>
                               <li>
-                                <Link to={clientRoutes.myAccount()}>
+                                <Link
+                                  to={clientRoutes.myAccount()}
+                                  onClick={() => {
+                                    /**Gtm code start start */
+                                    dataLayerTracking({
+                                      event: 'Profile Accessed',
+                                      Type: 'Account',
+                                    });
+                                    /**Gtm code start end */
+                                  }}
+                                >
                                   <span>
-                                    <img src={require('images/ic_manageprofile.svg')} alt="" />{' '}
+                                    <img
+                                      src={require('images/ic_manageprofile.svg')}
+                                      alt="Manage Profiles"
+                                    />{' '}
                                     Manage Profiles
                                   </span>
-                                  <img src={require('images/ic_arrow_right.svg')} alt="" />
+                                  <img
+                                    src={require('images/ic_arrow_right.svg')}
+                                    alt="Right Arrow"
+                                  />
                                 </Link>
                               </li>
 
                               <li>
-                                <Link to={clientRoutes.addressBook()}>
+                                <Link
+                                  to={clientRoutes.addressBook()}
+                                  onClick={() => {
+                                    /**Gtm code start start */
+                                    dataLayerTracking({
+                                      event: 'Profile Accessed',
+                                      Type: 'Address Book',
+                                    });
+                                    /**Gtm code start end */
+                                  }}
+                                >
                                   <span>
-                                    <img src={require('images/ic_location.svg')} alt="" /> Address
-                                    Book
+                                    <img
+                                      src={require('images/ic_location.svg')}
+                                      alt="Address Book"
+                                    />{' '}
+                                    Address Book
                                   </span>
-                                  <img src={require('images/ic_arrow_right.svg')} alt="" />
-                                </Link>
-                              </li>
-                              {userSubscriptions.length != 0 && (
-                                <li>
-                                  <Link to={clientRoutes.myMembership()}>
-                                    <span>
-                                      <img
-                                        src={require('images/my_membership.svg')}
-                                        width="24"
-                                        alt=""
-                                      />{' '}
-                                      My Memberships
-                                    </span>
-                                    <img src={require('images/ic_arrow_right.svg')} alt="" />
-                                  </Link>
-                                </li>
-                              )}
-                              {currentPatient && (
-                                <li>
-                                  <Link to={clientRoutes.yourOrders()}>
-                                    <span>
-                                      <img src={require('images/ic_invoice.svg')} alt="" /> My
-                                      Orders
-                                    </span>
-                                    <img src={require('images/ic_arrow_right.svg')} alt="" />
-                                  </Link>
-                                </li>
-                              )}
-
-                              <li>
-                                <Link to={clientRoutes.myPayments()}>
-                                  <span>
-                                    <img src={require('images/ic_fees.svg')} alt="" /> My Payments
-                                  </span>
-                                  <img src={require('images/ic_arrow_right.svg')} alt="" />
+                                  <img
+                                    src={require('images/ic_arrow_right.svg')}
+                                    alt="Right Arrow"
+                                  />
                                 </Link>
                               </li>
 
                               {currentPatient && (
                                 <li>
-                                  <Link to={clientRoutes.healthRecords()}>
+                                  <Link
+                                    to={clientRoutes.yourOrders()}
+                                    onClick={() => {
+                                      /**Gtm code start start */
+                                      dataLayerTracking({
+                                        event: 'Profile Accessed',
+                                        Type: 'Orders',
+                                      });
+                                      /**Gtm code start end */
+                                    }}
+                                  >
+                                    <span>
+                                      <img src={require('images/ic_invoice.svg')} alt="My Orders" />{' '}
+                                      My Orders
+                                    </span>
+                                    <img
+                                      src={require('images/ic_arrow_right.svg')}
+                                      alt="Right Arrow"
+                                    />
+                                  </Link>
+                                </li>
+                              )}
+
+                              <li>
+                                <Link
+                                  to={clientRoutes.myPayments()}
+                                  onClick={() => {
+                                    /**Gtm code start start */
+                                    dataLayerTracking({
+                                      event: 'Profile Accessed',
+                                      Type: 'Payments',
+                                    });
+                                    /**Gtm code start end */
+                                  }}
+                                >
+                                  <span>
+                                    <img src={require('images/ic_fees.svg')} alt="My Payments" /> My
+                                    Payments
+                                  </span>
+                                  <img
+                                    src={require('images/ic_arrow_right.svg')}
+                                    alt="Right Arrow"
+                                  />
+                                </Link>
+                              </li>
+
+                              {currentPatient && (
+                                <li>
+                                  <Link
+                                    to={clientRoutes.healthRecords()}
+                                    onClick={() => {
+                                      /**Gtm code start start */
+                                      dataLayerTracking({
+                                        event: 'Profile Accessed',
+                                        Type: 'Health Records',
+                                      });
+                                      /**Gtm code start end */
+                                    }}
+                                  >
                                     <span>
                                       <img
-                                        src={require('images/ic_notificaiton_accounts.svg')}
-                                        alt=""
+                                        src={require('images/ic_myhealth.svg')}
+                                        alt="Health Records"
                                       />{' '}
                                       Health Records
                                     </span>
-                                    <img src={require('images/ic_arrow_right.svg')} alt="" />
+                                    <img
+                                      src={require('images/ic_arrow_right.svg')}
+                                      alt="Right Arrow"
+                                    />
                                   </Link>
                                 </li>
                               )}
-
                               <li>
-                                <Link to={clientRoutes.needHelp()}>
+                                <Link to={clientRoutes.oneApolloMembership()}>
                                   <span>
-                                    <img src={require('images/ic_round_live_help.svg')} alt="" />{' '}
+                                    <img
+                                      src={require('images/one-apollo.svg')}
+                                      width="25"
+                                      alt="One Apollo Membership"
+                                    />
+                                    One Apollo Membership
+                                  </span>
+                                  <img
+                                    src={require('images/ic_arrow_right.svg')}
+                                    alt="Right Arrow"
+                                  />
+                                </Link>
+                              </li>
+                              <li>
+                                <Link
+                                  to={clientRoutes.needHelp()}
+                                  onClick={() => {
+                                    /**Gtm code start start */
+                                    dataLayerTracking({
+                                      event: 'Profile Accessed',
+                                      Type: 'Help',
+                                    });
+                                    /**Gtm code start end */
+                                  }}
+                                >
+                                  <span>
+                                    <img
+                                      src={require('images/ic_round_live_help.svg')}
+                                      alt="Need Help"
+                                    />{' '}
                                     Need Help
                                   </span>
-                                  <img src={require('images/ic_arrow_right.svg')} alt="" />
+                                  <img
+                                    src={require('images/ic_arrow_right.svg')}
+                                    alt="Right Arrow"
+                                  />
                                 </Link>
                               </li>
 
                               <li>
                                 <a href="javascript:void(0)" onClick={() => signOut()}>
                                   <span>
-                                    <img src={require('images/ic_logout.svg')} alt="" /> Logout
+                                    <img src={require('images/ic_logout.svg')} alt="Logout" />{' '}
+                                    Logout
                                   </span>
                                 </a>
                               </li>
@@ -655,18 +711,18 @@ export const Header: React.FC<HeaderProps> = (props) => {
               </div>
             </div>
           </div>
-          {props.backArrowVisible && (
-            <>
-              {!props.isWebView && (
-                <div className={classes.backArrow}>
-                  <Link to={props.backLocation || clientRoutes.welcome()}>
-                    <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
-                  </Link>
-                </div>
-              )}
-            </>
-          )}
         </header>
+        {props.backArrowVisible && (
+          <>
+            {!props.isWebView && (
+              <Link to={props.backLocation || clientRoutes.welcome()}>
+                <div className={classes.backArrow}>
+                  <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
+                </div>
+              </Link>
+            )}
+          </>
+        )}
       </div>
     </div>
   );

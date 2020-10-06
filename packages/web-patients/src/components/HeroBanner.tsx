@@ -121,9 +121,9 @@ const useStyles = makeStyles((theme: Theme) => {
     addMemberBtn: {
       boxShadow: 'none',
       backgroundColor: 'transparent',
-      marginLeft: 30,
       paddingBottom: 0,
       paddingRight: 0,
+      paddingLeft: 0,
       '&:hover': {
         backgroundColor: 'transparent',
       },
@@ -250,8 +250,7 @@ export const HeroBanner: React.FC = () => {
                 );
               })}
               <MenuItem classes={{ selected: classes.menuSelected }}>
-                {/* @TODO: Uncomment this after fixing */}
-                {/* <AphButton
+                <AphButton
                   color="primary"
                   classes={{ root: classes.addMemberBtn }}
                   onClick={() => {
@@ -259,8 +258,8 @@ export const HeroBanner: React.FC = () => {
                   }}
                   title={'Add Member'}
                 >
-                  Add Member
-                </AphButton> */}
+                  +Add Member
+                </AphButton>
               </MenuItem>
             </AphSelect>
           </Typography>

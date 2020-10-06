@@ -16,7 +16,7 @@ import {
   validatePharmaCoupon,
 } from 'graphql/types/validatePharmaCoupon';
 import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
-import { gtmTracking } from '../../gtmTracking';
+import { gtmTracking, dataLayerTracking } from '../../gtmTracking';
 import { getTypeOfProduct } from 'helpers/commonHelpers';
 import fetchUtil from 'helpers/fetch';
 import { PharmaCoupon } from './MedicineCart';
@@ -202,18 +202,10 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
     }
   };
 
-  var packageId: string;
-  const userSubscriptions = JSON.parse(localStorage.getItem('userSubscriptions'));
-  if (userSubscriptions && userSubscriptions[0] && userSubscriptions[0].status == 'ACTIVE') {
-    packageId = `${userSubscriptions[0].group_plan.group.name}:${userSubscriptions[0].group_plan.plan_id}`;
-  }
-
   const verifyCoupon = () => {
     const data = {
       mobile: localStorage.getItem('userMobileNo'),
       billAmount: cartTotal.toFixed(2),
-      email: currentPatient && currentPatient.emailAddress,
-      packageId: packageId,
       coupon: selectCouponCode,
       pinCode: localStorage.getItem('pharmaPincode'),
       products: cartItems.map((item) => {
@@ -228,15 +220,20 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
         };
       }),
     };
-    console.log(data, 'Checkpoint by Vasudev');
     if (currentPatient && currentPatient.id) {
       setMuationLoading(true);
-      const fetchCouponUrl = `${process.env.VALIDATE_CONSULT_COUPONS}?mobile=${
-        currentPatient.mobileNumber
-      }&email=${currentPatient.emailAddress}&packageId=${userSubscriptions ? packageId : ''}`;
-      fetchUtil(fetchCouponUrl, 'POST', data, '', false)
+      fetchUtil(process.env.VALIDATE_CONSULT_COUPONS, 'POST', data, '', false)
         .then((resp: any) => {
           if (resp.errorCode == 0) {
+            /**Gtm code start start */
+            dataLayerTracking({
+              event: 'Coupon Code Applied',
+              'GT-Coupon-Code': selectCouponCode,
+              'GT-Discount-Given': resp.response.valid,
+              'GT-Discount': resp.response.discount,
+            });
+            /**Gtm code start end */
+
             if (resp.response.valid) {
               const freeProductsSet = new Set(
                 resp.response.products && resp.response.products.length
@@ -257,6 +254,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                 label: `Coupon Applied - ${selectCouponCode}`,
                 value: resp.response.discount,
               });
+
               return resp;
             } else {
               props.setValidateCouponResult(null);
@@ -355,10 +353,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
   useEffect(() => {
     setIsLoading(true);
     // Since endpoint is the same for all coupons, this will be changed if searchlight gives a new endpoint
-    const fetchCouponUrl = `${process.env.GET_CONSULT_COUPONS}?mobile=${
-      currentPatient.mobileNumber
-    }&email=${currentPatient.emailAddress}&packageId=${userSubscriptions ? packageId : ''}`;
-    fetchUtil(fetchCouponUrl, 'GET', {}, '', false)
+    fetchUtil(process.env.GET_CONSULT_COUPONS, 'GET', {}, '', false)
       .then((res: any) => {
         if (res && res.response && res.response.length > 0) {
           setAvailableCoupons(res.response);

@@ -39,7 +39,6 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundPosition: 'center center',
       backgroundSize: 'cover',
       display: 'flex',
-      position: 'relative',
     },
     rightGroup: {
       marginLeft: 'auto',
@@ -51,11 +50,6 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#fff',
       '& p': {
         margin: 0,
-      },
-      '& img': {
-        position: 'absolute',
-        top: 20,
-        right: 20,
       },
     },
     title: {
@@ -136,25 +130,17 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#01475b',
       margin: 0,
       paddingBottom: 12,
-      textTransform: 'uppercase',
     },
     serviceCard: {
       display: 'flex',
       alignItems: 'center',
-      border: '1px solid #00485d',
+      backgroundColor: '#00485d',
       borderRadius: 10,
-      color: '#00485d',
+      color: '#fff',
       fontSize: 14,
       padding: '9px 16px',
       cursor: 'pointer',
       fontWeight: 500,
-      [theme.breakpoints.down('sm')]: {
-        width: '100%',
-        margin: '0 0 15px',
-        '&:last-child': {
-          margin: 0,
-        },
-      },
       '& img': {
         verticalAlign: 'middle',
       },
@@ -180,167 +166,124 @@ const useStyles = makeStyles((theme: Theme) => {
         marginTop: 20,
       },
     },
-    hcContent: {
-      padding: '16px 0',
-      borderBottom: '1px dashed rgba(0,0,0,0.2)',
-      '& h3': {
-        fontSize: 16,
-        fontWeight: 700,
-        color: '#07AE8B',
-        textTransform: 'uppercase',
-        margin: '0 0 10px',
-      },
-    },
-    hcDetails: {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      [theme.breakpoints.down('sm')]: {
-        flexDirection: 'column',
-        alignItems: 'flex-start',
-      },
-      '& p': {
-        fontSize: 14,
-        fontWeight: 500,
-        lineHeight: '20px',
-        color: 'rgba(1,71,91,0.6)',
-        width: '70%',
-      },
-      '& a': {
-        color: '#FC9916',
-        borderRadius: 10,
-        margin: '0 0 0 20px',
-        textTransform: 'none',
-        [theme.breakpoints.down('sm')]: {
-          margin: '20px 0 0',
-        },
-        '& img': {
-          margin: '0 10px 0 0',
-        },
-      },
-    },
-    serviceContent: {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      [theme.breakpoints.down('sm')]: {
-        flexDirection: 'column',
-        alignItems: 'flex-start',
-      },
-    },
-    pt0: {
-      paddingTop: 0,
-    },
   };
 });
 
 export const WeAreHelpYou: React.FC = (props) => {
   const classes = useStyles({});
   const covidScannerUrl = process.env.COVID_RISK_CALCULATOR_URL;
-  const mentalScannerUrl = process.env.MENTAL_HEALTH_SCAN_URL;
   const [iscoronaDialogOpen, setIscoronaDialogOpen] = useState<boolean>(false);
 
   return (
     <div className={classes.root}>
-      {/* <Typography variant="h3" className={classes.mainHead}>
+      <Typography variant="h3" className={classes.mainHead}>
         Worried about Coronavirus?
-      </Typography> */}
+      </Typography>
       <div className={classes.helpCard}>
         <div
           className={classes.cardHeader}
-          style={{ backgroundImage: `url(${require('images/ecosystem-banner.jpg')})` }}
+          style={{ backgroundImage: `url(${require('images/covid-banner.jpg')})` }}
         >
           <div className={classes.contentGroup}>
-            <img src={require('images/h-medicine.svg')} alt="" />
-            <div className={classes.title}>Health Articles & Resources</div>
-            <p>Make better health choices with our curated blogs, videos and expert advice.</p>
+            <div className={classes.title}>Coronavirus (Covid-19)</div>
+            <p>
+              Learn more about Coronavirus, how to stay safe, and what to do if you have symptoms.
+            </p>
           </div>
-          {/* <div className={classes.rightGroup}>
+          <div className={classes.rightGroup}>
             <LazyIntersection
               style={{ width: '24px' }}
               src={require('images/ic_covid-banner.svg')}
               alt=""
             />
-          </div> */}
+          </div>
         </div>
         <div className={classes.cardContent}>
-          <div className={`${classes.hcContent} ${classes.pt0}`}>
-            <Typography component="h3">Health Blog</Typography>
-            <div className={classes.hcDetails}>
-              <Typography>Explore healthcare content created every day by our experts.</Typography>
-              <AphButton href={clientRoutes.knowledgeBaseLanding()}>
-                <img src={'images/article.svg'} alt="" /> Read the Latest Articles
-              </AphButton>
-            </div>
+          <div className={classes.contentHeader}>
+            <span>
+              <LazyIntersection
+                style={{ width: '40px' }}
+                src={require('images/ic-mascot.png')}
+                alt="We are here to help you"
+              />
+            </span>
+            <span>We are here to help you.</span>
           </div>
-          <div className={classes.hcContent}>
-            <Typography component="h3">Coronavirus (COVID-19)</Typography>
-            <div className={classes.hcDetails}>
-              <Typography>
-                The latest Coronavirus information to keep you safe and healthy.
-              </Typography>
-              <AphButton href={clientRoutes.covidLanding()}>
-                <img src={'images/covid.svg'} alt="" />
-                Learn About COVID-19
-              </AphButton>
-            </div>
-          </div>
-          <div className={classes.helpSection}>
-            <div className={classes.helpSectionHead}>You can also</div>
-            <div className={classes.serviceContent}>
-              <div className={classes.serviceCard}>
-                <a href={covidScannerUrl} target={'_blank'}>
-                  <span>
-                    <LazyIntersection
-                      style={{ width: '24px' }}
-                      src={require('images/ic_covid-white.svg')}
-                      alt=""
-                    />
-                  </span>
-                  <span>Check your risk level</span>
-                </a>
-              </div>
-
-              <div className={classes.serviceCard}>
-                <a href={mentalScannerUrl} target={'_blank'}>
-                  <span>
-                    <LazyIntersection
-                      style={{ width: '24px' }}
-                      src={require('images/ic_psychologist.svg')}
-                      alt=""
-                    />
-                  </span>
-                  <span>Take a mental health scan</span>
-                </a>
-              </div>
-
-              <div
-                onClick={() => {
-                  setIscoronaDialogOpen(true);
-                }}
-                className={classes.serviceCard}
-              >
+          <Grid container spacing={2}>
+            <Grid item sm={8} xs={12}>
+              <p>
+                Apollo 247 has curated fact-based information from reputed sources on Coronavirus.
+                Now you can get reliable answers to common questions at one place.
+              </p>
+            </Grid>
+            <Grid item sm={4} xs={12}>
+              <Link className={classes.articleBox} to={clientRoutes.covidLanding()}>
                 <span>
                   <LazyIntersection
                     style={{ width: '24px' }}
-                    src={require('images/ic_family_doctor.svg')}
+                    src={require('images/ic_feed.svg')}
                     alt=""
                   />
                 </span>
-                <span>Call our experts</span>
-              </div>
-
-              {/* <Link className={classes.serviceCard} to={clientRoutes.kavachLanding()}>
-                <span>
-                  <LazyIntersection
-                    src={require('images/apollo-kavach.png')}
-                    alt="apollo-kavach"
-                    style={{ width: '24px' }}
-                  />
-                </span>
-                <span>Explore the Apollo Kavach Program</span>
-              </Link> */}
-            </div>
+                <Typography variant="h3">Learn more about Coronavirus</Typography>
+              </Link>
+            </Grid>
+          </Grid>
+          <div className={classes.helpSection}>
+            <div className={classes.helpSectionHead}>You can also</div>
+            <Grid container spacing={2}>
+              <Grid item sm={4} xs={12}>
+                <a href={covidScannerUrl} target={'_blank'}>
+                  <div className={classes.serviceCard}>
+                    <span>
+                      <LazyIntersection
+                        style={{ width: '24px' }}
+                        src={require('images/ic_covid-white.svg')}
+                        alt=""
+                      />
+                    </span>
+                    <span>Check your risk level</span>
+                  </div>
+                </a>
+              </Grid>
+              {/* <Grid item sm={4} xs={12}>
+                <div className={classes.serviceCard}>
+                  <span>
+                    <img src={require('images/ic_psychologist.svg')} alt="" />
+                  </span>
+                  <span>Take a mental health scan</span>
+                </div>
+              </Grid> */}
+              <Grid item sm={4} xs={12}>
+                <div
+                  onClick={() => {
+                    setIscoronaDialogOpen(true);
+                  }}
+                  className={classes.serviceCard}
+                >
+                  <span>
+                    <LazyIntersection
+                      style={{ width: '24px' }}
+                      src={require('images/ic_family_doctor.svg')}
+                      alt=""
+                    />
+                  </span>
+                  <span>Call our experts</span>
+                </div>
+              </Grid>
+              <Grid item sm={4} xs={12}>
+                <Link className={classes.serviceCard} to={clientRoutes.kavachLanding()}>
+                  <span>
+                    <LazyIntersection
+                      src={require('images/apollo-kavach.png')}
+                      alt="apollo-kavach"
+                      style={{ width: '24px' }}
+                    />
+                  </span>
+                  <span>Explore the Apollo Kavach Program</span>
+                </Link>
+              </Grid>
+            </Grid>
           </div>
         </div>
       </div>

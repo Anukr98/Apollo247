@@ -119,6 +119,8 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
       }
     });
 
+    const { firstName } = doctorDetails;
+
     return clinics.length > 0 ? (
       <>
         <div className={classes.sectionGroup}>

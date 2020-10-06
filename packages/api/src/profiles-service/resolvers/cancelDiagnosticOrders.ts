@@ -33,7 +33,7 @@ export const cancelDiagnosticOrdersTypeDefs = gql`
     centerLocality: String!
   }
 
-  input DiagnosticsOrderNotificationInput {
+  input sendDiagnosticsOrderNotificationInput {
     type: String
     patientID: String
     mobileNumber: String
@@ -42,19 +42,10 @@ export const cancelDiagnosticOrdersTypeDefs = gql`
     orderID: String
   }
 
-  type SendDiagnosticOrderNotificationResponse {
-    status: Boolean
-  }
-
   extend type Query {
     sendDiagnosticOrderNotification(
-      type: String
-      patientID: String
-      mobileNumber: String
-      patientFirstName: String
-      displayID: Int
-      orderID: String
-    ): SendDiagnosticOrderNotificationResponse!
+      sendDiagnosticsOrderNotificationInput: sendDiagnosticsOrderNotificationInput
+    ): Boolean
   }
 
   extend type Mutation {
@@ -82,10 +73,6 @@ type UpdateDiagnosticOrderInput = {
   centerCity: string;
   centerState: string;
   centerLocality: string;
-};
-
-type SendDiagnosticOrderNotificationResponse = {
-  status: boolean;
 };
 
 type UpdateOrderInputArgs = { updateDiagnosticOrderInput: UpdateDiagnosticOrderInput };
@@ -154,9 +141,8 @@ const sendDiagnosticOrderNotification: Resolver<
     orderID: string;
   },
   ProfilesServiceContext,
-  SendDiagnosticOrderNotificationResponse
+  boolean
 > = async (parent, args, { profilesDb }) => {
-  console.log(args);
   let notificationType: NotificationType;
   switch (args.type) {
     case NotificationType.DIAGNOSTIC_ORDER_SUCCESS:
@@ -166,7 +152,6 @@ const sendDiagnosticOrderNotification: Resolver<
       notificationType = NotificationType.DIAGNOSTIC_ORDER_PAYMENT_FAILED;
       break;
     default:
-      console.log(args.type);
       throw new AphError(AphErrorMessages.UNKNOWN_NOTIFICATION_ERROR);
   }
   const notification = await sendDiagnosticOrderStatusNotification(
@@ -179,9 +164,9 @@ const sendDiagnosticOrderNotification: Resolver<
     args.orderID
   );
   if (!notification) {
-    return { status: false };
+    return false;
   }
-  return { status: notification.status };
+  return notification.status;
 };
 
 export const cancelDiagnosticOrdersResolvers = {

@@ -209,10 +209,27 @@ import {
   patientDeviceVoipTokenTypeDefs,
   patientDeviceVoipTokenResolvers,
 } from 'profiles-service/resolvers/savepatientDeviceVoipToken';
+
 import {
-  validateHDFCCustomerTypeDefs,
-  validateHDFCCustomer,
-} from 'profiles-service/resolvers/hdfcCustomerValidation';
+  addPatientHealthCheckRecordTypeDefs,
+  addPatientHealthCheckRecordsResolvers,
+} from 'profiles-service/resolvers/addHealthCheckRecords';
+
+import {
+  addPatientHospitalizationRecordTypeDefs,
+  addPatientHospitalizationRecordResolvers
+} from 'profiles-service/resolvers/addHospitalizationRecords';
+
+import {
+  addPatientLabTestRecordTypeDefs,
+  addPatientLabTestRecordResolvers
+} from 'profiles-service/resolvers/addLabTestRecords';
+
+import {
+  deletePatientPrismMedicalRecordTypeDefs,
+  deletePatientPrismMedicalRecordResolvers
+} from 'profiles-service/resolvers/deletePatientPrismMedicalRecord'
+
 (async () => {
   await connect();
   const profilesLogger = winstonLogger.loggers.get('profileServiceLogger');
@@ -230,7 +247,6 @@ import {
         doctorsDb,
         consultsDb,
         currentPatient,
-        headers: headers
       };
       return context;
     },
@@ -468,8 +484,20 @@ import {
         resolvers: patientDeviceVoipTokenResolvers,
       },
       {
-        typeDefs: validateHDFCCustomerTypeDefs,
-        resolvers: validateHDFCCustomer,
+        typeDefs: addPatientHealthCheckRecordTypeDefs,
+        resolvers: addPatientHealthCheckRecordsResolvers
+      },
+      {
+        typeDefs: addPatientHospitalizationRecordTypeDefs,
+        resolvers: addPatientHospitalizationRecordResolvers,
+      },
+      {
+        typeDefs: addPatientLabTestRecordTypeDefs,
+        resolvers: addPatientLabTestRecordResolvers
+      },
+      {
+        typeDefs: deletePatientPrismMedicalRecordTypeDefs,
+        resolvers: deletePatientPrismMedicalRecordResolvers
       },
     ]),
     plugins: [

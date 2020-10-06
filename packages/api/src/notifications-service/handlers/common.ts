@@ -40,7 +40,7 @@ export const checkForValidAppointmentDoctorAndPatient = async function(
   //get doctor details
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
 
-  const doctorDetails = await doctorRepo.findById(appointment.doctorId);
+  const doctorDetails = await doctorRepo.getDoctorSecretary(appointment.doctorId);
   if (doctorDetails == null) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
   //check patient existence and get his details
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);

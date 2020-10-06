@@ -12,7 +12,7 @@ import fetchUtil from 'helpers/fetch';
 import { Link } from 'react-router-dom';
 import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
 import { useParams } from 'hooks/routerHooks';
-import { gtmTracking, _obTracking, _cbTracking } from 'gtmTracking';
+import { gtmTracking, _obTracking, _cbTracking, dataLayerTracking } from 'gtmTracking';
 import {
   paymentInstrumentClickTracking,
   consultPayInitiateTracking,
@@ -20,6 +20,7 @@ import {
 } from 'webEngageTracking';
 import { useMutation } from 'react-apollo-hooks';
 import { getDeviceType, getCouponByUserMobileNumber } from 'helpers/commonHelpers';
+import { ConfigOneApolloData } from 'strings/AppConfig';
 import { CouponCodeConsult } from 'components/Coupon/CouponCodeConsult';
 import _lowerCase from 'lodash/lowerCase';
 
@@ -28,7 +29,11 @@ import {
   saveMedicineOrderOMSVariables,
 } from 'graphql/types/saveMedicineOrderOMS';
 import { SaveMedicineOrderPaymentMqVariables } from 'graphql/types/SaveMedicineOrderPaymentMq';
-import { SAVE_MEDICINE_ORDER_OMS, SAVE_MEDICINE_ORDER_PAYMENT } from 'graphql/medicines';
+import {
+  SAVE_MEDICINE_ORDER_OMS,
+  SAVE_MEDICINE_ORDER_PAYMENT,
+  GET_ONE_APOLLO,
+} from 'graphql/medicines';
 import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 import {
   MEDICINE_DELIVERY_TYPE,
@@ -48,7 +53,8 @@ import { MAKE_APPOINTMENT_PAYMENT } from 'graphql/consult';
 import { Alerts } from 'components/Alerts/Alerts';
 import { validatePharmaCoupon_validatePharmaCoupon_pharmaLineItemsWithDiscountedPrice as pharmaCouponItem } from 'graphql/types/validatePharmaCoupon';
 import { Redirect } from 'react-router-dom';
-import { Query } from 'react-apollo';
+import { useApolloClient } from 'react-apollo-hooks';
+import { GetOneApollo, GetOneApolloVariables } from 'graphql/types/GetOneApollo';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -149,7 +155,17 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     paymentContainer: {
       height: '100%',
-    },
+		},
+		positionRelative: {
+			position: 'relative',
+		},
+		progressContainer: {
+			position: 'absolute',
+			top: 0,
+			left: 0,
+			bottom: 0,
+			right: 0
+		},
     paper: {
       borderRadius: 5,
       padding: 20,
@@ -187,32 +203,39 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     paymentOptions: {
-      display: 'grid',
-      gridTemplateColumns: 'auto auto',
-      gridGap: 20,
+      display: 'flex',
+      alignItems: 'flex-start',
       listStyleType: 'none',
+      justifyContent: 'space-between',
+      flexWrap: 'wrap',
       padding: 0,
+      margin: '10px -10px',
       '& li': {
-        background: '#fff',
-        borderRadius: 10,
-        color: '#fc9916',
-        textTransform: 'uppercase',
-        boxShadow: '0px 5px 20px 5px rgba(0,0,0,0.1)',
-        fontWeight: 700,
-        fontSize: 13,
-        padding: 15,
-        display: 'flex',
-        alignItems: 'center',
-        lineHeight: 'normal',
-        '& >svg': {
-          margin: '0 10px 0 0',
-        },
+        padding: 10,
+        flex: '1 0 auto',
+        width: 320,
       },
       [theme.breakpoints.down('xs')]: {
         gridTemplateColumns: 'auto',
         '& li:last-child': {
           padding: 10,
         },
+      },
+    },
+    paymentCard: {
+      background: '#fff',
+      borderRadius: 10,
+      color: '#fc9916',
+      textTransform: 'uppercase',
+      boxShadow: '0px 5px 20px 5px rgba(0,0,0,0.1)',
+      fontWeight: 700,
+      fontSize: 13,
+      padding: 15,
+      display: 'flex',
+      alignItems: 'center',
+      lineHeight: 'normal',
+      '& >svg': {
+        margin: '0 10px 0 0',
       },
     },
     charges: {
@@ -372,6 +395,83 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 300,
       textTransform: 'none',
     },
+    healthCredit: {
+      padding: '0 0 20px',
+      '& h3': {
+        fontSize: 16,
+        fontWeight: 500,
+        lineHeight: '20px',
+        padding: '0 0 10px',
+      },
+    },
+    healthCreditSelection: {
+      display: 'flex',
+      alignItems: 'center',
+      background: '#fff',
+      borderRadius: 10,
+      boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
+      padding: '14px 20px',
+      width: 320,
+      margin: '10px 0',
+    },
+    healthCreditAvailable: {
+      padding: '0 0 0 20px',
+      borderLeft: '1px solid rgba(2,71,91,0.3)',
+      width: '60%',
+      '& p': {
+        fontSize: 12,
+        fontWeight: 500,
+        color: 'rgba(2,71,91,0.6)',
+      },
+      '& h4': {
+        fontSize: 16,
+        fontWeight: 500,
+        lineHeight: '24px',
+      },
+    },
+    credits: {},
+    saveDetails: {
+      fontSize: 13,
+      fontWeight: 500,
+      color: '#00B38E',
+      '& span': {
+        fontWeight: 600,
+      },
+    },
+    formGroup: {
+      display: 'flex',
+      alignItems: 'center',
+      width: '40%',
+      position: 'relative',
+      '& img': {
+        position: 'absolute',
+        top: 0,
+        left: 40,
+      },
+      '& label': {
+        width: '100%',
+        position: 'relative',
+        zIndex: 2,
+      },
+    },
+    disabled: {
+      '& span': {
+        '&:last-child': {
+          color: 'rgba(8,76,96,0.4)',
+        },
+      },
+    },
+    codOption: {
+      flexDirection: 'column',
+      alignItems: 'flex-start',
+      justifyContent: 'flex-start',
+      '& p': {
+        fontSize: 14,
+        color: '#02475b',
+        textTransform: 'none',
+        fontWeight: 600,
+      },
+    },
   };
 });
 
@@ -380,12 +480,49 @@ export const getItemSpecialPrice = (cartItemDetails: MedicineCartItem) => {
 };
 
 const PayMedicine: React.FC = (props) => {
+  const client = useApolloClient();
   const classes = useStyles({});
   const [checked, setChecked] = React.useState(false);
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'Payment Option Selected',
+      Option: 'Cash On Delivery',
+    });
+    /**Gtm code start end */
     setChecked(event.target.checked);
   };
-  const [isLoading, setIsLoading] = React.useState<boolean>(false);
+  const applyOneApolloHc = (event: React.ChangeEvent<HTMLInputElement>) => {
+    oneApolloHcApplied(event.target.checked);
+    if (event.target.checked) {
+      if (oneApolloHcs >= mrpTotal - productDiscount) {
+        setOneAplloHcs(mrpTotal - productDiscount);
+      } else {
+        setOneAplloHcs(setOneApolloHCsResponse.availableHC);
+      }
+      const totalToPay =
+        mrpTotal +
+        deliveryCharges -
+        (productDiscount +
+          (oneApolloHcs >= mrpTotal - productDiscount
+            ? mrpTotal - productDiscount
+            : setOneApolloHCsResponse.availableHC));
+      calculateTotalWithHcs(totalToPay);
+    } else {
+      calculateTotalWithHcs(0);
+    }
+  };
+  const grandTotal = () => {
+    return isOneApolloHcApplied
+      ? totalWithHCsAndDiscount.toFixed(2)
+      : totalWithCouponDiscount.toFixed(2);
+  };
+  const [oneApolloHcs, setOneAplloHcs] = React.useState(0);
+  const [isOneApolloHcApplied, oneApolloHcApplied] = React.useState<boolean>(false);
+  const [totalWithHCsAndDiscount, calculateTotalWithHcs] = React.useState<number>(0);
+  const [setOneApolloHCsResponse, oneApolloHCsResponse] = useState<any>({});
+	const [isLoading, setIsLoading] = React.useState<boolean>(false);
+	const [oneApolloLoader, setOneApolloLoader] = React.useState<boolean>(true);
 
   const [paymentOptions, setPaymentOptions] = React.useState([]);
   const [mutationLoading, setMutationLoading] = useState(false);
@@ -411,15 +548,12 @@ const PayMedicine: React.FC = (props) => {
   const pharmacyDeliveryCharges = process.env.PHARMACY_DELIVERY_CHARGES;
 
   const { currentPatient } = useAllCurrentPatients();
+  // const deliveryCharges =
+  //   cartTotal >= parseFloat(pharmacyMinDeliveryValue) || cartTotal <= 0
+  //     ? 0
+  //     : parseFloat(pharmacyDeliveryCharges);
 
-  const userSubscriptions = JSON.parse(localStorage.getItem('userSubscriptions'));
-  const freeDelivery =
-    userSubscriptions &&
-    userSubscriptions[0] &&
-    userSubscriptions[0].status == 'ACTIVE' &&
-    userSubscriptions[0].group_plan &&
-    userSubscriptions[0].group_plan.name == 'PLATINUM+ PLAN';
-
+  // const totalAmount = (cartTotal + Number(deliveryCharges)).toFixed(2);
   const getMRPTotal = () => {
     let sum = 0;
     cartItems.forEach((item) => {
@@ -443,12 +577,11 @@ const PayMedicine: React.FC = (props) => {
     deliveryAddressId,
     tatType,
   } = cartValues;
-  const deliveryCharges = freeDelivery
-    ? 0
-    : cartTotal - Number(couponValue) >= Number(pharmacyMinDeliveryValue) ||
-      totalWithCouponDiscount <= 0
-    ? 0
-    : Number(pharmacyDeliveryCharges);
+  const deliveryCharges =
+    cartTotal - Number(couponValue) >= Number(pharmacyMinDeliveryValue) ||
+    totalWithCouponDiscount <= 0
+      ? 0
+      : Number(pharmacyDeliveryCharges);
 
   const consultBookDetails = localStorage.getItem('consultBookDetails')
     ? JSON.parse(localStorage.getItem('consultBookDetails'))
@@ -469,6 +602,21 @@ const PayMedicine: React.FC = (props) => {
   const { city, currentPincode } = useLocationDetails();
   const { authToken } = useAuth();
   const onlineConsultationFees = amount;
+
+  useEffect(() => {
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: `${params.payType} Payment Page`,
+      pageLOB: params.payType,
+      Time: appointmentDateTime,
+      Type: appointmentType,
+      pageType: 'Payment Page',
+    });
+    /**Gtm code start end */
+  }, []);
+
   useEffect(() => {
     fetchUtil(`${process.env.PHARMACY_PG_URL}/list-of-payment-methods`, 'GET', {}, '', true).then(
       (res: any) => {
@@ -484,6 +632,34 @@ const PayMedicine: React.FC = (props) => {
       <Redirect to={clientRoutes.welcome()} />;
     }
   }, []);
+
+  useEffect(() => {
+    if (currentPatient && currentPatient.id) {
+      client
+        .query<GetOneApollo, GetOneApolloVariables>({
+          query: GET_ONE_APOLLO,
+          variables: {
+            patientId: currentPatient ? currentPatient.id : '',
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then((res) => {
+          if (res && res.data && res.data.getOneApolloUser) {
+						setOneApolloLoader(false);
+            const data = res.data.getOneApolloUser;
+            oneApolloHCsResponse(res.data.getOneApolloUser);
+            if (data.availableHC >= mrpTotal - productDiscount) {
+              setOneAplloHcs(mrpTotal - productDiscount);
+            } else {
+              setOneAplloHcs(data.availableHC);
+            }
+          }
+        })
+        .catch((e) => {
+          console.log(ConfigOneApolloData.apolloHcsError, e);
+        });
+    }
+  }, [currentPatient, mrpTotal, productDiscount]);
 
   useEffect(() => {
     if (params.payType === 'consults') {
@@ -596,6 +772,7 @@ const PayMedicine: React.FC = (props) => {
     orderId: string,
     orderAutoId: number,
     isChennaiCOD: boolean,
+    orderType: string,
     userEmail?: string
   ) => {
     let chennaiOrderVariables = {};
@@ -611,14 +788,21 @@ const PayMedicine: React.FC = (props) => {
         // orderId: orderId,
         orderAutoId: orderAutoId,
         amountPaid: totalWithCouponDiscount,
-        paymentType: MEDICINE_ORDER_PAYMENT_TYPE.COD,
+        paymentType:
+          orderType == 'COD'
+            ? MEDICINE_ORDER_PAYMENT_TYPE.COD
+            : MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS,
         paymentStatus: 'success',
         responseCode: '',
         responseMessage: '',
         ...(chennaiOrderVariables && chennaiOrderVariables),
       },
     };
-
+    if (orderType == 'ONEAPOLLO') {
+      paymentInfo.medicinePaymentMqInput['amountPaid'] = 0;
+      paymentInfo.medicinePaymentMqInput['paymentStatus'] = 'TXN_SUCCESS';
+      paymentInfo.medicinePaymentMqInput['healthCredits'] = Number(oneApolloHcs.toFixed(2));
+    }
     savePayment({ variables: paymentInfo })
       .then(({ data }: any) => {
         if (data && data.SaveMedicineOrderPaymentMq) {
@@ -646,11 +830,11 @@ const PayMedicine: React.FC = (props) => {
       category: 'Pharmacy',
       action: 'Order',
       label: `Payment-${value === 'COD' ? 'COD' : 'Prepaid'}`,
-      value: totalWithCouponDiscount,
+      value: grandTotal(),
     });
     /**Gtm code End  */
     pharmacyPaymentInitiateTracking({
-      amount: totalWithCouponDiscount,
+      amount: grandTotal(),
       serviceArea: 'pharmacy',
       payMode: value,
     });
@@ -665,7 +849,7 @@ const PayMedicine: React.FC = (props) => {
     );
     setMutationLoading(true);
     paymentMutation()
-      .then((res) => {
+      .then((res: any) => {
         /**Gtm code start  */
         let ecommItems: any[] = [];
         cartItems.map((items, key) => {
@@ -691,7 +875,7 @@ const PayMedicine: React.FC = (props) => {
           itemCount: cartItems ? cartItems.length : 0,
           couponCode: couponCode ? couponCode : null,
           couponValue: couponValue ? couponValue : null,
-          finalBookingValue: totalWithCouponDiscount,
+          finalBookingValue: grandTotal(),
           ecommObj: {
             ecommerce: {
               items: ecommItems,
@@ -711,18 +895,20 @@ const PayMedicine: React.FC = (props) => {
             type: 'Pharmacy',
           });
           /* Webengage Code End */
-          if (orderAutoId && orderAutoId > 0 && value !== 'COD') {
+          if (orderAutoId && orderAutoId > 0 && value !== 'COD' && value !== 'ONEAPOLLO') {
             const pgUrl = `${
               process.env.PHARMACY_PG_URL
-            }/paymed?amount=${totalWithCouponDiscount.toFixed(
-              2
-            )}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web&paymentTypeID=${value}&paymentModeOnly=YES${
+            }/paymed?amount=${grandTotal()}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web&paymentTypeID=${value}&paymentModeOnly=YES${
               sessionStorage.getItem('utm_source') === 'sbi' ? '&partner=SBIYONO' : ''
-            }`;
+            }
+              ${isOneApolloHcApplied ? '&hc=' + oneApolloHcs.toFixed(2) : ''}`;
             window.location.href = pgUrl;
             localStorage.removeItem('updatedFreeCoupon');
           } else if (orderAutoId && orderAutoId > 0 && value === 'COD') {
-            placeOrder(orderId, orderAutoId, false, '');
+            placeOrder(orderId, orderAutoId, false, value, '');
+            localStorage.removeItem('updatedFreeCoupon');
+          } else if (orderAutoId && orderAutoId > 0 && value === 'ONEAPOLLO') {
+            placeOrder(orderId, orderAutoId, false, value, '');
             localStorage.removeItem('updatedFreeCoupon');
           } else if (errorMessage.length > 0) {
             setMutationLoading(false);
@@ -732,7 +918,7 @@ const PayMedicine: React.FC = (props) => {
           setIsLoading(false);
         }
       })
-      .catch((e) => {
+      .catch((e: any) => {
         /**Gtm code start  */
         gtmTracking({
           category: 'Pharmacy',
@@ -914,13 +1100,55 @@ const PayMedicine: React.FC = (props) => {
               <p>Amount To Pay</p>
               <p>
                 {params.payType === 'pharmacy'
-                  ? `Rs.${totalWithCouponDiscount && totalWithCouponDiscount.toFixed(2)}`
+                  ? `Rs.${grandTotal()}`
                   : `Rs.${revisedAmount && revisedAmount.toFixed(2)}`}
               </p>
             </div>
             <Grid container spacing={2} className={classes.paymentContainer}>
-              <Grid item xs={12} sm={8}>
+              <Grid item xs={12} sm={8} className={classes.positionRelative}>
+								{oneApolloLoader ? (
+									<div className={classes.progressContainer}>
+									<CircularProgress
+										className={classes.circlularProgress}
+										size={34}
+										color="secondary"
+									/>
+									</div>
+								) : (
                 <Paper className={`${classes.paper} ${classes.paperHeight}`}>
+                  { params.payType === 'pharmacy' && setOneApolloHCsResponse && setOneApolloHCsResponse.availableHC > 0 && (
+                    <div className={classes.healthCredit}>
+                      <Typography component="h3">
+                        Would you like to use Apollo Health Credits for this payment?
+                      </Typography>
+                      <div className={classes.healthCreditSelection}>
+                        <FormGroup className={classes.formGroup}>
+                          <FormControlLabel
+                            className={classes.checkbox}
+                            control={<Checkbox onChange={applyOneApolloHc} name="checked" />}
+                            label=""
+                          />
+                          <img src={require('images/one-apollo.svg')} width="48" alt="One Apollo" />
+                        </FormGroup>
+                        <div className={classes.healthCreditAvailable}>
+                          <Typography>Available Health Credits </Typography>
+                          <Typography component="h4" className={classes.credits}>
+                            {setOneApolloHCsResponse.availableHC}
+                          </Typography>
+                        </div>
+                      </div>
+                      {isOneApolloHcApplied ? (
+                        <Typography className={classes.saveDetails}>
+                          You have <span>saved Rs. {oneApolloHcs} </span> on your purchase.
+                        </Typography>
+                      ) : (
+                        <Typography className={classes.saveDetails}>
+                          You will <span>save Rs. {oneApolloHcs} </span> on your purchase.
+                        </Typography>
+                      )}
+                    </div>
+                  )}
+
                   <div className={classes.paperHeading}>
                     <Typography component="h3">Pay Via</Typography>
                   </div>
@@ -935,31 +1163,41 @@ const PayMedicine: React.FC = (props) => {
                       {sessionStorage.getItem('utm_source') === 'sbi' && (
                         <li
                           key={'sbiCashCard'}
-                          onClick={() =>
+                          onClick={() => {
+                            /**Gtm code start start */
+                            dataLayerTracking({
+                              event: 'Payment Option Selected',
+                              Option: process.env.SBI_CASHCARD_PAY_TYPE,
+                            });
+                            /**Gtm code start end */
+
                             params.payType === 'pharmacy'
                               ? onClickPay(
                                   process.env.SBI_CASHCARD_PAY_TYPE,
                                   'SBI YONO CASHLESS CARD'
                                 )
-                              : onClickConsultPay(process.env.SBI_CASHCARD_PAY_TYPE)
-                          }
+                              : onClickConsultPay(process.env.SBI_CASHCARD_PAY_TYPE);
+                          }}
                           style={{ cursor: 'pointer' }}
                         >
-                          <img
-                            src={
-                              'https://prodaphstorage.blob.core.windows.net/paymentlogos/sbi.png'
-                            }
-                            alt=""
-                            style={{ height: 30, width: 30 }}
-                          />
-                          <div style={{ paddingLeft: 10 }}>
-                            SBI YONO CASHLESS CARD
-                            <div className={classes.offerMessage}>
-                              You are eligible for {process.env.SBI_CASHCARD_DISCOUNT}% cashback
+                          <div className={classes.paymentCard}>
+                            <img
+                              src={
+                                'https://prodaphstorage.blob.core.windows.net/paymentlogos/sbi.png'
+                              }
+                              alt=""
+                              style={{ height: 30, width: 30 }}
+                            />
+                            <div style={{ paddingLeft: 10 }}>
+                              SBI YONO CASHLESS CARD
+                              <div className={classes.offerMessage}>
+                                You are eligible for {process.env.SBI_CASHCARD_DISCOUNT}% cashback
+                              </div>
                             </div>
                           </div>
                         </li>
                       )}
+
                       {paymentOptions.length > 0 &&
                         paymentOptions.map((payType, index) => {
                           return (
@@ -972,29 +1210,47 @@ const PayMedicine: React.FC = (props) => {
                               }
                               style={{ cursor: 'pointer' }}
                             >
-                              <img
-                                src={payType.imageUrl}
-                                alt=""
-                                style={{ height: 30, width: 30 }}
-                              />
-                              <span style={{ paddingLeft: 10 }}>{payType.name}</span>
+                              <div className={classes.paymentCard}>
+                                <img
+                                  src={payType.imageUrl}
+                                  alt=""
+                                  style={{ height: 30, width: 30 }}
+                                />
+                                <span style={{ paddingLeft: 10 }}>{payType.name}</span>
+                              </div>
                             </li>
                           );
                         })}
                       {params.payType === 'pharmacy' && (
                         <li>
-                          <FormGroup>
-                            <FormControlLabel
-                              className={classes.checkbox}
-                              control={<Checkbox onChange={handleChange} name="checked" />}
-                              label="Cash On Delivery"
-                            />
-                          </FormGroup>
+                          <div className={`${classes.paymentCard} ${classes.codOption}`}>
+                            <FormGroup>
+                              <FormControlLabel
+                                classes={{
+                                  root: classes.checkbox,
+                                  disabled: isOneApolloHcApplied ? classes.disabled : '',
+                                }}
+                                control={
+                                  <Checkbox
+                                    onChange={handleChange}
+                                    name="checked"
+                                    disabled={isOneApolloHcApplied}
+                                  />
+                                }
+                                label="Cash On Delivery"
+                              />
+                            </FormGroup>
+                            {isOneApolloHcApplied && (
+                              <Typography>
+                                ! COD option is not available along with OneApollo Health Credits.
+                              </Typography>
+                            )}
+                          </div>
                         </li>
                       )}
                     </ul>
                   )}
-                  {checked && (
+                  {checked && !isOneApolloHcApplied && (
                     <AphButton
                       className={classes.payBtn}
                       onClick={() => onClickPay('COD')}
@@ -1004,8 +1260,21 @@ const PayMedicine: React.FC = (props) => {
                       {mutationLoading ? (
                         <CircularProgress size={22} color="secondary" />
                       ) : (
-                        `Pay Rs.${totalWithCouponDiscount &&
-                          totalWithCouponDiscount.toFixed(2)} on delivery`
+                        `Pay Rs.${grandTotal()} on delivery`
+                      )}
+                    </AphButton>
+                  )}
+                  {isOneApolloHcApplied && Number(grandTotal()) === 0 && (
+                    <AphButton
+                      className={classes.payBtn}
+                      onClick={() => onClickPay('ONEAPOLLO')}
+                      color="primary"
+                      fullWidth
+                    >
+                      {mutationLoading ? (
+                        <CircularProgress size={22} color="secondary" />
+                      ) : (
+                        `Place Order`
                       )}
                     </AphButton>
                   )}
@@ -1022,7 +1291,8 @@ const PayMedicine: React.FC = (props) => {
                     </div>
                   )}
                 </Paper>
-              </Grid>
+								)}
+							</Grid>
               <Grid item xs={12} sm={4} className={classes.chargesContainer}>
                 {params.payType === 'consults' && (
                   <div
@@ -1052,7 +1322,7 @@ const PayMedicine: React.FC = (props) => {
                               </span>
                             </div>
                             <div className={classes.couponText}>
-                              {validateConsultCouponResult ? 'Coupon successfully applied' : ''}
+                              {validateConsultCouponResult ? 'Coupon succefully applied' : ''}
                             </div>
                           </>
                         )}
@@ -1081,6 +1351,12 @@ const PayMedicine: React.FC = (props) => {
                     <div className={`${classes.charges} ${classes.discount}`}>
                       <p>Product Discount</p> <p>- Rs.{productDiscount.toFixed(2)}</p>
                     </div>
+                    {isOneApolloHcApplied ? (
+                      <div className={`${classes.charges} ${classes.discount}`}>
+                        <p>One Apollo HC</p> <p>- Rs.{oneApolloHcs.toFixed(2)}</p>
+                      </div>
+                    ) : null}
+
                     {couponCode != '' && couponValue ? (
                       <div className={`${classes.charges} ${classes.discount}`}>
                         <p>Coupon Discount</p> <p>- Rs.{couponValue}</p>
@@ -1093,8 +1369,7 @@ const PayMedicine: React.FC = (props) => {
                       <p>Packing Charges</p> <p>+ Rs. 0.00</p>
                     </div>
                     <div className={`${classes.charges} ${classes.total}`}>
-                      <p>To Pay</p>{' '}
-                      <p>Rs.{totalWithCouponDiscount && totalWithCouponDiscount.toFixed(2)}</p>
+                      <p>To Pay</p> <p>Rs.{grandTotal()}</p>
                     </div>
                   </Paper>
                 ) : (

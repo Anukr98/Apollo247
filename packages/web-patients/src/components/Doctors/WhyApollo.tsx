@@ -23,10 +23,8 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   });
 });
-interface WhyApolloInterface {
-  alternateVariant?: boolean;
-}
-export const WhyApollo: React.FC<WhyApolloInterface> = (props) => {
+
+export const WhyApollo: React.FC = (props) => {
   const classes = useStyles({});
 
   return (
@@ -35,14 +33,10 @@ export const WhyApollo: React.FC<WhyApolloInterface> = (props) => {
       <ul>
         <li>Round-the-clock doctor availability</li>
         <li>Over 70 specialties</li>
-        {props.alternateVariant ? '' : <li>Detailed digital prescriptions</li>}
+        <li>Detailed digital prescriptions</li>
         <li>Order medicines {'&'} tests online</li>
         <li>Digitised health records</li>
       </ul>
     </div>
   );
-};
-
-WhyApollo.defaultProps = {
-  alternateVariant: true,
 };

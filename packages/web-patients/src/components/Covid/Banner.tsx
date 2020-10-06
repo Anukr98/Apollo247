@@ -174,7 +174,6 @@ interface BannerProps {
   backLocation?: string;
   title: string;
   subtitle: string;
-  isBlog?: boolean;
 }
 
 export const Banner: React.FC<BannerProps> = (props) => {
@@ -184,11 +183,7 @@ export const Banner: React.FC<BannerProps> = (props) => {
   return (
     <div
       className={classes.root}
-      style={{
-        backgroundImage: props.isBlog
-          ? `url(${require('images/blog_head.png')})`
-          : `url(${require('images/covid-banner.jpg')})`,
-      }}
+      style={{ backgroundImage: `url(${require('images/covid-banner.jpg')})` }}
     >
       <div className={classes.bannerTop}>
         {/* {!props.isWebView && (

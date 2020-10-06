@@ -10,7 +10,7 @@ import { useMutation } from 'react-apollo-hooks';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Link } from 'react-router-dom';
 import { useShoppingCart, MedicineCartItem } from '../../MedicinesCartProvider';
-import { gtmTracking } from '../../../gtmTracking';
+import { gtmTracking, dataLayerTracking } from '../../../gtmTracking';
 import {
   pharmacyConfigSectionTracking,
   addToCartTracking,
@@ -49,6 +49,7 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'center',
       '& img': {
         maxWidth: 70,
+        maxHeight: 70,
         margin: 'auto',
       },
     },
@@ -157,10 +158,10 @@ interface RecommendedProductsProps {
 export const RecommendedProducts: React.FC<RecommendedProductsProps> = (props) => {
   const classes = useStyles({});
   const sliderSettings = {
-    infinite: true,
+    infinite: false,
     speed: 500,
     slidesToShow: 6,
-    slidesToScroll: 1,
+    slidesToScroll: 3,
     nextArrow: <img src={require('images/ic_arrow_right.svg')} alt="" />,
     prevArrow: <img src={require('images/ic_arrow_left.svg')} alt="" />,
     responsive: [
@@ -169,7 +170,7 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = (props) =
         settings: {
           slidesToShow: 3,
           slidesToScroll: 3,
-          infinite: true,
+          infinite: false,
           dots: true,
           centerPadding: '50px',
         },
@@ -239,13 +240,6 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = (props) =
     return index;
   };
 
-  const getUrlKey = (name: string) => {
-    const formattedName = name
-      ? name.replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/gi, '-')
-      : '';
-    return formattedName.replace(/\s+/g, '-');
-  };
-
   return (
     <div className={classes.root}>
       {recommendedProductsList && recommendedProductsList.length >= 5 ? (
@@ -308,28 +302,25 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = (props) =
                             const imageList = [];
                             imageList.push(productList.productImage);
                             const cartItem: MedicineCartItem = {
-                              MaxOrderQty: productList.MaxOrderQty,
-                              url_key:
-                                productList.urlKey && productList.urlKey !== ''
-                                  ? productList.urlKey
-                                  : getUrlKey(productList.productName),
+                              MaxOrderQty: null,
+                              url_key: productList.productSku,
                               description: null,
-                              id: Number(productList.id),
+                              id: Number(productList.categoryName),
                               image: imageList,
-                              is_in_stock: productList.is_in_stock,
+                              is_in_stock: true,
                               is_prescription_required:
                                 productList.isPrescriptionNeeded === '0' ? '0' : '1',
                               name: productList.productName,
                               price: Number(productList.productPrice),
                               sku: productList.productSku,
                               special_price: productList.productSpecialPrice,
-                              small_image: productList.small_image,
-                              status: productList.status === 'Enabled' ? 1 : 0,
-                              thumbnail: productList.thumbnail || '',
-                              type_id: productList.type_id,
+                              small_image: productList.productImage,
+                              status: Number(productList.status),
+                              thumbnail: productList.productImage || '',
+                              type_id: productList.categoryName || '',
                               mou: productList.mou,
                               quantity: 1,
-                              isShippable: productList.isShippable === 'false' ? false : true,
+                              isShippable: true,
                             };
                             addToCartTracking({
                               productName: productList.productName,
@@ -373,6 +364,31 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = (props) =
                               },
                             });
                             /**Gtm code End  */
+
+                            /**Gtm code start start */
+                            dataLayerTracking({
+                              event: 'Product Added to Cart',
+                              productlist: JSON.stringify([
+                                {
+                                  item_name: productList.productName,
+                                  item_id: productList.productSku,
+                                  productPrice: productList.productPrice,
+                                  item_category: 'Pharmacy',
+                                  item_category_2: productList.categoryName
+                                    ? productList.categoryName.toLowerCase() === 'pharma'
+                                      ? 'Drugs'
+                                      : 'FMCG'
+                                    : null || '',
+                                  item_variant: 'Default',
+                                  index: 1,
+                                  quantity: 1,
+                                },
+                              ]),
+                              label: productList.productName,
+                              value: productList.productSpecialPrice || productList.productPrice,
+                            });
+                            /**Gtm code start end */
+
                             const index = cartItems.findIndex((item) => item.sku === cartItem.sku);
                             if (index >= 0) {
                               updateCartItem && updateCartItem(cartItem);
@@ -423,6 +439,27 @@ export const RecommendedProducts: React.FC<RecommendedProductsProps> = (props) =
                               },
                             });
                             /**Gtm code End  */
+
+                            /**Gtm code start start */
+                            dataLayerTracking({
+                              event: 'Product Removed from Cart',
+                              productlist: JSON.stringify([
+                                {
+                                  item_name: productList.productName,
+                                  item_id: productList.productSku,
+                                  productPrice:
+                                    productList.productSpecialPrice || productList.productPrice,
+                                  item_category: 'Pharmacy',
+                                  item_variant: 'Default',
+                                  index: 1,
+                                  quantity: 1,
+                                },
+                              ]),
+                              label: productList.productName,
+                              value: productList.productSpecialPrice || productList.productPrice,
+                            });
+                            /**Gtm code start end */
+
                             removeCartItemSku && removeCartItemSku(productList.productSku);
                           }}
                         >

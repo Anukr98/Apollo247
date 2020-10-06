@@ -54,7 +54,6 @@ export interface GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters
   firstName: string;
   lastName: string;
   fullName: string | null;
-  displayName: string | null;
   specialty: GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_specialty | null;
   experience: string | null;
   photoUrl: string | null;

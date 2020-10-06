@@ -142,7 +142,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [popupLoading, setPopupLoading] = React.useState<boolean>(false);
   const doctorId = doctorDetails.id;
-  const doctorName = doctorDetails && doctorDetails.displayName;
+  const doctorName = doctorDetails && doctorDetails.fullName;
 
   const clinics: any = [];
 
@@ -227,16 +227,18 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         }}
       >
         <Avatar
-          alt={doctorDetails.displayName || ''}
+          alt={doctorDetails.firstName || ''}
           src={
             doctorDetails.thumbnailUrl && doctorDetails.thumbnailUrl !== ''
               ? doctorDetails.thumbnailUrl
               : require('images/no_photo_icon_round.svg')
           }
           title={
-            doctorDetails.displayName
-              ? doctorDetails.displayName
-              : `${_startCase(doctorDetails.fullName)}`
+            doctorDetails.fullName
+              ? doctorDetails.fullName
+              : `${_startCase(_toLower(doctorDetails.firstName))} ${_startCase(
+                  _toLower(doctorDetails.lastName)
+                )}`
           }
           className={classes.doctorAvatar}
         />
@@ -250,15 +252,15 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           <div
             className={classes.doctorName}
             title={
-              doctorDetails.displayName
-                ? doctorDetails.displayName
+              doctorDetails.fullName
+                ? doctorDetails.fullName
                 : `${_startCase(_toLower(doctorDetails.firstName))} ${_startCase(
                     _toLower(doctorDetails.lastName)
                   )}`
             }
           >
-            {doctorDetails.displayName
-              ? doctorDetails.displayName
+            {doctorDetails.fullName
+              ? doctorDetails.fullName
               : `${_startCase(_toLower(doctorDetails.firstName))} ${_startCase(
                   _toLower(doctorDetails.lastName)
                 )}`}

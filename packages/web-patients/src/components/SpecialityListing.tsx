@@ -9,23 +9,16 @@ import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { useAllCurrentPatients } from 'hooks/authHooks';
-import { gtmTracking } from '../gtmTracking';
+import { gtmTracking, dataLayerTracking } from '../gtmTracking';
+// import { SearchObject } from 'components/DoctorsFilter';
 import { BottomLinks } from 'components/BottomLinks';
 import { PastSearches } from 'components/PastSearches';
 import { useAuth } from 'hooks/authHooks';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { isAlternateVersion } from 'helpers/commonHelpers';
 import { Link } from 'react-router-dom';
 import fetchUtil from 'helpers/fetch';
 import { SpecialtyDivision } from './SpecialtyDivision';
-import {
-  SearchDoctorAndSpecialtyByNameVariables,
-  SearchDoctorAndSpecialtyByName,
-  SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors as DoctorsType,
-  SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties as SpecialtyType,
-  SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctorsNextAvailability as NextAvailability,
-} from 'graphql/types/SearchDoctorAndSpecialtyByName';
-import { SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME } from 'graphql/doctors';
+import { GET_DOCTOR_LIST } from 'graphql/doctors';
 import { useApolloClient } from 'react-apollo-hooks';
 import { SpecialtySearch } from './SpecialtySearch';
 import { WhyApollo } from 'components/Doctors/WhyApollo';
@@ -35,7 +28,13 @@ import { Relation } from 'graphql/types/globalTypes';
 import { MetaTagsComp } from 'MetaTagsComp';
 import { SchemaMarkup } from 'SchemaMarkup';
 import _debounce from 'lodash/debounce';
+import { DoctorDetails } from 'components/Doctors/SpecialtyDetails';
+import { GetDoctorList_getDoctorList_specialties } from 'graphql/types/GetDoctorList';
+import { SPECIALTY_SEARCH_PAGE_SIZE } from 'helpers/commonHelpers';
 
+let currentPage = 1;
+let apolloDoctorCount = 0;
+let partnerDoctorCount = 0;
 const useStyles = makeStyles((theme: Theme) => {
   return {
     slContainer: {},
@@ -630,16 +629,17 @@ const SpecialityListing: React.FC = (props) => {
   const prakticeSDKSpecialties = localStorage.getItem('symptomTracker');
   const [searchKeyword, setSearchKeyword] = useState<string>('');
   const [locationPopup, setLocationPopup] = useState<boolean>(false);
-  const [searchSpecialty, setSearchSpecialty] = useState<SpecialtyType[] | null>(null);
-  const [searchDoctors, setSearchDoctors] = useState<DoctorsType[] | null>(null);
-  const [searchDoctorsNextAvailability, setSearchDoctorsNextAvailability] = useState<
-    NextAvailability[] | null
+  const [searchSpecialty, setSearchSpecialty] = useState<
+    GetDoctorList_getDoctorList_specialties[] | null
   >(null);
+  const [searchDoctors, setSearchDoctors] = useState<DoctorDetails[] | null>(null);
   const [searchLoading, setSearchLoading] = useState<boolean>(false);
-  const [isAlternateVariant, setIsAlternateVariant] = useState<boolean>(true);
   const [faqs, setFaqs] = useState<any | null>(null);
   const [selectedCity, setSelectedCity] = useState<string>('');
   const [faqSchema, setFaqSchema] = useState(null);
+  const [searchQuery, setSearchQuery] = useState<any>({});
+  const [pageNo, setPageNo] = useState<number>(1);
+  const [intialLoad, setInitalLoad] = useState<boolean>(true);
   const onePrimaryUser =
     allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
 
@@ -648,16 +648,18 @@ const SpecialityListing: React.FC = (props) => {
   };
 
   useEffect(() => {
-    if (isAlternateVersion()) {
-      setIsAlternateVariant(true);
-    } else {
-      setIsAlternateVariant(false);
-    }
     /**Gtm code start start */
-    gtmTracking({
+    /*gtmTracking({
       category: 'Consultations',
       action: 'Landing Page',
       label: 'Listing Page Viewed',
+    });*/
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: 'Consultation Index',
+      pageLOB: 'Consultation',
+      pageType: 'Index',
     });
     /**Gtm code start end */
   }, []);
@@ -685,15 +687,11 @@ const SpecialityListing: React.FC = (props) => {
   };
 
   useEffect(() => {
-    const faqUrl = isAlternateVersion()
-      ? process.env.SPECIALTY_LISTING_FAQS + '?variant=2'
-      : process.env.SPECIALTY_LISTING_FAQS;
-
     if (!faqs) {
       scrollToRef &&
         scrollToRef.current &&
         scrollToRef.current.scrollIntoView({ behavior: 'auto', block: 'end' });
-      fetchUtil(faqUrl, 'GET', {}, '', true).then((res: any) => {
+      fetchUtil(process.env.SPECIALTY_LISTING_FAQS, 'GET', {}, '', true).then((res: any) => {
         if (res && res.success === 'true' && res.data && res.data.length > 0) {
           setFaqs(res.data[0]);
           createFaqSchema(res.data[0]);
@@ -704,50 +702,74 @@ const SpecialityListing: React.FC = (props) => {
 
   const fetchData = (searchKeyword: any, selectedCity: any) => {
     apolloClient
-      .query<SearchDoctorAndSpecialtyByName, SearchDoctorAndSpecialtyByNameVariables>({
-        query: SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME,
+      .query({
+        query: GET_DOCTOR_LIST,
         variables: {
-          searchText: searchKeyword,
-          patientId: currentPatient ? currentPatient.id : '',
-          city: selectedCity,
+          filterInput: { searchText: searchKeyword, pageNo, pageSize: SPECIALTY_SEARCH_PAGE_SIZE },
         },
         fetchPolicy: 'no-cache',
       })
       .then((response) => {
-        const specialtiesAndDoctorsList =
-          response && response.data && response.data.SearchDoctorAndSpecialtyByName;
+        const specialtiesAndDoctorsList = response && response.data && response.data.getDoctorList;
+        currentPage = currentPage + 1;
         if (specialtiesAndDoctorsList) {
+          apolloDoctorCount = specialtiesAndDoctorsList.apolloDoctorCount;
+          partnerDoctorCount = specialtiesAndDoctorsList.partnerDoctorCount;
           const doctorsArray = specialtiesAndDoctorsList.doctors || [];
           const specialtiesArray = specialtiesAndDoctorsList.specialties || [];
           setSearchSpecialty(specialtiesArray);
-          setSearchDoctors(doctorsArray);
-          setSearchDoctorsNextAvailability(specialtiesAndDoctorsList.doctorsNextAvailability || []);
+          intialLoad
+            ? setSearchDoctors(doctorsArray)
+            : setSearchDoctors(searchDoctors.concat(doctorsArray));
         }
       })
       .catch((e) => {
         console.log(e);
         setSearchSpecialty([]);
         setSearchDoctors([]);
-        setSearchDoctorsNextAvailability([]);
       })
       .finally(() => {
         setSearchLoading(false);
+        if (intialLoad) {
+          setInitalLoad(false);
+        }
       });
   };
-  const debounceLoadData = useCallback(_debounce(fetchData, 300), []);
+
+  const debounceTracking = useCallback(
+    _debounce((searchKeyword) => {
+      dataLayerTracking({
+        event: 'Search Used',
+        query: searchKeyword,
+      });
+    }, 500),
+    []
+  );
+
   useEffect(() => {
     if (searchKeyword.length > 2 || selectedCity.length) {
-      setSearchLoading(true);
-      debounceLoadData(searchKeyword, selectedCity);
+      intialLoad && setSearchLoading(true);
+      const search = _debounce(fetchData, 500);
+      setSearchQuery((prevSearch: any) => {
+        if (prevSearch.cancel) {
+          prevSearch.cancel();
+        }
+        return search;
+      });
+      search(searchKeyword, selectedCity);
     }
-  }, [searchKeyword, selectedCity]);
+    if (searchKeyword.length > 2) {
+      /**Gtm code start start */
+      debounceTracking(searchKeyword);
+      /**Gtm code start end */
+    }
+  }, [searchKeyword, selectedCity, pageNo]);
 
   const metaTagProps = {
     title: 'Online Doctor Consultation via Video Call / Audio / Chat - Apollo 247',
     description:
       'Online doctor consultation in 15 mins with 1000+ Top Specialist Doctors. Video Call or Chat with a Doctor from 100+ Specialties including General Physicians, Pediatricians, Dermatologists, Gynaecologists & more.',
-    canonicalLink:
-      window && window.location && `${window.location.origin}${window.location.pathname}`,
+    canonicalLink: window && window.location && window.location.href,
   };
 
   const breadcrumbJSON = {
@@ -806,7 +828,10 @@ const SpecialityListing: React.FC = (props) => {
                     setLocationPopup={setLocationPopup}
                     locationPopup={locationPopup}
                     setSelectedCity={setSelectedCity}
-                    searchDoctorsNextAvailability={searchDoctorsNextAvailability}
+                    currentPage={currentPage}
+                    apolloDoctorCount={apolloDoctorCount}
+                    partnerDoctorCount={partnerDoctorCount}
+                    setPageNo={setPageNo}
                   />
                   {currentPatient && currentPatient.id && searchKeyword.length <= 0 && (
                     <PastSearches />
@@ -852,8 +877,8 @@ const SpecialityListing: React.FC = (props) => {
                       </div>
                     </div>
                   </div>
-                  <WhyApollo alternateVariant={isAlternateVariant} />
-                  <HowItWorks alternateVariant={isAlternateVariant} />
+                  <WhyApollo />
+                  <HowItWorks />
                 </div>
               </Grid>
             </Grid>
@@ -861,7 +886,7 @@ const SpecialityListing: React.FC = (props) => {
           {faqs && faqs.onlineConsultation && faqs.onlineConsultation.length > 0 && (
             <div className={classes.faq}>
               <div className={classes.faqTitle}>Frequently asked questions</div>
-              {faqs.onlineConsultation.map((que: any) => (
+              {faqs.onlineConsultation.map((que: any, idx: number) => (
                 <ExpansionPanel
                   key={que.id}
                   className={classes.panelRoot}
@@ -877,7 +902,7 @@ const SpecialityListing: React.FC = (props) => {
                       expanded: classes.panelExpanded,
                     }}
                   >
-                    <Typography className={classes.panelHeading} component="h3">
+                    <Typography className={classes.panelHeading} component={idx <= 9 ? 'h2' : 'h3'}>
                       {que.faqQuestion}
                     </Typography>
                   </ExpansionPanelSummary>

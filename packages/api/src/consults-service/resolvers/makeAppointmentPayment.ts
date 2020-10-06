@@ -25,6 +25,7 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { Connection } from 'typeorm';
 import { sendMail } from 'notifications-service/resolvers/email';
 import { EmailMessage } from 'types/notificationMessageTypes';
+import { ApiConstants } from 'ApiConstants';
 import { addMilliseconds, format, differenceInSeconds } from 'date-fns';
 import {
   sendNotification,
@@ -39,8 +40,6 @@ import { ConsultQueueRepository } from 'consults-service/repositories/consultQue
 import { acceptCoupon } from 'helpers/couponServices';
 import { AcceptCouponRequest } from 'types/coupons';
 import { updateDoctorSlotStatusES } from 'doctors-service/entities/doctorElastic';
-import { transactionSuccessTrigger } from 'helpers/subscriptionHelper';
-import { ApiConstants, TransactionType } from 'ApiConstants';
 
 export const makeAppointmentPaymentTypeDefs = gql`
   enum APPOINTMENT_PAYMENT_TYPE {
@@ -211,24 +210,11 @@ const makeAppointmentPayment: Resolver<
   let appointmentStatus = STATUS.PENDING;
 
   //update appointment status to PENDING
-
   if (paymentInput.paymentStatus == 'TXN_SUCCESS') {
-    const patient = patientsDb.getCustomRepository(PatientRepository);
-    const patientDetails = await patient.getPatientDetails(processingAppointment.patientId);
-    if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
-    transactionSuccessTrigger({
-      amount: `${paymentInput.amountPaid}`,
-      transactionType: TransactionType.CONSULT,
-      transactionDate: paymentInput.paymentDateTime || new Date(),
-      transactionId: paymentInput.paymentRefId,
-      sourceTransactionIdentifier: `${paymentInput.orderId}`,
-      mobileNumber: patientDetails.mobileNumber,
-      dob: patientDetails.dateOfBirth,
-      email: patientDetails.emailAddress,
-      partnerId: patientDetails.partnerId,
-    });
-
     if (processingAppointment.couponCode) {
+      const patient = patientsDb.getCustomRepository(PatientRepository);
+      const patientDetails = await patient.getPatientDetails(processingAppointment.patientId);
+      if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
       const payload: AcceptCouponRequest = {
         mobile: patientDetails.mobileNumber.replace('+91', ''),
         coupon: processingAppointment.couponCode,
@@ -251,11 +237,24 @@ const makeAppointmentPayment: Resolver<
         `${JSON.stringify(processingAppointment)}`,
         'true'
       );
+      processingAppointment.patientCancelReason = ApiConstants.SYSTEM_CANCELLED_REASON.toString();
       await apptsRepo.systemCancelAppointment(
         processingAppointment.id,
         { paymentInfo },
         processingAppointment
       );
+      const historyAttrs: Partial<AppointmentUpdateHistory> = {
+        appointment: processingAppointment,
+        userType: APPOINTMENT_UPDATED_BY.SYSTEM,
+        fromValue: currentStatus,
+        toValue: STATUS.CANCELLED,
+        fromState: processingAppointment.appointmentState,
+        toState: processingAppointment.appointmentState,
+        valueType: VALUE_TYPE.STATUS,
+        userName: '',
+        reason: ApiConstants.SYSTEM_CANCELLED_REASON.toString(),
+      };
+      apptsRepo.saveAppointmentHistory(historyAttrs);
       let isRefunded: boolean = false;
       if (paymentInfo.amountPaid && paymentInfo.amountPaid >= 1) {
         let refundResponse = await initiateRefund(
@@ -450,7 +449,7 @@ const makeAppointmentPayment: Resolver<
   paymentInfo.paymentStatus = paymentInput.paymentStatus;
   paymentInfo.responseCode = paymentInput.responseCode;
   paymentInfo.responseMessage = paymentInput.responseMessage;
-  if (paymentInfo.partnerInfo) paymentInfo.partnerInfo = paymentInput.partnerInfo;
+  paymentInfo.partnerInfo = paymentInput.partnerInfo;
   await apptsRepo.updateAppointment(
     processingAppointment.id,
     {

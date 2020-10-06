@@ -11,6 +11,8 @@ import moment from 'moment';
 import { RenderImage } from 'components/HealthRecords/RenderImage';
 import { getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizationsNew_response as HospitalizationType } from '../../graphql/types/getPatientPrismMedicalRecords';
 import { HEALTH_RECORDS_NO_DATA_FOUND, HEALTH_RECORDS_NOTE } from 'helpers/commonHelpers';
+import { MedicalRecordType } from '../../graphql/types/globalTypes';
+import { phrDownloadingDischargeSummaryFileTracking } from '../../webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -378,7 +380,7 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
   const { allCombinedData, loading, activeData, setActiveData, error, deleteReport } = props;
 
   const getFormattedDate = (combinedData: HospitalizationType, dateFor: string) => {
-    return dateFor === 'title' ? (
+    return dateFor === 'title' && combinedData.dateOfHospitalization !== 0 ? (
       <span>
         From {moment(combinedData.dateOfHospitalization).format('DD MMM, YYYY')} to{' '}
         {moment(combinedData.date).format('DD MMM, YYYY')}
@@ -405,7 +407,10 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
       <div className={classes.leftSection}>
         <div className={classes.noteText}>{HEALTH_RECORDS_NOTE}</div>
         <div className={classes.tabsWrapper}>
-          <Link className={classes.addReportMobile} to={clientRoutes.addRecords()}>
+          <Link
+            className={classes.addReportMobile}
+            to={clientRoutes.addHealthRecords('hospitalization')}
+          >
             <img src={require('images/ic_addfile.svg')} />
           </Link>
         </div>
@@ -425,6 +430,7 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
               allCombinedData.length > 0 &&
               allCombinedData.map((combinedData: HospitalizationType) => (
                 <div
+                  key={combinedData.id}
                   className={classes.consultGroup}
                   onClick={() => {
                     setActiveData(combinedData);
@@ -440,8 +446,9 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
                   <MedicalCard
                     deleteReport={deleteReport}
                     name={combinedData.doctorName ? `Dr. ${combinedData.doctorName}` : '-'}
-                    source={combinedData.hospitalName || '-'}
-                    type={'Hospitalization'}
+                    source={combinedData.source || '-'}
+                    hospitalName={combinedData.hospitalName || '-'}
+                    recordType={MedicalRecordType.HOSPITALIZATION}
                     id={`Hospitalization-${combinedData.id}`}
                     isActiveCard={activeData && activeData.id === combinedData.id}
                   />
@@ -455,17 +462,17 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
             </div>
           )}
         </Scrollbars>
-        {/* <div className={classes.addReportActions}>
+        <div className={classes.addReportActions}>
           <AphButton
             color="primary"
             onClick={() => {
-              window.location.href = clientRoutes.addRecords();
+              window.location.href = clientRoutes.addHealthRecords('hospitalization');
             }}
             fullWidth
           >
             Add Record
           </AphButton>
-        </div> */}
+        </div>
       </div>
       <div
         className={`${classes.rightSection} ${
@@ -545,7 +552,10 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
             {activeData && activeData.fileUrl && activeData.fileUrl.length > 0 && (
               <div className={classes.addReportActions}>
                 <AphButton
-                  onClick={() => window.open(activeData.fileUrl, '_blank')}
+                  onClick={() => {
+                    phrDownloadingDischargeSummaryFileTracking('Discharge Summary');
+                    window.open(activeData.fileUrl, '_blank');
+                  }}
                   color="primary"
                   fullWidth
                 >

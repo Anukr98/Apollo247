@@ -47,6 +47,7 @@ export const consultQueueTypeDefs = gql`
 
   extend type Query {
     getConsultQueue(doctorId: String!, isActive: Boolean): GetConsultQueueResult!
+    getPastConsultQueue(doctorId: String!, limit: Int, offset: Int): GetConsultQueueResult!
   }
 
   type JuniorDoctorsList {
@@ -62,17 +63,6 @@ export const consultQueueTypeDefs = gql`
     totalJuniorDoctorsOnline: Int!
     juniorDoctorsList: [JuniorDoctorsList]!
     isJdAllowed: Boolean
-    isJdAssigned: Boolean
-  }
-
-  type AddToConsultQueueWithJdAutomatedQuestionsResult {
-    id: Int!
-    doctorId: String!
-    totalJuniorDoctors: Int!
-    totalJuniorDoctorsOnline: Int!
-    juniorDoctorsList: [JuniorDoctorsList]!
-    isJdAllowed: Boolean
-    isJdAssigned: Boolean
   }
 
   type RemoveFromConsultQueueResult {
@@ -98,7 +88,7 @@ export const consultQueueTypeDefs = gql`
     removeFromConsultQueue(id: Int!): RemoveFromConsultQueueResult!
     addToConsultQueueWithAutomatedQuestions(
       consultQueueInput: ConsultQueueInput
-    ): AddToConsultQueueWithJdAutomatedQuestionsResult!
+    ): AddToConsultQueueResult!
     removeInvalidConsultQueueItems(appointmentStatuses: [String]): String!
   }
 `;
@@ -146,7 +136,9 @@ const buildGqlConsultQueue = async (doctorId: string, context: ConsultServiceCon
   let dbConsultQueue: ConsultQueueItem[] = [...activeQueueItems, ...inActiveQueueItems];
   //Get all the appointments of the queue items
   const appointmentIds = dbConsultQueue.map((queueItem) => queueItem.appointmentId);
-  if (!appointmentIds.length) { return []; }
+  if (!appointmentIds.length) {
+    return [];
+  }
 
   const appointments = await apptRepo.getAppointmentsByIds(appointmentIds);
 
@@ -196,6 +188,12 @@ type GetConsultQueueInput = {
   isActive: boolean;
 };
 
+type GetPastConsultQueueInput = {
+  doctorId: string;
+  limit: number;
+  offset: number;
+};
+
 const getConsultQueue: Resolver<
   null,
   GetConsultQueueInput,
@@ -233,6 +231,43 @@ const getConsultQueue: Resolver<
   return result;
 };
 
+const getPastConsultQueue: Resolver<
+  null,
+  GetPastConsultQueueInput,
+  ConsultServiceContext,
+  GetConsultQueueResult
+> = async (parent, { doctorId, limit, offset }, context) => {
+  const { docRepo, cqRepo, mobileNumber, patRepo } = getRepos(context);
+  await checkAuth(docRepo, mobileNumber, doctorId);
+  const result: GetConsultQueueResult = { consultQueue: [] };
+  let consultQueueItems: ConsultQueueItem[] = [];
+  consultQueueItems = await cqRepo.getPastConsultQueue(doctorId, limit, offset);
+  const patientIds = consultQueueItems.map((item) => item.appointment.patientId);
+  let patients: Patient[] = [];
+  if (patientIds && patientIds.length > 0) {
+    patients = await patRepo.getPatientDetailsByIds(patientIds);
+  }
+  let patient: Patient;
+  consultQueueItems.map((item) => {
+    const res: GqlConsultQueueItem = {
+      id: item.id,
+      isActive: item.isActive,
+      patient,
+      appointment: item.appointment,
+    };
+    result.consultQueue.push(res);
+  });
+
+  patients.map((patient) => {
+    result.consultQueue.map((item) => {
+      if (patient.id == item.appointment.patientId) {
+        item.patient = patient;
+      }
+    });
+  });
+  return result;
+};
+
 type AddToConsultQueueInput = { appointmentId: string };
 type AddToConsultQueueResult = {
   id: number;
@@ -241,7 +276,6 @@ type AddToConsultQueueResult = {
   totalJuniorDoctorsOnline: number;
   juniorDoctorsList: JuniorDoctorsList[];
   isJdAllowed: Boolean;
-  isJdAssigned: Boolean;
 };
 type JuniorDoctorsList = {
   juniorDoctorId: string;
@@ -258,12 +292,11 @@ const addToConsultQueue: Resolver<
 > = async (parent, { appointmentId }, context) => {
   const { cqRepo, docRepo, apptRepo, caseSheetRepo } = getRepos(context);
   const apptDetails = await apptRepo.findOneOrFail(appointmentId);
-  let isJdAssigned = false;
+
   const jrDocList: JuniorDoctorsList[] = [];
   const juniorDoctorCaseSheet = await caseSheetRepo.getJuniorDoctorCaseSheet(appointmentId);
 
   if (juniorDoctorCaseSheet != null) {
-    isJdAssigned = (juniorDoctorCaseSheet.createdDoctorId && juniorDoctorCaseSheet.createdDoctorId === process.env.VIRTUAL_JD_ID ? false : true);
     const queueResult: AddToConsultQueueResult = {
       id: 0,
       doctorId: '',
@@ -271,7 +304,6 @@ const addToConsultQueue: Resolver<
       totalJuniorDoctorsOnline: 0,
       juniorDoctorsList: jrDocList,
       isJdAllowed: true,
-      isJdAssigned,
     };
     return queueResult;
   }
@@ -327,7 +359,6 @@ const addToConsultQueue: Resolver<
     totalJuniorDoctorsOnline: onlineJrDocs.length,
     juniorDoctorsList: jrDocList,
     isJdAllowed: true,
-    isJdAssigned,
   };
 };
 
@@ -343,7 +374,7 @@ const removeFromConsultQueue: Resolver<
   const consultQueueItemToDeactivate = await cqRepo.findOneOrFail(id);
   const { doctorId, appointmentId } = consultQueueItemToDeactivate;
   await checkAuth(docRepo, mobileNumber, doctorId);
-  await caseSheetRepo.updateJDCaseSheet(appointmentId);
+  await caseSheetRepo.updateAllJDCaseSheet(appointmentId);
   await cqRepo.update(consultQueueItemToDeactivate.id, { isActive: false });
   const consultQueue = await buildGqlConsultQueue(doctorId, context);
   return { consultQueue };
@@ -387,15 +418,11 @@ type ConsultQueueInputArgs = {
   consultQueueInput: ConsultQueueInput;
 };
 
-type AddToConsultQueueWithJdAutomatedQuestionsResult = AddToConsultQueueResult & {
-  isJdAssigned: Boolean;
-}
-
 const addToConsultQueueWithAutomatedQuestions: Resolver<
   null,
   ConsultQueueInputArgs,
   ConsultServiceContext,
-  AddToConsultQueueWithJdAutomatedQuestionsResult
+  AddToConsultQueueResult
 > = async (parent, { consultQueueInput }, context) => {
   const appointmentId = consultQueueInput.appointmentId;
 
@@ -405,18 +432,15 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
   const doctorRepo = context.doctorsDb.getCustomRepository(DoctorRepository);
   const doctorDetails = await doctorRepo.findById(appointmentData.doctorId);
   const isJdAllowed = doctorDetails ? doctorDetails.isJdAllowed : true;
-  let isJdAssigned = false;
   const juniorDoctorCaseSheet = await caseSheetRepo.getJuniorDoctorCaseSheet(appointmentId);
   if (juniorDoctorCaseSheet != null) {
-    isJdAssigned = (juniorDoctorCaseSheet.createdDoctorId && juniorDoctorCaseSheet.createdDoctorId === process.env.VIRTUAL_JD_ID ? false : true);
-    const queueResult: AddToConsultQueueWithJdAutomatedQuestionsResult = {
+    const queueResult: AddToConsultQueueResult = {
       id: 0,
       doctorId: '',
       totalJuniorDoctors: 0,
       totalJuniorDoctorsOnline: 0,
       juniorDoctorsList: jrDocList,
       isJdAllowed,
-      isJdAssigned,
     };
     return queueResult;
   }
@@ -463,9 +487,9 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
         isJdAllowed === false
           ? ApiConstants.NOT_APPLICABLE
           : ApiConstants.APPOINTMENT_BOOKED_WITHIN_10_MIN.toString().replace(
-            '{0}',
-            ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString()
-          ),
+              '{0}',
+              ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString()
+            ),
       isJdConsultStarted: true,
     };
     caseSheetRepo.savecaseSheet(casesheetAttrs);
@@ -522,7 +546,6 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
       userName: appointmentData.patientId,
       reason: ApiConstants.CONSULT_QUEUE_HISTORY.toString() + ', assigned JD: ' + doctorId,
     };
-    isJdAssigned = true;
     apptRepo.saveAppointmentHistory(historyAttrs);
   } else {
     const consultQueueAttrs = {
@@ -694,13 +717,13 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
     totalJuniorDoctorsOnline: onlineJuniorDoctors.length,
     juniorDoctorsList: jrDocList,
     isJdAllowed,
-    isJdAssigned,
   };
 };
 
 export const consultQueueResolvers = {
   Query: {
     getConsultQueue,
+    getPastConsultQueue,
   },
   Mutation: {
     addToConsultQueue,

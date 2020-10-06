@@ -22,7 +22,6 @@ export async function syncInventory(orderDatails: MedicineOrders, syncType: SYNC
 
   const reqStartTime = new Date();
   const controller = new AbortController();
-  const medicineOrderAddress = orderDatails.medicineOrderAddress;
 
   const itemdetails = orderDatails.medicineOrderLineItems.map((item) => {
     return {
@@ -33,9 +32,6 @@ export async function syncInventory(orderDatails: MedicineOrders, syncType: SYNC
   const reqBody: InventorySyncRequest = {
     orderId: orderDatails.orderAutoId.toString(),
     storeCode: orderDatails.shopId,
-    pincode: medicineOrderAddress.zipcode,
-    lat: medicineOrderAddress.latitude,
-    lng: medicineOrderAddress.longitude,
     items: itemdetails,
   };
 

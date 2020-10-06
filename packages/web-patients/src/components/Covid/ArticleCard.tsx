@@ -102,7 +102,6 @@ interface ArticleItemProps {
   item: ArticleItem;
   handleInfographicClick: (obj: object) => void;
   isWebView: boolean;
-  pageType: string;
 }
 
 const ArticleItem: React.FC<ArticleItemProps> = (props) => {
@@ -119,23 +118,17 @@ const ArticleItem: React.FC<ArticleItemProps> = (props) => {
     sourceUrl,
   } = props.item;
   const image = screen.width > 768 ? thumbnailWeb : thumbnailMobile;
-  const linkTo = () => {
-    const baseUrl = props.pageType === 'covid' ? 'covid19' : 'blog';
-    return type.toLowerCase() === 'video' || type.toLowerCase() === 'infographic'
-      ? '#'
-      : !props.isWebView
-      ? props.pageType === 'covid'
-        ? `/${baseUrl}/${type.toLowerCase()}${slug}`
-        : `/${baseUrl}${slug}`
-      : props.pageType === 'covid'
-      ? `/${baseUrl}/${type.toLowerCase()}${slug}?utm_source=mobile_app`
-      : `/${baseUrl}${slug}?utm_source=mobile_app`;
-  };
   return (
     <Grid item sm={4} xs={12}>
       <div className={classes.card}>
         <Link
-          to={linkTo()}
+          to={
+            type.toLowerCase() === 'video' || type.toLowerCase() === 'infographic'
+              ? '#'
+              : !props.isWebView
+              ? `/covid19/${type.toLowerCase()}${slug}`
+              : `/covid19/${type.toLowerCase()}${slug}?utm_source=mobile_app`
+          }
           onClick={
             type.toLowerCase() === 'infographic'
               ? () => props.handleInfographicClick({ image, postTitle, sourceUrl })
@@ -181,7 +174,6 @@ interface ArticleCardProps {
   content: [];
   handleInfographicClick: (img: object) => void;
   isWebView: boolean;
-  pageType: string;
 }
 
 export const ArticleCard: React.FC<ArticleCardProps> = (props) => {
@@ -195,7 +187,6 @@ export const ArticleCard: React.FC<ArticleCardProps> = (props) => {
             handleInfographicClick={props.handleInfographicClick}
             item={item}
             key={i}
-            pageType={props.pageType}
           />
         ))}
       </Grid>

@@ -16,7 +16,7 @@ export interface AddToConsultQueueWithAutomatedQuestions_addToConsultQueueWithAu
 }
 
 export interface AddToConsultQueueWithAutomatedQuestions_addToConsultQueueWithAutomatedQuestions {
-  __typename: "AddToConsultQueueWithJdAutomatedQuestionsResult";
+  __typename: "AddToConsultQueueResult";
   id: number;
   doctorId: string;
   totalJuniorDoctorsOnline: number;

@@ -660,13 +660,6 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     return this.findOne({ orderAutoId });
   }
 
-  getMedicineOrderPlacedDetails(orderAutoId: number) {
-    return this.findOne({
-      where: { orderAutoId },
-      relations: ['patient', 'medicineOrderAddress'],
-    });
-  }
-
   getMedicineOrderWithShipments(orderAutoId: number) {
     return this.findOne({
       where: { orderAutoId },
