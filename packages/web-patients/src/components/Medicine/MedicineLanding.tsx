@@ -4,6 +4,7 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Popover, CircularProgress, Typography } from '@material-ui/core';
 import { Header } from 'components/Header';
+import { Helmet } from 'react-helmet';
 import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
 import { ShopByBrand } from 'components/Medicine/Cards/ShopByBrand';
 import { ShopByCategory } from 'components/Medicine/Cards/ShopByCategory';
@@ -718,6 +719,12 @@ const MedicineLanding: React.FC = (props: any) => {
 
   return (
     <div className={classes.root}>
+      <Helmet>
+        <link
+          rel="alternate"
+          href="android-app://com.apollopatient/https/www.apollo247.com/medicines"
+        />
+      </Helmet>
       <MetaTagsComp {...metaTagProps} />
       <div className={classes.medicineHeader}>
         <Header />
