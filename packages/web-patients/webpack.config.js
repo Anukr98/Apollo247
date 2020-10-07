@@ -47,7 +47,7 @@ const plugins = [
       licenseCode: process.env.WEBENGAGE_ID,
     },
     inject: true,
-    favicon: './favicon.svg',
+    favicon: './favicon.ico',
     scriptLoading: 'defer',
   }),
   new ScriptExtHtmlWebpackPlugin({
