@@ -272,13 +272,6 @@ export class PatientRepository extends Repository<Patient> {
     });
   }
 
-  getPatientIdsByMobileNumber(mobileNumber: string) {
-    return this.find({
-      where: { mobileNumber },
-      select: ['id'],
-    });
-  }
-
   async updatePatientAllergies(id: string, allergies: string) {
     const patient = await this.getPatientDetails(id);
     if (patient) {

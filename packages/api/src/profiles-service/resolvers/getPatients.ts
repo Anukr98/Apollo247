@@ -257,7 +257,7 @@ const getProfileConsultCount: Resolver<
   appointmentCountResult[]
 > = async (parent, args, { profilesDb, consultsDb, mobileNumber }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.getPatientIdsByMobileNumber(mobileNumber);
+  const patientDetails = await patientRepo.findByMobileNumber(mobileNumber);
   if (patientDetails == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
