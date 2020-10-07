@@ -6,6 +6,7 @@ import IconButton from '@material-ui/core/IconButton';
 import NavigateNextIcon from '@material-ui/icons/NavigateNext';
 import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore';
 import PDFViewer from 'components/PDFViewer';
+import moment from 'moment';
 
 const useStyles = makeStyles((theme) => ({
   modalWindowWrap: {
@@ -116,7 +117,15 @@ const useStyles = makeStyles((theme) => ({
   },
   documentDate: {
     margin: '10px 0 0',
-    fontWeight: 400,
+    '& p': {
+      margin: 0,
+      fontWeight: 400,
+      display: 'inline-block',
+      verticalAlign: 'middle',
+      '&:first-child': {
+        marginRight: 5,
+      },
+    },
   },
 }));
 
@@ -125,6 +134,7 @@ interface GallerySliderProps {
   onClose: any;
   onChange: any;
   documents: Array<any>;
+  appointmentDate: string;
 }
 
 interface ArrowProps {
@@ -136,6 +146,8 @@ interface ArrowProps {
 interface DocumentTitleProps {
   title: string;
   date: string;
+  currentIndex: number | null;
+  documentCount: number;
 }
 
 const Arrows: React.FC<ArrowProps> = ({ currentIndex, documentCount, onChange }) => {
@@ -168,12 +180,20 @@ const Arrows: React.FC<ArrowProps> = ({ currentIndex, documentCount, onChange })
   );
 };
 
-const DocumentTitle: React.FC<DocumentTitleProps> = ({ title, date }) => {
+const DocumentTitle: React.FC<DocumentTitleProps> = ({
+  title,
+  date,
+  currentIndex,
+  documentCount,
+}) => {
   const classes = useStyles({});
   return (
     <div className={classes.documentTitleWrapper}>
-      <h3 className={classes.documentTitle}>{title}</h3>
-      {date && <p className={classes.documentDate}>{date}</p>}
+      <h3 className={classes.documentTitle}>{title.split('/').pop()}</h3>
+      <div className={classes.documentDate}>
+        <p>{`Sent on: ${moment(date).format('Do MMM, YYYY')} | `}</p>
+        <p>{`Viewing ${currentIndex + 1} out of ${documentCount}`}</p>
+      </div>
     </div>
   );
 };
@@ -183,6 +203,7 @@ const GallerySlider: React.FC<GallerySliderProps> = ({
   onClose,
   onChange,
   documents,
+  appointmentDate,
 }) => {
   const classes = useStyles({});
 
@@ -199,7 +220,7 @@ const GallerySlider: React.FC<GallerySliderProps> = ({
   const docDate = open
     ? documents && documents[currentIndex] && documents[currentIndex].documentDate
       ? documents[currentIndex].documentDate
-      : null
+      : appointmentDate
     : null;
 
   const isPdf = open
@@ -214,7 +235,12 @@ const GallerySlider: React.FC<GallerySliderProps> = ({
         <div className={classes.tableContent}>
           <div className={classes.modalWindow}>
             <div className={classes.modalHeader}>
-              <DocumentTitle title={docTitle} date={docDate} />
+              <DocumentTitle
+                title={docTitle}
+                date={docDate}
+                currentIndex={currentIndex}
+                documentCount={documents.length}
+              />
               <div className={classes.modalClose} onClick={onClose}>
                 <img src={require('images/ic_round_clear.svg')} alt="" />
               </div>
