@@ -155,7 +155,12 @@ const styles = StyleSheet.create({
   },
 });
 
-export type AddressSource = 'My Account' | 'Upload Prescription' | 'Cart' | 'Diagnostics Cart';
+export type AddressSource =
+  | 'My Account'
+  | 'Upload Prescription'
+  | 'Cart'
+  | 'Diagnostics Cart'
+  | 'Medicine';
 
 export interface AddAddressProps
   extends NavigationScreenProps<{
