@@ -1066,3 +1066,11 @@ export const BotIcon: React.FC<IconProps> = (props) => (
 export const InfoIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/info.png')} />
 );
+
+export const GpsIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 15, height: 15 }}
+    {...props}
+    source={require('./icons/ic_gps_fixed.png')}
+  />
+);

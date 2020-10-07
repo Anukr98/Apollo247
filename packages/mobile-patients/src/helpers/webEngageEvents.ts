@@ -116,6 +116,8 @@ export enum WebEngageEventName {
   // Diagnostics Events
   FEATURED_TEST_CLICKED = 'Featured Test Clicked',
   BROWSE_PACKAGE = 'Browse Package',
+  DIAGNOSTIC_ENTER_DELIVERY_PINCODE_CLICKED = 'Diagnostic Enter Delivery Pincode Clicked',
+  DIAGNOSTIC_ENTER_DELIVERY_PINCODE_SUBMITTED = 'Diagnostic Enter Delivery Pincode Submitted ',
 
   // Health Records
   CONSULT_RX = 'PHR Consult & RX',
@@ -127,6 +129,18 @@ export enum WebEngageEventName {
   PHR_ORDER_MEDS_TESTS = 'PHR Order Meds & Tests',
   PHR_CONSULT_CARD_CLICK = 'PHR Consult Card click',
   RE_ORDER_MEDICINE = 'ReOrder Medicine',
+  PHR_VIEW_PRESCRIPTIONS = 'PHR View Prescriptions - app',
+  PHR_VIEW_LAB_TESTS = 'PHR View Lab Tests - app',
+  PHR_VIEW_HEALTH_CHECKS = 'PHR View Health Checks - app',
+  PHR_VIEW_HOSPITALIZATIONS = 'PHR View Hospitalizations - app',
+  PHR_ADD_PRESCRIPTIONS = 'PHR Add Prescriptions - app',
+  PHR_ADD_LAB_TESTS = 'PHR Add Lab Tests - app',
+  PHR_ADD_HEALTH_CHECKS = 'PHR Add Health Checks - app',
+  PHR_ADD_HOSPITALIZATIONS = 'PHR Add Hospitalizations - app',
+  PHR_DOWNLOAD_PRESCRIPTIONS = 'PHR Download Prescriptions - app',
+  PHR_DOWNLOAD_LAB_TESTS = 'PHR Download Lab Tests - app',
+  PHR_DOWNLOAD_HEALTH_CHECKS = 'PHR Download Health Checks - app',
+  PHR_DOWNLOAD_HOSPITALIZATIONS = 'PHR Download Hospitalizations - app',
   // ConsultRoom Events
   CONSULTATION_CANCELLED_BY_CUSTOMER = 'Consultation Cancelled by Customer',
   CONSULTATION_RESCHEDULED_BY_CUSTOMER = 'Consultation Rescheduled by Customer',
@@ -532,6 +546,7 @@ export interface WebEngageEvents {
   };
   [WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]: {
     Source: 'Take a Photo' | 'Choose Gallery' | 'E-Rx';
+    'Upload Source'?: 'Cart' | 'Upload Flow';
   };
   [WebEngageEventName.PHARMACY_SUBMIT_PRESCRIPTION]: {
     'Order ID': string | number;
@@ -1367,6 +1382,15 @@ export interface WebEngageEvents {
     ProductId: string;
     ProductName: string;
     'Stock availability': YesOrNo;
+    /**
+     * Category ID & Category Name is applicable if customers clicks on products from any category (all categories of shop by category or health areas)
+     */
+    'Category ID'?: string;
+    'Category Name'?: string;
+    /**
+     * Section Name is applicable if customer clicked on the product from the homepage product widgets like Hot sellers, Recommended products
+     */
+    'Section Name'?: string;
   };
   [WebEngageEventName.CATEGORY_PAGE_VIEWED]: {
     source: 'home' | 'deeplink';

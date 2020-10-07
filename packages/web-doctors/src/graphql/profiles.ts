@@ -39,7 +39,7 @@ export const GET_ALL_SPECIALTIES = gql`
   }
 `;
 export const GET_SET_PARTICIPANTS_STATUS = gql`
- query SetAndGetNumberOfParticipants(
+  query SetAndGetNumberOfParticipants(
     $appointmentId: String
     $userType: USER_TYPE
     $sourceType: BOOKINGSOURCE
@@ -47,15 +47,15 @@ export const GET_SET_PARTICIPANTS_STATUS = gql`
     $userStatus: USER_STATUS
   ) {
     setAndGetNumberOfParticipants(
-    appointmentId: $appointmentId
-    userType: $userType
-    sourceType: $sourceType
-    deviceType: $deviceType
-    userStatus: $userStatus
-  ) {
-    NUMBER_OF_PARTIPANTS
+      appointmentId: $appointmentId
+      userType: $userType
+      sourceType: $sourceType
+      deviceType: $deviceType
+      userStatus: $userStatus
+    ) {
+      NUMBER_OF_PARTIPANTS
+    }
   }
- }
 `;
 export const MAKE_TEAM_DOCTOR_ACTIVE = gql`
   mutation MakeTeamDoctorActive($associatedDoctor: String, $starDoctor: String) {
@@ -141,6 +141,10 @@ export const LOGGED_IN_USER_DETAILS = gql`
 export const GET_DOCTOR_DETAILS = gql`
   query GetDoctorDetails {
     getDoctorDetails {
+      isIvrSet
+      ivrConsultType
+      ivrCallTimeOnline
+      ivrCallTimePhysical
       chatDays
       awards
       city
@@ -1497,6 +1501,27 @@ export const SAVE_APPOINTMENT_CALL_FEEDBACK = gql`
       ratingValue
       feedbackResponseType
       feedbackResponses
+    }
+  }
+`;
+
+export const SET_APPOINTMENT_REMINDER_IVR = gql`
+  mutation SetAppointmentReminderIvr(
+    $doctorId: String!
+    $isIvrSet: Boolean
+    $ivrConsultType: ConsultMode
+    $ivrCallTimeOnline: Int
+    $ivrCallTimePhysical: Int
+  ) {
+    setAppointmentReminderIvr(
+      doctorId: $doctorId
+      isIvrSet: $isIvrSet
+      ivrConsultType: $ivrConsultType
+      ivrCallTimeOnline: $ivrCallTimeOnline
+      ivrCallTimePhysical: $ivrCallTimePhysical
+    ) {
+      isError
+      response
     }
   }
 `;

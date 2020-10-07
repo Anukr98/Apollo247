@@ -37,7 +37,10 @@ let apolloDoctorCount = 0;
 let partnerDoctorCount = 0;
 const useStyles = makeStyles((theme: Theme) => {
   return {
-    slContainer: {},
+    slContainer: {
+      height: '100vh',
+      overflowY: 'scroll',
+    },
     slContent: {
       padding: '0 20px 40px',
       background: '#f7f8f5',

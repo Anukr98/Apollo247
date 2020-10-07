@@ -279,6 +279,12 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
             resultsdisplayed: products.length,
           };
           postWebEngageEvent(WebEngageEventName.SEARCH, eventAttributes);
+          const searchEventAttribute: WebEngageEvents[WebEngageEventName.SEARCH_ENTER_CLICK] = {
+            keyword: searchText,
+            numberofresults: data.product_count,
+          };
+          postWebEngageEvent(WebEngageEventName.SEARCH_ENTER_CLICK, searchEventAttribute);
+
           try {
             trackTagalysEvent(
               {
@@ -468,12 +474,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           Source: 'Pharmacy Search',
         };
         postWebEngageEvent(WebEngageEventName.PHARMACY_SEARCH_RESULTS, eventAttributes);
-
-        const searchEventAttribute: WebEngageEvents[WebEngageEventName.SEARCH_ENTER_CLICK] = {
-          keyword: searchText,
-          numberofresults: medicineList.length,
-        };
-        postWebEngageEvent(WebEngageEventName.SEARCH_ENTER_CLICK, searchEventAttribute);
         onSearchProduct(searchText);
         setsearchSate(undefined);
       }

@@ -225,6 +225,11 @@ import {
 } from 'profiles-service/resolvers/addHospitalizationRecords';
 
 import {
+  addPatientPrescriptionRecordsTypeDefs,
+  addPatientPrescriptionRecordResolvers,
+} from 'profiles-service/resolvers/addPrescriptionRecords';
+
+import {
   addPatientLabTestRecordTypeDefs,
   addPatientLabTestRecordResolvers,
 } from 'profiles-service/resolvers/addLabTestRecords';
@@ -243,6 +248,11 @@ import {
   orderReturnedTypeDefs,
   orderReturnedResolvers,
 } from 'profiles-service/resolvers/pharmaOrderReturnPreDelivery';
+
+import {
+  deletePatientPrismMedicalRecordTypeDefs,
+  deletePatientPrismMedicalRecordResolvers,
+} from 'profiles-service/resolvers/deletePatientPrismMedicalRecord';
 
 (async () => {
   await connect();
@@ -524,6 +534,14 @@ import {
       {
         typeDefs: orderReturnedTypeDefs,
         resolvers: orderReturnedResolvers,
+      },
+      {
+        typeDefs: addPatientPrescriptionRecordsTypeDefs,
+        resolvers: addPatientPrescriptionRecordResolvers,
+      },
+      {
+        typeDefs: deletePatientPrismMedicalRecordTypeDefs,
+        resolvers: deletePatientPrismMedicalRecordResolvers,
       },
     ]),
     plugins: [

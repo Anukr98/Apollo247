@@ -1104,6 +1104,7 @@ export const GET_PATIENT_ADDRESS_LIST = gql`
         stateCode
         mobileNumber
         name
+        defaultAddress
       }
     }
   }
@@ -2599,6 +2600,29 @@ export const SEARCH_DIAGNOSTICS = gql`
   }
 `;
 
+export const SEARCH_DIAGNOSTICS_BY_CITY_ID = gql`
+  query searchDiagnosticsByCityID($cityID: Int!, $searchText: String!) {
+    searchDiagnosticsByCityID(cityID: $cityID, searchText: $searchText) {
+      diagnostics {
+        id
+        itemId
+        itemName
+        itemType
+        rate
+        itemType
+        gender
+        itemRemarks
+        city
+        state
+        collectionType
+        fromAgeInDays
+        toAgeInDays
+        testPreparationData
+      }
+    }
+  }
+`;
+
 export const SEARCH_DIAGNOSTICS_BY_ID = gql`
   query searchDiagnosticsById($itemIds: String) {
     searchDiagnosticsById(itemIds: $itemIds) {
@@ -3111,6 +3135,16 @@ export const CREATE_ONE_APOLLO_USER = gql`
     }
   }
 `;
+export const GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES = gql`
+  query getPincodeServiceability ($pincode: Int!) {
+    getPincodeServiceability(pincode: $pincode) {
+      cityID
+      cityName
+      stateID
+      stateName
+    }
+  }
+`;
 
 export const UPDATE_HEALTH_RECORD_NUDGE_STATUS = gql`
   mutation updateHealthRecordNudgeStatus($appointmentId: String!, $hideHealthRecordNudge: Boolean) {
@@ -3119,6 +3153,17 @@ export const UPDATE_HEALTH_RECORD_NUDGE_STATUS = gql`
       hideHealthRecordNudge: $hideHealthRecordNudge
     ) {
       response
+    }
+  }
+`;
+
+export const SET_DEFAULT_ADDRESS = gql`
+  mutation makeAdressAsDefault($patientAddressId: ID!) {
+    makeAdressAsDefault(patientAddressId: $patientAddressId) {
+      patientAddress {
+        id
+        defaultAddress
+      }
     }
   }
 `;
