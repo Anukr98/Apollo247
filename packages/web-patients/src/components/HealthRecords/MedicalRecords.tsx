@@ -25,6 +25,7 @@ import { Alerts } from 'components/Alerts/Alerts';
 import _lowerCase from 'lodash/lowerCase';
 import { MedicalRecordType } from '../../graphql/types/globalTypes';
 import { phrDownloadingMedicalRecordFileTracking } from '../../webEngageTracking';
+import { Route } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -677,7 +678,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                                     : combinedData.labTestSource || '-'
                                 }
                                 recordType={MedicalRecordType.TEST_REPORT}
-                                id={`LabResults-${combinedData.id}`}
+                                id={combinedData.id}
                                 isActiveCard={activeData && activeData === combinedData}
                               />
                             </div>
@@ -694,17 +695,21 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
             </div>
           )}
         </Scrollbars>
-        <div className={classes.addReportActions}>
-          <AphButton
-            color="primary"
-            onClick={() => {
-              window.location.href = clientRoutes.addHealthRecords('medical');
-            }}
-            fullWidth
-          >
-            Add Record
-          </AphButton>
-        </div>
+        <Route
+          render={({ history }) => (
+            <div className={classes.addReportActions}>
+              <AphButton
+                color="primary"
+                onClick={() => {
+                  history.push(clientRoutes.addHealthRecords('medical'));
+                }}
+                fullWidth
+              >
+                Add Record
+              </AphButton>
+            </div>
+          )}
+        />
       </div>
       <div
         className={`${classes.rightSection} ${
