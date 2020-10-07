@@ -105,6 +105,13 @@ export const saveMedicineOrderOMSTypeDefs = gql`
     PAYMENT_ABORTED
     ON_HOLD
     READY_FOR_VERIFICATION
+    VERIFICATION_DONE
+    RETURN_PENDING
+    RETURN_TO_ORIGIN
+    RETURN_REQUESTED
+    RVP_ASSIGNED
+    RETURN_PICKUP
+    RETURN_RTO
   }
 
   type SaveMedicineOrderResult {
