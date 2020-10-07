@@ -1104,6 +1104,7 @@ export const GET_PATIENT_ADDRESS_LIST = gql`
         stateCode
         mobileNumber
         name
+        defaultAddress
       }
     }
   }
@@ -3152,6 +3153,17 @@ export const UPDATE_HEALTH_RECORD_NUDGE_STATUS = gql`
       hideHealthRecordNudge: $hideHealthRecordNudge
     ) {
       response
+    }
+  }
+`;
+
+export const SET_DEFAULT_ADDRESS = gql`
+  mutation makeAdressAsDefault($patientAddressId: ID!) {
+    makeAdressAsDefault(patientAddressId: $patientAddressId) {
+      patientAddress {
+        id
+        defaultAddress
+      }
     }
   }
 `;
