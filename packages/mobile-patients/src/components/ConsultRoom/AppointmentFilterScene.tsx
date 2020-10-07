@@ -39,36 +39,6 @@ const styles = StyleSheet.create({
     zIndex: 5,
     elevation: 5,
   },
-  cardContainer: {
-    padding: 20,
-    paddingBottom: 0,
-    // paddingTop: 16,
-    marginVertical: 4,
-    ...theme.viewStyles.cardViewStyle,
-    borderRadius: 0,
-    backgroundColor: '#f7f8f5',
-    // shadowColor: '#4c808080',
-    // shadowOffset: { width: 0, height: 5 },
-    // shadowOpacity: 0.2,
-    // elevation: 2,
-  },
-  labelView: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-
-    paddingBottom: 8,
-    borderBottomWidth: 0.5,
-    borderColor: 'rgba(2,71,91, 0.3)',
-  },
-  leftText: {
-    color: theme.colors.FILTER_CARD_LABEL,
-    ...theme.fonts.IBMPlexSansMedium(14),
-  },
-  rightText: {
-    color: theme.colors.APP_YELLOW,
-    ...theme.fonts.IBMPlexSansSemiBold(13),
-  },
   optionsView: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -81,15 +51,6 @@ const styles = StyleSheet.create({
     marginRight: 8,
     marginTop: 11,
     backgroundColor: theme.colors.WHITE,
-  },
-  brandStyle: {
-    width: '46%',
-    height: 45,
-    borderRadius: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginVertical: 5,
-    marginHorizontal: 4,
   },
   buttonTextStyle: {
     paddingHorizontal: 12,
@@ -110,32 +71,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'column',
   },
+  calendarMainViewStyle: {
+    width: '97.4%',
+    height: 42,
+    backgroundColor: theme.colors.CARD_BG,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  closeIconStyle: {
+    width: 28,
+    height: 28,
+  },
+  calendarViewStyle: {
+    borderBottomWidth: 0.1,
+    borderBottomColor: 'rgba(2, 71, 91, 0.3)',
+  },
   //start
   content: {
     flexDirection: 'row',
-    // flex: 0.7,
-  },
-  sectionHeaderStyles: {
-    borderBottomWidth: 0.5,
-    borderTopWidth: 0.5,
-    borderColor: 'rgba(2,71,91, 0.3)',
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-    paddingVertical: 10,
-    marginVertical: 5,
-  },
-  checkboxViewStyle: {
-    flexDirection: 'row',
-    marginVertical: 5,
-  },
-  checkboxTextStyle: {
-    ...theme.viewStyles.text('M', 15, '#02475b'),
-    marginLeft: 9,
-  },
-  searchInputStyles: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
   },
   // menu Column - left
   menuColumn: {
@@ -146,11 +101,8 @@ const styles = StyleSheet.create({
   },
   menuItem: {
     paddingVertical: 21,
-    paddingRight: 12,
-    paddingLeft: 30,
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
-    // backgroundColor: theme.colors.CARD_BG,
     borderBottomWidth: 0.2,
     borderBottomColor: theme.colors.LIGHT_GRAY_2,
     flexDirection: 'row',
@@ -158,19 +110,13 @@ const styles = StyleSheet.create({
   selectedMenuItem: {
     backgroundColor: theme.colors.WHITE,
   },
-
   menuItemText: {
     ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE),
   },
-
   // settings column -right
   settingsColumn: {
     flex: 1,
     padding: 15,
-  },
-  settingsView: {
-    justifyContent: 'center',
-    backgroundColor: theme.colors.WHITE,
   },
   selectedMenuItemText: {
     ...theme.viewStyles.text('M', 14, theme.colors.BONDI_BLUE),
@@ -180,19 +126,6 @@ const styles = StyleSheet.create({
   },
   //end
 });
-
-type dataType = {
-  label: string;
-  options: string[];
-  selectedOptions: string[];
-}[];
-
-export interface AppointmentFilterScenedsProps {
-  onClickClose: (arg0: filterDataType[]) => void;
-  data: filterDataType[];
-  setData: (arg0: filterDataType[]) => void;
-  filterLength: () => void;
-}
 
 interface AppointmentFilterSceneProps {
   setFilter: (filter: AppointmentFilterObject) => void;
@@ -219,6 +152,7 @@ export const AppointmentFilterScene: React.FC<AppointmentFilterSceneProps> = (pr
   const [showCalander, setshowCalander] = useState<boolean>(false);
   const [localFilter, setLocalFilter] = useState<AppointmentFilterObject>(_.cloneDeep(filter));
   const [date, setDate] = useState<Date>(new Date());
+  const [selectedDateText, setSelectedDateText] = useState('');
 
   const filterValues = (valueList: Array<string>, value: string) => {
     if (valueList.includes(value)) {
@@ -229,12 +163,12 @@ export const AppointmentFilterScene: React.FC<AppointmentFilterSceneProps> = (pr
     return valueList;
   };
 
-  const setFilterValues = (type: string, value: string) => {
+  const setFilterValues = (type: string, value: string, remDate: boolean = false) => {
     if (type === 'appointmentStatus') {
       const appointmentStatus = filterValues(localFilter?.appointmentStatus || [], value);
       setLocalFilter({ ...localFilter, appointmentStatus });
     } else if (type === 'availability') {
-      const availability = filterValues(localFilter?.availability || [], value);
+      const availability = availabilityFilterValue(localFilter?.availability || [], value, remDate);
       setLocalFilter({ ...localFilter, availability });
     } else if (type === 'doctor') {
       const doctorsList = filterValues(localFilter?.doctorsList || [], value);
@@ -245,9 +179,29 @@ export const AppointmentFilterScene: React.FC<AppointmentFilterSceneProps> = (pr
     }
   };
 
+  const availabilityFilterValue = (
+    valueList: Array<string>,
+    value: string,
+    remDate: boolean = true
+  ) => {
+    if (remDate && valueList.includes(dateFormatText(selectedDate!))) {
+      const ind = valueList.indexOf(dateFormatText(selectedDate!));
+      valueList.splice(ind, 1, value);
+    } else if (valueList.includes(value)) {
+      valueList = valueList.filter((val) => val !== value);
+    } else {
+      valueList.push(value);
+    }
+    return valueList;
+  };
+
   useEffect(() => {
-    selectedDate && setFilterValues('availability', moment(selectedDate).format('DD/MM/YYYY'));
-  }, [selectedDate]);
+    selectedDate && setSelectedDateText(dateFormatText(selectedDate));
+  }, []);
+
+  const dateFormatText = (filterDate: Date) => {
+    return moment(filterDate).format('DD/MM/YYYY');
+  };
 
   const [menuItems, setMenuItems] = useState([
     { id: '0', name: 'Appointment Status' },
@@ -280,7 +234,7 @@ export const AppointmentFilterScene: React.FC<AppointmentFilterSceneProps> = (pr
         : id === 2
         ? localFilter?.doctorsList
         : localFilter?.specialtyList;
-    const selectedDateText = selectedDate ? moment(selectedDate).format('DD-MMM-YYYY') : '';
+
     return (
       <>
         <View style={[styles.optionsView]}>
@@ -296,17 +250,7 @@ export const AppointmentFilterScene: React.FC<AppointmentFilterSceneProps> = (pr
             }}
           >
             <View style={styles.calendarMainView}>
-              <View
-                style={{
-                  width: '97.4%',
-                  height: 42,
-                  backgroundColor: theme.colors.CARD_BG,
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  paddingHorizontal: 20,
-                }}
-              >
+              <View style={styles.calendarMainViewStyle}>
                 <View>
                   <Text style={styles.availabilityTextStyle}>Availability</Text>
                 </View>
@@ -315,25 +259,20 @@ export const AppointmentFilterScene: React.FC<AppointmentFilterSceneProps> = (pr
                     setshowCalander(false);
                   }}
                 >
-                  <CloseCal
-                    style={{
-                      width: 28,
-                      height: 28,
-                    }}
-                  />
+                  <CloseCal style={styles.closeIconStyle} />
                 </TouchableOpacity>
               </View>
-              <View
-                style={{
-                  borderBottomWidth: 0.1,
-                  borderBottomColor: 'rgba(2, 71, 91, 0.3)',
-                }}
-              />
+              <View style={styles.calendarViewStyle} />
               <CalendarView
                 styles={styles.calendarStyle}
                 date={date}
                 onPressDate={(date) => {
-                  const selectDate = moment(date).format('YYYY-MM-DD');
+                  setSelectedDateText(dateFormatText(date));
+                  const availability = availabilityFilterValue(
+                    localFilter?.availability || [],
+                    dateFormatText(date)
+                  );
+                  setLocalFilter({ ...localFilter, availability });
                   setSelectedDate(date);
                   setshowCalander(false);
                 }}
@@ -361,20 +300,26 @@ export const AppointmentFilterScene: React.FC<AppointmentFilterSceneProps> = (pr
               }}
             />
           ))}
-          {id === 1 && selectedDate ? (
+          {id === 1 && selectedDateText ? (
             <Button
               title={selectedDateText}
               style={[
                 styles.buttonStyle,
-                selectedDate ? { backgroundColor: theme.colors.APP_GREEN } : null,
+                selectedDateText ? { backgroundColor: theme.colors.APP_GREEN } : null,
               ]}
               titleTextStyle={[
                 styles.buttonTextStyle,
-                selectedDate ? { color: theme.colors.WHITE } : null,
+                selectedDateText ? { color: theme.colors.WHITE } : null,
               ]}
               onPress={() => {
-                setFilterValues(filterTypeValue, moment(selectedDate).format('DD/MM/YYYY'));
                 setSelectedDate(null);
+                setSelectedDateText('');
+                const availability = availabilityFilterValue(
+                  localFilter?.availability || [],
+                  selectedDateText,
+                  false
+                );
+                setLocalFilter({ ...localFilter, availability });
               }}
             />
           ) : null}
@@ -408,10 +353,9 @@ export const AppointmentFilterScene: React.FC<AppointmentFilterSceneProps> = (pr
         return renderFilterSection(2);
       case '3':
         return renderFilterSection(3);
-      default:
-        return renderFilterSection(0);
     }
   };
+
   // this holds the keys of the menuItems for the view to know which category is currently being rendered.
   const [selectedItem, setSelectedItem] = useState('0');
   const filtersCard = () => {
@@ -440,10 +384,7 @@ export const AppointmentFilterScene: React.FC<AppointmentFilterSceneProps> = (pr
             style={{ display: 'flex', backgroundColor: theme.colors.CARD_BG, height: '100%' }}
           />
         </View>
-        <View style={styles.settingsColumn}>
-          {/* Option 1: AGE */}
-          {renderSelectedView(selectedItem)}
-        </View>
+        <View style={styles.settingsColumn}>{renderSelectedView(selectedItem)}</View>
       </View>
     );
   };
@@ -474,6 +415,7 @@ export const AppointmentFilterScene: React.FC<AppointmentFilterSceneProps> = (pr
               setLocalFilter(initialAppointmentFilterObject);
               setFilter(initialAppointmentFilterObject);
               setSelectedDate(null);
+              setSelectedDateText('');
             }}
           >
             <Reload />

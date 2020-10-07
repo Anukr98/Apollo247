@@ -429,6 +429,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         ? 0
         : Number(caseSheetChatDays) - 1
       : 6;
+  const fromSearchAppointmentScreen =
+    props.navigation.getParam('fromSearchAppointmentScreen') || false;
   const disableChat =
     props.navigation.getParam('disableChat') ||
     moment(new Date(appointmentData.appointmentDateTime))
@@ -6885,7 +6887,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           leftIcon="backArrow"
           container={{ borderBottomWidth: 0, zIndex: 100 }}
           onPressLeftIcon={() => {
-            if (callhandelBack) {
+            if (fromSearchAppointmentScreen) {
+              props.navigation.goBack();
+            } else if (callhandelBack) {
               // handleCallTheEdSessionAPI();
               setDoctorJoinedChat && setDoctorJoinedChat(false);
               props.navigation.dispatch(

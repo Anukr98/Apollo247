@@ -70,11 +70,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     borderRadius: 0,
     backgroundColor: 'transparent',
-    paddingLeft: Platform.OS === 'ios' ? 0 : -3,
+    paddingLeft: Platform.OS === 'ios' ? 0 : -10,
     paddingTop: 0,
     color: theme.colors.SHERPA_BLUE,
     marginHorizontal: 10,
-    paddingHorizontal: 16,
+    paddingHorizontal: 0,
     paddingRight: 12,
   },
   buttonStyles: {
@@ -178,6 +178,42 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     ...theme.viewStyles.yellowTextStyle,
   },
+  textConsultSubtextView: {
+    flexDirection: 'row',
+    alignSelf: 'flex-end',
+    paddingBottom: -16,
+    opacity: 1,
+  },
+  completedConsultViewStyle: {
+    flexDirection: 'row',
+    marginBottom: 16,
+    flex: 1,
+    justifyContent: 'space-between',
+  },
+  doctorImageStyle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    resizeMode: 'contain',
+  },
+  doctorImagePlaceholderStyle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+  },
+  followUpTextStyle: {
+    ...theme.fonts.IBMPlexSansMedium(12),
+    color: '#02475b',
+    opacity: 0.6,
+    marginBottom: 12,
+    marginTop: 4,
+    letterSpacing: 0.02,
+  },
+  onlineIconView: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
 });
 
 export interface SearchAppointmentScreenProps
@@ -206,7 +242,6 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
   useEffect(() => {
     setAllAppointments(allAppointmentsParam);
   }, []);
-  console.log('allAppointments', props.navigation.getParam('allAppointments'));
   const renderHeader = () => {
     return (
       <Header
@@ -295,6 +330,42 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
     }
   };
 
+  const postConsultCardEvents = (
+    type: 'Card Click' | 'Continue Consult' | 'Chat with Doctor' | 'Fill Medical Details',
+    data: getPatinetAppointments_getPatinetAppointments_patinetAppointments
+  ) => {
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.CONSULT_CARD_CLICKED]
+      | WebEngageEvents[WebEngageEventName.CONTINUE_CONSULT_CLICKED]
+      | WebEngageEvents[WebEngageEventName.FILL_MEDICAL_DETAILS] = {
+      'Doctor Name': g(data, 'doctorInfo', 'fullName')!,
+      'Speciality ID': g(data, 'doctorInfo', 'specialty', 'id')!,
+      'Speciality Name': g(data, 'doctorInfo', 'specialty', 'name')!,
+      'Doctor Category': g(data, 'doctorInfo', 'doctorType')!,
+      'Consult Date Time': moment(g(data, 'appointmentDateTime')).toDate(),
+      'Consult Mode': g(data, 'appointmentType') == APPOINTMENT_TYPE.ONLINE ? 'Online' : 'Physical',
+      'Hospital Name': g(data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name')!,
+      'Hospital City': g(data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'city')!,
+      'Consult ID': g(data, 'id')!,
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient Age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Customer ID': g(currentPatient, 'id'),
+    };
+    postWebEngageEvent(
+      type == 'Card Click'
+        ? WebEngageEventName.CONSULT_CARD_CLICKED
+        : type == 'Continue Consult'
+        ? WebEngageEventName.CONTINUE_CONSULT_CLICKED
+        : WebEngageEventName.FILL_MEDICAL_DETAILS,
+      eventAttributes
+    );
+  };
+
   const renderConsultationCard = (
     item: getPatientAllAppointments_getPatientAllAppointments_appointments,
     index: number
@@ -370,7 +441,21 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
         .add(followUpAfterInDays, 'days')
         .startOf('day')
         .isSameOrAfter(moment(new Date()).startOf('day'));
+
     const renderPastConsultationButtons = () => {
+      const onPressPastAppointmentViewDetails = () => {
+        item.appointmentType === 'ONLINE'
+          ? props.navigation.navigate(AppRoutes.ChatRoom, {
+              data: item,
+              callType: '',
+              prescription: '',
+              disableChat: item.doctorInfo && pastAppointmentItem,
+              fromSearchAppointmentScreen: true,
+            })
+          : props.navigation.navigate(AppRoutes.DoctorDetails, {
+              doctorId: g(item, 'doctorId') || '',
+            });
+      };
       const cancelConsulations = getAppointmentStatusText() === 'Cancelled';
       return (
         <View
@@ -382,21 +467,7 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
           }}
         >
           {cancelConsulations ? null : (
-            <TouchableOpacity
-              activeOpacity={1}
-              onPress={() => {
-                item.appointmentType === 'ONLINE'
-                  ? props.navigation.navigate(AppRoutes.ChatRoom, {
-                      data: item,
-                      callType: '',
-                      prescription: '',
-                      disableChat: item.doctorInfo && pastAppointmentItem,
-                    })
-                  : props.navigation.navigate(AppRoutes.DoctorDetails, {
-                      doctorId: g(item, 'doctorId') || '',
-                    });
-              }}
-            >
+            <TouchableOpacity activeOpacity={1} onPress={onPressPastAppointmentViewDetails}>
               <Text
                 style={[
                   styles.prepareForConsult,
@@ -431,59 +502,21 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
       );
     };
 
-    const postConsultCardEvents = (
-      type: 'Card Click' | 'Continue Consult' | 'Chat with Doctor' | 'Fill Medical Details',
-      data: getPatinetAppointments_getPatinetAppointments_patinetAppointments
-    ) => {
-      const eventAttributes:
-        | WebEngageEvents[WebEngageEventName.CONSULT_CARD_CLICKED]
-        | WebEngageEvents[WebEngageEventName.CONTINUE_CONSULT_CLICKED]
-        | WebEngageEvents[WebEngageEventName.FILL_MEDICAL_DETAILS] = {
-        'Doctor Name': g(data, 'doctorInfo', 'fullName')!,
-        'Speciality ID': g(data, 'doctorInfo', 'specialty', 'id')!,
-        'Speciality Name': g(data, 'doctorInfo', 'specialty', 'name')!,
-        'Doctor Category': g(data, 'doctorInfo', 'doctorType')!,
-        'Consult Date Time': moment(g(data, 'appointmentDateTime')).toDate(),
-        'Consult Mode':
-          g(data, 'appointmentType') == APPOINTMENT_TYPE.ONLINE ? 'Online' : 'Physical',
-        'Hospital Name': g(data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name')!,
-        'Hospital City': g(data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'city')!,
-        'Consult ID': g(data, 'id')!,
-        'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-        'Patient UHID': g(currentPatient, 'uhid'),
-        Relation: g(currentPatient, 'relation'),
-        'Patient Age': Math.round(
-          moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
-        ),
-        'Patient Gender': g(currentPatient, 'gender'),
-        'Customer ID': g(currentPatient, 'id'),
-      };
-      postWebEngageEvent(
-        type == 'Card Click'
-          ? WebEngageEventName.CONSULT_CARD_CLICKED
-          : type == 'Continue Consult'
-          ? WebEngageEventName.CONTINUE_CONSULT_CLICKED
-          : WebEngageEventName.FILL_MEDICAL_DETAILS,
-        eventAttributes
-      );
-    };
-
     const renderTextConsultButton = () => {
+      const onPressTextConsult = () => {
+        postConsultCardEvents('Chat with Doctor', item);
+        CommonLogEvent(AppRoutes.Consult, 'Prepare for Consult clicked');
+        props.navigation.navigate(AppRoutes.ChatRoom, {
+          data: item,
+          callType: '',
+          prescription: '',
+          disableChat: item.doctorInfo && pastAppointmentItem,
+          fromSearchAppointmentScreen: true,
+        });
+      };
       return (
         <View>
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => {
-              postConsultCardEvents('Chat with Doctor', item);
-              CommonLogEvent(AppRoutes.Consult, 'Prepare for Consult clicked');
-              props.navigation.navigate(AppRoutes.ChatRoom, {
-                data: item,
-                callType: '',
-                prescription: '',
-                disableChat: item.doctorInfo && pastAppointmentItem,
-              });
-            }}
-          >
+          <TouchableOpacity activeOpacity={1} onPress={onPressTextConsult}>
             <View style={{ flexDirection: 'row', alignSelf: 'flex-end' }}>
               <ChatBlueIcon style={{ width: 20, height: 20, marginTop: 12 }} />
               <Text
@@ -499,14 +532,7 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
               </Text>
             </View>
             {day1.diff(day2, 'days') > 0 ? (
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignSelf: 'flex-end',
-                  paddingBottom: -16,
-                  opacity: 1,
-                }}
-              >
+              <View style={styles.textConsultSubtextView}>
                 <Text style={styles.postConsultTextStyles1}>
                   {'You can follow up with the doctor via text '}
                 </Text>
@@ -523,14 +549,7 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
 
     const renderCompletedConsultButtons = () => {
       return (
-        <View
-          style={{
-            flexDirection: 'row',
-            marginBottom: 16,
-            flex: 1,
-            justifyContent: 'space-between',
-          }}
-        >
+        <View style={styles.completedConsultViewStyle}>
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
@@ -574,26 +593,28 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
     };
 
     const renderActiveUpcomingConsultButton = () => {
+      const onPressActiveUpcomingButtons = () => {
+        postConsultCardEvents(
+          item.isConsultStarted ? 'Continue Consult' : 'Fill Medical Details',
+          item
+        );
+        CommonLogEvent(AppRoutes.Consult, 'Prepare for Consult clicked');
+        if (item.doctorInfo && !pastAppointmentItem) {
+          CommonLogEvent(AppRoutes.Consult, 'Chat Room Move clicked');
+          props.navigation.navigate(AppRoutes.ChatRoom, {
+            data: item,
+            callType: '',
+            prescription: '',
+            fromSearchAppointmentScreen: true,
+          });
+        }
+      };
       return (
         <View style={{ flexDirection: 'row' }}>
           <TouchableOpacity
             activeOpacity={1}
             style={{ flex: 1 }}
-            onPress={() => {
-              postConsultCardEvents(
-                item.isConsultStarted ? 'Continue Consult' : 'Fill Medical Details',
-                item
-              );
-              CommonLogEvent(AppRoutes.Consult, 'Prepare for Consult clicked');
-              if (item.doctorInfo && !pastAppointmentItem) {
-                CommonLogEvent(AppRoutes.Consult, 'Chat Room Move clicked');
-                props.navigation.navigate(AppRoutes.ChatRoom, {
-                  data: item,
-                  callType: '',
-                  prescription: '',
-                });
-              }
-            }}
+            onPress={onPressActiveUpcomingButtons}
           >
             <Text
               style={[
@@ -615,6 +636,20 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
     };
 
     const renderPickAnotherButton = () => {
+      const onPressPickAnotherSlot = () => {
+        CommonLogEvent(AppRoutes.Consult, 'Consult RESCHEDULE clicked');
+        if (item.doctorInfo) {
+          item.appointmentType === 'ONLINE'
+            ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
+                data: item,
+                from: 'notification',
+              })
+            : props.navigation.navigate(AppRoutes.AppointmentDetails, {
+                data: item,
+                from: 'notification',
+              });
+        }
+      };
       return (
         <>
           <View style={styles.pickAnotherSlotViewStyle}>
@@ -622,50 +657,54 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
               {string.common.pickAnotherSlotText}
             </Text>
           </View>
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => {
-              CommonLogEvent(AppRoutes.Consult, 'Consult RESCHEDULE clicked');
-              if (item.doctorInfo) {
-                item.appointmentType === 'ONLINE'
-                  ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
-                      data: item,
-                      from: 'notification',
-                    })
-                  : props.navigation.navigate(AppRoutes.AppointmentDetails, {
-                      data: item,
-                      from: 'notification',
-                    });
-              }
-            }}
-          >
+          <TouchableOpacity activeOpacity={1} onPress={onPressPickAnotherSlot}>
             <Text style={styles.prepareForConsult}>PICK ANOTHER SLOT</Text>
           </TouchableOpacity>
         </>
       );
     };
 
+    const onPressDoctorCardClick = () => {
+      postConsultCardEvents('Card Click', item);
+      CommonLogEvent(AppRoutes.Consult, `Consult ${item.appointmentType} clicked`);
+      if (item.doctorInfo && pastAppointmentItem) {
+        item.appointmentType === 'ONLINE'
+          ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
+              data: item,
+              from: 'Consult',
+            })
+          : props.navigation.navigate(AppRoutes.AppointmentDetails, {
+              data: item,
+              from: 'Consult',
+            });
+      }
+    };
+
+    const renderDoctorImage = () => {
+      return (
+        <View style={styles.imageView}>
+          {!!g(item, 'doctorInfo', 'thumbnailUrl') ? (
+            <Image
+              style={styles.doctorImageStyle}
+              source={{ uri: item.doctorInfo!.thumbnailUrl! }}
+              resizeMode={'contain'}
+            />
+          ) : (
+            <DoctorPlaceholderImage
+              style={styles.doctorImagePlaceholderStyle}
+              resizeMode={'contain'}
+            />
+          )}
+        </View>
+      );
+    };
+
     return (
-      <View style={{}}>
-        {/* <View style={{ width: 312 }}> */}
+      <View>
         <TouchableOpacity
           activeOpacity={1}
           style={[styles.doctorView]}
-          onPress={() => {
-            postConsultCardEvents('Card Click', item);
-            CommonLogEvent(AppRoutes.Consult, `Consult ${item.appointmentType} clicked`);
-            if (item.doctorInfo && !pastAppointmentItem) {
-              item.appointmentType === 'ONLINE'
-                ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
-                    data: item,
-                    from: 'Consult',
-                  })
-                : props.navigation.navigate(AppRoutes.AppointmentDetails, {
-                    data: item,
-                    from: 'Consult',
-                  });
-            }
-          }}
+          onPress={onPressDoctorCardClick}
         >
           <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
             <View style={{ flexDirection: 'row' }}>
@@ -694,45 +733,13 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
               ) : (
                 <CapsuleView title={title} style={styles.availableView} isActive={isActive} />
               )}
-
-              <View style={styles.imageView}>
-                {!!g(item, 'doctorInfo', 'thumbnailUrl') ? (
-                  <Image
-                    style={{
-                      width: 60,
-                      height: 60,
-                      borderRadius: 30,
-                      resizeMode: 'contain',
-                    }}
-                    source={{ uri: item.doctorInfo!.thumbnailUrl! }}
-                    resizeMode={'contain'}
-                  />
-                ) : (
-                  <DoctorPlaceholderImage
-                    style={{
-                      width: 60,
-                      height: 60,
-                      borderRadius: 30,
-                    }}
-                    resizeMode={'contain'}
-                  />
-                )}
-              </View>
+              {renderDoctorImage()}
               <View style={{ flex: 1, marginRight: 16 }}>
                 <Text style={styles.doctorNameStyles} numberOfLines={1}>
                   {item.doctorInfo ? `${item.doctorInfo.displayName}` : ''}
                 </Text>
                 {item.isFollowUp == 'true' ? (
-                  <Text
-                    style={{
-                      ...theme.fonts.IBMPlexSansMedium(12),
-                      color: '#02475b',
-                      opacity: 0.6,
-                      marginBottom: 12,
-                      marginTop: 4,
-                      letterSpacing: 0.02,
-                    }}
-                  >
+                  <Text style={styles.followUpTextStyle}>
                     {moment(appointmentDateTime).format('DD MMM YYYY')}
                   </Text>
                 ) : (
@@ -748,13 +755,7 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
                   </Text>
                 )}
                 <View style={styles.separatorStyle} />
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'flex-start',
-                  }}
-                >
+                <View style={styles.onlineIconView}>
                   <Text style={styles.consultTextStyles}>
                     {item.appointmentType === 'ONLINE' ? 'Online Consultation' : doctorHospitalName}
                   </Text>
@@ -806,6 +807,7 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
           paddingTop: 0,
           marginTop: 20,
         }}
+        ListFooterComponent={() => <View style={{ height: 20 }} />}
         // horizontal={true}
         data={searchText?.length > 2 ? searchAppointments : []}
         bounces={false}

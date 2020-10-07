@@ -255,6 +255,124 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansBold(9),
     color: theme.colors.WHITE,
   },
+  selectedFilterMainViewStyle: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    backgroundColor: '#f0f1ec',
+  },
+  selectedFilterViewStyle: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    maxWidth: '96%',
+    paddingBottom: 0,
+  },
+  xTextStyle: {
+    ...theme.viewStyles.text('M', 12, '#FFFFFF', 1, 16, -0.26),
+    paddingLeft: 8,
+    paddingVertical: 8,
+    paddingRight: 10,
+  },
+  filterTextStyle: {
+    ...theme.viewStyles.text('M', 12, '#FFFFFF', 1, 16, -0.26),
+    paddingVertical: 8,
+  },
+  filterButtonViewStyle: {
+    backgroundColor: '#00B38E',
+    height: 'auto',
+    borderRadius: 10,
+    width: 'auto',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    shadowColor: 'rgba(0,0,0,0.2)',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 3,
+    paddingLeft: 10,
+    marginRight: 12,
+    marginTop: 11,
+  },
+  removeFilterViewStyle: {
+    height: 'auto',
+    borderRadius: 10,
+    width: 'auto',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    paddingLeft: 10,
+    marginRight: 12,
+    marginTop: 11,
+  },
+  removeFilterTextStyle: {
+    ...theme.viewStyles.text('M', 12, '#00B38E', 1, 16, -0.26),
+    paddingVertical: 8,
+  },
+  selectedMemberViewStyle: {
+    flexDirection: 'row',
+    marginHorizontal: 20,
+    marginVertical: 14,
+    alignItems: 'center',
+    flex: 1,
+  },
+  selectedMemberTextStyle: {
+    ...theme.viewStyles.text('B', isIphone5s() ? 11 : 13, '#FC9916', 1, 24),
+    marginLeft: 8,
+  },
+  viewAnotherMemberTextStyle: {
+    ...theme.viewStyles.text('M', isIphone5s() ? 10 : 12, '#02475B', 1, 16),
+  },
+  searchFilterViewStyle: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    flex: 1,
+    marginLeft: 10,
+  },
+  noAppointmentViewStyle: {
+    ...theme.viewStyles.cardViewStyle,
+    padding: 16,
+    marginTop: 20,
+    marginHorizontal: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  textConsultSubtextView: {
+    flexDirection: 'row',
+    alignSelf: 'flex-end',
+    paddingBottom: -16,
+    opacity: 1,
+  },
+  completedConsultViewStyle: {
+    flexDirection: 'row',
+    marginBottom: 16,
+    flex: 1,
+    justifyContent: 'space-between',
+  },
+  doctorImageStyle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    resizeMode: 'contain',
+  },
+  doctorImagePlaceholderStyle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+  },
+  followUpTextStyle: {
+    ...theme.fonts.IBMPlexSansMedium(12),
+    color: '#02475b',
+    opacity: 0.6,
+    marginBottom: 12,
+    marginTop: 4,
+    letterSpacing: 0.02,
+  },
+  onlineIconView: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
 });
 
 export interface ConsultProps extends NavigationScreenProps {
@@ -670,10 +788,11 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                   }
                 });
                 combinationActiveFollowUp.push({ type: 'Active', data: activeAppointments });
-                combinationActiveFollowUp.push({
-                  type: 'Follow-up Chat',
-                  data: followUpAppointments,
-                });
+                followUpAppointments.length > 0 &&
+                  combinationActiveFollowUp.push({
+                    type: 'Follow-up Chat',
+                    data: followUpAppointments,
+                  });
                 setFilterDoctorsList(_.uniq(doctorsList));
                 setFilterSpecialtyList(_.uniq(specialtyList));
                 setTodaysConsultations(combinationActiveFollowUp);
@@ -834,9 +953,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         return null;
       }
     };
-    // console.log(tomorrow, 'tomorrow');
     let appointmentDateTomarrow = moment(item.appointmentDateTime).format('DD MMM');
-    // console.log(appointmentDateTomarrow, 'apptomorrow', tomorrowDate);
     const caseSheet = followUpChatDaysCaseSheet(item.caseSheet);
     const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpAfterInDays');
     const followUpAfterInDays =
@@ -866,8 +983,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       g(item, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name')! ||
       'Physical Consultation';
     const day1 = moment(appointmentDateTime)
-      // .set('hour', 0)
-      // .set('minute', 0)
       .startOf('day')
       .add(followUpAfterInDays, 'days'); // since we're calculating as EOD
     const day2 = moment(new Date());
@@ -897,7 +1012,20 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         .add(followUpAfterInDays, 'days')
         .startOf('day')
         .isSameOrAfter(moment(new Date()).startOf('day'));
+
     const renderPastConsultationButtons = () => {
+      const onPressPastAppointmentViewDetails = () => {
+        item.appointmentType === 'ONLINE'
+          ? props.navigation.navigate(AppRoutes.ChatRoom, {
+              data: item,
+              callType: '',
+              prescription: '',
+              disableChat: item.doctorInfo && pastAppointmentItem,
+            })
+          : props.navigation.navigate(AppRoutes.DoctorDetails, {
+              doctorId: g(item, 'doctorId') || '',
+            });
+      };
       const cancelConsulations = getAppointmentStatusText() === 'Cancelled';
       return (
         <View
@@ -909,21 +1037,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           }}
         >
           {cancelConsulations ? null : (
-            <TouchableOpacity
-              activeOpacity={1}
-              onPress={() => {
-                item.appointmentType === 'ONLINE'
-                  ? props.navigation.navigate(AppRoutes.ChatRoom, {
-                      data: item,
-                      callType: '',
-                      prescription: '',
-                      disableChat: item.doctorInfo && pastAppointmentItem,
-                    })
-                  : props.navigation.navigate(AppRoutes.DoctorDetails, {
-                      doctorId: g(item, 'doctorId') || '',
-                    });
-              }}
-            >
+            <TouchableOpacity activeOpacity={1} onPress={onPressPastAppointmentViewDetails}>
               <Text
                 style={[
                   styles.prepareForConsult,
@@ -959,21 +1073,19 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     };
 
     const renderTextConsultButton = () => {
+      const onPressTextConsult = () => {
+        postConsultCardEvents('Chat with Doctor', item);
+        CommonLogEvent(AppRoutes.Consult, 'Prepare for Consult clicked');
+        props.navigation.navigate(AppRoutes.ChatRoom, {
+          data: item,
+          callType: '',
+          prescription: '',
+          disableChat: item.doctorInfo && pastAppointmentItem,
+        });
+      };
       return (
         <View>
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => {
-              postConsultCardEvents('Chat with Doctor', item);
-              CommonLogEvent(AppRoutes.Consult, 'Prepare for Consult clicked');
-              props.navigation.navigate(AppRoutes.ChatRoom, {
-                data: item,
-                callType: '',
-                prescription: '',
-                disableChat: item.doctorInfo && pastAppointmentItem,
-              });
-            }}
-          >
+          <TouchableOpacity activeOpacity={1} onPress={onPressTextConsult}>
             <View style={{ flexDirection: 'row', alignSelf: 'flex-end' }}>
               <ChatBlueIcon style={{ width: 20, height: 20, marginTop: 12 }} />
               <Text
@@ -989,14 +1101,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               </Text>
             </View>
             {day1.diff(day2, 'days') > 0 ? (
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignSelf: 'flex-end',
-                  paddingBottom: -16,
-                  opacity: 1,
-                }}
-              >
+              <View style={styles.textConsultSubtextView}>
                 <Text style={styles.postConsultTextStyles1}>
                   {'You can follow up with the doctor via text '}
                 </Text>
@@ -1013,14 +1118,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
 
     const renderCompletedConsultButtons = () => {
       return (
-        <View
-          style={{
-            flexDirection: 'row',
-            marginBottom: 16,
-            flex: 1,
-            justifyContent: 'space-between',
-          }}
-        >
+        <View style={styles.completedConsultViewStyle}>
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
@@ -1064,26 +1162,27 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     };
 
     const renderActiveUpcomingConsultButton = () => {
+      const onPressActiveUpcomingButtons = () => {
+        postConsultCardEvents(
+          item.isConsultStarted ? 'Continue Consult' : 'Fill Medical Details',
+          item
+        );
+        CommonLogEvent(AppRoutes.Consult, 'Prepare for Consult clicked');
+        if (item.doctorInfo && !pastAppointmentItem) {
+          CommonLogEvent(AppRoutes.Consult, 'Chat Room Move clicked');
+          props.navigation.navigate(AppRoutes.ChatRoom, {
+            data: item,
+            callType: '',
+            prescription: '',
+          });
+        }
+      };
       return (
         <View style={{ flexDirection: 'row' }}>
           <TouchableOpacity
             activeOpacity={1}
             style={{ flex: 1 }}
-            onPress={() => {
-              postConsultCardEvents(
-                item.isConsultStarted ? 'Continue Consult' : 'Fill Medical Details',
-                item
-              );
-              CommonLogEvent(AppRoutes.Consult, 'Prepare for Consult clicked');
-              if (item.doctorInfo && !pastAppointmentItem) {
-                CommonLogEvent(AppRoutes.Consult, 'Chat Room Move clicked');
-                props.navigation.navigate(AppRoutes.ChatRoom, {
-                  data: item,
-                  callType: '',
-                  prescription: '',
-                });
-              }
-            }}
+            onPress={onPressActiveUpcomingButtons}
           >
             <Text
               style={[
@@ -1105,6 +1204,20 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     };
 
     const renderPickAnotherButton = () => {
+      const onPressPickAnotherSlot = () => {
+        CommonLogEvent(AppRoutes.Consult, 'Consult RESCHEDULE clicked');
+        if (item.doctorInfo) {
+          item.appointmentType === 'ONLINE'
+            ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
+                data: item,
+                from: 'notification',
+              })
+            : props.navigation.navigate(AppRoutes.AppointmentDetails, {
+                data: item,
+                from: 'notification',
+              });
+        }
+      };
       return (
         <>
           <View style={styles.pickAnotherSlotViewStyle}>
@@ -1112,26 +1225,45 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               {string.common.pickAnotherSlotText}
             </Text>
           </View>
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => {
-              CommonLogEvent(AppRoutes.Consult, 'Consult RESCHEDULE clicked');
-              if (item.doctorInfo) {
-                item.appointmentType === 'ONLINE'
-                  ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
-                      data: item,
-                      from: 'notification',
-                    })
-                  : props.navigation.navigate(AppRoutes.AppointmentDetails, {
-                      data: item,
-                      from: 'notification',
-                    });
-              }
-            }}
-          >
+          <TouchableOpacity activeOpacity={1} onPress={onPressPickAnotherSlot}>
             <Text style={styles.prepareForConsult}>PICK ANOTHER SLOT</Text>
           </TouchableOpacity>
         </>
+      );
+    };
+
+    const onPressDoctorCardClick = () => {
+      postConsultCardEvents('Card Click', item);
+      CommonLogEvent(AppRoutes.Consult, `Consult ${item.appointmentType} clicked`);
+      if (item.doctorInfo && pastAppointmentItem) {
+        item.appointmentType === 'ONLINE'
+          ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
+              data: item,
+              from: 'Consult',
+            })
+          : props.navigation.navigate(AppRoutes.AppointmentDetails, {
+              data: item,
+              from: 'Consult',
+            });
+      }
+    };
+
+    const renderDoctorImage = () => {
+      return (
+        <View style={styles.imageView}>
+          {!!g(item, 'doctorInfo', 'thumbnailUrl') ? (
+            <Image
+              style={styles.doctorImageStyle}
+              source={{ uri: item.doctorInfo!.thumbnailUrl! }}
+              resizeMode={'contain'}
+            />
+          ) : (
+            <DoctorPlaceholderImage
+              style={styles.doctorImagePlaceholderStyle}
+              resizeMode={'contain'}
+            />
+          )}
+        </View>
       );
     };
 
@@ -1142,25 +1274,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             {appointmentDateText}
           </Text>
         ) : null}
-        {/* <View style={{ width: 312 }}> */}
         <TouchableOpacity
           activeOpacity={1}
           style={[styles.doctorView]}
-          onPress={() => {
-            postConsultCardEvents('Card Click', item);
-            CommonLogEvent(AppRoutes.Consult, `Consult ${item.appointmentType} clicked`);
-            if (item.doctorInfo && pastAppointmentItem) {
-              item.appointmentType === 'ONLINE'
-                ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
-                    data: item,
-                    from: 'Consult',
-                  })
-                : props.navigation.navigate(AppRoutes.AppointmentDetails, {
-                    data: item,
-                    from: 'Consult',
-                  });
-            }
-          }}
+          onPress={onPressDoctorCardClick}
         >
           <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
             <View style={{ flexDirection: 'row' }}>
@@ -1189,45 +1306,13 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               ) : (
                 <CapsuleView title={title} style={styles.availableView} isActive={isActive} />
               )}
-
-              <View style={styles.imageView}>
-                {!!g(item, 'doctorInfo', 'thumbnailUrl') ? (
-                  <Image
-                    style={{
-                      width: 60,
-                      height: 60,
-                      borderRadius: 30,
-                      resizeMode: 'contain',
-                    }}
-                    source={{ uri: item.doctorInfo!.thumbnailUrl! }}
-                    resizeMode={'contain'}
-                  />
-                ) : (
-                  <DoctorPlaceholderImage
-                    style={{
-                      width: 60,
-                      height: 60,
-                      borderRadius: 30,
-                    }}
-                    resizeMode={'contain'}
-                  />
-                )}
-              </View>
+              {renderDoctorImage()}
               <View style={{ flex: 1, marginRight: 16 }}>
                 <Text style={styles.doctorNameStyles} numberOfLines={1}>
                   {item.doctorInfo ? `${item.doctorInfo.displayName}` : ''}
                 </Text>
                 {item.isFollowUp == 'true' ? (
-                  <Text
-                    style={{
-                      ...theme.fonts.IBMPlexSansMedium(12),
-                      color: '#02475b',
-                      opacity: 0.6,
-                      marginBottom: 12,
-                      marginTop: 4,
-                      letterSpacing: 0.02,
-                    }}
-                  >
+                  <Text style={styles.followUpTextStyle}>
                     {moment(appointmentDateTime).format('DD MMM YYYY')}
                   </Text>
                 ) : (
@@ -1243,13 +1328,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                   </Text>
                 )}
                 <View style={styles.separatorStyle} />
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'flex-start',
-                  }}
-                >
+                <View style={styles.onlineIconView}>
                   <Text style={styles.consultTextStyles}>
                     {item.appointmentType === 'ONLINE' ? 'Online Consultation' : doctorHospitalName}
                   </Text>
@@ -1355,7 +1434,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         source={{
           uri: photoUrl,
         }}
-        resizeMode={'contain'}
       />
     ) : (
       <EditProfilePlaceHolder style={[styles.profileImageStyle, { borderRadius: 0 }]} />
@@ -1393,25 +1471,18 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   };
 
   const renderSearchFilterView = () => {
+    const numberOfAppoinmentText =
+      filterLength > 0
+        ? 'You have ' + (filteredAppointmentsList.length || 'no') + ' appointment(s)!'
+        : selectedTab === tabs[0].title
+        ? 'You have ' + (activeConsultations.length || 'no') + ' active appointment(s)!'
+        : selectedTab === tabs[1].title
+        ? 'You have ' + (upcomingConsultations.length || 'no') + ' upcoming appointment(s)!'
+        : 'You have ' + (pastConsultations.length || 'no') + ' past appointment(s)!';
     return (
       <View style={{ flexDirection: 'row', flex: 1, marginRight: 20 }}>
-        <Text style={styles.descriptionTextStyle}>
-          {filterLength > 0
-            ? 'You have ' + (filteredAppointmentsList.length || 'no') + ' appointment(s)!'
-            : selectedTab === tabs[0].title
-            ? 'You have ' + (activeConsultations.length || 'no') + ' active appointment(s)!'
-            : selectedTab === tabs[1].title
-            ? 'You have ' + (upcomingConsultations.length || 'no') + ' upcoming appointment(s)!'
-            : 'You have ' + (pastConsultations.length || 'no') + ' past appointment(s)!'}
-        </Text>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            flex: 1,
-            marginLeft: 10,
-          }}
-        >
+        <Text style={styles.descriptionTextStyle}>{numberOfAppoinmentText}</Text>
+        <View style={styles.searchFilterViewStyle}>
           <TouchableOpacity
             activeOpacity={1}
             onPress={() =>
@@ -1442,16 +1513,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const renderNoAppointments = () => {
     if (!loading) {
       return (
-        <View
-          style={{
-            ...theme.viewStyles.cardViewStyle,
-            padding: 16,
-            marginTop: 20,
-            marginHorizontal: 12,
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-          }}
-        >
+        <View style={styles.noAppointmentViewStyle}>
           <View>
             <Text style={{ ...theme.viewStyles.text('M', 16, '#02475b', 1, 24, 0) }}>
               {string.home.book_appointment_question}
@@ -1497,250 +1559,91 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     );
   };
 
+  const renderSelectedFilterItems = (filterText: string, id: number) => {
+    const onSelectedFilterClose = () => {
+      switch (id) {
+        case 0:
+          const appointmentStatus =
+            filter && filter?.appointmentStatus
+              ? filter?.appointmentStatus?.filter((val) => val !== filterText)
+              : null;
+          setFilter({ ...filter, appointmentStatus });
+          break;
+        case 1:
+          const availability =
+            filter && filter?.availability
+              ? filter?.availability?.filter((val) => val !== filterText)
+              : null;
+          if (selectedDate) {
+            !availability?.includes(moment(selectedDate).format('DD/MM/YYYY')) &&
+              setSelectedDate(null);
+          }
+          setFilter({ ...filter, availability });
+          break;
+        case 2:
+          const doctorsList =
+            filter && filter?.doctorsList
+              ? filter?.doctorsList?.filter((val) => val !== filterText)
+              : null;
+          setFilter({ ...filter, doctorsList });
+          break;
+        case 3:
+          const specialtyList =
+            filter && filter?.specialtyList
+              ? filter?.specialtyList?.filter((val) => val !== filterText)
+              : null;
+          setFilter({ ...filter, specialtyList });
+          break;
+        default:
+          break;
+      }
+    };
+    return (
+      <View style={styles.filterButtonViewStyle}>
+        <Text style={styles.filterTextStyle}>{filterText}</Text>
+        <Text style={styles.xTextStyle} onPress={onSelectedFilterClose}>
+          {'X'}
+        </Text>
+      </View>
+    );
+  };
+
   const renderAppointmentFilterScreen = () => {
     return isFilterOpen ? (
       <AppointmentFilterScene
         filter={filter}
-        setFilter={(appointment_filter) => {
-          setFilter(appointment_filter);
-        }}
-        setIsFilterOpen={(filterOpen) => {
-          setIsFilterOpen(filterOpen);
-        }}
+        setFilter={setFilter}
+        setIsFilterOpen={setIsFilterOpen}
         filterDoctorsList={filterDoctorsList}
         filterSpecialtyList={filterSpecialtyList}
         selectedDate={selectedDate}
-        setSelectedDate={(date) => {
-          setSelectedDate(date);
-        }}
+        setSelectedDate={setSelectedDate}
       />
     ) : null;
   };
 
+  const renderRemoveFilterView = () => {
+    return (
+      <View style={styles.removeFilterViewStyle}>
+        <Text
+          style={styles.removeFilterTextStyle}
+          onPress={() => setFilter(initialAppointmentFilterObject)}
+        >
+          {'REMOVE ALL'}
+        </Text>
+      </View>
+    );
+  };
+
   const renderSelectedFilters = () => {
     return (
-      <View
-        style={{ flex: 1, paddingHorizontal: 20, paddingVertical: 10, backgroundColor: '#f0f1ec' }}
-      >
-        <View
-          style={{
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            maxWidth: '96%',
-            paddingBottom: 0,
-          }}
-        >
-          {appointmentStatus?.map((filterText) => (
-            <View
-              style={{
-                backgroundColor: '#00B38E',
-                height: 'auto',
-                borderRadius: 10,
-                width: 'auto',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexDirection: 'row',
-                shadowColor: 'rgba(0,0,0,0.2)',
-                shadowOffset: { width: 0, height: 3 },
-                shadowOpacity: 0.8,
-                shadowRadius: 2,
-                elevation: 3,
-                paddingLeft: 10,
-                marginRight: 12,
-                marginTop: 11,
-              }}
-            >
-              <Text
-                style={{
-                  ...theme.viewStyles.text('M', 12, '#FFFFFF', 1, 16, -0.26),
-                  paddingVertical: 8,
-                }}
-              >
-                {filterText}
-              </Text>
-              <Text
-                style={{
-                  ...theme.viewStyles.text('M', 12, '#FFFFFF', 1, 16, -0.26),
-                  paddingLeft: 8,
-                  paddingVertical: 8,
-                  paddingRight: 10,
-                }}
-                onPress={() => {
-                  const appointmentStatus =
-                    filter && filter?.appointmentStatus
-                      ? filter?.appointmentStatus?.filter((val) => val !== filterText)
-                      : null;
-                  setFilter({ ...filter, appointmentStatus });
-                }}
-              >
-                {'X'}
-              </Text>
-            </View>
-          ))}
-          {availability?.map((filterText) => (
-            <View
-              style={{
-                backgroundColor: '#00B38E',
-                height: 'auto',
-                borderRadius: 10,
-                width: 'auto',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexDirection: 'row',
-                shadowColor: 'rgba(0,0,0,0.2)',
-                shadowOffset: { width: 0, height: 3 },
-                shadowOpacity: 0.8,
-                shadowRadius: 2,
-                elevation: 3,
-                paddingLeft: 10,
-                marginRight: 12,
-                marginTop: 11,
-              }}
-            >
-              <Text
-                style={{
-                  ...theme.viewStyles.text('M', 12, '#FFFFFF', 1, 16, -0.26),
-                  paddingVertical: 8,
-                }}
-              >
-                {filterText}
-              </Text>
-              <Text
-                style={{
-                  ...theme.viewStyles.text('M', 12, '#FFFFFF', 1, 16, -0.26),
-                  paddingLeft: 8,
-                  paddingVertical: 8,
-                  paddingRight: 10,
-                }}
-                onPress={() => {
-                  const availability =
-                    filter && filter?.availability
-                      ? filter?.availability?.filter((val) => val !== filterText)
-                      : null;
-                  setFilter({ ...filter, availability });
-                }}
-              >
-                {'X'}
-              </Text>
-            </View>
-          ))}
-          {doctorsList?.map((filterText) => (
-            <View
-              style={{
-                backgroundColor: '#00B38E',
-                height: 'auto',
-                borderRadius: 10,
-                width: 'auto',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexDirection: 'row',
-                shadowColor: 'rgba(0,0,0,0.2)',
-                shadowOffset: { width: 0, height: 3 },
-                shadowOpacity: 0.8,
-                shadowRadius: 2,
-                elevation: 3,
-                paddingLeft: 10,
-                marginRight: 12,
-                marginTop: 11,
-              }}
-            >
-              <Text
-                style={{
-                  ...theme.viewStyles.text('M', 12, '#FFFFFF', 1, 16, -0.26),
-                  paddingVertical: 8,
-                }}
-              >
-                {filterText}
-              </Text>
-              <Text
-                style={{
-                  ...theme.viewStyles.text('M', 12, '#FFFFFF', 1, 16, -0.26),
-                  paddingLeft: 8,
-                  paddingVertical: 8,
-                  paddingRight: 10,
-                }}
-                onPress={() => {
-                  const doctorsList =
-                    filter && filter?.doctorsList
-                      ? filter?.doctorsList?.filter((val) => val !== filterText)
-                      : null;
-                  setFilter({ ...filter, doctorsList });
-                }}
-              >
-                {'X'}
-              </Text>
-            </View>
-          ))}
-          {specialtyList?.map((filterText) => (
-            <View
-              style={{
-                backgroundColor: '#00B38E',
-                height: 'auto',
-                borderRadius: 10,
-                width: 'auto',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexDirection: 'row',
-                shadowColor: 'rgba(0,0,0,0.2)',
-                shadowOffset: { width: 0, height: 3 },
-                shadowOpacity: 0.8,
-                shadowRadius: 2,
-                elevation: 3,
-                paddingLeft: 10,
-                marginRight: 12,
-                marginTop: 11,
-              }}
-            >
-              <Text
-                style={{
-                  ...theme.viewStyles.text('M', 12, '#FFFFFF', 1, 16, -0.26),
-                  paddingVertical: 8,
-                }}
-              >
-                {filterText}
-              </Text>
-              <Text
-                style={{
-                  ...theme.viewStyles.text('M', 12, '#FFFFFF', 1, 16, -0.26),
-                  paddingLeft: 8,
-                  paddingVertical: 8,
-                  paddingRight: 10,
-                }}
-                onPress={() => {
-                  const specialtyList =
-                    filter && filter?.specialtyList
-                      ? filter?.specialtyList?.filter((val) => val !== filterText)
-                      : null;
-                  setFilter({ ...filter, specialtyList });
-                }}
-              >
-                {'X'}
-              </Text>
-            </View>
-          ))}
-          <View
-            style={{
-              height: 'auto',
-              borderRadius: 10,
-              width: 'auto',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexDirection: 'row',
-              paddingLeft: 10,
-              marginRight: 12,
-              marginTop: 11,
-            }}
-          >
-            <Text
-              style={{
-                ...theme.viewStyles.text('M', 12, '#00B38E', 1, 16, -0.26),
-                paddingVertical: 8,
-              }}
-              onPress={() => setFilter(initialAppointmentFilterObject)}
-            >
-              {'REMOVE ALL'}
-            </Text>
-          </View>
+      <View style={styles.selectedFilterMainViewStyle}>
+        <View style={styles.selectedFilterViewStyle}>
+          {appointmentStatus?.map((filterText) => renderSelectedFilterItems(filterText, 0))}
+          {availability?.map((filterText) => renderSelectedFilterItems(filterText, 1))}
+          {doctorsList?.map((filterText) => renderSelectedFilterItems(filterText, 2))}
+          {specialtyList?.map((filterText) => renderSelectedFilterItems(filterText, 3))}
+          {renderRemoveFilterView()}
         </View>
       </View>
     );
@@ -1749,31 +1652,20 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const renderSelectMemberView = () => {
     return (
       <View
-        style={{
-          flexDirection: 'row',
-          marginHorizontal: 20,
-          marginVertical: 14,
-          marginBottom: selectedTab === tabs[0].title ? undefined : 0,
-          alignItems: 'center',
-          flex: 1,
-        }}
+        style={[
+          styles.selectedMemberViewStyle,
+          {
+            marginBottom: selectedTab === tabs[0].title ? undefined : 0,
+          },
+        ]}
       >
-        <Text style={{ ...theme.viewStyles.text('M', isIphone5s() ? 10 : 12, '#02475B', 1, 16) }}>
+        <Text style={styles.viewAnotherMemberTextStyle}>
           {'View appointments of another member?'}
         </Text>
         <ProfileList
           navigation={props.navigation}
           saveUserChange={true}
-          childView={
-            <Text
-              style={{
-                ...theme.viewStyles.text('B', isIphone5s() ? 11 : 13, '#FC9916', 1, 24),
-                marginLeft: 8,
-              }}
-            >
-              {'SELECT MEMBER'}
-            </Text>
-          }
+          childView={<Text style={styles.selectedMemberTextStyle}>{'SELECT MEMBER'}</Text>}
           listContainerStyle={{ marginLeft: 6, marginTop: 22 }}
           selectedProfile={profile}
           setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
@@ -1812,8 +1704,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               : selectedTab === tabs[0].title
               ? renderTodaysConsultations()
               : renderConsultations()}
-            {/* {renderThingsToDo()} */}
-            {/* {renderArticles()} */}
           </View>
         </ScrollView>
       </SafeAreaView>
