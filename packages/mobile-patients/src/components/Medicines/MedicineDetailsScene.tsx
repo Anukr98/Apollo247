@@ -216,11 +216,17 @@ const styles = StyleSheet.create({
   stickyBottomComponent: { height: 'auto', flexDirection: 'column' },
 });
 
+export type ProductPageViewedEventProps = Pick<
+  WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED],
+  'Category ID' | 'Category Name' | 'Section Name'
+>;
+
 export interface MedicineDetailsSceneProps
   extends NavigationScreenProps<{
     sku: string;
     /** movedFrom prop is mandatory. It is used as source in Product page viewed event */
     movedFrom: ProductPageViewedSource;
+    productPageViewedEventProps?: ProductPageViewedEventProps;
     deliveryError: string;
     sectionName?: string;
   }> {}
@@ -341,6 +347,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const scrollViewRef = React.useRef<KeyboardAwareScrollView>(null);
   const cartItemsCount = cartItems.length + diagnosticCartItems.length;
   const movedFrom = props.navigation.getParam('movedFrom');
+  const productPageViewedEventProps = props.navigation.getParam('productPageViewedEventProps');
 
   useEffect(() => {
     if (!_deliveryError) {
@@ -414,6 +421,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         ProductId: sku,
         ProductName: name,
         'Stock availability': !!is_in_stock ? 'Yes' : 'No',
+        ...productPageViewedEventProps,
       };
       postWebEngageEvent(WebEngageEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
     }

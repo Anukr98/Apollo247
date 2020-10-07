@@ -45,6 +45,7 @@ import {
 import { Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps, NavigationActions, StackActions } from 'react-navigation';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { ProductPageViewedEventProps } from '@aph/mobile-patients/src/components/Medicines/MedicineDetailsScene';
 import {
   isValidSearch,
   postWebEngageEvent,
@@ -552,6 +553,10 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: medicine.sku,
             movedFrom: ProductPageViewedSource.CATEGORY_OR_LISTING,
+            productPageViewedEventProps: {
+              'Category ID': category_id,
+              'Category Name': pageTitle,
+            } as ProductPageViewedEventProps,
           });
         }}
         medicineName={medicine.name}
