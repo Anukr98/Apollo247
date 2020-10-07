@@ -725,16 +725,13 @@ export class AppointmentRepository extends Repository<Appointment> {
       .leftJoinAndSelect('appointment.caseSheet', 'caseSheet')
       .leftJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
       .andWhere('appointment.patientId IN (:...ids)', { ids })
-      .andWhere(
-        'appointment.status not in(:status1,:status2,:status3,:status4,:status5)',
-        {
-          status1: STATUS.PAYMENT_PENDING,
-          status2: STATUS.UNAVAILABLE_MEDMANTRA,
-          status3: STATUS.PAYMENT_FAILED,
-          status4: STATUS.PAYMENT_PENDING_PG,
-          status5: STATUS.PAYMENT_ABORTED,
-        }
-      )
+      .andWhere('appointment.status not in(:status1,:status2,:status3,:status4,:status5)', {
+        status1: STATUS.PAYMENT_PENDING,
+        status2: STATUS.UNAVAILABLE_MEDMANTRA,
+        status3: STATUS.PAYMENT_FAILED,
+        status4: STATUS.PAYMENT_PENDING_PG,
+        status5: STATUS.PAYMENT_ABORTED,
+      })
       .offset(offset)
       .limit(limit)
       .orderBy('appointment.appointmentDateTime', 'DESC')
@@ -1406,6 +1403,17 @@ export class AppointmentRepository extends Repository<Appointment> {
       },
       AphErrorMessages.CANCEL_APPOINTMENT_ERROR
     );
+  }
+
+  async getAppointmentCountByPatientId(patientId: string[]) {
+    const results = await this.createQueryBuilder('appointment')
+      .select('appointment.patientId as patientId')
+      .addSelect('COUNT(*) AS count')
+      .where('appointment.patientId IN (:...patientList)', { patientList: patientId })
+      .andWhere('appointment.status = :completed', { completed: STATUS.COMPLETED })
+      .groupBy('appointment.patientId')
+      .getRawMany();
+    return results;
   }
 
   getAppointmentsByPatientId(patientId: string, startDate: Date, endDate: Date) {
