@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme } from '@material-ui/core';
+import { Theme, Popover } from '@material-ui/core';
 import { AphButton, AphDialog, AphDialogTitle } from '@aph/web-ui-components';
 import { MedicalRecordType } from '../../graphql/types/globalTypes';
 import _lowerCase from 'lodash/lowerCase';
@@ -110,6 +110,23 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    moreProfileActions: {
+      position: 'absolute',
+      right: 10,
+      cursor: 'pointer',
+      '& img': {
+        verticalAlign: 'middle',
+      },
+    },
+    cancelBtn: {
+      textTransform: 'none',
+      color: '#02475b',
+      fontSize: 16,
+      fontWeight: 500,
+    },
+    cancelPopover: {
+      marginTop: -10,
+    },
   };
 });
 
@@ -125,12 +142,23 @@ type MedicalCardProps = {
 
 export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
   const classes = useStyles({});
+  const delteRecordRef = useRef(null);
   const [showPopup, setShowPopup] = useState<boolean>(false);
+  const [showDeletePopover, setShowDeletePopover] = useState<boolean>(false);
   const { name, source, recordType, isActiveCard, deleteReport, id, hospitalName } = props;
 
   return (
     <div className={`${classes.root} ${isActiveCard ? classes.activeCard : ''}`}>
       <div className={classes.doctorInfoGroup}>
+        {/* {(source === '247self' || _lowerCase(source) === 'self') && (
+          <div
+            onClick={() => setShowDeletePopover(true)}
+            ref={delteRecordRef}
+            className={classes.moreProfileActions}
+          >
+            <img src={require('images/ic_more.svg')} alt="" />
+          </div>
+        )} */}
         <div className={classes.doctorInfo}>
           <div className={classes.doctorName}>{name}</div>
         </div>
@@ -149,6 +177,26 @@ export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
             : source}
         </div>
       )}
+      <Popover
+        open={showDeletePopover}
+        anchorEl={delteRecordRef.current}
+        onClose={() => setShowDeletePopover(false)}
+        classes={{
+          paper: classes.cancelPopover,
+        }}
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+      >
+        <AphButton onClick={() => setShowPopup(true)} className={classes.cancelBtn}>
+          Delete
+        </AphButton>
+      </Popover>
       <AphDialog
         open={showPopup}
         disableBackdropClick
@@ -164,6 +212,7 @@ export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
           <AphButton
             color="default"
             onClick={() => {
+              setShowDeletePopover(false);
               setShowPopup(false);
             }}
             autoFocus
@@ -175,6 +224,7 @@ export const MedicalCard: React.FC<MedicalCardProps> = (props) => {
             onClick={() => {
               deleteReport(id, recordType);
               setShowPopup(false);
+              setShowDeletePopover(false);
             }}
             autoFocus
           >
