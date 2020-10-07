@@ -616,12 +616,10 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 20,
     },
     myImageClass: {
-      [theme.breakpoints.up(768)]: {
-        zIndex: 1,
-        position: 'absolute',
-        top: 200,
-        left: 530,
-      },
+      zIndex: 1,
+      position: 'absolute',
+      top: '28%',
+      left: '37%',
     },
   };
 });
