@@ -48,6 +48,8 @@ const useStyles = makeStyles((theme: Theme) => {
     container: {
       maxWidth: 1064,
       margin: 'auto',
+      height: '100vh',
+      overflowY: 'scroll',
     },
     searchByBrandPage: {
       position: 'relative',
@@ -90,8 +92,10 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '20px 3px 20px 20px',
 
       [theme.breakpoints.down('xs')]: {
-        height: '100%',
+        // height: '100%',
         padding: 0,
+        height: '100vh',
+        overflowY: 'scroll',
       },
     },
     searchSection: {
@@ -303,7 +307,7 @@ const SearchByMedicine: React.FC = (props) => {
   useEffect(() => console.log(888, totalItems), [totalItems]);
 
   const handleOnScroll = useCallback(() => {
-    if (window.innerHeight + window.scrollY >= document.body.offsetHeight * 0.85) {
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight * 0.8) {
       if (!fetching) {
         fetching = true;
         loadItemData();
