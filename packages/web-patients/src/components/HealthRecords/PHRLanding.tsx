@@ -367,24 +367,43 @@ const PHRLanding: React.FC<LandingProps> = (props) => {
 
   const deleteReportMutation = useMutation(DELETE_PATIENT_MEDICAL_RECORD);
 
-  const deleteReport = (id: string, type: MedicalRecordType) => {
+  const deleteReport = (id: string, recordType: MedicalRecordType) => {
     setMedicalLoading(true);
     deleteReportMutation({
-      variables: { recordId: id },
+      variables: {
+        deletePatientPrismMedicalRecordInput: {
+          id,
+          patientId: currentPatient.id,
+          recordType,
+        },
+      },
       fetchPolicy: 'no-cache',
     })
       .then((_data) => {
-        if (type === MedicalRecordType.TEST_REPORT) {
-          const newRecords = labResults && labResults.filter((record: any) => record.id !== id);
-          setLabResults(newRecords);
-        } else if (type === MedicalRecordType.PRESCRIPTION) {
+        if (recordType === MedicalRecordType.TEST_REPORT) {
           const newRecords =
-            prescriptions && prescriptions.filter((record: any) => record.id !== id);
+            labResults && labResults.filter((record: LabResultsType) => record.id !== id);
+          setLabResults(newRecords);
+        } else if (recordType === MedicalRecordType.PRESCRIPTION) {
+          const newRecords =
+            prescriptions && prescriptions.filter((record: PrescriptionsType) => record.id !== id);
           setPrescriptions(newRecords);
+        } else if (recordType === MedicalRecordType.HEALTHCHECK) {
+          const newRecords =
+            healthChecks && healthChecks.filter((record: HealthCheckType) => record.id !== id);
+          setHealthChecks(newRecords);
+        } else if (recordType === MedicalRecordType.HOSPITALIZATION) {
+          const newRecords =
+            hospitalizations &&
+            hospitalizations.filter((record: HospitalizationType) => record.id !== id);
+          setHospitalization(newRecords);
         }
       })
       .catch((e) => {
         console.log('Error occured while render Delete MedicalOrder', { e });
+      })
+      .finally(() => {
+        setMedicalLoading(false);
       });
   };
 
@@ -436,6 +455,7 @@ const PHRLanding: React.FC<LandingProps> = (props) => {
                       error={consultError}
                       consultsData={consultsData}
                       allConsultsData={allConsultsData}
+                      deleteReport={deleteReport}
                     />
                   </TabContainer>
                 )}

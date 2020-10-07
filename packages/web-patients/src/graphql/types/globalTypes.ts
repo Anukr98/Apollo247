@@ -451,6 +451,7 @@ export enum mediaPrescriptionSource {
 }
 
 export interface AddHealthCheckRecordInput {
+  id?: string | null;
   patientId: string;
   recordType: MedicalRecordType;
   healthCheckName: string;
@@ -459,6 +460,7 @@ export interface AddHealthCheckRecordInput {
 }
 
 export interface AddHospitalizationRecordInput {
+  id?: string | null;
   patientId: string;
   recordType: MedicalRecordType;
   dischargeDate: any;
@@ -468,6 +470,7 @@ export interface AddHospitalizationRecordInput {
 }
 
 export interface AddLabTestRecordInput {
+  id?: string | null;
   patientId: string;
   recordType: MedicalRecordType;
   labTestName: string;
@@ -964,6 +967,7 @@ export interface UpdatePatientAddressInput {
   latitude?: number | null;
   longitude?: number | null;
   stateCode?: string | null;
+  defaultAddress?: boolean | null;
 }
 
 export interface UpdatePatientInput {

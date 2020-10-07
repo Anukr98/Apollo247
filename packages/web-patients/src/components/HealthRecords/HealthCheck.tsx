@@ -13,6 +13,7 @@ import { getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthCheck
 import { HEALTH_RECORDS_NO_DATA_FOUND, HEALTH_RECORDS_NOTE } from 'helpers/commonHelpers';
 import { MedicalRecordType } from '../../graphql/types/globalTypes';
 import { phrDownloadingHealthCheckFileTracking } from '../../webEngageTracking';
+import { Route } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -446,7 +447,7 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
                     name={combinedData.healthCheckName || combinedData.healthCheckType || '-'}
                     source={combinedData.source || '-'}
                     recordType={MedicalRecordType.HEALTHCHECK}
-                    id={`HealthCheck-${combinedData.id}`}
+                    id={combinedData.id}
                     isActiveCard={activeData && activeData.id === combinedData.id}
                   />
                 </div>
@@ -459,17 +460,21 @@ export const HealthCheck: React.FC<MedicalRecordProps> = (props) => {
             </div>
           )}
         </Scrollbars>
-        <div className={classes.addReportActions}>
-          <AphButton
-            color="primary"
-            onClick={() => {
-              window.location.href = clientRoutes.addHealthRecords('healthCheck');
-            }}
-            fullWidth
-          >
-            Add Record
-          </AphButton>
-        </div>
+        <Route
+          render={({ history }) => (
+            <div className={classes.addReportActions}>
+              <AphButton
+                color="primary"
+                onClick={() => {
+                  history.push(clientRoutes.addHealthRecords('healthCheck'));
+                }}
+                fullWidth
+              >
+                Add Record
+              </AphButton>
+            </div>
+          )}
+        />
       </div>
       <div
         className={`${classes.rightSection} ${
