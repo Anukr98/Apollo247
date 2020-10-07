@@ -170,6 +170,21 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    filterBrands: {
+      paddingRight: 110,
+      [theme.breakpoints.down('sm')]: {
+        paddingRight: 0,
+      },
+      '& button': {
+        minWidth: 102,
+        height: 42,
+        marginBottom: 20,
+        fontSize: 14,
+        [theme.breakpoints.down('sm')]: {
+          minWidth: 87,
+        },
+      },
+    },
     filterActive: {
       backgroundColor: '#00b38e !important',
       color: '#fff !important',
@@ -375,8 +390,8 @@ export const Filters: React.FC<FilterProps> = (props) => {
         isOnlineSelected && isPhysicalSelected
           ? ConsultMode.BOTH
           : isOnlineSelected
-          ? ConsultMode.ONLINE
-          : ConsultMode.PHYSICAL,
+            ? ConsultMode.ONLINE
+            : ConsultMode.PHYSICAL,
     };
     setLocalFilter(filterInitialValues);
     setFilter(filterInitialValues);
@@ -473,8 +488,8 @@ export const Filters: React.FC<FilterProps> = (props) => {
                   root: classes.tabRoot,
                   selected: classes.tabSelected,
                 }}
-                label="Brands"
-                title="Brands"
+                label="Hospital Group"
+                title="Hospital Group"
               />
               <Tab
                 classes={{
@@ -602,8 +617,8 @@ export const Filters: React.FC<FilterProps> = (props) => {
               <TabContainer>
                 <div className={classes.filterType}>
                   <h4>&nbsp;</h4>
-                  <div className={classes.filterBtns}>
-                    {brandList.map((brand: { key: string; value: string }) => (
+                  <div className={`${classes.filterBtns} ${classes.filterBrands}`}>
+                    {/* {brandList.map((brand: { key: string; value: string }) => (
                       <AphButton
                         key={brand.key}
                         className={applyClass(localFilter.brand, brand.key)}
@@ -613,7 +628,35 @@ export const Filters: React.FC<FilterProps> = (props) => {
                       >
                         {brand.value}
                       </AphButton>
-                    ))}
+                    ))} */}
+                    <AphButton>
+                      <img src={require('images/ic_brand_apollo.svg')} alt="" />
+                    </AphButton>
+                    <AphButton>
+                      <img src={require('images/ic_brand_apollocradle.svg')} alt="" />
+                    </AphButton>
+                    <AphButton>
+                      <img src={require('images/ic_brand_apolloclinic.svg')} alt="" />
+                    </AphButton>
+                    <AphButton>
+                      <img src={require('images/ic_brand_apollospectra.svg')} alt="" />
+                    </AphButton>
+                    <AphButton>
+                      <img src={require('images/logo-apollo-sugar.svg')} alt="" />
+                    </AphButton>
+                    <AphButton>
+                      <img src={require('images/logo-apollo-fertility.svg')} alt="" />
+                    </AphButton>
+                    <AphButton>
+                      <img src={require('images/logo-apollo-cosmetic.svg')} alt="" />
+                    </AphButton>
+                    <AphButton>
+                      <img src={require('images/apollo-logo-apollo-white-dental.svg')} alt="" />
+                    </AphButton>
+                    <AphButton>
+                      Others
+                    </AphButton>
+
                   </div>
                 </div>
               </TabContainer>

@@ -4105,19 +4105,9 @@
             "deprecationReason": null
           },
           {
-            "name": "getDiagnosticItDoseSlots",
+            "name": "getDiagnosticSlotsWithAreaID",
             "description": null,
             "args": [
-              {
-                "name": "patientId",
-                "description": null,
-                "type": {
-                  "kind": "SCALAR",
-                  "name": "String",
-                  "ofType": null
-                },
-                "defaultValue": null
-              },
               {
                 "name": "selectedDate",
                 "description": null,
@@ -4129,7 +4119,7 @@
                 "defaultValue": null
               },
               {
-                "name": "zipCode",
+                "name": "areaID",
                 "description": null,
                 "type": {
                   "kind": "SCALAR",
@@ -4144,7 +4134,7 @@
               "name": null,
               "ofType": {
                 "kind": "OBJECT",
-                "name": "DiagnosticItdoseSlotsResult",
+                "name": "DiagnosticSlotsWithAreaIDResult",
                 "ofType": null
               }
             },
@@ -28465,11 +28455,11 @@
       },
       {
         "kind": "OBJECT",
-        "name": "DiagnosticItdoseSlotsResult",
+        "name": "DiagnosticSlotsWithAreaIDResult",
         "description": null,
         "fields": [
           {
-            "name": "slotInfo",
+            "name": "slots",
             "description": null,
             "args": [],
             "type": {
@@ -29458,10 +29448,45 @@
               "kind": "LIST",
               "name": null,
               "ofType": {
-                "kind": "SCALAR",
-                "name": "String",
+                "kind": "OBJECT",
+                "name": "AreasResponse",
                 "ofType": null
               }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "AreasResponse",
+        "description": null,
+        "fields": [
+          {
+            "name": "id",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "Int",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "area",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
             },
             "isDeprecated": false,
             "deprecationReason": null
@@ -34998,6 +35023,16 @@
             "type": {
               "kind": "SCALAR",
               "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "defaultAddress",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "Boolean",
               "ofType": null
             },
             "defaultValue": null
