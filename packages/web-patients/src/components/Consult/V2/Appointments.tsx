@@ -1047,6 +1047,7 @@ const Appointments: React.FC<AppointmentProps> = (props) => {
         Status: paymentData.paymentStatus,
         OrderID: paymentData.displayId,
         Price: paymentData.amountPaid,
+        doctorId: appointmentHistory.doctorId,
         //CouponCode: 'CARE247', //if not used send it as null
         //CouponValue: 123.4, //if no coupon code, send it as 0
         'Payment Type': paymentData.responseMessage,
@@ -1056,7 +1057,7 @@ const Appointments: React.FC<AppointmentProps> = (props) => {
       });
       /**Gtm code start end */
     }
-  }, []);
+  }, [paymentData, appointmentHistory]);
 
   useEffect(() => {
     /**Gtm code start start */
@@ -1173,11 +1174,12 @@ const Appointments: React.FC<AppointmentProps> = (props) => {
                         <AphButton
                           color="primary"
                           classes={{ root: classes.addMemberBtn }}
+                          style={{ paddingLeft: 0 }}
                           onClick={() => {
                             setIsAddNewProfileDialogOpen(true);
                           }}
                         >
-                          Add Member
+                          +Add Member
                         </AphButton>
                       </MenuItem>
                     </AphSelect>

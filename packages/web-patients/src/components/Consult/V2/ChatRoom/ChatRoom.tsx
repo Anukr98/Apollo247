@@ -41,6 +41,7 @@ import { GET_APPOINTMENT_DATA } from 'graphql/consult';
 import { GetAppointmentData, GetAppointmentDataVariables } from 'graphql/types/GetAppointmentData';
 import { GetAppointmentData_getAppointmentData_appointmentsHistory as AppointmentHistory } from 'graphql/types/GetAppointmentData';
 import { removeGraphQLKeyword, getDiffInMinutes } from 'helpers/commonHelpers';
+import { dataLayerTracking } from 'gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -523,6 +524,18 @@ const ChatRoom: React.FC = () => {
 
   const [alertMessage, setAlertMessage] = useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: 'Chat Room Page',
+      pageLOB: 'Consultation',
+      pageType: 'Chat Room Page',
+    });
+    /**Gtm code start end */
+  }, []);
 
   const { data, loading, error } = useQueryWithSkip<
     GetDoctorDetailsById,
