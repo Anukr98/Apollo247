@@ -1382,6 +1382,15 @@ export interface WebEngageEvents {
     ProductId: string;
     ProductName: string;
     'Stock availability': YesOrNo;
+    /**
+     * Category ID & Category Name is applicable if customers clicks on products from any category (all categories of shop by category or health areas)
+     */
+    'Category ID'?: string;
+    'Category Name'?: string;
+    /**
+     * Section Name is applicable if customer clicked on the product from the homepage product widgets like Hot sellers, Recommended products
+     */
+    'Section Name'?: string;
   };
   [WebEngageEventName.CATEGORY_PAGE_VIEWED]: {
     source: 'home' | 'deeplink';

@@ -117,6 +117,7 @@ import {
 } from '@aph/mobile-patients/src/components/Medicines/MedicineReOrderOverlay';
 import { ProductList } from '@aph/mobile-patients/src/components/Medicines/ProductList';
 import { ProductCard } from '@aph/mobile-patients/src/components/Medicines/ProductCard';
+import { ProductPageViewedEventProps } from '@aph/mobile-patients/src/components/Medicines/MedicineDetailsScene';
 import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails } from '../../graphql/types/getMedicineOrderOMSDetailsWithAddress';
 import _ from 'lodash';
 
@@ -1311,6 +1312,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           addToCartSource={'Pharmacy Home'}
           sectionName={title}
           movedFrom={ProductPageViewedSource.HOME_PAGE}
+          productPageViewedEventProps={{ 'Section Name': title } as ProductPageViewedEventProps}
         />
       </View>
     );
