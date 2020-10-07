@@ -1440,12 +1440,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 Source: 'Pharmacy Home',
               };
               postWebEngageEvent(WebEngageEventName.PHARMACY_SEARCH_RESULTS, eventAttributes);
-
-              const searchEventAttribute: WebEngageEvents[WebEngageEventName.SEARCH_ENTER_CLICK] = {
-                keyword: searchText,
-                numberofresults: medicineList.length,
-              };
-              postWebEngageEvent(WebEngageEventName.SEARCH_ENTER_CLICK, searchEventAttribute);
               props.navigation.navigate(AppRoutes.SearchMedicineScene, { searchText });
             }
           }}
