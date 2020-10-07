@@ -397,7 +397,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     const cartTotalAfterDiscount = Number(cartTotal.toFixed(2)) - Number(productDiscount.toFixed(2));
     if (cartTotalAfterDiscount <= 0 && cartItems.length) {
       setCoupon!(null);
-      removeFreeProductsFromCart();
+      setCartItems!([]);
     }
   }, [productDiscount, cartTotal]);
 
@@ -405,8 +405,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     const updatedCartItems = cartItems.filter(
       (item) => !couponProducts.find((val) => val.sku == item.id)
     );
-    // console.log('couponProducts: ', JSON.stringify(couponProducts));
-    // console.log('updatedCartItems: ', JSON.stringify(updatedCartItems));
     setCartItems!(updatedCartItems);
     setCouponProducts!([]);
   };
