@@ -18,6 +18,7 @@ import { UPDATE_PATIENT } from 'graphql/profiles';
 import { ProfileSuccess } from 'components/ProfileSuccess';
 import { NewProfile } from 'components/NewProfile';
 import { trackLanding, hdfcUnlockNowTracking } from 'webEngageTracking';
+import { MetaTagsComp } from 'MetaTagsComp';
 import { HDFC_REF_CODE } from 'helpers/constants';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -491,6 +492,17 @@ export const HdfcLanding: React.FC = (props) => {
     );
   }
 
+  const [metaTagProps, setMetaTagProps] = React.useState(null);
+
+  useEffect(() => {
+    setMetaTagProps({
+      title: 'Apollo HealthyLife Program for HDFC Customer – Apollo 24|7',
+      description:
+        'Apollo 24|7 - The Healthy Life offering is the marketing program offered by Apollo 24|7, an online portal and app managed by Apollo Hospitals Enterprise Limited (AHEL) only for HDFC Bank customers.',
+      canonicalLink: typeof window !== 'undefined' && window.location && window.location.href,
+    });
+  }, []);
+
   useEffect(() => {
     trackLanding('HDFC Landing Page loaded');
     (window as any).dataLayer.push({
@@ -512,6 +524,7 @@ export const HdfcLanding: React.FC = (props) => {
 
   return (
     <div className={classes.mainContainer}>
+      {metaTagProps && <MetaTagsComp {...metaTagProps} />}
       <header className={` ${classes.header} ${classes.headerFixed}`}>
         <div className={classes.headerContent}>
           <Link to="/">
