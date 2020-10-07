@@ -167,6 +167,11 @@ export enum WebEngageEventName {
   HDFC_OTP_VERIFY_CLICKED = 'HDFC Verify OTP Clicked',
   HDFC_EXPLORE_BENEFITS_CLICKED = 'HDFC Explore Benefits Clicked',
   HDFC_HOMEPAGE_CAROUSEL_CLICKED = 'HDFC Home Page Carousel Clicked',
+  HDFC_MY_MEMBERSHIP_VIEWED = 'HDFC My Membership Viewed',
+  HDFC_PLAN_DETAILS_VIEWED = 'HDFC Plan Details Viewed',
+  HDFC_EXPLORE_PLAN_CLICKED = 'HDFC Explore Plan Clicked',
+  HDFC_HOW_TO_AVAIL_CLICKED = 'HDFC How To Avail Clicked',
+  HDFC_REDEEM_CLICKED = 'HDFC Redeem Clicked',
 
   // Opentok Events
   DOCTOR_SUBSCRIBER_ERROR = 'Doctor Subscriber Error',
@@ -1384,6 +1389,26 @@ export interface WebEngageEvents {
   [WebEngageEventName.HDFC_OTP_VERIFY_CLICKED]: HdfcCustomerInfo;
   [WebEngageEventName.HDFC_EXPLORE_BENEFITS_CLICKED]: HdfcCustomerPlanInfo;
   [WebEngageEventName.HDFC_HOMEPAGE_CAROUSEL_CLICKED]: HdfcCustomerPlanInfo;
+  [WebEngageEventName.HDFC_MY_MEMBERSHIP_VIEWED]: {
+    'User ID': string;
+    'Plan': string;
+  };
+  [WebEngageEventName.HDFC_PLAN_DETAILS_VIEWED]: {
+    'User ID': string;
+    'Plan': string;
+  };
+  [WebEngageEventName.HDFC_EXPLORE_PLAN_CLICKED]: {
+    'User ID': string;
+    'Plan': string;
+  };
+  [WebEngageEventName.HDFC_HOW_TO_AVAIL_CLICKED]: {
+    'User ID': string;
+    'Plan': string;
+  };
+  [WebEngageEventName.HDFC_REDEEM_CLICKED]: {
+    'User ID': string;
+    'Benefit': string;
+  };
 
   // ********** Opentok Events ********** \\
 

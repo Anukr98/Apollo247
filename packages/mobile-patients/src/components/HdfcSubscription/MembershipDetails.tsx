@@ -13,7 +13,6 @@ import {
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import {
-  HelpIcon,
   DownOrange,
   UpOrange,
   EllipseBulletPoint,
@@ -21,16 +20,18 @@ import {
   HdfcBannerSilver,
   HdfcBannerGold,
   HdfcBannerPlatinum,
-} from '../ui/Icons';
-import { TabsComponent } from '../ui/TabsComponent';
-import { AppRoutes } from '../NavigatorContainer';
+} from '@aph/mobile-patients/src/components/ui/Icons';
+import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { HdfcConnectPopup } from './HdfcConnectPopup';
 import { Hdfc_values } from '@aph/mobile-patients/src/strings/strings.json';
-import { useAppCommonData } from '../AppCommonDataProvider';
-import { g } from '../../helpers/helperFunctions';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AvailNowPopup } from './AvailNowPopup';
-import { Spinner } from '../ui/Spinner';
-import { useUIElements } from '../UIElementsProvider';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { WebEngageEvents, WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
 const { width } = Dimensions.get('window');
 
@@ -157,6 +158,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
 
   const { hdfcUserSubscriptions } = useAppCommonData();
   const { showAphAlert, hideAphAlert } = useUIElements();
+  const { currentPatient } = useAllCurrentPatients();
   const planName = g(hdfcUserSubscriptions, 'name');
   const upgradePlanName = g(hdfcUserSubscriptions, 'canUpgradeTo', 'name');
   const premiumPlanName = g(hdfcUserSubscriptions, 'canUpgradeTo', 'canUpgradeTo', 'name');
@@ -350,6 +352,11 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     availableCount: number,
     id: string,
   ) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_REDEEM_CLICKED] = {
+      'User ID': g(currentPatient, 'id'),
+      'Benefit': type == Hdfc_values.WHATSAPP_OPEN_CHAT ? type : action,
+    };
+    postWebEngageEvent(WebEngageEventName.HDFC_REDEEM_CLICKED, eventAttributes);
     if (type == Hdfc_values.REDIRECT) {
       if (action == Hdfc_values.SPECIALITY_LISTING) {
         props.navigation.navigate(AppRoutes.DoctorSearch);

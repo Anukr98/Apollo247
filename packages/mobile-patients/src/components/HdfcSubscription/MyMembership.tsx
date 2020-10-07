@@ -4,12 +4,13 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { HelpIcon, EllipseBulletPoint, LockIcon, HdfcBankLogo } from '../ui/Icons';
-import { useAppCommonData, PlanBenefits } from '../AppCommonDataProvider';
-import { g } from '../../helpers/helperFunctions';
+import { EllipseBulletPoint, LockIcon, HdfcBankLogo } from '@aph/mobile-patients/src/components/ui/Icons';
+import { useAppCommonData, PlanBenefits } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AvailNowPopup } from './AvailNowPopup';
-import { Spinner } from '../ui/Spinner';
-import string from '@aph/mobile-patients/src/strings/strings.json';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { WebEngageEvents, WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -114,6 +115,7 @@ export interface MyMembershipProps extends NavigationScreenProps {}
 
 export const MyMembership: React.FC<MyMembershipProps> = (props) => {
   const { hdfcUserSubscriptions } = useAppCommonData();
+  const { currentPatient } = useAllCurrentPatients();
   const showSubscriptions = !!(hdfcUserSubscriptions && hdfcUserSubscriptions.name);
   const canUpgradeToPlans = g(hdfcUserSubscriptions, 'canUpgradeTo');
   const canUpgradeMultiplePlans = !!g(canUpgradeToPlans, 'canUpgradeTo', 'name');
@@ -124,6 +126,15 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
   const [showAvailPopup, setShowAvailPopup] = useState<boolean>(false);
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [upgradeTransactionValue, setUpgradeTransactionValue] = useState<number>(0);
+
+  useEffect(() => {
+    const subscription_name = hdfcUserSubscriptions!.name;
+    const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_MY_MEMBERSHIP_VIEWED] = {
+      'User ID': g(currentPatient, 'id'),
+      'Plan': subscription_name.substring(0, subscription_name.indexOf('+')),
+    };
+    postWebEngageEvent(WebEngageEventName.HDFC_MY_MEMBERSHIP_VIEWED, eventAttributes);
+  }, []);
 
   useEffect(() => {
     if (hdfcUserSubscriptions && g(hdfcUserSubscriptions, '_id')) {
@@ -175,6 +186,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
   ) => {
     const buttonText = isCanUpgradeToPlan ? 'HOW TO AVAIL' : isActive ? 'EXPLORE' : 'ACTIVATE NOW';
     const premiumPlanName = g(hdfcUserSubscriptions, 'canUpgradeTo', 'canUpgradeTo', 'name');
+    const subscription_name = hdfcUserSubscriptions!.name;
 
     const transactionValue =
       subscriptionName === upgradePlanName
@@ -187,6 +199,11 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
         <TouchableOpacity
           style={{ padding: 10 }}
           onPress={() => {
+            const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_PLAN_DETAILS_VIEWED] = {
+              'User ID': g(currentPatient, 'id'),
+              'Plan': subscription_name.substring(0, subscription_name.indexOf('+')),
+            };
+            postWebEngageEvent(WebEngageEventName.HDFC_PLAN_DETAILS_VIEWED, eventAttributes);
             props.navigation.navigate(AppRoutes.MembershipDetails, {
               membershipType: subscriptionName,
               isActive: isActive,
@@ -199,10 +216,22 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
           style={{ padding: 10 }}
           onPress={() => {
             if (isCanUpgradeToPlan) {
+              const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_HOW_TO_AVAIL_CLICKED] = {
+                'User ID': g(currentPatient, 'id'),
+                'Plan': subscription_name.substring(0, subscription_name.indexOf('+')),
+              };
+              postWebEngageEvent(WebEngageEventName.HDFC_HOW_TO_AVAIL_CLICKED, eventAttributes);
               setUpgradeTransactionValue(transactionValue);
               setShowAvailPopup(true);
             } else {
               props.navigation.navigate(AppRoutes.ConsultRoom, {});
+              if (isActive) {
+                const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_EXPLORE_PLAN_CLICKED] = {
+                  'User ID': g(currentPatient, 'id'),
+                  'Plan': subscription_name.substring(0, subscription_name.indexOf('+')),
+                };
+                postWebEngageEvent(WebEngageEventName.HDFC_EXPLORE_PLAN_CLICKED, eventAttributes);
+              }
             }
           }}
         >
