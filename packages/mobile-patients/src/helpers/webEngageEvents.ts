@@ -4,6 +4,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 type YesOrNo = 'Yes' | 'No';
+type HdfcPlan = 'SILVER' | 'GOLD' | 'PLATINUM';
 
 export enum WebEngageEventName {
   MOBILE_ENTRY = 'Mobile Entry',
@@ -250,7 +251,7 @@ export interface HdfcCustomerInfo {
 
 export interface HdfcCustomerPlanInfo extends HdfcCustomerInfo {
   'Partner ID': string;
-  HDFCMembershipLevel: 'SILVER' | 'GOLD' | 'PLATINUM';
+  HDFCMembershipLevel: HdfcPlan;
   HDFCMembershipState: 'Active' | 'Inactive';
 }
 
@@ -1391,19 +1392,19 @@ export interface WebEngageEvents {
   [WebEngageEventName.HDFC_HOMEPAGE_CAROUSEL_CLICKED]: HdfcCustomerPlanInfo;
   [WebEngageEventName.HDFC_MY_MEMBERSHIP_VIEWED]: {
     'User ID': string;
-    'Plan': string;
+    'Plan': HdfcPlan;
   };
   [WebEngageEventName.HDFC_PLAN_DETAILS_VIEWED]: {
     'User ID': string;
-    'Plan': string;
+    'Plan': HdfcPlan;
   };
   [WebEngageEventName.HDFC_EXPLORE_PLAN_CLICKED]: {
     'User ID': string;
-    'Plan': string;
+    'Plan': HdfcPlan;
   };
   [WebEngageEventName.HDFC_HOW_TO_AVAIL_CLICKED]: {
     'User ID': string;
-    'Plan': string;
+    'Plan': HdfcPlan;
   };
   [WebEngageEventName.HDFC_REDEEM_CLICKED]: {
     'User ID': string;
