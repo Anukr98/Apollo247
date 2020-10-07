@@ -19,17 +19,11 @@ export const AddressCard: React.FC<AddressCardProps> = (props) => {
 
   return (
     <TouchableOpacity
-      style={{
-        ...styles.addressCard,
-        borderWidth: item.defaultAddress ? 1 : 0,
-        borderColor: '#FC9916',
-      }}
+      style={{ ...styles.addressCard, borderWidth: item.defaultAddress ? 1 : 0 }}
       onPress={() => onPressSelectAddress(item)}
     >
       <View style={styles.header}>
-        <Text style={{ ...theme.fonts.IBMPlexSansMedium(12), lineHeight: 18, color: '#01475B' }}>
-          {item.addressType}
-        </Text>
+        <Text style={styles.addressType}>{item.addressType}</Text>
         <TouchableOpacity onPress={() => onPressEditAddress(item)}>
           <EditAddressIcon />
         </TouchableOpacity>
@@ -47,6 +41,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     marginTop: 2,
     marginBottom: 20,
+    borderColor: '#FC9916',
   },
   header: {
     flexDirection: 'row',
@@ -61,5 +56,10 @@ const styles = StyleSheet.create({
     opacity: 0.8,
     marginTop: 3,
     marginBottom: 20,
+  },
+  addressType: {
+    ...theme.fonts.IBMPlexSansMedium(12),
+    lineHeight: 18,
+    color: '#01475B',
   },
 });

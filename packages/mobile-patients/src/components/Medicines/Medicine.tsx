@@ -131,6 +131,10 @@ import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobil
 import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
 import { PincodeInput } from '@aph/mobile-patients/src/components/Medicines/Components/PicodeInput';
 import { getFormattedLocation } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  makeAdressAsDefaultVariables,
+  makeAdressAsDefault,
+} from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
 
 const styles = StyleSheet.create({
   sliderDotStyle: {
@@ -486,7 +490,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     try {
       globalLoading!(true);
       hideAphAlert!();
-      const response = await client.query({
+      const response = await client.query<makeAdressAsDefault, makeAdressAsDefaultVariables>({
         query: SET_DEFAULT_ADDRESS,
         variables: { patientAddressId: address?.id },
         fetchPolicy: 'no-cache',
@@ -496,10 +500,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       console.log(patientAddress);
       let updatedAddresses = addresses.map((item) => ({
         ...item,
-        defaultAddress: patientAddress.id == item.id ? patientAddress.defaultAddress : false,
+        defaultAddress: patientAddress?.id == item.id ? patientAddress?.defaultAddress : false,
       }));
       setAddresses!(updatedAddresses);
-      patientAddress.defaultAddress && setDeliveryAddressId!(patientAddress.id);
+      patientAddress?.defaultAddress && setDeliveryAddressId!(patientAddress?.id);
       updateServiceability(address?.zipcode!);
       globalLoading!(false);
     } catch (error) {
@@ -707,14 +711,31 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     getPlaceInfoByPincode(pincode)
       .then(({ data }) => {
         try {
-          const addrComponents = data.results[0].address_components || [];
-          const latLang = data.results[0].geometry.location || {};
-          const response = getFormattedLocation(addrComponents, latLang, pincode);
-          setPharmacyLocation!(response);
-          setDeliveryAddressId!('');
-          updateServiceability(pincode, 'pincode');
-          !locationDetails && setLocationDetails!(response);
-          globalLoading!(false);
+          console.log('data >>', data);
+          if (data.results.length) {
+            const addrComponents = data.results[0].address_components || [];
+            const latLang = data.results[0].geometry.location || {};
+            const response = getFormattedLocation(addrComponents, latLang, pincode);
+            setPharmacyLocation!(response);
+            setDeliveryAddressId!('');
+            updateServiceability(pincode, 'pincode');
+            !locationDetails && setLocationDetails!(response);
+            globalLoading!(false);
+          } else {
+            globalLoading!(false);
+            showAphAlert!({
+              unDismissable: isunDismissable(),
+              title: string.common.uhOh,
+              description: 'Services unavailable. Change delivery location.',
+              CTAs: [
+                {
+                  text: 'CHANGE PINCODE',
+                  type: 'orange-link',
+                  onPress: () => showAccessAccessLocationPopup(true),
+                },
+              ],
+            });
+          }
         } catch (e) {
           globalLoading!(false);
           handleUpdatePlaceInfoByPincodeError(e);
