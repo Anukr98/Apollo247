@@ -89,6 +89,7 @@ export const doctorCallNotificationTypeDefs = gql`
       isDev: Boolean
       patientId: String
       numberOfParticipants: Int
+      endVoipCall: Boolean
     ): EndCallResult!
     sendApptNotification: ApptNotificationResult!
     getCallDetails(appointmentCallId: String): CallDetailsResult!
@@ -119,7 +120,7 @@ type CallDetailsResult = {
 
 const endCallNotification: Resolver<
   null,
-  { appointmentCallId: string; isDev: boolean; patientId: string; numberOfParticipants: number },
+  { appointmentCallId: string; isDev: boolean; patientId: string; numberOfParticipants: number, endVoipCall: boolean },
   ConsultServiceContext,
   EndCallResult
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
@@ -167,7 +168,8 @@ const endCallNotification: Resolver<
   if (
     voipPushtoken.length &&
     voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'] &&
-    (!args.numberOfParticipants || (args.numberOfParticipants && args.numberOfParticipants < 2))
+    (!args.numberOfParticipants || (args.numberOfParticipants && args.numberOfParticipants < 2) &&
+      args.endVoipCall)
   ) {
     hitCallKitCurl(
       voipPushtoken[voipPushtoken.length - 1]['deviceVoipPushToken'],
@@ -388,7 +390,7 @@ const sendCallStartNotification: Resolver<null, {}, ConsultServiceContext, EndCa
   const apptDetails = await apptRepo.getNotStartedAppointments();
   const devLink = process.env.DOCTOR_DEEP_LINK ? process.env.DOCTOR_DEEP_LINK : '';
   content += '\nappts length: ' + apptDetails.length.toString();
-  fs.appendFile(assetsDir + '/' + fileName, content, (err) => {});
+  fs.appendFile(assetsDir + '/' + fileName, content, (err) => { });
   if (apptDetails.length > 0) {
     const docRepo = doctorsDb.getCustomRepository(DoctorRepository);
     apptDetails.forEach(async (appt) => {
@@ -398,7 +400,7 @@ const sendCallStartNotification: Resolver<null, {}, ConsultServiceContext, EndCa
         //console.log(doctorDetails.id, doctorDetails.doctorSecretary, 'doc details');
         content +=
           doctorDetails.id + '-' + doctorDetails.doctorSecretary.secretary.mobileNumber + '\n';
-        fs.appendFile(assetsDir + '/' + fileName, content, (err) => {});
+        fs.appendFile(assetsDir + '/' + fileName, content, (err) => { });
         const templateData: string[] = [appt.appointmentType, appt.patientName, devLink];
         sendDoctorNotificationWhatsapp(
           ApiConstants.WHATSAPP_SD_CONSULT_DELAY,
