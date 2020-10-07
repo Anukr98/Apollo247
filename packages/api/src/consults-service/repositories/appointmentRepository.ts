@@ -1405,14 +1405,15 @@ export class AppointmentRepository extends Repository<Appointment> {
     );
   }
 
-  getAppointmentCountByPatientId(patientId: string[]) {
-    return this.find({
-      select: ['id', 'patientId'],
-      where: {
-        patientId: In(patientId),
-        status: STATUS.COMPLETED,
-      },
-    });
+  async getAppointmentCountByPatientId(patientId: string[]) {
+    const results = await this.createQueryBuilder('appointment')
+      .select('appointment.patientId as patientId')
+      .addSelect('COUNT(*) AS count')
+      .where('appointment.patientId IN (:...patientList)', { patientList: patientId })
+      .andWhere('appointment.status = :completed', { completed: STATUS.COMPLETED })
+      .groupBy('appointment.patientId')
+      .getRawMany();
+    return results;
   }
 
   getAppointmentsByPatientId(patientId: string, startDate: Date, endDate: Date) {

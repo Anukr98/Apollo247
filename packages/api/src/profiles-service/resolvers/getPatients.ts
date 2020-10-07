@@ -64,7 +64,7 @@ export const getPatientTypeDefs = gql`
   }
 
   type appointmentCountResult {
-    patientId: String
+    patientid: String
     count: Int
   }
 
@@ -246,16 +246,16 @@ const addNewProfile: Resolver<
 };
 
 type appointmentCountResult = {
-  patientId: string;
+  patientid: string;
   count: number;
 };
 
-const getProfileConsultCount: Resolver<null, {}, ProfilesServiceContext, any> = async (
-  parent,
-  args,
-  { profilesDb, consultsDb, mobileNumber }
-) => {
-  // let mobileNumber = '+919000377973';
+const getProfileConsultCount: Resolver<
+  null,
+  {},
+  ProfilesServiceContext,
+  appointmentCountResult[]
+> = async (parent, args, { profilesDb, consultsDb, mobileNumber }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   const patientDetails = await patientRepo.getPatientIdsByMobileNumber(mobileNumber);
   if (patientDetails == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
@@ -264,27 +264,9 @@ const getProfileConsultCount: Resolver<null, {}, ProfilesServiceContext, any> = 
   const patientIds = patientDetails.map((data) => {
     return data.id;
   });
-  const appointmentDetails = await appointmentRepo.getAppointmentCountByPatientId(patientIds);
-  const result: appointmentCountResult[] = [];
-  const uniqueIds = _.uniqWith(appointmentDetails, function(arrVal, othVal) {
-    return arrVal.patientId === othVal.patientId;
-  });
-  uniqueIds.forEach((appt) => {
-    const appointmentCounts = appointmentDetails
-      .map((data) => {
-        if (data.patientId === appt.patientId) {
-          return data;
-        }
-      })
-      .filter((item) => item).length;
-    const resultCount: any = {
-      patientId: appt.patientId,
-      count: appointmentCounts,
-    };
-    result.push(resultCount);
-  });
 
-  return result;
+  const appointmentDetails = await appointmentRepo.getAppointmentCountByPatientId(patientIds);
+  return appointmentDetails;
 };
 
 const editProfile: Resolver<
