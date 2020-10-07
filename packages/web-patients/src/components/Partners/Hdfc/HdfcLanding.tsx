@@ -812,7 +812,7 @@ export const HdfcLanding: React.FC = (props) => {
           })
         : ''}
 
-      {hasExistingProfile && currentPatient.partnerId === HDFC_REF_CODE
+      {hasExistingProfile && currentPatient && currentPatient.partnerId === HDFC_REF_CODE
         ? (window.location.href = '/')
         : ''}
 
