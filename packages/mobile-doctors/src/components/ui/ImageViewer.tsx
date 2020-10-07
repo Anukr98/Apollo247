@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginHorizontal: 20,
   },
-  mainContainer: { backgroundColor: 'black', marginTop: 6 },
+  mainContainer: { backgroundColor: 'black', marginTop: 5 },
   headerContainer: {
     backgroundColor: 'black',
     flexDirection: 'row',
@@ -275,48 +275,77 @@ export const ImageViewer: React.FC<ImageViewerProps> = (props) => {
     return (
       <View style={styles.itemContainer}>
         <TouchableOpacity onPress={() => handleDoubleTap()} activeOpacity={1}>
-          <Animated.View
-            style={[
-              { width: width, height: '100%' },
-              {
-                transform: [{ translateX: translateX }, { translateY: translateY }],
-              },
-            ]}
+          <PanGestureHandler
+            ref={
+              dragRef as
+                | string
+                | ((instance: PanGestureHandler | null) => void)
+                | React.RefObject<PanGestureHandler>
+                | null
+                | undefined
+            }
+            simultaneousHandlers={[pinchRef]}
+            onGestureEvent={onGestureEvent}
+            minPointers={1}
+            enabled={panEnabled}
+            maxPointers={2}
+            onHandlerStateChange={onHandlerStateChange}
           >
             <Animated.View
               style={[
-                styles.container,
+                { width: width, height: '100%' },
                 {
-                  transform: [{ scale: scale }, { rotate: currentIndex === index ? rotateStr : 0 }],
+                  transform: [{ translateX: translateX }, { translateY: translateY }],
                 },
               ]}
-              collapsable={false}
             >
-              {(panEnabled && currentIndex === index) || !panEnabled ? (
-                get_url_extension(item.url) === 'pdf' ? (
-                  <RenderPdf uri={item.url} isPopup={false} navigation={props.navigation} />
-                ) : (
-                  <ImageZoom
-                    cropWidth={width}
-                    cropHeight={height}
-                    imageWidth={width - 12}
-                    imageHeight={height}
-                  >
-                    <FastImage
-                      source={{ uri: item.url }}
-                      style={[
-                        styles.imageStyle,
-                        {
-                          backgroundColor: item.fileType === 'image' ? 'black' : 'white',
-                        },
-                      ]}
-                      resizeMode={FastImage.resizeMode.contain}
-                    />
-                  </ImageZoom>
-                )
-              ) : null}
+              <PinchGestureHandler
+                ref={
+                  pinchRef as
+                    | string
+                    | ((instance: PinchGestureHandler | null) => void)
+                    | React.RefObject<PinchGestureHandler>
+                    | null
+                    | undefined
+                }
+                simultaneousHandlers={dragRef}
+                onGestureEvent={onPinchGestureEvent}
+                onHandlerStateChange={onPinchHandlerStateChange}
+              >
+                <Animated.View
+                  style={[
+                    styles.container,
+                    {
+                      transform: [
+                        { scale: scale },
+                        { rotate: currentIndex === index ? rotateStr : 0 },
+                      ],
+                    },
+                  ]}
+                  collapsable={false}
+                >
+                  {(panEnabled && currentIndex === index) || !panEnabled ? (
+                    get_url_extension(item.url) === 'pdf' ? (
+                      <RenderPdf uri={item.url} isPopup={false} navigation={props.navigation} />
+                    ) : (
+                      <ImageZoom
+                        cropWidth={width}
+                        cropHeight={height}
+                        imageWidth={width - 12}
+                        imageHeight={height}
+                      >
+                        <FastImage
+                          source={{ uri: item.url }}
+                          style={styles.imageStyle}
+                          resizeMode={FastImage.resizeMode.contain}
+                        />
+                      </ImageZoom>
+                    )
+                  ) : null}
+                </Animated.View>
+              </PinchGestureHandler>
             </Animated.View>
-          </Animated.View>
+          </PanGestureHandler>
         </TouchableOpacity>
       </View>
     );
