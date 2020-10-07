@@ -36,7 +36,6 @@ import {
   medicinePageOpenTracking,
 } from 'webEngageTracking';
 import { MedicineProduct } from './../../helpers/MedicineApiCalls';
-import Scrollbars from 'react-custom-scrollbars';
 
 let tempData: any[] = [];
 let fetching = true;
@@ -804,7 +803,6 @@ const SearchByMedicine: React.FC = (props) => {
               categoryId={categoryId}
             />
             <div className={classes.searchSection}>
-              {/* <Scrollbars className={classes.scrollBar} autoHide={true}> */}
               <div className={classes.customScroll}>
                 <MedicinesCartContext.Consumer>
                   {() => (
@@ -815,7 +813,6 @@ const SearchByMedicine: React.FC = (props) => {
                   )}
                 </MedicinesCartContext.Consumer>
               </div>
-              {/* </Scrollbars> */}
             </div>
           </div>
         </div>
