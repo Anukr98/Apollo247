@@ -45,6 +45,7 @@ import {
 import { Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps, NavigationActions, StackActions } from 'react-navigation';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { ProductPageViewedEventProps } from '@aph/mobile-patients/src/components/Medicines/MedicineDetailsScene';
 import {
   isValidSearch,
   postWebEngageEvent,
@@ -385,12 +386,6 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           Source: 'Pharmacy Search',
         };
         postWebEngageEvent(WebEngageEventName.PHARMACY_SEARCH_RESULTS, eventAttributes);
-
-        const searchEventAttribute: WebEngageEvents[WebEngageEventName.SEARCH_ENTER_CLICK] = {
-          keyword: searchText,
-          numberofresults: medicineList.length,
-        };
-        postWebEngageEvent(WebEngageEventName.SEARCH_ENTER_CLICK, searchEventAttribute);
         props.navigation.navigate(AppRoutes.SearchMedicineScene, { searchText });
         resetSearchState();
       }
@@ -558,6 +553,10 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: medicine.sku,
             movedFrom: ProductPageViewedSource.CATEGORY_OR_LISTING,
+            productPageViewedEventProps: {
+              'Category ID': category_id,
+              'Category Name': pageTitle,
+            } as ProductPageViewedEventProps,
           });
         }}
         medicineName={medicine.name}

@@ -26,7 +26,7 @@
     "Rs": "₹",
     "KavachText": "Explore the Apollo Kavach Program",
     "joinConsultRoomDescription": "Please click here to\n Join the Call with",
-    "waitForDoctirToJoinCall": "doctor_name is not in the room yet.\nPlease wait for few seconds while doctor joins the call....",
+    "waitForDoctirToJoinCall": "Please wait while doctor_name is going through your medical records.\nThis might take a while. Advice you to stay in the consult room!",
     "exotelMessage": " is trying to call you from the number ",
     "requestMessage": ". Request you to answer the call.",
     "jdAssignedMessage": "A doctor from 0’s team will join you shortly to collect your medical details. These details are essential for 0 to help you and will take around 3-5 minutes.",
@@ -269,6 +269,7 @@
   "diagnostics": {
     "nonServiceableMsg": "Diagnostic services are not available in {{city_name}} for now.",
     "nonServiceablePinCodeMsg": "Diagnostic services are not available for this pincode.",
+    "nonServiceableConfigPinCodeMsg": "Diagnostic services are not available in Pincode - {{pincode}} for now.",
     "disabledDiagnosticsMsg": "Sorry, we can not process {{testNames}} now. This will be removed from your cart.\n",
     "disabledDiagnosticsFailureMsg": "Sorry, we are unable to verify items in your cart right now. Please try again later.",
     "removeThisTestCTA": "Remove this test from cart",

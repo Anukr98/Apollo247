@@ -5,7 +5,7 @@ import {
   Typography,
   ExpansionPanel,
   ExpansionPanelSummary,
-  ExpansionPanelDetails
+  ExpansionPanelDetails,
 } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import {
@@ -214,6 +214,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
     setDiagnosticTestResult,
     clinicalObservationNotes,
     setClinicalObservationNotes,
+    casesheetVersion,
   } = useContext(CaseSheetContext);
   const params = useParams<Params>();
 
@@ -266,7 +267,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
     },
     {
       key: 'note',
-      value: "Notes",
+      value: 'Notes',
       state: noteState,
       component: <DoctorsNotes />,
     },
@@ -305,6 +306,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
           value={followUpAfterInDays[0]}
           onChange={setFollowUpAfterInDays}
           disabled={!caseSheetEdit}
+          casesheetVersion={casesheetVersion}
           info={`The follow up chat days count will be changed for this individual patient. Your default follow up chat day count is set at ${chatDays}.`}
         />
       ),
@@ -362,7 +364,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
           medicationHistory: medicationHistory,
           occupationHistory: occupationHistory,
           diagnosticTestResult: diagnosticTestResult,
-          clinicalObservationNotes: clinicalObservationNotes
+          clinicalObservationNotes: clinicalObservationNotes,
         };
         updateLocalStorageItem(params.id, caseSheetObject);
         setFirstTimeLanding(false);
@@ -448,17 +450,27 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
         </section>
         <section className={classes.column}>
           {items.map((item) => (
-            <ExpansionPanel
-              key={item.key}
-              expanded={item.state}
-              onChange={handlePanelExpansion(item.key)}
-              className={`${classes.expandIcon}`}
+            <div
+              style={
+                casesheetVersion > 1 && item.key === 'followup'
+                  ? { display: 'none' }
+                  : { display: 'block' }
+              }
             >
-              <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography variant="h3">{item.value}</Typography>
-              </ExpansionPanelSummary>
-              <ExpansionPanelDetails className={classes.displayBlock}>{item.component}</ExpansionPanelDetails>
-            </ExpansionPanel>
+              <ExpansionPanel
+                key={item.key}
+                expanded={item.state}
+                onChange={handlePanelExpansion(item.key)}
+                className={`${classes.expandIcon}`}
+              >
+                <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+                  <Typography variant="h3">{item.value}</Typography>
+                </ExpansionPanelSummary>
+                <ExpansionPanelDetails className={classes.displayBlock}>
+                  {item.component}
+                </ExpansionPanelDetails>
+              </ExpansionPanel>
+            </div>
           ))}
         </section>
       </div>

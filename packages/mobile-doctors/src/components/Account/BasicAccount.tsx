@@ -16,7 +16,7 @@ import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 import { useAuth } from '@aph/mobile-doctors/src/hooks/authHooks';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   SafeAreaView,
   Text,
@@ -52,6 +52,7 @@ import {
   WebEngageEvents,
 } from '@aph/mobile-doctors/src/helpers/WebEngageHelper';
 import FastImage from 'react-native-fast-image';
+import codePush from 'react-native-code-push';
 
 const { width } = Dimensions.get('window');
 const styles = BasicAccountStyles;
@@ -78,6 +79,22 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
   const client = useApolloClient();
   const { setLoading } = useUIElements();
   const goToItem = props.navigation.getParam('goToItem');
+  const [codePushVersion, setCodePushVersion] = useState<string>('');
+
+  useEffect(() => {
+    updateCodePushVersioninUi();
+  }, []);
+
+  const updateCodePushVersioninUi = async () => {
+    try {
+      const version = (await codePush.getUpdateMetadata())!.label;
+      console.log('version', version);
+      setCodePushVersion(version.replace('v', 'H'));
+    } catch (error) {
+      console.log('error', error);
+      CommonBugFender(`${AppRoutes.MyAccount}_codePush.getUpdateMetadata`, error);
+    }
+  };
 
   useEffect(() => {
     if (!doctorDetails) {
@@ -313,7 +330,7 @@ export const BasicAccount: React.FC<MyAccountProps> = (props) => {
                   Platform.OS === 'ios'
                     ? AppConfig.Configuration.iOS_Version
                     : AppConfig.Configuration.Android_Version
-                }`}
+                }${codePushVersion ? `.${codePushVersion}` : ''}`}
               </Text>
             </View>
           </View>

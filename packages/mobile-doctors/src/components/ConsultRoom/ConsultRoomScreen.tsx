@@ -2322,6 +2322,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 item.fileType === 'image' && ((!isChatRoom && item.id === patientId) || isChatRoom)
             )}
             onClose={() => setOverlayDisplay(null)}
+            navigation={props.navigation}
           />
         );
       } else if (type === 'pdf') {

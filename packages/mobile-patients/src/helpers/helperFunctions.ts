@@ -42,7 +42,12 @@ import {
   searchDiagnostics,
   searchDiagnosticsVariables,
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
-import { SEARCH_DIAGNOSTICS } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  searchDiagnosticsByCityID,
+  searchDiagnosticsByCityIDVariables,
+  searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics,
+} from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
+import { SEARCH_DIAGNOSTICS_BY_CITY_ID } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -847,12 +852,11 @@ export const addTestsToCart = async (
   city: string
 ) => {
   const searchQuery = (name: string, city: string) =>
-    apolloClient.query<searchDiagnostics, searchDiagnosticsVariables>({
-      query: SEARCH_DIAGNOSTICS,
+    apolloClient.query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
+      query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
       variables: {
         searchText: name,
-        city: city,
-        patientId: '',
+        cityID: parseInt(city || '9',10),
       },
       fetchPolicy: 'no-cache',
     });
@@ -865,7 +869,7 @@ export const addTestsToCart = async (
 
     const searchQueries = Promise.all(items.map((item) => searchQuery(item!, city)));
     const searchQueriesData = (await searchQueries)
-      .map((item) => g(item, 'data', 'searchDiagnostics', 'diagnostics', '0' as any)!)
+      .map((item) => g(item, 'data', 'searchDiagnosticsByCityID', 'diagnostics', '0' as any)!)
       .filter((item, index) => g(item, 'itemName')! == items[index])
       .filter((item) => !!item);
     const detailQueries = Promise.all(
@@ -954,8 +958,7 @@ export const getRelations = (self?: string) => {
 
 export const formatTestSlot = (slotTime: string) => moment(slotTime, 'HH:mm').format('hh:mm A');
 
-export const formatTestSlotWithBuffer = (slotTime: string ) => {
- 
+export const formatTestSlotWithBuffer = (slotTime: string) => {
   const startTime = slotTime.split('-')[0];
   const endTime = moment(startTime, 'HH:mm')
     .add(30, 'minutes')
@@ -1060,6 +1063,13 @@ export const postwebEngageAddToCartEvent = (
     'Section Name': sectionName || '',
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART, eventAttributes);
+};
+
+export const postWebEngagePHR = (source: string, webEngageEventName: WebEngageEventName) => {
+  const eventAttributes = {
+    Source: source,
+  };
+  postWebEngageEvent(webEngageEventName, eventAttributes);
 };
 
 export const postWEGNeedHelpEvent = (
