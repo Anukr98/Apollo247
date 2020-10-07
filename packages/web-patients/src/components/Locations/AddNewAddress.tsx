@@ -14,7 +14,7 @@ import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { useMutation } from 'react-apollo-hooks';
 import { Alerts } from 'components/Alerts/Alerts';
 import FormHelperText from '@material-ui/core/FormHelperText';
-import { gtmTracking } from '../../gtmTracking';
+import { gtmTracking, dataLayerTracking } from '../../gtmTracking';
 import { pharmaStateCodeMapping } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -485,6 +485,15 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                       label: 'Address Selected',
                     });
                     /**Gtm code End  */
+
+                    /**Gtm code start start */
+                    dataLayerTracking({
+                      event: 'Address Selected',
+                      PINCode: pincode,
+                      City: city,
+                    });
+                    /**Gtm code start end */
+
                     props.setIsAddAddressDialogOpen(false);
                     props.forceRefresh && props.forceRefresh(true);
                     props.setDeliveryTime && props.setDeliveryTime('');
@@ -532,6 +541,15 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
                                 label: 'Address Selected',
                               });
                               /**Gtm code End  */
+
+                              /**Gtm code start start */
+                              dataLayerTracking({
+                                event: 'Address Selected',
+                                PINCode: pincode,
+                                City: city,
+                              });
+                              /**Gtm code start end */
+
                               props.setIsAddAddressDialogOpen(false);
                               props.forceRefresh && props.forceRefresh(true);
                               props.setDeliveryTime && props.setDeliveryTime('');

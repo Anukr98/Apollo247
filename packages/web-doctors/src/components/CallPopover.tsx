@@ -2970,7 +2970,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       const fromMobileNumber = currentPatient.mobileNumber;
                       const toMobileNumber = patientDetails.mobileNumber;
                       const appointmentId = params.id;
-                      console.log(fromMobileNumber, toMobileNumber, appointmentId);
 
                       const exotelInput = {
                         from: fromMobileNumber,
@@ -3644,11 +3643,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   <label>Height</label>
                   <div className={classes.content}>
                     <AphTextField
-                      onFocus={(e) => moveCursorToEnd(e.currentTarget)}
+                      onFocus={(e: any) => moveCursorToEnd(e.currentTarget)}
                       fullWidth
                       multiline
                       defaultValue={getDefaultValue('height')}
-                      onBlur={(e) => {
+                      onBlur={(e: any) => {
                         const storageItem = getLocalStorageItem(params.id);
                         if (storageItem) {
                           storageItem.height = e.target.value;
@@ -3663,12 +3662,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   <label>Weight</label>
                   <div className={classes.content}>
                     <AphTextField
-                      onFocus={(e) => moveCursorToEnd(e.currentTarget)}
+                      onFocus={(e: any) => moveCursorToEnd(e.currentTarget)}
                       fullWidth
                       multiline
                       helperText={vitalError.weight}
                       defaultValue={getDefaultValue('weight')}
-                      onBlur={(e) => {
+                      onBlur={(e: any) => {
                         const storageItem = getLocalStorageItem(params.id);
                         if (storageItem) {
                           storageItem.weight = e.target.value;
@@ -3683,11 +3682,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   <label>BP</label>
                   <div className={classes.content}>
                     <AphTextField
-                      onFocus={(e) => moveCursorToEnd(e.currentTarget)}
+                      onFocus={(e: any) => moveCursorToEnd(e.currentTarget)}
                       fullWidth
                       multiline
                       defaultValue={getDefaultValue('bp')}
-                      onBlur={(e) => {
+                      onBlur={(e: any) => {
                         const storageItem = getLocalStorageItem(params.id);
                         if (storageItem) {
                           storageItem.bp = e.target.value;
@@ -3702,11 +3701,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   <label>Temperature</label>
                   <div className={classes.content}>
                     <AphTextField
-                      onFocus={(e) => moveCursorToEnd(e.currentTarget)}
+                      onFocus={(e: any) => moveCursorToEnd(e.currentTarget)}
                       fullWidth
                       multiline
                       defaultValue={getDefaultValue('temperature')}
-                      onBlur={(e) => {
+                      onBlur={(e: any) => {
                         const storageItem = getLocalStorageItem(params.id);
                         if (storageItem) {
                           storageItem.temperature = e.target.value;

@@ -640,9 +640,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message === jdThankyou
     ) {
       return rowData.automatedText;
-    }else if(rowData.id === doctorId && rowData.message === exotelCall){	
-      return 'A Telephonic Voice call is initiated from '+ rowData.exotelNumber+'. Request you to answer the call.';	
-    }  else {
+    } else if (rowData.id === doctorId && rowData.message === exotelCall) {
+      return (
+        'A Telephonic Voice call is initiated from ' +
+        rowData.exotelNumber +
+        '. Request you to answer the call.'
+      );
+    } else {
       return rowData.message;
     }
   };
@@ -732,7 +736,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                         src={rowData.url}
                         alt={rowData.url}
                         onError={(e: any) => {
-                          handleImageError(e, rowData.url);
+                          console.error({ event: e, url: rowData.url });
                         }}
                       />
                     )}
@@ -844,7 +848,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                         src={rowData.url}
                         alt={rowData.url}
                         onError={(e: any) => {
-                          handleImageError(e, rowData.url);
+                          console.error({ event: e, url: rowData.url });
                         }}
                       />
                     )}
@@ -955,7 +959,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                         src={rowData.url}
                         alt={rowData.url}
                         onError={(e: any) => {
-                          handleImageError(e, rowData.url);
+                          console.error({ event: e, url: rowData.url });
                         }}
                       />
                     )}
@@ -1081,12 +1085,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   inputProps={{ type: 'text' }}
                   placeholder="Type here..."
                   value={messageText}
-                  onKeyPress={(e) => {
+                  onKeyPress={(e: any) => {
                     if ((e.which == 13 || e.keyCode == 13) && messageText.trim() !== '') {
                       send();
                     }
                   }}
-                  onChange={(event) => {
+                  onChange={(event: any) => {
                     setMessageText(event.currentTarget.value);
                   }}
                 />

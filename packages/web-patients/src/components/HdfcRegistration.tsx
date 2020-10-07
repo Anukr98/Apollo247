@@ -19,6 +19,7 @@ import {
   CreateUserSubscriptionVariables,
 } from 'graphql/types/CreateUserSubscription';
 import { HDFC_CUSTOMER, CreateUserSubscriptionInput } from 'graphql/types/globalTypes';
+import { Link } from '@material-ui/core';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -314,6 +315,13 @@ const useStyles = makeStyles((theme: Theme) => {
       '& button': {
         boxShadow: 'none',
         color: '#FC9916',
+      },
+      '& a': {
+        boxShadow: 'none',
+        color: '#FC9916',
+        fontWeight: 600,
+        textTransform: 'uppercase',
+        fontSize: 13,
       },
     },
     recheckOtp: {
@@ -702,7 +710,11 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
               </Typography>
             </div>
             <div className={classes.btnContainer}>
-              {!showOtpFail && <AphButton href={HDFC_ENROLL_LINK}>Open Savings Account</AphButton>}
+              {!showOtpFail && (
+                <Link target="_blank" href={HDFC_ENROLL_LINK}>
+                  Open Savings Account
+                </Link>
+              )}
               <AphButton
                 onClick={() => {
                   /* GA Tracking */

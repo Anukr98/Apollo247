@@ -105,8 +105,8 @@ const PatientsOverview: React.FC = () => {
           setUserSubscriptions(userSubscriptionsLocalStorage);
           setShowSubscription(true);
           currentPatient.partnerId === HDFC_REF_CODE &&
-          userSubscriptions &&
-          userSubscriptions.length == 0
+          userSubscriptionsLocalStorage &&
+          userSubscriptionsLocalStorage.length == 0
             ? scrollToRef(registrationRef)
             : '';
         });
