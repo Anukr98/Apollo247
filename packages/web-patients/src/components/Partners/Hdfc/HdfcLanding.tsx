@@ -492,16 +492,12 @@ export const HdfcLanding: React.FC = (props) => {
     );
   }
 
-  const [metaTagProps, setMetaTagProps] = React.useState(null);
-
-  useEffect(() => {
-    setMetaTagProps({
-      title: 'Apollo HealthyLife Program for HDFC Customer – Apollo 24|7',
-      description:
-        'Apollo 24|7 - The Healthy Life offering is the marketing program offered by Apollo 24|7, an online portal and app managed by Apollo Hospitals Enterprise Limited (AHEL) only for HDFC Bank customers.',
-      canonicalLink: typeof window !== 'undefined' && window.location && window.location.href,
-    });
-  }, []);
+  const meta = {
+    title: 'Apollo HealthyLife Program for HDFC Customer – Apollo 24|7',
+    description:
+      'Apollo 24|7 - The Healthy Life offering is the marketing program offered by Apollo 24|7, an online portal and app managed by Apollo Hospitals Enterprise Limited (AHEL) only for HDFC Bank customers.',
+    canonicalLink: typeof window !== 'undefined' && window.location && window.location.href,
+  };
 
   useEffect(() => {
     trackLanding('HDFC Landing Page loaded');
@@ -524,7 +520,7 @@ export const HdfcLanding: React.FC = (props) => {
 
   return (
     <div className={classes.mainContainer}>
-      {metaTagProps && <MetaTagsComp {...metaTagProps} />}
+      <MetaTagsComp {...meta} />
       <header className={` ${classes.header} ${classes.headerFixed}`}>
         <div className={classes.headerContent}>
           <Link to="/">
