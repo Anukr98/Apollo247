@@ -1062,10 +1062,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       // adding listener
       pubnubClient.addListener({
         status: (status) => {
-          console.log('status...............', status);
+          // console.log('status...............', status);
         },
         message: (message) => {
-          console.log(message);
+          // console.log(message);
           if (
             message.message &&
             (message.message.message === autoMessageStrings.videoCallMsg ||
@@ -2179,7 +2179,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     messageDetails.message === autoMessageStrings.stopConsultJr ||
                     messageDetails.message === autoMessageStrings.languageQue ||
                     messageDetails.message === autoMessageStrings.consultPatientStartedMsg ||
-                    messageDetails.message === autoMessageStrings.patientJoinedMeetingRoom
+                    messageDetails.message === autoMessageStrings.patientJoinedMeetingRoom ||
+                    messageDetails.message === autoMessageStrings.leaveChatRoom
                   ) {
                     props.setSrDoctorJoined(
                       messageDetails.message === autoMessageStrings.startConsultMsg
