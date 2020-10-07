@@ -30,7 +30,7 @@ import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useAuth, useAllCurrentPatients } from 'hooks/authHooks';
 import { ManageProfile } from 'components/ManageProfile';
 import { BottomLinks } from 'components/BottomLinks';
-import { gtmTracking } from 'gtmTracking';
+import { gtmTracking, dataLayerTracking } from 'gtmTracking';
 import { getOpeningHrs, readableParam } from '../helpers/commonHelpers';
 import { SchemaMarkup } from 'SchemaMarkup';
 import { MetaTagsComp } from 'MetaTagsComp';
@@ -434,6 +434,16 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               window.location.origin &&
               `${window.location.origin}/doctors/${readableParam(displayName)}-${id}`,
           });
+          /**Gtm code start start */
+          dataLayerTracking({
+            event: 'pageviewEvent',
+            pagePath: window.location.href,
+            pageName: 'Doctor Details Page',
+            pageLOB: 'Consultation',
+            pageType: 'Details Page',
+            productlist: JSON.stringify(data.getDoctorDetailsById),
+          });
+          /**Gtm code start end */
         }
         setError(false);
       })

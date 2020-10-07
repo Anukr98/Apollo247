@@ -73,7 +73,7 @@ import {
 import { ChennaiCheckout, submitFormType } from 'components/Cart/ChennaiCheckout';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { useParams } from 'hooks/routerHooks';
-import { gtmTracking, _obTracking } from '../../gtmTracking';
+import { gtmTracking, _obTracking, dataLayerTracking } from '../../gtmTracking';
 import { validatePharmaCoupon_validatePharmaCoupon } from 'graphql/types/validatePharmaCoupon';
 import { Route } from 'react-router-dom';
 import { getItemSpecialPrice } from '../PayMedicine';
@@ -778,6 +778,19 @@ export const MedicineCart: React.FC = (props) => {
       });
     }
   }, [showOrderPopup]);
+
+  useEffect(() => {
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: 'Pharmacy Cart Page',
+      pageLOB: 'Pharmacy',
+      pageType: 'Cart Page',
+      cartproductlist: JSON.stringify(cartItems),
+    });
+    /**Gtm code start end */
+  }, []);
 
   const checkForPriceUpdate = (tatRes: any) => {
     setShopId(tatRes.storeCode);
