@@ -103,6 +103,8 @@ export const saveMedicineOrderOMSTypeDefs = gql`
     READY_AT_STORE
     PURCHASED_IN_STORE
     PAYMENT_ABORTED
+    ON_HOLD
+    READY_FOR_VERIFICATION
   }
 
   type SaveMedicineOrderResult {
