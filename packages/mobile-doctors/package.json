@@ -61,7 +61,6 @@
     "@aph/universal": "file:../universal",
     "@react-native-community/art": "^1.1.2",
     "@react-native-community/async-storage": "^1.7.1",
-    "@react-native-community/geolocation": "^2.0.2",
     "@react-native-community/netinfo": "^5.9.5",
     "@react-native-community/progress-bar-android": "^1.0.3",
     "@react-native-community/progress-view": "^1.1.1",
