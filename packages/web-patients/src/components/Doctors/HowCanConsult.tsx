@@ -13,6 +13,7 @@ import { useMutation } from 'react-apollo-hooks';
 import { SAVE_PATIENT_SEARCH } from 'graphql/pastsearches';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import { dataLayerTracking } from 'gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -484,6 +485,11 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
           <div className={classes.bottomActions}>
             <AphButton
               onClick={() => {
+                /**Gtm code start start */
+                dataLayerTracking({
+                  event: 'Book Appointment Clicked',
+                });
+                /**Gtm code start end */
                 if (!isSignedIn) {
                   protectWithLoginPopup();
                 } else {
@@ -516,6 +522,11 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                       console.log(e);
                     })
                     .finally(() => {
+                      /**Gtm code start start */
+                      dataLayerTracking({
+                        event: 'Consult Now Pop-up Shown',
+                      });
+                      /**Gtm code start end */
                       setIsPopoverOpen(true);
                     });
                 }
