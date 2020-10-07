@@ -725,16 +725,13 @@ export class AppointmentRepository extends Repository<Appointment> {
       .leftJoinAndSelect('appointment.caseSheet', 'caseSheet')
       .leftJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
       .andWhere('appointment.patientId IN (:...ids)', { ids })
-      .andWhere(
-        'appointment.status not in(:status1,:status2,:status3,:status4,:status5)',
-        {
-          status1: STATUS.PAYMENT_PENDING,
-          status2: STATUS.UNAVAILABLE_MEDMANTRA,
-          status3: STATUS.PAYMENT_FAILED,
-          status4: STATUS.PAYMENT_PENDING_PG,
-          status5: STATUS.PAYMENT_ABORTED,
-        }
-      )
+      .andWhere('appointment.status not in(:status1,:status2,:status3,:status4,:status5)', {
+        status1: STATUS.PAYMENT_PENDING,
+        status2: STATUS.UNAVAILABLE_MEDMANTRA,
+        status3: STATUS.PAYMENT_FAILED,
+        status4: STATUS.PAYMENT_PENDING_PG,
+        status5: STATUS.PAYMENT_ABORTED,
+      })
       .offset(offset)
       .limit(limit)
       .orderBy('appointment.appointmentDateTime', 'DESC')
@@ -1406,6 +1403,16 @@ export class AppointmentRepository extends Repository<Appointment> {
       },
       AphErrorMessages.CANCEL_APPOINTMENT_ERROR
     );
+  }
+
+  getAppointmentCountByPatientId(patientId: string[]) {
+    return this.find({
+      select: ['id', 'patientId'],
+      where: {
+        patientId: In(patientId),
+        status: STATUS.COMPLETED,
+      },
+    });
   }
 
   getAppointmentsByPatientId(patientId: string, startDate: Date, endDate: Date) {

@@ -71,6 +71,7 @@ export const getCurrentPatientsTypeDefs = gql`
   type Patient @key(fields: "id") {
     addressList: [PatientAddress!]
     allergies: String
+    createdDate: Date!
     dateOfBirth: Date
     emailAddress: String
     familyHistory: [FamilyHistory]

@@ -12,6 +12,8 @@ import {
 } from 'notifications-service/handlers';
 import { ApiConstants, PATIENT_REPO_RELATIONS } from 'ApiConstants';
 import { createPrismUser } from 'helpers/phrV1Services';
+import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import _ from 'lodash';
 
 export const getPatientTypeDefs = gql`
   type PatientInfo {
@@ -61,6 +63,11 @@ export const getPatientTypeDefs = gql`
     ids: [String]
   }
 
+  type appointmentCountResult {
+    patientId: String
+    count: Int
+  }
+
   extend type Query {
     getPatientById(patientId: String): PatientInfo
     getPatient(patientId: String): PatientInfo
@@ -70,6 +77,7 @@ export const getPatientTypeDefs = gql`
     getPatients: GetPatientsResult
     getDeviceCodeCount(deviceCode: String): DeviceCountResponse
     getLinkedPatientIds(patientId: String): LinkedPatientIds
+    getProfileConsultCount: [appointmentCountResult]
   }
   extend type Mutation {
     deleteProfile(patientId: String): DeleteProfileResult!
@@ -237,6 +245,48 @@ const addNewProfile: Resolver<
   return { patient };
 };
 
+type appointmentCountResult = {
+  patientId: string;
+  count: number;
+};
+
+const getProfileConsultCount: Resolver<null, {}, ProfilesServiceContext, any> = async (
+  parent,
+  args,
+  { profilesDb, consultsDb, mobileNumber }
+) => {
+  // let mobileNumber = '+919000377973';
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patientRepo.getPatientIdsByMobileNumber(mobileNumber);
+  if (patientDetails == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const patientIds = patientDetails.map((data) => {
+    return data.id;
+  });
+  const appointmentDetails = await appointmentRepo.getAppointmentCountByPatientId(patientIds);
+  const result: appointmentCountResult[] = [];
+  const uniqueIds = _.uniqWith(appointmentDetails, function(arrVal, othVal) {
+    return arrVal.patientId === othVal.patientId;
+  });
+  uniqueIds.forEach((appt) => {
+    const appointmentCounts = appointmentDetails
+      .map((data) => {
+        if (data.patientId === appt.patientId) {
+          return data;
+        }
+      })
+      .filter((item) => item).length;
+    const resultCount: any = {
+      patientId: appt.patientId,
+      count: appointmentCounts,
+    };
+    result.push(resultCount);
+  });
+
+  return result;
+};
+
 const editProfile: Resolver<
   null,
   EditProfileInputArgs,
@@ -360,7 +410,7 @@ const getLinkedPatientIds: Resolver<
   LinkedPatientIds
 > = async (parent, args, { profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientId = args.patientId
+  const patientId = args.patientId;
   const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientId });
   if (!primaryPatientIds) throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS);
 
@@ -376,7 +426,8 @@ export const getPatientResolvers = {
     getPatients,
     getAthsToken,
     getDeviceCodeCount,
-    getLinkedPatientIds
+    getLinkedPatientIds,
+    getProfileConsultCount,
   },
   Mutation: {
     deleteProfile,
