@@ -11,7 +11,7 @@ rm -rfv packages/universal/dist/* || exit 2
 
 echo -e "\nrunning bootstrap:web..."
 npm run bootstrap:web || exit 2
-
+: '
 echo "\n Building api-gateway..."
 
 echo -e "\nrunning migration..."
@@ -74,7 +74,7 @@ cp -Rv packages/web-patients/dist/* skeleton/apollo-hospitals/packages/web-patie
 echo -e "\ncopying web-doctors files..."
 mkdir -pv skeleton/apollo-hospitals/packages/web-doctors/ || exit 2
 cp -Rv packages/web-doctors/dist/* skeleton/apollo-hospitals/packages/web-doctors/ || exit 2
-
+'
 echo -e "\ncopying universal files..."
 mkdir -pv skeleton/apollo-hospitals/packages/universal/ || exit 2
 cp -Rv packages/universal/dist/* skeleton/apollo-hospitals/packages/universal/ || exit 2
