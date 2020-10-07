@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { AphButton, AphLinearProgress } from '@aph/web-ui-components';
+import { dataLayerTracking } from 'gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -63,6 +64,13 @@ export const PrescriptionCard: React.FC<PrescriptionCardProps> = (props) => {
       setCompleted((oldCompleted) => {
         if (oldCompleted === 100) {
           /* this will stop animation once the progress bar reaches 100 */
+
+          /**Gtm code start start */
+          dataLayerTracking({
+            event: 'Prescription Uploaded',
+          });
+          /**Gtm code start end */
+
           return oldCompleted;
         }
         const diff = Math.random() * 10;
