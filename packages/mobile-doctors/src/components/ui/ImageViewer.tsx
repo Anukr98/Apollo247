@@ -7,6 +7,7 @@ import {
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 import { chatFilesType } from '@aph/mobile-doctors/src/helpers/dataTypes';
+import { get_url_extension } from '@aph/mobile-doctors/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useRef, useState } from 'react';
@@ -29,6 +30,8 @@ import {
 } from 'react-native-gesture-handler';
 import Carousel from 'react-native-snap-carousel';
 import { SafeAreaView } from 'react-navigation';
+import { RenderPdf } from '@aph/mobile-doctors/src/components/ui/RenderPdf';
+import ImageZoom from 'react-native-image-pan-zoom';
 
 const { width, height } = Dimensions.get('screen');
 const styles = StyleSheet.create({
@@ -51,7 +54,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginHorizontal: 20,
   },
-  mainContainer: { backgroundColor: 'black', marginTop: 16 },
+  mainContainer: { backgroundColor: 'black', marginTop: 5 },
   headerContainer: {
     backgroundColor: 'black',
     flexDirection: 'row',
@@ -72,7 +75,7 @@ const styles = StyleSheet.create({
   },
   previousContainer: {
     position: 'absolute',
-    top: '48%',
+    top: '55%',
     left: 2,
     zIndex: 100,
     elevation: 100,
@@ -88,7 +91,7 @@ const styles = StyleSheet.create({
   },
   nextContainer: {
     position: 'absolute',
-    top: '48%',
+    top: '55%',
     right: 2,
     zIndex: 100,
     elevation: 100,
@@ -111,7 +114,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 20,
   },
-  footerIconContainer: { justifyContent: 'center', alignItems: 'center' },
+  footerIconContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   footerText: theme.viewStyles.text('R', 14, theme.colors.WHITE, 1, 24),
   itemContainer: {
     width: width,
@@ -319,11 +325,18 @@ export const ImageViewer: React.FC<ImageViewerProps> = (props) => {
                   collapsable={false}
                 >
                   {(panEnabled && currentIndex === index) || !panEnabled ? (
-                    <FastImage
-                      source={{ uri: item.url }}
-                      style={styles.imageStyle}
-                      resizeMode={FastImage.resizeMode.contain}
-                    />
+                    <ImageZoom
+                      cropWidth={width}
+                      cropHeight={height}
+                      imageWidth={width - 12}
+                      imageHeight={height}
+                    >
+                      <FastImage
+                        source={{ uri: item.url }}
+                        style={styles.imageStyle}
+                        resizeMode={FastImage.resizeMode.contain}
+                      />
+                    </ImageZoom>
                   ) : null}
                 </Animated.View>
               </PinchGestureHandler>
@@ -474,7 +487,7 @@ export const ImageViewer: React.FC<ImageViewerProps> = (props) => {
             sliderWidth={width}
             sliderHeight={height * 0.7}
             itemWidth={width}
-            scrollEnabled={!panEnabled}
+            // scrollEnabled={!panEnabled}
             onScrollToIndexFailed={(data) => {
               scrollToIndex();
             }}
@@ -487,8 +500,8 @@ export const ImageViewer: React.FC<ImageViewerProps> = (props) => {
               lastOffset.y = 0;
             }}
           />
-          {renderFooter()}
         </View>
+        {renderFooter()}
       </SafeAreaView>
     </View>
   );

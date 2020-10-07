@@ -362,6 +362,7 @@ export const HealthVault: React.FC = () => {
               onClose={handleChange}
               onChange={handleChange}
               documents={appointmentDocuments}
+              appointmentDate={appointmentInfo.appointmentDateTime}
             />
           )}
 

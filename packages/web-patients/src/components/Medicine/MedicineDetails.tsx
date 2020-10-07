@@ -96,6 +96,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     medicineDetailsGroup: {
+      position: 'relative',
       [theme.breakpoints.up('sm')]: {
         display: 'flex',
         padding: '20px',
@@ -616,12 +617,11 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 20,
     },
     myImageClass: {
-      [theme.breakpoints.up(768)]: {
-        zIndex: 1,
-        position: 'absolute',
-        top: 200,
-        left: 530,
-      },
+      zIndex: 1,
+      position: 'absolute',
+      top: 40,
+      right: 20,
+      boxShadow: '0 5px 10px rgba(0,0,0,0.2)',
     },
   };
 });

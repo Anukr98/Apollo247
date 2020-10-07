@@ -19,6 +19,7 @@ import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import { ToplineReport } from 'components/HealthRecords/ToplineReport';
 import { HEALTH_RECORDS_NO_DATA_FOUND, HEALTH_RECORDS_NOTE } from 'helpers/commonHelpers';
 import { phrDownloadingPrescriptionFileTracking } from '../../webEngageTracking';
+import { Route } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -370,11 +371,12 @@ type ConsultationProps = {
   error: boolean;
   consultsData: any;
   allConsultsData: any;
+  deleteReport: (id: string, type: string) => void;
 };
 
 export const Consultations: React.FC<ConsultationProps> = (props) => {
   const classes = useStyles({});
-  const { loading, error, allConsultsData } = props;
+  const { loading, error, allConsultsData, deleteReport } = props;
   const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:990px)');
   const isSmallScreen = useMediaQuery('(max-width:767px)');
   const [filter, setFilter] = useState<string>('ALL');
@@ -526,6 +528,7 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
                         consult={consult}
                         isActiveCard={activeConsult === consult}
                         downloadPrescription={downloadPrescription}
+                        deleteReport={deleteReport}
                       />
                     </div>
                   )
@@ -538,17 +541,21 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
             </div>
           )}
         </Scrollbars>
-        <div className={classes.addReportActions}>
-          <AphButton
-            color="primary"
-            onClick={() => {
-              window.location.href = clientRoutes.addHealthRecords('prescription');
-            }}
-            fullWidth
-          >
-            Add Record
-          </AphButton>
-        </div>
+        <Route
+          render={({ history }) => (
+            <div className={classes.addReportActions}>
+              <AphButton
+                color="primary"
+                onClick={() => {
+                  history.push(clientRoutes.addHealthRecords('prescription'));
+                }}
+                fullWidth
+              >
+                Add Record
+              </AphButton>
+            </div>
+          )}
+        />
       </div>
       <div
         className={`${classes.rightSection} ${
