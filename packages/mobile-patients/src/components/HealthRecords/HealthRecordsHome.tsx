@@ -452,6 +452,19 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     );
   };
 
+  const tabsClickedWebEngageEvent = (webEngageEventName: WebEngageEventName) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.MEDICAL_RECORDS] = {
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+    };
+    postWebEngageEvent(webEngageEventName, eventAttributes);
+  };
+
   const renderTabSwitch = () => {
     return (
       <TabsComponent
@@ -472,27 +485,13 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         onChange={(selectedTab: string) => {
           setselectedTab(selectedTab);
           if (selectedTab === tabs[0].title) {
-            const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULT_RX] = {
-              'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-              'Patient UHID': g(currentPatient, 'uhid'),
-              Relation: g(currentPatient, 'relation'),
-              'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
-              'Patient Gender': g(currentPatient, 'gender'),
-              'Mobile Number': g(currentPatient, 'mobileNumber'),
-              'Customer ID': g(currentPatient, 'id'),
-            };
-            postWebEngageEvent(WebEngageEventName.CONSULT_RX, eventAttributes);
+            tabsClickedWebEngageEvent(WebEngageEventName.PHR_VIEW_PRESCRIPTIONS);
+          } else if (selectedTab === tabs[1].title) {
+            tabsClickedWebEngageEvent(WebEngageEventName.PHR_VIEW_LAB_TESTS);
+          } else if (selectedTab === tabs[2].title) {
+            tabsClickedWebEngageEvent(WebEngageEventName.PHR_VIEW_HEALTH_CHECKS);
           } else {
-            const eventAttributes: WebEngageEvents[WebEngageEventName.MEDICAL_RECORDS] = {
-              'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-              'Patient UHID': g(currentPatient, 'uhid'),
-              Relation: g(currentPatient, 'relation'),
-              'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
-              'Patient Gender': g(currentPatient, 'gender'),
-              'Mobile Number': g(currentPatient, 'mobileNumber'),
-              'Customer ID': g(currentPatient, 'id'),
-            };
-            postWebEngageEvent(WebEngageEventName.MEDICAL_RECORDS, eventAttributes);
+            tabsClickedWebEngageEvent(WebEngageEventName.PHR_VIEW_HOSPITALIZATIONS);
           }
         }}
         selectedTab={selectedTab}

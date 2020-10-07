@@ -306,6 +306,17 @@ export enum PAYMENT_METHODS {
   UPI = "UPI",
 }
 
+export enum PAYMENT_METHODS_REVERSE {
+  COD = "COD",
+  CREDIT_CARD = "CREDIT_CARD",
+  CREDIT_CARD_EMI = "CREDIT_CARD_EMI",
+  DEBIT_CARD = "DEBIT_CARD",
+  NET_BANKING = "NET_BANKING",
+  PAYTM_POSTPAID = "PAYTM_POSTPAID",
+  PAYTM_WALLET = "PAYTM_WALLET",
+  UPI = "UPI",
+}
+
 export enum PRISM_DOCUMENT_CATEGORY {
   HealthChecks = "HealthChecks",
   OpSummary = "OpSummary",
@@ -315,6 +326,13 @@ export enum PRISM_DOCUMENT_CATEGORY {
 export enum PharmaDiscountApplicableOn {
   MRP = "MRP",
   SPECIAL_PRICE = "SPECIAL_PRICE",
+}
+
+export enum REFUND_STATUS {
+  REFUND_FAILED = "REFUND_FAILED",
+  REFUND_REQUEST_NOT_RAISED = "REFUND_REQUEST_NOT_RAISED",
+  REFUND_REQUEST_RAISED = "REFUND_REQUEST_RAISED",
+  REFUND_SUCCESSFUL = "REFUND_SUCCESSFUL",
 }
 
 export enum REQUEST_ROLES {
@@ -433,6 +451,7 @@ export enum mediaPrescriptionSource {
 }
 
 export interface AddHealthCheckRecordInput {
+  id?: string | null;
   patientId: string;
   recordType: MedicalRecordType;
   healthCheckName: string;
@@ -441,6 +460,7 @@ export interface AddHealthCheckRecordInput {
 }
 
 export interface AddHospitalizationRecordInput {
+  id?: string | null;
   patientId: string;
   recordType: MedicalRecordType;
   dischargeDate: any;
@@ -450,6 +470,7 @@ export interface AddHospitalizationRecordInput {
 }
 
 export interface AddLabTestRecordInput {
+  id?: string | null;
   patientId: string;
   recordType: MedicalRecordType;
   labTestName: string;
@@ -946,6 +967,7 @@ export interface UpdatePatientAddressInput {
   latitude?: number | null;
   longitude?: number | null;
   stateCode?: string | null;
+  defaultAddress?: boolean | null;
 }
 
 export interface UpdatePatientInput {

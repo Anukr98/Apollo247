@@ -424,42 +424,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       setAllPatients(allPatients);
 
-      // console.log(allPatients, 'allPatientssplash');
-      // console.log(mePatient, 'mePatientsplash');
-      const navigationPropsString: string | null = await AsyncStorage.getItem('NAVIGATION_PROPS');
-
-      // console.log('onboarding', onboarding);
-      // console.log('userLoggedIn', userLoggedIn);
-
       setTimeout(
         () => {
-          if (JSON.parse(navigationPropsString || 'false')) {
-            const navigationProps = JSON.parse(navigationPropsString || '');
-            if (navigationProps) {
-              let navi: any[] = [];
-              navigationProps.scenes.map((i: any) => {
-                navi.push(
-                  NavigationActions.navigate({
-                    routeName: i.descriptor.navigation.state.routeName,
-                    params: i.descriptor.navigation.state.params,
-                  })
-                );
-                // props.navigation.push(
-                //   i.descriptor.navigation.state.routeName,
-                //   i.descriptor.navigation.state.params
-                // );
-              });
-              if (navi.length > 0) {
-                props.navigation.dispatch(
-                  StackActions.reset({
-                    index: navi.length - 1,
-                    key: null,
-                    actions: navi,
-                  })
-                );
-              }
-            }
-          } else if (userLoggedIn == 'true') {
+          if (userLoggedIn == 'true') {
             setshowSpinner(false);
 
             if (mePatient) {
@@ -469,21 +436,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
                 props.navigation.replace(AppRoutes.Login);
               }
             }
-          }
-          // else if (onboarding == 'true') {
-          //   setshowSpinner(false);
-
-          //   if (signUp == 'true') {
-          //     props.navigation.replace(AppRoutes.SignUp);
-          //   } else if (multiSignUp == 'true') {
-          //     if (mePatient) {
-          //       props.navigation.replace(AppRoutes.MultiSignup);
-          //     }
-          //   } else {
-          //     props.navigation.replace(AppRoutes.Login);
-          //   }
-          // }
-          else {
+          } else {
             setshowSpinner(false);
 
             if (signUp == 'true') {
@@ -630,7 +583,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       case 'MedicineCart':
         console.log('MedicineCart handleopen');
-        props.navigation.navigate(AppRoutes.YourCart, {
+        props.navigation.navigate(AppRoutes.MedicineCart, {
           movedFrom: 'splashscreen',
         });
         break;

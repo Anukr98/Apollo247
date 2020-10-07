@@ -7,16 +7,21 @@ import {
   ExpansionPanelDetails,
 } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { AuthContext, AuthContextProps } from 'components/AuthProvider';
 import { FollowUp } from 'components/case-sheet/panels';
-import { AphButton } from '@aph/web-ui-components';
+import { AphButton, AphSwitch, AphRadio, AphCustomDropdown } from '@aph/web-ui-components';
 import {
   UpdateDoctorChatDays,
   UpdateDoctorChatDaysVariables,
 } from 'graphql/types/UpdateDoctorChatDays';
+import {
+  SetAppointmentReminderIvrVariables,
+  SetAppointmentReminderIvr,
+} from 'graphql/types/SetAppointmentReminderIvr';
 import { useApolloClient } from 'react-apollo-hooks';
-import { UPDATE_DOCTOR_CHAT_DAYS } from 'graphql/profiles';
+import { UPDATE_DOCTOR_CHAT_DAYS, SET_APPOINTMENT_REMINDER_IVR } from 'graphql/profiles';
+import IVR from 'components/IVR';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -103,36 +108,71 @@ const useStyles = makeStyles((theme: Theme) => {
         background: '#FC9916',
         boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
       },
-      marginTop: '36%',
+      marginTop: '30px',
       float: 'right',
     },
   };
 });
 
+interface Expansion {
+  followUpExpand: boolean;
+  ivrExpanded: boolean;
+}
+
 export const MyAccountSettings: React.FC = () => {
   const apolloClient = useApolloClient();
-  const classes = useStyles({});
-  const [followUpExpand, setFollowUpExpand] = useState<boolean>(false);
   const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
   const { chatDays, setChatDays, currentUser } = useAuthContext();
-  // const [chatValue, setChatValue] = useState<number>(chatDays);
+  const classes = useStyles({});
+  const expansionDefaultState = {
+    followUpExpand: false,
+    ivrExpanded: false,
+  };
+  const [expansionState, setExpansionState] = useState<Expansion>({
+    followUpExpand: false,
+    ivrExpanded: false,
+  });
+  const [ivrState, setIvrState] = useState<any>({
+    setUpIvr: currentUser.isIvrSet,
+    consultationMode: currentUser.ivrConsultType,
+    ivrCallTimeOnline: currentUser.ivrCallTimeOnline,
+    ivrCallTimePhysical: currentUser.ivrCallTimePhysical,
+  });
+  const [enableSave, setEnableSave] = useState<boolean>(false);
+
   const items = [
     {
+      key: 'IVR',
+      value: <div>{'Set-up an IVR as a reminder for appointment booking'}</div>,
+      state: expansionState.ivrExpanded,
+      component: (
+        <IVR
+          ivrState={ivrState}
+          setIvrState={setIvrState}
+          setEnableSave={setEnableSave}
+          expanded={expansionState.ivrExpanded}
+        />
+      ),
+    },
+
+    {
       key: 'followUp',
-      value: followUpExpand ? (
-        <div>{'Set your patient follow Up days'}</div>
-      ) : (
+      value: (
         <div>
           <div>{'Set your patient follow Up days'}</div>
-          <div className={classes.expansionText}>
-            {'Default value set at '}
-            <span
-              style={{ fontSize: 18, fontWeight: 600, color: '#00B38E' }}
-            >{`${chatDays} days`}</span>
-          </div>
+          {!expansionState.followUpExpand && (
+            <div>
+              <div className={classes.expansionText}>
+                {'Default value set at '}
+                <span
+                  style={{ fontSize: 18, fontWeight: 600, color: '#00B38E' }}
+                >{`${chatDays} days`}</span>
+              </div>
+            </div>
+          )}
         </div>
       ),
-      state: followUpExpand,
+      state: expansionState.followUpExpand,
       component: (
         <FollowUp
           origin={'settings'}
@@ -143,21 +183,67 @@ export const MyAccountSettings: React.FC = () => {
           info={
             "This value will be default for all patient, However you can change the follow up chat day count on individual patient's Case-sheet"
           }
+          setEnableSave={setEnableSave}
+          expanded={expansionState.followUpExpand}
         />
       ),
     },
   ];
 
   const handlePanelExpansion = (expansionKey: string) => {
+    const collapsed = { ...expansionDefaultState };
+
     switch (expansionKey) {
       case 'followUp':
-        setFollowUpExpand((expand) => !expand);
+        setExpansionState({ ...collapsed, followUpExpand: !expansionState.followUpExpand });
+        break;
+
+      case 'IVR':
+        setExpansionState({ ...collapsed, ivrExpanded: !expansionState.ivrExpanded });
         break;
     }
   };
 
+  const saveChanges = () => {
+    if (expansionState.followUpExpand) {
+      apolloClient
+        .mutate<UpdateDoctorChatDays, UpdateDoctorChatDaysVariables>({
+          mutation: UPDATE_DOCTOR_CHAT_DAYS,
+          fetchPolicy: 'no-cache',
+          variables: { doctorId: currentUser.id, chatDays: chatDays },
+        })
+        .then((_data) => {
+          alert(_data.data.updateDoctorChatDays.response);
+        });
+    } else if (expansionState.ivrExpanded) {
+      const inputVariables = {
+        doctorId: currentUser.id,
+        isIvrSet: ivrState.setUpIvr,
+        ivrConsultType: ivrState.consultationMode,
+        ivrCallTimeOnline: parseInt(ivrState.ivrCallTimeOnline, 10),
+        ivrCallTimePhysical: parseInt(ivrState.ivrCallTimePhysical, 10),
+      };
+
+      apolloClient
+        .mutate<SetAppointmentReminderIvr, SetAppointmentReminderIvrVariables>({
+          mutation: SET_APPOINTMENT_REMINDER_IVR,
+          fetchPolicy: 'no-cache',
+          variables: inputVariables,
+        })
+        .then((_data) => {
+          alert('IVR changes updated successfully');
+        });
+    }
+  };
+
+  useEffect(() => {
+    const val = Object.values(expansionState);
+    if (!val.includes(true)) setEnableSave(false);
+    else setEnableSave(true);
+  }, [expansionState]);
+
   return (
-    <div style={{ height: 500 }}>
+    <div style={{ height: 800 }}>
       {items.map((item) => (
         <ExpansionPanel
           key={item.key}
@@ -172,22 +258,14 @@ export const MyAccountSettings: React.FC = () => {
         </ExpansionPanel>
       ))}
 
-      {followUpExpand && (
+      {/* {Object.values(expansionState).includes(true) && ( */}
+      {enableSave && (
         <AphButton
           variant="contained"
           color="primary"
           classes={{ root: classes.saveButton }}
           onClick={() => {
-            console.log(currentUser);
-            apolloClient
-              .mutate<UpdateDoctorChatDays, UpdateDoctorChatDaysVariables>({
-                mutation: UPDATE_DOCTOR_CHAT_DAYS,
-                fetchPolicy: 'no-cache',
-                variables: { doctorId: currentUser.id, chatDays: chatDays },
-              })
-              .then((_data) => {
-                alert(_data.data.updateDoctorChatDays.response);
-              });
+            saveChanges();
           }}
         >
           SAVE CHANGES

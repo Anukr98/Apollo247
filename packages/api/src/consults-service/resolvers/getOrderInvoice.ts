@@ -271,7 +271,7 @@ const getOrderInvoice: Resolver<
       doc.y + 10
     );
 
-    const nameLine = `${doctorInfo.salutation}. ${doctorInfo.firstName} ${doctorInfo.lastName}`;
+    const nameLine = `${doctorInfo.salutation} ${doctorInfo.firstName} ${doctorInfo.lastName}`;
 
     const specialty = doctorInfo.specialty.name;
     renderFourColumnRow(

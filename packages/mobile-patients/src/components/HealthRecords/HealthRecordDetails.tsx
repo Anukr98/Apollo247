@@ -31,13 +31,17 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { MedicalTest } from '@aph/mobile-patients/src/components/HealthRecords/AddRecord';
-import { g, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  handleGraphQlError,
+  postWebEngagePHR,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import {
   getLabResultpdf,
   getLabResultpdfVariables,
 } from '@aph/mobile-patients/src/graphql/types/getLabResultpdf';
+import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -447,6 +451,16 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
   };
 
   const downloadDocument = (pdfUrl: string = '') => {
+    const webEngageSource = healthCheck
+      ? 'Health Check'
+      : hospitalization
+      ? 'Discharge Summary'
+      : 'Lab Test';
+    const webEngageEventName: WebEngageEventName = healthCheck
+      ? WebEngageEventName.PHR_DOWNLOAD_HEALTH_CHECKS
+      : hospitalization
+      ? WebEngageEventName.PHR_DOWNLOAD_HOSPITALIZATIONS
+      : WebEngageEventName.PHR_DOWNLOAD_LAB_TESTS;
     const file_name = g(data, 'testResultFiles', '0', 'fileName')
       ? g(data, 'testResultFiles', '0', 'fileName')
       : g(data, 'healthCheckFiles', '0', 'fileName')
@@ -479,6 +493,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       })
       .then((res) => {
         setLoading && setLoading(false);
+        postWebEngagePHR(webEngageSource, webEngageEventName);
         Platform.OS === 'ios'
           ? RNFetchBlob.ios.previewDocument(res.path())
           : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));

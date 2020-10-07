@@ -153,7 +153,7 @@ export const pushTheView = (navigationProps: any, routeName: String, id?: String
       break;
 
     case 'MedicineCart':
-      navigationProps.navigate(AppRoutes.YourCart, {
+      navigationProps.navigate(AppRoutes.MedicineCart, {
         movedFrom: 'splashscreen',
       });
       break;

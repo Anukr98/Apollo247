@@ -527,18 +527,15 @@ const stackConfig: StackNavigatorConfig = {
   headerMode: 'none',
   cardStyle: { backgroundColor: 'transparent' },
   mode: 'card',
-  transitionConfig: (sceneProps) => {
+  transitionConfig: (sceneProps, prevSceneProps) => {
     try {
-      AsyncStorage.setItem('setCurrentName', sceneProps.scene.route.routeName);
-      CommonScreenLog(sceneProps.scene.route.routeName, sceneProps.scene.route.routeName);
-      logTabEvents(sceneProps.scene.route);
-      if (sceneProps.scene.route.routeName === AppRoutes.ChatRoom) {
-        // AsyncStorage.setItem('NAVIGATION_PROPS', JSON.stringify(sceneProps));
-        AsyncStorage.setItem('NAVIGATION_PROPS', 'false');
-      } else if (sceneProps.scene.route.routeName !== AppRoutes.SplashScreen) {
-        AsyncStorage.setItem('NAVIGATION_PROPS', 'false');
+      const currentRoute = sceneProps.scene.route.routeName;
+      const prevRoute = prevSceneProps?.scene?.route?.routeName;
+      if (prevRoute && prevRoute !== currentRoute) {
+        AsyncStorage.setItem('setCurrentName', currentRoute);
+        CommonScreenLog(currentRoute, currentRoute);
+        logTabEvents(sceneProps.scene.route);
       }
-      // console.log('sceneProps success', sceneProps.scene.route);
     } catch (error) {
       CommonBugFender('NavigatorContainer_stackConfig_try', error);
       console.log('sceneProps error', error);

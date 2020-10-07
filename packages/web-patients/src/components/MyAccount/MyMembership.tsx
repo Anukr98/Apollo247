@@ -3,6 +3,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography, Tabs, Tab, Grid } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
 import { ConfigOneApolloData } from 'strings/AppConfig';
+import { GetOneApollo as MyMembershipType } from 'graphql/types/GetOneApollo';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -189,7 +190,12 @@ const TabContainer: React.FC = (props) => {
   return <Typography component="div">{props.children}</Typography>;
 };
 
-export const MyMembership: React.FC = () => {
+interface MyMembershipProps {
+  myMembershipType?: MyMembershipType;
+}
+
+export const MyMembership: React.FC<MyMembershipProps> = (props: any) => {
+	const { myMembershipType } = props;
   const classes = useStyles({});
   return (
     <TabContainer>
@@ -238,49 +244,55 @@ export const MyMembership: React.FC = () => {
             </div>
           </Grid>
         </Grid>
+				{ myMembershipType.tier !== 'Platinum' && (
         <div className={classes.mUpgradeContainer}>
           <Typography component="h3">Membership Upgrades</Typography>
           <Grid container spacing={3}>
-            <Grid item md={6}>
-              <div className={classes.creditContent}>
-                <div className={`${classes.membershipCard} ${classes.gold} ${classes.mCard}`}>
-                  <div className={classes.mcUser}>
-                    <img src={require('images/lock.svg')} alt="Membership Locked" />
-                    <Typography>Gold</Typography>
-                  </div>
-                </div>
-                <Typography>
-                  Upgrade to gold and enjoy more benefits by satisfying either of the conditions:
-                </Typography>
-                <ul className={`${classes.creditList} ${classes.goldList}`}>
-                  <li>Spend Rs. 75,000 in one year period</li>
-                  <li> Buy an annual gym membership from Apollo Life</li>
-                </ul>
-                <AphButton color="primary" className={classes.knowMore}>
-                  Know More
-                </AphButton>
-              </div>
-            </Grid>
-            <Grid item md={6}>
-              <div className={classes.creditContent}>
-                <div className={`${classes.membershipCard} ${classes.platinum} ${classes.mCard}`}>
-                  <div className={classes.mcUser}>
-                    <img src={require('images/lock.svg')} alt="Membership Locked" />
-                    <Typography>Platinum</Typography>
-                  </div>
-                </div>
-                <Typography>
-                  Upgrade to gold and enjoy more benefits by satisfying either of the conditions:
-                </Typography>
-                <ul className={classes.creditList}>
-                  <li>Spend Rs. 2,00,000 in one year period</li>
-                  <li>Maintain Gold membership for 2 consecutive years</li>
-                </ul>
-              </div>
-            </Grid>
+						{ myMembershipType.tier === 'Silver' && (
+							<Grid item md={6}>
+								<div className={classes.creditContent}>
+									<div className={`${classes.membershipCard} ${classes.gold} ${classes.mCard}`}>
+										<div className={classes.mcUser}>
+											<img src={require('images/lock.svg')} alt="Membership Locked" />
+											<Typography>Gold</Typography>
+										</div>
+									</div>
+									<Typography>
+										Upgrade to gold and enjoy more benefits by satisfying either of the conditions:
+									</Typography>
+									<ul className={`${classes.creditList} ${classes.goldList}`}>
+										<li>Spend Rs. 75,000 in one year period</li>
+										<li> Buy an annual gym membership from Apollo Life</li>
+									</ul>
+									<AphButton color="primary" className={classes.knowMore}>
+										Know More
+									</AphButton>
+								</div>
+							</Grid>
+						)}
+						{ (myMembershipType.tier === 'Silver' || myMembershipType.tier === 'Gold') && (
+							<Grid item md={6}>
+								<div className={classes.creditContent}>
+									<div className={`${classes.membershipCard} ${classes.platinum} ${classes.mCard}`}>
+										<div className={classes.mcUser}>
+											<img src={require('images/lock.svg')} alt="Membership Locked" />
+											<Typography>Platinum</Typography>
+										</div>
+									</div>
+									<Typography>
+										Upgrade to platinum and enjoy more benefits by satisfying either of the conditions:
+									</Typography>
+									<ul className={classes.creditList}>
+										<li>Spend Rs. 2,00,000 in one year period</li>
+										<li>Maintain Gold membership for 2 consecutive years</li>
+									</ul>
+								</div>
+							</Grid>
+						)}
           </Grid>
         </div>
-      </div>
+				)}
+			</div>
     </TabContainer>
   );
 };

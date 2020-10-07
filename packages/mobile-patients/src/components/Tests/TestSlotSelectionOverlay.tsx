@@ -10,6 +10,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlots';
 import {
   formatTestSlot,
+  formatTestSlotWithBuffer,
   g,
   getTestSlotDetailsByTime,
   getUniqueTestSlots,
@@ -154,8 +155,8 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
 
   const renderSlotSelectionView = () => {
     const dropDownOptions = uniqueSlots.map((val) => ({
-      key: `${formatTestSlot(val.startTime)} - ${formatTestSlot(val.endTime)}`,
-      value: `${formatTestSlot(val.startTime)} - ${formatTestSlot(val.endTime)}`,
+      key: `${formatTestSlotWithBuffer(val.startTime)}`,
+      value: `${formatTestSlotWithBuffer(val.startTime)}`,
       data: val,
     }));
 
@@ -169,12 +170,7 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
         <View style={styles.optionsView}>
           <MaterialMenu
             options={dropDownOptions}
-            selectedText={
-              slotInfo &&
-              `${formatTestSlot(slotInfo.slotInfo.startTime!)} - ${formatTestSlot(
-                slotInfo.slotInfo.endTime!
-              )}`
-            }
+            selectedText={slotInfo && `${formatTestSlotWithBuffer(slotInfo.slotInfo.startTime!)}`}
             menuContainerStyle={{
               alignItems: 'flex-end',
               marginTop: 24,
@@ -203,9 +199,7 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
                     ? 'Loading...'
                     : dropDownOptions.length
                     ? slotInfo
-                      ? `${formatTestSlot(slotInfo.slotInfo.startTime!)} - ${formatTestSlot(
-                          slotInfo.slotInfo.endTime!
-                        )}`
+                      ? `${formatTestSlotWithBuffer(slotInfo.slotInfo.startTime!)}`
                       : 'Please select a slot'
                     : 'No slots available'}
                 </Text>

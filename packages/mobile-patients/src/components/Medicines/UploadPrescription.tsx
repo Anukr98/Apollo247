@@ -287,7 +287,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   };
 
   const renderPrescriptionModal = () => {
-    return (
+    return isSelectPrescriptionVisible && (
       <SelectEPrescriptionModal
         displayPrismRecords={true}
         navigation={props.navigation}
@@ -299,7 +299,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           }
           setEPrescriptions([...selectedEPres]);
         }}
-        isVisible={isSelectPrescriptionVisible}
+        isVisible={true}
         selectedEprescriptionIds={EPrescriptions.map((item) => item.id)}
       />
     );

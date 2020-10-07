@@ -52,6 +52,46 @@ export const webengageUserLogoutTracking = () => {
   }
 };
 
+// phr view data webengage events
+
+export const phrViewDischargeSummaryTracking = (userData: any) => {
+  if (window.webengage) {
+    const { id, mobileNumber, firstName, relation, gender, uhid, age } = userData;
+    try {
+      window.webengage.track('PHR View Discharge Summary Records - web', {
+        'Patient Name': firstName,
+        'Patient UHID': uhid,
+        Relation: relation,
+        Gender: gender,
+        'Mobile Number': mobileNumber,
+        'Customer ID': id,
+        Age: age,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const phrViewHealthCheckTracking = (userData: any) => {
+  if (window.webengage) {
+    const { id, mobileNumber, firstName, relation, gender, uhid, age } = userData;
+    try {
+      window.webengage.track('PHR View Health Check Records - web', {
+        'Patient Name': firstName,
+        'Patient UHID': uhid,
+        Relation: relation,
+        Gender: gender,
+        'Mobile Number': mobileNumber,
+        'Customer ID': id,
+        Age: age,
+      });
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
 export const phrConsultTabClickTracking = (userData: any) => {
   if (typeof window !== 'undefined') {
     const { id, mobileNumber, firstName, relation, gender, age, uhid } = userData;
@@ -70,12 +110,13 @@ export const phrConsultTabClickTracking = (userData: any) => {
     }
   }
 };
+
 //PHR Medical Records
 export const phrMedicalRecordsTabClickTracking = (userData: any) => {
   if (window.webengage) {
     const { id, mobileNumber, firstName, relation, gender, uhid, age } = userData;
     try {
-      window.webengage.track('PHR Medical Records - web', {
+      window.webengage.track('PHR Lab Test Records - web', {
         'Patient Name': firstName,
         'Patient UHID': uhid,
         Relation: relation,
@@ -89,9 +130,57 @@ export const phrMedicalRecordsTabClickTracking = (userData: any) => {
     }
   }
 };
-//Add Record
+
+// end of phr view data webengage events
+
+//Add phr Record  webengage events
+
+export const addDischargeSummaryRecordClickTracking = (source: string) => {
+  // Discharge Summary Record
+  try {
+    window.webengage.track('Add Discharge Summary Record - web', {
+      Source: source,
+    });
+  } catch (err) {
+    console.log('WebEngage Err: ', err);
+  }
+};
+
+export const addHealthCheckRecordClickTracking = (source: string) => {
+  // Health Check Record
+  try {
+    window.webengage.track('Add Health Check Record - web', {
+      Source: source,
+    });
+  } catch (err) {
+    console.log('WebEngage Err: ', err);
+  }
+};
+
+export const addMedicalRecordClickTracking = (source: string) => {
+  // Medical Record
+  try {
+    window.webengage.track('Add Lab Test Record - web', {
+      Source: source,
+    });
+  } catch (err) {
+    console.log('WebEngage Err: ', err);
+  }
+};
+
+export const addPrescriptionRecordClickTracking = (source: string) => {
+  //  Consult & RX Record
+  try {
+    window.webengage.track('Add Prescription Record - web', {
+      Source: source,
+    });
+  } catch (err) {
+    console.log('WebEngage Err: ', err);
+  }
+};
+
 export const addRecordClickTracking = (source: string) => {
-  // Consult & RX/ Medical Record
+  //  Consult & RX Record
   try {
     window.webengage.track('Add Record - web', {
       Source: source,
@@ -100,6 +189,52 @@ export const addRecordClickTracking = (source: string) => {
     console.log('WebEngage Err: ', err);
   }
 };
+
+// End of Add phr Record webengage events
+
+// Start of phr downloading file webengage events
+export const phrDownloadingDischargeSummaryFileTracking = (source: string) => {
+  try {
+    window.webengage.track('Download Discharge Summary file - web', {
+      Source: source,
+    });
+  } catch (err) {
+    console.log('WebEngage Err: ', err);
+  }
+};
+
+export const phrDownloadingHealthCheckFileTracking = (source: string) => {
+  try {
+    window.webengage.track('Download Health Check file - web', {
+      Source: source,
+    });
+  } catch (err) {
+    console.log('WebEngage Err: ', err);
+  }
+};
+
+export const phrDownloadingMedicalRecordFileTracking = (source: string) => {
+  try {
+    window.webengage.track('Download Lab Test Record file - web', {
+      Source: source,
+    });
+  } catch (err) {
+    console.log('WebEngage Err: ', err);
+  }
+};
+
+export const phrDownloadingPrescriptionFileTracking = (source: string) => {
+  try {
+    window.webengage.track('Download Consult/Rx file - web', {
+      Source: source,
+    });
+  } catch (err) {
+    console.log('WebEngage Err: ', err);
+  }
+};
+
+// End of phr downloading file webengage events
+
 //Upload Prescription
 export const uploadPrescriptionTracking = (data: any) => {
   console.log('data', data);
@@ -1007,6 +1142,16 @@ export const reschedulePatientTracking = (data: any) => {
       });
     } catch (err) {
       console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const medicinePageOpenTracking = () => {
+  if (typeof window !== 'undefined') {
+    try {
+      window.webengage.track('Medicine Page Opened - Web', {});
+    } catch (err) {
+      console.log('Webengage Err: ', err);
     }
   }
 };

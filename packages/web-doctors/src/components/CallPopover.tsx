@@ -1651,7 +1651,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     {
       joinPrompt || floatingJoinPrompt ? setPlayRingtone(false) : setPlayRingtone(true);
     }
-    if(!(joinPrompt || floatingJoinPrompt)){
+    if (!(joinPrompt || floatingJoinPrompt)) {
       setUserMessageOnCall('Connecting…');
     }
 
@@ -2363,7 +2363,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
 
   const [vitalIgnored, setVitalIgnored] = useState<boolean>(false);
   const [connectCall, setConnectCall] = useState<boolean>(false);
-
+  const consultWebengageObject: any = {
+    'appointmentId': props.appointmentId,
+    'patientId': params.patientId,
+    'doctorId': props.doctorId,
+    'sessionId': props.sessionId,
+  }
   return (
     <div className={classes.stickyHeader}>
       {playRingtone && (
@@ -2399,9 +2404,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           {(props.appointmentStatus !== STATUS.COMPLETED || props.isClickedOnEdit) && (
             <Prompt message="Are you sure to exit?" when={props.startAppointment}></Prompt>
           )}
-          <Link
-            to={localStorage.getItem('callBackUrl')}
-          >
+          <Link to={localStorage.getItem('callBackUrl')}>
             <div className={classes.backArrow}>
               <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
               <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
@@ -3508,6 +3511,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               setIscall={setIscall}
               setUserMessageOnCall={setUserMessageOnCall}
               userMessageOnCall={userMessageOnCall}
+              consultWebengageObject={consultWebengageObject}
             />
           )}
         </div>
@@ -3943,7 +3947,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               onClick={() => {
                 handleClose();
                 autoSend(videoCallMsg);
-                setIsVideoCall(true);
+                setIsVideoCall(false);
                 setDisableOnCancel(true);
                 setIscall(true);
                 setJoinPrompt(false);
@@ -3976,7 +3980,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   verticalAlign: 'middle',
                 }}
               />
-              {'COLLAPSE'}
+              {'Not Now'}
             </span>
           </div>
         </Box>

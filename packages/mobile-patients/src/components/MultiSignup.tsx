@@ -773,7 +773,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                 key: null,
                 actions: [
                   NavigationActions.navigate({
-                    routeName: AppRoutes.YourCart,
+                    routeName: AppRoutes.MedicineCart,
                     params: {
                       movedFrom: 'registration',
                     },

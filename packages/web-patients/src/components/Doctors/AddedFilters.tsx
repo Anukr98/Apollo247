@@ -2,7 +2,13 @@ import React from 'react';
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphButton } from '@aph/web-ui-components';
-import { SearchObject, experienceList, genderList } from 'helpers/commonHelpers';
+import {
+  SearchObject,
+  experienceList,
+  genderList,
+  brandList,
+  feeInRupees,
+} from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -88,6 +94,25 @@ export const AddedFilters: React.FC<AddedFiltersProps> = (props) => {
     <div className={classes.root}>
       <div className={classes.dialogContent}>
         <div className={classes.filterGroup}>
+          {filter.brand.length > 0 && (
+            <div className={classes.filterType}>
+              <h4>Brand</h4>
+              <div className={classes.filterBtns}>
+                {filter.brand.map((brandName) => {
+                  const filterdBrand = brandList.find(
+                    (brandObject) => brandObject.key === brandName
+                  );
+                  return (
+                    filterdBrand && (
+                      <AphButton disabled className={applyClass(filter.brand, brandName)}>
+                        {filterdBrand.value}
+                      </AphButton>
+                    )
+                  );
+                })}
+              </div>
+            </div>
+          )}
           {filter.experience.length > 0 && (
             <div className={classes.filterType}>
               <h4>Experience In Years</h4>
@@ -123,11 +148,16 @@ export const AddedFilters: React.FC<AddedFiltersProps> = (props) => {
             <div className={classes.filterType}>
               <h4>Fees In Rupees</h4>
               <div className={classes.filterBtns}>
-                {filter.fees.map((fee) => (
-                  <AphButton disabled className={applyClass(filter.experience, fee)}>
-                    {fee}
-                  </AphButton>
-                ))}
+                {filter.fees.map((fee) => {
+                  const filterdFee = feeInRupees.find((feeObj) => feeObj.key === fee);
+                  return (
+                    filterdFee && (
+                      <AphButton disabled className={applyClass(filter.fees, fee)}>
+                        {filterdFee.value}
+                      </AphButton>
+                    )
+                  );
+                })}
               </div>
             </div>
           )}

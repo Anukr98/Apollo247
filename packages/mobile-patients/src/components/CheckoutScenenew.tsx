@@ -214,7 +214,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       .catch((error) => {
         CommonBugFender('fetchingPaymentOptions', error);
         console.log(error);
-        props.navigation.navigate(AppRoutes.YourCart);
+        props.navigation.navigate(AppRoutes.MedicineCart);
         renderErrorPopup(`Something went wrong, plaease try again after sometime`);
       });
     return () => {

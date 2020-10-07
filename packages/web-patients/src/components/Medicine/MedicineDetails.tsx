@@ -27,6 +27,7 @@ import {
   uploadPrescriptionTracking,
   pharmacyPdpOverviewTracking,
   pharmacyProductViewTracking,
+  medicinePageOpenTracking,
 } from 'webEngageTracking';
 import { MetaTagsComp } from 'MetaTagsComp';
 import moment from 'moment';
@@ -193,6 +194,39 @@ const useStyles = makeStyles((theme: Theme) => {
         flexDirection: 'row-reverse',
         justifyContent: 'flex-end',
       },
+    },
+    webImages: {
+      [theme.breakpoints.down(768)]: {
+        display: 'none',
+      },
+    },
+    mobileImages: {
+      position: 'absolute',
+      top: 20,
+      right: 20,
+      [theme.breakpoints.up(768)]: {
+        display: 'none',
+      },
+    },
+    imageDisplay: {
+      width: 80,
+      height: 80,
+      borderRadius: '50%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: '#fff',
+      boxShadow: '0px 0px 5px rgba(128, 128, 128, 0.2)',
+      '& img': {
+        width: '72%',
+      },
+    },
+    imageDesc: {
+      color: '#0087ba',
+      fontSize: 10,
+      fontWeight: 600,
+      textAlign: 'center',
+      marginTop: 10,
     },
     noImageWrapper: {
       width: 290,
@@ -539,7 +573,7 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'none',
       alignItems: 'center',
       justifyContent: 'center',
-      [theme.breakpoints.down('sm')]: {
+      [theme.breakpoints.down(768)]: {
         display: 'flex',
       },
     },
@@ -581,6 +615,14 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       padding: 20,
     },
+    myImageClass: {
+      [theme.breakpoints.up(768)]: {
+        zIndex: 1,
+        position: 'absolute',
+        top: 200,
+        left: 530,
+      },
+    },
   };
 });
 
@@ -609,6 +651,7 @@ const MedicineDetails: React.FC = (props) => {
   const { diagnosticsCartItems } = useDiagnosticsCart();
   useEffect(() => {
     deepLinkUtil(`MedicineDetail?${params.sku}`);
+    medicinePageOpenTracking();
   });
 
   const apiDetails = {
@@ -1204,10 +1247,31 @@ const MedicineDetails: React.FC = (props) => {
                         >
                           <div className={classes.productInformation}>
                             {medicineDetails.image && medicineDetails.image.length > 0 ? (
-                              <MedicineImageGallery
-                                data={medicineDetails}
-                                setImageClick={setImageClick}
-                              />
+                              <>
+                                <div className={classes.webImages}>
+                                  <MedicineImageGallery
+                                    data={medicineDetails}
+                                    setImageClick={setImageClick}
+                                  />
+                                </div>
+                                <div className={`${classes.mobileImages}`}>
+                                  <div className={classes.imageDisplay}>
+                                    <img
+                                      onClick={() => setImageClick(true)}
+                                      src={`${process.env.PHARMACY_MED_IMAGES_BASE_URL}${medicineDetails.image[0]}`}
+                                      alt={`${medicineDetails.name}, Pack of ${getPackOfMedicine(
+                                        medicineDetails
+                                      )}`}
+                                      title={`${medicineDetails.name}, Pack of ${getPackOfMedicine(
+                                        medicineDetails
+                                      )}`}
+                                    />
+                                  </div>
+                                  <div
+                                    className={classes.imageDesc}
+                                  >{`${medicineDetails.image.length} PHOTOS`}</div>
+                                </div>
+                              </>
                             ) : (
                               <div className={classes.noImageWrapper}>
                                 <img
@@ -1329,6 +1393,7 @@ const MedicineDetails: React.FC = (props) => {
                       </div>
                       {renderSimilarProducts('mobileDisplay')}
                       <MedicineInformation data={medicineDetails} />
+                      <div id="myImage" className={classes.myImageClass} />
                     </div>
                     {renderSimilarProducts('webDisplay')}
                   </>

@@ -108,6 +108,7 @@ type PatientAppointmentsInput = {
 
 type PatinetAppointments = {
   id: string;
+  hideHealthRecordNudge: Boolean;
   patientId: string;
   doctorId: string;
   appointmentDateTime: Date;
