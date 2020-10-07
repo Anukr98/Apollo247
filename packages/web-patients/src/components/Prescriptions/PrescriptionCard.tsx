@@ -60,17 +60,15 @@ export const PrescriptionCard: React.FC<PrescriptionCardProps> = (props) => {
   const [completed, setCompleted] = React.useState(0);
 
   useEffect(() => {
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'Prescription Uploaded',
+    });
+    /**Gtm code start end */
     function progress() {
       setCompleted((oldCompleted) => {
         if (oldCompleted === 100) {
           /* this will stop animation once the progress bar reaches 100 */
-
-          /**Gtm code start start */
-          dataLayerTracking({
-            event: 'Prescription Uploaded',
-          });
-          /**Gtm code start end */
-
           return oldCompleted;
         }
         const diff = Math.random() * 10;

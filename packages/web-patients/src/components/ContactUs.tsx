@@ -5,6 +5,7 @@ import { Header } from 'components/Header';
 import { BottomLinks } from 'components/BottomLinks';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { MetaTagsComp } from 'MetaTagsComp';
+import { dataLayerTracking } from 'gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -51,6 +52,19 @@ const ContactUs: React.FC = (props) => {
       canonicalLink: typeof window !== 'undefined' && window.location && window.location.href,
     });
   }, []);
+
+  useEffect(() => {
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: 'Contact Page',
+      pageLOB: 'Others',
+      pageType: 'Contact Page',
+    });
+    /**Gtm code start end */
+  }, []);
+
   return (
     <div className={classes.root}>
       {metaTagProps && <MetaTagsComp {...metaTagProps} />}
