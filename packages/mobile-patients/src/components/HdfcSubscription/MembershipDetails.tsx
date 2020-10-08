@@ -13,7 +13,6 @@ import {
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import {
-  HelpIcon,
   DownOrange,
   UpOrange,
   EllipseBulletPoint,
@@ -21,16 +20,18 @@ import {
   HdfcBannerSilver,
   HdfcBannerGold,
   HdfcBannerPlatinum,
-} from '../ui/Icons';
-import { TabsComponent } from '../ui/TabsComponent';
-import { AppRoutes } from '../NavigatorContainer';
+} from '@aph/mobile-patients/src/components/ui/Icons';
+import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { HdfcConnectPopup } from './HdfcConnectPopup';
 import { Hdfc_values } from '@aph/mobile-patients/src/strings/strings.json';
-import { useAppCommonData } from '../AppCommonDataProvider';
-import { g } from '../../helpers/helperFunctions';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AvailNowPopup } from './AvailNowPopup';
-import { Spinner } from '../ui/Spinner';
-import { useUIElements } from '../UIElementsProvider';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { WebEngageEvents, WebEngageEventName, HdfcBenefitInfo } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
 const { width } = Dimensions.get('window');
 
@@ -157,7 +158,9 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
 
   const { hdfcUserSubscriptions } = useAppCommonData();
   const { showAphAlert, hideAphAlert } = useUIElements();
+  const { currentPatient } = useAllCurrentPatients();
   const planName = g(hdfcUserSubscriptions, 'name');
+  const plan = planName!.substring(0, planName!.indexOf('+'));
   const upgradePlanName = g(hdfcUserSubscriptions, 'canUpgradeTo', 'name');
   const premiumPlanName = g(hdfcUserSubscriptions, 'canUpgradeTo', 'canUpgradeTo', 'name');
   const membershipDetails =
@@ -222,7 +225,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
           icon,
           availableCount,
         } = value;
-        const { action, message, type } = benefitCtaAction;
+        const { action, message, type, webEngageEvent } = benefitCtaAction;
         const ctaLabelName = ctaLabel.toUpperCase();
         return renderRedeemableCards(
           headerContent,
@@ -233,7 +236,8 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
           type,
           icon,
           availableCount,
-          value._id
+          value._id,
+          webEngageEvent,
         );
       })
     );
@@ -316,6 +320,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     icon: string | null,
     availableCount: number,
     id: string,
+    webengageevent: string,
   ) => {
     return (
       <View style={[styles.cardStyle, { marginVertical: 10 }]}>
@@ -323,7 +328,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         {ctaLabel !== 'NULL' && (
           <TouchableOpacity
             onPress={() => {
-              handleCtaClick(type, action, message, availableCount, id);
+              handleCtaClick(type, action, message, availableCount, id, webengageevent);
             }}
           >
             <Text style={styles.redeemButtonText}>{ctaLabel}</Text>
@@ -343,13 +348,47 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     });
   };
 
+  const handleWebengageEvents = (event: string) => {
+    const eventAttributes: HdfcBenefitInfo = {
+      'Plan': plan,
+      'User ID': g(currentPatient, 'id'),
+    };
+    const eventName = Hdfc_values.WEBENGAGE_EVENT_NAMES;
+    if (event === eventName.HDFCDocOnCallClick) {
+      postWebEngageEvent(WebEngageEventName.HDFC_DOC_ON_CALL_CLICK, eventAttributes);
+    } else if (event === eventName.HDFCCovidCareClick) {
+      postWebEngageEvent(WebEngageEventName.HDFC_COVID_CARE_CLICK, eventAttributes);
+    } else if (event === eventName.HDFCDigitizationPHRClick) {
+      postWebEngageEvent(WebEngageEventName.HDFC_DIGITIZATION_PHR_CLICK, eventAttributes);
+    } else if (event === eventName.HDFCConciergeClick) {
+      postWebEngageEvent(WebEngageEventName.HDFC_CONCIERGE_CLICK, eventAttributes);
+    } else if (event === eventName.HDFCDietitianClick) {
+      postWebEngageEvent(WebEngageEventName.HDFC_DIETITIAN_CLICK, eventAttributes);
+    } else if (event === eventName.HDFCDiagnosticClick) {
+      postWebEngageEvent(WebEngageEventName.HDFC_DIAGNOSTIC_CLICK, eventAttributes);
+    } else if (event === eventName.HDFCDigitalVaultClick) {
+      postWebEngageEvent(WebEngageEventName.HDFC_DIGITAL_VAULT_CLICK, eventAttributes);
+    } else if (event === eventName.HDFC7000DoctorsClick) {
+      postWebEngageEvent(WebEngageEventName.HDFC_7000_DOCTORS_CLICK, eventAttributes);
+    } else if (event === eventName.HDFCFreeMedClick) {
+      postWebEngageEvent(WebEngageEventName.HDFC_FREE_MED_CHECK_CLICK, eventAttributes);
+    }
+  };
+
   const handleCtaClick = (
     type: string,
     action: string,
     message: string,
     availableCount: number,
     id: string,
+    webengageevent: string,
   ) => {
+    handleWebengageEvents(webengageevent);
+    const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_REDEEM_CLICKED] = {
+      'User ID': g(currentPatient, 'id'),
+      'Benefit': type == Hdfc_values.WHATSAPP_OPEN_CHAT ? type : action,
+    };
+    postWebEngageEvent(WebEngageEventName.HDFC_REDEEM_CLICKED, eventAttributes);
     if (type == Hdfc_values.REDIRECT) {
       if (action == Hdfc_values.SPECIALITY_LISTING) {
         props.navigation.navigate(AppRoutes.DoctorSearch);

@@ -435,6 +435,17 @@
     "NOT_HDFC_CUSTOMER_MESSAGE": "If you are not an HDFC Bank customer, you can become one by opening a Savings account with HDFC Bank",
     "HDFC_CARD_CAPTION": "Please ensure your Mobile no. and DOB with Apollo 24|7 match HDFC Bank records",
     "SAVINGS_ACCOUNT_CAPTION": "If you are not an HDFC Bank customer, you can become one by opening a Savings account with HDFC Bank",
+    "WEBENGAGE_EVENT_NAMES": {
+      "HDFCDocOnCallClick": "HDFCDocOnCallClick",
+      "HDFCCovidCareClick": "HDFCCovidCareClick",
+      "HDFCDigitizationPHRClick": "HDFCDigitizationPHRClick",
+      "HDFCConciergeClick": "HDFCConciergeClick",
+      "HDFCDietitianClick": "HDFCDietitianClick",
+      "HDFCDiagnosticClick": "HDFCDiagnosticClick",
+      "HDFCDigitalVaultClick": "HDFCDigitalVaultClick",
+      "HDFC7000DoctorsClick": "HDFC7000DoctorsClick",
+      "HDFCFreeMedClick": "HDFCFreeMedClick"
+    }
   },
   "symptomChecker": {
     "howItWorks": "HOW IT WORKS?",
