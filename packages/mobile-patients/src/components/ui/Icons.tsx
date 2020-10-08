@@ -276,6 +276,10 @@ export const ArrowLeft: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_arrow_left.png')} />
 );
 
+export const WhiteArrowRightIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_white_arrow_right.png')} />
+);
+
 export const ArrowRight: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_arrow_right.png')} />
 );
@@ -412,6 +416,10 @@ export const FilterDarkBlueIcon: React.FC<IconProps> = (props) => (
 
 export const FilterGreenIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" source={require('./icons/ic_filter_green.png')} {...props} />
+);
+
+export const PreviousPrescriptionIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" source={require('./icons/previous_prescription_icon.png')} {...props} />
 );
 
 export const ChatCallIcon: React.FC<IconProps> = (props) => (

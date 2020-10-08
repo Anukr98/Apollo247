@@ -15,13 +15,18 @@ import _ from 'lodash';
 import { SearchInput } from '@aph/mobile-patients/src/components/ui/SearchInput';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { getPatientAllAppointments_getPatientAllAppointments_appointments } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
+import {
+  getPatientAllAppointments_getPatientAllAppointments_appointments,
+  getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet_medicinePrescription,
+} from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
 import {
   DoctorIcon,
   ChatBlueIcon,
   DoctorPlaceholderImage,
   CTLightGrayVideo,
   PhysicalConsultDarkBlueIcon,
+  PreviousPrescriptionIcon,
+  WhiteArrowRightIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -32,6 +37,7 @@ import { CapsuleView } from '@aph/mobile-patients/src/components/ui/CapsuleView'
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { ConsultOverlay } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultOverlay';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { ListItem } from 'react-native-elements';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -213,6 +219,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
+  },
+  medicineNameTextStyle: {
+    ...theme.viewStyles.text('M', 12, '#FFFFFF', 1, 20, 0.04),
+    paddingHorizontal: 6,
+  },
+  medicineCardViewStyle: {
+    backgroundColor: '#0087BA',
+    borderRadius: 10,
+    paddingLeft: 10,
+    paddingRight: 3,
+    marginTop: 7,
   },
 });
 
@@ -441,7 +458,17 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
         .add(followUpAfterInDays, 'days')
         .startOf('day')
         .isSameOrAfter(moment(new Date()).startOf('day'));
-
+    const medicinePrescription = g(caseSheet, '0' as any, 'medicinePrescription');
+    const getMedicines = (
+      medicines: (getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet_medicinePrescription | null)[]
+    ) =>
+      medicines
+        ? medicines
+            .filter((i) => i?.medicineName)
+            .map((i) => i?.medicineName)
+            .join(', ')
+        : null;
+    const followUpMedicineNameText = getMedicines(medicinePrescription!);
     const renderPastConsultationButtons = () => {
       const onPressPastAppointmentViewDetails = () => {
         item.appointmentType === 'ONLINE'
@@ -770,6 +797,22 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
               </View>
             </View>
             <View style={[styles.separatorStyle, { marginHorizontal: 16 }]} />
+            {item?.isFollowUp === 'true' && followUpMedicineNameText ? (
+              <View style={{ marginHorizontal: 16, marginTop: 6 }}>
+                <Text style={{ ...theme.viewStyles.text('M', 12, '#02475B', 1, 20, 0.03) }}>
+                  {'Previous Prescription'}
+                </Text>
+                <ListItem
+                  title={followUpMedicineNameText}
+                  titleProps={{ numberOfLines: 1 }}
+                  titleStyle={styles.medicineNameTextStyle}
+                  pad={0}
+                  containerStyle={styles.medicineCardViewStyle}
+                  leftAvatar={<PreviousPrescriptionIcon style={{ height: 24, width: 22.5 }} />}
+                  rightAvatar={<WhiteArrowRightIcon style={{ height: 24, width: 24 }} />}
+                />
+              </View>
+            ) : null}
             {item.status == STATUS.PENDING ||
             // dateIsAfterconsult ||
             item.status == STATUS.IN_PROGRESS ||

@@ -15,6 +15,8 @@ import {
   FilterDarkBlueIcon,
   FilterGreenIcon,
   ChatBlueIcon,
+  PreviousPrescriptionIcon,
+  WhiteArrowRightIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppointmentFilterScene } from '@aph/mobile-patients/src/components/ConsultRoom/AppointmentFilterScene';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
@@ -23,7 +25,10 @@ import {
   CommonLogEvent,
   isIphone5s,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
+import {
+  getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet,
+  getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet_medicinePrescription,
+} from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
 import { GET_PATIENT_ALL_APPOINTMENTS } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { getPatinetAppointments_getPatinetAppointments_patinetAppointments } from '@aph/mobile-patients/src/graphql/types/getPatinetAppointments';
@@ -42,6 +47,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import moment, { Moment } from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
+import { ListItem } from 'react-native-elements';
 import {
   Image,
   NativeScrollEvent,
@@ -57,7 +63,6 @@ import {
   Platform,
   Dimensions,
 } from 'react-native';
-import { Badge } from 'react-native-elements';
 import { FlatList, NavigationEvents, NavigationScreenProps } from 'react-navigation';
 import {
   getPatientAllAppointments,
@@ -372,6 +377,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
+  },
+  medicineNameTextStyle: {
+    ...theme.viewStyles.text('M', 12, '#FFFFFF', 1, 20, 0.04),
+    paddingHorizontal: 6,
+  },
+  medicineCardViewStyle: {
+    backgroundColor: '#0087BA',
+    borderRadius: 10,
+    paddingLeft: 10,
+    paddingRight: 3,
+    marginTop: 7,
   },
 });
 
@@ -1012,7 +1028,17 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         .add(followUpAfterInDays, 'days')
         .startOf('day')
         .isSameOrAfter(moment(new Date()).startOf('day'));
-
+    const medicinePrescription = g(caseSheet, '0' as any, 'medicinePrescription');
+    const getMedicines = (
+      medicines: (getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet_medicinePrescription | null)[]
+    ) =>
+      medicines
+        ? medicines
+            .filter((i) => i?.medicineName)
+            .map((i) => i?.medicineName)
+            .join(', ')
+        : null;
+    const followUpMedicineNameText = getMedicines(medicinePrescription!);
     const renderPastConsultationButtons = () => {
       const onPressPastAppointmentViewDetails = () => {
         item.appointmentType === 'ONLINE'
@@ -1343,6 +1369,22 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               </View>
             </View>
             <View style={[styles.separatorStyle, { marginHorizontal: 16 }]} />
+            {item?.isFollowUp === 'true' && followUpMedicineNameText ? (
+              <View style={{ marginHorizontal: 16, marginTop: 6 }}>
+                <Text style={{ ...theme.viewStyles.text('M', 12, '#02475B', 1, 20, 0.03) }}>
+                  {'Previous Prescription'}
+                </Text>
+                <ListItem
+                  title={followUpMedicineNameText}
+                  titleProps={{ numberOfLines: 1 }}
+                  titleStyle={styles.medicineNameTextStyle}
+                  pad={0}
+                  containerStyle={styles.medicineCardViewStyle}
+                  leftAvatar={<PreviousPrescriptionIcon style={{ height: 24, width: 22.5 }} />}
+                  rightAvatar={<WhiteArrowRightIcon style={{ height: 24, width: 24 }} />}
+                />
+              </View>
+            ) : null}
             {item.status == STATUS.PENDING ||
             // dateIsAfterconsult ||
             item.status == STATUS.IN_PROGRESS ||
@@ -1404,7 +1446,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const [scrollOffset, setScrollOffset] = useState<number>(0);
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    // console.log(`scrollOffset, ${event.nativeEvent.contentOffset.y}`);
     const offset = event.nativeEvent.contentOffset.y;
     if (!(offset > 1 && scrollOffset > 1)) {
       setScrollOffset(event.nativeEvent.contentOffset.y);
