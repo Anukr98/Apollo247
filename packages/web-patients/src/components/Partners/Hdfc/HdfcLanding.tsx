@@ -17,7 +17,7 @@ import { UpdatePatient, UpdatePatientVariables } from 'graphql/types/UpdatePatie
 import { UPDATE_PATIENT } from 'graphql/profiles';
 import { ProfileSuccess } from 'components/ProfileSuccess';
 import { NewProfile } from 'components/NewProfile';
-import { trackLanding, hdfcUnlockNowTracking } from 'webEngageTracking';
+import { trackLanding, hdfcUnlockNowTracking, hdfcSignupFormShown } from 'webEngageTracking';
 import { MetaTagsComp } from 'MetaTagsComp';
 import { HDFC_REF_CODE } from 'helpers/constants';
 
@@ -807,6 +807,7 @@ export const HdfcLanding: React.FC = (props) => {
       {/* SignUp Popover */}
       {defaultNewProfile && (
         <AphDialog maxWidth="sm" open={defaultNewProfile && !hasExistingProfile ? true : false}>
+          {hdfcSignupFormShown()}
           <NewProfile patient={defaultNewProfile} onClose={() => {}} customSignUp={customSignUp} />
         </AphDialog>
       )}

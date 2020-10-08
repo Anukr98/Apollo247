@@ -973,6 +973,26 @@ export const HdfcUserSignupDetailTracking = (userDetailData: UserDetail) => {
   }
 };
 
+export const hdfcSignupFormShown = () => {
+  if (typeof window !== 'undefined') {
+    try {
+      window.webengage.track('HDFC Landing Registration Form Shown - web', {});
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const hdfcSignupDoneTracking = () => {
+  if (typeof window !== 'undefined') {
+    try {
+      window.webengage.track('HDFC Landing Registration Done - web', {});
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
 export const HDFCGenerateOTPClicked = (data: any) => {
   if (typeof window !== 'undefined') {
     const { mobileNumber, DOB, emailId, PartnerId } = data;
