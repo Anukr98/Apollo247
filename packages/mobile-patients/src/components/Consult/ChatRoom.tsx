@@ -6326,6 +6326,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setIsAudioCall(true);
     } else {
       setIsCall(true);
+      if (patientJoinedCall.current) {
+        setTimeout(() => {
+          setShowVideo(false);
+        }, 300);
+      }
     }
     setLoading(false);
   };
