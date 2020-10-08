@@ -71,6 +71,7 @@ export interface BenefitCtaAction {
   type: string;
   action: string;
   message: string;
+  webEngageEvent: string;
 }
 
 export interface PlanCoupons {

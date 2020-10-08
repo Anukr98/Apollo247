@@ -1034,6 +1034,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             type: g(ctaAction, 'type'),
             action: g(ctaAction, 'meta', 'action'),
             message: g(ctaAction, 'meta', 'message'),
+            webEngageEvent: g(ctaAction, 'meta', 'webEngage'),
           };
           const benefit: PlanBenefits = {
             _id: item!._id,
