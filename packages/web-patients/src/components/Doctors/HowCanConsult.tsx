@@ -344,8 +344,9 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
   return (
     <div className={classes.root}>
       <div className={classes.followUpText}>
-        {doctorDetails.fullName} is available for a minimum of {doctorDetails.chatDays} days for free follow-up text post Consult. However, doctor can decide to increase the
-        follow-up text days as per case basis.
+        {doctorDetails.fullName} is available for a minimum of {doctorDetails.chatDays} days for
+        free follow-up text post Consult. However, doctor can decide to increase the follow-up text
+        days as per case basis.
       </div>
       <div className={classes.headerGroup}>
         <h3>How can I consult with {doctorName}:</h3>
@@ -407,7 +408,9 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
           </span>
           <div className={classes.groupDetails}>
             <h4>
-              {physicalDirection ? 'Meet in person' : 'How to consult ON WEB via  audio/video ?'}
+              {physicalDirection
+                ? 'Meet in person'
+                : 'How to consult ON WEB via text/audio/video ?'}
             </h4>
             {(physicalDirection || (isSmallScreen && onlineDirection)) && (
               <p
@@ -472,7 +475,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
               </span>
               <span>
                 {onlineDirection
-                  ? 'Speak to the doctor via video/audio/chat'
+                  ? 'Speak to the doctor via video/audio/text'
                   : 'Visit the doctor at Hospital/Clinic'}
               </span>
             </li>
