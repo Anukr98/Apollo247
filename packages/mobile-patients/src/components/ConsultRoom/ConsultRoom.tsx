@@ -62,7 +62,6 @@ import {
   VALIDATE_HDFC_OTP,
   CREATE_USER_SUBSCRIPTION,
   GET_ALL_GROUP_BANNERS_OF_USER,
-  GET_PATIENT_ALL_APPOINTMENTS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { getPatientFutureAppointmentCount } from '@aph/mobile-patients/src/graphql/types/getPatientFutureAppointmentCount';
 import {
@@ -158,10 +157,7 @@ import { LocalStrings } from '@aph/mobile-patients/src/strings/LocalStrings';
 import { addVoipPushToken, addVoipPushTokenVariables } from '../../graphql/types/addVoipPushToken';
 import Carousel from 'react-native-snap-carousel';
 import { HdfcConnectPopup } from '../HdfcSubscription/HdfcConnectPopup';
-import {
-  getPatientAllAppointments,
-  getPatientAllAppointments_getPatientAllAppointments_appointments,
-} from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
+import { getPatientAllAppointments_getPatientAllAppointments_appointments } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
 
 const { Vitals } = NativeModules;
 
@@ -537,7 +533,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       checkPermissions(['camera', 'microphone']).then((response: any) => {
         const { camera, microphone } = response;
         if (camera !== 'authorized' || microphone !== 'authorized') {
-          fetchAppointments();
+          fetchInProgressAppointments();
         }
       });
     }
@@ -574,6 +570,37 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       getUserBanners();
     } catch (e) {}
   }, [currentPatient]);
+
+  const fetchInProgressAppointments = async () => {
+    setLoading && setLoading(true);
+    try {
+      const res = await client.query<getPatientFutureAppointmentCount>({
+        query: GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
+        fetchPolicy: 'no-cache',
+        variables: {
+          patientId: currentPatient?.id,
+        },
+      });
+      if (res?.data?.getPatientFutureAppointmentCount) {
+        const inProgressAppointments =
+          g(res, 'data', 'getPatientFutureAppointmentCount', 'activeAndInProgressConsultsCount') ||
+          0;
+        if (inProgressAppointments > 0) {
+          overlyCallPermissions(
+            currentPatient!.firstName!,
+            'the doctor',
+            showAphAlert,
+            hideAphAlert,
+            true
+          );
+        }
+        setLoading && setLoading(false);
+      }
+    } catch (error) {
+      setLoading && setLoading(false);
+      CommonBugFender('ConsultRoom_getPatientFutureAppointmentCount', error);
+    }
+  };
 
   const showFreeConsultOverlay = (doctorName: string) => {
     showAphAlert!({
@@ -1235,9 +1262,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             setCurrentAppointments(
               (g(data, 'data', 'getPatientFutureAppointmentCount', 'consultsCount') || 0).toString()
             );
-            const appointmentsCount = (
-              g(data, 'data', 'getPatientFutureAppointmentCount', 'consultsCount') || 0
-            ).toString();
             setAppointmentLoading(false);
           })
           .catch((e) => {
@@ -1247,75 +1271,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       }
     }
   }, [currentPatient, analytics, props.navigation.state.params]);
-
-  const fetchAppointments = async () => {
-    setLoading && setLoading(true);
-    let userId: any = await AsyncStorage.getItem('selectedProfileId');
-    userId = JSON.parse(userId);
-    client
-      .query<getPatientAllAppointments>({
-        query: GET_PATIENT_ALL_APPOINTMENTS,
-        fetchPolicy: 'no-cache',
-        variables: {
-          patientId:
-            userId !== g(currentPatient, 'id') ? g(currentPatient, 'id') || userId : userId,
-        },
-      })
-      .then(({ data }) => {
-        if (
-          data?.getPatientAllAppointments?.appointments &&
-          consultations !== data.getPatientAllAppointments.appointments
-        ) {
-          let pastAppointments:
-            | getPatientAllAppointments_getPatientAllAppointments_appointments
-            | any = [];
-          let activeAppointments:
-            | getPatientAllAppointments_getPatientAllAppointments_appointments
-            | any = [];
-          data.getPatientAllAppointments.appointments.forEach((item) => {
-            const caseSheet = followUpChatDaysCaseSheet(item.caseSheet);
-            const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpAfterInDays');
-            const followUpAfterInDays =
-              caseSheetChatDays || caseSheetChatDays === '0'
-                ? caseSheetChatDays === '0'
-                  ? 0
-                  : Number(caseSheetChatDays) - 1
-                : 6;
-            if (
-              moment(new Date(item.appointmentDateTime))
-                .add(followUpAfterInDays, 'days')
-                .startOf('day')
-                .isSameOrAfter(moment(new Date()).startOf('day'))
-            ) {
-              activeAppointments.push(item);
-            } else {
-              pastAppointments.push(item);
-            }
-          });
-          setconsultations(data.getPatientAllAppointments.appointments);
-          const inProgressAppointments = activeAppointments?.filter((item: any) => {
-            return item.status !== STATUS.COMPLETED;
-          });
-          if (inProgressAppointments && inProgressAppointments.length > 0) {
-            overlyCallPermissions(
-              currentPatient!.firstName!,
-              activeAppointments[0].doctorInfo.displayName,
-              showAphAlert,
-              hideAphAlert,
-              true
-            );
-          }
-        } else {
-          setconsultations([]);
-        }
-        setLoading && setLoading(false);
-      })
-      .catch((e) => {
-        setLoading && setLoading(false);
-        CommonBugFender('Consult_fetchAppointments', e);
-        console.log('Error occured in GET_PATIENT_ALL_APPOINTMENTS', e);
-      });
-  };
 
   useEffect(() => {
     async function fetchData() {
