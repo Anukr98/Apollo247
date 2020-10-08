@@ -2345,7 +2345,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     'appointmentId': props.appointmentId,
     'patientId': params.patientId,
     'doctorId': props.doctorId,
-    'sessionId': props.sessionId,
+    'sessionId': sessionId,
   }
   return (
     <div className={classes.stickyHeader}>
