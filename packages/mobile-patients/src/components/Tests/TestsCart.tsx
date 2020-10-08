@@ -280,7 +280,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   >();
 
   const itemsWithHC = cartItems!.filter((item) => item!.collectionMethod == 'HC');
-  const itemWithIdWithHC = itemsWithHC!.map((item) => parseInt(item.id));
+  const itemWithId = itemsWithHC!.map((item) => parseInt(item.id));
 
   const isValidPinCode = (text: string): boolean => /^(\s*|[1-9][0-9]*)$/.test(text);
 
@@ -1821,7 +1821,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       >({
         query: GET_DIAGNOSTICS_HC_CHARGES,
         variables: {
-          itemIDs: itemWithIdWithHC,
+          itemIDs: itemWithId,
           totalCharges: cartTotal,
           slotID: slotVal!,
           pincode: parseInt(pinCode, 10),
