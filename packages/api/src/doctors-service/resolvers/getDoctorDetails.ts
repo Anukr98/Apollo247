@@ -162,13 +162,10 @@ export const getDoctorDetailsTypeDefs = gql`
     isActive: Boolean!
     id: ID!
     chatDays: Int
-<<<<<<< HEAD
-=======
     isIvrSet: Boolean
     ivrConsultType: ConsultMode
     ivrCallTimeOnline: Int
     ivrCallTimePhysical: Int
->>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
     languages: String
     lastName: String!
     mobileNumber: String!

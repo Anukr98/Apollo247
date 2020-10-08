@@ -209,12 +209,10 @@ import {
   patientDeviceVoipTokenTypeDefs,
   patientDeviceVoipTokenResolvers,
 } from 'profiles-service/resolvers/savepatientDeviceVoipToken';
-<<<<<<< HEAD
 import {
   validateHDFCCustomerTypeDefs,
   validateHDFCCustomer,
 } from 'profiles-service/resolvers/hdfcCustomerValidation';
-=======
 
 import {
   addPatientHealthCheckRecordTypeDefs,
@@ -223,28 +221,24 @@ import {
 
 import {
   addPatientHospitalizationRecordTypeDefs,
-  addPatientHospitalizationRecordResolvers
+  addPatientHospitalizationRecordResolvers,
 } from 'profiles-service/resolvers/addHospitalizationRecords';
 
 import {
   addPatientPrescriptionRecordsTypeDefs,
-  addPatientPrescriptionRecordResolvers
-} from 'profiles-service/resolvers/addPrescriptionRecords'
+  addPatientPrescriptionRecordResolvers,
+} from 'profiles-service/resolvers/addPrescriptionRecords';
 
 import {
   addPatientLabTestRecordTypeDefs,
-  addPatientLabTestRecordResolvers
+  addPatientLabTestRecordResolvers,
 } from 'profiles-service/resolvers/addLabTestRecords';
 
-<<<<<<< HEAD
->>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
-=======
 import {
   deletePatientPrismMedicalRecordTypeDefs,
-  deletePatientPrismMedicalRecordResolvers
-} from 'profiles-service/resolvers/deletePatientPrismMedicalRecord'
+  deletePatientPrismMedicalRecordResolvers,
+} from 'profiles-service/resolvers/deletePatientPrismMedicalRecord';
 
->>>>>>> dd4424302c7871e5f39232d0300dfa52a9517f83
 (async () => {
   await connect();
   const profilesLogger = winstonLogger.loggers.get('profileServiceLogger');
@@ -262,7 +256,7 @@ import {
         doctorsDb,
         consultsDb,
         currentPatient,
-        headers: headers
+        headers: headers,
       };
       return context;
     },
@@ -500,13 +494,12 @@ import {
         resolvers: patientDeviceVoipTokenResolvers,
       },
       {
-<<<<<<< HEAD
         typeDefs: validateHDFCCustomerTypeDefs,
         resolvers: validateHDFCCustomer,
       },
-=======
+      {
         typeDefs: addPatientHealthCheckRecordTypeDefs,
-        resolvers: addPatientHealthCheckRecordsResolvers
+        resolvers: addPatientHealthCheckRecordsResolvers,
       },
       {
         typeDefs: addPatientHospitalizationRecordTypeDefs,
@@ -514,21 +507,16 @@ import {
       },
       {
         typeDefs: addPatientLabTestRecordTypeDefs,
-        resolvers: addPatientLabTestRecordResolvers
-<<<<<<< HEAD
-      }
->>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
-=======
+        resolvers: addPatientLabTestRecordResolvers,
       },
       {
         typeDefs: addPatientPrescriptionRecordsTypeDefs,
-        resolvers: addPatientPrescriptionRecordResolvers
+        resolvers: addPatientPrescriptionRecordResolvers,
       },
       {
         typeDefs: deletePatientPrismMedicalRecordTypeDefs,
-        resolvers: deletePatientPrismMedicalRecordResolvers
+        resolvers: deletePatientPrismMedicalRecordResolvers,
       },
->>>>>>> dd4424302c7871e5f39232d0300dfa52a9517f83
     ]),
     plugins: [
       /* This plugin is defined in-line. */

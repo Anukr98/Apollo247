@@ -23,7 +23,7 @@ import {
   NotificationBinArchive,
   AppointmentUpdateHistory,
   ExotelDetails,
-  ConsultQueueItem
+  ConsultQueueItem,
 } from 'consults-service/entities';
 import {
   AdminDoctorMapper,
@@ -97,15 +97,11 @@ import {
   PatientEntitiySubscriber,
 } from 'profiles-service/entities';
 import { AppointmentEntitySubscriber } from 'consults-service/entities/observers/appointmentObserver';
-<<<<<<< HEAD
-import { AppointmentCallFeedback } from 'consults-service/entities/appointmentCallFeedbackEntity'
 import { MedicineEntitySubscriber } from 'profiles-service/entities/observers/medicinePaymentSuccessObserver';
 import { DiagnosticEntitySubscriber } from 'profiles-service/entities/observers/diagnosticPaymentSuccessObserver';
-=======
 import { AppointmentCallFeedback } from 'consults-service/entities/appointmentCallFeedbackEntity';
 import { HealthCheckRecords } from 'profiles-service/entities/healthCheckRecordsEntity';
 import { HospitalizationRecords } from 'profiles-service/entities/hospitalizationRecordsEntity';
->>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
 
 export const connect = async () => {
   return await createConnections([
@@ -135,7 +131,7 @@ export const connect = async () => {
         AppointmentUpdateHistory,
         ExotelDetails,
         ConsultQueueItem,
-        AppointmentCallFeedback
+        AppointmentCallFeedback,
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,
@@ -232,7 +228,7 @@ export const connect = async () => {
         PharmacologistConsult,
         MedicineOrderAddress,
         HealthCheckRecords,
-        HospitalizationRecords
+        HospitalizationRecords,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,

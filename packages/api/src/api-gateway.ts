@@ -64,15 +64,12 @@ export type Resolver<Parent, Args, Context, Result> = (
         )}/graphql`,
       },
       {
-<<<<<<< HEAD
         name: 'subscriptions',
         url: `http://${process.env.SUBSCRIPTION_SERVICE_HOST}${getPortStr(
           process.env.SUBSCRIPTION_SERVICE_PORT ? process.env.SUBSCRIPTION_SERVICE_PORT : '80'
         )}/graphql`,
       },
       {
-=======
->>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
         name: 'diagnostics',
         url: `http://${process.env.DIAGNOSTICS_SERVICE_HOST}${getPortStr(
           process.env.DIAGNOSTICS_SERVICE_PORT ? process.env.DIAGNOSTICS_SERVICE_PORT : '80'

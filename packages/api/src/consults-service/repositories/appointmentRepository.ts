@@ -726,7 +726,6 @@ export class AppointmentRepository extends Repository<Appointment> {
       .leftJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
       .andWhere('appointment.patientId IN (:...ids)', { ids })
       .andWhere(
-<<<<<<< HEAD
         'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',
         {
           status1: STATUS.CANCELLED,
@@ -735,15 +734,6 @@ export class AppointmentRepository extends Repository<Appointment> {
           status4: STATUS.PAYMENT_FAILED,
           status5: STATUS.PAYMENT_PENDING_PG,
           status6: STATUS.PAYMENT_ABORTED,
-=======
-        'appointment.status not in(:status1,:status2,:status3,:status4,:status5)',
-        {
-          status1: STATUS.PAYMENT_PENDING,
-          status2: STATUS.UNAVAILABLE_MEDMANTRA,
-          status3: STATUS.PAYMENT_FAILED,
-          status4: STATUS.PAYMENT_PENDING_PG,
-          status5: STATUS.PAYMENT_ABORTED,
->>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
         }
       )
       .offset(offset)

@@ -373,11 +373,7 @@ export enum ApiConstants {
   DOCTOR_CHAT_SMS_LAST_DAY = 'Namaste {0}, you have pending chat messages from {1} patient(s). Please login to your doctor portal to reply. Please note that for {2} patient(s), today is the last day to reply.',
   CASESHEET_PROVISIONAL_HEADING = 'Diagnosis',
   CASESHEET_WHATSAPP_LABEL = 'WhatsApp',
-<<<<<<< HEAD
-  CASESHEET_WHATSAPP_NUMBER = '+91 80471 04009 ', //'+91 93550 31397',
-=======
   CASESHEET_WHATSAPP_NUMBER = '+91 80471 04009', //'+91 93550 31397',
->>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
   CASESHEET_EMAIL_LABEL = 'E-mail',
   CASESHEET_EMAIL = 'Helpdesk@apollo247.com',
   AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT = 10,

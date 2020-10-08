@@ -93,7 +93,7 @@ type ExotelRequest = {
   To?: string;
   CallerId: string | undefined;
   Url?: string;
-  CustomField?: string
+  CustomField?: string;
 };
 
 type callInputs = {
@@ -109,15 +109,11 @@ interface ExotelCalling {
   errorMessage: string;
 }
 
-<<<<<<< HEAD
 type ExotelCallFlowResponse = {
   success: boolean;
 };
 
-async function exotelCalling(callInputs: callInputs): Promise<ExotelCalling> {
-=======
 export async function exotelCalling(callInputs: callInputs): Promise<ExotelCalling> {
->>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
   if (!callInputs.exotelUrl || !callInputs.exotelRequest.CallerId) {
     throw new AphError(AphErrorMessages.INVALID_EXOTEL_PARAMETERS, undefined, {});
   }
@@ -278,7 +274,6 @@ const initiateCallForPartner: Resolver<
   null,
   ExotelCallFlowResponse
 > = async (parent, { mobileNumber, benefitId }) => {
-
   const isDocOnCallAvailable = await checkDocOnCallAvailable(mobileNumber, benefitId);
   if (!isDocOnCallAvailable) {
     throw new AphError(AphErrorMessages.NO_DOCTOR_ON_CALL_BENEFIT);
@@ -467,10 +462,6 @@ const getCallDetailsByAppintment: Resolver<
 
   return { calls: callsArray };
 };
-
-
-
-
 
 export const exotelCallingResolvers = {
   Query: {
