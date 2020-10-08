@@ -1394,27 +1394,15 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         .catch((e) => {
           const error = JSON.parse(JSON.stringify(e));
           const errorMessage = error && error.message;
-          const patientName = patientDetails!.firstName + ' ' + patientDetails!.lastName;
-          const logObject = {
-            api: 'EndAppointmentSession',
-            inputParam: JSON.stringify({
-              appointmentId: props.appointmentId,
-              status: status,
-              noShowBy: REQUEST_ROLES.PATIENT,
-            }),
-            appointmentId: props.appointmentId,
-            doctorId: props.doctorId,
-            doctorDisplayName: currentPatient!.displayName,
-            patientId: params.patientId,
-            patientName: patientName,
-            currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
-            appointmentDateTime: moment(new Date(props.appointmentDateTime)).format(
-              'MMMM DD YYYY h:mm:ss a'
-            ),
-            error: JSON.stringify(e),
-          };
-
-          props.sessionClient.notify(JSON.stringify(logObject));
+          webEngageEventTracking(
+            {
+              'API name': 'EndAppointmentSession',
+              'ErrorDetails': JSON.stringify(e),
+              'Consultation Display ID': props.webengageConsultTrackingObject.appointmentDisplayId,
+              'Consult ID': props.webengageConsultTrackingObject.appointmentId,
+            },
+            'Front_end - Doctor API-Error on Casesheet'
+          );
           alert(errorMessage);
         });
     } else {
@@ -1608,25 +1596,15 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         variables,
       })
       .catch((error: ApolloError) => {
-        const patientName =
-          props.casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
-          ' ' +
-          props.casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
-        const logObject = {
-          api: 'EndCallNotification',
-          inputParam: JSON.stringify(variables),
-          appointmentId: props.appointmentId,
-          doctorId: currentPatient!.id,
-          doctorDisplayName: currentPatient!.displayName,
-          patientId: params.patientId,
-          patientName: patientName,
-          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
-          appointmentDateTime: moment(new Date(props.appointmentDateTime)).format(
-            'MMMM DD YYYY h:mm:ss a'
-          ),
-          error: JSON.stringify(error),
-        };
-        sessionClient.notify(JSON.stringify(logObject));
+        webEngageEventTracking(
+          {
+            'API name': 'SendCallDisconnectNotification',
+            'ErrorDetails': JSON.stringify(error),
+            'Consultation Display ID': props.webengageConsultTrackingObject.appointmentDisplayId,
+            'Consult ID': props.webengageConsultTrackingObject.appointmentId,
+          },
+          'Front_end - Doctor API-Error on Casesheet'
+        );
         console.log('Error in Send Call Disconnect Notification', error.message);
       });
   };
@@ -2241,25 +2219,18 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         setDisableOnCancel(true);
       })
       .catch((e) => {
+        webEngageEventTracking(
+          {
+            'API name': 'initiateRescheduleAppointment',
+            'ErrorDetails': JSON.stringify(e),
+            'Consultation Display ID': props.webengageConsultTrackingObject.appointmentDisplayId,
+            'Consult ID': props.webengageConsultTrackingObject.appointmentId,
+          },
+          'Front_end - Doctor API-Error on Casesheet'
+        );
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
-        const patientName = patientDetails!.firstName + ' ' + patientDetails!.lastName;
-        const logObject = {
-          api: 'INITIATE_RESCHDULE_APPONITMENT',
-          inputParam: JSON.stringify(rescheduleParam),
-          appointmentId: props.appointmentId,
-          doctorId: props.doctorId,
-          doctorDisplayName: currentPatient!.displayName,
-          patientId: params.patientId,
-          patientName: patientName,
-          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
-          appointmentDateTime: moment(new Date(props.appointmentDateTime)).format(
-            'MMMM DD YYYY h:mm:ss a'
-          ),
-          error: JSON.stringify(e),
-        };
         setShowRescheduleLoader(false);
-        props.sessionClient.notify(JSON.stringify(logObject));
         alert(errorMessage);
       });
   };
@@ -2728,26 +2699,15 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         }
                       })
                       .catch((e) => {
-                        const patientName =
-                          patientDetails!.firstName + ' ' + patientDetails!.lastName;
-                        const logObject = {
-                          api: 'getDoctorNextAvailableSlots',
-                          inputParam: JSON.stringify({
-                            doctorIds: [props.doctorId],
-                            availableDate: format(new Date(), 'yyyy-MM-dd'),
-                          }),
-                          appointmentId: props.appointmentId,
-                          doctorId: props.doctorId,
-                          doctorDisplayName: currentPatient!.displayName,
-                          patientId: params.patientId,
-                          patientName: patientName,
-                          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
-                          appointmentDateTime: moment(new Date(props.appointmentDateTime)).format(
-                            'MMMM DD YYYY h:mm:ss a'
-                          ),
-                          error: JSON.stringify(e),
-                        };
-                        props.sessionClient.notify(JSON.stringify(logObject));
+                        webEngageEventTracking(
+                          {
+                            'API name': 'GetDoctorNextAvailableSlot',
+                            'ErrorDetails': JSON.stringify(e),
+                            'Consultation Display ID': props.webengageConsultTrackingObject.appointmentDisplayId,
+                            'Consult ID': props.webengageConsultTrackingObject.appointmentId,
+                          },
+                          'Front_end - Doctor API-Error on Casesheet'
+                        );
                       });
                   }
                 }}
@@ -3043,6 +3003,17 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                           exotelInput: exotelInput,
                         },
                         fetchPolicy: 'no-cache',
+                      }).catch((error: ApolloError) => {
+                        webEngageEventTracking(
+                          {
+                            'API name': 'InitateConferenceTelephoneCall',
+                            'ErrorDetails': JSON.stringify(error),
+                            'Consultation Display ID': props.webengageConsultTrackingObject.appointmentDisplayId,
+                            'Consult ID': props.webengageConsultTrackingObject.appointmentId,
+                          },
+                          'Front_end - Doctor API-Error on Casesheet'
+                        );
+                        console.log('Error in INITIATE_CONFERENCE_TELEPHONE_CALL', error.message);
                       });
                       webEngageEventTracking(
                         {
@@ -3452,30 +3423,16 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       );
                     })
                     .catch((e: ApolloError) => {
-                      const patientName =
-                        patientDetails!.firstName + ' ' + patientDetails!.lastName;
-                      const logObject = {
-                        api: 'CancelAppointment',
-                        inputParam: JSON.stringify({
-                          appointmentId: params.id,
-                          cancelReason:
-                            cancelReason === 'Other' ? otherTextCancelValue : cancelReason,
-                          cancelledBy: isSeniorDoctor ? REQUEST_ROLES.DOCTOR : REQUEST_ROLES.JUNIOR,
-                          cancelledById: isSeniorDoctor ? srDoctorId || '' : params.patientId,
-                        }),
-                        appointmentId: props.appointmentId,
-                        doctorId: props.doctorId,
-                        doctorDisplayName: currentPatient!.displayName,
-                        patientId: params.patientId,
-                        patientName: patientName,
-                        currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
-                        appointmentDateTime: moment(new Date(props.appointmentDateTime)).format(
-                          'MMMM DD YYYY h:mm:ss a'
-                        ),
-                        error: JSON.stringify(e),
-                      };
+                      webEngageEventTracking(
+                        {
+                          'API name': 'CancelAppointment',
+                          'ErrorDetails': JSON.stringify(e),
+                          'Consultation Display ID': props.webengageConsultTrackingObject.appointmentDisplayId,
+                          'Consult ID': props.webengageConsultTrackingObject.appointmentId,
+                        },
+                        'Front_end - Doctor API-Error on Casesheet'
+                      );
 
-                      props.sessionClient.notify(JSON.stringify(logObject));
                       setCancelError(e.graphQLErrors[0].message);
                     });
                 }}
@@ -3578,28 +3535,15 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     );
                   })
                   .catch((e: ApolloError) => {
-                    const patientName = patientDetails!.firstName + ' ' + patientDetails!.lastName;
-                    const logObject = {
-                      api: 'CancelAppointment',
-                      inputParam: JSON.stringify({
-                        appointmentId: params.id,
-                        cancelReason: 'MAX_RESCHEDULES_EXCEEDED',
-                        cancelledBy: isSeniorDoctor ? REQUEST_ROLES.DOCTOR : REQUEST_ROLES.JUNIOR,
-                        cancelledById: isSeniorDoctor ? srDoctorId || '' : params.patientId,
-                      }),
-                      appointmentId: props.appointmentId,
-                      doctorId: props.doctorId,
-                      doctorDisplayName: currentPatient!.displayName,
-                      patientId: params.patientId,
-                      patientName: patientName,
-                      currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
-                      appointmentDateTime: moment(new Date(props.appointmentDateTime)).format(
-                        'MMMM DD YYYY h:mm:ss a'
-                      ),
-                      error: JSON.stringify(e),
-                    };
-
-                    props.sessionClient.notify(JSON.stringify(logObject));
+                    webEngageEventTracking(
+                      {
+                        'API name': 'CancelAppointment',
+                        'ErrorDetails': JSON.stringify(e),
+                        'Consultation Display ID': props.webengageConsultTrackingObject.appointmentDisplayId,
+                        'Consult ID': props.webengageConsultTrackingObject.appointmentId,
+                      },
+                      'Front_end - Doctor API-Error on Casesheet'
+                    );
                     setCancelError(e.graphQLErrors[0].message);
                     setIsCancelDialogOpen(false);
                   });
