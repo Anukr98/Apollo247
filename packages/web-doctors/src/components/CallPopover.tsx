@@ -2793,6 +2793,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         },
                       })
                       .then((_data: any) => {
+                        setsessionId(_data.data.createAppointmentSession.sessionId);
+                        settoken(_data.data.createAppointmentSession.appointmentToken);
                         handleClose();
                         props.setStartConsultAction(false);
                         autoSend(audioCallMsg);
@@ -2806,7 +2808,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         webEngageEventTracking(
                           {
                             'API name': 'CreateAppointmentSession',
-                            'ErrorDetails': JSON.stringify(error),
+                            'ErrorDetails': JSON.stringify(e),
                             'Consultation Display ID': props.webengageConsultTrackingObject.appointmentDisplayId,
                             'Consult ID': props.webengageConsultTrackingObject.appointmentId,
                           },
@@ -2853,6 +2855,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         },
                       })
                       .then((_data: any) => {
+                        setsessionId(_data.data.createAppointmentSession.sessionId);
+                        settoken(_data.data.createAppointmentSession.appointmentToken);
                         handleClose();
                         props.setStartConsultAction(true);
                         autoSend(videoCallMsg);
@@ -2866,7 +2870,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         webEngageEventTracking(
                           {
                             'API name': 'CreateAppointmentSession',
-                            'ErrorDetails': JSON.stringify(error),
+                            'ErrorDetails': JSON.stringify(e),
                             'Consultation Display ID': props.webengageConsultTrackingObject.appointmentDisplayId,
                             'Consult ID': props.webengageConsultTrackingObject.appointmentId,
                           },
@@ -3884,12 +3888,39 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             cursor: 'pointer',
           }}
           onClick={() => {
-            handleClose();
-            autoSend(videoCallMsg);
-            setIsVideoCall(true);
-            setDisableOnCancel(true);
-            setIscall(true);
-            props.setIsCallAccepted(true);
+            client
+            .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
+              mutation: CREATE_APPOINTMENT_SESSION,
+              variables: {
+                createAppointmentSessionInput: {
+                  appointmentId: channel,
+                  requestRole: REQUEST_ROLES.DOCTOR,
+                },
+              },
+            })
+            .then((_data: any) => {
+              setsessionId(_data.data.createAppointmentSession.sessionId);
+              settoken(_data.data.createAppointmentSession.appointmentToken);
+              handleClose();
+              autoSend(videoCallMsg);
+              setIsVideoCall(true);
+              setDisableOnCancel(true);
+              setIscall(true);
+              props.setIsCallAccepted(true);
+            })
+            .catch((e: any) => {
+              setIsCallConnecting(false);
+              webEngageEventTracking(
+                {
+                  'API name': 'CreateAppointmentSession',
+                  'ErrorDetails': JSON.stringify(e),
+                  'Consultation Display ID': props.webengageConsultTrackingObject.appointmentDisplayId,
+                  'Consult ID': props.webengageConsultTrackingObject.appointmentId,
+                },
+                'Front_end - Doctor API-Error on Casesheet'
+              );
+            });
+            
             webEngageEventTracking(
               {
                 'Doctor name': props.webengageConsultTrackingObject.doctorName,
@@ -3948,13 +3979,39 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 cursor: 'pointer',
               }}
               onClick={() => {
-                handleClose();
-                autoSend(videoCallMsg);
-                setIsVideoCall(false);
-                setDisableOnCancel(true);
-                setIscall(true);
-                setJoinPrompt(false);
-                props.setIsCallAccepted(true);
+                client
+                .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
+                  mutation: CREATE_APPOINTMENT_SESSION,
+                  variables: {
+                    createAppointmentSessionInput: {
+                      appointmentId: channel,
+                      requestRole: REQUEST_ROLES.DOCTOR,
+                    },
+                  },
+                })
+                .then((_data: any) => {
+                  setsessionId(_data.data.createAppointmentSession.sessionId);
+                  settoken(_data.data.createAppointmentSession.appointmentToken);
+                  handleClose();
+                  autoSend(videoCallMsg);
+                  setIsVideoCall(false);
+                  setDisableOnCancel(true);
+                  setIscall(true);
+                  setJoinPrompt(false);
+                  props.setIsCallAccepted(true);
+                })
+                .catch((e: any) => {
+                  setIsCallConnecting(false);
+                  webEngageEventTracking(
+                    {
+                      'API name': 'CreateAppointmentSession',
+                      'ErrorDetails': JSON.stringify(e),
+                      'Consultation Display ID': props.webengageConsultTrackingObject.appointmentDisplayId,
+                      'Consult ID': props.webengageConsultTrackingObject.appointmentId,
+                    },
+                    'Front_end - Doctor API-Error on Casesheet'
+                  );
+                });  
               }}
             >
               {'JOIN'}
