@@ -652,7 +652,6 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     return (
       <Header
         leftIcon="backArrow"
-        rightComponent={<HelpIcon style={styles.arrowStyle} />}
         title={'MEMBERSHIP PLAN DETAIL'}
         container={{
           ...theme.viewStyles.cardViewStyle,
@@ -687,14 +686,17 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         <Text style={theme.viewStyles.text('M', 14, '#02475B', 1, 17, 0.35)}>
           Complete your first transaction to unlock your benefits
         </Text>
-        <Text style={theme.viewStyles.text('M', 14, '#02475B', 1, 27, 0.35)}>How to Unlock</Text>
+        <Text style={{
+          ...theme.viewStyles.text('M', 14, '#02475B', 1, 27, 0.35),
+          marginTop: 5,
+        }}>How to Unlock</Text>
         <Text
           style={{
             ...theme.viewStyles.text('R', 13, '#007C9D', 1, 17, 0.35),
             marginTop: 6,
           }}
         >
-          {`Transact for Rs ${
+          {`Make a single transaction worth Rs ${
             membershipDetails!.minTransactionValue
           } or more on Virtual Consultations or Pharmacy Orders`}
         </Text>

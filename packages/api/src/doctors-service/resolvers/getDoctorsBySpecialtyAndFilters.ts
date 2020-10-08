@@ -449,6 +449,8 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       },
     },
   });
+  elasticSort.push(elasticDoctorDoctorTypeSort());
+  
 
   if (!process.env.ELASTIC_INDEX_DOCTORS) {
     throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);

@@ -749,6 +749,7 @@ const SpecialityListing: React.FC = (props) => {
         }
       });
   };
+  const debounceLoadData = useCallback(_debounce(fetchData, 300), []);
 
   const debounceTracking = useCallback(
     _debounce((searchKeyword) => {

@@ -18,6 +18,8 @@ import { UPDATE_PATIENT } from 'graphql/profiles';
 import { ProfileSuccess } from 'components/ProfileSuccess';
 import { NewProfile } from 'components/NewProfile';
 import { trackLanding, hdfcUnlockNowTracking } from 'webEngageTracking';
+import { MetaTagsComp } from 'MetaTagsComp';
+import { HDFC_REF_CODE } from 'helpers/constants';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -110,23 +112,13 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     imgcontainer: {
-      width: 150,
-      height: 160,
-      background: '#005CA8',
-      borderRadius: '50%',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       margin: '0 30px 0 0',
-      [theme.breakpoints.down('sm')]: {
-        width: 46,
-        height: 46,
-        margin: '0 15px 0 0',
-        flex: '1 0 auto',
-      },
       '& img': {
         [theme.breakpoints.down('sm')]: {
-          width: 20,
+          width: 100,
         },
       },
     },
@@ -187,6 +179,9 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'block',
       },
     },
+    concierge: {
+      fill: '#FFF',
+    },
     benefitDetails: {
       '& h3': {
         fontSize: 20,
@@ -225,74 +220,8 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: '0 20px',
       },
     },
-    apolloContainer: {
-      padding: '20px 0',
-    },
-    apolloCare: {
-      padding: 50,
-      boxShadow: '0px 0px 12px rgba(0, 0, 0, 0.16)',
-      // background: '#02475b',
-      display: 'flex',
-      alignItems: 'flex-start',
-      [theme.breakpoints.down('sm')]: {
-        padding: 20,
-        borderRadius: 10,
-        alignItems: 'center',
-      },
-      '& img': {
-        margin: '0 40px 0 0',
-        [theme.breakpoints.down('sm')]: {
-          margin: '0 20px 0 0',
-          width: 90,
-        },
-      },
-      '& h4': {
-        fontSize: 40,
-        fontWeight: 600,
-        lineHeight: '56px',
-        margin: '0 0 5px',
-        width: '60%',
-        [theme.breakpoints.down('sm')]: {
-          fontSize: 14,
-          width: '100%',
-          lineHeight: '16px',
-        },
-      },
-      '& p': {
-        fontSize: 18,
-        lineHeight: '24px',
-        width: '80%',
-        fontWeight: 400,
-        [theme.breakpoints.down('sm')]: {
-          display: 'none',
-        },
-      },
-    },
-    acContainer: {
-      position: 'relative',
 
-      '& button': {
-        position: 'absolute',
-        bottom: 0,
-        right: -100,
-        fontSize: 14,
-        boxShadow: 'none',
-        fontWeight: 700,
-        margin: '30px 0 0',
-        display: 'block',
-        [theme.breakpoints.down('sm')]: {
-          fontSize: 12,
-          margin: '30px 0 0 auto',
-          position: 'static',
-        },
-      },
-    },
-    tncContainer: {
-      // padding: 0,
-      // [theme.breakpoints.down('sm')]: {
-      //   padding: '0 16px',
-      // },
-    },
+    tncContainer: {},
     tncContent: {
       boxShadow: '0px 0px 8px rgba(0, 0, 0, 0.08)',
       padding: 20,
@@ -563,8 +492,23 @@ export const HdfcLanding: React.FC = (props) => {
     );
   }
 
+  const meta = {
+    title: 'Apollo HealthyLife Program for HDFC Customer – Apollo 24|7',
+    description:
+      'Apollo 24|7 - The Healthy Life offering is the marketing program offered by Apollo 24|7, an online portal and app managed by Apollo Hospitals Enterprise Limited (AHEL) only for HDFC Bank customers.',
+    canonicalLink: typeof window !== 'undefined' && window.location && window.location.href,
+  };
+
   useEffect(() => {
     trackLanding('HDFC Landing Page loaded');
+    (window as any).dataLayer.push({
+      event: 'pageviewEvent',
+      pageName: 'HDFC Partner',
+      pageLOB: 'Others',
+      pageType: 'Partner',
+      'User ID': localStorage.getItem('userMobileNo'),
+      UserLoggedIn: isSignedIn ? 'Yes' : 'No',
+    });
   }, []);
 
   const customSignUp = {
@@ -576,6 +520,7 @@ export const HdfcLanding: React.FC = (props) => {
 
   return (
     <div className={classes.mainContainer}>
+      <MetaTagsComp {...meta} />
       <header className={` ${classes.header} ${classes.headerFixed}`}>
         <div className={classes.headerContent}>
           <Link to="/">
@@ -607,23 +552,22 @@ export const HdfcLanding: React.FC = (props) => {
                   width="100"
                 />
                 <img
-                  src={require('images/hdfc/hdfc-logo.svg')}
+                  src={require('images/hdfc/hdfc-health-first.svg')}
                   alt="HDFC Call Doctor"
                   width="100"
                 />
               </div>
               <div className={classes.bannerContent}>
                 <div className={classes.imgcontainer}>
-                  <img src={require('images/hdfc/call-doctor.svg')} alt="" />
+                  <img src={require('images/hdfc/join-apollo.svg')} alt="Apollo World of Care" />
                 </div>
 
                 <div className={classes.bannerDetails}>
-                  <Typography component="h1">Apollo Doctor on Call 24|7</Typography>
-                  <Typography>Complimentary on-call assistance by Apollo Doctors</Typography>
+                  <Typography component="h1">Apollo HealthyLife Program for you !</Typography>
                 </div>
               </div>
               <div className={classes.bannerFooter}>
-                <Typography>Offer exclusively for HDFC Bank customers</Typography>
+                <Typography>Exclusively for HDFC Bank customers</Typography>
                 {loading ? (
                   <CircularProgress size={30} />
                 ) : (
@@ -633,8 +577,19 @@ export const HdfcLanding: React.FC = (props) => {
                         className={classes.unlockNow}
                         onClick={() => {
                           hdfcUnlockNowTracking('HDFC Unlock Now Clicked');
-                          if (!isSignedIn) setIsLoginPopupVisible(true);
-                          else {
+                          if (!isSignedIn) {
+                            /* GA Tracking */
+                            (window as any).dataLayer.push({
+                              event: 'Unlock Now Clicked',
+                            });
+                            /*******************/
+                            setIsLoginPopupVisible(true);
+                          } else {
+                            /* GA Tracking */
+                            (window as any).dataLayer.push({
+                              event: 'Explore Benefits Clicked',
+                            });
+                            /*******************/
                             setLoading(true);
                             updatePatient({
                               variables: {
@@ -677,19 +632,22 @@ export const HdfcLanding: React.FC = (props) => {
                 </div>
               </li>
               <li>
-                <img src={require('images/hdfc/diagnostics.svg')} alt="Access to Apollo Services" />
-                <div className={classes.benefitDetails}>
-                  <Typography component="h3">Diagnostic Tests</Typography>
-                  <Typography>Doorstep Sample Collection by Trained Experts</Typography>
-                </div>
-              </li>
-              <li>
                 <img src={require('images/hdfc/medicine-delivery.svg')} alt="Medicine Delivery" />
                 <div className={classes.benefitDetails}>
                   <Typography component="h3">Doorstep Medicine Delivery</Typography>
                   <Typography>
                     Get 10% off on medicines and upto 20% off on Apollo Branded products with free
                     home delivery​
+                  </Typography>
+                </div>
+              </li>
+              <li>
+                <img src={require('images/hdfc/concierge.svg')} alt="Conceirge Services" />
+                <div className={classes.benefitDetails}>
+                  <Typography component="h3">Concierge Services</Typography>
+                  <Typography>
+                    Get instant Whatsapp assistance on any of our services including consultations,
+                    medicine orders, etc.​
                   </Typography>
                 </div>
               </li>
@@ -704,69 +662,22 @@ export const HdfcLanding: React.FC = (props) => {
                 </div>
               </li>
               <li>
-                <img src={require('images/hdfc/health-records.svg')} alt="Health Records" />
+                <img src={require('images/hdfc/diagnostics.svg')} alt="Access to Apollo Services" />
                 <div className={classes.benefitDetails}>
-                  <Typography component="h3">Patients Health Records Vault</Typography>
-                  <Typography>Digitization and Access to your Health Records </Typography>
+                  <Typography component="h3">Diagnostic Tests</Typography>
+                  <Typography>Doorstep Sample Collection by Trained Experts</Typography>
                 </div>
               </li>
               <li>
-                <img src={require('images/hdfc/apollo_doctors.svg')} alt="Diabetes Program" />
+                <img src={require('images/hdfc/health-records.svg')} alt="Health Records" />
                 <div className={classes.benefitDetails}>
-                  <Typography component="h3">Access to 7000+ Apollo Doctors</Typography>
-                  <Typography>Doctors from over 70 specialities to consult with</Typography>
+                  <Typography component="h3">Secured Patients Health Records Vault</Typography>
+                  <Typography>Digitization and Access to your Health Records </Typography>
                 </div>
               </li>
             </ul>
           </div>
 
-          <div className={classes.apolloContainer}>
-            <div className={classes.apolloCare}>
-              <img src={require('images/hdfc/join-apollo.svg')} alt="Apollo World of Care" />
-              <div className={classes.acContainer}>
-                <Typography component="h4">Apollo HealthyLife Program for you !</Typography>
-
-                <Typography>Exclusively for HDFC Bank customers</Typography>
-                {loading ? (
-                  <CircularProgress size={30} />
-                ) : (
-                  <Route
-                    render={({ history }) => (
-                      <AphButton
-                        color="primary"
-                        onClick={() => {
-                          if (!isSignedIn) setIsLoginPopupVisible(true);
-                          else {
-                            setLoading(true);
-                            updatePatient({
-                              variables: {
-                                patientInput: {
-                                  id: currentPatient.id,
-                                  partnerId: currentPatient.partnerId
-                                    ? currentPatient.partnerId
-                                    : 'HDFCBANK',
-                                },
-                              },
-                            })
-                              .then(() => {
-                                setLoading(false);
-                                history.push(clientRoutes.welcome());
-                              })
-                              .catch((error) => {
-                                setLoading(false);
-                                console.error(error);
-                              });
-                          }
-                        }}
-                      >
-                        {isSignedIn ? 'Explore Benefits' : 'Unlock Now'}
-                      </AphButton>
-                    )}
-                  />
-                )}
-              </div>
-            </div>
-          </div>
           <div className={classes.tncContainer}>
             <div className={classes.tncContent}>
               <Typography component="h4">Terms &amp; Conditions</Typography>
@@ -901,6 +812,18 @@ export const HdfcLanding: React.FC = (props) => {
           <NewProfile patient={defaultNewProfile} onClose={() => {}} customSignUp={customSignUp} />
         </AphDialog>
       )}
+
+      {defaultNewProfile && !hasExistingProfile /* GA Tracking */
+        ? (window as any).dataLayer.push({
+            event: 'UserLoggedIn',
+            Type: 'Registration',
+            'User ID': localStorage.getItem('userMobileNo'),
+          })
+        : ''}
+
+      {hasExistingProfile && currentPatient && currentPatient.partnerId === HDFC_REF_CODE
+        ? (window.location.href = '/')
+        : ''}
 
       <AphDialog open={notEligible} maxWidth="sm">
         <div className={classes.dialogcontent}>

@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { BottomLinks } from 'components/BottomLinks';
 import { Header } from 'components/Header';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { MetaTagsComp } from 'MetaTagsComp';
+import { dataLayerTracking } from 'gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -53,6 +54,19 @@ const Privacy: React.FC = (props) => {
       'Read the Privacy Policy of Apollo 247. Apollo 247 website and app ( “Website” /“App” respectively), respects your privacy, and seeks to comply with applicable legal requirements in respect of data collection, processing and transfer.',
     canonicalLink: typeof window !== 'undefined' && window.location && window.location.href,
   };
+
+  useEffect(() => {
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: 'Privacy Page',
+      pageLOB: 'Others',
+      pageType: 'Privacy Page',
+    });
+    /**Gtm code start end */
+  }, []);
+
   return (
     <div className={classes.root}>
       {metaTagProps && <MetaTagsComp {...metaTagProps} />}

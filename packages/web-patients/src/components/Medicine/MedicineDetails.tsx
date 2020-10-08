@@ -13,6 +13,7 @@ import { MedicineImageGallery } from 'components/Medicine/MedicineImageGallery';
 import { MedicineInformation } from 'components/Medicine/MedicineInformation';
 import { MedicinesCartContext, useShoppingCart } from 'components/MedicinesCartProvider';
 import { NavigationBottom } from 'components/NavigationBottom';
+import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';

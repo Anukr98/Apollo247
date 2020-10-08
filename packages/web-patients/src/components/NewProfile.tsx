@@ -246,6 +246,15 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
     return <ProfileSuccess onSubmitClick={() => props.onClose()} />;
   }
 
+  const handleDOBChange = (ev: any) => {
+    var ipLength = ev.target.value.length;
+    if (ev.keyCode != 8 && ev.keyCode != 46) {
+      if (ipLength === 2 || ipLength === 5) {
+        ev.target.value += '/';
+      }
+    }
+  };
+
   let signUpObject = {
     heading: 'Welcome to apollo 24|7',
     subHeading:
@@ -441,6 +450,9 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                                 placeholder="dd/mm/yyyy"
                                 error={showError('dateOfBirth')}
                                 inputProps={{ type: 'text', maxLength: 10 }}
+                                onKeyUp={(e) => {
+                                  handleDOBChange(e);
+                                }}
                               />
                               {showError('dateOfBirth') ? (
                                 <FormHelperText
@@ -488,40 +500,41 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                           )}
                         />
 
-                        <Field
-                          name="emailAddress"
-                          validate={(email: string) =>
-                            _isEmpty(email) || isEmailValid(email)
-                              ? undefined
-                              : 'Invalid email address'
-                          }
-                          render={({ field }: FieldProps<{ emailAddress: string }>) => (
-                            <FormControl className={classes.formControl} fullWidth>
-                              <AphTextField
-                                {...field}
-                                label="Email Address (Optional)"
-                                placeholder="name@email.com"
-                                error={showError('emailAddress')}
-                              />
-                              {showError('emailAddress') ? (
-                                <FormHelperText
-                                  className={
-                                    showError('emailAddress')
-                                      ? classes.showMessage
-                                      : classes.hideMessage
-                                  }
-                                  component="div"
-                                  error={true}
-                                >
-                                  {errors.emailAddress}
-                                </FormHelperText>
-                              ) : (
-                                ''
-                              )}
-                            </FormControl>
-                          )}
-                        />
-
+                        {!props.customSignUp && (
+                          <Field
+                            name="emailAddress"
+                            validate={(email: string) =>
+                              _isEmpty(email) || isEmailValid(email)
+                                ? undefined
+                                : 'Invalid email address'
+                            }
+                            render={({ field }: FieldProps<{ emailAddress: string }>) => (
+                              <FormControl className={classes.formControl} fullWidth>
+                                <AphTextField
+                                  {...field}
+                                  label="Email Address (Optional)"
+                                  placeholder="name@email.com"
+                                  error={showError('emailAddress')}
+                                />
+                                {showError('emailAddress') ? (
+                                  <FormHelperText
+                                    className={
+                                      showError('emailAddress')
+                                        ? classes.showMessage
+                                        : classes.hideMessage
+                                    }
+                                    component="div"
+                                    error={true}
+                                  >
+                                    {errors.emailAddress}
+                                  </FormHelperText>
+                                ) : (
+                                  ''
+                                )}
+                              </FormControl>
+                            )}
+                          />
+                        )}
                         <div className={classes.referralCodeWrapper}>
                           <img src={require('images/ic_gift.svg')} alt="" />
                           <div className={classes.enterCode}>

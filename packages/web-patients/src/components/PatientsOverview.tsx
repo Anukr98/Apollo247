@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Theme, Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
@@ -71,7 +71,10 @@ const PatientsOverview: React.FC = () => {
   const [alertMessage, setAlertMessage] = useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
   const [userSubscriptions, setUserSubscriptions] = React.useState([]);
-  const [showSubscription, setSshowSubscription] = useState<boolean>(false);
+  const [showSubscription, setShowSubscription] = useState<boolean>(false);
+
+  const scrollToRef = (ref: any) => ref.current.scrollIntoView({ behavior: 'smooth' });
+  const registrationRef = useRef(null);
 
   useEffect(() => {
     if (currentPatient && currentPatient.id) {
@@ -88,17 +91,24 @@ const PatientsOverview: React.FC = () => {
               responseData && responseData.getPatientFutureAppointmentCount.consultsCount
             );
           }
-          const userSubscriptionsLocalStorage = JSON.parse(
-            localStorage.getItem('userSubscriptions')
-          );
-          setUserSubscriptions(userSubscriptionsLocalStorage);
-          setSshowSubscription(true);
           setLoading(false);
         })
         .catch((error) => {
           setIsAlertOpen(true);
           setAlertMessage('Something went wrong :(');
           setLoading(false);
+        })
+        .finally(() => {
+          const userSubscriptionsLocalStorage = JSON.parse(
+            localStorage.getItem('userSubscriptions')
+          );
+          setUserSubscriptions(userSubscriptionsLocalStorage);
+          setShowSubscription(true);
+          currentPatient.partnerId === HDFC_REF_CODE &&
+          userSubscriptionsLocalStorage &&
+          userSubscriptionsLocalStorage.length == 0
+            ? scrollToRef(registrationRef)
+            : '';
         });
     }
   }, [currentPatient]);
@@ -131,26 +141,28 @@ const PatientsOverview: React.FC = () => {
         </Grid> */}
       {/* </Grid> */}
       {/* <Grid item xs={12} sm={6}> */}
-      {currentPatient &&
-        showSubscription &&
-        currentPatient.partnerId === HDFC_REF_CODE &&
-        (userSubscriptions == null || userSubscriptions.length == 0) && (
-          <HdfcRegistration patientPhone={currentPatient.mobileNumber} />
-        )}
-      {currentPatient &&
-        userSubscriptions &&
-        userSubscriptions.length != 0 &&
-        userSubscriptions[0] &&
-        userSubscriptions[0].status == 'DEFERRED_INACTIVE' && (
-          <HdfcHomePage patientPhone={currentPatient.mobileNumber} />
-        )}
-      {currentPatient &&
-        userSubscriptions &&
-        userSubscriptions.length != 0 &&
-        userSubscriptions[0] &&
-        userSubscriptions[0].status == 'ACTIVE' && (
-          <HdfcSlider patientPhone={currentPatient.mobileNumber} />
-        )}
+      <div ref={registrationRef}>
+        {currentPatient &&
+          showSubscription &&
+          currentPatient.partnerId === HDFC_REF_CODE &&
+          (userSubscriptions == null || userSubscriptions.length == 0) && (
+            <HdfcRegistration patientPhone={currentPatient.mobileNumber} />
+          )}
+        {currentPatient &&
+          userSubscriptions &&
+          userSubscriptions.length != 0 &&
+          userSubscriptions[0] &&
+          userSubscriptions[0].status == 'DEFERRED_INACTIVE' && (
+            <HdfcHomePage patientPhone={currentPatient.mobileNumber} />
+          )}
+        {currentPatient &&
+          userSubscriptions &&
+          userSubscriptions.length != 0 &&
+          userSubscriptions[0] &&
+          userSubscriptions[0].status == 'ACTIVE' && (
+            <HdfcSlider patientPhone={currentPatient.mobileNumber} />
+          )}
+      </div>
       {/* </Grid>
       </Grid> */}
       <Alerts

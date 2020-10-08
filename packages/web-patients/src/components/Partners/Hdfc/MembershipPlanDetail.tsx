@@ -851,6 +851,15 @@ export const MembershipPlanDetail: React.FC = (props) => {
       .catch((error) => {
         console.error('Failed fetching Subscription Inclusions');
       });
+    /* GA Tracking */
+    (window as any).dataLayer.push({
+      event: 'pageviewEvent',
+      pageName: 'HDFC Membership Detail Page',
+      pageLOB: 'Others',
+      pageType: 'Membership Detail',
+      'User ID': localStorage.getItem('userMobileNo'),
+    });
+    /*******************/
   }, []);
 
   const initiateExotelCall = (mobileNumber: string, benefitId: string) => {
@@ -884,6 +893,12 @@ export const MembershipPlanDetail: React.FC = (props) => {
 
   const handleCTAClick = (item: any) => {
     const cta_action = item.cta_action;
+    /* GA Tracking */
+    (window as any).dataLayer.push({
+      event: 'Redeem Clicked',
+      Benefit: cta_action.meta.action,
+    });
+    /*******************/
     if (cta_action.type == 'REDIRECT') {
       if (cta_action.meta.action == 'SPECIALITY_LISTING') {
         history.push(clientRoutes.specialityListing());
@@ -1005,8 +1020,8 @@ export const MembershipPlanDetail: React.FC = (props) => {
                       </Typography>
                       <Typography component="h5">How to Unlock</Typography>
                       <Typography>
-                        Transact for Rs. {minimumTransactionValue} or more on Virtual Consultations
-                        or Pharmacy Orders
+                        Make a single transaction worth Rs. {minimumTransactionValue} or more on
+                        Virtual Consultations or Pharmacy Orders
                       </Typography>
                     </div>
                   </div>

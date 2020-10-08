@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography, CircularProgress } from '@material-ui/core';
-import { Link } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import { useLoginPopupState, useAuth, useAllCurrentPatients } from 'hooks/authHooks';
 import { AphButton, AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-ui-components';
 import { clientRoutes } from 'helpers/clientRoutes';
@@ -404,6 +404,7 @@ export const MyMembership: React.FC = (props) => {
   const [showMore, setShowMore] = React.useState<boolean>(false);
   const [isHowToAvail, setIsHowToAvail] = React.useState<boolean>(false);
   const apolloClient = useApolloClient();
+  const history = useHistory();
   const [loading, setLoading] = React.useState<boolean>(true);
   const [active, setActive] = React.useState<boolean>(false);
 
@@ -509,8 +510,38 @@ export const MyMembership: React.FC = (props) => {
                     </a> */}
                     </div>
                     <div className={classes.btnContainer}>
-                      <AphButton href={clientRoutes.membershipPlanDetail()}>View Details</AphButton>
-                      <AphButton color="primary" variant="contained" href={clientRoutes.welcome()}>
+                      <AphButton
+                        onClick={() => {
+                          /* GA Tracking */
+                          (window as any).dataLayer.push({
+                            event: 'Plan Details Viewed',
+                            Plan:
+                              currentSubscription &&
+                              currentSubscription[0] &&
+                              currentSubscription[0].name,
+                          });
+                          /*******************/
+                          history.push(clientRoutes.membershipPlanDetail());
+                        }}
+                      >
+                        View Details
+                      </AphButton>
+                      <AphButton
+                        color="primary"
+                        variant="contained"
+                        onClick={() => {
+                          /* GA Tracking */
+                          (window as any).dataLayer.push({
+                            event: 'Explore Plan Clicked',
+                            Plan:
+                              currentSubscription &&
+                              currentSubscription[0] &&
+                              currentSubscription[0].name,
+                          });
+                          /*******************/
+                          history.push(clientRoutes.welcome());
+                        }}
+                      >
                         Explore
                       </AphButton>
                     </div>
@@ -547,13 +578,31 @@ export const MyMembership: React.FC = (props) => {
                     </a> */}
                         </div>
                         <div className={classes.btnContainer}>
-                          <AphButton href={clientRoutes.membershipPlanLocked()}>
+                          <AphButton
+                            onClick={() => {
+                              /* GA Tracking */
+                              (window as any).dataLayer.push({
+                                event: 'Locked Plan Details Viewed',
+                                Plan: upgradableSubscription && upgradableSubscription.name,
+                              });
+                              /*******************/
+                              history.push(clientRoutes.membershipPlanLocked());
+                            }}
+                          >
                             View Details
                           </AphButton>
                           <AphButton
                             color="primary"
                             variant="contained"
-                            onClick={() => setIsHowToAvail(true)}
+                            onClick={() => {
+                              /* GA Tracking */
+                              (window as any).dataLayer.push({
+                                event: 'How to Avail Clicked',
+                                Plan: upgradableSubscription && upgradableSubscription.name,
+                              });
+                              /*******************/
+                              setIsHowToAvail(true);
+                            }}
                           >
                             How To Avail
                           </AphButton>

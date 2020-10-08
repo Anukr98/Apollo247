@@ -89,6 +89,8 @@ export interface DiagnosticData {
 export interface AppCommonDataContextProps {
   hdfcUserSubscriptions: SubscriptionData | null;
   setHdfcUserSubscriptions: ((items: SubscriptionData) => void) | null;
+  bannerData: bannerType[] | null;
+  setBannerData: ((items: bannerType[]) => void) | null;
   locationDetails: LocationData | null;
   pharmacyLocation: LocationData | null;
   diagnosticLocation: LocationData | null;
@@ -147,6 +149,8 @@ export interface AppCommonDataContextProps {
 export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   hdfcUserSubscriptions: null,
   setHdfcUserSubscriptions: null,
+  bannerData: null,
+  setBannerData: null,
   locationDetails: null,
   pharmacyLocation: null,
   setLocationDetails: null,
@@ -205,6 +209,10 @@ export const AppCommonDataProvider: React.FC = (props) => {
 
   const [hdfcUserSubscriptions, _setHdfcUserSubscriptions] = useState<
     AppCommonDataContextProps['hdfcUserSubscriptions']
+  >(null);
+
+  const [bannerData, _setBannerData] = useState<
+    AppCommonDataContextProps['bannerData']
   >(null);
 
   const [pharmacyLocation, _setPharmacyLocation] = useState<
@@ -280,6 +288,12 @@ export const AppCommonDataProvider: React.FC = (props) => {
     _setHdfcUserSubscriptions(hdfcUserSubscriptions);
   };
 
+  const setBannerData: AppCommonDataContextProps['setBannerData'] = (
+    bannerData
+  ) => {
+    _setBannerData(bannerData);
+  };
+
   const setPharmacyLocation: AppCommonDataContextProps['setPharmacyLocation'] = (
     pharmacyLocation
   ) => {
@@ -342,6 +356,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setLocationDetails,
         hdfcUserSubscriptions,
         setHdfcUserSubscriptions,
+        bannerData,
+        setBannerData,
         pharmacyLocation,
         setPharmacyLocation,
         diagnosticLocation,
