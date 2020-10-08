@@ -1105,8 +1105,8 @@ interface CallPopoverProps {
   caseSheetId: string;
   prescriptionPdf: string;
   startAppointment: boolean;
-  sessionId: string;
-  token: string;
+  // sessionId: string;
+  // token: string;
   saving: boolean;
   appointmentStatus: String;
   sentToPatient: boolean;
@@ -3454,8 +3454,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               stopAudioVideoCallpatient={() => stopAudioVideoCallpatient()}
               showVideoChat={showVideoChat}
               isVideoCall={isVideoCall}
-              sessionId={props.sessionId}
-              token={props.token}
+              // sessionId={props.sessionId}
+              // token={props.token}
+              sessionId={sessionId}
+              token={token}
               timerMinuts={timerMinuts}
               timerSeconds={timerSeconds}
               isCallAccepted={props.isCallAccepted}

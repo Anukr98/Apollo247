@@ -394,8 +394,8 @@ export const ConsultTabs: React.FC = () => {
   const [startConsult, setStartConsult] = useState<string>('');
 
   const [isPdfPageOpen, setIsPdfPageOpen] = useState<boolean>(false);
-  const [sessionId, setsessionId] = useState<string>('');
-  const [token, settoken] = useState<string>('');
+  // const [sessionId, setsessionId] = useState<string>('');
+  // const [token, settoken] = useState<string>('');
   const [appointmentDateTime, setappointmentDateTime] = useState<string>('');
   const [sdConsultationDate, setSdConsultationDate] = useState<string>('');
   const [doctorId, setdoctorId] = useState<string>(currentPatient ? currentPatient.id : '');
@@ -1861,8 +1861,8 @@ export const ConsultTabs: React.FC = () => {
       .then((_data: any) => {
         getSetNumberOfParticipants(paramId, USER_STATUS.ENTERING);
         setAppointmentStatus(STATUS.IN_PROGRESS);
-        setsessionId(_data.data.createAppointmentSession.sessionId);
-        settoken(_data.data.createAppointmentSession.appointmentToken);
+        // setsessionId(_data.data.createAppointmentSession.sessionId);
+        // settoken(_data.data.createAppointmentSession.appointmentToken);
         sendCallNotificationFn(APPT_CALL_TYPE.CHAT, false);
         setError('');
         setSaving(false);
@@ -2152,8 +2152,8 @@ export const ConsultTabs: React.FC = () => {
               urlToPatient={urlToPatient}
               caseSheetId={caseSheetId}
               prescriptionPdf={prescriptionPdf}
-              sessionId={sessionId}
-              token={token}
+              // sessionId={sessionId}
+              // token={token}
               startAppointment={startAppointment}
               casesheetInfo={casesheetInfo}
               startAppointmentClick={startAppointmentClick}
@@ -2233,8 +2233,8 @@ export const ConsultTabs: React.FC = () => {
                     <div className={classes.chatContainer}>
                       <ConsultRoom
                         startConsult={startConsult}
-                        sessionId={sessionId}
-                        token={token}
+                        // sessionId={sessionId}
+                        // token={token}
                         appointmentId={paramId}
                         doctorId={doctorId}
                         patientId={patientId}

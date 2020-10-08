@@ -363,8 +363,8 @@ interface MessagesObjectProps {
 
 interface ConsultRoomProps {
   startConsult: string;
-  sessionId: string;
-  token: string;
+  // sessionId: string;
+  // token: string;
   appointmentId: string;
   doctorId: string;
   patientId: string;
