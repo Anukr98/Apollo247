@@ -2287,8 +2287,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     appointmentDetails &&
     isPastAppointment(appointmentDetails.appointmentDateTime, Number(followUpInDays));
 
-  // console.log(messages, 'messages from pubnub.....');
-
   return (
     <>
       <div className={classes.consultRoom}>
@@ -2382,7 +2380,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                 autoHeight
                 autoHeightMax={'calc(100vh - 332px)'}
               >
-                {messages.map((messageDetails: any) => {
+                {messages.map((messageDetails: any, idx: number) => {
                   const cardType = getCardType(messageDetails);
                   const message =
                     messageDetails && messageDetails.message ? messageDetails.message : '';
@@ -2470,6 +2468,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                   } else if (cardType === 'doctor') {
                     return (
                       <DoctorCard
+                        idx={idx}
+                        totalLength={messages.length}
                         message={message}
                         duration={duration}
                         messageDetails={messageDetails}

@@ -116,7 +116,7 @@ const saveOrderShipments: Resolver<
   log(
     'profileServiceLogger',
     `ORDER_VERIFIED_FOR_ORDER_ID:${saveOrderShipmentsInput.orderId}`,
-    `order verified call from OMS`,
+    `saveOrderShipments`,
     JSON.stringify(saveOrderShipmentsInput),
     ''
   );
@@ -148,6 +148,13 @@ const saveOrderShipments: Resolver<
       });
       await Promise.all(shipmentsPromise);
     } catch (e) {
+      log(
+        'profileServiceLogger',
+        `SAVE_MEDICINE_ORDER_SHIPMENT_ERROR`,
+        `saveOrderShipments`,
+        JSON.stringify(saveOrderShipmentsInput),
+        ''
+      );
       throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_SHIPMENT_ERROR, undefined, e);
     }
   }
