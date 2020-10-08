@@ -57,8 +57,6 @@ export class PatientDeviceTokenRepository extends Repository<PatientDeviceTokens
   updateVoipPushToken(id: string, updateAttrs: Partial<PatientDeviceTokens>) {
     return this.update(id, updateAttrs);
   }
-<<<<<<< HEAD
-=======
 
   async saveMultiplePatientDeviceToken(deviceTokenAttrs: Partial<PatientDeviceTokens>[]) {
     return this.save(deviceTokenAttrs).catch((patientDeviceTokenError) => {
@@ -67,5 +65,4 @@ export class PatientDeviceTokenRepository extends Repository<PatientDeviceTokens
       });
     });
   }
->>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
 }

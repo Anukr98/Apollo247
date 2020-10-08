@@ -101,15 +101,11 @@ import { createConnections } from 'typeorm';
 import { AppointmentEntitySubscriber } from 'consults-service/entities/observers/appointmentObserver';
 import { migrationDir } from 'ApiConstants';
 import { AdminFilterMapper } from 'doctors-service/entities/AdminFilterMapper';
-<<<<<<< HEAD
-import { AppointmentCallFeedback } from 'consults-service/entities/appointmentCallFeedbackEntity';
 import { DiagnosticEntitySubscriber } from 'profiles-service/entities/observers/diagnosticPaymentSuccessObserver';
 import { MedicineEntitySubscriber } from 'profiles-service/entities/observers/medicinePaymentSuccessObserver';
-=======
-import { AppointmentCallFeedback } from 'consults-service/entities/appointmentCallFeedbackEntity'
-import { HealthCheckRecords } from 'profiles-service/entities/healthCheckRecordsEntity'
-import { HospitalizationRecords } from 'profiles-service/entities/hospitalizationRecordsEntity'
->>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
+import { AppointmentCallFeedback } from 'consults-service/entities/appointmentCallFeedbackEntity';
+import { HealthCheckRecords } from 'profiles-service/entities/healthCheckRecordsEntity';
+import { HospitalizationRecords } from 'profiles-service/entities/hospitalizationRecordsEntity';
 
 export const connect = async () => {
   return await createConnections([
@@ -245,7 +241,7 @@ export const connect = async () => {
         PharmacologistConsult,
         MedicineOrderAddress,
         HealthCheckRecords,
-        HospitalizationRecords
+        HospitalizationRecords,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,

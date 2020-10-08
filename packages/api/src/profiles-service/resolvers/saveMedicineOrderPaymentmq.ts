@@ -24,18 +24,9 @@ import { sendMail } from 'notifications-service/resolvers/email';
 import { ApiConstants, TransactionType } from 'ApiConstants';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { log } from 'customWinstonLogger';
-<<<<<<< HEAD
 import { acceptCoupon } from 'helpers/couponServices';
 import { AcceptCouponRequest } from 'types/coupons';
-
-import {
-  BlockOneApolloPointsRequest,
-  BlockUserPointsResponse,
-  ONE_APOLLO_STORE_CODE,
-} from 'types/oneApolloTypes';
-=======
 import { BlockOneApolloPointsRequest, BlockUserPointsResponse } from 'types/oneApolloTypes';
->>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
 import { OneApollo } from 'helpers/oneApollo';
 import { getStoreCodeFromDevice } from 'profiles-service/helpers/OneApolloTransactionHelper';
 import { calculateRefund } from 'profiles-service/helpers/refundHelper';

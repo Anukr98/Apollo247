@@ -24,11 +24,8 @@ import { DoctorPatientExternalConnectRepository } from 'doctors-service/reposito
 import { ApiConstants } from 'ApiConstants';
 import { validateCoupon } from 'helpers/couponServices';
 import { ValidateCouponRequest } from 'types/coupons';
-<<<<<<< HEAD
 import { fetchUserSubscription } from 'helpers/subscriptionHelper';
-=======
 import { sendMessageToASBQueue } from 'consults-service/resolvers/appointmentReminderIVRForDoctors';
->>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
 
 export const bookAppointmentTypeDefs = gql`
   enum STATUS {
@@ -328,8 +325,8 @@ const bookAppointment: Resolver<
     const amount = appointmentInput.actualAmount
       ? appointmentInput.actualAmount
       : appointmentInput.appointmentType == APPOINTMENT_TYPE.PHYSICAL
-        ? parseInt(docDetails.physicalConsultationFees.toString(), 10)
-        : parseInt(docDetails.onlineConsultationFees.toString(), 10);
+      ? parseInt(docDetails.physicalConsultationFees.toString(), 10)
+      : parseInt(docDetails.onlineConsultationFees.toString(), 10);
 
     const payload: ValidateCouponRequest = {
       mobile: patientDetails.mobileNumber.replace('+91', ''),
@@ -349,8 +346,8 @@ const bookAppointment: Resolver<
             appointmentInput.appointmentType == APPOINTMENT_TYPE.ONLINE
               ? 1
               : appointmentInput.appointmentType == APPOINTMENT_TYPE.PHYSICAL
-                ? 0
-                : -1,
+              ? 0
+              : -1,
           cost: parseInt(amount.toString(), 10),
           rescheduling: false,
         },
