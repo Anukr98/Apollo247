@@ -402,7 +402,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         props.navigation.navigate('TESTS');
       } else if ((action = Hdfc_values.DIETECIAN_LANDING)) {
         props.navigation.navigate('DoctorSearchListing', {
-          specialityName: Hdfc_values.DIETICS_SPECIALITY_NAME,
+          specialities: Hdfc_values.DIETICS_SPECIALITY_NAME,
         });
       } else {
         props.navigation.navigate(AppRoutes.ConsultRoom);
