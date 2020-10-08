@@ -1639,7 +1639,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     });
 
   const onAddCartItem = (item: MedicineProduct) => {
-    console.log('pharmacyPincode >>', pharmacyPincode);
     const {
       sku,
       mou,
