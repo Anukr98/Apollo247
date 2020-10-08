@@ -266,7 +266,6 @@ export const styles = StyleSheet.create({
   healthvaultImage: {
     height: 100,
     width: 100,
-    resizeMode: 'cover',
     borderRadius: 5,
   },
   imageHeadingText: {

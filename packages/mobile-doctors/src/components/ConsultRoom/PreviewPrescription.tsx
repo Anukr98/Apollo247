@@ -27,7 +27,8 @@ import { string } from '@aph/mobile-doctors/src/strings/string';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import moment from 'moment';
 import React from 'react';
-import { Image, SafeAreaView, Text, TextStyle, View, ViewStyle } from 'react-native';
+import { SafeAreaView, Text, TextStyle, View, ViewStyle } from 'react-native';
+import FastImage from 'react-native-fast-image';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 
 const styles = PreviewPrescriptionStyles;
@@ -528,11 +529,12 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
               g(caseSheet, 'caseSheetDetails', 'appointment', 'sdConsultationDate')
             ).format('DD/MM/YYYY')} by`
           )}
-          <Image
+          <FastImage
             style={styles.signatureStyle}
             source={{
               uri: doctorDetails.signature,
             }}
+            resizeMode={'contain'}
           />
           {renderDoctorDetails()}
         </View>

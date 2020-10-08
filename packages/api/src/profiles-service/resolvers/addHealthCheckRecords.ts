@@ -21,6 +21,7 @@ import { uploadFileToBlobStorage } from 'helpers/uploadFileToBlob';
 export const addPatientHealthCheckRecordTypeDefs = gql`
 
     input AddHealthCheckRecordInput {
+        id: String
         patientId: ID!
         recordType: MedicalRecordType!
         healthCheckName: String!,
@@ -50,6 +51,7 @@ type HealthCheckFileProperties = {
 }
 
 type AddHealthCheckRecordInput = {
+    id?: string;
     patientId: string;
     recordType: MedicalRecordType;
     healthCheckName: string;
@@ -101,6 +103,7 @@ const addPatientHealthCheckRecord: Resolver<
     }
 
     const healthCheckUploadArgs: HealthCheckUploadRequest = {
+        id: addHealthCheckRecordInput.id ? addHealthCheckRecordInput.id : '',
         healthCheckName: addHealthCheckRecordInput.healthCheckName,
         healthCheckType: "",
         healthCheckSummary: "",

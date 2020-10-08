@@ -10,6 +10,8 @@ import {
   pharmacyPdpPincodeTracking,
   addToCartTracking,
   buyNowTracking,
+  pharmaAvailabilityApiTracking,
+  pharmaTatApiTracking,
 } from 'webEngageTracking';
 import { SubstituteDrugsList } from 'components/Medicine/SubstituteDrugsList';
 import {
@@ -558,6 +560,41 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
               if (pharmaAddressDetails.pincode !== pinCode) {
                 getPlaceDetails(pinCode);
               }
+              /** Webengage Tracking */
+              const {
+                items,
+                lat,
+                lng,
+                ordertime,
+                pincode,
+                storeCode,
+                storeType,
+                tat,
+                tatU,
+              } = res.data.response;
+              const { exist, mrp, qty } = items[0];
+              pharmaTatApiTracking({
+                source: 'PDP',
+                inputSku: sku,
+                inputQty: medicineQty,
+                inputLat: pharmaAddressDetails.lat,
+                inputLng: pharmaAddressDetails.lng,
+                inputPincode: pinCode,
+                inputMrp: price,
+                itemsInCart: 1,
+                resExist: exist,
+                resMrp: mrp * parseInt(mou),
+                resQty: qty,
+                resLat: lat,
+                resLng: lng,
+                resOrderTime: ordertime,
+                resPincode: pincode,
+                resStorecode: storeCode,
+                resStoreType: storeType,
+                resTat: tat,
+                resTatU: tatU,
+              });
+              /** Webengage Tracking */
             } else if (typeof res.data.errorMSG === 'string') {
               setDefaultDeliveryTime(pinCode);
             }
@@ -599,18 +636,27 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const checkDeliveryTime = (pinCode: string, sku: string) => {
     checkSkuAvailability(sku, pinCode)
       .then((res: any) => {
-        if (
-          res &&
-          res.data &&
-          res.data.response &&
-          res.data.response.length > 0 &&
-          res.data.response[0].exist
-        ) {
-          fetchDeliveryTime(pinCode);
-        } else {
-          setDeliveryTime('');
-          setErrorMessage(OUT_OF_STOCK_MESSAGE);
-          dataLayerTrackingFn(pincodeCity, pinCode, OUT_OF_STOCK_MESSAGE);
+        if (res && res.data && res.data.response && res.data.response.length > 0) {
+          /** Webengage Tracking */
+          const { exist, mrp, qty } = res.data.response[0];
+          pharmaAvailabilityApiTracking({
+            source: 'PDP',
+            inputSku: sku,
+            inputPincode: pinCode,
+            inputMrp: price,
+            itemsInCart: 1,
+            resExist: exist,
+            resMrp: mrp * parseInt(mou),
+            resQty: qty,
+          });
+          /** Webengage Tracking */
+          if (res.data.response[0].exist) {
+            fetchDeliveryTime(pinCode);
+          } else {
+            setDeliveryTime('');
+            setErrorMessage(OUT_OF_STOCK_MESSAGE);
+            dataLayerTrackingFn(pincodeCity, pinCode, OUT_OF_STOCK_MESSAGE);
+          }
         }
       })
       .catch((e) => {
@@ -809,7 +855,11 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                         }}
                         onClick={() => {
                           const { sku, name } = data;
-                          checkDeliveryTime(pinCode, sku);
+                          if (!pharmaAddressDetails.lat || !pharmaAddressDetails.lng) {
+                            getPlaceDetails(pinCode);
+                          } else {
+                            checkDeliveryTime(pinCode, sku);
+                          }
                           const eventData = {
                             pinCode,
                             productId: sku,

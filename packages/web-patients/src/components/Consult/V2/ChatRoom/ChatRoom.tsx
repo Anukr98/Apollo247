@@ -528,6 +528,7 @@ const ChatRoom: React.FC = () => {
   const [rescheduleCount, setRescheduleCount] = useState<number | null>(null);
   const [reschedulesRemaining, setReschedulesRemaining] = useState<number | null>(null);
   const [isConsultCompleted, setIsConsultCompleted] = useState<boolean>(false);
+  const [disableActions, setDisableActions] = useState<boolean>(false);
 
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
@@ -734,6 +735,8 @@ const ChatRoom: React.FC = () => {
                     srDoctorJoined={srDoctorJoined}
                     isConsultCompleted={isConsultCompleted}
                     secretaryData={secretaryData}
+                    setDisableActions={setDisableActions}
+                    disableActions={disableActions}
                   />
                 )}
               </div>
@@ -743,10 +746,17 @@ const ChatRoom: React.FC = () => {
                   {appointmentDetails &&
                     appointmentDetails.status !== STATUS.CANCELLED &&
                     appointmentDetails.status !== STATUS.COMPLETED &&
+                    !isConsultCompleted &&
+                    !disableActions &&
                     !srDoctorJoined && (
                       <div className={classes.headerActions}>
                         <AphButton
-                          disabled={appointmentDetails.isSeniorConsultStarted || srDoctorJoined}
+                          disabled={
+                            appointmentDetails.isSeniorConsultStarted ||
+                            srDoctorJoined ||
+                            disableActions ||
+                            isConsultCompleted
+                          }
                           classes={{
                             root: classes.viewButton,
                             disabled: classes.disabledButton,

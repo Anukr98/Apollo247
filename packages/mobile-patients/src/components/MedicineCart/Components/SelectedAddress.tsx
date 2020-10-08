@@ -47,7 +47,7 @@ export const SelectedAddress: React.FC<SelectedAddressProps> = (props) => {
         <Text style={styles.name}>{selectedAddress?.name || selectedAddress?.addressType}</Text>
         <Text style={styles.address}>{formatSelectedAddress(selectedAddress!)}</Text>
         <Text style={styles.address}>
-          Mobile -
+          {'Mobile - '}
           <Text style={{ ...theme.fonts.IBMPlexSansMedium(12) }}>
             {selectedAddress?.mobileNumber}
           </Text>

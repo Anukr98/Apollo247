@@ -23,6 +23,7 @@ import {
   SearchObject,
   SPECIALTY_DETAIL_LISTING_PAGE_SIZE as PAGE_SIZE,
   deepLinkUtil,
+  isAlternateVersion,
 } from 'helpers/commonHelpers';
 import { useLocationDetails } from 'components/LocationProvider';
 import { GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor as docDetails } from 'graphql/types/GetDoctorDetailsById';
@@ -36,10 +37,6 @@ import _filter from 'lodash/filter';
 import { MetaTagsComp } from 'MetaTagsComp';
 import { GET_ALL_SPECIALITIES } from 'graphql/specialities';
 import { NavigationBottom } from 'components/NavigationBottom';
-import {
-  SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors as DoctorsType,
-  SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties as SpecialtyType,
-} from 'graphql/types/SearchDoctorAndSpecialtyByName';
 import _lowerCase from 'lodash/lowerCase';
 import { gtmTracking } from 'gtmTracking';
 import { SpecialtySearch } from 'components/SpecialtySearch';
@@ -49,7 +46,7 @@ import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
 import { dataLayerTracking } from 'gtmTracking';
 // import Pagination from '@material-ui/lab/Pagination';
 import axios from 'axios';
-import { GetDoctorList, GetDoctorList_getDoctorList } from 'graphql/types/GetDoctorList';
+import { GetDoctorList } from 'graphql/types/GetDoctorList';
 import _debounce from 'lodash/debounce';
 
 let currentPage = 1;
@@ -417,6 +414,8 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     dateSelected: '',
     specialtyName: '',
     prakticeSpecialties: '',
+    consultMode: ConsultMode.BOTH,
+    brand: [],
   };
   const classes = useStyles({});
   const onePrimaryUser = hasOnePrimaryUser();
@@ -445,6 +444,7 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const [specialtyId, setSpecialtyId] = useState<string>('');
   const [specialtyName, setSpecialtyName] = useState<string>('');
   const [locationPopup, setLocationPopup] = useState<boolean>(false);
+  const [isAlternateVariant, setIsAlternateVariant] = useState<boolean>(true);
   const [selectedCity, setSelectedCity] = useState<string>(
     params && params.city ? params.city : ''
   );
@@ -454,6 +454,70 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const [faqData, setFaqData] = useState<any>();
   const [searchQuery, setSearchQuery] = useState<any>({});
   const scrollRef = useRef<HTMLDivElement>(null);
+  const searchParams = window.location.search;
+
+  const assigningFilters = (
+    filterObject: SearchObject,
+    property: string,
+    valueArray: Array<string>
+  ) => {
+    switch (property) {
+      case 'brand':
+        return { ...filterObject, brand: valueArray };
+      case 'experience':
+        return { ...filterObject, experience: valueArray };
+      case 'availability':
+        return {
+          ...filterObject,
+          availability: valueArray.map((value) => value.replace(/_/g, ' ')),
+        };
+      case 'fees':
+        return { ...filterObject, fees: valueArray };
+      case 'gender':
+        return { ...filterObject, gender: valueArray };
+      case 'language':
+        return { ...filterObject, language: valueArray };
+      default:
+        return filterObject;
+    }
+  };
+
+  useEffect(() => {
+    if (isOnlineSelected || isPhysicalSelected) {
+      let filterObject: SearchObject = {
+        ...searchObject,
+        consultMode:
+          isOnlineSelected && isPhysicalSelected
+            ? ConsultMode.BOTH
+            : isOnlineSelected
+            ? ConsultMode.ONLINE
+            : ConsultMode.PHYSICAL,
+      };
+      if (searchParams.length > 0) {
+        const search = searchParams.substring(1);
+
+        const decodedObject = JSON.parse(
+          '{"' + search.replace(/&/g, '","').replace(/=/g, '":"') + '"}',
+          function(key, value) {
+            return key === '' ? value : decodeURIComponent(value);
+          }
+        );
+        for (const property in decodedObject) {
+          const valueArray = decodedObject[property].split(',');
+          filterObject = assigningFilters(filterObject, property, valueArray);
+        }
+        setFilter({
+          ...filterObject,
+        });
+      } else {
+        setFilter(filterObject);
+      }
+    } else {
+      setFilteredDoctorData(null);
+      apolloDoctorCount = 0;
+      partnerDoctorCount = 0;
+    }
+  }, [searchParams, isOnlineSelected, isPhysicalSelected]);
 
   useEffect(() => {
     deepLinkUtil(`Speciality?${specialtyId}`);
@@ -465,7 +529,9 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
       apolloClient
         .query({
           query: GET_DOCTOR_LIST,
-          variables: { filterInput: _merge(apiVariables, { pageNo, pageSize: PAGE_SIZE }) },
+          variables: {
+            filterInput: _merge(apiVariables, { pageNo, pageSize: PAGE_SIZE }),
+          },
           fetchPolicy: 'no-cache',
         })
         .then((response) => {
@@ -539,7 +605,14 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
       }
     }
   }, []);
+
   useEffect(() => {
+    // the below if-else is for marketing requirement (hiding prescription/Rx string)
+    if (isAlternateVersion()) {
+      setIsAlternateVariant(true);
+    } else {
+      setIsAlternateVariant(false);
+    }
     if (scrollRef && scrollRef.current) {
       window.addEventListener('scroll', handleOnScroll);
     }
@@ -689,6 +762,8 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
       prakticeSDKSpecialties && prakticeSDKSpecialties.length > 0 ? 'NAME' : 'ID',
     pincode: currentPincode ? currentPincode : localStorage.getItem('currentPincode') || '',
     searchText: filter.searchKeyword,
+    consultMode: filter.consultMode,
+    doctorType: filter.brand,
   };
 
   useEffect(() => {
@@ -700,7 +775,12 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
       apolloClient
         .query({
           query: GET_DOCTOR_LIST,
-          variables: { filterInput: _merge(apiVariables, { pageNo: 1, pageSize: PAGE_SIZE }) },
+          variables: {
+            filterInput: _merge(apiVariables, {
+              pageNo: 1,
+              pageSize: PAGE_SIZE,
+            }),
+          },
           fetchPolicy: 'no-cache',
         })
         .then((response) => {
@@ -800,32 +880,13 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
       return false;
     });
   };
-  useEffect(() => {
-    if (doctorData) {
-      setLoading(true);
-      let filterDoctorsData = doctorData;
-      if (isOnlineSelected || isPhysicalSelected) {
-        filterDoctorsData = getConsultModeDoctorList(filterDoctorsData);
-        if (filterDoctorsData.length > 0) {
-          const filteredObj = getDoctorObject(filterDoctorsData);
-          setFilteredDoctorData(filteredObj);
-        } else {
-          setFilteredDoctorData(null);
-        }
-      } else {
-        setFilteredDoctorData(null);
-      }
-
-      setLoading(false);
-    }
-  }, [isOnlineSelected, isPhysicalSelected, doctorData]);
 
   const metaTagProps = {
     title: (faqData && faqData[0].specialtyMetaTitle) || '',
     description: (faqData && faqData[0].specialtyMetaDescription) || '',
     canonicalLink:
-      (faqData && faqData[0].canonicalUrl) || (window && window.location && window.location.href),
-    deepLink: window.location.href,
+      (faqData && faqData[0].canonicalUrl) ||
+      (window && window.location && `${window.location.host}${window.location.pathname}`),
   };
 
   return (
@@ -902,7 +963,8 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                 onlyFilteredCount={onlyFilteredCount}
               />
               <div className={classes.doctorCards}>
-                {(filter.language.length > 0 ||
+                {(filter.brand.length > 0 ||
+                  filter.language.length > 0 ||
                   filter.availability.length > 0 ||
                   filter.experience.length > 0 ||
                   filter.fees.length > 0 ||
@@ -964,8 +1026,8 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
             </div>
             <div className={classes.rightBar}>
               <div className={classes.stickyBlock}>
-                <WhyApollo />
-                <HowItWorks />
+                <WhyApollo alternateVariant={isAlternateVariant} />
+                <HowItWorks alternateVariant={isAlternateVariant} />
               </div>
             </div>
           </div>

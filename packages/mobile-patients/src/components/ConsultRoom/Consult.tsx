@@ -39,6 +39,7 @@ import {
   g,
   followUpChatDaysCaseSheet,
   getDiffInMinutes,
+  overlyCallPermissions,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -446,8 +447,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   >([]);
   const [selectedDate, setSelectedDate] = React.useState<Date | null>(null);
   const [displayFilter, setDisplayFilter] = useState<boolean>(false);
+  const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
 
-  const { loading, setLoading } = useUIElements();
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
   const [
     appointmentItem,
@@ -828,6 +829,24 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 setconsultations(data.getPatientAllAppointments.appointments);
                 setActiveConsultations(activeAppointments);
                 setPastConsultations(pastAppointments);
+                const inProgressAppointments = activeAppointments?.filter((item: any) => {
+                  return item.status !== STATUS.COMPLETED;
+                });
+                if (inProgressAppointments && inProgressAppointments.length > 0) {
+                  if (Platform.OS === 'ios') {
+                    callPermissions();
+                  } else {
+                    callPermissions(() => {
+                      overlyCallPermissions(
+                        currentPatient!.firstName!,
+                        activeAppointments[0].doctorInfo.displayName,
+                        showAphAlert,
+                        hideAphAlert,
+                        true
+                      );
+                    });
+                  }
+                }
               } else {
                 setconsultations([]);
                 setFilteredAppointmentsList([]);

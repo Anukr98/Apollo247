@@ -24,6 +24,9 @@ import {
   isPastAppointment,
   getDiffInMinutes,
   getAvailableFreeChatDays,
+  disablingActionsTimeBeforeConsultation,
+  getDiffInDays,
+  getDiffInHours,
 } from 'helpers/commonHelpers';
 import { useApolloClient } from 'react-apollo-hooks';
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -32,6 +35,7 @@ import { GetAppointmentData_getAppointmentData_appointmentsHistory as Appointmen
 import { cancellationPatientTracking } from 'webEngageTracking';
 import { getSecretaryDetailsByDoctorId } from 'graphql/types/getSecretaryDetailsByDoctorId';
 import { DoctorType } from 'graphql/types/globalTypes';
+import moment from 'moment';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -409,6 +413,8 @@ interface ConsultDoctorProfileProps {
   srDoctorJoined: boolean;
   isConsultCompleted: boolean;
   secretaryData: getSecretaryDetailsByDoctorId;
+  setDisableActions: (disableActions: boolean) => void;
+  disableActions: boolean;
 }
 
 type Params = { appointmentId: string; doctorId: string };
@@ -430,6 +436,8 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
     handleRescheduleOpen,
     appointmentDetails,
     secretaryData,
+    setDisableActions,
+    disableActions,
   } = props;
 
   const [showMore, setShowMore] = useState<boolean>(true);
@@ -476,7 +484,6 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
     }
     const currentTime = new Date().getTime();
     const appointmentTime = new Date(appointmentDetails.appointmentDateTime);
-    const differenceInWords = formatDistanceStrict(appointmentTime, currentTime);
 
     const {
       firstName,
@@ -523,10 +530,29 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
         ) {
           setRefreshTimer(!refreshTimer);
         }
+        if (differenceInMinutes <= 15) {
+          setDisableActions(true);
+        }
       }, 60000);
     };
 
     const differenceInMinutes = getDiffInMinutes(appointmentDetails.appointmentDateTime);
+    const differenceInDays = getDiffInDays(appointmentDetails.appointmentDateTime);
+    let completeText = '';
+    if (differenceInDays === 0) {
+      const differenceInHours = getDiffInHours(appointmentDetails.appointmentDateTime) - 1; // removing 1hr as getDiffInHours has +1
+      if (differenceInHours > 0) {
+        completeText += `${differenceInHours} ${differenceInHours === 1 ? 'hr' : 'hrs'}`;
+      }
+      const finalDiffInMinutes = differenceInMinutes - differenceInHours * 60;
+      if (finalDiffInMinutes > 0) {
+        completeText += ` ${finalDiffInMinutes} ${finalDiffInMinutes === 1 ? 'min' : 'mins'}`;
+      }
+    }
+
+    if (differenceInMinutes < disablingActionsTimeBeforeConsultation) {
+      setDisableActions(true);
+    }
     shouldRefreshComponent(differenceInMinutes);
     const specialityName = (specialty && specialty.name) || '';
 
@@ -600,7 +626,9 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
             {appointmentDetails.status !== STATUS.COMPLETED &&
               appointmentDetails.status !== STATUS.CANCELLED &&
               !appointmentDetails.isSeniorConsultStarted &&
-              !props.srDoctorJoined && (
+              !props.isConsultCompleted &&
+              !props.srDoctorJoined &&
+              !disableActions && (
                 <div
                   onClick={() => setIsCancelPopoverOpen(true)}
                   ref={cancelAppointRef}
@@ -705,12 +733,21 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                       </div>
                     ) : (
                       <div className={classes.joinInSection}>
-                        <span>Doctor Joining In</span>
-                        <span className={classes.joinTime}>
-                          {differenceInMinutes > 0 && differenceInMinutes <= 15
-                            ? `${differenceInMinutes} minutes`
-                            : differenceInWords}
-                        </span>
+                        {differenceInDays >= 1 ? (
+                          <>
+                            <span>Consult On</span>
+                            <span className={classes.joinTime}>
+                              {moment(appointmentDetails.appointmentDateTime).format(
+                                'DD/MM hh:mm a'
+                              )}
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <span>Doctor Joining In</span>
+                            <span className={classes.joinTime}>{completeText}</span>
+                          </>
+                        )}
                       </div>
                     ))
                   ))}
@@ -827,7 +864,11 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
             horizontal: 'right',
           }}
         >
-          <AphButton onClick={() => setShowCancelPopup(true)} className={classes.cancelBtn}>
+          <AphButton
+            disabled={disableActions || props.isConsultCompleted}
+            onClick={() => setShowCancelPopup(true)}
+            className={classes.cancelBtn}
+          >
             Cancel Appointment
           </AphButton>
         </Popover>

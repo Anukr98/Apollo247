@@ -1,17 +1,25 @@
-import { DEVICETYPE } from 'graphql/types/globalTypes';
-import { GetDoctorDetailsById_getDoctorDetailsById_consultHours } from 'graphql/types/GetDoctorDetailsById';
-import moment from 'moment';
+import Axios, { AxiosResponse } from 'axios';
 import { GooglePlacesType } from 'components/LocationProvider';
-import { CouponCategoryApplicable } from 'graphql/types/globalTypes';
+import {
+  GetDoctorDetailsById_getDoctorDetailsById as DoctorDetails,
+  GetDoctorDetailsById_getDoctorDetailsById_consultHours,
+} from 'graphql/types/GetDoctorDetailsById';
+import { GetPatientByMobileNumber_getPatientByMobileNumber_patients as CurrentPatient } from 'graphql/types/GetPatientByMobileNumber';
+import {
+  ConsultMode,
+  CouponCategoryApplicable,
+  DEVICETYPE,
+  DoctorType,
+  MEDICINE_ORDER_STATUS,
+} from 'graphql/types/globalTypes';
+import { EXOTEL_CALL_URL, EXOTEL_X_API } from 'helpers/constants';
+import { getAppStoreLink } from 'helpers/dateHelpers';
+import fetchUtil from 'helpers/fetch';
+import { MedicineProductDetails } from 'helpers/MedicineApiCalls';
 import _lowerCase from 'lodash/lowerCase';
 import _upperFirst from 'lodash/upperFirst';
-import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
-import { MedicineProductDetails } from 'helpers/MedicineApiCalls';
-import fetchUtil from 'helpers/fetch';
-import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
-import { GetPatientByMobileNumber_getPatientByMobileNumber_patients as CurrentPatient } from 'graphql/types/GetPatientByMobileNumber';
+import moment from 'moment';
 
-import { getAppStoreLink } from 'helpers/dateHelpers';
 declare global {
   interface Window {
     opera: any;
@@ -214,6 +222,7 @@ const OUT_OF_STOCK = 'Out Of Stock';
 const NOTIFY_WHEN_IN_STOCK = 'Notify when in stock';
 const PINCODE_MAXLENGTH = 6;
 const SPECIALTY_DETAIL_LISTING_PAGE_SIZE = 50;
+const SPECIALTY_SEARCH_PAGE_SIZE = 20;
 
 const findAddrComponents = (
   proptoFind: GooglePlacesType,
@@ -264,6 +273,8 @@ interface SearchObject {
   dateSelected: string;
   specialtyName: string;
   prakticeSpecialties: string | null;
+  consultMode: ConsultMode | null;
+  brand: string[] | null;
 }
 
 interface AppointmentFilterObject {
@@ -273,7 +284,25 @@ interface AppointmentFilterObject {
   specialtyList: string[] | null;
 }
 
-const feeInRupees = ['100 - 500', '500 - 1000', '1000+'];
+const brandList = [
+  { key: DoctorType.APOLLO, value: 'Apollo' },
+  { key: DoctorType.APOLLO_HOMECARE, value: 'Apollo Homecare' },
+  { key: DoctorType.CLINIC, value: 'Clinic' },
+  { key: DoctorType.CRADLE, value: 'Cradle' },
+  { key: DoctorType.DOCTOR_CONNECT, value: 'Doctor Connect' },
+  { key: DoctorType.FERTILITY, value: 'Fertility' },
+  { key: DoctorType.JUNIOR, value: 'Junior' },
+  { key: DoctorType.PAYROLL, value: 'Payroll' },
+  { key: DoctorType.SPECTRA, value: 'Spectra' },
+  { key: DoctorType.STAR_APOLLO, value: 'Star Apollo' },
+  { key: DoctorType.SUGAR, value: 'Sugar' },
+  { key: DoctorType.WHITE_DENTAL, value: 'White Dental' },
+];
+const feeInRupees = [
+  { key: '100-500', value: '100 - 500' },
+  { key: '500-1000', value: '500 - 1000' },
+  { key: '1000+', value: '1000+' },
+];
 const experienceList = [
   { key: '0-5', value: '0 - 5' },
   { key: '6-10', value: '6 - 10' },
@@ -363,6 +392,19 @@ const getStatus = (status: MEDICINE_ORDER_STATUS) => {
 const isRejectedStatus = (status: MEDICINE_ORDER_STATUS) => {
   return (
     status === MEDICINE_ORDER_STATUS.CANCELLED || status === MEDICINE_ORDER_STATUS.PAYMENT_FAILED
+  );
+};
+
+const callToExotelApi = (params: any): Promise<AxiosResponse<any>> => {
+  const url = EXOTEL_CALL_URL;
+  return Axios.post(
+    url,
+    { ...params },
+    {
+      headers: {
+        'x-api-key': EXOTEL_X_API,
+      },
+    }
   );
 };
 
@@ -546,6 +588,14 @@ const deepLinkUtil = (deepLinkPattern: string) => {
   }
 };
 
+const isAlternateVersion = () => {
+  // the below lines are written to init app in another mode variant=2 -> marketing requirements
+  const urlString = window.location.href;
+  const url = new URL(urlString);
+  const alternateVariant = url.searchParams.get('variant');
+  return alternateVariant && alternateVariant === '2' ? true : false;
+};
+
 const isPrime = (num: number) => {
   for (let i = 2; i < num; i++) if (num % i === 0) return false;
   return num > 1;
@@ -563,9 +613,15 @@ const getSlidesToScroll = (num: number) => {
   return isPrime(num) ? 1 : isDivisibleByThree(num) ? 3 : 2;
 };
 
+const disablingActionsTimeBeforeConsultation = 16;
+
 export {
+  disablingActionsTimeBeforeConsultation,
+  brandList,
   getSlidesToScroll,
   deepLinkUtil,
+  isDivisibleByTwo,
+  isAlternateVersion,
   HEALTH_RECORDS_NO_DATA_FOUND,
   removeGraphQLKeyword,
   getCouponByUserMobileNumber,
@@ -612,6 +668,7 @@ export {
   ORDER_BILLING_STATUS_STRINGS,
   getTypeOfProduct,
   kavachHelpline,
+  callToExotelApi,
   isActualUser,
   NO_ONLINE_SERVICE,
   OUT_OF_STOCK,
@@ -619,4 +676,5 @@ export {
   PINCODE_MAXLENGTH,
   SPECIALTY_DETAIL_LISTING_PAGE_SIZE,
   HEALTH_RECORDS_NOTE,
+  SPECIALTY_SEARCH_PAGE_SIZE,
 };

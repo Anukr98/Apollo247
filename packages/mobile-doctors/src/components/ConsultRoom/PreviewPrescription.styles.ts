@@ -159,7 +159,6 @@ export const PreviewPrescriptionStyles = StyleSheet.create({
   signatureStyle: {
     width: 106,
     height: 60,
-    resizeMode: 'contain',
   },
   contactContainer: { flexDirection: 'row', flexWrap: 'wrap' },
   contactSubContainer: { flexDirection: 'row', marginTop: 4, alignItems: 'center' },

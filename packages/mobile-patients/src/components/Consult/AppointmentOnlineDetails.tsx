@@ -975,7 +975,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
           <BottomPopUp
             title={`Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`}
             description={
-              'Since you could not complete the appointment, you can choose to cancel or reschedule.'
+              "Since you're cancelling 15 minutes before your appointment, we'll issue you a full refund!"
             }
           >
             <View

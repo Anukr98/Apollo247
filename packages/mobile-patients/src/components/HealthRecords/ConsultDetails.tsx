@@ -49,7 +49,6 @@ import {
   MEDICINE_UNIT,
   ConsultMode,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   addTestsToCart,
   doRequestAndAccessLocation,
@@ -58,6 +57,7 @@ import {
   medUnitFormatArray,
   nameFormater,
   postWebEngageEvent,
+  postWebEngagePHR,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -1132,6 +1132,10 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                       CommonLogEvent('CONSULT_DETAILS', 'No image');
                     } else {
                       postWEGEvent('download prescription');
+                      postWebEngagePHR(
+                        'Prescription',
+                        WebEngageEventName.PHR_DOWNLOAD_PRESCRIPTIONS
+                      );
                       const dirs = RNFetchBlob.fs.dirs;
 
                       const fileName: string = getFileName();

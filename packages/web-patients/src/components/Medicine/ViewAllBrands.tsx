@@ -12,7 +12,7 @@ import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
 import { BottomLinks } from 'components/BottomLinks';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { MetaTagsComp } from 'MetaTagsComp';
-
+import { medicinePageOpenTracking } from '../../webEngageTracking';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
@@ -287,6 +287,7 @@ export const ViewAllBrands: React.FC = (props) => {
 
   useEffect(() => {
     if (!data) {
+      medicinePageOpenTracking();
       setIsLoading(true);
       axios
         .post(

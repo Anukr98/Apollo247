@@ -1,12 +1,10 @@
 import * as React from 'react';
-import { Image, ImageProps } from 'react-native';
+import FastImage, { FastImageProps } from 'react-native-fast-image';
 
 const consultIconStyle = {
   height: 60,
   width: 60,
 };
-
-const smResizeMode: Partial<ImageProps> = { height: 24, width: 24, resizeMode: 'contain' };
 
 const getIconStyle = (size?: IconProps['size']) => {
   if (size === 'xs') return { width: 20, height: 20 };
@@ -15,27 +13,27 @@ const getIconStyle = (size?: IconProps['size']) => {
   return { width: 48, height: 48 };
 };
 
-interface IconProps extends Partial<ImageProps> {
+interface IconProps extends Partial<FastImageProps> {
   size?: 'xs' | 'sm' | 'md' | 'lg';
 }
 
-export interface IconBaseProps extends ImageProps {
+export interface IconBaseProps extends FastImageProps {
   size?: 'xs' | 'sm' | 'md' | 'lg';
 }
 
 export const IconBase: React.FC<IconBaseProps> = ({ size, style, ...props }) => (
-  <Image style={[getIconStyle(size), style]} {...props} />
+  <FastImage style={[getIconStyle(size), style]} {...props} />
 );
 
-export const SplashLogo: React.FC<Partial<ImageProps>> = (props) => (
-  <Image
+export const SplashLogo: React.FC<Partial<FastImageProps>> = (props) => (
+  <FastImage
     style={{ width: 136.3, height: 100 }}
     {...props}
     source={require('@aph/mobile-doctors/src/images/apollo/apollo_logoo.png')}
   />
 );
-export const LandingPageImage: React.FC<Partial<ImageProps>> = (props) => (
-  <Image
+export const LandingPageImage: React.FC<Partial<FastImageProps>> = (props) => (
+  <FastImage
     style={{ width: '100%', height: 'auto' }}
     {...props}
     source={require('@aph/mobile-doctors/src/images/apollo/illustration_mobile_consult_a_doctor.png')}
@@ -62,7 +60,7 @@ export const Mascot: React.FC<IconProps> = (props) => (
 );
 
 export const More: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('../../images/icons/ic_more.png')} />
+  <IconBase size="sm" {...props} source={require('../../images/icons/ic_more.png')} />
 );
 
 export const Dropdown: React.FC<IconProps> = (props) => (
@@ -83,23 +81,23 @@ export const Download: React.FC<IconProps> = (props) => (
 );
 
 export const ArrowFull: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('../../images/icons/ic_arrowFull.png')} />
+  <IconBase size="sm" {...props} source={require('../../images/icons/ic_arrowFull.png')} />
 );
 
 export const ArrowStep1: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('../../images/icons/ic_arrowStep1.png')} />
+  <IconBase size="sm" {...props} source={require('../../images/icons/ic_arrowStep1.png')} />
 );
 
 export const ArrowStep2: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('../../images/icons/ic_arrowStep2.png')} />
+  <IconBase size="sm" {...props} source={require('../../images/icons/ic_arrowStep2.png')} />
 );
 
 export const ArrowStep3: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('../../images/icons/ic_arrowStep3.png')} />
+  <IconBase size="sm" {...props} source={require('../../images/icons/ic_arrowStep3.png')} />
 );
 
 export const Remove: React.FC<IconProps> = (props) => (
-  <IconBase {...props} size="sm" source={require('../../images/icons/ic_cross.png')} />
+  <IconBase size="sm" {...props} source={require('../../images/icons/ic_cross.png')} />
 );
 
 export const Reload: React.FC<IconProps> = (props) => (
@@ -151,7 +149,7 @@ export const CloseWhite: React.FC<IconProps> = (props) => (
 );
 
 export const SortDecreasing: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('../../images/icons/ic_sort_decreasing.png')} />
+  <IconBase size="sm" {...props} source={require('../../images/icons/ic_sort_decreasing.png')} />
 );
 
 export const SortIncreasing: React.FC<IconProps> = (props) => (
@@ -305,16 +303,21 @@ export const DoctorPlaceholder: React.FC<IconProps> = (props) => (
 );
 
 export const DoctorImage: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('../../images/icons/narayanRao.png')} />
+  <IconBase size="sm" {...props} source={require('../../images/icons/narayanRao.png')} />
 );
 
 export const BackIcon: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('../../images/icons/round_navigate_before_24_px.png')} />
+  <IconBase
+    size="sm"
+    {...props}
+    source={require('../../images/icons/round_navigate_before_24_px.png')}
+  />
 );
 
 export const ApploLogo: React.FC<IconProps> = (props) => (
   <IconBase
-    style={{ height: 40, width: 53, resizeMode: 'contain' }}
+    style={{ height: 40, width: 53 }}
+    resizeMode={'contain'}
     {...props}
     source={require('../../images/icons/apollo_logoo.png')}
   />
@@ -322,7 +325,8 @@ export const ApploLogo: React.FC<IconProps> = (props) => (
 
 export const ApploLogo2: React.FC<IconProps> = (props) => (
   <IconBase
-    style={{ height: 50, width: 63, resizeMode: 'contain' }}
+    style={{ height: 50, width: 63 }}
+    resizeMode={'contain'}
     {...props}
     source={require('../../images/apollo/ic_logo.png')}
   />
@@ -330,33 +334,60 @@ export const ApploLogo2: React.FC<IconProps> = (props) => (
 
 export const RoundIcon: React.FC<IconProps> = (props) => (
   <IconBase
-    style={smResizeMode}
+    size="sm"
+    resizeMode={'contain'}
     {...props}
     source={require('../../images/icons/round_help_outline_24_px.png')}
   />
 );
 
 export const Up: React.FC<IconProps> = (props) => (
-  <IconBase style={smResizeMode} {...props} source={require('../../images/icons/up.png')} />
+  <IconBase
+    size="sm"
+    resizeMode={'contain'}
+    {...props}
+    source={require('../../images/icons/up.png')}
+  />
 );
 export const Down: React.FC<IconProps> = (props) => (
-  <IconBase style={smResizeMode} {...props} source={require('../../images/icons/down.png')} />
+  <IconBase
+    size="sm"
+    resizeMode={'contain'}
+    {...props}
+    source={require('../../images/icons/down.png')}
+  />
 );
 
 export const Send: React.FC<IconProps> = (props) => (
-  <IconBase style={smResizeMode} {...props} source={require('../../images/icons/send.png')} />
+  <IconBase
+    size="sm"
+    resizeMode={'contain'}
+    {...props}
+    source={require('../../images/icons/send.png')}
+  />
 );
 
 export const Add: React.FC<IconProps> = (props) => (
-  <IconBase style={smResizeMode} {...props} source={require('../../images/icons/add.png')} />
+  <IconBase
+    size="sm"
+    resizeMode={'contain'}
+    {...props}
+    source={require('../../images/icons/add.png')}
+  />
 );
 export const InviteIcon: React.FC<IconProps> = (props) => (
-  <IconBase style={smResizeMode} {...props} source={require('../../images/icons/inviteicon.png')} />
+  <IconBase
+    size="sm"
+    resizeMode={'contain'}
+    {...props}
+    source={require('../../images/icons/inviteicon.png')}
+  />
 );
 
 export const Notification: React.FC<IconProps> = (props) => (
   <IconBase
-    style={smResizeMode}
+    size="sm"
+    resizeMode={'contain'}
     {...props}
     source={require('../../images/icons/notification.png')}
   />
@@ -371,22 +402,47 @@ export const CalendarIcon: React.FC<IconProps> = (props) => (
 );
 
 export const Cancel: React.FC<IconProps> = (props) => (
-  <IconBase style={smResizeMode} {...props} source={require('../../images/icons/clear.png')} />
+  <IconBase
+    size="sm"
+    resizeMode={'contain'}
+    {...props}
+    source={require('../../images/icons/clear.png')}
+  />
 );
 
 export const Video: React.FC<IconProps> = (props) => (
-  <IconBase style={smResizeMode} {...props} source={require('../../images/icons/video.png')} />
+  <IconBase
+    size="sm"
+    resizeMode={'contain'}
+    {...props}
+    source={require('../../images/icons/video.png')}
+  />
 );
 export const Audio: React.FC<IconProps> = (props) => (
-  <IconBase style={smResizeMode} {...props} source={require('../../images/icons/clinic.png')} />
+  <IconBase
+    size="sm"
+    resizeMode={'contain'}
+    {...props}
+    source={require('../../images/icons/clinic.png')}
+  />
 );
 
 export const DotIcon: React.FC<IconProps> = (props) => (
-  <IconBase style={smResizeMode} {...props} source={require('../../images/icons/remove.png')} />
+  <IconBase
+    size="sm"
+    resizeMode={'contain'}
+    {...props}
+    source={require('../../images/icons/remove.png')}
+  />
 );
 
 export const Block: React.FC<IconProps> = (props) => (
-  <IconBase style={smResizeMode} {...props} source={require('../../images/icons/block.png')} />
+  <IconBase
+    size="sm"
+    resizeMode={'contain'}
+    {...props}
+    source={require('../../images/icons/block.png')}
+  />
 );
 
 export const PastAppointmentIcon: React.FC<IconProps> = (props) => (
@@ -404,7 +460,12 @@ export const UpComingIcon: React.FC<IconProps> = (props) => (
   <IconBase size="xs" {...props} source={require('../../images/icons/ic_status_upcoming.png')} />
 );
 export const Call: React.FC<IconProps> = (props) => (
-  <IconBase style={smResizeMode} {...props} source={require('../../images/icons/call.png')} />
+  <IconBase
+    size="sm"
+    resizeMode={'contain'}
+    {...props}
+    source={require('../../images/icons/call.png')}
+  />
 );
 export const UserPlaceHolder: React.FC<IconProps> = (props) => (
   <IconBase
@@ -791,7 +852,8 @@ export const Path: React.FC<IconProps> = (props) => (
 
 export const Edit: React.FC<IconProps> = (props) => (
   <IconBase
-    style={{ height: 24, width: 24, resizeMode: 'contain' }}
+    style={{ height: 24, width: 24 }}
+    resizeMode={'contain'}
     {...props}
     source={require('../../images/icons/edit.png')}
   />

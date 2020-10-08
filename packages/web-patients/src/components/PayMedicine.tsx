@@ -1,60 +1,56 @@
-import React, { useState, useEffect } from 'react';
-import { makeStyles } from '@material-ui/styles';
-import { Theme, Typography, CircularProgress } from '@material-ui/core';
-import { Header } from 'components/Header';
-import Paper from '@material-ui/core/Paper';
-import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
-import Grid from '@material-ui/core/Grid';
+import { AphButton, AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-ui-components';
+import { CircularProgress, Theme, Typography } from '@material-ui/core';
 import Checkbox from '@material-ui/core/Checkbox';
-import FormGroup from '@material-ui/core/FormGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
-import fetchUtil from 'helpers/fetch';
-import { Link } from 'react-router-dom';
-import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
-import { useParams } from 'hooks/routerHooks';
-import { gtmTracking, _obTracking, _cbTracking, dataLayerTracking } from 'gtmTracking';
-import {
-  paymentInstrumentClickTracking,
-  consultPayInitiateTracking,
-  pharmacyPaymentInitiateTracking,
-} from 'webEngageTracking';
-import { useMutation } from 'react-apollo-hooks';
-import { getDeviceType, getCouponByUserMobileNumber } from 'helpers/commonHelpers';
-import { ConfigOneApolloData } from 'strings/AppConfig';
+import FormGroup from '@material-ui/core/FormGroup';
+import Grid from '@material-ui/core/Grid';
+import Paper from '@material-ui/core/Paper';
+import { makeStyles } from '@material-ui/styles';
+import { Alerts } from 'components/Alerts/Alerts';
 import { CouponCodeConsult } from 'components/Coupon/CouponCodeConsult';
-import _lowerCase from 'lodash/lowerCase';
-
+import { Header } from 'components/Header';
+import { useLocationDetails } from 'components/LocationProvider';
+import { MedicineCartItem, useShoppingCart } from 'components/MedicinesCartProvider';
+import { MAKE_APPOINTMENT_PAYMENT } from 'graphql/consult';
+import { BOOK_APPOINTMENT } from 'graphql/doctors';
+import {
+  GET_ONE_APOLLO,
+  SAVE_MEDICINE_ORDER_OMS,
+  SAVE_MEDICINE_ORDER_PAYMENT,
+} from 'graphql/medicines';
+import { GetOneApollo, GetOneApolloVariables } from 'graphql/types/GetOneApollo';
+import {
+  BOOKINGSOURCE,
+  CODCity,
+  MEDICINE_DELIVERY_TYPE,
+  MEDICINE_ORDER_PAYMENT_TYPE,
+} from 'graphql/types/globalTypes';
+import {
+  makeAppointmentPayment,
+  makeAppointmentPaymentVariables,
+} from 'graphql/types/makeAppointmentPayment';
 import {
   saveMedicineOrderOMS,
   saveMedicineOrderOMSVariables,
 } from 'graphql/types/saveMedicineOrderOMS';
 import { SaveMedicineOrderPaymentMqVariables } from 'graphql/types/SaveMedicineOrderPaymentMq';
-import {
-  SAVE_MEDICINE_ORDER_OMS,
-  SAVE_MEDICINE_ORDER_PAYMENT,
-  GET_ONE_APOLLO,
-} from 'graphql/medicines';
-import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
-import {
-  MEDICINE_DELIVERY_TYPE,
-  MEDICINE_ORDER_PAYMENT_TYPE,
-  BOOKINGSOURCE,
-  CODCity,
-} from 'graphql/types/globalTypes';
-import moment from 'moment';
+import { dataLayerTracking, gtmTracking, _cbTracking, _obTracking } from 'gtmTracking';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { useLocationDetails } from 'components/LocationProvider';
-import { BOOK_APPOINTMENT } from 'graphql/doctors';
+import { getDeviceType } from 'helpers/commonHelpers';
+import fetchUtil from 'helpers/fetch';
+import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
+import { useParams } from 'hooks/routerHooks';
+import _lowerCase from 'lodash/lowerCase';
+import moment from 'moment';
+import React, { useEffect, useState } from 'react';
+import { useApolloClient, useMutation } from 'react-apollo-hooks';
+import { Link, Redirect } from 'react-router-dom';
+import { ConfigOneApolloData } from 'strings/AppConfig';
 import {
-  makeAppointmentPayment,
-  makeAppointmentPaymentVariables,
-} from 'graphql/types/makeAppointmentPayment';
-import { MAKE_APPOINTMENT_PAYMENT } from 'graphql/consult';
-import { Alerts } from 'components/Alerts/Alerts';
-import { validatePharmaCoupon_validatePharmaCoupon_pharmaLineItemsWithDiscountedPrice as pharmaCouponItem } from 'graphql/types/validatePharmaCoupon';
-import { Redirect } from 'react-router-dom';
-import { useApolloClient } from 'react-apollo-hooks';
-import { GetOneApollo, GetOneApolloVariables } from 'graphql/types/GetOneApollo';
+  consultPayInitiateTracking,
+  paymentInstrumentClickTracking,
+  pharmacyPaymentInitiateTracking,
+} from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -155,17 +151,17 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     paymentContainer: {
       height: '100%',
-		},
-		positionRelative: {
-			position: 'relative',
-		},
-		progressContainer: {
-			position: 'absolute',
-			top: 0,
-			left: 0,
-			bottom: 0,
-			right: 0
-		},
+    },
+    positionRelative: {
+      position: 'relative',
+    },
+    progressContainer: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      bottom: 0,
+      right: 0,
+    },
     paper: {
       borderRadius: 5,
       padding: 20,
@@ -521,8 +517,8 @@ const PayMedicine: React.FC = (props) => {
   const [isOneApolloHcApplied, oneApolloHcApplied] = React.useState<boolean>(false);
   const [totalWithHCsAndDiscount, calculateTotalWithHcs] = React.useState<number>(0);
   const [setOneApolloHCsResponse, oneApolloHCsResponse] = useState<any>({});
-	const [isLoading, setIsLoading] = React.useState<boolean>(false);
-	const [oneApolloLoader, setOneApolloLoader] = React.useState<boolean>(true);
+  const [isLoading, setIsLoading] = React.useState<boolean>(false);
+  const [oneApolloLoader, setOneApolloLoader] = React.useState<boolean>(true);
 
   const [paymentOptions, setPaymentOptions] = React.useState([]);
   const [mutationLoading, setMutationLoading] = useState(false);
@@ -548,12 +544,15 @@ const PayMedicine: React.FC = (props) => {
   const pharmacyDeliveryCharges = process.env.PHARMACY_DELIVERY_CHARGES;
 
   const { currentPatient } = useAllCurrentPatients();
-  // const deliveryCharges =
-  //   cartTotal >= parseFloat(pharmacyMinDeliveryValue) || cartTotal <= 0
-  //     ? 0
-  //     : parseFloat(pharmacyDeliveryCharges);
 
-  // const totalAmount = (cartTotal + Number(deliveryCharges)).toFixed(2);
+  const userSubscriptions = JSON.parse(localStorage.getItem('userSubscriptions'));
+  const freeDelivery =
+    userSubscriptions &&
+    userSubscriptions[0] &&
+    userSubscriptions[0].status == 'ACTIVE' &&
+    userSubscriptions[0].group_plan &&
+    userSubscriptions[0].group_plan.name == 'PLATINUM+ PLAN';
+
   const getMRPTotal = () => {
     let sum = 0;
     cartItems.forEach((item) => {
@@ -577,11 +576,12 @@ const PayMedicine: React.FC = (props) => {
     deliveryAddressId,
     tatType,
   } = cartValues;
-  const deliveryCharges =
-    cartTotal - Number(couponValue) >= Number(pharmacyMinDeliveryValue) ||
-    totalWithCouponDiscount <= 0
-      ? 0
-      : Number(pharmacyDeliveryCharges);
+  const deliveryCharges = freeDelivery
+    ? 0
+    : cartTotal - Number(couponValue) >= Number(pharmacyMinDeliveryValue) ||
+      totalWithCouponDiscount <= 0
+    ? 0
+    : Number(pharmacyDeliveryCharges);
 
   const consultBookDetails = localStorage.getItem('consultBookDetails')
     ? JSON.parse(localStorage.getItem('consultBookDetails'))
@@ -645,7 +645,7 @@ const PayMedicine: React.FC = (props) => {
         })
         .then((res) => {
           if (res && res.data && res.data.getOneApolloUser) {
-						setOneApolloLoader(false);
+            setOneApolloLoader(false);
             const data = res.data.getOneApolloUser;
             oneApolloHCsResponse(res.data.getOneApolloUser);
             if (data.availableHC >= mrpTotal - productDiscount) {
@@ -1106,193 +1106,199 @@ const PayMedicine: React.FC = (props) => {
             </div>
             <Grid container spacing={2} className={classes.paymentContainer}>
               <Grid item xs={12} sm={8} className={classes.positionRelative}>
-								{oneApolloLoader ? (
-									<div className={classes.progressContainer}>
-									<CircularProgress
-										className={classes.circlularProgress}
-										size={34}
-										color="secondary"
-									/>
-									</div>
-								) : (
-                <Paper className={`${classes.paper} ${classes.paperHeight}`}>
-                  {setOneApolloHCsResponse && setOneApolloHCsResponse.availableHC > 0 && (
-                    <div className={classes.healthCredit}>
-                      <Typography component="h3">
-                        Would you like to use Apollo Health Credits for this payment?
-                      </Typography>
-                      <div className={classes.healthCreditSelection}>
-                        <FormGroup className={classes.formGroup}>
-                          <FormControlLabel
-                            className={classes.checkbox}
-                            control={<Checkbox onChange={applyOneApolloHc} name="checked" />}
-                            label=""
-                          />
-                          <img src={require('images/one-apollo.svg')} width="48" alt="One Apollo" />
-                        </FormGroup>
-                        <div className={classes.healthCreditAvailable}>
-                          <Typography>Available Health Credits </Typography>
-                          <Typography component="h4" className={classes.credits}>
-                            {setOneApolloHCsResponse.availableHC}
-                          </Typography>
-                        </div>
-                      </div>
-                      {isOneApolloHcApplied ? (
-                        <Typography className={classes.saveDetails}>
-                          You have <span>saved Rs. {oneApolloHcs} </span> on your purchase.
-                        </Typography>
-                      ) : (
-                        <Typography className={classes.saveDetails}>
-                          You will <span>save Rs. {oneApolloHcs} </span> on your purchase.
-                        </Typography>
-                      )}
-                    </div>
-                  )}
-
-                  <div className={classes.paperHeading}>
-                    <Typography component="h3">Pay Via</Typography>
-                  </div>
-                  {isLoading ? (
+                {oneApolloLoader ? (
+                  <div className={classes.progressContainer}>
                     <CircularProgress
                       className={classes.circlularProgress}
                       size={34}
                       color="secondary"
                     />
-                  ) : (
-                    <ul className={classes.paymentOptions}>
-                      {sessionStorage.getItem('utm_source') === 'sbi' && (
-                        <li
-                          key={'sbiCashCard'}
-                          onClick={() => {
-                            /**Gtm code start start */
-                            dataLayerTracking({
-                              event: 'Payment Option Selected',
-                              Option: process.env.SBI_CASHCARD_PAY_TYPE,
-                            });
-                            /**Gtm code start end */
-
-                            params.payType === 'pharmacy'
-                              ? onClickPay(
-                                  process.env.SBI_CASHCARD_PAY_TYPE,
-                                  'SBI YONO CASHLESS CARD'
-                                )
-                              : onClickConsultPay(process.env.SBI_CASHCARD_PAY_TYPE);
-                          }}
-                          style={{ cursor: 'pointer' }}
-                        >
-                          <div className={classes.paymentCard}>
-                            <img
-                              src={
-                                'https://prodaphstorage.blob.core.windows.net/paymentlogos/sbi.png'
-                              }
-                              alt=""
-                              style={{ height: 30, width: 30 }}
-                            />
-                            <div style={{ paddingLeft: 10 }}>
-                              SBI YONO CASHLESS CARD
-                              <div className={classes.offerMessage}>
-                                You are eligible for {process.env.SBI_CASHCARD_DISCOUNT}% cashback
-                              </div>
-                            </div>
-                          </div>
-                        </li>
-                      )}
-
-                      {paymentOptions.length > 0 &&
-                        paymentOptions.map((payType, index) => {
-                          return (
-                            <li
-                              key={index}
-                              onClick={() =>
-                                params.payType === 'pharmacy'
-                                  ? onClickPay(payType.paymentMode, payType.name)
-                                  : onClickConsultPay(payType.paymentMode)
-                              }
-                              style={{ cursor: 'pointer' }}
-                            >
-                              <div className={classes.paymentCard}>
-                                <img
-                                  src={payType.imageUrl}
-                                  alt=""
-                                  style={{ height: 30, width: 30 }}
-                                />
-                                <span style={{ paddingLeft: 10 }}>{payType.name}</span>
-                              </div>
-                            </li>
-                          );
-                        })}
-                      {params.payType === 'pharmacy' && (
-                        <li>
-                          <div className={`${classes.paymentCard} ${classes.codOption}`}>
-                            <FormGroup>
+                  </div>
+                ) : (
+                  <Paper className={`${classes.paper} ${classes.paperHeight}`}>
+                    {params.payType === 'pharmacy' &&
+                      setOneApolloHCsResponse &&
+                      setOneApolloHCsResponse.availableHC > 0 && (
+                        <div className={classes.healthCredit}>
+                          <Typography component="h3">
+                            Would you like to use Apollo Health Credits for this payment?
+                          </Typography>
+                          <div className={classes.healthCreditSelection}>
+                            <FormGroup className={classes.formGroup}>
                               <FormControlLabel
-                                classes={{
-                                  root: classes.checkbox,
-                                  disabled: isOneApolloHcApplied ? classes.disabled : '',
-                                }}
-                                control={
-                                  <Checkbox
-                                    onChange={handleChange}
-                                    name="checked"
-                                    disabled={isOneApolloHcApplied}
-                                  />
-                                }
-                                label="Cash On Delivery"
+                                className={classes.checkbox}
+                                control={<Checkbox onChange={applyOneApolloHc} name="checked" />}
+                                label=""
+                              />
+                              <img
+                                src={require('images/one-apollo.svg')}
+                                width="48"
+                                alt="One Apollo"
                               />
                             </FormGroup>
-                            {isOneApolloHcApplied && (
-                              <Typography>
-                                ! COD option is not available along with OneApollo Health Credits.
+                            <div className={classes.healthCreditAvailable}>
+                              <Typography>Available Health Credits </Typography>
+                              <Typography component="h4" className={classes.credits}>
+                                {setOneApolloHCsResponse.availableHC}
                               </Typography>
-                            )}
+                            </div>
                           </div>
-                        </li>
+                          {isOneApolloHcApplied ? (
+                            <Typography className={classes.saveDetails}>
+                              You have <span>saved Rs. {oneApolloHcs} </span> on your purchase.
+                            </Typography>
+                          ) : (
+                            <Typography className={classes.saveDetails}>
+                              You will <span>save Rs. {oneApolloHcs} </span> on your purchase.
+                            </Typography>
+                          )}
+                        </div>
                       )}
-                    </ul>
-                  )}
-                  {checked && !isOneApolloHcApplied && (
-                    <AphButton
-                      className={classes.payBtn}
-                      onClick={() => onClickPay('COD')}
-                      color="primary"
-                      fullWidth
-                    >
-                      {mutationLoading ? (
-                        <CircularProgress size={22} color="secondary" />
-                      ) : (
-                        `Pay Rs.${grandTotal()} on delivery`
-                      )}
-                    </AphButton>
-                  )}
-                  {isOneApolloHcApplied && Number(grandTotal()) === 0 && (
-                    <AphButton
-                      className={classes.payBtn}
-                      onClick={() => onClickPay('ONEAPOLLO')}
-                      color="primary"
-                      fullWidth
-                    >
-                      {mutationLoading ? (
-                        <CircularProgress size={22} color="secondary" />
-                      ) : (
-                        `Place Order`
-                      )}
-                    </AphButton>
-                  )}
-                  {params.payType === 'consults' && revisedAmount === 0 && (
-                    <div className={!showZeroPaymentButton ? classes.hideButton : ''}>
+
+                    <div className={classes.paperHeading}>
+                      <Typography component="h3">Pay Via</Typography>
+                    </div>
+                    {isLoading ? (
+                      <CircularProgress
+                        className={classes.circlularProgress}
+                        size={34}
+                        color="secondary"
+                      />
+                    ) : (
+                      <ul className={classes.paymentOptions}>
+                        {sessionStorage.getItem('utm_source') === 'sbi' && (
+                          <li
+                            key={'sbiCashCard'}
+                            onClick={() => {
+                              /**Gtm code start start */
+                              dataLayerTracking({
+                                event: 'Payment Option Selected',
+                                Option: process.env.SBI_CASHCARD_PAY_TYPE,
+                              });
+                              /**Gtm code start end */
+
+                              params.payType === 'pharmacy'
+                                ? onClickPay(
+                                    process.env.SBI_CASHCARD_PAY_TYPE,
+                                    'SBI YONO CASHLESS CARD'
+                                  )
+                                : onClickConsultPay(process.env.SBI_CASHCARD_PAY_TYPE);
+                            }}
+                            style={{ cursor: 'pointer' }}
+                          >
+                            <div className={classes.paymentCard}>
+                              <img
+                                src={
+                                  'https://prodaphstorage.blob.core.windows.net/paymentlogos/sbi.png'
+                                }
+                                alt=""
+                                style={{ height: 30, width: 30 }}
+                              />
+                              <div style={{ paddingLeft: 10 }}>
+                                SBI YONO CASHLESS CARD
+                                <div className={classes.offerMessage}>
+                                  You are eligible for {process.env.SBI_CASHCARD_DISCOUNT}% cashback
+                                </div>
+                              </div>
+                            </div>
+                          </li>
+                        )}
+
+                        {paymentOptions.length > 0 &&
+                          paymentOptions.map((payType, index) => {
+                            return (
+                              <li
+                                key={index}
+                                onClick={() =>
+                                  params.payType === 'pharmacy'
+                                    ? onClickPay(payType.paymentMode, payType.name)
+                                    : onClickConsultPay(payType.paymentMode)
+                                }
+                                style={{ cursor: 'pointer' }}
+                              >
+                                <div className={classes.paymentCard}>
+                                  <img
+                                    src={payType.imageUrl}
+                                    alt=""
+                                    style={{ height: 30, width: 30 }}
+                                  />
+                                  <span style={{ paddingLeft: 10 }}>{payType.name}</span>
+                                </div>
+                              </li>
+                            );
+                          })}
+                        {params.payType === 'pharmacy' && (
+                          <li>
+                            <div className={`${classes.paymentCard} ${classes.codOption}`}>
+                              <FormGroup>
+                                <FormControlLabel
+                                  classes={{
+                                    root: classes.checkbox,
+                                    disabled: isOneApolloHcApplied ? classes.disabled : '',
+                                  }}
+                                  control={
+                                    <Checkbox
+                                      onChange={handleChange}
+                                      name="checked"
+                                      disabled={isOneApolloHcApplied}
+                                    />
+                                  }
+                                  label="Cash On Delivery"
+                                />
+                              </FormGroup>
+                              {isOneApolloHcApplied && (
+                                <Typography>
+                                  ! COD option is not available along with OneApollo Health Credits.
+                                </Typography>
+                              )}
+                            </div>
+                          </li>
+                        )}
+                      </ul>
+                    )}
+                    {checked && !isOneApolloHcApplied && (
                       <AphButton
                         className={classes.payBtn}
-                        onClick={() => onClickConsultPay('PREPAID')}
+                        onClick={() => onClickPay('COD')}
                         color="primary"
                         fullWidth
                       >
-                        Confirm Booking
+                        {mutationLoading ? (
+                          <CircularProgress size={22} color="secondary" />
+                        ) : (
+                          `Pay Rs.${grandTotal()} on delivery`
+                        )}
                       </AphButton>
-                    </div>
-                  )}
-                </Paper>
-								)}
-							</Grid>
+                    )}
+                    {isOneApolloHcApplied && Number(grandTotal()) === 0 && (
+                      <AphButton
+                        className={classes.payBtn}
+                        onClick={() => onClickPay('ONEAPOLLO')}
+                        color="primary"
+                        fullWidth
+                      >
+                        {mutationLoading ? (
+                          <CircularProgress size={22} color="secondary" />
+                        ) : (
+                          `Place Order`
+                        )}
+                      </AphButton>
+                    )}
+                    {params.payType === 'consults' && revisedAmount === 0 && (
+                      <div className={!showZeroPaymentButton ? classes.hideButton : ''}>
+                        <AphButton
+                          className={classes.payBtn}
+                          onClick={() => onClickConsultPay('PREPAID')}
+                          color="primary"
+                          fullWidth
+                        >
+                          Confirm Booking
+                        </AphButton>
+                      </div>
+                    )}
+                  </Paper>
+                )}
+              </Grid>
               <Grid item xs={12} sm={4} className={classes.chargesContainer}>
                 {params.payType === 'consults' && (
                   <div
@@ -1322,7 +1328,7 @@ const PayMedicine: React.FC = (props) => {
                               </span>
                             </div>
                             <div className={classes.couponText}>
-                              {validateConsultCouponResult ? 'Coupon succefully applied' : ''}
+                              {validateConsultCouponResult ? 'Coupon successfully applied' : ''}
                             </div>
                           </>
                         )}

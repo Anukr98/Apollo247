@@ -187,6 +187,7 @@ export interface getPatientAllAppointments_getPatientAllAppointments_appointment
   __typename: "PatinetAppointments";
   appointmentPayments: (getPatientAllAppointments_getPatientAllAppointments_appointments_appointmentPayments | null)[] | null;
   id: string;
+  hideHealthRecordNudge: boolean | null;
   patientId: string;
   doctorId: string;
   appointmentDateTime: any;

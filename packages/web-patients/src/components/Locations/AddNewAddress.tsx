@@ -22,6 +22,7 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     addAddressContainer: {
       height: '100%',
+      maxBlockSize: 500,
     },
     addAddressContent: {
       padding: 20,
@@ -307,6 +308,9 @@ const useStyles = makeStyles((theme: Theme) => {
       height: '52vh',
       [theme.breakpoints.down('xs')]: {
         height: '59vh',
+      },
+      '& div.gmnoprint': {
+        display: 'none',
       },
     },
     locateContent: {
@@ -687,7 +691,7 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
           zoom={15}
           mapContainerClassName={classes.mapContentMain}
         >
-          <Marker position={{ lat: latitude, lng: longitude }} label="MOVE MAP TO ADJUST" />
+          <Marker position={{ lat: latitude, lng: longitude }} />
         </GoogleMap>
       </Fragment>
     );

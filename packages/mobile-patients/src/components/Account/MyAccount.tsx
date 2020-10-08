@@ -9,6 +9,7 @@ import {
   NeedHelpIcon,
   OneApollo,
   LinkedUhidIcon,
+  MyMembershipIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
@@ -152,7 +153,11 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     GetCurrentPatients_getCurrentPatients_patients | null | undefined
   >(currentPatient);
   const { signOut, getPatientApiCall } = useAuth();
-  const { setSavePatientDetails, setAppointmentsPersonalized } = useAppCommonData();
+  const {
+    setSavePatientDetails,
+    setAppointmentsPersonalized,
+    hdfcUserSubscriptions,
+  } = useAppCommonData();
 
   useEffect(() => {
     updateCodePushVersioninUi();
@@ -460,6 +465,15 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             props.navigation.navigate(AppRoutes.OneApolloMembership);
           }}
         />
+        {hdfcUserSubscriptions && g(hdfcUserSubscriptions, '_id') && (
+          <ListCard
+            title={'My Memberships'}
+            leftIcon={<MyMembershipIcon style={{ height: 20, width: 26 }} />}
+            onPress={() => {
+              props.navigation.navigate(AppRoutes.MyMembership);
+            }}
+          />
+        )}
         <ListCard
           title={'Need Help'}
           leftIcon={<NeedHelpIcon />}

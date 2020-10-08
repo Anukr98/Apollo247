@@ -22,6 +22,9 @@ import {
   PATIENT_TYPE,
   AppointmentUpdateHistory,
   PaginateParams,
+  CaseSheet,
+  APPOINTMENT_UPDATED_BY,
+  VALUE_TYPE,
 } from 'consults-service/entities';
 import { AppointmentDateTime } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import { AphError } from 'AphError';
@@ -36,7 +39,7 @@ import {
   addHours,
   differenceInDays,
 } from 'date-fns';
-import { ConsultHours, ConsultMode, Doctor } from 'doctors-service/entities';
+import { ConsultHours, ConsultMode, Doctor, DoctorType } from 'doctors-service/entities';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
@@ -52,7 +55,7 @@ export class AppointmentRepository extends Repository<Appointment> {
   async findById(id: string) {
     const cache = await getCache(`${REDIS_APPOINTMENT_ID_KEY_PREFIX}${id}`);
     if (cache && typeof cache === 'string') {
-      let cacheAppointment: Appointment = JSON.parse(cache);
+      const cacheAppointment: Appointment = JSON.parse(cache);
       if (cacheAppointment.sdConsultationDate) {
         cacheAppointment.sdConsultationDate = new Date(cacheAppointment.sdConsultationDate);
       }
@@ -106,15 +109,14 @@ export class AppointmentRepository extends Repository<Appointment> {
     return this.update(id, updateAttrs);
   }
 
-  getlimitedHoursFutureAppointments(currentDate: Date, limitedHoursFutureDate: Date) {
+  getActiveAndInProgressAppointments(ids: string[]) {
+    const weekPastDate = format(addDays(new Date(), -7), 'yyyy-MM-dd');
+    const weekPastDateUTC = new Date(weekPastDate + 'T18:30');
     return this.createQueryBuilder('appointment')
-      .leftJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
-      .where('appointment.appointmentDateTime > :currentDate', { currentDate })
-      .andWhere('appointment.appointmentDateTime <= :limitedHoursFutureDate', {
-        limitedHoursFutureDate,
-      })
+      .where('appointment.appointmentDateTime > :weekPastDateUTC', { weekPastDateUTC })
+      .andWhere('appointment.patientId IN (:...ids)', { ids })
       .andWhere(
-        'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',
+        'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6, :status7)',
         {
           status1: STATUS.CANCELLED,
           status2: STATUS.PAYMENT_PENDING,
@@ -122,10 +124,10 @@ export class AppointmentRepository extends Repository<Appointment> {
           status4: STATUS.PAYMENT_FAILED,
           status5: STATUS.PAYMENT_PENDING_PG,
           status6: STATUS.PAYMENT_ABORTED,
+          status7: STATUS.COMPLETED
         }
       )
-      .orderBy('appointment.appointmentDateTime', 'ASC')
-      .getMany();
+      .getCount();
   }
 
   getAppointmentsCount(doctorId: string, patientId: string) {
@@ -2106,6 +2108,13 @@ export class AppointmentRepository extends Repository<Appointment> {
     return AppointmentUpdateHistory.create(historyAttrs).save();
   }
 
+  getAppointmentIdsByPatientId(patientId: string) {
+    return this.createQueryBuilder('appointment')
+      .select(['id'])
+      .andWhere('appointment.patientId = :patientId', { patientId: patientId })
+      .getRawMany();
+  }
+
   async getAppointmenIdsFromPatientID(patientId: string) {
     return this.find({
       select: ['id'],
@@ -2117,5 +2126,30 @@ export class AppointmentRepository extends Repository<Appointment> {
         getApptError,
       });
     });
+  }
+  caseSheetAppointmentHistoryUpdate(
+    appointmentData: Appointment,
+    caseSheetAttrs: Partial<CaseSheet>
+  ) {
+    let response: any;
+    if (appointmentData) {
+      let reason = ApiConstants.CASESHEET_MODIFIED_HISTORY.toString();
+      if (caseSheetAttrs.doctorType == DoctorType.JUNIOR) {
+        reason = ApiConstants.JD_CASESHEET_COMPLETED_HISTORY.toString();
+      }
+      const historyAttrs: Partial<AppointmentUpdateHistory> = {
+        appointment: appointmentData,
+        userType: APPOINTMENT_UPDATED_BY.DOCTOR,
+        fromValue: appointmentData.status,
+        toValue: appointmentData.status,
+        valueType: VALUE_TYPE.STATUS,
+        fromState: appointmentData.appointmentState,
+        toState: appointmentData.appointmentState,
+        userName: caseSheetAttrs.createdDoctorId,
+        reason,
+      };
+      response = this.saveAppointmentHistory(historyAttrs);
+    }
+    return response;
   }
 }

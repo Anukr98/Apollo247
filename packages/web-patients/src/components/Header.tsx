@@ -18,6 +18,13 @@ import { useParams } from 'hooks/routerHooks';
 import moment from 'moment';
 import { dataLayerTracking } from 'gtmTracking';
 
+import { useApolloClient } from 'react-apollo-hooks';
+import { GET_SUBSCRIPTIONS_OF_USER_BY_STATUS } from 'graphql/profiles';
+import {
+  getSubscriptionsOfUserByStatus,
+  getSubscriptionsOfUserByStatusVariables,
+} from 'graphql/types/getSubscriptionsOfUserByStatus';
+
 const useStyles = makeStyles((theme: Theme) => {
   return {
     header: {
@@ -26,6 +33,7 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
       backgroundColor: theme.palette.common.white,
       padding: '0 20px',
+      position: 'relative',
       [theme.breakpoints.down('xs')]: {
         padding: '0 10px',
         boxShadow: '0 0.5px 2px 0 rgba(0, 0, 0, 0.1)',
@@ -280,7 +288,7 @@ const useStyles = makeStyles((theme: Theme) => {
     backArrow: {
       position: 'absolute',
       top: 90,
-      left: 70,
+      left: -70,
       width: 48,
       height: 48,
       lineHeight: '36px',
@@ -333,6 +341,9 @@ export const Header: React.FC<HeaderProps> = (props) => {
   const isMobileView = screen.width <= 768;
   const node = useRef(null);
 
+  const [userSubscriptions, setUserSubscriptions] = React.useState([]);
+  const apolloClient = useApolloClient();
+
   const params = useParams<{
     searchMedicineType: string;
     searchText: string;
@@ -355,6 +366,36 @@ export const Header: React.FC<HeaderProps> = (props) => {
       document.removeEventListener('mousedown', handleClick);
     };
   }, []);
+
+  useEffect(() => {
+    // const userSubscriptionsLocalStorage = JSON.parse(localStorage.getItem('userSubscriptions'));
+    // userSubscriptionsLocalStorage ? setUserSubscriptions(userSubscriptionsLocalStorage) : '';
+    if (
+      isSignedIn &&
+      userSubscriptions.length == 0
+      // &&  (userSubscriptionsLocalStorage == null || userSubscriptionsLocalStorage.length == 0)
+    ) {
+      apolloClient
+        .query<getSubscriptionsOfUserByStatus, getSubscriptionsOfUserByStatusVariables>({
+          query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+          variables: {
+            mobile_number: localStorage.getItem('userMobileNo'),
+            status: ['active', 'deferred_inactive'],
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then((response) => {
+          setUserSubscriptions(response.data.GetSubscriptionsOfUserByStatus.response);
+          localStorage.setItem(
+            'userSubscriptions',
+            JSON.stringify(response.data.GetSubscriptionsOfUserByStatus.response)
+          );
+        })
+        .catch((error) => {
+          alert('Something went wrong :(');
+        });
+    }
+  }, [currentPatient]);
 
   const MedicineRoutes = [
     clientRoutes.medicines(),
@@ -495,7 +536,21 @@ export const Header: React.FC<HeaderProps> = (props) => {
                                   />
                                 </Link>
                               </li>
-
+                              {userSubscriptions.length != 0 && (
+                                <li>
+                                  <Link to={clientRoutes.myMembership()}>
+                                    <span>
+                                      <img
+                                        src={require('images/my_membership.svg')}
+                                        width="24"
+                                        alt=""
+                                      />{' '}
+                                      My Memberships
+                                    </span>
+                                    <img src={require('images/ic_arrow_right.svg')} alt="" />
+                                  </Link>
+                                </li>
+                              )}
                               {currentPatient && (
                                 <li>
                                   <Link
@@ -711,18 +766,18 @@ export const Header: React.FC<HeaderProps> = (props) => {
               </div>
             </div>
           </div>
-        </header>
-        {props.backArrowVisible && (
-          <>
-            {!props.isWebView && (
-              <Link to={props.backLocation || clientRoutes.welcome()}>
+          {props.backArrowVisible && (
+            <>
+              {!props.isWebView && (
                 <div className={classes.backArrow}>
-                  <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
+                  <Link to={props.backLocation || clientRoutes.welcome()}>
+                    <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
+                  </Link>
                 </div>
-              </Link>
-            )}
-          </>
-        )}
+              )}
+            </>
+          )}
+        </header>
       </div>
     </div>
   );

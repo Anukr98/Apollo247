@@ -57,8 +57,14 @@ export const getPatientTypeDefs = gql`
     status: Boolean
   }
 
+  type LinkedPatientIDs {
+    ids: [String]
+  }
+
   extend type Query {
     getPatientById(patientId: String): PatientInfo
+    getPatient(patientId: String): PatientInfo
+    getLinkedPatientIDs(patientId: String): LinkedPatientIDs
     getAthsToken(patientId: String): PatientInfo
     getPatientByMobileNumber(mobileNumber: String): PatientList
     getPatients: GetPatientsResult
@@ -74,6 +80,7 @@ export const getPatientTypeDefs = gql`
       whatsAppConsult: Boolean
       patientId: String
     ): UpdateWhatsAppStatusResult!
+    createNewUHID(patientId: String!): String
   }
 `;
 
@@ -117,6 +124,19 @@ type UpdateWhatsAppStatusResult = {
   status: Boolean;
 };
 
+type LinkedPatientIDs = {
+  ids: String[];
+};
+
+type PatientDetails = {
+  firstName: string;
+  lastName: string;
+  emailAddress: string;
+  mobileNumber: string;
+  dateOfBirth: Date;
+  gender: Gender;
+};
+
 type PatientProfileInputArgs = { patientProfileInput: PatientProfileInput };
 type EditProfileInputArgs = { editProfileInput: EditProfileInput };
 
@@ -141,6 +161,35 @@ const getPatientById: Resolver<
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
   return { patient };
+};
+
+const getPatient: Resolver<
+  null,
+  { patientId: string },
+  ProfilesServiceContext,
+  PatientInfo
+> = async (parent, args, { profilesDb }) => {
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+
+  const patient = await patientRepo.getPatientDetails(args.patientId);
+  if (!patient) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  }
+  return { patient };
+};
+
+const getLinkedPatientIDs: Resolver<
+  null,
+  { patientId: string },
+  ProfilesServiceContext,
+  LinkedPatientIDs
+> = async (parent, args, { profilesDb }) => {
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+
+  const patients = await patientRepo.getLinkedPatientIds({ patientId: args.patientId });
+  return {
+    ids: patients,
+  };
 };
 
 const getPatientByMobileNumber: Resolver<
@@ -287,6 +336,19 @@ const getAthsToken: Resolver<
   return { patient };
 };
 
+const createNewUHID: Resolver<null, { patientID: string }, ProfilesServiceContext, string> = async (
+  parent,
+  args,
+  { profilesDb }
+) => {
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  const patient = await patientRepo.getPatientDetails(args.patientID);
+  if (!patient) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  }
+  return await patientRepo.createNewUhid(patient);
+};
+
 const getPatients = () => {
   return { patients: [] };
 };
@@ -308,6 +370,8 @@ const getLinkedPatientIds: Resolver<
 export const getPatientResolvers = {
   Query: {
     getPatientById,
+    getPatient,
+    getLinkedPatientIDs,
     getPatientByMobileNumber,
     getPatients,
     getAthsToken,
@@ -319,5 +383,6 @@ export const getPatientResolvers = {
     addNewProfile,
     editProfile,
     updateWhatsAppStatus,
+    createNewUHID,
   },
 };
