@@ -8,8 +8,13 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
+import android.media.Ringtone;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 
 import com.facebook.react.ReactApplication;
@@ -29,7 +34,9 @@ import android.net.Uri;
 import android.os.Build;
 import android.util.Log;
 
+import androidx.annotation.ColorRes;
 import androidx.annotation.RequiresApi;
+import androidx.annotation.StringRes;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 
@@ -44,6 +51,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Random;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -61,6 +69,7 @@ public class MyFirebaseMessagingService
         extends FirebaseMessagingService {
 
     private static DeviceEventManagerModule.RCTDeviceEventEmitter eventEmitter = null;
+
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -125,6 +134,14 @@ public class MyFirebaseMessagingService
         }
         }
 
+    private Spannable getActionText(String title, @ColorRes int colorRes) {
+        Spannable spannable = new SpannableString(title);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N_MR1) {
+            spannable.setSpan(
+                    new ForegroundColorSpan(this.getColor(colorRes)), 0, spannable.length(), 0);
+        }
+        return spannable;
+    }
 
     private void sendNotifications(RemoteMessage remoteMessage){
         String appointment_id=remoteMessage.getData().get("appointmentId");
@@ -132,7 +149,8 @@ public class MyFirebaseMessagingService
         String doctorName=remoteMessage.getData().get("doctorName");
         String deeplinkUri="apollopatients://DoctorCall?"+appointment_id+'+'+incoming_call_type;
         Uri uri = Uri.parse(deeplinkUri);
-        Uri uri_home=Uri.parse("apollopatients://Consult");
+        Uri uri_home=Uri.parse("apollopatients://ConsultRoom");
+        int oneTimeID = (int) SystemClock.uptimeMillis();
 
         //on notif click start
         Intent intent = new Intent(Intent.ACTION_VIEW,uri);
@@ -142,23 +160,23 @@ public class MyFirebaseMessagingService
         //on notif click end
 
 
-
-//set intents and pending intents to call service on click of “accept” action button of notification
-        Intent receiveCallAction = new Intent(Intent.ACTION_VIEW,uri);
-        receiveCallAction.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent piAccept = PendingIntent.getActivity(this, 0 /* Request code */, intent,
-                PendingIntent.FLAG_ONE_SHOT);
-
-//set intents and pending intents to call service on click of “reject” action button of notification
-        Intent rejectCallAction =new Intent(Intent.ACTION_VIEW,uri_home);
-        rejectCallAction.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent piReject = PendingIntent.getActivity(this, 0 /* Request code */, intent,
-                PendingIntent.FLAG_ONE_SHOT);
-
         String channelId = "fcm_FirebaseNotifiction_call_channel";
         String channelName = "Apollo 247 Incoming Call";
-        Uri incoming_call_notif = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
-        Uri local_sound=Uri.parse("android.resource://com.apollo.patientapp/" + R.raw.incallmanager_ringtone);
+        Uri incoming_call_notif = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
+
+        //
+        int notificationId = new Random().nextInt();
+        PendingIntent acptIntent = NotificationActivity.getAcceptIntent(oneTimeID,uri,this);
+        PendingIntent rjctIntent = NotificationActivity.getRejectIntent(oneTimeID,uri_home, this);
+        //
+
+
+
+        long[] v = {500,1000};
+
+        NotificationCompat.Action acceptCall=new NotificationCompat.Action.Builder(R.drawable.acpt_btn,getActionText("Answer",android.R.color.holo_green_light),acptIntent).build();
+        NotificationCompat.Action rejectCall=new NotificationCompat.Action.Builder(R.drawable.rjt_btn,getActionText("Decline",android.R.color.holo_red_light),rjctIntent).build();
+
         NotificationCompat.Builder notificationBuilder =
             new NotificationCompat.Builder(this, channelId)
                     .setContentTitle(doctorName)
@@ -167,15 +185,23 @@ public class MyFirebaseMessagingService
                     .setPriority(NotificationCompat.PRIORITY_MAX)
                     .setCategory(NotificationCompat.CATEGORY_CALL)
                     .setAutoCancel(true)
-                    .setSound(local_sound)
-                    .addAction(R.drawable.acpt_btn, "Receive Call", piAccept)
-                    .addAction(R.drawable.rjt_btn, "Cancel call", piReject)
-                    .setFullScreenIntent(piAccept, true)
+                    .setVibrate(v)
+                    .setSound(incoming_call_notif)
+                    .addAction(acceptCall)
+                    .addAction(rejectCall)
+                    .setFullScreenIntent(acptIntent, true)
                     .setContentIntent(pendingIntent);
 
+        Log.e("notificationBuilder", String.valueOf(notificationId));
         NotificationManager notificationManager =
             (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
+        try {
+            Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), incoming_call_notif);
+            r.play();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         int importance = NotificationManager.IMPORTANCE_MAX;
 
@@ -185,7 +211,7 @@ public class MyFirebaseMessagingService
             notificationManager.createNotificationChannel(mChannel);
         }
 
-        notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
+        notificationManager.notify(oneTimeID, notificationBuilder.build());
 }
 
 
