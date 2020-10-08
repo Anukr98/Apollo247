@@ -6329,7 +6329,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       if (patientJoinedCall.current) {
         setTimeout(() => {
           setShowVideo(false);
-        }, 300);
+        }, 1000);
       }
     }
     setLoading(false);
