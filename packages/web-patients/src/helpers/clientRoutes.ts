@@ -70,6 +70,7 @@ export const clientRoutes = {
   prescription: (appointmentId: string) => `/prescription/${appointmentId}`,
   oneApolloMembership: () => '/oneapollo-membership',
   pageNotFound: () => '/page-not-found',
+  apolloProHealth: () => '/apollo-pro-health',
   // sitemap: (sitemap: string) => `/${sitemap}`,
   // childSitemap: (sitemap: string, pageNo: string) => `/${sitemap}/${pageNo}`,
 };
