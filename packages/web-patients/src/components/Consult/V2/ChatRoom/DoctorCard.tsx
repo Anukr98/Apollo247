@@ -188,7 +188,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   // console.log(message, 'message....................');
   let chatDate,
     chatTime = '';
-  console.log(chatDate, chatTime, '-----------------------');
   if (props.chatTime && props.chatTime.length > 0) {
     chatDate = new Date(props.chatTime);
     chatTime = isToday(chatDate)
