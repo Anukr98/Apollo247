@@ -1056,6 +1056,29 @@ export const getUniqueTestSlots = (slots: TestSlot[]) => {
     });
 };
 
+export const getUniqueTestSlotsWithArea = (slots: TestSlotWithArea[]) => {
+  return slots
+    .filter(
+      (item, idx, array) =>
+        array.findIndex(
+          (_item) =>
+            _item.slotInfo.Timeslot == item.slotInfo.Timeslot 
+        ) == idx
+    )
+    .map((val) => ({
+      startTime: val.slotInfo.Timeslot!,
+      endTime: val.slotInfo.Timeslot!,
+    }))
+    .sort((a, b) => {
+      if (moment(a.startTime.trim(), 'HH:mm').isAfter(moment(b.startTime.trim(), 'HH:mm')))
+        return 1;
+      else if (moment(b.startTime.trim(), 'HH:mm').isAfter(moment(a.startTime.trim(), 'HH:mm')))
+        return -1;
+      return 0;
+    });
+};
+
+
 const webengage = new WebEngage();
 
 export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Object) => {
