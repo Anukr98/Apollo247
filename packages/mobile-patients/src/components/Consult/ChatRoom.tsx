@@ -6523,6 +6523,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const uploadPrescriptionPopup = () => {
     return (
       <UploadPrescriprionPopup
+        type={'nonCartFlow'}
         heading="Attach File(s)"
         instructionHeading="Instructions For Uploading Files"
         instructions={[
