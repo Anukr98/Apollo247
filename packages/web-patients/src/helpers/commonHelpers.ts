@@ -580,10 +580,10 @@ export const consultWebengageEventsCommonInfo = (data: any) => {
 };
 const deepLinkUtil = (deepLinkPattern: string) => {
   if (getDeviceType() !== DEVICETYPE.DESKTOP && !sessionStorage.getItem('deepLinkAccessed')) {
-    window.location.href = `apollopatients://${deepLinkPattern}`;
-    setTimeout(() => {
-      window.location.href = getAppStoreLink();
-    }, 1000);
+    // window.location.href = `apollopatients://${deepLinkPattern}`;
+    // setTimeout(() => {
+    //   window.location.href = getAppStoreLink();
+    // }, 1000);
     sessionStorage.setItem('deepLinkAccessed', '1');
   }
 };

@@ -529,6 +529,7 @@ export const GET_CASESHEET_JRD = gql`
           appointmentDocuments {
             documentPath
             prismFileId
+            createdDate
           }
           status
           appointmentState

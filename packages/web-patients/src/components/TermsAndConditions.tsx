@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { makeStyles, Theme } from '@material-ui/core';
-import { BottomLinks } from 'components/BottomLinks';
 import { Header } from 'components/Header';
+import { BottomLinks } from 'components/BottomLinks';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { MetaTagsComp } from 'MetaTagsComp';
+import { dataLayerTracking } from 'gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -95,6 +96,18 @@ const TermsAndConditions: React.FC = () => {
       'Apollo 247 - Read all of our terms and conditions. Apollo 24|7 is a part of the multi-specialty healthcare group Apollo Hospitals.',
     canonicalLink: typeof window !== 'undefined' && window.location && window.location.href,
   };
+
+  useEffect(() => {
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: 'Terms Page',
+      pageLOB: 'Others',
+      pageType: 'Terms Page',
+    });
+    /**Gtm code start end */
+  }, []);
 
   return (
     <div className={classes.root}>

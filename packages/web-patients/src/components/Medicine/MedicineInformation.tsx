@@ -10,8 +10,6 @@ import {
   pharmacyPdpPincodeTracking,
   addToCartTracking,
   buyNowTracking,
-  pharmaAvailabilityApiTracking,
-  pharmaTatApiTracking,
 } from 'webEngageTracking';
 import { SubstituteDrugsList } from 'components/Medicine/SubstituteDrugsList';
 import {
@@ -560,41 +558,6 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
               if (pharmaAddressDetails.pincode !== pinCode) {
                 getPlaceDetails(pinCode);
               }
-              /** Webengage Tracking */
-              const {
-                items,
-                lat,
-                lng,
-                ordertime,
-                pincode,
-                storeCode,
-                storeType,
-                tat,
-                tatU,
-              } = res.data.response;
-              const { exist, mrp, qty } = items[0];
-              pharmaTatApiTracking({
-                source: 'PDP',
-                inputSku: sku,
-                inputQty: medicineQty,
-                inputLat: pharmaAddressDetails.lat,
-                inputLng: pharmaAddressDetails.lng,
-                inputPincode: pinCode,
-                inputMrp: price,
-                itemsInCart: 1,
-                resExist: exist,
-                resMrp: mrp * parseInt(mou),
-                resQty: qty,
-                resLat: lat,
-                resLng: lng,
-                resOrderTime: ordertime,
-                resPincode: pincode,
-                resStorecode: storeCode,
-                resStoreType: storeType,
-                resTat: tat,
-                resTatU: tatU,
-              });
-              /** Webengage Tracking */
             } else if (typeof res.data.errorMSG === 'string') {
               setDefaultDeliveryTime(pinCode);
             }
@@ -855,11 +818,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                         }}
                         onClick={() => {
                           const { sku, name } = data;
-                          if (!pharmaAddressDetails.lat || !pharmaAddressDetails.lng) {
-                            getPlaceDetails(pinCode);
-                          } else {
-                            checkDeliveryTime(pinCode, sku);
-                          }
+                          checkDeliveryTime(pinCode, sku);
                           const eventData = {
                             pinCode,
                             productId: sku,

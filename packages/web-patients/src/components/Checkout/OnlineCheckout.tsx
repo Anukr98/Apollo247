@@ -24,7 +24,7 @@ import { consultPayButtonClickTracking } from 'webEngageTracking';
 import { dataLayerTracking } from 'gtmTracking';
 import { getCouponByUserMobileNumber } from 'helpers/commonHelpers';
 import fetchUtil from 'helpers/fetch';
-import { gtmTracking } from '../../gtmTracking';
+import { gtmTracking, dataLayerTracking } from '../../gtmTracking';
 import { useLocationDetails } from 'components/LocationProvider';
 import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
 

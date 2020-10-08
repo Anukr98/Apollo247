@@ -553,6 +553,10 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
           followUpAfterInDays
           version
           doctorType
+          medicinePrescription {
+            id
+            medicineName
+          }
         }
       }
     }

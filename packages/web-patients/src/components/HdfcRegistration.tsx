@@ -19,6 +19,7 @@ import {
   CreateUserSubscriptionVariables,
 } from 'graphql/types/CreateUserSubscription';
 import { HDFC_CUSTOMER, CreateUserSubscriptionInput } from 'graphql/types/globalTypes';
+import { Link } from '@material-ui/core';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -315,13 +316,20 @@ const useStyles = makeStyles((theme: Theme) => {
         boxShadow: 'none',
         color: '#FC9916',
       },
+      '& a': {
+        boxShadow: 'none',
+        color: '#FC9916',
+        fontWeight: 600,
+        textTransform: 'uppercase',
+        fontSize: 13,
+      },
     },
     recheckOtp: {
       // display: 'none',
       width: '60%',
       [theme.breakpoints.down('sm')]: {
         width: '100%',
-        padding: '0 0 30px',
+        padding: '0 0 50px',
       },
       '& h2': {
         fontSize: 32,
@@ -448,6 +456,11 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
           setShowIntro(false);
           setShowRecheckOTP(false);
           setShowOTPValidator(true);
+          /* GA Tracking */
+          (window as any).dataLayer.push({
+            event: 'HDFC OTP Generated',
+          });
+          /*******************/
         } else if (response.data.identifyHdfcCustomer.status == HDFC_CUSTOMER.OTP_NOT_GENERATED) {
           setLoading(false);
           setShowIntro(false);
@@ -457,6 +470,11 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
           setLoading(false);
           setShowIntro(false);
           setShowRecheckOTP(true);
+          /* GA Tracking */
+          (window as any).dataLayer.push({
+            event: 'HDFC Account Not Found',
+          });
+          /*******************/
         }
       })
       .catch((error) => {
@@ -467,6 +485,11 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
 
   const validateHDFCOtp = () => {
     setLoading(true);
+    /* GA Tracking */
+    (window as any).dataLayer.push({
+      event: 'HDFC OTP Submitted',
+    });
+    /*******************/
     /*****WebEngage*******/
     const data = {
       mobileNumber: currentPatient.mobileNumber,
@@ -496,9 +519,19 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
             response.data.validateHdfcOTP.defaultPlan,
             currentPatient.mobileNumber
           );
+          /* GA Tracking */
+          (window as any).dataLayer.push({
+            event: 'HDFC OTP Validated',
+          });
+          /*******************/
         }
         if (response.data.validateHdfcOTP.status === false) {
           setLoading(false);
+          /* GA Tracking */
+          (window as any).dataLayer.push({
+            event: 'HDFC OTP Validation failed',
+          });
+          /*******************/
         }
       })
       .catch((error) => {
@@ -542,6 +575,12 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
         };
         HDFCPlanSubscribed(data);
         /*****WebEngage*******/
+        /* GA Tracking */
+        (window as any).dataLayer.push({
+          event: 'HDFC Plan Subscribed',
+          Plan: plan,
+        });
+        /*******************/
       })
       .catch((error) => {
         setLoading(false);
@@ -568,9 +607,18 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
               </Typography>
             </div>
             <Typography className={classes.desc}>
-              This is required by HDFC Bank to verify your details
+              Please ensure your Mobile no. and DOB with Apollo 24|7 match HDFC Bank's records​
             </Typography>
-            <AphButton onClick={() => queryIdentifyHDFCCustomer()}>
+            <AphButton
+              onClick={() => {
+                /* GA Tracking */
+                (window as any).dataLayer.push({
+                  event: 'HDFC OTP Requested',
+                });
+                /*******************/
+                queryIdentifyHDFCCustomer();
+              }}
+            >
               {loading ? <CircularProgress size={30} /> : 'Generate Otp'}{' '}
             </AphButton>
           </div>
@@ -658,12 +706,25 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
               <Typography>
                 {showOtpFail
                   ? 'Due to a technical glitch, we are unable to verify your details with HDFC Bank right now. Please try again in sometime'
-                  : 'Looks like your details are not matching with HDFC Bank records.​ Please retry or enroll yourself with HDFC Bank'}
+                  : `Please ensure your Mobile no. and DOB with Apollo 24|7 match HDFC Bank's records.​ If you are not an HDFC Bank customer, you can become one by opening a Savings account with HDFC Bank`}
               </Typography>
             </div>
             <div className={classes.btnContainer}>
-              {!showOtpFail && <AphButton href={HDFC_ENROLL_LINK}>Enroll</AphButton>}
-              <AphButton onClick={() => queryIdentifyHDFCCustomer()}>
+              {!showOtpFail && (
+                <Link target="_blank" href={HDFC_ENROLL_LINK}>
+                  Open Savings Account
+                </Link>
+              )}
+              <AphButton
+                onClick={() => {
+                  /* GA Tracking */
+                  (window as any).dataLayer.push({
+                    event: 'HDFC OTP Rechecked',
+                  });
+                  /*******************/
+                  queryIdentifyHDFCCustomer();
+                }}
+              >
                 {loading ? <CircularProgress size={30} /> : 'Recheck Otp'}
               </AphButton>
             </div>

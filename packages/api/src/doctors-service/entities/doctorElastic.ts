@@ -419,9 +419,9 @@ export function elasticDoctorDoctorTypeSort(){
       script: {
         lang: 'painless',
         source:
-          "if( doc['doctorType.keyword'].value == 'STAR_APOLLO'){ params.STAR_APOLLO }else {params.OTHERS}",
+          "if( doc['doctorType.keyword'].value == 'APOLLO'){ params.APOLLO }else {params.OTHERS}",
         params: {
-          STAR_APOLLO: 1,
+          APOLLO: 1,
           OTHERS: 0,
         },
       },
