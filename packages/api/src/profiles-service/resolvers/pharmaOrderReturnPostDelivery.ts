@@ -8,73 +8,72 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format, addMinutes, parseISO } from 'date-fns';
 import { log } from 'customWinstonLogger';
 
-export const saveOrderVerifiedTypeDefs = gql`
-  input OrderVerifiedInput {
+export const orderReturnPostDeliveryTypeDefs = gql`
+  input OrderReturnPostDeliveryInput {
     orderId: Int!
+    apOrderNo: String!
+    returnTrackingId: String!
     status: MEDICINE_ORDER_STATUS!
     updatedDate: String!
-    items: [ItemArticleDetails]
+    trackingProvider: String
+    trackingNo: String
+    driverName: String
+    driverPhone: String
+    reasonCode: String!
+    itemDetails: [ItemArticleDetails]
+    bankDetails: BankDetails
   }
 
-  type OrderVerifiedResult {
+  input BankDetails {
+    accountNumber: String!
+    ifscCode: String!
+    bankName: String
+    customerName: String
+    customerNumber: String
+  }
+
+  type OrderReturnPostDeliveryResult {
     status: MEDICINE_ORDER_STATUS
     errorCode: Int
     errorMessage: String
     orderId: Int
-    tat: String
-    siteId: String
-    tatType: String
-    allocationProfile: String
-    clusterId: String
   }
 
   extend type Mutation {
-    saveOrderVerified(orderVerifiedInput: OrderVerifiedInput): OrderVerifiedResult!
+    orderReturnPostDelivery(
+      orderReturnPostDeliveryInput: OrderReturnPostDeliveryInput
+    ): OrderReturnPostDeliveryResult!
   }
 `;
 
-type SaveOrderVerifiedResult = {
+type SaveOrderReturnResult = {
   status: MEDICINE_ORDER_STATUS;
   errorCode: number;
   errorMessage: string;
   orderId: number;
-  tat: string;
-  siteId: string;
-  tatType: string;
-  allocationProfile: string;
-  clusterId: string;
 };
 
-type SaveOrderVerifiedInput = {
+type SaveOrderReturnInput = {
   orderId: number;
+  apOrderNo: string;
   status: MEDICINE_ORDER_STATUS;
   updatedDate: string;
-  items: [ItemArticleDetails];
+  reasonCode: string;
 };
 
-type ItemArticleDetails = {
-  articleCode: string;
-  articleName: string;
-  quantity: number;
-  batch: string;
-  unitPrice: number;
-  packSize: number;
-  posAvailability: boolean;
+type SaveOrderReturnInputArgs = {
+  orderReturnInput: SaveOrderReturnInput;
 };
 
-type SaveOrderVerifiedInputArgs = {
-  orderVerifiedInput: SaveOrderVerifiedInput;
-};
-
-const saveOrderVerified: Resolver<
+const orderReturnPostDelivery: Resolver<
   null,
-  SaveOrderVerifiedInputArgs,
+  SaveOrderReturnInputArgs,
   ProfilesServiceContext,
-  SaveOrderVerifiedResult
-> = async (parent, { orderVerifiedInput }, { profilesDb }) => {
+  SaveOrderReturnResult
+> = async (parent, { orderReturnInput }, { profilesDb }) => {
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const orderDetails = await medicineOrdersRepo.getMedicineOrderWithShipments(
-    orderVerifiedInput.orderId
+    orderReturnInput.orderId
   );
   if (!orderDetails) {
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
@@ -86,17 +85,17 @@ const saveOrderVerified: Resolver<
 
   log(
     'profileServiceLogger',
-    `ORDER_VERIFICATION_DONE_FOR_ORDER_ID:${orderVerifiedInput.orderId}`,
-    `saveOrderVerified call from OMS`,
-    JSON.stringify(orderVerifiedInput),
+    `ORDER_STATUS_CHANGE_${orderReturnInput.status}_FOR_ORDER_ID:${orderReturnInput.orderId}`,
+    `orderReturned call from OMS`,
+    JSON.stringify(orderReturnInput),
     ''
   );
   const statusDate = format(
-    addMinutes(parseISO(orderVerifiedInput.updatedDate), -330),
+    addMinutes(parseISO(orderReturnInput.updatedDate), -330),
     "yyyy-MM-dd'T'HH:mm:ss.SSSX"
   );
   const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
-    orderStatus: MEDICINE_ORDER_STATUS.VERIFICATION_DONE,
+    orderStatus: orderReturnInput.status,
     medicineOrders: orderDetails,
     statusDate: new Date(statusDate),
   };
@@ -106,26 +105,19 @@ const saveOrderVerified: Resolver<
     orderDetails.id,
     orderDetails.orderAutoId,
     new Date(),
-    MEDICINE_ORDER_STATUS.VERIFICATION_DONE
+    orderReturnInput.status
   );
 
-  // calculate tat for non cart orders
-
   return {
-    status: MEDICINE_ORDER_STATUS.VERIFICATION_DONE,
+    status: orderReturnInput.status,
     errorCode: 0,
     errorMessage: '',
     orderId: orderDetails.orderAutoId,
-    tat: '',
-    siteId: '',
-    tatType: '',
-    allocationProfile: '',
-    clusterId: '',
   };
 };
 
-export const saveOrderVerifiedResolvers = {
+export const orderReturnPostDeliveryResolvers = {
   Mutation: {
-    saveOrderVerified,
+    orderReturnPostDelivery,
   },
 };
