@@ -1158,86 +1158,85 @@ export const MembershipPlanDetail: React.FC = (props) => {
                 <div className={classes.detailsContent}>
                   <ul className={classes.tncList}>
                     <li>
-                      The Healthy Life offering is the marketing program offered by Apollo 24|7, an
+                      The HealthyLife offering is the marketing program offered by Apollo 24|7, an
                       app managed by Apollo Hospitals Enterprise Limited (AHEL) only for HDFC Bank
                       customers.
-                    </li>
-                    <li>
-                      The validity of the program (“Term”) is till 31st August 2021, unless extended
-                      by Apollo 24|7 and HDFC Bank.
-                    </li>
-                    <li>
-                      The discounts applicable as per the Healthy Life program shall be applied at
-                      the time of payment checkout by the customer.
-                    </li>
-                    <li>
-                      This program is designed for select HDFC customers and offerings will vary
-                      with the different categories of HDFC customers. However, membership schemes
-                      can be upgraded on the basis of the spending on the Apollo 24|7 app as
-                      mentioned in the offer grid.
-                    </li>
-                    <li>
-                      The Healthy Life Program is open to all HDFC customers with a valid Indian
-                      mobile number only.
-                    </li>
-                    <li>
-                      The T&amp;C’s of the silver, gold and platinum membership offered in the
-                      Healthy Life program shall be governed by the terms &amp; conditions of the
-                      website -{' '}
-                      <a href="https://www.oneapollo.com/terms-conditions/">
-                        https://www.oneapollo.com/terms-conditions/
-                      </a>
-                    </li>
-                    <li>
-                      The Healthy Life offering will be applicable to all HDFC customers, whether
-                      they are existing customers of Apollo 24|7 or not. However, all the customers
-                      shall adhere to the offerings as mentioned in this marketing program.
-                    </li>
-                    <li>The Healthy Life program is non-transferable.</li>
-                    <li>
-                      The activation of the benefits for the Healthy Life program will be completed
-                      24 hours post the service delivery/fulfillment of the qualifying transaction.
-                      For e.g., to unlock benefits, the user is needed to make a qualifying
-                      transaction of INR 499, amount subject to change as per different tiers
-                    </li>
-                    <li>
-                      By enrolling for the Healthy Life program, a member consents to allow use and
-                      disclosure by Apollo Health centres, along with his/her personal and other
-                      information as provided by the member at the time of enrolment and/or
-                      subsequently.
-                    </li>
-                    <li>
-                      As a prerequisite to becoming a member, a customer will need to provide
-                      mandatory information including full name, valid and active Indian mobile
-                      number. He/she shall adhere to such terms and conditions as may be prescribed
-                      for membership from time to time.
-                    </li>
-                    <li>
-                      The Healthy Life membership program will be issued solely at the discretion of
-                      the management and the final discretion on all matters relating to the
-                      membership shall rest with Apollo 24|7(AHEL).
-                    </li>
-                    <li>
-                      Healthy Life program is a corporate offering exclusively for HDFC bank
-                      customers and not for individuals.
-                    </li>
-                    <li>
-                      Apollo 24|7 reserves the right to add, alter, amend and revise terms and
-                      conditions as well as rules and regulations governing the Healthy Life
-                      membership program without prior notice.
-                    </li>
-                    <li>
-                      Benefits and offers available through the program may change or be withdrawn
-                      without prior intimation. Apollo 24|7 will not be responsible for any
-                      liability arising from such situations or use of such offers.
-                    </li>
-                    <li>
-                      Any disputes arising out of the offer shall be subject to arbitration by a
-                      sole arbitrator appointed by Apollo 24|7 for this purpose. The proceedings of
-                      the arbitration shall be conducted as per the provisions of Arbitration and
-                      Conciliation Act, 1996. The place of arbitration shall be at Chennai and
-                      language of arbitration shall be English. The existence of a dispute, if at
-                      all, shall not constitute a claim against Apollo 24|7.
+                      <li>
+                        The validity of membership is 1 year and the validity of program (“Term”) is
+                        till 30th September 2021, unless extended by Apollo 24|7 and HDFC Bank
+                      </li>
+                      <li>
+                        The discounts/offers applicable as per the HealthyLife program shall be
+                        applied at the time of payment checkout by the customer.
+                      </li>
+                      <li>
+                        This program is designed for select HDFC current and saving accounts
+                        customers and offerings will vary with the different categories of accounts
+                        of HDFC customers. However, membership schemes can be upgraded / downgraded
+                        on the basis of the spending on the Apollo 24|7 app or web as mentioned in
+                        the offer grid.{' '}
+                      </li>
+                      <li>
+                        The HealthyLife Program is open to all HDFC current and saving accounts
+                        customers with a valid Indian mobile number registered with HDFC bank only.{' '}
+                      </li>
+                      <li>
+                        The T&amp;C’s of the OneApollo silver, gold and platinum membership offered
+                        in the HealthyLife program shall be governed by the terms &amp; conditions
+                        of the website -{' '}
+                        <a href="https://www.oneapollo.com/terms-conditions/">
+                          https://www.oneapollo.com/terms-conditions/
+                        </a>
+                      </li>
+                      <li>
+                        The HealthyLife offering will be applicable to all Current &amp; Savings
+                        Account holders of HDFC Bank, whether they are existing customers of Apollo
+                        24|7 or not. However, all the customers shall adhere to the terms and
+                        conditions as mentioned in this marketing program.{' '}
+                      </li>
+                      <li>The HealthyLife program membership is non-transferable.</li>
+                      <li>
+                        HealthyLife Benefits Unlock condition - The activation of the benefits for
+                        the HealthyLife program will be completed 24 hours post the service
+                        delivery/fulfilment of the qualifying transaction. For e.g., to unlock
+                        benefits, the user is needed to make a qualifying transaction of amount
+                        subject to change as per different tiers .
+                      </li>
+                      <li>
+                        By enrolling for the HealthyLife program, a member consents to allow use and
+                        disclosure by Apollo Health centres,of his/her personal and other
+                        information as provided by the member at the time of enrolment and/or
+                        subsequently.
+                      </li>
+                      <li>
+                        As a prerequisite to becoming a member, a customer will need to provide
+                        mandatory information including full name, valid and active Indian mobile
+                        number. He/she shall adhere to such terms and conditions as may be
+                        prescribed for membership from time to time.
+                      </li>
+                      <li>
+                        The HealthyLife membership program will be issued solely at the discretion
+                        of the management and the final discretion on all matters relating to the
+                        membership shall rest with Apollo 24|7(AHEL).
+                      </li>
+                      <li>
+                        Apollo 24|7 reserves the right to add, alter, amend and revise terms and
+                        conditions as well as rules and regulations governing the HealthyLife
+                        membership program without prior notice.
+                      </li>
+                      <li>
+                        Benefits and offers available through the program may change or be withdrawn
+                        without prior intimation. Apollo 24|7 will not be responsible for any
+                        liability arising from such situations or use of such offers.
+                      </li>
+                      <li>
+                        Any disputes arising out of the offer shall be subject to arbitration by a
+                        sole arbitrator appointed by Apollo 24|7 for this purpose. The proceedings
+                        of the arbitration shall be conducted as per the provisions of Arbitration
+                        and Conciliation Act, 1996. The place of arbitration shall be at Chennai and
+                        language of arbitration shall be English. The existence of a dispute, if at
+                        all, shall not constitute a claim against Apollo 24|7.
+                      </li>
                     </li>
                   </ul>
                 </div>
