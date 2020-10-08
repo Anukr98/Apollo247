@@ -1,44 +1,43 @@
-import React, { useEffect } from 'react';
 import { AphButton, AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-ui-components';
 import { Tab, Tabs, Theme, Typography } from '@material-ui/core';
-import { Helmet } from 'react-helmet';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { makeStyles } from '@material-ui/styles';
-import { Header } from 'components/Header';
-import Scrollbars from 'react-custom-scrollbars';
-import { MedicineImageGallery } from 'components/Medicine/MedicineImageGallery';
-import { MedicineInformation } from 'components/Medicine/MedicineInformation';
-import { useParams } from 'hooks/routerHooks';
 import axios from 'axios';
 import { Alerts } from 'components/Alerts/Alerts';
-import { ManageProfile } from 'components/ManageProfile';
-import { gtmTracking, dataLayerTracking } from '../../gtmTracking';
 import { BottomLinks } from 'components/BottomLinks';
+import { Header } from 'components/Header';
+import { ManageProfile } from 'components/ManageProfile';
+import { HotSellers } from 'components/Medicine/Cards/HotSellers';
 import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
+import { MedicineImageGallery } from 'components/Medicine/MedicineImageGallery';
+import { MedicineInformation } from 'components/Medicine/MedicineInformation';
 import { MedicinesCartContext, useShoppingCart } from 'components/MedicinesCartProvider';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
+import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { getPackOfMedicine, deepLinkUtil } from 'helpers/commonHelpers';
+import { deepLinkUtil, getPackOfMedicine } from 'helpers/commonHelpers';
 import { useCurrentPatient } from 'hooks/authHooks';
-import stripHtml from 'string-strip-html';
-import {
-  uploadPrescriptionTracking,
-  pharmacyPdpOverviewTracking,
-  pharmacyProductViewTracking,
-  medicinePageOpenTracking,
-} from 'webEngageTracking';
+import { useParams } from 'hooks/routerHooks';
 import { MetaTagsComp } from 'MetaTagsComp';
 import moment from 'moment';
+import React, { useEffect } from 'react';
+import Scrollbars from 'react-custom-scrollbars';
+import { Helmet } from 'react-helmet';
 import { useHistory } from 'react-router';
 import { Link } from 'react-router-dom';
 import { SchemaMarkup } from 'SchemaMarkup';
-
+import stripHtml from 'string-strip-html';
+import {
+  medicinePageOpenTracking,
+  pharmacyPdpOverviewTracking,
+  pharmacyProductViewTracking,
+  uploadPrescriptionTracking,
+} from 'webEngageTracking';
+import { dataLayerTracking, gtmTracking } from '../../gtmTracking';
 import { MedicineProductDetails, PharmaOverview } from '../../helpers/MedicineApiCalls';
 import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
-import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
-import { HotSellers } from 'components/Medicine/Cards/HotSellers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -691,6 +690,10 @@ const MedicineDetails: React.FC = (props) => {
             }
           )
           .then(({ data }) => {
+            if (data.productdp[0] && data.productdp[0].url_key === null) {
+              window.location.href = clientRoutes.medicines();
+              return;
+            }
             setMedicineDetails(data.productdp[0]);
             /**schema markup  start*/
             const {
@@ -923,6 +926,10 @@ const MedicineDetails: React.FC = (props) => {
   const history = useHistory();
 
   useEffect(() => {
+    if (params.sku === 'null') {
+      window.location.href = clientRoutes.medicines();
+      return;
+    }
     if (params.sku.match('[A-Z]{3}[0-9]{4}')) {
       setIsSkuVersion(true);
     }
@@ -930,7 +937,7 @@ const MedicineDetails: React.FC = (props) => {
   }, [params.sku]);
 
   useEffect(() => {
-    if (params && params.searchText) {
+    if (params && params.searchText && params.searchText !== 'null') {
       window.history.replaceState(null, '', clientRoutes.medicineDetails(params.sku));
     }
   }, []);

@@ -3,7 +3,6 @@
   <head>
     <meta charset="utf-8" />
     <title>Apollo</title>
-    <!-- <link rel="alternate" href="android-app://com.apollopatient/https/www.apollo247.com/" /> -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -23,6 +22,7 @@
     </script>
 
     <link
+      preload
       rel="stylesheet"
       href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:300,400,500,600,700&display=swap"
     />
@@ -33,6 +33,7 @@
     /></noscript>
 
     <link
+      preload
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.6.0/slick.min.css"
     />
@@ -43,6 +44,7 @@
     /></noscript>
 
     <link
+      preload
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.6.0/slick-theme.min.css"
     />
@@ -53,6 +55,7 @@
     /></noscript>
 
     <link
+      preload
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/react-image-gallery@0.9.1/styles/css/image-gallery.css"
     />
@@ -63,7 +66,7 @@
     /></noscript>
 
     <link rel="shortcut icon" href="favicon.svg" type="image/svg/ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no" />
 
     <style type="text/css">
       a {
@@ -125,7 +128,7 @@
   <body>
     <noscript>Your browser does not support JavaScript!</noscript>
     <div id="root"></div>
-
+    <script defer async src="https://static.opentok.com/v2/js/opentok.min.js"></script>
     <script id="_webengage_script_tag" type="text/javascript" async defer>
       var webengage;
       const licenseCode = '<%= licenseCode %>';

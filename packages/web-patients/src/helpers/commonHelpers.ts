@@ -1,17 +1,25 @@
-import { DEVICETYPE, ConsultMode } from 'graphql/types/globalTypes';
-import { GetDoctorDetailsById_getDoctorDetailsById_consultHours } from 'graphql/types/GetDoctorDetailsById';
-import moment from 'moment';
+import Axios, { AxiosResponse } from 'axios';
 import { GooglePlacesType } from 'components/LocationProvider';
-import { CouponCategoryApplicable } from 'graphql/types/globalTypes';
+import {
+  GetDoctorDetailsById_getDoctorDetailsById as DoctorDetails,
+  GetDoctorDetailsById_getDoctorDetailsById_consultHours,
+} from 'graphql/types/GetDoctorDetailsById';
+import { GetPatientByMobileNumber_getPatientByMobileNumber_patients as CurrentPatient } from 'graphql/types/GetPatientByMobileNumber';
+import {
+  ConsultMode,
+  CouponCategoryApplicable,
+  DEVICETYPE,
+  DoctorType,
+  MEDICINE_ORDER_STATUS,
+} from 'graphql/types/globalTypes';
+import { EXOTEL_CALL_URL, EXOTEL_X_API } from 'helpers/constants';
+import { getAppStoreLink } from 'helpers/dateHelpers';
+import fetchUtil from 'helpers/fetch';
+import { MedicineProductDetails } from 'helpers/MedicineApiCalls';
 import _lowerCase from 'lodash/lowerCase';
 import _upperFirst from 'lodash/upperFirst';
-import { MEDICINE_ORDER_STATUS, DoctorType } from 'graphql/types/globalTypes';
-import { MedicineProductDetails } from 'helpers/MedicineApiCalls';
-import fetchUtil from 'helpers/fetch';
-import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
-import { GetPatientByMobileNumber_getPatientByMobileNumber_patients as CurrentPatient } from 'graphql/types/GetPatientByMobileNumber';
+import moment from 'moment';
 
-import { getAppStoreLink } from 'helpers/dateHelpers';
 declare global {
   interface Window {
     opera: any;
@@ -387,6 +395,19 @@ const isRejectedStatus = (status: MEDICINE_ORDER_STATUS) => {
   );
 };
 
+const callToExotelApi = (params: any): Promise<AxiosResponse<any>> => {
+  const url = EXOTEL_CALL_URL;
+  return Axios.post(
+    url,
+    { ...params },
+    {
+      headers: {
+        'x-api-key': EXOTEL_X_API,
+      },
+    }
+  );
+};
+
 const getAvailability = (nextAvailability: string, differenceInMinutes: number, type: string) => {
   const nextAvailabilityMoment = moment(nextAvailability);
   const tomorrowAvailabilityHourTime = moment('06:00', 'HH:mm');
@@ -567,6 +588,14 @@ const deepLinkUtil = (deepLinkPattern: string) => {
   }
 };
 
+const isAlternateVersion = () => {
+  // the below lines are written to init app in another mode variant=2 -> marketing requirements
+  const urlString = window.location.href;
+  const url = new URL(urlString);
+  const alternateVariant = url.searchParams.get('variant');
+  return alternateVariant && alternateVariant === '2' ? true : false;
+};
+
 const isPrime = (num: number) => {
   for (let i = 2; i < num; i++) if (num % i === 0) return false;
   return num > 1;
@@ -591,6 +620,8 @@ export {
   brandList,
   getSlidesToScroll,
   deepLinkUtil,
+  isDivisibleByTwo,
+  isAlternateVersion,
   HEALTH_RECORDS_NO_DATA_FOUND,
   removeGraphQLKeyword,
   getCouponByUserMobileNumber,
@@ -637,6 +668,7 @@ export {
   ORDER_BILLING_STATUS_STRINGS,
   getTypeOfProduct,
   kavachHelpline,
+  callToExotelApi,
   isActualUser,
   NO_ONLINE_SERVICE,
   OUT_OF_STOCK,

@@ -395,6 +395,7 @@ const CovidLanding: React.FC = (props: any) => {
                             isWebView={isWebView}
                             handleInfographicClick={(data) => handleInfographicClick(data)}
                             content={covidContent[parentCat.category]}
+                            pageType="covid"
                           />
                         )}
                       {moreContentLoading ? (
