@@ -425,9 +425,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setError(true);
   };
 
+  const pharmacyPincode =
+    g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode') || defaultAddress?.zipcode;
   useEffect(() => {
-    const pharmacyPincode =
-      g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode') || defaultAddress?.zipcode;
     if (pharmacyPincode) {
       updateServiceability(pharmacyPincode);
     }
@@ -1639,6 +1639,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     });
 
   const onAddCartItem = (item: MedicineProduct) => {
+    console.log('pharmacyPincode >>', pharmacyPincode);
     const {
       sku,
       mou,
