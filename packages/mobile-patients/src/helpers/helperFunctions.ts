@@ -73,6 +73,7 @@ import { getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails } fr
 import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetailsWithAddress';
 import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 import { handleUniversalLinks } from './UniversalLinks';
+import { getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots } from '../graphql/types/getDiagnosticSlotsWithAreaID';
 
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 let onInstallConversionDataCanceller: any;
@@ -94,6 +95,14 @@ export interface TestSlot {
   diagnosticBranchCode: string;
   date: Date;
   slotInfo: getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo;
+}
+
+export interface TestSlotWithArea {
+  employeeCode: string;
+  employeeName: string;
+  diagnosticBranchCode: string;
+  date: Date;
+  slotInfo : getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots
 }
 
 const isDebugOn = __DEV__;
@@ -989,6 +998,30 @@ export const isValidTestSlot = (
         )
       : true) &&
     moment(slot.endTime!.trim(), 'HH:mm').isSameOrBefore(
+      moment(AppConfig.Configuration.DIAGNOSTIC_MAX_SLOT_TIME.trim(), 'HH:mm')
+    )
+  );
+};
+
+export const isValidTestSlotWithArea = (
+  slot: getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots,
+  date: Date
+) => {
+  return (
+    (moment(date)
+      .format('DMY')
+      .toString() ===
+    moment()
+      .format('DMY')
+      .toString()
+      ? moment(slot.Timeslot!.trim(), 'HH:mm').isSameOrAfter(
+          moment(new Date()).add(
+            AppConfig.Configuration.DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES,
+            'minutes'
+          )
+        )
+      : true) &&
+    moment(slot.Timeslot!.trim(), 'HH:mm').isSameOrBefore(
       moment(AppConfig.Configuration.DIAGNOSTIC_MAX_SLOT_TIME.trim(), 'HH:mm')
     )
   );
