@@ -1,4 +1,5 @@
 import React from 'react';
+import { Typography } from '@material-ui/core';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import {
   Theme,
@@ -21,13 +22,6 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         borderRadius: 0,
       },
-      '& h2': {
-        margin: 0,
-        color: '#01667c',
-        fontSize: 16,
-        fontWeight: 600,
-        lineHeight: '25px',
-      },
     },
     panelRoot: {
       marginBottom: '0px !important',
@@ -44,12 +38,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     panelHeader: {
-      fontSize: 14,
-      padding: '16px 0',
-      fontWeight: 600,
-      color: '#02475b',
-      alignItems: 'flex-start',
-      minHeight: 'auto',
+      padding: 0,
     },
     summaryContent: {
       margin: 0,
@@ -70,6 +59,11 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#01475b',
       paddingBottom: 16,
     },
+    panelHeading: {
+      margin: 0,
+      fontSize: 14,
+      fontWeight: 600,
+    },
   });
 });
 interface FrequentlyQuestionsProps {
@@ -82,7 +76,7 @@ export const FrequentlyQuestions: React.FC<FrequentlyQuestionsProps> = (props) =
   return faqData ? (
     <div className={classes.root}>
       <h2>Frequently asked questions</h2>
-      {faqData.map((fq: any) => (
+      {faqData.map((fq: any, idx: number) => (
         <ExpansionPanel key={fq.id} className={classes.panelRoot}>
           <ExpansionPanelSummary
             expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
@@ -94,7 +88,9 @@ export const FrequentlyQuestions: React.FC<FrequentlyQuestionsProps> = (props) =
               expanded: classes.panelExpanded,
             }}
           >
-            {fq.faqQuestion}
+            <Typography className={classes.panelHeading} component={idx <= 9 ? 'h2' : 'h3'}>
+              {fq.faqQuestion}
+            </Typography>
           </ExpansionPanelSummary>
           <ExpansionPanelDetails className={classes.panelDetails}>
             {fq.faqAnswer}

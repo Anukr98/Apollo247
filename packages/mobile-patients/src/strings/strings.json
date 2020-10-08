@@ -25,23 +25,27 @@
     "covidYouCanText": "You can also",
     "Rs": "₹",
     "KavachText": "Explore the Apollo Kavach Program",
-    "joinConsultRoomDescription": "Please click on 'Join' to start the\nconsult with",
-    "waitForDoctirToJoinCall": "doctor_name is not in the room yet.\nPlease wait for few seconds while doctor joins the call....",
+    "joinConsultRoomDescription": "Please click here to\n Join the Call with",
+    "waitForDoctirToJoinCall": "Please wait while doctor_name is going through your medical records.\nThis might take a while. Advice you to stay in the consult room!",
     "exotelMessage": " is trying to call you from the number ",
     "requestMessage": ". Request you to answer the call.",
-    "jdAssignedMessage": "A doctor from 0’s team will join you shortly to collect your medical details. These details are essential for 0 to help you and will take around 3-5 minutes."
+    "jdAssignedMessage": "A doctor from 0’s team will join you shortly to collect your medical details. These details are essential for 0 to help you and will take around 3-5 minutes.",
+    "consultCompleteMessage": "Please wait while {0} is preparing your prescription. The prescription will be sent here in the consult room itself. However, this might take a while!",
+    "customerCareNumber": 4041894343,
+    "customerCareHelpText": "I need help with my order",
+    "selectAddress": "Choose from saved address"
   },
   "consultType": {
     "mainHeading": "How would you like to consult with",
     "checkBoxText": "I have consulted with {0} before",
     "online": {
       "heading": "In-App AUDIO/VIDEO",
-      "question": "How to consult via chat/audio/video?",
+      "question": "How to consult via text/audio/video?",
       "point1": "Choose the doctor",
       "point2": "Book a slot",
       "point3": "Make payment",
       "point4": "Be present in the consult room within Apollo247 app at the time of consult",
-      "point5": "Speak to the doctor via video/audio/chat",
+      "point5": "Speak to the doctor via video/audio/text",
       "point6": "Receive prescriptions instantly",
       "point7": "Follow Up via text - valid for 7 days"
     },
@@ -56,8 +60,9 @@
       "point6": "Follow Up via text - valid for 7 days"
     },
     "follow_up_chat_days_text": "Follow Up via text - valid for {0} days",
-    "follow_up_chat_message": "is available for a minimum of {0} days for free follow-up chat post Consult. However, doctor can decide to increase the follow-up chat days as per case basis.",
-    "chatDisabledHeader": "Free follow up chat days with the doctor are over. Please book a new appointment for consulting with {0} again!"
+    "follow_up_chat_message": "is available for a minimum of {0} days for free follow-up via text post Consult. However, doctor can decide to increase the follow-up text days as per case basis.",
+    "chatDisabledHeader": "Free follow up chat days with the doctor are over. Please book a new appointment for consulting with {0} again!",
+    "availableForInAppConsultsOnly": "Due to the current situation, {{doctor}} is available only for In-App Consults"
   },
   "login": {
     "hello": "hello!",
@@ -258,11 +263,13 @@
     "cartUpdatedAfterPriceCheckMsg": "Your Cart has been updated! MRP of some items may have changed or some items may be removed due to unavailability.",
     "addItemsForStoresAlert": "Please add items to your cart to view the list of stores available.",
     "storeItemsAvailabilityApiFailMsg": "Sorry! We’re unable to check availability of cart items for the selected store. Please try later or opt for Home Delivery.",
-    "cartItemsNotAvailableInStore": "The item(s) you have selected are not available in the nearby stores. Kindly opt for Home Delivery and we will deliver them to you directly at your doorstep."
+    "cartItemsNotAvailableInStore": "The item(s) you have selected are not available in the nearby stores. Kindly opt for Home Delivery and we will deliver them to you directly at your doorstep.",
+    "PickupStoreUnavailable": "Sorry! We’re working hard to get to this area! In the meantime, you can try next nearest pincode."
   },
   "diagnostics": {
     "nonServiceableMsg": "Diagnostic services are not available in {{city_name}} for now.",
     "nonServiceablePinCodeMsg": "Diagnostic services are not available for this pincode.",
+    "nonServiceableConfigPinCodeMsg": "Diagnostic services are not available in Pincode - {{pincode}} for now.",
     "disabledDiagnosticsMsg": "Sorry, we can not process {{testNames}} now. This will be removed from your cart.\n",
     "disabledDiagnosticsFailureMsg": "Sorry, we are unable to verify items in your cart right now. Please try again later.",
     "removeThisTestCTA": "Remove this test from cart",
@@ -295,7 +302,9 @@
     "coupon_discount": "Coupon Discount",
     "delivery_charges": "Delivery Charges",
     "packaging_charges": "Packaging Charges",
-    "orderCancellationAfterBillingAlert": "Your order has already Billed and therefore cannot be cancelled from the App. In case you still wish to Cancel, please click on the link below to chat with out customer care executives for assistance during working hours (9:00 AM to 8:30 PM)"
+    "orderCancellationAfterBillingAlert": "Your order has already Billed and therefore cannot be cancelled from the App. In case you still wish to Cancel, please click on the link below to chat with out customer care executives for assistance during working hours (9:00 AM to 8:30 PM)",
+    "chatWithUs": "CHAT WITH US",
+    "tatBreach_InconvenienceText": "We are trying our best to expedite the process.\nSorry for the inconvenience"
   },
   "OrderSummaryText": {
     "total_order_billed": "Total Ordered Value",
@@ -318,7 +327,15 @@
         "count": "0"
       },
       {
-        "title": "Medical Records",
+        "title": "Tests",
+        "count": "0"
+      },
+      {
+        "title": "Health Check",
+        "count": "0"
+      },
+      {
+        "title": "Hospitalization",
         "count": "0"
       }
     ]
@@ -462,5 +479,15 @@
     "mpAndOverlayPermission": "For a smooth consultation experience with {0} and to ensure that you do not miss out your doctor's call, Apollo 247 needs your microphone and call display permissions.",
     "onlyCameraPermission": "For a smooth consultation experience with {0}, Apollo 247 needs your camera permission.",
     "onlyMPPermission": "For a smooth consultation experience with {0}, Apollo 247 needs your microphone permission."
+  },
+  "Prescription_Success": "Your prescriptions have been submitted successfully. Our Pharmacists will validate the prescriptions and place your order.\n\nIf we require any clarifications, we will call you within one hour (Calling hours: 8AM to 8PM).",
+  "cancelConsultationHeading": "Cancel Consultation",
+  "cancelConsultationReasonHeading": "Why are you cancelling this consultation?",
+  "ReasonFor_Cancel_Consultation": {
+    "doctorDidNotJoin": "Doctor did not join the consult",
+    "bookedForWrongUser": "Booked with wrong user details",
+    "doctorDeniedMode": "Doctor denied your preferable mode of consult",
+    "audioVideoIssue": "Audio Video Issues",
+    "otherReasons": "Others (Please specifiy)"
   }
 }

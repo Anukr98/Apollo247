@@ -1479,7 +1479,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             bounces={false}
             data={doctorsList}
             onEndReachedThreshold={0.5}
-            renderItem={({ item }) => renderSearchDoctorResultsRow(item)}
+            renderItem={({ item, index }) => renderSearchDoctorResultsRow(index + 1, item)}
           />
         </View>
       );
@@ -1521,6 +1521,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   };
 
   const renderSearchDoctorResultsRow = (
+    rowId: number,
     rowData: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors | null
   ) => {
     if (rowData)
@@ -1531,6 +1532,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               saveSearch={true}
               doctorsNextAvailability={doctorAvailalbeSlots}
               availableModes={getDoctorAvailableMode(rowData.id, 'result')}
+              rowId={rowId}
               rowData={rowData}
               navigation={props.navigation}
               onPress={() => {
@@ -1565,6 +1567,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   };
 
   const renderPossibleDoctorResultsRow = (
+    rowId: number,
     rowData: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors | null,
     isPossibleDoctor: boolean = false
   ) => {
@@ -1581,6 +1584,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                   : OtherDoctorAvailalbeSlots
               }
               availableModes={getDoctorAvailableMode(rowData.id, 'other')}
+              rowId={rowId}
               rowData={rowData}
               navigation={props.navigation}
               onPress={() => {
@@ -1632,7 +1636,9 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               bounces={false}
               data={possibleMatches.doctors}
               onEndReachedThreshold={0.5}
-              renderItem={({ item }) => renderPossibleDoctorResultsRow(item, true)}
+              renderItem={({ item, index }) =>
+                renderPossibleDoctorResultsRow(index + 1, item, true)
+              }
             />
           </View>
         )}

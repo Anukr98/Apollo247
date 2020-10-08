@@ -42,7 +42,12 @@ import {
   searchDiagnostics,
   searchDiagnosticsVariables,
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
-import { SEARCH_DIAGNOSTICS } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  searchDiagnosticsByCityID,
+  searchDiagnosticsByCityIDVariables,
+  searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics,
+} from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
+import { SEARCH_DIAGNOSTICS_BY_CITY_ID } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -141,16 +146,20 @@ export const formatAddress = (address: savePatientAddress_savePatientAddress_pat
 export const formatAddressWithLandmark = (
   address: savePatientAddress_savePatientAddress_patientAddress
 ) => {
-  const addrLine1 = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');
+  const addrLine1 = removeConsecutiveComma(
+    [address.addressLine1, address.addressLine2].filter((v) => v).join(', ')
+  );
   const landmark = [address.landmark];
   // to handle state value getting twice
-  const addrLine2 = [address.city, address.state]
-    .filter((v) => v)
-    .join(', ')
-    .split(',')
-    .map((v) => v.trim())
-    .filter((item, idx, array) => array.indexOf(item) === idx)
-    .join(', ');
+  const addrLine2 = removeConsecutiveComma(
+    [address.city, address.state]
+      .filter((v) => v)
+      .join(', ')
+      .split(',')
+      .map((v) => v.trim())
+      .filter((item, idx, array) => array.indexOf(item) === idx)
+      .join(', ')
+  );
   const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
   if (address.landmark != '') {
     return `${addrLine1},\nLandmark: ${landmark}\n${addrLine2}${formattedZipcode}`;
@@ -160,7 +169,11 @@ export const formatAddressWithLandmark = (
 };
 
 export const formatNameNumber = (address: savePatientAddress_savePatientAddress_patientAddress) => {
-  return `${address.name}\n${address.mobileNumber}`;
+  if (address.name!) {
+    return `${address.name}\n${address.mobileNumber}`;
+  } else {
+    return `${address.mobileNumber}`;
+  }
 };
 
 export const followUpChatDaysCaseSheet = (
@@ -189,6 +202,22 @@ export const formatOrderAddress = (
     .join(', ');
   const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
   return `${addrLine}${formattedZipcode}`;
+};
+
+export const formatSelectedAddress = (
+  address: savePatientAddress_savePatientAddress_patientAddress
+) => {
+  const formattedAddress =
+    (address.addressLine1 && address.addressLine1 + ', ') +
+    '' +
+    (address.addressLine2 && address.addressLine2 + ', ') +
+    '' +
+    (address.city && address.city + ',') +
+    '' +
+    (address.state && address.state + ',') +
+    '' +
+    (address.zipcode && address.zipcode);
+  return formattedAddress;
 };
 
 export const getUuidV4 = () => {
@@ -823,12 +852,11 @@ export const addTestsToCart = async (
   city: string
 ) => {
   const searchQuery = (name: string, city: string) =>
-    apolloClient.query<searchDiagnostics, searchDiagnosticsVariables>({
-      query: SEARCH_DIAGNOSTICS,
+    apolloClient.query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
+      query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
       variables: {
         searchText: name,
-        city: city,
-        patientId: '',
+        cityID: parseInt(city || '9',10),
       },
       fetchPolicy: 'no-cache',
     });
@@ -841,7 +869,7 @@ export const addTestsToCart = async (
 
     const searchQueries = Promise.all(items.map((item) => searchQuery(item!, city)));
     const searchQueriesData = (await searchQueries)
-      .map((item) => g(item, 'data', 'searchDiagnostics', 'diagnostics', '0' as any)!)
+      .map((item) => g(item, 'data', 'searchDiagnosticsByCityID', 'diagnostics', '0' as any)!)
       .filter((item, index) => g(item, 'itemName')! == items[index])
       .filter((item) => !!item);
     const detailQueries = Promise.all(
@@ -881,7 +909,7 @@ export const getDiscountPercentage = (price: number | string, specialPrice?: num
     : Number(price) == Number(specialPrice)
     ? 0
     : ((Number(price) - Number(specialPrice)) / Number(price)) * 100;
-  return Math.ceil(discountPercent);
+  return discountPercent != 0 ? Number(discountPercent).toFixed(2) : 0;
 };
 
 export const getBuildEnvironment = () => {
@@ -929,6 +957,16 @@ export const getRelations = (self?: string) => {
 };
 
 export const formatTestSlot = (slotTime: string) => moment(slotTime, 'HH:mm').format('hh:mm A');
+
+export const formatTestSlotWithBuffer = (slotTime: string) => {
+  const startTime = slotTime.split('-')[0];
+  const endTime = moment(startTime, 'HH:mm')
+    .add(30, 'minutes')
+    .format('HH:mm');
+
+  const newSlot = [startTime, endTime];
+  return newSlot.map((item) => moment(item.trim(), 'hh:mm').format('hh:mm A')).join(' - ');
+};
 
 export const isValidTestSlot = (
   slot: getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo,
@@ -988,13 +1026,9 @@ const webengage = new WebEngage();
 
 export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Object) => {
   try {
-    console.log('\n********* WebEngageEvent Start *********\n');
-    console.log(`WebEngageEvent ${eventName}`, { eventName, attributes });
-    console.log('\n********* WebEngageEvent End *********\n');
-    // if (getBuildEnvironment() !== 'DEV') {
-    // Don't post events in DEV environment
+    const logContent = `[WebEngage] Event: ${eventName}\n`;
+    console.log(logContent, '\n' /*attributes, '\n'*/);
     webengage.track(eventName, attributes);
-    // }
   } catch (error) {
     console.log('********* Unable to post WebEngageEvent *********', { error });
   }
@@ -1029,6 +1063,13 @@ export const postwebEngageAddToCartEvent = (
     'Section Name': sectionName || '',
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART, eventAttributes);
+};
+
+export const postWebEngagePHR = (source: string, webEngageEventName: WebEngageEventName) => {
+  const eventAttributes = {
+    Source: source,
+  };
+  postWebEngageEvent(webEngageEventName, eventAttributes);
 };
 
 export const postWEGNeedHelpEvent = (
@@ -1287,13 +1328,9 @@ export const postAppsFlyerAddToCartEvent = (
 
 export const postFirebaseEvent = (eventName: FirebaseEventName, attributes: Object) => {
   try {
-    console.log('\n********* FirebaseEvent Start *********\n');
-    console.log(`FirebaseEvent ${eventName}`, { eventName, attributes });
-    console.log('\n********* FirebaseEvent End *********\n');
-    // if (getBuildEnvironment() !== 'DEV') {
-    // Don't post events in DEV environment
+    const logContent = `[Firebase] Event: ${eventName}\n`;
+    console.log(logContent, '\n' /*attributes, '\n'*/);
     firebase.analytics().logEvent(eventName, attributes);
-    // }
   } catch (error) {
     console.log('********* Unable to post FirebaseEvent *********', { error });
   }
@@ -1391,6 +1428,35 @@ export const getMaxQtyForMedicineItem = (qty?: number | string) => {
   return qty ? Number(qty) : AppConfig.Configuration.CART_ITEM_MAX_QUANTITY;
 };
 
+export const formatToCartItem = ({
+  sku,
+  name,
+  price,
+  special_price,
+  mou,
+  is_prescription_required,
+  MaxOrderQty,
+  type_id,
+  is_in_stock,
+  thumbnail,
+  image,
+}: MedicineProduct): ShoppingCartItem => {
+  return {
+    id: sku,
+    name: name,
+    price: price,
+    specialPrice: Number(special_price) || undefined,
+    mou: mou,
+    quantity: 1,
+    prescriptionRequired: is_prescription_required == '1',
+    isMedicine: (type_id || '').toLowerCase() == 'pharma',
+    thumbnail: thumbnail || image,
+    maxOrderQty: MaxOrderQty,
+    productType: type_id,
+    isInStock: is_in_stock == 1,
+  };
+};
+
 export const addPharmaItemToCart = (
   cartItem: ShoppingCartItem,
   pincode: string,
@@ -1409,7 +1475,7 @@ export const addPharmaItemToCart = (
   const outOfStockMsg = 'Sorry, this item is out of stock in your area.';
 
   const navigate = () => {
-    navigation.navigate(AppRoutes.MedicineDetailsScene, {
+    navigation.push(AppRoutes.MedicineDetailsScene, {
       sku: cartItem.id,
       deliveryError: outOfStockMsg,
     });
@@ -1737,4 +1803,8 @@ export const checkPermissions = (permissions: string[]) => {
       }
     });
   });
+}
+
+export const removeConsecutiveComma = (value: string) => {
+  return value.replace(/^,|,$|,(?=,)/g, '');
 };

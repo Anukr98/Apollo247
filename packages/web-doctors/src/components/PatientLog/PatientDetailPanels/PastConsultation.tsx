@@ -316,7 +316,7 @@ interface pastConsultationProps {
   pastAppointments: GetCaseSheet_getCaseSheet_pastAppointments[] | null;
 }
 export const PastConsultation: React.FC<pastConsultationProps> = (props) => {
-  const pastAppointments = props.pastAppointments;
+  const pastAppointments = props.pastAppointments && props.pastAppointments.length > 0 ? props.pastAppointments : [];
   const classes = useStyles({});
   const ischild: boolean = false;
 

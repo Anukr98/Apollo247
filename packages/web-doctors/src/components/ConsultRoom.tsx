@@ -20,6 +20,7 @@ import { GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_appointmentDocum
 import { useAuth } from 'hooks/authHooks';
 import ReactPanZoom from 'react-image-pan-zoom-rotate';
 import { useParams } from 'hooks/routerHooks';
+import { webEngageEventTracking } from 'webEngageTracking';
 
 const client = new AphStorageClient(
   process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
@@ -373,6 +374,8 @@ interface ConsultRoomProps {
   messages: MessagesObjectProps[];
   postDoctorConsultEventAction: (eventType: WebEngageEvent, displayId: string) => void;
   appointmentStatus: string;
+  setIsCallAccepted: (flag: boolean) => void;
+  isCallAccepted: boolean;
 }
 
 let timerIntervalId: any;
@@ -388,12 +391,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [messages, setMessages] = useState<MessagesObjectProps[]>(props.messages);
   const [messageText, setMessageText] = useState<string>('');
   const [msg, setMsg] = useState<string>('');
-  const [isCallAccepted, setIsCallAccepted] = useState<boolean>(false);
+
   const [isNewMsg, setIsNewMsg] = useState<boolean>(false);
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [fileUploading, setFileUploading] = React.useState<boolean>(false);
   const [fileUploadErrorMessage, setFileUploadErrorMessage] = React.useState<string>('');
   const [modalOpen, setModalOpen] = React.useState(false);
+
   const [imgPrevUrl, setImgPrevUrl] = React.useState<any>();
   const { currentPatient, isSignedIn } = useAuth();
   const { documentArray, setDocumentArray, patientDetails, appointmentInfo } = useContext(
@@ -463,10 +467,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   useEffect(() => {
-    if (isCallAccepted) {
+    if (props.isCallAccepted) {
       startIntervalTimer(0);
     }
-  }, [isCallAccepted]);
+  }, [props.isCallAccepted]);
 
   useEffect(() => {
     if (params.tabValue === '1') {
@@ -476,6 +480,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   useEffect(() => {
     const lastMsg = props.lastMsg;
+    console.log({ lastMsg });
     if (lastMsg && lastMsg !== null) {
       if (
         !showVideoChat &&
@@ -505,7 +510,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         setIsNewMsg(false);
       }
       if (lastMsg.message && lastMsg.message.message === acceptcallMsg) {
-        setIsCallAccepted(true);
+        props.setIsCallAccepted(true);
       }
       srollToBottomAction();
       resetMessagesAction();
@@ -567,22 +572,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         }
       })
       .catch((error: ApolloError) => {
-        const patientName = patientDetails!.firstName + ' ' + patientDetails!.lastName;
-        const logObject = {
-          api: 'AddChatDocument',
-          inputParam: JSON.stringify({ appointmentId: props.appointmentId, documentPath: url }),
-          appointmentId: props.appointmentId,
-          doctorId: doctorId,
-          doctorDisplayName: currentPatient!.displayName,
-          patientId: patientId,
-          patientName: patientName,
-          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
-          appointmentDateTime: moment(new Date(appointmentInfo!.appointmentDateTime)).format(
-            'MMMM DD YYYY h:mm:ss a'
-          ),
-          error: JSON.stringify(error),
-        };
-        props.sessionClient.notify(JSON.stringify(logObject));
+        webEngageEventTracking(
+          {
+            'API name': 'AddChatDocument',
+            'ErrorDetails': JSON.stringify(error),
+            'Consultation Display ID': (appointmentInfo && appointmentInfo.displayId) || '',
+            'Consult ID': props.appointmentId,
+          },
+          'Front_end - Doctor API-Error on Casesheet'
+        );
       });
   };
   const convertChatTime = (timeStamp: any) => {

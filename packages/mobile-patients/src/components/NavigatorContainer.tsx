@@ -44,6 +44,7 @@ import {
 import { HealthRecordsHome } from '@aph/mobile-patients/src/components/HealthRecords/HealthRecordsHome';
 import { ConsultDetails } from '@aph/mobile-patients/src/components/HealthRecords/ConsultDetails';
 import { RecordDetails } from '@aph/mobile-patients/src/components/HealthRecords/RecordDetails';
+import { HealthRecordDetails } from '@aph/mobile-patients/src/components/HealthRecords/HealthRecordDetails';
 import { SymptomChecker } from '@aph/mobile-patients/src/components/SymptomChecker';
 import { PaymentScene } from '@aph/mobile-patients/src/components/PaymentScene';
 import { MedicineConsultDetails } from '@aph/mobile-patients/src/components/HealthRecords/MedicineConsultDetails';
@@ -92,10 +93,15 @@ import PaymentStatusScreen from '@aph/mobile-patients/src/components/MyPayments/
 import { ConsultTypeScreen } from './ConsultRoom/ConsultTypeScreen';
 import { CommonWebView } from '@aph/mobile-patients/src/components/CommonWebView';
 import { RefundStatus } from '@aph/mobile-patients/src/components/RefundStatus';
-import { Maps } from '@aph/mobile-patients/src/components/ui/Maps';
+import { MedicineCart } from '@aph/mobile-patients/src/components/MedicineCart/MedicineCart';
+import { CartSummary } from '@aph/mobile-patients/src/components/MedicineCart/CartSummary';
+import { StorePickup } from '@aph/mobile-patients/src/components/MedicineCart/StorePickup';
+import { PickUpCartSummary } from '@aph/mobile-patients/src/components/MedicineCart/PickUpCartSummary';
+
 import { SymptomTracker } from '@aph/mobile-patients/src/components/SymptomTracker';
 import { SymptomSelection } from '@aph/mobile-patients/src/components/SymptomSelection';
 
+import { Maps } from '@aph/mobile-patients/src/components/ui/Maps';
 export enum AppRoutes {
   Login = 'Login',
   ConsultRoom = 'ConsultRoom',
@@ -137,6 +143,7 @@ export enum AppRoutes {
   HealthRecordsHome = 'HealthRecordsHome',
   ConsultDetails = 'ConsultDetails',
   RecordDetails = 'RecordDetails',
+  HealthRecordDetails = 'HealthRecordDetails',
   SymptomChecker = 'SymptomChecker',
   AddressBook = 'AddressBook',
   NotificationSettings = 'NotificationSettings',
@@ -178,9 +185,13 @@ export enum AppRoutes {
   ConsultTypeScreen = 'ConsultTypeScreen',
   CommonWebView = 'CommonWebView',
   RefundStatus = 'RefundStatus',
-  Maps = 'Maps',
+  MedicineCart = 'MedicineCart',
+  CartSummary = 'CartSummary',
+  StorePickup = 'StorePickup',
+  PickUpCartSummary = 'PickUpCartSummary',
   SymptomTracker = 'SymptomTracker',
   SymptomSelection = 'SymptomSelection',
+  Maps = 'Maps',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -217,6 +228,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.OTPVerification]: {
     screen: OTPVerification,
+    navigationOptions: {
+      gesturesEnabled: false,
+    },
   },
   [AppRoutes.ConsultRoom]: {
     screen: ConsultRoom,
@@ -338,6 +352,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.RecordDetails]: {
     screen: RecordDetails,
+  },
+  [AppRoutes.HealthRecordDetails]: {
+    screen: HealthRecordDetails,
   },
   [AppRoutes.SymptomChecker]: {
     screen: SymptomChecker,
@@ -463,14 +480,26 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.RefundStatus]: {
     screen: RefundStatus,
   },
-  [AppRoutes.Maps]: {
-    screen: Maps,
+  [AppRoutes.MedicineCart]: {
+    screen: MedicineCart,
+  },
+  [AppRoutes.CartSummary]: {
+    screen: CartSummary,
+  },
+  [AppRoutes.StorePickup]: {
+    screen: StorePickup,
+  },
+  [AppRoutes.PickUpCartSummary]: {
+    screen: PickUpCartSummary,
   },
   [AppRoutes.SymptomTracker]: {
     screen: SymptomTracker,
   },
   [AppRoutes.SymptomSelection]: {
     screen: SymptomSelection,
+  },
+  [AppRoutes.Maps]: {
+    screen: Maps,
   },
 };
 
@@ -500,18 +529,15 @@ const stackConfig: StackNavigatorConfig = {
   headerMode: 'none',
   cardStyle: { backgroundColor: 'transparent' },
   mode: 'card',
-  transitionConfig: (sceneProps) => {
+  transitionConfig: (sceneProps, prevSceneProps) => {
     try {
-      AsyncStorage.setItem('setCurrentName', sceneProps.scene.route.routeName);
-      CommonScreenLog(sceneProps.scene.route.routeName, sceneProps.scene.route.routeName);
-      logTabEvents(sceneProps.scene.route);
-      if (sceneProps.scene.route.routeName === AppRoutes.ChatRoom) {
-        // AsyncStorage.setItem('NAVIGATION_PROPS', JSON.stringify(sceneProps));
-        AsyncStorage.setItem('NAVIGATION_PROPS', 'false');
-      } else if (sceneProps.scene.route.routeName !== AppRoutes.SplashScreen) {
-        AsyncStorage.setItem('NAVIGATION_PROPS', 'false');
+      const currentRoute = sceneProps.scene.route.routeName;
+      const prevRoute = prevSceneProps?.scene?.route?.routeName;
+      if (prevRoute && prevRoute !== currentRoute) {
+        AsyncStorage.setItem('setCurrentName', currentRoute);
+        CommonScreenLog(currentRoute, currentRoute);
+        logTabEvents(sceneProps.scene.route);
       }
-      // console.log('sceneProps success', sceneProps.scene.route);
     } catch (error) {
       CommonBugFender('NavigatorContainer_stackConfig_try', error);
       console.log('sceneProps error', error);

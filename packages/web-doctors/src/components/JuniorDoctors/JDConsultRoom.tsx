@@ -7,6 +7,7 @@ import { JDCallPopover } from 'components/JuniorDoctors/JDCallPopover';
 import Typography from '@material-ui/core/Typography';
 import { useApolloClient } from 'react-apollo-hooks';
 import Pubnub from 'pubnub';
+import { getAge } from 'helpers/Utils';
 import {
   CreateAppointmentSession,
   CreateAppointmentSessionVariables,
@@ -416,10 +417,13 @@ export const JDConsultRoom: React.FC = () => {
   const classes = useStyles({});
   const { patientId, appointmentId, queueId, isActive } = useParams<JDConsultRoomParams>();
   const [isCall, setIscall] = React.useState(true);
+  const [userMessageOnCall, setUserMessageOnCall] = useState<string>('');
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [jrdNoFillDialog, setJrdNoFillDialog] = React.useState(false);
   const [isNewMessage, setIsNewMessage] = React.useState(false);
   const [notesJrd, setNotesJrd] = React.useState('');
+  const [diagnosticTestResult, setDiagnosticTestResult] = useState<string | null>(null);
+  const [clinicalObservationNotes, setClinicalObservationNotes] = useState<string | null>(null);
   const [assignedDoctor, setAssignedDoctor] = useState<assignedDoctorType>({
     assignedDoctorSalutation: '',
     assignedDoctorFirstName: '',
@@ -847,14 +851,7 @@ export const JDConsultRoom: React.FC = () => {
             _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.dateOfBirth !== null &&
             _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.dateOfBirth !== ''
           ) {
-            cardStripArr.push(
-              Math.abs(
-                new Date(Date.now()).getUTCFullYear() -
-                  new Date(
-                    _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.dateOfBirth
-                  ).getUTCFullYear()
-              ).toString()
-            );
+            cardStripArr.push(getAge(_data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.dateOfBirth));
           }
           if (
             _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.gender &&
@@ -984,6 +981,18 @@ export const JDConsultRoom: React.FC = () => {
               storageItem && storageItem.weight
                 ? storageItem.weight
                 : _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory.weight
+            );
+
+            setDiagnosticTestResult(
+              storageItem && storageItem.diagnosticTestResult
+               ? storageItem.diagnosticTestResult 
+               : _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory.diagnosticTestResult || ''
+            );
+
+            setClinicalObservationNotes(
+              storageItem && storageItem.clinicalObservationNotes
+               ? storageItem.clinicalObservationNotes 
+               : _data.data.getJuniorDoctorCaseSheet.patientDetails.patientMedicalHistory.clinicalObservationNotes || ''
             );
           }
           // -------------------------------------------------------------- //
@@ -1179,6 +1188,8 @@ export const JDConsultRoom: React.FC = () => {
       occupationHistory: occupationHistory || '',
       referralSpecialtyName: referralSpecialtyName || '',
       referralDescription: referralDescription || '',
+      diagnosticTestResult: diagnosticTestResult || '',
+      clinicalObservationNotes: clinicalObservationNotes || ''
     };
 
     setSaving(true);
@@ -1529,6 +1540,10 @@ export const JDConsultRoom: React.FC = () => {
             setSymptoms,
             notes,
             setNotes,
+            diagnosticTestResult,
+            setDiagnosticTestResult,
+            clinicalObservationNotes,
+            setClinicalObservationNotes,
             juniorDoctorNotes,
             diagnosis,
             setDiagnosis,
@@ -1722,6 +1737,8 @@ export const JDConsultRoom: React.FC = () => {
                     setIscall={setIscall}
                     rejectedByPatientBeforeAnswer={rejectedByPatientBeforeAnswer}
                     setRejectedByPatientBeforeAnswer={setRejectedByPatientBeforeAnswer}
+                    setUserMessageOnCall={setUserMessageOnCall}
+                    userMessageOnCall={userMessageOnCall}
                   />
                 )}
                 <div className={classes.contentGroup}>
@@ -1756,6 +1773,8 @@ export const JDConsultRoom: React.FC = () => {
                           setSubscriberError={setSubscriberError}
                           isCall={isCall}
                           setIscall={setIscall}
+                          setUserMessageOnCall={setUserMessageOnCall}
+                          userMessageOnCall={userMessageOnCall}
                         />
                       </div>
                     </div>

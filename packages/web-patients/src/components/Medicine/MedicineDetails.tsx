@@ -1,42 +1,44 @@
-import React, { useEffect } from 'react';
 import { AphButton, AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-ui-components';
 import { Tab, Tabs, Theme, Typography } from '@material-ui/core';
-import { Helmet } from 'react-helmet';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { makeStyles } from '@material-ui/styles';
-import { Header } from 'components/Header';
-import Scrollbars from 'react-custom-scrollbars';
-import { MedicineImageGallery } from 'components/Medicine/MedicineImageGallery';
-import { MedicineInformation } from 'components/Medicine/MedicineInformation';
-import { useParams } from 'hooks/routerHooks';
 import axios from 'axios';
 import { Alerts } from 'components/Alerts/Alerts';
-import { MedicineProductDetails, PharmaOverview } from '../../helpers/MedicineApiCalls';
+import { BottomLinks } from 'components/BottomLinks';
+import { Header } from 'components/Header';
 import { ManageProfile } from 'components/ManageProfile';
+import { HotSellers } from 'components/Medicine/Cards/HotSellers';
+import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
+import { MedicineImageGallery } from 'components/Medicine/MedicineImageGallery';
+import { MedicineInformation } from 'components/Medicine/MedicineInformation';
 import { MedicinesCartContext, useShoppingCart } from 'components/MedicinesCartProvider';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
-import { gtmTracking, dataLayerTracking } from '../../gtmTracking';
-import { SchemaMarkup } from 'SchemaMarkup';
-import { BottomLinks } from 'components/BottomLinks';
-import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
+import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { getPackOfMedicine, deepLinkUtil } from 'helpers/commonHelpers';
+import { deepLinkUtil, getPackOfMedicine } from 'helpers/commonHelpers';
 import { useCurrentPatient } from 'hooks/authHooks';
-import stripHtml from 'string-strip-html';
-import {
-  uploadPrescriptionTracking,
-  pharmacyPdpOverviewTracking,
-  pharmacyProductViewTracking,
-} from 'webEngageTracking';
+import { useParams } from 'hooks/routerHooks';
 import { MetaTagsComp } from 'MetaTagsComp';
 import moment from 'moment';
+import React, { useEffect } from 'react';
+import Scrollbars from 'react-custom-scrollbars';
+import { Helmet } from 'react-helmet';
 import { useHistory } from 'react-router';
 import { Link } from 'react-router-dom';
-import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
-import { HotSellers } from 'components/Medicine/Cards/HotSellers';
+import { SchemaMarkup } from 'SchemaMarkup';
+import stripHtml from 'string-strip-html';
+import {
+  medicinePageOpenTracking,
+  pharmacyPdpOverviewTracking,
+  pharmacyProductViewTracking,
+  uploadPrescriptionTracking,
+} from 'webEngageTracking';
+import { dataLayerTracking, gtmTracking } from '../../gtmTracking';
+import { MedicineProductDetails, PharmaOverview } from '../../helpers/MedicineApiCalls';
+import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -94,6 +96,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     medicineDetailsGroup: {
+      position: 'relative',
       [theme.breakpoints.up('sm')]: {
         display: 'flex',
         padding: '20px',
@@ -192,6 +195,39 @@ const useStyles = makeStyles((theme: Theme) => {
         flexDirection: 'row-reverse',
         justifyContent: 'flex-end',
       },
+    },
+    webImages: {
+      [theme.breakpoints.down(768)]: {
+        display: 'none',
+      },
+    },
+    mobileImages: {
+      position: 'absolute',
+      top: 20,
+      right: 20,
+      [theme.breakpoints.up(768)]: {
+        display: 'none',
+      },
+    },
+    imageDisplay: {
+      width: 80,
+      height: 80,
+      borderRadius: '50%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: '#fff',
+      boxShadow: '0px 0px 5px rgba(128, 128, 128, 0.2)',
+      '& img': {
+        width: '72%',
+      },
+    },
+    imageDesc: {
+      color: '#0087ba',
+      fontSize: 10,
+      fontWeight: 600,
+      textAlign: 'center',
+      marginTop: 10,
     },
     noImageWrapper: {
       width: 290,
@@ -538,7 +574,7 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'none',
       alignItems: 'center',
       justifyContent: 'center',
-      [theme.breakpoints.down('sm')]: {
+      [theme.breakpoints.down(768)]: {
         display: 'flex',
       },
     },
@@ -580,6 +616,13 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       padding: 20,
     },
+    myImageClass: {
+      zIndex: 1,
+      position: 'absolute',
+      top: 40,
+      right: 20,
+      boxShadow: '0 5px 10px rgba(0,0,0,0.2)',
+    },
   };
 });
 
@@ -608,6 +651,7 @@ const MedicineDetails: React.FC = (props) => {
   const { diagnosticsCartItems } = useDiagnosticsCart();
   useEffect(() => {
     deepLinkUtil(`MedicineDetail?${params.sku}`);
+    medicinePageOpenTracking();
   });
 
   const apiDetails = {
@@ -1211,10 +1255,31 @@ const MedicineDetails: React.FC = (props) => {
                         >
                           <div className={classes.productInformation}>
                             {medicineDetails.image && medicineDetails.image.length > 0 ? (
-                              <MedicineImageGallery
-                                data={medicineDetails}
-                                setImageClick={setImageClick}
-                              />
+                              <>
+                                <div className={classes.webImages}>
+                                  <MedicineImageGallery
+                                    data={medicineDetails}
+                                    setImageClick={setImageClick}
+                                  />
+                                </div>
+                                <div className={`${classes.mobileImages}`}>
+                                  <div className={classes.imageDisplay}>
+                                    <img
+                                      onClick={() => setImageClick(true)}
+                                      src={`${process.env.PHARMACY_MED_IMAGES_BASE_URL}${medicineDetails.image[0]}`}
+                                      alt={`${medicineDetails.name}, Pack of ${getPackOfMedicine(
+                                        medicineDetails
+                                      )}`}
+                                      title={`${medicineDetails.name}, Pack of ${getPackOfMedicine(
+                                        medicineDetails
+                                      )}`}
+                                    />
+                                  </div>
+                                  <div
+                                    className={classes.imageDesc}
+                                  >{`${medicineDetails.image.length} PHOTOS`}</div>
+                                </div>
+                              </>
                             ) : (
                               <div className={classes.noImageWrapper}>
                                 <img
@@ -1336,6 +1401,7 @@ const MedicineDetails: React.FC = (props) => {
                       </div>
                       {renderSimilarProducts('mobileDisplay')}
                       <MedicineInformation data={medicineDetails} />
+                      <div id="myImage" className={classes.myImageClass} />
                     </div>
                     {renderSimilarProducts('webDisplay')}
                   </>

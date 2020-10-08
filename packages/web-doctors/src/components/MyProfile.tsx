@@ -1066,43 +1066,43 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
                           },
                         }}
                         onChange={(e: any) => {
-                          const secretaryId =
-                            secretaryList &&
-                            secretaryList.getSecretaryList &&
-                            secretaryList.getSecretaryList.map((item) => {
-                              if (item!.name === e.target.value) {
-                                return item!.id;
-                              }
-                              return null;
-                            });
-                          client
-                            .mutate<AddSecretary, AddSecretaryVariables>({
-                              mutation: ADD_SECRETARY,
-                              variables: {
-                                secretaryId: `${secretaryId &&
-                                  secretaryId.length > 0 &&
-                                  secretaryId[0]}`,
-                              },
-                              fetchPolicy: 'no-cache',
-                            })
-                            .then((res: any) => {
-                              setSecretaryName(
-                                res &&
-                                  res.data &&
-                                  res.data.addSecretary &&
-                                  res.data.addSecretary.secretary &&
-                                  res.data.addSecretary.secretary.name
-                              );
-                              addDoctorSecretary(
-                                res &&
-                                  res.data &&
-                                  res.data.addSecretary &&
-                                  res.data.addSecretary.secretary
-                              );
-                            })
-                            .catch((e: ApolloError) => {
-                              console.log(e);
-                            });
+                          const selectedSecretary =
+                            secretaryList && secretaryList.getSecretaryList
+                              ? secretaryList.getSecretaryList.filter(function(item: any) {
+                                  return item!.name === e.target.value;
+                                })
+                              : [];
+                          if (selectedSecretary && selectedSecretary.length > 0) {
+                            client
+                              .mutate<AddSecretary, AddSecretaryVariables>({
+                                mutation: ADD_SECRETARY,
+                                variables: {
+                                  secretaryId: `${selectedSecretary &&
+                                    selectedSecretary.length > 0 &&
+                                    selectedSecretary[0].id}`,
+                                },
+                                fetchPolicy: 'no-cache',
+                              })
+                              .then((res: any) => {
+                                setSecretaryName(
+                                  res &&
+                                    res.data &&
+                                    res.data.addSecretary &&
+                                    res.data.addSecretary.secretary &&
+                                    res.data.addSecretary.secretary.name
+                                );
+                                addDoctorSecretary(
+                                  res &&
+                                    res.data &&
+                                    res.data.addSecretary &&
+                                    res.data.addSecretary.secretary
+                                );
+                              })
+                              .catch((e: ApolloError) => {
+                                console.log(e);
+                                alert('error occuerd while selecting a secretary');
+                              });
+                          }
                         }}
                       >
                         {secretaryList &&

@@ -400,10 +400,7 @@ export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
               paymentInfo={statusActions(paymentStatus).info}
               orderId={Number(cardDetails.displayId)}
               amountPaid={amountPaid}
-              doctorDetail={{
-                fullName: cardDetails.doctor.name,
-                doctorHospital: [],
-              }}
+              doctorFullName={cardDetails.doctor.name}
               paymentRefId={paymentRefId}
               bookingDateTime={moment(cardDetails.appointmentDateTime)
                 .format('DD MMM YYYY, h:mm[ ]A')

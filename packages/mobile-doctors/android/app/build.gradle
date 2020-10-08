@@ -134,8 +134,8 @@ android {
         applicationId "com.apollo.doctorapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 9
-        versionName "1.03"
+        versionCode 12
+        versionName "1.0502"
         ndk {
             abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
         }
@@ -191,6 +191,10 @@ android {
 }
 
 dependencies {
+    implementation project(':react-native-code-push')
+    implementation project(':react-native-fast-image')
+    implementation project(':react-native-device-info')
+    implementation project(':react-native-webengage')
     implementation project(':react-native-incall-manager')
     implementation project(':react-native-system-setting')
     implementation project(':react-native-sound')
@@ -207,18 +211,19 @@ dependencies {
     implementation project(':react-native-pdf')
     implementation project(':bugsnag-react-native')
     implementation project(':react-native-image-crop-picker')
-    implementation project(':react-native-image-picker')
     implementation project(':react-native-firebase')
     implementation project(':@react-native-community_async-storage')
     implementation fileTree(dir: "libs", include: ["*.jar", "*.aar"])
     implementation 'me.leolin:ShortcutBadger:1.1.21@aar' // <-- Add this line if you wish to use badge on Android
     implementation project(':react-native-document-picker')
     implementation project(':react-native-splash-screen')
-    implementation project(':react-native-vector-icons')
     implementation project(':react-native-gesture-handler')
     implementation project(':@react-native-community_geolocation')
     implementation project(':@react-native-community_netinfo')
 
+    implementation 'com.webengage:android-sdk:3.+'
+    implementation 'com.google.android.gms:play-services-ads:15.0.1'
+    implementation 'com.android.installreferrer:installreferrer:1.1.1'
     implementation "com.android.support:appcompat-v7:${rootProject.ext.supportLibVersion}"
     implementation "com.facebook.react:react-native:+"  // From node_modules
 
@@ -345,3 +350,4 @@ configurations {
 apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
 apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
+apply from: "../../node_modules/react-native-code-push/android/codepush.gradle"

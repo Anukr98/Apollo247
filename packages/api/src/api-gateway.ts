@@ -8,7 +8,7 @@ import { AphAuthenticationError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { webPatientsBaseUrl, webDoctorsBaseUrl, getPortStr } from '@aph/universal/src/aphRoutes';
 import { winstonLogger } from 'customWinstonLogger';
-import { format, differenceInMilliseconds } from 'date-fns';
+import { format } from 'date-fns';
 
 //import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 // import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';

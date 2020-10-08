@@ -4,6 +4,7 @@ import { Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { OTSession, OTPublisher, OTStreams, OTSubscriber } from 'opentok-react';
 import { CaseSheetContext } from 'context/CaseSheetContext';
+import { webEngageEventTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -181,6 +182,9 @@ interface ConsultProps {
   setPublisherError: (error: any) => void;
   setSubscriberError: (error: any) => void;
   setGiveRating?: (flag: boolean) => void;
+  setUserMessageOnCall: (msg: string) => void;
+  userMessageOnCall: string;
+  consultWebengageObject: any;
 }
 function getCookieValue() {
   const name = 'action=';
@@ -214,6 +218,17 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const sessionHandler = {
     connectionDestroyed: (event: any) => {
       console.log('session connectionDestroyed', event);
+      webEngageEventTracking(
+        {
+          'Event Name': 'connectionDestroyed',
+          'Appointment ID': props.consultWebengageObject.appointmentId,
+          'Patient ID': props.consultWebengageObject.patientId,
+          'Doctor ID': props.consultWebengageObject.doctorId,
+          'Session ID': props.consultWebengageObject.sessionId,
+          'Data': JSON.stringify(event),
+        },
+        'Front_end - Doctor Session Event'
+      );
       props.toggelChatVideo();
       props.stopAudioVideoCallpatient();
       props.setIscall(false);
@@ -230,33 +245,121 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     error: (error: any) => {
       console.log(`There was an error with the sessionEventHandlers: ${JSON.stringify(error)}`);
       props.setSessionError(error);
+      webEngageEventTracking(
+        {
+          'Event Name': 'error',
+          'Appointment ID': props.consultWebengageObject.appointmentId,
+          'Patient ID': props.consultWebengageObject.patientId,
+          'Doctor ID': props.consultWebengageObject.doctorId,
+          'Session ID': props.consultWebengageObject.sessionId,
+          'Error': JSON.stringify(error),
+        },
+        'Front_end - Doctor Session Event'
+      );
     },
     connectionCreated: (event: string) => {
       console.log('session stream connectionCreated!', event);
+      webEngageEventTracking(
+        {
+          'Event Name': 'connectionCreated',
+          'Appointment ID': props.consultWebengageObject.appointmentId,
+          'Patient ID': props.consultWebengageObject.patientId,
+          'Doctor ID': props.consultWebengageObject.doctorId,
+          'Session ID': props.consultWebengageObject.sessionId,
+          'Data': JSON.stringify(event),
+        },
+        'Front_end - Doctor Session Event'
+      );
     },
     sessionConnected: (event: string) => {
       console.log('session stream sessionConnected!', event);
+      webEngageEventTracking(
+        {
+          'Event Name': 'sessionConnected',
+          'Appointment ID': props.consultWebengageObject.appointmentId,
+          'Patient ID': props.consultWebengageObject.patientId,
+          'Doctor ID': props.consultWebengageObject.doctorId,
+          'Session ID': props.consultWebengageObject.sessionId,
+          'Data': JSON.stringify(event),
+        },
+        'Front_end - Doctor Session Event'
+      );
     },
     sessionDisconnected: (event: any) => {
       console.log('session stream sessionDisconnected!', event);
       if (event.reason === 'clientDisconnected') {
       }
+      webEngageEventTracking(
+        {
+          'Event Name': 'sessionDisconnected',
+          'Appointment ID': props.consultWebengageObject.appointmentId,
+          'Patient ID': props.consultWebengageObject.patientId,
+          'Doctor ID': props.consultWebengageObject.doctorId,
+          'Session ID': props.consultWebengageObject.sessionId,
+          'Data': JSON.stringify(event),
+        },
+        'Front_end - Doctor Session Event'
+      );
     },
     sessionReconnected: (event: string) => {
       console.log('session stream sessionReconnected!', event);
       setReconnecting(false);
+      webEngageEventTracking(
+        {
+          'Event Name': 'sessionReconnected',
+          'Appointment ID': props.consultWebengageObject.appointmentId,
+          'Patient ID': props.consultWebengageObject.patientId,
+          'Doctor ID': props.consultWebengageObject.doctorId,
+          'Session ID': props.consultWebengageObject.sessionId,
+          'Data': JSON.stringify(event),
+        },
+        'Front_end - Doctor Session Event'
+      );
     },
     sessionReconnecting: (event: string) => {
       console.log('session stream sessionReconnecting!', event);
       setReconnecting(true);
+      webEngageEventTracking(
+        {
+          'Event Name': 'sessionReconnecting',
+          'Appointment ID': props.consultWebengageObject.appointmentId,
+          'Patient ID': props.consultWebengageObject.patientId,
+          'Doctor ID': props.consultWebengageObject.doctorId,
+          'Session ID': props.consultWebengageObject.sessionId,
+          'Data': JSON.stringify(event),
+        },
+        'Front_end - Doctor Session Event'
+      );
     },
     signal: (event: string) => {
       console.log('session stream signal!', event);
+      webEngageEventTracking(
+        {
+          'Event Name': 'signal',
+          'Appointment ID': props.consultWebengageObject.appointmentId,
+          'Patient ID': props.consultWebengageObject.patientId,
+          'Doctor ID': props.consultWebengageObject.doctorId,
+          'Session ID': props.consultWebengageObject.sessionId,
+          'Data': JSON.stringify(event),
+        },
+        'Front_end - Doctor Session Event'
+      );
     },
     streamDestroyed: (event: any) => {
       console.log('session streamDestroyed destroyed!', event); // is called when the doctor network is disconnected
       if (event.reason === 'networkDisconnected') {
       }
+      webEngageEventTracking(
+        {
+          'Event Name': 'streamDestroyed',
+          'Appointment ID': props.consultWebengageObject.appointmentId,
+          'Patient ID': props.consultWebengageObject.patientId,
+          'Doctor ID': props.consultWebengageObject.doctorId,
+          'Session ID': props.consultWebengageObject.sessionId,
+          'Data': JSON.stringify(event),
+        },
+        'Front_end - Doctor Session Event'
+      );
     },
     streamPropertyChanged: (event: any) => {
       console.log('session streamPropertyChanged destroyed!', event);
@@ -265,56 +368,203 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         setCallerAudio(event.stream.hasAudio);
         setCallerVideo(event.stream.hasVideo);
       }
+      webEngageEventTracking(
+        {
+          'Event Name': 'streamPropertyChanged',
+          'Appointment ID': props.consultWebengageObject.appointmentId,
+          'Patient ID': props.consultWebengageObject.patientId,
+          'Doctor ID': props.consultWebengageObject.doctorId,
+          'Session ID': props.consultWebengageObject.sessionId,
+          'Data': JSON.stringify(event),
+        },
+        'Front_end - Doctor Session Event'
+      );
     },
   };
   const publisherHandler = {
     streamCreated: (event: string) => {
       console.log('Publisher stream created!', event);
+      webEngageEventTracking(
+        {
+          'Event Name': 'streamPropertyChanged',
+          'Appointment ID': props.consultWebengageObject.appointmentId,
+          'Patient ID': props.consultWebengageObject.patientId,
+          'Doctor ID': props.consultWebengageObject.doctorId,
+          'Session ID': props.consultWebengageObject.sessionId,
+          'Data': JSON.stringify(event),
+        },
+        'Front_end - Doctor Publisher Event'
+      );
     },
     streamDestroyed: (event: string) => {
       console.log('Publisher stream destroyed!', event);
+      webEngageEventTracking(
+        {
+          'Event Name': 'streamPropertyChanged',
+          'Appointment ID': props.consultWebengageObject.appointmentId,
+          'Patient ID': props.consultWebengageObject.patientId,
+          'Doctor ID': props.consultWebengageObject.doctorId,
+          'Session ID': props.consultWebengageObject.sessionId,
+          'Data': JSON.stringify(event),
+        },
+        'Front_end - Doctor Publisher Event'
+      );
     },
     error: (error: any) => {
       console.log(`There was an error with the publisherEventHandlers: ${JSON.stringify(error)}`);
       props.setPublisherError(error);
+      webEngageEventTracking(
+        {
+          'Event Name': 'error',
+          'Appointment ID': props.consultWebengageObject.appointmentId,
+          'Patient ID': props.consultWebengageObject.patientId,
+          'Doctor ID': props.consultWebengageObject.doctorId,
+          'Session ID': props.consultWebengageObject.sessionId,
+          'Error': JSON.stringify(error),
+        },
+        'Front_end - Doctor Publisher Event'
+      );
     },
   };
   const subscriberHandler = {
     error: (error: any) => {
       console.log(`There was an error with the subscriberEventHandlers: ${JSON.stringify(error)}`);
       props.setSubscriberError(error);
+      webEngageEventTracking(
+        {
+          'Event Name': 'error',
+          'Appointment ID': props.consultWebengageObject.appointmentId,
+          'Patient ID': props.consultWebengageObject.patientId,
+          'Doctor ID': props.consultWebengageObject.doctorId,
+          'Session ID': props.consultWebengageObject.sessionId,
+          'Error': JSON.stringify(error),
+        },
+        'Front_end - Doctor Subscriber Event'
+      );
     },
     connected: (event: string) => {
       console.log('Subscribe stream connected!', event);
+      props.setUserMessageOnCall('Patient Joined');
+      setTimeout(() => {
+        props.setUserMessageOnCall('');
+      }, 3000);
+      webEngageEventTracking(
+        {
+          'Event Name': 'connected',
+          'Appointment ID': props.consultWebengageObject.appointmentId,
+          'Patient ID': props.consultWebengageObject.patientId,
+          'Doctor ID': props.consultWebengageObject.doctorId,
+          'Session ID': props.consultWebengageObject.sessionId,
+          'Data': JSON.stringify(event),
+        },
+        'Front_end - Doctor Subscriber Event'
+      );
     },
     disconnected: (event: string) => {
       console.log('Subscribe stream disconnected!', event);
+      webEngageEventTracking(
+        {
+          'Event Name': 'disconnected',
+          'Appointment ID': props.consultWebengageObject.appointmentId,
+          'Patient ID': props.consultWebengageObject.patientId,
+          'Doctor ID': props.consultWebengageObject.doctorId,
+          'Session ID': props.consultWebengageObject.sessionId,
+          'Data': JSON.stringify(event),
+        },
+        'Front_end - Doctor Subscriber Event'
+      );
     },
     destroyed: (event: any) => {
       console.log('Subscribe destroyed!', event);
       if (event.reason === 'networkDisconnected') {
       }
+      webEngageEventTracking(
+        {
+          'Event Name': 'destroyed',
+          'Appointment ID': props.consultWebengageObject.appointmentId,
+          'Patient ID': props.consultWebengageObject.patientId,
+          'Doctor ID': props.consultWebengageObject.doctorId,
+          'Session ID': props.consultWebengageObject.sessionId,
+          'Data': JSON.stringify(event),
+        },
+        'Front_end - Doctor Subscriber Event'
+      );
     },
     videoDisableWarning: (event: any) => {
       console.log(`videoDisableWarning: ${JSON.stringify(event)}`);
+      webEngageEventTracking(
+        {
+          'Event Name': 'videoDisableWarning',
+          'Appointment ID': props.consultWebengageObject.appointmentId,
+          'Patient ID': props.consultWebengageObject.patientId,
+          'Doctor ID': props.consultWebengageObject.doctorId,
+          'Session ID': props.consultWebengageObject.sessionId,
+          'Data': JSON.stringify(event),
+        },
+        'Front_end - Doctor Subscriber Event'
+      );
     },
     videoDisableWarningLifted: (event: any) => {
       console.log(`videoDisableWarningLifted: ${JSON.stringify(event)}`);
+      webEngageEventTracking(
+        {
+          'Event Name': 'videoDisableWarningLifted',
+          'Appointment ID': props.consultWebengageObject.appointmentId,
+          'Patient ID': props.consultWebengageObject.patientId,
+          'Doctor ID': props.consultWebengageObject.doctorId,
+          'Session ID': props.consultWebengageObject.sessionId,
+          'Data': JSON.stringify(event),
+        },
+        'Front_end - Doctor Subscriber Event'
+      );
     },
     videoDisabled: (event: any) => {
       console.log(`videoDisabled: ${JSON.stringify(event)}`);
       if (event.reason === 'quality') {
         setDowngradeToAudio(true);
       }
+      webEngageEventTracking(
+        {
+          'Event Name': 'videoDisabled',
+          'Appointment ID': props.consultWebengageObject.appointmentId,
+          'Patient ID': props.consultWebengageObject.patientId,
+          'Doctor ID': props.consultWebengageObject.doctorId,
+          'Session ID': props.consultWebengageObject.sessionId,
+          'Data': JSON.stringify(event),
+        },
+        'Front_end - Doctor Subscriber Event'
+      );
     },
     videoEnabled: (event: any) => {
       console.log(`videoDisabled: ${JSON.stringify(event)}`);
       if (event.reason === 'quality') {
         setDowngradeToAudio(false);
       }
+      webEngageEventTracking(
+        {
+          'Event Name': 'videoEnabled',
+          'Appointment ID': props.consultWebengageObject.appointmentId,
+          'Patient ID': props.consultWebengageObject.patientId,
+          'Doctor ID': props.consultWebengageObject.doctorId,
+          'Session ID': props.consultWebengageObject.sessionId,
+          'Data': JSON.stringify(event),
+        },
+        'Front_end - Doctor Subscriber Event'
+      );
     },
     streamDestroyed: (event: any) => {
       console.log('Subscribe stream destroyed!');
+      webEngageEventTracking(
+        {
+          'Event Name': 'streamDestroyed',
+          'Appointment ID': props.consultWebengageObject.appointmentId,
+          'Patient ID': props.consultWebengageObject.patientId,
+          'Doctor ID': props.consultWebengageObject.doctorId,
+          'Session ID': props.consultWebengageObject.sessionId,
+          'Data': JSON.stringify(event),
+        },
+        'Front_end - Doctor Subscriber Event'
+      );
     },
   };
 
@@ -361,6 +611,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                     ? '0' + props.timerSeconds
                     : props.timerSeconds
                 }`}
+              {props.userMessageOnCall && props.userMessageOnCall !== ''  && (<p className={classes.audioVideoState}>{props.userMessageOnCall}</p>) }
               <p className={classes.audioVideoState}>{checkReconnecting()}</p>
               <p className={classes.audioVideoState}>{checkDowngradeToAudio()}</p>
               <p className={classes.audioVideoState}>{isPaused()}</p>
@@ -377,6 +628,17 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 onError={(error: any) => {
                   console.log('Session Error', error);
                   props.setSessionError(error);
+                  webEngageEventTracking(
+                    {
+                      'Event Name': 'error',
+                      'Appointment ID': props.consultWebengageObject.appointmentId,
+                      'Patient ID': props.consultWebengageObject.patientId,
+                      'Doctor ID': props.consultWebengageObject.doctorId,
+                      'Session ID': props.consultWebengageObject.sessionId,
+                      'Error': JSON.stringify(error),
+                    },
+                    'Front_end - Doctor Session Event'
+                  );
                 }}
               >
                 <OTPublisher
@@ -386,10 +648,24 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                   properties={{
                     publishAudio: isPublishAudio,
                     publishVideo: subscribeToVideo,
+                    resolution: '640x480',
+                    audioBitrate: 30000,
+                    frameRate: 15,
                   }}
                   eventHandlers={publisherHandler}
                   onError={(error: any) => {
                     console.log('Publisher Error', error, error.name);
+                    webEngageEventTracking(
+                      {
+                        'Event Name': 'error',
+                        'Appointment ID': props.consultWebengageObject.appointmentId,
+                        'Patient ID': props.consultWebengageObject.patientId,
+                        'Doctor ID': props.consultWebengageObject.doctorId,
+                        'Session ID': props.consultWebengageObject.sessionId,
+                        'Error': JSON.stringify(error),
+                      },
+                      'Front_end - Doctor Publisher Event'
+                    );
                     if (error.name === 'OT_USER_MEDIA_ACCESS_DENIED') {
                       props.setPublisherError({
                         message: 'Audio/Video permissions are not provided',
@@ -441,6 +717,17 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                       onError={(error: any) => {
                         console.log('Subscriber Error', error);
                         props.setSubscriberError(error);
+                        webEngageEventTracking(
+                          {
+                            'Event Name': 'error',
+                            'Appointment ID': props.consultWebengageObject.appointmentId,
+                            'Patient ID': props.consultWebengageObject.patientId,
+                            'Doctor ID': props.consultWebengageObject.doctorId,
+                            'Session ID': props.consultWebengageObject.sessionId,
+                            'Error': JSON.stringify(error),
+                          },
+                          'Front_end - Doctor Subscriber Event'
+                        );
                       }}
                     />
                   </OTStreams>

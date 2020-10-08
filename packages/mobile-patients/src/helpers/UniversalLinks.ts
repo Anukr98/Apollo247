@@ -1,6 +1,7 @@
 import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
 import { AppRoutes } from '../components/NavigatorContainer';
 import { isUpperCase } from '@aph/mobile-patients/src/utils/commonUtils';
+import { ProductPageViewedSource } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const handleEncodedURI = (encodedString: string) => {
   const decodedString = decodeURIComponent(encodedString);
@@ -150,7 +151,7 @@ const pushTheView = (
     case 'MedicineDetail':
       navigation.navigate(AppRoutes.MedicineDetailsScene, {
         sku: id,
-        movedFrom: 'deeplink',
+        movedFrom: ProductPageViewedSource.DEEP_LINK,
       });
       break;
 
@@ -211,7 +212,7 @@ const pushTheView = (
       break;
 
     case 'MedicineCart':
-      navigation.navigate(AppRoutes.YourCart, {
+      navigation.navigate(AppRoutes.MedicineCart, {
         movedFrom: 'splashscreen',
       });
       break;

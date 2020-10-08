@@ -2,14 +2,12 @@ import { AccountStarTeam } from '@aph/mobile-doctors/src/components/Account/Acco
 import { AppRoutes } from '@aph/mobile-doctors/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
-import { HelpView } from '@aph/mobile-doctors/src/components/ui/HelpView';
 import {
   BackArrow,
   RoundIcon,
   Star,
   UserPlaceHolder,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
-import { Loader } from '@aph/mobile-doctors/src/components/ui/Loader';
 import { NeedHelpCard } from '@aph/mobile-doctors/src/components/ui/NeedHelpCard';
 import { SquareCardWithTitle } from '@aph/mobile-doctors/src/components/ui/SquareCardWithTitle';
 import {
@@ -29,7 +27,8 @@ import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React, { useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { Alert, Image, SafeAreaView, Text, TextInput, View } from 'react-native';
+import { Alert, SafeAreaView, Text, TextInput, View } from 'react-native';
+import FastImage from 'react-native-fast-image';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { MyAccountProfileStyles } from '../../components/Account/MyAccountProfile.styles';
@@ -245,7 +244,11 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
               <View style={styles.photourl}>
                 <View style={styles.profileContainerStyle}>
                   {profileData.photoUrl ? (
-                    <Image style={styles.imageview} source={{ uri: profileData.photoUrl }} />
+                    <FastImage
+                      style={styles.imageview}
+                      source={{ uri: profileData.photoUrl }}
+                      resizeMode="contain"
+                    />
                   ) : (
                     <UserPlaceHolder style={styles.imageview} />
                   )}
@@ -260,7 +263,9 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
                 </Text>
                 <Text style={styles.drnametext}>
                   {formatSpecialityAndExperience(
-                    profileData.specialty!.name,
+                    g(profileData, 'specialty', 'specialistSingularTerm') ||
+                      g(profileData, 'specialty', 'name') ||
+                      '',
                     profileData.experience || ''
                   )}
                 </Text>
@@ -290,12 +295,12 @@ export const MyAccountProfile: React.FC<ProfileProps> = (props) => {
                 onReload={props.onReload}
               />
             ) : null}
-            <View>
+            {/* <View>
               <Text style={styles.login}>{strings.account.secretay_login}</Text>
               {renderMobilePhoneView()}
               {isLoading ? <Loader flex1 /> : null}
               {renderButtonsView()}
-            </View>
+            </View> */}
           </SquareCardWithTitle>
         </ScrollView>
       </KeyboardAwareScrollView>

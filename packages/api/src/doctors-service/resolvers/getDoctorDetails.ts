@@ -113,6 +113,10 @@ export const getDoctorDetailsTypeDefs = gql`
     isActive: Boolean!
     id: ID!
     chatDays: Int
+    isIvrSet: Boolean
+    ivrConsultType: ConsultMode
+    ivrCallTimeOnline: Int
+    ivrCallTimePhysical: Int
     languages: String
     lastName: String!
     mobileNumber: String!
@@ -158,6 +162,10 @@ export const getDoctorDetailsTypeDefs = gql`
     isActive: Boolean!
     id: ID!
     chatDays: Int
+    isIvrSet: Boolean
+    ivrConsultType: ConsultMode
+    ivrCallTimeOnline: Int
+    ivrCallTimePhysical: Int
     languages: String
     lastName: String!
     mobileNumber: String!
@@ -176,6 +184,7 @@ export const getDoctorDetailsTypeDefs = gql`
     streetLine3: String
     thumbnailUrl: String
     zip: String
+    isJdAllowed: Boolean
     bankAccount: [BankAccount]
     consultHours: [ConsultHours]
     doctorHospital: [DoctorHospital!]!

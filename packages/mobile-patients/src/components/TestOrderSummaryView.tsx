@@ -3,7 +3,7 @@ import React from 'react';
 import { Dimensions, StyleSheet, Text, View } from 'react-native';
 import { getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList } from '../graphql/types/getDiagnosticOrderDetails';
 import moment from 'moment';
-import { g } from '../helpers/helperFunctions';
+import { g, formatTestSlotWithBuffer } from '../helpers/helperFunctions';
 
 const { height } = Dimensions.get('window');
 
@@ -153,7 +153,9 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
         {!!orderDetails.slotTimings && (
           <View style={styles.subView}>
             <Text style={styles.orderName}>Pickup Time</Text>
-            <Text style={styles.hideText}>{`${formatSlot(orderDetails.slotTimings)}`}</Text>
+            <Text style={styles.hideText}>{`${formatTestSlotWithBuffer(
+              orderDetails.slotTimings
+            )}`}</Text>
           </View>
         )}
       </View>

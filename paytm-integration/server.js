@@ -107,11 +107,13 @@ app.get('/invokeFollowUpNotification', cronTabs.FollowUpNotification);
 app.get('/invokeApptReminder', cronTabs.ApptReminder);
 app.get('/invokeDoctorApptReminder', cronTabs.DoctorApptReminder);
 app.get('/invokeDailyAppointmentSummary', cronTabs.DailyAppointmentSummary);
+app.get('/invokeDailyAppointmentSummaryOps', cronTabs.DailyAppointmentSummaryOps);
 app.get('/invokePhysicalApptReminder', cronTabs.PhysicalApptReminder);
 app.get('/updateSdSummary', cronTabs.updateSdSummary);
 app.get('/updateJdSummary', cronTabs.updateJdSummary);
 app.get('/updateDoctorFeeSummary', cronTabs.updateDoctorFeeSummary);
 app.get('/updateDoctorSlotsEs', cronTabs.updateDoctorSlotsEs);
+app.get('/appointmentReminderTemplate', cronTabs.appointmentReminderTemplate);
 app.get('/invokeDashboardSummaries', (req, res) => {
   const currentDate = format(new Date(), 'yyyy-MM-dd');
 
@@ -317,21 +319,26 @@ app.get('/updateDoctorsAwayAndOnlineCount', (req, res) => {
   });
 });
 app.get('/getCmToken', (req, res) => {
-  axios.defaults.headers.common['authorization'] =
-    'ServerOnly eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcHBJZCI6ImFwb2xsb18yNF83IiwiaWF0IjoxNTcyNTcxOTIwLCJleHAiOjE1ODA4Mjg0ODUsImlzcyI6IlZpdGFDbG91ZC1BVVRIIiwic3ViIjoiVml0YVRva2VuIn0.ZGuLAK3M_O2leBCyCsPyghUKTGmQOgGX-j9q4SuLF-Y';
+  // axios.defaults.headers.common['authorization'] = 'ServerOnly eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcHBJZCI6ImFwb2xsb18yNF83IiwiaWF0IjoxNTcyNTcxOTIwLCJleHAiOjE1ODA4Mjg0ODUsImlzcyI6IlZpdGFDbG91ZC1BVVRIIiwic3ViIjoiVml0YVRva2VuIn0.ZGuLAK3M_O2leBCyCsPyghUKTGmQOgGX-j9q4SuLF-Y';
+  const axiosConfig = {
+    headers: {
+      'authorization': 'ServerOnly eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcHBJZCI6ImFwb2xsb18yNF83IiwiaWF0IjoxNTcyNTcxOTIwLCJleHAiOjE1ODA4Mjg0ODUsImlzcyI6IlZpdGFDbG91ZC1BVVRIIiwic3ViIjoiVml0YVRva2VuIn0.ZGuLAK3M_O2leBCyCsPyghUKTGmQOgGX-j9q4SuLF-Y'
+    }
+  }
   axios
     .get(
       process.env.CM_API_URL +
-        '?appId=apollo_24_7&appUserId=' +
-        req.query.appUserId +
-        '&name=' +
-        req.query.userName +
-        '&gender=' +
-        req.query.gender +
-        '&emailId=' +
-        req.query.emailId +
-        '&phoneNumber=' +
-        req.query.phoneNumber
+      '?appId=apollo_24_7&appUserId=' +
+      req.query.appUserId +
+      '&name=' +
+      req.query.userName +
+      '&gender=' +
+      req.query.gender +
+      '&emailId=' +
+      req.query.emailId +
+      '&phoneNumber=' +
+      req.query.phoneNumber,
+      axiosConfig
     )
     .then((response) => {
       res.send({
@@ -1127,8 +1134,7 @@ app.get('/processOmsOrders', (req, res) => {
                     );
                   } catch (e) {
                     logger.error(
-                      `Error while fetching prescription urls for orderid ${
-                        orderDetails.orderAutoId
+                      `Error while fetching prescription urls for orderid ${orderDetails.orderAutoId
                       } ${JSON.stringify(e)}`
                     );
                     res.send({
@@ -1208,8 +1214,8 @@ app.get('/processOmsOrders', (req, res) => {
                       (patientDetails.lastName ? ' ' + patientDetails.lastName : ''),
                     primarycontactno: patientAddressDetails.mobileNumber
                       ? patientAddressDetails.mobileNumber.substr(
-                          patientAddressDetails.mobileNumber.length - 10
-                        )
+                        patientAddressDetails.mobileNumber.length - 10
+                      )
                       : '',
                     secondarycontactno: patientDetails.mobileNumber.substr(3),
                     age: patientAge,
@@ -1438,7 +1444,7 @@ app.get('/processOrderById', (req, res) => {
         ) {
           if (
             response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patientAddressId !=
-              '' &&
+            '' &&
             response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patientAddressId != null
           ) {
             await getAddressDetails(
@@ -1488,9 +1494,9 @@ app.get('/processOrderById', (req, res) => {
         let orderType = 'FMCG';
         if (
           response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl !=
-            '' &&
+          '' &&
           response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl !=
-            null
+          null
         ) {
           prescriptionImages = response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl.split(
             ','
@@ -1520,9 +1526,9 @@ app.get('/processOrderById', (req, res) => {
               .paymentType;
           if (
             response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl !=
-              '' &&
+            '' &&
             response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl !=
-              null
+            null
           ) {
             prescriptionImages = response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl.split(
               ','

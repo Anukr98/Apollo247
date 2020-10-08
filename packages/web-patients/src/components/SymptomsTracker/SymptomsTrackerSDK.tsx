@@ -20,6 +20,7 @@ import moment from 'moment';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
 import { BottomLinks } from 'components/BottomLinks';
+import { dataLayerTracking } from 'gtmTracking';
 import { MetaTagsComp } from 'MetaTagsComp';
 import { dataLayerTracking } from 'gtmTracking';
 
@@ -391,7 +392,7 @@ export const CustomComponent: React.FC<CustomComponentProps> = (props) => {
 type Patient = GetCurrentPatients_getCurrentPatients_patients;
 const SymptomsTrackerSDK: React.FC = () => {
   const classes = useStyles({});
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, isSigningIn } = useAuth();
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
   const isMediumScreen = useMediaQuery('(max-width:900px)');
   const isSmallScreen = useMediaQuery('(max-width:767px)');
@@ -722,7 +723,7 @@ const SymptomsTrackerSDK: React.FC = () => {
           </Popover>
         </div>
       }
-      {!isSignedIn && (
+      {!isSignedIn && !isSigningIn && (
         <Popover
           open={loggedOutUserDetailPopover}
           anchorEl={anchorEl}

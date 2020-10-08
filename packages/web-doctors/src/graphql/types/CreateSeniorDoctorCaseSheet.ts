@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 import { APPOINTMENT_TYPE, STATUS, DoctorType, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_TO_BE_TAKEN, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION } from "./globalTypes";

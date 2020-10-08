@@ -28,7 +28,7 @@ export const clientRoutes = {
   chatRoom: (appointmentId: string, doctorId: string) => `/chat-room/${appointmentId}/${doctorId}`,
   myAccount: () => '/my-account',
   notificationSettings: () => '/settings',
-  addRecords: () => '/add-records',
+  addHealthRecords: (type: string) => `/add-record/${type}`,
   yourOrders: () => '/orders',
   medicineAllBrands: () => '/medicine/brands',
   medicineSearchByBrand: (id: string) => `/search-by-brand/${id}`,
@@ -77,6 +77,7 @@ export const clientRoutes = {
   prescription: (appointmentId: string) => `/prescription/${appointmentId}`,
   sitemap: (sitemap: string) => `/static/${sitemap}`,
   childSitemap: (sitemap: string, pageNo: string) => `/static/${sitemap}/${pageNo}`,
+  oneApolloMembership: () => '/oneapollo-membership',
   // sitemap: (sitemap: string) => `/${sitemap}`,
   // childSitemap: (sitemap: string, pageNo: string) => `/${sitemap}/${pageNo}`,
 };

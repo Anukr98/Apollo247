@@ -85,8 +85,6 @@ import {
   GetAllGroupBannersOfUser,
   GetAllGroupBannersOfUserVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetAllGroupBannersOfUser';
-import { DEVICE_TYPE, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { getPatientFutureAppointmentCount } from '@aph/mobile-patients/src/graphql/types/getPatientFutureAppointmentCount';
 import { DEVICE_TYPE, Relation, STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   saveDeviceToken,
@@ -110,7 +108,6 @@ import {
   getlocationDataFromLatLang,
   postFirebaseEvent,
   postWebEngageEvent,
-  UnInstallAppsFlyer,
   setWebEngageScreenNames,
   overlyCallPermissions,
   followUpChatDaysCaseSheet,
@@ -150,7 +147,6 @@ import {
   AppState,
   AppStateStatus,
 } from 'react-native';
-import firebase from 'react-native-firebase';
 import { ScrollView } from 'react-native-gesture-handler';
 import WebEngage from 'react-native-webengage';
 import { NavigationScreenProps } from 'react-navigation';
@@ -215,15 +211,6 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 10,
     justifyContent: 'center',
     alignItems: 'flex-start',
-  },
-  gotItStyles: {
-    height: 60,
-    paddingRight: 25,
-    backgroundColor: 'transparent',
-  },
-  gotItTextStyles: {
-    paddingTop: 16,
-    ...theme.viewStyles.yellowTextStyle,
   },
   hiTextStyle: {
     marginLeft: 20,
@@ -1337,13 +1324,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         setshowPopUp(false);
       } else {
         setshowPopUp(true);
+        setTimeout(() => {
+          setshowPopUp(false);
+          CommonLogEvent(AppRoutes.ConsultRoom, 'ConsultRoom_BottomPopUp clicked');
+          AsyncStorage.setItem('gotIt', 'true');
+        }, 5000);
       }
       const CMEnabled = await AsyncStorage.getItem('CMEnable');
       const eneabled = CMEnabled ? JSON.parse(CMEnabled) : false;
       setEnableCM(eneabled);
     }
     fetchData();
-    callDeviceTokenAPI();
   }, []);
 
   useEffect(() => {
@@ -1467,7 +1458,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   fullName,
                   keyHash,
                   buildSpecify,
-                  currentDeviceToken.deviceToken
+                  currentDeviceToken
                 );
             }
           }
@@ -1486,55 +1477,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           description: 'We’re setting up your profile. Please check back soon!',
         });
     }
-  };
-
-  const callDeviceTokenAPI = async () => {
-    const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
-    const deviceToken2 = deviceToken ? JSON.parse(deviceToken) : '';
-    firebase
-      .messaging()
-      .getToken()
-      .then((token) => {
-        console.log('token', token);
-        // console.log('DeviceInfo', DeviceInfo);
-        UnInstallAppsFlyer(token);
-        if (token !== deviceToken2.deviceToken) {
-          const input = {
-            deviceType: Platform.OS === 'ios' ? DEVICE_TYPE.IOS : DEVICE_TYPE.ANDROID,
-            deviceToken: token,
-            deviceOS: '',
-            // deviceOS: Platform.OS === 'ios' ? '' : DeviceInfo.getBaseOS(),
-            patientId: currentPatient ? currentPatient.id : '',
-          };
-          console.log('input', input);
-
-          if (currentPatient && !deviceTokenApICalled) {
-            setDeviceTokenApICalled(true);
-            client
-              .mutate<saveDeviceToken, saveDeviceTokenVariables>({
-                mutation: SAVE_DEVICE_TOKEN,
-                variables: {
-                  SaveDeviceTokenInput: input,
-                },
-                fetchPolicy: 'no-cache',
-              })
-              .then((data: any) => {
-                console.log('APICALLED', data.data.saveDeviceToken.deviceToken);
-                AsyncStorage.setItem(
-                  'deviceToken',
-                  JSON.stringify(data.data.saveDeviceToken.deviceToken)
-                );
-              })
-              .catch((e) => {
-                CommonBugFender('ConsultRoom_setDeviceTokenApICalled', e);
-                console.log('Error occured while adding Doctor', e);
-              });
-          }
-        }
-      })
-      .catch((e) => {
-        CommonBugFender('ConsultRoom_callDeviceTokenAPI', e);
-      });
   };
 
   const getPersonalizesAppointments = async () => {
@@ -2754,24 +2696,29 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       </SafeAreaView>
       {renderBottomTabBar()}
       {showPopUp && (
-        <BottomPopUp
-          title={`Hi ${(currentPatient && currentPatient.firstName) || ''}`}
-          description={string.home.welcome_popup.description}
-        >
-          <View style={{ height: 60, alignItems: 'flex-end' }}>
-            <TouchableOpacity
-              activeOpacity={1}
-              style={styles.gotItStyles}
-              onPress={() => {
-                CommonLogEvent(AppRoutes.ConsultRoom, 'ConsultRoom_BottomPopUp clicked');
-                AsyncStorage.setItem('gotIt', 'true');
-                setshowPopUp(false);
-              }}
-            >
-              <Text style={styles.gotItTextStyles}>{string.home.welcome_popup.cta_label}</Text>
-            </TouchableOpacity>
-          </View>
-        </BottomPopUp>
+        <>
+          <BottomPopUp
+            title={`Hi ${(currentPatient && currentPatient.firstName) || ''}`}
+            description={string.home.welcome_popup.description}
+          >
+            <View style={{ height: 20, alignItems: 'flex-end' }} />
+          </BottomPopUp>
+          <TouchableOpacity
+            onPress={() => {
+              CommonLogEvent(AppRoutes.ConsultRoom, 'ConsultRoom_BottomPopUp clicked');
+              AsyncStorage.setItem('gotIt', 'true');
+              setshowPopUp(false);
+            }}
+            style={{
+              backgroundColor: 'transparent',
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              top: 0,
+              bottom: 0,
+            }}
+          />
+        </>
       )}
       {showSpinner && <Spinner />}
       {showHdfcConnectPopup && (

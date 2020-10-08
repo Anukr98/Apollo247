@@ -25,6 +25,7 @@ import { ApiConstants } from 'ApiConstants';
 import { validateCoupon } from 'helpers/couponServices';
 import { ValidateCouponRequest } from 'types/coupons';
 import { fetchUserSubscription } from 'helpers/subscriptionHelper';
+import { sendMessageToASBQueue } from 'consults-service/resolvers/appointmentReminderIVRForDoctors';
 
 export const bookAppointmentTypeDefs = gql`
   enum STATUS {
@@ -402,6 +403,10 @@ const bookAppointment: Resolver<
     reason: ApiConstants.BOOK_APPOINTMENT_HISTORY_REASON.toString(),
   };
   appts.saveAppointmentHistory(historyAttrs);
+
+  if (docDetails.isIvrSet) {
+    sendMessageToASBQueue(docDetails, appointmentAttrs);
+  }
 
   return { appointment };
 };

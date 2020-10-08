@@ -1,14 +1,71 @@
-import { StyleSheet, Platform } from 'react-native';
-
+import { StyleSheet, Platform, Dimensions } from 'react-native';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import { isIphoneX } from 'react-native-iphone-x-helper';
+const { width } = Dimensions.get('window');
 
-export default StyleSheet.create({
+export const AddTestPopupStyles = StyleSheet.create({
+  mainView: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    zIndex: 5,
+    elevation: 500,
+  },
+  touchableCloseIcon: {
+    marginTop: Platform.OS === 'ios' ? (isIphoneX() ? 58 : 34) : 50,
+    backgroundColor: 'white',
+    height: 28,
+    width: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 14,
+    marginRight: 0,
+    marginBottom: 8,
+  },
+  closeIcon: { width: 28, height: 28 },
+  contenteView: {
+    ...theme.viewStyles.cardContainer,
+    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+    borderRadius: 10,
+    maxHeight: '85%',
+  },
+  scrollViewStyles: {
+    flex: 1,
+    borderRadius: 10,
+    backgroundColor: '#f7f7f7',
+    padding: 20,
+  },
+  listSpinner: {
+    paddingTop: 20,
+    paddingBottom: 16,
+  },
+  headerStyles: {
+    ...theme.viewStyles.cardContainer,
+    borderTopRightRadius: 10,
+    borderTopLeftRadius: 10,
+    backgroundColor: theme.colors.WHITE,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 18,
+    width: width - 60,
+    flexDirection: 'row',
+    zIndex: 10,
+  },
+  medNameStyles: {
+    ...theme.viewStyles.text('SB', 13, theme.colors.SHARP_BLUE, 1, undefined, 0.5),
+    marginLeft: 20,
+    marginRight: 20,
+  },
   searchTestDropdown: {
-    margin: 0,
-    overflow: 'hidden',
+    marginTop: 1,
     shadowColor: theme.colors.SHADOW_GRAY,
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.8,
+    shadowRadius: 8,
     ...Platform.select({
       ios: {
         zIndex: 1,
@@ -26,13 +83,10 @@ export default StyleSheet.create({
     color: theme.colors.SHARP_BLUE,
     marginLeft: 0,
     marginRight: 0,
-    marginBottom: 10,
+    ...theme.viewStyles.text('M', 16, theme.colors.SHARP_BLUE),
+    paddingBottom: 7,
   },
-  tabTitle: {
-    color: theme.colors.SHARP_BLUE,
-    ...theme.fonts.IBMPlexSansSemiBold(13),
-    textAlign: 'center',
-  },
+
   tabViewstyle: {
     backgroundColor: '#ffffff',
     paddingHorizontal: 20,
@@ -46,5 +100,32 @@ export default StyleSheet.create({
     padding: 20,
     width: '50%',
     marginHorizontal: '25%',
+  },
+  instructionText: {
+    marginTop: 16,
+    ...theme.viewStyles.text('M', 14, theme.colors.SHARP_BLUE, 0.6, undefined, 0.02),
+  },
+  additionalInstrInputstyle: {
+    marginTop: 8,
+    borderWidth: 1,
+    borderRadius: 10,
+    height: 92,
+    paddingLeft: 16,
+    paddingRight: 16,
+    paddingBottom: 16,
+    paddingTop: 16,
+    borderColor: theme.colors.APP_GREEN,
+    ...theme.viewStyles.text('M', 16, theme.colors.SHARP_BLUE, 1, undefined, 0.02),
+  },
+  buttonContainer: {
+    backgroundColor: '#ffffff',
+    zIndex: 10,
+    shadowColor: theme.colors.SHADOW_GRAY,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 5,
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
   },
 });

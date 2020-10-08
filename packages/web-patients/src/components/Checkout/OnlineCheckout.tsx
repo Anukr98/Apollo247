@@ -21,6 +21,7 @@ import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/doctors';
 import { ValidateConsultCoupon_validateConsultCoupon } from 'graphql/types/ValidateConsultCoupon';
 import { Route } from 'react-router-dom';
 import { consultPayButtonClickTracking } from 'webEngageTracking';
+import { dataLayerTracking } from 'gtmTracking';
 import { getCouponByUserMobileNumber } from 'helpers/commonHelpers';
 import fetchUtil from 'helpers/fetch';
 import { gtmTracking, dataLayerTracking } from '../../gtmTracking';
@@ -588,12 +589,12 @@ const OnlineCheckout: React.FC = () => {
         <div className={classes.container}>
           <div className={classes.pageContainer}>
             <div className={classes.pageHeader}>
-              <Link to={clientRoutes.specialityListing()}>
+              <a onClick={() => window.history.back()}>
                 <div className={classes.backArrow}>
                   <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                   <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
                 </div>
-              </Link>
+              </a>
               Checkout
             </div>
             <div className={classes.pageContent}>

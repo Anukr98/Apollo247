@@ -1,7 +1,7 @@
 import { Theme, Typography, Popover } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React, { useRef, useState } from 'react';
-import { AphButton } from '@aph/web-ui-components';
+import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
 import _forEach from 'lodash/forEach';
@@ -19,16 +19,23 @@ import { cancelAppointment, cancelAppointmentVariables } from 'graphql/types/can
 import { CANCEL_APPOINTMENT } from 'graphql/profiles';
 import { GET_CONSULT_INVOICE } from 'graphql/consult';
 import { Alerts } from 'components/Alerts/Alerts';
+import { CancelConsult } from 'components/Consult/V2/ChatRoom/CancelConsult';
 import {
   isPastAppointment,
   getDiffInMinutes,
   getAvailableFreeChatDays,
+  disablingActionsTimeBeforeConsultation,
+  getDiffInDays,
+  getDiffInHours,
 } from 'helpers/commonHelpers';
 import { useApolloClient } from 'react-apollo-hooks';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { useParams } from 'hooks/routerHooks';
 import { GetAppointmentData_getAppointmentData_appointmentsHistory as AppointmentHistory } from 'graphql/types/GetAppointmentData';
+import { cancellationPatientTracking } from 'webEngageTracking';
+import { getSecretaryDetailsByDoctorId } from 'graphql/types/getSecretaryDetailsByDoctorId';
 import { DoctorType } from 'graphql/types/globalTypes';
+import moment from 'moment';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -405,6 +412,7 @@ interface ConsultDoctorProfileProps {
   handleRescheduleOpen: any;
   srDoctorJoined: boolean;
   isConsultCompleted: boolean;
+  secretaryData: getSecretaryDetailsByDoctorId;
   setDisableActions: (disableActions: boolean) => void;
   disableActions: boolean;
 }
@@ -417,12 +425,17 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
   const appointmentId = params.appointmentId;
   const cancelAppointRef = useRef(null);
   const [isCancelPopoverOpen, setIsCancelPopoverOpen] = React.useState<boolean>(false);
+  const [isCancelConsultationDialogOpen, setIsCancelConsultationDialogOpen] = useState<boolean>(
+    false
+  );
+  const [cancelReasontext, setCancelReasonText] = useState<string>('');
 
   const {
     doctorDetails,
     setRescheduleCount,
     handleRescheduleOpen,
     appointmentDetails,
+    secretaryData,
     setDisableActions,
     disableActions,
   } = props;
@@ -471,7 +484,6 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
     }
     const currentTime = new Date().getTime();
     const appointmentTime = new Date(appointmentDetails.appointmentDateTime);
-    const differenceInWords = formatDistanceStrict(appointmentTime, currentTime);
 
     const {
       firstName,
@@ -485,8 +497,12 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
       onlineConsultationFees,
       physicalConsultationFees,
       doctorHospital,
+      mobileNumber,
       chatDays,
     } = doctorDetails && doctorDetails.getDoctorDetailsById;
+
+    const { mobileNumber: secretaryNumber, name: secretaryName } = (secretaryData &&
+      secretaryData.getSecretaryDetailsByDoctorId) || { mobileNumber: '', name: '' };
 
     const caseSheets =
       appointmentDetails && appointmentDetails.caseSheet ? appointmentDetails.caseSheet : [];
@@ -521,6 +537,22 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
     };
 
     const differenceInMinutes = getDiffInMinutes(appointmentDetails.appointmentDateTime);
+    const differenceInDays = getDiffInDays(appointmentDetails.appointmentDateTime);
+    let completeText = '';
+    if (differenceInDays === 0) {
+      const differenceInHours = getDiffInHours(appointmentDetails.appointmentDateTime) - 1; // removing 1hr as getDiffInHours has +1
+      if (differenceInHours > 0) {
+        completeText += `${differenceInHours} ${differenceInHours === 1 ? 'hr' : 'hrs'}`;
+      }
+      const finalDiffInMinutes = differenceInMinutes - differenceInHours * 60;
+      if (finalDiffInMinutes > 0) {
+        completeText += ` ${finalDiffInMinutes} ${finalDiffInMinutes === 1 ? 'min' : 'mins'}`;
+      }
+    }
+
+    if (differenceInMinutes < disablingActionsTimeBeforeConsultation) {
+      setDisableActions(true);
+    }
     shouldRefreshComponent(differenceInMinutes);
     const specialityName = (specialty && specialty.name) || '';
 
@@ -549,7 +581,7 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
         variables: {
           cancelAppointmentInput: {
             appointmentId: appointmentId,
-            cancelReason: '',
+            cancelReason: cancelReasontext,
             cancelledBy: REQUEST_ROLES.PATIENT,
             cancelledById: patientId,
           },
@@ -565,6 +597,15 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
           setApiLoading(false);
           setShowCancelPopup(false);
           window.location.href = clientRoutes.appointments();
+          cancellationPatientTracking({
+            doctorName: fullName,
+            patientName:
+              (currentPatient && `${currentPatient.firstName} ${currentPatient.lastName}`) || '',
+            secretaryName: secretaryName || '',
+            doctorNumber: mobileNumber,
+            patientNumber: (currentPatient && currentPatient.mobileNumber) || '',
+            secretaryNumber: secretaryNumber || '',
+          });
         })
         .catch((e: string) => {
           setShowCancelPopup(false);
@@ -585,8 +626,8 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
             {appointmentDetails.status !== STATUS.COMPLETED &&
               appointmentDetails.status !== STATUS.CANCELLED &&
               !appointmentDetails.isSeniorConsultStarted &&
+              !props.isConsultCompleted &&
               !props.srDoctorJoined &&
-              differenceInMinutes > 15 &&
               !disableActions && (
                 <div
                   onClick={() => setIsCancelPopoverOpen(true)}
@@ -692,12 +733,21 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                       </div>
                     ) : (
                       <div className={classes.joinInSection}>
-                        <span>Doctor Joining In</span>
-                        <span className={classes.joinTime}>
-                          {differenceInMinutes > 0 && differenceInMinutes <= 15
-                            ? `${differenceInMinutes} minutes`
-                            : differenceInWords}
-                        </span>
+                        {differenceInDays >= 1 ? (
+                          <>
+                            <span>Consult On</span>
+                            <span className={classes.joinTime}>
+                              {moment(appointmentDetails.appointmentDateTime).format(
+                                'DD/MM hh:mm a'
+                              )}
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <span>Doctor Joining In</span>
+                            <span className={classes.joinTime}>{completeText}</span>
+                          </>
+                        )}
                       </div>
                     ))
                   ))}
@@ -784,7 +834,10 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                   Reschedule Instead
                 </AphButton>
 
-                <AphButton onClick={() => cancelAppointmentApi()}>
+                <AphButton
+                  // onClick={() => cancelAppointmentApi()}
+                  onClick={() => setIsCancelConsultationDialogOpen(true)}
+                >
                   {apiLoading ? (
                     <CircularProgress size={22} color="secondary" />
                   ) : (
@@ -811,7 +864,11 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
             horizontal: 'right',
           }}
         >
-          <AphButton onClick={() => setShowCancelPopup(true)} className={classes.cancelBtn}>
+          <AphButton
+            disabled={disableActions || props.isConsultCompleted}
+            onClick={() => setShowCancelPopup(true)}
+            className={classes.cancelBtn}
+          >
             Cancel Appointment
           </AphButton>
         </Popover>
@@ -821,6 +878,22 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
           isAlertOpen={isAlertOpen}
           setIsAlertOpen={setIsAlertOpen}
         />
+        <AphDialog open={isCancelConsultationDialogOpen} maxWidth="sm">
+          <AphDialogClose
+            onClick={() => setIsCancelConsultationDialogOpen(false)}
+            title={'Close'}
+          />
+          <AphDialogTitle>Cancel Consultation</AphDialogTitle>
+          <CancelConsult
+            setIsCancelConsultationDialogOpen={(isCancelConsultationDialogOpen: boolean) =>
+              setIsCancelConsultationDialogOpen(isCancelConsultationDialogOpen)
+            }
+            cancelAppointmentApi={cancelAppointmentApi}
+            setCancelReasonText={(cancelReasontext: string) =>
+              setCancelReasonText(cancelReasontext)
+            }
+          />
+        </AphDialog>
       </div>
     );
   }

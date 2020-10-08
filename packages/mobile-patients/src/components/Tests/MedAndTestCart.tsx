@@ -91,7 +91,7 @@ export const MedAndTestCart: React.FC<MedAndTestCartProps> = (props) => {
               activeOpacity={1}
               key={i}
               onPress={() => {
-                props.navigation.navigate(i == 0 ? AppRoutes.YourCart : AppRoutes.TestsCart, {
+                props.navigation.navigate(i == 0 ? AppRoutes.MedicineCart : AppRoutes.TestsCart, {
                   isComingFromConsult,
                 });
               }}

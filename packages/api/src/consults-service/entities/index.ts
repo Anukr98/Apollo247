@@ -35,6 +35,7 @@ export enum APPOINTMENT_UPDATED_BY {
   DOCTOR = 'DOCTOR',
   PATIENT = 'PATIENT',
   ADMIN = 'ADMIN',
+  SYSTEM = 'SYSTEM',
 }
 
 export interface PaginateParams {
@@ -323,6 +324,9 @@ export class Appointment extends BaseEntity {
     default: () => "'{}'",
   })
   paymentInfo: Partial<AppointmentPayments>;
+
+  @Column({ nullable: true, default: false })
+  hideHealthRecordNudge: Boolean;
 
   @BeforeUpdate()
   async appointMentStatusConstraintCheck() {

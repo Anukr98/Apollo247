@@ -69,6 +69,7 @@ export interface EPrescription {
 
 export interface PharmaCoupon extends validatePharmaCoupon_validatePharmaCoupon {
   coupon: string;
+  message?: string;
   discount: number;
   valid: boolean;
   reason: String;
@@ -97,6 +98,7 @@ export interface ShoppingCartContextProps {
   updateCartItem:
     | ((itemUpdates: Partial<ShoppingCartItem> & { id: ShoppingCartItem['id'] }) => void)
     | null;
+  getCartItemQty: (id: string) => number;
   cartTotal: number;
   cartTotalOfRxProducts: number;
   couponDiscount: number;
@@ -166,6 +168,7 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   addMultipleCartItems: null,
   removeCartItem: null,
   updateCartItem: null,
+  getCartItemQty: () => 0,
   cartTotal: 0,
   cartTotalOfRxProducts: 0,
   couponDiscount: 0,
@@ -367,6 +370,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
     }
   };
 
+  const getCartItemQty: ShoppingCartContextProps['getCartItemQty'] = (id) =>
+    cartItems.find(({ id: cId }) => cId == id)?.quantity || 0;
+
   const setCouponProducts: ShoppingCartContextProps['setCouponProducts'] = (items) => {
     _setCouponProducts(items);
   };
@@ -385,10 +391,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   );
 
   const deliveryCharges =
-    !deliveryType || deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP || isFreeDelivery
+    isFreeDelivery || deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
       ? 0
-      : deliveryType == MEDICINE_DELIVERY_TYPE.HOME_DELIVERY &&
-        cartTotal > 0 &&
+      : cartTotal > 0 &&
         cartTotal - productDiscount - couponDiscount <
           AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY
       ? AppConfig.Configuration.DELIVERY_CHARGES
@@ -494,14 +499,14 @@ export const ShoppingCartProvider: React.FC = (props) => {
     updateCartItemsFromStorage();
   }, []);
 
-  const getDiscountPrice = (
-    cartItem: ShoppingCartItem,
-    lineItems: validatePharmaCoupon_validatePharmaCoupon_pharmaLineItemsWithDiscountedPrice[]
-  ) => {
+  const getDiscountPrice = (cartItem: ShoppingCartItem, lineItems: CartProduct[]) => {
     const foundItem = lineItems.find((item) => item.sku == cartItem.id);
-    return foundItem
+    return foundItem && foundItem.discountAmt != 0
       ? foundItem.onMrp
-        ? foundItem.mrp - foundItem.discountAmt
+        ? Number(foundItem!.discountAmt).toFixed(2) >
+          Number(foundItem!.mrp - foundItem!.specialPrice).toFixed(2)
+          ? foundItem.mrp - foundItem.discountAmt
+          : undefined
         : foundItem.specialPrice - foundItem.discountAmt
       : undefined;
   };
@@ -526,11 +531,14 @@ export const ShoppingCartProvider: React.FC = (props) => {
       );
 
     if (coupon) {
+      let couponDiscount: number = coupon?.discount;
       if (
-        g(coupon, 'discount') != 0 &&
-        g(coupon, 'discount') > deductProductDiscount(coupon.products)
+        couponDiscount != 0 &&
+        Number(couponDiscount) - Number(deductProductDiscount(coupon.products)) > 0.1
       ) {
-        setCouponDiscount(g(coupon, 'discount') - deductProductDiscount(coupon.products) || 0);
+        setCouponDiscount(
+          Number(couponDiscount) - Number(deductProductDiscount(coupon.products)) || 0
+        );
         setProductDiscount(productDiscount);
         setCartItems(
           cartItems.map((item) => ({
@@ -563,7 +571,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
           discount = discount + (item.mrp - (item.specialPrice || item.mrp)) * item.quantity;
         }
       });
-    return discount;
+    return Number(discount).toFixed(2);
   };
 
   const getProductDiscount = (products: CartProduct[]) => {
@@ -604,6 +612,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
         addMultipleCartItems,
         removeCartItem,
         updateCartItem,
+        getCartItemQty,
         cartTotal, // MRP Total
         cartTotalOfRxProducts,
         grandTotal,

@@ -27,6 +27,7 @@ import {
 } from '../webEngageTracking';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { PARTNER_TP_REF_CODES } from 'helpers/constants';
+import { useAuth, useLoginPopupState } from 'hooks/authHooks';
 import { LazyIntersection } from './lib/LazyIntersection';
 
 const isoDatePattern = 'yyyy-MM-dd';
@@ -197,6 +198,10 @@ const useStyles = makeStyles((theme: Theme) => {
     required: {
       color: 'red',
     },
+    backArrow: {
+      cursor: 'pointer',
+      paddingLeft: 20,
+    },
   });
 });
 
@@ -234,6 +239,8 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
   const [alertMessage, setAlertMessage] = useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
   const orderedGenders = [Gender.MALE, Gender.FEMALE];
+  const { signOut } = useAuth();
+  const { setIsLoginPopupVisible: setLoginPopupVisible } = useLoginPopupState();
 
   if (showProfileSuccess) {
     return <ProfileSuccess onSubmitClick={() => props.onClose()} />;
@@ -354,7 +361,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                     <></>
                   ) : (
                     <div className={classes.mascotIcon}>
-                      <img src={require('images/ic-mascot.png')} alt="" />
+                      <LazyIntersection src={require('images/ic-mascot.png')} alt="" />
                     </div>
                   )}
                   <div className={classes.customScrollBar}>

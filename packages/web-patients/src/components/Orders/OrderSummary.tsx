@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme } from '@material-ui/core';
+import { Theme, Typography } from '@material-ui/core';
 import moment from 'moment';
 import {
   getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails as OrderDetails,
@@ -21,6 +21,7 @@ import { MedicineOrderBilledItem } from 'helpers/MedicineApiCalls';
 import { pharmacyOrderSummaryTracking } from 'webEngageTracking';
 import { ReOrder } from './ReOrder';
 import { useAllCurrentPatients } from 'hooks/authHooks';
+import { getPaymentMethodFullName } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -300,6 +301,28 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 16,
       },
     },
+    oneApolloLabel: {
+      display: 'flex',
+      alignItems: 'center',
+      '& img': {
+        margin: '0 10px 0 0',
+      },
+      '& p': {
+        fontSize: 12,
+        fontWeight: 500,
+        color: '#01475b',
+      },
+      '& span': {
+        display: 'block',
+      },
+    },
+    infoText: {
+      fontSize: 10,
+      color: '#0087ba',
+    },
+    alignStart: {
+      alignItems: 'flex-start',
+    },
   };
 });
 
@@ -326,6 +349,11 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
     orderDetailsData.medicineOrderPayments &&
     orderDetailsData.medicineOrderPayments.length > 0 &&
     orderDetailsData.medicineOrderPayments[0];
+  const paymentMode = orderPayment.paymentMode
+    ? getPaymentMethodFullName(orderPayment.paymentMode)
+    : orderPayment.paymentType && orderPayment.paymentType.length
+    ? orderPayment.paymentType
+    : '';
   const shipmentInvoiceDetails =
     orderDetailsData &&
     orderDetailsData.medicineOrderShipments &&
@@ -377,7 +405,6 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
       : orderPayment.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS
       ? 'Prepaid'
       : 'No Payment');
-
   const getPatientAddress = (deliveryAddress: OrderAddress) => {
     if (deliveryAddress) {
       const address1 = deliveryAddress.addressLine1 ? `${deliveryAddress.addressLine1}, ` : '';
@@ -646,9 +673,39 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
           )}
 
           {orderPayment && (
-            <div className={`${classes.priceRow} ${classes.lastRow}`}>
-              <span>Payment method</span>
-              <span>{paymentMethodToDisplay}</span>
+            <div>
+              <p>Payment Method</p>
+              {orderPayment.healthCreditsRedeemed != 0 || orderPayment.refundAmount != null ? (
+                <div>
+                  <div className={`${classes.priceRow} ${classes.lastRow} ${classes.alignStart}`}>
+                    <label>
+                      <span className={classes.oneApolloLabel}>
+                        <img src={require('images/one-apollo.svg')} width="30" alt="One Apollo" />
+                        <Typography>Health Credits</Typography>
+                      </span>
+                      <span className={classes.infoText}>(Will be Redeemed after delivery)</span>
+                    </label>
+                    <span>Rs. 
+                      {orderPayment.healthCreditsRedeemed != 0
+                        ? (orderPayment.healthCreditsRedeemed || 0).toFixed(2)
+                        : (orderPayment.healthCreditsRedemptionRequest.RedeemedPoints || 0).toFixed(
+                            2
+                          )}
+                    </span>
+                  </div>
+                  {orderPayment.paymentMode != null && (
+                    <div className={`${classes.priceRow} ${classes.lastRow}`}>
+                      <label>{paymentMode}</label>
+                      <span>Rs. {(orderPayment.amountPaid || 0).toFixed(2)}</span>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className={`${classes.priceRow} ${classes.lastRow}`}>
+                  <label>{paymentMode}</label>
+                  <span>Rs. {(orderDetailsData.estimatedAmount || 0).toFixed(2)}</span>
+                </div>
+              )}
             </div>
           )}
           {!isPrescriptionUploadOrder && isOrderBilled && !noDiscountFound && (
