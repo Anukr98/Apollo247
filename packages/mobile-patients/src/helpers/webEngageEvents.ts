@@ -173,6 +173,16 @@ export enum WebEngageEventName {
   HDFC_EXPLORE_PLAN_CLICKED = 'HDFC Explore Plan Clicked',
   HDFC_HOW_TO_AVAIL_CLICKED = 'HDFC How To Avail Clicked',
   HDFC_REDEEM_CLICKED = 'HDFC Redeem Clicked',
+  HDFC_DOC_ON_CALL_CLICK = 'HDFC Doc On Call Click',
+  HDFC_COVID_CARE_CLICK = 'HDFC Covid Care Click',
+  HDFC_DIGITIZATION_PHR_CLICK = 'HDFC Digitization PHR Click',
+  HDFC_FREE_HEALTH_ASSESSMENT_CLICK = 'HDFC Free Health Assessment Click',
+  HDFC_CONCIERGE_CLICK = 'HDFC Concierge Click',
+  HDFC_DIETITIAN_CLICK = 'HDFC Dietitian Click',
+  HDFC_DIAGNOSTIC_CLICK = 'HDFC Diagnostic Click',
+  HDFC_DIGITAL_VAULT_CLICK = 'HDFC Digital Vault Click',
+  HDFC_7000_DOCTORS_CLICK = 'HDFC 7000 Doctors Click',
+  HDFC_FREE_MED_CHECK_CLICK = 'HDFC Free Med Check Click',
 
   // Opentok Events
   DOCTOR_SUBSCRIBER_ERROR = 'Doctor Subscriber Error',
@@ -253,6 +263,11 @@ export interface HdfcCustomerPlanInfo extends HdfcCustomerInfo {
   'Partner ID': string;
   HDFCMembershipLevel: HdfcPlan;
   HDFCMembershipState: 'Active' | 'Inactive';
+}
+
+export interface HdfcBenefitInfo {
+  'User ID': string;
+  'Plan': HdfcPlan;
 }
 
 export interface PatientInfoWithConsultId extends PatientInfo {
@@ -1390,26 +1405,24 @@ export interface WebEngageEvents {
   [WebEngageEventName.HDFC_OTP_VERIFY_CLICKED]: HdfcCustomerInfo;
   [WebEngageEventName.HDFC_EXPLORE_BENEFITS_CLICKED]: HdfcCustomerPlanInfo;
   [WebEngageEventName.HDFC_HOMEPAGE_CAROUSEL_CLICKED]: HdfcCustomerPlanInfo;
-  [WebEngageEventName.HDFC_MY_MEMBERSHIP_VIEWED]: {
-    'User ID': string;
-    'Plan': HdfcPlan;
-  };
-  [WebEngageEventName.HDFC_PLAN_DETAILS_VIEWED]: {
-    'User ID': string;
-    'Plan': HdfcPlan;
-  };
-  [WebEngageEventName.HDFC_EXPLORE_PLAN_CLICKED]: {
-    'User ID': string;
-    'Plan': HdfcPlan;
-  };
-  [WebEngageEventName.HDFC_HOW_TO_AVAIL_CLICKED]: {
-    'User ID': string;
-    'Plan': HdfcPlan;
-  };
+  [WebEngageEventName.HDFC_MY_MEMBERSHIP_VIEWED]: HdfcBenefitInfo;
+  [WebEngageEventName.HDFC_PLAN_DETAILS_VIEWED]: HdfcBenefitInfo;
+  [WebEngageEventName.HDFC_EXPLORE_PLAN_CLICKED]: HdfcBenefitInfo;
+  [WebEngageEventName.HDFC_HOW_TO_AVAIL_CLICKED]: HdfcBenefitInfo;
   [WebEngageEventName.HDFC_REDEEM_CLICKED]: {
     'User ID': string;
     'Benefit': string;
   };
+  [WebEngageEventName.HDFC_DOC_ON_CALL_CLICK]: HdfcBenefitInfo;
+  [WebEngageEventName.HDFC_COVID_CARE_CLICK]: HdfcBenefitInfo;
+  [WebEngageEventName.HDFC_DIGITIZATION_PHR_CLICK]: HdfcBenefitInfo;
+  [WebEngageEventName.HDFC_FREE_HEALTH_ASSESSMENT_CLICK]: HdfcBenefitInfo;
+  [WebEngageEventName.HDFC_CONCIERGE_CLICK]: HdfcBenefitInfo;
+  [WebEngageEventName.HDFC_DIETITIAN_CLICK]: HdfcBenefitInfo;
+  [WebEngageEventName.HDFC_DIAGNOSTIC_CLICK]: HdfcBenefitInfo;
+  [WebEngageEventName.HDFC_DIGITAL_VAULT_CLICK]: HdfcBenefitInfo;
+  [WebEngageEventName.HDFC_7000_DOCTORS_CLICK]: HdfcBenefitInfo;
+  [WebEngageEventName.HDFC_FREE_MED_CHECK_CLICK]: HdfcBenefitInfo;
 
   // ********** Opentok Events ********** \\
 

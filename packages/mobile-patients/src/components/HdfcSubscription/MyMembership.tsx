@@ -126,9 +126,9 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
   const [showAvailPopup, setShowAvailPopup] = useState<boolean>(false);
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [upgradeTransactionValue, setUpgradeTransactionValue] = useState<number>(0);
+  const subscription_name = hdfcUserSubscriptions!.name;
 
   useEffect(() => {
-    const subscription_name = hdfcUserSubscriptions!.name;
     const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_MY_MEMBERSHIP_VIEWED] = {
       'User ID': g(currentPatient, 'id'),
       'Plan': subscription_name.substring(0, subscription_name.indexOf('+')),
@@ -186,7 +186,6 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
   ) => {
     const buttonText = isCanUpgradeToPlan ? 'HOW TO AVAIL' : isActive ? 'EXPLORE' : 'ACTIVATE NOW';
     const premiumPlanName = g(hdfcUserSubscriptions, 'canUpgradeTo', 'canUpgradeTo', 'name');
-    const subscription_name = hdfcUserSubscriptions!.name;
 
     const transactionValue =
       subscriptionName === upgradePlanName

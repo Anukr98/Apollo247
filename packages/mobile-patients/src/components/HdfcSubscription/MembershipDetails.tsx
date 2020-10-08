@@ -160,6 +160,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
   const planName = g(hdfcUserSubscriptions, 'name');
+  const plan = planName!.substring(0, planName!.indexOf('+'));
   const upgradePlanName = g(hdfcUserSubscriptions, 'canUpgradeTo', 'name');
   const premiumPlanName = g(hdfcUserSubscriptions, 'canUpgradeTo', 'canUpgradeTo', 'name');
   const membershipDetails =
