@@ -270,8 +270,9 @@ const getOrderInvoice: Resolver<
       `${_capitalize(appointmentData[0].appointmentType)}`,
       doc.y + 10
     );
-
-    const nameLine = `${doctorInfo.salutation} ${doctorInfo.firstName} ${doctorInfo.lastName}`;
+    const salutation =
+      doctorInfo.salutation.indexOf('.') > -1 ? doctorInfo.salutation : `${doctorInfo.salutation}.`;
+    const nameLine = `${salutation} ${doctorInfo.firstName} ${doctorInfo.lastName}`;
 
     const specialty = doctorInfo.specialty.name;
     renderFourColumnRow(

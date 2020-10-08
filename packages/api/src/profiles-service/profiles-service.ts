@@ -213,6 +213,10 @@ import {
   patientDeviceVoipTokenTypeDefs,
   patientDeviceVoipTokenResolvers,
 } from 'profiles-service/resolvers/savepatientDeviceVoipToken';
+import {
+  validateHDFCCustomerTypeDefs,
+  validateHDFCCustomer,
+} from 'profiles-service/resolvers/hdfcCustomerValidation';
 
 import {
   addPatientHealthCheckRecordTypeDefs,
@@ -271,6 +275,7 @@ import {
         doctorsDb,
         consultsDb,
         currentPatient,
+        headers: headers,
       };
       return context;
     },
@@ -506,6 +511,10 @@ import {
       {
         typeDefs: patientDeviceVoipTokenTypeDefs,
         resolvers: patientDeviceVoipTokenResolvers,
+      },
+      {
+        typeDefs: validateHDFCCustomerTypeDefs,
+        resolvers: validateHDFCCustomer,
       },
       {
         typeDefs: addPatientHealthCheckRecordTypeDefs,

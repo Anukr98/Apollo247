@@ -21,13 +21,16 @@ import { sendMedicineOrderStatusNotification } from 'notifications-service/handl
 import { NotificationType } from 'notifications-service/constants';
 import { medicineCOD } from 'helpers/emailTemplates/medicineCOD';
 import { sendMail } from 'notifications-service/resolvers/email';
-import { ApiConstants } from 'ApiConstants';
+import { ApiConstants, TransactionType } from 'ApiConstants';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { log } from 'customWinstonLogger';
+import { acceptCoupon } from 'helpers/couponServices';
+import { AcceptCouponRequest } from 'types/coupons';
 import { BlockOneApolloPointsRequest, BlockUserPointsResponse } from 'types/oneApolloTypes';
 import { OneApollo } from 'helpers/oneApollo';
 import { getStoreCodeFromDevice } from 'profiles-service/helpers/OneApolloTransactionHelper';
 import { calculateRefund } from 'profiles-service/helpers/refundHelper';
+import { transactionSuccessTrigger } from 'helpers/subscriptionHelper';
 
 export const saveMedicineOrderPaymentMqTypeDefs = gql`
   enum CODCity {
@@ -280,8 +283,31 @@ const SaveMedicineOrderPaymentMq: Resolver<
       statusDate: new Date(),
       statusMessage: statusMsg,
     };
-    await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
 
+    if (
+      currentStatus == MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS ||
+      currentStatus == MEDICINE_ORDER_STATUS.ORDER_INITIATED
+    ) {
+      transactionSuccessTrigger({
+        amount: `${medicinePaymentMqInput.amountPaid}`,
+        transactionType: TransactionType.PHARMA,
+        transactionDate: medicinePaymentMqInput.paymentDateTime || new Date(),
+        transactionId: medicinePaymentMqInput.paymentRefId,
+        sourceTransactionIdentifier: `${medicinePaymentMqInput.orderAutoId}`,
+        mobileNumber: orderDetails.patient.mobileNumber,
+        dob: orderDetails.patient.dateOfBirth,
+        email: orderDetails.patient.emailAddress,
+        partnerId: orderDetails.patient.partnerId,
+      });
+      if (orderDetails.coupon) {
+        const payload: AcceptCouponRequest = {
+          mobile: orderDetails.patient.mobileNumber.replace('+91', ''),
+          coupon: orderDetails.coupon,
+        };
+        await acceptCoupon(payload);
+      }
+    }
+    await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
     await medicineOrdersRepo.updateMedicineOrder(orderDetails.id, orderDetails.orderAutoId, {
       orderDateTime: new Date(),
       currentStatus,

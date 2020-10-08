@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
@@ -57,12 +57,14 @@ const ContactUs: React.FC = (props) => {
   }, []);
 
   const [metaTagProps, setMetaTagProps] = useState(null);
-  setMetaTagProps({
-    title: 'Apollo 247 - Contact Us - Apollo Hospitals',
-    description:
-      'Apollo 247- Have a query about our products, services, online doctor consultation and more - write to us',
-    canonicalLink: typeof window !== 'undefined' && window.location && window.location.href,
-  });
+  useEffect(() => {
+    setMetaTagProps({
+      title: 'Apollo 247 - Contact Us - Apollo Hospitals',
+      description:
+        'Apollo 247- Have a query about our products, services, online doctor consultation and more - write to us',
+      canonicalLink: typeof window !== 'undefined' && window.location && window.location.href,
+    });
+  }, []);
   return (
     <div className={classes.root}>
       {metaTagProps && <MetaTagsComp {...metaTagProps} />}

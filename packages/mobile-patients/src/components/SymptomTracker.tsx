@@ -605,21 +605,6 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
                   );
                 })}
             </View>
-            <View style={[styles.symptomsContainer, styles.symptomViewMargin]}>
-              <View style={styles.seperatorLine}>
-                <Text style={styles.patientDetailsTitle}>Specialities</Text>
-              </View>
-              {specialities &&
-                specialities.length > 0 &&
-                specialities.map((item, index) => {
-                  return (
-                    <View key={index} style={[styles.itemRowStyle, styles.itemRowMargin]}>
-                      <View style={styles.bullet} />
-                      <Text style={styles.patientDetailsText}>{item.name}</Text>
-                    </View>
-                  );
-                })}
-            </View>
           </View>
         ) : (
           <View />
