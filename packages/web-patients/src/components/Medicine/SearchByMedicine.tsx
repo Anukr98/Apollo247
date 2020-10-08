@@ -285,6 +285,10 @@ const useStyles = makeStyles((theme: Theme) => {
       '& p': {
         fontSize: 14,
         lineHeight: '20px',
+        '& span': {
+          fontWeight: 700,
+          display: 'block',
+        },
       },
     },
     mfaqContainer: {

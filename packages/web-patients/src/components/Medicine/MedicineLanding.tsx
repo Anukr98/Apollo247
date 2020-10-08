@@ -464,12 +464,16 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       [theme.breakpoints.down('sm')]: {
         padding: 10,
+        height: 80,
+        alignItems: 'flex-start',
+        position: 'relative',
       },
+
       '& img': {
         margin: '0 10px',
         [theme.breakpoints.down('sm')]: {
           width: 40,
-          display: 'none',
+          // display: 'none',
         },
       },
     },
@@ -478,7 +482,13 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
       right: -30,
       [theme.breakpoints.down('sm')]: {
-        display: 'none',
+        width: '100px !important',
+      },
+      [theme.breakpoints.down('xs')]: {
+        right: 10,
+        bottom: 0,
+        width: '60px !important',
+        position: 'absolute',
       },
     },
     mBannerDetail: {
@@ -489,6 +499,9 @@ const useStyles = makeStyles((theme: Theme) => {
         borderBottom: '1px solid #579BCC',
         textTransform: 'uppercase',
         [theme.breakpoints.down('sm')]: {
+          fontSize: 18,
+        },
+        [theme.breakpoints.down('xs')]: {
           fontSize: 12,
         },
       },
@@ -496,6 +509,9 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 18,
         fontWeight: 400,
         [theme.breakpoints.down('sm')]: {
+          fontSize: 14,
+        },
+        [theme.breakpoints.down('xs')]: {
           fontSize: 10,
         },
       },
@@ -634,8 +650,7 @@ const MedicineLanding: React.FC = (props: any) => {
   const [expanded, setExpanded] = React.useState<string | false>(false);
 
   const apiDetails = {
-    // url: process.env.PHARMACY_MED_PROD_SEARCH_BY_BRAND,
-    url: 'https://magento.apollo247.com/apollo_24x7_api.php?version=v2',
+    url: process.env.PHARMACY_MED_PROD_SEARCH_BY_BRAND,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
