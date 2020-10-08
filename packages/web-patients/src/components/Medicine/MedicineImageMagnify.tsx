@@ -22,7 +22,7 @@ export const MedicineImageMagnify: React.FC<MedicineImageMagnifyProps> = (props)
         enlargedImagePortalId: 'myImage',
         isActivatedOnTouch: true,
         enlargedImageContainerDimensions: {
-          width: '250%',
+          width: '245%',
           height: '170%',
         },
       }}
