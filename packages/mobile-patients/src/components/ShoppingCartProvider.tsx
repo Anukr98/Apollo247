@@ -499,12 +499,16 @@ export const ShoppingCartProvider: React.FC = (props) => {
     updateCartItemsFromStorage();
   }, []);
 
+  function formatNumber(value: number | string) {
+    return Number(Number(value).toFixed(2));
+  }
+
   const getDiscountPrice = (cartItem: ShoppingCartItem, lineItems: CartProduct[]) => {
     const foundItem = lineItems.find((item) => item.sku == cartItem.id);
     return foundItem && foundItem.discountAmt != 0
       ? foundItem.onMrp
-        ? Number(foundItem!.discountAmt).toFixed(2) >
-          Number(foundItem!.mrp - foundItem!.specialPrice).toFixed(2)
+        ? formatNumber(foundItem!.discountAmt) >
+          formatNumber(foundItem!.mrp - foundItem!.specialPrice)
           ? foundItem.mrp - foundItem.discountAmt
           : undefined
         : foundItem.specialPrice - foundItem.discountAmt
