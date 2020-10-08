@@ -776,16 +776,22 @@ const MedicineLanding: React.FC = (props: any) => {
                     <CircularProgress size={30} />
                   </div>
                 )}
-                <div className={classes.webCarousel}>
-                  {data && data.mainbanners_desktop && data.mainbanners_desktop.length > 0 && (
-                    <CarouselBanner bannerData={data.mainbanners_desktop} history={props.history} />
-                  )}
-                </div>
-                <div className={classes.mobileCarousel}>
-                  {data && data.mainbanners && data.mainbanners.length > 0 && (
-                    <CarouselBanner bannerData={data.mainbanners} history={props.history} />
-                  )}
-                </div>
+                {screen.width > 500 ? (
+                  <div className={classes.webCarousel}>
+                    {data && data.mainbanners_desktop && data.mainbanners_desktop.length > 0 && (
+                      <CarouselBanner
+                        bannerData={data.mainbanners_desktop}
+                        history={props.history}
+                      />
+                    )}
+                  </div>
+                ) : (
+                  <div className={classes.mobileCarousel}>
+                    {data && data.mainbanners && data.mainbanners.length > 0 && (
+                      <CarouselBanner bannerData={data.mainbanners} history={props.history} />
+                    )}
+                  </div>
+                )}
               </div>
 
               <div className={classes.rightSection}>
