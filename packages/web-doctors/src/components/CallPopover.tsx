@@ -2803,6 +2803,15 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       })
                       .catch((e: any) => {
                         setIsCallConnecting(false);
+                        webEngageEventTracking(
+                          {
+                            'API name': 'CreateAppointmentSession',
+                            'ErrorDetails': JSON.stringify(error),
+                            'Consultation Display ID': props.webengageConsultTrackingObject.appointmentDisplayId,
+                            'Consult ID': props.webengageConsultTrackingObject.appointmentId,
+                          },
+                          'Front_end - Doctor API-Error on Casesheet'
+                        );
                       });
                     }}
                   >
@@ -2854,6 +2863,15 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       })
                       .catch((e: any) => {
                         setIsCallConnecting(false);
+                        webEngageEventTracking(
+                          {
+                            'API name': 'CreateAppointmentSession',
+                            'ErrorDetails': JSON.stringify(error),
+                            'Consultation Display ID': props.webengageConsultTrackingObject.appointmentDisplayId,
+                            'Consult ID': props.webengageConsultTrackingObject.appointmentId,
+                          },
+                          'Front_end - Doctor API-Error on Casesheet'
+                        );
                       });
                     }}
                   >
