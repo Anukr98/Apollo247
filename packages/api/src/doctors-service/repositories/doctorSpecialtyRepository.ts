@@ -1,12 +1,8 @@
 import { EntityRepository, Repository } from 'typeorm';
 import { DoctorSpecialty } from 'doctors-service/entities';
-import { getCache, setCache } from 'profiles-service/database/connectRedis';
-import { ApiConstants } from 'ApiConstants';
 
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-
-const REDIS_DOCTOR_SPECIALITY_KEY: string = 'doctor:speciality';
 
 @EntityRepository(DoctorSpecialty)
 export class DoctorSpecialtyRepository extends Repository<DoctorSpecialty> {
@@ -30,36 +26,6 @@ export class DoctorSpecialtyRepository extends Repository<DoctorSpecialty> {
       }
     })
   }
-
-
-  async setAllSpecialtiesCache() {
-    const specialties = await this.findAll();
-    if (specialties) {
-      const specialtiesString = JSON.stringify(specialties);
-      setCache(
-        `${REDIS_DOCTOR_SPECIALITY_KEY}`,
-        specialtiesString,
-        ApiConstants.CACHE_EXPIRATION_3600
-      );
-    }
-    return specialties;
-  }
-
-  async getAllSpecialtiesCache() {
-    const cache = await getCache(`${REDIS_DOCTOR_SPECIALITY_KEY}`);
-    if (cache && typeof cache === 'string') {
-      return JSON.parse(cache);
-    } else {
-      return await this.setAllSpecialtiesCache();
-    }
-  }
-
-  async getSpecialityWithPagination(pageSize:number,pageNo:number){
-    const offset = (pageNo - 1) * pageSize;
-    const speciality = await this.getAllSpecialtiesCache();
-    return speciality.slice(offset,offset+pageSize);
-  }
-
 
   searchByName(searchString: string) {
     return this.createQueryBuilder('specialty')
