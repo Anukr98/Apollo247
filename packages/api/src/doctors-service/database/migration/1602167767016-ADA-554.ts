@@ -8,9 +8,10 @@ export class ADA5541602167767016 implements MigrationInterface {
     ADD COLUMN "panCard"  character varying COLLATE pg_catalog."default",
     ADD COLUMN "typeOfService"  character varying COLLATE pg_catalog."default",
     ADD COLUMN "isPennyRequried" boolean NOT NULL DEFAULT true,
-    ADD COLUMN "isActive" boolean NOT NULL DEFAULT true`);
-    await queryRunner.query(`ALTER TABLE doctor_bank_accounts
-    RENAME COLUMN "bankName" TO "branchName"`);
+    ADD COLUMN "isActive" boolean NOT NULL DEFAULT true
+    ADD COLUMN "branchName"  character varying COLLATE pg_catalog."default"`);
+
+
     await queryRunner.query(`ALTER TABLE admin_sub_roles
     ADD COLUMN "editBankDetails" boolean NOT NULL DEFAULT true`);
 
@@ -23,9 +24,9 @@ export class ADA5541602167767016 implements MigrationInterface {
     DROP COLUMN "panCard" ,
     DROP COLUMN "typeOfService",
     DROP COLUMN  "isPennyRequried" ,
-    DROP COLUMN  "isActive"`);
-    await queryRunner.query(`ALTER TABLE doctor_bank_accounts
-    RENAME COLUMN "branchName" to "bankName"`);
+    DROP COLUMN  "isActive",
+    DROP COLUMN "branchName"`);
+
     await queryRunner.query(`ALTER TABLE admin_sub_roles DROP COLUMN "editBankDetails"`);
   }
 
