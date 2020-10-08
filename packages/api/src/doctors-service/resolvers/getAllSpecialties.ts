@@ -48,10 +48,10 @@ const getAllSpecialties: Resolver<null, {pageSize: number,pageNo: number}, Docto
 ) => {
   const pageNo = args.pageNo ? args.pageNo : 1;
   const pageSize = args.pageSize ? args.pageSize : 100;
-  const offset = (pageNo - 1) * pageSize;
 
   const specialtiesRepo = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
-  const [allSpecialties]  = await specialtiesRepo.findAllWithPagination(pageSize, offset);
+  const allSpecialties  = await specialtiesRepo.getSpecialityWithPagination(pageSize, pageNo);
+  
   allSpecialties.map((element: any) => {
     element['commonSearchWords'] = element.commonSearchTerm;
   });

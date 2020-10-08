@@ -816,7 +816,7 @@ const getDoctorList: Resolver<
   if (args.filterInput.specialtyName && args.filterInput.specialtyName.length > 0) {
     elasticMatch.push({ terms: { 'specialty.name.keyword': args.filterInput.specialtyName } });
   }
-  if (args.filterInput.specialty && !args.filterInput.searchText) {
+  if (args.filterInput.specialty) {
     elasticMatch.push({ match_phrase: { 'specialty.specialtyId': args.filterInput.specialty } });
   }
   if (
