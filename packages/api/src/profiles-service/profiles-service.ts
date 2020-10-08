@@ -113,12 +113,16 @@ import {
   updateOrderStatusResolvers,
 } from 'profiles-service/resolvers/pharmaUpdateOrderStatus';
 import {
+  saveOrderShipmentsTypeDefs,
+  saveOrderShipmentsResolvers,
+} from 'profiles-service/resolvers/pharmaOrderShipmentsCreated';
+import {
   saveOrderShipmentInvoiceTypeDefs,
   saveOrderShipmentInvoiceResolvers,
 } from 'profiles-service/resolvers/pharmaOrderBilled';
 import {
-  saveOrderShipmentsTypeDefs,
-  saveOrderShipmentsResolvers,
+  saveOrderVerifiedTypeDefs,
+  saveOrderVerifiedResolvers,
 } from 'profiles-service/resolvers/pharmaOrderVerified';
 import {
   pharmaOrderConfirmationTypeDefs,
@@ -233,6 +237,21 @@ import {
   addPatientLabTestRecordTypeDefs,
   addPatientLabTestRecordResolvers,
 } from 'profiles-service/resolvers/addLabTestRecords';
+
+import {
+  updateOrderOnHoldTypeDefs,
+  updateOrderOnHoldResolvers,
+} from 'profiles-service/resolvers/pharmaOrderOnHold';
+
+import {
+  orderReturnPostDeliveryTypeDefs,
+  orderReturnPostDeliveryResolvers,
+} from 'profiles-service/resolvers/pharmaOrderReturnPostDelivery';
+
+import {
+  orderReturnedTypeDefs,
+  orderReturnedResolvers,
+} from 'profiles-service/resolvers/pharmaOrderReturnPreDelivery';
 
 import {
   deletePatientPrismMedicalRecordTypeDefs,
@@ -508,6 +527,22 @@ import {
       {
         typeDefs: addPatientLabTestRecordTypeDefs,
         resolvers: addPatientLabTestRecordResolvers,
+      },
+      {
+        typeDefs: saveOrderVerifiedTypeDefs,
+        resolvers: saveOrderVerifiedResolvers,
+      },
+      {
+        typeDefs: updateOrderOnHoldTypeDefs,
+        resolvers: updateOrderOnHoldResolvers,
+      },
+      {
+        typeDefs: orderReturnPostDeliveryTypeDefs,
+        resolvers: orderReturnPostDeliveryResolvers,
+      },
+      {
+        typeDefs: orderReturnedTypeDefs,
+        resolvers: orderReturnedResolvers,
       },
       {
         typeDefs: addPatientPrescriptionRecordsTypeDefs,
