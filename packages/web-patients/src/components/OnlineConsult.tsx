@@ -635,13 +635,8 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     <div className={classes.root}>
       <Scrollbars autoHide={true} autoHeight autoHeightMax={isSmallScreen ? '50vh' : '65vh'}>
         <div className={classes.customScrollBar}>
-<<<<<<< HEAD
-          <div className={classes.consultGroup}>
-            <p>{`${doctorName} is ${availabilityMarkup()}! Would you like to
-=======
           <div className={`${classes.consultGroup} ${classes.marBottomMedium}`}>
-            <p>{`Dr. ${doctorName} is ${availabilityMarkup()}! Would you like to
->>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
+            <p>{`${doctorName} is ${availabilityMarkup()}! Would you like to
                 consult now or schedule for later?`}</p>
             <div className={classes.actions}>
               <AphButton

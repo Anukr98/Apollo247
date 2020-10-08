@@ -9,12 +9,8 @@ import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { useAllCurrentPatients } from 'hooks/authHooks';
-<<<<<<< HEAD
-import { gtmTracking } from '../gtmTracking';
-=======
 import { gtmTracking, dataLayerTracking } from '../gtmTracking';
 // import { SearchObject } from 'components/DoctorsFilter';
->>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
 import { BottomLinks } from 'components/BottomLinks';
 import { PastSearches } from 'components/PastSearches';
 import { useAuth } from 'hooks/authHooks';

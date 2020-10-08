@@ -412,10 +412,7 @@ interface ConsultDoctorProfileProps {
   handleRescheduleOpen: any;
   srDoctorJoined: boolean;
   isConsultCompleted: boolean;
-<<<<<<< HEAD
-=======
   secretaryData: getSecretaryDetailsByDoctorId;
->>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
   setDisableActions: (disableActions: boolean) => void;
   disableActions: boolean;
 }
@@ -438,10 +435,7 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
     setRescheduleCount,
     handleRescheduleOpen,
     appointmentDetails,
-<<<<<<< HEAD
-=======
     secretaryData,
->>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
     setDisableActions,
     disableActions,
   } = props;
@@ -634,10 +628,6 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
               !appointmentDetails.isSeniorConsultStarted &&
               !props.isConsultCompleted &&
               !props.srDoctorJoined &&
-<<<<<<< HEAD
-              differenceInMinutes > 15 &&
-=======
->>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
               !disableActions && (
                 <div
                   onClick={() => setIsCancelPopoverOpen(true)}

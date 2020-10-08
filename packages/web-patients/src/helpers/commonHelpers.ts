@@ -1,23 +1,25 @@
-import { DEVICETYPE, ConsultMode } from 'graphql/types/globalTypes';
-import { GetDoctorDetailsById_getDoctorDetailsById_consultHours } from 'graphql/types/GetDoctorDetailsById';
-import moment from 'moment';
+import Axios, { AxiosResponse } from 'axios';
 import { GooglePlacesType } from 'components/LocationProvider';
-import { CouponCategoryApplicable } from 'graphql/types/globalTypes';
+import {
+  GetDoctorDetailsById_getDoctorDetailsById as DoctorDetails,
+  GetDoctorDetailsById_getDoctorDetailsById_consultHours,
+} from 'graphql/types/GetDoctorDetailsById';
+import { GetPatientByMobileNumber_getPatientByMobileNumber_patients as CurrentPatient } from 'graphql/types/GetPatientByMobileNumber';
+import {
+  ConsultMode,
+  CouponCategoryApplicable,
+  DEVICETYPE,
+  DoctorType,
+  MEDICINE_ORDER_STATUS,
+} from 'graphql/types/globalTypes';
+import { EXOTEL_CALL_URL, EXOTEL_X_API } from 'helpers/constants';
+import { getAppStoreLink } from 'helpers/dateHelpers';
+import fetchUtil from 'helpers/fetch';
+import { MedicineProductDetails } from 'helpers/MedicineApiCalls';
 import _lowerCase from 'lodash/lowerCase';
 import _upperFirst from 'lodash/upperFirst';
-<<<<<<< HEAD
-import { MEDICINE_ORDER_STATUS } from 'graphql/types/globalTypes';
-import Axios, { AxiosResponse, Canceler } from 'axios';
-=======
-import { MEDICINE_ORDER_STATUS, DoctorType } from 'graphql/types/globalTypes';
->>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
-import { MedicineProductDetails } from 'helpers/MedicineApiCalls';
-import { EXOTEL_CALL_URL, EXOTEL_X_API } from 'helpers/constants';
-import fetchUtil from 'helpers/fetch';
-import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
-import { GetPatientByMobileNumber_getPatientByMobileNumber_patients as CurrentPatient } from 'graphql/types/GetPatientByMobileNumber';
+import moment from 'moment';
 
-import { getAppStoreLink } from 'helpers/dateHelpers';
 declare global {
   interface Window {
     opera: any;
@@ -586,7 +588,6 @@ const deepLinkUtil = (deepLinkPattern: string) => {
   }
 };
 
-<<<<<<< HEAD
 const isAlternateVersion = () => {
   // the below lines are written to init app in another mode variant=2 -> marketing requirements
   const urlString = window.location.href;
@@ -594,9 +595,7 @@ const isAlternateVersion = () => {
   const alternateVariant = url.searchParams.get('variant');
   return alternateVariant && alternateVariant === '2' ? true : false;
 };
-export {
-  isAlternateVersion,
-=======
+
 const isPrime = (num: number) => {
   for (let i = 2; i < num; i++) if (num % i === 0) return false;
   return num > 1;
@@ -620,8 +619,9 @@ export {
   disablingActionsTimeBeforeConsultation,
   brandList,
   getSlidesToScroll,
->>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
   deepLinkUtil,
+  isDivisibleByTwo,
+  isAlternateVersion,
   HEALTH_RECORDS_NO_DATA_FOUND,
   removeGraphQLKeyword,
   getCouponByUserMobileNumber,

@@ -183,15 +183,7 @@ export const InfoCard: React.FC<InfoCardProps> = (props) => {
   const [popupLoading, setPopupLoading] = useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const doctorValue = doctorInfo.displayName.toLowerCase();
-<<<<<<< HEAD
-  const specialityName =
-    doctorInfo &&
-    doctorInfo.specialty &&
-    doctorInfo.specialty.name &&
-    doctorInfo.specialty.name.toLowerCase();
-=======
   const specialityName = doctorInfo && doctorInfo.specialistSingularTerm.toLowerCase();
->>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
 
   const availabilityMarkupString = (type: string) =>
     doctorInfo.slot ? getAvailability(doctorInfo.slot, differenceInMinutes, type) : '';

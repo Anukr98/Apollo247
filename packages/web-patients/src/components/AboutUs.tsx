@@ -84,10 +84,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 const AboutUs: React.FC = () => {
-<<<<<<< HEAD
-=======
   const classes = useStyles({});
-
   useEffect(() => {
     /**Gtm code start start */
     dataLayerTracking({
@@ -100,9 +97,7 @@ const AboutUs: React.FC = () => {
     /**Gtm code start end */
   }, []);
 
->>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
   const [metaTagProps, setMetaTagProps] = useState(null);
-  const classes = useStyles({});
   useEffect(() => {
     setMetaTagProps({
       title: 'Official Apollo Website for Online Medicines & Consultations - About Apollo 247',

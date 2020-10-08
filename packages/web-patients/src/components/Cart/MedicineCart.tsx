@@ -1001,7 +1001,6 @@ export const MedicineCart: React.FC = (props) => {
     validateCouponResult.discount >= productDiscount
       ? Number(cartTotal) - couponDiscount
       : Number(cartTotal);
-<<<<<<< HEAD
   const deliveryCharges = freeDelivery
     ? 0
     : modifiedAmountForCharges >= Number(pharmacyMinDeliveryValue) ||
@@ -1009,15 +1008,6 @@ export const MedicineCart: React.FC = (props) => {
       tabValue === 1
     ? 0
     : Number(pharmacyDeliveryCharges);
-=======
-
-  const deliveryCharges =
-    modifiedAmountForCharges >= Number(pharmacyMinDeliveryValue) ||
-    modifiedAmountForCharges <= 0 ||
-    tabValue === 1
-      ? 0
-      : Number(pharmacyDeliveryCharges);
->>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
   const totalAmount = (cartTotal + Number(deliveryCharges)).toFixed(2);
   const totalWithCouponDiscount =
     validateCouponResult &&
@@ -2026,9 +2016,7 @@ export const MedicineCart: React.FC = (props) => {
               )}
               <div className={classes.oneApolloDetails}>
                 <img src={require('images/one-apollo.svg')} width="30" alt="One Apollo" />
-                <Typography>
-                  {ConfigOneApolloData.medicineCartString}
-                </Typography>
+                <Typography>{ConfigOneApolloData.medicineCartString}</Typography>
               </div>
             </div>
           </Scrollbars>

@@ -1001,13 +1001,14 @@ export const GET_LAB_RESULT_PDF = gql`
   }
 `;
 
-<<<<<<< HEAD
 export const IDENTIFY_HDFC_CUSTOMER = gql`
   query identifyHdfcCustomer($mobile_number: String!, $DOB: Date!) {
     identifyHdfcCustomer(mobileNumber: $mobile_number, DOB: $DOB) {
       status
       token
-=======
+    }
+  }
+`;
 export const UPDATE_WHATSAPP_STATUS = gql`
   mutation UpdateWhatsAppStatus(
     $whatsAppMedicine: Boolean
@@ -1020,12 +1021,10 @@ export const UPDATE_WHATSAPP_STATUS = gql`
       patientId: $patientId
     ) {
       status
->>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
     }
   }
 `;
 
-<<<<<<< HEAD
 export const VALIDATE_HDFC_OTP = gql`
   query validateHdfcOTP($otp: String!, $token: String!, $dateOfBirth: Date!) {
     validateHdfcOTP(otp: $otp, token: $token, dateOfBirth: $dateOfBirth) {
@@ -1083,7 +1082,9 @@ export const INITIATE_CALL_FOR_PARTNER = gql`
   query initiateCallForPartner($mobileNumber: String!, $benefitId: String!) {
     initiateCallForPartner(mobileNumber: $mobileNumber, benefitId: $benefitId) {
       success
-=======
+    }
+  }
+`;
 export const GET_ONEAPOLLO_USERTXNS = gql`
   query getOneApolloUserTransactions {
     getOneApolloUserTransactions {
@@ -1094,7 +1095,6 @@ export const GET_ONEAPOLLO_USERTXNS = gql`
       transactionDate
       businessUnit
       redeemedHC
->>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
     }
   }
 `;

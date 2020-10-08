@@ -40,9 +40,6 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import { GET_APPOINTMENT_DATA } from 'graphql/consult';
 import { GetAppointmentData, GetAppointmentDataVariables } from 'graphql/types/GetAppointmentData';
 import { GetAppointmentData_getAppointmentData_appointmentsHistory as AppointmentHistory } from 'graphql/types/GetAppointmentData';
-<<<<<<< HEAD
-import { removeGraphQLKeyword, getDiffInMinutes } from 'helpers/commonHelpers';
-=======
 import { removeGraphQLKeyword } from 'helpers/commonHelpers';
 import {
   getSecretaryDetailsByDoctorId,
@@ -50,7 +47,6 @@ import {
 } from 'graphql/types/getSecretaryDetailsByDoctorId';
 import { reschedulePatientTracking } from 'webEngageTracking';
 import { dataLayerTracking } from 'gtmTracking';
->>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -533,10 +529,7 @@ const ChatRoom: React.FC = () => {
   const [reschedulesRemaining, setReschedulesRemaining] = useState<number | null>(null);
   const [isConsultCompleted, setIsConsultCompleted] = useState<boolean>(false);
   const [disableActions, setDisableActions] = useState<boolean>(false);
-<<<<<<< HEAD
-=======
 
->>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const patientId = (currentPatient && currentPatient.id) || '';
@@ -741,10 +734,7 @@ const ChatRoom: React.FC = () => {
                     appointmentDetails={appointmentDetails}
                     srDoctorJoined={srDoctorJoined}
                     isConsultCompleted={isConsultCompleted}
-<<<<<<< HEAD
-=======
                     secretaryData={secretaryData}
->>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
                     setDisableActions={setDisableActions}
                     disableActions={disableActions}
                   />
@@ -756,33 +746,16 @@ const ChatRoom: React.FC = () => {
                   {appointmentDetails &&
                     appointmentDetails.status !== STATUS.CANCELLED &&
                     appointmentDetails.status !== STATUS.COMPLETED &&
-<<<<<<< HEAD
-<<<<<<< HEAD
-                    getDiffInMinutes(appointmentDetails.appointmentDateTime) > 15 &&
-=======
->>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
-=======
                     !isConsultCompleted &&
->>>>>>> dd4424302c7871e5f39232d0300dfa52a9517f83
                     !disableActions &&
                     !srDoctorJoined && (
                       <div className={classes.headerActions}>
                         <AphButton
                           disabled={
-<<<<<<< HEAD
-                            disableActions ||
-                            appointmentDetails.isSeniorConsultStarted ||
-                            srDoctorJoined
-=======
                             appointmentDetails.isSeniorConsultStarted ||
                             srDoctorJoined ||
-<<<<<<< HEAD
-                            disableActions
->>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
-=======
                             disableActions ||
                             isConsultCompleted
->>>>>>> dd4424302c7871e5f39232d0300dfa52a9517f83
                           }
                           classes={{
                             root: classes.viewButton,

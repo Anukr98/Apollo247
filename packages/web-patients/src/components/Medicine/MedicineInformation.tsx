@@ -636,7 +636,6 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const checkDeliveryTime = (pinCode: string, sku: string) => {
     checkSkuAvailability(sku, pinCode)
       .then((res: any) => {
-<<<<<<< HEAD
         if (res && res.data && res.data.response && res.data.response.length > 0) {
           /** Webengage Tracking */
           const { exist, mrp, qty } = res.data.response[0];
@@ -656,21 +655,8 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
           } else {
             setDeliveryTime('');
             setErrorMessage(OUT_OF_STOCK_MESSAGE);
+            dataLayerTrackingFn(pincodeCity, pinCode, OUT_OF_STOCK_MESSAGE);
           }
-=======
-        if (
-          res &&
-          res.data &&
-          res.data.response &&
-          res.data.response.length > 0 &&
-          res.data.response[0].exist
-        ) {
-          fetchDeliveryTime(pinCode);
-        } else {
-          setDeliveryTime('');
-          setErrorMessage(OUT_OF_STOCK_MESSAGE);
-          dataLayerTrackingFn(pincodeCity, pinCode, OUT_OF_STOCK_MESSAGE);
->>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
         }
       })
       .catch((e) => {

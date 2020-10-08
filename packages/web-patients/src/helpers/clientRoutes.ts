@@ -75,12 +75,9 @@ export const clientRoutes = {
   covidProtocol: () => '/medical-condition',
   dietetics: () => 'specialties/dietetics',
   prescription: (appointmentId: string) => `/prescription/${appointmentId}`,
-<<<<<<< HEAD
   sitemap: (sitemap: string) => `/static/${sitemap}`,
   childSitemap: (sitemap: string, pageNo: string) => `/static/${sitemap}/${pageNo}`,
-=======
   oneApolloMembership: () => '/oneapollo-membership',
->>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
   // sitemap: (sitemap: string) => `/${sitemap}`,
   // childSitemap: (sitemap: string, pageNo: string) => `/${sitemap}/${pageNo}`,
 };
