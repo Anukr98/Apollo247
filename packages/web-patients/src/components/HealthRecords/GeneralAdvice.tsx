@@ -66,6 +66,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#0087ba',
       lineHeight: 1.43,
       minHeight: 84,
+      wordBreak: 'break-all',
       '& ol': {
         paddingLeft: 20,
         margin: 0,

@@ -46,6 +46,8 @@ import { HealthRecordsHome } from '@aph/mobile-patients/src/components/HealthRec
 import { ConsultDetails } from '@aph/mobile-patients/src/components/HealthRecords/ConsultDetails';
 import { RecordDetails } from '@aph/mobile-patients/src/components/HealthRecords/RecordDetails';
 import { HealthRecordDetails } from '@aph/mobile-patients/src/components/HealthRecords/HealthRecordDetails';
+import { SearchAppointmentScreen } from '@aph/mobile-patients/src/components/ConsultRoom/SearchAppointmentScreen';
+import { AppointmentFilterScene } from '@aph/mobile-patients/src/components/ConsultRoom/AppointmentFilterScene';
 import { SymptomChecker } from '@aph/mobile-patients/src/components/SymptomChecker';
 import { PaymentScene } from '@aph/mobile-patients/src/components/PaymentScene';
 import { MedicineConsultDetails } from '@aph/mobile-patients/src/components/HealthRecords/MedicineConsultDetails';
@@ -71,6 +73,8 @@ import { EditProfile } from '@aph/mobile-patients/src/components/Account/EditPro
 import { ManageProfile } from '@aph/mobile-patients/src/components/Account/ManageProfile';
 import { LinkUHID } from '@aph/mobile-patients/src/components/Account/LinkUHID';
 import { ReadMoreLinkUHID } from '@aph/mobile-patients/src/components/Account/ReadMoreLinkUHID';
+import { MyMembership } from '@aph/mobile-patients/src/components/HdfcSubscription/MyMembership';
+import { MembershipDetails } from '@aph/mobile-patients/src/components/HdfcSubscription/MembershipDetails';
 import { TestsByCategory } from '@aph/mobile-patients/src/components/Medicines/TestsByCategory';
 import { RenderPdf } from '@aph/mobile-patients/src/components/ui/RenderPdf';
 import { TestPayment } from '@aph/mobile-patients/src/components/Tests/TestPayment';
@@ -164,6 +168,8 @@ export enum AppRoutes {
   ManageProfile = 'ManageProfile',
   LinkUHID = 'LinkUHID',
   ReadMoreLinkUHID = 'ReadMoreLinkUHID',
+  MyMembership = 'MyMembership',
+  MembershipDetails = 'MembershipDetails',
   YourOrdersTest = 'YourOrdersTest',
   TestOrderDetails = 'TestOrderDetails',
   ClinicSelection = 'ClinicSelection',
@@ -190,6 +196,8 @@ export enum AppRoutes {
   SymptomTracker = 'SymptomTracker',
   SymptomSelection = 'SymptomSelection',
   Maps = 'Maps',
+  SearchAppointmentScreen = 'SearchAppointmentScreen',
+  AppointmentFilterScene = 'AppointmentFilterScene',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -423,6 +431,12 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.ReadMoreLinkUHID]: {
     screen: ReadMoreLinkUHID,
   },
+  [AppRoutes.MyMembership]: {
+    screen: MyMembership,
+  },
+  [AppRoutes.MembershipDetails]: {
+    screen: MembershipDetails,
+  },
   [AppRoutes.YourOrdersTest]: {
     screen: YourOrdersTest,
   },
@@ -498,6 +512,12 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.Maps]: {
     screen: Maps,
+  },
+  [AppRoutes.SearchAppointmentScreen]: {
+    screen: SearchAppointmentScreen,
+  },
+  [AppRoutes.AppointmentFilterScene]: {
+    screen: AppointmentFilterScene,
   },
 };
 

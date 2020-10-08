@@ -299,7 +299,7 @@ const DoctorsLanding: React.FC<DoctorsLandingProps> = (props) => {
           setLoading(false);
         });
     }
-  }, [filterOptions.searchKeyword, specialitySelected, currentPincode, data]);
+  }, [filterOptions.searchKeyword, specialitySelected, currentPincode]);
 
   useEffect(() => {
     if (specialitySelected.length > 0) {

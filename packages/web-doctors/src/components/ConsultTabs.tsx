@@ -394,8 +394,8 @@ export const ConsultTabs: React.FC = () => {
   const [startConsult, setStartConsult] = useState<string>('');
 
   const [isPdfPageOpen, setIsPdfPageOpen] = useState<boolean>(false);
-  const [sessionId, setsessionId] = useState<string>('');
-  const [token, settoken] = useState<string>('');
+  // const [sessionId, setsessionId] = useState<string>('');
+  // const [token, settoken] = useState<string>('');
   const [appointmentDateTime, setappointmentDateTime] = useState<string>('');
   const [sdConsultationDate, setSdConsultationDate] = useState<string>('');
   const [doctorId, setdoctorId] = useState<string>(currentPatient ? currentPatient.id : '');
@@ -537,6 +537,7 @@ export const ConsultTabs: React.FC = () => {
       //withPresence: true,
     });
     getHistory(0);
+    console.log('messages in use Effect call', messages);
     pubnub.addListener({
       status(statusEvent: any) {},
       message(message: any) {
@@ -639,30 +640,21 @@ export const ConsultTabs: React.FC = () => {
         console.log(`${eventType} webengage event registerd.`);
       })
       .catch((e: any) => {
+        webEngageEventTracking(
+          {
+            'API name': 'PostDoctorConsultEvent',
+            'ErrorDetails': JSON.stringify(e),
+            'Consultation Display ID': displayId,
+            'Consult ID': appointmentId,
+          },
+          'Front_end - Doctor API-Error on Casesheet'
+        );
         console.log(`${eventType} webengage event registration failed.`);
-        const patientName =
-          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
-          ' ' +
-          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
-        const logObject = {
-          api: 'PostDoctorConsultEvent',
-          inputParam: JSON.stringify(inputParam),
-          appointmentId: appointmentId,
-          doctorId: currentPatient!.id,
-          doctorDisplayName: currentPatient!.displayName,
-          patientId: params.patientId,
-          patientName: patientName,
-          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
-          appointmentDateTime: moment(new Date(appointmentDateTime)).format(
-            'MMMM DD YYYY h:mm:ss a'
-          ),
-          error: JSON.stringify(error),
-        };
-
-        sessionClient.notify(JSON.stringify(logObject));
       });
   };
   const getPrismUrls = (client: ApolloClient<object>, patientId: string, fileIds: string[]) => {
+    console.log('In get Prism Url', { patientId: patientId, fileIds: fileIds });
+
     return new Promise((res, rej) => {
       client
         .query<downloadDocuments>({
@@ -684,6 +676,7 @@ export const ConsultTabs: React.FC = () => {
     });
   };
   const getHistory = (timetoken: number) => {
+    console.log('In get history, about to fetch response from pubnub with time token', timetoken);
     pubnub.history(
       {
         channel: appointmentId,
@@ -694,6 +687,7 @@ export const ConsultTabs: React.FC = () => {
       },
       (status: any, res: any) => {
         const newmessage: MessagesObjectProps[] = messages;
+        console.log('In get history, response from pubnub', res);
         res.messages.forEach((element: any, index: number) => {
           const item = element.entry;
           if (item.prismId) {
@@ -710,6 +704,7 @@ export const ConsultTabs: React.FC = () => {
         const end: number = res.endTimeToken ? res.endTimeToken : 1;
         if (res.messages.length == 100) {
           getHistory(end);
+          console.log('In If of gethistory in consult tab');
         }
       }
     );
@@ -749,6 +744,15 @@ export const ConsultTabs: React.FC = () => {
       }
     })
     .catch((e) => {
+      webEngageEventTracking(
+        {
+          'API name': 'SetAndGetNumberOfParticipants',
+          'ErrorDetails': JSON.stringify(e),
+          'Consultation Display ID': getCookieValue('displayId'),
+          'Consult ID': appointmentId,
+        },
+        'Front_end - Doctor API-Error on Casesheet'
+      );
       console.log(e, 'error occured in SetAndGetNumberOfParticipants api');
     });
   }
@@ -760,25 +764,15 @@ export const ConsultTabs: React.FC = () => {
         window.location.href = clientRoutes.ConsultTabs(appointmentId, patientId, String(tabValue));
       })
       .catch((e: ApolloError) => {
-        const patientName =
-          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
-          ' ' +
-          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
-        const logObject = {
-          api: 'CreateSeniorDoctorCaseSheet',
-          appointmentId: appointmentId,
-          doctorId: currentPatient!.id,
-          doctorDisplayName: currentPatient!.displayName,
-          patientId: params.patientId,
-          patientName: patientName,
-          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
-          appointmentDateTime: appointmentDateTime
-            ? moment(new Date(appointmentDateTime)).format('MMMM DD YYYY h:mm:ss a')
-            : '',
-          error: JSON.stringify(e),
-        };
-
-        sessionClient.notify(JSON.stringify(logObject));
+        webEngageEventTracking(
+          {
+            'API name': 'CreateSeniorDoctorCaseSheet',
+            'ErrorDetails': JSON.stringify(e),
+            //'Consultation Display ID': webengageConsultTrackingObject.appointmentDisplayId,
+            'Consult ID': appointmentId,
+          },
+          'Front_end - Doctor API-Error on Casesheet'
+        );
         setError('Unable to load Consult.');
       });
   };
@@ -1151,6 +1145,16 @@ export const ConsultTabs: React.FC = () => {
           if (isCasesheetNotExists) {
             //setError('Creating Casesheet. Please wait....');
             createSDCasesheetCall(true);
+          }else{
+            webEngageEventTracking(
+              {
+                'API name': 'GetCaseSheet',
+                'ErrorDetails': JSON.stringify(error),
+                //'Consultation Display ID': webengageConsultTrackingObject.appointmentDisplayId,
+                'Consult ID': appointmentId,
+              },
+              'Front_end - Doctor API-Error on Casesheet'
+            );
           }
           const isUnauthorized = allMessages.includes(AphErrorMessages.UNAUTHORIZED);
           if (isUnauthorized) setIsUnauthorized(true);
@@ -1454,25 +1458,15 @@ export const ConsultTabs: React.FC = () => {
           }
         })
         .catch((error: ApolloError) => {
-          const patientName =
-            casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
-            ' ' +
-            casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
-          const logObject = {
-            api: 'GetJuniorDoctorCaseSheet',
-            appointmentId: appointmentId,
-            doctorId: currentPatient!.id,
-            doctorDisplayName: currentPatient!.displayName,
-            patientId: params.patientId,
-            patientName: patientName,
-            currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
-            appointmentDateTime: moment(new Date(appointmentDateTime)).format(
-              'MMMM DD YYYY h:mm:ss a'
-            ),
-            error: JSON.stringify(error),
-          };
-
-          sessionClient.notify(JSON.stringify(logObject));
+          webEngageEventTracking(
+            {
+              'API name': 'GetJuniorDoctorCaseSheet',
+              'ErrorDetails': JSON.stringify(error),
+              //'Consultation Display ID': webengageConsultTrackingObject.appointmentDisplayId,
+              'Consult ID': appointmentId,
+            },
+            'Front_end - Doctor API-Error on Casesheet'
+          );
           const networkErrorMessage = error.networkError ? error.networkError.message : null;
           const allMessages = error.graphQLErrors
             .map((e) => e.message)
@@ -1529,39 +1523,22 @@ export const ConsultTabs: React.FC = () => {
         }
       })
       .catch((error: ApolloError) => {
-        const patientName =
-          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
-          ' ' +
-          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
-        const logObject = {
-          api: 'SendCallNotification',
-          inputParam: JSON.stringify({
-            appointmentId: appointmentId,
-            patientId: patientId,
-            callType: callType,
-            doctorType: DOCTOR_CALL_TYPE.SENIOR,
-            deviceType: DEVICETYPE.DESKTOP,
-            callSource: BOOKINGSOURCE.WEB,
-          }),
-          appointmentId: appointmentId,
-          doctorId: currentPatient!.id,
-          doctorDisplayName: currentPatient!.displayName,
-          patientId: params.patientId,
-          patientName: patientName,
-          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
-          appointmentDateTime: moment(new Date(appointmentDateTime)).format(
-            'MMMM DD YYYY h:mm:ss a'
-          ),
-          error: JSON.stringify(error),
-        };
-
-        sessionClient.notify(JSON.stringify(logObject));
+        webEngageEventTracking(
+          {
+            'API name': 'SendCallNotification',
+            'ErrorDetails': JSON.stringify(error),
+            'Consultation Display ID': webengageConsultTrackingObject.appointmentDisplayId,
+            'Consult ID': appointmentId,
+          },
+          'Front_end - Doctor API-Error on Casesheet'
+        );
         console.log('An error occurred while sending notification to Client.');
       });
   };
 
   const sendCallNotificationFn = (callType: APPT_CALL_TYPE, isCall: boolean) => {
     pubnubPresence((patient: number, doctor: number) => {
+      console.log('Inside sendCallNotificationFn', { patient, doctor, sum: patient + doctor });
       sendCallNotificationFnWithCheck(callType, isCall, patient + doctor);
     });
   };
@@ -1637,29 +1614,15 @@ export const ConsultTabs: React.FC = () => {
         setUrlToPatient(true);
       })
       .catch((e) => {
-        const patientName =
-          casesheetInfo.getCaseSheet.patientDetails.firstName +
-          ' ' +
-          casesheetInfo.getCaseSheet.patientDetails.lastName;
-        const logObject = {
-          api: 'UpdatePatientPrescriptionSentStatus',
-          inputParam: JSON.stringify({
-            caseSheetId: caseSheetId,
-            sentToPatient: true,
-          }),
-          appointmentId: appointmentId,
-          doctorId: currentPatient!.id,
-          doctorDisplayName: currentPatient!.displayName,
-          patientId: params.patientId,
-          patientName: patientName,
-          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
-          appointmentDateTime: moment(new Date(appointmentDateTime)).format(
-            'MMMM DD YYYY h:mm:ss a'
-          ),
-          error: JSON.stringify(error),
-        };
-
-        sessionClient.notify(JSON.stringify(logObject));
+        webEngageEventTracking(
+          {
+            'API name': 'createSessionAction',
+            'ErrorDetails': JSON.stringify(e),
+            'Consultation Display ID': webengageConsultTrackingObject.appointmentDisplayId,
+            'Consult ID': appointmentId,
+          },
+          'Front_end - Doctor API-Error on Prescription Preview'
+        );
         alert('Error occured while sending prescription to patient');
         console.log('Error occured while sending prescription to patient', e);
         setSaving(false);
@@ -1795,24 +1758,17 @@ export const ConsultTabs: React.FC = () => {
               ? JSON.parse(JSON.stringify(e))
               : 'Error occured while update casesheet';
             const errorMessage = e ? error.message : error;
-
             console.error('Error occured while update casesheet', e);
+            webEngageEventTracking(
+              {
+                'API name': 'ModifyCaseSheet',
+                'ErrorDetails': JSON.stringify(e),
+                'Consultation Display ID': webengageConsultTrackingObject.appointmentDisplayId,
+                'Consult ID': appointmentId,
+              },
+              'Front_end - Doctor API-Error on Casesheet'
+            );
             alert(errorMessage);
-            const logObject = {
-              api: 'ModifyCaseSheet',
-              inputParam: JSON.stringify(inputVariables),
-              appointmentId: appointmentId,
-              doctorId: currentPatient!.id,
-              doctorDisplayName: currentPatient!.displayName,
-              patientId: params.patientId,
-              currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
-              appointmentDateTime: moment(new Date(appointmentDateTime)).format(
-                'MMMM DD YYYY h:mm:ss a'
-              ),
-              error: e ? JSON.stringify(e) : 'Error occured while update casesheet',
-            };
-
-            sessionClient.notify(JSON.stringify(logObject));
           }
         });
     } catch (error) {
@@ -1881,29 +1837,15 @@ export const ConsultTabs: React.FC = () => {
         setIsPdfPageOpen(true);
       })
       .catch((e) => {
-        const patientName =
-          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
-          ' ' +
-          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
-        const logObject = {
-          api: 'EndAppointmentSession',
-          inputParam: JSON.stringify({
-            appointmentId: appointmentId,
-            status: STATUS.COMPLETED,
-          }),
-          appointmentId: appointmentId,
-          doctorId: currentPatient!.id,
-          doctorDisplayName: currentPatient!.displayName,
-          patientId: params.patientId,
-          patientName: patientName,
-          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
-          appointmentDateTime: moment(new Date(appointmentDateTime)).format(
-            'MMMM DD YYYY h:mm:ss a'
-          ),
-          error: JSON.stringify(e),
-        };
-
-        sessionClient.notify(JSON.stringify(logObject));
+        webEngageEventTracking(
+          {
+            'API name': 'EndAppointmentSession',
+            'ErrorDetails': JSON.stringify(e),
+            'Consultation Display ID': webengageConsultTrackingObject.appointmentDisplayId,
+            'Consult ID': appointmentId,
+          },
+          'Front_end - Doctor API-Error on Casesheet'
+        );
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
         console.log('Error occured while End casesheet', errorMessage, error);
@@ -1926,36 +1868,22 @@ export const ConsultTabs: React.FC = () => {
       .then((_data: any) => {
         getSetNumberOfParticipants(paramId, USER_STATUS.ENTERING);
         setAppointmentStatus(STATUS.IN_PROGRESS);
-        setsessionId(_data.data.createAppointmentSession.sessionId);
-        settoken(_data.data.createAppointmentSession.appointmentToken);
+        // setsessionId(_data.data.createAppointmentSession.sessionId);
+        // settoken(_data.data.createAppointmentSession.appointmentToken);
         sendCallNotificationFn(APPT_CALL_TYPE.CHAT, false);
         setError('');
         setSaving(false);
       })
       .catch((e: any) => {
-        const patientName =
-          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
-          ' ' +
-          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
-        const logObject = {
-          api: 'CreateAppointmentSession',
-          inputParam: JSON.stringify({
-            appointmentId: paramId,
-            requestRole: REQUEST_ROLES.DOCTOR,
-          }),
-          appointmentId: appointmentId,
-          doctorId: currentPatient!.id,
-          doctorDisplayName: currentPatient!.displayName,
-          patientId: params.patientId,
-          patientName: patientName,
-          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
-          appointmentDateTime: moment(new Date(appointmentDateTime)).format(
-            'MMMM DD YYYY h:mm:ss a'
-          ),
-          error: JSON.stringify(error),
-        };
-
-        sessionClient.notify(JSON.stringify(logObject));
+        webEngageEventTracking(
+          {
+            'API name': 'createSessionAction',
+            'ErrorDetails': JSON.stringify(e),
+            'Consultation Display ID': webengageConsultTrackingObject.appointmentDisplayId,
+            'Consult ID': appointmentId,
+          },
+          'Front_end - Doctor API-Error on Casesheet'
+        );
         setError('Error occured creating session');
         console.log('Error occured creating session', e);
         setSaving(false);
@@ -1988,33 +1916,22 @@ export const ConsultTabs: React.FC = () => {
         },
       })
       .catch((error: ApolloError) => {
-        const patientName =
-          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.firstName +
-          ' ' +
-          casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.lastName;
-        const logObject = {
-          api: 'EndCallNotification',
-          inputParam: JSON.stringify({
-            appointmentCallId: isCall ? callId : chatRecordId,
-          }),
-          appointmentId: appointmentId,
-          doctorId: currentPatient!.id,
-          doctorDisplayName: currentPatient!.displayName,
-          patientId: params.patientId,
-          patientName: patientName,
-          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
-          appointmentDateTime: moment(new Date(appointmentDateTime)).format(
-            'MMMM DD YYYY h:mm:ss a'
-          ),
-          error: JSON.stringify(error),
-        };
-        sessionClient.notify(JSON.stringify(logObject));
+        webEngageEventTracking(
+          {
+            'API name': 'EndCallNotification',
+            'ErrorDetails': JSON.stringify(error),
+            'Consultation Display ID': webengageConsultTrackingObject.appointmentDisplayId,
+            'Consult ID': appointmentId,
+          },
+          'Front_end - Doctor API-Error on Casesheet'
+        );
         console.log('Error in Call Notification', error.message);
       });
   };
 
   const endCallNotificationAction = (isCall: boolean) => {
     pubnubPresence((patient: number, doctor: number) => {
+      console.log('Inside endCallNotificationAction', { patient, doctor, sum: patient + doctor });
       endCallNotificationActionCheckFn(isCall, patient + doctor);
     });
   };
@@ -2025,7 +1942,7 @@ export const ConsultTabs: React.FC = () => {
       .then((response: any) => {
         console.log({ pubnubHereNowResponse: response });
         const occupants = response.channels[appointmentId].occupants;
-        let doctorCount = 0;
+        let doctorCount = 1;
         let paientsCount = 0;
         occupants.forEach((item: any) => {
           if (item.uuid.indexOf('PATIENT') > -1) {
@@ -2034,6 +1951,7 @@ export const ConsultTabs: React.FC = () => {
             doctorCount = 1;
           }
         });
+        console.log('Inside hereNow', { doctorCount, paientsCount });
         callBack(paientsCount, doctorCount);
       })
       .catch((error) => {
@@ -2072,6 +1990,15 @@ export const ConsultTabs: React.FC = () => {
         alert('Thank you for sharing your reviews.');
       })
       .catch((e: any) => {
+        webEngageEventTracking(
+          {
+            'API name': 'saveAppointmentCallFeedback',
+            'ErrorDetails': JSON.stringify(e),
+            'Consultation Display ID': webengageConsultTrackingObject.appointmentDisplayId,
+            'Consult ID': appointmentId,
+          },
+          'Front_end - Doctor API-Error on Casesheet'
+        );
         alert('Error in giving feedback. Please try again!');
       });
   };
@@ -2234,8 +2161,8 @@ export const ConsultTabs: React.FC = () => {
               urlToPatient={urlToPatient}
               caseSheetId={caseSheetId}
               prescriptionPdf={prescriptionPdf}
-              sessionId={sessionId}
-              token={token}
+              // sessionId={sessionId}
+              // token={token}
               startAppointment={startAppointment}
               casesheetInfo={casesheetInfo}
               startAppointmentClick={startAppointmentClick}
@@ -2315,8 +2242,8 @@ export const ConsultTabs: React.FC = () => {
                     <div className={classes.chatContainer}>
                       <ConsultRoom
                         startConsult={startConsult}
-                        sessionId={sessionId}
-                        token={token}
+                        // sessionId={sessionId}
+                        // token={token}
                         appointmentId={paramId}
                         doctorId={doctorId}
                         patientId={patientId}

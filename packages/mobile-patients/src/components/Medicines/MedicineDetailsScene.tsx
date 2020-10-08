@@ -220,6 +220,8 @@ const styles = StyleSheet.create({
   stickyBottomComponent: { height: 'auto', flexDirection: 'column' },
 });
 
+type PharmacyTatApiCalled = WebEngageEvents[WebEngageEventName.PHARMACY_TAT_API_CALLED]
+
 export type ProductPageViewedEventProps = Pick<
   WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED],
   'Category ID' | 'Category Name' | 'Section Name'
@@ -242,6 +244,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     {} as MedicineProductDetails
   );
   const client = useApolloClient();
+  const [tatEventData, setTatEventData] = useState<PharmacyTatApiCalled>();
   const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
   const pharmacyPincode = g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
@@ -410,6 +413,32 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     }
   }, [deliveryTime, deliveryError]);
 
+  useEffect(() => {
+    try {
+      if (medicineDetails?.price && tatEventData) {
+        const eventAttributes: PharmacyTatApiCalled = {
+          ...tatEventData,
+          Input_MRP: medicineDetails.price,
+          Response_MRP: tatEventData.Response_MRP * Number(medicineDetails.mou || 1),
+        };
+        postWebEngageEvent(WebEngageEventName.PHARMACY_TAT_API_CALLED, eventAttributes);
+      }
+    } catch (error) {}
+  }, [medicineDetails, tatEventData]);
+
+  const productViewWebengage = (stockAvailability: boolean) => {
+    if (typeof movedFrom !== 'undefined' && typeof isOutOfStock !== 'undefined') {
+      // webengage event when page is opened from different sources
+      const eventAttributes: WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED] = {
+        source: movedFrom,
+        ProductId: sku,
+        ProductName: medicineName,
+        'Stock availability': stockAvailability ? 'Yes' : 'No',
+      };
+      postWebEngageEvent(WebEngageEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
+    }
+  };
+
   const trackTagalysViewEvent = (details: MedicineProductDetails) => {
     try {
       trackTagalysEvent(
@@ -486,6 +515,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   };
 
   const fetchDeliveryTime = async (checkButtonClicked?: boolean) => {
+    let stockAvailability = true;
     if (!pincode) return;
     const unServiceableMsg = 'Sorry, not serviceable in your area.';
     const pincodeServiceableItemOutOfStockMsg = 'Sorry, this item is out of stock in your area.';
@@ -509,16 +539,38 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         setdeliveryTime('');
         setdeliveryError(unServiceableMsg);
         setshowDeliverySpinner(false);
+        // call webengage event function for stock availability
+        if (!checkButtonClicked) {
+          productViewWebengage(false);
+        }
         return;
       }
 
-      const checkAvailabilityRes = await availabilityApi247(pincode, sku);
-      const outOfStock = !!!checkAvailabilityRes?.data?.response[0]?.exist;
-
+      const checkAvailabilityRes = await availabilityApi247(pincode, sku)
+      const outOfStock = !(!!(checkAvailabilityRes?.data?.response[0]?.exist))
+      try {
+        const { mrp, exist, qty } = checkAvailabilityRes.data.response[0];
+        const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED] = {
+          Source: 'PDP',
+          Input_SKU: sku,
+          Input_Pincode: pincode,
+          Input_MRP: medicineDetails?.price,
+          No_of_items_in_the_cart: 1,
+          Response_Exist: exist ? 'Yes' : 'No',
+          Response_MRP: mrp,
+          Response_Qty: qty,
+        };
+        postWebEngageEvent(WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED, eventAttributes);
+      } catch (error) {}
+     
       if (outOfStock) {
         setdeliveryTime('');
         setdeliveryError(pincodeServiceableItemOutOfStockMsg);
         setshowDeliverySpinner(false);
+        // call webengage event function for stock availability
+        if (!checkButtonClicked) {
+          productViewWebengage(false);
+        }
         return;
       }
 
@@ -543,7 +595,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       }
 
       getDeliveryTAT247({
-        items: [{ sku: sku, qty: getItemQuantity(sku) }],
+        items: [{ sku: sku, qty: getItemQuantity(sku) || 1 }],
         pincode: pincode,
         lat: lattitude,
         lng: longitude,
@@ -575,7 +627,38 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           } else {
             setdeliveryError(pincodeServiceableItemOutOfStockMsg);
             setdeliveryTime('');
+          stockAvailability = false;
           }
+          if (!checkButtonClicked) {
+            productViewWebengage(stockAvailability);
+          }
+  
+            try {
+              const response = res.data.response;
+              const item = response.items[0];
+              const eventAttributes: PharmacyTatApiCalled = {
+                Source: 'PDP',
+                Input_sku: sku,
+                Input_qty: getItemQuantity(sku) || 1,
+                Input_lat: lattitude,
+                Input_long: longitude,
+                Input_pincode: pincode,
+                Input_MRP: medicineDetails?.price, // overriding this value after PDP API call
+                No_of_items_in_the_cart: 1,
+                Response_Exist: item.exist ? 'Yes' : 'No',
+                Response_MRP: item.mrp, // overriding this value after PDP API call
+                Response_Qty: item.qty,
+                Response_lat: response.lat,
+                Response_lng: response.lng,
+                Response_ordertime: response.ordertime,
+                Response_pincode: `${response.pincode}`,
+                Response_storeCode: response.storeCode,
+                Response_storeType: response.storeType,
+                Response_tat: response.tat,
+                Response_tatU: response.tatU,
+              };
+              setTatEventData(eventAttributes);
+            } catch (error) {}
         })
         .catch(() => {
           // Intentionally show T+2 days as Delivery Date
@@ -587,7 +670,11 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       // in case user entered wrong pincode, not able to get lat lng. showing out of stock to user
       setdeliveryError(pincodeServiceableItemOutOfStockMsg);
       setdeliveryTime('');
-      setshowDeliverySpinner(false);
+      setshowDeliverySpinner(false)
+      // call webengage event function for stock availability
+      if (!checkButtonClicked) {
+        productViewWebengage(false);
+      }
     }
   };
 

@@ -318,6 +318,7 @@ export const HealthVault: React.FC = () => {
       };
       appointmentDocuments && appointmentDocuments.push(data as appointmentDocumentType);
       setDocumentArray((null as unknown) as appointmentDocumentType);
+      console.log('In use effect (without []) of health vault');
     }
   });
   const downloadDocumentsInputVariable = {
@@ -326,6 +327,7 @@ export const HealthVault: React.FC = () => {
   };
   useEffect(() => {
     if (downloadDocumentsInputVariable.patientId) {
+      console.log('calling download doc in use effect(1st render) of health vault');
       client
         .query<downloadDocuments>({
           query: DOWNLOAD_DOCUMENTS,
@@ -362,6 +364,7 @@ export const HealthVault: React.FC = () => {
               onClose={handleChange}
               onChange={handleChange}
               documents={appointmentDocuments}
+              appointmentDate={appointmentInfo.appointmentDateTime}
             />
           )}
 
@@ -427,6 +430,9 @@ export const HealthVault: React.FC = () => {
                 {`${!loading && prismImageList && prismImageList.length === 0 && 'No data Found'}`}{' '}
               </span>
             )}
+            {console.log('prism Image List value', prismImageList)}
+            {console.log('appointmentDocuments List value', appointmentDocuments)}
+
             {!loading &&
               prismImageList &&
               prismImageList.length > 0 &&

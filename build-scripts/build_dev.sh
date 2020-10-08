@@ -11,6 +11,7 @@ rm -rfv packages/universal/dist/* || exit 2
 
 echo -e "\nrunning bootstrap:web..."
 npm run bootstrap:web || exit 2
+
 echo "\n Building api-gateway..."
 
 echo -e "\nrunning migration..."

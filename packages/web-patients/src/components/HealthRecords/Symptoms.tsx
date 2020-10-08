@@ -67,6 +67,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#0087ba',
       lineHeight: 1.43,
       minHeight: 84,
+      wordBreak: 'break-all',
     },
     bottomActions: {
       paddingTop: 20,

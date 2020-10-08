@@ -21,7 +21,7 @@ import Geolocation from '@react-native-community/geolocation';
 import NetInfo from '@react-native-community/netinfo';
 import moment from 'moment';
 import AsyncStorage from '@react-native-community/async-storage';
-import { Alert, Dimensions, Platform, Linking } from 'react-native';
+import { Alert, Dimensions, Platform, Linking, NativeModules } from 'react-native';
 import RNAndroidLocationEnabler from 'react-native-android-location-enabler';
 import Permissions from 'react-native-permissions';
 import { DiagnosticsCartItem } from '../components/DiagnosticsCartProvider';
@@ -76,6 +76,7 @@ import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAdd
 import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 import { handleUniversalLinks } from './UniversalLinks';
 
+const { RNAppSignatureHelper } = NativeModules;
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 let onInstallConversionDataCanceller: any;
 let onAppOpenAttributionCanceller: any;
@@ -464,6 +465,28 @@ export const getNetStatus = async () => {
       CommonBugFender('helperFunctions_getNetStatus', e);
     });
   return status;
+};
+
+export const getDiffInDays = (nextAvailability: string) => {
+  if (nextAvailability) {
+    const nextAvailabilityTime = moment(new Date(nextAvailability));
+    const currentTime = moment(new Date());
+    const differenceInDays = nextAvailabilityTime.diff(currentTime, 'days');
+    return differenceInDays;
+  } else {
+    return 0;
+  }
+};
+
+export const getDiffInMinutes = (doctorAvailableSlots: string) => {
+  if (doctorAvailableSlots && doctorAvailableSlots.length > 0) {
+    const nextAvailabilityTime = moment(doctorAvailableSlots);
+    const currentTime = moment(new Date());
+    const differenceInMinutes = currentTime.diff(nextAvailabilityTime, 'minutes') * -1;
+    return differenceInMinutes + 1; // for some reason moment is returning 1 second less. so that 1 is added.;
+  } else {
+    return 0;
+  }
 };
 
 export const nextAvailability = (nextSlot: string, type: 'Available' | 'Consult' = 'Available') => {
@@ -920,11 +943,9 @@ export const getBuildEnvironment = () => {
     case 'https://aph.staging.api.popcornapps.com//graphql':
       return 'QA';
     case 'https://stagingapi.apollo247.com//graphql':
-      return 'STAGING';
+      return 'VAPT';
     case 'https://aph.uat.api.popcornapps.com//graphql':
       return 'UAT';
-    case 'https://aph.vapt.api.popcornapps.com//graphql':
-      return 'VAPT';
     case 'https://api.apollo247.com//graphql':
       return 'PROD';
     case 'https://asapi.apollo247.com//graphql':
@@ -1540,6 +1561,20 @@ export const addPharmaItemToCart = (
       } else {
         navigate();
       }
+      try {
+        const { mrp, exist, qty } = res.data.response[0];
+        const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED] = {
+          Source: setLoading ? 'Add_Display' : 'Add_Search',
+          Input_SKU: cartItem.id,
+          Input_Pincode: pincode,
+          Input_MRP: cartItem.price,
+          No_of_items_in_the_cart: 1,
+          Response_Exist: exist ? 'Yes' : 'No',
+          Response_MRP: mrp,
+          Response_Qty: qty,
+        };
+        postWebEngageEvent(WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED, eventAttributes);
+      } catch (error) {}
     })
     .catch(() => {
       addToCart();
@@ -1559,6 +1594,250 @@ export const dataSavedUserID = async (key: string) => {
 export const setWebEngageScreenNames = (screenName: string) => {
   webengage.screen(screenName);
 };
+
+export const overlyCallPermissions = (
+  patientName: string,
+  doctorName: string,
+  showAphAlert: any,
+  hideAphAlert: any,
+  isDissmiss: boolean,
+  callback?: () => void | null
+) => {
+  if (Platform.OS === 'android') {
+    Permissions.checkMultiple(['camera', 'microphone'])
+      .then((response) => {
+        console.log('Response===>', response);
+        const { camera, microphone } = response;
+        const cameraNo = camera === 'denied' || camera === 'undetermined';
+        const microphoneNo = microphone === 'denied' || microphone === 'undetermined';
+        const cameraYes = camera === 'authorized';
+        const microphoneYes = microphone === 'authorized';
+        // Response is one of: 'authorized', 'denied', 'restricted', or 'undetermined'
+        if (cameraNo && microphoneNo) {
+          RNAppSignatureHelper.isRequestOverlayPermissionGranted((status: any) => {
+            if (status) {
+              showAphAlert!({
+                unDismissable: isDissmiss,
+                title: `Hi ${patientName} :)`,
+                description: string.callRelatedPermissions.allPermissions.replace(
+                  '{0}',
+                  doctorName
+                ),
+                ctaContainerStyle: { justifyContent: 'flex-end' },
+                CTAs: [
+                  {
+                    text: 'OK, GOT IT',
+                    type: 'orange-link',
+                    onPress: () => {
+                      hideAphAlert!();
+                      callback && callback();
+                      callPermissions(() => {
+                        RNAppSignatureHelper.requestOverlayPermission();
+                      });
+                    },
+                  },
+                ],
+              });
+            } else {
+              showAphAlert!({
+                unDismissable: isDissmiss,
+                title: `Hi ${patientName} :)`,
+                description: string.callRelatedPermissions.camAndMPPermission.replace(
+                  '{0}',
+                  doctorName
+                ),
+                ctaContainerStyle: { justifyContent: 'flex-end' },
+                CTAs: [
+                  {
+                    text: 'OK, GOT IT',
+                    type: 'orange-link',
+                    onPress: () => {
+                      hideAphAlert!();
+                      callback && callback();
+                      callPermissions();
+                    },
+                  },
+                ],
+              });
+            }
+          });
+        } else if (cameraYes && microphoneNo) {
+          RNAppSignatureHelper.isRequestOverlayPermissionGranted((status: any) => {
+            if (status) {
+              showAphAlert!({
+                unDismissable: isDissmiss,
+                title: `Hi ${patientName} :)`,
+                description: string.callRelatedPermissions.mpAndOverlayPermission.replace(
+                  '{0}',
+                  doctorName
+                ),
+                ctaContainerStyle: { justifyContent: 'flex-end' },
+                CTAs: [
+                  {
+                    text: 'OK, GOT IT',
+                    type: 'orange-link',
+                    onPress: () => {
+                      hideAphAlert!();
+                      callback && callback();
+                      callPermissions(() => {
+                        RNAppSignatureHelper.requestOverlayPermission();
+                      });
+                    },
+                  },
+                ],
+              });
+            } else {
+              showAphAlert!({
+                unDismissable: isDissmiss,
+                title: `Hi ${patientName} :)`,
+                description: string.callRelatedPermissions.onlyMPPermission.replace(
+                  '{0}',
+                  doctorName
+                ),
+                ctaContainerStyle: { justifyContent: 'flex-end' },
+                CTAs: [
+                  {
+                    text: 'OK, GOT IT',
+                    type: 'orange-link',
+                    onPress: () => {
+                      hideAphAlert!();
+                      callback && callback();
+                      callPermissions();
+                    },
+                  },
+                ],
+              });
+            }
+          });
+        } else if (cameraNo && microphoneYes) {
+          RNAppSignatureHelper.isRequestOverlayPermissionGranted((status: any) => {
+            if (status) {
+              showAphAlert!({
+                unDismissable: isDissmiss,
+                title: `Hi ${patientName} :)`,
+                description: string.callRelatedPermissions.camAndOverlayPermission.replace(
+                  '{0}',
+                  doctorName
+                ),
+                ctaContainerStyle: { justifyContent: 'flex-end' },
+                CTAs: [
+                  {
+                    text: 'OK, GOT IT',
+                    type: 'orange-link',
+                    onPress: () => {
+                      hideAphAlert!();
+                      callback && callback();
+                      callPermissions(() => {
+                        RNAppSignatureHelper.requestOverlayPermission();
+                      });
+                    },
+                  },
+                ],
+              });
+            } else {
+              showAphAlert!({
+                unDismissable: isDissmiss,
+                title: `Hi ${patientName} :)`,
+                description: string.callRelatedPermissions.onlyCameraPermission.replace(
+                  '{0}',
+                  doctorName
+                ),
+                ctaContainerStyle: { justifyContent: 'flex-end' },
+                CTAs: [
+                  {
+                    text: 'OK, GOT IT',
+                    type: 'orange-link',
+                    onPress: () => {
+                      hideAphAlert!();
+                      callback && callback();
+                      callPermissions();
+                    },
+                  },
+                ],
+              });
+            }
+          });
+        } else if (cameraYes && microphoneYes) {
+          RNAppSignatureHelper.isRequestOverlayPermissionGranted((status: any) => {
+            if (status) {
+              showAphAlert!({
+                unDismissable: isDissmiss,
+                title: `Hi ${patientName} :)`,
+                description: string.callRelatedPermissions.onlyOverlayPermission.replace(
+                  '{0}',
+                  doctorName
+                ),
+                ctaContainerStyle: { justifyContent: 'flex-end' },
+                CTAs: [
+                  {
+                    text: 'OK, GOT IT',
+                    type: 'orange-link',
+                    onPress: () => {
+                      hideAphAlert!();
+                      callback && callback();
+                      RNAppSignatureHelper.requestOverlayPermission();
+                    },
+                  },
+                ],
+              });
+            }
+          });
+        }
+      })
+      .catch((e) => {});
+  } else {
+    Permissions.checkMultiple(['camera', 'microphone'])
+      .then((response) => {
+        const { camera, microphone } = response;
+        const cameraNo = camera === 'denied' || camera === 'undetermined';
+        const microphoneNo = microphone === 'denied' || microphone === 'undetermined';
+        const cameraYes = camera === 'authorized';
+        const microphoneYes = microphone === 'authorized';
+        // Response is one of: 'authorized', 'denied', 'restricted', or 'undetermined'
+        const description =
+          cameraNo && microphoneNo
+            ? string.callRelatedPermissions.camAndMPPermission
+            : cameraYes && microphoneNo
+            ? string.callRelatedPermissions.onlyMPPermission
+            : cameraNo && microphoneYes
+            ? string.callRelatedPermissions.onlyCameraPermission
+            : '';
+        if (description) {
+          showAphAlert!({
+            unDismissable: true,
+            title: `Hi ${patientName} :)`,
+            description: description.replace('{0}', doctorName),
+            ctaContainerStyle: { justifyContent: 'flex-end' },
+            CTAs: [
+              {
+                text: 'OK, GOT IT',
+                type: 'orange-link',
+                onPress: () => {
+                  hideAphAlert!();
+                  callback && callback();
+                  callPermissions();
+                },
+              },
+            ],
+          });
+        }
+      })
+      .catch((e) => {});
+  }
+};
+
+export const checkPermissions = (permissions: string[]) => {
+  return new Promise((resolve, reject) => {
+    Permissions.checkMultiple(permissions).then((response) => {
+      if (response) {
+        resolve(response);
+      } else {
+        reject('Unable to get permissions.');
+      }
+    });
+  });
+}
+
 export const removeConsecutiveComma = (value: string) => {
   return value.replace(/^,|,$|,(?=,)/g, '');
 };
