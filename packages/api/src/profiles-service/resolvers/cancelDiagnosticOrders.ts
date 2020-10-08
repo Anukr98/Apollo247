@@ -11,7 +11,6 @@ import {
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { sendDiagnosticOrderStatusNotification } from 'notifications-service/handlers/main';
 import { NotificationType } from 'notifications-service/constants';
-import { notificationType } from 'consults-service/entities';
 
 export const cancelDiagnosticOrdersTypeDefs = gql`
   type DiagnosticOrderCancelResult {
@@ -33,20 +32,6 @@ export const cancelDiagnosticOrdersTypeDefs = gql`
     centerLocality: String!
   }
 
-<<<<<<< HEAD
-  input DiagnosticsOrderNotificationInput {
-=======
-  input sendDiagnosticsOrderNotificationInput {
->>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
-    type: String
-    patientID: String
-    mobileNumber: String
-    patientFirstName: String
-    displayID: Int
-    orderID: String
-  }
-
-<<<<<<< HEAD
   type SendDiagnosticOrderNotificationResponse {
     status: Boolean
   }
@@ -60,12 +45,6 @@ export const cancelDiagnosticOrdersTypeDefs = gql`
       displayID: Int
       orderID: String
     ): SendDiagnosticOrderNotificationResponse!
-=======
-  extend type Query {
-    sendDiagnosticOrderNotification(
-      sendDiagnosticsOrderNotificationInput: sendDiagnosticsOrderNotificationInput
-    ): Boolean
->>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
   }
 
   extend type Mutation {
@@ -165,14 +144,9 @@ const sendDiagnosticOrderNotification: Resolver<
     orderID: string;
   },
   ProfilesServiceContext,
-<<<<<<< HEAD
   SendDiagnosticOrderNotificationResponse
 > = async (parent, args, { profilesDb }) => {
   console.log(args);
-=======
-  boolean
-> = async (parent, args, { profilesDb }) => {
->>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
   let notificationType: NotificationType;
   switch (args.type) {
     case NotificationType.DIAGNOSTIC_ORDER_SUCCESS:
@@ -182,10 +156,7 @@ const sendDiagnosticOrderNotification: Resolver<
       notificationType = NotificationType.DIAGNOSTIC_ORDER_PAYMENT_FAILED;
       break;
     default:
-<<<<<<< HEAD
       console.log(args.type);
-=======
->>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
       throw new AphError(AphErrorMessages.UNKNOWN_NOTIFICATION_ERROR);
   }
   const notification = await sendDiagnosticOrderStatusNotification(
@@ -198,15 +169,9 @@ const sendDiagnosticOrderNotification: Resolver<
     args.orderID
   );
   if (!notification) {
-<<<<<<< HEAD
     return { status: false };
   }
   return { status: notification.status };
-=======
-    return false;
-  }
-  return notification.status;
->>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
 };
 
 export const cancelDiagnosticOrdersResolvers = {
