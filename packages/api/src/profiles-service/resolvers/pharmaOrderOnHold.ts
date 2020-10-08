@@ -5,76 +5,63 @@ import { MEDICINE_ORDER_STATUS, MedicineOrdersStatus } from 'profiles-service/en
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { format, addMinutes, parseISO } from 'date-fns';
 import { log } from 'customWinstonLogger';
+import { format, addMinutes, parseISO } from 'date-fns';
 
-export const saveOrderVerifiedTypeDefs = gql`
-  input OrderVerifiedInput {
+export const updateOrderOnHoldTypeDefs = gql`
+  input UpdateOrderOnHoldInput {
     orderId: Int!
-    status: MEDICINE_ORDER_STATUS!
+    holdStatus: String
     updatedDate: String!
-    items: [ItemArticleDetails]
+    reasonCode: String
   }
 
-  type OrderVerifiedResult {
-    status: MEDICINE_ORDER_STATUS
+  type updateOrderOnHoldResult {
+    status: String
     errorCode: Int
     errorMessage: String
     orderId: Int
-    tat: String
-    siteId: String
-    tatType: String
-    allocationProfile: String
-    clusterId: String
   }
 
   extend type Mutation {
-    saveOrderVerified(orderVerifiedInput: OrderVerifiedInput): OrderVerifiedResult!
+    updateOrderOnHold(updateOrderOnHoldInput: UpdateOrderOnHoldInput): updateOrderOnHoldResult!
   }
 `;
 
-type SaveOrderVerifiedResult = {
+type updateOrderOnHoldResult = {
   status: MEDICINE_ORDER_STATUS;
   errorCode: number;
   errorMessage: string;
   orderId: number;
-  tat: string;
-  siteId: string;
-  tatType: string;
-  allocationProfile: string;
-  clusterId: string;
 };
 
-type SaveOrderVerifiedInput = {
+type UpdateOrderOnHoldInput = {
   orderId: number;
-  status: MEDICINE_ORDER_STATUS;
   updatedDate: string;
-  items: [ItemArticleDetails];
+  holdStatus: string;
+  reasonCode: string;
 };
 
-type ItemArticleDetails = {
-  articleCode: string;
-  articleName: string;
-  quantity: number;
-  batch: string;
-  unitPrice: number;
-  packSize: number;
-  posAvailability: boolean;
+type UpdateOrderOnHoldInputInputArgs = {
+  updateOrderOnHoldInput: UpdateOrderOnHoldInput;
 };
 
-type SaveOrderVerifiedInputArgs = {
-  orderVerifiedInput: SaveOrderVerifiedInput;
-};
-
-const saveOrderVerified: Resolver<
+const updateOrderOnHold: Resolver<
   null,
-  SaveOrderVerifiedInputArgs,
+  UpdateOrderOnHoldInputInputArgs,
   ProfilesServiceContext,
-  SaveOrderVerifiedResult
-> = async (parent, { orderVerifiedInput }, { profilesDb }) => {
+  updateOrderOnHoldResult
+> = async (parent, { updateOrderOnHoldInput }, { profilesDb }) => {
+  log(
+    'profileServiceLogger',
+    `ORDER_IS_ON_HOLD_CALL_FROM_OMS_FOR_ORDER_ID:${updateOrderOnHoldInput.orderId}`,
+    `updateOrderOnHold`,
+    JSON.stringify(updateOrderOnHoldInput),
+    ''
+  );
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const orderDetails = await medicineOrdersRepo.getMedicineOrderWithShipments(
-    orderVerifiedInput.orderId
+    updateOrderOnHoldInput.orderId
   );
   if (!orderDetails) {
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
@@ -84,48 +71,33 @@ const saveOrderVerified: Resolver<
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
   }
 
-  log(
-    'profileServiceLogger',
-    `ORDER_VERIFICATION_DONE_FOR_ORDER_ID:${orderVerifiedInput.orderId}`,
-    `saveOrderVerified call from OMS`,
-    JSON.stringify(orderVerifiedInput),
-    ''
-  );
   const statusDate = format(
-    addMinutes(parseISO(orderVerifiedInput.updatedDate), -330),
+    addMinutes(parseISO(updateOrderOnHoldInput.updatedDate), -330),
     "yyyy-MM-dd'T'HH:mm:ss.SSSX"
   );
   const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
-    orderStatus: MEDICINE_ORDER_STATUS.VERIFICATION_DONE,
+    orderStatus: MEDICINE_ORDER_STATUS.ON_HOLD,
     medicineOrders: orderDetails,
     statusDate: new Date(statusDate),
+    statusMessage: updateOrderOnHoldInput.reasonCode,
   };
   await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
-
   await medicineOrdersRepo.updateMedicineOrderDetails(
     orderDetails.id,
     orderDetails.orderAutoId,
-    new Date(),
-    MEDICINE_ORDER_STATUS.VERIFICATION_DONE
+    new Date(statusDate),
+    MEDICINE_ORDER_STATUS.ON_HOLD
   );
-
-  // calculate tat for non cart orders
-
   return {
-    status: MEDICINE_ORDER_STATUS.VERIFICATION_DONE,
+    status: MEDICINE_ORDER_STATUS.ON_HOLD,
     errorCode: 0,
     errorMessage: '',
     orderId: orderDetails.orderAutoId,
-    tat: '',
-    siteId: '',
-    tatType: '',
-    allocationProfile: '',
-    clusterId: '',
   };
 };
 
-export const saveOrderVerifiedResolvers = {
+export const updateOrderOnHoldResolvers = {
   Mutation: {
-    saveOrderVerified,
+    updateOrderOnHold,
   },
 };

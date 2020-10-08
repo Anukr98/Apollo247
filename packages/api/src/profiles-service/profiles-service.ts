@@ -113,12 +113,16 @@ import {
   updateOrderStatusResolvers,
 } from 'profiles-service/resolvers/pharmaUpdateOrderStatus';
 import {
+  saveOrderShipmentsTypeDefs,
+  saveOrderShipmentsResolvers,
+} from 'profiles-service/resolvers/pharmaOrderShipmentsCreated';
+import {
   saveOrderShipmentInvoiceTypeDefs,
   saveOrderShipmentInvoiceResolvers,
 } from 'profiles-service/resolvers/pharmaOrderBilled';
 import {
-  saveOrderShipmentsTypeDefs,
-  saveOrderShipmentsResolvers,
+  saveOrderVerifiedTypeDefs,
+  saveOrderVerifiedResolvers,
 } from 'profiles-service/resolvers/pharmaOrderVerified';
 import {
   pharmaOrderConfirmationTypeDefs,
@@ -217,23 +221,38 @@ import {
 
 import {
   addPatientHospitalizationRecordTypeDefs,
-  addPatientHospitalizationRecordResolvers
+  addPatientHospitalizationRecordResolvers,
 } from 'profiles-service/resolvers/addHospitalizationRecords';
 
 import {
   addPatientPrescriptionRecordsTypeDefs,
-  addPatientPrescriptionRecordResolvers
-} from 'profiles-service/resolvers/addPrescriptionRecords'
+  addPatientPrescriptionRecordResolvers,
+} from 'profiles-service/resolvers/addPrescriptionRecords';
 
 import {
   addPatientLabTestRecordTypeDefs,
-  addPatientLabTestRecordResolvers
+  addPatientLabTestRecordResolvers,
 } from 'profiles-service/resolvers/addLabTestRecords';
 
 import {
+  updateOrderOnHoldTypeDefs,
+  updateOrderOnHoldResolvers,
+} from 'profiles-service/resolvers/pharmaOrderOnHold';
+
+import {
+  orderReturnPostDeliveryTypeDefs,
+  orderReturnPostDeliveryResolvers,
+} from 'profiles-service/resolvers/pharmaOrderReturnPostDelivery';
+
+import {
+  orderReturnedTypeDefs,
+  orderReturnedResolvers,
+} from 'profiles-service/resolvers/pharmaOrderReturnPreDelivery';
+
+import {
   deletePatientPrismMedicalRecordTypeDefs,
-  deletePatientPrismMedicalRecordResolvers
-} from 'profiles-service/resolvers/deletePatientPrismMedicalRecord'
+  deletePatientPrismMedicalRecordResolvers,
+} from 'profiles-service/resolvers/deletePatientPrismMedicalRecord';
 
 (async () => {
   await connect();
@@ -490,7 +509,7 @@ import {
       },
       {
         typeDefs: addPatientHealthCheckRecordTypeDefs,
-        resolvers: addPatientHealthCheckRecordsResolvers
+        resolvers: addPatientHealthCheckRecordsResolvers,
       },
       {
         typeDefs: addPatientHospitalizationRecordTypeDefs,
@@ -498,15 +517,31 @@ import {
       },
       {
         typeDefs: addPatientLabTestRecordTypeDefs,
-        resolvers: addPatientLabTestRecordResolvers
+        resolvers: addPatientLabTestRecordResolvers,
+      },
+      {
+        typeDefs: saveOrderVerifiedTypeDefs,
+        resolvers: saveOrderVerifiedResolvers,
+      },
+      {
+        typeDefs: updateOrderOnHoldTypeDefs,
+        resolvers: updateOrderOnHoldResolvers,
+      },
+      {
+        typeDefs: orderReturnPostDeliveryTypeDefs,
+        resolvers: orderReturnPostDeliveryResolvers,
+      },
+      {
+        typeDefs: orderReturnedTypeDefs,
+        resolvers: orderReturnedResolvers,
       },
       {
         typeDefs: addPatientPrescriptionRecordsTypeDefs,
-        resolvers: addPatientPrescriptionRecordResolvers
+        resolvers: addPatientPrescriptionRecordResolvers,
       },
       {
         typeDefs: deletePatientPrismMedicalRecordTypeDefs,
-        resolvers: deletePatientPrismMedicalRecordResolvers
+        resolvers: deletePatientPrismMedicalRecordResolvers,
       },
     ]),
     plugins: [
