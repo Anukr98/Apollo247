@@ -189,7 +189,7 @@ const DocumentTitle: React.FC<DocumentTitleProps> = ({
   const classes = useStyles({});
   return (
     <div className={classes.documentTitleWrapper}>
-      <h3 className={classes.documentTitle}>{title.split('/').pop()}</h3>
+      <h3 className={classes.documentTitle}>{title}</h3>
       <div className={classes.documentDate}>
         <p>{`Sent on: ${moment(date).format('Do MMM, YYYY')} | `}</p>
         <p>{`Viewing ${currentIndex + 1} out of ${documentCount}`}</p>
@@ -214,20 +214,16 @@ const GallerySlider: React.FC<GallerySliderProps> = ({
   const docTitle = open
     ? documents && documents[currentIndex] && documents[currentIndex].documentTitle
       ? documents[currentIndex].documentTitle
-      : docPrevUrl
+      : docPrevUrl.split('/').pop()
     : '';
 
   const docDate = open
-    ? documents && documents[currentIndex] && documents[currentIndex].documentDate
-      ? documents[currentIndex].documentDate
+    ? documents && documents[currentIndex] && documents[currentIndex].createdDate
+      ? documents[currentIndex].createdDate
       : appointmentDate
     : null;
 
-  const isPdf = open
-    ? documents[currentIndex].documentPath.toLowerCase().includes('.pdf')
-      ? true
-      : false
-    : null;
+  const isPdf = open ? documents[currentIndex].documentPath.toLowerCase().includes('.pdf') : null;
 
   return (
     <Modal open={open} onClose={onClose}>
