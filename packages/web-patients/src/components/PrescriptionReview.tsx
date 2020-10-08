@@ -850,12 +850,22 @@ const PrescriptionReview: React.FC = (props: any) => {
                               return (
                                 <li key={pres.imageUrl}>
                                   <div className={classes.imageDetails}>
-                                    <img
-                                      className={classes.prescriptionThumb}
-                                      src={pres.imageUrl}
-                                      alt="CONSULT A PHARMACOLOGIST"
-                                      title="CONSULT A PHARMACOLOGIST"
-                                    />
+                                    {pres.fileType === 'pdf' ? (
+                                      <img
+                                        src={require('images/pdf-file-format-symbol.svg')}
+                                        width="30"
+                                        height="30"
+                                        alt="CONSULT A PHARMACOLOGIST"
+                                        title="CONSULT A PHARMACOLOGIST"
+                                      />
+                                    ) : (
+                                      <img
+                                        className={classes.prescriptionThumb}
+                                        src={pres.imageUrl}
+                                        alt="CONSULT A PHARMACOLOGIST"
+                                        title="CONSULT A PHARMACOLOGIST"
+                                      />
+                                    )}
                                     <div>
                                       <Typography component="h5">{pres.name}</Typography>
                                       <span className={classes.uploadProgress}></span>

@@ -757,9 +757,13 @@ const ChatRoom: React.FC = () => {
                     appointmentDetails.status !== STATUS.CANCELLED &&
                     appointmentDetails.status !== STATUS.COMPLETED &&
 <<<<<<< HEAD
+<<<<<<< HEAD
                     getDiffInMinutes(appointmentDetails.appointmentDateTime) > 15 &&
 =======
 >>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
+=======
+                    !isConsultCompleted &&
+>>>>>>> dd4424302c7871e5f39232d0300dfa52a9517f83
                     !disableActions &&
                     !srDoctorJoined && (
                       <div className={classes.headerActions}>
@@ -772,8 +776,13 @@ const ChatRoom: React.FC = () => {
 =======
                             appointmentDetails.isSeniorConsultStarted ||
                             srDoctorJoined ||
+<<<<<<< HEAD
                             disableActions
 >>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
+=======
+                            disableActions ||
+                            isConsultCompleted
+>>>>>>> dd4424302c7871e5f39232d0300dfa52a9517f83
                           }
                           classes={{
                             root: classes.viewButton,

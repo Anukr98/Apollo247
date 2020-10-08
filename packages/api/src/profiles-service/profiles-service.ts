@@ -227,11 +227,24 @@ import {
 } from 'profiles-service/resolvers/addHospitalizationRecords';
 
 import {
+  addPatientPrescriptionRecordsTypeDefs,
+  addPatientPrescriptionRecordResolvers
+} from 'profiles-service/resolvers/addPrescriptionRecords'
+
+import {
   addPatientLabTestRecordTypeDefs,
   addPatientLabTestRecordResolvers
 } from 'profiles-service/resolvers/addLabTestRecords';
 
+<<<<<<< HEAD
 >>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
+=======
+import {
+  deletePatientPrismMedicalRecordTypeDefs,
+  deletePatientPrismMedicalRecordResolvers
+} from 'profiles-service/resolvers/deletePatientPrismMedicalRecord'
+
+>>>>>>> dd4424302c7871e5f39232d0300dfa52a9517f83
 (async () => {
   await connect();
   const profilesLogger = winstonLogger.loggers.get('profileServiceLogger');
@@ -502,8 +515,20 @@ import {
       {
         typeDefs: addPatientLabTestRecordTypeDefs,
         resolvers: addPatientLabTestRecordResolvers
+<<<<<<< HEAD
       }
 >>>>>>> f905e6117da9c1e2704230ce1fc212bc922fd95c
+=======
+      },
+      {
+        typeDefs: addPatientPrescriptionRecordsTypeDefs,
+        resolvers: addPatientPrescriptionRecordResolvers
+      },
+      {
+        typeDefs: deletePatientPrismMedicalRecordTypeDefs,
+        resolvers: deletePatientPrismMedicalRecordResolvers
+      },
+>>>>>>> dd4424302c7871e5f39232d0300dfa52a9517f83
     ]),
     plugins: [
       /* This plugin is defined in-line. */

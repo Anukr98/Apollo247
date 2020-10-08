@@ -333,12 +333,16 @@ const convertAvailabilityToDate = (availability: String[], dateSelectedFromFilte
     availableNow = {};
   }
   const availabilityArray: String[] = [];
-  const today = moment(new Date()).utc().format('YYYY-MM-DD');
+  const today = moment(new Date())
+    .utc()
+    .format('YYYY-MM-DD');
   if (availability.length > 0) {
     availability.forEach((value: String) => {
       if (value === 'Now') {
         availableNow = {
-          availableNow: moment(new Date()).utc().format('YYYY-MM-DD hh:mm'),
+          availableNow: moment(new Date())
+            .utc()
+            .format('YYYY-MM-DD hh:mm'),
         };
       } else if (value === 'Today') {
         availabilityArray.push(today);
@@ -479,33 +483,39 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   };
 
   useEffect(() => {
-    let filterObject: SearchObject = {
-      ...searchObject,
-      consultMode:
-        isOnlineSelected && isPhysicalSelected
-          ? ConsultMode.BOTH
-          : isOnlineSelected
-          ? ConsultMode.ONLINE
-          : ConsultMode.PHYSICAL,
-    };
-    if (searchParams.length > 0) {
-      const search = searchParams.substring(1);
+    if (isOnlineSelected || isPhysicalSelected) {
+      let filterObject: SearchObject = {
+        ...searchObject,
+        consultMode:
+          isOnlineSelected && isPhysicalSelected
+            ? ConsultMode.BOTH
+            : isOnlineSelected
+            ? ConsultMode.ONLINE
+            : ConsultMode.PHYSICAL,
+      };
+      if (searchParams.length > 0) {
+        const search = searchParams.substring(1);
 
-      const decodedObject = JSON.parse(
-        '{"' + search.replace(/&/g, '","').replace(/=/g, '":"') + '"}',
-        function (key, value) {
-          return key === '' ? value : decodeURIComponent(value);
+        const decodedObject = JSON.parse(
+          '{"' + search.replace(/&/g, '","').replace(/=/g, '":"') + '"}',
+          function(key, value) {
+            return key === '' ? value : decodeURIComponent(value);
+          }
+        );
+        for (const property in decodedObject) {
+          const valueArray = decodedObject[property].split(',');
+          filterObject = assigningFilters(filterObject, property, valueArray);
         }
-      );
-      for (const property in decodedObject) {
-        const valueArray = decodedObject[property].split(',');
-        filterObject = assigningFilters(filterObject, property, valueArray);
+        setFilter({
+          ...filterObject,
+        });
+      } else {
+        setFilter(filterObject);
       }
-      setFilter({
-        ...filterObject,
-      });
     } else {
-      setFilter(filterObject);
+      setFilteredDoctorData(null);
+      apolloDoctorCount = 0;
+      partnerDoctorCount = 0;
     }
   }, [searchParams, isOnlineSelected, isPhysicalSelected]);
 
@@ -664,7 +674,8 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
       }
       return search;
     });
-  }, [searchKeyword, filter]);
+    search();
+  }, [searchKeyword]);
 
   useEffect(() => {
     if (params && params.specialty) {

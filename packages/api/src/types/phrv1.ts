@@ -16,6 +16,7 @@ export interface GetUsersResponse {
 }
 
 export interface LabResultsUploadRequest {
+  id?: string;
   labTestName: string;
   labTestSource: string;
   labTestDate: number;
@@ -105,6 +106,7 @@ export interface LabResultsDownloadResponse {
 }
 
 export interface PrescriptionUploadRequest {
+  id?: string;
   prescriptionName: string;
   prescribedBy: string;
   dateOfPrescription: number;
@@ -221,6 +223,7 @@ export interface HealthChecksResponse {
 }
 
 export interface HealthCheckUploadRequest {
+  id?: string;
   healthCheckName: string;
   healthCheckType: string;
   healthCheckDate: string | number;
@@ -281,6 +284,7 @@ export interface DischargeSummaryResponse {
 }
 
 export interface DischargeSummaryUploadRequest {
+  id?: string;
   hospitalName: string;
   dateOfHospitalization: number | string,
   doctorName: string;
