@@ -45,6 +45,8 @@ import { HealthRecordsHome } from '@aph/mobile-patients/src/components/HealthRec
 import { ConsultDetails } from '@aph/mobile-patients/src/components/HealthRecords/ConsultDetails';
 import { RecordDetails } from '@aph/mobile-patients/src/components/HealthRecords/RecordDetails';
 import { HealthRecordDetails } from '@aph/mobile-patients/src/components/HealthRecords/HealthRecordDetails';
+import { SearchAppointmentScreen } from '@aph/mobile-patients/src/components/ConsultRoom/SearchAppointmentScreen';
+import { AppointmentFilterScene } from '@aph/mobile-patients/src/components/ConsultRoom/AppointmentFilterScene';
 import { SymptomChecker } from '@aph/mobile-patients/src/components/SymptomChecker';
 import { PaymentScene } from '@aph/mobile-patients/src/components/PaymentScene';
 import { MedicineConsultDetails } from '@aph/mobile-patients/src/components/HealthRecords/MedicineConsultDetails';
@@ -192,6 +194,8 @@ export enum AppRoutes {
   SymptomTracker = 'SymptomTracker',
   SymptomSelection = 'SymptomSelection',
   Maps = 'Maps',
+  SearchAppointmentScreen = 'SearchAppointmentScreen',
+  AppointmentFilterScene = 'AppointmentFilterScene',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -500,6 +504,12 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.Maps]: {
     screen: Maps,
+  },
+  [AppRoutes.SearchAppointmentScreen]: {
+    screen: SearchAppointmentScreen,
+  },
+  [AppRoutes.AppointmentFilterScene]: {
+    screen: AppointmentFilterScene,
   },
 };
 

@@ -169,11 +169,18 @@ export interface getPatientAllAppointments_getPatientAllAppointments_appointment
   starTeam: (getPatientAllAppointments_getPatientAllAppointments_appointments_doctorInfo_starTeam | null)[] | null;
 }
 
+export interface getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet_medicinePrescription {
+  __typename: "MedicinePrescription";
+  id: string | null;
+  medicineName: string | null;
+}
+
 export interface getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet {
   __typename: "CaseSheet";
   followUpAfterInDays: string | null;
   version: number | null;
   doctorType: DoctorType | null;
+  medicinePrescription: (getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet_medicinePrescription | null)[] | null;
 }
 
 export interface getPatientAllAppointments_getPatientAllAppointments_appointments {

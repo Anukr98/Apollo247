@@ -276,6 +276,10 @@ export const ArrowLeft: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_arrow_left.png')} />
 );
 
+export const WhiteArrowRightIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_white_arrow_right.png')} />
+);
+
 export const ArrowRight: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_arrow_right.png')} />
 );
@@ -400,6 +404,22 @@ export const Path: React.FC<IconProps> = (props) => (
     }}
     source={require('./icons/path.png')}
   />
+);
+
+export const SearchGreenIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" source={require('./icons/ic_search_green.png')} {...props} />
+);
+
+export const FilterDarkBlueIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" source={require('./icons/ic_filter_dark_blue.png')} {...props} />
+);
+
+export const FilterGreenIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" source={require('./icons/ic_filter_green.png')} {...props} />
+);
+
+export const PreviousPrescriptionIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" source={require('./icons/previous_prescription_icon.png')} {...props} />
 );
 
 export const ChatCallIcon: React.FC<IconProps> = (props) => (
@@ -665,6 +685,14 @@ export const InjectionIcon: React.FC<IconProps> = (props) => (
 
 export const SearchSendIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_send.png')} />
+);
+
+export const PhysicalConsultDarkBlueIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_hospital_dark_blue.png')} />
+);
+
+export const ChatBlueIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_chat_blue.png')} />
 );
 
 export const WhiteSearchIcon: React.FC<IconProps> = (props) => (
