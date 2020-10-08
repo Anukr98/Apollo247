@@ -1,4 +1,4 @@
-000000#!/usr/bin/env bash
+#!/usr/bin/env bash
 # $1 refers the environment: 'local' | 'development' | 'staging' | 'production'
 
 echo -e "\ncleaning up any old build files..."
