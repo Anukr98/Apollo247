@@ -24,7 +24,11 @@ import { ApolloError } from 'apollo-client';
 import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
 import { useApolloClient, useMutation } from 'react-apollo-hooks';
 import { useParams } from 'hooks/routerHooks';
-import { CANCEL_APPOINTMENT } from 'graphql/profiles';
+import { CANCEL_APPOINTMENT, CREATE_APPOINTMENT_SESSION } from 'graphql/profiles';
+import {
+  CreateAppointmentSession,
+  CreateAppointmentSessionVariables,
+} from 'graphql/types/CreateAppointmentSession';
 import { CancelAppointment, CancelAppointmentVariables } from 'graphql/types/CancelAppointment';
 import { Consult } from 'components/Consult';
 import { CircularProgress } from '@material-ui/core';
@@ -1457,6 +1461,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     otherError: false,
   });
   // audioVideoChat start
+  const [sessionId, setsessionId] = useState<string>('');
+  const [token, settoken] = useState<string>('');
+  const [isCallConnecting, setIsCallConnecting] = useState<boolean>(false);
   const [userMessageOnCall, setUserMessageOnCall] = useState<string>('');
   const [showVideoChat, setShowVideoChat] = useState<boolean>(false);
   const [isVideoCall, setIsVideoCall] = useState<boolean>(false);
@@ -2750,20 +2757,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   <img src={require('images/ic_cross.svg')} alt="" onClick={() => handleClose()} />
                 </Button>
                 <div className={`${classes.loginFormWrap} ${classes.helpWrap}`}>
-                  <p>How do you want to talk to the patient?</p>
+                  <p>{isCallConnecting ? 'please wait..' : 'How do you want to talk to the patient?'}</p>
                   <Button
                     variant="contained"
                     color="primary"
                     className={classes.needHelp}
-                    disabled={disableOnCancel}
+                    disabled={disableOnCancel || isCallConnecting}
                     onClick={() => {
-                      handleClose();
-                      props.setStartConsultAction(false);
-                      autoSend(audioCallMsg);
-                      setDisableOnCancel(true);
-                      setIsVideoCall(false);
-                      missedCallIntervalTimer(45);
-                      setIscall(true);
                       webEngageEventTracking(
                         {
                           'Doctor name': props.webengageConsultTrackingObject.doctorName,
@@ -2781,6 +2781,29 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         },
                         'Front_end - Doctor Started the Audio call'
                       );
+                      setIsCallConnecting(true);
+                      client
+                      .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
+                        mutation: CREATE_APPOINTMENT_SESSION,
+                        variables: {
+                          createAppointmentSessionInput: {
+                            appointmentId: channel,
+                            requestRole: REQUEST_ROLES.DOCTOR,
+                          },
+                        },
+                      })
+                      .then((_data: any) => {
+                        handleClose();
+                        props.setStartConsultAction(false);
+                        autoSend(audioCallMsg);
+                        setDisableOnCancel(true);
+                        setIsVideoCall(false);
+                        missedCallIntervalTimer(45);
+                        setIscall(true);
+                      })
+                      .catch((e: any) => {
+                        setIsCallConnecting(false);
+                      });
                     }}
                   >
                     <img src={require('images/call_popup.svg')} alt="" />
@@ -2790,15 +2813,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     variant="contained"
                     color="primary"
                     className={classes.needHelp}
-                    disabled={disableOnCancel}
+                    disabled={disableOnCancel || isCallConnecting}
                     onClick={() => {
-                      handleClose();
-                      props.setStartConsultAction(true);
-                      autoSend(videoCallMsg);
-                      setIsVideoCall(true);
-                      setDisableOnCancel(true);
-                      missedCallIntervalTimer(45);
-                      setIscall(true);
                       webEngageEventTracking(
                         {
                           'Doctor name': props.webengageConsultTrackingObject.doctorName,
@@ -2816,6 +2832,29 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         },
                         'Front_end - Doctor Started the Video call'
                       );
+                      setIsCallConnecting(true);
+                      client
+                      .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
+                        mutation: CREATE_APPOINTMENT_SESSION,
+                        variables: {
+                          createAppointmentSessionInput: {
+                            appointmentId: channel,
+                            requestRole: REQUEST_ROLES.DOCTOR,
+                          },
+                        },
+                      })
+                      .then((_data: any) => {
+                        handleClose();
+                        props.setStartConsultAction(true);
+                        autoSend(videoCallMsg);
+                        setIsVideoCall(true);
+                        setDisableOnCancel(true);
+                        missedCallIntervalTimer(45);
+                        setIscall(true);
+                      })
+                      .catch((e: any) => {
+                        setIsCallConnecting(false);
+                      });
                     }}
                   >
                     <img src={require('images/video_popup.svg')} alt="" />
