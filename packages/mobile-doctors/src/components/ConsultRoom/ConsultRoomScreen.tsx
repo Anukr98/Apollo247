@@ -1553,6 +1553,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               appointmentCallId: isCall ? callId : chatId,
               patientId: g(caseSheet, 'patientDetails', 'id'),
               numberOfParticipants: patient + doctor,
+              endVoipCall: isCall,
             },
           })
           .catch((error) => {
