@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
@@ -6,6 +6,7 @@ import { BottomLinks } from 'components/BottomLinks';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { dataLayerTracking } from 'gtmTracking';
 import { MetaTagsComp } from 'MetaTagsComp';
+import { dataLayerTracking } from 'gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -57,12 +58,27 @@ const ContactUs: React.FC = (props) => {
   }, []);
 
   const [metaTagProps, setMetaTagProps] = useState(null);
-  setMetaTagProps({
-    title: 'Apollo 247 - Contact Us - Apollo Hospitals',
-    description:
-      'Apollo 247- Have a query about our products, services, online doctor consultation and more - write to us',
-    canonicalLink: typeof window !== 'undefined' && window.location && window.location.href,
-  });
+  useEffect(() => {
+    setMetaTagProps({
+      title: 'Apollo 247 - Contact Us - Apollo Hospitals',
+      description:
+        'Apollo 247- Have a query about our products, services, online doctor consultation and more - write to us',
+      canonicalLink: typeof window !== 'undefined' && window.location && window.location.href,
+    });
+  }, []);
+
+  useEffect(() => {
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: 'Contact Page',
+      pageLOB: 'Others',
+      pageType: 'Contact Page',
+    });
+    /**Gtm code start end */
+  }, []);
+
   return (
     <div className={classes.root}>
       {metaTagProps && <MetaTagsComp {...metaTagProps} />}

@@ -55,12 +55,18 @@ import {
   SEARCH_DIAGNOSTICS_BY_ID,
   GET_DIAGNOSTIC_AREAS,
   GET_DIAGNOSTIC_SLOTS_WITH_AREA_ID,
+  GET_DIAGNOSTICS_HC_CHARGES,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
   getDiagnosticSlots,
   getDiagnosticSlotsVariables,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlots';
+import {
+  getDiagnosticsHCCharges_getDiagnosticsHCCharges,
+  getDiagnosticsHCChargesVariables,
+  getDiagnosticsHCCharges,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticsHCCharges';
 import {
   getPatientAddressList,
   getPatientAddressListVariables,
@@ -221,6 +227,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     setDiagnosticSlot,
     setEPrescriptions,
     deliveryCharges,
+    setHcCharges,
+    hcCharges,
     coupon,
     areaSelected,
     setAreaSelected,
@@ -271,11 +279,32 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     savePatientAddress_savePatientAddress_patientAddress
   >();
 
+  const itemsWithHC = cartItems!.filter((item) => item!.collectionMethod == 'HC');
+  const itemWithIdWithHC = itemsWithHC!.map((item) => parseInt(item.id));
+
   const isValidPinCode = (text: string): boolean => /^(\s*|[1-9][0-9]*)$/.test(text);
+
   const cartItemsWithId = cartItems!.map((item) => parseInt(item.id));
   useEffect(() => {
     fetchAddresses();
   }, [currentPatient]);
+
+  useEffect(() => {
+    if (selectedTab == tabs[0].title) {
+      if (
+        selectedTimeSlot &&
+        selectedTimeSlot!.slotInfo!.slot! &&
+        deliveryAddressId! &&
+        deliveryAddressId.length > 0 &&
+        cartItems
+      ) {
+        console.log('s');
+        fetchHC_ChargesForTest(selectedTimeSlot!.slotInfo!.slot!);
+      }
+    } else {
+      setHcCharges!(0);
+    }
+  }, [selectedTab, selectedTimeSlot, deliveryAddressId, cartItems]);
 
   useEffect(() => {
     if (cartItems.length) {
@@ -1329,10 +1358,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               <Text style={styles.blueTextStyle}>- Rs. {couponDiscount.toFixed(2)}</Text>
             </View>
           )}
-          {/* <View style={styles.rowSpaceBetweenStyle}>
-            <Text style={styles.blueTextStyle}>Collection Charges</Text>
-            <Text style={styles.blueTextStyle}>Rs. {deliveryCharges.toFixed(2)}</Text>
-          </View> */}
+          {selectedTab == tabs[0].title && (
+            <View style={styles.rowSpaceBetweenStyle}>
+              <Text style={styles.blueTextStyle}>Home Collection Charges</Text>
+              <Text style={styles.blueTextStyle}>Rs. {hcCharges.toFixed(2)}</Text>
+            </View>
+          )}
           <View style={[styles.separatorStyle, { marginTop: 16, marginBottom: 7 }]} />
           <View style={styles.rowSpaceBetweenStyle}>
             <Text style={styles.blueTextStyle}>To Pay </Text>
@@ -1780,6 +1811,34 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   //     }
   //   }
   // };
+
+  const fetchHC_ChargesForTest = async (slotVal: string) => {
+    setLoading!(true);
+    try {
+      const HomeCollectionChargesApi = await client.query<
+        getDiagnosticsHCCharges,
+        getDiagnosticsHCChargesVariables
+      >({
+        query: GET_DIAGNOSTICS_HC_CHARGES,
+        variables: {
+          itemIDs: itemWithIdWithHC,
+          totalCharges: cartTotal,
+          slotID: slotVal!,
+          pincode: parseInt(pinCode, 10),
+        },
+        fetchPolicy: 'no-cache',
+      });
+
+      let getCharges = g(HomeCollectionChargesApi.data, 'getDiagnosticsHCCharges', 'charges') || 0;
+      if (getCharges != null) {
+        setHcCharges!(getCharges);
+      }
+      setLoading!(false);
+    } catch (error) {
+      setLoading!(false);
+      renderAlert(`Something went wrong, unable to fetch Home collection charges.`);
+    }
+  };
 
   const renderProfiles = () => {
     return (

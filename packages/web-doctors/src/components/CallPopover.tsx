@@ -24,7 +24,11 @@ import { ApolloError } from 'apollo-client';
 import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
 import { useApolloClient, useMutation } from 'react-apollo-hooks';
 import { useParams } from 'hooks/routerHooks';
-import { CANCEL_APPOINTMENT } from 'graphql/profiles';
+import { CANCEL_APPOINTMENT, CREATE_APPOINTMENT_SESSION } from 'graphql/profiles';
+import {
+  CreateAppointmentSession,
+  CreateAppointmentSessionVariables,
+} from 'graphql/types/CreateAppointmentSession';
 import { CancelAppointment, CancelAppointmentVariables } from 'graphql/types/CancelAppointment';
 import { Consult } from 'components/Consult';
 import { CircularProgress } from '@material-ui/core';
@@ -1105,8 +1109,8 @@ interface CallPopoverProps {
   caseSheetId: string;
   prescriptionPdf: string;
   startAppointment: boolean;
-  sessionId: string;
-  token: string;
+  // sessionId: string;
+  // token: string;
   saving: boolean;
   appointmentStatus: String;
   sentToPatient: boolean;
@@ -1457,6 +1461,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     otherError: false,
   });
   // audioVideoChat start
+  const [sessionId, setsessionId] = useState<string>('');
+  const [token, settoken] = useState<string>('');
+  const [isCallConnecting, setIsCallConnecting] = useState<boolean>(false);
   const [userMessageOnCall, setUserMessageOnCall] = useState<string>('');
   const [showVideoChat, setShowVideoChat] = useState<boolean>(false);
   const [isVideoCall, setIsVideoCall] = useState<boolean>(false);
@@ -1799,7 +1806,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     } else {
       setStartAppointmentButton(true);
     }
-    startBtnInformationCheck();
+    appointmentInfo!.status !== 'COMPLETED' && startBtnInformationCheck();
   };
   const client = useApolloClient();
   const stopInterval = () => {
@@ -1853,7 +1860,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const pubnub = props.pubnub;
 
   useEffect(() => {
-    countdowntimer = setInterval(startConstultCheck, 1000);
+    countdowntimer =
+      appointmentInfo!.status !== 'COMPLETED' && setInterval(startConstultCheck, 1000);
     return function cleanup() {
       clearInterval(intervalcallId);
       clearInterval(intervalCallAbundant);
@@ -2750,20 +2758,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   <img src={require('images/ic_cross.svg')} alt="" onClick={() => handleClose()} />
                 </Button>
                 <div className={`${classes.loginFormWrap} ${classes.helpWrap}`}>
-                  <p>How do you want to talk to the patient?</p>
+                  <p>{isCallConnecting ? 'please wait..' : 'How do you want to talk to the patient?'}</p>
                   <Button
                     variant="contained"
                     color="primary"
                     className={classes.needHelp}
-                    disabled={disableOnCancel}
+                    disabled={disableOnCancel || isCallConnecting}
                     onClick={() => {
-                      handleClose();
-                      props.setStartConsultAction(false);
-                      autoSend(audioCallMsg);
-                      setDisableOnCancel(true);
-                      setIsVideoCall(false);
-                      missedCallIntervalTimer(45);
-                      setIscall(true);
                       webEngageEventTracking(
                         {
                           'Doctor name': props.webengageConsultTrackingObject.doctorName,
@@ -2781,6 +2782,38 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         },
                         'Front_end - Doctor Started the Audio call'
                       );
+                      setIsCallConnecting(true);
+                      client
+                      .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
+                        mutation: CREATE_APPOINTMENT_SESSION,
+                        variables: {
+                          createAppointmentSessionInput: {
+                            appointmentId: channel,
+                            requestRole: REQUEST_ROLES.DOCTOR,
+                          },
+                        },
+                      })
+                      .then((_data: any) => {
+                        handleClose();
+                        props.setStartConsultAction(false);
+                        autoSend(audioCallMsg);
+                        setDisableOnCancel(true);
+                        setIsVideoCall(false);
+                        missedCallIntervalTimer(45);
+                        setIscall(true);
+                      })
+                      .catch((e: any) => {
+                        setIsCallConnecting(false);
+                        webEngageEventTracking(
+                          {
+                            'API name': 'CreateAppointmentSession',
+                            'ErrorDetails': JSON.stringify(error),
+                            'Consultation Display ID': props.webengageConsultTrackingObject.appointmentDisplayId,
+                            'Consult ID': props.webengageConsultTrackingObject.appointmentId,
+                          },
+                          'Front_end - Doctor API-Error on Casesheet'
+                        );
+                      });
                     }}
                   >
                     <img src={require('images/call_popup.svg')} alt="" />
@@ -2790,15 +2823,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     variant="contained"
                     color="primary"
                     className={classes.needHelp}
-                    disabled={disableOnCancel}
+                    disabled={disableOnCancel || isCallConnecting}
                     onClick={() => {
-                      handleClose();
-                      props.setStartConsultAction(true);
-                      autoSend(videoCallMsg);
-                      setIsVideoCall(true);
-                      setDisableOnCancel(true);
-                      missedCallIntervalTimer(45);
-                      setIscall(true);
                       webEngageEventTracking(
                         {
                           'Doctor name': props.webengageConsultTrackingObject.doctorName,
@@ -2816,6 +2842,38 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         },
                         'Front_end - Doctor Started the Video call'
                       );
+                      setIsCallConnecting(true);
+                      client
+                      .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
+                        mutation: CREATE_APPOINTMENT_SESSION,
+                        variables: {
+                          createAppointmentSessionInput: {
+                            appointmentId: channel,
+                            requestRole: REQUEST_ROLES.DOCTOR,
+                          },
+                        },
+                      })
+                      .then((_data: any) => {
+                        handleClose();
+                        props.setStartConsultAction(true);
+                        autoSend(videoCallMsg);
+                        setIsVideoCall(true);
+                        setDisableOnCancel(true);
+                        missedCallIntervalTimer(45);
+                        setIscall(true);
+                      })
+                      .catch((e: any) => {
+                        setIsCallConnecting(false);
+                        webEngageEventTracking(
+                          {
+                            'API name': 'CreateAppointmentSession',
+                            'ErrorDetails': JSON.stringify(error),
+                            'Consultation Display ID': props.webengageConsultTrackingObject.appointmentDisplayId,
+                            'Consult ID': props.webengageConsultTrackingObject.appointmentId,
+                          },
+                          'Front_end - Doctor API-Error on Casesheet'
+                        );
+                      });
                     }}
                   >
                     <img src={require('images/video_popup.svg')} alt="" />
@@ -2989,7 +3047,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       const fromMobileNumber = currentPatient.mobileNumber;
                       const toMobileNumber = patientDetails.mobileNumber;
                       const appointmentId = params.id;
-                      console.log(fromMobileNumber, toMobileNumber, appointmentId);
 
                       const exotelInput = {
                         from: fromMobileNumber,
@@ -3454,8 +3511,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               stopAudioVideoCallpatient={() => stopAudioVideoCallpatient()}
               showVideoChat={showVideoChat}
               isVideoCall={isVideoCall}
-              sessionId={props.sessionId}
-              token={props.token}
+              // sessionId={props.sessionId}
+              // token={props.token}
+              sessionId={sessionId}
+              token={token}
               timerMinuts={timerMinuts}
               timerSeconds={timerSeconds}
               isCallAccepted={props.isCallAccepted}
@@ -3687,11 +3746,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   <label>Height</label>
                   <div className={classes.content}>
                     <AphTextField
-                      onFocus={(e) => moveCursorToEnd(e.currentTarget)}
+                      onFocus={(e: any) => moveCursorToEnd(e.currentTarget)}
                       fullWidth
                       multiline
                       defaultValue={getDefaultValue('height')}
-                      onBlur={(e) => {
+                      onBlur={(e: any) => {
                         const storageItem = getLocalStorageItem(params.id);
                         if (storageItem) {
                           storageItem.height = e.target.value;
@@ -3706,12 +3765,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   <label>Weight</label>
                   <div className={classes.content}>
                     <AphTextField
-                      onFocus={(e) => moveCursorToEnd(e.currentTarget)}
+                      onFocus={(e: any) => moveCursorToEnd(e.currentTarget)}
                       fullWidth
                       multiline
                       helperText={vitalError.weight}
                       defaultValue={getDefaultValue('weight')}
-                      onBlur={(e) => {
+                      onBlur={(e: any) => {
                         const storageItem = getLocalStorageItem(params.id);
                         if (storageItem) {
                           storageItem.weight = e.target.value;
@@ -3726,11 +3785,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   <label>BP</label>
                   <div className={classes.content}>
                     <AphTextField
-                      onFocus={(e) => moveCursorToEnd(e.currentTarget)}
+                      onFocus={(e: any) => moveCursorToEnd(e.currentTarget)}
                       fullWidth
                       multiline
                       defaultValue={getDefaultValue('bp')}
-                      onBlur={(e) => {
+                      onBlur={(e: any) => {
                         const storageItem = getLocalStorageItem(params.id);
                         if (storageItem) {
                           storageItem.bp = e.target.value;
@@ -3745,11 +3804,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   <label>Temperature</label>
                   <div className={classes.content}>
                     <AphTextField
-                      onFocus={(e) => moveCursorToEnd(e.currentTarget)}
+                      onFocus={(e: any) => moveCursorToEnd(e.currentTarget)}
                       fullWidth
                       multiline
                       defaultValue={getDefaultValue('temperature')}
-                      onBlur={(e) => {
+                      onBlur={(e: any) => {
                         const storageItem = getLocalStorageItem(params.id);
                         if (storageItem) {
                           storageItem.temperature = e.target.value;

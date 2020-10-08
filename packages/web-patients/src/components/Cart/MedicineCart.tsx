@@ -69,6 +69,7 @@ import {
   pharmacyProceedToPayTracking,
   pharmacySubmitPrescTracking,
   pharmacyUploadPresClickTracking,
+  pharmaTatApiTracking,
 } from '../../webEngageTracking';
 import { ChennaiCheckout, submitFormType } from 'components/Cart/ChennaiCheckout';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
@@ -768,6 +769,18 @@ export const MedicineCart: React.FC = (props) => {
   const [longitude, setLongitude] = React.useState<string>('');
   const [quantityUpdated, setQuantityUpdated] = React.useState<boolean>(true);
 
+  const userSubscriptions = JSON.parse(localStorage.getItem('userSubscriptions'));
+  var packageId: string;
+  if (userSubscriptions && userSubscriptions[0] && userSubscriptions[0].status == 'ACTIVE') {
+    packageId = `${userSubscriptions[0].group_plan.group.name}:${userSubscriptions[0].group_plan.plan_id}`;
+  }
+  const freeDelivery =
+    userSubscriptions &&
+    userSubscriptions[0] &&
+    userSubscriptions[0].status == 'ACTIVE' &&
+    userSubscriptions[0].group_plan &&
+    userSubscriptions[0].group_plan.name == 'PLATINUM+ PLAN';
+
   const apiDetails = {
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     bulk_product_info_url: process.env.PHARMACY_MED_BULK_PRODUCT_INFO_URL,
@@ -887,10 +900,48 @@ export const MedicineCart: React.FC = (props) => {
     });
     return await checkTatAvailability(items, pincode, lat, lng)
       .then((res: any) => {
-        const updatedCartItems = res && res.data && res.data.response && res.data.response.items;
-        //call the fxn here
-        checkCartChangesUtil(updatedCartItems);
-        return true;
+        if (res && res.data && res.data.response) {
+          const updatedCartItems = res.data.response.items;
+          //call the fxn here
+          checkCartChangesUtil(updatedCartItems);
+          /** Webengage Tracking */
+          const {
+            items,
+            lat,
+            lng,
+            ordertime,
+            pincode,
+            storeCode,
+            storeType,
+            tat,
+            tatU,
+          } = res.data.response;
+          const { exist, mrp, qty } = items[0];
+          const { sku, quantity, price, mou } = cartItems[0];
+          pharmaTatApiTracking({
+            source: 'Cart',
+            inputSku: sku,
+            inputQty: quantity,
+            inputLat: lat,
+            inputLng: lng,
+            inputPincode: pincode,
+            inputMrp: price,
+            itemsInCart: cartItems.length,
+            resExist: exist,
+            resMrp: mrp * parseInt(mou),
+            resQty: qty,
+            resLat: lat,
+            resLng: lng,
+            resOrderTime: ordertime,
+            resPincode: pincode,
+            resStorecode: storeCode,
+            resStoreType: storeType,
+            resTat: tat,
+            resTatU: tatU,
+          });
+          /** Webengage Tracking */
+          return true;
+        }
       })
       .catch((e) => {
         console.error(e);
@@ -939,6 +990,7 @@ export const MedicineCart: React.FC = (props) => {
   //   });
   //   return sum;
   // };
+
   const mrpTotal = getMRPTotal();
   // const couponDiscountTotal = getCouponDiscountTotal();
   let productDiscount = mrpTotal - cartTotal;
@@ -949,13 +1001,13 @@ export const MedicineCart: React.FC = (props) => {
     validateCouponResult.discount >= productDiscount
       ? Number(cartTotal) - couponDiscount
       : Number(cartTotal);
-
-  const deliveryCharges =
-    modifiedAmountForCharges >= Number(pharmacyMinDeliveryValue) ||
-    modifiedAmountForCharges <= 0 ||
-    tabValue === 1
-      ? 0
-      : Number(pharmacyDeliveryCharges);
+  const deliveryCharges = freeDelivery
+    ? 0
+    : modifiedAmountForCharges >= Number(pharmacyMinDeliveryValue) ||
+      modifiedAmountForCharges <= 0 ||
+      tabValue === 1
+    ? 0
+    : Number(pharmacyDeliveryCharges);
   const totalAmount = (cartTotal + Number(deliveryCharges)).toFixed(2);
   const totalWithCouponDiscount =
     validateCouponResult &&
@@ -1048,6 +1100,8 @@ export const MedicineCart: React.FC = (props) => {
       const data = {
         mobile: localStorage.getItem('userMobileNo'),
         billAmount: cartTotal.toFixed(2),
+        email: currentPatient && currentPatient.emailAddress,
+        packageId: packageId,
         coupon: couponCode,
         pinCode: localStorage.getItem('pharmaPincode'),
         products: cartItems.map((item) => {
@@ -1062,6 +1116,9 @@ export const MedicineCart: React.FC = (props) => {
           };
         }),
       };
+      const fetchCouponUrl = `${process.env.VALIDATE_CONSULT_COUPONS}?mobile=${
+        currentPatient.mobileNumber
+      }&email=${currentPatient.emailAddress}&packageId=${userSubscriptions ? packageId : ''}`;
       fetchUtil(process.env.VALIDATE_CONSULT_COUPONS, 'POST', data, '', false)
         .then((resp: any) => {
           if (resp.errorCode == 0) {
@@ -1959,9 +2016,7 @@ export const MedicineCart: React.FC = (props) => {
               )}
               <div className={classes.oneApolloDetails}>
                 <img src={require('images/one-apollo.svg')} width="30" alt="One Apollo" />
-                <Typography>
-                  {ConfigOneApolloData.medicineCartString}
-                </Typography>
+                <Typography>{ConfigOneApolloData.medicineCartString}</Typography>
               </div>
             </div>
           </Scrollbars>

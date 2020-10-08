@@ -6,6 +6,7 @@ import { BottomLinks } from 'components/BottomLinks';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { dataLayerTracking } from 'gtmTracking';
 import { MetaTagsComp } from 'MetaTagsComp';
+import { dataLayerTracking } from 'gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -85,7 +86,6 @@ const useStyles = makeStyles((theme: Theme) => {
 
 const AboutUs: React.FC = () => {
   const classes = useStyles({});
-
   useEffect(() => {
     /**Gtm code start start */
     dataLayerTracking({
@@ -99,12 +99,27 @@ const AboutUs: React.FC = () => {
   }, []);
 
   const [metaTagProps, setMetaTagProps] = useState(null);
-  setMetaTagProps({
-    title: 'Official Apollo Website for Online Medicines & Consultations - About Apollo 247',
-    description:
-      'Apollo 247 is a part of the multi-specialty healthcare group Apollo Hospitals. Buy medicines online and get treated by Apollo certified doctors anytime.',
-    canonicalLink: typeof window !== 'undefined' && window.location && window.location.href,
-  });
+  useEffect(() => {
+    setMetaTagProps({
+      title: 'Official Apollo Website for Online Medicines & Consultations - About Apollo 247',
+      description:
+        'Apollo 247 is a part of the multi-specialty healthcare group Apollo Hospitals. Buy medicines online and get treated by Apollo certified doctors anytime.',
+      canonicalLink: typeof window !== 'undefined' && window.location && window.location.href,
+    });
+  }, []);
+
+  useEffect(() => {
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: 'About Us Page',
+      pageLOB: 'Others',
+      pageType: 'About Us Page',
+    });
+    /**Gtm code start end */
+  }, []);
+
   return (
     <div className={classes.root}>
       {metaTagProps && <MetaTagsComp {...metaTagProps} />}

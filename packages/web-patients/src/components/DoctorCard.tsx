@@ -64,8 +64,10 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 10,
       fontWeight: 600,
       color: '#0087ba',
-      textTransform: 'uppercase',
       letterSpacing: 0.25,
+      '& span': {
+        fontSize: 13,
+      },
     },
     doctorExp: {
       paddingLeft: 8,
@@ -142,7 +144,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [popupLoading, setPopupLoading] = React.useState<boolean>(false);
   const doctorId = doctorDetails.id;
-  const doctorName = doctorDetails && doctorDetails.fullName;
+  const doctorName = doctorDetails && doctorDetails.displayName;
 
   const clinics: any = [];
 
@@ -227,18 +229,16 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         }}
       >
         <Avatar
-          alt={doctorDetails.firstName || ''}
+          alt={doctorDetails.displayName || ''}
           src={
             doctorDetails.thumbnailUrl && doctorDetails.thumbnailUrl !== ''
               ? doctorDetails.thumbnailUrl
               : require('images/no_photo_icon_round.svg')
           }
           title={
-            doctorDetails.fullName
-              ? doctorDetails.fullName
-              : `${_startCase(_toLower(doctorDetails.firstName))} ${_startCase(
-                  _toLower(doctorDetails.lastName)
-                )}`
+            doctorDetails.displayName
+              ? doctorDetails.displayName
+              : `${_startCase(doctorDetails.fullName)}`
           }
           className={classes.doctorAvatar}
         />
@@ -252,15 +252,15 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           <div
             className={classes.doctorName}
             title={
-              doctorDetails.fullName
-                ? doctorDetails.fullName
+              doctorDetails.displayName
+                ? doctorDetails.displayName
                 : `${_startCase(_toLower(doctorDetails.firstName))} ${_startCase(
                     _toLower(doctorDetails.lastName)
                   )}`
             }
           >
-            {doctorDetails.fullName
-              ? doctorDetails.fullName
+            {doctorDetails.displayName
+              ? doctorDetails.displayName
               : `${_startCase(_toLower(doctorDetails.firstName))} ${_startCase(
                   _toLower(doctorDetails.lastName)
                 )}`}
@@ -275,11 +275,14 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               {doctorDetails && parseInt(doctorDetails.experience || '1', 10) > 1 ? 'YRS' : 'YEAR'}
             </span>
           </div>
-          <div className={classes.doctorspecialty} title={'Specialty'}>
+          <div className={classes.doctorspecialty} title={'Fees'}>
             <p>
-              {doctorDetails &&
-                doctorDetails.specialty &&
-                doctorDetails.specialty.userFriendlyNomenclature}
+              Starts at{' '}
+              <span>
+                ₹{' '}
+                {doctorDetails &&
+                  (doctorDetails.onlineConsultationFees || doctorDetails.physicalConsultationFees)}
+              </span>
             </p>
           </div>
           <div className={classes.doctorDetails} title={'Location'}>

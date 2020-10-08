@@ -4,6 +4,7 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Popover, CircularProgress, Typography } from '@material-ui/core';
 import { Header } from 'components/Header';
+import { Helmet } from 'react-helmet';
 import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
 import { ShopByBrand } from 'components/Medicine/Cards/ShopByBrand';
 import { ShopByCategory } from 'components/Medicine/Cards/ShopByCategory';
@@ -42,6 +43,7 @@ import { Route } from 'react-router-dom';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useAuth } from 'hooks/authHooks';
 import { deepLinkUtil } from 'helpers/commonHelpers';
+import { isAlternateVersion } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -695,9 +697,9 @@ const MedicineLanding: React.FC = (props: any) => {
     /**Gtm code start end */
   };
   const metaTagProps = {
-    title: 'Online Medicine Order & Delivery, Buy Medicines from Apollo Pharmacy',
+    title: 'Apollo 247- Online Pharmacy, Online Medicine Order, Fastest Delivery',
     description:
-      "Online Medicine Order - Buy medicines online from Apollo Pharmacy Stores (India's largest pharmacy chain) and get the home delivery. All kinds on medicines, health products & equipments are available at our online medicine store.",
+      "Apollo 247 Online Pharmacy - Online Medicine Order - Buy medicines online from Apollo Online Pharmacy Store (India's largest pharmacy chain) and experience the fastest home delivery. All kinds of medicines, health products & equipments are available at our online medicine store.",
     canonicalLink:
       window && window.location && window.location.origin && `${window.location.origin}/medicines`,
     deepLink: window.location.href,
@@ -752,6 +754,12 @@ const MedicineLanding: React.FC = (props: any) => {
 
   return (
     <div className={classes.root}>
+      <Helmet>
+        <link
+          rel="alternate"
+          href="android-app://com.apollopatient/https/www.apollo247.com/medicines"
+        />
+      </Helmet>
       <MetaTagsComp {...metaTagProps} />
       <div className={classes.medicineHeader}>
         <Header />
@@ -788,9 +796,11 @@ const MedicineLanding: React.FC = (props: any) => {
                     <div className={classes.preServiceType}>
                       <div className={classes.prescriptionGroup}>
                         <div>
-                          <h3 className={classes.groupTitle}>
-                            Now place your order via prescription
-                          </h3>
+                          {!isAlternateVersion() && (
+                            <h3 className={classes.groupTitle}>
+                              Now place your order via prescription
+                            </h3>
+                          )}
                           <AphButton
                             onClick={() => handleUploadPrescription()}
                             title={'Upload Prescription'}
@@ -798,9 +808,11 @@ const MedicineLanding: React.FC = (props: any) => {
                             Upload
                           </AphButton>
                         </div>
-                        <div className={classes.prescriptionIcon}>
-                          <img src={require('images/ic_prescription_pad.svg')} alt="" />
-                        </div>
+                        {!isAlternateVersion() && (
+                          <div className={classes.prescriptionIcon}>
+                            <img src={require('images/ic_prescription_pad.svg')} alt="" />
+                          </div>
+                        )}
                       </div>
                       <div className={classes.medicineReview}>
                         <p>

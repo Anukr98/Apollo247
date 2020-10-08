@@ -2074,6 +2074,9 @@ export class Diagnostics extends BaseEntity {
   @Column({ nullable: true })
   cityId: number;
 
+  @Column({ nullable: true })
+  subCategoryId: number;
+
   @Column({ default: TEST_COLLECTION_TYPE.HC })
   collectionType: TEST_COLLECTION_TYPE;
 
