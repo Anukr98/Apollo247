@@ -28,6 +28,9 @@ const useStyles = makeStyles((theme: Theme) => {
     container: {
       width: 1064,
       margin: '0 auto',
+      [theme.breakpoints.down('sm')]: {
+        width: '100%',
+      },
     },
     aphContent: {
       background: '#f7f8f5',
@@ -36,6 +39,15 @@ const useStyles = makeStyles((theme: Theme) => {
     aboutContainer: {
       display: 'grid',
       gridTemplateColumns: 'auto auto',
+      [theme.breakpoints.down('sm')]: {
+        overflow: 'hidden',
+        position: 'relative',
+      },
+      '& img': {
+        [theme.breakpoints.down('sm')]: {
+          width: 190,
+        },
+      },
     },
     aboutDetails: {
       padding: 40,
@@ -43,9 +55,15 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       justifyContent: 'center',
       background: '#fff',
+      [theme.breakpoints.down('sm')]: {
+        padding: 24,
+      },
       '& h2': {
         fontSize: 36,
         fontWeight: 600,
+        [theme.breakpoints.down('sm')]: {
+          fontSize: 16,
+        },
         '& span': {
           textTransform: 'uppercase',
           display: 'block',
@@ -54,6 +72,12 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     aboutContent: {
       width: '80%',
+      [theme.breakpoints.down('sm')]: {
+        position: 'relative',
+        zIndex: 4,
+        width: '100%',
+        padding: '80px 0',
+      },
       '& h2': {
         margin: '0 0 20px',
       },
@@ -71,11 +95,21 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       alignItems: 'flex-start',
       justifyContent: 'space-between',
+      [theme.breakpoints.down('sm')]: {
+        flexDirection: 'column',
+      },
     },
     aphStepDetail: {
       width: 290,
       position: 'relative',
       height: 350,
+      [theme.breakpoints.down('sm')]: {
+        margin: '0 0 60px',
+        height: 'auto !important',
+        '&:last-child': {
+          margin: 0,
+        },
+      },
       '& h2': {
         fontSize: 36,
         lineHeight: '46px',
@@ -93,6 +127,7 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 18,
         lineHeight: '24px',
         padding: '5px 0',
+
         '& span': {
           fontWeight: 500,
         },
@@ -113,25 +148,45 @@ const useStyles = makeStyles((theme: Theme) => {
     gtContainer: {
       padding: 50,
       position: 'relative',
-      height: 450,
+      [theme.breakpoints.down('sm')]: {
+        padding: 24,
+        overflow: 'hidden',
+      },
     },
     gtContent: {
       padding: '30px 0',
       display: 'flex',
       alignItems: 'flex-end',
       justifyContent: 'space-between',
+      [theme.breakpoints.down('sm')]: {
+        flexDirection: 'column',
+        alignItems: 'center',
+      },
       '& button': {
         width: 150,
         fontSize: 12,
         textTransform: 'uppercase',
+        [theme.breakpoints.down('sm')]: {
+          order: 2,
+        },
       },
       '& h2': {
         fontSize: 36,
         lineHeight: '46px',
         fontWeight: 600,
         width: '65%',
+        [theme.breakpoints.down('sm')]: {
+          order: 1,
+          width: '100%',
+          fontSize: 24,
+          lineHeight: '30px',
+          margin: '0 0 50px',
+        },
         '& .orange': {
           color: '#FCB716',
+          [theme.breakpoints.down('sm')]: {
+            display: 'block',
+          },
         },
         '& .uppercase': {
           textTransform: 'uppercase',
@@ -148,11 +203,20 @@ const useStyles = makeStyles((theme: Theme) => {
       left: 0,
       width: '50%',
       zIndex: 0,
+      [theme.breakpoints.down('sm')]: {
+        fontSize: 92,
+        lineHeight: '92px',
+        bottom: 0,
+      },
     },
     faqContainer: {
       padding: 30,
       position: 'relative',
       zIndex: 4,
+      borderRadius: 5,
+      [theme.breakpoints.down('sm')]: {
+        padding: '0 10px',
+      },
     },
     faq: {
       padding: 20,
@@ -227,6 +291,21 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     aphBanner: {
       position: 'relative',
+      [theme.breakpoints.down('sm')]: {
+        padding: '0 0 60px',
+      },
+      '& .web': {
+        [theme.breakpoints.down('sm')]: {
+          display: 'none',
+        },
+      },
+      '& .mobile': {
+        width: '100%',
+        display: 'none',
+        [theme.breakpoints.down('sm')]: {
+          display: 'block',
+        },
+      },
     },
     bannerContainer: {
       width: 280,
@@ -237,6 +316,14 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 10,
       padding: 20,
       boxShadow: ' 0 5px 20px 0 rgba(0, 0, 0, 0.3)',
+      zIndex: 4,
+      [theme.breakpoints.down('sm')]: {
+        position: 'relative',
+        margin: '-30px auto',
+        zIndex: 4,
+        left: 0,
+        right: 0,
+      },
       '& h2': {
         fontSize: 16,
         fontWeight: 500,
@@ -280,6 +367,20 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'none',
       },
     },
+    proHealth2: {
+      [theme.breakpoints.down('sm')]: {
+        width: 'auto !important',
+        opacity: 0.7,
+        margin: '0 -20px 0 0',
+        position: 'absolute',
+        right: -50,
+        top: 0,
+      },
+    },
+    abc2: {
+      display: 'block !important',
+      height: 500,
+    },
   };
 });
 
@@ -300,7 +401,16 @@ const ApolloProHealthLanding: React.FC = (props) => {
             Get In Touch
           </AphButton>
           <div className={classes.aphBanner}>
-            <img src={require('images/pro-health-banner.svg')} alt="Apollo Pro Health Program" />
+            <img
+              src={require('images/pro-health-banner.svg')}
+              className="web"
+              alt="Apollo Pro Health Program"
+            />
+            <img
+              src={require('images/ph-banner-mobile.svg')}
+              className="mobile"
+              alt="Apollo Pro Health Program"
+            />
             <div className={classes.bannerContainer}>
               <Typography component="h2">Share your details</Typography>
               <form>
@@ -401,7 +511,7 @@ const ApolloProHealthLanding: React.FC = (props) => {
               </div>
             </div>
           </div>
-          <div className={classes.aboutContainer}>
+          <div className={`${classes.aboutContainer} ${classes.abc2}`}>
             <div className={classes.aboutDetails}>
               <div className={classes.aboutContent}>
                 <Typography component="h2">About Us</Typography>
@@ -418,7 +528,11 @@ const ApolloProHealthLanding: React.FC = (props) => {
                 </Typography>
               </div>
             </div>
-            <img src={require('images/prohealth-2.svg')} alt="Apollo Pro Health Program" />
+            <img
+              src={require('images/prohealth-2.svg')}
+              className={classes.proHealth2}
+              alt="Apollo Pro Health Program"
+            />
           </div>
           <div className={classes.gtContainer}>
             <div className={classes.gtContent}>
