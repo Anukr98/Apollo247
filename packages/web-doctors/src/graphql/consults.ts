@@ -155,11 +155,13 @@ export const END_CALL_NOTIFICATION = gql`
     $appointmentCallId: String
     $patientId: String
     $numberOfParticipants: Int
+    $endVoipCall: Boolean
   ) {
     endCallNotification(
       appointmentCallId: $appointmentCallId
       patientId: $patientId
       numberOfParticipants: $numberOfParticipants
+      endVoipCall: $endVoipCall
     ) {
       status
     }
