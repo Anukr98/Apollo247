@@ -21,7 +21,6 @@ import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/doctors';
 import { ValidateConsultCoupon_validateConsultCoupon } from 'graphql/types/ValidateConsultCoupon';
 import { Route } from 'react-router-dom';
 import { consultPayButtonClickTracking } from 'webEngageTracking';
-import { dataLayerTracking } from 'gtmTracking';
 import { getCouponByUserMobileNumber } from 'helpers/commonHelpers';
 import fetchUtil from 'helpers/fetch';
 import { gtmTracking, dataLayerTracking } from '../../gtmTracking';
