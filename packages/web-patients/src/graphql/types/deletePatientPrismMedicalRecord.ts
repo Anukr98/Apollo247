@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { MedicalRecordType } from "./globalTypes";
+import { DeletePatientPrismMedicalRecordInput } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: deletePatientPrismMedicalRecord
@@ -19,7 +19,5 @@ export interface deletePatientPrismMedicalRecord {
 }
 
 export interface deletePatientPrismMedicalRecordVariables {
-  id?: string | null;
-  patientId: string;
-  recordType: MedicalRecordType;
+  DeletePatientPrismMedicalRecordInput?: DeletePatientPrismMedicalRecordInput | null;
 }

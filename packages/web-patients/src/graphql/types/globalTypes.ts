@@ -583,6 +583,12 @@ export interface ConsultQueueInput {
   gender?: Gender | null;
 }
 
+export interface DeletePatientPrismMedicalRecordInput {
+  id?: string | null;
+  patientId: string;
+  recordType: MedicalRecordType;
+}
+
 export interface DiagnosticLineItem {
   itemId?: number | null;
   price?: number | null;

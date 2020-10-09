@@ -651,11 +651,11 @@ export const UPLOAD_DOCUMENT = gql`
 
 export const DELETE_PATIENT_MEDICAL_RECORD = gql`
   mutation deletePatientPrismMedicalRecord(
-    $id: String
-    $patientId: ID!
-    $recordType: MedicalRecordType!
+    $DeletePatientPrismMedicalRecordInput: DeletePatientPrismMedicalRecordInput
   ) {
-    deletePatientPrismMedicalRecord(id: $id, patientId: $patientId, recordType: $recordType) {
+    deletePatientPrismMedicalRecord(
+      deletePatientPrismMedicalRecordInput: $DeletePatientPrismMedicalRecordInput
+    ) {
       status
     }
   }
