@@ -13,6 +13,7 @@ import {
   MedicineListingSections,
   Props as MedicineListingSectionsProps,
 } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListingSections';
+import { ProductPageViewedEventProps } from '@aph/mobile-patients/src/components/Medicines/MedicineDetailsScene';
 import { OptionSelectionOverlay } from '@aph/mobile-patients/src/components/Medicines/OptionSelectionOverlay';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
@@ -199,6 +200,12 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
         movedFrom: searchText
           ? ProductPageViewedSource.FULL_SEARCH
           : ProductPageViewedSource.CATEGORY_OR_LISTING,
+        productPageViewedEventProps: searchText
+          ? undefined
+          : ({
+              'Category ID': categoryId,
+              'Category Name': titleNavProp,
+            } as ProductPageViewedEventProps),
       });
     };
 
