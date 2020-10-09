@@ -3268,3 +3268,27 @@ export const SET_DEFAULT_ADDRESS = gql`
     }
   }
 `;
+
+export const GET_DIAGNOSTIC_AREAS = gql`
+  query getAreas ($pincode: Int!,$itemIDs: [Int]!) {
+    getAreas(pincode: $pincode, itemIDs: $itemIDs) {
+     status
+     areas{
+        id 
+        area
+      }
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_SLOTS_WITH_AREA_ID = gql`
+  query getDiagnosticSlotsWithAreaID ($selectedDate: Date!,$areaID: Int!) {
+    getDiagnosticSlotsWithAreaID(selectedDate: 
+      $selectedDate, areaID: $areaID) {
+      slots{
+        Timeslot
+        TimeslotID
+      }
+    }
+  }
+`;

@@ -277,7 +277,10 @@
     "disabledDiagnosticsMsg": "Sorry, we can not process {{testNames}} now. This will be removed from your cart.\n",
     "disabledDiagnosticsFailureMsg": "Sorry, we are unable to verify items in your cart right now. Please try again later.",
     "removeThisTestCTA": "Remove this test from cart",
-    "removeTheseTestsCTA": "Remove these tests from cart"
+    "removeTheseTestsCTA": "Remove these tests from cart",
+    "itemsAddedSuccessfullyCTA":" Item successfully added",
+    "proceedToCartCTA":"PROCEED TO CART"
+
   },
   "orders": {
     "urOrders": "MY ORDERS",

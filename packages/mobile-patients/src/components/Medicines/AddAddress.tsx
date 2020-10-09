@@ -228,7 +228,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     setAddresses: setTestAddresses,
   } = useDiagnosticsCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
-  const { locationDetails, pharmacyLocation } = useAppCommonData();
+  const { locationDetails, pharmacyLocation, diagnosticLocation } = useAppCommonData();
 
   const isChanged =
     addressData &&
@@ -291,7 +291,11 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           });
       } else {
         const _locationDetails =
-          pharmacyLocation && source == 'Cart' ? pharmacyLocation : locationDetails;
+          pharmacyLocation && source == 'Cart'
+            ? pharmacyLocation
+            : diagnosticLocation && source == 'Diagnostics Cart'
+            ? diagnosticLocation
+            : locationDetails;
         setstate(_locationDetails.state || '');
         // setcity(formatCityStateDisplay(_locationDetails.city, _locationDetails.state)); //[city,state] format
         setcity(_locationDetails.city || '');

@@ -40,6 +40,11 @@ export interface DiagnosticSlot {
   date: number; // timestamp
 }
 
+export interface DiagnosticArea {
+  key: number | string;
+  value: string;
+}
+
 export interface DiagnosticsCartContextProps {
   forPatientId: string;
   setPatientId: ((id: string) => void) | null;
@@ -106,6 +111,9 @@ export interface DiagnosticsCartContextProps {
   diagnosticSlot: DiagnosticSlot | null;
   setDiagnosticSlot: ((item: DiagnosticSlot | null) => void) | null;
 
+  areaSelected: DiagnosticArea | null;
+  setAreaSelected: ((items: DiagnosticArea | null) => void) | null;
+
   diagnosticClinic: DiagnosticClinic | null;
   setDiagnosticClinic: ((item: DiagnosticClinic) => void) | null;
 }
@@ -167,6 +175,8 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   diagnosticSlot: null,
   setDiagnosticClinic: null,
   setDiagnosticSlot: null,
+  areaSelected: null,
+  setAreaSelected: null,
 });
 
 const showGenericAlert = (message: string) => {
@@ -224,6 +234,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   const [diagnosticSlot, _setDiagnosticSlot] = useState<
     DiagnosticsCartContextProps['diagnosticSlot']
   >(null);
+
+  const [areaSelected, setAreaSelected] = useState<DiagnosticsCartContextProps['areaSelected']>(
+    null
+  );
 
   const setDiagnosticClinic: DiagnosticsCartContextProps['setDiagnosticClinic'] = (item) => {
     _setDiagnosticClinic(item);
@@ -386,6 +400,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setClinics([]);
     setCoupon(null);
     setDiagnosticSlot(null);
+    setAreaSelected(null);
   };
 
   useEffect(() => {
@@ -453,6 +468,8 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         grandTotal,
         couponDiscount,
         deliveryCharges,
+        setAreaSelected,
+        areaSelected,
         hcCharges,
         setHcCharges,
 

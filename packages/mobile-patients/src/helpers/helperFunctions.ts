@@ -73,6 +73,7 @@ import { getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails } fr
 import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetailsWithAddress';
 import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 import { handleUniversalLinks } from './UniversalLinks';
+import { getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots } from '../graphql/types/getDiagnosticSlotsWithAreaID';
 
 const { RNAppSignatureHelper } = NativeModules;
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
@@ -95,6 +96,14 @@ export interface TestSlot {
   diagnosticBranchCode: string;
   date: Date;
   slotInfo: getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo;
+}
+
+export interface TestSlotWithArea {
+  employeeCode: string;
+  employeeName: string;
+  diagnosticBranchCode: string;
+  date: Date;
+  slotInfo : getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots
 }
 
 const isDebugOn = __DEV__;
@@ -1015,6 +1024,30 @@ export const isValidTestSlot = (
   );
 };
 
+export const isValidTestSlotWithArea = (
+  slot: getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots,
+  date: Date
+) => {
+  return (
+    (moment(date)
+      .format('DMY')
+      .toString() ===
+    moment()
+      .format('DMY')
+      .toString()
+      ? moment(slot.Timeslot!.trim(), 'HH:mm').isSameOrAfter(
+          moment(new Date()).add(
+            AppConfig.Configuration.DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES,
+            'minutes'
+          )
+        )
+      : true) &&
+    moment(slot.Timeslot!.trim(), 'HH:mm').isSameOrBefore(
+      moment(AppConfig.Configuration.DIAGNOSTIC_MAX_SLOT_TIME.trim(), 'HH:mm')
+    )
+  );
+};
+
 export const getTestSlotDetailsByTime = (slots: TestSlot[], startTime: string, endTime: string) => {
   return slots.find(
     (item) => item.slotInfo.startTime == startTime && item.slotInfo.endTime == endTime
@@ -1043,6 +1076,29 @@ export const getUniqueTestSlots = (slots: TestSlot[]) => {
       return 0;
     });
 };
+
+export const getUniqueTestSlotsWithArea = (slots: TestSlotWithArea[]) => {
+  return slots
+    .filter(
+      (item, idx, array) =>
+        array.findIndex(
+          (_item) =>
+            _item.slotInfo.Timeslot == item.slotInfo.Timeslot 
+        ) == idx
+    )
+    .map((val) => ({
+      startTime: val.slotInfo.Timeslot!,
+      endTime: val.slotInfo.Timeslot!,
+    }))
+    .sort((a, b) => {
+      if (moment(a.startTime.trim(), 'HH:mm').isAfter(moment(b.startTime.trim(), 'HH:mm')))
+        return 1;
+      else if (moment(b.startTime.trim(), 'HH:mm').isAfter(moment(a.startTime.trim(), 'HH:mm')))
+        return -1;
+      return 0;
+    });
+};
+
 
 const webengage = new WebEngage();
 
