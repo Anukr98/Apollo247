@@ -329,6 +329,7 @@ export const GET_PATIENT_FUTURE_APPOINTMENT_COUNT = gql`
   query getPatientFutureAppointmentCount($patientId: String) {
     getPatientFutureAppointmentCount(patientId: $patientId) {
       consultsCount
+      activeAndInProgressConsultsCount
     }
   }
 `;
@@ -3218,7 +3219,7 @@ export const CREATE_ONE_APOLLO_USER = gql`
   }
 `;
 export const GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES = gql`
-  query getPincodeServiceability ($pincode: Int!) {
+  query getPincodeServiceability($pincode: Int!) {
     getPincodeServiceability(pincode: $pincode) {
       cityID
       cityName
