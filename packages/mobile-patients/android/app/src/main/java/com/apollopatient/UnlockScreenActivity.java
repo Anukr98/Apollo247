@@ -16,6 +16,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -94,8 +95,12 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
         //ringtoneManager end
 
         if(notifMessageType.equals(incomingCallStart)){
-//                ringtone.setLooping(true);
-//                ringtone.play();
+            if(!Settings.canDrawOverlays(this)){
+                return;
+            }else{
+                ringtone.setLooping(true);
+                ringtone.play();
+            }
         }
         else if(notifMessageType.equals(incomingCallDisconnect)){
                 finish();
