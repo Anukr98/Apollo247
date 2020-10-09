@@ -246,7 +246,7 @@ export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
   return (
     <>
       <div className={classes.specialitySearch} ref={searchRef}>
-        <div className={classes.location} onClick={() => setLocationPopup(!locationPopup)}>
+        <div className={classes.location} onClick={() => setLocationPopup(true)}>
           <img src={require('images/location.svg')} alt="" />
           <div className={classes.userLocation}>
             <Typography className={selectedCity ? classes.cityActive : null}>
