@@ -96,6 +96,8 @@ app.get(
   })
 );
 
+app.patch('/update247PatientProfile', cronTabs.update247PatientProfile);
+
 app.post('/saveMedicineInfoRedis', cronTabs.saveMedicineInfoRedis);
 app.get('/sendCallStartNotification', cronTabs.sendCallStartNotification);
 app.get('/refreshDoctorDeepLinks', cronTabs.refreshDoctorDeepLinks);

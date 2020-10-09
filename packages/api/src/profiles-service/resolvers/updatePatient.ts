@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { Patient, Relation } from 'profiles-service/entities';
+import { Patient, Relation, Gender } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { Resolver } from 'api-gateway';
@@ -20,6 +20,8 @@ import { OneApollo } from 'helpers/oneApollo';
 import { ONE_APOLLO_STORE_CODE } from 'types/oneApolloTypes';
 import { format } from 'date-fns';
 import { winstonLogger } from 'customWinstonLogger';
+
+import _ from 'lodash';
 
 const REDIS_PATIENT_LOCK_PREFIX = `patient:lock:`;
 export const updatePatientTypeDefs = gql`
@@ -45,15 +47,78 @@ export const updatePatientTypeDefs = gql`
     allergies: String!
   }
 
+  input SyncPatientProfileUpdatesFromPRISMInput {
+    uhid: String
+    mobileNumber: String
+    updateAttributes : UpdateAttributes
+  }
+
+  input UpdateAttributes {
+    patientProfile: profileUpdateAttributes
+    patientAddress: addressUpdateAttributes
+  }
+
+  input profileUpdateAttributes {
+    firstName: String
+    lastName: String
+    gender: Gender
+    emailAddress: String
+    dateOfBirth: DateTime
+  }
+
+  input addressUpdateAttributes {
+    addressLine1 : String
+    addressLine2 : String
+    city : String
+    state : String
+    zipcode : String
+  }
+
   type UpdatePatientResult {
     patient: Patient
+  }
+
+  type SyncPatientProfileUpdatesFromPRISMResult {
+    status: Boolean
   }
 
   extend type Mutation {
     updatePatient(patientInput: UpdatePatientInput): UpdatePatientResult!
     updatePatientAllergies(patientId: String!, allergies: String!): UpdatePatientResult!
+    syncPatientProfileUpdatesFromPRISM(syncPatientProfileUpdatesFromPRISMInput:SyncPatientProfileUpdatesFromPRISMInput): SyncPatientProfileUpdatesFromPRISMResult!
   }
 `;
+
+interface SyncPatientProfileUpdatesFromPRISMInput {
+  uhid: string
+  mobileNumber: string
+  updateAttributes: {
+    patientProfile: Partial<profileUpdateAttributes>,
+    patientAddress: Partial<addressUpdateAttributes>
+  }
+}
+
+interface profileUpdateAttributes {
+  firstName: string
+  lastName: string
+  gender: Gender
+  emailAddress: string
+  dateOfBirth: Date
+}
+
+interface addressUpdateAttributes {
+  addressLine1: string
+  addressLine2: string
+  city: string
+  state: string
+  zipcode: string
+}
+
+type SyncPatientProfileUpdatesFromPRISMInputArgs = { syncPatientProfileUpdatesFromPRISMInput: SyncPatientProfileUpdatesFromPRISMInput };
+
+type SyncPatientProfileUpdatesFromPRISMResult = {
+  status: Boolean
+}
 
 type UpdatePatientResult = {
   patient: Patient | null;
@@ -255,9 +320,48 @@ const getStoreCode = (patient: Patient) => {
   return storeCode;
 };
 
+/* This is graph ql resolver to expose webhook to PRISM to update profile information in 247
+webook exposed through - update247PatientProfile method */
+const syncPatientProfileUpdatesFromPRISM: Resolver<
+  null,
+  SyncPatientProfileUpdatesFromPRISMInputArgs,
+  ProfilesServiceContext,
+  SyncPatientProfileUpdatesFromPRISMResult> = async (parent, { syncPatientProfileUpdatesFromPRISMInput }, { profilesDb }) => {
+
+    if (syncPatientProfileUpdatesFromPRISMInput &&
+      syncPatientProfileUpdatesFromPRISMInput.updateAttributes &&
+      syncPatientProfileUpdatesFromPRISMInput.updateAttributes.patientProfile &&
+      !_.isEmpty(syncPatientProfileUpdatesFromPRISMInput.updateAttributes.patientProfile)) {
+
+      const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+      const patient = await patientRepo.findByUhidAndMobile(syncPatientProfileUpdatesFromPRISMInput.uhid, syncPatientProfileUpdatesFromPRISMInput.mobileNumber)
+
+      if (!patient) {
+        throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, {});
+      }
+
+      const updatePayload = Object.assign(patient, syncPatientProfileUpdatesFromPRISMInput.updateAttributes.patientProfile)
+
+      try {
+        await patientRepo.updatePatientDetails(updatePayload)
+      } catch (err) {
+        throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, {});
+      }
+    } else {
+      throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, {});
+    }
+
+    return {
+      status: true
+    }
+  };
+
+
+
 export const updatePatientResolvers = {
   Mutation: {
     updatePatient,
     updatePatientAllergies,
+    syncPatientProfileUpdatesFromPRISM,
   },
 };
