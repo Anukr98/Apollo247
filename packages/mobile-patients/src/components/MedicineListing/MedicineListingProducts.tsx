@@ -1,15 +1,16 @@
 import {
+  ProductList,
+  Props as ProductListProps,
+} from '@aph/mobile-patients/src/components/Medicines/ProductList';
+import {
   Props as SearchMedicineCardProps,
   SearchMedicineCard,
 } from '@aph/mobile-patients/src/components/ui/SearchMedicineCard';
 import { SearchMedicineGridCard } from '@aph/mobile-patients/src/components/ui/SearchMedicineGridCard';
 import React from 'react';
-import { FlatList, FlatListProps, ListRenderItemInfo, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
-export interface ProductProps extends SearchMedicineCardProps {}
-type ListProps = FlatListProps<ProductProps>;
-
-export interface Props extends Omit<ListProps, 'renderItem'> {
+export interface Props extends ProductListProps {
   view: 'list' | 'grid';
 }
 
@@ -21,7 +22,7 @@ export const MedicineListingProducts: React.FC<Props> = ({
 }) => {
   const isGridView = view == 'grid';
 
-  const renderItem = ({ item, index }: ListRenderItemInfo<SearchMedicineCardProps>) => {
+  const renderItem: ProductListProps['renderComponent'] = ({ item, index }) => {
     const props: SearchMedicineCardProps = {
       ...item,
       containerStyle: !isGridView
@@ -38,18 +39,14 @@ export const MedicineListingProducts: React.FC<Props> = ({
   const renderItemSeparator = () => <View style={styles.itemSeparator} />;
 
   return (
-    <FlatList
+    <ProductList
       data={data}
-      renderItem={renderItem}
-      keyExtractor={({ sku }) => `${sku}`}
-      keyboardShouldPersistTaps="always"
-      bounces={false}
-      showsVerticalScrollIndicator={false}
+      renderComponent={renderItem}
       numColumns={isGridView ? 2 : 1}
       key={view}
-      removeClippedSubviews={true}
       ItemSeparatorComponent={renderItemSeparator}
       contentContainerStyle={[styles.flatListContainer, contentContainerStyle]}
+      horizontal={false}
       {...restOfProps}
     />
   );

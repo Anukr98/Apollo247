@@ -16,14 +16,23 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import React from 'react';
-import { FlatList, FlatListProps, ListRenderItemInfo, StyleSheet, View } from 'react-native';
+import {
+  FlatList,
+  FlatListProps,
+  ListRenderItem,
+  ListRenderItemInfo,
+  StyleSheet,
+  View,
+} from 'react-native';
 import { NavigationRoute, NavigationScreenProp } from 'react-navigation';
 
 type ListProps = FlatListProps<MedicineProduct>;
 
 export interface Props extends Omit<ListProps, 'renderItem'> {
   navigation: NavigationScreenProp<NavigationRoute<object>, object>;
-  Component: React.FC<ProductCardProps>;
+  /** one of the props (Component | renderComponent) are mandatory */
+  Component?: React.FC<ProductCardProps>;
+  renderComponent?: ListRenderItem<ProductCardProps>;
   addToCartSource: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Source'];
   movedFrom: ProductPageViewedSource;
   productPageViewedEventProps?: ProductPageViewedEventProps;
@@ -37,6 +46,7 @@ export const ProductList: React.FC<Props> = ({
   movedFrom,
   navigation,
   Component,
+  renderComponent,
   data,
   contentContainerStyle,
   ...restOfProps
@@ -76,7 +86,8 @@ export const ProductList: React.FC<Props> = ({
     );
   };
 
-  const renderItem = ({ item, index }: ListRenderItemInfo<MedicineProduct>) => {
+  const renderItem = (info: ListRenderItemInfo<MedicineProduct>) => {
+    const { item, index } = info;
     const id = item.sku;
     const qty = getCartItemQty(id);
     const onPressAddQty = () => {
@@ -104,7 +115,11 @@ export const ProductList: React.FC<Props> = ({
           : styles.itemContainer,
     };
 
-    return <Component {...props} />;
+    return renderComponent ? (
+      renderComponent({ ...info, item: props })
+    ) : Component ? (
+      <Component {...props} />
+    ) : null;
   };
 
   const renderItemSeparator = () => <View style={styles.itemSeparator} />;

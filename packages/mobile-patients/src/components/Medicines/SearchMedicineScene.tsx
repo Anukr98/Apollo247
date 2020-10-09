@@ -610,7 +610,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         price={price}
         specialPrice={specialPrice}
         quantity={getItemQuantity(medicine.sku)}
-        onPressAdd={() => {
+        onPressAddQty={() => {
           CommonLogEvent(AppRoutes.SearchMedicineScene, 'Add item to cart');
           onAddCartItem(medicine);
         }}
@@ -684,7 +684,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         price={price}
         specialPrice={specialPrice}
         quantity={getItemQuantity(medicine.sku)}
-        onPressAdd={() => {
+        onPressAddQty={() => {
           CommonLogEvent(AppRoutes.SearchMedicineScene, 'Add item to cart');
           onAddCartItem(medicine);
         }}

@@ -1,22 +1,15 @@
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { MedicineListingEvents } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListingEvents';
 import {
   MedicineListingFilter,
   Props as MedicineListingFilterProps,
 } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListingFilter';
 import { MedicineListingHeader } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListingHeader';
-import {
-  MedicineListingProducts,
-  ProductProps,
-} from '@aph/mobile-patients/src/components/MedicineListing/MedicineListingProducts';
+import { MedicineListingProducts } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListingProducts';
 import {
   MedicineListingSections,
   Props as MedicineListingSectionsProps,
 } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListingSections';
-import { ProductPageViewedEventProps } from '@aph/mobile-patients/src/components/Medicines/MedicineDetailsScene';
 import { OptionSelectionOverlay } from '@aph/mobile-patients/src/components/Medicines/OptionSelectionOverlay';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
   getProductsByCategoryApi,
@@ -24,10 +17,6 @@ import {
   MedicineProductsResponse,
   searchMedicineApi,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
-import {
-  addPharmaItemToCart,
-  formatToCartItem,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { ProductPageViewedSource } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -79,12 +68,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
 
   // global contexts
   const { currentPatient } = useAllCurrentPatients();
-  const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable } = useAppCommonData();
-  const { showAphAlert, setLoading: setGlobalLoading } = useUIElements();
-  const { getCartItemQty, addCartItem, updateCartItem, removeCartItem } = useShoppingCart();
-
-  // custom variables
-  const pharmacyPincode = pharmacyLocation?.pincode || locationDetails?.pincode;
+  const { showAphAlert } = useUIElements();
 
   useEffect(() => {
     if (searchText.length >= 3) {
@@ -193,64 +177,6 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     return <MedicineListingHeader navigation={navigation} movedFrom={movedFrom} />;
   };
 
-  const getMedListingProducts = (products: MedicineProduct[]): ProductProps[] => {
-    const onPress = (sku: string) => {
-      navigation.navigate(AppRoutes.MedicineDetailsScene, {
-        sku,
-        movedFrom: searchText
-          ? ProductPageViewedSource.FULL_SEARCH
-          : ProductPageViewedSource.CATEGORY_OR_LISTING,
-        productPageViewedEventProps: searchText
-          ? undefined
-          : ({
-              'Category ID': categoryId,
-              'Category Name': titleNavProp,
-            } as ProductPageViewedEventProps),
-      });
-    };
-
-    const onPressNotify = (name: string) => {
-      renderAlert('Okay! :)', `You will be notified when ${name} is back in stock.`);
-    };
-
-    const onPressAddToCart = (item: MedicineProduct) => {
-      addPharmaItemToCart(
-        formatToCartItem(item),
-        pharmacyPincode!,
-        addCartItem,
-        setGlobalLoading,
-        navigation,
-        currentPatient,
-        !!isPharmacyLocationServiceable,
-        { source: 'Pharmacy Full Search', categoryId: item.category_id }
-      );
-    };
-
-    return products.map((item) => {
-      const id = item.sku;
-      const qty = getCartItemQty(id);
-      const onPressAdd = () => {
-        if (qty < item.MaxOrderQty) {
-          updateCartItem!({ id, quantity: qty + 1 });
-        }
-      };
-      const onPressSubstract = () => {
-        qty == 1 ? removeCartItem!(id) : updateCartItem!({ id, quantity: qty - 1 });
-      };
-
-      return {
-        ...item,
-        quantity: qty,
-        maxOrderQty: item.MaxOrderQty,
-        onPress: () => onPress(id),
-        onPressAddToCart: () => onPressAddToCart(item),
-        onPressAdd: onPressAdd,
-        onPressSubstract: onPressSubstract,
-        onPressNotify: () => onPressNotify(item.name),
-      };
-    });
-  };
-
   const renderSections = () => {
     const props: MedicineListingSectionsProps = {
       searchText,
@@ -281,12 +207,19 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
 
     return (
       <MedicineListingProducts
-        data={isLoading ? [] : getMedListingProducts(products)}
-        view={showListView ? 'list' : 'grid'}
+        data={isLoading ? [] : products}
         onEndReached={onEndReached}
         onEndReachedThreshold={1}
         ListHeaderComponent={renderSections()}
         ListFooterComponent={renderLoading()}
+        navigation={navigation}
+        addToCartSource={searchText ? 'Pharmacy Full Search' : 'Pharmacy List'}
+        movedFrom={
+          searchText
+            ? ProductPageViewedSource.FULL_SEARCH
+            : ProductPageViewedSource.CATEGORY_OR_LISTING
+        }
+        view={showListView ? 'list' : 'grid'}
       />
     );
   };

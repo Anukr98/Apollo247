@@ -494,7 +494,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         price={price}
         specialPrice={specialPrice}
         quantity={getItemQuantity(medicine.sku)}
-        onPressAdd={() => {
+        onPressAddQty={() => {
           CommonLogEvent('SEARCH_BY_BRAND', 'Add item to cart');
           onAddCartItem(medicine);
         }}
@@ -568,7 +568,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         price={price}
         specialPrice={specialPrice}
         quantity={getItemQuantity(medicine.sku)}
-        onPressAdd={() => {
+        onPressAddQty={() => {
           CommonLogEvent('SEARCH_BY_BRAND', 'Add item to cart');
           onAddCartItem(medicine);
         }}

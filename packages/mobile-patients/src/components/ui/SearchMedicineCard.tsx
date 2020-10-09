@@ -67,8 +67,8 @@ export interface Props extends MedicineProduct {
   onPress: () => void;
   onPressAddToCart: () => void;
   onPressNotify: () => void;
-  onPressAdd: () => void;
-  onPressSubstract: () => void;
+  onPressAddQty: () => void;
+  onPressSubtractQty: () => void;
   quantity: number;
   containerStyle?: TouchableOpacityProps['style'];
 }
@@ -88,8 +88,8 @@ export const SearchMedicineCard: React.FC<Props> = (props) => {
     onPress,
     onPressAddToCart,
     onPressNotify,
-    onPressAdd,
-    onPressSubstract,
+    onPressAddQty,
+    onPressSubtractQty,
   } = props;
 
   const renderTitleAndIcon = () => {
@@ -124,9 +124,9 @@ export const SearchMedicineCard: React.FC<Props> = (props) => {
         <AddToCartButtons
           numberOfItemsInCart={quantity}
           maxOrderQty={MaxOrderQty}
-          addToCart={onPressAdd}
-          removeItemFromCart={onPressSubstract}
-          removeFromCart={onPressSubstract}
+          addToCart={onPressAddQty}
+          removeItemFromCart={onPressSubtractQty}
+          removeFromCart={onPressSubtractQty}
           isSolidContainer={false}
         />
       </View>
