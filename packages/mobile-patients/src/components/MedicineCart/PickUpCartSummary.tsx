@@ -154,6 +154,7 @@ export const PickUpCartSummary: React.FC<PickUpCartSummaryProps> = (props) => {
         showPopUp={showPopUp}
         onClickClose={() => setshowPopUp(false)}
         navigation={props.navigation}
+        type={'cartOrMedicineFlow'}
       />
     );
   };

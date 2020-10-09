@@ -12,6 +12,7 @@ import { NavigationScreenProps } from 'react-navigation';
 export interface UploadPrescriptionProps extends NavigationScreenProps {
   showPopUp: boolean;
   onClickClose: () => void;
+  type: string;
 }
 
 export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => {
@@ -21,7 +22,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     setEPrescriptions,
     ePrescriptions,
   } = useShoppingCart();
-  const { showPopUp, onClickClose } = props;
+  const { showPopUp, onClickClose, type } = props;
   const [showEprescriptionUpload, setshowEprescriptionUpload] = useState<boolean>(false);
 
   const updatePhysicalPrescriptions = (uploadPrescriptions: PhysicalPrescription[]) => {
@@ -34,6 +35,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   const renderUploadPrescription = () => {
     return showPopUp ? (
       <UploadPrescriprionPopup
+        type={type}
         isVisible={showPopUp}
         hideTAndCs={false}
         disabledOption={'NONE'}
