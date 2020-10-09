@@ -655,6 +655,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         showPopUp={showPopUp}
         onClickClose={() => setshowPopUp(false)}
         navigation={props.navigation}
+        type={'cartOrMedicineFlow'}
       />
     );
   };

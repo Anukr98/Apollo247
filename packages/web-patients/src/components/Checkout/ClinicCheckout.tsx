@@ -421,7 +421,7 @@ const ClinicCheckout: React.FC = () => {
   if (doctorDetails) {
     const {
       experience,
-      fullName,
+      displayName,
       photoUrl,
       physicalConsultationFees,
     } = doctorDetails.getDoctorDetailsById;
@@ -473,7 +473,7 @@ const ClinicCheckout: React.FC = () => {
                     <img src={photoUrl} alt="" />
                   </div>
                   <div className={classes.doctorInfo}>
-                    <div className={classes.doctorName}>{fullName}</div>
+                    <div className={classes.doctorName}>{displayName}</div>
                     <div className={classes.doctorType}>
                       <span>
                         {speciality} | {experience} Yrs. Exp
@@ -545,7 +545,7 @@ const ClinicCheckout: React.FC = () => {
                               </span>
                             </div>
                             <div className={classes.couponText}>
-                              {validateCouponResult ? 'Coupon succefully applied' : ''}
+                              {validateCouponResult ? 'Coupon successfully applied' : ''}
                             </div>
                           </>
                         )}

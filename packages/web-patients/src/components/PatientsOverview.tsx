@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Theme, Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
@@ -13,11 +13,18 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { useMutation } from 'react-apollo-hooks';
 import { Alerts } from 'components/Alerts/Alerts';
+import { HdfcRegistration } from 'components/HdfcRegistration';
+import { HdfcSlider } from 'components/HdfcSlider';
+import { HDFC_REF_CODE } from 'helpers/constants';
+import { HdfcHomePage } from 'components/HdfcHomePage';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
       paddingTop: 20,
+      [theme.breakpoints.down('sm')]: {
+        width: '100%',
+      },
     },
     card: {
       backgroundColor: '#fff',
@@ -63,6 +70,11 @@ const PatientsOverview: React.FC = () => {
   >(GET_PATIENT_FUTURE_APPOINTMENT_COUNT);
   const [alertMessage, setAlertMessage] = useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
+  const [userSubscriptions, setUserSubscriptions] = React.useState([]);
+  const [showSubscription, setShowSubscription] = useState<boolean>(false);
+
+  const scrollToRef = (ref: any) => ref.current.scrollIntoView({ behavior: 'smooth' });
+  const registrationRef = useRef(null);
 
   useEffect(() => {
     if (currentPatient && currentPatient.id) {
@@ -85,26 +97,38 @@ const PatientsOverview: React.FC = () => {
           setIsAlertOpen(true);
           setAlertMessage('Something went wrong :(');
           setLoading(false);
+        })
+        .finally(() => {
+          const userSubscriptionsLocalStorage = JSON.parse(
+            localStorage.getItem('userSubscriptions')
+          );
+          setUserSubscriptions(userSubscriptionsLocalStorage);
+          setShowSubscription(true);
+          currentPatient.partnerId === HDFC_REF_CODE &&
+          userSubscriptionsLocalStorage &&
+          userSubscriptionsLocalStorage.length == 0
+            ? scrollToRef(registrationRef)
+            : '';
         });
     }
   }, [currentPatient]);
   return (
     <div className={classes.root}>
-      <Grid spacing={2} container>
-        <Grid item xs={12} sm={6}>
-          <Link to={clientRoutes.appointments()}>
-            <div className={classes.card} title={'View upcoming appointments'}>
-              <div className={classes.totalConsults}>
-                {loading ? <CircularProgress size={10} /> : activeAppointments}
-              </div>
-              <span>Upcoming Appointments</span>
-              <span className={classes.rightArrow}>
-                <img src={require('images/ic_arrow_right.svg')} />
-              </span>
-            </div>
-          </Link>
-        </Grid>
-        {/* <Grid item xs={12} sm={6}>
+      {/* <Grid spacing={2} container>
+        <Grid item xs={12} sm={6}> */}
+      <Link to={clientRoutes.appointments()}>
+        <div className={classes.card} title={'View upcoming appointments'}>
+          <div className={classes.totalConsults}>
+            {loading ? <CircularProgress size={10} /> : activeAppointments}
+          </div>
+          <span>Upcoming Appointments</span>
+          <span className={classes.rightArrow}>
+            <img src={require('images/ic_arrow_right.svg')} />
+          </span>
+        </div>
+      </Link>
+      {/* </Grid> */}
+      {/* <Grid item xs={12} sm={6}>
           <div className={classes.card}>
             <div className={classes.totalConsults}>
               {loading ? <CircularProgress size={10} /> : activeAppointments}
@@ -115,7 +139,32 @@ const PatientsOverview: React.FC = () => {
             </span>
           </div>
         </Grid> */}
-      </Grid>
+      {/* </Grid> */}
+      {/* <Grid item xs={12} sm={6}> */}
+      <div ref={registrationRef}>
+        {currentPatient &&
+          showSubscription &&
+          currentPatient.partnerId === HDFC_REF_CODE &&
+          (userSubscriptions == null || userSubscriptions.length == 0) && (
+            <HdfcRegistration patientPhone={currentPatient.mobileNumber} />
+          )}
+        {currentPatient &&
+          userSubscriptions &&
+          userSubscriptions.length != 0 &&
+          userSubscriptions[0] &&
+          userSubscriptions[0].status == 'DEFERRED_INACTIVE' && (
+            <HdfcHomePage patientPhone={currentPatient.mobileNumber} />
+          )}
+        {currentPatient &&
+          userSubscriptions &&
+          userSubscriptions.length != 0 &&
+          userSubscriptions[0] &&
+          userSubscriptions[0].status == 'ACTIVE' && (
+            <HdfcSlider patientPhone={currentPatient.mobileNumber} />
+          )}
+      </div>
+      {/* </Grid>
+      </Grid> */}
       <Alerts
         setAlertMessage={setAlertMessage}
         alertMessage={alertMessage}

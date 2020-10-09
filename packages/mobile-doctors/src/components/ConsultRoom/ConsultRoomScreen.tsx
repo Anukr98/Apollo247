@@ -1553,6 +1553,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               appointmentCallId: isCall ? callId : chatId,
               patientId: g(caseSheet, 'patientDetails', 'id'),
               numberOfParticipants: patient + doctor,
+              endVoipCall: isCall,
             },
           })
           .catch((error) => {
@@ -2313,11 +2314,14 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     setShowLoading(true);
     checkFiles(url, (newUrl, allFiles) => {
       setShowLoading(false);
-      if (type === 'image' || type === 'pdf') {
+      if (type === 'image') {
         setOverlayDisplay(
           <ImageViewer
             scrollToURL={newUrl}
-            files={allFiles.filter((item) => (!isChatRoom && item.id === patientId) || isChatRoom)}
+            files={allFiles.filter(
+              (item) =>
+                item.fileType === 'image' && ((!isChatRoom && item.id === patientId) || isChatRoom)
+            )}
             onClose={() => setOverlayDisplay(null)}
             navigation={props.navigation}
           />

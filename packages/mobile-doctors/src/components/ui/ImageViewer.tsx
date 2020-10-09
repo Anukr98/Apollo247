@@ -325,22 +325,18 @@ export const ImageViewer: React.FC<ImageViewerProps> = (props) => {
                   collapsable={false}
                 >
                   {(panEnabled && currentIndex === index) || !panEnabled ? (
-                    get_url_extension(item.url) === 'pdf' ? (
-                      <RenderPdf uri={item.url} isPopup={false} navigation={props.navigation} />
-                    ) : (
-                      <ImageZoom
-                        cropWidth={width}
-                        cropHeight={height}
-                        imageWidth={width - 12}
-                        imageHeight={height}
-                      >
-                        <FastImage
-                          source={{ uri: item.url }}
-                          style={styles.imageStyle}
-                          resizeMode={FastImage.resizeMode.contain}
-                        />
-                      </ImageZoom>
-                    )
+                    <ImageZoom
+                      cropWidth={width}
+                      cropHeight={height}
+                      imageWidth={width - 12}
+                      imageHeight={height}
+                    >
+                      <FastImage
+                        source={{ uri: item.url }}
+                        style={styles.imageStyle}
+                        resizeMode={FastImage.resizeMode.contain}
+                      />
+                    </ImageZoom>
                   ) : null}
                 </Animated.View>
               </PinchGestureHandler>

@@ -195,8 +195,8 @@ const dataAdapter = (
       }
       return {
         id,
-        appointmentDateTime,
         displayId,
+        appointmentDateTime,
         patientId,
         startTime,
         endTime,
@@ -207,8 +207,8 @@ const dataAdapter = (
         isNew: !!newPatientsList && newPatientsList.includes(patientId),
         details: {
           patientName: `${patientInfo!.firstName} ${patientInfo!.lastName}`,
-          mobileNumber: patientInfo!.mobileNumber,
           checkups: symptoms,
+          mobileNumber: patientInfo!.mobileNumber,
           avatar: patientInfo!.photoUrl
             ? patientInfo!.photoUrl
             : require('images/no_photo_icon_round.svg'),

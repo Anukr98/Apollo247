@@ -7,4 +7,5 @@ export interface ProfilesServiceContext extends GatewayContext {
   doctorsDb: Connection;
   consultsDb: Connection;
   currentPatient: Patient | null;
+  headers?: any
 }

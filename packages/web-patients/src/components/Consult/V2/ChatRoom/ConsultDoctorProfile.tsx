@@ -530,6 +530,9 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
         ) {
           setRefreshTimer(!refreshTimer);
         }
+        if (differenceInMinutes <= 15) {
+          setDisableActions(true);
+        }
       }, 60000);
     };
 
