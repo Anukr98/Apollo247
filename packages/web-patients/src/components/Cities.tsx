@@ -1,13 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Theme, Grid, CircularProgress, Paper, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import {
-  AphButton,
-  AphDialog,
-  AphDialogClose,
-  AphDialogTitle,
-  AphInput,
-} from '@aph/web-ui-components';
+import { AphButton, AphInput } from '@aph/web-ui-components';
 import { GET_ALL_CITIES } from 'graphql/specialities';
 import { getAllCities } from 'graphql/types/getAllCities';
 import { useQuery } from 'react-apollo-hooks';
@@ -18,21 +12,22 @@ import { useParams } from 'hooks/routerHooks';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     locationContainer: {
-      padding: 30,
+      width: 500,
+      position: 'absolute',
+      top: 50,
+      left: 0,
+      padding: 20,
+      borderRadius: 10,
+      background: '#fff',
+      zIndex: 4,
+      boxShadow: '0px 5px 20px rgba(0, 0, 0, 0.3)',
       [theme.breakpoints.down(600)]: {
         padding: 20,
       },
     },
-    dialogTitle: {
-      textAlign: 'left',
-      [theme.breakpoints.down(600)]: {
-        '& h2': {
-          fontSize: 14,
-        },
-      },
-    },
+
     popularCities: {
-      padding: '20px 0',
+      padding: '20px 0 0',
       '& h6': {
         fontSize: 14,
         fontWeight: 700,
@@ -63,6 +58,12 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     cityContainer: {
       position: 'relative',
+      '& input': {
+        fontSize: 18,
+        '&::placeholder': {
+          fontSize: 18,
+        },
+      },
     },
     autoSearchPopover: {
       padding: '15px 10px 15px 20px',
@@ -150,97 +151,89 @@ export const Cities: React.FC<CitiesProps> = (props) => {
     citiesList && citiesList.filter((city) => _lowerCase(city).includes(_lowerCase(searchText)));
 
   return (
-    <div>
-      <AphDialog open={locationPopup} maxWidth="md">
-        <AphDialogClose onClick={() => setLocationPopup(false)} title={'Close'} />
-        <AphDialogTitle className={classes.dialogTitle}>
-          Select a city to see the recommended healthcare services
-        </AphDialogTitle>
-        <div className={classes.locationContainer}>
-          <div className={classes.cityContainer}>
-            <AphInput
-              placeholder="Select for a city"
-              value={searchText}
-              onChange={(e) => {
-                setSearchText(e.target.value);
-                setShowDropdown(true);
-              }}
-            />
-            {showDropdown &&
-              searchText.length > 0 &&
-              (loading ? (
-                <div className={classes.progressLoader}>
-                  <CircularProgress size={30} />
-                </div>
-              ) : (
-                filteredCities &&
-                filteredCities.length > 0 && (
-                  <div className={classes.autoSearchPopover}>
-                    <ul className={classes.searchList}>
-                      {filteredCities.map(
-                        (city: string) =>
-                          _lowerCase(city).includes(_lowerCase(searchText)) && (
-                            <li
-                              style={{ cursor: 'pointer' }}
-                              key={city}
-                              onClick={() => {
-                                setSearchText(city);
-                                setCityName(city);
-                                setShowDropdown(false);
-                              }}
-                            >
-                              {city}
-                            </li>
-                          )
-                      )}
-                    </ul>
-                  </div>
-                )
-              ))}
-          </div>
-          <div className={classes.popularCities}>
-            <Typography component="h6">Popular Cities</Typography>
-            {populatCities.map((city: string) => (
-              <AphButton
-                key={city}
-                className={cityName === city ? classes.buttonActive : ''}
-                onClick={(e) => {
-                  if (city === cityName) {
-                    setCityName('');
-                    setSearchText('');
-                  } else {
-                    setCityName(city);
-                    setSearchText(city);
-                  }
-                  setShowDropdown(false);
-                }}
-              >
-                {city}
-              </AphButton>
-            ))}
-          </div>
-          <div className={classes.btnContainer}>
-            <AphButton
-              className={cityName === '' ? classes.disabledButton : ''}
-              disabled={cityName === ''}
-              color="primary"
-              onClick={() => {
-                if (params.city && params.specialty) {
-                  window.location.href = clientRoutes.citySpecialties(
-                    cityName.toLowerCase(),
-                    params.specialty
-                  );
-                } else {
-                  setSelectedCity(cityName);
-                  setLocationPopup(false);
-                }
-              }}
-            >
-              Okay
-            </AphButton>
-          </div>
-        </div>
-      </AphDialog>
+    <div className={classes.locationContainer}>
+      <div className={classes.cityContainer}>
+        <AphInput
+          placeholder="Select for a city"
+          value={searchText}
+          onChange={(e) => {
+            setSearchText(e.target.value);
+            setShowDropdown(true);
+          }}
+        />
+        {showDropdown &&
+          searchText.length > 0 &&
+          (loading ? (
+            <div className={classes.progressLoader}>
+              <CircularProgress size={30} />
+            </div>
+          ) : (
+            filteredCities &&
+            filteredCities.length > 0 && (
+              <div className={classes.autoSearchPopover}>
+                <ul className={classes.searchList}>
+                  {filteredCities.map(
+                    (city: string) =>
+                      _lowerCase(city).includes(_lowerCase(searchText)) && (
+                        <li
+                          style={{ cursor: 'pointer' }}
+                          key={city}
+                          onClick={() => {
+                            setSearchText(city);
+                            setCityName(city);
+                            setShowDropdown(false);
+                          }}
+                        >
+                          {city}
+                        </li>
+                      )
+                  )}
+                </ul>
+              </div>
+            )
+          ))}
+      </div>
+      <div className={classes.popularCities}>
+        <Typography component="h6">Popular Cities</Typography>
+        {populatCities.map((city: string) => (
+          <AphButton
+            key={city}
+            className={cityName === city ? classes.buttonActive : ''}
+            onClick={(e) => {
+              if (city === cityName) {
+                setCityName('');
+                setSearchText('');
+              } else {
+                setCityName(city);
+                setSearchText(city);
+              }
+              setShowDropdown(false);
+            }}
+          >
+            {city}
+          </AphButton>
+        ))}
+      </div>
+      {/* <div className={classes.btnContainer}>
+        <AphButton
+          className={cityName === '' ? classes.disabledButton : ''}
+          disabled={cityName === ''}
+          color="primary"
+          onClick={() => {
+            if (params.city && params.specialty) {
+              window.location.href = clientRoutes.citySpecialties(
+                cityName.toLowerCase(),
+                params.specialty
+              );
+            } else {
+              setSelectedCity(cityName);
+              setLocationPopup(false);
+            }
+          }}
+        >
+          Okay
+        </AphButton>
+      </div> */}
     </div>
   );
 };
