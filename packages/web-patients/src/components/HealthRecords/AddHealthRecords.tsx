@@ -809,7 +809,19 @@ const AddHealthRecords: React.FC = (props) => {
       <div className={classes.container}>
         <div className={classes.addRecordsPage}>
           <div className={classes.breadcrumbs}>
-            <Link to={{ pathname: clientRoutes.healthRecords(), state: 'medical' }}>
+            <Link
+              to={{
+                pathname: clientRoutes.healthRecords(),
+                state:
+                  typeOfRecord === MedicalRecordType.TEST_REPORT
+                    ? 'medical'
+                    : typeOfRecord === MedicalRecordType.HOSPITALIZATION
+                    ? 'hospitalization'
+                    : typeOfRecord === MedicalRecordType.HEALTHCHECK
+                    ? 'healthCheck'
+                    : '',
+              }}
+            >
               <div className={classes.backArrow}>
                 <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                 <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
@@ -1303,7 +1315,7 @@ const AddHealthRecords: React.FC = (props) => {
             </Scrollbars>
             <div className={classes.pageBottomActions}>
               <AphButton color="primary" onClick={handleSaveRecord}>
-                {showSpinner ? <CircularProgress size={22} color="secondary" /> : 'Add Record'}
+                {showSpinner ? <CircularProgress size={22} color="secondary" /> : 'Save Record'}
               </AphButton>
             </div>
           </div>
