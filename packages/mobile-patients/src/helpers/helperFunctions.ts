@@ -222,7 +222,7 @@ export const formatSelectedAddress = (
     (address?.addressLine2 + ', ') +
     (address?.city + ', ') +
     (address?.state + ', ') +
-    address.zipcode;
+    address?.zipcode;
   return formattedAddress;
 };
 
