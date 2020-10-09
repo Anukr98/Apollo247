@@ -13,9 +13,13 @@ import {
   getTestSlotDetailsByTime,
   postWebEngageEvent,
   isValidTestSlotWithArea,
+  isEmptyObject,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { TestSlotOverlay } from '@aph/mobile-patients/src/components/Tests/TestSlotOverlay';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  DiagnosticData,
+  useAppCommonData,
+} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   DiagnosticsCartItem,
   useDiagnosticsCart,
@@ -274,7 +278,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [testCentresLoaded, setTestCentresLoaded] = useState<boolean>(false);
   const [isAreaServiceable, setAreaServiceable] = useState<boolean>(false);
   const [diagnosticAreas, setDiagnosticAreas] = useState<any>([]);
-  const [selectedArea, setSelectedArea] = useState<object>({});
+  const [selectedArea, setSelectedArea] = useState<DiagnosticData | {}>(areaSelected);
   const [localSelectedAddress, setLocalSelectedAddress] = useState<
     savePatientAddress_savePatientAddress_patientAddress
   >();
@@ -294,8 +298,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       if (
         selectedTimeSlot &&
         selectedTimeSlot!.slotInfo!.slot! &&
-        deliveryAddressId! &&
-        deliveryAddressId.length > 0 &&
+        deliveryAddressId != '' &&
         cartItems
       ) {
         console.log('s');
@@ -356,6 +359,19 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   }, [currentPatientId]);
 
   useEffect(() => {
+    if (deliveryAddressId != '') {
+      const selectedAddressIndex = addresses.findIndex(
+        (address) => address.id == deliveryAddressId
+      );
+
+      fetchAreasForAddress(
+        addresses[selectedAddressIndex].id,
+        addresses[selectedAddressIndex].zipcode!
+      );
+    }
+  }, [deliveryAddressId]);
+
+  useEffect(() => {
     if (deliveryAddressId) {
       if (diagnosticSlot) {
         setDate(new Date(diagnosticSlot.date));
@@ -376,14 +392,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       } else {
         setDate(new Date());
         setselectedTimeSlot(undefined);
-        const selectedAddressIndex = addresses.findIndex(
-          (address) => address.id == deliveryAddressId
-        );
-
-        fetchAreasForAddress(
-          addresses[selectedAddressIndex].id,
-          addresses[selectedAddressIndex].zipcode!
-        );
       }
     }
   }, [deliveryAddressId, diagnosticSlot, cartItems]);
@@ -559,8 +567,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
    */
 
   const fetchAreasForAddress = (id: string, pincode: string) => {
-    setDiagnosticAreas([]);
-    setSelectedArea({});
+    if (cartItems.length == 0) {
+      return;
+    }
+    // setDiagnosticAreas([]);
+    // setSelectedArea({});
     setLoading!(true);
     client
       .query<getAreas, getAreasVariables>({
@@ -577,8 +588,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         if (data.getAreas.status) {
           setDiagnosticAreas!(getDiagnosticAreas);
         } else {
-          setDeliveryAddressId && setDeliveryAddressId(''); //empty the selected address
-          setDiagnosticAreas([]); //empty the array
+          setDeliveryAddressId && setDeliveryAddressId('');
+          setDiagnosticAreas([]);
+          setselectedTimeSlot(undefined);
           setAreaServiceable(false);
           setLoading!(false);
           showAphAlert!({
@@ -590,7 +602,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       })
       .catch((e) => {
         setLoading!(false);
+        setDiagnosticAreas([]);
         setAreaServiceable(false);
+        setselectedTimeSlot(undefined);
         CommonBugFender('TestsCart_getArea selection', e);
         console.log('error' + e);
         showAphAlert!({
@@ -904,7 +918,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 } else {
                   setLocalSelectedAddress(item);
                   setDeliveryAddressId!(item.id);
-                  fetchAreasForAddress(item.id, item.zipcode!);
+
+                  setDiagnosticAreas([]);
+                  setSelectedArea!({});
+                  setAreaSelected!({});
+
+                  // fetchAreasForAddress(item.id, item.zipcode!);
                 }
               }}
               containerStyle={{ marginTop: 16 }}
@@ -942,7 +961,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                         setDeliveryAddressId && setDeliveryAddressId(id);
                         setDiagnosticSlot && setDiagnosticSlot(null);
                         setselectedTimeSlot(undefined);
-                        fetchAreasForAddress(id, pincode!);
+
+                        setDiagnosticAreas([]);
+                        setSelectedArea!({});
+                        setAreaSelected!({});
+
+                        // fetchAreasForAddress(id, pincode!);
                       }
                     },
                   });
@@ -1111,7 +1135,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
    * if address selected + if area serviceable
    */
   const renderPickupHours = () => {
-    const showTime = deliveryAddressId && isAreaServiceable;
+    const showTime = deliveryAddressId && areaSelected && !isEmptyObject(areaSelected);
     return (
       <View>
         {showTime ? (
@@ -1186,6 +1210,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               bottomPadding={styles.menuBottomPadding}
               onPress={(item) => {
                 setSelectedArea(item);
+                setAreaSelected!(item);
                 checkSlotSelection(item);
                 setAreaServiceable(true);
                 // checkServicability(selectedAddress);

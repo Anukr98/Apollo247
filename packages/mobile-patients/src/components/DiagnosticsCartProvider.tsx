@@ -111,8 +111,8 @@ export interface DiagnosticsCartContextProps {
   diagnosticSlot: DiagnosticSlot | null;
   setDiagnosticSlot: ((item: DiagnosticSlot | null) => void) | null;
 
-  areaSelected: DiagnosticArea | null;
-  setAreaSelected: ((items: DiagnosticArea | null) => void) | null;
+  areaSelected: DiagnosticArea | {};
+  setAreaSelected: ((items: DiagnosticArea | {}) => void) | null;
 
   diagnosticClinic: DiagnosticClinic | null;
   setDiagnosticClinic: ((item: DiagnosticClinic) => void) | null;
@@ -175,8 +175,8 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   diagnosticSlot: null,
   setDiagnosticClinic: null,
   setDiagnosticSlot: null,
-  areaSelected: null,
-  setAreaSelected: null,
+  areaSelected: {},
+  setAreaSelected: {},
 });
 
 const showGenericAlert = (message: string) => {
@@ -235,9 +235,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     DiagnosticsCartContextProps['diagnosticSlot']
   >(null);
 
-  const [areaSelected, setAreaSelected] = useState<DiagnosticsCartContextProps['areaSelected']>(
-    null
-  );
+  const [areaSelected, setAreaSelected] = useState<DiagnosticsCartContextProps['areaSelected']>({});
 
   const setDiagnosticClinic: DiagnosticsCartContextProps['setDiagnosticClinic'] = (item) => {
     _setDiagnosticClinic(item);
@@ -400,7 +398,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setClinics([]);
     setCoupon(null);
     setDiagnosticSlot(null);
-    setAreaSelected(null);
+    setAreaSelected({});
   };
 
   useEffect(() => {
