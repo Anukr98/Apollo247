@@ -2803,6 +2803,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         setIsVideoCall(false);
                         missedCallIntervalTimer(45);
                         setIscall(true);
+                        setIsCallConnecting(false);
                       })
                       .catch((e: any) => {
                         setIsCallConnecting(false);
@@ -2865,6 +2866,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         setDisableOnCancel(true);
                         missedCallIntervalTimer(45);
                         setIscall(true);
+                        setIsCallConnecting(false);
                       })
                       .catch((e: any) => {
                         setIsCallConnecting(false);
