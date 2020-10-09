@@ -91,7 +91,8 @@ const updateItem = async (client, items, stateId, cityId, state, city) => {
           itemInDB.toAgeInDays != item.ToAgeInDays ||
           itemInDB.isActive != true ||
           itemInDB.city != city ||
-          itemInDB.state != state
+          itemInDB.state != state ||
+          itemInDB.subCategoryId != item.subcategoryid
         ) {
           await updateDiagnosticItem(client, item, stateId, cityId, state, city);
           rowsUpdated++;
@@ -148,7 +149,7 @@ const updateDiagnosticItemDeActive = async (client, itemsToDeActive) => {
 };
 
 const updateDiagnosticItem = async (client, item, stateId, cityId, state, city) => {
-  const str = `UPDATE diagnostics SET "rate" = ${item.Rate}, "itemName" = '${item.itemname}', "toAgeInDays" = ${item.ToAgeInDays}, "isActive" = true, "itemAliasName" = '', "testInPackage" = 0, "NABL_CAP" = '', "itemRemarks" = '', "discounted" = 'N', "testPreparationData" = '', "state" = '${state}', "city" = '${city}' WHERE "itemId" = ${item.itemid} AND "stateId" = ${stateId} AND "cityId" = ${cityId} AND "itemCode" = '${item.itemcode}'`;
+  const str = `UPDATE diagnostics SET "rate" = ${item.Rate}, "itemName" = '${item.itemname}', "toAgeInDays" = ${item.ToAgeInDays}, "isActive" = true, "itemAliasName" = '', "testInPackage" = 0, "NABL_CAP" = '', "itemRemarks" = '', "discounted" = 'N', "testPreparationData" = '', "state" = '${state}', "city" = '${city}', "subCategoryId" = ${item.subcategoryid} WHERE "itemId" = ${item.itemid} AND "stateId" = ${stateId} AND "cityId" = ${cityId} AND "itemCode" = '${item.itemcode}'`;
   try {
     const result = await client.query(str);
     if (result.rowCount != 1) {
@@ -163,13 +164,15 @@ const updateDiagnosticItem = async (client, item, stateId, cityId, state, city) 
 const saveDiagnosticItem = async (client, item, stateId, cityId, state, city) => {
   const str = `INSERT INTO diagnostics ("itemId", "itemName", "itemCode", "fromAgeInDays", "toAgeInDays", "gender", "labName", "labCode", "labID",
    "rate", "itemType", "stateId", "cityId", "state", "city", "scheduleRate",
-   "itemAliasName", "testInPackage", "NABL_CAP", "itemRemarks", "discounted", "testPreparationData") VALUES ('${
+   "itemAliasName", "testInPackage", "NABL_CAP", "itemRemarks", "discounted", "testPreparationData", "subCategoryId") VALUES ('${
      item.itemid
    }', '${item.itemname}', '${item.itemcode}', ${item.FromAgeInDays}, ${item.ToAgeInDays}, '${
     item.Gender
   }', '${item.LabName}', '${item.LabCode}', ${item.LabID}, ${
     item.Rate
-  }, '${item.ItemType.toUpperCase()}', ${stateId}, ${cityId}, '${state}', '${city}', 0.00, '', 0, '', '', 'N', '')`;
+  }, '${item.ItemType.toUpperCase()}', ${stateId}, ${cityId}, '${state}', '${city}', 0.00, '', 0, '', '', 'N', '', ${
+    item.subcategoryid
+  })`;
   try {
     await client.query(str);
   } catch (err) {
@@ -246,11 +249,27 @@ const updateInactiveCities = async (client, cityStateMapping) => {
   }
 };
 
+const alterColumnSubCategoryID = async (client) => {
+  const str = 'ALTER TABLE diagnostics ADD COLUMN "subCategoryId" integer;';
+  try {
+    const result = await client.query(str);
+    if (result.rowCount != 0) {
+      console.log('cities have been removed', result.rowCount, 'query:', str);
+    }
+  } catch (err) {
+    console.log(err);
+    if (err.message.indexOf('already exists') == -1) {
+      process.kill(process.pid);
+    }
+  }
+};
+
 const start = async () => {
   const token = await getToken();
   client.connect().catch(function (err) {
     console.log('error while connection', err);
   });
+  await alterColumnSubCategoryID(client);
   const cityStateMapping = await getDistinctCityState(client);
   await updateInactiveCities(client, cityStateMapping);
   await updateItems(client, token, cityStateMapping);

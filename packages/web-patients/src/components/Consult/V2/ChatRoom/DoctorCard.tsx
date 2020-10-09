@@ -171,6 +171,8 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 interface DoctorCardProps {
+  idx: number;
+  totalLength: number;
   message: string;
   duration: string;
   messageDetails: any;
@@ -251,6 +253,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       ) : props.messageDetails.message === '^^#followupconsult' ||
         props.messageDetails.message === '^^#rescheduleconsult' ? (
         <ViewPrescriptionCard
+          idx={props.idx}
+          totalLength={props.totalLength}
           message={props.message}
           duration={props.duration}
           messageDetails={props.messageDetails}

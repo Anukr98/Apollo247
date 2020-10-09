@@ -10,6 +10,7 @@ import { APPOINTMENT_TYPE } from 'consults-service/entities';
 import { Coupon } from 'profiles-service/entities';
 import { validateCoupon } from 'helpers/couponServices';
 import { ValidateCouponRequest } from 'types/coupons';
+import { fetchUserSubscription } from 'helpers/subscriptionHelper';
 
 export const validateConsultCouponTypeDefs = gql`
   enum AppointmentType {
@@ -135,6 +136,7 @@ const validateConsultCoupon: Resolver<
     billAmount: parseInt(amount.toString(), 10),
     coupon: code,
     paymentType: '',
+    packageId: await fetchUserSubscription(mobileNumber),
     pinCode: '',
     consultations: [
       {

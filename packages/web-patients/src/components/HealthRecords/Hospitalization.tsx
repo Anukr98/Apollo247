@@ -12,6 +12,8 @@ import { RenderImage } from 'components/HealthRecords/RenderImage';
 import { getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizationsNew_response as HospitalizationType } from '../../graphql/types/getPatientPrismMedicalRecords';
 import { HEALTH_RECORDS_NO_DATA_FOUND, HEALTH_RECORDS_NOTE } from 'helpers/commonHelpers';
 import { MedicalRecordType } from '../../graphql/types/globalTypes';
+import { phrDownloadingDischargeSummaryFileTracking } from '../../webEngageTracking';
+import { Route } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -429,6 +431,7 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
               allCombinedData.length > 0 &&
               allCombinedData.map((combinedData: HospitalizationType) => (
                 <div
+                  key={combinedData.id}
                   className={classes.consultGroup}
                   onClick={() => {
                     setActiveData(combinedData);
@@ -447,7 +450,7 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
                     source={combinedData.source || '-'}
                     hospitalName={combinedData.hospitalName || '-'}
                     recordType={MedicalRecordType.HOSPITALIZATION}
-                    id={`Hospitalization-${combinedData.id}`}
+                    id={combinedData.id}
                     isActiveCard={activeData && activeData.id === combinedData.id}
                   />
                 </div>
@@ -460,17 +463,21 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
             </div>
           )}
         </Scrollbars>
-        <div className={classes.addReportActions}>
-          <AphButton
-            color="primary"
-            onClick={() => {
-              window.location.href = clientRoutes.addHealthRecords('hospitalization');
-            }}
-            fullWidth
-          >
-            Add Record
-          </AphButton>
-        </div>
+        <Route
+          render={({ history }) => (
+            <div className={classes.addReportActions}>
+              <AphButton
+                color="primary"
+                onClick={() => {
+                  history.push(clientRoutes.addHealthRecords('hospitalization'));
+                }}
+                fullWidth
+              >
+                Add Record
+              </AphButton>
+            </div>
+          )}
+        />
       </div>
       <div
         className={`${classes.rightSection} ${
@@ -550,7 +557,10 @@ export const Hospitalization: React.FC<MedicalRecordProps> = (props) => {
             {activeData && activeData.fileUrl && activeData.fileUrl.length > 0 && (
               <div className={classes.addReportActions}>
                 <AphButton
-                  onClick={() => window.open(activeData.fileUrl, '_blank')}
+                  onClick={() => {
+                    phrDownloadingDischargeSummaryFileTracking('Discharge Summary');
+                    window.open(activeData.fileUrl, '_blank');
+                  }}
                   color="primary"
                   fullWidth
                 >

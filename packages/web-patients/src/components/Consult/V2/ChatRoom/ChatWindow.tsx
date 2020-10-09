@@ -1,75 +1,83 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { Theme, Grid, Button, MenuItem, Modal } from '@material-ui/core';
-import { makeStyles } from '@material-ui/styles';
-import Scrollbars from 'react-custom-scrollbars';
-import { useAllCurrentPatients } from 'hooks/authHooks';
-import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
 import {
   AphButton,
-  AphTextField,
-  AphSelect,
   AphDialog,
   AphDialogClose,
   AphDialogTitle,
+  AphSelect,
+  AphTextField,
 } from '@aph/web-ui-components';
-import Slider from 'react-slick';
-import { ChatVideo } from 'components/Consult/V2/ChatRoom/ChatVideo';
-import WarningModel from 'components/WarningModel';
-import { PatientCard } from 'components/Consult/V2/ChatRoom/PatientCard';
-import { DoctorCard } from 'components/Consult/V2/ChatRoom/DoctorCard';
-import { WelcomeCard } from 'components/Consult/V2/ChatRoom/WelcomeCard';
-import { JdInfoCard } from 'components/Consult/V2/ChatRoom/JuniordoctorInfoCard';
-import { BookRescheduleAppointmentInput, STATUS } from 'graphql/types/globalTypes';
+import { Button, Grid, MenuItem, Modal, Theme } from '@material-ui/core';
+import CircularProgress from '@material-ui/core/CircularProgress';
 // import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import FormHelperText from '@material-ui/core/FormHelperText';
-import PubNub, { PubnubStatus, PublishResponse, HistoryResponse } from 'pubnub';
-import _startCase from 'lodash/startCase';
-import { useMutation } from 'react-apollo-hooks';
+import { makeStyles } from '@material-ui/styles';
+import { AppointmentCompleteCardMessage } from 'components/Consult/V2/ChatRoom/AppointmentCompleteCardMessage';
+import { BookAppointmentCard } from 'components/Consult/V2/ChatRoom/BookAppointmentCard';
+import { ChatVideo } from 'components/Consult/V2/ChatRoom/ChatVideo';
+import { DoctorCard } from 'components/Consult/V2/ChatRoom/DoctorCard';
+import { DoctorJoinedMessageCard } from 'components/Consult/V2/ChatRoom/DoctorJoinedMessageCard';
+import { ExotelMessageCard } from 'components/Consult/V2/ChatRoom/ExotelMessageCard';
+import { FirstMessageCard } from 'components/Consult/V2/ChatRoom/FirstMessageCard';
+import { JdInfoCard } from 'components/Consult/V2/ChatRoom/JuniordoctorInfoCard';
+import { PatientCard } from 'components/Consult/V2/ChatRoom/PatientCard';
+import { SecondMessageCard } from 'components/Consult/V2/ChatRoom/SecondMessageCard';
+import { UploadChatEPrescriptionCard } from 'components/Consult/V2/ChatRoom/UploadChatEPrescriptionCard';
+import { UploadChatPrescription } from 'components/Consult/V2/ChatRoom/UploadChatPrescriptions';
+import { WelcomeCard } from 'components/Consult/V2/ChatRoom/WelcomeCard';
+import WarningModel from 'components/WarningModel';
+import CryptoJS from 'crypto-js';
 import {
+  INSERT_MESSAGE_POST_CONSULT,
   JOIN_JDQ_WITH_AUTOMATED_QUESTIONS,
-  UPDATE_APPOINTMENT_SESSION,
   PAST_APPOINTMENTS_COUNT,
+  UPDATE_APPOINTMENT_SESSION,
   UPDATE_SAVE_EXTERNAL_CONNECT,
 } from 'graphql/consult';
-import { downloadDocuments } from 'graphql/types/downloadDocuments';
 import { DOWNLOAD_DOCUMENT } from 'graphql/profiles';
 import {
   AddToConsultQueueWithAutomatedQuestions,
   AddToConsultQueueWithAutomatedQuestionsVariables,
 } from 'graphql/types/AddToConsultQueueWithAutomatedQuestions';
+import { downloadDocuments } from 'graphql/types/downloadDocuments';
+import { GetAppointmentData_getAppointmentData_appointmentsHistory as AppointmentHistory } from 'graphql/types/GetAppointmentData';
+import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
+import {
+  GetPastAppointmentsCount,
+  GetPastAppointmentsCountVariables,
+} from 'graphql/types/GetPastAppointmentsCount';
+import { getSecretaryDetailsByDoctorId } from 'graphql/types/getSecretaryDetailsByDoctorId';
+import {
+  BookRescheduleAppointmentInput,
+  DoctorType,
+  notificationEventName,
+  notificationStatus,
+  notificationType,
+  STATUS,
+} from 'graphql/types/globalTypes';
+import { InsertMessage, InsertMessageVariables } from 'graphql/types/InsertMessage';
 import {
   UpdateAppointmentSession,
   UpdateAppointmentSessionVariables,
 } from 'graphql/types/UpdateAppointmentSession';
 import {
-  GetPastAppointmentsCount,
-  GetPastAppointmentsCountVariables,
-} from 'graphql/types/GetPastAppointmentsCount';
-import {
   UpdateSaveExternalConnect,
   UpdateSaveExternalConnectVariables,
 } from 'graphql/types/UpdateSaveExternalConnect';
-import { useApolloClient } from 'react-apollo-hooks';
-import { UploadChatPrescription } from 'components/Consult/V2/ChatRoom/UploadChatPrescriptions';
-import { UploadChatEPrescriptionCard } from 'components/Consult/V2/ChatRoom/UploadChatEPrescriptionCard';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import { BookAppointmentCard } from 'components/Consult/V2/ChatRoom/BookAppointmentCard';
-import { isPastAppointment, consultWebengageEventsInfo } from 'helpers/commonHelpers';
+import { consultWebengageEventsInfo, isPastAppointment } from 'helpers/commonHelpers';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 import { useParams } from 'hooks/routerHooks';
-import { GetAppointmentData_getAppointmentData_appointmentsHistory as AppointmentHistory } from 'graphql/types/GetAppointmentData';
+import _startCase from 'lodash/startCase';
+import PubNub, { HistoryResponse, PublishResponse, PubnubStatus } from 'pubnub';
+import React, { useEffect, useRef, useState } from 'react';
+import { useApolloClient, useMutation } from 'react-apollo-hooks';
+import Scrollbars from 'react-custom-scrollbars';
+import Slider from 'react-slick';
 import {
-  medicalDetailsFillTracking,
-  callReceiveClickTracking,
-  messageSentPostConsultTracking,
   callEndedClickTracking,
+  callReceiveClickTracking,
+  medicalDetailsFillTracking,
+  messageSentPostConsultTracking,
 } from 'webEngageTracking';
-import { getSecretaryDetailsByDoctorId } from 'graphql/types/getSecretaryDetailsByDoctorId';
-import { DoctorJoinedMessageCard } from 'components/Consult/V2/ChatRoom/DoctorJoinedMessageCard';
-import { AppointmentCompleteCardMessage } from 'components/Consult/V2/ChatRoom/AppointmentCompleteCardMessage';
-import { DoctorType } from 'graphql/types/globalTypes';
-import { ExotelMessageCard } from 'components/Consult/V2/ChatRoom/ExotelMessageCard';
-import { FirstMessageCard } from 'components/Consult/V2/ChatRoom/FirstMessageCard';
-import { SecondMessageCard } from 'components/Consult/V2/ChatRoom/SecondMessageCard';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -987,6 +995,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     UpdateSaveExternalConnect,
     UpdateSaveExternalConnectVariables
   >(UPDATE_SAVE_EXTERNAL_CONNECT);
+
+  const mutationChatPostConsultWithDoctor = useMutation<InsertMessage, InsertMessageVariables>(
+    INSERT_MESSAGE_POST_CONSULT
+  );
 
   const getPrismUrls = (patientId: string, fileIds: string[]) => {
     return new Promise((res, rej) => {
@@ -2287,8 +2299,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     appointmentDetails &&
     isPastAppointment(appointmentDetails.appointmentDateTime, Number(followUpInDays));
 
-  // console.log(messages, 'messages from pubnub.....');
-
   return (
     <>
       <div className={classes.consultRoom}>
@@ -2382,7 +2392,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                 autoHeight
                 autoHeightMax={'calc(100vh - 332px)'}
               >
-                {messages.map((messageDetails: any) => {
+                {messages.map((messageDetails: any, idx: number) => {
                   const cardType = getCardType(messageDetails);
                   const message =
                     messageDetails && messageDetails.message ? messageDetails.message : '';
@@ -2470,6 +2480,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                   } else if (cardType === 'doctor') {
                     return (
                       <DoctorCard
+                        idx={idx}
+                        totalLength={messages.length}
                         message={message}
                         duration={duration}
                         messageDetails={messageDetails}
@@ -2535,6 +2547,28 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                           cardType: 'patient',
                         };
                         publishMessage(appointmentId, composeMessage);
+                        if (appointmentDetails.status === STATUS.COMPLETED) {
+                          /* insert message post consult */
+                          const ciphertext = CryptoJS.AES.encrypt(
+                            e.target.value,
+                            process.env.NOTIFICATION_SMS_SECRECT_KEY
+                          ).toString();
+                          mutationChatPostConsultWithDoctor({
+                            variables: {
+                              messageInput: {
+                                fromId: currentPatient && currentPatient.id,
+                                toId: appointmentDetails.doctorId,
+                                eventName: notificationEventName.APPOINTMENT,
+                                eventId: appointmentDetails.id,
+                                message: ciphertext,
+                                status: notificationStatus.UNREAD,
+                                type: notificationType.CHAT,
+                              },
+                            },
+                          }).catch((e) => {
+                            console.log('Error in sending notification to Doctor', e);
+                          });
+                        }
                         setUserMessage('');
                       }
                     }}

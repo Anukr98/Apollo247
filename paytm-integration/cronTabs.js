@@ -521,7 +521,7 @@ exports.updateDoctorSlotsEs = (req, res) => {
 
 exports.refreshDoctorDeepLinks = (req, res) => {
   const requestJSON = {
-    query: Constants.DOCTORS_DEEPLINK_REFRESH,
+    query: Constants.DOCTORS_DEEPLINK_REFRESH.replace(`{0}`, req.query.offset),
   };
   axios.defaults.headers.common['authorization'] = Constants.AUTH_TOKEN;
   axios
@@ -574,29 +574,29 @@ exports.sendCallStartNotification = (req, res) => {
 };
 
 exports.appointmentReminderTemplate = (req, res) => {
-
   try {
-
     console.log(`\n\n url*********`, req.url);
     console.log(`\n\n headers*********`, req.headers);
     console.log(`\n\n params*********`, req.params);
 
     let urlObject = url.parse(req.url, true);
-    const appointmentDateTime = format(new Date(urlObject.query.CustomField.split('_')[0]), "h m a");
+    const appointmentDateTime = format(
+      new Date(urlObject.query.CustomField.split('_')[0]),
+      'h m a'
+    );
     const appointmentType = urlObject.query.CustomField.split('_')[1];
 
     console.log(`Hi, You have an upcoming appointment at ${appointmentDateTime} today from Apollo 247. 
     It will be ${appointmentType} consultation.Dial 1 to repeat the same message. `);
 
-    return res.contentType('text/plain').status(200).send(`Hi, You have an upcoming appointment at ${appointmentDateTime} today from Apollo 247. 
+    return res.contentType('text/plain').status(200)
+      .send(`Hi, You have an upcoming appointment at ${appointmentDateTime} today from Apollo 247. 
          It will be ${appointmentType} consultation.Dial 1 to repeat the same message. `);
-
   } catch (ex) {
     console.error(ex);
     return res.status(400).end();
   }
-
-}
+};
 
 exports.saveMedicineInfoRedis = (req, res) => {
   console.log(req.body, 'input body');

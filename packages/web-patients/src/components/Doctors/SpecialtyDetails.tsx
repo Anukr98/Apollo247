@@ -23,6 +23,7 @@ import {
   SearchObject,
   SPECIALTY_DETAIL_LISTING_PAGE_SIZE as PAGE_SIZE,
   deepLinkUtil,
+  isAlternateVersion,
 } from 'helpers/commonHelpers';
 import { useLocationDetails } from 'components/LocationProvider';
 import { GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor as docDetails } from 'graphql/types/GetDoctorDetailsById';
@@ -332,12 +333,16 @@ const convertAvailabilityToDate = (availability: String[], dateSelectedFromFilte
     availableNow = {};
   }
   const availabilityArray: String[] = [];
-  const today = moment(new Date()).utc().format('YYYY-MM-DD');
+  const today = moment(new Date())
+    .utc()
+    .format('YYYY-MM-DD');
   if (availability.length > 0) {
     availability.forEach((value: String) => {
       if (value === 'Now') {
         availableNow = {
-          availableNow: moment(new Date()).utc().format('YYYY-MM-DD hh:mm'),
+          availableNow: moment(new Date())
+            .utc()
+            .format('YYYY-MM-DD hh:mm'),
         };
       } else if (value === 'Today') {
         availabilityArray.push(today);
@@ -439,6 +444,7 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const [specialtyId, setSpecialtyId] = useState<string>('');
   const [specialtyName, setSpecialtyName] = useState<string>('');
   const [locationPopup, setLocationPopup] = useState<boolean>(false);
+  const [isAlternateVariant, setIsAlternateVariant] = useState<boolean>(true);
   const [selectedCity, setSelectedCity] = useState<string>(
     params && params.city ? params.city : ''
   );
@@ -477,33 +483,39 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   };
 
   useEffect(() => {
-    let filterObject: SearchObject = {
-      ...searchObject,
-      consultMode:
-        isOnlineSelected && isPhysicalSelected
-          ? ConsultMode.BOTH
-          : isOnlineSelected
-          ? ConsultMode.ONLINE
-          : ConsultMode.PHYSICAL,
-    };
-    if (searchParams.length > 0) {
-      const search = searchParams.substring(1);
+    if (isOnlineSelected || isPhysicalSelected) {
+      let filterObject: SearchObject = {
+        ...searchObject,
+        consultMode:
+          isOnlineSelected && isPhysicalSelected
+            ? ConsultMode.BOTH
+            : isOnlineSelected
+            ? ConsultMode.ONLINE
+            : ConsultMode.PHYSICAL,
+      };
+      if (searchParams.length > 0) {
+        const search = searchParams.substring(1);
 
-      const decodedObject = JSON.parse(
-        '{"' + search.replace(/&/g, '","').replace(/=/g, '":"') + '"}',
-        function (key, value) {
-          return key === '' ? value : decodeURIComponent(value);
+        const decodedObject = JSON.parse(
+          '{"' + search.replace(/&/g, '","').replace(/=/g, '":"') + '"}',
+          function(key, value) {
+            return key === '' ? value : decodeURIComponent(value);
+          }
+        );
+        for (const property in decodedObject) {
+          const valueArray = decodedObject[property].split(',');
+          filterObject = assigningFilters(filterObject, property, valueArray);
         }
-      );
-      for (const property in decodedObject) {
-        const valueArray = decodedObject[property].split(',');
-        filterObject = assigningFilters(filterObject, property, valueArray);
+        setFilter({
+          ...filterObject,
+        });
+      } else {
+        setFilter(filterObject);
       }
-      setFilter({
-        ...filterObject,
-      });
     } else {
-      setFilter(filterObject);
+      setFilteredDoctorData(null);
+      apolloDoctorCount = 0;
+      partnerDoctorCount = 0;
     }
   }, [searchParams, isOnlineSelected, isPhysicalSelected]);
 
@@ -595,6 +607,12 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   }, []);
 
   useEffect(() => {
+    // the below if-else is for marketing requirement (hiding prescription/Rx string)
+    if (isAlternateVersion()) {
+      setIsAlternateVariant(true);
+    } else {
+      setIsAlternateVariant(false);
+    }
     if (scrollRef && scrollRef.current) {
       window.addEventListener('scroll', handleOnScroll);
     }
@@ -656,7 +674,8 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
       }
       return search;
     });
-  }, [searchKeyword, filter]);
+    search();
+  }, [searchKeyword]);
 
   useEffect(() => {
     if (params && params.specialty) {
@@ -866,8 +885,8 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     title: (faqData && faqData[0].specialtyMetaTitle) || '',
     description: (faqData && faqData[0].specialtyMetaDescription) || '',
     canonicalLink:
-      (faqData && faqData[0].canonicalUrl) || (window && window.location && window.location.href),
-    deepLink: window.location.href,
+      (faqData && faqData[0].canonicalUrl) ||
+      (window && window.location && `${window.location.host}${window.location.pathname}`),
   };
 
   return (
@@ -1007,8 +1026,8 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
             </div>
             <div className={classes.rightBar}>
               <div className={classes.stickyBlock}>
-                <WhyApollo />
-                <HowItWorks />
+                <WhyApollo alternateVariant={isAlternateVariant} />
+                <HowItWorks alternateVariant={isAlternateVariant} />
               </div>
             </div>
           </div>

@@ -115,7 +115,8 @@ type AddMedicalRecordResult = {
   status: boolean;
 };
 
-/* >= release 5.0.0 not used for lab tests */
+/* >= release 5.0.0 not used for lab tests
+>= release 5.0.0 not used for adding prescriptions from phr section */
 
 const addPatientMedicalRecord: Resolver<
   null,

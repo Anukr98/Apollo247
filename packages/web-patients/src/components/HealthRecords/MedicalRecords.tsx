@@ -24,6 +24,8 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import { Alerts } from 'components/Alerts/Alerts';
 import _lowerCase from 'lodash/lowerCase';
 import { MedicalRecordType } from '../../graphql/types/globalTypes';
+import { phrDownloadingMedicalRecordFileTracking } from '../../webEngageTracking';
+import { Route } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -460,17 +462,13 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
       allCombinedData.sort((data1: LabResultsType, data2: LabResultsType) => {
         const filteredData1 =
           type === FILTER_TYPE.DATE
-            ? moment(data1.date)
-                .toDate()
-                .getTime()
+            ? moment(data1.date).toDate().getTime()
             : type === FILTER_TYPE.TEST
             ? _lowerCase(data1.labTestName)
             : _lowerCase(data1.packageName);
         const filteredData2 =
           type === FILTER_TYPE.DATE
-            ? moment(data2.date)
-                .toDate()
-                .getTime()
+            ? moment(data2.date).toDate().getTime()
             : type === FILTER_TYPE.TEST
             ? _lowerCase(data2.labTestName)
             : _lowerCase(data2.packageName);
@@ -680,7 +678,7 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                                     : combinedData.labTestSource || '-'
                                 }
                                 recordType={MedicalRecordType.TEST_REPORT}
-                                id={`LabResults-${combinedData.id}`}
+                                id={combinedData.id}
                                 isActiveCard={activeData && activeData === combinedData}
                               />
                             </div>
@@ -697,17 +695,21 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
             </div>
           )}
         </Scrollbars>
-        <div className={classes.addReportActions}>
-          <AphButton
-            color="primary"
-            onClick={() => {
-              window.location.href = clientRoutes.addHealthRecords('medical');
-            }}
-            fullWidth
-          >
-            Add Record
-          </AphButton>
-        </div>
+        <Route
+          render={({ history }) => (
+            <div className={classes.addReportActions}>
+              <AphButton
+                color="primary"
+                onClick={() => {
+                  history.push(clientRoutes.addHealthRecords('medical'));
+                }}
+                fullWidth
+              >
+                Add Record
+              </AphButton>
+            </div>
+          )}
+        />
       </div>
       <div
         className={`${classes.rightSection} ${
@@ -804,7 +806,10 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
             <div className={classes.addReportActions}>
               <AphButton
                 color="primary"
-                onClick={() => downloadTestReport(activeData.id)}
+                onClick={() => {
+                  phrDownloadingMedicalRecordFileTracking('Medical Record');
+                  downloadTestReport(activeData.id);
+                }}
                 fullWidth
               >
                 {isDownloading ? (

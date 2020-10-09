@@ -17,6 +17,7 @@ import {
   makeAppointmentPaymentResolvers,
 } from 'consults-service/resolvers/makeAppointmentPayment';
 import { caseSheetResolvers, caseSheetTypeDefs } from 'consults-service/resolvers/caseSheet';
+import { caseSheetV2Resolvers, caseSheetV2TypeDefs } from 'consults-service/resolvers/caseSheetV2';
 import {
   paymentTransactionStatusTypeDefs,
   paymentTransactionStatusResolvers,
@@ -212,6 +213,10 @@ import {
           {
             typeDefs: caseSheetTypeDefs,
             resolvers: caseSheetResolvers,
+          },
+          {
+            typeDefs: caseSheetV2TypeDefs,
+            resolvers: caseSheetV2Resolvers,
           },
           {
             typeDefs: transferAppointmentTypeDefs,
