@@ -4,11 +4,23 @@ import { Theme, Typography } from '@material-ui/core';
 import { Header } from './Header';
 import { BottomLinks } from 'components/BottomLinks';
 import { NavigationBottom } from 'components/NavigationBottom';
-import { AphButton } from '@aph/web-ui-components';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import FormControl from '@material-ui/core/FormControl';
+import Select from '@material-ui/core/Select';
+import MenuItem from '@material-ui/core/MenuItem';
+
+import {
+  AphSelect,
+  AphButton,
+  AphInput,
+  AphTextField,
+  AphDialogTitle,
+  AphDialog,
+  AphDialogClose,
+} from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -202,6 +214,7 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'fixed',
       left: 20,
       bottom: 100,
+      zIndex: 9,
       [theme.breakpoints.up(1440)]: {
         left: 50,
       },
@@ -210,6 +223,61 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       [theme.breakpoints.up(1920)]: {
         left: '15%',
+      },
+    },
+    aphBanner: {
+      position: 'relative',
+    },
+    bannerContainer: {
+      width: 280,
+      position: 'absolute',
+      top: '20%',
+      right: 50,
+      background: '#fff',
+      borderRadius: 10,
+      padding: 20,
+      boxShadow: ' 0 5px 20px 0 rgba(0, 0, 0, 0.3)',
+      '& h2': {
+        fontSize: 16,
+        fontWeight: 500,
+        textAlign: 'center',
+        lineHeight: '16px',
+      },
+      '& button': {
+        margin: '20px auto 0',
+        width: 180,
+        display: 'block',
+      },
+    },
+    formControl: {
+      width: '100%',
+      margin: '0 0 15px',
+      '& svg': {
+        color: '#00b38e',
+      },
+    },
+    formInput: {
+      margin: '0 0 15px',
+    },
+    selectEmpty: {
+      fontSize: 16,
+      color: '#02475b',
+      fontWeight: 500,
+      '& div': {
+        '&:focus': {
+          background: 'none',
+        },
+      },
+      '&:hover': {
+        '&:before': {
+          borderColor: ' #00b38e !important',
+        },
+      },
+      '&:before': {
+        borderBottom: '2px solid #00b38e',
+      },
+      '&:after': {
+        display: 'none',
       },
     },
   };
@@ -231,7 +299,44 @@ const ApolloProHealthLanding: React.FC = (props) => {
           <AphButton color="primary" className={classes.fabButton}>
             Get In Touch
           </AphButton>
-          <img src={require('images/pro-health-banner.svg')} alt="Apollo Pro Health Program" />
+          <div className={classes.aphBanner}>
+            <img src={require('images/pro-health-banner.svg')} alt="Apollo Pro Health Program" />
+            <div className={classes.bannerContainer}>
+              <Typography component="h2">Share your details</Typography>
+              <form>
+                <AphTextField placeholder="Name" className={classes.formInput} />
+                <AphTextField
+                  inputProps={{
+                    maxLength: 10,
+                  }}
+                  placeholder="Mobile Number"
+                  className={classes.formInput}
+                />
+                <AphTextField placeholder="Email" className={classes.formInput} />
+                <FormControl className={classes.formControl}>
+                  <Select
+                    labelId="demo-simple-select-label"
+                    id="demo-simple-select"
+                    displayEmpty
+                    className={classes.selectEmpty}
+                    inputProps={{ 'aria-label': 'Without label' }}
+                  >
+                    <MenuItem value="" disabled>
+                      Select location
+                    </MenuItem>
+                    <MenuItem value="hyderabad">Hyderaad</MenuItem>
+                    <MenuItem value="chennai">Chennai</MenuItem>
+                    <MenuItem value="delhi">Delhi</MenuItem>
+                    <MenuItem value="mumbai">Mumbai</MenuItem>
+                  </Select>
+                  <AphButton variant="contained" color="primary">
+                    Let's Talk
+                  </AphButton>
+                </FormControl>
+              </form>
+            </div>
+          </div>
+
           <div className={classes.aboutContainer}>
             <img src={require('images/prohealth-1.svg')} alt="Apollo Pro Health Program" />
             <div className={classes.aboutDetails}>
