@@ -65,7 +65,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
       [theme.breakpoints.down(650)]: {
         '&:after': {
-          height: 170,
+          height: 180,
         },
       },
     },

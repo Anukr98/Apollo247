@@ -21,6 +21,7 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: '0 10px 0 0',
       cursor: 'pointer',
       position: 'relative',
+
       '& >img': {
         margin: '0 10px 0 0',
       },
@@ -56,11 +57,14 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     specialitySearch: {
       padding: '10px 0',
+      background: '#fff',
       display: 'flex',
       alignItems: 'center',
       [theme.breakpoints.down(700)]: {
         flexDirection: 'column',
         alignItems: 'flex-start',
+        padding: 20,
+        margin: '0 0 20px',
       },
     },
     cityActive: {

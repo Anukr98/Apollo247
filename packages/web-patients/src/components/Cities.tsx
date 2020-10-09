@@ -23,6 +23,7 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0px 5px 20px rgba(0, 0, 0, 0.3)',
       [theme.breakpoints.down(600)]: {
         padding: 20,
+        width: 320,
       },
     },
 
