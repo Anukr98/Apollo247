@@ -3899,6 +3899,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               },
             })
             .then((_data: any) => {
+              props.setStartConsultAction(true);
               setsessionId(_data.data.createAppointmentSession.sessionId);
               settoken(_data.data.createAppointmentSession.appointmentToken);
               handleClose();

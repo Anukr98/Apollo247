@@ -6,12 +6,15 @@ import {
   g,
   isValidTestSlot,
   TestSlot,
+  TestSlotWithArea,
   formatTestSlot,
   formatTestSlotWithBuffer,
   getUniqueTestSlots,
   getTestSlotDetailsByTime,
   postWebEngageEvent,
+  isValidTestSlotWithArea,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
+import { TestSlotOverlay } from '@aph/mobile-patients/src/components/Tests/TestSlotOverlay';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   DiagnosticsCartItem,
@@ -27,7 +30,11 @@ import {
 import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { CalendarShow, TestsIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  CalendarShow,
+  DropdownGreen,
+  TestsIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCard';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -35,6 +42,8 @@ import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/St
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
+import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import {
   CommonLogEvent,
   CommonBugFender,
@@ -44,6 +53,8 @@ import {
   GET_PATIENT_ADDRESS_LIST,
   UPLOAD_DOCUMENT,
   SEARCH_DIAGNOSTICS_BY_ID,
+  GET_DIAGNOSTIC_AREAS,
+  GET_DIAGNOSTIC_SLOTS_WITH_AREA_ID,
   GET_DIAGNOSTICS_HC_CHARGES,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
@@ -83,6 +94,7 @@ import {
   TouchableOpacity,
   View,
   Keyboard,
+  Dimensions,
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import Geolocation from '@react-native-community/geolocation';
@@ -96,7 +108,13 @@ import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEven
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { postPharmacyAddNewAddressClick } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
-
+import { getAreas, getAreasVariables } from '../../graphql/types/getAreas';
+import {
+  getDiagnosticSlotsWithAreaID,
+  getDiagnosticSlotsWithAreaIDVariables,
+} from '../../graphql/types/getDiagnosticSlotsWithAreaID';
+import { CartItemsList } from '../MedicineCart/Components/CartItemsList';
+const { width: winWidth } = Dimensions.get('window');
 const styles = StyleSheet.create({
   labelView: {
     flexDirection: 'row',
@@ -142,12 +160,40 @@ const styles = StyleSheet.create({
     color: theme.colors.SHERPA_BLUE,
     marginBottom: 5,
   },
+  menuItemContainer: {
+    marginHorizontal: 0,
+    padding: 0,
+    margin: 0,
+  },
+  menuMenuContainerStyle: {
+    marginLeft: winWidth * 0.25,
+    marginTop: 30,
+  },
+  menuScrollViewContainerStyle: { paddingVertical: 0 },
+  menuItemTextStyle: {
+    ...theme.viewStyles.text('M', 14, '#01475b'),
+    padding: 0,
+    margin: 0,
+  },
+  menuBottomPadding: { paddingBottom: 0 },
+  dropdownGreenContainer: { justifyContent: 'flex-end', marginBottom: -2 },
+  locationText: { ...theme.viewStyles.text('M', 14, '#01475b', 1, 18) },
+  locationTextUnderline: {
+    height: 2,
+    backgroundColor: '#00b38e',
+    opacity: 1,
+  },
 });
 
 type clinicHoursData = {
   week: string;
   time: string;
 };
+
+export interface areaObject {
+  key: string;
+  value: string;
+}
 
 export interface TestsCartProps extends NavigationScreenProps {}
 
@@ -176,6 +222,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     forPatientId,
     setPatientId,
     diagnosticSlot,
+
     setDiagnosticClinic,
     setDiagnosticSlot,
     setEPrescriptions,
@@ -183,6 +230,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     setHcCharges,
     hcCharges,
     coupon,
+    areaSelected,
+    setAreaSelected,
   } = useDiagnosticsCart();
   const { setAddresses: setMedAddresses } = useShoppingCart();
 
@@ -203,6 +252,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const [slots, setSlots] = useState<TestSlot[]>([]);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<TestSlot>();
+
   const [selectedTab, setselectedTab] = useState<string>(clinicId ? tabs[1].title : tabs[0].title);
   const { currentPatient } = useAllCurrentPatients();
   const currentPatientId = currentPatient && currentPatient!.id;
@@ -222,12 +272,19 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [isEPrescriptionUploadComplete, setisEPrescriptionUploadComplete] = useState<boolean>();
   const [storePickUpLoading, setStorePickUpLoading] = useState<boolean>(false);
   const [testCentresLoaded, setTestCentresLoaded] = useState<boolean>(false);
+  const [isAreaServiceable, setAreaServiceable] = useState<boolean>(false);
+  const [diagnosticAreas, setDiagnosticAreas] = useState<any>([]);
+  const [selectedArea, setSelectedArea] = useState<object>({});
+  const [localSelectedAddress, setLocalSelectedAddress] = useState<
+    savePatientAddress_savePatientAddress_patientAddress
+  >();
 
   const itemsWithHC = cartItems!.filter((item) => item!.collectionMethod == 'HC');
   const itemWithId = itemsWithHC!.map((item) => parseInt(item.id));
 
   const isValidPinCode = (text: string): boolean => /^(\s*|[1-9][0-9]*)$/.test(text);
 
+  const cartItemsWithId = cartItems!.map((item) => parseInt(item.id));
   useEffect(() => {
     fetchAddresses();
   }, [currentPatient]);
@@ -322,10 +379,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         const selectedAddressIndex = addresses.findIndex(
           (address) => address.id == deliveryAddressId
         );
-        checkServicability(addresses[selectedAddressIndex]);
+
+        fetchAreasForAddress(
+          addresses[selectedAddressIndex].id,
+          addresses[selectedAddressIndex].zipcode!
+        );
       }
     }
-  }, [deliveryAddressId, diagnosticSlot]);
+  }, [deliveryAddressId, diagnosticSlot, cartItems]);
 
   useEffect(() => {
     clinics.length == 0 && fetchStorePickup();
@@ -493,6 +554,56 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     }
   };
 
+  /**
+   * fetching the areas
+   */
+
+  const fetchAreasForAddress = (id: string, pincode: string) => {
+    setDiagnosticAreas([]);
+    setSelectedArea({});
+    setLoading!(true);
+    client
+      .query<getAreas, getAreasVariables>({
+        query: GET_DIAGNOSTIC_AREAS,
+        fetchPolicy: 'no-cache',
+        variables: {
+          pincode: parseInt(pincode!),
+          itemIDs: cartItemsWithId,
+        },
+      })
+      .then(({ data }) => {
+        setLoading!(false);
+        const getDiagnosticAreas = g(data, 'getAreas', 'areas') || [];
+        if (data.getAreas.status) {
+          setDiagnosticAreas!(getDiagnosticAreas);
+        } else {
+          setDeliveryAddressId && setDeliveryAddressId(''); //empty the selected address
+          setDiagnosticAreas([]); //empty the array
+          setAreaServiceable(false);
+          setLoading!(false);
+          showAphAlert!({
+            title: 'Uh oh.. :(',
+            description:
+              'Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address.',
+          });
+        }
+      })
+      .catch((e) => {
+        setLoading!(false);
+        setAreaServiceable(false);
+        CommonBugFender('TestsCart_getArea selection', e);
+        console.log('error' + e);
+        showAphAlert!({
+          title: 'Uh oh.. :(',
+          description:
+            'Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address.',
+        });
+      })
+      .finally(() => {
+        setLoading!(false);
+      });
+  };
+
   const renderItemsInCart = () => {
     const cartItemsCount =
       cartItems.length > 10 || cartItems.length == 0
@@ -579,28 +690,82 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const [checkingServicability, setCheckingServicability] = useState(false);
 
-  // const checkServicability = (address: savePatientAddress_savePatientAddress_patientAddress) => {
-  //   setCheckingServicability(true);
-  //   pinCodeServiceabilityApi(address.zipcode!)
-  //     .then(({ data: { Availability } }) => {
-  //       setCheckingServicability(false);
-  //       if (Availability) {
-  //         setDeliveryAddressId && setDeliveryAddressId(address.id);
-  //         setPinCode && setPinCode(address.zipcode!);
-  //       } else {
-  //         showAphAlert!({
-  //           title: 'Uh oh.. :(',
-  //           description:
-  //             'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby clinics, or change the pincode.',
-  //         });
-  //       }
-  //     })
-  //     .catch((e) => {
-  //       aphaphConsole.log({ e });
-  //       setCheckingServicability(false);
-  //       handleGraphQlError(e);
-  //     });
-  // };
+  const checkSlotSelection = (item: areaObject) => {
+    client
+      .query<getDiagnosticSlotsWithAreaID, getDiagnosticSlotsWithAreaIDVariables>({
+        query: GET_DIAGNOSTIC_SLOTS_WITH_AREA_ID,
+        fetchPolicy: 'no-cache',
+        variables: {
+          selectedDate: moment(date).format('YYYY-MM-DD'),
+          areaID: parseInt(item.key!),
+        },
+      })
+      .then(({ data }) => {
+        const diagnosticSlots = g(data, 'getDiagnosticSlotsWithAreaID', 'slots') || [];
+        console.log('ORIGINAL DIAGNOSTIC SLOTS', { diagnosticSlots });
+        const slotsArray: TestSlot[] = [];
+        diagnosticSlots!.forEach((item) => {
+          if (isValidTestSlotWithArea(item!, date)) {
+            slotsArray.push({
+              employeeCode: 'apollo_employee_code',
+              employeeName: 'apollo_employee_name',
+              slotInfo: {
+                endTime: item?.Timeslot!,
+                status: 'empty',
+                startTime: item?.Timeslot!,
+                slot: item?.TimeslotID,
+              },
+              date: date,
+              diagnosticBranchCode: 'apollo_route',
+            } as TestSlot);
+          }
+        });
+
+        const uniqueSlots = getUniqueTestSlots(slotsArray);
+
+        console.log('ARRAY OF SLOTS', { slotsArray });
+
+        setSlots(slotsArray);
+        uniqueSlots.length &&
+          setselectedTimeSlot(
+            getTestSlotDetailsByTime(slotsArray, uniqueSlots[0].startTime!, uniqueSlots[0].endTime!)
+          );
+        setDisplaySchedule(true); //show slot popup
+
+        setDeliveryAddressId!(localSelectedAddress!.id);
+        setPinCode!(localSelectedAddress!.zipcode!);
+      })
+      .catch((e) => {
+        CommonBugFender('TestsCart_checkServicability', e);
+        console.log('Error occured', { e });
+        setDiagnosticSlot && setDiagnosticSlot(null);
+        setselectedTimeSlot(undefined);
+        const noHubSlots = g(e, 'graphQLErrors', '0', 'message') === 'NO_HUB_SLOTS';
+
+        if (noHubSlots) {
+          setDeliveryAddressId!(localSelectedAddress!.id);
+          setPinCode!(localSelectedAddress!.zipcode!);
+          showAphAlert!({
+            title: 'Uh oh.. :(',
+            description: `Sorry! There are no slots available on ${moment(date).format(
+              'DD MMM, YYYY'
+            )}. Please choose another date.`,
+            onPressOk: () => {
+              setDisplaySchedule(true);
+              hideAphAlert && hideAphAlert();
+            },
+          });
+        } else {
+          setDeliveryAddressId && setDeliveryAddressId('');
+          // setPinCode && setPinCode('');
+          showAphAlert!({
+            title: 'Uh oh.. :(',
+            description:
+              'Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address.',
+          });
+        }
+      });
+  };
 
   const checkServicability = (
     selectedAddress: savePatientAddress_savePatientAddress_patientAddress
@@ -710,23 +875,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     const startIndex = spliceStartIndex == -1 ? 0 : spliceStartIndex;
 
     return (
-      <View
-        style={{ marginTop: 8, marginHorizontal: 16 }}
-        pointerEvents={checkingServicability ? 'none' : 'auto'}
-      >
-        {checkingServicability ? (
-          <View
-            style={{
-              position: 'absolute',
-              width: '100%',
-              height: '100%',
-              alignSelf: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <ActivityIndicator size="large" color="green" />
-          </View>
-        ) : null}
+      <View style={{ marginTop: 8, marginHorizontal: 16 }}>
         {addresses.slice(startIndex, startIndex + 2).map((item, index, array) => {
           return (
             <RadioSelectionItem
@@ -753,7 +902,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                       )}), that can only be done at the centre, we request you to get all tests in your cart done at the centre of your convenience. Please proceed to select.`,
                   });
                 } else {
-                  checkServicability(item);
+                  setLocalSelectedAddress(item);
+                  setDeliveryAddressId!(item.id);
+                  fetchAreasForAddress(item.id, item.zipcode!);
                 }
               }}
               containerStyle={{ marginTop: 16 }}
@@ -786,11 +937,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                   props.navigation.navigate(AppRoutes.SelectDeliveryAddress, {
                     isTest: true,
                     selectedAddressId: deliveryAddressId,
-                    isChanged: (val: boolean, id?: string) => {
+                    isChanged: (val: boolean, id?: string, pincode?: string) => {
                       if (val && id) {
                         setDeliveryAddressId && setDeliveryAddressId(id);
                         setDiagnosticSlot && setDiagnosticSlot(null);
                         setselectedTimeSlot(undefined);
+                        fetchAreasForAddress(id, pincode!);
                       }
                     },
                   });
@@ -955,28 +1107,39 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     );
   };
 
+  /**
+   * if address selected + if area serviceable
+   */
   const renderPickupHours = () => {
+    const showTime = deliveryAddressId && isAreaServiceable;
     return (
       <View>
-        <View style={styles.rowSpaceBetweenStyle}>
-          <Text style={styles.dateTextStyle}>Date</Text>
-          <Text style={styles.dateTextStyle}>{moment(date).format('DD MMM, YYYY')}</Text>
-        </View>
-        <View style={styles.rowSpaceBetweenStyle}>
-          <Text style={styles.dateTextStyle}>Time</Text>
-          <Text style={styles.dateTextStyle}>
-            {selectedTimeSlot
-              ? `${formatTestSlotWithBuffer(selectedTimeSlot.slotInfo.startTime!)}`
-              : 'No slot selected'}
-          </Text>
-        </View>
+        {showTime ? (
+          <>
+            <View style={styles.rowSpaceBetweenStyle}>
+              <Text style={styles.dateTextStyle}>Date</Text>
+              <Text style={styles.dateTextStyle}>{moment(date).format('DD MMM, YYYY')}</Text>
+            </View>
+            <View style={styles.rowSpaceBetweenStyle}>
+              <Text style={styles.dateTextStyle}>Time</Text>
+              <Text style={styles.dateTextStyle}>
+                {selectedTimeSlot
+                  ? `${formatTestSlotWithBuffer(selectedTimeSlot.slotInfo.startTime!)}`
+                  : 'No slot selected'}
+              </Text>
+            </View>
+          </>
+        ) : null}
         <Text
-          style={[styles.yellowTextStyle, { padding: 0, paddingTop: 20, alignSelf: 'flex-end' }]}
+          style={[
+            styles.yellowTextStyle,
+            { padding: 0, paddingTop: 20, alignSelf: 'flex-end', opacity: showTime ? 1 : 0.5 },
+          ]}
           onPress={() => {
-            setDisplaySchedule(true);
+            showTime && setDisplaySchedule(true);
           }}
         >
-          PICK ANOTHER SLOT
+          {showTime ? 'PICK ANOTHER SLOT' : 'SELECT SLOT'}
         </Text>
       </View>
     );
@@ -997,9 +1160,84 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     );
   };
 
+  /**
+   * active only when added from the 0th tab + deliveryAddress selected
+   */
+  const renderAreaSelectionCard = () => {
+    const isSelectable = selectedTab === tabs[0].title && deliveryAddressId;
+    const options = diagnosticAreas.map((item: any) => ({ key: item.id, value: item.area }));
+    return (
+      <>
+        {selectedTab === tabs[0].title ? (
+          <View
+            style={{
+              ...theme.viewStyles.cardViewStyle,
+              marginHorizontal: 20,
+              margin: 16,
+              padding: 16,
+            }}
+          >
+            <MaterialMenu
+              options={options}
+              itemContainer={styles.menuItemContainer}
+              menuContainerStyle={[styles.menuMenuContainerStyle]}
+              scrollViewContainerStyle={styles.menuScrollViewContainerStyle}
+              itemTextStyle={styles.menuItemTextStyle}
+              bottomPadding={styles.menuBottomPadding}
+              onPress={(item) => {
+                setSelectedArea(item);
+                checkSlotSelection(item);
+                setAreaServiceable(true);
+                // checkServicability(selectedAddress);
+              }}
+            >
+              {renderAreaSelectionField()}
+            </MaterialMenu>
+          </View>
+        ) : null}
+      </>
+    );
+  };
+
+  const renderAreaSelectionField = () => {
+    const isAreaSelectable =
+      Object.keys(selectedArea).length === 0 && selectedArea.constructor === Object;
+    return (
+      <View style={{ paddingLeft: 15, marginTop: 3.5 }}>
+        <View style={{ marginTop: -7.5 }}>
+          <View style={{ flexDirection: 'row' }}>
+            <View style={{ width: '90%' }}>
+              <Text
+                style={{
+                  ...theme.viewStyles.text(
+                    'M',
+                    15,
+                    isAreaSelectable
+                      ? diagnosticAreas.length > 0
+                        ? '#01475b'
+                        : 'rgba(1,48,91, 0.3)'
+                      : '#01475b',
+                    1,
+                    18
+                  ),
+                  marginBottom: 5,
+                }}
+              >
+                {isAreaSelectable ? ' Select area' : selectedArea.value}
+              </Text>
+              <Spearator style={[styles.locationTextUnderline]} />
+            </View>
+            <View style={styles.dropdownGreenContainer}>
+              <DropdownGreen />
+            </View>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
   const renderTimingCard = () => {
-    return (selectedTab === tabs[0].title && deliveryAddressId && !checkingServicability) ||
-      (selectedTab === tabs[1].title && clinicId) ? (
+    return selectedTab === tabs[0].title || (selectedTab === tabs[1].title && clinicId) ? (
       <View
         style={{
           ...theme.viewStyles.cardViewStyle,
@@ -1061,6 +1299,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           />
           {selectedTab === tabs[0].title ? renderHomeDelivery() : renderStorePickup()}
         </View>
+        {renderAreaSelectionCard()}
         {renderTimingCard()}
       </View>
     );
@@ -1645,6 +1884,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         <TestSlotSelectionOverlay
           heading="Schedule Appointment"
           date={date}
+          areaId={selectedArea?.key!}
           maxDate={moment()
             .add(AppConfig.Configuration.DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS, 'day')
             .toDate()}
@@ -1655,7 +1895,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           slotInfo={selectedTimeSlot}
           onSchedule={(date: Date, slotInfo: TestSlot) => {
             console.log({ slotInfo });
-
             setDate(date);
             setselectedTimeSlot(slotInfo);
             setDiagnosticSlot!({
