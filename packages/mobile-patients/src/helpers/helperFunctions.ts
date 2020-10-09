@@ -103,7 +103,7 @@ export interface TestSlotWithArea {
   employeeName: string;
   diagnosticBranchCode: string;
   date: Date;
-  slotInfo : getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots
+  slotInfo: getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots;
 }
 
 const isDebugOn = __DEV__;
@@ -217,15 +217,12 @@ export const formatSelectedAddress = (
   address: savePatientAddress_savePatientAddress_patientAddress
 ) => {
   const formattedAddress =
-    (address.addressLine1 && address.addressLine1 + ', ') +
-    '' +
-    (address.addressLine2 && address.addressLine2 + ', ') +
-    '' +
-    (address.city && address.city + ',') +
-    '' +
-    (address.state && address.state + ',') +
-    '' +
-    (address.zipcode && address.zipcode);
+    address?.addressLine1 +
+    ', ' +
+    (address?.addressLine2 + ', ') +
+    (address?.city + ', ') +
+    (address?.state + ', ') +
+    address?.zipcode;
   return formattedAddress;
 };
 
@@ -887,7 +884,7 @@ export const addTestsToCart = async (
       query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
       variables: {
         searchText: name,
-        cityID: parseInt(city || '9',10),
+        cityID: parseInt(city || '9', 10),
       },
       fetchPolicy: 'no-cache',
     });
@@ -1081,10 +1078,7 @@ export const getUniqueTestSlotsWithArea = (slots: TestSlotWithArea[]) => {
   return slots
     .filter(
       (item, idx, array) =>
-        array.findIndex(
-          (_item) =>
-            _item.slotInfo.Timeslot == item.slotInfo.Timeslot 
-        ) == idx
+        array.findIndex((_item) => _item.slotInfo.Timeslot == item.slotInfo.Timeslot) == idx
     )
     .map((val) => ({
       startTime: val.slotInfo.Timeslot!,
@@ -1098,7 +1092,6 @@ export const getUniqueTestSlotsWithArea = (slots: TestSlotWithArea[]) => {
       return 0;
     });
 };
-
 
 const webengage = new WebEngage();
 
@@ -1881,7 +1874,7 @@ export const checkPermissions = (permissions: string[]) => {
       }
     });
   });
-}
+};
 
 export const removeConsecutiveComma = (value: string) => {
   return value.replace(/^,|,$|,(?=,)/g, '');
