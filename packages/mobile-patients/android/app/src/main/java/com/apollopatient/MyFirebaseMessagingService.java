@@ -166,16 +166,13 @@ public class MyFirebaseMessagingService
 
         //
         int notificationId = new Random().nextInt();
-        PendingIntent acptIntent = NotificationActivity.getAcceptIntent(oneTimeID,uri,this);
-        PendingIntent rjctIntent = NotificationActivity.getRejectIntent(oneTimeID,uri_home, this);
+        PendingIntent acptIntent = MainActivity.getActionIntent(oneTimeID,uri,this);
+        PendingIntent rjctIntent = MainActivity.getActionIntent(oneTimeID,uri_home, this);
         //
-
-
-
-        long[] v = {500,1000};
-
         NotificationCompat.Action acceptCall=new NotificationCompat.Action.Builder(R.drawable.acpt_btn,getActionText("Answer",android.R.color.holo_green_light),acptIntent).build();
         NotificationCompat.Action rejectCall=new NotificationCompat.Action.Builder(R.drawable.rjt_btn,getActionText("Decline",android.R.color.holo_red_light),rjctIntent).build();
+
+        long[] v = {500,1000};
 
         NotificationCompat.Builder notificationBuilder =
             new NotificationCompat.Builder(this, channelId)
