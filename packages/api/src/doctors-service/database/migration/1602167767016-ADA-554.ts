@@ -8,7 +8,7 @@ export class ADA5541602167767016 implements MigrationInterface {
     ADD COLUMN "panCard"  character varying COLLATE pg_catalog."default",
     ADD COLUMN "typeOfService"  character varying COLLATE pg_catalog."default",
     ADD COLUMN "isPennyRequried" boolean NOT NULL DEFAULT true,
-    ADD COLUMN "isActive" boolean NOT NULL DEFAULT true
+    ADD COLUMN "isActive" boolean NOT NULL DEFAULT true,
     ADD COLUMN "branchName"  character varying COLLATE pg_catalog."default"`);
 
 
