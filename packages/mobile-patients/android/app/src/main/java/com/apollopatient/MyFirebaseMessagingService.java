@@ -159,25 +159,40 @@ public class MyFirebaseMessagingService
                 PendingIntent.FLAG_ONE_SHOT);
         //on notif click end
 
+        //when device locked show fullscreen notification start
+        Intent i = new Intent(getApplicationContext(), UnlockScreenActivity.class);
+        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        i.putExtra("DOCTOR_NAME", remoteMessage.getData().get("doctorName"));
+        i.putExtra("APPOINTMENT_ID",remoteMessage.getData().get("appointmentId"));
+        i.putExtra("CALL_TYPE",remoteMessage.getData().get("callType"));
+        i.putExtra("APP_STATE",isAppRunning());
+        PendingIntent fullScreenIntent = PendingIntent.getActivity(this, 0 /* Request code */, i,
+                PendingIntent.FLAG_ONE_SHOT);
+        //end
 
-        String channelId = "fcm_FirebaseNotifiction_call_channel";
-        String channelName = "Apollo 247 Incoming Call";
+        //channel info start
+        String channelId = "fcm_call_channel";
+        String channelName = "Incoming Call";
         Uri incoming_call_notif = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
+//                Uri.parse("android.resource://"+this.getPackageName()+"/"+R.raw.incallmanager_ringtone);
+//                RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
+        //end
 
-        //
+        // notification action buttons start
         int notificationId = new Random().nextInt();
         PendingIntent acptIntent = MainActivity.getActionIntent(oneTimeID,uri,this);
         PendingIntent rjctIntent = MainActivity.getActionIntent(oneTimeID,uri_home, this);
-        //
+
         NotificationCompat.Action acceptCall=new NotificationCompat.Action.Builder(R.drawable.acpt_btn,getActionText("Answer",android.R.color.holo_green_light),acptIntent).build();
         NotificationCompat.Action rejectCall=new NotificationCompat.Action.Builder(R.drawable.rjt_btn,getActionText("Decline",android.R.color.holo_red_light),rjctIntent).build();
+        //end
 
         long[] v = {500,1000};
 
         NotificationCompat.Builder notificationBuilder =
             new NotificationCompat.Builder(this, channelId)
                     .setContentTitle(doctorName)
-                    .setContentText((channelName))
+                    .setContentText(channelName)
                     .setSmallIcon(R.drawable.ic_notification_white)
                     .setPriority(NotificationCompat.PRIORITY_MAX)
                     .setCategory(NotificationCompat.CATEGORY_CALL)
@@ -186,27 +201,30 @@ public class MyFirebaseMessagingService
                     .setSound(incoming_call_notif)
                     .addAction(acceptCall)
                     .addAction(rejectCall)
-                    .setFullScreenIntent(acptIntent, true)
+                    .setFullScreenIntent(fullScreenIntent, true)
                     .setContentIntent(pendingIntent);
 
         Log.e("notificationBuilder", String.valueOf(notificationId));
         NotificationManager notificationManager =
             (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-        try {
-            Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), incoming_call_notif);
-            r.play();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        
 
         int importance = NotificationManager.IMPORTANCE_MAX;
 
+        //channel creation start
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             NotificationChannel mChannel = new NotificationChannel(
                     channelId, channelName, importance);
+            AudioAttributes attributes = new AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                    .build();
+            mChannel.setSound(incoming_call_notif,attributes);
+            mChannel.setDescription(channelName);
+            mChannel.enableLights(true);
+            mChannel.enableVibration(true);
             notificationManager.createNotificationChannel(mChannel);
         }
+        //end
 
         notificationManager.notify(oneTimeID, notificationBuilder.build());
 }

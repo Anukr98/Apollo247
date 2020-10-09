@@ -94,8 +94,8 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
         //ringtoneManager end
 
         if(notifMessageType.equals(incomingCallStart)){
-                ringtone.setLooping(true);
-                ringtone.play();
+//                ringtone.setLooping(true);
+//                ringtone.play();
         }
         else if(notifMessageType.equals(incomingCallDisconnect)){
                 finish();
