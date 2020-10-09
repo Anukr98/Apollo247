@@ -77,9 +77,11 @@ interface Value {
 }
 interface Filter {
   name: string;
-  attribute: 'category' | 'brand';
-  select_type: 'single' | 'multi';
-  values: Value[];
+  attribute: string // 'category' | 'brand' ...
+  select_type: 'single' | 'multi' | 'range';
+  min?: number;
+  max?: number;
+  values?: Value[];
 }
 interface SortBy {
   label: string;
@@ -463,7 +465,9 @@ export const getMedicineDetailsApi = (
 
 export const searchMedicineApi = async (
   searchText: string,
-  pageId: number = 1
+  pageId: number = 1,
+  sortBy: string | null,
+  filters: { [key: string]: string[] } | null
 ): Promise<AxiosResponse<MedicineProductsResponse>> => {
   return Axios({
     url: config.MED_SEARCH[0],
@@ -471,6 +475,8 @@ export const searchMedicineApi = async (
     data: {
       params: searchText,
       page_id: pageId,
+      sort_by: sortBy,
+      filters: filters,
     },
     headers: {
       Authorization: config.MED_SEARCH[1],

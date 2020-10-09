@@ -1,3 +1,4 @@
+import { MedicineListingFilterSlider } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListingFilterSlider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
@@ -9,6 +10,7 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MedicineProductsResponse } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { MultiSliderProps } from '@ptomasroos/react-native-multi-slider';
 import { isEqual } from 'lodash';
 import React, { useState } from 'react';
 import {
@@ -75,7 +77,28 @@ export const MedicineListingFilter: React.FC<Props> = ({
     );
   };
 
+  const renderRange = (filter: Filter) => {
+    const { min, max, attribute } = filter;
+    const onValuesChangeFinish: MultiSliderProps['onValuesChangeFinish'] = (values) => {
+      const range = `${values[0]}-${values[1]}`;
+      setSelectedFilters({ ...selectedFilters, [attribute]: [range] });
+    };
+
+    return (
+      <MedicineListingFilterSlider
+        values={[Number(min), Number(max)]}
+        min={Number(min)}
+        max={Number(max)}
+        sliderLength={width * 0.4}
+        onValuesChangeFinish={onValuesChangeFinish}
+      />
+    );
+  };
+
   const renderFilterSubOptions = (filter: Filter) => {
+    if (filter.select_type == 'range') {
+      return renderRange(filter);
+    }
     return filter.values?.map(({ label, value }) => {
       const { select_type, attribute } = filter;
       const isMulti = select_type == 'multi';

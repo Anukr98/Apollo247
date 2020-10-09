@@ -87,7 +87,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
 
   useEffect(() => {
     if (searchText.length >= 3) {
-      searchProducts(searchText, 1);
+      searchProducts(searchText, 1, sortBy?.value || null, filterBy);
     }
   }, [sortBy, filterBy]);
 
@@ -107,14 +107,22 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     }
   }, []);
 
-  const searchProducts = async (searchText: string, pageId: number) => {
+  const searchProducts = async (
+    searchText: string,
+    pageId: number,
+    sortBy: string | null,
+    filters: SelectedFilters
+  ) => {
     try {
       updateLoading(pageId, true);
-      const { data } = await searchMedicineApi(searchText, pageId);
+      const { data } = await searchMedicineApi(searchText, pageId, sortBy, filters);
       updateProducts(pageId, products, data);
       setProductsTotal(data.product_count);
       updateLoading(pageId, false);
       setPageId(pageId + 1);
+      // TODO: transform response format of search API
+      // setSortByOptions(data.sort_by.values || []);
+      // setFilterOptions(data.filters);
       setPageTitle(data.search_heading || '');
       if (pageId == 1) {
         MedicineListingEvents.searchEnterClick({
@@ -257,7 +265,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     const onEndReached = () => {
       if (!isLoadingMore && products.length < productsTotal) {
         if (searchText) {
-          searchProducts(searchText, pageId);
+          searchProducts(searchText, pageId, sortBy?.value || null, filterBy);
         } else {
           searchProductsByCategory(categoryId, pageId, sortBy?.value || null, filterBy);
         }
