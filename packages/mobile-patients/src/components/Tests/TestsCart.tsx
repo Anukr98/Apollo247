@@ -235,6 +235,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     coupon,
     areaSelected,
     setAreaSelected,
+    diagnosticAreas,
+    setDiagnosticAreas,
   } = useDiagnosticsCart();
   const { setAddresses: setMedAddresses } = useShoppingCart();
 
@@ -275,7 +277,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [isEPrescriptionUploadComplete, setisEPrescriptionUploadComplete] = useState<boolean>();
   const [storePickUpLoading, setStorePickUpLoading] = useState<boolean>(false);
   const [testCentresLoaded, setTestCentresLoaded] = useState<boolean>(false);
-  const [diagnosticAreas, setDiagnosticAreas] = useState<any>([]);
 
   const itemsWithHC = cartItems!.filter((item) => item!.collectionMethod == 'HC');
   const itemWithId = itemsWithHC!.map((item) => parseInt(item.id));
@@ -373,10 +374,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       } else {
         setDate(new Date());
         setselectedTimeSlot(undefined);
+        setDiagnosticAreas!([]);
+        setAreaSelected!({});
         const selectedAddressIndex = addresses.findIndex(
           (address) => address.id == deliveryAddressId
         );
-
         fetchAreasForAddress(
           addresses[selectedAddressIndex].id,
           addresses[selectedAddressIndex].zipcode!
@@ -576,7 +578,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           setDiagnosticAreas!(getDiagnosticAreas);
         } else {
           setDeliveryAddressId && setDeliveryAddressId('');
-          setDiagnosticAreas([]);
+          setDiagnosticAreas!([]);
+          setAreaSelected!({});
           setselectedTimeSlot(undefined);
           setLoading!(false);
           showAphAlert!({
@@ -588,7 +591,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       })
       .catch((e) => {
         setLoading!(false);
-        setDiagnosticAreas([]);
+        setDiagnosticAreas!([]);
+        setAreaSelected!({});
         setselectedTimeSlot(undefined);
         CommonBugFender('TestsCart_getArea selection', e);
         console.log('error' + e);
@@ -667,6 +671,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               onPressAdd={() => {}}
               onPressRemove={() => {
                 CommonLogEvent(AppRoutes.TestsCart, 'Remove item from cart');
+                cartItems.length == 0 ? setDeliveryAddressId!('') : null;
                 onRemoveCartItem(test);
               }}
               onChangeUnit={() => {}}
@@ -876,7 +881,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     const startIndex = spliceStartIndex == -1 ? 0 : spliceStartIndex;
 
     return (
-      <View style={{ marginTop: 8, marginHorizontal: 16 }}>
+      <View
+        style={{ marginTop: 8, marginHorizontal: 16 }}
+        pointerEvents={cartItems.length > 0 ? 'auto' : 'none'}
+      >
         {addresses.slice(startIndex, startIndex + 2).map((item, index, array) => {
           return (
             <RadioSelectionItem
@@ -904,9 +912,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                   });
                 } else {
                   setDeliveryAddressId!(item.id);
-                  setDiagnosticAreas([]);
+                  setDiagnosticAreas!([]);
                   setAreaSelected!({});
-
+                  setDiagnosticSlot!(null);
                   // fetchAreasForAddress(item.id, item.zipcode!);
                 }
               }}

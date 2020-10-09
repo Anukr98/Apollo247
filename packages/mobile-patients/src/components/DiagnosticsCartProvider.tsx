@@ -114,6 +114,9 @@ export interface DiagnosticsCartContextProps {
   areaSelected: DiagnosticArea | {};
   setAreaSelected: ((items: DiagnosticArea | {}) => void) | null;
 
+  diagnosticAreas: [];
+  setDiagnosticAreas: ((items: any | []) => void) | null;
+
   diagnosticClinic: DiagnosticClinic | null;
   setDiagnosticClinic: ((item: DiagnosticClinic) => void) | null;
 }
@@ -177,6 +180,8 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   setDiagnosticSlot: null,
   areaSelected: {},
   setAreaSelected: null,
+  diagnosticAreas: [],
+  setDiagnosticAreas: null,
 });
 
 const showGenericAlert = (message: string) => {
@@ -236,6 +241,9 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   >(null);
 
   const [areaSelected, setAreaSelected] = useState<DiagnosticsCartContextProps['areaSelected']>({});
+  const [diagnosticAreas, setDiagnosticAreas] = useState<
+    DiagnosticsCartContextProps['diagnosticAreas']
+  >([]);
 
   const setDiagnosticClinic: DiagnosticsCartContextProps['setDiagnosticClinic'] = (item) => {
     _setDiagnosticClinic(item);
@@ -306,7 +314,8 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setCartItems(newCartItems);
     //empty the slots and areas everytime due to dependency of api.
     setDiagnosticSlot(null);
-    setAreaSelected({});
+    setAreaSelected!({});
+    setDiagnosticAreas([]);
   };
 
   const addMultipleCartItems: DiagnosticsCartContextProps['addMultipleCartItems'] = (
@@ -330,6 +339,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     //empty the slots and areas everytime due to dependency of api.
     setDiagnosticSlot(null);
     setAreaSelected!({});
+    setDiagnosticAreas!([]);
     setCartItems(newCartItems);
   };
   const updateCartItem: DiagnosticsCartContextProps['updateCartItem'] = (itemUpdates) => {
@@ -405,6 +415,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setCoupon(null);
     setDiagnosticSlot(null);
     setAreaSelected({});
+    setDiagnosticAreas([]);
   };
 
   useEffect(() => {
@@ -474,6 +485,8 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         deliveryCharges,
         setAreaSelected,
         areaSelected,
+        setDiagnosticAreas,
+        diagnosticAreas,
         hcCharges,
         setHcCharges,
 
