@@ -431,6 +431,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const patientJoinedMeetingRoom = '^^#patientJoinedMeetingRoom';
   const leaveChatRoom = '^^#leaveChatRoom';
   const exotelCall = '^^#exotelCall';
+  const vitalCompletedByPatient = '^^#vitalsCompletedByPatient';
 
   const { doctorId, patientId } = props;
   const channel = props.appointmentId;
@@ -575,7 +576,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         webEngageEventTracking(
           {
             'API name': 'AddChatDocument',
-            'ErrorDetails': JSON.stringify(error),
+            ErrorDetails: JSON.stringify(error),
             'Consultation Display ID': (appointmentInfo && appointmentInfo.displayId) || '',
             'Consult ID': props.appointmentId,
           },
@@ -671,7 +672,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== appointmentComplete &&
       rowData.message !== doctorAutoResponse &&
       rowData.message !== patientJoinedMeetingRoom &&
-      rowData.message !== leaveChatRoom
+      rowData.message !== leaveChatRoom &&
+      rowData.message !== vitalCompletedByPatient
     ) {
       leftComponent++;
       rightComponent = 0;
@@ -779,7 +781,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== appointmentComplete &&
       rowData.message !== doctorAutoResponse &&
       rowData.message !== patientJoinedMeetingRoom &&
-      rowData.message !== leaveChatRoom
+      rowData.message !== leaveChatRoom &&
+      rowData.message !== vitalCompletedByPatient
     ) {
       leftComponent = 0;
       jrDrComponent = 0;
