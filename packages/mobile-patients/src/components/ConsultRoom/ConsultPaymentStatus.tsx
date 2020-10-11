@@ -13,6 +13,7 @@ import {
   postAppsFlyerEvent,
   postFirebaseEvent,
   postWebEngageEvent,
+  overlyCallPermissions,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
@@ -37,7 +38,6 @@ import {
   TouchableOpacity,
   View,
   Clipboard,
-  NativeModules,
 } from 'react-native';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';
@@ -54,7 +54,6 @@ import { Snackbar } from 'react-native-paper';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
-const { RNAppSignatureHelper } = NativeModules;
 
 export interface ConsultPaymentStatusProps extends NavigationScreenProps {}
 
@@ -94,7 +93,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     });
 
   useEffect(() => {
-    overlyPermissionAndroid();
+    overlyCallPermissions(currentPatient.firstName, doctorName, showAphAlert, hideAphAlert, true);
   }, []);
 
   useEffect(() => {
@@ -438,8 +437,8 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const appointmentCard = () => {
     return (
       <View style={styles.appointmentCardStyle}>
-        <View style={{ flex: 0.5, paddingTop: 0.05 * windowWidth }}>
-          <View style={{ flex: 0.4, justifyContent: 'center' }}>
+        <View style={{ marginVertical: 20 }}>
+          <View style={{ justifyContent: 'center' }}>
             {textComponent(
               'Date & Time of Appointment',
               undefined,
@@ -447,9 +446,8 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
               false
             )}
           </View>
-          <View style={{ flex: 0.6, justifyContent: 'flex-start' }}>
+          <View style={{ justifyContent: 'flex-start', marginTop: 5 }}>
             {textComponent(
-              // appointmentDateTime.toDateString() + '  ' + appointmentDateTime.toLocaleTimeString(),
               getDate(appointmentDateTime),
               undefined,
               theme.colors.SHADE_CYAN_BLUE,
@@ -457,20 +455,20 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
             )}
           </View>
         </View>
-        <View style={{ flex: 0.5, flexDirection: 'row' }}>
+        <View style={{ flexDirection: 'row', marginBottom: 20 }}>
           <View style={{ flex: 0.5 }}>
-            <View style={{ flex: 0.4, justifyContent: 'center' }}>
+            <View style={{ justifyContent: 'center' }}>
               {textComponent('Doctor Name', undefined, theme.colors.ASTRONAUT_BLUE, false)}
             </View>
-            <View style={{ flex: 0.6, justifyContent: 'flex-start' }}>
+            <View style={{ justifyContent: 'flex-start', marginTop: 5 }}>
               {textComponent(doctorName, undefined, theme.colors.SHADE_CYAN_BLUE, false)}
             </View>
           </View>
-          <View style={{ flex: 0.5 }}>
-            <View style={{ flex: 0.4, justifyContent: 'center' }}>
+          <View style={{ flex: 0.5, marginLeft: 10 }}>
+            <View style={{ justifyContent: 'center' }}>
               {textComponent('Mode of Consult', undefined, theme.colors.ASTRONAUT_BLUE, false)}
             </View>
-            <View style={{ flex: 0.6, justifyContent: 'flex-start' }}>
+            <View style={{ justifyContent: 'flex-start', marginTop: 5 }}>
               {textComponent(appointmentType, undefined, theme.colors.SHADE_CYAN_BLUE, false)}
             </View>
           </View>
@@ -498,30 +496,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       return 'TRY AGAIN';
     } else {
       return 'GO TO HOME';
-    }
-  };
-
-  const overlyPermissionAndroid = () => {
-    if (Platform.OS === 'android') {
-      RNAppSignatureHelper.isRequestOverlayPermissionGranted((status: any) => {
-        if (status) {
-          showAphAlert!({
-            title: `Hi ${currentPatient.firstName} :)`,
-            description: Payment.askPermission1 + doctorName + Payment.askPermission2,
-            ctaContainerStyle: { justifyContent: 'flex-end' },
-            CTAs: [
-              {
-                text: 'OK, GOT IT',
-                type: 'orange-link',
-                onPress: () => {
-                  hideAphAlert!();
-                  RNAppSignatureHelper.requestOverlayPermission();
-                },
-              },
-            ],
-          });
-        }
-      });
     }
   };
 
@@ -578,7 +552,14 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
                   StackActions.reset({
                     index: 0,
                     key: null,
-                    actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+                    actions: [
+                      NavigationActions.navigate({
+                        routeName: AppRoutes.ConsultRoom,
+                        params: {
+                          isReset: true,
+                        },
+                      }),
+                    ],
                   })
                 );
                 props.navigation.navigate(AppRoutes.ChatRoom, {
@@ -681,7 +662,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   appointmentCardStyle: {
-    height: 0.23 * windowHeight,
     marginVertical: 0.03 * windowWidth,
     paddingLeft: 0.06 * windowWidth,
     marginHorizontal: 0.06 * windowWidth,

@@ -31,7 +31,7 @@ module.exports = async (req, res) => {
     const effectiveAmount = +new Decimal(amount).plus(healthCredits);
 
     // Decide if we need token here or we can use static token
-    axios.defaults.headers.common['authorization'] = process.env.API_TOKEN;
+    // axios.defaults.headers.common['authorization'] = process.env.API_TOKEN;
 
     // validate the order and token.
     const response = await axios({
@@ -53,6 +53,9 @@ module.exports = async (req, res) => {
               }
             `,
       },
+      headers: {
+        'authorization': process.env.API_TOKEN
+      }
     });
     if (
       response &&
@@ -140,7 +143,12 @@ module.exports = async (req, res) => {
 };
 
 async function saveMedicineOrder(payload) {
-  axios.defaults.headers.common['authorization'] = process.env.API_TOKEN;;
+  // axios.defaults.headers.common['authorization'] = process.env.API_TOKEN;
+  const axiosConfig = {
+    headers: {
+      'authorization': process.env.API_TOKEN
+    }
+  }
   // this needs to be altered later.
   const requestJSON = {
     query:
@@ -160,7 +168,7 @@ async function saveMedicineOrder(payload) {
   };
 
   /// write medicineoirder
-  const response = await axios.post(process.env.API_URL, requestJSON);
+  const response = await axios.post(process.env.API_URL, requestJSON, axiosConfig);
   if (response.data && response.data.errors) {
     throw new Error(response.data.errors[0].message);
   }

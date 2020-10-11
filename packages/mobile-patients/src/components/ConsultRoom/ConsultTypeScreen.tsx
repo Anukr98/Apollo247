@@ -15,6 +15,7 @@ import {
   CTPrescription,
   CTChat,
   OnlineHeader,
+  CTPhone,
 } from '../ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import {
@@ -163,6 +164,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
   const [consultedChecked, setConsultedChecked] = useState<boolean>(false);
   const DoctorName = props.navigation.getParam('DoctorName');
   const DoctorId = props.navigation.getParam('DoctorId');
+  const chatDays = props.navigation.getParam('chatDays');
   const [hideCheckbox, setHideCheckbox] = useState<boolean>(false);
   const nextAppointemntOnlineTime = props.navigation.getParam('nextAppointemntOnlineTime');
   const nextAppointemntInPresonTime = props.navigation.getParam('nextAppointemntInPresonTime');
@@ -330,14 +332,21 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
         { image: <CTCalender />, description: string.consultType.online.point2 },
         { image: <CTPayment />, description: string.consultType.online.point3 },
         {
-          image: <CTVideo />,
+          image: <CTPhone style={{ marginTop: 3 }} />,
           description: string.consultType.online.point4,
+        },
+        {
+          image: <CTVideo />,
+          description: string.consultType.online.point5,
           textColor: theme.colors.SKY_BLUE,
         },
-        { image: <CTPrescription />, description: string.consultType.online.point5 },
+        { image: <CTPrescription />, description: string.consultType.online.point6 },
         {
           image: <CTChat />,
-          description: string.consultType.online.point6,
+          description: string.consultType.follow_up_chat_days_text.replace(
+            '{0}',
+            chatDays ? chatDays : '7'
+          ),
           textColor: theme.colors.SKY_BLUE,
         },
       ],

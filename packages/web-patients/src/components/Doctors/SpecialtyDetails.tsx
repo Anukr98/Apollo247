@@ -16,13 +16,14 @@ import { HowItWorks } from 'components/Doctors/HowItWorks';
 import { AddedFilters } from 'components/Doctors/AddedFilters';
 import { useApolloClient } from 'react-apollo-hooks';
 import { useParams } from 'hooks/routerHooks';
-import { GET_DOCTORS_BY_SPECIALITY_AND_FILTERS } from 'graphql/doctors';
+import { GET_DOCTOR_LIST } from 'graphql/doctors';
 import {
   readableParam,
   DOCTOR_CATEGORY,
   SearchObject,
   SPECIALTY_DETAIL_LISTING_PAGE_SIZE as PAGE_SIZE,
   deepLinkUtil,
+  isAlternateVersion,
 } from 'helpers/commonHelpers';
 import { useLocationDetails } from 'components/LocationProvider';
 import { GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor as docDetails } from 'graphql/types/GetDoctorDetailsById';
@@ -30,28 +31,24 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import moment from 'moment';
 import _upperFirst from 'lodash/upperFirst';
 import _merge from 'lodash/merge';
-import {
-  GetDoctorsBySpecialtyAndFilters,
-  GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors as DoctorDetails,
-} from 'graphql/types/GetDoctorsBySpecialtyAndFilters';
 import _find from 'lodash/find';
 import { ConsultMode, DoctorType } from 'graphql/types/globalTypes';
 import _filter from 'lodash/filter';
 import { MetaTagsComp } from 'MetaTagsComp';
 import { GET_ALL_SPECIALITIES } from 'graphql/specialities';
 import { NavigationBottom } from 'components/NavigationBottom';
-import {
-  SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors as DoctorsType,
-  SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties as SpecialtyType,
-} from 'graphql/types/SearchDoctorAndSpecialtyByName';
 import _lowerCase from 'lodash/lowerCase';
 import { gtmTracking } from 'gtmTracking';
 import { SpecialtySearch } from 'components/SpecialtySearch';
 import { SchemaMarkup } from 'SchemaMarkup';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
+import { dataLayerTracking } from 'gtmTracking';
 // import Pagination from '@material-ui/lab/Pagination';
 import axios from 'axios';
+import { GetDoctorList } from 'graphql/types/GetDoctorList';
+import _debounce from 'lodash/debounce';
+
 let currentPage = 1;
 let apolloDoctorCount = 0;
 let partnerDoctorCount = 0;
@@ -388,6 +385,23 @@ interface SpecialityProps {
   history: any;
 }
 
+export interface DoctorDetails {
+  id: string;
+  displayName: string;
+  consultMode: ConsultMode;
+  doctorType: string;
+  doctorfacility: string;
+  earliestSlotInMinutes: number;
+  experience: number;
+  fee: number;
+  photoUrl: string;
+  qualification: string;
+  slot: string;
+  specialistSingularTerm: string;
+  specialtydisplayName: string;
+  thumbnailUrl: string;
+}
+
 const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const searchObject: SearchObject = {
     searchKeyword: '',
@@ -400,6 +414,8 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     dateSelected: '',
     specialtyName: '',
     prakticeSpecialties: '',
+    consultMode: ConsultMode.BOTH,
+    brand: [],
   };
   const classes = useStyles({});
   const onePrimaryUser = hasOnePrimaryUser();
@@ -412,7 +428,7 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   }>();
   const prakticeSDKSpecialties = localStorage.getItem('symptomTracker');
   const apolloClient = useApolloClient();
-  const [data, setData] = useState<GetDoctorsBySpecialtyAndFilters | null>(null);
+  const [data, setData] = useState<GetDoctorList | null>(null);
   const [structuredJSON, setStructuredJSON] = useState(null);
   const [breadcrumbJSON, setBreadcrumbJSON] = useState(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -428,17 +444,80 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const [specialtyId, setSpecialtyId] = useState<string>('');
   const [specialtyName, setSpecialtyName] = useState<string>('');
   const [locationPopup, setLocationPopup] = useState<boolean>(false);
+  const [isAlternateVariant, setIsAlternateVariant] = useState<boolean>(true);
   const [selectedCity, setSelectedCity] = useState<string>(
     params && params.city ? params.city : ''
   );
-  const [searchSpecialty, setSearchSpecialty] = useState<SpecialtyType[] | null>(null);
   const [searchKeyword, setSearchKeyword] = useState<string>('');
-  const [searchDoctors, setSearchDoctors] = useState<DoctorsType[] | null>(null);
-  const [searchLoading, setSearchLoading] = useState<boolean>(false);
   const [isFetching, setIsFetching] = useState<boolean>(false);
   const [slugName, setSlugName] = useState<string>('');
   const [faqData, setFaqData] = useState<any>();
+  const [searchQuery, setSearchQuery] = useState<any>({});
   const scrollRef = useRef<HTMLDivElement>(null);
+  const searchParams = window.location.search;
+
+  const assigningFilters = (
+    filterObject: SearchObject,
+    property: string,
+    valueArray: Array<string>
+  ) => {
+    switch (property) {
+      case 'brand':
+        return { ...filterObject, brand: valueArray };
+      case 'experience':
+        return { ...filterObject, experience: valueArray };
+      case 'availability':
+        return {
+          ...filterObject,
+          availability: valueArray.map((value) => value.replace(/_/g, ' ')),
+        };
+      case 'fees':
+        return { ...filterObject, fees: valueArray };
+      case 'gender':
+        return { ...filterObject, gender: valueArray };
+      case 'language':
+        return { ...filterObject, language: valueArray };
+      default:
+        return filterObject;
+    }
+  };
+
+  useEffect(() => {
+    if (isOnlineSelected || isPhysicalSelected) {
+      let filterObject: SearchObject = {
+        ...searchObject,
+        consultMode:
+          isOnlineSelected && isPhysicalSelected
+            ? ConsultMode.BOTH
+            : isOnlineSelected
+            ? ConsultMode.ONLINE
+            : ConsultMode.PHYSICAL,
+      };
+      if (searchParams.length > 0) {
+        const search = searchParams.substring(1);
+
+        const decodedObject = JSON.parse(
+          '{"' + search.replace(/&/g, '","').replace(/=/g, '":"') + '"}',
+          function(key, value) {
+            return key === '' ? value : decodeURIComponent(value);
+          }
+        );
+        for (const property in decodedObject) {
+          const valueArray = decodedObject[property].split(',');
+          filterObject = assigningFilters(filterObject, property, valueArray);
+        }
+        setFilter({
+          ...filterObject,
+        });
+      } else {
+        setFilter(filterObject);
+      }
+    } else {
+      setFilteredDoctorData(null);
+      apolloDoctorCount = 0;
+      partnerDoctorCount = 0;
+    }
+  }, [searchParams, isOnlineSelected, isPhysicalSelected]);
 
   useEffect(() => {
     deepLinkUtil(`Speciality?${specialtyId}`);
@@ -449,53 +528,16 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
       setIsFetching(true);
       apolloClient
         .query({
-          query: GET_DOCTORS_BY_SPECIALITY_AND_FILTERS,
-          variables: { filterInput: _merge(apiVariables, { pageNo, pageSize: PAGE_SIZE }) },
+          query: GET_DOCTOR_LIST,
+          variables: {
+            filterInput: _merge(apiVariables, { pageNo, pageSize: PAGE_SIZE }),
+          },
           fetchPolicy: 'no-cache',
         })
         .then((response) => {
           let potentialActionSchema: any[] = [];
-          setStructuredJSON({
-            '@context': 'https://schema.org/',
-            '@type': 'MedicalSpecialty',
-            name: specialtyName,
-            description: `Find the best ${specialtyName} doctors & specialists and consult with them instantly on Apollo24|7`,
-            potentialAction: {
-              '@type': 'ViewAction',
-              target: potentialActionSchema,
-            },
-          });
-          setBreadcrumbJSON({
-            '@context': 'https://schema.org/',
-            '@type': 'BreadcrumbList',
-            itemListElement: [
-              {
-                '@type': 'ListItem',
-                position: 1,
-                name: 'HOME',
-                item: 'https://www.apollo247.com/',
-              },
-              {
-                '@type': 'ListItem',
-                position: 2,
-                name: 'SPECIALTIES',
-                item: 'https://www.apollo247.com/specialties',
-              },
-              {
-                '@type': 'ListItem',
-                position: 3,
-                name: specialtyName,
-                item: `https://www.apollo247.com/specialties/${readableParam(specialtyName)}`,
-              },
-            ],
-          });
-          if (
-            response &&
-            response.data &&
-            response.data.getDoctorsBySpecialtyAndFilters &&
-            response.data.getDoctorsBySpecialtyAndFilters.doctors
-          ) {
-            const doctors = response.data.getDoctorsBySpecialtyAndFilters.doctors;
+          if (response && response.data && response.data.getDoctorList) {
+            const doctors = response.data.getDoctorList.doctors;
             doctors.map((doctorDetails: docDetails) => {
               doctorDetails &&
                 doctorDetails.fullName &&
@@ -514,27 +556,17 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                       )}`,
                 });
             });
+
             const filteredObj = getDoctorObject(doctorData.concat(doctors));
             setDoctorData(doctorData.concat(doctors) || []);
             setOnlyFilteredCount(onlyFilteredCount + doctors.length || 0);
             setFilteredDoctorData(filteredObj);
           }
           currentPage = currentPage + 1;
-          const newData: any = {
-            getDoctorsBySpecialtyAndFilters: {
-              doctors: data['getDoctorsBySpecialtyAndFilters'].doctors.concat(
-                response.data['getDoctorsBySpecialtyAndFilters'].doctors
-              ),
-              doctorsAvailability: data[
-                'getDoctorsBySpecialtyAndFilters'
-              ].doctorsAvailability.concat(
-                response.data['getDoctorsBySpecialtyAndFilters'].doctorsAvailability
-              ),
-              doctorsNextAvailability: data[
-                'getDoctorsBySpecialtyAndFilters'
-              ].doctorsNextAvailability.concat(
-                response.data['getDoctorsBySpecialtyAndFilters'].doctorsNextAvailability
-              ),
+          const newData = {
+            getDoctorList: {
+              ...response.data.getDoctorList,
+              doctors: data['getDoctorList'].doctors.concat(response.data['getDoctorList'].doctors),
             },
           };
           setData(newData);
@@ -546,7 +578,7 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     }
   }, [pageNo]);
 
-  const getDoctorObject = (data: any) => {
+  const getDoctorObject = (data: DoctorDetails[]) => {
     const apolloDoctors = data.filter(
       (doctor: DoctorDetails) => doctor.doctorType.toLowerCase() !== 'doctor_connect'
     );
@@ -573,7 +605,14 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
       }
     }
   }, []);
+
   useEffect(() => {
+    // the below if-else is for marketing requirement (hiding prescription/Rx string)
+    if (isAlternateVersion()) {
+      setIsAlternateVariant(true);
+    } else {
+      setIsAlternateVariant(false);
+    }
     if (scrollRef && scrollRef.current) {
       window.addEventListener('scroll', handleOnScroll);
     }
@@ -615,17 +654,27 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
           },
         },
       });
+      window.dataLayer.push({
+        event: 'pageviewEvent',
+        pagePath: window.location.href,
+        pageName: `${readableParam(specialtyName)} Listing Page`,
+        pageLOB: 'Consultation',
+        pageType: 'Index',
+        productlist: JSON.stringify(doctorData),
+      });
     }
   }, [doctorData]);
   /* Gtm code end */
 
   useEffect(() => {
-    if (searchKeyword.length > 1) {
-      const doctorsSearch = doctorData.filter((doctorDetail: DoctorDetails) => {
-        return doctorDetail.fullName.toLowerCase().includes(searchKeyword.toLowerCase());
-      });
-      setSearchDoctors(doctorsSearch);
-    }
+    const search = _debounce(() => setFilter({ ...filter, searchKeyword }), 500);
+    setSearchQuery((prevSearch: any) => {
+      if (prevSearch.cancel) {
+        prevSearch.cancel();
+      }
+      return search;
+    });
+    search();
   }, [searchKeyword]);
 
   useEffect(() => {
@@ -712,6 +761,9 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     specialtySearchType:
       prakticeSDKSpecialties && prakticeSDKSpecialties.length > 0 ? 'NAME' : 'ID',
     pincode: currentPincode ? currentPincode : localStorage.getItem('currentPincode') || '',
+    searchText: filter.searchKeyword,
+    consultMode: filter.consultMode,
+    doctorType: filter.brand,
   };
 
   useEffect(() => {
@@ -722,8 +774,13 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
         scrollToRef.current.scrollIntoView({ behavior: 'auto', block: 'end' });
       apolloClient
         .query({
-          query: GET_DOCTORS_BY_SPECIALITY_AND_FILTERS,
-          variables: { filterInput: _merge(apiVariables, { pageNo: 1, pageSize: PAGE_SIZE }) },
+          query: GET_DOCTOR_LIST,
+          variables: {
+            filterInput: _merge(apiVariables, {
+              pageNo: 1,
+              pageSize: PAGE_SIZE,
+            }),
+          },
           fetchPolicy: 'no-cache',
         })
         .then((response) => {
@@ -762,29 +819,24 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
               },
             ],
           });
-          if (
-            response &&
-            response.data &&
-            response.data.getDoctorsBySpecialtyAndFilters &&
-            response.data.getDoctorsBySpecialtyAndFilters.doctors
-          ) {
-            apolloDoctorCount = response.data.getDoctorsBySpecialtyAndFilters.apolloDoctorCount;
-            partnerDoctorCount = response.data.getDoctorsBySpecialtyAndFilters.partnerDoctorCount;
-            const doctors = response.data.getDoctorsBySpecialtyAndFilters.doctors;
-            doctors.map((doctorDetails: docDetails) => {
+          if (response && response.data && response.data.getDoctorList) {
+            apolloDoctorCount = response.data.getDoctorList.apolloDoctorCount;
+            partnerDoctorCount = response.data.getDoctorList.partnerDoctorCount;
+            const doctors = response.data.getDoctorList.doctors;
+            doctors.map((doctorDetails: DoctorDetails) => {
               doctorDetails &&
-                doctorDetails.fullName &&
+                doctorDetails.displayName &&
                 potentialActionSchema.push({
                   '@type': 'EntryPoint',
-                  name: doctorDetails.fullName,
+                  name: doctorDetails.displayName,
                   url: params.specialty
                     ? `${window.location.origin}${clientRoutes.specialtyDoctorDetails(
                         params.specialty,
-                        readableParam(doctorDetails.fullName),
+                        readableParam(doctorDetails.displayName),
                         doctorDetails.id
                       )}`
                     : `${window.location.origin}${clientRoutes.doctorDetails(
-                        readableParam(doctorDetails.fullName),
+                        readableParam(doctorDetails.displayName),
                         doctorDetails.id
                       )}`,
                 });
@@ -815,17 +867,11 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     });
   };
 
-  const getConsultModeDoctorList = (data: DoctorDetails[]) => {
-    return _filter(data, (doctor: DoctorDetails) => {
-      const consultMode =
-        doctor.consultHours &&
-        doctor.consultHours.length > 0 &&
-        doctor.consultHours[0] &&
-        doctor.consultHours[0].consultMode
-          ? doctor.consultHours[0].consultMode
-          : '';
+  const getConsultModeDoctorList = (data: any) => {
+    return _filter(data, (doctor: any) => {
+      const consultMode = doctor.consultMode;
       if (isOnlineSelected && isPhysicalSelected) {
-        return consultMode === ConsultMode.BOTH;
+        return true;
       } else if (isOnlineSelected) {
         return consultMode !== ConsultMode.PHYSICAL;
       } else if (isPhysicalSelected) {
@@ -834,51 +880,13 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
       return false;
     });
   };
-  useEffect(() => {
-    if (doctorData) {
-      setLoading(true);
-      let filterDoctorsData = searchKeyword.length > 1 ? searchDoctors : doctorData;
-      if (isOnlineSelected || isPhysicalSelected) {
-        filterDoctorsData = getConsultModeDoctorList(filterDoctorsData);
-      }
-      if (doctorType) {
-        filterDoctorsData = getFilteredDoctorList(filterDoctorsData);
-      }
-      const filteredObj = getDoctorObject(filterDoctorsData);
-
-      setFilteredDoctorData(filteredObj);
-      setLoading(false);
-    }
-  }, [isOnlineSelected, isPhysicalSelected, doctorData, searchKeyword, searchDoctors]);
-
-  const getDoctorsCount = (data: DoctorDetails[], type: DOCTOR_CATEGORY) => {
-    return _filter(data, (doctor: DoctorDetails) => {
-      return type === DOCTOR_CATEGORY.PARTNER
-        ? doctor.doctorType === DoctorType.DOCTOR_CONNECT
-        : doctor.doctorType !== DoctorType.DOCTOR_CONNECT;
-    }).length;
-  };
-
-  const doctorsNextAvailability =
-    data &&
-    data.getDoctorsBySpecialtyAndFilters &&
-    data.getDoctorsBySpecialtyAndFilters.doctorsNextAvailability
-      ? data.getDoctorsBySpecialtyAndFilters.doctorsNextAvailability
-      : [];
-
-  const doctorsAvailability =
-    data &&
-    data.getDoctorsBySpecialtyAndFilters &&
-    data.getDoctorsBySpecialtyAndFilters.doctorsAvailability
-      ? data.getDoctorsBySpecialtyAndFilters.doctorsAvailability
-      : [];
 
   const metaTagProps = {
     title: (faqData && faqData[0].specialtyMetaTitle) || '',
     description: (faqData && faqData[0].specialtyMetaDescription) || '',
     canonicalLink:
-      (faqData && faqData[0].canonicalUrl) || (window && window.location && window.location.href),
-    deepLink: window.location.href,
+      (faqData && faqData[0].canonicalUrl) ||
+      (window && window.location && `${window.location.host}${window.location.pathname}`),
   };
 
   return (
@@ -918,9 +926,6 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                 setSearchKeyword={setSearchKeyword}
                 searchKeyword={searchKeyword}
                 selectedCity={selectedCity}
-                searchSpecialty={searchSpecialty}
-                searchDoctors={searchDoctors}
-                searchLoading={searchLoading}
                 setLocationPopup={setLocationPopup}
                 locationPopup={locationPopup}
                 setSelectedCity={setSelectedCity}
@@ -958,7 +963,8 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                 onlyFilteredCount={onlyFilteredCount}
               />
               <div className={classes.doctorCards}>
-                {(filter.language.length > 0 ||
+                {(filter.brand.length > 0 ||
+                  filter.language.length > 0 ||
                   filter.availability.length > 0 ||
                   filter.experience.length > 0 ||
                   filter.fees.length > 0 ||
@@ -972,39 +978,24 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                     <Grid container spacing={2}>
                       {filteredDoctorData[doctorType].map((doctor: DoctorDetails) => {
                         if (doctor && doctor.id) {
-                          const nextAvailability = doctorsNextAvailability.find(
-                            (nextAvailabilitySlot) => nextAvailabilitySlot.doctorId === doctor.id
-                          );
-
-                          const availabiltyMode = doctorsAvailability.find(
-                            (availability) => availability.doctorId === doctor.id
-                          );
-
-                          const doctorAvailableMode =
-                            availabiltyMode && availabiltyMode.availableModes[0];
-
                           return (
-                            doctorAvailableMode && (
-                              <Grid key={doctor.id} item xs={12} sm={12} md={12} lg={6}>
-                                {doctorType.toLowerCase() === 'apollo' ? (
-                                  <InfoCardPartner
-                                    doctorInfo={doctor}
-                                    doctorType={doctorType}
-                                    nextAvailability={nextAvailability}
-                                    consultMode={doctorAvailableMode}
-                                    specialityType={(faqData && faqData[0].title) || ''}
-                                  />
-                                ) : (
-                                  <InfoCard
-                                    doctorInfo={doctor}
-                                    doctorType={doctorType}
-                                    nextAvailability={nextAvailability}
-                                    consultMode={doctorAvailableMode}
-                                    specialityType={(faqData && faqData[0].title) || ''}
-                                  />
-                                )}
-                              </Grid>
-                            )
+                            <Grid key={doctor.id} item xs={12} sm={12} md={12} lg={6}>
+                              {doctorType.toLowerCase() === 'apollo' ? (
+                                <InfoCardPartner
+                                  doctorInfo={doctor}
+                                  doctorType={doctorType}
+                                  specialityType={(faqData && faqData[0].title) || ''}
+                                  specialtyId={specialtyId}
+                                />
+                              ) : (
+                                <InfoCard
+                                  doctorInfo={doctor}
+                                  doctorType={doctorType}
+                                  specialityType={(faqData && faqData[0].title) || ''}
+                                  specialtyId={specialtyId}
+                                />
+                              )}
+                            </Grid>
                           );
                         }
                       })}
@@ -1035,8 +1026,8 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
             </div>
             <div className={classes.rightBar}>
               <div className={classes.stickyBlock}>
-                <WhyApollo />
-                <HowItWorks />
+                <WhyApollo alternateVariant={isAlternateVariant} />
+                <HowItWorks alternateVariant={isAlternateVariant} />
               </div>
             </div>
           </div>

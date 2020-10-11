@@ -4,6 +4,22 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 type YesOrNo = 'Yes' | 'No';
+type HdfcPlan = 'SILVER' | 'GOLD' | 'PLATINUM';
+
+export enum ProductPageViewedSource {
+  NOTIFICATION = 'notification',
+  DEEP_LINK = 'deeplink',
+  BANNER = 'banner',
+  REGISTRATION = 'registration',
+  CART = 'cart',
+  PARTIAL_SEARCH = 'partial search',
+  FULL_SEARCH = 'full search',
+  HOME_PAGE = 'home page',
+  CATEGORY_OR_LISTING = 'category or listing',
+  SUBSTITUTES = 'substitutes',
+  CROSS_SELLING_PRODUCTS = 'cross selling products',
+  SIMILAR_PRODUCTS = 'similar products',
+}
 
 export enum WebEngageEventName {
   MOBILE_ENTRY = 'Mobile Entry',
@@ -16,8 +32,6 @@ export enum WebEngageEventName {
   SEARCH = 'Pharmacy Search',
   SEARCH_ENTER_CLICK = 'Pharmacy Search Enter Clicked',
   PHARMACY_SEARCH_RESULTS = 'Pharmacy Search Results',
-  PHARMACY_PRODUCT_CLICKED = 'Pharmacy Product Clicked',
-  PHARMACY_PRODUCT_DETAIL_SUBSTITUTE_CLICKED = 'Pharmacy Product Detail Substitute Clicked',
   PRODUCT_DETAIL_TAB_CLICKED = 'Product Detail Tab Clicked',
   PRODUCT_DETAIL_PINCODE_CHECK = 'Product Detail Pincode Check',
   NOTIFY_ME = 'Notify Me',
@@ -82,6 +96,8 @@ export enum WebEngageEventName {
   PHARMACY_ADD_NEW_ADDRESS_COMPLETED = 'Pharmacy Add New Address Completed', // (Event triggered Once the address is selected & TAT is displayed)
   PHARMACY_CART_ADDRESS_SELECTED_SUCCESS = 'Pharmacy Cart Address Selected Success',
   PHARMACY_CART_ADDRESS_SELECTED_FAILURE = 'Pharmacy Cart Address Selected Failure',
+  PHARMACY_AVAILABILITY_API_CALLED = 'Pharmacy Availability API Called',
+  PHARMACY_TAT_API_CALLED = 'Pharmacy TAT API Called',
 
   // HomePageElements Events
   BUY_MEDICINES = 'Buy Medicines',
@@ -103,6 +119,8 @@ export enum WebEngageEventName {
   // Diagnostics Events
   FEATURED_TEST_CLICKED = 'Featured Test Clicked',
   BROWSE_PACKAGE = 'Browse Package',
+  DIAGNOSTIC_ENTER_DELIVERY_PINCODE_CLICKED = 'Diagnostic Enter Delivery Pincode Clicked',
+  DIAGNOSTIC_ENTER_DELIVERY_PINCODE_SUBMITTED = 'Diagnostic Enter Delivery Pincode Submitted ',
 
   // Health Records
   CONSULT_RX = 'PHR Consult & RX',
@@ -114,6 +132,18 @@ export enum WebEngageEventName {
   PHR_ORDER_MEDS_TESTS = 'PHR Order Meds & Tests',
   PHR_CONSULT_CARD_CLICK = 'PHR Consult Card click',
   RE_ORDER_MEDICINE = 'ReOrder Medicine',
+  PHR_VIEW_PRESCRIPTIONS = 'PHR View Prescriptions - app',
+  PHR_VIEW_LAB_TESTS = 'PHR View Lab Tests - app',
+  PHR_VIEW_HEALTH_CHECKS = 'PHR View Health Checks - app',
+  PHR_VIEW_HOSPITALIZATIONS = 'PHR View Hospitalizations - app',
+  PHR_ADD_PRESCRIPTIONS = 'PHR Add Prescriptions - app',
+  PHR_ADD_LAB_TESTS = 'PHR Add Lab Tests - app',
+  PHR_ADD_HEALTH_CHECKS = 'PHR Add Health Checks - app',
+  PHR_ADD_HOSPITALIZATIONS = 'PHR Add Hospitalizations - app',
+  PHR_DOWNLOAD_PRESCRIPTIONS = 'PHR Download Prescriptions - app',
+  PHR_DOWNLOAD_LAB_TESTS = 'PHR Download Lab Tests - app',
+  PHR_DOWNLOAD_HEALTH_CHECKS = 'PHR Download Health Checks - app',
+  PHR_DOWNLOAD_HOSPITALIZATIONS = 'PHR Download Hospitalizations - app',
   // ConsultRoom Events
   CONSULTATION_CANCELLED_BY_CUSTOMER = 'Consultation Cancelled by Customer',
   CONSULTATION_RESCHEDULED_BY_CUSTOMER = 'Consultation Rescheduled by Customer',
@@ -142,12 +172,13 @@ export enum WebEngageEventName {
   TAKE_PHOTO_CLICK_CHATROOM = 'Take a photo in consult room clicked',
   GALLERY_UPLOAD_PHOTO_CLICK_CHATROOM = 'choose from gallery in consult room clicked',
   UPLOAD_PHR_CLICK_CHATROOM = 'Upload from PHR in consult room clicked',
+  PATIENT_JOINED_CONSULT = 'Patient Joined the consult with doctor',
+  PATIENT_ENDED_CONSULT = 'Patient ended the consult',
   // Medicine Events
   PHARMACY_AUTO_SELECT_LOCATION_CLICKED = 'Pharmacy Auto Select Location Clicked',
   PHARMACY_ENTER_DELIVERY_PINCODE_CLICKED = 'Pharmacy Enter Delivery Pincode Clicked',
   PHARMACY_ENTER_DELIVERY_PINCODE_SUBMITTED = 'Pharmacy Enter Delivery Pincode Submitted ',
   PHARMACY_PINCODE_NONSERVICABLE = 'Pharmacy location nonservicable',
-  PHARMACY_CATEGORY_SECTION_PRODUCT_CLICK = 'Pharmacy Category Section Product Click',
   PHARMACY_BANNER_CLICK = 'Pharmacy Homepage Banner click',
   CALL_THE_NEAREST_PHARMACY = 'Call the Nearest Pharmacy',
   // Payments Events
@@ -159,6 +190,54 @@ export enum WebEngageEventName {
   HOME_PAGE_VIEWED = 'Pharmacy Home page viewed',
   PRODUCT_PAGE_VIEWED = 'Product page viewed',
   CATEGORY_PAGE_VIEWED = 'Category page viewed',
+
+  // HDFC events
+  HDFC_OTP_GENERATE_CLICKED = 'HDFC Generate OTP Clicked',
+  HDFC_OTP_VERIFY_CLICKED = 'HDFC Verify OTP Clicked',
+  HDFC_EXPLORE_BENEFITS_CLICKED = 'HDFC Explore Benefits Clicked',
+  HDFC_HOMEPAGE_CAROUSEL_CLICKED = 'HDFC Home Page Carousel Clicked',
+  HDFC_MY_MEMBERSHIP_VIEWED = 'HDFC My Membership Viewed',
+  HDFC_PLAN_DETAILS_VIEWED = 'HDFC Plan Details Viewed',
+  HDFC_EXPLORE_PLAN_CLICKED = 'HDFC Explore Plan Clicked',
+  HDFC_HOW_TO_AVAIL_CLICKED = 'HDFC How To Avail Clicked',
+  HDFC_REDEEM_CLICKED = 'HDFC Redeem Clicked',
+  HDFC_DOC_ON_CALL_CLICK = 'HDFC Doc On Call Click',
+  HDFC_COVID_CARE_CLICK = 'HDFC Covid Care Click',
+  HDFC_DIGITIZATION_PHR_CLICK = 'HDFC Digitization PHR Click',
+  HDFC_FREE_HEALTH_ASSESSMENT_CLICK = 'HDFC Free Health Assessment Click',
+  HDFC_CONCIERGE_CLICK = 'HDFC Concierge Click',
+  HDFC_DIETITIAN_CLICK = 'HDFC Dietitian Click',
+  HDFC_DIAGNOSTIC_CLICK = 'HDFC Diagnostic Click',
+  HDFC_DIGITAL_VAULT_CLICK = 'HDFC Digital Vault Click',
+  HDFC_7000_DOCTORS_CLICK = 'HDFC 7000 Doctors Click',
+  HDFC_FREE_MED_CHECK_CLICK = 'HDFC Free Med Check Click',
+
+  // Opentok Events
+  DOCTOR_SUBSCRIBER_ERROR = 'Doctor Subscriber Error',
+  DOCTOR_SUBSCRIBER_OTRNERROR = 'Doctor Subscriber Otrnerror',
+  DOCTOR_SUBSCRIBER_DISCONNECTED = 'Doctor Subscriber Disconnected',
+  DOCTOR_SUBSCRIBER_CONNECTED = 'Doctor Subscriber Connected',
+  DOCTOR_SUBSCRIBER_VIDEO_DISABLED = 'Doctor Subscriber Video Disabled',
+  DOCTOR_SUBSCRIBER_VIDEO_ENABLED = 'Doctor Subscriber Video Enabled',
+
+  PATIENT_PUBLISHER_ERROR = 'Patient Publisher Error',
+  PATIENT_PUBLISHER_OTRNERROR = 'Patient Publisher Otrnerror',
+  PATIENT_PUBLISHER_STREAM_CREATED = 'Patient Publisher Stream Created',
+  PATIENT_PUBLISHER_STREAM_DESTROYED = 'Patient Publisher Stream Destroyed',
+
+  PATIENT_SESSION_ERROR = 'Patient Session Error',
+  PATIENT_SESSION_OTRNERROR = 'Patient Session Otrnerror',
+  PATIENT_SESSION_CONNECTION_CREATED = 'Patient Session Connection Created',
+  PATIENT_SESSION_CONNECTION_DESTROYED = 'Patient Session Connection Destroyed',
+  PATIENT_SESSION_CONNECTED = 'Patient Session Connected',
+  PATIENT_SESSION_DISCONNECTED = 'Patient Session Disconnected',
+  PATIENT_SESSION_RECONNECTED = 'Patient Session Reconnected',
+  PATIENT_SESSION_RECONNECTING = 'Patient Session Reconnecting',
+  PATIENT_SESSION_STREAM_CREATED = 'Patient Session Stream Created',
+  PATIENT_SESSION_STREAM_DESTROYED = 'Patient Session Stream Destroyed',
+  PATIENT_SESSION_STREAM_PROPERTY_CHANGED = 'Patient Session Stream Property Changed',
+  //chatRoom Events
+  PATIENT_SENT_CHAT_MESSAGE_POST_CONSULT = 'Patient sent chat message post consult',
 }
 
 export interface PatientInfo {
@@ -199,6 +278,26 @@ export interface PatientInfoWithSource extends PatientInfo {
   Source: 'Home Screen' | 'Menu';
   Pincode?: String;
   Serviceability?: String;
+}
+
+export interface HdfcCustomerInfo {
+  'Patient UHID': string;
+  'Customer ID': string;
+  'Patient Name': string;
+  'Mobile Number': string;
+  'Date of Birth': Date | string;
+  Email: string;
+}
+
+export interface HdfcCustomerPlanInfo extends HdfcCustomerInfo {
+  'Partner ID': string;
+  HDFCMembershipLevel: HdfcPlan;
+  HDFCMembershipState: 'Active' | 'Inactive';
+}
+
+export interface HdfcBenefitInfo {
+  'User ID': string;
+  'Plan': HdfcPlan;
 }
 
 export interface PatientInfoWithConsultId extends PatientInfo {
@@ -288,16 +387,6 @@ export interface WebEngageEvents {
     keyword: string;
     Source: 'Pharmacy Home' | 'Pharmacy Search';
   };
-  [WebEngageEventName.PHARMACY_PRODUCT_CLICKED]: {
-    'product name': string;
-    'product id': string; // (SKUID)
-    Brand: string;
-    'Brand ID': string;
-    'category name': string;
-    'category ID': string;
-    Source: 'Home' | 'List' | 'Search';
-    'Section Name': string;
-  };
   [WebEngageEventName.PRODUCT_DETAIL_PINCODE_CHECK]: {
     'product id': string; // (SKUID)
     'product name': string;
@@ -309,10 +398,6 @@ export interface WebEngageEvents {
   [WebEngageEventName.PRODUCT_DETAIL_TAB_CLICKED]: {
     tabName: string;
   };
-  [WebEngageEventName.PHARMACY_PRODUCT_DETAIL_SUBSTITUTE_CLICKED]: {
-    'product id': string; // (SKUID)
-    'product name': string;
-  };
   [WebEngageEventName.NOTIFY_ME]: {
     'product name': string;
     'product id': string; // (SKUID)
@@ -320,6 +405,7 @@ export interface WebEngageEvents {
     'Brand ID': string;
     'category name': string;
     'category ID': string;
+    pincode: string;
   };
 
   [WebEngageEventName.CATEGORY_CLICKED]: {
@@ -343,8 +429,8 @@ export interface WebEngageEvents {
   [WebEngageEventName.CATEGORY_LIST_GRID_VIEW]: {
     'Category name'?: string;
     'Category id'?: string;
-    'Type': 'Grid' | 'List';
-    'Source': 'Search' | 'Category';
+    Type: 'Grid' | 'List';
+    Source: 'Search' | 'Category';
   };
   [WebEngageEventName.SHOW_PRESCRIPTION_AT_STORE_SELECTED]: {
     value: boolean;
@@ -528,6 +614,7 @@ export interface WebEngageEvents {
   };
   [WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]: {
     Source: 'Take a Photo' | 'Choose Gallery' | 'E-Rx';
+    'Upload Source'?: 'Cart' | 'Upload Flow';
   };
   [WebEngageEventName.PHARMACY_SUBMIT_PRESCRIPTION]: {
     'Order ID': string | number;
@@ -596,11 +683,6 @@ export interface WebEngageEvents {
     Pincode: string;
     Servicable: boolean;
   };
-  [WebEngageEventName.PHARMACY_CATEGORY_SECTION_PRODUCT_CLICK]: {
-    'Section Name': string;
-    ProductId: string;
-    ProductName: string;
-  };
   [WebEngageEventName.PHARMACY_BANNER_CLICK]: {
     BannerPosition: number;
   };
@@ -647,6 +729,9 @@ export interface WebEngageEvents {
     'Speciality ID': string;
     'Hospital Name': string;
     'Hospital City': string;
+    'Secretary Name': string;
+    'Secretary Mobile Number': string;
+    'Doctor Mobile Number': string;
   };
   [WebEngageEventName.TYPE_OF_CONSULT_SELECTED]: {
     'Consultation Type': string;
@@ -686,6 +771,7 @@ export interface WebEngageEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
+    Rank: number;
   };
   [WebEngageEventName.DOCTOR_CONNECT_CARD_CLICK]: {
     'Online Price': number;
@@ -745,6 +831,48 @@ export interface WebEngageEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Patient UHID': string;
+  };
+
+  //chat room
+  [WebEngageEventName.PATIENT_SENT_CHAT_MESSAGE_POST_CONSULT]: {
+    'Doctor Name': string;
+    'Speciality Name': string;
+    'Speciality ID': string;
+    'Doctor Category': DoctorType;
+    'Consult Date Time': Date;
+    'Consult Mode': 'Online' | 'Physical';
+    'Hospital Name': string;
+    'Hospital City': string;
+    'Consult ID': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Customer ID': string;
+    'Secretary Name': string;
+    'Secretary Mobile Number': string;
+    'Doctor Mobile Number': string;
+  };
+  [WebEngageEventName.CHAT_WITH_DOCTOR]: {
+    'Doctor Name': string;
+    'Speciality Name': string;
+    'Speciality ID': string;
+    'Doctor Category': DoctorType;
+    'Consult Date Time': Date;
+    'Consult Mode': 'Online' | 'Physical';
+    'Hospital Name': string;
+    'Hospital City': string;
+    'Consult ID': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Customer ID': string;
+    'Secretary Name': string;
+    'Secretary Mobile Number': string;
+    'Doctor Mobile Number': string;
   };
   // confirm the type of data for the below
   [WebEngageEventName.CONSULT_SCHEDULE_FOR_LATER_CLICKED]: {
@@ -905,6 +1033,39 @@ export interface WebEngageEvents {
     Pincode: string;
   };
 
+  [WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED]: {
+    Source: 'PDP' | 'Add_Search' | 'Add_Display' | 'Cart';
+    Input_SKU: string;
+    Input_Pincode: string;
+    Input_MRP: number;
+    No_of_items_in_the_cart: number;
+    Response_Exist: YesOrNo;
+    Response_MRP: number;
+    Response_Qty: number;
+  };
+
+  [WebEngageEventName.PHARMACY_TAT_API_CALLED]: {
+    Source: 'PDP' | 'Cart';
+    Input_sku: string;
+    Input_qty: number;
+    Input_lat: number;
+    Input_long: number;
+    Input_pincode: string;
+    Input_MRP: number;
+    No_of_items_in_the_cart: number;
+    Response_Exist: YesOrNo;
+    Response_MRP: number;
+    Response_Qty: number;
+    Response_lat: number;
+    Response_lng: number;
+    Response_ordertime: number;
+    Response_pincode: string;
+    Response_storeCode: string;
+    Response_storeType: string;
+    Response_tat: string;
+    Response_tatU: number;
+  };
+
   [WebEngageEventName.FEATURED_TEST_CLICKED]: {
     'Product name': string;
     'Product id (SKUID)': string;
@@ -976,6 +1137,9 @@ export interface WebEngageEvents {
     'Patient Gender': string;
     'Mobile Number': string;
     'Customer ID': string;
+    'Secretary Name': string;
+    'Secretary Mobile Number': string;
+    'Doctor Mobile Number': string;
   };
 
   [WebEngageEventName.CONSULTATION_RESCHEDULED_BY_CUSTOMER]: {
@@ -994,6 +1158,9 @@ export interface WebEngageEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
+    'Secretary Name': string;
+    'Secretary Mobile Number': string;
+    'Doctor Mobile Number': string;
   };
   [WebEngageEventName.FILL_MEDICAL_DETAILS]: {
     'Doctor Name': string;
@@ -1084,6 +1251,9 @@ export interface WebEngageEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
+    'Secretary Name': string;
+    'Secretary Mobile Number': string;
+    'Doctor Mobile Number': string;
   };
   [WebEngageEventName.CONTINUE_CONSULTATION_CLICKED]: {
     'Doctor Name': string;
@@ -1102,6 +1272,9 @@ export interface WebEngageEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
+    'Secretary Name': string;
+    'Secretary Mobile Number': string;
+    'Doctor Mobile Number': string;
   };
   [WebEngageEventName.CANCEL_CONSULTATION_CLICKED]: {
     'Doctor Name': string;
@@ -1120,6 +1293,9 @@ export interface WebEngageEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
+    'Secretary Name': string;
+    'Secretary Mobile Number': string;
+    'Doctor Mobile Number': string;
   };
   [WebEngageEventName.PRESCRIPTION_RECEIVED]: {
     'Doctor Name': string;
@@ -1138,6 +1314,7 @@ export interface WebEngageEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
+    City: string;
   };
   [WebEngageEventName.SD_CONSULTATION_STARTED]: {
     'Doctor Name': string;
@@ -1157,6 +1334,40 @@ export interface WebEngageEvents {
     'Customer ID': string;
   };
   [WebEngageEventName.SD_VIDEO_CALL_STARTED]: {
+    'Doctor Name': string;
+    'Speciality Name': string;
+    'Speciality ID': string;
+    'Doctor Category': DoctorType;
+    'Consult Date Time': Date;
+    'Consult Mode': 'Online' | 'Physical';
+    'Hospital Name': string;
+    'Hospital City': string;
+    'Consult ID': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Customer ID': string;
+  };
+  [WebEngageEventName.PATIENT_JOINED_CONSULT]: {
+    'Doctor Name': string;
+    'Speciality Name': string;
+    'Speciality ID': string;
+    'Doctor Category': DoctorType;
+    'Consult Date Time': Date;
+    'Consult Mode': 'Online' | 'Physical';
+    'Hospital Name': string;
+    'Hospital City': string;
+    'Consult ID': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    Relation: string;
+    'Patient Age': number;
+    'Patient Gender': string;
+    'Customer ID': string;
+  };
+  [WebEngageEventName.PATIENT_ENDED_CONSULT]: {
     'Doctor Name': string;
     'Speciality Name': string;
     'Speciality ID': string;
@@ -1242,23 +1453,6 @@ export interface WebEngageEvents {
     'Patient Gender': string;
     'Customer ID': string;
   };
-  [WebEngageEventName.CHAT_WITH_DOCTOR]: {
-    'Doctor Name': string;
-    'Speciality Name': string;
-    'Speciality ID': string;
-    'Doctor Category': DoctorType;
-    'Consult Date Time': Date;
-    'Consult Mode': 'Online' | 'Physical';
-    'Hospital Name': string;
-    'Hospital City': string;
-    'Consult ID': string;
-    'Patient Name': string;
-    'Patient UHID': string;
-    Relation: string;
-    'Patient Age': number;
-    'Patient Gender': string;
-    'Customer ID': string;
-  };
   [WebEngageEventName.NO_SLOTS_FOUND]: {
     'Doctor Name': string;
     'Speciality Name': string;
@@ -1285,10 +1479,19 @@ export interface WebEngageEvents {
     source: 'deeplink' | 'app home';
   };
   [WebEngageEventName.PRODUCT_PAGE_VIEWED]: {
-    source: 'deeplink' | 'widget' | 'search';
+    source: ProductPageViewedSource;
     ProductId: string;
     ProductName: string;
-    "Stock availability": YesOrNo;
+    'Stock availability': YesOrNo;
+    /**
+     * Category ID & Category Name is applicable if customers clicks on products from any category (all categories of shop by category or health areas)
+     */
+    'Category ID'?: string;
+    'Category Name'?: string;
+    /**
+     * Section Name is applicable if customer clicked on the product from the homepage product widgets like Hot sellers, Recommended products
+     */
+    'Section Name'?: string;
   };
   [WebEngageEventName.CATEGORY_PAGE_VIEWED]: {
     source: 'home' | 'deeplink';
@@ -1298,5 +1501,182 @@ export interface WebEngageEvents {
   [WebEngageEventName.CONFIRM_LOCATION]: {
     isMarkerModified: boolean;
     changedByInMeters: number;
+  };
+  [WebEngageEventName.HDFC_OTP_GENERATE_CLICKED]: HdfcCustomerInfo;
+  [WebEngageEventName.HDFC_OTP_VERIFY_CLICKED]: HdfcCustomerInfo;
+  [WebEngageEventName.HDFC_EXPLORE_BENEFITS_CLICKED]: HdfcCustomerPlanInfo;
+  [WebEngageEventName.HDFC_HOMEPAGE_CAROUSEL_CLICKED]: HdfcCustomerPlanInfo;
+  [WebEngageEventName.HDFC_MY_MEMBERSHIP_VIEWED]: HdfcBenefitInfo;
+  [WebEngageEventName.HDFC_PLAN_DETAILS_VIEWED]: HdfcBenefitInfo;
+  [WebEngageEventName.HDFC_EXPLORE_PLAN_CLICKED]: HdfcBenefitInfo;
+  [WebEngageEventName.HDFC_HOW_TO_AVAIL_CLICKED]: HdfcBenefitInfo;
+  [WebEngageEventName.HDFC_REDEEM_CLICKED]: {
+    'User ID': string;
+    'Benefit': string;
+  };
+  [WebEngageEventName.HDFC_DOC_ON_CALL_CLICK]: HdfcBenefitInfo;
+  [WebEngageEventName.HDFC_COVID_CARE_CLICK]: HdfcBenefitInfo;
+  [WebEngageEventName.HDFC_DIGITIZATION_PHR_CLICK]: HdfcBenefitInfo;
+  [WebEngageEventName.HDFC_FREE_HEALTH_ASSESSMENT_CLICK]: HdfcBenefitInfo;
+  [WebEngageEventName.HDFC_CONCIERGE_CLICK]: HdfcBenefitInfo;
+  [WebEngageEventName.HDFC_DIETITIAN_CLICK]: HdfcBenefitInfo;
+  [WebEngageEventName.HDFC_DIAGNOSTIC_CLICK]: HdfcBenefitInfo;
+  [WebEngageEventName.HDFC_DIGITAL_VAULT_CLICK]: HdfcBenefitInfo;
+  [WebEngageEventName.HDFC_7000_DOCTORS_CLICK]: HdfcBenefitInfo;
+  [WebEngageEventName.HDFC_FREE_MED_CHECK_CLICK]: HdfcBenefitInfo;
+
+  // ********** Opentok Events ********** \\
+
+  [WebEngageEventName.DOCTOR_SUBSCRIBER_ERROR]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    error: string;
+    'Session ID': string;
+  };
+
+  [WebEngageEventName.DOCTOR_SUBSCRIBER_OTRNERROR]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    error: string;
+    'Session ID': string;
+  };
+
+  [WebEngageEventName.DOCTOR_SUBSCRIBER_CONNECTED]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.DOCTOR_SUBSCRIBER_DISCONNECTED]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.DOCTOR_SUBSCRIBER_VIDEO_DISABLED]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.DOCTOR_SUBSCRIBER_VIDEO_ENABLED]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.PATIENT_PUBLISHER_ERROR]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    error: string;
+    'Session ID': string;
+  };
+
+  [WebEngageEventName.PATIENT_PUBLISHER_OTRNERROR]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    error: string;
+    'Session ID': string;
+  };
+
+  [WebEngageEventName.PATIENT_PUBLISHER_STREAM_CREATED]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.PATIENT_PUBLISHER_STREAM_DESTROYED]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.PATIENT_SESSION_ERROR]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    error: string;
+    'Session ID': string;
+  };
+
+  [WebEngageEventName.PATIENT_SESSION_OTRNERROR]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    error: string;
+    'Session ID': string;
+  };
+
+  [WebEngageEventName.PATIENT_SESSION_CONNECTION_CREATED]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.PATIENT_SESSION_CONNECTION_DESTROYED]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.PATIENT_SESSION_CONNECTED]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.PATIENT_SESSION_DISCONNECTED]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.PATIENT_SESSION_RECONNECTED]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.PATIENT_SESSION_RECONNECTING]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.PATIENT_SESSION_STREAM_CREATED]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.PATIENT_SESSION_STREAM_DESTROYED]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.PATIENT_SESSION_STREAM_PROPERTY_CHANGED]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    event: string;
   };
 }

@@ -164,7 +164,11 @@ const useStyles = makeStyles((theme: Theme) => {
         flex: 1,
         color: '#fc9916',
         marginLeft: 16,
-        backgroundColor: '#fff',
+        backgroundColor: 'transparent',
+        boxShadow: 'none',
+        '&:hover': {
+          backgroundColor: 'transparent',
+        },
       },
     },
     card: {
@@ -316,8 +320,14 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '& p': {
         fontSize: 12,
-        color: 'rgb(2, 71, 91, 0.6)',
+        color: 'rgb(1, 71, 91, 0.6)',
         lineHeight: '18px',
+        fontWeight: 500,
+        paddingRight: 20,
+        marginBottom: 10,
+        [theme.breakpoints.down('xs')]: {
+          paddingRight: 0,
+        },
       },
     },
     consultContainer: {
@@ -372,7 +382,11 @@ const a11yProps = (index: any) => {
   };
 };
 
-export const HowItWorks: React.FC = (props) => {
+interface HowItWorksInterface {
+  alternateVariant?: boolean;
+}
+
+export const HowItWorks: React.FC<HowItWorksInterface> = (props) => {
   const classes = useStyles({});
   const [chatConsult, setChatConsult] = useState<boolean>(false);
   const [meetInPerson, setMeetInPerson] = useState<boolean>(false);
@@ -443,10 +457,15 @@ export const HowItWorks: React.FC = (props) => {
                       Be present in the consult room on apollo247.com at the time of consult
                     </Typography>
                   </li>
-                  <li>
-                    <img src={require('images/prescription.svg')} />
-                    <Typography>Receive prescriptions instantly </Typography>
-                  </li>
+                  {props.alternateVariant ? (
+                    ''
+                  ) : (
+                    <li>
+                      <img src={require('images/prescription.svg')} />
+                      <Typography>Receive prescriptions instantly </Typography>
+                    </li>
+                  )}
+
                   <li>
                     <img src={require('images/ic-followchat.svg')} />
                     <Typography>Follow Up via text - Valid upto 7 days</Typography>
@@ -491,7 +510,9 @@ export const HowItWorks: React.FC = (props) => {
       </div>
       <div className={classes.appDetails}>
         {/* <Typography component="h6">Consultation works only on our mobile app</Typography> */}
-        <Typography>To enjoy enhanced consultation experience download our mobile app</Typography>
+        <Typography>
+          To enjoy services provided by Apollo 247 on Mobile, download our App
+        </Typography>
         <a href={getAppStoreLink()} target={'_blank'}>
           <div className={classes.appDownload}>
             <img src={require('images/apollo247.png')} />
@@ -537,7 +558,7 @@ export const HowItWorks: React.FC = (props) => {
           <div className={`${classes.appDetails} ${classes.appDetailsMobile}`}>
             <Typography component="h6">Consultation works only on our mobile app</Typography>
             <Typography>
-              To enjoy enhanced consultation experience download our mobile app
+              To enjoy services provided by Apollo 247 on Mobile, download our App
             </Typography>
             <div className={classes.appDownload}>
               <img src={require('images/apollo247.png')} />
@@ -582,4 +603,7 @@ export const HowItWorks: React.FC = (props) => {
       </AphDialog>
     </div>
   );
+};
+HowItWorks.defaultProps = {
+  alternateVariant: true,
 };

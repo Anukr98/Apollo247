@@ -6,7 +6,6 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { AphButton } from '@aph/web-ui-components';
 import Typography from '@material-ui/core/Typography';
 import { NewsletterSubscriptionForm } from './NewsletterSubscriptionForm';
-import { CallOurExperts } from 'components/CallOurExperts';
 import { ShareWidget } from 'components/ShareWidget';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -284,6 +283,7 @@ interface ArticleBannerProps {
   source: string;
   isWebView: boolean;
   slug: string;
+  pageType: string;
 }
 
 export const ArticleBanner: React.FC<ArticleBannerProps> = (props) => {
@@ -291,18 +291,16 @@ export const ArticleBanner: React.FC<ArticleBannerProps> = (props) => {
   const subRef = React.useRef(null);
   const [openSubscriptionForm, setOpenSubscriptionForm] = useState(false);
   const [showShareWidget, setShowShareWidget] = useState(false);
-
-  const { title, type, source, isWebView } = props;
+  const { title, type, source, isWebView, pageType } = props;
+  const getBackLink = () => {
+    const baseLink =
+      pageType === 'covid' ? clientRoutes.covidLanding() : clientRoutes.knowledgeBaseLanding();
+    return !isWebView ? baseLink : `${baseLink}?utm_source=mobile_app`;
+  };
   return (
     <div className={classes.root}>
       <div className={classes.bannerTop}>
-        <Link
-          to={
-            !isWebView
-              ? clientRoutes.covidLanding()
-              : `${clientRoutes.covidLanding()}?utm_source=mobile_app`
-          }
-        >
+        <Link to={getBackLink()}>
           <div className={classes.backArrow}>
             <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
             <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
@@ -325,7 +323,7 @@ export const ArticleBanner: React.FC<ArticleBannerProps> = (props) => {
                 e.stopPropagation();
                 setShowShareWidget(false);
               }}
-              url={`${window.location.protocol}//${window.location.hostname}/covid19/article/${props.slug}`}
+              url={window.location.href}
             />
           )}
         </div>
@@ -364,7 +362,7 @@ export const ArticleBanner: React.FC<ArticleBannerProps> = (props) => {
                 closeShareWidget={() => {
                   setShowShareWidget(false);
                 }}
-                url={`${window.location.protocol}//${window.location.hostname}/covid19/article/${props.slug}`}
+                url={window.location.href}
               />
             )}
           </div>

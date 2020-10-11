@@ -20,6 +20,7 @@ import { BottomLinks } from 'components/BottomLinks';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
+import { dataLayerTracking } from 'gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -279,6 +280,14 @@ const CovidLanding: React.FC = (props: any) => {
     scrollToRef &&
       scrollToRef.current &&
       scrollToRef.current.scrollIntoView({ behavior: 'smooth' });
+
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: 'Covid-19 Index Page',
+      pageLOB: 'Covid-19',
+      pageType: 'Index',
+    });
   }, []);
 
   useEffect(() => {
@@ -386,6 +395,7 @@ const CovidLanding: React.FC = (props: any) => {
                             isWebView={isWebView}
                             handleInfographicClick={(data) => handleInfographicClick(data)}
                             content={covidContent[parentCat.category]}
+                            pageType="covid"
                           />
                         )}
                       {moreContentLoading ? (

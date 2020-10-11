@@ -45,7 +45,11 @@ module.exports = async (req, res, next) => {
       transactionStatus == 'pending'
     ) {
       /*save response in apollo24x7*/
-      axios.defaults.headers.common['authorization'] = process.env.API_TOKEN;
+      const axiosConfig = {
+        headers: {
+          'authorization': process.env.API_TOKEN
+        }
+      }
 
       logger.info(`consults query - ${consultsOrderQuery(payload)}`);
 
@@ -54,7 +58,7 @@ module.exports = async (req, res, next) => {
         query: consultsOrderQuery(payload),
       };
 
-      const response = await axios.post(process.env.API_URL, requestJSON);
+      const response = await axios.post(process.env.API_URL, requestJSON, axiosConfig);
 
       logger.info(`${orderId} - consult-payment-response - ${JSON.stringify(response.data)}`);
 

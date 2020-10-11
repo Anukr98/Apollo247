@@ -14,25 +14,31 @@ import { theme } from '@aph/mobile-doctors/src/theme/theme';
 import React from 'react';
 import { createBottomTabNavigator, NavigationRouteConfig } from 'react-navigation';
 
+export enum TabRoutes {
+  Appointments = 'APPOINTMENTS',
+  Patients = 'PATIENTS',
+  MyAccount = 'MY ACCOUNT',
+}
+
 const routeToIcon: Partial<Record<string, NavigationRouteConfig>> = {
-  APPOINTMENTS: <ConsultationRoom />,
-  PATIENTS: <MyHealth />,
+  [TabRoutes.Appointments]: <ConsultationRoom />,
+  [TabRoutes.Patients]: <MyHealth />,
   // INBOX: <InboxIcon />,
-  'MY ACCOUNT': <Person />,
+  [TabRoutes.MyAccount]: <Person />,
 };
 
 const routeToFocusedIcon: Partial<Record<string, NavigationRouteConfig>> = {
-  APPOINTMENTS: <ConsultationRoomFocused />,
-  PATIENTS: <MyHealthFocused />,
+  [TabRoutes.Appointments]: <ConsultationRoomFocused />,
+  [TabRoutes.Patients]: <MyHealthFocused />,
   // INBOX: <InboxIcon />,
-  'MY ACCOUNT': <PersonFocused />,
+  [TabRoutes.MyAccount]: <PersonFocused />,
 };
 
 const routeConfigMap: Partial<Record<string, NavigationRouteConfig>> = {
-  APPOINTMENTS: Appointments,
-  PATIENTS: Patients,
+  [TabRoutes.Appointments]: Appointments,
+  [TabRoutes.Patients]: Patients,
   // INBOX: Inbox,
-  'MY ACCOUNT': BasicAccount,
+  [TabRoutes.MyAccount]: BasicAccount,
 };
 
 export const TabBar = createBottomTabNavigator(routeConfigMap, {

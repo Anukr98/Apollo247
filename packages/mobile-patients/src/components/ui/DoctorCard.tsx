@@ -12,8 +12,12 @@ import {
   CommonBugFender,
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { SAVE_SEARCH } from '@aph/mobile-patients/src/graphql/profiles';
-import { getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
+import { SAVE_SEARCH, GET_DOCTOR_DETAILS_BY_ID } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor,
+  getDoctorDetailsById,
+  getDoctorDetailsById_getDoctorDetailsById,
+} from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import {
   getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors,
   getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability,
@@ -108,6 +112,7 @@ const styles = StyleSheet.create({
 });
 
 export interface DoctorCardProps extends NavigationScreenProps {
+  rowId?: number;
   rowData:
     | SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors
     | getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors
@@ -137,6 +142,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const rowData = props.rowData;
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
+  const [doctorDetails, setDoctorDetails] = useState<getDoctorDetailsById_getDoctorDetailsById>();
 
   useEffect(() => {
     if (!currentPatient) {
@@ -144,6 +150,10 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       getPatientApiCall();
     }
   }, [currentPatient]);
+
+  useEffect(() => {
+    fetchDoctorDetails(props.rowData!.id);
+  }, []);
 
   const client = useApolloClient();
 
@@ -193,6 +203,37 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     }
   }, [props.doctorsNextAvailability, doctorsNextAvailability, setNextAvailability]);
 
+  const fetchDoctorDetails = (doctorId: string) => {
+    const input = {
+      id: doctorId,
+    };
+    console.log('input ', input);
+
+    client
+      .query<getDoctorDetailsById>({
+        query: GET_DOCTOR_DETAILS_BY_ID,
+        variables: input,
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data }) => {
+        console.log(data, 'data');
+
+        try {
+          if (data && data.getDoctorDetailsById && doctorDetails !== data.getDoctorDetailsById) {
+            console.log('getDoctorDetailsById===>', data.getDoctorDetailsById);
+            setDoctorDetails(data.getDoctorDetailsById);
+          }
+        } catch (e) {
+          CommonBugFender('DoctorDetails_fetchDoctorDetails_try', e);
+        }
+      })
+      .catch((e) => {
+        props.navigation.navigate(AppRoutes.ConsultRoom, {});
+        CommonBugFender('DoctorDetails_fetchDoctorDetails', e);
+        console.log('Error occured', e);
+      });
+  };
+
   const navigateToDetails = (id: string, params?: {}) => {
     if (props.saveSearch) {
       const searchInput = {
@@ -222,6 +263,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     props.navigation.navigate(AppRoutes.ConsultTypeScreen, {
       DoctorName: nameFormater((rowData && rowData.displayName) || '', 'title'),
       DoctorId: id,
+      chatDays: doctorDetails?.chatDays,
       nextAppointemntOnlineTime: availability ? availability.onlineSlot : null,
       nextAppointemntInPresonTime: availability ? availability.physicalSlot : null,
       onlinePrice: rowData && rowData.onlineConsultationFees,
@@ -496,6 +538,9 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                         'Patient Gender': currentPatient.gender,
                         'Customer ID': currentPatient.id,
                       };
+                      if (props.rowId) {
+                        eventAttributes['Rank'] = props.rowId;
+                      }
                       postWebEngageEvent(
                         WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK,
                         eventAttributes

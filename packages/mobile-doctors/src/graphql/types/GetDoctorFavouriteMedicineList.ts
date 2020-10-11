@@ -25,6 +25,9 @@ export interface GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_m
   medicineUnit: MEDICINE_UNIT | null;
   routeOfAdministration: ROUTE_OF_ADMINISTRATION | null;
   medicineCustomDosage: string | null;
+  medicineCustomDetails: string | null;
+  includeGenericNameInPrescription: boolean | null;
+  genericName: string | null;
 }
 
 export interface GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList {

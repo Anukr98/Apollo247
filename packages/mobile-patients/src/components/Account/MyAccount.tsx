@@ -9,6 +9,7 @@ import {
   NeedHelpIcon,
   OneApollo,
   LinkedUhidIcon,
+  MyMembershipIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
@@ -26,6 +27,7 @@ import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/a
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import AsyncStorage from '@react-native-community/async-storage';
 import Moment from 'moment';
+import { differenceInYears, parse } from 'date-fns';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -151,7 +153,13 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     GetCurrentPatients_getCurrentPatients_patients | null | undefined
   >(currentPatient);
   const { signOut, getPatientApiCall } = useAuth();
-  const { setSavePatientDetails, setAppointmentsPersonalized } = useAppCommonData();
+  const {
+    setSavePatientDetails,
+    setAppointmentsPersonalized,
+    hdfcUserSubscriptions,
+    setHdfcUserSubscriptions,
+    setBannerData,
+  } = useAppCommonData();
 
   useEffect(() => {
     updateCodePushVersioninUi();
@@ -206,6 +214,12 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       });
   }, [currentPatient, profileDetails]);
 
+  const getAge = (dob: string) => {
+    const now = new Date();
+    let age = parse(dob);
+    return differenceInYears(now, age);
+  };
+
   const renderDetails = () => {
     if (profileDetails)
       return (
@@ -239,11 +253,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
               </Text>
               <Text style={styles.doctorSpecializationStyles}>
                 {profileDetails.gender ? profileDetails.gender : '-'} |{' '}
-                {profileDetails.dateOfBirth
-                  ? Math.round(
-                      Moment().diff(profileDetails.dateOfBirth, 'years', true)
-                    ).toString() || '-'
-                  : '-'}
+                {profileDetails.dateOfBirth ? getAge(profileDetails.dateOfBirth) || '-' : '-'}
               </Text>
             </View>
             <View style={styles.separatorStyle} />
@@ -270,6 +280,8 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       AsyncStorage.removeItem('deeplink');
       AsyncStorage.removeItem('deeplinkReferalCode');
       setSavePatientDetails && setSavePatientDetails('');
+      setHdfcUserSubscriptions && setHdfcUserSubscriptions(null);
+      setBannerData && setBannerData([]);
       setAppointmentsPersonalized && setAppointmentsPersonalized([]);
       signOut();
       setTagalysConfig(null);
@@ -293,7 +305,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
 
     const input = {
-      deviceToken: currentDeviceToken.deviceToken,
+      deviceToken: currentDeviceToken,
       patientId: currentPatient ? currentPatient && currentPatient.id : '',
     };
     console.log('deleteDeviceTokenInput', input);
@@ -457,6 +469,15 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             props.navigation.navigate(AppRoutes.OneApolloMembership);
           }}
         />
+        {hdfcUserSubscriptions && g(hdfcUserSubscriptions, '_id') && (
+          <ListCard
+            title={'My Memberships'}
+            leftIcon={<MyMembershipIcon style={{ height: 20, width: 26 }} />}
+            onPress={() => {
+              props.navigation.navigate(AppRoutes.MyMembership);
+            }}
+          />
+        )}
         <ListCard
           title={'Need Help'}
           leftIcon={<NeedHelpIcon />}

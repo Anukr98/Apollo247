@@ -24,6 +24,7 @@ import {
   aphConsole,
   g,
   postWebEngageEvent,
+  overlyCallPermissions,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -100,6 +101,7 @@ type CustomNotificationType =
   | 'doctor_Noshow_Reschedule_Appointment'
   | 'Appointment_Canceled_Refund'
   | 'Appointment_Payment_Pending_Failure'
+  | 'Book_Appointment'
   | 'webview';
 
 export interface NotificationListenerProps extends NavigationScreenProps {}
@@ -776,30 +778,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           const userName = data.patientName;
           const doctorType = data.doctorType;
           aphConsole.log('chat_room');
-          showAphAlert!({
-            title: `Hi ${userName} :)`,
-            description: `Dr. ${
-              doctorType == DoctorType.JUNIOR ? doctorName + '`s' + ' team doctor' : doctorName
-            } is waiting to start your consultation. Please proceed to the Consult Room`,
-            unDismissable: true,
-            CTAs: [
-              {
-                text: 'CANCEL',
-                type: 'white-button',
-                onPress: () => {
-                  hideAphAlert && hideAphAlert();
-                },
-              },
-              {
-                text: 'CONSULT ROOM',
-                type: 'orange-button',
-                onPress: () => {
-                  console.log('data.appointmentId', data.appointmentId);
-                  getAppointmentData(data.appointmentId, notificationType, '', '');
-                },
-              },
-            ],
-          });
+          getAppointmentData(data.appointmentId, notificationType, '', '');
         }
         break;
 
@@ -810,15 +789,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           const doctorName = data.doctorName;
           const userName = data.patientName;
           // setLoading;
-          getCallStatus(
-            data.appointmentCallId,
-            data.appointmentId,
-            notificationType,
-            data.callType,
-            doctorName,
-            userName,
-            data.doctorType
-          );
+          getAppointmentData(data.appointmentId, notificationType, data.callType, '');
         }
         break;
 
@@ -853,6 +824,13 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       case 'PRESCRIPTION_READY': // prescription is generated
         {
           showConsultDetailsRoomAlert(data, 'PRESCRIPTION_READY', 'true');
+        }
+        break;
+      case 'Book_Appointment':
+        {
+          const doctorName = data.doctorName;
+          const userName = data.patientName;
+          overlyCallPermissions(userName, doctorName, showAphAlert, hideAphAlert, true);
         }
         break;
       case 'webview':
@@ -890,8 +868,9 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         .notifications()
         .displayNotification(localNotification)
         .catch((err) => console.error(err));
-
-      processNotification(notification);
+      if (notification.data.type !== 'chat_room' && notification.data.type !== 'call_started') {
+        processNotification(notification);
+      }
     });
 
     /*

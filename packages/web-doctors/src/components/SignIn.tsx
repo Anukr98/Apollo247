@@ -21,6 +21,7 @@ import { isMobileNumberValid } from '@aph/universal/dist/aphValidators';
 import { AphTextField } from '@aph/web-ui-components';
 import { HelpPopup } from 'components/Help';
 import isNumeric from 'validator/lib/isNumeric';
+import { webEngageEventTracking } from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -341,6 +342,9 @@ export const SignIn: React.FC<PopupProps> = (props) => {
               }}
               onKeyPress={(e) => {
                 if (otp.join('').length === numOtpDigits && e.key == 'Enter') {
+                  webEngageEventTracking(null,
+                    'Front_end - Doctor OTP Entered'
+                  );
                   verifyOtp(otp.join(''), loginId);
                   setSubmitCount(submitCount + 1);
                 }
@@ -386,23 +390,13 @@ export const SignIn: React.FC<PopupProps> = (props) => {
           </div>
         </FormHelperText>
       )}
-      {showTimer ? (
-        <Button
-          variant="text"
-          className={classes.resendBtn}
-          onClick={() => {
-            setDisplayGetHelp(true);
-            setMobileNumber('');
-          }}
-        >
-          GET HELP
-        </Button>
-      ) : (
+      {!showTimer && (
         <Button
           variant="text"
           className={classes.resendBtn}
           disabled={isSendingOtp}
           onClick={() => {
+            webEngageEventTracking(null, 'Front_end - Doctor OTP Resend');
             setOtp([]);
             setSubmitCount(0);
             sendOtp(mobileNumberWithPrefix, loginId).then((res: any) => {
@@ -423,6 +417,7 @@ export const SignIn: React.FC<PopupProps> = (props) => {
         <Fab
           color="primary"
           onClick={() => {
+            webEngageEventTracking(null, 'Front_end - Doctor OTP Entered');
             verifyOtp(otp.join(''), loginId).then(() => setDisplayOtpInput(true));
             setSubmitCount(submitCount + 1);
           }}
@@ -470,6 +465,12 @@ export const SignIn: React.FC<PopupProps> = (props) => {
           }
           onKeyPress={(e) => {
             if (!showErrorMessage && mobileNumber.length === 10 && e.key == 'Enter') {
+              webEngageEventTracking(
+                {
+                  'Doctor mobile Number': mobileNumberWithPrefix,
+                },
+                'Front_end - Doctor Mobile Number entered'
+              );
               sendOtp(mobileNumberWithPrefix, '').then((res: any) => {
                 if (res) {
                   setLoginId(res);
@@ -494,17 +495,6 @@ export const SignIn: React.FC<PopupProps> = (props) => {
         {sendOtpError ? '' : phoneMessage}
         </FormHelperText>
       </FormControl>
-      <Button
-        variant="text"
-        className={classes.resendBtn}
-        disabled={!showErrorMessage}
-        onClick={() => {
-          setDisplayGetHelp(true);
-          setStickyPopupValue();
-        }}
-      >
-        GET HELP
-      </Button>
       <div className={classes.action}>
         <Fab
           color="primary"
@@ -513,6 +503,12 @@ export const SignIn: React.FC<PopupProps> = (props) => {
             !isMobileNumberValid(mobileNumber) || mobileNumber.length !== 10 || isSendingOtp
           }
           onClick={() => {
+            webEngageEventTracking(
+              {
+                'Doctor mobile Number': mobileNumberWithPrefix,
+              },
+              'Front_end - Doctor Mobile Number entered'
+            );
             sendOtp(mobileNumberWithPrefix, '').then((res: any) => {
               if (res) {
                 setLoginId(res);

@@ -12,21 +12,30 @@ import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 import _isEmpty from 'lodash/isEmpty';
 import _uniqueId from 'lodash/uniqueId';
-import { GET_PATIENT_BY_MOBILE_NUMBER, GET_CURRENT_PATIENTS } from 'graphql/profiles';
+import {
+  GET_PATIENT_BY_MOBILE_NUMBER,
+  GET_CURRENT_PATIENTS,
+  CREATE_ONE_APOLLO_USER,
+} from 'graphql/profiles';
 import { Login, LoginVariables } from 'graphql/types/Login';
 import { verifyLoginOtp, verifyLoginOtpVariables } from 'graphql/types/verifyLoginOtp';
+import {
+  createOneAPolloUser,
+  createOneAPolloUserVariables,
+} from 'graphql/types/createOneAPolloUser';
 import { LOGIN_TYPE } from 'graphql/types/globalTypes';
-import { clientRoutes } from 'helpers/clientRoutes';
+
 import {
   CUSTOM_LOGIN,
   CUSTOM_LOGIN_VERIFY_OTP,
   CUSTOM_LOGIN_RESEND_OTP,
 } from 'graphql/customlogin';
 import { ResendOtp, ResendOtpVariables } from 'graphql/types/ResendOtp';
-import { gtmTracking, _urTracking } from '../gtmTracking';
+import { gtmTracking, _urTracking, dataLayerTracking } from '../gtmTracking';
 import { webengageUserLoginTracking, webengageUserLogoutTracking } from '../webEngageTracking';
 import { GetPatientByMobileNumber } from 'graphql/types/GetPatientByMobileNumber';
 import { GetCurrentPatients } from 'graphql/types/GetCurrentPatients';
+
 // import { isTest, isFirebaseLoginTest } from 'helpers/testHelpers';
 // import { ResendOtp, ResendOtpVariables } from 'graphql/types/ResendOtp';
 
@@ -169,11 +178,18 @@ export const AuthProvider: React.FC = (props) => {
         gtmTracking({ category: 'Profile', action: 'Logout', label: 'Logout' });
         /**Gtm code start end */
 
+        /**Gtm code start start */
+        dataLayerTracking({
+          event: 'UserLoggedOut',
+        });
+        /**Gtm code start end */
+
         /*webengage code start */
         webengageUserLogoutTracking();
         /*webengage code end */
         localStorage.removeItem('currentUser');
         localStorage.removeItem('userMobileNo');
+        localStorage.removeItem('userSubscriptions');
         window.location.reload();
       });
 
@@ -224,6 +240,11 @@ export const AuthProvider: React.FC = (props) => {
         if (!res) {
           setVerifyOtpError(true);
           setIsSigningIn(false);
+          /**Gtm code start start */
+          dataLayerTracking({
+            event: 'OTPValidation Failed',
+          });
+          /**Gtm code start end */
         } else {
           setVerifyOtpError(false);
           app.auth().signInWithCustomToken(res);
@@ -303,6 +324,17 @@ export const AuthProvider: React.FC = (props) => {
       // sessionClient.notify(JSON.stringify(logObject));
       return false;
     }
+  };
+
+  const registerUserOneApollo = async (patientId: string) => {
+    await wait(
+      apolloClient.mutate<createOneAPolloUser, createOneAPolloUserVariables>({
+        variables: {
+          patientId,
+        },
+        mutation: CREATE_ONE_APOLLO_USER,
+      })
+    );
   };
 
   const resendOtpApiCall = async (mobileNumber: string, loginId: string) => {
@@ -443,6 +475,8 @@ export const AuthProvider: React.FC = (props) => {
                     res.data.getCurrentPatients.patients &&
                     res.data.getCurrentPatients.patients[0].id;
                   localStorage.setItem('currentUser', userId);
+                  // register the user in one-apollo
+                  registerUserOneApollo(userId);
                   setCurrentPatientId(userId);
                   gtmTracking({
                     category: 'Profile',
@@ -451,6 +485,15 @@ export const AuthProvider: React.FC = (props) => {
                   });
                   _urTracking({ userId: userId, isApolloCustomer: false, profileFetchedCount: 1 });
                   setSignInError(false);
+
+                  /**Gtm code start start */
+                  dataLayerTracking({
+                    event: 'UserLoggedIn',
+                    Type: isNewUser ? 'Register' : 'Login',
+                    'User ID': userId,
+                  });
+                  /**Gtm code start end */
+
                   window.location.reload(true);
                 });
             } else {
@@ -477,6 +520,15 @@ export const AuthProvider: React.FC = (props) => {
               /* webengage code start */
               webengageUserLoginTracking(user.uid);
               /* webengage code end */
+
+              /**Gtm code start start */
+              dataLayerTracking({
+                event: 'UserLoggedIn',
+                Type: isNewUser ? 'Register' : 'Login',
+                'User ID': userId,
+              });
+              /**Gtm code start end */
+
               setSignInError(false);
             }
           })

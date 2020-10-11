@@ -1,6 +1,5 @@
 import React from 'react';
-import { StyleProp, TextStyle, View, ViewStyle, Platform } from 'react-native';
-import { Text } from 'react-native-elements';
+import { StyleProp, TextStyle, View, ViewStyle, Platform, Text } from 'react-native';
 import ProfileTabHeaderStyles from '@aph/mobile-doctors/src/components/ui/ProfileTabHeader.styles';
 
 const styles = ProfileTabHeaderStyles;

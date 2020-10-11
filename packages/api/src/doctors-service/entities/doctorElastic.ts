@@ -1,5 +1,5 @@
 import { ApiResponse, Client, RequestParams } from "@elastic/elasticsearch";
-import { Doctor } from "doctors-service/entities";
+import { Doctor, ConsultMode } from "doctors-service/entities";
 import { APPOINTMENT_TYPE, ES_DOCTOR_SLOT_STATUS, Appointment } from "consults-service/entities";
 import { format, addMinutes, addDays } from "date-fns";
 import { AphError } from "AphError";
@@ -221,6 +221,7 @@ export function elasticDoctorTextSearch(searchText: string){
                   `displayName^${ES_FIELDS_PRIORITY.doctor_fullName}`,
                   `specialty.name^${ES_FIELDS_PRIORITY.speciality_name}`,
                   `specialty.groupName^${ES_FIELDS_PRIORITY.speciality_groupName}`,
+                  `specialty.symptoms^${ES_FIELDS_PRIORITY.speciality_commonSearchTerm}`,
                   `specialty.commonSearchTerm^${ES_FIELDS_PRIORITY.speciality_commonSearchTerm}`,
                   `specialty.userFriendlyNomenclature^${ES_FIELDS_PRIORITY.speciality_userFriendlyNomenclature}`,
                 ],
@@ -235,6 +236,7 @@ export function elasticDoctorTextSearch(searchText: string){
                   `displayName^${ES_FIELDS_PRIORITY.doctor_fullName}`,
                   `specialty.name^${ES_FIELDS_PRIORITY.speciality_name}`,
                   `specialty.groupName^${ES_FIELDS_PRIORITY.speciality_groupName}`,
+                  `specialty.symptoms^${ES_FIELDS_PRIORITY.speciality_commonSearchTerm}`,
                   `specialty.commonSearchTerm^${ES_FIELDS_PRIORITY.speciality_commonSearchTerm}`,
                   `specialty.userFriendlyNomenclature^${ES_FIELDS_PRIORITY.speciality_userFriendlyNomenclature}`,
                 ],
@@ -273,6 +275,27 @@ export function elasticDoctorLatestSlotFilter(){
       },
     },
   };
+}
+
+export function elasticDoctorConsultModeFilter(consultModeInput: ConsultMode){
+  let consultMode: string[] = [];
+    const consultModeQueryObj:{ [index: string]: any } = [];
+    switch (consultModeInput) {
+      case 'ONLINE':
+        consultMode = ['ONLINE', 'BOTH'];
+        break;
+      case 'PHYSICAL':
+        consultMode = ['PHYSICAL', 'BOTH'];
+        break;
+      default:
+        consultMode = [];
+    }
+    consultMode.forEach((mode) => {
+      consultModeQueryObj.push({ match: { 'consultHours.consultMode': mode } });
+    });
+    if (consultModeQueryObj.length) {
+     return { bool: { should: consultModeQueryObj } };
+    }
 }
 
 export function elasticDoctorAvailabilityFilter(filterInput: FilterDoctorInput){
@@ -396,9 +419,9 @@ export function elasticDoctorDoctorTypeSort(){
       script: {
         lang: 'painless',
         source:
-          "if( doc['doctorType.keyword'].value == 'STAR_APOLLO'){ params.STAR_APOLLO }else {params.OTHERS}",
+          "if( doc['doctorType.keyword'].value == 'APOLLO'){ params.APOLLO }else {params.OTHERS}",
         params: {
-          STAR_APOLLO: 1,
+          APOLLO: 1,
           OTHERS: 0,
         },
       },
@@ -449,4 +472,183 @@ export function elasticDoctorSearch(
       },
     };
     return searchParams;
+}
+export function elasticSpecialtySearch(searchText: string) {
+  const specialtiesSearchParams: RequestParams.Search = {
+    index: process.env.ELASTIC_INDEX_DOCTORS,
+    body: {
+      size: 0,
+      _source: ['specialty'],
+      query: {
+        bool: {
+          must: [
+            {
+              multi_match: {
+                fields: [
+                  'specialty.name^5',
+                  'specialty.userFriendlyNomenclature^4',
+                  'specialty.specialistSingularTerm^4',
+                  'specialty.symptoms^3',
+                ],
+                type: 'phrase_prefix',
+                //fuzziness: 'AUTO',
+                query: `*${searchText.trim().toLowerCase()}*`,
+              },
+            },
+          ],
+        },
+      },
+      aggs: {
+        matched_specialities: {
+          terms: {
+            field: 'specialty.name.keyword',
+            size: 1000,
+          },
+          aggs: {
+            matched_specialities_hits: {
+              top_hits: {
+                sort: [
+                  {
+                    _score: {
+                      order: 'desc',
+                    },
+                  },
+                ],
+                _source: ['specialty'],
+                size: 1,
+              },
+            },
+          },
+        },
+      },
+    },
+  };
+  return specialtiesSearchParams;
+}
+
+export function elasticDoctorFilters() {
+  const aggnDocumentsSpan = 10000;
+  const searchFilters: RequestParams.Search = {
+    index: process.env.ELASTIC_INDEX_DOCTORS,
+    body: {
+      query: {
+        bool: {
+          must: [
+            {
+              match: {
+                isSearchable: 'true',
+              },
+            },
+            {
+              match: {
+                isActive: 'true',
+              },
+            },
+          ],
+        },
+      },
+      size: 0,
+      aggs: {
+        brands: {
+          terms: {
+            field: 'doctorType.keyword',
+            size: aggnDocumentsSpan,
+            order: { _term: 'asc' },
+          },
+        },
+        state: {
+          terms: {
+            field: 'facility.state.keyword',
+            size: aggnDocumentsSpan,
+            min_doc_count: 1,
+            order: { _term: 'asc' },
+          },
+          aggs: {
+            city: {
+              terms: {
+                field: 'facility.city.keyword',
+                size: aggnDocumentsSpan,
+                min_doc_count: 1,
+                order: { _term: 'asc' },
+              },
+            },
+          },
+        },
+        language: {
+          terms: {
+            field: 'languages.keyword',
+            size: aggnDocumentsSpan,
+            min_doc_count: 1,
+            order: { _term: 'asc' },
+          },
+        },
+        experience: {
+          terms: {
+            field: 'experience_range.keyword',
+            size: aggnDocumentsSpan,
+            order: { _term: 'asc' },
+          },
+        },
+        fee: {
+          terms: {
+            field: 'fee_range.keyword',
+            size: aggnDocumentsSpan,
+            order: { _term: 'asc' },
+          },
+        },
+        gender: {
+          terms: {
+            field: 'gender.keyword',
+            size: aggnDocumentsSpan,
+            order: { _term: 'asc' },
+          },
+        },
+      },
+    },
+  };
+  return searchFilters;
+}
+
+export function ifKeyExist(arr: any[], key: string, value: string) {
+  if (arr.length) {
+    arr = arr.filter((elem: any) => {
+      return elem[key] === value;
+    });
+    if (arr.length) {
+      return arr[0];
+    }
+    return {};
+  } else {
+    return {};
+  }
+}
+
+export function capitalize(input: string) {
+  const words = input.split('_');
+  const CapitalizedWords: string[] = [];
+  words.forEach((element: string) => {
+    if (element.length >= 1) {
+      CapitalizedWords.push(
+        (element[0].toUpperCase() + element.slice(1, element.length).toLowerCase()).trim()
+      );
+    }
+  });
+  return CapitalizedWords.join(' ');
+}
+
+export function rangeCompare(field: string, order: string = 'asc') {
+  return function sort(objectA: any, objectB: any) {
+    if (!objectA.hasOwnProperty(field) || !objectB.hasOwnProperty(field)) {
+      return 0;
+    }
+    const fieldA = parseInt(objectA[field].split('-')[0], 10);
+    const fieldB = parseInt(objectB[field].split('-')[0], 10);
+    let comparison = 0;
+    if (fieldA > fieldB) {
+      comparison = 1;
+    } else if (fieldA < fieldB) {
+      comparison = -1;
+    }
+    return order === 'desc' ? comparison * -1 : comparison;
+  };
 }

@@ -11,3 +11,18 @@ export const Compare = (a, b, key) => {
   }
   return 0;
 };
+
+export const getAge = (date) => {
+  if (date) {
+    const currentDate = new Date(Date.now());
+    const birthDate = new Date(date);
+    let years = currentDate.getUTCFullYear() - birthDate.getUTCFullYear()
+    if (currentDate.getMonth() < birthDate.getMonth() || 
+    currentDate.getMonth() == birthDate.getMonth() && currentDate.getDate() < birthDate.getDate()) {
+      years--;
+    }
+    return years.toString();
+  }else{
+    return '';
+  }
+};

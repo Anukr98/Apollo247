@@ -21,17 +21,16 @@ import { sendMedicineOrderStatusNotification } from 'notifications-service/handl
 import { NotificationType } from 'notifications-service/constants';
 import { medicineCOD } from 'helpers/emailTemplates/medicineCOD';
 import { sendMail } from 'notifications-service/resolvers/email';
-import { ApiConstants } from 'ApiConstants';
+import { ApiConstants, TransactionType } from 'ApiConstants';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { log } from 'customWinstonLogger';
-import {
-  BlockOneApolloPointsRequest,
-  BlockUserPointsResponse,
-  ONE_APOLLO_STORE_CODE,
-} from 'types/oneApolloTypes';
+import { acceptCoupon } from 'helpers/couponServices';
+import { AcceptCouponRequest } from 'types/coupons';
+import { BlockOneApolloPointsRequest, BlockUserPointsResponse } from 'types/oneApolloTypes';
 import { OneApollo } from 'helpers/oneApollo';
 import { getStoreCodeFromDevice } from 'profiles-service/helpers/OneApolloTransactionHelper';
 import { calculateRefund } from 'profiles-service/helpers/refundHelper';
+import { transactionSuccessTrigger } from 'helpers/subscriptionHelper';
 
 export const saveMedicineOrderPaymentMqTypeDefs = gql`
   enum CODCity {
@@ -284,8 +283,31 @@ const SaveMedicineOrderPaymentMq: Resolver<
       statusDate: new Date(),
       statusMessage: statusMsg,
     };
-    await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
 
+    if (
+      currentStatus == MEDICINE_ORDER_STATUS.PAYMENT_SUCCESS ||
+      currentStatus == MEDICINE_ORDER_STATUS.ORDER_INITIATED
+    ) {
+      transactionSuccessTrigger({
+        amount: `${medicinePaymentMqInput.amountPaid}`,
+        transactionType: TransactionType.PHARMA,
+        transactionDate: medicinePaymentMqInput.paymentDateTime || new Date(),
+        transactionId: medicinePaymentMqInput.paymentRefId,
+        sourceTransactionIdentifier: `${medicinePaymentMqInput.orderAutoId}`,
+        mobileNumber: orderDetails.patient.mobileNumber,
+        dob: orderDetails.patient.dateOfBirth,
+        email: orderDetails.patient.emailAddress,
+        partnerId: orderDetails.patient.partnerId,
+      });
+      if (orderDetails.coupon) {
+        const payload: AcceptCouponRequest = {
+          mobile: orderDetails.patient.mobileNumber.replace('+91', ''),
+          coupon: orderDetails.coupon,
+        };
+        await acceptCoupon(payload);
+      }
+    }
+    await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
     await medicineOrdersRepo.updateMedicineOrder(orderDetails.id, orderDetails.orderAutoId, {
       orderDateTime: new Date(),
       currentStatus,
@@ -442,15 +464,6 @@ const blockOneApolloUserPoints = async (
   userDetailInput: userDetailInput,
   profilesDb: Connection
 ) => {
-  let storeCode = ONE_APOLLO_STORE_CODE.WEBCUS;
-  switch (userDetailInput.deviceType) {
-    case DEVICE_TYPE.ANDROID:
-      storeCode = ONE_APOLLO_STORE_CODE.ANDCUS;
-      break;
-    case DEVICE_TYPE.IOS:
-      storeCode = ONE_APOLLO_STORE_CODE.IOSCUS;
-      break;
-  }
   const blockUserPointsInput: BlockOneApolloPointsRequest = {
     MobileNumber: +userDetailInput.mobileNumber,
     CreditsRedeemed: userDetailInput.creditsToBlock,
@@ -473,7 +486,7 @@ const handleOneApolloFailure = async (
   medicineOrdersRepo: MedicineOrdersRepository,
   profilesDb: Connection
 ) => {
-  let cancelOrderUpdates: Promise<MedicineOrdersStatus | UpdateResult>[] = [];
+  const cancelOrderUpdates: Promise<MedicineOrdersStatus | UpdateResult>[] = [];
 
   const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
     orderStatus: MEDICINE_ORDER_STATUS.CANCELLED,

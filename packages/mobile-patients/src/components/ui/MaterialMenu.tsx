@@ -55,6 +55,7 @@ export interface MaterialMenuProps {
   menuContainerStyle?: StyleProp<ViewStyle> | undefined;
   scrollViewContainerStyle?: StyleProp<ViewStyle> | undefined;
   selectedText?: string | number;
+  firstOptionText?: boolean | undefined;
   selectedTextStyle?: StyleProp<TextStyle> | undefined;
   lastTextStyle?: StyleProp<TextStyle> | undefined;
   lastContainerStyle?: StyleProp<ViewStyle> | undefined;
@@ -110,6 +111,8 @@ export const MaterialMenu: React.FC<MaterialMenuProps> = (props) => {
             textStyle={[
               styles.itemTextStyle,
               props.itemTextStyle,
+              props.firstOptionText &&
+                index === 0 && { ...theme.viewStyles.text('SB', 16, '#01475b') },
               !!props.selectedText && props.selectedText === item.key
                 ? props.selectedTextStyle
                 : {},
@@ -117,7 +120,7 @@ export const MaterialMenu: React.FC<MaterialMenuProps> = (props) => {
             ]}
           >
             {item.value}
-            <Text>{' '}</Text>
+            <Text> </Text>
             {item.isPrimary ? (
               !!props.selectedText && props.selectedText === item.key ? (
                 <PrimaryIcon
@@ -130,16 +133,16 @@ export const MaterialMenu: React.FC<MaterialMenuProps> = (props) => {
                   resizeMode={'contain'}
                 />
               ) : (
-                  <LinkedUhidIcon
-                    style={{
-                      width: Platform.OS === 'ios' ? 12 : 14,
-                      height: Platform.OS === 'ios' ? 10 : 12,
-                      marginLeft: Platform.OS === 'ios' ? 12 : 15,
-                      marginTop: Platform.OS === 'ios' ? 4 : 6,
-                    }}
-                    resizeMode={'contain'}
-                  />
-                )
+                <LinkedUhidIcon
+                  style={{
+                    width: Platform.OS === 'ios' ? 12 : 14,
+                    height: Platform.OS === 'ios' ? 10 : 12,
+                    marginLeft: Platform.OS === 'ios' ? 12 : 15,
+                    marginTop: Platform.OS === 'ios' ? 4 : 6,
+                  }}
+                  resizeMode={'contain'}
+                />
+              )
             ) : null}
           </MenuItem>
         ))}

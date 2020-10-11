@@ -31,6 +31,7 @@ import {
   INVALID_FILE_TYPE_ERROR,
   toBase64,
 } from 'helpers/commonHelpers';
+import { dataLayerTracking } from 'gtmTracking';
 import { MetaTagsComp } from 'MetaTagsComp';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -599,6 +600,18 @@ const PrescriptionReview: React.FC = (props: any) => {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
   useEffect(() => {
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: 'Pharmacy Prescription Review Page',
+      pageLOB: 'Pharmacy',
+      pageType: ' Prescription',
+    });
+    /**Gtm code start end */
+  }, []);
+
+  useEffect(() => {
     if (prescriptionUploaded && prescriptionUploaded.imageUrl) {
       setPrescriptionArr(prescriptionArr.concat([prescriptionUploaded]));
       setUploadPrescription(true);
@@ -837,12 +850,22 @@ const PrescriptionReview: React.FC = (props: any) => {
                               return (
                                 <li key={pres.imageUrl}>
                                   <div className={classes.imageDetails}>
-                                    <img
-                                      className={classes.prescriptionThumb}
-                                      src={pres.imageUrl}
-                                      alt="CONSULT A PHARMACOLOGIST"
-                                      title="CONSULT A PHARMACOLOGIST"
-                                    />
+                                    {pres.fileType === 'pdf' ? (
+                                      <img
+                                        src={require('images/pdf-file-format-symbol.svg')}
+                                        width="30"
+                                        height="30"
+                                        alt="CONSULT A PHARMACOLOGIST"
+                                        title="CONSULT A PHARMACOLOGIST"
+                                      />
+                                    ) : (
+                                      <img
+                                        className={classes.prescriptionThumb}
+                                        src={pres.imageUrl}
+                                        alt="CONSULT A PHARMACOLOGIST"
+                                        title="CONSULT A PHARMACOLOGIST"
+                                      />
+                                    )}
                                     <div>
                                       <Typography component="h5">{pres.name}</Typography>
                                       <span className={classes.uploadProgress}></span>
@@ -956,6 +979,13 @@ const PrescriptionReview: React.FC = (props: any) => {
                           disabled={isPostSubmitDisable}
                           color="primary"
                           onClick={() => {
+                            /**Gtm code start start */
+                            dataLayerTracking({
+                              event: 'Prescription Uploaded',
+                              pageType: 'Index',
+                            });
+                            /**Gtm code start end */
+
                             !isSignedIn ? protectWithLoginPopup() : submitPrescriptionForReview();
                           }}
                         >

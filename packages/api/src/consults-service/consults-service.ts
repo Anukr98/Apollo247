@@ -17,6 +17,7 @@ import {
   makeAppointmentPaymentResolvers,
 } from 'consults-service/resolvers/makeAppointmentPayment';
 import { caseSheetResolvers, caseSheetTypeDefs } from 'consults-service/resolvers/caseSheet';
+import { caseSheetV2Resolvers, caseSheetV2TypeDefs } from 'consults-service/resolvers/caseSheetV2';
 import {
   paymentTransactionStatusTypeDefs,
   paymentTransactionStatusResolvers,
@@ -131,6 +132,11 @@ import {
   appointmentCallFeedbackResolvers,
 } from 'consults-service/resolvers/appointmentCallFeedbackResolver';
 
+import {
+  liveStatusTypeDefs,
+  liveStatusResolvers,
+} from 'consults-service/resolvers/ChatRoomLiveStatus';
+
 (async () => {
   connect()
     .then((res) => {
@@ -207,6 +213,10 @@ import {
           {
             typeDefs: caseSheetTypeDefs,
             resolvers: caseSheetResolvers,
+          },
+          {
+            typeDefs: caseSheetV2TypeDefs,
+            resolvers: caseSheetV2Resolvers,
           },
           {
             typeDefs: transferAppointmentTypeDefs,
@@ -287,6 +297,10 @@ import {
           {
             typeDefs: appointmentCallFeedbackTypeDefs,
             resolvers: appointmentCallFeedbackResolvers,
+          },
+          {
+            typeDefs: liveStatusTypeDefs,
+            resolvers: liveStatusResolvers,
           },
         ]),
         plugins: [

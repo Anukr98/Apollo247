@@ -3,7 +3,7 @@ import React from 'react';
 import { Dimensions, StyleSheet, Text, View } from 'react-native';
 import { getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList } from '../graphql/types/getDiagnosticOrderDetails';
 import moment from 'moment';
-import { g } from '../helpers/helperFunctions';
+import { g, formatTestSlotWithBuffer } from '../helpers/helperFunctions';
 
 const { height } = Dimensions.get('window');
 
@@ -97,11 +97,30 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
   };
 
   const formatSlot = (slot: string /*07:00-07:30 */) => {
-    return slot
-      .split('-')
-      .map((item) => moment(item.trim(), 'hh:mm').format('hh:mm A'))
-      .join(' - ');
+    /**
+     * for showing 30 mins buffer time.
+     */
+    const startTime = slot.split('-')[0];
+    const endTime = moment(startTime, 'HH:mm')
+      .add(30, 'minutes')
+      .format('HH:mm');
+
+    const newSlot = [startTime, endTime];
+    return newSlot.map((item) => moment(item.trim(), 'hh:mm').format('hh:mm A')).join(' - ');
   };
+
+  /**
+   * to handle the quantity
+   */
+  const individualDiagnosticsArray = orderDetails?.diagnosticOrderLineItems!.map(
+    (item) => item?.price * item?.quantity
+  );
+
+  const totalIndividualDiagonsticsCharges = individualDiagnosticsArray?.reduce(
+    (prevVal, currVal) => prevVal + currVal
+  );
+
+  const HomeCollectionCharges = orderDetails?.totalPrice! - totalIndividualDiagonsticsCharges!;
 
   const orderLineItems = orderDetails!.diagnosticOrderLineItems || [];
   return (
@@ -134,13 +153,13 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
         {!!orderDetails.slotTimings && (
           <View style={styles.subView}>
             <Text style={styles.orderName}>Pickup Time</Text>
-            <Text style={styles.hideText}>{`${formatSlot(orderDetails.slotTimings)}`}</Text>
+            <Text style={styles.hideText}>{`${formatTestSlotWithBuffer(
+              orderDetails.slotTimings
+            )}`}</Text>
           </View>
         )}
       </View>
-
       <View style={styles.horizontalline} />
-
       <View style={styles.headeingView}>
         <View style={{ flex: 1 }}>
           <Text style={styles.testsummeryHeading}>CONSULT DETAIL</Text>
@@ -152,7 +171,6 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
           <Text style={styles.testsummeryHeading}>CHARGES</Text>
         </View>
       </View>
-
       {orderLineItems.map((item) => (
         <View style={styles.commonTax}>
           <View style={{ flex: 1 }}>
@@ -166,9 +184,24 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
           </View>
         </View>
       ))}
+      {/**
+       * HOME COLLECTION CHARGES
+       */}
+      {!!HomeCollectionCharges && (
+        <View style={styles.commonTax}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.commonText}>Home Collection Charges</Text>
+          </View>
+          <View style={{ flex: 1, alignItems: 'flex-end' }}>
+            <Text style={styles.commonText}>-</Text>
+          </View>
+          <View style={{ flex: 1, alignItems: 'center' }}>
+            <Text style={styles.commonText}>Rs.{HomeCollectionCharges}</Text>
+          </View>
+        </View>
+      )}
 
       <View style={styles.horizontalline1} />
-
       <View style={styles.payment}>
         <Text style={styles.paymentText1}> Total </Text>
         <Text style={styles.paymentText}> Rs. {orderDetails.totalPrice} </Text>

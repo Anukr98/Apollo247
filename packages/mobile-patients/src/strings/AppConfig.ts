@@ -7,7 +7,6 @@ export enum AppEnv {
   DEV = 'DEV',
   QA = 'QA',
   QA2 = 'QA2',
-  STAGING = 'STAGING',
   PROD = 'PROD',
   PERFORM = 'PERFORM',
   VAPT = 'VAPT',
@@ -66,6 +65,8 @@ const appStaticVariables = {
   HOME_SCREEN_KAVACH_TEXT: string.common.KavachText,
   MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK: 'https://bit.ly/apollo247medicines',
   Doctors_Page_Size: 25,
+  CUSTOMER_CARE_HELP_TEXT: string.common.customerCareHelpText,
+  CUSTOMER_CARE_NUMBER: string.common.customerCareNumber
 };
 
 const DEV_top6_specailties = [
@@ -286,7 +287,7 @@ const ConfigurationDev = {
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: DEV_top6_specailties,
-  ...PharmaApiConfig.prod,
+  ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
@@ -296,6 +297,7 @@ const ConfigurationDev = {
     'https://aph.dev.web-patients.popcornapps.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
   CONSULT_COUPON_BASE_URL: 'https://uatvalidcoupon.apollo247.com',
   KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
+  SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
 };
 
 // QA
@@ -326,7 +328,7 @@ const ConfigurationQA = {
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: QA_top6_specailties,
-  ...PharmaApiConfig.prod,
+  ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
@@ -336,6 +338,7 @@ const ConfigurationQA = {
     'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
   CONSULT_COUPON_BASE_URL: 'https://uatvalidcoupon.apollo247.com',
   KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
+  SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
 };
 
 // QA2
@@ -366,7 +369,7 @@ const ConfigurationQA2 = {
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: QA_top6_specailties,
-  ...PharmaApiConfig.prod,
+  ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
@@ -376,14 +379,15 @@ const ConfigurationQA2 = {
     'https://qapatients.apollo247.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
   CONSULT_COUPON_BASE_URL: 'https://validcoupon.apollo247.com',
   KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
+  SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
 };
 
-// staging
-const ConfigurationStaging = {
+// VAPT
+const ConfigurationVAPT = {
   TAGALYS_API_KEY: '050343bfa6dae87212fd64ee7809c2c8',
   TAGALYS_CLIENT_CODE: 'A029C7273776C78A',
-  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: '8njVNeiezjGyi0BjIuIWOWm_N3zo2uVb5Z5_B',
-  CODE_PUSH_DEPLOYMENT_KEY_IOS: 'IwojMQex0fbTUlvY1ydYzMT5l7hrLrbLy0ciH',
+  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: 'WjmvQNubbydD5MzGoj0wJDBBQM5j0QnYlE6fq',
+  CODE_PUSH_DEPLOYMENT_KEY_IOS: 'I2C97PsUTffeO7krrfYjxOxQ_uebYPeOPdLqG',
   PAYMENT_GATEWAY_BASE_URL: 'https://stagingpmt.apollo247.com',
   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
@@ -406,7 +410,7 @@ const ConfigurationStaging = {
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: QA_top6_specailties,
-  ...PharmaApiConfig.prod,
+  ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
   CONDITIONAL_MANAGENET_BASE_URL: 'https://stagingpmt.apollo247.com',
@@ -414,7 +418,9 @@ const ConfigurationStaging = {
   COVID_RISK_LEVEL_URL: 'https://staging.patients.apollo247.com/covid19/scan?utm_source=mobile_app',
   COVID_LATEST_ARTICLES_URL:
     'https://staging.patients.apollo247.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
+  CONSULT_COUPON_BASE_URL: 'https://uatvalidcoupon.apollo247.com',
   KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
+  SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
 };
 //Production
 const ConfigurationProd = {
@@ -454,6 +460,7 @@ const ConfigurationProd = {
     'https://www.apollo247.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
   CONSULT_COUPON_BASE_URL: 'https://validcoupon.apollo247.com',
   KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
+  SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
 };
 
 //PERFORMANCE
@@ -484,7 +491,7 @@ const ConfigurationPERFORM = {
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: DEV_top6_specailties,
-  ...PharmaApiConfig.prod,
+  ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
@@ -495,47 +502,7 @@ const ConfigurationPERFORM = {
     'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
   CONSULT_COUPON_BASE_URL: 'https://uatvalidcoupon.apollo247.com',
   KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
-};
-
-//VAPT
-const ConfigurationVAPT = {
-  TAGALYS_API_KEY: '050343bfa6dae87212fd64ee7809c2c8',
-  TAGALYS_CLIENT_CODE: 'A029C7273776C78A',
-  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: '',
-  CODE_PUSH_DEPLOYMENT_KEY_IOS: '',
-  PAYMENT_GATEWAY_BASE_URL: 'http://aph.vapt.pmt.popcornapps.com',
-  PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
-  PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
-  CONSULT_PG_BASE_URL: 'http://aph.vapt.pmt.popcornapps.com',
-  CONSULT_PG_SUCCESS_PATH: '/consultpg-success?',
-  CONSULT_PG_ERROR_PATH: '/consultpg-error?',
-  CONSULT_PG_PENDING_PATH: '/consultpg-pending',
-  CONSULT_PG_REDIRECT_PATH: '/consultpg-redirect?',
-  DIAGNOSTICS_PG_BASE_URL: 'http://aph.vapt.pmt.popcornapps.com',
-  DIAGNOSTICS_PG_SUCCESS_PATH: '/diagnostic-pg-success?',
-  DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
-  DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
-  MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
-  DELIVERY_CHARGES: 25,
-  DIASGNOS_DELIVERY_CHARGES: 0,
-  PRAKTISE_API_KEY: 'FD7632C8-AF22-4534-91ED-4C197E1662F4', //'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
-  PRO_TOKBOX_KEY: '46429002',
-  PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
-  PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
-  DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
-  GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
-  TOP_SPECIALITIES: DEV_top6_specailties,
-  ...PharmaApiConfig.prod,
-  ...appStaticVariables,
-  ...Apollo247Config.dev,
-  CONDITIONAL_MANAGENET_BASE_URL: 'http://aph.vapt.pmt.popcornapps.com',
-  BUGSNAG_KEY: '53a0b9fd23719632a22d2c262a06bb4e', //7839e425f4acbd8e6ff3f907281addca <-- popcornapps key
-  COVID_RISK_LEVEL_URL:
-    'https://aph.staging.web-patients.popcornapps.com/covid19/cough-scan?utm_source=mobile_app',
-  COVID_LATEST_ARTICLES_URL:
-    'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
-  CONSULT_COUPON_BASE_URL: 'https://uatvalidcoupon.apollo247.com',
-  KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
+  SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
 };
 
 //DevelopmentReplica
@@ -566,7 +533,7 @@ const ConfigurationDevReplica = {
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: QA_top6_specailties,
-  ...PharmaApiConfig.prod,
+  ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
@@ -577,6 +544,7 @@ const ConfigurationDevReplica = {
     'https://aph.staging.web-patients.popcornapps.com/covid19?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Covid19%20Content',
   CONSULT_COUPON_BASE_URL: 'https://uatvalidcoupon.apollo247.com',
   KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
+  SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
 };
 
 const Configuration =
@@ -586,8 +554,6 @@ const Configuration =
     ? ConfigurationQA
     : APP_ENV == AppEnv.QA2
     ? ConfigurationQA2
-    : APP_ENV == AppEnv.STAGING
-    ? ConfigurationStaging
     : APP_ENV == AppEnv.PERFORM
     ? ConfigurationPERFORM
     : APP_ENV == AppEnv.VAPT
@@ -848,7 +814,35 @@ export const NeedHelp = [
     category: 'Unsubscribe',
     options: ['Marketing SMSes', 'Marketing Push Notifications', 'Both'],
   },
+  {
+    category: 'Membership',
+    options: [
+      'Coupon related',
+      'Concierge Services',
+      'Digitization of Health Records',
+      'Covid Services',
+      'OneApollo Membership',
+      'Doctor on Call',
+      'Early Access to Offers & Sampling of New health products',
+      'Free Delivery',
+      'Base Diabetes Management Program',
+      'Advanced Diabetes Management Program Trial',
+      'Activating Membership',
+      'Membership Upgrade',
+      'Membership Downgrade',
+    ],
+  },
 ];
+
+export const CancelConsultation = {
+  reason :[
+    string.ReasonFor_Cancel_Consultation.doctorDidNotJoin,
+    string.ReasonFor_Cancel_Consultation.bookedForWrongUser,
+    string.ReasonFor_Cancel_Consultation.doctorDeniedMode,
+    string.ReasonFor_Cancel_Consultation.audioVideoIssue,
+    string.ReasonFor_Cancel_Consultation.otherReasons,
+  ]
+}
 
 type SpecialitiesType = {
   [key: string]: string[];

@@ -40,6 +40,7 @@ const styles = StyleSheet.create({
     // height: 100,
     backgroundColor: 'transparent',
     // ...theme.viewStyles.container,
+    zIndex: 1000,
   },
   mainView: {
     minHeight: 200,
