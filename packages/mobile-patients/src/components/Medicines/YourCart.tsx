@@ -396,8 +396,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   useEffect(() => {
     const cartTotalAfterDiscount = Number(cartTotal.toFixed(2)) - Number(productDiscount.toFixed(2));
     if (cartTotalAfterDiscount <= 0 && cartItems.length) {
-      setCoupon!(null);
-      setCartItems!([]);
+      // setCoupon!(null);
+      // setCartItems!([]);
     }
   }, [productDiscount, cartTotal]);
 
@@ -831,7 +831,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         categoryId: item.productType,
         mrp: item.price,
         quantity: item.quantity,
-        specialPrice: item.specialPrice ? item.specialPrice : item.price,
+        specialPrice: item.specialPrice !== undefined ? item.specialPrice : item.price,
       })),
     };
     validateConsultCoupon(data)
