@@ -132,6 +132,7 @@ export interface PrescriptionUploadRequest {
   diagnosis: string[];
   diagnosticPrescription: string[];
   medicinePrescriptions: CaseSheetMedicinePrescription[];
+  appointmentDisplayId?: string;
 }
 
 export interface PrescriptionUploadResponse {

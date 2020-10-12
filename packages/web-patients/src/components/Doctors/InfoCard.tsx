@@ -17,6 +17,7 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { consultNowClickTracking } from 'webEngageTracking';
 import { readableParam, getAvailability } from 'helpers/commonHelpers';
+import { GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability as NextAvailabilityType } from 'graphql/types/GetDoctorsBySpecialtyAndFilters';
 import { dataLayerTracking } from 'gtmTracking';
 import { DoctorDetails } from 'components/Doctors/SpecialtyDetails';
 

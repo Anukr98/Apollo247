@@ -4,6 +4,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 type YesOrNo = 'Yes' | 'No';
+type HdfcPlan = 'SILVER' | 'GOLD' | 'PLATINUM';
 
 export enum ProductPageViewedSource {
   NOTIFICATION = 'notification',
@@ -95,6 +96,8 @@ export enum WebEngageEventName {
   PHARMACY_ADD_NEW_ADDRESS_COMPLETED = 'Pharmacy Add New Address Completed', // (Event triggered Once the address is selected & TAT is displayed)
   PHARMACY_CART_ADDRESS_SELECTED_SUCCESS = 'Pharmacy Cart Address Selected Success',
   PHARMACY_CART_ADDRESS_SELECTED_FAILURE = 'Pharmacy Cart Address Selected Failure',
+  PHARMACY_AVAILABILITY_API_CALLED = 'Pharmacy Availability API Called',
+  PHARMACY_TAT_API_CALLED = 'Pharmacy TAT API Called',
 
   // HomePageElements Events
   BUY_MEDICINES = 'Buy Medicines',
@@ -188,6 +191,51 @@ export enum WebEngageEventName {
   PRODUCT_PAGE_VIEWED = 'Product page viewed',
   CATEGORY_PAGE_VIEWED = 'Category page viewed',
 
+  // HDFC events
+  HDFC_OTP_GENERATE_CLICKED = 'HDFC Generate OTP Clicked',
+  HDFC_OTP_VERIFY_CLICKED = 'HDFC Verify OTP Clicked',
+  HDFC_EXPLORE_BENEFITS_CLICKED = 'HDFC Explore Benefits Clicked',
+  HDFC_HOMEPAGE_CAROUSEL_CLICKED = 'HDFC Home Page Carousel Clicked',
+  HDFC_MY_MEMBERSHIP_VIEWED = 'HDFC My Membership Viewed',
+  HDFC_PLAN_DETAILS_VIEWED = 'HDFC Plan Details Viewed',
+  HDFC_EXPLORE_PLAN_CLICKED = 'HDFC Explore Plan Clicked',
+  HDFC_HOW_TO_AVAIL_CLICKED = 'HDFC How To Avail Clicked',
+  HDFC_REDEEM_CLICKED = 'HDFC Redeem Clicked',
+  HDFC_DOC_ON_CALL_CLICK = 'HDFC Doc On Call Click',
+  HDFC_COVID_CARE_CLICK = 'HDFC Covid Care Click',
+  HDFC_DIGITIZATION_PHR_CLICK = 'HDFC Digitization PHR Click',
+  HDFC_FREE_HEALTH_ASSESSMENT_CLICK = 'HDFC Free Health Assessment Click',
+  HDFC_CONCIERGE_CLICK = 'HDFC Concierge Click',
+  HDFC_DIETITIAN_CLICK = 'HDFC Dietitian Click',
+  HDFC_DIAGNOSTIC_CLICK = 'HDFC Diagnostic Click',
+  HDFC_DIGITAL_VAULT_CLICK = 'HDFC Digital Vault Click',
+  HDFC_7000_DOCTORS_CLICK = 'HDFC 7000 Doctors Click',
+  HDFC_FREE_MED_CHECK_CLICK = 'HDFC Free Med Check Click',
+
+  // Opentok Events
+  DOCTOR_SUBSCRIBER_ERROR = 'Doctor Subscriber Error',
+  DOCTOR_SUBSCRIBER_OTRNERROR = 'Doctor Subscriber Otrnerror',
+  DOCTOR_SUBSCRIBER_DISCONNECTED = 'Doctor Subscriber Disconnected',
+  DOCTOR_SUBSCRIBER_CONNECTED = 'Doctor Subscriber Connected',
+  DOCTOR_SUBSCRIBER_VIDEO_DISABLED = 'Doctor Subscriber Video Disabled',
+  DOCTOR_SUBSCRIBER_VIDEO_ENABLED = 'Doctor Subscriber Video Enabled',
+
+  PATIENT_PUBLISHER_ERROR = 'Patient Publisher Error',
+  PATIENT_PUBLISHER_OTRNERROR = 'Patient Publisher Otrnerror',
+  PATIENT_PUBLISHER_STREAM_CREATED = 'Patient Publisher Stream Created',
+  PATIENT_PUBLISHER_STREAM_DESTROYED = 'Patient Publisher Stream Destroyed',
+
+  PATIENT_SESSION_ERROR = 'Patient Session Error',
+  PATIENT_SESSION_OTRNERROR = 'Patient Session Otrnerror',
+  PATIENT_SESSION_CONNECTION_CREATED = 'Patient Session Connection Created',
+  PATIENT_SESSION_CONNECTION_DESTROYED = 'Patient Session Connection Destroyed',
+  PATIENT_SESSION_CONNECTED = 'Patient Session Connected',
+  PATIENT_SESSION_DISCONNECTED = 'Patient Session Disconnected',
+  PATIENT_SESSION_RECONNECTED = 'Patient Session Reconnected',
+  PATIENT_SESSION_RECONNECTING = 'Patient Session Reconnecting',
+  PATIENT_SESSION_STREAM_CREATED = 'Patient Session Stream Created',
+  PATIENT_SESSION_STREAM_DESTROYED = 'Patient Session Stream Destroyed',
+  PATIENT_SESSION_STREAM_PROPERTY_CHANGED = 'Patient Session Stream Property Changed',
   //chatRoom Events
   PATIENT_SENT_CHAT_MESSAGE_POST_CONSULT = 'Patient sent chat message post consult',
 }
@@ -230,6 +278,26 @@ export interface PatientInfoWithSource extends PatientInfo {
   Source: 'Home Screen' | 'Menu';
   Pincode?: String;
   Serviceability?: String;
+}
+
+export interface HdfcCustomerInfo {
+  'Patient UHID': string;
+  'Customer ID': string;
+  'Patient Name': string;
+  'Mobile Number': string;
+  'Date of Birth': Date | string;
+  Email: string;
+}
+
+export interface HdfcCustomerPlanInfo extends HdfcCustomerInfo {
+  'Partner ID': string;
+  HDFCMembershipLevel: HdfcPlan;
+  HDFCMembershipState: 'Active' | 'Inactive';
+}
+
+export interface HdfcBenefitInfo {
+  'User ID': string;
+  'Plan': HdfcPlan;
 }
 
 export interface PatientInfoWithConsultId extends PatientInfo {
@@ -964,6 +1032,39 @@ export interface WebEngageEvents {
     Pincode: string;
   };
 
+  [WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED]: {
+    Source: 'PDP' | 'Add_Search' | 'Add_Display' | 'Cart';
+    Input_SKU: string;
+    Input_Pincode: string;
+    Input_MRP: number;
+    No_of_items_in_the_cart: number;
+    Response_Exist: YesOrNo;
+    Response_MRP: number;
+    Response_Qty: number;
+  };
+
+  [WebEngageEventName.PHARMACY_TAT_API_CALLED]: {
+    Source: 'PDP' | 'Cart';
+    Input_sku: string;
+    Input_qty: number;
+    Input_lat: number;
+    Input_long: number;
+    Input_pincode: string;
+    Input_MRP: number;
+    No_of_items_in_the_cart: number;
+    Response_Exist: YesOrNo;
+    Response_MRP: number;
+    Response_Qty: number;
+    Response_lat: number;
+    Response_lng: number;
+    Response_ordertime: number;
+    Response_pincode: string;
+    Response_storeCode: string;
+    Response_storeType: string;
+    Response_tat: string;
+    Response_tatU: number;
+  };
+
   [WebEngageEventName.FEATURED_TEST_CLICKED]: {
     'Product name': string;
     'Product id (SKUID)': string;
@@ -1399,5 +1500,182 @@ export interface WebEngageEvents {
   [WebEngageEventName.CONFIRM_LOCATION]: {
     isMarkerModified: boolean;
     changedByInMeters: number;
+  };
+  [WebEngageEventName.HDFC_OTP_GENERATE_CLICKED]: HdfcCustomerInfo;
+  [WebEngageEventName.HDFC_OTP_VERIFY_CLICKED]: HdfcCustomerInfo;
+  [WebEngageEventName.HDFC_EXPLORE_BENEFITS_CLICKED]: HdfcCustomerPlanInfo;
+  [WebEngageEventName.HDFC_HOMEPAGE_CAROUSEL_CLICKED]: HdfcCustomerPlanInfo;
+  [WebEngageEventName.HDFC_MY_MEMBERSHIP_VIEWED]: HdfcBenefitInfo;
+  [WebEngageEventName.HDFC_PLAN_DETAILS_VIEWED]: HdfcBenefitInfo;
+  [WebEngageEventName.HDFC_EXPLORE_PLAN_CLICKED]: HdfcBenefitInfo;
+  [WebEngageEventName.HDFC_HOW_TO_AVAIL_CLICKED]: HdfcBenefitInfo;
+  [WebEngageEventName.HDFC_REDEEM_CLICKED]: {
+    'User ID': string;
+    'Benefit': string;
+  };
+  [WebEngageEventName.HDFC_DOC_ON_CALL_CLICK]: HdfcBenefitInfo;
+  [WebEngageEventName.HDFC_COVID_CARE_CLICK]: HdfcBenefitInfo;
+  [WebEngageEventName.HDFC_DIGITIZATION_PHR_CLICK]: HdfcBenefitInfo;
+  [WebEngageEventName.HDFC_FREE_HEALTH_ASSESSMENT_CLICK]: HdfcBenefitInfo;
+  [WebEngageEventName.HDFC_CONCIERGE_CLICK]: HdfcBenefitInfo;
+  [WebEngageEventName.HDFC_DIETITIAN_CLICK]: HdfcBenefitInfo;
+  [WebEngageEventName.HDFC_DIAGNOSTIC_CLICK]: HdfcBenefitInfo;
+  [WebEngageEventName.HDFC_DIGITAL_VAULT_CLICK]: HdfcBenefitInfo;
+  [WebEngageEventName.HDFC_7000_DOCTORS_CLICK]: HdfcBenefitInfo;
+  [WebEngageEventName.HDFC_FREE_MED_CHECK_CLICK]: HdfcBenefitInfo;
+
+  // ********** Opentok Events ********** \\
+
+  [WebEngageEventName.DOCTOR_SUBSCRIBER_ERROR]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    error: string;
+    'Session ID': string;
+  };
+
+  [WebEngageEventName.DOCTOR_SUBSCRIBER_OTRNERROR]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    error: string;
+    'Session ID': string;
+  };
+
+  [WebEngageEventName.DOCTOR_SUBSCRIBER_CONNECTED]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.DOCTOR_SUBSCRIBER_DISCONNECTED]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.DOCTOR_SUBSCRIBER_VIDEO_DISABLED]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.DOCTOR_SUBSCRIBER_VIDEO_ENABLED]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.PATIENT_PUBLISHER_ERROR]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    error: string;
+    'Session ID': string;
+  };
+
+  [WebEngageEventName.PATIENT_PUBLISHER_OTRNERROR]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    error: string;
+    'Session ID': string;
+  };
+
+  [WebEngageEventName.PATIENT_PUBLISHER_STREAM_CREATED]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.PATIENT_PUBLISHER_STREAM_DESTROYED]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.PATIENT_SESSION_ERROR]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    error: string;
+    'Session ID': string;
+  };
+
+  [WebEngageEventName.PATIENT_SESSION_OTRNERROR]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    error: string;
+    'Session ID': string;
+  };
+
+  [WebEngageEventName.PATIENT_SESSION_CONNECTION_CREATED]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.PATIENT_SESSION_CONNECTION_DESTROYED]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.PATIENT_SESSION_CONNECTED]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.PATIENT_SESSION_DISCONNECTED]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.PATIENT_SESSION_RECONNECTED]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.PATIENT_SESSION_RECONNECTING]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.PATIENT_SESSION_STREAM_CREATED]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.PATIENT_SESSION_STREAM_DESTROYED]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    event: string;
+  };
+
+  [WebEngageEventName.PATIENT_SESSION_STREAM_PROPERTY_CHANGED]: {
+    'Appointment ID': string;
+    'Patient ID': string;
+    'Doctor ID': string;
+    event: string;
   };
 }

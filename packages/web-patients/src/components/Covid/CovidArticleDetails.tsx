@@ -6,14 +6,11 @@ import { Header } from 'components/Header';
 import { ArticleBanner } from 'components/Covid/ArticleBanner';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import fetchUtil from 'helpers/fetch';
-import { CallOurExperts } from 'components/CallOurExperts';
 import { FeedbackWidget } from 'components/Covid/FeedbackWidget';
-import { Link } from 'react-router-dom';
 import isEmpty from 'lodash/isEmpty';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { CommentsForm } from 'components/Covid/CommentsForm';
 import { CommentsList } from 'components/Covid/CommentsList';
-import { AphButton } from '@aph/web-ui-components';
 import { CheckRiskLevel } from 'components/Covid/CheckRiskLevel';
 import { BottomLinks } from 'components/BottomLinks';
 import moment from 'moment';
@@ -371,6 +368,9 @@ const CovidArticleDetails: React.FC = (props: any) => {
                   source={source}
                   type={type}
                   isWebView={isWebView}
+                  pageType={
+                    window.location.pathname.split('/').slice(1)[0] === 'covid19' ? 'covid' : 'blog'
+                  }
                 />
                 <div className={classes.imageBanner}>
                   <img className={classes.mobileBanner} src={thumbnailMobile} alt="" />

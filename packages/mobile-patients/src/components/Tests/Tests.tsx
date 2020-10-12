@@ -623,17 +623,15 @@ export const Tests: React.FC<TestsProps> = (props) => {
               city: serviceableData.cityName || '',
             };
             setDiagnosticServiceabilityData!(obj);
-            updatePlaceInfoByPincode(pincode);
-            setshowLocationpopup(false);
             setDiagnosticLocationServiceable!(true);
             setServiceabilityMsg('');
           } else {
-            setshowLocationpopup(false);
             setDiagnosticLocationServiceable!(false);
             setLoadingContext!(false);
             renderLocationNotServingPopUpForPincode(pincode);
-            //red text shown below the text input field.
           }
+          setshowLocationpopup(false);
+          updatePlaceInfoByPincode(pincode);
         })
         .catch((e) => {
           CommonBugFender('Tests_', e);

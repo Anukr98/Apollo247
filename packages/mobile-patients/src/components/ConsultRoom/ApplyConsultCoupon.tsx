@@ -24,6 +24,8 @@ import {
 import { fetchConsultCoupons } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { useAppCommonData } from '../AppCommonDataProvider';
+import { g } from '../../helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   bottonButtonContainer: {
@@ -113,6 +115,13 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
   const [loading, setLoading] = useState<boolean>(true);
   const [validating, setValidating] = useState<boolean>(false);
   const { showAphAlert } = useUIElements();
+  const { hdfcUserSubscriptions } = useAppCommonData();
+
+  let packageId = '';
+  if (!!g(hdfcUserSubscriptions, '_id') && !!g(hdfcUserSubscriptions, 'isActive')) {
+    packageId =
+      g(hdfcUserSubscriptions, 'group', 'name') + ':' + g(hdfcUserSubscriptions, 'planId');
+  }
 
   const renderErrorPopup = (desc: string) =>
     showAphAlert!({
@@ -121,7 +130,7 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
     });
 
   useEffect(() => {
-    fetchConsultCoupons()
+    fetchConsultCoupons(packageId)
       .then((res: any) => {
         console.log(JSON.stringify(res.data), 'objobj');
         setcouponList(res.data.response);

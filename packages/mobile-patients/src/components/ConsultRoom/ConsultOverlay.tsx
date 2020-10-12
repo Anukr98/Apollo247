@@ -93,6 +93,8 @@ import {
   Text,
   TouchableOpacity,
   View,
+  StyleProp,
+  ViewStyle,
 } from 'react-native';
 import firebase from 'react-native-firebase';
 import { ScrollView } from 'react-native-gesture-handler';
@@ -102,6 +104,20 @@ import { FirebaseEventName } from '../../helpers/firebaseEvents';
 import { WhatsAppStatus } from '../ui/WhatsAppStatus';
 
 const { width, height } = Dimensions.get('window');
+
+const styles = StyleSheet.create({
+  mainViewStyle: {
+    backgroundColor: '#f7f8f5',
+    marginTop: 16,
+    // width: width - 40,
+    width: width - 40,
+    height: 'auto',
+    maxHeight: height - 98,
+    padding: 0,
+    borderRadius: 10,
+    overflow: 'hidden',
+  },
+});
 
 export interface ConsultOverlayProps extends NavigationScreenProps {
   // dispalyoverlay: boolean;
@@ -119,6 +135,7 @@ export interface ConsultOverlayProps extends NavigationScreenProps {
   availableMode: string;
   consultedWithDoctorBefore: boolean;
   callSaveSearch: string;
+  mainContainerStyle?: StyleProp<ViewStyle>;
 }
 export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const client = useApolloClient();
@@ -159,7 +176,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   );
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
-  const { locationDetails } = useAppCommonData();
+  const { locationDetails, hdfcUserSubscriptions } = useAppCommonData();
   const { getPatientApiCall } = useAuth();
 
   const renderErrorPopup = (desc: string) =>
@@ -181,7 +198,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   }, [props.consultModeSelected]);
 
   useEffect(() => {
-    fetchUserSpecificCoupon();
     const todayDate = new Date().toISOString().slice(0, 10);
     getNextAvailableSlots(client, props.doctor ? [props.doctor.id] : [], todayDate)
       .then(({ data }: any) => {
@@ -202,10 +218,15 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       });
   }, []);
 
+  useEffect(() => {
+    if (selectedTimeSlot != '') {
+      fetchUserSpecificCoupon();
+    }
+  }, [selectedTimeSlot]);
+
   const fetchUserSpecificCoupon = () => {
     userSpecificCoupon(g(currentPatient, 'mobileNumber'))
       .then((resp: any) => {
-        console.log(resp.data);
         if (resp.data.errorCode == 0) {
           let couponList = resp.data.response;
           if (typeof couponList != null && couponList.length) {
@@ -235,33 +256,17 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       StackActions.reset({
         index: 0,
         key: null,
-        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+        actions: [
+          NavigationActions.navigate({
+            routeName: AppRoutes.ConsultRoom,
+            params: {
+              isFreeConsult: true,
+              doctorName: doctorName,
+            },
+          }),
+        ],
       })
     );
-    showAphAlert!({
-      unDismissable: true,
-      title: 'Appointment Confirmation',
-      description: `Your appointment has been successfully booked with Dr. ${doctorName}. Please go to consult room 10-15 minutes prior to your appointment. Answering a few medical questions in advance will make your appointment process quick and smooth :)`,
-      children: (
-        <View style={{ height: 60, alignItems: 'flex-end' }}>
-          <TouchableOpacity
-            activeOpacity={1}
-            style={{
-              height: 60,
-              paddingRight: 25,
-              backgroundColor: 'transparent',
-              justifyContent: 'center',
-            }}
-            onPress={() => {
-              hideAphAlert!();
-              props.navigation.navigate(AppRoutes.TabBar);
-            }}
-          >
-            <Text style={theme.viewStyles.yellowTextStyle}>GO TO CONSULT ROOM</Text>
-          </TouchableOpacity>
-        </View>
-      ),
-    });
   };
 
   const getConsultationBookedEventAttributes = (time: string, id: string) => {
@@ -861,6 +866,11 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   };
 
   const validateCoupon = (coupon: string, fireEvent?: boolean) => {
+    let packageId = '';
+    if (!!g(hdfcUserSubscriptions, '_id') && !!g(hdfcUserSubscriptions, 'isActive')) {
+      packageId =
+        g(hdfcUserSubscriptions, 'group', 'name') + ':' + g(hdfcUserSubscriptions, 'planId');
+    }
     const timeSlot =
       tabs[0].title === selectedTab &&
       isConsultOnline &&
@@ -888,13 +898,13 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           rescheduling: false,
         },
       ],
+      packageId: packageId,
+      email: g(currentPatient, 'emailAddress')
     };
 
-    // console.log('validateCouponData', data);
     return new Promise((res, rej) => {
       validateConsultCoupon(data)
         .then((resp: any) => {
-          // console.log(g(resp, 'data'), 'data');
           if (resp.data.errorCode == 0) {
             if (resp.data.response.valid) {
               const revisedAmount =
@@ -1104,19 +1114,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             alignItems: 'center',
           }}
         >
-          <View
-            style={{
-              backgroundColor: '#f7f8f5',
-              marginTop: 16,
-              // width: width - 40,
-              width: width - 40,
-              height: 'auto',
-              maxHeight: height - 98,
-              padding: 0,
-              borderRadius: 10,
-              overflow: 'hidden',
-            }}
-          >
+          <View style={[styles.mainViewStyle, props.mainContainerStyle]}>
             <TabsComponent
               style={{
                 ...theme.viewStyles.cardViewStyle,

@@ -127,7 +127,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
     source: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]['Source']
   ) => {
     const uploadSource = props!.type === 'cartOrMedicineFlow' ? 'Cart' : 
-      (props!.type === 'nonCartFlow' ? 'Upload Flow' : '');
+      (props!.type === 'nonCartFlow' ? 'Upload Flow' : 'Upload Flow');
     const eventAttributes: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED] = {
       Source: source,
     };
