@@ -219,7 +219,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
           variables: {
             searchText: name,
-            cityID: parseInt(locationForDiagnostics?.cityId || '9', 10), //be default show of hyderabad
+            cityID: parseInt(locationForDiagnostics?.cityId!, 10), //be default show of hyderabad
           },
           fetchPolicy: 'no-cache',
         })
@@ -293,7 +293,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
         variables: {
           searchText: _searchText,
-          cityID: parseInt(locationForDiagnostics?.cityId || '9', 10),
+          cityID: parseInt(locationForDiagnostics?.cityId!, 10),
         },
         fetchPolicy: 'no-cache',
       })
