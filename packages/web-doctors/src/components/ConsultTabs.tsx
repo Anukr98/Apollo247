@@ -1912,6 +1912,7 @@ export const ConsultTabs: React.FC = () => {
         variables: {
           appointmentCallId: isCall ? callId : chatRecordId,
           patientId: params.patientId,
+          endVoipCall: isCall,
           numberOfParticipants,
         },
       })

@@ -38,7 +38,6 @@ import {
 } from 'webEngageTracking';
 import { dataLayerTracking, gtmTracking } from '../../gtmTracking';
 import { MedicineProductDetails, PharmaOverview } from '../../helpers/MedicineApiCalls';
-import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {

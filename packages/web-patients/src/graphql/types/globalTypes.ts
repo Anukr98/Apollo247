@@ -627,6 +627,12 @@ export interface ConsultQueueInput {
   gender?: Gender | null;
 }
 
+export interface DeletePatientPrismMedicalRecordInput {
+  id?: string | null;
+  patientId: string;
+  recordType: MedicalRecordType;
+}
+
 export interface CreateUserSubscriptionInput {
   plan_id: string;
   payment_reference_id?: string | null;

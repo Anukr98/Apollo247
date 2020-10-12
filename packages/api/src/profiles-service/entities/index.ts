@@ -436,7 +436,7 @@ export class MedicineOrders extends BaseEntity {
   @Column({ nullable: true })
   allocationProfileName: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedDate: Date;
 
   @BeforeInsert()
@@ -850,7 +850,7 @@ export class MedicineOrdersStatus extends BaseEntity {
   @Column({ nullable: true })
   customReason: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedDate: Date;
 
   @BeforeInsert()
@@ -2704,7 +2704,7 @@ export class MedicineOrderShipments extends BaseEntity {
   })
   oneApolloTransaction: OneApollTransaction;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedDate: Date;
 
   @Column({ nullable: true, type: 'json' })
