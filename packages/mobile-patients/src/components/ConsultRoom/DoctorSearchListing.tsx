@@ -347,7 +347,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         lng: locationDetails.longitude || '',
       };
       latlng = coordinates;
-      fetchSpecialityFilterData(filterMode, FilterData, latlng);
+      fetchSpecialityFilterData(filterMode, FilterData, latlng, 'availability', undefined, false, doctorSearch);
       setcurrentLocation(locationDetails.displayName);
       setLocationSearchText(locationDetails.displayName);
     }
@@ -387,17 +387,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     type: string,
     searchText: string = doctorSearch
   ) => {
-    const doctorsApollo =
-      data && data.length && searchText
-        ? data.filter(
-            (i) =>
-              i &&
-              (i.displayName || '')
-                .toString()
-                .toLowerCase()
-                .includes(searchText.toLowerCase())
-          )
-        : data;
+    const doctorsApollo =data;
     if (type == 'APOLLO') {
       const apolloDoctors = doctorsApollo.filter((item) => {
         return item && item.doctorType !== 'DOCTOR_CONNECT';
@@ -472,7 +462,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                         },
                         'distance',
                         response.pincode,
-                        docTabSelected
+                        docTabSelected,
+                        doctorSearch
                       );
                   })
                   .catch((e) => {
@@ -490,15 +481,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           </View>
         ),
       });
-    } else {
-      fetchSpecialityFilterData(
-        filterMode,
-        FilterData,
-        latlng,
-        'distance',
-        undefined,
-        docTabSelected
-      );
     }
   };
 
@@ -507,8 +489,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     SearchData: filterDataType[] = FilterData,
     location: locationType | null = latlng,
     sort: string | null = sortValue,
-    pinCode?: string,
+    pinCode: string | undefined,
     docTabSelected: boolean = false,
+    searchText:string,
     pageNo?: number
   ) => {
     const experienceArray: Range[] = [];
@@ -619,7 +602,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       sort: sort,
       pageNo: pageNo ? pageNo + 1 : 1,
       pageSize: pageSize,
-      searchText: '',
+      searchText: searchText ,
     };
     setBugFenderLog('DOCTOR_FILTER_INPUT', JSON.stringify(FilterInput));
     !pageNo && setshowSpinner(true);
@@ -770,7 +753,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                   },
                   sortValue,
                   findAddrComponents('postal_code', addrComponents),
-                  doctorsType === 'PARTNERS' ? true : false
+                  doctorsType === 'PARTNERS' ? true : false,
+                  doctorSearch
                 );
                 latlng = {
                   lat: coordinates.lat,
@@ -901,7 +885,18 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               onPress={() => {
                 setSearchIconClicked(!searchIconClicked);
                 setDoctorSearch('');
-                filterDoctors(doctorsList, doctorsType, '');
+                // filterDoctors(doctorsList, doctorsType, '');
+                if(searchIconClicked){
+                  fetchSpecialityFilterData(
+                    filterMode,
+                    FilterData,
+                    latlng,
+                    'availability',
+                    undefined,
+                    doctorsType === 'PARTNERS' ? true : false,
+                    ''
+                  );
+                }
               }}
             >
               <View
@@ -1074,7 +1069,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                       latlng,
                       sortValue,
                       undefined,
-                      doctorsType === 'PARTNERS' ? true : false
+                      doctorsType === 'PARTNERS' ? true : false,
+                      doctorSearch
                     );
                   } else {
                     setshowSpinner(false);
@@ -1140,6 +1136,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         sortValue,
         undefined,
         doctorsType === 'PARTNERS' ? true : false,
+        doctorSearch,
         pageNo
       );
     }
@@ -1302,6 +1299,19 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     );
   };
   const [doctorSearch, setDoctorSearch] = useState<string>('');
+  useEffect(() => {
+    if(isValidSearch(doctorSearch) && doctorSearch.length >2){
+      fetchSpecialityFilterData(
+        filterMode,
+        FilterData,
+        latlng,
+        'availability',
+        undefined,
+        doctorsType === 'PARTNERS' ? true : false,
+        doctorSearch
+      );
+    }
+  }, [doctorSearch])
 
   const renderDoctorSearchBar = () => {
     return (
@@ -1314,15 +1324,14 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           underlineColorAndroid="transparent"
           onChangeText={(value) => {
             if (isValidSearch(value)) {
-              setDoctorSearch(value);
-              const search = _.debounce(filterDoctors, 300);
+              const search = _.debounce(setDoctorSearch, 300);
               setSearchQuery((prevSearch: any) => {
                 if (prevSearch.cancel) {
                   prevSearch.cancel();
                 }
                 return search;
               });
-              search(doctorsList, doctorsType, value);
+              setDoctorSearch(value);
             }
           }}
         />
@@ -1381,7 +1390,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         latlng,
         'availability',
         undefined,
-        docTabSelected
+        docTabSelected,
+        doctorSearch
       );
     }
   };
@@ -1651,7 +1661,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                     latlng,
                     sortValue,
                     undefined,
-                    doctorsType === 'PARTNERS' ? true : false
+                    doctorsType === 'PARTNERS' ? true : false,
+                    doctorSearch
                   );
                   CommonLogEvent(
                     AppRoutes.DoctorSearchListing,
