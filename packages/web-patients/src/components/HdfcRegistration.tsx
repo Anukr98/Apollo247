@@ -371,7 +371,7 @@ const useStyles = makeStyles((theme: Theme) => {
       '& h2': {
         fontSize: 32,
         fontWeight: 700,
-        color: '#02475b',
+        color: '#005CA8',
         lineHeight: '42px',
         [theme.breakpoints.down('sm')]: {
           fontSize: 14,
@@ -594,10 +594,11 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
     <div className={`${classes.hdcContainer}`}>
       <div className={classes.hdcContent}>
         <div className={classes.hdcHeader}>
-          <img src={require('images/hdfc/apollo-hashtag.svg')} alt="HDFC Call Doctor" width="100" />
-          <img src={require('images/hdfc/hdfc-logo.svg')} alt="HDFC Call Doctor" width="100" />
+          <img src={require('images/hdfc/apollo-hashtag.svg')} alt="HDFC Call Doctor" width="150" />
+          <img src={require('images/hdfc/hdfc-logo.svg')} alt="HDFC Call Doctor" width="150" />
         </div>
         {/* Intro */}
+       
         {showIntro && (
           <div className={classes.hdfcIntro}>
             <div className={classes.newContent}>

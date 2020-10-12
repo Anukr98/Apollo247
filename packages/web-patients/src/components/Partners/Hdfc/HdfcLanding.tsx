@@ -63,6 +63,7 @@ const useStyles = makeStyles((theme: Theme) => {
     bannerContainer: {
       padding: '20px 0',
       borderRadius: 10,
+      
     },
     mainBanner: {
       width: '100%',
@@ -76,15 +77,14 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     bannerContent: {
-      padding: 30,
+      padding: '10px 30px',
       display: 'flex',
       alignItems: 'center',
       [theme.breakpoints.down('sm')]: {
         padding: '20px 0',
       },
-
       '& p': {
-        fontSize: 18,
+        fontSize: 24,
         lineHeight: '24px',
         fontWeight: 600,
         color: '#005CA8',
@@ -95,9 +95,10 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '& h1': {
         fontSize: 32,
-        lineHeight: '38px',
+        lineHeight: '40px',
         fontWeight: 700,
         color: '#005CA8',
+        margin: '0 0 10px',
         [theme.breakpoints.down('sm')]: {
           fontSize: 20,
           lineHeight: '22px',
@@ -132,6 +133,7 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 10,
       background: ' linear-gradient(160.46deg, #1D3052 0%, #1E5F74 46.19%, #41A8A8 98.44%)',
       padding: 30,
+      position: 'relative',
       [theme.breakpoints.down('sm')]: {
         padding: 20,
       },
@@ -148,6 +150,10 @@ const useStyles = makeStyles((theme: Theme) => {
           fontSize: 16,
         },
       },
+      '& button':{
+        margin: '20px 20px 0 auto',
+        display: 'block'
+,      }
     },
     benefitList: {
       padding: 0,
@@ -375,14 +381,18 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
-      // padding: '0 0 20px',
+      padding: '0 30px',
     },
     bannerFooter: {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'flex-end',
+      position: 'absolute',
+      right: 50,
+      bottom: 50,
       '& button': {
         margin: '0 0 0 20px',
+        
       },
       '& p': {
         fontSize: 14,
@@ -393,9 +403,10 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     unlockNow: {
-      padding: 10,
+      padding: '10px 20px',
       background: '#E52936',
       color: '#fff',
+      fontSize: 16,
       [theme.breakpoints.down('sm')]: {
         fontSize: 10,
       },
@@ -549,12 +560,12 @@ export const HdfcLanding: React.FC = (props) => {
                 <img
                   src={require('images/hdfc/apollo-hashtag.svg')}
                   alt="HDFC Call Doctor"
-                  width="100"
+                  width="150"
                 />
                 <img
                   src={require('images/hdfc/hdfc-health-first.svg')}
                   alt="HDFC Call Doctor"
-                  width="100"
+                  width="150"
                 />
               </div>
               <div className={classes.bannerContent}>
@@ -564,10 +575,11 @@ export const HdfcLanding: React.FC = (props) => {
 
                 <div className={classes.bannerDetails}>
                   <Typography component="h1">Apollo HealthyLife Program for you !</Typography>
+                  <Typography>Exclusively for HDFC Bank customers</Typography>
                 </div>
               </div>
               <div className={classes.bannerFooter}>
-                <Typography>Exclusively for HDFC Bank customers</Typography>
+              
                 {loading ? (
                   <CircularProgress size={30} />
                 ) : (
@@ -676,7 +688,57 @@ export const HdfcLanding: React.FC = (props) => {
                 </div>
               </li>
             </ul>
-          </div>
+                     
+              {loading ? (
+                <CircularProgress size={30} />
+              ) : (
+                <Route
+                  render={({ history }) => (
+                    <AphButton
+                      className={classes.unlockNow}
+                      onClick={() => {
+                        hdfcUnlockNowTracking('HDFC Unlock Now Clicked');
+                        if (!isSignedIn) {
+                          /* GA Tracking */
+                          (window as any).dataLayer.push({
+                            event: 'Unlock Now Clicked',
+                          });
+                          /*******************/
+                          setIsLoginPopupVisible(true);
+                        } else {
+                          /* GA Tracking */
+                          (window as any).dataLayer.push({
+                            event: 'Explore Benefits Clicked',
+                          });
+                          /*******************/
+                          setLoading(true);
+                          updatePatient({
+                            variables: {
+                              patientInput: {
+                                id: currentPatient.id,
+                                partnerId: currentPatient.partnerId
+                                  ? currentPatient.partnerId
+                                  : 'HDFCBANK',
+                              },
+                            },
+                          })
+                            .then(() => {
+                              setLoading(false);
+                              history.push(clientRoutes.welcome());
+                            })
+                            .catch((error) => {
+                              setLoading(false);
+                              console.error(error);
+                            });
+                        }
+                      }}
+                    >
+                      {isSignedIn ? 'Explore Benefits' : 'Unlock Now'}
+                    </AphButton>
+                  )}
+                />
+              )}
+            </div>
 
           <div className={classes.tncContainer}>
             <div className={classes.tncContent}>
