@@ -127,7 +127,7 @@ export type Resolver<Parent, Args, Context, Result> = (
     'https://stagingdoctors.apollo247.com',
     'https://stagingpmt.apollo247.com',
     'https://consult-booking-qa.apollo247.com',
-    'https://consult-tool-qa.apollo247.com'
+    'https://consult-tool-qa.apollo247.com',
     'https://qathreepatients.apollo247.com',
     'https://qathreedoctors.apollo247.com',
     'https://qathreepmt.apollo247.com',
