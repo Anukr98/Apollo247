@@ -368,7 +368,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         fetchPolicy: 'no-cache',
       })
       .then(({ data }) => {
-        console.log('filterData >>', data?.getDoctorListFilters?.filters);
         if (data?.getDoctorListFilters?.filters) {
           setFilterData(filterOptions(data?.getDoctorListFilters?.filters)),
             AsyncStorage.setItem(
