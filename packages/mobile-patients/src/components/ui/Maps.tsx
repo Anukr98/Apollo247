@@ -133,8 +133,8 @@ const styles = StyleSheet.create({
     height: 35,
     width: 35,
     resizeMode: 'contain',
-    top: -3,
-    left: 7,
+    // top: -3,
+    // left: 7,
   },
   markerOutline: {
     width: 58,
@@ -618,9 +618,9 @@ export const Maps: React.FC<MapProps> = (props) => {
         <View style={styles.markerTitleView}>
           <Text style={styles.markerText}>MOVE MAP TO ADJUST</Text>
         </View>
-        <View style={styles.markerOutline}>
-          <Image style={styles.markerIcon} source={FakeMarker} />
-        </View>
+        {/* <View style={styles.markerOutline}> */}
+        <Image style={styles.markerIcon} source={FakeMarker} />
+        {/* </View> */}
       </View>
     );
   };
