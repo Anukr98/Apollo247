@@ -47,7 +47,7 @@ import {
   searchDiagnosticsByCityIDVariables,
   searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics,
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
-import { SEARCH_DIAGNOSTICS_BY_CITY_ID } from '@aph/mobile-patients/src/graphql/profiles';
+import { SEARCH_DIAGNOSTICS, SEARCH_DIAGNOSTICS_BY_CITY_ID } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -880,11 +880,12 @@ export const addTestsToCart = async (
   city: string
 ) => {
   const searchQuery = (name: string, city: string) =>
-    apolloClient.query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
-      query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
+    apolloClient.query<searchDiagnostics, searchDiagnosticsVariables>({
+      query: SEARCH_DIAGNOSTICS,
       variables: {
         searchText: name,
-        cityID: parseInt(city || '9', 10),
+        city: city,
+        patientId: ''
       },
       fetchPolicy: 'no-cache',
     });
@@ -897,7 +898,7 @@ export const addTestsToCart = async (
 
     const searchQueries = Promise.all(items.map((item) => searchQuery(item!, city)));
     const searchQueriesData = (await searchQueries)
-      .map((item) => g(item, 'data', 'searchDiagnosticsByCityID', 'diagnostics', '0' as any)!)
+      .map((item) => g(item, 'data', 'searchDiagnostics', 'diagnostics', '0' as any)!)
       .filter((item, index) => g(item, 'itemName')! == items[index])
       .filter((item) => !!item);
     const detailQueries = Promise.all(
