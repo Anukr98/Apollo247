@@ -26,7 +26,7 @@
     "Rs": "₹",
     "KavachText": "Explore the Apollo Kavach Program",
     "joinConsultRoomDescription": "Please click here to\n Join the Call with",
-    "waitForDoctirToJoinCall": "Please wait while doctor_name is going through your medical records.\nThis might take a while. Advice you to stay in the consult room!",
+    "waitForDoctirToJoinCall": "Please wait while doctor_name is going through your medical records. This might take a while. Advice you to stay in the consult room!",
     "exotelMessage": " is trying to call you from the number ",
     "requestMessage": ". Request you to answer the call.",
     "consultCompleteMessage": "Please wait while {0} is preparing your prescription. The prescription will be sent here in the consult room itself. However, this might take a while!",
