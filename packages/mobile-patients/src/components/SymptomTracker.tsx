@@ -341,12 +341,6 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
 
       // start chat
       initializeChat(profile);
-
-      const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_INFO_CLICKED] = patientInfoAttributes;
-      postWebEngageEvent(
-        WebEngageEventName.SYMPTOM_TRACKER_SELECT_ANOTHER_MEMBER_CLICKED,
-        eventAttributes
-      );
     }
     setShowList(false);
     setTimeout(() => {
@@ -453,7 +447,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
         <TouchableOpacity
           style={styles.selectMemberBtn}
           onPress={() => {
-            const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_INFO_CLICKED] = patientInfoAttributes;
+            const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_SELECT_ANOTHER_MEMBER_CLICKED] = patientInfoAttributes;
             postWebEngageEvent(
               WebEngageEventName.SYMPTOM_TRACKER_SELECT_ANOTHER_MEMBER_CLICKED,
               eventAttributes

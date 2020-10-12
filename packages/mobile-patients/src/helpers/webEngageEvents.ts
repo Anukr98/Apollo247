@@ -1759,4 +1759,6 @@ export interface WebEngageEvents {
     Relation: string;
     'Selected Symptoms': string;
   };
+  [WebEngageEventName.SYMPTOM_TRACKER_FOR_MYSELF]: SymptomTrackerPatientInfo;
+  [WebEngageEventName.SYMPTOM_TRACKER_FOR_FAMILY]: SymptomTrackerPatientInfo;
 }
