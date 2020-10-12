@@ -58,6 +58,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
         id
         image
         name
+        specialistSingularTerm
       }
       zip
       doctorType
