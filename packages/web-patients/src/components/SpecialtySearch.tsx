@@ -20,6 +20,8 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '5px 0',
       margin: '0 10px 0 0',
       cursor: 'pointer',
+      position: 'relative',
+
       '& >img': {
         margin: '0 10px 0 0',
       },
@@ -55,11 +57,14 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     specialitySearch: {
       padding: '10px 0',
+      background: '#fff',
       display: 'flex',
       alignItems: 'center',
       [theme.breakpoints.down(700)]: {
         flexDirection: 'column',
         alignItems: 'flex-start',
+        padding: 20,
+        margin: '0 0 20px',
       },
     },
     cityActive: {
@@ -245,7 +250,7 @@ export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
   return (
     <>
       <div className={classes.specialitySearch} ref={searchRef}>
-        {/* <div className={classes.location} onClick={() => setLocationPopup(true)}>
+        <div className={classes.location} onClick={() => setLocationPopup(true)}>
           <img src={require('images/location.svg')} alt="" />
           <div className={classes.userLocation}>
             <Typography className={selectedCity ? classes.cityActive : null}>
@@ -253,7 +258,16 @@ export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
             </Typography>
             <img src={require('images/ic_dropdown_green.svg')} alt="" />
           </div>
-        </div> */}
+          {locationPopup && (
+            <Cities
+              setSelectedCity={setSelectedCity}
+              locationPopup={locationPopup}
+              setLocationPopup={setLocationPopup}
+              selectedCity={selectedCity}
+            />
+          )}
+        </div>
+
         <div className={classes.searchContainer}>
           <img src={require('images/ic-search.svg')} alt="" />
           <AphInput
@@ -342,14 +356,6 @@ export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
             )}
         </div>
       </div>
-      {locationPopup && (
-        <Cities
-          setSelectedCity={setSelectedCity}
-          locationPopup={locationPopup}
-          setLocationPopup={setLocationPopup}
-          selectedCity={selectedCity}
-        />
-      )}
     </>
   );
 };
