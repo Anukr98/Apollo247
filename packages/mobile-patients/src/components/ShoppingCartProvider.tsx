@@ -356,7 +356,18 @@ export const ShoppingCartProvider: React.FC = (props) => {
 
   const removeCartItem: ShoppingCartContextProps['removeCartItem'] = (id) => {
     const newCartItems = cartItems.filter((item) => item.id !== id);
-    setCartItems(newCartItems);
+    const newCartTotal = 
+      newCartItems.reduce(
+        (currTotal, currItem) =>
+          currTotal + currItem.quantity * 
+            (typeof currItem.specialPrice !== 'undefined' ? currItem.specialPrice : currItem.price),
+        0
+      );
+    if (newCartTotal <= 0){
+      setCartItems([]);
+    } else {
+      setCartItems(newCartItems);
+    }
   };
   const updateCartItem: ShoppingCartContextProps['updateCartItem'] = (itemUpdates) => {
     const foundIndex = cartItems.findIndex((item) => item.id == itemUpdates.id);
@@ -366,7 +377,22 @@ export const ShoppingCartProvider: React.FC = (props) => {
         g(currentPatient, 'id')
       );
       cartItems[foundIndex] = { ...cartItems[foundIndex], ...itemUpdates };
-      setCartItems([...cartItems]);
+      const newCartTotal = 
+        cartItems.reduce(
+          (currTotal, currItem) =>
+            currTotal + currItem.quantity * 
+              (
+                typeof currItem.specialPrice !== 'undefined' ? 
+                (currItem.isFreeCouponProduct && currItem.quantity === 1) ? 0 : currItem.specialPrice : 
+                currItem.price
+              ),
+          0
+        );
+      if (newCartTotal <= 0){
+        setCartItems([]);
+      } else {
+        setCartItems([...cartItems]);
+      }
     }
   };
 

@@ -372,7 +372,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         categoryId: item.productType,
         mrp: item.price,
         quantity: item.quantity,
-        specialPrice: item.specialPrice ? item.specialPrice : item.price,
+        specialPrice: item.specialPrice !== undefined ? item.specialPrice : item.price,
       })),
     };
     try {
@@ -418,6 +418,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             isInStock: !!medicineDetails.is_in_stock,
             maxOrderQty: medicineDetails.MaxOrderQty,
             productType: medicineDetails.type_id,
+            isFreeCouponProduct: !!(couponProducts[index]!.couponFree),
           } as ShoppingCartItem;
         });
         addMultipleCartItems!(medicinesAll as ShoppingCartItem[]);
