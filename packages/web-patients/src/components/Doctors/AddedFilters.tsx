@@ -6,9 +6,10 @@ import {
   SearchObject,
   experienceList,
   genderList,
-  brandList,
+  hospitalGroupList,
   feeInRupees,
 } from 'helpers/commonHelpers';
+import { DoctorType } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -94,18 +95,33 @@ export const AddedFilters: React.FC<AddedFiltersProps> = (props) => {
     <div className={classes.root}>
       <div className={classes.dialogContent}>
         <div className={classes.filterGroup}>
-          {filter.brand.length > 0 && (
+          {filter.hospitalGroup.length > 0 && (
             <div className={classes.filterType}>
-              <h4>Brand</h4>
+              <h4>Hospital Group</h4>
               <div className={classes.filterBtns}>
-                {filter.brand.map((brandName) => {
-                  const filterdBrand = brandList.find(
-                    (brandObject) => brandObject.key === brandName
-                  );
+                {filter.hospitalGroup.map((hospitalGroupName) => {
+                  let filteredHospitalGroup: { key: DoctorType; value: string; imageUrl: string };
+                  if (
+                    hospitalGroupName !== DoctorType.JUNIOR &&
+                    hospitalGroupName !== DoctorType.PAYROLL
+                  ) {
+                    filteredHospitalGroup = hospitalGroupList.find(
+                      (hospitalGroupObject: { key: DoctorType; value: string; imageUrl: string }) =>
+                        hospitalGroupObject.key === hospitalGroupName
+                    );
+                  } else {
+                    filteredHospitalGroup =
+                      hospitalGroupName === DoctorType.JUNIOR
+                        ? { key: DoctorType.JUNIOR, value: 'Junior', imageUrl: '' }
+                        : { key: DoctorType.PAYROLL, value: 'Payroll', imageUrl: '' };
+                  }
                   return (
-                    filterdBrand && (
-                      <AphButton disabled className={applyClass(filter.brand, brandName)}>
-                        {filterdBrand.value}
+                    filteredHospitalGroup && (
+                      <AphButton
+                        disabled
+                        className={applyClass(filter.hospitalGroup, hospitalGroupName)}
+                      >
+                        {filteredHospitalGroup.value}
                       </AphButton>
                     )
                   );

@@ -16,9 +16,9 @@ import {
   genderList,
   languageList,
   availabilityList,
-  brandList,
+  hospitalGroupList,
 } from 'helpers/commonHelpers';
-import { ConsultMode } from 'graphql/types/globalTypes';
+import { ConsultMode, DoctorType } from 'graphql/types/globalTypes';
 import { Route } from 'react-router';
 import { clientRoutes } from 'helpers/clientRoutes';
 
@@ -347,6 +347,18 @@ export const Filters: React.FC<FilterProps> = (props) => {
     return valueList;
   };
 
+  const filterOthersHospitalGroup = (valueList: Array<string>) => {
+    if (valueList.includes(DoctorType.PAYROLL) && valueList.includes(DoctorType.JUNIOR)) {
+      valueList = valueList.filter(
+        (val) => val !== DoctorType.PAYROLL && val !== DoctorType.JUNIOR
+      );
+    } else {
+      valueList.push(DoctorType.PAYROLL);
+      valueList.push(DoctorType.JUNIOR);
+    }
+    return valueList;
+  };
+
   const setFilterValues = (type: string, value: string) => {
     if (type === 'experience') {
       const experience = filterValues(localFilter.experience, value);
@@ -363,9 +375,12 @@ export const Filters: React.FC<FilterProps> = (props) => {
     } else if (type === 'availability') {
       const availability = filterValues(localFilter.availability, value);
       setLocalFilter({ ...localFilter, availability });
-    } else if (type === 'brand') {
-      const brand = filterValues(localFilter.brand, value);
-      setLocalFilter({ ...localFilter, brand });
+    } else if (type === 'hospitalGroup') {
+      const hospitalGroup =
+        value === 'others'
+          ? filterOthersHospitalGroup(localFilter.hospitalGroup)
+          : filterValues(localFilter.hospitalGroup, value);
+      setLocalFilter({ ...localFilter, hospitalGroup });
     }
   };
 
@@ -385,13 +400,13 @@ export const Filters: React.FC<FilterProps> = (props) => {
       dateSelected: '',
       specialtyName: '',
       prakticeSpecialties: '',
-      brand: [],
+      hospitalGroup: [],
       consultMode:
         isOnlineSelected && isPhysicalSelected
           ? ConsultMode.BOTH
           : isOnlineSelected
-            ? ConsultMode.ONLINE
-            : ConsultMode.PHYSICAL,
+          ? ConsultMode.ONLINE
+          : ConsultMode.PHYSICAL,
     };
     setLocalFilter(filterInitialValues);
     setFilter(filterInitialValues);
@@ -618,45 +633,36 @@ export const Filters: React.FC<FilterProps> = (props) => {
                 <div className={classes.filterType}>
                   <h4>&nbsp;</h4>
                   <div className={`${classes.filterBtns} ${classes.filterBrands}`}>
-                    {/* {brandList.map((brand: { key: string; value: string }) => (
-                      <AphButton
-                        key={brand.key}
-                        className={applyClass(localFilter.brand, brand.key)}
-                        onClick={() => {
-                          setFilterValues('brand', brand.key);
-                        }}
-                      >
-                        {brand.value}
-                      </AphButton>
-                    ))} */}
-                    <AphButton>
-                      <img src={require('images/ic_brand_apollo.svg')} alt="" />
-                    </AphButton>
-                    <AphButton>
-                      <img src={require('images/ic_brand_apollocradle.svg')} alt="" />
-                    </AphButton>
-                    <AphButton>
-                      <img src={require('images/ic_brand_apolloclinic.svg')} alt="" />
-                    </AphButton>
-                    <AphButton>
-                      <img src={require('images/ic_brand_apollospectra.svg')} alt="" />
-                    </AphButton>
-                    <AphButton>
-                      <img src={require('images/logo-apollo-sugar.svg')} alt="" />
-                    </AphButton>
-                    <AphButton>
-                      <img src={require('images/logo-apollo-fertility.svg')} alt="" />
-                    </AphButton>
-                    <AphButton>
+                    {hospitalGroupList.map(
+                      (hospitalGroup: { key: string; value: string; imageUrl: string }) => (
+                        <AphButton
+                          key={hospitalGroup.key}
+                          className={applyClass(localFilter.hospitalGroup, hospitalGroup.key)}
+                          onClick={() => {
+                            setFilterValues('hospitalGroup', hospitalGroup.key);
+                          }}
+                        >
+                          <img src={hospitalGroup.imageUrl} alt="" />
+                        </AphButton>
+                      )
+                    )}
+                    {/* <AphButton>
                       <img src={require('images/logo-apollo-cosmetic.svg')} alt="" />
-                    </AphButton>
-                    <AphButton>
-                      <img src={require('images/apollo-logo-apollo-white-dental.svg')} alt="" />
-                    </AphButton>
-                    <AphButton>
+                    </AphButton> */}
+                    <AphButton
+                      key={'others'}
+                      className={
+                        localFilter.hospitalGroup.includes(DoctorType.JUNIOR) &&
+                        localFilter.hospitalGroup.includes(DoctorType.PAYROLL)
+                          ? classes.filterActive
+                          : ''
+                      }
+                      onClick={() => {
+                        setFilterValues('hospitalGroup', 'others');
+                      }}
+                    >
                       Others
                     </AphButton>
-
                   </div>
                 </div>
               </TabContainer>
@@ -779,8 +785,8 @@ export const Filters: React.FC<FilterProps> = (props) => {
                     onClick={() => {
                       const newUrl = window.location.href;
                       const currentUrl = new URL(`${newUrl.split('?')[0]}`);
-                      if (localFilter.brand.length > 0) {
-                        structFilterUrl(currentUrl, 'brand', localFilter.brand);
+                      if (localFilter.hospitalGroup.length > 0) {
+                        structFilterUrl(currentUrl, 'hospitalGroup', localFilter.hospitalGroup);
                       }
                       if (localFilter.experience.length > 0) {
                         structFilterUrl(currentUrl, 'experience', localFilter.experience);

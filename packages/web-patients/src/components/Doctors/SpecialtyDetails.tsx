@@ -415,7 +415,7 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     specialtyName: '',
     prakticeSpecialties: '',
     consultMode: ConsultMode.BOTH,
-    brand: [],
+    hospitalGroup: [],
   };
   const classes = useStyles({});
   const onePrimaryUser = hasOnePrimaryUser();
@@ -462,8 +462,8 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     valueArray: Array<string>
   ) => {
     switch (property) {
-      case 'brand':
-        return { ...filterObject, brand: valueArray };
+      case 'hospitalGroup':
+        return { ...filterObject, hospitalGroup: valueArray };
       case 'experience':
         return { ...filterObject, experience: valueArray };
       case 'availability':
@@ -667,17 +667,6 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   /* Gtm code end */
 
   useEffect(() => {
-    const search = _debounce(() => setFilter({ ...filter, searchKeyword }), 500);
-    setSearchQuery((prevSearch: any) => {
-      if (prevSearch.cancel) {
-        prevSearch.cancel();
-      }
-      return search;
-    });
-    search();
-  }, [searchKeyword]);
-
-  useEffect(() => {
     if (params && params.specialty) {
       apolloClient
         .query({
@@ -763,7 +752,7 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     pincode: currentPincode ? currentPincode : localStorage.getItem('currentPincode') || '',
     searchText: filter.searchKeyword,
     consultMode: filter.consultMode,
-    doctorType: filter.brand,
+    doctorType: filter.hospitalGroup,
   };
 
   useEffect(() => {
@@ -923,6 +912,9 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                 <h1>{faqData && faqData[0].specialtyHeading}</h1>
               </div>
               <SpecialtySearch
+                filter={filter}
+                setFilter={setFilter}
+                setSearchQuery={setSearchQuery}
                 setSearchKeyword={setSearchKeyword}
                 searchKeyword={searchKeyword}
                 selectedCity={selectedCity}
@@ -963,7 +955,7 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                 onlyFilteredCount={onlyFilteredCount}
               />
               <div className={classes.doctorCards}>
-                {(filter.brand.length > 0 ||
+                {(filter.hospitalGroup.length > 0 ||
                   filter.language.length > 0 ||
                   filter.availability.length > 0 ||
                   filter.experience.length > 0 ||
@@ -1041,3 +1033,14 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
 };
 
 export default SpecialtyDetails;
+
+// useEffect(() => {
+//   const search = _debounce(() => setFilter({ ...filter, searchKeyword }), 500);
+//   setSearchQuery((prevSearch: any) => {
+//     if (prevSearch.cancel) {
+//       prevSearch.cancel();
+//     }
+//     return search;
+//   });
+//   search();
+// }, [searchKeyword]);
