@@ -763,6 +763,7 @@ const SpecialityListing: React.FC = (props) => {
 
   useEffect(() => {
     if (searchKeyword.length > 2 || selectedCity.length) {
+      selectedCity.length === 0 && setInitalLoad(true);
       intialLoad && setSearchLoading(true);
       const search = _debounce(fetchData, 500);
       setSearchQuery((prevSearch: any) => {
