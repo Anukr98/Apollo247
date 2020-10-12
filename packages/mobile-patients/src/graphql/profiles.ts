@@ -3136,7 +3136,7 @@ export const CREATE_ONE_APOLLO_USER = gql`
   }
 `;
 export const GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES = gql`
-  query getPincodeServiceability ($pincode: Int!) {
+  query getPincodeServiceability($pincode: Int!) {
     getPincodeServiceability(pincode: $pincode) {
       cityID
       cityName
@@ -3163,6 +3163,49 @@ export const SET_DEFAULT_ADDRESS = gql`
       patientAddress {
         id
         defaultAddress
+      }
+    }
+  }
+`;
+
+export const GET_DOCTOR_LIST = gql`
+  query getDoctorList($filterInput: FilterDoctorInput) {
+    getDoctorList(filterInput: $filterInput) {
+      doctors
+      apolloDoctorCount
+      partnerDoctorCount
+    }
+  }
+`;
+
+export const GET_DOCTORLIST_FILTERS = gql`
+  query getDoctorListFilters {
+    getDoctorListFilters {
+      filters {
+        city {
+          state
+          data
+        }
+        brands {
+          name
+          image
+          brandName
+        }
+        language {
+          name
+        }
+        experience {
+          name
+        }
+        availability {
+          name
+        }
+        fee {
+          name
+        }
+        gender {
+          name
+        }
       }
     }
   }

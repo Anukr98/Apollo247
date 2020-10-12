@@ -683,8 +683,7 @@ export interface WebEngageEvents {
     'Doctor ID': string;
     'Speciality ID': string;
     'Doctor Category': DoctorType;
-    'Online Price': number;
-    'Physical Price': number;
+    Fee: number;
     'Doctor Speciality': string;
   };
   [WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK]: {
@@ -693,7 +692,7 @@ export interface WebEngageEvents {
     'Speciality ID': string;
     'Doctor Speciality': string;
     'Doctor Experience': number;
-    'Language Known': string;
+    'Language Known'?: string;
     'Hospital Name': string;
     'Hospital City': string | null;
     'Availability Minutes': number;
@@ -703,7 +702,7 @@ export interface WebEngageEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
-    Rank: number;
+    Rank?: number;
   };
   [WebEngageEventName.DOCTOR_CONNECT_CARD_CLICK]: {
     'Online Price': number;

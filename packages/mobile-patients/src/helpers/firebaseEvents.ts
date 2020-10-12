@@ -355,8 +355,7 @@ export interface FirebaseEvents {
     DoctorID: string;
     SpecialityID: string;
     DoctorCategory: DoctorType;
-    OnlinePrice: number;
-    PhysicalPrice: number;
+    Fee: number;
     DoctorSpeciality: string;
   };
   [FirebaseEventName.CONSULT_NOW_CLICKED]: {
