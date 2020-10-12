@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { AphInput } from '@aph/web-ui-components';
 import _lowerCase from 'lodash/lowerCase';
-import { Cities } from './Cities';
+import { Cities } from 'components/Cities';
 import { DoctorDetails } from 'components/Doctors/SpecialtyDetails';
 import { GetDoctorList_getDoctorList_specialties } from 'graphql/types/GetDoctorList';
 import _get from 'lodash/get';
@@ -191,7 +191,7 @@ interface SpecialtySearchProps {
   setSearchQuery?: any;
 }
 
-export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
+export const SpecialtySearchWithCity: React.FC<SpecialtySearchProps> = (props) => {
   const classes = useStyles({});
   const {
     selectedCity,
@@ -264,17 +264,20 @@ export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
     });
     search();
   };
+  // debugger;
 
   return (
     <>
       <div className={classes.specialitySearch} ref={searchRef}>
-        {/* <div className={classes.location} onClick={() => setLocationPopup(true)}>
-          <img src={require('images/location.svg')} alt="" />
-          <div className={classes.userLocation}>
-            <Typography className={selectedCity ? classes.cityActive : null}>
-              {selectedCity === '' ? 'Select Your City' : selectedCity}
-            </Typography>
-            <img src={require('images/ic_dropdown_green.svg')} alt="" />
+        <div className={classes.location}>
+          <div onClick={() => setLocationPopup(true)}>
+            <img src={require('images/location.svg')} alt="" />
+            <div className={classes.userLocation}>
+              <Typography className={selectedCity ? classes.cityActive : null}>
+                {selectedCity === '' ? 'Select Your City' : selectedCity}
+              </Typography>
+              <img src={require('images/ic_dropdown_green.svg')} alt="" />
+            </div>
           </div>
           {locationPopup && (
             <Cities
@@ -284,7 +287,7 @@ export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
               selectedCity={selectedCity}
             />
           )}
-        </div> */}
+        </div>
 
         <div className={classes.searchContainer}>
           <img src={require('images/ic-search.svg')} alt="" />

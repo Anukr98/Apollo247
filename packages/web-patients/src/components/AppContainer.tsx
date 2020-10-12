@@ -52,6 +52,9 @@ const covidProtocolLanding = loadable(() => import('components/Covid/CovidProtoc
 const SpecialityListing = loadable(() => import('components/SpecialityListing'));
 const DoctorsLanding = loadable(() => import('components/DoctorsLanding'));
 const SpecialtyDetails = loadable(() => import('components/Doctors/SpecialtyDetails'));
+const SpecialtyDetailsWithCity = loadable(() =>
+  import('components/Doctors/SpecialtyDetailsWithCity')
+);
 const Appointments = loadable(() => import('components/Consult/V2/Appointments'));
 const ChatRoom = loadable(() => import('components/Consult/V2/ChatRoom/ChatRoom'));
 const Prescription = loadable(() => import('components/Consult/V2/Prescription'));
@@ -144,6 +147,11 @@ const App: React.FC = () => {
           exact
           path={clientRoutes.citySpecialties(':city', ':specialty')}
           component={SpecialtyDetails}
+        />
+        <Route
+          exact
+          path={clientRoutes.SpecialtyDetailsWithCity(':specialty', ':city', 'identifier')}
+          component={SpecialtyDetailsWithCity}
         />
         <Route exact path={clientRoutes.medicines()} component={MedicineLanding} />
         <Route exact path={clientRoutes.medicineSearch()} component={MedicineSearch} />

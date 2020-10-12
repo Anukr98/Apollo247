@@ -8,6 +8,7 @@ import { useQuery } from 'react-apollo-hooks';
 import _lowerCase from 'lodash/lowerCase';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { useParams } from 'hooks/routerHooks';
+import Axios from 'axios';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -151,6 +152,13 @@ export const Cities: React.FC<CitiesProps> = (props) => {
   const filteredCities =
     citiesList && citiesList.filter((city) => _lowerCase(city).includes(_lowerCase(searchText)));
 
+  const onSearch = (searchText: string) => {
+    const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${searchText}&components=country:in&key=${process.env.GOOGLE_API_KEY}`;
+    Axios.get(url).then((res) => {
+      console.log('ressssssss', res);
+    });
+  };
+
   return (
     <div className={classes.locationContainer}>
       <div className={classes.cityContainer}>
@@ -160,6 +168,7 @@ export const Cities: React.FC<CitiesProps> = (props) => {
           onChange={(e) => {
             setSearchText(e.target.value);
             setShowDropdown(true);
+            onSearch(e.target.value);
           }}
         />
         {showDropdown &&
@@ -209,6 +218,8 @@ export const Cities: React.FC<CitiesProps> = (props) => {
                 setSearchText(city);
               }
               setShowDropdown(false);
+              setSelectedCity(city);
+              setLocationPopup(false);
             }}
           >
             {city}
