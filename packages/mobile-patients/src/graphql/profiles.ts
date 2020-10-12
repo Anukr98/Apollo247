@@ -3321,6 +3321,7 @@ export const GET_DOCTORLIST_FILTERS = gql`
         }
       }
     }
+  }
 `;
 
 export const GET_DIAGNOSTIC_SLOTS_WITH_AREA_ID = gql`
