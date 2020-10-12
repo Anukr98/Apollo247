@@ -333,16 +333,12 @@ const convertAvailabilityToDate = (availability: String[], dateSelectedFromFilte
     availableNow = {};
   }
   const availabilityArray: String[] = [];
-  const today = moment(new Date())
-    .utc()
-    .format('YYYY-MM-DD');
+  const today = moment(new Date()).utc().format('YYYY-MM-DD');
   if (availability.length > 0) {
     availability.forEach((value: String) => {
       if (value === 'Now') {
         availableNow = {
-          availableNow: moment(new Date())
-            .utc()
-            .format('YYYY-MM-DD hh:mm'),
+          availableNow: moment(new Date()).utc().format('YYYY-MM-DD hh:mm'),
         };
       } else if (value === 'Today') {
         availabilityArray.push(today);
@@ -498,7 +494,7 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
 
         const decodedObject = JSON.parse(
           '{"' + search.replace(/&/g, '","').replace(/=/g, '":"') + '"}',
-          function(key, value) {
+          function (key, value) {
             return key === '' ? value : decodeURIComponent(value);
           }
         );
@@ -1033,14 +1029,3 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
 };
 
 export default SpecialtyDetails;
-
-// useEffect(() => {
-//   const search = _debounce(() => setFilter({ ...filter, searchKeyword }), 500);
-//   setSearchQuery((prevSearch: any) => {
-//     if (prevSearch.cancel) {
-//       prevSearch.cancel();
-//     }
-//     return search;
-//   });
-//   search();
-// }, [searchKeyword]);

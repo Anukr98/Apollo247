@@ -8,6 +8,7 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { useParams } from 'hooks/routerHooks';
+import { LazyIntersection } from 'components/lib/LazyIntersection';
 
 import {
   SearchObject,
@@ -642,7 +643,7 @@ export const Filters: React.FC<FilterProps> = (props) => {
                             setFilterValues('hospitalGroup', hospitalGroup.key);
                           }}
                         >
-                          <img src={hospitalGroup.imageUrl} alt="" />
+                          <LazyIntersection src={hospitalGroup.imageUrl} alt="" />
                         </AphButton>
                       )
                     )}
