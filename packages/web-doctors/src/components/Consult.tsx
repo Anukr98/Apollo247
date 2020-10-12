@@ -224,7 +224,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           'Appointment ID': props.consultWebengageObject.appointmentId,
           'Patient ID': props.consultWebengageObject.patientId,
           'Doctor ID': props.consultWebengageObject.doctorId,
-          'Session ID': props.consultWebengageObject.sessionId,
+          'Session ID': props.sessionId,
           'Data': JSON.stringify(event),
         },
         'Front_end - Doctor Session Event'
@@ -251,7 +251,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           'Appointment ID': props.consultWebengageObject.appointmentId,
           'Patient ID': props.consultWebengageObject.patientId,
           'Doctor ID': props.consultWebengageObject.doctorId,
-          'Session ID': props.consultWebengageObject.sessionId,
+          'Session ID': props.sessionId,
           'Error': JSON.stringify(error),
         },
         'Front_end - Doctor Session Event'
@@ -265,7 +265,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           'Appointment ID': props.consultWebengageObject.appointmentId,
           'Patient ID': props.consultWebengageObject.patientId,
           'Doctor ID': props.consultWebengageObject.doctorId,
-          'Session ID': props.consultWebengageObject.sessionId,
+          'Session ID': props.sessionId,
           'Data': JSON.stringify(event),
         },
         'Front_end - Doctor Session Event'
@@ -279,7 +279,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           'Appointment ID': props.consultWebengageObject.appointmentId,
           'Patient ID': props.consultWebengageObject.patientId,
           'Doctor ID': props.consultWebengageObject.doctorId,
-          'Session ID': props.consultWebengageObject.sessionId,
+          'Session ID': props.sessionId,
           'Data': JSON.stringify(event),
         },
         'Front_end - Doctor Session Event'
@@ -295,7 +295,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           'Appointment ID': props.consultWebengageObject.appointmentId,
           'Patient ID': props.consultWebengageObject.patientId,
           'Doctor ID': props.consultWebengageObject.doctorId,
-          'Session ID': props.consultWebengageObject.sessionId,
+          'Session ID': props.sessionId,
           'Data': JSON.stringify(event),
         },
         'Front_end - Doctor Session Event'
@@ -310,7 +310,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           'Appointment ID': props.consultWebengageObject.appointmentId,
           'Patient ID': props.consultWebengageObject.patientId,
           'Doctor ID': props.consultWebengageObject.doctorId,
-          'Session ID': props.consultWebengageObject.sessionId,
+          'Session ID': props.sessionId,
           'Data': JSON.stringify(event),
         },
         'Front_end - Doctor Session Event'
@@ -325,7 +325,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           'Appointment ID': props.consultWebengageObject.appointmentId,
           'Patient ID': props.consultWebengageObject.patientId,
           'Doctor ID': props.consultWebengageObject.doctorId,
-          'Session ID': props.consultWebengageObject.sessionId,
+          'Session ID': props.sessionId,
           'Data': JSON.stringify(event),
         },
         'Front_end - Doctor Session Event'
@@ -339,7 +339,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           'Appointment ID': props.consultWebengageObject.appointmentId,
           'Patient ID': props.consultWebengageObject.patientId,
           'Doctor ID': props.consultWebengageObject.doctorId,
-          'Session ID': props.consultWebengageObject.sessionId,
+          'Session ID': props.sessionId,
           'Data': JSON.stringify(event),
         },
         'Front_end - Doctor Session Event'
@@ -355,7 +355,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           'Appointment ID': props.consultWebengageObject.appointmentId,
           'Patient ID': props.consultWebengageObject.patientId,
           'Doctor ID': props.consultWebengageObject.doctorId,
-          'Session ID': props.consultWebengageObject.sessionId,
+          'Session ID': props.sessionId,
           'Data': JSON.stringify(event),
         },
         'Front_end - Doctor Session Event'
@@ -374,7 +374,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           'Appointment ID': props.consultWebengageObject.appointmentId,
           'Patient ID': props.consultWebengageObject.patientId,
           'Doctor ID': props.consultWebengageObject.doctorId,
-          'Session ID': props.consultWebengageObject.sessionId,
+          'Session ID': props.sessionId,
           'Data': JSON.stringify(event),
         },
         'Front_end - Doctor Session Event'
@@ -390,7 +390,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           'Appointment ID': props.consultWebengageObject.appointmentId,
           'Patient ID': props.consultWebengageObject.patientId,
           'Doctor ID': props.consultWebengageObject.doctorId,
-          'Session ID': props.consultWebengageObject.sessionId,
+          'Session ID': props.sessionId,
           'Data': JSON.stringify(event),
         },
         'Front_end - Doctor Publisher Event'
@@ -404,7 +404,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           'Appointment ID': props.consultWebengageObject.appointmentId,
           'Patient ID': props.consultWebengageObject.patientId,
           'Doctor ID': props.consultWebengageObject.doctorId,
-          'Session ID': props.consultWebengageObject.sessionId,
+          'Session ID': props.sessionId,
           'Data': JSON.stringify(event),
         },
         'Front_end - Doctor Publisher Event'
@@ -419,7 +419,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           'Appointment ID': props.consultWebengageObject.appointmentId,
           'Patient ID': props.consultWebengageObject.patientId,
           'Doctor ID': props.consultWebengageObject.doctorId,
-          'Session ID': props.consultWebengageObject.sessionId,
+          'Session ID': props.sessionId,
           'Error': JSON.stringify(error),
         },
         'Front_end - Doctor Publisher Event'
@@ -436,7 +436,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           'Appointment ID': props.consultWebengageObject.appointmentId,
           'Patient ID': props.consultWebengageObject.patientId,
           'Doctor ID': props.consultWebengageObject.doctorId,
-          'Session ID': props.consultWebengageObject.sessionId,
+          'Session ID': props.sessionId,
           'Error': JSON.stringify(error),
         },
         'Front_end - Doctor Subscriber Event'
@@ -454,7 +454,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           'Appointment ID': props.consultWebengageObject.appointmentId,
           'Patient ID': props.consultWebengageObject.patientId,
           'Doctor ID': props.consultWebengageObject.doctorId,
-          'Session ID': props.consultWebengageObject.sessionId,
+          'Session ID': props.sessionId,
           'Data': JSON.stringify(event),
         },
         'Front_end - Doctor Subscriber Event'
@@ -468,7 +468,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           'Appointment ID': props.consultWebengageObject.appointmentId,
           'Patient ID': props.consultWebengageObject.patientId,
           'Doctor ID': props.consultWebengageObject.doctorId,
-          'Session ID': props.consultWebengageObject.sessionId,
+          'Session ID': props.sessionId,
           'Data': JSON.stringify(event),
         },
         'Front_end - Doctor Subscriber Event'
@@ -484,7 +484,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           'Appointment ID': props.consultWebengageObject.appointmentId,
           'Patient ID': props.consultWebengageObject.patientId,
           'Doctor ID': props.consultWebengageObject.doctorId,
-          'Session ID': props.consultWebengageObject.sessionId,
+          'Session ID': props.sessionId,
           'Data': JSON.stringify(event),
         },
         'Front_end - Doctor Subscriber Event'
@@ -498,7 +498,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           'Appointment ID': props.consultWebengageObject.appointmentId,
           'Patient ID': props.consultWebengageObject.patientId,
           'Doctor ID': props.consultWebengageObject.doctorId,
-          'Session ID': props.consultWebengageObject.sessionId,
+          'Session ID': props.sessionId,
           'Data': JSON.stringify(event),
         },
         'Front_end - Doctor Subscriber Event'
@@ -512,7 +512,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           'Appointment ID': props.consultWebengageObject.appointmentId,
           'Patient ID': props.consultWebengageObject.patientId,
           'Doctor ID': props.consultWebengageObject.doctorId,
-          'Session ID': props.consultWebengageObject.sessionId,
+          'Session ID': props.sessionId,
           'Data': JSON.stringify(event),
         },
         'Front_end - Doctor Subscriber Event'
@@ -529,7 +529,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           'Appointment ID': props.consultWebengageObject.appointmentId,
           'Patient ID': props.consultWebengageObject.patientId,
           'Doctor ID': props.consultWebengageObject.doctorId,
-          'Session ID': props.consultWebengageObject.sessionId,
+          'Session ID': props.sessionId,
           'Data': JSON.stringify(event),
         },
         'Front_end - Doctor Subscriber Event'
@@ -546,7 +546,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           'Appointment ID': props.consultWebengageObject.appointmentId,
           'Patient ID': props.consultWebengageObject.patientId,
           'Doctor ID': props.consultWebengageObject.doctorId,
-          'Session ID': props.consultWebengageObject.sessionId,
+          'Session ID': props.sessionId,
           'Data': JSON.stringify(event),
         },
         'Front_end - Doctor Subscriber Event'
@@ -560,7 +560,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           'Appointment ID': props.consultWebengageObject.appointmentId,
           'Patient ID': props.consultWebengageObject.patientId,
           'Doctor ID': props.consultWebengageObject.doctorId,
-          'Session ID': props.consultWebengageObject.sessionId,
+          'Session ID': props.sessionId,
           'Data': JSON.stringify(event),
         },
         'Front_end - Doctor Subscriber Event'
@@ -634,7 +634,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                       'Appointment ID': props.consultWebengageObject.appointmentId,
                       'Patient ID': props.consultWebengageObject.patientId,
                       'Doctor ID': props.consultWebengageObject.doctorId,
-                      'Session ID': props.consultWebengageObject.sessionId,
+                      'Session ID': props.sessionId,
                       'Error': JSON.stringify(error),
                     },
                     'Front_end - Doctor Session Event'
@@ -661,7 +661,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                         'Appointment ID': props.consultWebengageObject.appointmentId,
                         'Patient ID': props.consultWebengageObject.patientId,
                         'Doctor ID': props.consultWebengageObject.doctorId,
-                        'Session ID': props.consultWebengageObject.sessionId,
+                        'Session ID': props.sessionId,
                         'Error': JSON.stringify(error),
                       },
                       'Front_end - Doctor Publisher Event'
@@ -723,7 +723,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                             'Appointment ID': props.consultWebengageObject.appointmentId,
                             'Patient ID': props.consultWebengageObject.patientId,
                             'Doctor ID': props.consultWebengageObject.doctorId,
-                            'Session ID': props.consultWebengageObject.sessionId,
+                            'Session ID': props.sessionId,
                             'Error': JSON.stringify(error),
                           },
                           'Front_end - Doctor Subscriber Event'

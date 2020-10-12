@@ -115,6 +115,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingLeft: 14,
       paddingRight: 10,
       lineHeight: 1.5,
+      wordBreak: 'break-word',
       [theme.breakpoints.down('xs')]: {
         fontSize: 12,
         paddingLeft: 0,
@@ -189,18 +190,18 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
     if (doctorDetails) {
       const {
         city,
-        fullName,
         id,
         doctorType,
         doctorHospital,
         onlineConsultationFees,
         physicalConsultationFees,
+        displayName,
       } = doctorDetails;
       let items = [],
         count = 0;
       onlineConsultationFees &&
         items.push({
-          item_name: fullName,
+          item_name: displayName,
           item_id: id,
           price: Number(onlineConsultationFees),
           item_brand:
@@ -222,7 +223,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
         });
       physicalConsultationFees &&
         items.push({
-          item_name: fullName,
+          item_name: displayName,
           item_id: id,
           price: Number(physicalConsultationFees),
           item_brand:
@@ -488,7 +489,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
     const education = doctorDetails.qualification;
     const profileImage = doctorDetails.photoUrl;
 
-    const { awards, experience, firstName, fullName, languages } = doctorDetails;
+    const { awards, experience, languages, displayName } = doctorDetails;
 
     const isConnectDoctor = doctorDetails.doctorType === DoctorType.DOCTOR_CONNECT;
 
@@ -501,12 +502,12 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
     return (
       <div className={classes.root}>
         <div className={classes.doctorProfile}>
-          <div className={classes.doctorImage} title={fullName || ''}>
-            <img src={profileImage || require('images/no_photo.png')} alt={firstName || ''} />
+          <div className={classes.doctorImage} title={displayName || ''}>
+            <img src={profileImage || require('images/no_photo.png')} alt={displayName || ''} />
           </div>
           <div className={classes.doctorInfo}>
             <div className={classes.doctorName} title={'Doctor Name'}>
-              <h1>{fullName}</h1>
+              <h1>{displayName}</h1>
               <span>
                 <img
                   className={isConnectDoctor ? classes.otherDoctorType : ''}

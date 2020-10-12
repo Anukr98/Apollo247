@@ -21,10 +21,9 @@ import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/doctors';
 import { ValidateConsultCoupon_validateConsultCoupon } from 'graphql/types/ValidateConsultCoupon';
 import { Route } from 'react-router-dom';
 import { consultPayButtonClickTracking } from 'webEngageTracking';
-import { dataLayerTracking } from 'gtmTracking';
 import { getCouponByUserMobileNumber } from 'helpers/commonHelpers';
 import fetchUtil from 'helpers/fetch';
-import { gtmTracking } from '../../gtmTracking';
+import { gtmTracking, dataLayerTracking } from '../../gtmTracking';
 import { useLocationDetails } from 'components/LocationProvider';
 import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
 
@@ -551,7 +550,7 @@ const OnlineCheckout: React.FC = () => {
   if (doctorDetails) {
     const {
       experience,
-      fullName,
+      displayName,
       photoUrl,
       onlineConsultationFees,
     } = doctorDetails.getDoctorDetailsById;
@@ -604,7 +603,7 @@ const OnlineCheckout: React.FC = () => {
                     <img src={photoUrl} alt="" />
                   </div>
                   <div className={classes.doctorInfo}>
-                    <div className={classes.doctorName}>{fullName}</div>
+                    <div className={classes.doctorName}>{displayName}</div>
                     <div className={classes.doctorType}>
                       <span>
                         {speciality} | <span>{experience} Yrs. Exp</span>

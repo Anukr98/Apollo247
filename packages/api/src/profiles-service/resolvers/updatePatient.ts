@@ -13,9 +13,13 @@ import {
   ReferralCodesMasterRepository,
   ReferalCouponMappingRepository,
 } from 'profiles-service/repositories/couponRepository';
-import { ApiConstants, PATIENT_REPO_RELATIONS } from 'ApiConstants';
+import { ApiConstants, PATIENT_REPO_RELATIONS, PartnerId } from 'ApiConstants';
 import { createPrismUser } from 'helpers/phrV1Services';
 import { getCache, delCache, setCache } from 'profiles-service/database/connectRedis';
+import { OneApollo } from 'helpers/oneApollo';
+import { ONE_APOLLO_STORE_CODE } from 'types/oneApolloTypes';
+import { format } from 'date-fns';
+import { winstonLogger } from 'customWinstonLogger';
 
 const REDIS_PATIENT_LOCK_PREFIX = `patient:lock:`;
 export const updatePatientTypeDefs = gql`
@@ -56,6 +60,13 @@ type UpdatePatientResult = {
 };
 
 type UpdatePatientArgs = { patientInput: Partial<Patient> & { id: Patient['id'] } };
+const MOCK_KEY = 'mock:hdfc';
+
+/**
+ * initiate logger...
+ */
+const profilesLogger = winstonLogger.loggers.get('profileServiceLogger');
+
 const updatePatient: Resolver<
   null,
   UpdatePatientArgs,
@@ -74,9 +85,9 @@ const updatePatient: Resolver<
       throw new AphError(AphErrorMessages.INVALID_EMPLOYEE_ID, undefined, {});
     }
   }
-
+  let referralCode;
   if (updateAttrs.referralCode && trim(updateAttrs.referralCode).length > 0) {
-    const referralCode = updateAttrs.referralCode.toUpperCase();
+    referralCode = updateAttrs.referralCode.toUpperCase();
     if (!isValidReferralCode(referralCode))
       throw new AphError(AphErrorMessages.INVALID_REFERRAL_CODE);
     updateAttrs.referralCode = referralCode;
@@ -91,6 +102,22 @@ const updatePatient: Resolver<
   if (lockedProfile && typeof lockedProfile == 'string') {
     throw new Error(AphErrorMessages.PROFILE_CREATION_IN_PROGRESS);
   }
+
+  // partnerid && partner id not == hdfc --- nothing
+  // partnerid == null -- setPartnerId
+  // partnerId && partnerid == HDFC --- check for correct reffral to handle error
+
+  if (patient.partnerId && patient.partnerId == PartnerId.HDFCBANK) {
+    console.log('referralCode', referralCode);
+    if (referralCode != PartnerId.HDFCBANK) {
+      referralCode = PartnerId.HDFCBANK;
+    }
+  } else {
+    if (referralCode == PartnerId.HDFCBANK) {
+      updateAttrs.partnerId = PartnerId.HDFCBANK;
+    }
+  }
+
   Object.assign(patient, updateAttrs);
   if (patient.uhid == '' || patient.uhid == null) {
     await setCache(lockKey, 'true', ApiConstants.CACHE_EXPIRATION_120);
@@ -137,6 +164,7 @@ const updatePatient: Resolver<
       }
     }
   }
+
   const patientObjWithRelations = await patientRepo.findByIdWithRelations(patientInput.id, [
     PATIENT_REPO_RELATIONS.PATIENT_ADDRESS,
     PATIENT_REPO_RELATIONS.FAMILY_HISTORY,
@@ -145,6 +173,50 @@ const updatePatient: Resolver<
   ]);
 
   Object.assign(patient, patientObjWithRelations);
+
+  // register user in oneApollo...
+  try {
+    let mobileNumber = '';
+    if (patient.mobileNumber.length === 13) {
+      mobileNumber = patient.mobileNumber.slice(3);
+    } else {
+      mobileNumber = patient.mobileNumber;
+    }
+    const userPayload = {
+      FirstName: patient.firstName,
+      LastName: patient.lastName,
+      BusinessUnit: <string>process.env.ONEAPOLLO_BUSINESS_UNIT,
+      MobileNumber: mobileNumber,
+      DOB: format(patient.dateOfBirth, 'yyyy-MM-dd'),
+      Gender: patient.gender,
+      Email: patient.emailAddress,
+      StoreCode: getStoreCode(patient),
+      CustomerId: patient.uhid,
+    };
+    //adding log for prod, remove it once testing is done...
+    profilesLogger.log('info', `createOneApolloUser payload - ${JSON.stringify(userPayload)}`);
+
+    const oneApollo = new OneApollo();
+    const userCreateResponse = await oneApollo.createOneApolloUser(userPayload);
+
+    if (userCreateResponse.Success) {
+      profilesLogger.log(
+        'info',
+        `createOneApolloUser success - ${JSON.stringify(userCreateResponse)}`
+      );
+    } else {
+      //user already exist
+      profilesLogger.log(
+        'error',
+        `createOneApolloUser error - ${JSON.stringify(userCreateResponse.Message)}`
+      );
+    }
+  } catch (e) {
+    profilesLogger.log(
+      'error',
+      `createOneApolloUser ONE_APOLLO_USER_CREATE_REQUEST_FAILED - ${JSON.stringify(e.message)}`
+    );
+  }
   // Object.assign(patient, await patientRepo.getPatientDetails(patientInput.id));
   return { patient };
 };
@@ -167,6 +239,20 @@ const updatePatientAllergies: Resolver<
 
   if (patient == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   return { patient };
+};
+
+/**
+ * helper fn
+ */
+const getStoreCode = (patient: Patient) => {
+  let storeCode: ONE_APOLLO_STORE_CODE = ONE_APOLLO_STORE_CODE.WEBCUS;
+  if (patient.iosVersion) {
+    storeCode = ONE_APOLLO_STORE_CODE.IOSCUS;
+  }
+  if (patient.androidVersion) {
+    storeCode = ONE_APOLLO_STORE_CODE.ANDCUS;
+  }
+  return storeCode;
 };
 
 export const updatePatientResolvers = {

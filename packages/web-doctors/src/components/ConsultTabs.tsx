@@ -394,8 +394,8 @@ export const ConsultTabs: React.FC = () => {
   const [startConsult, setStartConsult] = useState<string>('');
 
   const [isPdfPageOpen, setIsPdfPageOpen] = useState<boolean>(false);
-  const [sessionId, setsessionId] = useState<string>('');
-  const [token, settoken] = useState<string>('');
+  // const [sessionId, setsessionId] = useState<string>('');
+  // const [token, settoken] = useState<string>('');
   const [appointmentDateTime, setappointmentDateTime] = useState<string>('');
   const [sdConsultationDate, setSdConsultationDate] = useState<string>('');
   const [doctorId, setdoctorId] = useState<string>(currentPatient ? currentPatient.id : '');
@@ -537,6 +537,7 @@ export const ConsultTabs: React.FC = () => {
       //withPresence: true,
     });
     getHistory(0);
+    console.log('messages in use Effect call', messages);
     pubnub.addListener({
       status(statusEvent: any) {},
       message(message: any) {
@@ -652,6 +653,8 @@ export const ConsultTabs: React.FC = () => {
       });
   };
   const getPrismUrls = (client: ApolloClient<object>, patientId: string, fileIds: string[]) => {
+    console.log('In get Prism Url', { patientId: patientId, fileIds: fileIds });
+
     return new Promise((res, rej) => {
       client
         .query<downloadDocuments>({
@@ -673,6 +676,7 @@ export const ConsultTabs: React.FC = () => {
     });
   };
   const getHistory = (timetoken: number) => {
+    console.log('In get history, about to fetch response from pubnub with time token', timetoken);
     pubnub.history(
       {
         channel: appointmentId,
@@ -683,6 +687,7 @@ export const ConsultTabs: React.FC = () => {
       },
       (status: any, res: any) => {
         const newmessage: MessagesObjectProps[] = messages;
+        console.log('In get history, response from pubnub', res);
         res.messages.forEach((element: any, index: number) => {
           const item = element.entry;
           if (item.prismId) {
@@ -699,6 +704,7 @@ export const ConsultTabs: React.FC = () => {
         const end: number = res.endTimeToken ? res.endTimeToken : 1;
         if (res.messages.length == 100) {
           getHistory(end);
+          console.log('In If of gethistory in consult tab');
         }
       }
     );
@@ -1532,6 +1538,7 @@ export const ConsultTabs: React.FC = () => {
 
   const sendCallNotificationFn = (callType: APPT_CALL_TYPE, isCall: boolean) => {
     pubnubPresence((patient: number, doctor: number) => {
+      console.log('Inside sendCallNotificationFn', { patient, doctor, sum: patient + doctor });
       sendCallNotificationFnWithCheck(callType, isCall, patient + doctor);
     });
   };
@@ -1861,8 +1868,8 @@ export const ConsultTabs: React.FC = () => {
       .then((_data: any) => {
         getSetNumberOfParticipants(paramId, USER_STATUS.ENTERING);
         setAppointmentStatus(STATUS.IN_PROGRESS);
-        setsessionId(_data.data.createAppointmentSession.sessionId);
-        settoken(_data.data.createAppointmentSession.appointmentToken);
+        // setsessionId(_data.data.createAppointmentSession.sessionId);
+        // settoken(_data.data.createAppointmentSession.appointmentToken);
         sendCallNotificationFn(APPT_CALL_TYPE.CHAT, false);
         setError('');
         setSaving(false);
@@ -1905,6 +1912,7 @@ export const ConsultTabs: React.FC = () => {
         variables: {
           appointmentCallId: isCall ? callId : chatRecordId,
           patientId: params.patientId,
+          endVoipCall: isCall,
           numberOfParticipants,
         },
       })
@@ -1924,6 +1932,7 @@ export const ConsultTabs: React.FC = () => {
 
   const endCallNotificationAction = (isCall: boolean) => {
     pubnubPresence((patient: number, doctor: number) => {
+      console.log('Inside endCallNotificationAction', { patient, doctor, sum: patient + doctor });
       endCallNotificationActionCheckFn(isCall, patient + doctor);
     });
   };
@@ -1934,7 +1943,7 @@ export const ConsultTabs: React.FC = () => {
       .then((response: any) => {
         console.log({ pubnubHereNowResponse: response });
         const occupants = response.channels[appointmentId].occupants;
-        let doctorCount = 0;
+        let doctorCount = 1;
         let paientsCount = 0;
         occupants.forEach((item: any) => {
           if (item.uuid.indexOf('PATIENT') > -1) {
@@ -1943,6 +1952,7 @@ export const ConsultTabs: React.FC = () => {
             doctorCount = 1;
           }
         });
+        console.log('Inside hereNow', { doctorCount, paientsCount });
         callBack(paientsCount, doctorCount);
       })
       .catch((error) => {
@@ -2152,8 +2162,8 @@ export const ConsultTabs: React.FC = () => {
               urlToPatient={urlToPatient}
               caseSheetId={caseSheetId}
               prescriptionPdf={prescriptionPdf}
-              sessionId={sessionId}
-              token={token}
+              // sessionId={sessionId}
+              // token={token}
               startAppointment={startAppointment}
               casesheetInfo={casesheetInfo}
               startAppointmentClick={startAppointmentClick}
@@ -2233,8 +2243,8 @@ export const ConsultTabs: React.FC = () => {
                     <div className={classes.chatContainer}>
                       <ConsultRoom
                         startConsult={startConsult}
-                        sessionId={sessionId}
-                        token={token}
+                        // sessionId={sessionId}
+                        // token={token}
                         appointmentId={paramId}
                         doctorId={doctorId}
                         patientId={patientId}

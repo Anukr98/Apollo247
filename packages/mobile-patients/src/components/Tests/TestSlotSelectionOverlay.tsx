@@ -3,7 +3,10 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { CalendarView, CALENDAR_TYPE } from '@aph/mobile-patients/src/components/ui/CalendarView';
 import { DropdownGreen } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
-import { GET_DIAGNOSTIC_SLOTS } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  GET_DIAGNOSTIC_SLOTS,
+  GET_DIAGNOSTIC_SLOTS_WITH_AREA_ID,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getDiagnosticSlots,
   getDiagnosticSlotsVariables,
@@ -16,6 +19,7 @@ import {
   getUniqueTestSlots,
   handleGraphQlError,
   isValidTestSlot,
+  isValidTestSlotWithArea,
   TestSlot,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -24,6 +28,10 @@ import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Dimensions, StyleSheet, Text, View } from 'react-native';
+import {
+  getDiagnosticSlotsWithAreaID,
+  getDiagnosticSlotsWithAreaIDVariables,
+} from '../../graphql/types/getDiagnosticSlotsWithAreaID';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -67,6 +75,7 @@ export interface TestSlotSelectionOverlayProps extends AphOverlayProps {
   date: Date;
   slotInfo?: TestSlot;
   slots: TestSlot[];
+  areaId: string;
   onSchedule: (date: Date, slotInfo: TestSlot) => void;
 }
 
@@ -87,49 +96,41 @@ export const TestSlotSelectionOverlay: React.FC<TestSlotSelectionOverlayProps> =
     if (!isVisible || !zipCode) return;
     showSpinner(true);
     client
-      .query<getDiagnosticSlots, getDiagnosticSlotsVariables>({
-        query: GET_DIAGNOSTIC_SLOTS,
+      .query<getDiagnosticSlotsWithAreaID, getDiagnosticSlotsWithAreaIDVariables>({
+        query: GET_DIAGNOSTIC_SLOTS_WITH_AREA_ID,
         fetchPolicy: 'no-cache',
         variables: {
-          patientId: g(currentPatient, 'id'),
-          hubCode: 'HYD_HUB1',
           selectedDate: moment(date).format('YYYY-MM-DD'),
-          zipCode: zipCode,
+          areaID: parseInt(props.areaId!),
         },
       })
       .then(({ data }) => {
-        const diagnosticSlots = g(data, 'getDiagnosticSlots', 'diagnosticSlot') || [];
-        // console.log('ORIGINAL DIAGNOSTIC SLOTS', { diagnosticSlots });
-        console.log(
-          'ORIGINAL DIAGNOSTIC SLOTS',
-          diagnosticSlots.map((item) => ({
-            code: item!.employeeCode,
-            // slotsLength: item!.slotInfo!.length,
-            slots: item!.slotInfo!.map((item) => item!.startTime + `\t ${item!.status}` + '\n'),
-          }))
-        );
+        const diagnosticSlots = g(data, 'getDiagnosticSlotsWithAreaID', 'slots') || [];
+        console.log('ORIGINAL DIAGNOSTIC SLOTS', { diagnosticSlots });
 
         const slotsArray: TestSlot[] = [];
         diagnosticSlots!.forEach((item) => {
-          item!.slotInfo!.forEach((slot) => {
-            if (isValidTestSlot(slot!, date)) {
-              slotsArray.push({
-                employeeCode: item!.employeeCode,
-                employeeName: item!.employeeName,
-                slotInfo: slot,
-                date: date,
-                diagnosticBranchCode: g(data, 'getDiagnosticSlots', 'diagnosticBranchCode'),
-              } as TestSlot);
-            }
-          });
+          if (isValidTestSlotWithArea(item!, date)) {
+            //all the hardcoded values are not returned by api.
+            slotsArray.push({
+              employeeCode: 'apollo_employee_code',
+              employeeName: 'apollo_employee_name',
+              slotInfo: {
+                endTime: item?.Timeslot!,
+                status: 'empty',
+                startTime: item?.Timeslot!,
+                slot: item?.TimeslotID,
+              },
+              date: date,
+              diagnosticBranchCode: 'apollo_route',
+            } as TestSlot);
+          }
         });
 
         const uniqueSlots = getUniqueTestSlots(slotsArray);
 
-        // console.log('ARRAY OF SLOTS', { slotsArray });
-        // console.log('UNIQUE SLOTS', { uniqueSlots });
-        console.log('ARRAY OF SLOTS', slotsArray.length);
-        console.log('UNIQUE SLOTS', uniqueSlots.length);
+        console.log('ARRAY OF SLOTS', { slotsArray });
+        console.log('UNIQUE SLOTS', { uniqueSlots });
 
         setSlots(slotsArray);
         uniqueSlots.length &&

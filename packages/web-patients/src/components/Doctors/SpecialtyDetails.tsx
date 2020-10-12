@@ -23,6 +23,7 @@ import {
   SearchObject,
   SPECIALTY_DETAIL_LISTING_PAGE_SIZE as PAGE_SIZE,
   deepLinkUtil,
+  isAlternateVersion,
 } from 'helpers/commonHelpers';
 import { useLocationDetails } from 'components/LocationProvider';
 import { GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor as docDetails } from 'graphql/types/GetDoctorDetailsById';
@@ -332,16 +333,12 @@ const convertAvailabilityToDate = (availability: String[], dateSelectedFromFilte
     availableNow = {};
   }
   const availabilityArray: String[] = [];
-  const today = moment(new Date())
-    .utc()
-    .format('YYYY-MM-DD');
+  const today = moment(new Date()).utc().format('YYYY-MM-DD');
   if (availability.length > 0) {
     availability.forEach((value: String) => {
       if (value === 'Now') {
         availableNow = {
-          availableNow: moment(new Date())
-            .utc()
-            .format('YYYY-MM-DD hh:mm'),
+          availableNow: moment(new Date()).utc().format('YYYY-MM-DD hh:mm'),
         };
       } else if (value === 'Today') {
         availabilityArray.push(today);
@@ -414,7 +411,7 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     specialtyName: '',
     prakticeSpecialties: '',
     consultMode: ConsultMode.BOTH,
-    brand: [],
+    hospitalGroup: [],
   };
   const classes = useStyles({});
   const onePrimaryUser = hasOnePrimaryUser();
@@ -443,6 +440,7 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const [specialtyId, setSpecialtyId] = useState<string>('');
   const [specialtyName, setSpecialtyName] = useState<string>('');
   const [locationPopup, setLocationPopup] = useState<boolean>(false);
+  const [isAlternateVariant, setIsAlternateVariant] = useState<boolean>(true);
   const [selectedCity, setSelectedCity] = useState<string>(
     params && params.city ? params.city : ''
   );
@@ -460,8 +458,8 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     valueArray: Array<string>
   ) => {
     switch (property) {
-      case 'brand':
-        return { ...filterObject, brand: valueArray };
+      case 'hospitalGroup':
+        return { ...filterObject, hospitalGroup: valueArray };
       case 'experience':
         return { ...filterObject, experience: valueArray };
       case 'availability':
@@ -496,7 +494,7 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
 
         const decodedObject = JSON.parse(
           '{"' + search.replace(/&/g, '","').replace(/=/g, '":"') + '"}',
-          function(key, value) {
+          function (key, value) {
             return key === '' ? value : decodeURIComponent(value);
           }
         );
@@ -605,6 +603,12 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   }, []);
 
   useEffect(() => {
+    // the below if-else is for marketing requirement (hiding prescription/Rx string)
+    if (isAlternateVersion()) {
+      setIsAlternateVariant(true);
+    } else {
+      setIsAlternateVariant(false);
+    }
     if (scrollRef && scrollRef.current) {
       window.addEventListener('scroll', handleOnScroll);
     }
@@ -657,17 +661,6 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     }
   }, [doctorData]);
   /* Gtm code end */
-
-  useEffect(() => {
-    const search = _debounce(() => setFilter({ ...filter, searchKeyword }), 500);
-    setSearchQuery((prevSearch: any) => {
-      if (prevSearch.cancel) {
-        prevSearch.cancel();
-      }
-      return search;
-    });
-    search();
-  }, [searchKeyword]);
 
   useEffect(() => {
     if (params && params.specialty) {
@@ -755,7 +748,7 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     pincode: currentPincode ? currentPincode : localStorage.getItem('currentPincode') || '',
     searchText: filter.searchKeyword,
     consultMode: filter.consultMode,
-    doctorType: filter.brand,
+    doctorType: filter.hospitalGroup,
   };
 
   useEffect(() => {
@@ -877,8 +870,8 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     title: (faqData && faqData[0].specialtyMetaTitle) || '',
     description: (faqData && faqData[0].specialtyMetaDescription) || '',
     canonicalLink:
-      (faqData && faqData[0].canonicalUrl) || (window && window.location && window.location.href),
-    deepLink: window.location.href,
+      (faqData && faqData[0].canonicalUrl) ||
+      (window && window.location && `${window.location.host}${window.location.pathname}`),
   };
 
   return (
@@ -915,6 +908,9 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                 <h1>{faqData && faqData[0].specialtyHeading}</h1>
               </div>
               <SpecialtySearch
+                filter={filter}
+                setFilter={setFilter}
+                setSearchQuery={setSearchQuery}
                 setSearchKeyword={setSearchKeyword}
                 searchKeyword={searchKeyword}
                 selectedCity={selectedCity}
@@ -955,7 +951,7 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                 onlyFilteredCount={onlyFilteredCount}
               />
               <div className={classes.doctorCards}>
-                {(filter.brand.length > 0 ||
+                {(filter.hospitalGroup.length > 0 ||
                   filter.language.length > 0 ||
                   filter.availability.length > 0 ||
                   filter.experience.length > 0 ||
@@ -1018,8 +1014,8 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
             </div>
             <div className={classes.rightBar}>
               <div className={classes.stickyBlock}>
-                <WhyApollo />
-                <HowItWorks />
+                <WhyApollo alternateVariant={isAlternateVariant} />
+                <HowItWorks alternateVariant={isAlternateVariant} />
               </div>
             </div>
           </div>

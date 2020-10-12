@@ -363,8 +363,8 @@ interface MessagesObjectProps {
 
 interface ConsultRoomProps {
   startConsult: string;
-  sessionId: string;
-  token: string;
+  // sessionId: string;
+  // token: string;
   appointmentId: string;
   doctorId: string;
   patientId: string;
@@ -431,6 +431,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const patientJoinedMeetingRoom = '^^#patientJoinedMeetingRoom';
   const leaveChatRoom = '^^#leaveChatRoom';
   const exotelCall = '^^#exotelCall';
+  const vitalCompletedByPatient = '^^#vitalsCompletedByPatient';
 
   const { doctorId, patientId } = props;
   const channel = props.appointmentId;
@@ -575,7 +576,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         webEngageEventTracking(
           {
             'API name': 'AddChatDocument',
-            'ErrorDetails': JSON.stringify(error),
+            ErrorDetails: JSON.stringify(error),
             'Consultation Display ID': (appointmentInfo && appointmentInfo.displayId) || '',
             'Consult ID': props.appointmentId,
           },
@@ -671,7 +672,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== appointmentComplete &&
       rowData.message !== doctorAutoResponse &&
       rowData.message !== patientJoinedMeetingRoom &&
-      rowData.message !== leaveChatRoom
+      rowData.message !== leaveChatRoom &&
+      rowData.message !== vitalCompletedByPatient
     ) {
       leftComponent++;
       rightComponent = 0;
@@ -734,7 +736,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                         src={rowData.url}
                         alt={rowData.url}
                         onError={(e: any) => {
-                          handleImageError(e, rowData.url);
+                          console.error({ event: e, url: rowData.url });
                         }}
                       />
                     )}
@@ -779,7 +781,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== appointmentComplete &&
       rowData.message !== doctorAutoResponse &&
       rowData.message !== patientJoinedMeetingRoom &&
-      rowData.message !== leaveChatRoom
+      rowData.message !== leaveChatRoom &&
+      rowData.message !== vitalCompletedByPatient
     ) {
       leftComponent = 0;
       jrDrComponent = 0;
@@ -846,7 +849,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                         src={rowData.url}
                         alt={rowData.url}
                         onError={(e: any) => {
-                          handleImageError(e, rowData.url);
+                          console.error({ event: e, url: rowData.url });
                         }}
                       />
                     )}
@@ -957,7 +960,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                         src={rowData.url}
                         alt={rowData.url}
                         onError={(e: any) => {
-                          handleImageError(e, rowData.url);
+                          console.error({ event: e, url: rowData.url });
                         }}
                       />
                     )}
@@ -1083,12 +1086,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   inputProps={{ type: 'text' }}
                   placeholder="Type here..."
                   value={messageText}
-                  onKeyPress={(e) => {
+                  onKeyPress={(e: any) => {
                     if ((e.which == 13 || e.keyCode == 13) && messageText.trim() !== '') {
                       send();
                     }
                   }}
-                  onChange={(event) => {
+                  onChange={(event: any) => {
                     setMessageText(event.currentTarget.value);
                   }}
                 />

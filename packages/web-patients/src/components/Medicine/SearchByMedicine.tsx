@@ -376,6 +376,7 @@ const SearchByMedicine: React.FC = (props) => {
       )
       .then((res) => {
         setCategoryId(res.data.category_id || paramSearchText);
+        deepLinkUtil(`MedicineSearch?${res.data.category_id || paramSearchText},${params.searchText}`);
         axios
           .post(
             `${apiDetails.url}` || '',

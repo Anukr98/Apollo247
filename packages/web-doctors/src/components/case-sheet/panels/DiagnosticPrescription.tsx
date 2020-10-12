@@ -432,7 +432,7 @@ export const DiagnosticPrescription: React.FC = () => {
         suggestions = filterVal;
         setLengthOfSuggestions(suggestions.length);
       })
-      .catch((e) => {
+      .catch((e: any) => {
         console.log('Error occured while searching for tests', e);
       });
   };
@@ -573,7 +573,7 @@ export const DiagnosticPrescription: React.FC = () => {
         autoFocus
         fullWidth
         InputProps={{
-          inputRef: (node) => {
+          inputRef: (node: any) => {
             ref(node);
             inputRef(node);
           },
@@ -713,17 +713,24 @@ export const DiagnosticPrescription: React.FC = () => {
                           variant="contained"
                           color="primary"
                           onClick={() => {
+                            //favTest.itemname
+
                             const favTestValue = {
                               itemName: favTest.itemname,
                               id: favTest.id,
                               __typename: favTest.__typename,
                             };
-                            selectedValues!.push(favTestValue);
-                            setShowFavMedicine(true);
-                            setState({
-                              single: '',
-                              popper: '',
-                            });
+
+                            let sel = selectedValues.find((x) => x.itemName === favTest.itemname);
+                            if (sel) alert('Already Exists');
+                            else {
+                              selectedValues!.push(favTestValue);
+                              setShowFavMedicine(true);
+                              setState({
+                                single: '',
+                                popper: '',
+                              });
+                            }
                           }}
                         >
                           <img src={require('images/add_doctor_white.svg')} alt="" />
@@ -760,9 +767,13 @@ export const DiagnosticPrescription: React.FC = () => {
           {!editTest!.isEdit && (
             <Autosuggest
               onSuggestionSelected={(e, { suggestion }) => {
-                suggestion.testInstruction = '';
-                setIsSuggestionSelected(true);
-                setSelectedValue(suggestion);
+                let sel = selectedValues.find((x) => x.itemName === suggestion.itemName);
+                if (sel) alert('Already Exists');
+                else {
+                  suggestion.testInstruction = '';
+                  setIsSuggestionSelected(true);
+                  setSelectedValue(suggestion);
+                }
               }}
               {...autosuggestProps}
               inputProps={{
@@ -771,7 +782,7 @@ export const DiagnosticPrescription: React.FC = () => {
                 placeholder: 'Search Tests',
                 value: state.single,
                 onChange: handleChange('single'),
-                onKeyPress: (e) => {
+                onKeyPress: (e: any) => {
                   // if (e.which == 13 || e.keyCode == 13) {
                   //   if (selectedValues && suggestions.length === 1) {
                   //     selectedValues.push(suggestions[0]);
@@ -828,7 +839,7 @@ export const DiagnosticPrescription: React.FC = () => {
                   multiline
                   placeholder="Type here..."
                   value={selectedValue!.testInstruction}
-                  onChange={(e) => {
+                  onChange={(e: any) => {
                     setSelectedValue({ ...selectedValue, testInstruction: e.target.value });
                   }}
                 />

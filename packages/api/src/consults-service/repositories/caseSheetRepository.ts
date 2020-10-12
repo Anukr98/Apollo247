@@ -345,4 +345,15 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
     );
     return getCaseSheetData;
   }
+  
+  async getCaseSheetByFilters(appointmentId: string) {
+    const caseSheets = await this.createQueryBuilder('case_sheet')
+    .leftJoinAndSelect('case_sheet.appointment', 'appointment')
+    .where('case_sheet.appointment = :appointmentId', { appointmentId })
+    .orderBy('case_sheet.createdDate', 'DESC')
+    .getMany();
+    const JDCaseSheet = caseSheets.filter((casesheet) => casesheet.doctorType === 'JUNIOR');
+    const SDCaseSheet = caseSheets.filter((casesheet) => casesheet.doctorType != 'JUNIOR');
+    return { SDCaseSheet, JDCaseSheet };
+  }
 }

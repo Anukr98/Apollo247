@@ -9,6 +9,7 @@
 export interface getPatientFutureAppointmentCount_getPatientFutureAppointmentCount {
   __typename: "AppointmentsCount";
   consultsCount: number | null;
+  activeAndInProgressConsultsCount: number | null;
 }
 
 export interface getPatientFutureAppointmentCount {
