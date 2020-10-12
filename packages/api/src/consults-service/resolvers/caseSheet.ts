@@ -46,7 +46,7 @@ import { PatientLifeStyleRepository } from 'profiles-service/repositories/patien
 import { PatientMedicalHistoryRepository } from 'profiles-service/repositories/patientMedicalHistory';
 import { SecretaryRepository } from 'doctors-service/repositories/secretaryRepository';
 import { SymptomsList } from 'types/appointmentTypes';
-import { differenceInSeconds, addDays } from 'date-fns';
+import { differenceInSeconds } from 'date-fns';
 import { ApiConstants, PATIENT_REPO_RELATIONS } from 'ApiConstants';
 import { sendNotification } from 'notifications-service/handlers';
 import { NotificationType } from 'notifications-service/constants';
@@ -54,6 +54,7 @@ import { NotificationBinRepository } from 'notifications-service/repositories/no
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
 import { getCache, setCache, delCache } from 'consults-service/database/connectRedis';
+import _ from 'lodash';
 
 
 export type DiagnosisJson = {
@@ -1030,10 +1031,12 @@ const modifyCaseSheet: Resolver<
     getCaseSheetData.updatedDate,
     getCaseSheetData.createdDate
   );
-  delete getCaseSheetData.status;
+   
+  const getCaseSheetDataWithoutStatus = _.omit(getCaseSheetData, 'status');
+
   //medicalHistory upsert ends
-  const caseSheetAttrs: Omit<Partial<CaseSheet>, 'id'> = getCaseSheetData;
-  await caseSheetRepo.updateCaseSheet(inputArguments.id, caseSheetAttrs, getCaseSheetData);
+  const caseSheetAttrs: Omit<Partial<CaseSheet>, 'id'> = getCaseSheetDataWithoutStatus;
+  await caseSheetRepo.updateCaseSheetWithPartialData(inputArguments.id, caseSheetAttrs, getCaseSheetDataWithoutStatus);
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointmentData = await appointmentRepo.findById(getCaseSheetData.appointment.id);
   if (appointmentData) {
@@ -1334,6 +1337,10 @@ const submitJDCaseSheet: Resolver<
       casesheetAttrsToUpdate,
       juniorDoctorcaseSheet
     );
+    
+    //update all existing JDcassheets to completed
+    await caseSheetRepo.updateAllJDCaseSheet(juniorDoctorcaseSheet.appointment.id);
+    
   } else {
     const casesheetAttrsToAdd = {
       createdDate: createdDate,
