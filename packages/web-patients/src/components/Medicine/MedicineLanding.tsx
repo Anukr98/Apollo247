@@ -1247,7 +1247,7 @@ const MedicineLanding: React.FC = (props: any) => {
                   </Typography>
                 </div>
               </div>
-              <div className={classes.mfaqContainer}>
+              {/* <div className={classes.mfaqContainer}>
                 <Typography>Frequently Asked Questions</Typography>
                 <div className={classes.mfaqDetail}>
                   <Typography component="h2">Additional Services I Will Receive</Typography>
@@ -1286,6 +1286,7 @@ const MedicineLanding: React.FC = (props: any) => {
                   </Typography>
                 </div>
               </div>
+            */}
             </div>
           )}
         </div>
