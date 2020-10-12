@@ -2,6 +2,7 @@ import {
   DoctorType,
   MEDICINE_ORDER_STATUS,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { SymptomsSpecialities } from '@aph/mobile-patients/src/helpers/apiCalls';
 
 type YesOrNo = 'Yes' | 'No';
 type HdfcPlan = 'SILVER' | 'GOLD' | 'PLATINUM';
@@ -238,6 +239,22 @@ export enum WebEngageEventName {
   PATIENT_SESSION_STREAM_PROPERTY_CHANGED = 'Patient Session Stream Property Changed',
   //chatRoom Events
   PATIENT_SENT_CHAT_MESSAGE_POST_CONSULT = 'Patient sent chat message post consult',
+
+  // Symptom Tracker Events
+  SYMPTOM_TRACKER_PAGE_CLICKED = 'User clicked on Track symptoms',
+  SYMPTOM_TRACKER_PROCEED_CLICKED = 'User clicked on proceed_symptom checker',
+  SYMPTOM_TRACKER_FOR_MYSELF = 'User clicked on myself_symptom checker',
+  SYMPTOM_TRACKER_FOR_FAMILY = 'User clicked on someone else_ symptom checker',
+  SYMPTOM_TRACKER_SELECT_ANOTHER_MEMBER_CLICKED = 'User clicked on select other member_symptom checker',
+  SYMPTOM_TRACKER_INFO_CLICKED = 'User clicked on information sign (i)_symptom checker',
+  SYMPTOM_TRACKER_MOST_TROUBLING_SYMPTOM_CLICKED = 'User clicked on symptom that is troubling the most',
+  SYMPTOM_TRACKER_SUGGESTED_SYMPTOMS_CLICKED = 'User selected suggested symptoms',
+  SYMPTOM_TRACKER_ADD_SELECTED_SYMPTOMS_CLICKED = 'User clicked on ‘Add selected symptoms’',
+  SYMPTOM_TRACKER_ADD_OTHER_SYMPTOM_CLICKED = 'User clicked on ‘Add other symptom’',
+  SYMPTOM_TRACKER_NO_OTHER_SYMPTOM_CLICKED = 'User clicked on ‘No other symptom’',
+  SYMPTOM_TRACKER_CONSULT_DOCTOR_CLICKED = 'User clicked on ‘Consult doctor’_symptom checker',
+  SYMPTOM_TRACKER_RESTART_CLICKED = 'User clicked on ‘restart’_symptom checker',
+  SYMPTOM_TRACKER_SEARCH_SYMPTOMS = 'User searched symptom_symptom checker',
 }
 
 export interface PatientInfo {
@@ -289,6 +306,31 @@ export interface HdfcCustomerInfo {
   Email: string;
 }
 
+interface SymptomTrackerPatientInfo {
+  'Patient UHID': string;
+  'Patient ID': string;
+  'Patient Name': string;
+  'Mobile Number': string;
+  'Date of Birth': Date | string;
+  Email: string;
+  Relation: string;
+}
+
+interface SymptomTrackerCompleteInfo {
+  'Patient UHID': string;
+  'Patient ID': string;
+  'Patient Name': string;
+  'Mobile Number': string;
+  'Date of Birth': Date | string;
+  Email: string;
+  Relation: string;
+  symptoms: {
+    id?: string;
+    name: string;
+  }[];
+  specialities: SymptomsSpecialities[];
+}
+
 export interface HdfcCustomerPlanInfo extends HdfcCustomerInfo {
   'Partner ID': string;
   HDFCMembershipLevel: HdfcPlan;
@@ -297,7 +339,7 @@ export interface HdfcCustomerPlanInfo extends HdfcCustomerInfo {
 
 export interface HdfcBenefitInfo {
   'User ID': string;
-  'Plan': HdfcPlan;
+  Plan: HdfcPlan;
 }
 
 export interface PatientInfoWithConsultId extends PatientInfo {
@@ -1512,7 +1554,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.HDFC_HOW_TO_AVAIL_CLICKED]: HdfcBenefitInfo;
   [WebEngageEventName.HDFC_REDEEM_CLICKED]: {
     'User ID': string;
-    'Benefit': string;
+    Benefit: string;
   };
   [WebEngageEventName.HDFC_DOC_ON_CALL_CLICK]: HdfcBenefitInfo;
   [WebEngageEventName.HDFC_COVID_CARE_CLICK]: HdfcBenefitInfo;
@@ -1678,5 +1720,43 @@ export interface WebEngageEvents {
     'Patient ID': string;
     'Doctor ID': string;
     event: string;
+  };
+
+  [WebEngageEventName.SYMPTOM_TRACKER_PAGE_CLICKED]: SymptomTrackerPatientInfo;
+  [WebEngageEventName.SYMPTOM_TRACKER_INFO_CLICKED]: SymptomTrackerPatientInfo;
+  [WebEngageEventName.SYMPTOM_TRACKER_ADD_OTHER_SYMPTOM_CLICKED]: SymptomTrackerPatientInfo;
+  [WebEngageEventName.SYMPTOM_TRACKER_MOST_TROUBLING_SYMPTOM_CLICKED]: SymptomTrackerPatientInfo;
+  [WebEngageEventName.SYMPTOM_TRACKER_NO_OTHER_SYMPTOM_CLICKED]: SymptomTrackerPatientInfo;
+  [WebEngageEventName.SYMPTOM_TRACKER_RESTART_CLICKED]: SymptomTrackerCompleteInfo;
+  [WebEngageEventName.SYMPTOM_TRACKER_CONSULT_DOCTOR_CLICKED]: SymptomTrackerCompleteInfo;
+  [WebEngageEventName.SYMPTOM_TRACKER_SEARCH_SYMPTOMS]: {
+    'Patient UHID': string;
+    'Patient ID': string;
+    'Patient Name': string;
+    'Mobile Number': string;
+    'Date of Birth': Date | string;
+    Email: string;
+    Relation: string;
+    'Search String': string;
+  };
+  [WebEngageEventName.SYMPTOM_TRACKER_SUGGESTED_SYMPTOMS_CLICKED]: {
+    'Patient UHID': string;
+    'Patient ID': string;
+    'Patient Name': string;
+    'Mobile Number': string;
+    'Date of Birth': Date | string;
+    Email: string;
+    Relation: string;
+    'Symptom Clicked': string;
+  };
+  [WebEngageEventName.SYMPTOM_TRACKER_ADD_SELECTED_SYMPTOMS_CLICKED]: {
+    'Patient UHID': string;
+    'Patient ID': string;
+    'Patient Name': string;
+    'Mobile Number': string;
+    'Date of Birth': Date | string;
+    Email: string;
+    Relation: string;
+    'Selected Symptoms': string;
   };
 }
