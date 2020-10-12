@@ -1191,7 +1191,7 @@ app.get('/processOmsOrders', (req, res) => {
                   issubscribe: false,
                   tattype: orderDetails.tatType || '',
                   orderchannel: orderDetails.bookingSource || '',
-                  clusterid: orderDetails.clusterid || '',
+                  clusterid: orderDetails.clusterId || '',
                   additionalmisc1: orderDetails.allocationProfileName || '',
                   customerdetails: {
                     billingaddress: deliveryAddress.trim(),
