@@ -1,6 +1,5 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const Constants = require('./Constants');
 const axios = require('axios');
 const cors = require('cors');
 const ejs = require('ejs');
@@ -32,10 +31,8 @@ const {
 const listOfPaymentMethods = require('./consult-integrations/helpers/list-of-payment-method');
 
 const {
+  exotelCallEndHandler,
   getAddressDetails,
-  getCache,
-  CreateUserSubscription,
-  getCallDetails,
 } = require('./commons');
 const { getMedicineOrderQuery } = require('./pharma-integrations/helpers/medicine-order-query');
 const getPrescriptionUrls = require('./pharma-integrations/controllers/pharma-prescription-urls');
@@ -61,24 +58,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(express.static(__dirname + '/views'));
 app.set('view engine', 'ejs');
-app.post('/exotelCallEnd', async (req, res) => {
-  try {
-    const EXOTEL_HDFC_CALL_PREFIX = 'exotelcall:hdfc';
-
-    const { mobileNumber } = req.query;
-    const key = `${EXOTEL_HDFC_CALL_PREFIX}:${mobileNumber}`;
-    let callEndResponse = await getCache(key);
-    callEndResponse = JSON.parse(callEndResponse);
-    const { benefitId } = callEndResponse;
-    const callDetails = await getCallDetails(callEndResponse);
-    if (callDetails['Call']['Status'] == Constants.EXOTEL_CALL_END_STATUS.COMPLETED) {
-      await CreateUserSubscription(mobileNumber, benefitId);
-    }
-    res.json({ success: true });
-  } catch (error) {
-    throw new Error(error);
-  }
-});
+app.post('/exotelCallEnd', exotelCallEndHandler);
 app.get(
   '/deeplink',
   deeplink({
@@ -324,16 +304,16 @@ app.get('/getCmToken', (req, res) => {
   axios
     .get(
       process.env.CM_API_URL +
-        '?appId=apollo_24_7&appUserId=' +
-        req.query.appUserId +
-        '&name=' +
-        req.query.userName +
-        '&gender=' +
-        req.query.gender +
-        '&emailId=' +
-        req.query.emailId +
-        '&phoneNumber=' +
-        req.query.phoneNumber
+      '?appId=apollo_24_7&appUserId=' +
+      req.query.appUserId +
+      '&name=' +
+      req.query.userName +
+      '&gender=' +
+      req.query.gender +
+      '&emailId=' +
+      req.query.emailId +
+      '&phoneNumber=' +
+      req.query.phoneNumber
     )
     .then((response) => {
       res.send({
@@ -1127,7 +1107,7 @@ app.get('/processOmsOrders', (req, res) => {
                   } catch (e) {
                     logger.error(
                       `Error while fetching prescription urls for orderid ${
-                        orderDetails.orderAutoId
+                      orderDetails.orderAutoId
                       } ${JSON.stringify(e)}`
                     );
                     res.send({
@@ -1209,8 +1189,8 @@ app.get('/processOmsOrders', (req, res) => {
                       (patientDetails.lastName ? ' ' + patientDetails.lastName : ''),
                     primarycontactno: patientAddressDetails.mobileNumber
                       ? patientAddressDetails.mobileNumber.substr(
-                          patientAddressDetails.mobileNumber.length - 10
-                        )
+                        patientAddressDetails.mobileNumber.length - 10
+                      )
                       : '',
                     secondarycontactno: patientDetails.mobileNumber.substr(3),
                     age: patientAge,
@@ -1439,7 +1419,7 @@ app.get('/processOrderById', (req, res) => {
         ) {
           if (
             response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patientAddressId !=
-              '' &&
+            '' &&
             response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patientAddressId != null
           ) {
             await getAddressDetails(
@@ -1489,9 +1469,9 @@ app.get('/processOrderById', (req, res) => {
         let orderType = 'FMCG';
         if (
           response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl !=
-            '' &&
+          '' &&
           response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl !=
-            null
+          null
         ) {
           prescriptionImages = response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl.split(
             ','
@@ -1521,9 +1501,9 @@ app.get('/processOrderById', (req, res) => {
               .paymentType;
           if (
             response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl !=
-              '' &&
+            '' &&
             response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl !=
-              null
+            null
           ) {
             prescriptionImages = response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl.split(
               ','
