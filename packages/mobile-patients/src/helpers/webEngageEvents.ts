@@ -457,7 +457,8 @@ export interface WebEngageEvents {
       | 'Pharmacy PDP'
       | 'Pharmacy List'
       | 'Pharmacy Partial Search'
-      | 'Pharmacy Full Search';
+      | 'Pharmacy Full Search'
+      | 'Similar Widget';
     Brand?: string;
     'Brand ID'?: string;
     'category name'?: string;
