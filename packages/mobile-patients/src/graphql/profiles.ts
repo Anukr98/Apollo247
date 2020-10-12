@@ -3269,6 +3269,16 @@ export const SET_DEFAULT_ADDRESS = gql`
   }
 `;
 
+export const GET_DOCTOR_LIST = gql`
+  query getDoctorList($filterInput: FilterDoctorInput) {
+    getDoctorList(filterInput: $filterInput) {
+      doctors
+      apolloDoctorCount
+      partnerDoctorCount
+    }
+  }
+`;
+
 export const GET_DIAGNOSTIC_AREAS = gql`
   query getAreas ($pincode: Int!,$itemIDs: [Int]!) {
     getAreas(pincode: $pincode, itemIDs: $itemIDs) {
@@ -3276,6 +3286,39 @@ export const GET_DIAGNOSTIC_AREAS = gql`
      areas{
         id 
         area
+      }
+    }
+  }
+`;
+
+export const GET_DOCTORLIST_FILTERS = gql`
+  query getDoctorListFilters {
+    getDoctorListFilters {
+      filters {
+        city {
+          state
+          data
+        }
+        brands {
+          name
+          image
+          brandName
+        }
+        language {
+          name
+        }
+        experience {
+          name
+        }
+        availability {
+          name
+        }
+        fee {
+          name
+        }
+        gender {
+          name
+        }
       }
     }
   }

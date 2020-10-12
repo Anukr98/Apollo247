@@ -33,7 +33,12 @@ import { ConsultMode } from '../../graphql/types/globalTypes';
 import { AppRoutes } from '../NavigatorContainer';
 import { useApolloClient } from 'react-apollo-hooks';
 import { useUIElements } from '../UIElementsProvider';
-import { PAST_APPOINTMENTS_COUNT } from '../../graphql/profiles';
+import { PAST_APPOINTMENTS_COUNT, GET_DOCTOR_DETAILS_BY_ID } from '../../graphql/profiles';
+import {
+  getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor,
+  getDoctorDetailsById,
+  getDoctorDetailsById_getDoctorDetailsById,
+} from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import {
   getPastAppointmentsCount,
   getPastAppointmentsCountVariables,
@@ -148,7 +153,7 @@ const styles = StyleSheet.create({
 export interface ConsultTypeScreenProps extends NavigationScreenProps {
   DoctorName: string;
   DoctorId: string;
-  nextAppointemntOnlineTime: string;
+  nextSlot: string;
   nextAppointemntInPresonTime: string;
   onlinePrice: string;
   InpersonPrice: string;
@@ -164,20 +169,20 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
   const [consultedChecked, setConsultedChecked] = useState<boolean>(false);
   const DoctorName = props.navigation.getParam('DoctorName');
   const DoctorId = props.navigation.getParam('DoctorId');
-  const chatDays = props.navigation.getParam('chatDays');
+  // const chatDays = props.navigation.getParam('chatDays');
   const [hideCheckbox, setHideCheckbox] = useState<boolean>(false);
-  const nextAppointemntOnlineTime = props.navigation.getParam('nextAppointemntOnlineTime');
-  const nextAppointemntInPresonTime = props.navigation.getParam('nextAppointemntInPresonTime');
-  const onlinePrice = props.navigation.getParam('onlinePrice');
-  const InpersonPrice = props.navigation.getParam('InpersonPrice');
+  const nextAppointemntOnlineTime = props.navigation.getParam('nextSlot');
+  const nextAppointemntInPresonTime = props.navigation.getParam('nextSlot');
+  // const onlinePrice = props.navigation.getParam('onlinePrice');
+  // const InpersonPrice = props.navigation.getParam('InpersonPrice');
   const ConsultType = props.navigation.getParam('ConsultType');
   const params = props.navigation.getParam('params');
   const { setLoading } = useUIElements();
   const { currentPatientId, currentPatient } = useAllCurrentPatients();
-
+  const [doctorDetails, setdoctorDetails] = useState<getDoctorDetailsById_getDoctorDetailsById>();
   const callSaveSearch = props.navigation.getParam('callSaveSearch');
 
-  // const client = useApolloClient();
+  const client = useApolloClient();
 
   // useEffect(() => {
   //   if (DoctorId && currentPatientId) {
@@ -204,6 +209,38 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
   //       });
   //   }
   // }, [DoctorId, client, currentPatientId, setLoading]);
+
+  useEffect(() => {
+    fetchDoctorDetails(DoctorId);
+  }, []);
+
+  const fetchDoctorDetails = (doctorId: string) => {
+    const input = {
+      id: doctorId,
+    };
+    console.log('input ', input);
+
+    client
+      .query<getDoctorDetailsById>({
+        query: GET_DOCTOR_DETAILS_BY_ID,
+        variables: input,
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data }) => {
+        console.log(data);
+        try {
+          if (data && data.getDoctorDetailsById) {
+            setdoctorDetails(data.getDoctorDetailsById);
+          }
+        } catch (e) {
+          CommonBugFender('DoctorDetails_fetchDoctorDetails_try', e);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('DoctorDetails_fetchDoctorDetails', e);
+        console.log('Error occured', e);
+      });
+  };
 
   const renderHeader = () => {
     return (
@@ -325,7 +362,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
       <OnlineHeader />,
       string.consultType.online.heading,
       string.consultType.online.question,
-      onlinePrice,
+      doctorDetails?.onlineConsultationFees ? doctorDetails?.onlineConsultationFees : '-',
       nextAppointemntOnlineTime,
       [
         { image: <CTDoctor />, description: string.consultType.online.point1 },
@@ -345,7 +382,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
           image: <CTChat />,
           description: string.consultType.follow_up_chat_days_text.replace(
             '{0}',
-            chatDays ? chatDays : '7'
+            doctorDetails?.chatDays ? String(doctorDetails?.chatDays) : '7'
           ),
           textColor: theme.colors.SKY_BLUE,
         },
@@ -368,7 +405,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
       <InPersonHeader />,
       string.consultType.inperson.heading,
       string.consultType.inperson.question,
-      InpersonPrice,
+      doctorDetails?.physicalConsultationFees ? doctorDetails?.physicalConsultationFees : '-',
       nextAppointemntInPresonTime,
       [
         { image: <CTDoctor />, description: string.consultType.inperson.point1 },
