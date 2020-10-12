@@ -30,7 +30,7 @@
     "Rs": "₹",
     "KavachText": "Explore the Apollo Kavach Program",
     "joinConsultRoomDescription": "Please click here to\n Join the Call with",
-    "waitForDoctirToJoinCall": "Please wait while doctor_name is going through your medical records. This might take a while. Advice you to stay in the consult room!",
+    "waitForDoctirToJoinCall": "Please wait while Dr. doctor_name is going through your medical records. This might take a while. Advice you to stay in the consult room!",
     "exotelMessage": " is trying to call you from the number ",
     "requestMessage": ". Request you to answer the call.",
     "jdAssignedMessage": "A doctor from 0’s team will join you shortly to collect your medical details. These details are essential for 0 to help you and will take around 3-5 minutes.",
