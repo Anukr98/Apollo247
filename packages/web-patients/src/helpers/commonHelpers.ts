@@ -274,7 +274,7 @@ interface SearchObject {
   specialtyName: string;
   prakticeSpecialties: string | null;
   consultMode: ConsultMode | null;
-  brand: string[] | null;
+  hospitalGroup: string[] | null;
 }
 
 interface AppointmentFilterObject {
@@ -284,19 +284,47 @@ interface AppointmentFilterObject {
   specialtyList: string[] | null;
 }
 
-const brandList = [
-  { key: DoctorType.APOLLO, value: 'Apollo' },
-  { key: DoctorType.APOLLO_HOMECARE, value: 'Apollo Homecare' },
-  { key: DoctorType.CLINIC, value: 'Clinic' },
-  { key: DoctorType.CRADLE, value: 'Cradle' },
-  { key: DoctorType.DOCTOR_CONNECT, value: 'Doctor Connect' },
-  { key: DoctorType.FERTILITY, value: 'Fertility' },
-  { key: DoctorType.JUNIOR, value: 'Junior' },
-  { key: DoctorType.PAYROLL, value: 'Payroll' },
-  { key: DoctorType.SPECTRA, value: 'Spectra' },
-  { key: DoctorType.STAR_APOLLO, value: 'Star Apollo' },
-  { key: DoctorType.SUGAR, value: 'Sugar' },
-  { key: DoctorType.WHITE_DENTAL, value: 'White Dental' },
+const hospitalGroupList = [
+  { key: DoctorType.APOLLO, value: 'Apollo', imageUrl: require('images/ic_brand_apollo.svg') },
+  {
+    key: DoctorType.CRADLE,
+    value: 'Cradle',
+    imageUrl: require('images/ic_brand_apollocradle.svg'),
+  },
+  {
+    key: DoctorType.CLINIC,
+    value: 'Clinic',
+    imageUrl: require('images/ic_brand_apolloclinic.svg'),
+  },
+  {
+    key: DoctorType.SPECTRA,
+    value: 'Spectra',
+    imageUrl: require('images/ic_brand_apollospectra.svg'),
+  },
+  { key: DoctorType.SUGAR, value: 'Sugar', imageUrl: require('images/logo-apollo-sugar.svg') },
+  {
+    key: DoctorType.FERTILITY,
+    value: 'Fertility',
+    imageUrl: require('images/logo-apollo-fertility.svg'),
+  },
+  {
+    key: DoctorType.WHITE_DENTAL,
+    value: 'White Dental',
+    imageUrl: require('images/apollo-logo-apollo-white-dental.svg'),
+  },
+  // {
+  //   key: DoctorType.APOLLO_HOMECARE,
+  //   value: 'Apollo Homecare',
+  //   imageUrl: 'images/ic_brand_apollo.svg',
+  // },
+  // {
+  //   key: DoctorType.DOCTOR_CONNECT,
+  //   value: 'Doctor Connect',
+  //   imageUrl: 'images/ic_brand_apollo.svg',
+  // },
+  // { key: DoctorType.JUNIOR, value: 'Junior', imageUrl: 'images/ic_brand_apollo.svg' },
+  // { key: DoctorType.PAYROLL, value: 'Payroll', imageUrl: 'images/ic_brand_apollo.svg' },
+  // { key: DoctorType.STAR_APOLLO, value: 'Star Apollo', imageUrl: 'images/ic_brand_apollo.svg' },
 ];
 const feeInRupees = [
   { key: '100-500', value: '100 - 500' },
@@ -617,7 +645,7 @@ const disablingActionsTimeBeforeConsultation = 16;
 
 export {
   disablingActionsTimeBeforeConsultation,
-  brandList,
+  hospitalGroupList,
   getSlidesToScroll,
   deepLinkUtil,
   isDivisibleByTwo,
