@@ -383,7 +383,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   };
 
   const filterDoctors = (
-    data: (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null)[],
+    data: any,
     type: string,
     searchText: string = doctorSearch
   ) => {
@@ -392,7 +392,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         ? data.filter(
             (i) =>
               i &&
-              (i.fullName || '')
+              (i.displayName || '')
                 .toString()
                 .toLowerCase()
                 .includes(searchText.toLowerCase())
@@ -1539,6 +1539,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       postTabBarClickWEGEvent('APOLLO');
       setDoctorsType('APOLLO');
       // onPressAvailabiltyRadioButton();
+      setFilteredDoctorsList([])
       filterDoctors(doctorsList, 'APOLLO');
       scrollToTop();
     }
@@ -1549,6 +1550,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       postTabBarClickWEGEvent('PARTNERS');
       setDoctorsType('PARTNERS');
       // onPressNearByRadioButton(true);
+      setFilteredDoctorsList([])
       filterDoctors(doctorsList, 'PARTNERS');
       scrollToTop();
     }
