@@ -10,6 +10,8 @@ export const clientRoutes = {
   doctorsLanding: () => '/track-symptoms/doctors',
   specialties: (specialty: string) => `/specialties/${specialty}`,
   citySpecialties: (city: string, specialty: string) => `/${city}/specialties/${specialty}`,
+  specialtyDetailsWithCity: (specialty: string, city: string) =>
+    `/doctor/${specialty}-in-${city}-scity`,
   appointments: () => '/appointments',
   appointmentSuccess: () => `/appointments/${status}`,
   testsAndMedicine: () => '/tests-medicines',
