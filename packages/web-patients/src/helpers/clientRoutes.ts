@@ -2,7 +2,7 @@ import { webPatientsBaseUrl } from '@aph/universal/dist/aphRoutes';
 
 export const clientRoutes = {
   patients: () => '/patients',
-
+  specialtyDetailsWithCity: (specialty: string, city: string) =>`/doctors/${specialty}-in-${city}-scity`,
   welcome: () => '/',
   doctorDetails: (doctorName: string, doctorId: string) => `/doctors/${doctorName}-${doctorId}`,
   specialtyDoctorDetails: (specialty: string, doctorName: string, doctorId: string) =>
@@ -10,8 +10,7 @@ export const clientRoutes = {
   doctorsLanding: () => '/track-symptoms/doctors',
   specialties: (specialty: string) => `/specialties/${specialty}`,
   citySpecialties: (city: string, specialty: string) => `/${city}/specialties/${specialty}`,
-  specialtyDetailsWithCity: (specialty: string, city: string) =>
-    `/doctor/${specialty}-in-${city}-scity`,
+ 
   appointments: () => '/appointments',
   appointmentSuccess: () => `/appointments/${status}`,
   testsAndMedicine: () => '/tests-medicines',

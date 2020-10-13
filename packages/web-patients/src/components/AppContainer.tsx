@@ -29,6 +29,9 @@ const Welcome = loadable(() => import('components/Welcome'));
 const NotificationSettings = loadable(() =>
   import('components/Notifications/NotificationSettings')
 );
+const SpecialtyDetailsWithCity = loadable(() =>
+  import('components/Doctors/SpecialtyDetailsWithCity')
+);
 const SbiLandingPage = loadable(() => import('components/Partners/SBI/SbiLandingPage'));
 const PatientsList = loadable(() => import('components/PatientsList'));
 const PrescriptionReview = loadable(() => import('components/PrescriptionReview'));
@@ -52,9 +55,6 @@ const covidProtocolLanding = loadable(() => import('components/Covid/CovidProtoc
 const SpecialityListing = loadable(() => import('components/SpecialityListing'));
 const DoctorsLanding = loadable(() => import('components/DoctorsLanding'));
 const SpecialtyDetails = loadable(() => import('components/Doctors/SpecialtyDetails'));
-const SpecialtyDetailsWithCity = loadable(() =>
-  import('components/Doctors/SpecialtyDetailsWithCity')
-);
 const Appointments = loadable(() => import('components/Consult/V2/Appointments'));
 const ChatRoom = loadable(() => import('components/Consult/V2/ChatRoom/ChatRoom'));
 const Prescription = loadable(() => import('components/Consult/V2/Prescription'));
@@ -124,6 +124,11 @@ const App: React.FC = () => {
       <Switch>
         <Route exact path={clientRoutes.welcome()} component={Welcome} />
         <Route exact path={clientRoutes.aboutUs()} component={AboutUs} />
+        <Route
+          exact
+          path={clientRoutes.specialtyDetailsWithCity(':specialty', ':city')}
+          component={SpecialtyDetailsWithCity}
+        />
         <Route exact path={clientRoutes.covidLanding()} component={CovidLanding} />
         <Route exact path={clientRoutes.articleDetails()} component={CovidArticleDetails} />
         <Route exact path={clientRoutes.kavachLanding()} component={KavachLanding} />
@@ -147,11 +152,6 @@ const App: React.FC = () => {
           exact
           path={clientRoutes.citySpecialties(':city', ':specialty')}
           component={SpecialtyDetails}
-        />
-        <Route
-          exact
-          path={clientRoutes.specialtyDetailsWithCity(':specialty', ':city')}
-          component={SpecialtyDetailsWithCity}
         />
         <Route exact path={clientRoutes.medicines()} component={MedicineLanding} />
         <Route exact path={clientRoutes.medicineSearch()} component={MedicineSearch} />
