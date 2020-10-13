@@ -58,14 +58,13 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     specialitySearch: {
       padding: '10px 0',
-      background: '#fff',
       display: 'flex',
       alignItems: 'center',
       [theme.breakpoints.down(700)]: {
         flexDirection: 'column',
         alignItems: 'flex-start',
         padding: 20,
-        margin: '0 0 20px',
+        background: '#fff',
       },
     },
     cityActive: {
