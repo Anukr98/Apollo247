@@ -40,7 +40,8 @@ export async function sendPatientRegistrationNotification(
   const notificationTitle = ApiConstants.PATIENT_REGISTRATION_TITLE.toString();
   let notificationBody: string = '';
   notificationBody = ApiConstants.PATIENT_REGISTRATION_BODY.replace('{0}', patient.firstName);
-  let smsContent = process.env.SMS_LINK ? ' Click here ' + process.env.SMS_LINK : '';
+  const appLink = await getPatientDeeplink(ApiConstants.PATIENT_CONSULTS_DEEPLINK, ApiConstants.PATIENT_DEEPLINK_TEMPLATE_ID_APOLLO);
+  let smsContent = appLink ? ' Click here ' + appLink : '';
   smsContent = notificationBody + smsContent;
   const payload = {
     notification: {
@@ -347,8 +348,9 @@ export async function sendChatMessageNotification(
   doctorsDb: Connection,
   chatMessage: string
 ) {
-  if (process.env.CHAT_DOCTOR_DEEP_LINK) {
-    const devLink = process.env.CHAT_DOCTOR_DEEP_LINK + appointment.id.toString();
+  const appLink = await getPatientDeeplink(ApiConstants.DOCTOR_DEEPLINK_CHAT + appointment.id.toString(), ApiConstants.PATIENT_DEEPLINK_TEMPLATE_ID_APOLLO);
+  if (appLink) {
+    const devLink = appLink;
     const templateData: string[] = [
       doctorDetails.salutation + ' ' + doctorDetails.firstName,
       patientDetails.firstName + ' ' + patientDetails.lastName,
