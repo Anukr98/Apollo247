@@ -5,7 +5,7 @@ import Grid from '@material-ui/core/Grid';
 import { Link, Theme, Typography } from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
 import Modal from '@material-ui/core/Modal';
-import { AphButton } from '@aph/web-ui-components';
+import { AphButton, AphTextField } from '@aph/web-ui-components';
 import { MEDICINE_ORDER_PAYMENT_TYPE } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { goConsultRoomTracking } from 'webEngageTracking';
@@ -235,6 +235,51 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#fc9916 !important',
       textTransform: 'uppercase',
       cursor: 'pointer',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      margin: '0 25px !important',
+      paddingBottom: 0,
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+    },
+    searchInput: {
+      '& input': {
+        padding: '10px 25px 10px 10px',
+        minHeight: 25,
+      },
+    },
+    chatSend: {
+      position: 'absolute',
+      right: -10,
+      top: 0,
+      boxShadow: 'none',
+      paddingTop: 5,
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+      '&:disabled': {
+        opacity: 0.5,
+        pointerEvents: 'none',
+      },
+    },
+    chatWindowFooter: {
+      paddingTop: 2,
+      position: 'relative',
+      margin: '10px auto 0 auto',
+      maxWidth: 360,
+      background: '#fff',
+      borderRadius: 8,
+      '& input': {
+        fontSize: 12,
+        padding: '2px 40px 7px 10px',
+      },
+    },
+    successMsg: {
+      color: 'rgba(74,165,74,0.6)',
+      fontSize: 11,
+      fontWeight: 500,
+      padding: '8px 0',
     },
   };
 });
@@ -308,15 +353,14 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
       </div>
       <div className={classes.modalBody}>
         <div
-          className={`${classes.statusCard} ${
-            paymentStatus == 'pending'
-              ? classes.pending
-              : paymentStatus == 'failed' || paymentStatus === 'aborted'
+          className={`${classes.statusCard} ${paymentStatus == 'pending'
+            ? classes.pending
+            : paymentStatus == 'failed' || paymentStatus === 'aborted'
               ? classes.failed
               : paymentStatus == 'success'
-              ? classes.success
-              : ''
-          }`}
+                ? classes.success
+                : ''
+            }`}
         >
           {paymentStatus && paymentStatus.length > 0 && (
             <img src={require(`images/${paymentStatus}.svg`)} />
@@ -328,13 +372,38 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
             <Typography component="p">Payment Ref. Number - {paymentRefId}</Typography>
           )}
           {type === 'consult' && paymentStatus == 'success' && (
-            <Typography
-              component="p"
-              className={classes.viewInvoice}
-              onClick={() => fetchConsultInvoice(true)}
-            >
-              View Invoice
-            </Typography>
+            <>
+              <AphButton
+                className={classes.viewInvoice}
+                onClick={() => fetchConsultInvoice(true)}
+              >
+                View Invoice
+            </AphButton>
+              <AphButton
+                className={classes.viewInvoice}
+              >
+                Email Invoice
+            </AphButton>
+              <div
+                className={classes.chatWindowFooter}
+              >
+                <AphTextField
+                  autoFocus
+                  className={classes.searchInput}
+                  inputProps={{ type: 'text' }}
+                  placeholder="Type here..."
+                />
+                <AphButton
+                  className={classes.chatSend}
+                  disabled
+                >
+                  <img src={require('images/ic_send.svg')} alt="" />
+                </AphButton>
+                {/* <div className={classes.successMsg}>
+                  Invoice has been sent to garimasuri@gmail.com!
+                </div> */}
+              </div>
+            </>
           )}
         </div>
         <div className={`${classes.sectionHeader} ${classes.modalSHeader}`}>
@@ -372,30 +441,28 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
                     <Grid item xs={12} sm={12}>
                       <div className={classes.details}>
                         <Typography component="h6">Clinic Address</Typography>
-                        <Typography component="p">{`${doctorAddressDetail.name}, ${
-                          doctorAddressDetail.streetLine1
-                        },${
-                          doctorAddressDetail.streetLine2
+                        <Typography component="p">{`${doctorAddressDetail.name}, ${doctorAddressDetail.streetLine1
+                          },${doctorAddressDetail.streetLine2
                             ? doctorAddressDetail.streetLine2 + ','
                             : ''
-                        } ${doctorAddressDetail.city} `}</Typography>
+                          } ${doctorAddressDetail.city} `}</Typography>
                       </div>
                     </Grid>
                   )}
               </Grid>
             </Paper>
           ) : (
-            <Paper className={classes.orderDetails}>
-              <div className={classes.details}>
-                <Typography component="h6">Order Date &amp; Time</Typography>
-                <Typography component="p">{paymentDateTime}</Typography>
-              </div>
-              <div className={classes.details}>
-                <Typography component="h6">Mode of Payment</Typography>
-                <Typography component="p">{paymentType}</Typography>
-              </div>
-            </Paper>
-          )}
+              <Paper className={classes.orderDetails}>
+                <div className={classes.details}>
+                  <Typography component="h6">Order Date &amp; Time</Typography>
+                  <Typography component="p">{paymentDateTime}</Typography>
+                </div>
+                <div className={classes.details}>
+                  <Typography component="h6">Mode of Payment</Typography>
+                  <Typography component="p">{paymentType}</Typography>
+                </div>
+              </Paper>
+            )}
         </>
         <div className={classes.note}>
           {paymentInfo && paymentInfo.length > 1 && (

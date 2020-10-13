@@ -8,6 +8,7 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { useParams } from 'hooks/routerHooks';
+import { LazyIntersection } from 'components/lib/LazyIntersection';
 
 import {
   SearchObject,
@@ -16,9 +17,9 @@ import {
   genderList,
   languageList,
   availabilityList,
-  brandList,
+  hospitalGroupList,
 } from 'helpers/commonHelpers';
-import { ConsultMode } from 'graphql/types/globalTypes';
+import { ConsultMode, DoctorType } from 'graphql/types/globalTypes';
 import { Route } from 'react-router';
 import { clientRoutes } from 'helpers/clientRoutes';
 
@@ -167,6 +168,21 @@ const useStyles = makeStyles((theme: Theme) => {
         [theme.breakpoints.down('sm')]: {
           marginRight: 6,
           marginBottom: 10,
+        },
+      },
+    },
+    filterBrands: {
+      paddingRight: 110,
+      [theme.breakpoints.down('sm')]: {
+        paddingRight: 0,
+      },
+      '& button': {
+        minWidth: 102,
+        height: 42,
+        marginBottom: 20,
+        fontSize: 14,
+        [theme.breakpoints.down('sm')]: {
+          minWidth: 87,
         },
       },
     },
@@ -332,6 +348,18 @@ export const Filters: React.FC<FilterProps> = (props) => {
     return valueList;
   };
 
+  const filterOthersHospitalGroup = (valueList: Array<string>) => {
+    if (valueList.includes(DoctorType.PAYROLL) && valueList.includes(DoctorType.JUNIOR)) {
+      valueList = valueList.filter(
+        (val) => val !== DoctorType.PAYROLL && val !== DoctorType.JUNIOR
+      );
+    } else {
+      valueList.push(DoctorType.PAYROLL);
+      valueList.push(DoctorType.JUNIOR);
+    }
+    return valueList;
+  };
+
   const setFilterValues = (type: string, value: string) => {
     if (type === 'experience') {
       const experience = filterValues(localFilter.experience, value);
@@ -348,9 +376,12 @@ export const Filters: React.FC<FilterProps> = (props) => {
     } else if (type === 'availability') {
       const availability = filterValues(localFilter.availability, value);
       setLocalFilter({ ...localFilter, availability });
-    } else if (type === 'brand') {
-      const brand = filterValues(localFilter.brand, value);
-      setLocalFilter({ ...localFilter, brand });
+    } else if (type === 'hospitalGroup') {
+      const hospitalGroup =
+        value === 'others'
+          ? filterOthersHospitalGroup(localFilter.hospitalGroup)
+          : filterValues(localFilter.hospitalGroup, value);
+      setLocalFilter({ ...localFilter, hospitalGroup });
     }
   };
 
@@ -370,7 +401,7 @@ export const Filters: React.FC<FilterProps> = (props) => {
       dateSelected: '',
       specialtyName: '',
       prakticeSpecialties: '',
-      brand: [],
+      hospitalGroup: [],
       consultMode:
         isOnlineSelected && isPhysicalSelected
           ? ConsultMode.BOTH
@@ -473,8 +504,8 @@ export const Filters: React.FC<FilterProps> = (props) => {
                   root: classes.tabRoot,
                   selected: classes.tabSelected,
                 }}
-                label="Brands"
-                title="Brands"
+                label="Hospital Group"
+                title="Hospital Group"
               />
               <Tab
                 classes={{
@@ -602,18 +633,37 @@ export const Filters: React.FC<FilterProps> = (props) => {
               <TabContainer>
                 <div className={classes.filterType}>
                   <h4>&nbsp;</h4>
-                  <div className={classes.filterBtns}>
-                    {brandList.map((brand: { key: string; value: string }) => (
-                      <AphButton
-                        key={brand.key}
-                        className={applyClass(localFilter.brand, brand.key)}
-                        onClick={() => {
-                          setFilterValues('brand', brand.key);
-                        }}
-                      >
-                        {brand.value}
-                      </AphButton>
-                    ))}
+                  <div className={`${classes.filterBtns} ${classes.filterBrands}`}>
+                    {hospitalGroupList.map(
+                      (hospitalGroup: { key: string; value: string; imageUrl: string }) => (
+                        <AphButton
+                          key={hospitalGroup.key}
+                          className={applyClass(localFilter.hospitalGroup, hospitalGroup.key)}
+                          onClick={() => {
+                            setFilterValues('hospitalGroup', hospitalGroup.key);
+                          }}
+                        >
+                          <LazyIntersection src={hospitalGroup.imageUrl} alt="" />
+                        </AphButton>
+                      )
+                    )}
+                    {/* <AphButton>
+                      <img src={require('images/logo-apollo-cosmetic.svg')} alt="" />
+                    </AphButton> */}
+                    <AphButton
+                      key={'others'}
+                      className={
+                        localFilter.hospitalGroup.includes(DoctorType.JUNIOR) &&
+                        localFilter.hospitalGroup.includes(DoctorType.PAYROLL)
+                          ? classes.filterActive
+                          : ''
+                      }
+                      onClick={() => {
+                        setFilterValues('hospitalGroup', 'others');
+                      }}
+                    >
+                      Others
+                    </AphButton>
                   </div>
                 </div>
               </TabContainer>
@@ -736,8 +786,8 @@ export const Filters: React.FC<FilterProps> = (props) => {
                     onClick={() => {
                       const newUrl = window.location.href;
                       const currentUrl = new URL(`${newUrl.split('?')[0]}`);
-                      if (localFilter.brand.length > 0) {
-                        structFilterUrl(currentUrl, 'brand', localFilter.brand);
+                      if (localFilter.hospitalGroup.length > 0) {
+                        structFilterUrl(currentUrl, 'hospitalGroup', localFilter.hospitalGroup);
                       }
                       if (localFilter.experience.length > 0) {
                         structFilterUrl(currentUrl, 'experience', localFilter.experience);

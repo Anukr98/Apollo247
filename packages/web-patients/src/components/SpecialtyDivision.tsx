@@ -506,7 +506,6 @@ const useStyles = makeStyles((theme: Theme) => {
     modalDialog: {
       maxWidth: 526,
       margin: 'auto',
-      display: 'none',
     },
   };
 });
@@ -635,7 +634,7 @@ export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
           <Specialties selectedCity={selectedCity} setSpecialtyCount={setSpecialtyCount} />
         </div>
       </div>
-      <AphDialog open={true} maxWidth={false} className={classes.modalDialog} >
+      <AphDialog open={false} maxWidth={false} className={classes.modalDialog} >
         <AphDialogTitle className={classes.memberTitle}>
           Select the member you want to book appointment for
                </AphDialogTitle>

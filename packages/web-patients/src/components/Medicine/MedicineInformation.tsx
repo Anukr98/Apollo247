@@ -10,6 +10,7 @@ import {
   pharmacyPdpPincodeTracking,
   addToCartTracking,
   buyNowTracking,
+  pharmaAvailabilityApiTracking,
 } from 'webEngageTracking';
 import { SubstituteDrugsList } from 'components/Medicine/SubstituteDrugsList';
 import {
@@ -599,18 +600,27 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const checkDeliveryTime = (pinCode: string, sku: string) => {
     checkSkuAvailability(sku, pinCode)
       .then((res: any) => {
-        if (
-          res &&
-          res.data &&
-          res.data.response &&
-          res.data.response.length > 0 &&
-          res.data.response[0].exist
-        ) {
-          fetchDeliveryTime(pinCode);
-        } else {
-          setDeliveryTime('');
-          setErrorMessage(OUT_OF_STOCK_MESSAGE);
-          dataLayerTrackingFn(pincodeCity, pinCode, OUT_OF_STOCK_MESSAGE);
+        if (res && res.data && res.data.response && res.data.response.length > 0) {
+          /** Webengage Tracking */
+          const { exist, mrp, qty } = res.data.response[0];
+          pharmaAvailabilityApiTracking({
+            source: 'PDP',
+            inputSku: sku,
+            inputPincode: pinCode,
+            inputMrp: price,
+            itemsInCart: 1,
+            resExist: exist,
+            resMrp: mrp * parseInt(mou),
+            resQty: qty,
+          });
+          /** Webengage Tracking */
+          if (res.data.response[0].exist) {
+            fetchDeliveryTime(pinCode);
+          } else {
+            setDeliveryTime('');
+            setErrorMessage(OUT_OF_STOCK_MESSAGE);
+            dataLayerTrackingFn(pincodeCity, pinCode, OUT_OF_STOCK_MESSAGE);
+          }
         }
       })
       .catch((e) => {

@@ -69,7 +69,7 @@ export const EPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
           <View style={styles.upperContainer}>
             <Text
               style={{
-                // flex: 1,
+                flex: 0.85,
                 color: theme.colors.LIGHT_BLUE,
                 lineHeight: 24,
                 textAlign: 'left',
@@ -78,30 +78,32 @@ export const EPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
             >
               {doctorName}
             </Text>
-            {showTick && (
-              <GreenTickIcon
-                style={{
-                  width: 20,
-                  paddingHorizontal: 8,
-                }}
-              />
-            )}
-            {!isDisabled && !showTick && (
-              <TouchableOpacity
-                onPress={() => {
-                  actionType == 'removal' ? onRemove!() : onSelect!(!!!isSelected);
-                }}
-                style={{ flex: 1, alignItems: 'flex-end' }}
-              >
-                {actionType == 'removal' ? (
-                  <CrossYellow />
-                ) : isSelected ? (
-                  <CheckedIcon />
-                ) : (
-                  <UnCheck />
-                )}
-              </TouchableOpacity>
-            )}
+            <View style={{ flex: 0.15 }}>
+              {showTick && (
+                <GreenTickIcon
+                  style={{
+                    width: 20,
+                    paddingHorizontal: 8,
+                  }}
+                />
+              )}
+              {!isDisabled && !showTick && (
+                <TouchableOpacity
+                  onPress={() => {
+                    actionType == 'removal' ? onRemove!() : onSelect!(!!!isSelected);
+                  }}
+                  style={{ alignItems: 'flex-end' }}
+                >
+                  {actionType == 'removal' ? (
+                    <CrossYellow />
+                  ) : isSelected ? (
+                    <CheckedIcon />
+                  ) : (
+                    <UnCheck />
+                  )}
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
         </View>
         <View style={{ marginLeft: 43 }}>

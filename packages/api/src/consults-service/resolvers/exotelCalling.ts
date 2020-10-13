@@ -9,8 +9,11 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { ExotelDetailsRepository } from 'consults-service/repositories/exotelDetailsRepository';
 import { uploadFileToBlobStorage } from 'helpers/uploadFileToBlob';
+import { checkDocOnCallAvailable } from 'helpers/subscriptionHelper';
 import { DEVICETYPE, Appointment } from 'consults-service/entities';
 import { ApiConstants } from 'ApiConstants';
+import { URLSearchParams } from 'url';
+import { setCache } from 'consults-service/database/connectRedis';
 
 export const exotelTypeDefs = gql`
   input exotelInput {
@@ -57,21 +60,30 @@ export const exotelTypeDefs = gql`
   type callDetailsResult {
     calls: [callDetails!]!
   }
-
+  type ExotelCallFlowResponse {
+    success: Boolean
+  }
   extend type Query {
     initateConferenceTelephoneCall(exotelInput: exotelInput): exotelResult!
     getCallDetailsByAppintment(appointment: appointment): callDetailsResult!
+    initiateCallForPartner(mobileNumber: String!, benefitId: String!): ExotelCallFlowResponse!
   }
   extend type Mutation {
     updateCallStatusBySid(callStatusInput: callStatusInput): callStatusResult
   }
 `;
 
+const EXOTEL_HDFC_CALL_PREFIX = 'exotelcall:hdfc';
 type exotelInput = {
   from?: string;
   to?: string;
   appointmentId: string;
   deviceType?: DEVICETYPE;
+};
+
+type exotelCallFlowInputArgs = {
+  mobileNumber: string;
+  benefitId: string;
 };
 
 type exotelInputArgs = { exotelInput: exotelInput };
@@ -81,7 +93,7 @@ type ExotelRequest = {
   To?: string;
   CallerId: string | undefined;
   Url?: string;
-  CustomField?: string
+  CustomField?: string;
 };
 
 type callInputs = {
@@ -96,6 +108,10 @@ interface ExotelCalling {
   response: string;
   errorMessage: string;
 }
+
+type ExotelCallFlowResponse = {
+  success: boolean;
+};
 
 export async function exotelCalling(callInputs: callInputs): Promise<ExotelCalling> {
   if (!callInputs.exotelUrl || !callInputs.exotelRequest.CallerId) {
@@ -252,6 +268,62 @@ const initateConferenceTelephoneCall: Resolver<
 
   return exotelResult;
 };
+const initiateCallForPartner: Resolver<
+  null,
+  exotelCallFlowInputArgs,
+  null,
+  ExotelCallFlowResponse
+> = async (parent, { mobileNumber, benefitId }) => {
+  const isDocOnCallAvailable = await checkDocOnCallAvailable(mobileNumber, benefitId);
+  if (!isDocOnCallAvailable) {
+    throw new AphError(AphErrorMessages.NO_DOCTOR_ON_CALL_BENEFIT);
+  }
+  const apiBaseUrl = `https://${process.env.EXOTEL_HDFC_API_KEY}:${process.env.EXOTEL_HDFC_API_TOKEN}@${process.env.EXOTEL_SUB_DOMAIN}`;
+  const apiUrl = `${apiBaseUrl}/v1/Accounts/${process.env.EXOTEL_SID}/Calls/connect.json`;
+  const params: { [index: string]: string } = {
+    From: mobileNumber,
+    CallerId: `${process.env.EXOTEL_HDFC_CALLER_ID}`,
+    Url: `http://my.exotel.com/apollo2471/exoml/start_voice/${process.env.EXOTEL_HDFC_APP_ID}`,
+    CallType: 'trans',
+    StatusCallback: `${process.env.PAYTM_BASE_URL}/exotelCallEnd?mobileNumber=${parseInt(
+      mobileNumber,
+      10
+    )}`,
+  };
+  console.log(JSON.stringify(params));
+  fetch(apiUrl, {
+    method: 'POST',
+    body: new URLSearchParams(params),
+    headers: {
+      'Content-type': 'application/x-www-form-urlencoded',
+    },
+  })
+    .then((res) => res.json())
+    .then((res) => {
+      // // add the cache for mobile number + Sid
+      const value = {
+        benefitId,
+        sid: res['Call']['Sid'],
+      };
+      setCache(
+        `${EXOTEL_HDFC_CALL_PREFIX}:${parseInt(mobileNumber, 10)}`,
+        JSON.stringify(value),
+        ApiConstants.CACHE_EXPIRATION_1800
+      );
+    })
+    .catch((error) => {
+      log(
+        'consultServiceLogger',
+        `EXOTEL_CALL_ERROR`,
+        'initiateCallForPartner->CATCH_BLOCK',
+        '',
+        `${mobileNumber}: ${JSON.stringify(error)}`
+      );
+      console.log(params);
+      throw new AphError(AphErrorMessages.EXOTEL_REQUEST_ERROR);
+    });
+  return { success: true };
+};
 
 type callStatusInput = {
   status: string;
@@ -395,6 +467,7 @@ export const exotelCallingResolvers = {
   Query: {
     initateConferenceTelephoneCall,
     getCallDetailsByAppintment,
+    initiateCallForPartner,
   },
   Mutation: {
     updateCallStatusBySid,

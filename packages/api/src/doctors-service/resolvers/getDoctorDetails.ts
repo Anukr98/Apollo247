@@ -143,6 +143,12 @@ export const getDoctorDetailsTypeDefs = gql`
     specialty: DoctorSpecialties
     starTeam: [StarTeam]
     availableModes: [ConsultMode]
+    doctorNextAvailSlots:DoctorNextAvailSlots
+  }
+
+  type DoctorNextAvailSlots {
+    onlineSlot: String
+    physicalSlot: String
   }
 
   type DoctorDetailsWithStatusExclude @key(fields: "id") {

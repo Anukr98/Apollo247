@@ -120,6 +120,7 @@ import {
 } from '@aph/mobile-patients/src/components/Medicines/MedicineReOrderOverlay';
 import { ProductList } from '@aph/mobile-patients/src/components/Medicines/ProductList';
 import { ProductCard } from '@aph/mobile-patients/src/components/Medicines/ProductCard';
+import { ProductPageViewedEventProps } from '@aph/mobile-patients/src/components/Medicines/MedicineDetailsScene';
 import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails } from '../../graphql/types/getMedicineOrderOMSDetailsWithAddress';
 import _ from 'lodash';
 import { AccessLocation } from '@aph/mobile-patients/src/components/Medicines/Components/AccessLocation';
@@ -183,6 +184,8 @@ export interface MedicineProps
     showRecommendedSection?: boolean; // using for deeplink
   }> {}
 
+type Address = savePatientAddress_savePatientAddress_patientAddress;
+
 export const Medicine: React.FC<MedicineProps> = (props) => {
   const focusSearch = props.navigation.getParam('focusSearch');
   const showUploadPrescriptionPopup = props.navigation.getParam('showUploadPrescriptionPopup');
@@ -232,6 +235,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [bannerLoading, setBannerLoading] = useState(true);
   const defaultAddress = addresses.find((item) => item.defaultAddress);
   const hasLocation = locationDetails || pharmacyLocation || defaultAddress;
+  const pharmacyPincode = pharmacyLocation?.pincode || locationDetails?.pincode;
 
   const postwebEngageCategoryClickedEvent = (
     categoryId: string,
@@ -449,31 +453,42 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     fetchAddress();
   }, []);
 
+  const formatAddressToLocation = (address: Address): LocationData => ({
+    displayName: address.city!,
+    latitude: address.latitude!,
+    longitude: address.longitude!,
+    area: '',
+    city: address.city!,
+    state: address.state!,
+    stateCode: address.stateCode!,
+    country: '',
+    pincode: address.zipcode!,
+    lastUpdated: new Date().getTime(),
+  });
+
   async function fetchAddress() {
-    console.log(addresses.length);
     try {
       if (addresses.length) {
-        let deliveryAddress = addresses.find((item) => item.defaultAddress);
+        const deliveryAddress = addresses.find((item) => item.defaultAddress);
         deliveryAddress && setDeliveryAddressId!(deliveryAddress?.id);
         return;
       }
       globalLoading!(true);
-      const userId = g(currentPatient, 'id');
       const response = await client.query<getPatientAddressList, getPatientAddressListVariables>({
         query: GET_PATIENT_ADDRESS_LIST,
-        variables: { patientId: userId },
+        variables: { patientId: currentPatient?.id },
         fetchPolicy: 'no-cache',
       });
-      const { data } = response;
-      const addressList =
-        (data.getPatientAddressList
-          .addressList as savePatientAddress_savePatientAddress_patientAddress[]) || [];
+      const addressList = (response.data.getPatientAddressList.addressList as Address[]) || [];
       setAddresses!(addressList);
-      let deliveryAddress = addressList.find((item) => item.defaultAddress);
-      deliveryAddress
-        ? (setDeliveryAddressId!(deliveryAddress?.id),
-          updateServiceability(deliveryAddress?.zipcode!))
-        : checkLocation();
+      const deliveryAddress = addressList.find((item) => item.defaultAddress);
+      if (deliveryAddress) {
+        setDeliveryAddressId!(deliveryAddress?.id);
+        updateServiceability(deliveryAddress?.zipcode!);
+        setPharmacyLocation!(formatAddressToLocation(deliveryAddress));
+      } else {
+        checkLocation();
+      }
       globalLoading!(false);
     } catch (error) {
       checkLocation();
@@ -482,7 +497,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     }
   }
 
-  async function setDefaultAddress(address: savePatientAddress_savePatientAddress_patientAddress) {
+  async function setDefaultAddress(address: Address) {
     try {
       globalLoading!(true);
       hideAphAlert!();
@@ -493,13 +508,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       });
       const { data } = response;
       const patientAddress = data?.makeAdressAsDefault?.patientAddress;
-      console.log(patientAddress);
-      let updatedAddresses = addresses.map((item) => ({
+      const updatedAddresses = addresses.map((item) => ({
         ...item,
         defaultAddress: patientAddress?.id == item.id ? patientAddress?.defaultAddress : false,
       }));
       setAddresses!(updatedAddresses);
       patientAddress?.defaultAddress && setDeliveryAddressId!(patientAddress?.id);
+      const deliveryAddress = updatedAddresses.find(({ id }) => patientAddress?.id == id);
+      setPharmacyLocation!(formatAddressToLocation(deliveryAddress! || null));
       updateServiceability(address?.zipcode!);
       globalLoading!(false);
     } catch (error) {
@@ -1453,6 +1469,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           addToCartSource={'Pharmacy Home'}
           sectionName={title}
           movedFrom={ProductPageViewedSource.HOME_PAGE}
+          productPageViewedEventProps={{ 'Section Name': title } as ProductPageViewedEventProps}
         />
       </View>
     );
@@ -1582,12 +1599,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 Source: 'Pharmacy Home',
               };
               postWebEngageEvent(WebEngageEventName.PHARMACY_SEARCH_RESULTS, eventAttributes);
-
-              const searchEventAttribute: WebEngageEvents[WebEngageEventName.SEARCH_ENTER_CLICK] = {
-                keyword: searchText,
-                numberofresults: medicineList.length,
-              };
-              postWebEngageEvent(WebEngageEventName.SEARCH_ENTER_CLICK, searchEventAttribute);
               props.navigation.navigate(AppRoutes.SearchMedicineScene, { searchText });
             }
           }}

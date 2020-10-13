@@ -1553,6 +1553,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
               appointmentCallId: isCall ? callId : chatId,
               patientId: g(caseSheet, 'patientDetails', 'id'),
               numberOfParticipants: patient + doctor,
+              endVoipCall: isCall,
             },
           })
           .catch((error) => {
@@ -2322,6 +2323,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 item.fileType === 'image' && ((!isChatRoom && item.id === patientId) || isChatRoom)
             )}
             onClose={() => setOverlayDisplay(null)}
+            navigation={props.navigation}
           />
         );
       } else if (type === 'pdf') {

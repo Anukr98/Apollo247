@@ -4,6 +4,7 @@ import { makeStyles } from '@material-ui/styles';
 import ImageGallery from 'react-image-gallery';
 import { MedicineProductDetails, MedicineProduct } from '../../helpers/MedicineApiCalls';
 import { getPackOfMedicine } from 'helpers/commonHelpers';
+import { MedicineImageMagnify } from 'components/Medicine/MedicineImageMagnify';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -97,6 +98,10 @@ export const MedicineImageGallery: React.FC<MedicineInformationProps> = (props) 
     });
   });
 
+  const magnifyImage = (imageProps: any) => {
+    return <MedicineImageMagnify imageProps={imageProps} />;
+  };
+
   return (
     images && (
       <div className={classes.root}>
@@ -107,6 +112,7 @@ export const MedicineImageGallery: React.FC<MedicineInformationProps> = (props) 
           showNav={false}
           showBullets={true}
           onClick={() => props.setImageClick(true)}
+          renderItem={magnifyImage}
         />
       </div>
     )

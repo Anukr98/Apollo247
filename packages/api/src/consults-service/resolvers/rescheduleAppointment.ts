@@ -193,7 +193,7 @@ const getAppointmentRescheduleDetails: Resolver<
   const rescheduleDetails = await rescheduleRepo.getRescheduleDetailsByAppointment(apptDetails.id);
   if (!rescheduleDetails) throw new AphError(AphErrorMessages.NO_RESCHEDULE_DETAILS, undefined, {});
   const apptCount = await appointmentRepo.checkIfAppointmentExist(
-    rescheduleDetails.rescheduleInitiatedId,
+    apptDetails.doctorId,
     rescheduleDetails.rescheduledDateTime
   );
   if (rescheduleDetails.rescheduledDateTime < new Date() || apptCount > 0) {
@@ -201,7 +201,7 @@ const getAppointmentRescheduleDetails: Resolver<
     let availableSlot;
     while (true) {
       const nextSlot = await appointmentRepo.getDoctorNextSlotDate(
-        rescheduleDetails.rescheduleInitiatedId,
+        apptDetails.doctorId,
         nextDate,
         doctorsDb,
         apptDetails.appointmentType,
@@ -382,10 +382,10 @@ const bookRescheduleAppointment: Resolver<
   if (!apptDetails) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
-  // const oldApptDate = format(
-  //   addMinutes(new Date(apptDetails.appointmentDateTime), +330),
-  //   'yyyy-MM-dd hh:mm a'
-  // );
+  const oldApptDate = format(
+    addMinutes(new Date(apptDetails.appointmentDateTime), +330),
+    'yyyy-MM-dd hh:mm a'
+  );
   const rescheduleDetails = await rescheduleApptRepo.getRescheduleDetails(
     bookRescheduleAppointmentInput.appointmentId
   );
@@ -693,6 +693,7 @@ const bookRescheduleAppointment: Resolver<
       patientDetails.uhid,
       docDetails.salutation + ' ' + docDetails.firstName,
       facilityDetsString,
+      oldApptDate,
       apptDate,
       apptTime,
       rescheduledapptDetails.appointmentType,

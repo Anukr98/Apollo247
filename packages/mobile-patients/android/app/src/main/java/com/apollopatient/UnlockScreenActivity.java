@@ -16,6 +16,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -94,8 +95,12 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
         //ringtoneManager end
 
         if(notifMessageType.equals(incomingCallStart)){
+            if(!Settings.canDrawOverlays(this)){
+                return;
+            }else{
                 ringtone.setLooping(true);
                 ringtone.play();
+            }
         }
         else if(notifMessageType.equals(incomingCallDisconnect)){
                 finish();
@@ -122,18 +127,15 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
                 params.putString("appointment_id",appointment_id);
                 params.putString("call_type",incoming_call_type);
 
-                if(isAppRuning){
-                    Intent intent = new Intent(UnlockScreenActivity.this, MainActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-                    intent.putExtra("APPOINTMENT_ID",appointment_id);
-                    intent.putExtra("CALL_TYPE",incoming_call_type);
+                
+                    String deeplinkUri="apollopatients://DoctorCall?"+appointment_id+'+'+incoming_call_type;
+                    Uri uri = Uri.parse(deeplinkUri);
+                    Log.e("deeplinkUri", uri.toString());
+                    Intent intent = new Intent(Intent.ACTION_VIEW, uri);
                     finish();
                     startActivity(intent);
-                }
-            else{
-                    sendEvent(reactContext, "accept", params);
-                    finish();
-                }
+                
+         
             }
         });
 

@@ -56,7 +56,7 @@ export interface RenderPdfProps
     }[];
   }> {
   uri: string;
-  title: string;
+  title?: string;
   pdfTitle?: string;
   isPopup: boolean;
   setDisplayPdf?: () => void;

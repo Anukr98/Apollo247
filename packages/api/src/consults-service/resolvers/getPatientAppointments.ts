@@ -8,7 +8,7 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { ApiConstants } from 'ApiConstants';
 import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHospitalRepository';
-import { addDays } from 'date-fns';
+import { addDays, subHours } from 'date-fns';
 import { getCache, setCache } from 'profiles-service/database/connectRedis';
 
 export const getPatinetAppointmentsTypeDefs = gql`
@@ -62,6 +62,7 @@ export const getPatinetAppointmentsTypeDefs = gql`
 
   type AppointmentsCount {
     consultsCount: Int
+    activeAndInProgressConsultsCount: Int 
   }
 
   type PersonalizedAppointmentResult {
@@ -108,6 +109,7 @@ type PatientAppointmentsInput = {
 
 type PatinetAppointments = {
   id: string;
+  hideHealthRecordNudge: Boolean;
   patientId: string;
   doctorId: string;
   appointmentDateTime: Date;
@@ -202,7 +204,7 @@ const getPatientFutureAppointmentCount: Resolver<
   null,
   { patientId: string },
   ConsultServiceContext,
-  { consultsCount: number }
+  { consultsCount: number, activeAndInProgressConsultsCount: number }
 > = async (parent, args, { consultsDb, patientsDb, mobileNumber }) => {
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const { patientId } = args;
@@ -214,7 +216,8 @@ const getPatientFutureAppointmentCount: Resolver<
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientDetails, patientId });
   const conultsList = await appointmentRepo.getPatientUpcomingAppointmentsCount(primaryPatientIds);
-  return { consultsCount: conultsList };
+  const activeAndInProgressConsultsList = await appointmentRepo.getActiveAndInProgressAppointments(primaryPatientIds);
+  return { consultsCount: conultsList, activeAndInProgressConsultsCount: activeAndInProgressConsultsList };
 };
 
 const getPatientAllAppointments: Resolver<
