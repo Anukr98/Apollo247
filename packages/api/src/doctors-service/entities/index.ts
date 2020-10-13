@@ -14,6 +14,7 @@ import {
 } from 'typeorm';
 import { Validate, IsDate } from 'class-validator';
 import { NameValidator, MobileNumberValidator, EmailValidator } from 'validators/entityValidators';
+import { DoctorPricing } from 'doctors-service/entities/doctorPricing';
 
 export enum Apps {
   DASHBOARD = 'DASHBOARD',
@@ -174,7 +175,7 @@ export class BlockedCalendarItem extends BaseEntity {
   @Column()
   doctorId: string;
 
-  @Column({ type: 'timestamp with time zone' })
+  @Column({ type: 'timestamp with time zone', nullable: true })
   end: Date;
 
   @PrimaryGeneratedColumn()
@@ -183,7 +184,7 @@ export class BlockedCalendarItem extends BaseEntity {
   @Column({ nullable: true, type: 'text' })
   reason: string;
 
-  @Column({ type: 'timestamp with time zone' })
+  @Column({ type: 'timestamp with time zone', nullable: true })
   start: Date;
 }
 ///////////////////////////////////////////////////////////
@@ -345,6 +346,13 @@ export class Doctor extends BaseEntity {
     (doctorDeviceTokens) => doctorDeviceTokens.doctor
   )
   doctorDeviceTokens: DoctorDeviceTokens[];
+
+  @OneToMany(
+    (type) => DoctorPricing,
+    (doctorPricing) => doctorPricing.doctor
+  )
+  doctorPricing: DoctorPricing[];
+
 
   @Column({ nullable: true })
   country: string;
