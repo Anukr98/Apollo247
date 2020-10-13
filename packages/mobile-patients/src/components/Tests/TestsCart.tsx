@@ -1984,7 +1984,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           <View style={{ marginVertical: 24 }}>
             {renderItemsInCart()}
             {renderProfiles()}
-            <MedicineUploadPrescriptionView isTest={true} navigation={props.navigation} />
+            <MedicineUploadPrescriptionView
+              isTest={true}
+              navigation={props.navigation}
+              isMandatory={false}
+              listOfTest={[]}
+            />
             {renderDelivery()}
             {renderTotalCharges()}
             {/* {renderTestSuggestions()} */}
