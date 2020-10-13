@@ -150,7 +150,7 @@ const App: React.FC = () => {
         />
         <Route
           exact
-          path={clientRoutes.SpecialtyDetailsWithCity(':specialty', ':city', 'identifier')}
+          path={clientRoutes.specialtyDetailsWithCity(':specialty', ':city')}
           component={SpecialtyDetailsWithCity}
         />
         <Route exact path={clientRoutes.medicines()} component={MedicineLanding} />
