@@ -59,6 +59,8 @@ export interface GetDoctorDetailsById_getDoctorDetailsById_specialty {
   id: string;
   image: string | null;
   name: string;
+  specialistSingularTerm: string | null;
+  userFriendlyNomenclature: string | null;
 }
 
 export interface GetDoctorDetailsById_getDoctorDetailsById_doctorHospital_facility {

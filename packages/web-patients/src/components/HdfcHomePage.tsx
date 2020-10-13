@@ -100,8 +100,8 @@ export const HdfcHomePage: React.FC<HdfcHomePageProps> = (props) => {
     <div className={`${classes.hdcContainer} ${showJoinClub ? classes.overflowHidden : ''} `}>
       <div className={classes.hdcContent}>
         <div className={classes.hdcHeader}>
-          <img src={require('images/hdfc/apollo-hashtag.svg')} alt="HDFC Call Doctor" width="100" />
-          <img src={require('images/hdfc/hdfc-logo.svg')} alt="HDFC Call Doctor" width="100" />
+          <img src={require('images/hdfc/apollo-hashtag.svg')} alt="HDFC Call Doctor" width="150" />
+          <img src={require('images/hdfc/hdfc-logo.svg')} alt="HDFC Call Doctor" width="120" />
         </div>
         {showJoinClub && (
           <div className={classes.joinClub}>

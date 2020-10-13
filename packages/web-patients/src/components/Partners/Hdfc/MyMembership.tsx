@@ -473,12 +473,12 @@ export const MyMembership: React.FC = (props) => {
                     <img
                       src={require('images/hdfc/apollo-hashtag.svg')}
                       alt="HDFC Call Doctor"
-                      width="100"
+                      width="150"
                     />
                     <img
                       src={require('images/hdfc/hdfc-logo.svg')}
                       alt="HDFC Call Doctor"
-                      width="100"
+                      width="120"
                     />
                   </div>
                   <Typography component="h3" className={classes.sectionTitle}>

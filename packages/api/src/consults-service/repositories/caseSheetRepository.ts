@@ -38,6 +38,7 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
 
   getJDCaseSheetByAppointmentId(appointmentId: string) {
     return this.createQueryBuilder('case_sheet')
+      .leftJoinAndSelect('case_sheet.appointment', 'appointment')
       .where('case_sheet.appointment = :appointmentId', { appointmentId })
       .andWhere('case_sheet.doctorType = :type', { type: DoctorType.JUNIOR })
       .getOne()
@@ -93,6 +94,18 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
       .catch((error) => {
         throw new AphError(AphErrorMessages.GET_CASESHEET_ERROR, undefined, { error });
       });
+  }
+
+  async updateCaseSheetWithPartialData(
+    id: string,
+    caseSheetAttrs: Partial<CaseSheet>,
+    caseSheet: Partial<CaseSheet>
+  ) {
+    const modifiedCaseSheet = this.create(caseSheet);
+    Object.assign(modifiedCaseSheet, { ...caseSheetAttrs });
+    return modifiedCaseSheet.save().catch((createErrors) => {
+      throw new AphError(AphErrorMessages.UPDATE_CASESHEET_ERROR, undefined, { createErrors });
+    });
   }
 
   async findAndUpdateJdConsultStatus(appointmentId: string) {
@@ -177,5 +190,27 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
       .select("appointment.id")
       .groupBy('appointment.id')
       .getRawMany();
+  }
+
+  async updateAllJDCaseSheet(appointmentId: string) {
+    const JDCaseSheetDetails: CaseSheet[] = await this.getJDMultipleCaseSheets(appointmentId);
+    if (JDCaseSheetDetails.length == 0)
+      throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID, undefined);
+    JDCaseSheetDetails.forEach((item) => {
+      Object.assign(item, {
+        status: CASESHEET_STATUS.COMPLETED,
+      });
+    });
+  }
+
+  getJDMultipleCaseSheets(appointmentId: string) {
+    const juniorDoctorType = DoctorType.JUNIOR;
+    return this.createQueryBuilder('case_sheet')
+      .leftJoinAndSelect('case_sheet.appointment', 'appointment')
+      .leftJoinAndSelect('appointment.appointmentDocuments', 'appointmentDocuments')
+      .where('case_sheet.appointment = :appointmentId', { appointmentId })
+      .andWhere('case_sheet.doctorType = :juniorDoctorType', { juniorDoctorType })
+      .orderBy('case_sheet.createdDate', 'DESC')
+      .getMany();
   }
 }
