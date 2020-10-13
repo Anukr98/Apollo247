@@ -37,6 +37,8 @@ export const updateOrderStatusTypeDefs = gql`
     apOrderNo: String
     updatedDate: String!
     referenceNo: String
+    driverName: String
+    driverPhone: String
   }
 
   type UpdateOrderStatusResult {
@@ -176,10 +178,10 @@ const updateOrderStatus: Resolver<
       orderShipmentsAttrs.trackingUrl = updateOrderStatusInput.trackingUrl;
       orderShipmentsAttrs.trackingProvider = updateOrderStatusInput.trackingProvider;
     } else if (status == MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY) {
-      orderShipmentsAttrs.driverDetails = JSON.stringify({
+      orderShipmentsAttrs.driverDetails = {
         driverName: updateOrderStatusInput.driverName,
         driverPhone: updateOrderStatusInput.driverPhone,
-      });
+      };
     }
     try {
       await medicineOrdersRepo.updateMedicineOrderShipment(

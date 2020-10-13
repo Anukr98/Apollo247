@@ -306,6 +306,11 @@ export enum PROFILE_SOURCE {
   MFINE = 'MFINE',
 }
 
+export type DriverDetails = {
+  driverName: string;
+  driverPhone: string;
+};
+
 @EventSubscriber()
 export class PatientEntitiySubscriber implements EntitySubscriberInterface<Patient> {
   beforeUpdate(event: UpdateEvent<any>): Promise<any> | void {
@@ -2695,7 +2700,7 @@ export class MedicineOrderShipments extends BaseEntity {
   cancelReasonCode: string;
 
   @Column({ nullable: true, type: 'jsonb' })
-  driverDetails: string;
+  driverDetails: DriverDetails;
 
   @Column({ nullable: true })
   currentStatus: MEDICINE_ORDER_STATUS;
