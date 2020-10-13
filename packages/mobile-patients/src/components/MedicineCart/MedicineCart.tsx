@@ -180,14 +180,18 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
 
   const fetchUserSpecificCoupon = () => {
     userSpecificCoupon(g(currentPatient, 'mobileNumber'))
-      .then((resp: any) => {
+      .then(async (resp: any) => {
         console.log(resp.data);
         if (resp.data.errorCode == 0) {
           let couponList = resp.data.response;
           if (typeof couponList != null && couponList.length) {
             const coupon = couponList[0].coupon;
             const msg = couponList[0].message;
-            validateCoupon(coupon, msg, true);
+            try {
+              await validateCoupon(coupon, msg, true);
+            } catch (error) {
+              return;
+            }
           }
         }
       })
@@ -320,9 +324,13 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     console.log(loading);
   }
 
-  function validatePharmaCoupon () {
+  async function validatePharmaCoupon () {
     if (coupon && cartTotal > 0) {
-      validateCoupon(coupon.coupon, coupon.message);
+      try {
+        await validateCoupon(coupon.coupon, coupon.message);
+      } catch (error) {
+        return;
+      }
     }  
   }
 
