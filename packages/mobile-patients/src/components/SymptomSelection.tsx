@@ -110,9 +110,14 @@ export const SymptomSelection: React.FC<SymptomSelectionProps> = (props) => {
           });
           search(symptoms);
         }}
-        placeholder={string.symptomChecker.typeSymptomOrChooseFromList}
+        placeholder={
+          selectedSymptoms?.length > 0
+            ? string.symptomChecker.removeSelectionPlaceholder
+            : string.symptomChecker.typeSymptomOrChooseFromList
+        }
         inputStyle={styles.inputStyle}
         autoFocus={true}
+        editable={selectedSymptoms?.length === 0}
       />
     );
   };
