@@ -676,13 +676,13 @@ const Appointments: React.FC<AppointmentProps> = (props) => {
     }
   };
 
-  const getSecretaryData = (successApptId: string) => {
-    if (!secretaryData) {
+  const getSecretaryData = () => {
+    if (appointmentHistory && !secretaryData) {
       apolloClient
         .query<getSecretaryDetailsByDoctorId>({
           query: GET_SECRETARY_DETAILS_BY_DOCTOR_ID,
           variables: {
-            doctorId: successApptId || '',
+            doctorId: (appointmentHistory && appointmentHistory.doctorId) || '',
           },
           fetchPolicy: 'no-cache',
         })
@@ -701,7 +701,7 @@ const Appointments: React.FC<AppointmentProps> = (props) => {
     if (successApptId && successApptId.length) {
       getAppointmentHistory(successApptId);
       getPaymentData(successApptId);
-      getSecretaryData(successApptId);
+      getSecretaryData();
     }
   }, [successApptId, appointmentHistory, paymentData]);
 

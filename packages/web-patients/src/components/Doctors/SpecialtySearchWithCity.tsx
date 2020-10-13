@@ -313,7 +313,7 @@ export const SpecialtySearchWithCity: React.FC<SpecialtySearchProps> = (props) =
                             <Link
                               key={specialty.id}
                               to={clientRoutes.specialtyDetailsWithCity(
-                                readableParam(specialty.name),
+                                readableParam(specialty.specialistPluralTerm),
                                 _lowerCase(selectedCity)
                               )}
                             >
