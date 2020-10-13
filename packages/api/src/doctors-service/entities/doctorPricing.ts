@@ -11,35 +11,36 @@ enum STATUS {
 }
 
 @Entity()
-export class DoctorProfileHistory extends BaseEntity {
+export class DoctorPricing extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'float8' })
   slashed_price: Number
 
-  @Column({ nullable: true })
+  @Column()
   available_to: PLAN;
 
-  @Column({ nullable: true })
+  @Column()
   group_plan: String
 
-  @Column({ nullable: true, type: 'timestamp' })
+
+  @Column({ type: 'timestamp' })
   start_date: Date;
 
-  @Column({ nullable: true, type: 'timestamp' })
+  @Column({ type: 'timestamp' })
   end_date: Date;
 
-  @Column({ nullable: true })
+  @Column()
   status: STATUS;
 
   @Column({ nullable: true })
   doctor_share: Number
 
-  @Column({ nullable: true })
+  @Column({ type: 'float8' })
   apollo_share: Number
 
   @OneToOne((type) => Doctor)
   @JoinColumn()
-  fk_doctor_id: Doctor;
+  doctor: Doctor;
 }
