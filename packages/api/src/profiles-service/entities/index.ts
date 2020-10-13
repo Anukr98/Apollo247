@@ -140,6 +140,8 @@ export enum MEDICINE_ORDER_STATUS {
   RVP_ASSIGNED = 'RVP_ASSIGNED',
   RETURN_PICKUP = 'RETURN_PICKUP',
   RETURN_RTO = 'RETURN_RTO',
+  READY_TO_SHIP = 'READY_TO_SHIP',
+  SHIPPED = 'SHIPPED',
 }
 
 export enum UPLOAD_FILE_TYPES {
@@ -2691,6 +2693,9 @@ export class MedicineOrderShipments extends BaseEntity {
 
   @Column({ nullable: true })
   cancelReasonCode: string;
+
+  @Column({ nullable: true, type: 'json' })
+  driverDetails: string;
 
   @Column({ nullable: true })
   currentStatus: MEDICINE_ORDER_STATUS;

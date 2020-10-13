@@ -75,19 +75,20 @@ const updateOrderOnHold: Resolver<
     addMinutes(parseISO(updateOrderOnHoldInput.updatedDate), -330),
     "yyyy-MM-dd'T'HH:mm:ss.SSSX"
   );
-  const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
-    orderStatus: MEDICINE_ORDER_STATUS.ON_HOLD,
-    medicineOrders: orderDetails,
-    statusDate: new Date(statusDate),
-    statusMessage: updateOrderOnHoldInput.reasonCode,
-  };
-  await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
   await medicineOrdersRepo.updateMedicineOrderDetails(
     orderDetails.id,
     orderDetails.orderAutoId,
     new Date(statusDate),
     MEDICINE_ORDER_STATUS.ON_HOLD
   );
+  const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
+    orderStatus: MEDICINE_ORDER_STATUS.ON_HOLD,
+    medicineOrders: orderDetails,
+    statusDate: new Date(statusDate),
+    statusMessage: updateOrderOnHoldInput.reasonCode,
+    hideStatus: false,
+  };
+  await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
   return {
     status: MEDICINE_ORDER_STATUS.ON_HOLD,
     errorCode: 0,

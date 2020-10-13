@@ -931,6 +931,20 @@ const getMedicineOrderOMSDetailsWithAddress: Resolver<
           );
         }
       }
+    } else if (medicineOrderDetails.currentStatus == MEDICINE_ORDER_STATUS.ON_HOLD) {
+      const reasonCode = medicineOrderDetails.medicineOrdersStatus.find((orderStatusObj: any) => {
+        return orderStatusObj.orderStatus == MEDICINE_ORDER_STATUS.ON_HOLD;
+      });
+      if (reasonCode) {
+        const cancellationReasons = await medicineOrdersRepo.getMedicineOrderCancelReasonByCode(
+          reasonCode.statusMessage
+        );
+        if (cancellationReasons) {
+          reasonCode.statusMessage = cancellationReasons.displayMessage;
+        } else {
+          reasonCode.statusMessage = '';
+        }
+      }
     }
     medicineOrderDetails.medicineOrdersStatus.sort((a: any, b: any) => {
       return getUnixTime(new Date(a.statusDate)) - getUnixTime(new Date(b.statusDate));
