@@ -363,7 +363,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
       string.consultType.online.heading,
       string.consultType.online.question,
       doctorDetails?.onlineConsultationFees ? doctorDetails?.onlineConsultationFees : '-',
-      nextAppointemntOnlineTime,
+      doctorDetails?.doctorNextAvailSlots?.onlineSlot,
       [
         { image: <CTDoctor />, description: string.consultType.online.point1 },
         { image: <CTCalender />, description: string.consultType.online.point2 },
@@ -406,7 +406,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
       string.consultType.inperson.heading,
       string.consultType.inperson.question,
       doctorDetails?.physicalConsultationFees ? doctorDetails?.physicalConsultationFees : '-',
-      nextAppointemntInPresonTime,
+      doctorDetails?.doctorNextAvailSlots?.physicalSlot,
       [
         { image: <CTDoctor />, description: string.consultType.inperson.point1 },
         { image: <CTCalender />, description: string.consultType.inperson.point2 },
