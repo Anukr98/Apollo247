@@ -119,7 +119,7 @@ export async function generateOtp(mobile: String) {
     },
   };
   reconSendToQueue(
-    `26, ${refNo}, ${mobile}, ${('0' + requestTime.getDate()).slice(-2)}${(
+    `26, ${refNo}, XXXXXX${mobile.slice(-4)}, ${('0' + requestTime.getDate()).slice(-2)}${(
       '0' +
       (requestTime.getMonth() + 1)
     ).slice(-2)}${`${requestTime
@@ -177,7 +177,7 @@ export async function verifyOtp(otp: String, mobile: String) {
     },
   };
   reconSendToQueue(
-    `26, ${refNo}, ${mobile}, ${('0' + requestTime.getDate()).slice(-2)}${(
+    `26, ${refNo}, XXXXXX${mobile.slice(-4)}, ${('0' + requestTime.getDate()).slice(-2)}${(
       '0' +
       (requestTime.getMonth() + 1)
     ).slice(-2)}${`${requestTime
