@@ -108,6 +108,7 @@ import { WebEngageEventName, WebEngageEvents } from '../../helpers/webEngageEven
 import moment from 'moment';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
+import _ from 'lodash';
 import {
   getPincodeServiceability,
   getPincodeServiceabilityVariables,
