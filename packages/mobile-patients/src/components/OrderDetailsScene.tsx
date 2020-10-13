@@ -759,7 +759,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       isDeliveryOrder && tatInfo && !isCancelled && !isDelivered && hours > 0;
 
     const expectedDeliveryInDays = moment.duration(moment(tatInfo!).diff(moment()));
-    const diffInDays = expectedDeliveryInDays._data.days;
+    const diffInDays = expectedDeliveryInDays?._data?.days;
 
     let statusList = orderStatusList
       .filter(
