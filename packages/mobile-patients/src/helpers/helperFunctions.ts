@@ -216,13 +216,9 @@ export const formatOrderAddress = (
 export const formatSelectedAddress = (
   address: savePatientAddress_savePatientAddress_patientAddress
 ) => {
-  const formattedAddress =
-    address?.addressLine1 +
-    ', ' +
-    (address?.addressLine2 + ', ') +
-    (address?.city + ', ') +
-    (address?.state + ', ') +
-    address?.zipcode;
+  const formattedAddress = [address?.addressLine1, address?.addressLine2, address?.city, address?.state, address?.zipcode]
+  .filter((item) => item)
+  .join(', ')
   return formattedAddress;
 };
 
