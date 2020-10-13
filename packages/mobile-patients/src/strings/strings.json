@@ -39,6 +39,23 @@
     "customerCareHelpText": "I need help with my order",
     "selectAddress": "Choose from saved address"
   },
+  "components": {
+    "medicineDetails": {
+      "helpers": {
+        "overview": "Overview",
+        "usage": "Usage",
+        "sideEffects": "Side Effects",
+        "precautions": "Precautions",
+        "drugWarnings": "Drug Warnings",
+        "storage": "Storage",
+        "alcohol": "Alcohol:\n",
+        "pregnancy": "Pregnancy:\n",
+        "driving": "Driving:\n",
+        "kidney": "Kidney:\n",
+        "liver": "Liver:\n"
+      }
+    }
+  },
   "consultType": {
     "mainHeading": "How would you like to consult with",
     "checkBoxText": "I have consulted with {0} before",
