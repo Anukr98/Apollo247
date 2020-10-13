@@ -292,7 +292,7 @@ export const convertCaseSheetToRxPdfData = async (
               new Date(Date.now()).getUTCFullYear() -
                 new Date(patientData.dateOfBirth).getUTCFullYear()
             ).toString()
-          : 0;
+          : '0';
       patientInfo = {
         firstName: patientData.firstName,
         lastName: patientData.lastName,
