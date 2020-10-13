@@ -429,8 +429,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setError(true);
   };
 
-  const pharmacyPincode =
-    g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode') || defaultAddress?.zipcode;
   useEffect(() => {
     if (pharmacyPincode) {
       updateServiceability(pharmacyPincode);
@@ -470,8 +468,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     try {
       if (addresses.length) {
         const deliveryAddress = addresses.find((item) => item.defaultAddress);
-        deliveryAddress && setDeliveryAddressId!(deliveryAddress?.id);
-        return;
+        if(deliveryAddress){
+          setDeliveryAddressId!(deliveryAddress?.id);
+          updateServiceability(deliveryAddress?.zipcode!);
+          setPharmacyLocation!(formatAddressToLocation(deliveryAddress));
+          return;
+        }
       }
       globalLoading!(true);
       const response = await client.query<getPatientAddressList, getPatientAddressListVariables>({
