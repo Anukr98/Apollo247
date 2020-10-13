@@ -66,6 +66,8 @@ export const getPatientConsultsAndPrescriptionsTypeDefs = gql`
     RVP_ASSIGNED
     RETURN_PICKUP
     RETURN_RTO
+    READY_TO_SHIP
+    SHIPPED
   }
 
   input PatientConsultsAndOrdersInput {

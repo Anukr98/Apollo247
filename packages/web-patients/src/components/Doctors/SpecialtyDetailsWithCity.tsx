@@ -734,7 +734,7 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
               if (
                 specialty &&
                 specialty.name &&
-                readableParam(specialty.name) === params.specialty
+                readableParam(specialty.specialistPluralTerm) === params.specialty
               ) {
                 setSpecialtyId(specialty.id);
                 setSpecialtyName(specialty.name);

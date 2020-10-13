@@ -83,7 +83,6 @@ const saveOrderVerified: Resolver<
   if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED) {
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
   }
-
   log(
     'profileServiceLogger',
     `ORDER_VERIFICATION_DONE_FOR_ORDER_ID:${orderVerifiedInput.orderId}`,
@@ -99,15 +98,9 @@ const saveOrderVerified: Resolver<
     orderStatus: MEDICINE_ORDER_STATUS.VERIFICATION_DONE,
     medicineOrders: orderDetails,
     statusDate: new Date(statusDate),
+    hideStatus: false,
   };
   await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
-
-  await medicineOrdersRepo.updateMedicineOrderDetails(
-    orderDetails.id,
-    orderDetails.orderAutoId,
-    new Date(),
-    MEDICINE_ORDER_STATUS.VERIFICATION_DONE
-  );
 
   // calculate tat for non cart orders
 
