@@ -130,7 +130,6 @@ export const AuthProvider: React.FC = (props) => {
       } catch (e) {}
     }
   };
-
   const validateAndUpdate = (authToken: any) => {
     if (authToken) {
       const jwtDecode = require('jwt-decode');

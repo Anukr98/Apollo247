@@ -39,6 +39,7 @@ import {
   searchDiagnosticsByIdVariables,
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsById';
 import { SEARCH_DIAGNOSTICS_BY_ID } from '@aph/mobile-patients/src/graphql/profiles';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   testNameStyles: {
@@ -122,6 +123,18 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansBold(9),
     color: theme.colors.WHITE,
   },
+  proceedToCartText: {
+    color: theme.colors.APP_YELLOW,
+    ...theme.fonts.IBMPlexSansSemiBold(13),
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  successfulText: {
+    margin: 10,
+    textAlign: 'center',
+    color: '#658F9B',
+    ...theme.fonts.IBMPlexSansMedium(12),
+  },
 });
 
 const tabs = [
@@ -156,6 +169,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const { cartItems, addCartItem } = useDiagnosticsCart();
   const { cartItems: shopCartItems } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
+  const [isItemAdded, setItemAdded] = useState<boolean>(false);
   const currentItemId = testInfo.ItemID;
   aphConsole.log('currentItemId : ' + currentItemId);
   const [searchSate, setsearchSate] = useState<'load' | 'success' | 'fail' | undefined>();
@@ -245,7 +259,12 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           leftIcon="backArrow"
           onPressLeftIcon={() => props.navigation.goBack()}
           rightComponent={
-            <TouchableOpacity onPress={() => props.navigation.navigate(AppRoutes.MedAndTestCart)}>
+            <TouchableOpacity
+              onPress={() => {
+                setItemAdded(false);
+                props.navigation.navigate(AppRoutes.MedAndTestCart);
+              }}
+            >
               <CartIcon style={{}} />
               {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
             </TouchableOpacity>
@@ -352,6 +371,10 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     );
   };
 
+  const onProceedToCartCTA = () => {
+    props.navigation.navigate(AppRoutes.MedAndTestCart);
+  };
+
   const postDiagnosticAddToCartEvent = (
     name: string,
     id: string,
@@ -413,30 +436,54 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           </View>
 
           <View style={styles.SeparatorStyle}></View>
+          {isItemAdded && (
+            <Text style={styles.successfulText}>
+              {string.diagnostics.itemsAddedSuccessfullyCTA}
+            </Text>
+          )}
 
           <View style={{ flex: 1, alignItems: 'center', marginHorizontal: 60 }}>
             <Button
-              title={!isAddedToCart ? 'ADD TO CART' : 'ADDED TO CART'}
-              disabled={!isAddedToCart ? false : true}
+              title={
+                !isAddedToCart
+                  ? 'ADD TO CART'
+                  : isItemAdded
+                  ? string.diagnostics.proceedToCartCTA
+                  : 'ITEM ADDED'
+              }
+              disabled={!isAddedToCart || isItemAdded ? false : true}
               style={{ flex: 1, marginBottom: 16 }}
               onPress={() => {
-                postDiagnosticAddToCartEvent(
-                  testInfo.ItemName,
-                  testInfo.ItemID,
-                  testInfo.Rate,
-                  testInfo.Rate
-                );
-                addCartItem!({
-                  id: testInfo.ItemID,
-                  name: testInfo.ItemName,
-                  mou: testInfo.PackageInClussion.length,
-                  price: testInfo.Rate,
-                  thumbnail: '',
-                  specialPrice: undefined,
-                  collectionMethod: testInfo.collectionType,
-                });
+                if (!isAddedToCart) {
+                  setItemAdded(true);
+                  postDiagnosticAddToCartEvent(
+                    testInfo.ItemName,
+                    testInfo.ItemID,
+                    testInfo.Rate,
+                    testInfo.Rate
+                  );
+                  addCartItem!({
+                    id: testInfo.ItemID,
+                    name: testInfo.ItemName,
+                    mou: testInfo.PackageInClussion.length,
+                    price: testInfo.Rate,
+                    thumbnail: '',
+                    specialPrice: undefined,
+                    collectionMethod: testInfo.collectionType,
+                  });
+                } else {
+                  setItemAdded(false);
+                  props.navigation.navigate(AppRoutes.MedAndTestCart);
+                }
               }}
             />
+            {isAddedToCart && !isItemAdded && (
+              <View style={{ height: 40 }}>
+                <Text onPress={onProceedToCartCTA} style={styles.proceedToCartText}>
+                  {string.diagnostics.proceedToCartCTA}
+                </Text>
+              </View>
+            )}
           </View>
         </StickyBottomComponent>
       </SafeAreaView>

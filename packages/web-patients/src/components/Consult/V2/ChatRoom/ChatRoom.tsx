@@ -40,7 +40,7 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import { GET_APPOINTMENT_DATA } from 'graphql/consult';
 import { GetAppointmentData, GetAppointmentDataVariables } from 'graphql/types/GetAppointmentData';
 import { GetAppointmentData_getAppointmentData_appointmentsHistory as AppointmentHistory } from 'graphql/types/GetAppointmentData';
-import { removeGraphQLKeyword } from 'helpers/commonHelpers';
+import { removeGraphQLKeyword, getDiffInMinutes } from 'helpers/commonHelpers';
 import {
   getSecretaryDetailsByDoctorId,
   getSecretaryDetailsByDoctorIdVariables,
@@ -746,6 +746,7 @@ const ChatRoom: React.FC = () => {
                   {appointmentDetails &&
                     appointmentDetails.status !== STATUS.CANCELLED &&
                     appointmentDetails.status !== STATUS.COMPLETED &&
+                    !isConsultCompleted &&
                     !disableActions &&
                     !srDoctorJoined && (
                       <div className={classes.headerActions}>
@@ -753,7 +754,8 @@ const ChatRoom: React.FC = () => {
                           disabled={
                             appointmentDetails.isSeniorConsultStarted ||
                             srDoctorJoined ||
-                            disableActions
+                            disableActions ||
+                            isConsultCompleted
                           }
                           classes={{
                             root: classes.viewButton,

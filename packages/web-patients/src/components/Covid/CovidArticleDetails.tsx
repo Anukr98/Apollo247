@@ -18,6 +18,7 @@ import { SchemaMarkup } from 'SchemaMarkup';
 import { MetaTagsComp } from 'MetaTagsComp';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
+import { dataLayerTracking } from 'gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -247,6 +248,13 @@ const CovidArticleDetails: React.FC = (props: any) => {
   const articleSlug = props && props.location.pathname && props.location.pathname.split('/').pop();
 
   useEffect(() => {
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: 'Covid-19 Article Page',
+      pageLOB: 'Covid-19',
+      pageType: 'Article',
+    });
     if (props && props.location && props.location.search && props.location.search.length) {
       const qParamsArr = props.location.search.split('=');
       if (qParamsArr && qParamsArr.length) {

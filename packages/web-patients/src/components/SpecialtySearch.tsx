@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { Theme, CircularProgress, Popover, Typography } from '@material-ui/core';
-import { readableParam, SPECIALTY_SEARCH_PAGE_SIZE } from 'helpers/commonHelpers';
+import { readableParam, SPECIALTY_SEARCH_PAGE_SIZE, SearchObject } from 'helpers/commonHelpers';
 import { makeStyles } from '@material-ui/styles';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
@@ -10,6 +10,7 @@ import { Cities } from './Cities';
 import { DoctorDetails } from 'components/Doctors/SpecialtyDetails';
 import { GetDoctorList_getDoctorList_specialties } from 'graphql/types/GetDoctorList';
 import _get from 'lodash/get';
+import _debounce from 'lodash/debounce';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -180,6 +181,9 @@ interface SpecialtySearchProps {
   apolloDoctorCount?: number;
   partnerDoctorCount?: number;
   setPageNo?: (pageNo: number) => void;
+  filter?: SearchObject;
+  setFilter?: (filter: SearchObject) => void;
+  setSearchQuery?: any;
 }
 
 export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
@@ -198,6 +202,9 @@ export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
     apolloDoctorCount,
     partnerDoctorCount,
     setPageNo,
+    setFilter,
+    filter,
+    setSearchQuery,
   } = props;
 
   const getDoctorAvailability = (slot: number) => {
@@ -242,6 +249,17 @@ export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
     }
   };
 
+  const debounceSearchQuery = (searchKeyValue: string) => {
+    const search = _debounce(() => setFilter({ ...filter, searchKeyword: searchKeyValue }), 500);
+    setSearchQuery((prevSearch: any) => {
+      if (prevSearch.cancel) {
+        prevSearch.cancel();
+      }
+      return search;
+    });
+    search();
+  };
+
   return (
     <>
       <div className={classes.specialitySearch} ref={searchRef}>
@@ -262,6 +280,7 @@ export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
             value={searchKeyword}
             onChange={(e) => {
               const searchValue = e.target.value;
+              filter && setSearchQuery && debounceSearchQuery(searchValue);
               setSearchKeyword(searchValue);
             }}
           />

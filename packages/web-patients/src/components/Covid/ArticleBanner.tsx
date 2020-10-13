@@ -6,7 +6,6 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { AphButton } from '@aph/web-ui-components';
 import Typography from '@material-ui/core/Typography';
 import { NewsletterSubscriptionForm } from './NewsletterSubscriptionForm';
-import { CallOurExperts } from 'components/CallOurExperts';
 import { ShareWidget } from 'components/ShareWidget';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -324,7 +323,7 @@ export const ArticleBanner: React.FC<ArticleBannerProps> = (props) => {
                 e.stopPropagation();
                 setShowShareWidget(false);
               }}
-              url={`${window.location.protocol}//${window.location.hostname}/covid19/article/${props.slug}`}
+              url={window.location.href}
             />
           )}
         </div>
@@ -363,7 +362,7 @@ export const ArticleBanner: React.FC<ArticleBannerProps> = (props) => {
                 closeShareWidget={() => {
                   setShowShareWidget(false);
                 }}
-                url={`${window.location.protocol}//${window.location.hostname}/covid19/article/${props.slug}`}
+                url={window.location.href}
               />
             )}
           </div>

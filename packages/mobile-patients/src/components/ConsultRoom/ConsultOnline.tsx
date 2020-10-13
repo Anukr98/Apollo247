@@ -399,7 +399,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
                         }}
                       >
                         {`${
-                          props.doctor ? `${props.doctor.fullName}` : ''
+                          props.doctor ? `${props.doctor.displayName}` : ''
                         } is not available in the ${selectedtiming.toLowerCase()} slot :(`}
                       </Text>
                     );
@@ -448,7 +448,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
               ...theme.fonts.IBMPlexSansMedium(14),
             }}
           >
-            {`${props.doctor ? `${props.doctor.fullName}` : 'Doctor'} is ${nextAvailability(
+            {`${props.doctor ? `${props.doctor.displayName}` : 'Doctor'} is ${nextAvailability(
               NextAvailableSlot
             )}!\nWould you like to consult now or schedule for later?`}
           </Text>

@@ -43,7 +43,8 @@ export class PatientDeviceTokenRepository extends Repository<PatientDeviceTokens
 
   deviceTokensOfAllIds(ids: string[]) {
     return this.find({
-      patient: In(ids),
+      where: { patient: In(ids) },
+      //patient: In(ids),
     });
   }
 

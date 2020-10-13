@@ -18,6 +18,13 @@ import { useParams } from 'hooks/routerHooks';
 import moment from 'moment';
 import { dataLayerTracking } from 'gtmTracking';
 
+import { useApolloClient } from 'react-apollo-hooks';
+import { GET_SUBSCRIPTIONS_OF_USER_BY_STATUS } from 'graphql/profiles';
+import {
+  getSubscriptionsOfUserByStatus,
+  getSubscriptionsOfUserByStatusVariables,
+} from 'graphql/types/getSubscriptionsOfUserByStatus';
+
 const useStyles = makeStyles((theme: Theme) => {
   return {
     header: {
@@ -334,6 +341,9 @@ export const Header: React.FC<HeaderProps> = (props) => {
   const isMobileView = screen.width <= 768;
   const node = useRef(null);
 
+  const [userSubscriptions, setUserSubscriptions] = React.useState([]);
+  const apolloClient = useApolloClient();
+
   const params = useParams<{
     searchMedicineType: string;
     searchText: string;
@@ -356,6 +366,30 @@ export const Header: React.FC<HeaderProps> = (props) => {
       document.removeEventListener('mousedown', handleClick);
     };
   }, []);
+
+  useEffect(() => {
+    const userSubscriptionsLocalStorage = JSON.parse(localStorage.getItem('userSubscriptions'));
+    userSubscriptionsLocalStorage ? setUserSubscriptions(userSubscriptionsLocalStorage) : '';
+    apolloClient
+      .query<getSubscriptionsOfUserByStatus, getSubscriptionsOfUserByStatusVariables>({
+        query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+        variables: {
+          mobile_number: localStorage.getItem('userMobileNo'),
+          status: ['active', 'deferred_inactive'],
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((response) => {
+        setUserSubscriptions(response.data.GetSubscriptionsOfUserByStatus.response);
+        localStorage.setItem(
+          'userSubscriptions',
+          JSON.stringify(response.data.GetSubscriptionsOfUserByStatus.response)
+        );
+      })
+      .catch((error) => {
+        console.error('Something went wrong :( ' + error);
+      });
+  }, [currentPatient]);
 
   const MedicineRoutes = [
     clientRoutes.medicines(),
@@ -496,7 +530,21 @@ export const Header: React.FC<HeaderProps> = (props) => {
                                   />
                                 </Link>
                               </li>
-
+                              {userSubscriptions.length != 0 && (
+                                <li>
+                                  <Link to={clientRoutes.myMembership()}>
+                                    <span>
+                                      <img
+                                        src={require('images/my_membership.svg')}
+                                        width="24"
+                                        alt=""
+                                      />{' '}
+                                      My Memberships
+                                    </span>
+                                    <img src={require('images/ic_arrow_right.svg')} alt="" />
+                                  </Link>
+                                </li>
+                              )}
                               {currentPatient && (
                                 <li>
                                   <Link

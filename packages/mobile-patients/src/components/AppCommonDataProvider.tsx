@@ -20,11 +20,84 @@ export interface LocationData {
   lastUpdated?: number; //timestamp
 }
 
+export interface SubscriptionData {
+  _id: string | '';
+  name: string | '';
+  planId: string | '';
+  benefitsWorth: string | '';
+  activationModes: string[];
+  price: number | null;
+  minTransactionValue: number;
+  status: string | '';
+  subscriptionStatus: string | '';
+  canUpgradeTo?: SubscriptionData | {};
+  group: GroupPlan;
+  benefits: PlanBenefits[];
+  coupons: PlanCoupons[];
+  isActive: boolean;
+  upgradeTransactionValue?: number | null;
+}
+
+export interface GroupPlan {
+  _id: string;
+  name: string;
+  isActive: boolean;
+}
+
+export interface bannerType {
+  _id: string | null;
+  is_active: boolean;
+  banner: string;
+  banner_template_info?: null;
+  cta_action?: (() => void) | null;
+  meta?: {} | null;
+}
+
+export interface PlanBenefits {
+  _id: string;
+  attribute: string;
+  headerContent: string;
+  description: string;
+  ctaLabel: string;
+  ctaAction: string;
+  benefitCtaAction: BenefitCtaAction;
+  attributeType: string;
+  availableCount: number;
+  refreshFrequency: number;
+  icon: string | null;
+}
+
+export interface BenefitCtaAction {
+  type: string;
+  action: string;
+  message: string;
+  webEngageEvent: string;
+}
+
+export interface PlanCoupons {
+  coupon: string;
+  message: string;
+  applicable: string;
+}
+
+export interface DiagnosticData {
+  cityId: string;
+  stateId: string;
+  city: string;
+  state: string;
+}
+
 export interface AppCommonDataContextProps {
+  hdfcUserSubscriptions: SubscriptionData | null;
+  setHdfcUserSubscriptions: ((items: SubscriptionData) => void) | null;
+  bannerData: bannerType[] | null;
+  setBannerData: ((items: bannerType[]) => void) | null;
   locationDetails: LocationData | null;
   pharmacyLocation: LocationData | null;
+  diagnosticLocation: LocationData | null;
   setLocationDetails: ((items: LocationData) => void) | null;
   setPharmacyLocation: ((items: LocationData) => void) | null;
+  setDiagnosticLocation: ((items: LocationData) => void) | null;
   isPharmacyLocationServiceable?: boolean;
   setPharmacyLocationServiceable: ((value: boolean) => void) | null;
   medicinePageAPiResponse: MedicinePageAPiResponse | null;
@@ -33,7 +106,11 @@ export interface AppCommonDataContextProps {
   setDiagnosticsCities:
     | ((items: getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities[]) => void)
     | null;
-  locationForDiagnostics: { cityId: string; stateId: string; city: string; state: string } | null;
+  locationForDiagnostics: DiagnosticData | null;
+  diagnosticServiceabilityData: DiagnosticData | null;
+  setDiagnosticServiceabilityData: ((items: DiagnosticData) => void) | null;
+  isDiagnosticLocationServiceable?: boolean;
+  setDiagnosticLocationServiceable: ((value: boolean) => void) | null;
   VirtualConsultationFee: string;
   setVirtualConsultationFee: ((arg0: string) => void) | null;
   generalPhysicians: { id: string; data: getDoctorsBySpecialtyAndFilters } | null | undefined;
@@ -71,10 +148,16 @@ export interface AppCommonDataContextProps {
 }
 
 export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
+  hdfcUserSubscriptions: null,
+  setHdfcUserSubscriptions: null,
+  bannerData: null,
+  setBannerData: null,
   locationDetails: null,
   pharmacyLocation: null,
   setLocationDetails: null,
   setPharmacyLocation: null,
+  diagnosticLocation: null,
+  setDiagnosticLocation: null,
   isPharmacyLocationServiceable: false,
   setPharmacyLocationServiceable: null,
   medicinePageAPiResponse: null,
@@ -84,6 +167,10 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   appointmentsPersonalized: [],
   setAppointmentsPersonalized: null,
   locationForDiagnostics: null,
+  diagnosticServiceabilityData: null,
+  setDiagnosticServiceabilityData: null,
+  isDiagnosticLocationServiceable: false,
+  setDiagnosticLocationServiceable: null,
   VirtualConsultationFee: '',
   setVirtualConsultationFee: null,
   generalPhysicians: null,
@@ -109,7 +196,7 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   savePatientDetails: [],
   setSavePatientDetails: null,
   doctorJoinedChat: false,
-  setDoctorJoinedChat: null
+  setDoctorJoinedChat: null,
 });
 
 export const AppCommonDataProvider: React.FC = (props) => {
@@ -121,8 +208,20 @@ export const AppCommonDataProvider: React.FC = (props) => {
     AppCommonDataContextProps['locationDetails']
   >(null);
 
+  const [hdfcUserSubscriptions, _setHdfcUserSubscriptions] = useState<
+    AppCommonDataContextProps['hdfcUserSubscriptions']
+  >(null);
+
+  const [bannerData, _setBannerData] = useState<
+    AppCommonDataContextProps['bannerData']
+  >(null);
+
   const [pharmacyLocation, _setPharmacyLocation] = useState<
     AppCommonDataContextProps['pharmacyLocation']
+  >(null);
+
+  const [diagnosticLocation, _setDiagnosticLocation] = useState<
+    AppCommonDataContextProps['diagnosticLocation']
   >(null);
 
   const [isPharmacyLocationServiceable, setPharmacyLocationServiceable] = useState<
@@ -136,6 +235,14 @@ export const AppCommonDataProvider: React.FC = (props) => {
   const [diagnosticsCities, setDiagnosticsCities] = useState<
     AppCommonDataContextProps['diagnosticsCities']
   >([]);
+
+  const [diagnosticServiceabilityData, setDiagnosticServiceabilityData] = useState<
+    AppCommonDataContextProps['diagnosticServiceabilityData']
+  >(null);
+
+  const [isDiagnosticLocationServiceable, setDiagnosticLocationServiceable] = useState<
+    AppCommonDataContextProps['isDiagnosticLocationServiceable']
+  >();
 
   const [appointmentsPersonalized, setAppointmentsPersonalized] = useState<
     AppCommonDataContextProps['appointmentsPersonalized']
@@ -176,6 +283,18 @@ export const AppCommonDataProvider: React.FC = (props) => {
     });
   };
 
+  const setHdfcUserSubscriptions: AppCommonDataContextProps['setHdfcUserSubscriptions'] = (
+    hdfcUserSubscriptions
+  ) => {
+    _setHdfcUserSubscriptions(hdfcUserSubscriptions);
+  };
+
+  const setBannerData: AppCommonDataContextProps['setBannerData'] = (
+    bannerData
+  ) => {
+    _setBannerData(bannerData);
+  };
+
   const setPharmacyLocation: AppCommonDataContextProps['setPharmacyLocation'] = (
     pharmacyLocation
   ) => {
@@ -185,27 +304,20 @@ export const AppCommonDataProvider: React.FC = (props) => {
     });
   };
 
+  const setDiagnosticLocation: AppCommonDataContextProps['setDiagnosticLocation'] = (
+    diagnosticLocation
+  ) => {
+    _setDiagnosticLocation(diagnosticLocation);
+    AsyncStorage.setItem('diagnosticLocation', JSON.stringify(diagnosticLocation)).catch(() => {
+      console.log('Failed to save diagnostic location in local storage.');
+    });
+  };
+
   const locationForDiagnostics: AppCommonDataContextProps['locationForDiagnostics'] = {
-    cityId: ((
-      diagnosticsCities.find(
-        (item) => item!.cityname.toLowerCase() == (g(locationDetails, 'city') || '').toLowerCase()
-      ) || {}
-    ).cityid || '') as string,
-    city: ((
-      diagnosticsCities.find(
-        (item) => item!.cityname.toLowerCase() == (g(locationDetails, 'city') || '').toLowerCase()
-      ) || {}
-    ).cityname || '') as string,
-    state: ((
-      diagnosticsCities.find(
-        (item) => item!.cityname.toLowerCase() == (g(locationDetails, 'city') || '').toLowerCase()
-      ) || {}
-    ).statename || '') as string,
-    stateId: ((
-      diagnosticsCities.find(
-        (item) => item!.cityname.toLowerCase() == (g(locationDetails, 'city') || '').toLowerCase()
-      ) || {}
-    ).stateid || '') as string,
+    cityId: (diagnosticServiceabilityData?.cityId || '') as string,
+    city: (diagnosticServiceabilityData?.city || '') as string,
+    state: (diagnosticServiceabilityData?.state || '') as string,
+    stateId: (diagnosticServiceabilityData?.stateId || '') as string,
   };
 
   const [notificationCount, setNotificationCount] = useState<number>(0);
@@ -220,14 +332,17 @@ export const AppCommonDataProvider: React.FC = (props) => {
         const locationFromStorage = await AsyncStorage.multiGet([
           'locationDetails',
           'pharmacyLocation',
+          'diagnosticLocation',
         ]);
         const location = locationFromStorage[0][1];
         const pharmacyLocation = locationFromStorage[1][1];
+        const diagnosticLocation = locationFromStorage[2][1];
+
         _setLocationDetails(JSON.parse(location || 'null'));
         _setPharmacyLocation(JSON.parse(pharmacyLocation || 'null'));
+        _setDiagnosticLocation(JSON.parse(diagnosticLocation || 'null'));
       } catch (error) {
         console.log('Failed to get location from local storage.');
-        CommonBugFender('AppCommonDataProvider_updateLocationFromStorage_try', error);
       }
     };
     updateLocationFromStorage();
@@ -240,8 +355,14 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setCurrentLocationFetched,
         locationDetails,
         setLocationDetails,
+        hdfcUserSubscriptions,
+        setHdfcUserSubscriptions,
+        bannerData,
+        setBannerData,
         pharmacyLocation,
         setPharmacyLocation,
+        diagnosticLocation,
+        setDiagnosticLocation,
         isPharmacyLocationServiceable,
         setPharmacyLocationServiceable,
         medicinePageAPiResponse,
@@ -249,6 +370,10 @@ export const AppCommonDataProvider: React.FC = (props) => {
         diagnosticsCities,
         setDiagnosticsCities,
         locationForDiagnostics,
+        diagnosticServiceabilityData,
+        setDiagnosticServiceabilityData,
+        isDiagnosticLocationServiceable,
+        setDiagnosticLocationServiceable,
         VirtualConsultationFee,
         setVirtualConsultationFee,
         generalPhysicians,
@@ -274,7 +399,7 @@ export const AppCommonDataProvider: React.FC = (props) => {
         savePatientDetails,
         setSavePatientDetails,
         doctorJoinedChat,
-        setDoctorJoinedChat
+        setDoctorJoinedChat,
       }}
     >
       {props.children}

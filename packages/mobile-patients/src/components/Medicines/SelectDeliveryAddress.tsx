@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
 export interface SelectDeliveryAddressProps extends NavigationScreenProps {
   isTest?: boolean;
   selectedAddress: string;
-  isChanged: (val: boolean, id?: string) => void;
+  isChanged: (val: boolean, id?: string, pincode?: string) => void;
 }
 
 export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (props) => {
@@ -77,7 +77,7 @@ export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (prop
             setLoading(true);
             if (isTest) {
               reArrangeAddresses();
-              isChanged(true, selectedId);
+              isChanged(true, selectedId, selectedPinCode);
               props.navigation.goBack();
             } else {
               pinCodeServiceabilityApi247(selectedPinCode)

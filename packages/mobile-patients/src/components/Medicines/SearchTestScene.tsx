@@ -14,7 +14,7 @@ import {
 import {
   GET_PATIENT_PAST_MEDICINE_SEARCHES,
   SAVE_SEARCH,
-  SEARCH_DIAGNOSTICS,
+  SEARCH_DIAGNOSTICS_BY_CITY_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getPatientPastMedicineSearches,
@@ -26,10 +26,10 @@ import {
   TEST_COLLECTION_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
-  searchDiagnostics,
-  searchDiagnosticsVariables,
-  searchDiagnostics_searchDiagnostics_diagnostics,
-} from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
+  searchDiagnosticsByCityID,
+  searchDiagnosticsByCityIDVariables,
+  searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics,
+} from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
 import {
   aphConsole,
   g,
@@ -155,7 +155,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const [showMatchingMedicines, setShowMatchingMedicines] = useState<boolean>(false);
   const [searchText, setSearchText] = useState<string>('');
   const [medicineList, setMedicineList] = useState<
-    searchDiagnostics_searchDiagnostics_diagnostics[]
+    searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
   >([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [pastSearches, setPastSearches] = useState<
@@ -210,23 +210,22 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
 
   const fetchPackageDetails = (
     name: string,
-    func: (product: searchDiagnostics_searchDiagnostics_diagnostics) => void
+    func: (product: searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics) => void
   ) => {
     {
       setGlobalLoading!(true);
       client
-        .query<searchDiagnostics, searchDiagnosticsVariables>({
-          query: SEARCH_DIAGNOSTICS,
+        .query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
+          query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
           variables: {
             searchText: name,
-            city: locationForDiagnostics && locationForDiagnostics.city, //'Hyderabad' | 'Chennai,
-            patientId: (currentPatient && currentPatient.id) || '',
+            cityID: parseInt(locationForDiagnostics?.cityId!, 10), //be default show of hyderabad
           },
           fetchPolicy: 'no-cache',
         })
         .then(({ data }) => {
           aphConsole.log('searchDiagnostics\n', { data });
-          const product = g(data, 'searchDiagnostics', 'diagnostics', '0' as any);
+          const product = g(data, 'searchDiagnosticsByCityID', 'diagnostics', '0' as any);
           if (product) {
             func && func(product);
           } else {
@@ -290,18 +289,19 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     setIsLoading(true);
 
     client
-      .query<searchDiagnostics, searchDiagnosticsVariables>({
-        query: SEARCH_DIAGNOSTICS,
+      .query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
+        query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
         variables: {
           searchText: _searchText,
-          city: locationForDiagnostics && locationForDiagnostics.city,
-          patientId: (currentPatient && currentPatient.id) || '',
+          cityID: parseInt(locationForDiagnostics?.cityId!, 10),
         },
         fetchPolicy: 'no-cache',
       })
       .then(({ data }) => {
-        const products = g(data, 'searchDiagnostics', 'diagnostics') || [];
-        setMedicineList(products as searchDiagnostics_searchDiagnostics_diagnostics[]);
+        const products = g(data, 'searchDiagnosticsByCityID', 'diagnostics') || [];
+        setMedicineList(
+          products as searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
+        );
         setIsLoading(false);
       })
       .catch((e) => {
@@ -349,7 +349,12 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   };
 
   const onAddCartItem = (
-    { itemId, itemName, rate, collectionType }: searchDiagnostics_searchDiagnostics_diagnostics,
+    {
+      itemId,
+      itemName,
+      rate,
+      collectionType,
+    }: searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics,
     testsIncluded: number
   ) => {
     savePastSeacrh(`${itemId}`, itemName).catch((e) => {
@@ -366,7 +371,9 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     });
   };
 
-  const onRemoveCartItem = ({ itemId }: searchDiagnostics_searchDiagnostics_diagnostics) => {
+  const onRemoveCartItem = ({
+    itemId,
+  }: searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics) => {
     removeCartItem!(`${itemId}`);
   };
 
@@ -515,9 +522,9 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   };
 
   const renderTestCard = (
-    product: searchDiagnostics_searchDiagnostics_diagnostics,
+    product: searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics,
     index: number,
-    array: searchDiagnostics_searchDiagnostics_diagnostics[]
+    array: searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
   ) => {
     const productCardContainerStyle = [
       { marginBottom: 8, marginHorizontal: 20 },

@@ -208,6 +208,11 @@ export async function sendCallsNotification(
         appointmentCallId: appointmentCallId,
         doctorType: doctorType,
       },
+      android: {
+        notification: {
+          channel_id: "fcm_call_channel"
+        }
+      },
     };
 
     admin
@@ -656,7 +661,7 @@ export async function sendReminderNotification(
   if (
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15 ||
     pushNotificationInput.notificationType ==
-      NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
+    NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
   ) {
     if (!(appointment && appointment.id)) {
       throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND);

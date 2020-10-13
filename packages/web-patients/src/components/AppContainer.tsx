@@ -18,6 +18,12 @@ import { DiagnosticsCartProvider } from './Tests/DiagnosticsCartProvider';
 import { MedicinesCartProvider } from 'components/MedicinesCartProvider';
 import { OneApolloMembership } from 'components/MyAccount/OneApolloMembership';
 
+import { HdfcLanding } from 'components/Partners/Hdfc/HdfcLanding';
+import { HdfcMemberShip } from 'components/Partners/Hdfc/HdfcMembership';
+import { MyMembership } from 'components/Partners/Hdfc/MyMembership';
+import { MembershipPlanLocked } from 'components/Partners/Hdfc/MembershipPlanLocked';
+import { MembershipPlanDetail } from 'components/Partners/Hdfc/MembershipPlanDetail';
+
 const Welcome = loadable(() => import('components/Welcome'));
 
 const NotificationSettings = loadable(() =>
@@ -45,7 +51,6 @@ const CovidArticleDetails = loadable(() => import('components/Covid/CovidArticle
 const covidProtocolLanding = loadable(() => import('components/Covid/CovidProtocolLanding'));
 const SpecialityListing = loadable(() => import('components/SpecialityListing'));
 const DoctorsLanding = loadable(() => import('components/DoctorsLanding'));
-// import { Sitemap } from 'components/Sitemap';
 const SpecialtyDetails = loadable(() => import('components/Doctors/SpecialtyDetails'));
 const Appointments = loadable(() => import('components/Consult/V2/Appointments'));
 const ChatRoom = loadable(() => import('components/Consult/V2/ChatRoom/ChatRoom'));
@@ -74,6 +79,7 @@ const MyPayments = loadable(() => import('components/MyAccount/MyPayments'));
 const KnowledgeArticleLanding = loadable(() => import('components/KnowledgeArticleLanding'));
 const PageNotFound = loadable(() => import('components/PageNotFound'));
 const ApolloProHealth = loadable(() => import('components/ApolloProHealthLanding'));
+const Sitemap = loadable(() => import('components/Sitemap'));
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -224,6 +230,13 @@ const App: React.FC = () => {
         <Route exact path={clientRoutes.medicinePrescription()} component={MedicinePrescriptions} />
         <Route exact path={clientRoutes.covidProtocol()} component={covidProtocolLanding} />
         <Route exact path={clientRoutes.prescription(':appointmentId')} component={Prescription} />
+        <Route exact path={clientRoutes.partnersHdfc()} component={HdfcLanding} />
+        <AuthRouted exact path={clientRoutes.membershipHdfc()} component={HdfcMemberShip} />
+        <AuthRouted exact path={clientRoutes.myMembership()} component={MyMembership} />
+        <Route exact path={clientRoutes.membershipPlanLocked()} component={MembershipPlanLocked} />
+        <Route exact path={clientRoutes.membershipPlanDetail()} component={MembershipPlanDetail} />
+        <Route exact path={clientRoutes.sitemap(':sitemap')} component={Sitemap} />
+        <Route exact path={clientRoutes.childSitemap(':sitemap', ':pageNo')} component={Sitemap} />
         <Route
           exact
           path={clientRoutes.knowledgeBaseLanding()}

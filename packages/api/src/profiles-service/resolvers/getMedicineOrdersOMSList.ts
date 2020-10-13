@@ -618,7 +618,7 @@ const getRecommendedProductsList: Resolver<
           is_in_stock: true,
           small_image: skuDets.base_image,
           thumbnail: skuDets.base_image,
-          type_id: '',
+          type_id: skuDets.product_discount_category,
           quantity: skuDets.qty,
           isShippable: skuDets.sell_online,
           MaxOrderQty: 0,

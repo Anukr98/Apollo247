@@ -252,11 +252,8 @@ export const WeAreHelpYou: React.FC = (props) => {
         >
           <div className={classes.contentGroup}>
             <img src={require('images/h-medicine.svg')} alt="" />
-            <div className={classes.title}>Healthcare As One Ecosystem</div>
-            <p>
-              Learn more about healthcare in today’s world with rapid increase in medications and
-              dietery habits round the globe.
-            </p>
+            <div className={classes.title}>Health Articles & Resources</div>
+            <p>Make better health choices with our curated blogs, videos and expert advice.</p>
           </div>
           {/* <div className={classes.rightGroup}>
             <LazyIntersection
@@ -268,29 +265,23 @@ export const WeAreHelpYou: React.FC = (props) => {
         </div>
         <div className={classes.cardContent}>
           <div className={`${classes.hcContent} ${classes.pt0}`}>
-            <Typography component="h3">Knowledge Base</Typography>
+            <Typography component="h3">Health Blog</Typography>
             <div className={classes.hcDetails}>
-              <Typography>
-                We know there is too much information out there. We have compiled the most
-                science-based articles for you on how to stay safe, prevention and what to do in
-                case you are infected.
-              </Typography>
+              <Typography>Explore healthcare content created every day by our experts.</Typography>
               <AphButton href={clientRoutes.knowledgeBaseLanding()}>
-                <img src={'images/article.svg'} alt="" /> Read the latest articles
+                <img src={'images/article.svg'} alt="" /> Read the Latest Articles
               </AphButton>
             </div>
           </div>
           <div className={classes.hcContent}>
-            <Typography component="h3">Covid-19</Typography>
+            <Typography component="h3">Coronavirus (COVID-19)</Typography>
             <div className={classes.hcDetails}>
               <Typography>
-                We know there is too much information out there. We have compiled the most
-                science-based articles for you on how to stay safe, prevention and what to do in
-                case you are infected.
+                The latest Coronavirus information to keep you safe and healthy.
               </Typography>
               <AphButton href={clientRoutes.covidLanding()}>
                 <img src={'images/covid.svg'} alt="" />
-                Learn about Covid-19
+                Learn About COVID-19
               </AphButton>
             </div>
           </div>

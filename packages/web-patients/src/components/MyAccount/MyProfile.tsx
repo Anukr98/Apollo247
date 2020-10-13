@@ -146,6 +146,7 @@ export const MyProfile: React.FC = (props) => {
     right: false,
   });
 
+  const userSubscriptions = JSON.parse(localStorage.getItem('userSubscriptions'));
   type DrawerSide = 'top' | 'left' | 'bottom' | 'right';
   const toggleDrawer = (side: DrawerSide, open: boolean) => (
     event: React.KeyboardEvent | React.MouseEvent
@@ -180,6 +181,8 @@ export const MyProfile: React.FC = (props) => {
             ? 'Need Help'
             : currentPath === clientRoutes.myPayments()
             ? 'My Payments'
+            : currentPath === clientRoutes.myMembership()
+            ? 'My MemberShips'
             : 'Manage Profiles'}
         </div>
       </div>
@@ -265,6 +268,25 @@ export const MyProfile: React.FC = (props) => {
                 </span>
               </Link>
             </div>
+            {userSubscriptions && userSubscriptions.length != 0 && (
+              <div className={classes.sectionGroup}>
+                <Link
+                  className={`${classes.serviceType} ${classes.textVCenter} ${
+                    currentPath === clientRoutes.myMembership() ? classes.menuActive : ''
+                  }`}
+                  to={clientRoutes.myMembership()}
+                  title={'My Memberships'}
+                >
+                  <span className={classes.serviceImg}>
+                    <img src={require('images/my_membership.svg')} alt="" />
+                  </span>
+                  <span className={classes.linkText}>My Memberships</span>
+                  <span className={classes.rightArrow}>
+                    <img src={require('images/ic_arrow_right.svg')} alt="" />
+                  </span>
+                </Link>
+              </div>
+            )}
             <div className={classes.sectionGroup}>
               <Link
                 className={`${classes.serviceType} ${classes.textVCenter} ${
@@ -496,6 +518,25 @@ export const MyProfile: React.FC = (props) => {
                     </span>
                   </Link>
                 </div>
+                {userSubscriptions && userSubscriptions.length != 0 && (
+                  <div className={classes.sectionGroup}>
+                    <Link
+                      className={`${classes.serviceType} ${classes.textVCenter} ${
+                        currentPath === clientRoutes.myMembership() ? classes.menuActive : ''
+                      }`}
+                      to={clientRoutes.myMembership()}
+                      title={'My Memberships'}
+                    >
+                      <span className={classes.serviceImg}>
+                        <img src={require('images/my_membership.svg')} alt="" />
+                      </span>
+                      <span className={classes.linkText}>My Memberships</span>
+                      <span className={classes.rightArrow}>
+                        <img src={require('images/ic_arrow_right.svg')} alt="" />
+                      </span>
+                    </Link>
+                  </div>
+                )}
                 <div className={classes.sectionGroup}>
                   <Link
                     className={`${classes.serviceType} ${classes.textVCenter} ${

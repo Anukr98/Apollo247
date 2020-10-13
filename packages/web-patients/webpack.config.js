@@ -47,7 +47,7 @@ const plugins = [
       licenseCode: process.env.WEBENGAGE_ID,
     },
     inject: true,
-    favicon: './favicon.svg',
+    favicon: './favicon.ico',
     scriptLoading: 'defer',
   }),
   new ScriptExtHtmlWebpackPlugin({
@@ -174,7 +174,7 @@ module.exports = {
         loader: 'file-loader',
         options: {
           publicPath: (url, resourcePath, context) => {
-            const imageName = resourcePath.split('/').pop();
+            const imageName = resourcePath.split('images/').pop();
             if (isProduction || isStaging) {
               // console.log('resourcePath', resourcePath.split('/').pop());
               return `${imageCdnBaseUrl}/${imageName}`;

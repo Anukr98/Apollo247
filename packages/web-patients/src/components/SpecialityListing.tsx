@@ -15,6 +15,7 @@ import { BottomLinks } from 'components/BottomLinks';
 import { PastSearches } from 'components/PastSearches';
 import { useAuth } from 'hooks/authHooks';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { isAlternateVersion } from 'helpers/commonHelpers';
 import { Link } from 'react-router-dom';
 import fetchUtil from 'helpers/fetch';
 import { SpecialtyDivision } from './SpecialtyDivision';
@@ -37,7 +38,10 @@ let apolloDoctorCount = 0;
 let partnerDoctorCount = 0;
 const useStyles = makeStyles((theme: Theme) => {
   return {
-    slContainer: {},
+    slContainer: {
+      height: '100vh',
+      overflowY: 'scroll',
+    },
     slContent: {
       padding: '0 20px 40px',
       background: '#f7f8f5',
@@ -634,6 +638,7 @@ const SpecialityListing: React.FC = (props) => {
   >(null);
   const [searchDoctors, setSearchDoctors] = useState<DoctorDetails[] | null>(null);
   const [searchLoading, setSearchLoading] = useState<boolean>(false);
+  const [isAlternateVariant, setIsAlternateVariant] = useState<boolean>(true);
   const [faqs, setFaqs] = useState<any | null>(null);
   const [selectedCity, setSelectedCity] = useState<string>('');
   const [faqSchema, setFaqSchema] = useState(null);
@@ -648,6 +653,11 @@ const SpecialityListing: React.FC = (props) => {
   };
 
   useEffect(() => {
+    if (isAlternateVersion()) {
+      setIsAlternateVariant(true);
+    } else {
+      setIsAlternateVariant(false);
+    }
     /**Gtm code start start */
     /*gtmTracking({
       category: 'Consultations',
@@ -687,11 +697,15 @@ const SpecialityListing: React.FC = (props) => {
   };
 
   useEffect(() => {
+    const faqUrl = isAlternateVersion()
+      ? process.env.SPECIALTY_LISTING_FAQS + '?variant=2'
+      : process.env.SPECIALTY_LISTING_FAQS;
+
     if (!faqs) {
       scrollToRef &&
         scrollToRef.current &&
         scrollToRef.current.scrollIntoView({ behavior: 'auto', block: 'end' });
-      fetchUtil(process.env.SPECIALTY_LISTING_FAQS, 'GET', {}, '', true).then((res: any) => {
+      fetchUtil(faqUrl, 'GET', {}, '', true).then((res: any) => {
         if (res && res.success === 'true' && res.data && res.data.length > 0) {
           setFaqs(res.data[0]);
           createFaqSchema(res.data[0]);
@@ -735,6 +749,7 @@ const SpecialityListing: React.FC = (props) => {
         }
       });
   };
+  const debounceLoadData = useCallback(_debounce(fetchData, 300), []);
 
   const debounceTracking = useCallback(
     _debounce((searchKeyword) => {
@@ -748,6 +763,7 @@ const SpecialityListing: React.FC = (props) => {
 
   useEffect(() => {
     if (searchKeyword.length > 2 || selectedCity.length) {
+      selectedCity.length === 0 && setInitalLoad(true);
       intialLoad && setSearchLoading(true);
       const search = _debounce(fetchData, 500);
       setSearchQuery((prevSearch: any) => {
@@ -769,7 +785,8 @@ const SpecialityListing: React.FC = (props) => {
     title: 'Online Doctor Consultation via Video Call / Audio / Chat - Apollo 247',
     description:
       'Online doctor consultation in 15 mins with 1000+ Top Specialist Doctors. Video Call or Chat with a Doctor from 100+ Specialties including General Physicians, Pediatricians, Dermatologists, Gynaecologists & more.',
-    canonicalLink: window && window.location && window.location.href,
+    canonicalLink:
+      window && window.location && `${window.location.origin}${window.location.pathname}`,
   };
 
   const breadcrumbJSON = {
@@ -877,8 +894,8 @@ const SpecialityListing: React.FC = (props) => {
                       </div>
                     </div>
                   </div>
-                  <WhyApollo />
-                  <HowItWorks />
+                  <WhyApollo alternateVariant={isAlternateVariant} />
+                  <HowItWorks alternateVariant={isAlternateVariant} />
                 </div>
               </Grid>
             </Grid>

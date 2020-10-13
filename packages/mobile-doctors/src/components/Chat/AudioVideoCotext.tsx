@@ -643,24 +643,24 @@ export const AudioVideoProvider: React.FC = (props) => {
           CommonBugFender('playing_callertune__failed', e);
         }
       }
-      opentokWebengage('streamCreated', event, 'P');
+      opentokWebengage('Doctor Publisher Stream Created', event, 'P');
     },
     streamDestroyed: (event: OpentokStreamObject) => {
       console.log('Publisher stream destroyed!', event);
       setStremConnected(false);
-      opentokWebengage('streamDestroyed', event, 'P');
+      opentokWebengage('Doctor Publisher Stream Destroyed', event, 'P');
     },
     error: (error: OpentokError) => {
       errorPopup(error.message, theme.colors.APP_RED);
       AsyncStorage.setItem('callDisconnected', 'true');
       console.log('Publisher stream error!', error);
-      opentokWebengage('error', error, 'P');
+      opentokWebengage('Doctor Publisher Error', error, 'P');
     },
     otrnError: (event: string) => {
       errorPopup(strings.toastMessages.error, theme.colors.APP_RED);
       AsyncStorage.setItem('callDisconnected', 'true');
       console.log('Publisher stream otrnError!', event);
-      opentokWebengage('otrnError', event, 'P');
+      opentokWebengage('Doctor Publisher Otrnerror', event, 'P');
     },
   };
 
@@ -668,14 +668,14 @@ export const AudioVideoProvider: React.FC = (props) => {
     error: (error: OpentokError) => {
       errorPopup(error.message, theme.colors.APP_RED);
       console.log('Subscriber stream error!', error);
-      opentokWebengage('error', error, 'Sub');
+      opentokWebengage('Patient Subscriber Error', error, 'Sub');
     },
     otrnError: (event: string) => {
       errorPopup(strings.toastMessages.error, theme.colors.APP_RED);
       console.log('Subscriber stream otrnError!', event);
-      opentokWebengage('otrnError', event, 'Sub');
+      opentokWebengage('Patient Subscriber Otrnerror', event, 'Sub');
     },
-    connected: () => {
+    connected: (event: string) => {
       setCallConnected(true);
       if (audioTrack) {
         setPrevVolume();
@@ -683,12 +683,12 @@ export const AudioVideoProvider: React.FC = (props) => {
       }
       hidePopup();
       console.log('Subscriber stream connected!');
-      opentokWebengage('connected', '', 'Sub');
+      opentokWebengage('Patient Subscriber Connected', event, 'Sub');
     },
-    disconnected: () => {
+    disconnected: (event: string) => {
       // errorPopup(strings.toastMessages.error, theme.colors.APP_RED);
       console.log('Subscriber stream disconnected!');
-      opentokWebengage('disconnected', '', 'Sub');
+      opentokWebengage('Patient Subscriber Disconnected', event, 'Sub');
     },
     videoDataReceived: () => {
       setCallConnected(true);
@@ -710,7 +710,7 @@ export const AudioVideoProvider: React.FC = (props) => {
         });
       }
       console.log('Subscriber stream videoDisabled!', event);
-      opentokWebengage('videoDisabled', event, 'Sub');
+      opentokWebengage('Patient Subscriber Video Disabled', event, 'Sub');
     },
     videoEnabled: (event: OpentokVideoWarn) => {
       if (event.reason === 'quality') {
@@ -722,12 +722,12 @@ export const AudioVideoProvider: React.FC = (props) => {
         });
       }
       console.log('Subscriber stream videoEnabled!', event);
-      opentokWebengage('videoEnabled', event, 'Sub');
+      opentokWebengage('Patient Subscriber Video Enabled', event, 'Sub');
     },
     videoDisableWarning: () => {
       errorPopup(strings.toastMessages.willFallback, theme.colors.APP_YELLOW);
       console.log('Subscriber stream videoDisableWarning!');
-      opentokWebengage('videoDisableWarning', '', 'Sub');
+      opentokWebengage('Patient Subscriber Video Warning', '', 'Sub');
     },
     videoDisableWarningLifted: () => {
       errorPopup(strings.toastMessages.videoBack, theme.colors.APP_GREEN);
@@ -737,7 +737,7 @@ export const AudioVideoProvider: React.FC = (props) => {
         video: true,
       });
       console.log('Subscriber stream videoDisableWarningLifted!');
-      opentokWebengage('videoDisableWarningLifted', '', 'Sub');
+      opentokWebengage('Patient Subscriber Video Warning Lifted', '', 'Sub');
     },
     audioNetworkStats: (event: OpenTokAudioStream) => {
       // setCallerAudio(event.stream.hasAudio);
@@ -773,7 +773,7 @@ export const AudioVideoProvider: React.FC = (props) => {
       setTimeout(() => {
         errorPopup(message, theme.colors.APP_RED);
       }, 50);
-      opentokWebengage('error', error, 'Ses');
+      opentokWebengage('Doctor Session Error', error, 'Ses');
       console.log('session stream error!', error);
     },
     otrnError: (event: string) => {
@@ -783,7 +783,7 @@ export const AudioVideoProvider: React.FC = (props) => {
         }
       });
       AsyncStorage.setItem('callDisconnected', 'true');
-      opentokWebengage('otrnError', event, 'Ses');
+      opentokWebengage('Doctor Session Otrnerror', event, 'Ses');
       console.log('session stream otrnError!', event);
     },
     connectionCreated: (event: string) => {
@@ -801,7 +801,7 @@ export const AudioVideoProvider: React.FC = (props) => {
       hidePopup();
       // console.log('otSessionRef', otSessionRef);
       // console.log('Another client connected. ' + connectionCount + ' total.');
-      opentokWebengage('connectionCreated', event, 'Ses');
+      opentokWebengage('Doctor Session Connection Created', event, 'Ses');
       console.log('session stream connectionCreated!', event);
     },
     connectionDestroyed: (event: string) => {
@@ -832,31 +832,30 @@ export const AudioVideoProvider: React.FC = (props) => {
         setPrevVolume();
         audioTrack.stop();
       }
-      opentokWebengage('connectionDestroyed', event, 'Ses');
+      opentokWebengage('Doctor Session Connection Destroyed', event, 'Ses');
       console.log('session stream connectionDestroyed!', event);
     },
     sessionConnected: (event: OpenTokSessionConnect) => {
       console.log('session stream sessionConnected!', event);
-      opentokWebengage('sessionConnected', event, 'Ses');
+      opentokWebengage('Doctor Session Connected', event, 'Ses');
       hidePopup();
     },
     sessionDisconnected: (event: { sessionId: string }) => {
       console.log('session stream sessionDisconnected!', event);
-      opentokWebengage('sessionDisconnected', event, 'Ses');
+      opentokWebengage('Doctor Session Disconnected', event, 'Ses');
     },
     sessionReconnected: () => {
       console.log('session stream sessionReconnected!');
       errorPopup(strings.toastMessages.reconnected, theme.colors.APP_GREEN);
-      opentokWebengage('sessionReconnected', '', 'Ses');
+      opentokWebengage('Doctor Session Reconnected', '', 'Ses');
     },
     sessionReconnecting: () => {
       console.log('session stream sessionReconnecting!');
       errorPopup(strings.toastMessages.reconnecting, theme.colors.APP_YELLOW);
-      opentokWebengage('sessionReconnecting', '', 'Ses');
+      opentokWebengage('Doctor Session Reconnecting', '', 'Ses');
     },
     signal: (event: string) => {
       console.log('session stream signal!', event);
-      opentokWebengage('signal', event, 'Ses');
     },
     streamCreated: (event: OpentokStreamObject) => {
       console.log('session streamCreated!', event);
@@ -865,11 +864,11 @@ export const AudioVideoProvider: React.FC = (props) => {
         setPrevVolume();
         audioTrack.stop(() => {});
       }
-      opentokWebengage('streamCreated', event, 'Ses');
+      opentokWebengage('Doctor Session Stream Created', event, 'Ses');
     },
     streamDestroyed: (event: string) => {
       console.log('session streamDestroyed!', event);
-      opentokWebengage('streamDestroyed', event, 'Ses');
+      opentokWebengage('Doctor Session Stream Destroyed', event, 'Ses');
     },
     streamPropertyChanged: (event: OpentokChangeProp) => {
       console.log('session streamPropertyChanged!', event);
@@ -882,7 +881,7 @@ export const AudioVideoProvider: React.FC = (props) => {
           audioTrack.stop(() => {});
         }
       }
-      opentokWebengage('streamPropertyChanged', event, 'Ses');
+      opentokWebengage('Doctor Session Stream Property Changed', event, 'Ses');
     },
   };
   const renderCallView = () => {

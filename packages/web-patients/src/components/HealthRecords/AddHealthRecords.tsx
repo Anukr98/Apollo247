@@ -41,7 +41,13 @@ import { useMutation } from 'react-apollo-hooks';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { Alerts } from 'components/Alerts/Alerts';
-import { addRecordClickTracking } from '../../webEngageTracking';
+import {
+  // addRecordClickTracking,
+  addPrescriptionRecordClickTracking,
+  addMedicalRecordClickTracking,
+  addHealthCheckRecordClickTracking,
+  addDischargeSummaryRecordClickTracking,
+} from '../../webEngageTracking';
 import { gtmTracking } from '../../gtmTracking';
 import { BottomLinks } from 'components/BottomLinks';
 import {
@@ -744,12 +750,16 @@ const AddHealthRecords: React.FC = (props) => {
     if (valid.message.length === 0) {
       setshowSpinner(true);
       if (typeOfRecord === MedicalRecordType.TEST_REPORT) {
+        addMedicalRecordClickTracking('Medical Record');
         callAddingLabResultRecord();
       } else if (typeOfRecord === MedicalRecordType.PRESCRIPTION) {
+        addPrescriptionRecordClickTracking('Prescription');
         callAddingRecord();
       } else if (typeOfRecord === MedicalRecordType.HEALTHCHECK) {
+        addHealthCheckRecordClickTracking('Health Check Record');
         callAddingHealthCheckRecord();
       } else if (typeOfRecord === MedicalRecordType.HOSPITALIZATION) {
+        addDischargeSummaryRecordClickTracking('Discharge Summary Record');
         callingAddingHospitalizationRecord();
       }
     } else {
@@ -759,7 +769,6 @@ const AddHealthRecords: React.FC = (props) => {
   };
 
   const handleSaveRecord = () => {
-    addRecordClickTracking('Medical Record');
     saveRecord();
   };
 
@@ -800,7 +809,19 @@ const AddHealthRecords: React.FC = (props) => {
       <div className={classes.container}>
         <div className={classes.addRecordsPage}>
           <div className={classes.breadcrumbs}>
-            <Link to={{ pathname: clientRoutes.healthRecords(), state: 'medical' }}>
+            <Link
+              to={{
+                pathname: clientRoutes.healthRecords(),
+                state:
+                  typeOfRecord === MedicalRecordType.TEST_REPORT
+                    ? 'medical'
+                    : typeOfRecord === MedicalRecordType.HOSPITALIZATION
+                    ? 'hospitalization'
+                    : typeOfRecord === MedicalRecordType.HEALTHCHECK
+                    ? 'healthCheck'
+                    : '',
+              }}
+            >
               <div className={classes.backArrow}>
                 <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                 <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
@@ -1294,7 +1315,7 @@ const AddHealthRecords: React.FC = (props) => {
             </Scrollbars>
             <div className={classes.pageBottomActions}>
               <AphButton color="primary" onClick={handleSaveRecord}>
-                {showSpinner ? <CircularProgress size={22} color="secondary" /> : 'Add Record'}
+                {showSpinner ? <CircularProgress size={22} color="secondary" /> : 'Save Record'}
               </AphButton>
             </div>
           </div>
