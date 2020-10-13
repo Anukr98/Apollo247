@@ -2278,6 +2278,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     );
   };
   const onEndConsult = () => {
+    updateNumberOfParticipants(USER_STATUS.LEAVING);
     stopAllCalls();
     endCallNotificationAPI(false);
     postWebEngageEvent(WebEngageEventName.DOCTOR_STOP_CONSULT, {

@@ -178,6 +178,7 @@ export const GET_DOCTOR_LIST = gql`
         id
         name
         specialtydisplayName
+        specialistPluralTerm
       }
       apolloDoctorCount
       partnerDoctorCount

@@ -7,7 +7,6 @@ import {
   MEDICINE_ORDER_STATUS,
   MedicineOrdersStatus,
   MedicineOrderShipments,
-  MEDICINE_DELIVERY_TYPE,
   MedicineOrderInvoice,
 } from 'profiles-service/entities';
 
@@ -38,6 +37,8 @@ export const updateOrderStatusTypeDefs = gql`
     apOrderNo: String
     updatedDate: String!
     referenceNo: String
+    driverName: String
+    driverPhone: String
   }
 
   type UpdateOrderStatusResult {
@@ -65,6 +66,8 @@ type OrderStatusInput = {
   trackingNo: string;
   trackingUrl: string;
   trackingProvider: string;
+  driverName: string;
+  driverPhone: string;
   referenceNo: string;
   reasonCode: string;
   apOrderNo: string;
@@ -74,6 +77,8 @@ type OrderStatusInput = {
 type OrderStatusInputArgs = {
   updateOrderStatusInput: OrderStatusInput;
 };
+
+const inernal_statuses = ['READY_FOR_VERIFICATION', 'VERIFICATION_DONE'];
 
 const updateOrderStatus: Resolver<
   null,
@@ -166,11 +171,18 @@ const updateOrderStatus: Resolver<
     }
     const orderShipmentsAttrs: Partial<MedicineOrderShipments> = {
       currentStatus: status,
-      trackingNo: updateOrderStatusInput.trackingNo || shipmentDetails.trackingNo,
-      trackingUrl: updateOrderStatusInput.trackingUrl || shipmentDetails.trackingUrl,
-      trackingProvider: updateOrderStatusInput.trackingProvider || shipmentDetails.trackingProvider,
       cancelReasonCode: updateOrderStatusInput.reasonCode || shipmentDetails.cancelReasonCode,
     };
+    if (status == MEDICINE_ORDER_STATUS.READY_TO_SHIP) {
+      orderShipmentsAttrs.trackingNo = updateOrderStatusInput.trackingNo;
+      orderShipmentsAttrs.trackingUrl = updateOrderStatusInput.trackingUrl;
+      orderShipmentsAttrs.trackingProvider = updateOrderStatusInput.trackingProvider;
+    } else if (status == MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY) {
+      orderShipmentsAttrs.driverDetails = {
+        driverName: updateOrderStatusInput.driverName,
+        driverPhone: updateOrderStatusInput.driverPhone,
+      };
+    }
     try {
       await medicineOrdersRepo.updateMedicineOrderShipment(
         orderShipmentsAttrs,
@@ -239,17 +251,24 @@ const updateOrderStatus: Resolver<
     });
 
     if (!shipmentsWithDifferentStatus || shipmentsWithDifferentStatus.length == 0) {
-      await medicineOrdersRepo.updateMedicineOrderDetails(
-        orderDetails.id,
-        orderDetails.orderAutoId,
-        new Date(statusDate),
-        status
-      );
+      let hideStatus = true;
+      if (inernal_statuses.indexOf(status) > -1) {
+        hideStatus = false;
+      } else {
+        await medicineOrdersRepo.updateMedicineOrderDetails(
+          orderDetails.id,
+          orderDetails.orderAutoId,
+          new Date(statusDate),
+          status
+        );
+      }
+
       const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
         orderStatus: status,
         medicineOrders: orderDetails,
         statusDate: new Date(statusDate),
         statusMessage: updateOrderStatusInput.reasonCode,
+        hideStatus,
       };
       await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
       if (status == MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY) {

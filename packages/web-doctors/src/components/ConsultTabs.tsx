@@ -1835,6 +1835,7 @@ export const ConsultTabs: React.FC = () => {
           (status: any, response: any) => {}
         );
         setIsPdfPageOpen(true);
+        getSetNumberOfParticipants(paramId, USER_STATUS.LEAVING);
       })
       .catch((e) => {
         webEngageEventTracking(
