@@ -1156,7 +1156,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         channel: channel,
         message: {
           message: doctorAutoResponse,
-          automatedText: `We have notified the query you have raised to the ${appointmentData.doctorInfo.displayName}. Doctor will get back to you within 24 hours. In case of emergency, please contact the nearby hospital`,
+          automatedText: `We have notified the query you raised to ${appointmentData.doctorInfo.displayName}. Doctor will get back to you within 24 hours. In case of any emergency, it is advisable to contact a nearby hospital!`,
           id: doctorId,
           isTyping: true,
           messageDate: new Date(),
