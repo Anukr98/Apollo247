@@ -345,10 +345,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   useEffect(() => {
-    if (diagnosticPincode != '') {
+    if (!diagnosticPincode) {
       const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ENTER_DELIVERY_PINCODE_CLICKED] = {
         ...patientAttributes,
-        Method: optionSelected == '' ? 'Enter Manually' : optionSelected,
+        Method: !optionSelected ? 'Enter Manually' : optionSelected,
         Pincode: parseInt(diagnosticPincode!),
       };
       postWebEngageEvent(
