@@ -108,7 +108,6 @@ import { WebEngageEventName, WebEngageEvents } from '../../helpers/webEngageEven
 import moment from 'moment';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
-import _ from 'lodash';
 import {
   getPincodeServiceability,
   getPincodeServiceabilityVariables,
@@ -239,6 +238,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [currentLocation, setcurrentLocation] = useState<string>('');
   const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
   const [serviceabilityCity, setServiceabilityCity] = useState<string>('');
+  const [optionSelected, setOptionSelected] = useState<string>('');
   const [locationSearchList, setlocationSearchList] = useState<{ name: string; placeId: string }[]>(
     []
   );
@@ -280,6 +280,106 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const hasLocation = locationDetails;
 
   const diagnosticPincode = g(diagnosticLocation, 'pincode') || g(locationDetails, 'pincode');
+
+  useEffect(() => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED] = {
+      'Patient UHID': currentPatient.uhid,
+      'Patient Gender': currentPatient.gender,
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient Age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+    };
+    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED, eventAttributes);
+  }, []);
+
+  /**
+   * for serviceable - non-serviceable tracking
+   */
+  useEffect(() => {
+    if (!!locationDetails || !!diagnosticLocation) {
+      if (isDiagnosticLocationServiceable) {
+        const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_SERVICEABLE] = {
+          'Patient UHID': currentPatient.uhid,
+          State: g(diagnosticLocation, 'state') || g(locationDetails, 'state') || '',
+          City: g(diagnosticLocation, 'city') || g(locationDetails, 'city') || '',
+          'PinCode Entered': parseInt(diagnosticPincode!),
+        };
+        postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_SERVICEABLE, eventAttributes);
+      } else {
+        const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_NON_SERVICEABLE] = {
+          'Patient UHID': currentPatient.uhid,
+          State: g(diagnosticLocation, 'state') || g(locationDetails, 'state') || '',
+          City: g(diagnosticLocation, 'city') || g(locationDetails, 'city') || '',
+          'PinCode Entered': parseInt(diagnosticPincode!),
+        };
+        postWebEngageEvent(
+          WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_NON_SERVICEABLE,
+          eventAttributes
+        );
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED] = {
+      'Patient UHID': currentPatient.uhid,
+      'Patient Gender': currentPatient.gender,
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient Age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+    };
+    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED, eventAttributes);
+  }, [isDiagnosticLocationServiceable]);
+
+  const setWebEngageEventOnSearchItem = (keyword: string, results: []) => {
+    if (keyword.length > 2) {
+      const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_SEARCHED] = {
+        'Patient UHID': currentPatient.uhid,
+        'Patient Gender': currentPatient.gender,
+        'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+        'Patient Age': Math.round(
+          moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+        ),
+        'Keyword Entered': keyword,
+        '# Results appeared': results.length,
+        'Item in Results': results,
+      };
+      postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED, eventAttributes);
+    }
+  };
+
+  const setWebEngageEventOnSearchItemClicked = (item: object) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_CLICKED_AFTER_SEARCH] = {
+      'Patient UHID': currentPatient.uhid,
+      'Patient Gender': currentPatient.gender,
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient Age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Item Clicked': item,
+    };
+    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED, eventAttributes);
+  };
+
+  useEffect(() => {
+    if (diagnosticPincode != '') {
+      const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ENTER_DELIVERY_PINCODE_CLICKED] = {
+        'Patient UHID': currentPatient.uhid,
+        'Patient Gender': currentPatient.gender,
+        'Patient Age': Math.round(
+          moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+        ),
+        Method: optionSelected == '' ? 'Enter Manually' : optionSelected,
+        Pincode: parseInt(diagnosticPincode!),
+      };
+      postWebEngageEvent(
+        WebEngageEventName.DIAGNOSTIC_ENTER_DELIVERY_PINCODE_CLICKED,
+        eventAttributes
+      );
+    }
+  }, [diagnosticPincode]);
 
   /**
    * if any change in the location and pincode is changed
@@ -444,6 +544,20 @@ export const Tests: React.FC<TestsProps> = (props) => {
         });
     }
   }, []);
+
+  const setWebEnageEventForItemViewedOnLanding = (name: string, id: string, type: string) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ITEM_CLICKED_ON_LANDING] = {
+      'Item Name': name,
+      'Item ID': id,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient Age': Math.round(
+        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient Gender': g(currentPatient, 'gender'),
+      Type: type,
+    };
+    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ITEM_CLICKED_ON_LANDING, eventAttributes);
+  };
 
   const postFeaturedTestEvent = (name: string, id: string) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.FEATURED_TEST_CLICKED] = {
@@ -939,6 +1053,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
         if (!isDiagnosticLocationServiceable) {
           return;
         }
+        setWebEnageEventForItemViewedOnLanding(
+          packageName!,
+          `${diagnostics!.itemId}`,
+          `${diagnostics!.itemType}`
+        );
         postFeaturedTestEvent(packageName!, `${diagnostics!.itemId}`);
         props.navigation.navigate(AppRoutes.TestDetails, {
           testDetails: {
@@ -950,6 +1069,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
             FromAgeInDays: diagnostics!.fromAgeInDays,
             ToAgeInDays: diagnostics!.toAgeInDays,
             preparation: diagnostics!.testPreparationData,
+            source: 'Landing Page',
+            type: diagnostics!.itemType,
           } as TestPackageForDetails,
         });
       },
@@ -1253,7 +1374,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
                         ...item,
                         collectionType: product.collectionType,
                         preparation: product.testPreparationData,
+                        source: 'Landing Page',
+                        type: product.itemType,
                       } as TestPackageForDetails,
+                      type: 'Package',
                     });
                   });
                 },
@@ -1355,6 +1479,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                   if (!isDiagnosticLocationServiceable) {
                     return;
                   }
+                  setWebEnageEventForItemViewedOnLanding(item.organName!, item.id!, 'Package');
                   postBrowsePackageEvent(item.organName!);
                   props.navigation.navigate(AppRoutes.TestsByCategory, {
                     title: `${item.organName || 'Products'}`.toUpperCase(),
@@ -1422,11 +1547,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
         })
         .then(({ data }) => {
           // aphConsole.log({ data });
+          setSearchText(_searchText);
           const products = g(data, 'searchDiagnosticsByCityID', 'diagnostics') || [];
           setMedicineList(
             products as searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
           );
           setsearchSate('success');
+          setWebEngageEventOnSearchItem(_searchText, products);
         })
         .catch((e) => {
           CommonBugFender('Tests_onSearchMedicine', e);
@@ -1690,17 +1817,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
         onPress={(item) => {
           if (item.value == options[0].value) {
             autoDetectLocation();
+            setOptionSelected('Auto Detect');
           } else {
-            const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ENTER_DELIVERY_PINCODE_CLICKED] = {
-              'Patient UHID': currentPatient.uhid,
-              'Mobile Number': currentPatient.mobileNumber,
-              'Customer ID': currentPatient.id,
-            };
-            postWebEngageEvent(
-              WebEngageEventName.DIAGNOSTIC_ENTER_DELIVERY_PINCODE_CLICKED,
-              eventAttributes
-            );
             setshowLocationpopup(true);
+            setOptionSelected('Enter Manually');
           }
         }}
       >
@@ -1808,10 +1928,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
       fromAgeInDays,
       toAgeInDays,
       testPreparationData,
+      itemType,
     } = item;
     return renderSearchSuggestionItem({
       onPress: () => {
         savePastSeacrh(`${itemId}`, itemName).catch((e) => {});
+        setWebEngageEventOnSearchItemClicked(item);
         props.navigation.navigate(AppRoutes.TestDetails, {
           testDetails: {
             Rate: rate,
@@ -1822,6 +1944,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
             FromAgeInDays: fromAgeInDays,
             ToAgeInDays: toAgeInDays,
             preparation: testPreparationData,
+            source: 'Landing Page',
+            type: itemType,
           } as TestPackageForDetails,
         });
       },

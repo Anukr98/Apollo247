@@ -7,6 +7,8 @@ import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/St
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getPackageData, TestPackage } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import {
   aphConsole,
   postWebEngageEvent,
@@ -40,6 +42,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsById';
 import { SEARCH_DIAGNOSTICS_BY_ID } from '@aph/mobile-patients/src/graphql/profiles';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { useAppCommonData } from '../AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   testNameStyles: {
@@ -151,6 +154,8 @@ const tabs = [
 export interface TestPackageForDetails extends TestPackage {
   collectionType: TEST_COLLECTION_TYPE;
   preparation: string;
+  source: 'Landing Page' | 'Search Page' | 'Cart Page';
+  type: string;
 }
 
 export interface TestDetailsProps
@@ -166,6 +171,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
   const [testInfo, setTestInfo] = useState<TestPackageForDetails>(testDetails);
   const TestDetailsDiscription = testInfo.PackageInClussion;
+  const { locationDetails, diagnosticLocation } = useAppCommonData();
   const { cartItems, addCartItem } = useDiagnosticsCart();
   const { cartItems: shopCartItems } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
@@ -174,6 +180,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   aphConsole.log('currentItemId : ' + currentItemId);
   const [searchSate, setsearchSate] = useState<'load' | 'success' | 'fail' | undefined>();
   const client = useApolloClient();
+  const { currentPatient } = useAllCurrentPatients();
 
   useEffect(() => {
     if (itemId) {
@@ -192,6 +199,19 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             setsearchSate('fail');
           });
     }
+  }, []);
+
+  useEffect(() => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION] = {
+      'Patient UHID': currentPatient.uhid,
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      Source: testInfo.source,
+      'Item Name': testInfo.ItemName,
+      'Item Type': testInfo.type,
+      'Item Code': testInfo.ItemID,
+      'Item Price': testInfo.Rate,
+    };
+    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION, eventAttributes);
   }, []);
 
   const loadTestDetails = async (itemId: string) => {
