@@ -370,7 +370,7 @@ export function elasticDoctorAvailabilityFilter(filterInput: FilterDoctorInput){
   } else if (elasticSlotDateAvailability.length > 0) {
     return { bool: { should: elasticSlotDateAvailability } };
   } else if (filterInput.availableNow) {
-    return elasticSlotAvailabileNow;
+    return { bool: { must: elasticSlotAvailabileNow } };
   }
 
 }
