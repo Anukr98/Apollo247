@@ -8,6 +8,7 @@ import {
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import {
   MedicineOrders,
+  MedicineOrdersStatus,
   MEDICINE_ORDER_STATUS,
   MEDICINE_ORDER_TYPE,
   MEDICINE_DELIVERY_TYPE,
@@ -528,9 +529,11 @@ const getMedicineOrderOMSDetails: Resolver<
       throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
     }
     if (medicineOrderDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED) {
-      const reasonCode = medicineOrderDetails.medicineOrdersStatus.find((orderStatusObj: any) => {
-        return orderStatusObj.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED;
-      });
+      const reasonCode = medicineOrderDetails.medicineOrdersStatus.find(
+        (orderStatusObj: MedicineOrdersStatus) => {
+          return orderStatusObj.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED;
+        }
+      );
       if (reasonCode) {
         try {
           const cancellationReasons = await medicineOrdersRepo.getMedicineOrderCancelReasonByCode(
@@ -908,9 +911,11 @@ const getMedicineOrderOMSDetailsWithAddress: Resolver<
       throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
     }
     if (medicineOrderDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED) {
-      const reasonCode = medicineOrderDetails.medicineOrdersStatus.find((orderStatusObj: any) => {
-        return orderStatusObj.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED;
-      });
+      const reasonCode = medicineOrderDetails.medicineOrdersStatus.find(
+        (orderStatusObj: MedicineOrdersStatus) => {
+          return orderStatusObj.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED;
+        }
+      );
       if (reasonCode) {
         try {
           const cancellationReasons = await medicineOrdersRepo.getMedicineOrderCancelReasonByCode(
@@ -932,9 +937,11 @@ const getMedicineOrderOMSDetailsWithAddress: Resolver<
         }
       }
     } else if (medicineOrderDetails.currentStatus == MEDICINE_ORDER_STATUS.ON_HOLD) {
-      const reasonCode = medicineOrderDetails.medicineOrdersStatus.find((orderStatusObj: any) => {
-        return orderStatusObj.orderStatus == MEDICINE_ORDER_STATUS.ON_HOLD;
-      });
+      const reasonCode = medicineOrderDetails.medicineOrdersStatus.find(
+        (orderStatusObj: MedicineOrdersStatus) => {
+          return orderStatusObj.orderStatus == MEDICINE_ORDER_STATUS.ON_HOLD;
+        }
+      );
       if (reasonCode) {
         const cancellationReasons = await medicineOrdersRepo.getMedicineOrderCancelReasonByCode(
           reasonCode.statusMessage

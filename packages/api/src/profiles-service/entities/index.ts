@@ -2694,7 +2694,7 @@ export class MedicineOrderShipments extends BaseEntity {
   @Column({ nullable: true })
   cancelReasonCode: string;
 
-  @Column({ nullable: true, type: 'json' })
+  @Column({ nullable: true, type: 'jsonb' })
   driverDetails: string;
 
   @Column({ nullable: true })
