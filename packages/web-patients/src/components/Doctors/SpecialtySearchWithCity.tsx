@@ -41,6 +41,7 @@ const useStyles = makeStyles((theme: Theme) => {
         minWidth: 50,
         maxWidth: 120,
         whiteSpace: 'nowrap',
+        textTransform: 'capitalize',
       },
     },
     searchInput: {
@@ -58,14 +59,13 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     specialitySearch: {
       padding: '10px 0',
-      background: '#fff',
       display: 'flex',
       alignItems: 'center',
-      [theme.breakpoints.down(700)]: {
+      [theme.breakpoints.down(768)]: {
         flexDirection: 'column',
         alignItems: 'flex-start',
         padding: 20,
-        margin: '0 0 20px',
+        backgroundColor: '#fff',
       },
     },
     cityActive: {
@@ -177,9 +177,9 @@ interface SpecialtySearchProps {
   searchKeyword: string;
   selectedCity: string;
   setSelectedCity: (selectedCity: string) => void;
-  searchSpecialty?: GetDoctorList_getDoctorList_specialties[] | null;
-  searchDoctors?: DoctorDetails[] | null;
-  searchLoading?: boolean;
+  searchSpecialty: GetDoctorList_getDoctorList_specialties[] | null;
+  searchDoctors: DoctorDetails[] | null;
+  searchLoading: boolean;
   setLocationPopup: (locationPopup: boolean) => void;
   locationPopup: boolean;
   currentPage?: number;
@@ -231,17 +231,15 @@ export const SpecialtySearchWithCity: React.FC<SpecialtySearchProps> = (props) =
   const pathCondition = location.pathname === clientRoutes.specialityListing();
 
   useEffect(() => {
-    if (pathCondition) {
-      const handleClickOutside = (event: { target: any }) => {
-        if (searchRef.current && !searchRef.current.contains(event.target)) {
-          setSearchKeyword('');
-        }
-      };
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-      };
-    }
+    const handleClickOutside = (event: { target: any }) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setSearchKeyword('');
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, [searchRef]);
 
   const onScrollHandle = () => {
@@ -264,15 +262,14 @@ export const SpecialtySearchWithCity: React.FC<SpecialtySearchProps> = (props) =
     });
     search();
   };
-  // debugger;
 
   return (
     <>
       <div className={classes.specialitySearch} ref={searchRef}>
         <div className={classes.location}>
           <div onClick={() => setLocationPopup(true)}>
-            <img src={require('images/location.svg')} alt="" />
             <div className={classes.userLocation}>
+              <img src={require('images/location.svg')} alt="" />
               <Typography className={selectedCity ? classes.cityActive : null}>
                 {selectedCity === '' ? 'Select Your City' : selectedCity}
               </Typography>
@@ -293,7 +290,7 @@ export const SpecialtySearchWithCity: React.FC<SpecialtySearchProps> = (props) =
           <img src={require('images/ic-search.svg')} alt="" />
           <AphInput
             className={classes.searchInput}
-            placeholder={pathCondition ? 'Search doctors or specialities' : 'Search doctors'}
+            placeholder={'Search doctors or specialities'}
             value={searchKeyword}
             onChange={(e) => {
               const searchValue = e.target.value;
@@ -301,81 +298,75 @@ export const SpecialtySearchWithCity: React.FC<SpecialtySearchProps> = (props) =
               setSearchKeyword(searchValue);
             }}
           />
-          {(searchSpecialty || searchDoctors || searchLoading) &&
-            searchKeyword.length > 0 &&
-            pathCondition && (
-              <div className={classes.searchContent} onScroll={onScrollHandle} ref={scrollRef}>
-                {searchLoading ? (
-                  <CircularProgress />
-                ) : (
-                  <>
-                    {searchSpecialty && searchSpecialty.length > 0 && (
-                      <div className={classes.sContent}>
-                        <Typography component="h6">Specialities</Typography>
-                        <ul className={classes.sList}>
-                          {searchSpecialty.map(
-                            (specialty: GetDoctorList_getDoctorList_specialties) => (
-                              <Link
-                                key={specialty.id}
-                                to={
-                                  selectedCity === ''
-                                    ? clientRoutes.specialties(readableParam(specialty.name))
-                                    : clientRoutes.citySpecialties(
-                                        _lowerCase(selectedCity),
-                                        readableParam(specialty.name)
-                                      )
-                                }
-                              >
-                                <li key={specialty.id} onClick={() => setSearchKeyword('')}>
-                                  {specialty.name}
-                                </li>
-                              </Link>
-                            )
-                          )}
-                        </ul>
-                      </div>
-                    )}
-                    {searchDoctors && searchDoctors.length > 0 && (
-                      <div className={classes.docContent}>
-                        <Typography component="h6">Doctors</Typography>
-                        <ul className={classes.doctorList}>
-                          {searchDoctors.map((doctor: DoctorDetails) => (
-                            <li key={doctor.id}>
-                              <Link
-                                key={doctor.id}
-                                to={clientRoutes.doctorDetails(
-                                  readableParam(doctor.displayName),
-                                  doctor.id
-                                )}
-                              >
-                                <div className={classes.doctorContent}>
-                                  <div className={classes.dImg}>
-                                    <img src={doctor.photoUrl} />
-                                  </div>
-                                  <div className={classes.doctorDetails}>
-                                    <Typography component="h2">{doctor.displayName}</Typography>
-                                    <Typography>
-                                      {_get(doctor, 'specialistSingularTerm', '')} |{' '}
-                                      {getDoctorAvailability(doctor.earliestSlotInMinutes)} |{' '}
-                                      {doctor.fee} | {doctor.doctorfacility}
-                                    </Typography>
-                                  </div>
+          {(searchSpecialty || searchDoctors || searchLoading) && searchKeyword.length > 0 && (
+            <div className={classes.searchContent} onScroll={onScrollHandle} ref={scrollRef}>
+              {searchLoading ? (
+                <CircularProgress />
+              ) : (
+                <>
+                  {searchSpecialty && searchSpecialty.length > 0 && (
+                    <div className={classes.sContent}>
+                      <Typography component="h6">Specialities</Typography>
+                      <ul className={classes.sList}>
+                        {searchSpecialty.map(
+                          (specialty: GetDoctorList_getDoctorList_specialties) => (
+                            <Link
+                              key={specialty.id}
+                              to={clientRoutes.specialtyDetailsWithCity(
+                                readableParam(specialty.name),
+                                _lowerCase(selectedCity)
+                              )}
+                            >
+                              <li key={specialty.id} onClick={() => setSearchKeyword('')}>
+                                {specialty.name}
+                              </li>
+                            </Link>
+                          )
+                        )}
+                      </ul>
+                    </div>
+                  )}
+                  {searchDoctors && searchDoctors.length > 0 && (
+                    <div className={classes.docContent}>
+                      <Typography component="h6">Doctors</Typography>
+                      <ul className={classes.doctorList}>
+                        {searchDoctors.map((doctor: DoctorDetails) => (
+                          <li key={doctor.id}>
+                            <Link
+                              key={doctor.id}
+                              to={clientRoutes.doctorDetails(
+                                readableParam(doctor.displayName),
+                                doctor.id
+                              )}
+                            >
+                              <div className={classes.doctorContent}>
+                                <div className={classes.dImg}>
+                                  <img src={doctor.photoUrl} />
                                 </div>
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </>
-                )}
-                {!searchLoading &&
-                  searchDoctors &&
-                  searchDoctors.length === 0 &&
-                  searchSpecialty &&
-                  searchSpecialty.length === 0 && <p>No Results Found</p>}
-              </div>
-            )}
+                                <div className={classes.doctorDetails}>
+                                  <Typography component="h2">{doctor.displayName}</Typography>
+                                  <Typography>
+                                    {_get(doctor, 'specialistSingularTerm', '')} |{' '}
+                                    {getDoctorAvailability(doctor.earliestSlotInMinutes)} |{' '}
+                                    {doctor.fee} | {doctor.doctorfacility}
+                                  </Typography>
+                                </div>
+                              </div>
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </>
+              )}
+              {!searchLoading &&
+                searchDoctors &&
+                searchDoctors.length === 0 &&
+                searchSpecialty &&
+                searchSpecialty.length === 0 && <p>No Results Found</p>}
+            </div>
+          )}
         </div>
       </div>
     </>

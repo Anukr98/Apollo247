@@ -46,7 +46,10 @@ import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
 import { dataLayerTracking } from 'gtmTracking';
 // import Pagination from '@material-ui/lab/Pagination';
 import axios from 'axios';
-import { GetDoctorList } from 'graphql/types/GetDoctorList';
+import {
+  GetDoctorList,
+  GetDoctorList_getDoctorList_specialties,
+} from 'graphql/types/GetDoctorList';
 import _debounce from 'lodash/debounce';
 
 let currentPage = 1;
@@ -155,6 +158,37 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingLeft: 5,
         paddingRight: 5,
       },
+      [theme.breakpoints.down(768)]: {
+        display: 'none',
+      },
+    },
+    mobileBreadcrumbLinks: {
+      display: 'flex',
+      alignItems: 'center',
+      fontSize: 12,
+      padding: 10,
+      textTransform: 'uppercase',
+      backgroundColor: '#fff',
+      color: '#007c93',
+      fontWeight: 600,
+      '& a': {
+        paddingLeft: 5,
+        paddingRight: 5,
+        color: '#fca317',
+      },
+      '& span': {
+        paddingLeft: 5,
+        paddingRight: 5,
+      },
+      [theme.breakpoints.up(768)]: {
+        display: 'none',
+      },
+    },
+    mobileHeading: {
+      marginLeft: 50,
+      [theme.breakpoints.up(768)]: {
+        display: 'none',
+      },
     },
     pageContent: {
       [theme.breakpoints.up('sm')]: {
@@ -200,27 +234,34 @@ const useStyles = makeStyles((theme: Theme) => {
           top: 18,
         },
       },
+      '& span': {
+        textTransform: 'capitalize',
+      },
     },
     tabsFilter: {
-      borderBottom: '0.5px solid rgba(2,71,91,0.3)',
       display: 'flex',
       alignItems: 'center',
       marginTop: 10,
       [theme.breakpoints.down('xs')]: {
-        backgroundColor: '#fff',
         marginTop: 0,
         display: 'block',
-        paddingLeft: 20,
-        paddingRight: 20,
+        // paddingLeft: 20,
+        // paddingRight: 20,
+        padding: '20px 20px 0 20px',
+        backgroundColor: '#fff',
       },
       '& h2': {
         fontSize: 16,
         fontWeight: 600,
         margin: 0,
-        color: '#00a7b9',
+        color: '#00B0C1',
+      },
+      '& span': {
+        textTransform: 'capitalize',
       },
     },
     filterButtons: {
+      borderBottom: '0.5px solid rgba(2,71,91,0.3)',
       marginLeft: 'auto',
       '& button': {
         boxShadow: 'none',
@@ -228,10 +269,17 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 500,
         color: '#658f9b',
         backgroundColor: 'transparent',
-        textTransform: 'none',
+        textTransform: 'capitalize',
         borderBottom: '5px solid transparent',
         borderRadius: 0,
         padding: 10,
+      },
+      '& h2': {
+        fontSize: 12,
+        fontWeight: 500,
+      },
+      [theme.breakpoints.down(768)]: {
+        backgroundColor: '#fff',
       },
     },
     buttonActive: {
@@ -426,7 +474,6 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
     city: string;
     specialty: string;
   }>();
-  console.log('params', params);
   const prakticeSDKSpecialties = localStorage.getItem('symptomTracker');
   const apolloClient = useApolloClient();
   const [data, setData] = useState<GetDoctorList | null>(null);
@@ -454,6 +501,9 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
   const [slugName, setSlugName] = useState<string>('');
   const [faqData, setFaqData] = useState<any>();
   const [searchQuery, setSearchQuery] = useState<any>({});
+  const [searchSpecialty, setSearchSpecialty] = useState<
+    GetDoctorList_getDoctorList_specialties[] | null
+  >(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const searchParams = window.location.search;
 
@@ -562,6 +612,8 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
             setDoctorData(doctorData.concat(doctors) || []);
             setOnlyFilteredCount(onlyFilteredCount + doctors.length || 0);
             setFilteredDoctorData(filteredObj);
+            const specialtiesArray = response.data.getDoctorList.specialties || [];
+            setSearchSpecialty(specialtiesArray);
           }
           currentPage = currentPage + 1;
           const newData = {
@@ -733,7 +785,7 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
   const apiVariables = {
     patientId: currentPatient ? currentPatient.id : '',
     specialty: prakticeSDKSpecialties && prakticeSDKSpecialties.length > 0 ? '' : specialtyId,
-    city: filter.cityName,
+    city: selectedCity,
     experience: expRange,
     availability: convertAvailabilityToDate(filter.availability || [], filter.dateSelected),
     fees: feeRange,
@@ -835,6 +887,8 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
             setOnlyFilteredCount(doctors.length || 0);
             const filteredObj = getDoctorObject(doctors);
             setFilteredDoctorData(filteredObj);
+            const specialtiesArray = response.data.getDoctorList.specialties || [];
+            setSearchSpecialty(specialtiesArray);
           }
           setData(response.data);
         })
@@ -845,31 +899,7 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
           setInitalLoad(false);
         });
     }
-  }, [currentLat, currentLong, filter, specialtyId, specialtyName]);
-
-  const getFilteredDoctorList = (data: DoctorDetails[]) => {
-    return _filter(data, (doctor: DoctorDetails) => {
-      if (doctorType === DOCTOR_CATEGORY.APOLLO) {
-        return doctor.doctorType !== DoctorType.DOCTOR_CONNECT;
-      } else {
-        return doctor.doctorType === DoctorType.DOCTOR_CONNECT;
-      }
-    });
-  };
-
-  const getConsultModeDoctorList = (data: any) => {
-    return _filter(data, (doctor: any) => {
-      const consultMode = doctor.consultMode;
-      if (isOnlineSelected && isPhysicalSelected) {
-        return true;
-      } else if (isOnlineSelected) {
-        return consultMode !== ConsultMode.PHYSICAL;
-      } else if (isPhysicalSelected) {
-        return consultMode !== ConsultMode.ONLINE;
-      }
-      return false;
-    });
-  };
+  }, [currentLat, currentLong, filter, specialtyId, specialtyName, selectedCity]);
 
   const metaTagProps = {
     title: (faqData && faqData[0].specialtyMetaTitle) || '',
@@ -898,20 +928,43 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
               </div>
             </Link>
             {faqData && faqData[0].breadCrumbTitle && (
-              <div className={classes.breadcrumbLinks}>
-                <Link to={clientRoutes.welcome()}>Home</Link>
-                <img src={require('images/triangle.svg')} alt="" />
-                <Link to={clientRoutes.specialityListing()}>Specialties</Link>
-                <img src={require('images/triangle.svg')} alt="" />
-                <span>{faqData && faqData[0].breadCrumbTitle}</span>
-              </div>
+              <>
+                <div className={classes.breadcrumbLinks}>
+                  <Link to={clientRoutes.welcome()}>Home</Link>
+                  <img src={require('images/triangle.svg')} alt="" />
+                  <Link to={clientRoutes.specialityListing()}>Online Doctor Consultation</Link>
+                  <img src={require('images/triangle.svg')} alt="" />
+                  <Link to={clientRoutes.specialties(readableParam(params.specialty))}>
+                    {faqData && faqData[0].breadCrumbTitle}
+                  </Link>
+                  <img src={require('images/triangle.svg')} alt="" />
+                  <span>{faqData && `${faqData[0].breadCrumbTitle} in ${selectedCity}`}</span>
+                </div>
+                <div className={classes.mobileHeading}>{faqData[0].breadCrumbTitle}</div>
+              </>
             )}
           </div>
           <div className={classes.pageContent}>
             <div className={classes.leftGroup}>
-              <div className={classes.sectionHeader}>
-                <h1>{faqData && faqData[0].specialtyHeading}</h1>
+              <div className={classes.mobileBreadcrumbLinks}>
+                <Link to={clientRoutes.welcome()}>Home</Link>
+                <img src={require('images/triangle.svg')} alt="" />
+                <Link to={clientRoutes.specialityListing()}>Online Doctor Consultation</Link>
+                <img src={require('images/triangle.svg')} alt="" />
+                <Link to={clientRoutes.specialties(readableParam(params.specialty))}>
+                  {faqData && faqData[0].breadCrumbTitle}
+                </Link>
+                <img src={require('images/triangle.svg')} alt="" />
+                <span>{faqData && `${faqData[0].breadCrumbTitle} in ${selectedCity}`}</span>
               </div>
+              {faqData && faqData[0].breadCrumbTitle && (
+                <div className={classes.sectionHeader}>
+                  <h1>
+                    Best <span>{faqData[0].breadCrumbTitle.toLowerCase()}</span> in{' '}
+                    <span>{selectedCity}</span>
+                  </h1>
+                </div>
+              )}
               <SpecialtySearchWithCity
                 filter={filter}
                 setFilter={setFilter}
@@ -922,30 +975,42 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
                 setLocationPopup={setLocationPopup}
                 locationPopup={locationPopup}
                 setSelectedCity={setSelectedCity}
+                searchSpecialty={searchSpecialty}
+                searchDoctors={doctorData}
+                searchLoading={loading}
               />
               <div className={classes.tabsFilter}>
                 <h2>
-                  {filteredDoctorData ? filteredDoctorData[doctorType].length : 0} Doctors found
+                  {`${filteredDoctorData ? filteredDoctorData[doctorType].length : 0}`}{' '}
+                  <span>{faqData && faqData[0].breadCrumbTitle.toLowerCase()}</span> found in{' '}
+                  <span>{selectedCity}</span>
                 </h2>
-                <div className={classes.filterButtons}>
-                  <AphButton
-                    onClick={() => {
-                      setDoctorType(DOCTOR_CATEGORY.APOLLO);
-                    }}
-                    className={doctorType === DOCTOR_CATEGORY.APOLLO ? classes.buttonActive : ''}
-                  >
-                    Apollo Doctors ({apolloDoctorCount})
-                  </AphButton>
-                  <AphButton
-                    className={doctorType === DOCTOR_CATEGORY.PARTNER ? classes.buttonActive : ''}
-                    onClick={() => {
-                      setDoctorType(DOCTOR_CATEGORY.PARTNER);
-                    }}
-                  >
-                    Doctor Partners ({partnerDoctorCount})
-                  </AphButton>
-                </div>
               </div>
+              <div className={classes.filterButtons}>
+                <AphButton
+                  onClick={() => {
+                    setDoctorType(DOCTOR_CATEGORY.APOLLO);
+                  }}
+                  className={doctorType === DOCTOR_CATEGORY.APOLLO ? classes.buttonActive : ''}
+                >
+                  <h2>
+                    Apollo {faqData && faqData[0].breadCrumbTitle.toLowerCase()} (
+                    {apolloDoctorCount})
+                  </h2>
+                </AphButton>
+                <AphButton
+                  className={doctorType === DOCTOR_CATEGORY.PARTNER ? classes.buttonActive : ''}
+                  onClick={() => {
+                    setDoctorType(DOCTOR_CATEGORY.PARTNER);
+                  }}
+                >
+                  <h2>
+                    Partner {faqData && faqData[0].breadCrumbTitle.toLowerCase()} (
+                    {partnerDoctorCount})
+                  </h2>
+                </AphButton>
+              </div>
+
               <Filters
                 isOnlineSelected={isOnlineSelected}
                 setIsOnlineSelected={setIsOnlineSelected}
@@ -966,7 +1031,9 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
                   <div className={classes.circlularProgress}>
                     <CircularProgress />
                   </div>
-                ) : filteredDoctorData && Object.keys(filteredDoctorData).length > 0 ? (
+                ) : filteredDoctorData &&
+                  Object.keys(filteredDoctorData).length > 0 &&
+                  filteredDoctorData[doctorType].length > 0 ? (
                   <>
                     <Grid container spacing={2}>
                       {filteredDoctorData[doctorType].map((doctor: DoctorDetails) => {
@@ -979,6 +1046,7 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
                                   doctorType={doctorType}
                                   specialityType={(faqData && faqData[0].title) || ''}
                                   specialtyId={specialtyId}
+                                  selectedCity={selectedCity}
                                 />
                               ) : (
                                 <InfoCard
@@ -986,6 +1054,7 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
                                   doctorType={doctorType}
                                   specialityType={(faqData && faqData[0].title) || ''}
                                   specialtyId={specialtyId}
+                                  selectedCity={selectedCity}
                                 />
                               )}
                             </Grid>
@@ -998,18 +1067,6 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
                   'no results found'
                 )}
               </div>
-              {/* {pageNo < Math.ceil((apolloDoctorCount + partnerDoctorCount) / PAGE_SIZE) && (
-                <div className={classes.paginationContainer}>
-                  <Pagination
-                    count={Math.ceil((apolloDoctorCount + partnerDoctorCount) / PAGE_SIZE)}
-                    color="primary"
-                    page={pageNo}
-                    onChange={() => window.location.reload()}
-                    classes={{ root: classes.pagination, ul: classes.paginationUl }}
-                  />
-                </div>
-              )} */}
-
               {faqData && faqData.length > 0 && (
                 <>
                   <BookBest faqData={faqData[0]} specialityName={specialtyName} />
