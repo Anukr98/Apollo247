@@ -359,7 +359,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 doRequestAndAccessLocation()
                   .then((response) => {
                     setLoadingContext!(false);
-                    response && setLocationDetails!(response);
+                    checkIsPinCodeServiceable(response.pincode);
+                    response && setDiagnosticLocation!(response);
+                    response && !locationDetails && setLocationDetails!(response);
                   })
                   .catch((e) => {
                     CommonBugFender('Tests_ALLOW_AUTO_DETECT', e);
@@ -576,11 +578,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   /**check current location */
-  const autoDetectLocation = () => {
+  const autoDetectLocation = async () => {
     setLoadingContext!(true);
     doRequestAndAccessLocationModified()
       .then((response) => {
         setLoadingContext!(false);
+        checkIsPinCodeServiceable(response.pincode);
         response && setDiagnosticLocation!(response);
         // response && WebEngageEventAutoDetectLocation(response.pincode, true);
         response && !locationDetails && setLocationDetails!(response);
