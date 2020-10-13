@@ -1100,8 +1100,8 @@ const webengage = new WebEngage();
 
 export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Object) => {
   try {
-    const logContent = `[WebEngage] Event: ${eventName}\n`;
-    console.log(logContent, '\n' /*attributes, '\n'*/);
+    const logContent = `[WebEngage Event] ${eventName}`;
+    console.log(logContent);
     webengage.track(eventName, attributes);
   } catch (error) {
     console.log('********* Unable to post WebEngageEvent *********', { error });
@@ -1346,11 +1346,8 @@ export const APPStateActive = () => {
 
 export const postAppsFlyerEvent = (eventName: AppsFlyerEventName, attributes: Object) => {
   try {
-    console.log('\n********* AppsFlyerEvent Start *********\n');
-    console.log(`AppsFlyerEvent ${eventName}`, { eventName, attributes });
-    console.log('\n********* AppsFlyerEvent End *********\n');
-    // if (getBuildEnvironment() !== 'DEV') {
-    // Don't post events in DEV environment
+    const logContent = `[AppsFlyer Event] ${eventName}`;
+    console.log(logContent);
     appsFlyer.trackEvent(
       eventName,
       attributes,
@@ -1361,7 +1358,6 @@ export const postAppsFlyerEvent = (eventName: AppsFlyerEventName, attributes: Ob
         console.error('AppsFlyerEventError', err);
       }
     );
-    // }
   } catch (error) {
     console.log('********* Unable to post AppsFlyerEvent *********', { error });
   }
@@ -1402,8 +1398,8 @@ export const postAppsFlyerAddToCartEvent = (
 
 export const postFirebaseEvent = (eventName: FirebaseEventName, attributes: Object) => {
   try {
-    const logContent = `[Firebase] Event: ${eventName}\n`;
-    console.log(logContent, '\n' /*attributes, '\n'*/);
+    const logContent = `[Firebase Event] ${eventName}`;
+    console.log(logContent);
     firebase.analytics().logEvent(eventName, attributes);
   } catch (error) {
     console.log('********* Unable to post FirebaseEvent *********', { error });
