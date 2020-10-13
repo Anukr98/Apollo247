@@ -1380,7 +1380,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           data={medicineDetails.similar_products}
           Component={ProductUpSellingCard}
           navigation={props.navigation}
-          addToCartSource={'Pharmacy PDP'}
+          addToCartSource={'Similar Widget'}
           movedFrom={ProductPageViewedSource.SIMILAR_PRODUCTS}
         />,
       ];

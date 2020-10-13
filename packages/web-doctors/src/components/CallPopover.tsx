@@ -2729,7 +2729,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 className={classes.consultIcon}
                 aria-describedby={id}
                 variant="contained"
-                onClick={(e) => handleClick(e)}
+                onClick={(e) => {
+                  handleClick(e); 
+                  setsessionId('');
+                  settoken('');
+                }}
                 disabled={
                   props.appointmentStatus === STATUS.COMPLETED ||
                   props.appointmentStatus === STATUS.CANCELLED ||
@@ -2782,6 +2786,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         },
                         'Front_end - Doctor Started the Audio call'
                       );
+                      props.setStartConsultAction(false);
+                      setIsVideoCall(false);
                       setIsCallConnecting(true);
                       client
                       .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
@@ -2797,12 +2803,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         setsessionId(_data.data.createAppointmentSession.sessionId);
                         settoken(_data.data.createAppointmentSession.appointmentToken);
                         handleClose();
-                        props.setStartConsultAction(false);
                         autoSend(audioCallMsg);
                         setDisableOnCancel(true);
-                        setIsVideoCall(false);
                         missedCallIntervalTimer(45);
                         setIscall(true);
+                        setIsCallConnecting(false);
                       })
                       .catch((e: any) => {
                         setIsCallConnecting(false);
@@ -2844,6 +2849,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         },
                         'Front_end - Doctor Started the Video call'
                       );
+                      props.setStartConsultAction(true);
+                      setIsVideoCall(true);
                       setIsCallConnecting(true);
                       client
                       .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
@@ -2859,12 +2866,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         setsessionId(_data.data.createAppointmentSession.sessionId);
                         settoken(_data.data.createAppointmentSession.appointmentToken);
                         handleClose();
-                        props.setStartConsultAction(true);
                         autoSend(videoCallMsg);
-                        setIsVideoCall(true);
                         setDisableOnCancel(true);
                         missedCallIntervalTimer(45);
                         setIscall(true);
+                        setIsCallConnecting(false);
                       })
                       .catch((e: any) => {
                         setIsCallConnecting(false);

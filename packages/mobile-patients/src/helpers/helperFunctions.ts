@@ -47,7 +47,7 @@ import {
   searchDiagnosticsByCityIDVariables,
   searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics,
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
-import { SEARCH_DIAGNOSTICS_BY_CITY_ID } from '@aph/mobile-patients/src/graphql/profiles';
+import { SEARCH_DIAGNOSTICS, SEARCH_DIAGNOSTICS_BY_CITY_ID } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -103,7 +103,7 @@ export interface TestSlotWithArea {
   employeeName: string;
   diagnosticBranchCode: string;
   date: Date;
-  slotInfo : getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots
+  slotInfo: getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots;
 }
 
 const isDebugOn = __DEV__;
@@ -217,15 +217,12 @@ export const formatSelectedAddress = (
   address: savePatientAddress_savePatientAddress_patientAddress
 ) => {
   const formattedAddress =
-    (address.addressLine1 && address.addressLine1 + ', ') +
-    '' +
-    (address.addressLine2 && address.addressLine2 + ', ') +
-    '' +
-    (address.city && address.city + ',') +
-    '' +
-    (address.state && address.state + ',') +
-    '' +
-    (address.zipcode && address.zipcode);
+    address?.addressLine1 +
+    ', ' +
+    (address?.addressLine2 + ', ') +
+    (address?.city + ', ') +
+    (address?.state + ', ') +
+    address?.zipcode;
   return formattedAddress;
 };
 
@@ -512,8 +509,10 @@ export const nextAvailability = (nextSlot: string, type: 'Available' | 'Consult'
           minute: moment('06:00', 'HH:mm').get('minute'),
         })
     );
-    if (differenceMinute < 60) {
+    if (differenceMinute < 60 && differenceMinute > 0) {
       return `${type} in ${differenceMinute} min${differenceMinute !== 1 ? 's' : ''}`;
+    } else if (differenceMinute <= 0) {
+      return 'BOOK APPOINTMENT';
     } else if (differenceMinute >= 60 && !isTomorrow) {
       return `${type} at ${moment(nextSlot).format('hh:mm A')}`;
     } else if (isTomorrow && diffDays < 2) {
@@ -883,11 +882,12 @@ export const addTestsToCart = async (
   city: string
 ) => {
   const searchQuery = (name: string, city: string) =>
-    apolloClient.query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
-      query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
+    apolloClient.query<searchDiagnostics, searchDiagnosticsVariables>({
+      query: SEARCH_DIAGNOSTICS,
       variables: {
         searchText: name,
-        cityID: parseInt(city || '9',10),
+        city: city,
+        patientId: ''
       },
       fetchPolicy: 'no-cache',
     });
@@ -900,7 +900,7 @@ export const addTestsToCart = async (
 
     const searchQueries = Promise.all(items.map((item) => searchQuery(item!, city)));
     const searchQueriesData = (await searchQueries)
-      .map((item) => g(item, 'data', 'searchDiagnosticsByCityID', 'diagnostics', '0' as any)!)
+      .map((item) => g(item, 'data', 'searchDiagnostics', 'diagnostics', '0' as any)!)
       .filter((item, index) => g(item, 'itemName')! == items[index])
       .filter((item) => !!item);
     const detailQueries = Promise.all(
@@ -1081,10 +1081,7 @@ export const getUniqueTestSlotsWithArea = (slots: TestSlotWithArea[]) => {
   return slots
     .filter(
       (item, idx, array) =>
-        array.findIndex(
-          (_item) =>
-            _item.slotInfo.Timeslot == item.slotInfo.Timeslot 
-        ) == idx
+        array.findIndex((_item) => _item.slotInfo.Timeslot == item.slotInfo.Timeslot) == idx
     )
     .map((val) => ({
       startTime: val.slotInfo.Timeslot!,
@@ -1098,7 +1095,6 @@ export const getUniqueTestSlotsWithArea = (slots: TestSlotWithArea[]) => {
       return 0;
     });
 };
-
 
 const webengage = new WebEngage();
 
@@ -1881,7 +1877,7 @@ export const checkPermissions = (permissions: string[]) => {
       }
     });
   });
-}
+};
 
 export const removeConsecutiveComma = (value: string) => {
   return value.replace(/^,|,$|,(?=,)/g, '');

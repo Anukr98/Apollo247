@@ -355,7 +355,6 @@ export interface DoctorSearchProps
 export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   // const params = props.navigation.state.params ? props.navigation.state.params!.searchText : '';
   // const MoveDoctor = props.navigation.state.params ? props.navigation.state.params!.MoveDoctor : '';
-  const [filtersList, setFiltersList] = useState<any>();
   const [searchText, setSearchText] = useState<string>('');
   const [pastSearch, setPastSearch] = useState<boolean>(true);
   const [needHelp, setNeedHelp] = useState<boolean>(true);
@@ -445,84 +444,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     return false;
   };
 
-  const fetchDoctorData = (id: string, speciality: string) => {
-    let geolocation = {} as any;
-    if (locationDetails) {
-      geolocation = {
-        geolocation: {
-          latitude: parseFloat(locationDetails.latitude ? locationDetails.latitude.toString() : ''),
-          longitude: parseFloat(
-            locationDetails.longitude ? locationDetails.longitude.toString() : ''
-          ),
-        },
-      };
-    }
 
-    console.log(geolocation, 'geolocation');
-
-    const FilterInput: FilterDoctorInput = {
-      patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
-      specialty: id,
-      pincode: g(locationDetails, 'pincode') || null,
-      ...geolocation,
-    };
-    console.log(FilterInput, 'FilterInput1111');
-
-    client
-      .query<getDoctorsBySpecialtyAndFilters>({
-        query: DOCTOR_SPECIALITY_BY_FILTERS,
-        fetchPolicy: 'no-cache',
-        variables: {
-          filterInput: FilterInput,
-        },
-      })
-      .then(({ data }) => {
-        console.log(data, 'dataaaaa');
-        setFiltersList(data.getDoctorsBySpecialtyAndFilters.filters);
-        if (speciality === 'General Physician/ Internal Medicine')
-          setGeneralPhysicians && setGeneralPhysicians({ id: id, data: data });
-        else if (speciality === 'Urology') {
-          setUrology && setUrology({ id: id, data: data });
-        } else if (speciality === 'ENT') {
-          setEnt && setEnt({ id: id, data: data });
-        } else if (speciality === 'Dermatology') {
-          setDermatology && setDermatology({ id: id, data: data });
-        }
-
-        // try {
-        //   const filterGetData =
-        //     data && data.getDoctorsBySpecialtyAndFilters
-        //       ? data.getDoctorsBySpecialtyAndFilters
-        //       : null;
-        //   if (filterGetData) {
-        //     if (filterGetData.doctors) {
-        //       // setDoctorsList(filterGetData.doctors);
-        //     }
-
-        //     if (filterGetData.doctorsAvailability) {
-        //       // setdoctorsAvailability(filterGetData.doctorsAvailability);
-        //       setshowSpinner(false);
-        //     }
-        //     if (filterGetData.specialty) {
-        //       // setspecialities(filterGetData.specialty);
-        //       setshowSpinner(false);
-        //     }
-
-        //     if (filterGetData.doctorsNextAvailability) {
-        //       // setdoctorsNextAvailability(filterGetData.doctorsNextAvailability);
-        //       setshowSpinner(false);
-        //     }
-        //   }
-        // } catch (e) {
-        //   CommonBugFender('DoctorSearchListing_fetchSpecialityFilterData_try', e);
-        // }
-      })
-      .catch((e) => {
-        // CommonBugFender('DoctorSearchListing_fetchSpecialityFilterData', e);
-        // setshowSpinner(false);
-        console.log('Error 11111111', e);
-      });
-  };
   const moveSelectedToTop = () => {
     if (currentPatient !== undefined) {
       const patientLinkedProfiles = [
@@ -642,7 +564,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           ) {
             sortSpecialities(data.getAllSpecialties);
             // setSpecialities(data.getAllSpecialties);
-            // setLocalData(data.getAllSpecialties);
             // setshowSpinner(false);
             // AsyncStorage.setItem('SpecialistData', JSON.stringify(data.getAllSpecialties));
             // AsyncStorage.setItem('APICalledDate', todayDate);
@@ -669,7 +590,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       return 0;
     });
     setSpecialities(specialities);
-    setLocalData(specialities);
     setshowSpinner(false);
     AsyncStorage.setItem('SpecialistData', JSON.stringify(specialities));
     AsyncStorage.setItem('APICalledDate', todayDate);
@@ -760,7 +680,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     // if (isToday && specialistData && specialistData.length) {
     //   if (specialistData) {
     //     setSpecialities(JSON.parse(specialistData));
-    //     setLocalData(JSON.parse(specialistData));
     //     fetchTopSpecialities(JSON.parse(specialistData));
     //     // fetchDoctorData(JSON.parse(specialistData)[0].id);
     //   }
@@ -769,26 +688,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     setshowSpinner(false);
     fetchSpecialities();
     // }
-  };
-
-  const setLocalData = (data: any) => {
-    const Physicians = data.filter(
-      (item: any) =>
-        item.name.toLowerCase() === 'General Physician/ Internal Medicine'.toLowerCase()
-    );
-    Physicians.length > 0 &&
-      fetchDoctorData(Physicians[0].id, 'General Physician/ Internal Medicine');
-
-    const Ent = data.filter((item: any) => item.name.toLowerCase() === 'ENT'.toLowerCase());
-    Ent.length > 0 && fetchDoctorData(Ent[0].id, 'ENT');
-
-    const Dermatology = data.filter(
-      (item: any) => item.name.toLowerCase() === 'Dermatology'.toLowerCase()
-    );
-    Dermatology.length > 0 && fetchDoctorData(Dermatology[0].id, 'Dermatology');
-
-    const Urology = data.filter((item: any) => item.name.toLowerCase() === 'Urology'.toLowerCase());
-    Urology.length > 0 && fetchDoctorData(Urology[0].id, 'Urology');
   };
 
   useEffect(() => {
@@ -1443,7 +1342,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       specialityName: name,
       callSaveSearch: callSaveSearch,
       specialistPluralTerm,
-      filters: filtersList,
     });
   };
 

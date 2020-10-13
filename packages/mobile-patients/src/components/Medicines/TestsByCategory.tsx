@@ -620,7 +620,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
         query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
         variables: {
           searchText: _searchText,
-          cityID: parseInt(locationForDiagnostics?.cityId || '9', 10),
+          cityID: parseInt(locationForDiagnostics?.cityId!, 10),
         },
         fetchPolicy: 'no-cache',
       })

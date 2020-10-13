@@ -1415,7 +1415,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         .query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
           query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
           variables: {
-            cityID: parseInt(locationForDiagnostics?.cityId || '9', 10), //be default show of hyderabad
+            cityID: parseInt(locationForDiagnostics?.cityId!, 10), //be default show of hyderabad
             searchText: _searchText,
           },
           fetchPolicy: 'no-cache',
@@ -1595,11 +1595,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
     const itemsNotFound =
       searchSate == 'success' && searchText.length > 2 && medicineList.length == 0;
-
     return (
-      <>
+      <View pointerEvents={isDiagnosticLocationServiceable ? 'auto' : 'none'}>
         <Input
-          pointerEvents={isDiagnosticLocationServiceable ? 'auto' : 'none'}
           autoFocus={!locationDetails ? false : focusSearch}
           onSubmitEditing={() => {
             if (searchText.length > 2) {
@@ -1665,7 +1663,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             itemsNotFound ? 'Sorry, we couldn’t find what you are looking for :(' : undefined
           }
         />
-      </>
+      </View>
     );
   };
 
