@@ -175,7 +175,7 @@ export class BlockedCalendarItem extends BaseEntity {
   @Column()
   doctorId: string;
 
-  @Column({ type: 'timestamp with time zone', nullable: true })
+  @Column({ type: 'timestamp with time zone' })
   end: Date;
 
   @PrimaryGeneratedColumn()
@@ -184,7 +184,7 @@ export class BlockedCalendarItem extends BaseEntity {
   @Column({ nullable: true, type: 'text' })
   reason: string;
 
-  @Column({ type: 'timestamp with time zone', nullable: true })
+  @Column({ type: 'timestamp with time zone' })
   start: Date;
 }
 ///////////////////////////////////////////////////////////
