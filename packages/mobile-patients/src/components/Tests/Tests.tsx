@@ -282,38 +282,35 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const diagnosticPincode = g(diagnosticLocation, 'pincode') || g(locationDetails, 'pincode');
 
+  const patientAttributes = {
+    'Patient UHID': g(currentPatient, 'uhid'),
+    'Patient Gender': g(currentPatient, 'gender'),
+    'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Patient Age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+  };
   useEffect(() => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED] = {
-      'Patient UHID': currentPatient.uhid,
-      'Patient Gender': currentPatient.gender,
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      'Patient Age': Math.round(
-        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
-      ),
-    };
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED] = patientAttributes;
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED, eventAttributes);
   }, []);
 
   /**
    * for serviceable - non-serviceable tracking
    */
+
+  const serviceableAttributes = {
+    'Patient UHID': g(currentPatient, 'uhid'),
+    State: g(diagnosticLocation, 'state') || g(locationDetails, 'state') || '',
+    City: g(diagnosticLocation, 'city') || g(locationDetails, 'city') || '',
+    'PinCode Entered': parseInt(diagnosticPincode!),
+  };
+
   useEffect(() => {
     if (!!locationDetails || !!diagnosticLocation) {
       if (isDiagnosticLocationServiceable) {
-        const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_SERVICEABLE] = {
-          'Patient UHID': currentPatient.uhid,
-          State: g(diagnosticLocation, 'state') || g(locationDetails, 'state') || '',
-          City: g(diagnosticLocation, 'city') || g(locationDetails, 'city') || '',
-          'PinCode Entered': parseInt(diagnosticPincode!),
-        };
+        const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_SERVICEABLE] = serviceableAttributes;
         postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_SERVICEABLE, eventAttributes);
       } else {
-        const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_NON_SERVICEABLE] = {
-          'Patient UHID': currentPatient.uhid,
-          State: g(diagnosticLocation, 'state') || g(locationDetails, 'state') || '',
-          City: g(diagnosticLocation, 'city') || g(locationDetails, 'city') || '',
-          'PinCode Entered': parseInt(diagnosticPincode!),
-        };
+        const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_NON_SERVICEABLE] = serviceableAttributes;
         postWebEngageEvent(
           WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_NON_SERVICEABLE,
           eventAttributes
@@ -323,26 +320,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED] = {
-      'Patient UHID': currentPatient.uhid,
-      'Patient Gender': currentPatient.gender,
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      'Patient Age': Math.round(
-        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
-      ),
-    };
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED] = patientAttributes;
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED, eventAttributes);
   }, [isDiagnosticLocationServiceable]);
 
   const setWebEngageEventOnSearchItem = (keyword: string, results: []) => {
     if (keyword.length > 2) {
       const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_SEARCHED] = {
-        'Patient UHID': currentPatient.uhid,
-        'Patient Gender': currentPatient.gender,
-        'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-        'Patient Age': Math.round(
-          moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
-        ),
+        ...patientAttributes,
         'Keyword Entered': keyword,
         '# Results appeared': results.length,
         'Item in Results': results,
@@ -353,12 +338,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const setWebEngageEventOnSearchItemClicked = (item: object) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_CLICKED_AFTER_SEARCH] = {
-      'Patient UHID': currentPatient.uhid,
-      'Patient Gender': currentPatient.gender,
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      'Patient Age': Math.round(
-        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
-      ),
+      ...patientAttributes,
       'Item Clicked': item,
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED, eventAttributes);
@@ -367,11 +347,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   useEffect(() => {
     if (diagnosticPincode != '') {
       const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ENTER_DELIVERY_PINCODE_CLICKED] = {
-        'Patient UHID': currentPatient.uhid,
-        'Patient Gender': currentPatient.gender,
-        'Patient Age': Math.round(
-          moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
-        ),
+        ...patientAttributes,
         Method: optionSelected == '' ? 'Enter Manually' : optionSelected,
         Pincode: parseInt(diagnosticPincode!),
       };
@@ -409,12 +385,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
         });
     }
   }, [currentPatient]);
-
-  // useEffect(() => {
-  //   if (g(currentPatient, 'id') && g(locationDetails, 'city')) {
-  //     //call the pincode service check
-  //   }
-  // }, [locationDetails, currentPatient]);
 
   /**
    * if there is any change in the location yellow pop-up ,if location is present.
@@ -548,13 +518,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const setWebEnageEventForItemViewedOnLanding = (name: string, id: string, type: string) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ITEM_CLICKED_ON_LANDING] = {
+      ...patientAttributes,
       'Item Name': name,
       'Item ID': id,
-      'Patient UHID': g(currentPatient, 'uhid'),
-      'Patient Age': Math.round(
-        moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
-      ),
-      'Patient Gender': g(currentPatient, 'gender'),
       Type: type,
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ITEM_CLICKED_ON_LANDING, eventAttributes);

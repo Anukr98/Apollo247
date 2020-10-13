@@ -272,6 +272,20 @@ export interface UserInfo {
   'Customer ID': string;
 }
 
+export interface DiagnosticUserInfo {
+  'Patient UHID': string;
+  'Patient Gender': string;
+  'Patient Name': string;
+  'Patient Age': number;
+}
+
+export interface DiagnosticServiceble {
+  'Patient UHID': string;
+  'State': string ;
+  'City': string;
+  'PinCode Entered': number ;
+}
+
 export interface ConsultRoomDoctorPatientInfo {
   'Patient name': string;
   'Patient UHID': string;
@@ -341,6 +355,21 @@ export interface ReorderMedicine extends PatientInfo {
   source: string;
   orderType: 'Cart' | 'Non Cart' | 'Offline';
   noOfItemsNotAvailable?: number;
+} 
+
+export interface ItemSearchedOnLanding extends DiagnosticUserInfo {
+  'Keyword Entered': string;
+  '# Results appeared': number;
+  'Item in Results': object[];
+}
+
+export interface ItemClickedOnLanding extends DiagnosticUserInfo{
+  'Item Clicked': object;
+}
+
+export interface DiagnosticPinCode extends DiagnosticUserInfo{
+  Method: string;
+  'Pincode': number | string; 
 }
 
 export interface WebEngageEvents {
@@ -644,45 +673,17 @@ export interface WebEngageEvents {
   };
 
   // ********** Diagnostic Events ******* 
-  [WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED]:{
-    'Patient UHID': string;
-    'Patient Gender': string;
-    'Patient Name': string;
-    'Patient Age': number;
-  };
-  [WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_SEARCHED]:{ //comment
-    'Patient UHID': string;
-    'Patient Gender': string;
-    'Patient Name': string;
-    'Patient Age': number;
-    'Keyword Entered': string;
-    '# Results appeared': number;
-    'Item in Results': object[];
-  };
-  [WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_CLICKED_AFTER_SEARCH]:{ //comment
-    'Patient UHID': string;
-    'Patient Gender': string;
-    'Patient Name': string;
-    'Patient Age': number;
-    'Item Clicked': object;
-  };
+
+  [WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED]:DiagnosticUserInfo;
+  [WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_SEARCHED]:ItemSearchedOnLanding;
+  [WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_CLICKED_AFTER_SEARCH]:ItemClickedOnLanding;
   [WebEngageEventName.DIAGNOSTIC_MY_ORDERS]:{ //comment
     'Patient UHID': string;
     'Active Orders':number;
     'Past Orders':number;
   }
-  [WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_NON_SERVICEABLE]:{
-    'Patient UHID': string;
-    'State': string ;
-    'City': string;
-    'PinCode Entered': number ;
-  }
-  [WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_SERVICEABLE]:{
-    'Patient UHID': string;
-    'State': string ;
-    'City': string;
-    'PinCode Entered': number;
-  }
+  [WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_NON_SERVICEABLE]: DiagnosticServiceble
+  [WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_SERVICEABLE]:DiagnosticServiceble
   [WebEngageEventName.DIAGNOSTIC_ADDRESS_NON_SERVICEABLE_CARTPAGE]:{
     'Patient UHID': string;
     'State': string;
@@ -695,13 +696,7 @@ export interface WebEngageEvents {
     'OrderID:': string;
     'Sample Collection Date': string; //Date
   }
-  [WebEngageEventName.DIAGNOSTIC_ENTER_DELIVERY_PINCODE_CLICKED]:{ //comment
-    'Patient UHID': string;
-    'Patient Gender': string;
-    'Patient Age:': number;
-    Method: string;
-    'Pincode': number | string; 
-  }
+  [WebEngageEventName.DIAGNOSTIC_ENTER_DELIVERY_PINCODE_CLICKED]: DiagnosticPinCode
   [WebEngageEventName.FEATURED_TEST_CLICKED]: {
     'Product name': string;
     'Product id (SKUID)': string;
@@ -730,6 +725,7 @@ export interface WebEngageEvents {
     'Patient UHID': string;
     'Patient Age': number;
     'Patient Gender': string;
+    'Patient Name': string;
     'Item Name': string;
     'Item ID': string;
     'Type': string;

@@ -3,8 +3,15 @@ import React, { useEffect } from 'react';
 import { Dimensions, StyleSheet, Text, View } from 'react-native';
 import { getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList } from '../graphql/types/getDiagnosticOrderDetails';
 import moment from 'moment';
-import { g, formatTestSlotWithBuffer, postWebEngageEvent } from '../helpers/helperFunctions';
-import { WebEngageEventName, WebEngageEvents } from '../helpers/webEngageEvents';
+import {
+  g,
+  formatTestSlotWithBuffer,
+  postWebEngageEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const { height } = Dimensions.get('window');
 

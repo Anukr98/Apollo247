@@ -42,7 +42,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsById';
 import { SEARCH_DIAGNOSTICS_BY_ID } from '@aph/mobile-patients/src/graphql/profiles';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { useAppCommonData } from '../AppCommonDataProvider';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   testNameStyles: {
@@ -203,7 +203,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
   useEffect(() => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION] = {
-      'Patient UHID': currentPatient.uhid,
+      'Patient UHID': g(currentPatient, 'uhid'),
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       Source: testInfo.source,
       'Item Name': testInfo.ItemName,

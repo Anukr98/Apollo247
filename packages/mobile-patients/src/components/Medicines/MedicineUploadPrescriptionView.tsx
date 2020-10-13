@@ -22,8 +22,8 @@ import { postWebEngageEvent, g } from '@aph/mobile-patients/src/helpers/helperFu
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { postShowPrescriptionAtStoreSelected } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
-import { useAllCurrentPatients } from '../../hooks/authHooks';
-import { fonts } from '../../theme/fonts';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -400,13 +400,11 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
                 </Text>
                 {isTest &&
                   props.isMandatory &&
-                  props.listOfTest &&
-                  props.listOfTest.length > 0 &&
-                  props.listOfTest.map((items) => {
+                  props?.listOfTest?.map((items) => {
                     return (
                       <View style={styles.testsOuterView}>
                         <Text style={styles.testBulletStyle}>{'\u2B24'}</Text>
-                        <Text style={styles.testTextStyle}>{items}</Text>
+                        <Text style={styles.testTestStyle}>{items}</Text>
                       </View>
                     );
                   })}

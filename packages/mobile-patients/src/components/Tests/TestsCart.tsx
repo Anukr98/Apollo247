@@ -15,7 +15,6 @@ import {
   isValidTestSlotWithArea,
   isEmptyObject,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
-import { TestSlotOverlay } from '@aph/mobile-patients/src/components/Tests/TestSlotOverlay';
 import {
   DiagnosticData,
   useAppCommonData,
@@ -307,7 +306,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   useEffect(() => {
     if (cartItems.length) {
       const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CART_VIEWED] = {
-        'Patient UHID': currentPatient.uhid,
+        'Patient UHID': g(currentPatient, 'uhid'),
         'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
         'Total items in cart': cartItems.length,
         'Sub Total': cartTotal,
@@ -362,7 +361,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const setWebEngageEventForAddressNonServiceable = (pincode: string) => {
     const selectedAddr = addresses.find((item) => item.id == deliveryAddressId);
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ADDRESS_NON_SERVICEABLE_CARTPAGE] = {
-      'Patient UHID': currentPatient.uhid,
+      'Patient UHID': g(currentPatient, 'uhid'),
       State: selectedAddr?.state || '',
       City: selectedAddr?.city || '',
       PinCode: parseInt(pincode!),
