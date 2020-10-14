@@ -185,7 +185,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
           const products = g(resp.data, 'response', 'products');
           if (products && products.length) {
             const freeProducts = products.filter((product) => {
-              return product.couponFree === true;
+              return product.couponFree === 1;
             });
             setCouponProducts!(freeProducts);
           }

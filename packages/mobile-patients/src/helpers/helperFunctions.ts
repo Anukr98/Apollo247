@@ -49,7 +49,7 @@ import {
   searchDiagnosticsByCityIDVariables,
   searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics,
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
-import { SAVE_SEARCH, SEARCH_DIAGNOSTICS_BY_CITY_ID } from '@aph/mobile-patients/src/graphql/profiles';
+import { SAVE_SEARCH, SEARCH_DIAGNOSTICS, SEARCH_DIAGNOSTICS_BY_CITY_ID } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -75,6 +75,7 @@ import { getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails } fr
 import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetailsWithAddress';
 import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 import { handleUniversalLinks } from './UniversalLinks';
+import { getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots } from '../graphql/types/getDiagnosticSlotsWithAreaID';
 
 const { RNAppSignatureHelper } = NativeModules;
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
@@ -97,6 +98,14 @@ export interface TestSlot {
   diagnosticBranchCode: string;
   date: Date;
   slotInfo: getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo;
+}
+
+export interface TestSlotWithArea {
+  employeeCode: string;
+  employeeName: string;
+  diagnosticBranchCode: string;
+  date: Date;
+  slotInfo: getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots;
 }
 
 const isDebugOn = __DEV__;
@@ -209,16 +218,9 @@ export const formatOrderAddress = (
 export const formatSelectedAddress = (
   address: savePatientAddress_savePatientAddress_patientAddress
 ) => {
-  const formattedAddress =
-    (address.addressLine1 && address.addressLine1 + ', ') +
-    '' +
-    (address.addressLine2 && address.addressLine2 + ', ') +
-    '' +
-    (address.city && address.city + ',') +
-    '' +
-    (address.state && address.state + ',') +
-    '' +
-    (address.zipcode && address.zipcode);
+  const formattedAddress = [address?.addressLine1, address?.addressLine2, address?.city, address?.state, address?.zipcode]
+  .filter((item) => item)
+  .join(', ')
   return formattedAddress;
 };
 
@@ -505,8 +507,10 @@ export const nextAvailability = (nextSlot: string, type: 'Available' | 'Consult'
           minute: moment('06:00', 'HH:mm').get('minute'),
         })
     );
-    if (differenceMinute < 60) {
+    if (differenceMinute < 60 && differenceMinute > 0) {
       return `${type} in ${differenceMinute} min${differenceMinute !== 1 ? 's' : ''}`;
+    } else if (differenceMinute <= 0) {
+      return 'BOOK APPOINTMENT';
     } else if (differenceMinute >= 60 && !isTomorrow) {
       return `${type} at ${moment(nextSlot).format('hh:mm A')}`;
     } else if (isTomorrow && diffDays < 2) {
@@ -876,11 +880,12 @@ export const addTestsToCart = async (
   city: string
 ) => {
   const searchQuery = (name: string, city: string) =>
-    apolloClient.query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
-      query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
+    apolloClient.query<searchDiagnostics, searchDiagnosticsVariables>({
+      query: SEARCH_DIAGNOSTICS,
       variables: {
         searchText: name,
-        cityID: parseInt(city || '9',10),
+        city: city,
+        patientId: ''
       },
       fetchPolicy: 'no-cache',
     });
@@ -893,7 +898,7 @@ export const addTestsToCart = async (
 
     const searchQueries = Promise.all(items.map((item) => searchQuery(item!, city)));
     const searchQueriesData = (await searchQueries)
-      .map((item) => g(item, 'data', 'searchDiagnosticsByCityID', 'diagnostics', '0' as any)!)
+      .map((item) => g(item, 'data', 'searchDiagnostics', 'diagnostics', '0' as any)!)
       .filter((item, index) => g(item, 'itemName')! == items[index])
       .filter((item) => !!item);
     const detailQueries = Promise.all(
@@ -1017,6 +1022,30 @@ export const isValidTestSlot = (
   );
 };
 
+export const isValidTestSlotWithArea = (
+  slot: getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots,
+  date: Date
+) => {
+  return (
+    (moment(date)
+      .format('DMY')
+      .toString() ===
+    moment()
+      .format('DMY')
+      .toString()
+      ? moment(slot.Timeslot!.trim(), 'HH:mm').isSameOrAfter(
+          moment(new Date()).add(
+            AppConfig.Configuration.DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES,
+            'minutes'
+          )
+        )
+      : true) &&
+    moment(slot.Timeslot!.trim(), 'HH:mm').isSameOrBefore(
+      moment(AppConfig.Configuration.DIAGNOSTIC_MAX_SLOT_TIME.trim(), 'HH:mm')
+    )
+  );
+};
+
 export const getTestSlotDetailsByTime = (slots: TestSlot[], startTime: string, endTime: string) => {
   return slots.find(
     (item) => item.slotInfo.startTime == startTime && item.slotInfo.endTime == endTime
@@ -1046,12 +1075,31 @@ export const getUniqueTestSlots = (slots: TestSlot[]) => {
     });
 };
 
+export const getUniqueTestSlotsWithArea = (slots: TestSlotWithArea[]) => {
+  return slots
+    .filter(
+      (item, idx, array) =>
+        array.findIndex((_item) => _item.slotInfo.Timeslot == item.slotInfo.Timeslot) == idx
+    )
+    .map((val) => ({
+      startTime: val.slotInfo.Timeslot!,
+      endTime: val.slotInfo.Timeslot!,
+    }))
+    .sort((a, b) => {
+      if (moment(a.startTime.trim(), 'HH:mm').isAfter(moment(b.startTime.trim(), 'HH:mm')))
+        return 1;
+      else if (moment(b.startTime.trim(), 'HH:mm').isAfter(moment(a.startTime.trim(), 'HH:mm')))
+        return -1;
+      return 0;
+    });
+};
+
 const webengage = new WebEngage();
 
 export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Object) => {
   try {
-    const logContent = `[WebEngage] Event: ${eventName}\n`;
-    console.log(logContent, '\n' /*attributes, '\n'*/);
+    const logContent = `[WebEngage Event] ${eventName}`;
+    console.log(logContent);
     webengage.track(eventName, attributes);
   } catch (error) {
     console.log('********* Unable to post WebEngageEvent *********', { error });
@@ -1296,11 +1344,8 @@ export const APPStateActive = () => {
 
 export const postAppsFlyerEvent = (eventName: AppsFlyerEventName, attributes: Object) => {
   try {
-    console.log('\n********* AppsFlyerEvent Start *********\n');
-    console.log(`AppsFlyerEvent ${eventName}`, { eventName, attributes });
-    console.log('\n********* AppsFlyerEvent End *********\n');
-    // if (getBuildEnvironment() !== 'DEV') {
-    // Don't post events in DEV environment
+    const logContent = `[AppsFlyer Event] ${eventName}`;
+    console.log(logContent);
     appsFlyer.trackEvent(
       eventName,
       attributes,
@@ -1311,7 +1356,6 @@ export const postAppsFlyerEvent = (eventName: AppsFlyerEventName, attributes: Ob
         console.error('AppsFlyerEventError', err);
       }
     );
-    // }
   } catch (error) {
     console.log('********* Unable to post AppsFlyerEvent *********', { error });
   }
@@ -1352,8 +1396,8 @@ export const postAppsFlyerAddToCartEvent = (
 
 export const postFirebaseEvent = (eventName: FirebaseEventName, attributes: Object) => {
   try {
-    const logContent = `[Firebase] Event: ${eventName}\n`;
-    console.log(logContent, '\n' /*attributes, '\n'*/);
+    const logContent = `[Firebase Event] ${eventName}`;
+    console.log(logContent);
     firebase.analytics().logEvent(eventName, attributes);
   } catch (error) {
     console.log('********* Unable to post FirebaseEvent *********', { error });
@@ -1836,7 +1880,7 @@ export const checkPermissions = (permissions: string[]) => {
       }
     });
   });
-}
+};
 
 export const removeConsecutiveComma = (value: string) => {
   return value.replace(/^,|,$|,(?=,)/g, '');

@@ -140,6 +140,8 @@ export enum MEDICINE_ORDER_STATUS {
   RVP_ASSIGNED = 'RVP_ASSIGNED',
   RETURN_PICKUP = 'RETURN_PICKUP',
   RETURN_RTO = 'RETURN_RTO',
+  READY_TO_SHIP = 'READY_TO_SHIP',
+  SHIPPED = 'SHIPPED',
 }
 
 export enum UPLOAD_FILE_TYPES {
@@ -304,6 +306,11 @@ export enum PROFILE_SOURCE {
   MFINE = 'MFINE',
 }
 
+export type DriverDetails = {
+  driverName: string;
+  driverPhone: string;
+};
+
 @EventSubscriber()
 export class PatientEntitiySubscriber implements EntitySubscriberInterface<Patient> {
   beforeUpdate(event: UpdateEvent<any>): Promise<any> | void {
@@ -436,7 +443,7 @@ export class MedicineOrders extends BaseEntity {
   @Column({ nullable: true })
   allocationProfileName: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedDate: Date;
 
   @BeforeInsert()
@@ -850,7 +857,7 @@ export class MedicineOrdersStatus extends BaseEntity {
   @Column({ nullable: true })
   customReason: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedDate: Date;
 
   @BeforeInsert()
@@ -2692,6 +2699,9 @@ export class MedicineOrderShipments extends BaseEntity {
   @Column({ nullable: true })
   cancelReasonCode: string;
 
+  @Column({ nullable: true, type: 'jsonb' })
+  driverDetails: DriverDetails;
+
   @Column({ nullable: true })
   currentStatus: MEDICINE_ORDER_STATUS;
 
@@ -2704,7 +2714,7 @@ export class MedicineOrderShipments extends BaseEntity {
   })
   oneApolloTransaction: OneApollTransaction;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedDate: Date;
 
   @Column({ nullable: true, type: 'json' })

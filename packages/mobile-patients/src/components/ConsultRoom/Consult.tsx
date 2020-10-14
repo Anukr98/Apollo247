@@ -1280,7 +1280,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     const onPressDoctorCardClick = () => {
       postConsultCardEvents('Card Click', item);
       CommonLogEvent(AppRoutes.Consult, `Consult ${item.appointmentType} clicked`);
-      if (item.doctorInfo && pastAppointmentItem) {
+      if (item.doctorInfo && !pastAppointmentItem) {
         item.appointmentType === 'ONLINE'
           ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
               data: item,

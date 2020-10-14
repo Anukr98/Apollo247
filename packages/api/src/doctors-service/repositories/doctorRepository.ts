@@ -273,9 +273,9 @@ export class DoctorRepository extends Repository<Doctor> {
     const searchParams: RequestParams.Search = {
       index: process.env.ELASTIC_INDEX_DOCTORS,
       body: {
-        _source: {
-          excludes: ['doctorSlots'],
-        },
+        // _source: {
+        //   excludes: ['doctorSlots'],
+        // },
         query: {
           ids: {
             values: id,
@@ -286,6 +286,12 @@ export class DoctorRepository extends Repository<Doctor> {
     const getDetails = await client.search(searchParams);
     client.close();
     let doctorData, facilities;
+    let bufferTime = 5;
+    const callStartTime: Date = new Date();
+    const doctorNextAvailSlots:any ={
+      physicalSlot:'',
+      onlineSlot:''
+    };
 
     if (getDetails.body.hits.hits && getDetails.body.hits.hits.length > 0) {
       doctorData = getDetails.body.hits.hits[0]._source;
@@ -298,6 +304,7 @@ export class DoctorRepository extends Repository<Doctor> {
       const availableModes: string[] = [];
       for (const consultHour of doctorData.consultHours) {
         consultHour['id'] = consultHour['consultHoursId'];
+        bufferTime = consultHour['consultBuffer'];
         if (!availableModes.includes(consultHour['consultMode'])) {
           availableModes.push(consultHour['consultMode']);
         }
@@ -310,6 +317,24 @@ export class DoctorRepository extends Repository<Doctor> {
         doctorData.doctorHospital.push({ facility });
       }
       doctorData.availableModes = availableModes;
+
+      for (const slots of doctorData.doctorSlots) {
+        for (const slot of slots['slots']) {
+          if (
+            slot.status == 'OPEN' &&
+            differenceInMinutes(new Date(slot.slot), callStartTime) > bufferTime
+          ) {
+            if (!doctorNextAvailSlots.physicalSlot && slot.slotType != 'ONLINE') {
+              doctorNextAvailSlots.physicalSlot = slot.slot;
+            }
+            if (!doctorNextAvailSlots.onlineSlot && slot.slotType != 'PHYSICAL') {
+              doctorNextAvailSlots.onlineSlot = slot.slot;
+            }
+          }
+        }
+      }
+      doctorData.doctorNextAvailSlots = doctorNextAvailSlots;
+      delete doctorData.doctorSlots;
     }
     return doctorData;
   }

@@ -106,8 +106,12 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   };
 
   const renderQuantity = () => {
+    let maxQuantity: number = getMaxQtyForMedicineItem(item.maxOrderQty);
+    if (!!item.isFreeCouponProduct && item.quantity === 1) {
+      maxQuantity = 1;
+    }
     const opitons = Array.from({
-      length: getMaxQtyForMedicineItem(item.maxOrderQty),
+      length: maxQuantity,
     }).map((_, i) => {
       return { key: (i + 1).toString(), value: i + 1 };
     });

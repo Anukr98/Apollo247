@@ -30,7 +30,7 @@
     "Rs": "₹",
     "KavachText": "Explore the Apollo Kavach Program",
     "joinConsultRoomDescription": "Please click here to\n Join the Call with",
-    "waitForDoctirToJoinCall": "Please wait while doctor_name is going through your medical records.\nThis might take a while. Advice you to stay in the consult room!",
+    "waitForDoctirToJoinCall": "Please wait while Dr. doctor_name is going through your medical records. This might take a while. Advice you to stay in the consult room!",
     "exotelMessage": " is trying to call you from the number ",
     "requestMessage": ". Request you to answer the call.",
     "jdAssignedMessage": "A doctor from 0’s team will join you shortly to collect your medical details. These details are essential for 0 to help you and will take around 3-5 minutes.",
@@ -38,6 +38,23 @@
     "customerCareNumber": 4041894343,
     "customerCareHelpText": "I need help with my order",
     "selectAddress": "Choose from saved address"
+  },
+  "components": {
+    "medicineDetails": {
+      "helpers": {
+        "overview": "Overview",
+        "usage": "Usage",
+        "sideEffects": "Side Effects",
+        "precautions": "Precautions",
+        "drugWarnings": "Drug Warnings",
+        "storage": "Storage",
+        "alcohol": "Alcohol:\n",
+        "pregnancy": "Pregnancy:\n",
+        "driving": "Driving:\n",
+        "kidney": "Kidney:\n",
+        "liver": "Liver:\n"
+      }
+    }
   },
   "consultType": {
     "mainHeading": "How would you like to consult with",
@@ -277,7 +294,9 @@
     "disabledDiagnosticsMsg": "Sorry, we can not process {{testNames}} now. This will be removed from your cart.\n",
     "disabledDiagnosticsFailureMsg": "Sorry, we are unable to verify items in your cart right now. Please try again later.",
     "removeThisTestCTA": "Remove this test from cart",
-    "removeTheseTestsCTA": "Remove these tests from cart"
+    "removeTheseTestsCTA": "Remove these tests from cart",
+    "itemsAddedSuccessfullyCTA": " Item successfully added",
+    "proceedToCartCTA": "PROCEED TO CART"
   },
   "orders": {
     "urOrders": "MY ORDERS",
@@ -492,7 +511,8 @@
     "consultDoctor": "Consult Doctor",
     "restartSymptomTrackerDiscription": "This will end your symptom tracking and you’ll have to start it again. Do you want to continue tracking your symptoms or go back?",
     "symptomTracker": "Symptom Tracker",
-    "addAnotherSymptom": "Would you like to report another symptom?"
+    "addAnotherSymptom": "Would you like to report another symptom?",
+    "removeSelectionPlaceholder": "Remove selection to type your own symptom"
   },
   "callRelatedPermissions": {
     "allPermissions": "For a smooth consultation experience with {0} and to ensure that you do not miss out your doctor's call, Apollo 247 needs your camera, microphone and call display permissions.",

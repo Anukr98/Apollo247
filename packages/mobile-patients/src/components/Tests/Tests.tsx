@@ -239,6 +239,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [currentLocation, setcurrentLocation] = useState<string>('');
   const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
   const [serviceabilityCity, setServiceabilityCity] = useState<string>('');
+  const [optionSelected, setOptionSelected] = useState<string>('');
   const [locationSearchList, setlocationSearchList] = useState<{ name: string; placeId: string }[]>(
     []
   );
@@ -281,12 +282,85 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const diagnosticPincode = g(diagnosticLocation, 'pincode') || g(locationDetails, 'pincode');
 
+  const patientAttributes = {
+    'Patient UHID': g(currentPatient, 'uhid'),
+    'Patient Gender': g(currentPatient, 'gender'),
+    'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+    'Patient Age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
+  };
+  useEffect(() => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED] = patientAttributes;
+    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED, eventAttributes);
+  }, []);
+
+  /**
+   * for serviceable - non-serviceable tracking
+   */
+
+  const serviceableAttributes = {
+    'Patient UHID': g(currentPatient, 'uhid'),
+    State: g(diagnosticLocation, 'state') || g(locationDetails, 'state') || '',
+    City: g(diagnosticLocation, 'city') || g(locationDetails, 'city') || '',
+    'PinCode Entered': parseInt(diagnosticPincode!),
+  };
+
+  useEffect(() => {
+    if (!!locationDetails || !!diagnosticLocation) {
+      if (isDiagnosticLocationServiceable) {
+        const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_SERVICEABLE] = serviceableAttributes;
+        postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_SERVICEABLE, eventAttributes);
+      } else {
+        const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_NON_SERVICEABLE] = serviceableAttributes;
+        postWebEngageEvent(
+          WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_NON_SERVICEABLE,
+          eventAttributes
+        );
+      }
+    }
+  }, []);
+
+  const setWebEngageEventOnSearchItem = (keyword: string, results: []) => {
+    if (keyword.length > 2) {
+      const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_SEARCHED] = {
+        ...patientAttributes,
+        'Keyword Entered': keyword,
+        '# Results appeared': results.length,
+        'Item in Results': results,
+      };
+      postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_SEARCHED, eventAttributes);
+    }
+  };
+
+  const setWebEngageEventOnSearchItemClicked = (item: object) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_CLICKED_AFTER_SEARCH] = {
+      ...patientAttributes,
+      'Item Clicked': item,
+    };
+    postWebEngageEvent(
+      WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_CLICKED_AFTER_SEARCH,
+      eventAttributes
+    );
+  };
+
+  const setWebEnageEventForPinCodeClicked = () => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ENTER_DELIVERY_PINCODE_CLICKED] = {
+      ...patientAttributes,
+      Method: !optionSelected ? 'Enter Manually' : optionSelected,
+      Pincode: parseInt(diagnosticPincode!),
+    };
+    postWebEngageEvent(
+      WebEngageEventName.DIAGNOSTIC_ENTER_DELIVERY_PINCODE_CLICKED,
+      eventAttributes
+    );
+  };
+
   /**
    * if any change in the location and pincode is changed
    */
   useEffect(() => {
     if (diagnosticPincode) {
       checkIsPinCodeServiceable(diagnosticPincode);
+      setWebEnageEventForPinCodeClicked();
     }
   }, [diagnosticPincode]);
 
@@ -308,12 +382,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
         });
     }
   }, [currentPatient]);
-
-  // useEffect(() => {
-  //   if (g(currentPatient, 'id') && g(locationDetails, 'city')) {
-  //     //call the pincode service check
-  //   }
-  // }, [locationDetails, currentPatient]);
 
   /**
    * if there is any change in the location yellow pop-up ,if location is present.
@@ -359,7 +427,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 doRequestAndAccessLocation()
                   .then((response) => {
                     setLoadingContext!(false);
-                    response && setLocationDetails!(response);
+                    checkIsPinCodeServiceable(response.pincode);
+                    response && setDiagnosticLocation!(response);
+                    response && !locationDetails && setLocationDetails!(response);
                   })
                   .catch((e) => {
                     CommonBugFender('Tests_ALLOW_AUTO_DETECT', e);
@@ -444,6 +514,16 @@ export const Tests: React.FC<TestsProps> = (props) => {
         });
     }
   }, []);
+
+  const setWebEnageEventForItemViewedOnLanding = (name: string, id: string, type: string) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ITEM_CLICKED_ON_LANDING] = {
+      ...patientAttributes,
+      'Item Name': name,
+      'Item ID': id,
+      Type: type,
+    };
+    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ITEM_CLICKED_ON_LANDING, eventAttributes);
+  };
 
   const postFeaturedTestEvent = (name: string, id: string) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.FEATURED_TEST_CLICKED] = {
@@ -576,11 +656,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   /**check current location */
-  const autoDetectLocation = () => {
+  const autoDetectLocation = async () => {
     setLoadingContext!(true);
     doRequestAndAccessLocationModified()
       .then((response) => {
         setLoadingContext!(false);
+        checkIsPinCodeServiceable(response.pincode);
         response && setDiagnosticLocation!(response);
         // response && WebEngageEventAutoDetectLocation(response.pincode, true);
         response && !locationDetails && setLocationDetails!(response);
@@ -623,17 +704,15 @@ export const Tests: React.FC<TestsProps> = (props) => {
               city: serviceableData.cityName || '',
             };
             setDiagnosticServiceabilityData!(obj);
-            updatePlaceInfoByPincode(pincode);
-            setshowLocationpopup(false);
             setDiagnosticLocationServiceable!(true);
             setServiceabilityMsg('');
           } else {
-            setshowLocationpopup(false);
             setDiagnosticLocationServiceable!(false);
             setLoadingContext!(false);
             renderLocationNotServingPopUpForPincode(pincode);
-            //red text shown below the text input field.
           }
+          setshowLocationpopup(false);
+          updatePlaceInfoByPincode(pincode);
         })
         .catch((e) => {
           CommonBugFender('Tests_', e);
@@ -941,6 +1020,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
         if (!isDiagnosticLocationServiceable) {
           return;
         }
+        setWebEnageEventForItemViewedOnLanding(
+          packageName!,
+          `${diagnostics!.itemId}`,
+          `${diagnostics!.itemType}`
+        );
         postFeaturedTestEvent(packageName!, `${diagnostics!.itemId}`);
         props.navigation.navigate(AppRoutes.TestDetails, {
           testDetails: {
@@ -952,6 +1036,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
             FromAgeInDays: diagnostics!.fromAgeInDays,
             ToAgeInDays: diagnostics!.toAgeInDays,
             preparation: diagnostics!.testPreparationData,
+            source: 'Landing Page',
+            type: diagnostics!.itemType,
           } as TestPackageForDetails,
         });
       },
@@ -1255,7 +1341,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
                         ...item,
                         collectionType: product.collectionType,
                         preparation: product.testPreparationData,
+                        source: 'Landing Page',
+                        type: product.itemType,
                       } as TestPackageForDetails,
+                      type: 'Package',
                     });
                   });
                 },
@@ -1357,6 +1446,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                   if (!isDiagnosticLocationServiceable) {
                     return;
                   }
+                  setWebEnageEventForItemViewedOnLanding(item.organName!, item.id!, 'Package');
                   postBrowsePackageEvent(item.organName!);
                   props.navigation.navigate(AppRoutes.TestsByCategory, {
                     title: `${item.organName || 'Products'}`.toUpperCase(),
@@ -1417,18 +1507,20 @@ export const Tests: React.FC<TestsProps> = (props) => {
         .query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
           query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
           variables: {
-            cityID: parseInt(locationForDiagnostics?.cityId || '9', 10), //be default show of hyderabad
+            cityID: parseInt(locationForDiagnostics?.cityId!, 10), //be default show of hyderabad
             searchText: _searchText,
           },
           fetchPolicy: 'no-cache',
         })
         .then(({ data }) => {
           // aphConsole.log({ data });
+          setSearchText(_searchText);
           const products = g(data, 'searchDiagnosticsByCityID', 'diagnostics') || [];
           setMedicineList(
             products as searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
           );
           setsearchSate('success');
+          setWebEngageEventOnSearchItem(_searchText, products);
         })
         .catch((e) => {
           CommonBugFender('Tests_onSearchMedicine', e);
@@ -1597,11 +1689,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
     const itemsNotFound =
       searchSate == 'success' && searchText.length > 2 && medicineList.length == 0;
-
     return (
-      <>
+      <View pointerEvents={isDiagnosticLocationServiceable ? 'auto' : 'none'}>
         <Input
-          pointerEvents={isDiagnosticLocationServiceable ? 'auto' : 'none'}
           autoFocus={!locationDetails ? false : focusSearch}
           onSubmitEditing={() => {
             if (searchText.length > 2) {
@@ -1667,7 +1757,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             itemsNotFound ? 'Sorry, we couldn’t find what you are looking for :(' : undefined
           }
         />
-      </>
+      </View>
     );
   };
 
@@ -1694,17 +1784,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
         onPress={(item) => {
           if (item.value == options[0].value) {
             autoDetectLocation();
+            setOptionSelected('Auto Detect');
           } else {
-            const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ENTER_DELIVERY_PINCODE_CLICKED] = {
-              'Patient UHID': currentPatient.uhid,
-              'Mobile Number': currentPatient.mobileNumber,
-              'Customer ID': currentPatient.id,
-            };
-            postWebEngageEvent(
-              WebEngageEventName.DIAGNOSTIC_ENTER_DELIVERY_PINCODE_CLICKED,
-              eventAttributes
-            );
             setshowLocationpopup(true);
+            setOptionSelected('Enter Manually');
           }
         }}
       >
@@ -1812,10 +1895,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
       fromAgeInDays,
       toAgeInDays,
       testPreparationData,
+      itemType,
     } = item;
     return renderSearchSuggestionItem({
       onPress: () => {
         savePastSeacrh(`${itemId}`, itemName).catch((e) => {});
+        setWebEngageEventOnSearchItemClicked(item);
         props.navigation.navigate(AppRoutes.TestDetails, {
           testDetails: {
             Rate: rate,
@@ -1826,6 +1911,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
             FromAgeInDays: fromAgeInDays,
             ToAgeInDays: toAgeInDays,
             preparation: testPreparationData,
+            source: 'Landing Page',
+            type: itemType,
           } as TestPackageForDetails,
         });
       },

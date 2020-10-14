@@ -825,6 +825,10 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
           id
         }
       }
+      doctorNextAvailSlots{
+        onlineSlot
+        physicalSlot
+      }
     }
   }
 `;
@@ -3264,6 +3268,73 @@ export const SET_DEFAULT_ADDRESS = gql`
       patientAddress {
         id
         defaultAddress
+      }
+    }
+  }
+`;
+
+export const GET_DOCTOR_LIST = gql`
+  query getDoctorList($filterInput: FilterDoctorInput) {
+    getDoctorList(filterInput: $filterInput) {
+      doctors
+      apolloDoctorCount
+      partnerDoctorCount
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_AREAS = gql`
+  query getAreas ($pincode: Int!,$itemIDs: [Int]!) {
+    getAreas(pincode: $pincode, itemIDs: $itemIDs) {
+     status
+     areas{
+        id 
+        area
+      }
+    }
+  }
+`;
+
+export const GET_DOCTORLIST_FILTERS = gql`
+  query getDoctorListFilters {
+    getDoctorListFilters {
+      filters {
+        city {
+          state
+          data
+        }
+        brands {
+          name
+          image
+          brandName
+        }
+        language {
+          name
+        }
+        experience {
+          name
+        }
+        availability {
+          name
+        }
+        fee {
+          name
+        }
+        gender {
+          name
+        }
+      }
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_SLOTS_WITH_AREA_ID = gql`
+  query getDiagnosticSlotsWithAreaID ($selectedDate: Date!,$areaID: Int!) {
+    getDiagnosticSlotsWithAreaID(selectedDate: 
+      $selectedDate, areaID: $areaID) {
+      slots{
+        Timeslot
+        TimeslotID
       }
     }
   }
