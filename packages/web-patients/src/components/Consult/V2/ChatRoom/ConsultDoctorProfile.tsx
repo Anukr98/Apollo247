@@ -737,9 +737,11 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                           <>
                             <span>Consult On</span>
                             <span className={classes.joinTime}>
-                              {moment(appointmentDetails.appointmentDateTime).format(
-                                'DD/MM hh:mm a'
-                              )}
+                              {`${moment(appointmentDetails.appointmentDateTime).format(
+                                'DD/MM'
+                              )} at ${moment(appointmentDetails.appointmentDateTime).format(
+                                'hh:mm a'
+                              )}`}
                             </span>
                           </>
                         ) : (
