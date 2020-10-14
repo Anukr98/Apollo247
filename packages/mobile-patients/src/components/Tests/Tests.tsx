@@ -319,11 +319,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   }, []);
 
-  useEffect(() => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED] = patientAttributes;
-    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED, eventAttributes);
-  }, [isDiagnosticLocationServiceable]);
-
   const setWebEngageEventOnSearchItem = (keyword: string, results: []) => {
     if (keyword.length > 2) {
       const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_SEARCHED] = {
@@ -332,7 +327,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         '# Results appeared': results.length,
         'Item in Results': results,
       };
-      postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED, eventAttributes);
+      postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_SEARCHED, eventAttributes);
     }
   };
 
@@ -341,22 +336,23 @@ export const Tests: React.FC<TestsProps> = (props) => {
       ...patientAttributes,
       'Item Clicked': item,
     };
-    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED, eventAttributes);
+    postWebEngageEvent(
+      WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_CLICKED_AFTER_SEARCH,
+      eventAttributes
+    );
   };
 
-  useEffect(() => {
-    if (!diagnosticPincode) {
-      const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ENTER_DELIVERY_PINCODE_CLICKED] = {
-        ...patientAttributes,
-        Method: !optionSelected ? 'Enter Manually' : optionSelected,
-        Pincode: parseInt(diagnosticPincode!),
-      };
-      postWebEngageEvent(
-        WebEngageEventName.DIAGNOSTIC_ENTER_DELIVERY_PINCODE_CLICKED,
-        eventAttributes
-      );
-    }
-  }, [diagnosticPincode]);
+  const setWebEnageEventForPinCodeClicked = () => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ENTER_DELIVERY_PINCODE_CLICKED] = {
+      ...patientAttributes,
+      Method: !optionSelected ? 'Enter Manually' : optionSelected,
+      Pincode: parseInt(diagnosticPincode!),
+    };
+    postWebEngageEvent(
+      WebEngageEventName.DIAGNOSTIC_ENTER_DELIVERY_PINCODE_CLICKED,
+      eventAttributes
+    );
+  };
 
   /**
    * if any change in the location and pincode is changed
@@ -364,6 +360,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   useEffect(() => {
     if (diagnosticPincode) {
       checkIsPinCodeServiceable(diagnosticPincode);
+      setWebEnageEventForPinCodeClicked();
     }
   }, [diagnosticPincode]);
 
