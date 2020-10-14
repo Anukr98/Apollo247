@@ -1,17 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { Theme, Grid, CircularProgress, Paper, Typography } from '@material-ui/core';
+import React, { useState } from 'react';
+import { Theme, CircularProgress, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { AphButton, AphInput, AphTextField } from '@aph/web-ui-components';
-import { GET_ALL_CITIES } from 'graphql/specialities';
-import { getAllCities } from 'graphql/types/getAllCities';
-import { useQuery } from 'react-apollo-hooks';
+import { AphButton, AphTextField } from '@aph/web-ui-components';
 import _lowerCase from 'lodash/lowerCase';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { useParams } from 'hooks/routerHooks';
-import Axios from 'axios';
-import PlacesAutocomplete, { geocodeByAddress, getLatLng } from 'react-places-autocomplete';
+import PlacesAutocomplete from 'react-places-autocomplete';
 import { Helmet } from 'react-helmet';
-import { Route } from 'react-router';
 import { useHistory } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
