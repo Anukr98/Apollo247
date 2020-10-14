@@ -53,10 +53,12 @@ const useStyles = makeStyles((theme: Theme) => {
         boxShadow: 'none',
         display: 'block',
         marginLeft: 'auto',
+        fontSize: 16,
         background: '#E52936',
         color: '#fff',
         [theme.breakpoints.down('sm')]: {
           bottom: 20,
+          fontSize: 12,
         },
         '&:hover': {
           background: '#E52936',
