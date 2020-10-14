@@ -501,7 +501,7 @@ export interface WebEngageEvents {
       | 'Pharmacy Partial Search'
       | 'Pharmacy Full Search'
       | 'Similar Widget'
-      | 'Cart';
+      | 'Pharmacy Cart';
     Brand?: string;
     'Brand ID'?: string;
     'category name'?: string;

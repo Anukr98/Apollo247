@@ -28,7 +28,7 @@ export const SuggestProducts: React.FC<SuggestProductsProps> = (props) => {
         data={products}
         Component={ProductUpSellingCard}
         navigation={navigation}
-        addToCartSource={'Cart'}
+        addToCartSource={'Pharmacy Cart'}
         movedFrom={ProductPageViewedSource.CART}
       />
     );
