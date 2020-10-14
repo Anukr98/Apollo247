@@ -83,6 +83,8 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('sm')]: {
         fontSize: 10,
         bottom: 0,
+        left:0,
+        width: '60%',
       },
     },
     note: {
