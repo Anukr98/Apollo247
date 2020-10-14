@@ -103,7 +103,9 @@ export const ProductList: React.FC<Props> = ({
           ? styles.itemEndContainer
           : styles.itemContainer,
     };
-
+    if (movedFrom == ProductPageViewedSource.CART) {
+      props['onCartScreen'] = true;
+    }
     return <Component {...props} />;
   };
 
