@@ -2,7 +2,7 @@ import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsP
 import { CommonBugFender } from '@aph/mobile-doctors/src/helpers/DeviceHelper';
 import { mimeType } from '@aph/mobile-doctors/src/helpers/mimeType';
 import React, { useState, useRef, useEffect } from 'react';
-import { Platform, TouchableOpacity, View, Linking, FlatList } from 'react-native';
+import { Platform, TouchableOpacity, View, Linking, FlatList, BackHandler } from 'react-native';
 import Pdf from 'react-native-pdf';
 import { NavigationScreenProps } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';
@@ -32,6 +32,22 @@ export const DocumentCorousel: React.FC<DocumentCorouselProps> = (props) => {
   const [currentPage, setCurrentPage] = useState<number>(0);
   const flatListRef = useRef<any>(null);
 
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    };
+  }, []);
+
+  const handleBack = async () => {
+    onClose();
+    return false;
+  };
+
+  useEffect(() => {
+    scrollToIndex();
+  }, [scrollToURL, flatListRef]);
+
   const scrollToIndex = () => {
     setLoading && setLoading(true);
     const initialScrollIndex = pdfFiles && pdfFiles.findIndex((item) => item.url === scrollToURL);
@@ -45,10 +61,6 @@ export const DocumentCorousel: React.FC<DocumentCorouselProps> = (props) => {
       setLoading && setLoading(false);
     }, 500);
   };
-
-  useEffect(() => {
-    scrollToIndex();
-  }, [scrollToURL, flatListRef]);
 
   const downloadDocument = (item: any) => {
     const pdf_title = `${

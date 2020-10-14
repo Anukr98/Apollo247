@@ -2331,7 +2331,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
                 item.fileType === 'pdf' && ((!isChatRoom && item.id === patientId) || isChatRoom)
             )}
             patientDetails={patientDetails}
-            initialDocScrollIndex={index}
             onClose={() => setOverlayDisplay(null)}
             navigation={props.navigation}
             scrollToURL={newUrl}
