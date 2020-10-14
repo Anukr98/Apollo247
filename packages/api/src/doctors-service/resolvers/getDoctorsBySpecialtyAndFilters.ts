@@ -83,6 +83,28 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
     partnerDoctorCount: Int
   }
 
+  type doctorCardDetail {
+    id: String
+    displayName: String
+    specialtydisplayName: String
+    experience: Int
+    photoUrl: String
+    thumbnailUrl: String
+    qualification: String
+    doctorType: String
+    doctorfacility: String
+    specialistSingularTerm: String
+    specialistPluralTerm: String
+    consultMode: ConsultMode
+    slot: String
+    earliestSlotInMinutes: Int
+    fee: Int
+  }
+
+  type PlatinumDoctorResult {
+    doctors: [doctorCardDetail]
+  }
+
   type DoctorsFiltersResult {
     filters: filters
   }
@@ -133,6 +155,7 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
   extend type Query {
     getDoctorsBySpecialtyAndFilters(filterInput: FilterDoctorInput): FilterDoctorsResult
     getDoctorList(filterInput: FilterDoctorInput): DoctorListResult
+    getPlatinumDoctor(specialty: ID): PlatinumDoctorResult
     getDoctorListFilters: DoctorsFiltersResult
   }
 `;
@@ -179,6 +202,24 @@ type FilterDoctorsResult = {
   apolloDoctorCount: number;
   partnerDoctorCount: number;
 };
+
+type doctorCardDetail = {
+  id: string;
+  displayName: string;
+  specialtydisplayName: string;
+  experience: number;
+  photoUrl: string;
+  thumbnailUrl: string;
+  qualification: string;
+  doctorType: string;
+  doctorfacility: string;
+  specialistSingularTerm: string;
+  specialistPluralTerm: string;
+  consultMode: ConsultMode;
+  slot: string;
+  earliestSlotInMinutes: number;
+  fee: number;
+}
 
 type DoctorsListResult = {
   doctors: Doctor[];
@@ -1005,6 +1046,91 @@ const getDoctorList: Resolver<
   };
 };
 
+const getPlatinumDoctor: Resolver<
+  null,
+  { specialty: string },
+  DoctorsServiceContext,
+  {doctors: doctorCardDetail[]} //boolean//Doctor
+> = async (parent, args, {}) => {
+  const elasticMatch = [];
+  const elasticSort = [];
+  if (!args.specialty) 
+    throw new AphError(AphErrorMessages.INVALID_SPECIALTY_ID);
+  
+  elasticMatch.push({ match_phrase: { 'specialty.specialtyId': args.specialty } });
+  elasticMatch.push({ match: { isSearchable: 'true' } });
+  elasticMatch.push(elasticDoctorLatestSlotFilter());
+  elasticSort.push(elasticDoctorAvailabilitySort());
+
+  if (!process.env.ELASTIC_INDEX_DOCTORS) {
+    throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
+  }
+
+  const searchParams: RequestParams.Search = elasticDoctorSearch(0, 1, elasticSort, elasticMatch);
+  const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
+
+  const getDetails = await client.search(searchParams);
+  client.close();
+
+  if (getDetails.body.hits.hits.length < 1) {
+    throw new AphError(AphErrorMessages.NO_PLATINUM_DOCTORS);
+  }
+  const doctors: doctorCardDetail[] = [];
+  let doctorObj: doctorCardDetail;
+
+  for (const doc of getDetails.body.hits.hits) {
+    const doctor = doc._source;
+    let consultMode: ConsultMode[] = [];
+    let fee: number = doctor.onlineConsultationFees;
+
+    doctorObj = {
+      id: doctor.doctorId,
+      displayName: doctor.displayName,
+      specialtydisplayName: doctor.specialty.userFriendlyNomenclature,
+      experience: doctor.experience,
+      photoUrl: doctor.photoUrl,
+      thumbnailUrl: doctor.thumbnailUrl,
+      qualification: doctor.qualification,
+      doctorType: doctor.doctorType,
+      doctorfacility: doctor.facility[0].name + ' ' + doctor.facility[0].city,
+      specialistSingularTerm: doctor.specialty.specialistSingularTerm,
+      specialistPluralTerm: doctor.specialty.specialistPluralTerm,
+      consultMode: ConsultMode.BOTH,
+      slot: '',
+      earliestSlotInMinutes: 0,
+      fee: fee,
+    };
+
+    for (const consultHour of doctor.consultHours) {
+      if (!consultMode.includes(consultHour.consultMode)) {
+        consultMode.push(consultHour.consultMode);
+      }
+    }
+    if (consultMode.length > 1) {
+      consultMode = [ConsultMode.BOTH];
+    }
+    doctorObj.consultMode = <ConsultMode>consultMode.toString();
+    if (doctorObj.consultMode === ConsultMode.BOTH) {
+      fee =
+        doctor.onlineConsultationFees > doctor.physicalConsultationFees
+          ? doctor.physicalConsultationFees
+          : doctor.onlineConsultationFees;
+    } else if (doctorObj.consultMode === ConsultMode.PHYSICAL) {
+      fee = doctor.physicalConsultationFees;
+    }
+    doctorObj.fee = fee;
+    for (const slot of doc.inner_hits['doctorSlots.slots'].hits.hits) {
+      doctorObj.slot = slot._source.slot;
+      doctorObj.earliestSlotInMinutes = differenceInMinutes(
+        new Date(slot._source.slot),
+        callStartTime
+      );
+    }
+    doctors.push(doctorObj);
+  }
+  return {doctors};
+};
+
 const getDoctorListFilters: Resolver<
   null,
   {},
@@ -1102,6 +1228,7 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefsResolvers = {
   Query: {
     getDoctorsBySpecialtyAndFilters,
     getDoctorList,
+    getPlatinumDoctor,
     getDoctorListFilters
   },
 };
