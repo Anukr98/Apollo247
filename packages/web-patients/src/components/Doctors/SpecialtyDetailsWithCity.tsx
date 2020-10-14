@@ -32,7 +32,7 @@ import moment from 'moment';
 import _upperFirst from 'lodash/upperFirst';
 import _merge from 'lodash/merge';
 import _find from 'lodash/find';
-import { ConsultMode, DoctorType } from 'graphql/types/globalTypes';
+import { ConsultMode } from 'graphql/types/globalTypes';
 import _filter from 'lodash/filter';
 import { MetaTagsComp } from 'MetaTagsComp';
 import { GET_ALL_SPECIALITIES } from 'graphql/specialities';
@@ -44,7 +44,6 @@ import { SchemaMarkup } from 'SchemaMarkup';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
 import { dataLayerTracking } from 'gtmTracking';
-// import Pagination from '@material-ui/lab/Pagination';
 import axios from 'axios';
 import {
   GetDoctorList,
@@ -491,6 +490,7 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
   const [pageNo, setPageNo] = useState<number>(1);
   const [specialtyId, setSpecialtyId] = useState<string>('');
   const [specialtyName, setSpecialtyName] = useState<string>('');
+  const [specialtyPlural, setSpecialtyPlural] = useState<string>('');
   const [locationPopup, setLocationPopup] = useState<boolean>(false);
   const [isAlternateVariant, setIsAlternateVariant] = useState<boolean>(true);
   const [selectedCity, setSelectedCity] = useState<string>(
@@ -739,6 +739,7 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
                 setSpecialtyId(specialty.id);
                 setSpecialtyName(specialty.name);
                 setSlugName(specialty.slugName);
+                setSpecialtyPlural(specialty.specialistPluralTerm);
               }
             });
         });
@@ -859,6 +860,14 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
                 name: specialtyName,
                 item: `https://www.apollo247.com/specialties/${readableParam(specialtyName)}`,
               },
+              {
+                '@type': 'ListItem',
+                position: 4,
+                name: `${specialtyPlural} - ${selectedCity}`,
+                item: `https://www.apollo247.com/doctors/${readableParam(
+                  specialtyPlural
+                )}-in-${selectedCity}-scity`,
+              },
             ],
           });
           if (response && response.data && response.data.getDoctorList) {
@@ -889,6 +898,16 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
             setFilteredDoctorData(filteredObj);
             const specialtiesArray = response.data.getDoctorList.specialties || [];
             setSearchSpecialty(specialtiesArray);
+            /**Gtm code start start */
+            dataLayerTracking({
+              event: 'pageviewEvent',
+              pagePath: window.location.href,
+              pageName: `${specialtyName}-${selectedCity} Listing Page`,
+              pageLOB: 'Consultation',
+              pageType: 'Listing',
+              productlist: JSON.stringify(doctors),
+            });
+            /**Gtm code start end */
           }
           setData(response.data);
         })
@@ -912,7 +931,6 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
   return (
     <div className={classes.root}>
       <MetaTagsComp {...metaTagProps} />
-
       {structuredJSON && <SchemaMarkup structuredJSON={structuredJSON} />}
       {breadcrumbJSON && <SchemaMarkup structuredJSON={breadcrumbJSON} />}
       <div className={classes.mHide}>

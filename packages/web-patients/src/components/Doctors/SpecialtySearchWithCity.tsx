@@ -11,6 +11,7 @@ import { DoctorDetails } from 'components/Doctors/SpecialtyDetails';
 import { GetDoctorList_getDoctorList_specialties } from 'graphql/types/GetDoctorList';
 import _get from 'lodash/get';
 import _debounce from 'lodash/debounce';
+import { dataLayerTracking } from 'gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -267,7 +268,14 @@ export const SpecialtySearchWithCity: React.FC<SpecialtySearchProps> = (props) =
     <>
       <div className={classes.specialitySearch} ref={searchRef}>
         <div className={classes.location}>
-          <div onClick={() => setLocationPopup(true)}>
+          <div
+            onClick={() => {
+              setLocationPopup(true);
+              dataLayerTracking({
+                event: 'Change City Clicked',
+              });
+            }}
+          >
             <div className={classes.userLocation}>
               <img src={require('images/location.svg')} alt="" />
               <Typography className={selectedCity ? classes.cityActive : null}>
