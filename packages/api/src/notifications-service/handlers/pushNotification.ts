@@ -208,10 +208,8 @@ export async function sendCallsNotification(
         appointmentCallId: appointmentCallId,
         doctorType: doctorType,
       },
-      android: {
-        notification: {
-          channel_id: "fcm_call_channel"
-        }
+      notification: {
+        channel_id: "fcm_call_channel"
       },
     };
 

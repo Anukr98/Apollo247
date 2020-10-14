@@ -3,7 +3,7 @@ const Constants = require('./Constants');
 const fs = require('fs');
 const format = require('date-fns/format');
 const addDays = require('date-fns/addDays');
-const addHours = require('date-fns/addHours');
+const addMinutes = require('date-fns/addMinutes');
 const url = require('url');
 
 exports.autoSubmitJDCasesheet = (req, res) => {
@@ -581,7 +581,7 @@ exports.appointmentReminderTemplate = (req, res) => {
 
     let urlObject = url.parse(req.url, true);
     const appointmentDateTime = format(
-      new Date(urlObject.query.CustomField.split('_')[0]),
+      addMinutes(new Date(urlObject.query.CustomField.split('_')[0]), 330),
       'h m a'
     );
     const appointmentType = urlObject.query.CustomField.split('_')[1];
