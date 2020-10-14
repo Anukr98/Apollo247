@@ -62,7 +62,7 @@ export const DocumentCorousel: React.FC<DocumentCorouselProps> = (props) => {
     }, 500);
   };
 
-  const downloadDocument = (item: any) => {
+  const downloadDocument = (item: chatFilesType) => {
     const pdf_title = `${
       patientDetails ? patientDetails.firstName || 'Patient' : 'Patient'
     }_${item.fileName || 'Appointment_Document.pdf'}`;
@@ -113,7 +113,7 @@ export const DocumentCorousel: React.FC<DocumentCorouselProps> = (props) => {
     );
   };
 
-  const renderItem = (item: any, index: number) => {
+  const renderItem = (item: chatFilesType, index: number) => {
     return (
       <View key={index}>
         <View style={styles.docContainer}>
