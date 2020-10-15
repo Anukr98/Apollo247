@@ -1,19 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
 import Slider from 'react-slick';
 import { MedicineProduct } from '../../../helpers/MedicineApiCalls';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { Link, Route } from 'react-router-dom';
+import { Route } from 'react-router-dom';
 import { useShoppingCart, MedicineCartItem } from '../../MedicinesCartProvider';
-import { gtmTracking } from '../../../gtmTracking';
+import { gtmTracking, dataLayerTracking } from '../../../gtmTracking';
 import {
   pharmacyConfigSectionTracking,
   addToCartTracking,
   removeFromCartTracking,
   pharmacyProductClickedTracking,
 } from 'webEngageTracking';
+import { LazyIntersection } from '../../lib/LazyIntersection';
+import { getSlidesToScroll } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -49,6 +51,7 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'center',
       '& img': {
         maxWidth: 70,
+        maxHeight: 70,
         margin: 'auto',
       },
     },
@@ -135,22 +138,47 @@ interface HotSellerProps {
 
 export const HotSellers: React.FC<HotSellerProps> = (props) => {
   const classes = useStyles({});
+  const [currIndex, setCurrIndex] = useState(0);
   const sliderSettings = {
-    infinite: true,
+    infinite: false,
     speed: 500,
     slidesToShow: 6,
-    slidesToScroll: 1,
-    nextArrow: <img src={require('images/ic_arrow_right.svg')} alt="" />,
-    prevArrow: <img src={require('images/ic_arrow_left.svg')} alt="" />,
+    slidesToScroll: getSlidesToScroll(props.data.products.length),
+    nextArrow: (
+      <div>
+        {currIndex !== props.data.products.length - 6 && (
+          <img src={require('images/ic_arrow_right.svg')} alt="" />
+        )}
+      </div>
+    ),
+    prevArrow: (
+      <div>{currIndex !== 0 && <img src={require('images/ic_arrow_left.svg')} alt="" />}</div>
+    ),
+    afterChange: (currentIndex: number) => {
+      setCurrIndex(currentIndex);
+    },
     responsive: [
       {
         breakpoint: 992,
         settings: {
           slidesToShow: 3,
           slidesToScroll: 3,
-          infinite: true,
+          infinite: false,
           dots: true,
           centerPadding: '50px',
+          nextArrow: (
+            <div>
+              {currIndex !== props.data.products.length - 3 && (
+                <img src={require('images/ic_arrow_right.svg')} alt="" />
+              )}
+            </div>
+          ),
+          prevArrow: (
+            <div>{currIndex !== 0 && <img src={require('images/ic_arrow_left.svg')} alt="" />}</div>
+          ),
+          afterChange: (currentIndex: number) => {
+            setCurrIndex(currentIndex);
+          },
         },
       },
       {
@@ -190,7 +218,12 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
 
   return (
     <div className={classes.root}>
-      <Slider {...sliderSettings}>
+      <Slider
+        {...sliderSettings}
+        beforeChange={() => {
+          document.getElementById('searchProduct').blur();
+        }}
+      >
         {props.data &&
           props.data.products &&
           props.data.products.map((hotSeller) =>
@@ -214,9 +247,9 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                   <Route
                     render={({ history }) => (
                       <a
-                        href=""
+                        href={clientRoutes.medicineDetails(hotSeller.url_key)}
                         onClick={() => {
-                          history.push(clientRoutes.medicineDetails(hotSeller.url_key));
+                          // history.push(clientRoutes.medicineDetails(hotSeller.url_key));
                           pharmacyConfigSectionTracking({
                             sectionName: props.section,
                             productId: hotSeller.sku,
@@ -231,7 +264,11 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                         }}
                       >
                         <div className={classes.productIcon}>
-                          <img src={`${apiDetails.url}${hotSeller.thumbnail}`} alt="" />
+                          {/* <img src={`${apiDetails.url}${hotSeller.thumbnail}`} alt="" /> */}
+                          <LazyIntersection
+                            src={`${apiDetails.url}${hotSeller.thumbnail}`}
+                            alt={`Buy ${hotSeller.name} Online`}
+                          />
                         </div>
                         <div className={classes.productTitle}>{hotSeller.name}</div>
                       </a>
@@ -314,6 +351,31 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                               },
                             });
                             /**Gtm code End  */
+
+                            /**Gtm code start start */
+                            dataLayerTracking({
+                              event: 'Product Added to Cart',
+                              productlist: JSON.stringify([
+                                {
+                                  item_name: hotSeller.name,
+                                  item_id: hotSeller.sku,
+                                  price: hotSeller.price,
+                                  item_category: 'Pharmacy',
+                                  item_category_2: hotSeller.type_id
+                                    ? hotSeller.type_id.toLowerCase() === 'pharma'
+                                      ? 'Drugs'
+                                      : 'FMCG'
+                                    : null,
+                                  item_variant: 'Default',
+                                  index: 1,
+                                  quantity: 1,
+                                },
+                              ]),
+                              label: hotSeller.name,
+                              value: hotSeller.special_price || hotSeller.price,
+                            });
+                            /**Gtm code start end */
+
                             const index = cartItems.findIndex((item) => item.id === cartItem.id);
                             if (index >= 0) {
                               updateCartItem && updateCartItem(cartItem);
@@ -363,6 +425,26 @@ export const HotSellers: React.FC<HotSellerProps> = (props) => {
                               },
                             });
                             /**Gtm code End  */
+
+                            /**Gtm code start start */
+                            dataLayerTracking({
+                              event: 'Product Removed from Cart',
+                              productlist: JSON.stringify([
+                                {
+                                  item_name: hotSeller.name,
+                                  item_id: hotSeller.sku,
+                                  price: hotSeller.special_price || hotSeller.price,
+                                  item_category: 'Pharmacy',
+                                  item_variant: 'Default',
+                                  index: 1,
+                                  quantity: 1,
+                                },
+                              ]),
+                              label: hotSeller.name,
+                              value: hotSeller.special_price || hotSeller.price,
+                            });
+                            /**Gtm code start end */
+
                             removeCartItemSku && removeCartItemSku(hotSeller.sku);
                           }}
                         >

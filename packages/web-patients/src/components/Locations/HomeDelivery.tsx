@@ -1,43 +1,36 @@
-import { makeStyles } from '@material-ui/styles';
-import { Theme, FormControlLabel, CircularProgress, Popover, Typography } from '@material-ui/core';
-import React, { useEffect, useRef } from 'react';
-import moment from 'moment';
-import isNull from 'lodash/isNull';
-
 import {
-  AphRadio,
   AphButton,
   AphDialog,
-  AphDialogTitle,
   AphDialogClose,
+  AphDialogTitle,
+  AphRadio,
 } from '@aph/web-ui-components';
-import { useApolloClient } from 'react-apollo-hooks';
+import { CircularProgress, FormControlLabel, Popover, Theme, Typography } from '@material-ui/core';
+import { makeStyles } from '@material-ui/styles';
+import { Alerts } from 'components/Alerts/Alerts';
 import { AddNewAddress } from 'components/Locations/AddNewAddress';
 import { ViewAllAddress } from 'components/Locations/ViewAllAddress';
-import axios, { AxiosResponse, Canceler, AxiosError } from 'axios';
-import { Alerts } from 'components/Alerts/Alerts';
-import { UPDATE_PATIENT_ADDRESS } from 'graphql/address';
-import { useMutation } from 'react-apollo-hooks';
-import { GET_PATIENT_ADDRESSES_LIST } from 'graphql/address';
+import { MedicineCartItem, useShoppingCart } from 'components/MedicinesCartProvider';
+import { GET_PATIENT_ADDRESSES_LIST, UPDATE_PATIENT_ADDRESS } from 'graphql/address';
 import {
   GetPatientAddressList,
   GetPatientAddressListVariables,
   GetPatientAddressList_getPatientAddressList_addressList as Address,
 } from 'graphql/types/GetPatientAddressList';
-import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
-import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
-import { gtmTracking } from '../../gtmTracking';
-import {
-  pharmaStateCodeMapping,
-  getDiffInDays,
-  TAT_API_TIMEOUT_IN_MILLI_SEC,
-} from 'helpers/commonHelpers';
+import { pharmaStateCodeMapping } from 'helpers/commonHelpers';
 import {
   checkServiceAvailability,
   checkSkuAvailability,
   checkTatAvailability,
 } from 'helpers/MedicineApiCalls';
-import fetchUtil from 'helpers/fetch';
+import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
+import isNull from 'lodash/isNull';
+import moment from 'moment';
+import React, { useEffect, useRef } from 'react';
+import { useApolloClient, useMutation } from 'react-apollo-hooks';
+import { gtmTracking, dataLayerTracking } from '../../gtmTracking';
+import axios, { AxiosError } from 'axios';
+import { pharmaAvailabilityApiTracking, pharmaTatApiTracking } from 'webEngageTracking';
 
 export const formatAddress = (address: Address) => {
   const addressFormat = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');
@@ -106,6 +99,7 @@ const useStyles = makeStyles((theme: Theme) => {
     bottomActions: {
       display: 'flex',
       alignItems: 'center',
+
       '& button': {
         boxShadow: 'none',
         padding: 0,
@@ -133,6 +127,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 10,
       boxShadow: '0 -5px 20px 0 #ffffff',
       position: 'relative',
+
       '& button': {
         borderRadius: 10,
       },
@@ -214,23 +209,46 @@ const useStyles = makeStyles((theme: Theme) => {
     weAreSorry: {
       color: '#890000',
     },
+    dialogTitle: {
+      zIndex: 1,
+      '& h2': {
+        fontSize: 16,
+        fontWeight: 500,
+      },
+    },
+    dialogBox: {
+      '& >div': {
+        '& >div': {
+          maxWidth: 400,
+          margin: '30px auto 0',
+          [theme.breakpoints.down('xs')]: {
+            borderRadius: 0,
+            margin: 0,
+            height: '100vh',
+            maxHeight: 'inherit',
+            background: '#F7F8F5',
+          },
+        },
+      },
+    },
+    goBack: {
+      display: 'none',
+      [theme.breakpoints.down('xs')]: {
+        display: 'block',
+        position: 'absolute',
+        top: 10,
+        zIndex: 5,
+        boxShadow: 'none',
+      },
+    },
   };
 });
-
-const apiDetails = {
-  url: process.env.PHARMACY_MED_INFO_URL,
-  authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
-  deliveryUrl: process.env.PHARMACY_MED_DELIVERY_TIME,
-  deliveryAuthToken: process.env.PHARMACY_MED_DELIVERY_AUTH_TOKEN,
-  service_url: process.env.PHARMACY_SERVICE_AVAILABILITY,
-  deliveryHeaderTATUrl: process.env.PHARMACY_MED_DELIVERY_HEADER_TAT,
-};
 
 type HomeDeliveryProps = {
   setDeliveryTime: (deliveryTime: string) => void;
   deliveryTime: string;
   selectedZipCode: (zipCode: string) => void;
-  checkForPriceUpdate: (shopid: string, pincode: string, lat: string, lng: string) => void;
+  checkForPriceUpdate: (tatRes: any) => void;
   setLatitude: (latitude: string) => void;
   setLongitude: (longitude: string) => void;
   latitude: string;
@@ -258,11 +276,10 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
     setDeliveryAddresses,
     cartItems,
     setStoreAddressId,
-    medicineCartType,
-    removeCartItems,
     updateItemShippingStatus,
     changeCartTatStatus,
     pharmaAddressDetails,
+    removeCartItems,
   } = useShoppingCart();
   const { setDeliveryTime, deliveryTime } = props;
   const { isSigningIn } = useAuth();
@@ -366,6 +383,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
         let obj = cartItems.find((o) => o.sku === nonDeliverableSKU);
         arrSku.push(obj.sku);
       });
+      removeCartItems && removeCartItems(arrSku);
       setShowNonDeliverablePopup(false);
       setNonServicableSKU([]);
     }
@@ -418,13 +436,44 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
       .then((res: any) => {
         if (res && res.data && res.data.response && res.data.response.tat) {
           setDeliveryTime(res.data.response.tat);
-          props.checkForPriceUpdate(
-            res.data.response.storeCode,
-            paramObject.postalcode,
-            paramObject.lat,
-            paramObject.lng
-          );
+          props.checkForPriceUpdate(res.data.response);
           changeCartTatStatus && changeCartTatStatus(true);
+          /** Webengage Tracking */
+          const {
+            items,
+            lat,
+            lng,
+            ordertime,
+            pincode,
+            storeCode,
+            storeType,
+            tat,
+            tatU,
+          } = res.data.response;
+          const { exist, mrp, qty } = items[0];
+          const { sku, quantity, price, mou } = cartItems[0];
+          pharmaTatApiTracking({
+            source: 'Cart',
+            inputSku: sku,
+            inputQty: quantity,
+            inputLat: paramObject.lat,
+            inputLng: paramObject.lng,
+            inputPincode: paramObject.postalcode,
+            inputMrp: price,
+            itemsInCart: cartItems.length,
+            resExist: exist,
+            resMrp: mrp * parseInt(mou),
+            resQty: qty,
+            resLat: lat,
+            resLng: lng,
+            resOrderTime: ordertime,
+            resPincode: pincode,
+            resStorecode: storeCode,
+            resStoreType: storeType,
+            resTat: tat,
+            resTatU: tatU,
+          });
+          /** Webengage Tracking */
         }
       })
       .catch((e) => {
@@ -438,13 +487,27 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
       return item.sku;
     });
     setDeliveryLoading(true);
-    await checkSkuAvailability(lookUp.join(','), pharmaAddressDetails.pincode)
+    await checkSkuAvailability(lookUp.join(','), zipCode)
       .then((res: any) => {
         try {
           if (res && res.data && res.data.response) {
             setDeliveryLoading(false);
             setSelectingAddress(true);
             if (res.data.response.length > 0) {
+              /** Webengage Tracking */
+              const { exist, mrp, qty } = res.data.response[0];
+              const { sku, price, mou } = cartItems[0];
+              pharmaAvailabilityApiTracking({
+                source: 'Cart',
+                inputSku: sku,
+                inputPincode: zipCode,
+                inputMrp: price,
+                itemsInCart: cartItems.length,
+                resExist: exist,
+                resMrp: mrp * parseInt(mou),
+                resQty: qty,
+              });
+              /** Webengage Tracking */
               const tatResult = res.data.response;
               const nonDeliverySKUArr = tatResult
                 .filter((item: any) => !item.exist)
@@ -504,7 +567,11 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
   const updateAddressMutation = useMutation(UPDATE_PATIENT_ADDRESS);
 
   const checkLatLongStateCodeAvailability = (address: Address) => {
-    const googleMapApi = `https://maps.googleapis.com/maps/api/geocode/json?address=${address.zipcode}&components=country:in&key=${process.env.GOOGLE_API_KEY}`;
+    const pincodeAndAddress = [address.zipcode, address.addressLine1]
+      .filter((v) => (v || '').trim())
+      .join(',');
+
+    const googleMapApi = `https://maps.googleapis.com/maps/api/geocode/json?address=pincode:${pincodeAndAddress}&components=country:in&key=${process.env.GOOGLE_API_KEY}`;
     if (!address.latitude || !address.longitude || !address.stateCode) {
       // get lat long
       if (address.zipcode && address.zipcode.length === 6) {
@@ -622,6 +689,15 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
                                   label: 'Address Selected',
                                 });
                                 /**Gtm code End  */
+
+                                /**Gtm code start start */
+                                dataLayerTracking({
+                                  event: 'Address Selected',
+                                  PINCode: address.zipcode,
+                                  City: address.city,
+                                });
+                                /**Gtm code start end */
+
                                 checkLatLongStateCodeAvailability(address);
                               } else {
                                 setShowPlaceNotFoundPopup(true);
@@ -675,9 +751,16 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
         </div>
       )}
 
-      <AphDialog open={isAddAddressDialogOpen} maxWidth="sm">
+      <AphDialog open={isAddAddressDialogOpen} className={classes.dialogBox}>
         <AphDialogClose onClick={() => setIsAddAddressDialogOpen(false)} title={'Close'} />
-        <AphDialogTitle>Add New Address</AphDialogTitle>
+        <AphButton
+          onClick={() => setIsAddAddressDialogOpen(false)}
+          title={'Close'}
+          className={classes.goBack}
+        >
+          <img src={require('images/ic_back.svg')} alt="Back Button" />
+        </AphButton>
+        <AphDialogTitle className={classes.dialogTitle}>Add New Address</AphDialogTitle>
         <AddNewAddress
           setIsAddAddressDialogOpen={setIsAddAddressDialogOpen}
           checkServiceAvailability={checkServiceAvailabilityCheck}

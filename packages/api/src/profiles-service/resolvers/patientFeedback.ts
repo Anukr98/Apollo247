@@ -115,7 +115,6 @@ const getPatientFeedback: Resolver<
 > = async (parent, args, { profilesDb, consultsDb }) => {
   const patientFeedbackRepo = profilesDb.getCustomRepository(PatientFeedbackRepository);
   const feedback = await patientFeedbackRepo.getFeedbackRecord(args.patientId, args.transactionId);
-  console.log(feedback);
   return { feedback };
 };
 

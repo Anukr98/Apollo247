@@ -43,7 +43,6 @@ const getDoctorAvailableSlots: Resolver<
   previousDate = addDays(DoctorAvailabilityInput.availableDate, -1);
   const checkStart = `${previousDate.toDateString()} 18:30:00`;
   const checkEnd = `${DoctorAvailabilityInput.availableDate.toDateString()} 18:30:00`;
-  console.log(checkStart, checkEnd, 'check start end');
   let weekDay = format(previousDate, 'EEEE').toUpperCase();
   let timeSlots = await consultHourRep.getConsultHours(DoctorAvailabilityInput.doctorId, weekDay);
   weekDay = format(DoctorAvailabilityInput.availableDate, 'EEEE').toUpperCase();
@@ -57,7 +56,6 @@ const getDoctorAvailableSlots: Resolver<
   timeSlots = timeSlots.concat(timeSlotsNext);
   let availableSlots: string[] = [];
   //let availableSlotsReturn: string[] = [];
-  console.log(timeSlots, 'time slots');
   let rowCount = 0;
   if (timeSlots && timeSlots.length > 0) {
     timeSlots.map((timeSlot) => {
@@ -65,7 +63,6 @@ const getDoctorAvailableSlots: Resolver<
       const ed = `${DoctorAvailabilityInput.availableDate.toDateString()} ${timeSlot.endTime.toString()}`;
       let consultStartTime = new Date(st);
       let consultEndTime = new Date(ed);
-      console.log('consults timings', consultStartTime, consultEndTime);
 
       if (consultEndTime < consultStartTime) {
         st = `${previousDate.toDateString()} ${timeSlot.startTime.toString()}`;
@@ -87,7 +84,6 @@ const getDoctorAvailableSlots: Resolver<
       } else {
         slotsCount = Math.floor(slotsCount);
       }
-      console.log(slotsCount, 'slot count', differenceInMinutes(consultEndTime, consultStartTime));
       const stTime = consultStartTime.getHours() + ':' + consultStartTime.getMinutes();
       let startTime = new Date(previousDate.toDateString() + ' ' + stTime);
       if (prevDaySlots == 0) {
@@ -119,12 +115,6 @@ const getDoctorAvailableSlots: Resolver<
           const endStr = ':00.000Z';
           const generatedSlot = `${startDateStr}T${stTimeHours}:${stTimeMins}${endStr}`;
           const timeWithBuffer = addMinutes(new Date(), timeSlot.consultBuffer);
-          console.log(
-            new Date(generatedSlot),
-            new Date(),
-            new Date(generatedSlot) > timeWithBuffer,
-            ' dates comparision'
-          );
           if (new Date(generatedSlot) > timeWithBuffer) {
             if (
               new Date(generatedSlot) >= new Date(checkStart) &&
@@ -137,10 +127,8 @@ const getDoctorAvailableSlots: Resolver<
           }
           return `${startDateStr}T${stTimeHours}:${stTimeMins}${endStr}`;
         });
-      console.log(availableSlots, 'avail slots');
       const lastSlot = new Date(availableSlots[availableSlots.length - 1]);
       const lastMins = Math.abs(differenceInMinutes(lastSlot, consultEndTime));
-      console.log(lastMins, 'last mins', lastSlot);
       if (lastMins < timeSlot.consultDuration) {
         availableSlots.pop();
       }

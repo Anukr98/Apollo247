@@ -15,6 +15,19 @@ export interface getDoctorDetailsById_getDoctorDetailsById_specialty {
   userFriendlyNomenclature: string | null;
 }
 
+export interface getDoctorDetailsById_getDoctorDetailsById_doctorSecretary_secretary {
+  __typename: "Secretary";
+  id: string;
+  name: string;
+  mobileNumber: string;
+  isActive: boolean;
+}
+
+export interface getDoctorDetailsById_getDoctorDetailsById_doctorSecretary {
+  __typename: "DoctorSecretaryDetails";
+  secretary: getDoctorDetailsById_getDoctorDetailsById_doctorSecretary_secretary | null;
+}
+
 export interface getDoctorDetailsById_getDoctorDetailsById_doctorHospital_facility {
   __typename: "Facility";
   id: string;
@@ -123,6 +136,7 @@ export interface getDoctorDetailsById_getDoctorDetailsById {
   registrationNumber: string;
   onlineConsultationFees: string;
   physicalConsultationFees: string;
+  doctorSecretary: getDoctorDetailsById_getDoctorDetailsById_doctorSecretary | null;
   doctorHospital: getDoctorDetailsById_getDoctorDetailsById_doctorHospital[];
   starTeam: (getDoctorDetailsById_getDoctorDetailsById_starTeam | null)[] | null;
   consultHours: (getDoctorDetailsById_getDoctorDetailsById_consultHours | null)[] | null;

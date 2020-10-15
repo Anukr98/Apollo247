@@ -133,3 +133,5 @@ export const MedicineSearch: React.FC = (props: any) => {
     </div>
   );
 };
+
+export default MedicineSearch;

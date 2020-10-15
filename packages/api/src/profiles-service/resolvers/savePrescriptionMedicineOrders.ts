@@ -214,7 +214,10 @@ const SavePrescriptionMedicineOrder: Resolver<
     }
     let patientAge = 30;
     if (patientDetails.dateOfBirth && patientDetails.dateOfBirth != null) {
-      patientAge = Math.abs(differenceInYears(new Date(), patientDetails.dateOfBirth));
+      patientAge = Math.max(
+        0,
+        Math.floor(differenceInYears(new Date(), patientDetails.dateOfBirth))
+      );
     }
     const medicineOrderPharma = {
       tpdetails: {
@@ -248,8 +251,6 @@ const SavePrescriptionMedicineOrder: Resolver<
         PrescUrl: orderPrescriptionUrl,
       },
     };
-
-    console.log('prescmedicineOrderPharma', medicineOrderPharma);
     const placeOrderUrl = process.env.PHARMACY_MED_PLACE_ORDERS
       ? process.env.PHARMACY_MED_PLACE_ORDERS
       : '';
@@ -293,7 +294,6 @@ const SavePrescriptionMedicineOrder: Resolver<
       ''
     );
     const orderResp: PharmaResponse = JSON.parse(textRes);
-    console.log(orderResp, 'respp', orderResp.ordersResult.Message);
     if (orderResp.ordersResult.Status === false) {
       errorCode = -1;
       errorMessage = orderResp.ordersResult.Message;
@@ -330,15 +330,15 @@ const SavePrescriptionMedicineOrder: Resolver<
 
         const toEmailId =
           process.env.NODE_ENV == 'dev' ||
-            process.env.NODE_ENV == 'development' ||
-            process.env.NODE_ENV == 'local'
+          process.env.NODE_ENV == 'development' ||
+          process.env.NODE_ENV == 'local'
             ? ApiConstants.MEDICINE_SUPPORT_EMAILID
             : ApiConstants.MEDICINE_SUPPORT_EMAILID_PRODUCTION;
 
         let ccEmailIds =
           process.env.NODE_ENV == 'dev' ||
-            process.env.NODE_ENV == 'development' ||
-            process.env.NODE_ENV == 'local'
+          process.env.NODE_ENV == 'development' ||
+          process.env.NODE_ENV == 'local'
             ? ''
             : <string>ApiConstants.MEDICINE_SUPPORT_CC_EMAILID_PRODUCTION;
 

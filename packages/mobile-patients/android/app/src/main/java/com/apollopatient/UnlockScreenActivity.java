@@ -16,6 +16,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -65,8 +66,10 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        pnConfiguration.setSubscribeKey("sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b");
-        pnConfiguration.setPublishKey("pub-c-75e6dc17-2d81-4969-8410-397064dae70e");
+        //pubkey=pub-c-75e6dc17-2d81-4969-8410-397064dae70e
+        //subkey=sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b
+        pnConfiguration.setSubscribeKey("sub-c-517dafbc-d955-11e9-aa3a-6edd521294c5");
+        pnConfiguration.setPublishKey("pub-c-e275fde3-09e1-44dd-bc32-5c3d04c3b2ef");
         pnConfiguration.setSecure(true);
 
         mLocalBroadcastManager = LocalBroadcastManager.getInstance(this);
@@ -92,8 +95,12 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
         //ringtoneManager end
 
         if(notifMessageType.equals(incomingCallStart)){
+            if(!Settings.canDrawOverlays(this)){
+                return;
+            }else{
                 ringtone.setLooping(true);
                 ringtone.play();
+            }
         }
         else if(notifMessageType.equals(incomingCallDisconnect)){
                 finish();
@@ -120,18 +127,15 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
                 params.putString("appointment_id",appointment_id);
                 params.putString("call_type",incoming_call_type);
 
-                if(isAppRuning){
-                    Intent intent = new Intent(UnlockScreenActivity.this, MainActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-                    intent.putExtra("APPOINTMENT_ID",appointment_id);
-                    intent.putExtra("CALL_TYPE",incoming_call_type);
+                
+                    String deeplinkUri="apollopatients://DoctorCall?"+appointment_id+'+'+incoming_call_type;
+                    Uri uri = Uri.parse(deeplinkUri);
+                    Log.e("deeplinkUri", uri.toString());
+                    Intent intent = new Intent(Intent.ACTION_VIEW, uri);
                     finish();
                     startActivity(intent);
-                }
-            else{
-                    sendEvent(reactContext, "accept", params);
-                    finish();
-                }
+                
+         
             }
         });
 

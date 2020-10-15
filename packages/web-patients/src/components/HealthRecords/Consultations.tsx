@@ -18,6 +18,8 @@ import { getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescri
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import { ToplineReport } from 'components/HealthRecords/ToplineReport';
 import { HEALTH_RECORDS_NO_DATA_FOUND, HEALTH_RECORDS_NOTE } from 'helpers/commonHelpers';
+import { phrDownloadingPrescriptionFileTracking } from '../../webEngageTracking';
+import { Route } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -130,7 +132,9 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     addReportMobile: {
-      display: 'none',
+      '& img': {
+        verticalAlign: 'middle',
+      },
       [theme.breakpoints.up('sm')]: {
         display: 'none',
       },
@@ -313,7 +317,7 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
       borderRadius: 10,
       marginBottom: 12,
-      padding: 14,
+      padding: '14px 14px 14px 18px',
       display: 'flex',
       '&:before': {
         display: 'none',
@@ -367,11 +371,12 @@ type ConsultationProps = {
   error: boolean;
   consultsData: any;
   allConsultsData: any;
+  deleteReport: (id: string, type: string) => void;
 };
 
 export const Consultations: React.FC<ConsultationProps> = (props) => {
   const classes = useStyles({});
-  const { loading, error, allConsultsData } = props;
+  const { loading, error, allConsultsData, deleteReport } = props;
   const isMediumScreen = useMediaQuery('(min-width:768px) and (max-width:990px)');
   const isSmallScreen = useMediaQuery('(max-width:767px)');
   const [filter, setFilter] = useState<string>('ALL');
@@ -386,8 +391,14 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
         filteredConsults =
           allConsultsData &&
           allConsultsData.filter((consult: any) => {
-            if (consult && consult.patientId) {
-              return consult.appointmentType === filter;
+            if (filter === 'PHYSICAL') {
+              return (
+                consult.source === '247self' ||
+                consult.source === 'self' ||
+                (consult && consult.patientId && consult.appointmentType === filter)
+              );
+            } else {
+              return consult && consult.patientId && consult.appointmentType === filter;
             }
           });
       }
@@ -451,7 +462,10 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
       <div className={classes.leftSection}>
         <div className={classes.noteText}>{HEALTH_RECORDS_NOTE}</div>
         <div className={classes.tabsWrapper}>
-          <Link className={classes.addReportMobile} to={clientRoutes.addRecords()}>
+          <Link
+            className={classes.addReportMobile}
+            to={clientRoutes.addHealthRecords('prescription')}
+          >
             <img src={require('images/ic_addfile.svg')} />
           </Link>
           <div className={classes.topFilters}>
@@ -514,6 +528,7 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
                         consult={consult}
                         isActiveCard={activeConsult === consult}
                         downloadPrescription={downloadPrescription}
+                        deleteReport={deleteReport}
                       />
                     </div>
                   )
@@ -526,11 +541,21 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
             </div>
           )}
         </Scrollbars>
-        <div className={classes.addReportActions}>
-          <Link to={clientRoutes.addRecords()} className={classes.addReport}>
-            Add a Report
-          </Link>
-        </div>
+        <Route
+          render={({ history }) => (
+            <div className={classes.addReportActions}>
+              <AphButton
+                color="primary"
+                onClick={() => {
+                  history.push(clientRoutes.addHealthRecords('prescription'));
+                }}
+                fullWidth
+              >
+                Add Record
+              </AphButton>
+            </div>
+          )}
+        />
       </div>
       <div
         className={`${classes.rightSection} ${
@@ -555,7 +580,13 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
               <div className={classes.headerActions}>
                 {/* <AphButton>View Consult</AphButton>  */}
                 {activeConsult && activeConsult.patientId && (
-                  <div className={classes.downloadIcon} onClick={() => downloadPrescription()}>
+                  <div
+                    className={classes.downloadIcon}
+                    onClick={() => {
+                      phrDownloadingPrescriptionFileTracking('Prescription');
+                      downloadPrescription();
+                    }}
+                  >
                     <img src={require('images/ic_download.svg')} alt="" />
                   </div>
                 )}
@@ -599,17 +630,18 @@ export const Consultations: React.FC<ConsultationProps> = (props) => {
                       </div>
                       <div className={classes.reportsDetails}>
                         <label>Referring Doctor</label>
-                        <p>{!!activeConsult.prescribedBy ? activeConsult.prescribedBy : '-'}</p>
+                        <p>{activeConsult.prescribedBy ? `${activeConsult.prescribedBy}` : '-'}</p>
                       </div>
                     </div>
                     {(activeConsult.observations || activeConsult.additionalNotes) && (
                       <ToplineReport activeData={activeConsult} />
                     )}
-                    {activeConsult.fileUrl &&
+                    {activeConsult &&
+                      activeConsult.fileUrl &&
                       activeConsult.fileUrl.length > 0 &&
                       (activeConsult.fileUrl.includes('.pdf') ? (
                         <div className={classes.prescriptionImage}>
-                          <a href={activeConsult.prescriptionImageUrl}>Download File</a>
+                          <a href={activeConsult.fileUrl}>Download File</a>
                         </div>
                       ) : (
                         <div className={classes.prescriptionImage}>

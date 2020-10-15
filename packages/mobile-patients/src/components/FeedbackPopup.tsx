@@ -179,7 +179,12 @@ export const FeedbackPopup: React.FC<FeedbackPopupProps> = (props) => {
                 />
               ))}
               <Spearator style={{ marginTop: 19.8 }} />
-              <View style={{ marginTop: 23.8 }}>
+              <View
+                style={[
+                  { marginTop: 23.8 },
+                  props.type === FEEDBACKTYPE.CONSULT ? { marginBottom: 4 } : {},
+                ]}
+              >
                 <Text style={theme.viewStyles.text('M', 14, '#02475b')}>
                   {'What can be improved?'}
                 </Text>
@@ -194,23 +199,29 @@ export const FeedbackPopup: React.FC<FeedbackPopupProps> = (props) => {
                 />
               </View>
             </View>
-            <View
-              style={{
-                flex: 1,
-                marginTop: 40,
-                marginBottom: 20,
-                alignItems: 'center',
-              }}
-            >
-              <Button
-                disabled={!ratingOption}
-                onPress={onSubmitFeedBack}
-                title={'SUBMIT FEEDBACK'}
-                style={{ width: '66.66%' }}
-              />
-            </View>
+            {props.type === FEEDBACKTYPE.CONSULT ? null : renderSubmitButton()}
           </>
         )}
+      </View>
+    );
+  };
+
+  const renderSubmitButton = () => {
+    return (
+      <View
+        style={{
+          flex: 1,
+          marginTop: props.type === FEEDBACKTYPE.CONSULT ? 20 : 40,
+          marginBottom: props.type === FEEDBACKTYPE.CONSULT ? 60 : 20,
+          alignItems: 'center',
+        }}
+      >
+        <Button
+          disabled={!ratingOption}
+          onPress={onSubmitFeedBack}
+          title={'SUBMIT FEEDBACK'}
+          style={{ width: '66.66%' }}
+        />
       </View>
     );
   };
@@ -223,6 +234,7 @@ export const FeedbackPopup: React.FC<FeedbackPopupProps> = (props) => {
       style={[{ elevation: 999 }, props.containerStyle]}
     >
       <KeyboardAwareScrollView bounces={false}>{renderRatingContent()}</KeyboardAwareScrollView>
+      {props.type === FEEDBACKTYPE.CONSULT ? renderSubmitButton() : null}
     </BottomPopUp>
   );
 };

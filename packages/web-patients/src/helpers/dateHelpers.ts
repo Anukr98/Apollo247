@@ -1,4 +1,4 @@
-import { getTime } from 'date-fns/esm';
+import getTime from 'date-fns/esm/getTime';
 
 export const getIstTimestamp = (today: Date, slotTime: string) => {
   const hhmm = slotTime.split(':');

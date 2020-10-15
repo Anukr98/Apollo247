@@ -9,7 +9,12 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { log } from 'customWinstonLogger';
 import { debugLog } from 'customWinstonLogger';
-import { sendDoctorNotificationWhatsapp } from 'notifications-service/handlers';
+import {
+  sendDoctorNotificationWhatsapp,
+  isNotificationAllowed,
+} from 'notifications-service/handlers';
+import { PatientDeviceTokenRepository } from 'profiles-service/repositories/patientDeviceTokenRepository';
+import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 
 export const loginTypeDefs = gql`
   enum LOGIN_TYPE {
@@ -32,10 +37,17 @@ export const loginTypeDefs = gql`
   type testSMSResult {
     send: Boolean
   }
+  type LogoutResult{
+    isError: Boolean
+    response: String
+  }
   extend type Query {
     login(mobileNumber: String!, loginType: LOGIN_TYPE!, hashCode: String): LoginResult!
     resendOtp(mobileNumber: String!, id: String!, loginType: LOGIN_TYPE!): LoginResult!
     testSendSMS(mobileNumber: String!): testSMSResult!
+  }
+  extend type Mutation {
+    logout(mobileNumber: String!): LogoutResult!
   }
 `;
 
@@ -177,7 +189,7 @@ const resendOtp: Resolver<
     otp,
     hashCode,
     logger: resendLogger,
-    otpSaveResponse,
+    id: otpSaveResponse.id,
   });
 };
 type testSMSResult = {
@@ -195,8 +207,6 @@ const testSendSMS: Resolver<
 
   //call sms gateway service to send the OTP here
   const smsResult = await testSMS(mobileNumber, otp);
-
-  console.log(smsResult.status, smsResult);
   if (smsResult.status != 'OK') {
     return {
       send: false,
@@ -232,6 +242,10 @@ const sendSMS = async (mobileNumber: string, otp: string, hashCode: string, mess
   //logging api call data here
   log('smsOtpAPILogger', `OPT_API_CALL: ${apiUrl}`, 'sendSMS()->API_CALL_STARTING', '', '');
 
+  const isWhitelisted = await isNotificationAllowed(mobileNumber);
+  if (!isWhitelisted) {
+    return;
+  }
   const smsResponse = await fetch(apiUrl)
     .then((res) => res.json())
     .catch((error) => {
@@ -251,6 +265,13 @@ const sendSMS = async (mobileNumber: string, otp: string, hashCode: string, mess
   return smsResponse;
 };
 const testSMS = async (mobileNumber: string, otp: string) => {
+  const isWhitelisted = await isNotificationAllowed(mobileNumber);
+  if (!isWhitelisted) {
+    return {
+      status: null,
+    };
+  }
+
   const apiBaseUrl = process.env.KALEYRA_OTP_API_BASE_URL;
   const apiUrlWithKey = `${apiBaseUrl}?api_key=${process.env.KALEYRA_OTP_API_KEY}`;
 
@@ -276,39 +297,60 @@ const testSMS = async (mobileNumber: string, otp: string) => {
 
   return smsResponse;
 };
-export const sendNotificationSMS = async (mobileNumber: string, message: string) => {
-  const apiBaseUrl = process.env.KALEYRA_OTP_API_BASE_URL;
-  const apiUrlWithKey = `${apiBaseUrl}?api_key=${process.env.KALEYRA_OTP_API_KEY}`;
 
-  const queryParams = `&method=${ApiConstants.KALEYRA_OTP_SMS_METHOD}&message=${message}&to=${mobileNumber}&sender=${ApiConstants.KALEYRA_OTP_SENDER}`;
-
-  const apiUrl = `${apiUrlWithKey}${queryParams}`;
-
-  //logging api call data here
-  log('smsOtpAPILogger', `OPT_API_CALL: ${apiUrl}`, 'sendSMS()->API_CALL_STARTING', '', '');
-
-  const smsResponse = await fetch(apiUrl)
-    .then((res) => res.json())
-    .catch((error) => {
-      //logging error here
-      log('smsOtpAPILogger', `API_CALL_ERROR`, 'sendSMS()->CATCH_BLOCK', '', JSON.stringify(error));
-      throw new AphError(AphErrorMessages.CREATE_OTP_ERROR);
-    });
-  return smsResponse;
+const logout: Resolver<
+  null,
+  { mobileNumber: string },
+  ProfilesServiceContext,
+  {
+    isError: boolean;
+    response: string;
+  }
+> = async (parent, args, { profilesDb }) => {
+  try {
+    const profilesRepository = profilesDb.getCustomRepository(PatientRepository);
+    const profiles = await profilesRepository.getIdsByMobileNumber(args.mobileNumber);
+    if (!profiles.length) {
+      throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
+    }
+    for (let index = 0; index < profiles.length; index++) {
+      const devTokenRepository = profilesDb.getCustomRepository(PatientDeviceTokenRepository);
+      await devTokenRepository.deleteDeviceTokenWhere({ patient: profiles[index] });
+    }
+    return { isError: false, response: "Tokens Deleted Successfully" };
+  } catch (err) {
+    console.error("error in deleting tokens > ", err);
+    return { isError: true, response: "Tokens Not Deleted" };
+  }
 };
+
 export const loginResolvers = {
   Query: {
     login,
     resendOtp,
     testSendSMS,
   },
+  Mutation: {
+    logout
+  }
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const sendMessage = async (args: any) => {
   const { loginType, mobileNumber, otp, hashCode, logger, id, doctorsDb } = args;
+
+  const isWhitelisted = await isNotificationAllowed(mobileNumber);
+  if (!isWhitelisted) {
+    return {
+      status: true,
+      loginId: id,
+      message: ApiConstants.OTP_NON_WHITELISTED_NUMBER.toString(),
+    };
+  }
+
   logger('SEND_SMS___START');
   let textMessage;
+
   //let smsResult;
   if (loginType == LOGIN_TYPE.DOCTOR) {
     //const whatsAppMessage = ApiConstants.DOCTOR_WHATSAPP_OTP.replace('{0}', otp);

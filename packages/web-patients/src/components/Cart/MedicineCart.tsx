@@ -19,7 +19,6 @@ import {
 } from '@aph/web-ui-components';
 import { HomeDelivery } from 'components/Locations/HomeDelivery';
 import { StorePickUp } from 'components/Locations/StorePickUp';
-import axios from 'axios';
 import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
 import {
   useShoppingCart,
@@ -30,6 +29,7 @@ import {
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { getDeviceType, getCouponByUserMobileNumber } from 'helpers/commonHelpers';
+import { ConfigOneApolloData } from 'strings/AppConfig';
 import { ApplyCoupon } from 'components/Cart/ApplyCoupon';
 import _compact from 'lodash/compact';
 import _find from 'lodash/find';
@@ -69,11 +69,12 @@ import {
   pharmacyProceedToPayTracking,
   pharmacySubmitPrescTracking,
   pharmacyUploadPresClickTracking,
+  pharmaTatApiTracking,
 } from '../../webEngageTracking';
 import { ChennaiCheckout, submitFormType } from 'components/Cart/ChennaiCheckout';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
 import { useParams } from 'hooks/routerHooks';
-import { gtmTracking, _obTracking } from '../../gtmTracking';
+import { gtmTracking, _obTracking, dataLayerTracking } from '../../gtmTracking';
 import { validatePharmaCoupon_validatePharmaCoupon } from 'graphql/types/validatePharmaCoupon';
 import { Route } from 'react-router-dom';
 import { getItemSpecialPrice } from '../PayMedicine';
@@ -81,6 +82,7 @@ import { getTypeOfProduct } from 'helpers/commonHelpers';
 import _lowerCase from 'lodash/lowerCase';
 import fetchUtil from 'helpers/fetch';
 import { checkTatAvailability } from 'helpers/MedicineApiCalls';
+import axios from 'axios';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -640,6 +642,41 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    medicinesAddmore: {
+      fontWeight: 500,
+      fontSize: 14,
+      lineHeight: '20px',
+      padding: 10,
+      background: '#F7F8F5',
+      boxShadow: '0px 5px 20px rgba(128, 128, 128, 0.3)',
+      borderRadius: 5,
+      margin: '20px 15px 10px 20px',
+      '& img': {
+        position: 'relative',
+        top: 3,
+      },
+    },
+    addmoreAmount: {
+      color: '#FC9916',
+    },
+    nudgeAddMore: {
+      color: '#0087BA',
+      paddingLeft: 5,
+    },
+    oneApolloDetails: {
+      display: 'flex',
+      alignItems: 'flex-start',
+      padding: '10px 0 0',
+      '& img': {
+        margin: '0 10px 0 0',
+      },
+      '& p': {
+        fontSize: 13,
+        fontWeight: 500,
+        color: '#666666',
+        lineHeight: '17px',
+      },
+    },
   };
 });
 
@@ -663,6 +700,7 @@ export interface CartProduct {
   quantity: number;
   discountAmt: number;
   onMrp: boolean;
+  couponFree: number;
 }
 
 export const MedicineCart: React.FC = (props) => {
@@ -690,6 +728,7 @@ export const MedicineCart: React.FC = (props) => {
     setCartItems,
     removeFreeCartItems,
     addCartItems,
+    updateCartItemQty,
   } = useShoppingCart();
 
   const addToCartRef = useRef(null);
@@ -724,16 +763,29 @@ export const MedicineCart: React.FC = (props) => {
   const [validityStatus, setValidityStatus] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [shopId, setShopId] = useState<string>('');
+  const [tatType, setTatType] = useState<string>('');
   const [couponDiscount, setCouponDiscount] = useState<number>(0);
   const [latitude, setLatitude] = React.useState<string>('');
   const [longitude, setLongitude] = React.useState<string>('');
+  const [quantityUpdated, setQuantityUpdated] = React.useState<boolean>(true);
+
+  const userSubscriptions = JSON.parse(localStorage.getItem('userSubscriptions'));
+  var packageId: string;
+  if (userSubscriptions && userSubscriptions[0] && userSubscriptions[0].status == 'ACTIVE') {
+    packageId = `${userSubscriptions[0].group_plan.group.name}:${userSubscriptions[0].group_plan.plan_id}`;
+  }
+  const freeDelivery =
+    userSubscriptions &&
+    userSubscriptions[0] &&
+    userSubscriptions[0].status == 'ACTIVE' &&
+    userSubscriptions[0].group_plan &&
+    userSubscriptions[0].group_plan.name == 'PLATINUM+ PLAN';
 
   const apiDetails = {
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
     bulk_product_info_url: process.env.PHARMACY_MED_BULK_PRODUCT_INFO_URL,
     priceUpdateToken: process.env.PHARMACY_MED_DELIVERY_AUTH_TOKEN,
     getInventoryUrl: process.env.PHARMACY_GET_STORE_INVENTORY,
-    url: process.env.PHARMACY_MED_PROD_DETAIL_URL,
   };
 
   useEffect(() => {
@@ -763,9 +815,72 @@ export const MedicineCart: React.FC = (props) => {
     }
   }, [showOrderPopup]);
 
-  const checkForPriceUpdate = (sId: string, pincode: string, lat: string, lng: string) => {
-    setShopId(sId);
-    checkForCartChanges(pincode, lat, lng);
+  useEffect(() => {
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: 'Pharmacy Cart Page',
+      pageLOB: 'Pharmacy',
+      pageType: 'Cart Page',
+      cartproductlist: JSON.stringify(cartItems),
+    });
+    /**Gtm code start end */
+  }, []);
+
+  const checkForPriceUpdate = (tatRes: any) => {
+    setShopId(tatRes.storeCode);
+    setTatType(tatRes.storeType);
+
+    // checkForCartChanges(pincode, lat, lng);
+    checkCartChangesUtil(tatRes.items);
+  };
+
+  const checkCartChangesUtil = (updatedCartItems: any) => {
+    cartItems.map((item, index) => {
+      const itemToBeMatched = _find(updatedCartItems, { sku: item.sku });
+      const storeItemPrice =
+        (itemToBeMatched.mrp && Number((itemToBeMatched.mrp * Number(item.mou || 1)).toFixed(2))) ||
+        0;
+
+      if (
+        itemToBeMatched.mrp !== 0 &&
+        Number((itemToBeMatched.mrp * Number(item.mou || 1)).toFixed(2)).toFixed(2) !==
+          Number(item.price).toFixed(2) &&
+        !isDiffLessOrGreaterThan25Percent(item.price, storeItemPrice)
+      ) {
+        let newItem = { ...item };
+        const isDiff = storeItemPrice
+          ? isDiffLessOrGreaterThan25Percent(item.price, storeItemPrice)
+          : true;
+        const storeItemSP =
+          !isDiff && item.special_price
+            ? getSpecialPriceFromRelativePrices(
+                item.price,
+                Number(item.special_price),
+                itemToBeMatched.mrp * Number(item.mou || 1)
+              )
+            : item.special_price;
+        newItem['price'] = isDiff ? item.price : storeItemPrice;
+        if (item.special_price) {
+          // get new special price
+          newItem['special_price'] = isDiff ? item.special_price : storeItemSP;
+        }
+
+        /* the below commented code are the price difference
+          values which could be used in the near future */
+        const changedDetailObj = {
+          // pDiff: item.price - updatedCartItems[index].price,
+          availabilityChange: true,
+          // splPDiff: item.special_price
+          //   ? Number(item.special_price) - Number(updatedCartItems[index].special_price)
+          //   : 0,
+        };
+        const updatedObj = Object.assign({}, item, changedDetailObj);
+        updateCartItemPrice(newItem);
+        setPriceDifferencePopover(true);
+      }
+    });
   };
 
   const getSpecialPriceFromRelativePrices = (
@@ -781,57 +896,52 @@ export const MedicineCart: React.FC = (props) => {
   };
   const checkForCartChanges = async (pincode: string, lat: string, lng: string) => {
     const items = cartItems.map((item: MedicineCartItem) => {
-      return { sku: item.sku, qty: item.quantity };
+      return { sku: item.sku, qty: item.quantity, couponFree: Number(item.couponFree) };
     });
     return await checkTatAvailability(items, pincode, lat, lng)
       .then((res: any) => {
-        const updatedCartItems = res && res.data && res.data.response && res.data.response.items;
-        cartItems.map((item, index) => {
-          const itemToBeMatched = _find(updatedCartItems, { sku: item.sku });
-          const storeItemPrice =
-            (itemToBeMatched.mrp &&
-              Number((itemToBeMatched.mrp * Number(item.mou || 1)).toFixed(2))) ||
-            0;
-
-          if (
-            itemToBeMatched.mrp !== 0 &&
-            Number((itemToBeMatched.mrp * Number(item.mou || 1)).toFixed(2)).toFixed(2) !==
-              Number(item.price).toFixed(2) &&
-            !isDiffLessOrGreaterThan25Percent(item.price, storeItemPrice)
-          ) {
-            let newItem = { ...item };
-            const isDiff = storeItemPrice
-              ? isDiffLessOrGreaterThan25Percent(item.price, storeItemPrice)
-              : true;
-            const storeItemSP =
-              !isDiff && item.special_price
-                ? getSpecialPriceFromRelativePrices(
-                    item.price,
-                    Number(item.special_price),
-                    itemToBeMatched.mrp * Number(item.mou || 1)
-                  )
-                : item.special_price;
-            newItem['price'] = isDiff ? item.price : storeItemPrice;
-            if (item.special_price) {
-              // get new special price
-              newItem['special_price'] = isDiff ? item.special_price : storeItemSP;
-            }
-
-            /* the below commented code are the price difference
-              values which could be used in the near future */
-            const changedDetailObj = {
-              // pDiff: item.price - updatedCartItems[index].price,
-              availabilityChange: true,
-              // splPDiff: item.special_price
-              //   ? Number(item.special_price) - Number(updatedCartItems[index].special_price)
-              //   : 0,
-            };
-            const updatedObj = Object.assign({}, item, changedDetailObj);
-            updateCartItemPrice(newItem);
-            setPriceDifferencePopover(true);
-          }
-        });
-        return true;
+        if (res && res.data && res.data.response) {
+          const updatedCartItems = res.data.response.items;
+          //call the fxn here
+          checkCartChangesUtil(updatedCartItems);
+          /** Webengage Tracking */
+          const {
+            items,
+            lat,
+            lng,
+            ordertime,
+            pincode,
+            storeCode,
+            storeType,
+            tat,
+            tatU,
+          } = res.data.response;
+          const { exist, mrp, qty } = items[0];
+          const { sku, quantity, price, mou } = cartItems[0];
+          pharmaTatApiTracking({
+            source: 'Cart',
+            inputSku: sku,
+            inputQty: quantity,
+            inputLat: lat,
+            inputLng: lng,
+            inputPincode: pincode,
+            inputMrp: price,
+            itemsInCart: cartItems.length,
+            resExist: exist,
+            resMrp: mrp * parseInt(mou),
+            resQty: qty,
+            resLat: lat,
+            resLng: lng,
+            resOrderTime: ordertime,
+            resPincode: pincode,
+            resStorecode: storeCode,
+            resStoreType: storeType,
+            resTat: tat,
+            resTatU: tatU,
+          });
+          /** Webengage Tracking */
+          return true;
+        }
       })
       .catch((e) => {
         console.error(e);
@@ -871,7 +981,18 @@ export const MedicineCart: React.FC = (props) => {
     });
     return sum;
   };
+  // const getCouponDiscountTotal = () => {
+  //   let sum = 0;
+  //   cartItems.forEach((item) => {
+  //     if (item.special_price === 0) {
+  //       sum += Number(item.price) * item.quantity;
+  //     }
+  //   });
+  //   return sum;
+  // };
+
   const mrpTotal = getMRPTotal();
+  // const couponDiscountTotal = getCouponDiscountTotal();
   let productDiscount = mrpTotal - cartTotal;
   // below variable is for calculating delivery charges after applying coupon discount
   const modifiedAmountForCharges =
@@ -880,12 +1001,13 @@ export const MedicineCart: React.FC = (props) => {
     validateCouponResult.discount >= productDiscount
       ? Number(cartTotal) - couponDiscount
       : Number(cartTotal);
-  const deliveryCharges =
-    modifiedAmountForCharges >= Number(pharmacyMinDeliveryValue) ||
-    modifiedAmountForCharges <= 0 ||
-    tabValue === 1
-      ? 0
-      : Number(pharmacyDeliveryCharges);
+  const deliveryCharges = freeDelivery
+    ? 0
+    : modifiedAmountForCharges >= Number(pharmacyMinDeliveryValue) ||
+      modifiedAmountForCharges <= 0 ||
+      tabValue === 1
+    ? 0
+    : Number(pharmacyDeliveryCharges);
   const totalAmount = (cartTotal + Number(deliveryCharges)).toFixed(2);
   const totalWithCouponDiscount =
     validateCouponResult &&
@@ -957,6 +1079,7 @@ export const MedicineCart: React.FC = (props) => {
               ).toFixed(2)
             ),
             mrp: cartItemDetails.price,
+            couponFree: Number(cartItemDetails.couponFree) || 0,
             isPrescriptionNeeded: cartItemDetails.is_prescription_required ? 1 : 0,
             mou: parseInt(cartItemDetails.mou),
             isMedicine:
@@ -977,29 +1100,36 @@ export const MedicineCart: React.FC = (props) => {
       const data = {
         mobile: localStorage.getItem('userMobileNo'),
         billAmount: cartTotal.toFixed(2),
+        email: currentPatient && currentPatient.emailAddress,
+        packageId: packageId,
         coupon: couponCode,
         pinCode: localStorage.getItem('pharmaPincode'),
         products: cartItems.map((item) => {
-          const { sku, quantity, special_price, price, type_id } = item;
+          const { sku, quantity, special_price, price, type_id, couponFree } = item;
           return {
             sku,
             mrp: item.price,
             quantity,
+            couponFree: Number(couponFree) || 0,
             categoryId: type_id || '',
             specialPrice: special_price || price,
           };
         }),
       };
+      const fetchCouponUrl = `${process.env.VALIDATE_CONSULT_COUPONS}?mobile=${
+        currentPatient.mobileNumber
+      }&email=${currentPatient.emailAddress}&packageId=${userSubscriptions ? packageId : ''}`;
       fetchUtil(process.env.VALIDATE_CONSULT_COUPONS, 'POST', data, '', false)
         .then((resp: any) => {
           if (resp.errorCode == 0) {
             if (resp.response.valid) {
               const freeProductsSet = new Set(
                 resp.response.products && resp.response.products.length
-                  ? resp.response.products.filter((cartItem: any) => cartItem.mrp === 0)
+                  ? resp.response.products.filter((cartItem: any) => cartItem.couponFree)
                   : []
               );
               if (freeProductsSet.size) {
+                handleQuantityFreeProduct(resp.response);
                 addDiscountedProducts(resp.response);
                 setValidateCouponResult(resp.response);
                 setErrorMessage('');
@@ -1009,6 +1139,7 @@ export const MedicineCart: React.FC = (props) => {
                 setErrorMessage(
                   'Coupon not applicable on your cart item(s) or item(s) with already higher discounts'
                 );
+                removeAllFreeProducts();
                 localStorage.removeItem('pharmaCoupon');
                 setCouponCode && setCouponCode('');
                 return;
@@ -1021,6 +1152,7 @@ export const MedicineCart: React.FC = (props) => {
               setErrorMessage(
                 'Coupon not applicable on your cart item(s) or item(s) with already higher discounts'
               );
+              removeAllFreeProducts();
               localStorage.removeItem('pharmaCoupon');
               setCouponCode && setCouponCode('');
             }
@@ -1037,57 +1169,77 @@ export const MedicineCart: React.FC = (props) => {
     }
   };
 
+  const handleQuantityFreeProduct = (response: any) => {
+    if (response.products && Array.isArray(response.products) && response.products.length) {
+      response.products.forEach((cartItem: MedicineCartItem) => {
+        if (
+          cartItem.couponFree &&
+          cartItem.quantity > 1 &&
+          !localStorage.getItem('updatedFreeCoupon')
+        ) {
+          updateCartItemQty({ ...cartItem, quantity: cartItem.quantity, couponFree: 1 });
+        }
+      });
+      localStorage.setItem('updatedFreeCoupon', 'true');
+    }
+  };
+
   const addDiscountedProducts = (response: any) => {
-    const promises: Promise<any>[] = [];
+    const skus: Array<string> = [];
     if (response.products && Array.isArray(response.products) && response.products.length) {
       try {
         const cartSkuSet = new Set(
           cartItems && cartItems.length ? cartItems.map((cartItem) => cartItem.sku) : []
         );
         response.products.forEach((data: any) => {
-          if (!cartSkuSet.has(data.sku))
-            promises.push(
-              axios.post(
-                apiDetails.url || '',
-                { params: data.sku },
-                {
-                  headers: {
-                    Authorization: apiDetails.authToken,
-                  },
-                }
-              )
-            );
+          if (!cartSkuSet.has(data.sku) && data.couponFree) skus.push(data.sku);
         });
         const allData: MedicineCartItem[] = [];
-        Promise.all(promises)
-          .then((data: any) => {
-            data.forEach((e: any) => {
-              const cartItem: MedicineCartItem = {
-                MaxOrderQty: 1,
-                url_key: e.data.productdp[0].url_key,
-                description: e.data.productdp[0].description,
-                id: e.data.productdp[0].id,
-                image: e.data.productdp[0].image,
-                is_in_stock: e.data.productdp[0].is_in_stock,
-                is_prescription_required: e.data.productdp[0].is_prescription_required,
-                name: e.data.productdp[0].name,
-                price: 0,
-                sku: e.data.productdp[0].sku,
-                special_price: 0,
-                small_image: e.data.productdp[0].small_image,
-                status: e.data.productdp[0].status,
-                thumbnail: e.data.productdp[0].thumbnail,
-                type_id: e.data.productdp[0].type_id,
-                mou: e.data.productdp[0].mou,
-                quantity: 1,
-                isShippable: true,
-              };
-              allData.push(cartItem);
+        if (skus && skus.length) {
+          axios
+            .post(
+              apiDetails.bulk_product_info_url || '',
+              { params: skus.join(',') },
+              {
+                headers: {
+                  Authorization: apiDetails.authToken,
+                },
+              }
+            )
+            .then((resp) => {
+              if (resp && resp.data && resp.data.productdp && resp.data.productdp.length) {
+                resp &&
+                  resp.data &&
+                  resp.data.productdp.forEach((e: any) => {
+                    const cartItem: MedicineCartItem = {
+                      MaxOrderQty: 1,
+                      url_key: e.url_key,
+                      description: e.description,
+                      id: e.id,
+                      image: e.image,
+                      is_in_stock: e.is_in_stock,
+                      is_prescription_required: e.is_prescription_required,
+                      name: e.name,
+                      price: e.price,
+                      sku: e.sku,
+                      special_price: 0,
+                      couponFree: 1,
+                      small_image: e.small_image,
+                      status: e.status,
+                      thumbnail: e.thumbnail,
+                      type_id: e.type_id,
+                      mou: e.mou,
+                      quantity: 1,
+                      isShippable: true,
+                    };
+                    allData.push(cartItem);
+                  });
+              }
+            })
+            .then(() => {
+              addCartItems(allData);
             });
-          })
-          .then(() => {
-            addCartItems(allData);
-          });
+        }
       } catch (e) {
         console.error(e);
         throw e;
@@ -1157,6 +1309,7 @@ export const MedicineCart: React.FC = (props) => {
           items: cartItemsForApi,
           coupon: couponCode,
           deviceType: getDeviceType(),
+          shopId,
         },
       },
     }
@@ -1261,6 +1414,7 @@ export const MedicineCart: React.FC = (props) => {
       .catch((e) => {
         console.log({ e });
         setIsAlertOpen(true);
+
         setAlertMessage('Something went wrong, please try later.');
       })
       .finally(() => {
@@ -1599,6 +1753,25 @@ export const MedicineCart: React.FC = (props) => {
                 </>
               ) : null}
             </div>
+            {deliveryCharges !== 0 && (
+              <div className={`${classes.medicineListGroup} ${classes.medicinesAddmore}`}>
+                <img src={require('images/ic_priority_high.svg')} alt="info icon" />
+                Add{' '}
+                <span className={classes.addmoreAmount}>
+                  {(Number(pharmacyMinDeliveryValue) - cartTotal).toFixed(2)}
+                </span>{' '}
+                of eligible items to your order to qualify for FREE Delivery.
+                <span>
+                  <Link
+                    className={classes.nudgeAddMore}
+                    to={clientRoutes.medicines()}
+                    title={'Add Items'}
+                  >
+                    Add Items
+                  </Link>
+                </span>
+              </div>
+            )}
           </Scrollbars>
         </div>
         <div className={classes.rightSection}>
@@ -1739,14 +1912,14 @@ export const MedicineCart: React.FC = (props) => {
                               <div className={classes.appliedCoupon}>
                                 {Number(validateCouponResult.discount.toFixed(2)) >
                                   Number(productDiscount.toFixed(2)) ||
-                                  (validateCouponResult.products &&
-                                    validateCouponResult.products.length &&
-                                    validateCouponResult.products.filter(({ mrp }) => mrp === 0)
-                                      .length && (
-                                      <span className={classes.linkText}>
-                                        <span>{couponCode}</span> applied
-                                      </span>
-                                    ))}
+                                (validateCouponResult.products &&
+                                  validateCouponResult.products.length &&
+                                  validateCouponResult.products.filter(({ mrp }) => mrp === 0)
+                                    .length) ? (
+                                  <span className={classes.linkText}>
+                                    <span>{couponCode}</span> applied
+                                  </span>
+                                ) : null}
                                 <span className={classes.rightArrow}>
                                   <img src={require('images/ic_arrow_right.svg')} alt="" />
                                 </span>
@@ -1841,6 +2014,10 @@ export const MedicineCart: React.FC = (props) => {
                   </div>
                 </>
               )}
+              <div className={classes.oneApolloDetails}>
+                <img src={require('images/one-apollo.svg')} width="30" alt="One Apollo" />
+                <Typography>{ConfigOneApolloData.medicineCartString}</Typography>
+              </div>
             </div>
           </Scrollbars>
           <div className={classes.checkoutBtn}>
@@ -1875,6 +2052,8 @@ export const MedicineCart: React.FC = (props) => {
                                   deliveryTime: deliveryTime,
                                   validateCouponResult: validateCouponResult,
                                   shopId: shopId,
+                                  deliveryAddressId,
+                                  tatType,
                                 })
                               );
                               history.push(clientRoutes.payMedicine('pharmacy'));
@@ -1989,6 +2168,8 @@ export const MedicineCart: React.FC = (props) => {
                               deliveryTime: deliveryTime,
                               validateCouponResult: validateCouponResult,
                               shopId: shopId,
+                              deliveryAddressId,
+                              tatType,
                             })
                           );
                           history.push(clientRoutes.payMedicine('pharmacy'));

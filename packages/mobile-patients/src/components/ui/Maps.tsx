@@ -19,6 +19,7 @@ import {
   savePatientAddress,
   savePatientAddressVariables,
   savePatientAddress_savePatientAddress,
+  savePatientAddress_savePatientAddress_patientAddress,
 } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
   updatePatientAddress,
@@ -28,6 +29,9 @@ import {
   g,
   handleGraphQlError,
   postWebEngageEvent,
+  doRequestAndAccessLocationModified,
+  distanceBwTwoLatLng,
+  removeConsecutiveComma,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   getLatLongFromAddress,
@@ -45,6 +49,7 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
+  Platform,
 } from 'react-native';
 import { useApolloClient } from 'react-apollo-hooks';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
@@ -64,7 +69,12 @@ const icon_gps = require('../ui/icons/ic_gps_fixed.png');
 
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
-const mapHeight = screenHeight > 650 ? screenHeight / 1.63 : screenHeight / 1.8;
+const mapHeight =
+  screenHeight > 750
+    ? screenHeight / 1.5
+    : screenHeight > 650
+    ? screenHeight / 1.63
+    : screenHeight / 1.8;
 
 const { isIphoneX } = DeviceHelper();
 
@@ -123,6 +133,15 @@ const styles = StyleSheet.create({
     height: 35,
     width: 35,
     resizeMode: 'contain',
+    // top: -3,
+    // left: 7,
+  },
+  markerOutline: {
+    width: 58,
+    height: 58,
+    borderRadius: 58 / 2,
+    borderColor: theme.colors.SHERPA_BLUE,
+    borderWidth: 1,
   },
   currentLocationView: {
     backgroundColor: 'white',
@@ -144,6 +163,7 @@ const styles = StyleSheet.create({
     height: 25,
     alignSelf: 'center',
     justifyContent: 'center',
+    tintColor: theme.colors.SHERPA_BLUE,
   },
   markerTitleView: {
     backgroundColor: theme.colors.SHERPA_BLUE,
@@ -176,14 +196,16 @@ export interface MapProps
     isChanged?: boolean;
     addOnly?: boolean;
     source: string;
+    ComingFrom?: string;
   }> {}
 
 export const Maps: React.FC<MapProps> = (props) => {
   const addressObject = props.navigation.getParam('addressDetails');
   const [latitude, setLatitude] = useState<number>(0);
   const [longitude, setLongitude] = useState<number>(0);
-  const [latitudeDelta, setLatitudeDelta] = useState<number>(1);
-  const [longitudeDelta, setLongitudeDelta] = useState<number>(1);
+  const [latitudeDelta, setLatitudeDelta] = useState<number>(0.01);
+  const [longitudeDelta, setLongitudeDelta] = useState<number>(0.01);
+  const [isMapDragging, setMapDragging] = useState<boolean>(false);
 
   const [stateCode, setStateCode] = useState<string>(addressObject?.stateCode!);
   const [state, setstate] = useState<string>(addressObject?.state!);
@@ -197,10 +219,17 @@ export const Maps: React.FC<MapProps> = (props) => {
 
   const { showAphAlert, hideAphAlert } = useUIElements();
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
-  const { addAddress, setDeliveryAddressId, setNewAddressAdded } = useShoppingCart();
+  const {
+    addAddress,
+    setDeliveryAddressId,
+    setNewAddressAdded,
+    addresses,
+    setAddresses,
+  } = useShoppingCart();
   const {
     addAddress: addDiagnosticAddress,
     setDeliveryAddressId: setDiagnosticAddressId,
+    setAddresses: setTestAddresses,
   } = useDiagnosticsCart();
   const { locationDetails, pharmacyLocation } = useAppCommonData();
   const _map = useRef(null);
@@ -223,33 +252,20 @@ export const Maps: React.FC<MapProps> = (props) => {
     const getLongtitude = addressObject?.longitude;
     const getLandmark = addressObject?.landmark || '';
     let address;
-    if (getLandmark != '') {
-      address =
-        addressObject?.addressLine1 +
-        ', ' +
-        addressObject?.addressLine2 +
-        ', ' +
-        getLandmark +
-        ', ' +
-        addressObject?.city +
-        ', ' +
-        addressObject?.state +
-        ', ' +
-        addressObject?.zipcode;
-    } else {
-      address =
-        addressObject?.addressLine1 +
-        ', ' +
-        addressObject?.addressLine2 +
-        ', ' +
-        addressObject?.city +
-        ', ' +
-        addressObject?.state +
-        ', ' +
-        addressObject?.zipcode;
-    }
+    const newAddr = [
+      addressObject?.addressLine1,
+      addressObject?.addressLine2,
+      getLandmark,
+      addressObject?.city,
+      addressObject?.state,
+      addressObject?.zipcode,
+    ];
+
+    address = newAddr.filter(Boolean).join(', ');
+    address = address.replace(/,+/g, ',').replace(/(,\s*$)|(^,*)/, ''); //for replacing two consecutive comma
 
     setAddress(address);
+
     //check this condition for initial cases
     getLatLongFromAddress(address)
       .then(({ data }) => {
@@ -260,10 +276,12 @@ export const Maps: React.FC<MapProps> = (props) => {
           /**added so that, it always picks the one from the address entered.
            * if we want to show the location wherever he has left, then remove this code.
            */
-          // setRegion({ latitude: latLang.lat,
-          //   longitude: latLang.lng,
-          //   latitudeDelta: 0.01,
-          //   longitudeDelta: 0.01})
+          setRegion({
+            latitude: latLang.lat,
+            longitude: latLang.lng,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          });
         } catch (e) {
           //show current location
           showCurrentLocation();
@@ -282,34 +300,46 @@ export const Maps: React.FC<MapProps> = (props) => {
       variables: { PatientAddressInput: addressInput },
     });
 
-  /** haversine formula */
-  const calcuteDiffInMeters = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-    var R = 6378.137; // Radius of earth in KM
-    var dLat = (lat2 * Math.PI) / 180 - (lat1 * Math.PI) / 180;
-    var dLon = (lon2 * Math.PI) / 180 - (lon1 * Math.PI) / 180;
-    var a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos((lat1 * Math.PI) / 180) *
-        Math.cos((lat2 * Math.PI) / 180) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    var d = R * c;
-    return d * 1000; // meters
-  };
-
   const sendWebEngageEvent = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-    const diff = calcuteDiffInMeters(lat1, lon1, lat2, lon2);
+    const diff = distanceBwTwoLatLng(lat1, lon1, lat2, lon2);
+    const diffInMeters = diff * 1000;
     const eventAttributes: WebEngageEvents[WebEngageEventName.CONFIRM_LOCATION] = {
-      isMarkerModified: diff === 0 ? false : true,
-      changedByInMeters: diff,
+      isMarkerModified: diffInMeters === 0 ? false : true,
+      changedByInMeters: diffInMeters,
     };
     postWebEngageEvent(WebEngageEventName.CONFIRM_LOCATION, eventAttributes);
   };
 
+  const setUpdatedAddressList = async (
+    updatedAddress: savePatientAddress_savePatientAddress_patientAddress
+  ) => {
+    const newAddrList = [
+      { ...updatedAddress },
+      ...addresses.filter((item) => item.id != updatedAddress.id),
+    ];
+    setAddresses!(newAddrList);
+    setTestAddresses!(newAddrList);
+  };
+
+  const _navigateToScreens = (
+    addressList: savePatientAddress_savePatientAddress_patientAddress
+  ) => {
+    const screenName = props.navigation.getParam('ComingFrom')!;
+    if (screenName! && screenName != '') {
+      setUpdatedAddressList(addressList);
+      props.navigation.pop(2, { immediate: true });
+    } else {
+      props.navigation.pop(3, { immediate: true });
+      props.navigation.push(AppRoutes.AddressBook);
+    }
+  };
+
   const onConfirmLocation = async () => {
     setshowSpinner(true);
-    sendWebEngageEvent(addressObject.latitude, addressObject.longitude, latitude, longitude);
+    if (addressObject?.latitude && addressObject?.longitude) {
+      sendWebEngageEvent(addressObject?.latitude, addressObject.longitude, latitude, longitude);
+    }
+
     CommonLogEvent(AppRoutes.Maps, 'On Confirm Location Clicked');
     if (props.navigation.getParam('KeyName') == 'Update' && addressObject) {
       const updateaddressInput: UpdatePatientAddressInput = {
@@ -339,8 +369,7 @@ export const Maps: React.FC<MapProps> = (props) => {
           try {
             setshowSpinner(false);
             console.log('updateapicalled', _data);
-            props.navigation.pop(3, { immediate: true });
-            props.navigation.push(AppRoutes.AddressBook);
+            _navigateToScreens(_data.data.updatePatientAddress.patientAddress);
           } catch (error) {
             CommonBugFender('AddAddress_onConfirmLocation_try', error);
           }
@@ -462,39 +491,51 @@ export const Maps: React.FC<MapProps> = (props) => {
     );
   };
 
-  // const onMarkerDragEnd = (event: MapEvent) =>{
-  //   const coordinates = event.nativeEvent.coordinate;
-  //   setLatitude(coordinates?.latitude);
-  //   setLongitude(coordinates?.longitude);
-  // }
-
   /** to drag the map */
   /** set lat-long when drag has been stopped */
   const _onRegionChangeComplete = (region: RegionObject) => {
-    setRegion(region);
-    setLatitude(region.latitude);
-    setLongitude(region.longitude);
-    console.log(region.latitude, region.longitude);
+    /**since double tap does not work in ios */
+    if (isMapDragging || Platform.OS == 'ios') {
+      setMapDragging(false);
+      setRegion(region);
+      setLatitude(region.latitude);
+      setLongitude(region.longitude);
+      console.log(region.latitude, region.longitude);
+    }
+
+    if (!isMapDragging && Platform.OS == 'android') {
+      return;
+    }
+  };
+
+  const _setMapDragging = () => {
+    if (!isMapDragging) {
+      setMapDragging(true);
+    }
   };
 
   /** for getting current position */
   const showCurrentLocation = () => {
-    Geolocation.getCurrentPosition(
-      ({ coords }) => {
-        const { latitude, longitude } = coords;
-        const currentRegion = {
-          latitude,
-          longitude,
-          latitudeDelta: 0.005,
-          longitudeDelta: 0.001,
-        };
-        setRegion(currentRegion);
-        //create the address from latlong
-        createAddressFromCurrentPos(coords.latitude, coords.longitude);
-      },
-      (error) => console.log(error.code, error.message, 'getCurrentPosition error')
-    ),
-      { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 };
+    doRequestAndAccessLocationModified()
+      .then((response) => {
+        if (response) {
+          const currentRegion = {
+            latitude: response.latitude,
+            longitude: response.longitude,
+            latitudeDelta: 0.005,
+            longitudeDelta: 0.001,
+          };
+          setRegion(currentRegion);
+          if (response?.latitude && response?.longitude) {
+            setLatitude(response.latitude);
+            setLongitude(response.longitude);
+          }
+          // createAddressFromCurrentPos(response?.latitude,response?.longitude)
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('MapAddress_doRequestAndAccessLocationModified', e);
+      });
   };
 
   const createAddressFromCurrentPos = (lat: number, long: number) => {
@@ -563,18 +604,10 @@ export const Maps: React.FC<MapProps> = (props) => {
         minZoomLevel={9}
         onMapReady={() => console.log('ready')}
         onRegionChangeComplete={(region) => _onRegionChangeComplete(region)}
-        // initialRegion={{latitude:latitude,longitude:longitude,latitudeDelta:latitudeDelta,longitudeDelta:longitudeDelta}}
-      >
-        {/**drag the marker */}
-        {/* <Marker
-          coordinate={{
-            latitude: latitude,
-            longitude: longitude
-          }}
-          draggable={true}
-          onDragEnd={(e) => onMarkerDragEnd(e)}
-        /> */}
-      </MapView>
+        onDoublePress={_setMapDragging}
+        onPanDrag={_setMapDragging}
+        // initialRegion={{latitude: latitude,longitude: longitude,latitudeDelta: latitudeDelta,longitudeDelta: longitudeDelta,}}
+      ></MapView>
     );
   };
 
@@ -585,7 +618,9 @@ export const Maps: React.FC<MapProps> = (props) => {
         <View style={styles.markerTitleView}>
           <Text style={styles.markerText}>MOVE MAP TO ADJUST</Text>
         </View>
+        {/* <View style={styles.markerOutline}> */}
         <Image style={styles.markerIcon} source={FakeMarker} />
+        {/* </View> */}
       </View>
     );
   };

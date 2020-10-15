@@ -45,6 +45,12 @@ import firebase from 'react-native-firebase';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { WeekView } from './WeekView';
 import { string } from '@aph/mobile-doctors/src/strings/string';
+import {
+  postWebEngageEvent,
+  setScreenName,
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-doctors/src/helpers/WebEngageHelper';
 
 const styles = AppointmentsStyles;
 let timerId: NodeJS.Timeout;
@@ -202,6 +208,7 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
 
   useEffect(() => {
     checkNotificationPermission();
+    setScreenName('Home screen');
   }, []);
 
   const getAppointmentsApi = (selectedDate = date) => {
@@ -241,6 +248,10 @@ export const Appointments: React.FC<AppointmentsProps> = (props) => {
       .catch((err) => {
         setgetAppointments(undefined);
         setAppointmentError(true);
+        postWebEngageEvent(WebEngageEventName.DOCTOR_CALENDAR_ERROR, {
+          'Selected Calendar Day': date.toString(),
+          ErrorDetails: JSON.stringify(err),
+        } as WebEngageEvents[WebEngageEventName.DOCTOR_CALENDAR_ERROR]);
       })
       .finally(() => {
         setshowSpinner(false);

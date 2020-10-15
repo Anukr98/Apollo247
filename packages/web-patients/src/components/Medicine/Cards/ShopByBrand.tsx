@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { Link } from 'react-router-dom';
@@ -6,6 +6,8 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import Slider from 'react-slick';
 import { MedicinePageSection } from '../../../helpers/MedicineApiCalls';
 import _replace from 'lodash/replace';
+import { LazyIntersection } from '../../lib/LazyIntersection';
+import { getSlidesToScroll } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -59,20 +61,32 @@ interface ShopByBrandsProps {
 
 export const ShopByBrand: React.FC<ShopByBrandsProps> = (props) => {
   const classes = useStyles({});
+  const [currIndex, setCurrIndex] = useState(0);
   const sliderSettings = {
-    infinite: true,
+    infinite: false,
     speed: 500,
     slidesToShow: 6,
-    slidesToScroll: 1,
-    nextArrow: <img src={require('images/ic_arrow_right.svg')} alt="" />,
-    prevArrow: <img src={require('images/ic_arrow_left.svg')} alt="" />,
+    slidesToScroll: getSlidesToScroll(props.data.length),
+    nextArrow: (
+      <div>
+        {currIndex !== props.data.length - 6 && (
+          <img src={require('images/ic_arrow_right.svg')} alt="" />
+        )}
+      </div>
+    ),
+    prevArrow: (
+      <div>{currIndex !== 0 && <img src={require('images/ic_arrow_left.svg')} alt="" />}</div>
+    ),
+    afterChange: (currentIndex: number) => {
+      setCurrIndex(currentIndex);
+    },
     responsive: [
       {
         breakpoint: 992,
         settings: {
           slidesToShow: 3,
           slidesToScroll: 3,
-          infinite: true,
+          infinite: false,
           dots: true,
         },
       },
@@ -108,7 +122,12 @@ export const ShopByBrand: React.FC<ShopByBrandsProps> = (props) => {
 
   return (
     <div className={classes.root}>
-      <Slider {...sliderSettings}>
+      <Slider
+        {...sliderSettings}
+        beforeChange={() => {
+          document.getElementById('searchProduct').blur();
+        }}
+      >
         {props.data &&
           props.data.map((brand, index) => {
             let formattedTitle = _replace(brand.title.toLowerCase(), ' & ', '_');
@@ -118,11 +137,11 @@ export const ShopByBrand: React.FC<ShopByBrandsProps> = (props) => {
                 <Link to={clientRoutes.searchByMedicine(searchText, brand.url_key)}>
                   <div className={classes.cardWrap}>
                     <div className={classes.cardIcon}>
-                      <img
+                      <LazyIntersection
                         src={`${apiDetails.url && apiDetails.url.replace('/catalog/product', '')}${
                           brand.image_url.startsWith('/') ? brand.image_url : `/${brand.image_url}`
                         }`}
-                        alt=""
+                        alt={`Buy ${brand.title} Products Online`}
                       />
                     </div>
                   </div>

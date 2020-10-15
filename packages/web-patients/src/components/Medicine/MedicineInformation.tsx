@@ -10,6 +10,7 @@ import {
   pharmacyPdpPincodeTracking,
   addToCartTracking,
   buyNowTracking,
+  pharmaAvailabilityApiTracking,
 } from 'webEngageTracking';
 import { SubstituteDrugsList } from 'components/Medicine/SubstituteDrugsList';
 import {
@@ -19,13 +20,12 @@ import {
   checkTatAvailability,
 } from '../../helpers/MedicineApiCalls';
 import { useParams } from 'hooks/routerHooks';
-import axios, { AxiosResponse, AxiosError, Canceler } from 'axios';
 import { useShoppingCart, MedicineCartItem } from '../MedicinesCartProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { AddToCartPopover } from 'components/Medicine/AddToCartPopover';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import { gtmTracking } from '../../gtmTracking';
+import { gtmTracking, dataLayerTracking } from '../../gtmTracking';
 import {
   NO_SERVICEABLE_MESSAGE,
   getDiffInDays,
@@ -44,6 +44,7 @@ import _lowerCase from 'lodash/lowerCase';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import fetchUtil from 'helpers/fetch';
 import _get from 'lodash/get';
+import axios, { AxiosError } from 'axios';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -255,10 +256,13 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 'bold',
     },
     medicineNoOnline: {
-      color: '#890000',
-      lineHeight: '32px',
-      fontWeight: 'bold',
-      boxShadow: '0 2px 4px 0 rgba(0,0,0, 0.2)',
+      lineHeight: '18px',
+      backgroundColor: 'rgba(137,0,0,0.5)',
+      fontSize: 12,
+      fontWeight: 600,
+      padding: '3px 8px',
+      color: '#fff',
+      display: 'inline-block',
     },
     selectMenuItem: {
       backgroundColor: 'transparent',
@@ -363,6 +367,14 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'block',
       },
     },
+    calltoOrder: {
+      position: 'absolute',
+      bottom: 20,
+      textAlign: 'center',
+      fontSize: 17,
+      fontWeight: 500,
+      color: '#0087ba',
+    },
   });
 });
 
@@ -410,6 +422,8 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
   const [clickAddCart, setClickAddCart] = React.useState<boolean>(false);
   const [isUpdateQuantity, setIsUpdateQuantity] = React.useState<boolean>(false);
+  const [showAddMessage, setShowAddMessage] = useState<boolean>(false);
+  const [pincodeCity, setPincodeCity] = useState<string | null>(null);
 
   const apiDetails = {
     skuUrl: process.env.PHARMACY_MED_PROD_SKU_URL,
@@ -495,6 +509,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
               _get(data.results[0], 'geometry.location.lat', ''),
               _get(data.results[0], 'geometry.location.lng', '')
             );
+            setPincodeCity(data.results[0].formatted_address);
           }
         } catch {
           (e: AxiosError) => {
@@ -509,6 +524,17 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       });
   };
 
+  const dataLayerTrackingFn = (city: any, pin: any, status: any) => {
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'Product Stock Checked',
+      PINCode: pin,
+      City: city,
+      Status: status,
+    });
+    /**Gtm code start end */
+  };
+
   const fetchDeliveryTime = async (pinCode: string) => {
     setTatLoading(true);
     const items = [{ sku: data.sku, qty: medicineQty }];
@@ -518,7 +544,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
           if (res && res.data) {
             if (res && res.data.errorMsg) {
               setDeliveryTime('');
-              setErrorMessage(NO_SERVICEABLE_MESSAGE);
+              setErrorMessage(OUT_OF_STOCK_MESSAGE);
             }
             setTatLoading(false);
             if (
@@ -528,28 +554,27 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
               res.data.response.tatU &&
               res.data.response.tatU != -1
             ) {
-              if (getDiffInDays(res.data.response.tatU) < 10) {
-                setDeliveryTime(res.data.response.tat);
-                setErrorMessage('');
-                if (pharmaAddressDetails.pincode !== pinCode) {
-                  getPlaceDetails(pinCode);
-                }
-              } else {
-                setDeliveryTime('');
-                setErrorMessage(OUT_OF_STOCK_MESSAGE);
+              setDeliveryTime(res.data.response.tat);
+              setErrorMessage('');
+              if (pharmaAddressDetails.pincode !== pinCode) {
+                getPlaceDetails(pinCode);
               }
             } else if (typeof res.data.errorMSG === 'string') {
               setDefaultDeliveryTime(pinCode);
             }
+
+            dataLayerTrackingFn(pincodeCity, pinCode, `In Stock ${deliveryTime}`);
           }
         } catch (error) {
           console.log(error);
           setDefaultDeliveryTime(pinCode);
+          dataLayerTrackingFn(pincodeCity, pinCode, `In Stock ${deliveryTime}`);
         }
       })
       .catch((error: any) => {
         console.log(error);
         setDefaultDeliveryTime(pinCode);
+        dataLayerTrackingFn(pincodeCity, pinCode, `In Stock ${deliveryTime}`);
       });
   };
 
@@ -575,22 +600,33 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const checkDeliveryTime = (pinCode: string, sku: string) => {
     checkSkuAvailability(sku, pinCode)
       .then((res: any) => {
-        if (
-          res &&
-          res.data &&
-          res.data.response &&
-          res.data.response.length > 0 &&
-          res.data.response[0].exist
-        ) {
-          fetchDeliveryTime(pinCode);
-        } else {
-          setDeliveryTime('');
-          setErrorMessage(NO_SERVICEABLE_MESSAGE);
+        if (res && res.data && res.data.response && res.data.response.length > 0) {
+          /** Webengage Tracking */
+          const { exist, mrp, qty } = res.data.response[0];
+          pharmaAvailabilityApiTracking({
+            source: 'PDP',
+            inputSku: sku,
+            inputPincode: pinCode,
+            inputMrp: price,
+            itemsInCart: 1,
+            resExist: exist,
+            resMrp: mrp * parseInt(mou),
+            resQty: qty,
+          });
+          /** Webengage Tracking */
+          if (res.data.response[0].exist) {
+            fetchDeliveryTime(pinCode);
+          } else {
+            setDeliveryTime('');
+            setErrorMessage(OUT_OF_STOCK_MESSAGE);
+            dataLayerTrackingFn(pincodeCity, pinCode, OUT_OF_STOCK_MESSAGE);
+          }
         }
       })
       .catch((e) => {
-        setErrorMessage(NO_SERVICEABLE_MESSAGE);
+        setErrorMessage(OUT_OF_STOCK_MESSAGE);
         setDeliveryTime('');
+        dataLayerTrackingFn(pincodeCity, pinCode, OUT_OF_STOCK_MESSAGE);
       });
   };
 
@@ -667,9 +703,18 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
     ) : (
       <div className={classes.outOfOnline}>
         <div className={classes.medicineNoOnline}>{NO_ONLINE_SERVICE}</div>
+        <div className={classes.calltoOrder}>Please call 1860-500-0101 to order</div>
       </div>
     );
   };
+
+  useEffect(() => {
+    if (showAddMessage) {
+      setTimeout(() => {
+        setShowAddMessage(false);
+      }, 3000);
+    }
+  }, [showAddMessage]);
 
   const cartItem: MedicineCartItem = {
     MaxOrderQty,
@@ -807,7 +852,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
       <div className={sell_online ? classes.bottomGroupResponsive : classes.bottomGroupResponse}>
         {!errorMessage ? (
           <>
-            {is_in_stock && sell_online ? (
+            {sell_online ? (
               <div className={classes.priceGroup}>
                 <div className={classes.priceWrap}>
                   <div className={classes.leftGroup}>
@@ -856,6 +901,35 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                                 },
                               });
                             /* Gtm code end  */
+
+                            /**Gtm code start start */
+                            itemIndexInCart(data) !== -1 &&
+                              clickAddCart &&
+                              dataLayerTracking({
+                                event: 'Product Added to Cart',
+                                productlist: JSON.stringify([
+                                  {
+                                    item_name: name,
+                                    item_id: sku,
+                                    price: special_price || price,
+                                    item_category: 'Pharmacy',
+                                    item_category_2: type_id
+                                      ? type_id.toLowerCase() === 'pharma'
+                                        ? 'Drugs'
+                                        : 'FMCG'
+                                      : null,
+                                    // 'item_category_4': '', // future reference
+                                    item_variant: 'Default',
+                                    index: 1,
+                                    quantity:
+                                      quantity > medicineQty
+                                        ? quantity - medicineQty
+                                        : medicineQty - quantity,
+                                  },
+                                ]),
+                              });
+                            /**Gtm code start end */
+
                             setMedicineQty(quantity);
                           }}
                         >
@@ -885,104 +959,155 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
               notAvailableContext()
             )}
 
-            {is_in_stock && sell_online ? (
-              <div className={classes.bottomActions}>
-                <AphButton
-                  disabled={addMutationLoading || updateMutationLoading}
-                  className={
-                    addMutationLoading || updateMutationLoading ? classes.disableButton : ''
-                  }
-                  onClick={() => {
-                    setIsUpdateQuantity(false);
-                    setClickAddCart(true);
-                    setAddMutationLoading(true);
-                    addToCartTracking({
-                      productName: name,
-                      source: 'Pharmacy PDP',
-                      productId: sku,
-                      brand: '',
-                      brandId: '',
-                      categoryName: params.searchText || '',
-                      categoryId: category_id,
-                      discountedPrice: special_price || price,
-                      price: price,
-                      quantity: 1,
-                    });
-                    /**Gtm code start  */
-                    gtmTracking({
-                      category: 'Pharmacy',
-                      action: 'Add to Cart',
-                      label: name,
-                      value: special_price || price,
-                      ecommObj: {
-                        event: 'add_to_cart',
-                        ecommerce: {
-                          items: [
-                            {
-                              item_name: name,
-                              item_id: sku,
-                              price: special_price || price,
-                              item_category: 'Pharmacy',
-                              item_category_2: type_id
-                                ? type_id.toLowerCase() === 'pharma'
-                                  ? 'Drugs'
-                                  : 'FMCG'
-                                : null,
-                              // 'item_category_4': '', // future reference
-                              item_variant: 'Default',
-                              index: 1,
-                              quantity: medicineQty,
-                            },
-                          ],
+            {sell_online ? (
+              <>
+                <div className={classes.bottomActions}>
+                  <AphButton
+                    disabled={addMutationLoading || updateMutationLoading}
+                    className={
+                      addMutationLoading || updateMutationLoading ? classes.disableButton : ''
+                    }
+                    onClick={() => {
+                      setIsUpdateQuantity(false);
+                      setClickAddCart(true);
+                      setAddMutationLoading(true);
+                      addToCartTracking({
+                        productName: name,
+                        source: 'Pharmacy PDP',
+                        productId: sku,
+                        brand: '',
+                        brandId: '',
+                        categoryName: params.searchText || '',
+                        categoryId: category_id,
+                        discountedPrice: special_price || price,
+                        price: price,
+                        quantity: 1,
+                      });
+                      /**Gtm code start  */
+                      gtmTracking({
+                        category: 'Pharmacy',
+                        action: 'Add to Cart',
+                        label: name,
+                        value: special_price || price,
+                        ecommObj: {
+                          event: 'add_to_cart',
+                          ecommerce: {
+                            items: [
+                              {
+                                item_name: name,
+                                item_id: sku,
+                                price: special_price || price,
+                                item_category: 'Pharmacy',
+                                item_category_2: type_id
+                                  ? type_id.toLowerCase() === 'pharma'
+                                    ? 'Drugs'
+                                    : 'FMCG'
+                                  : null,
+                                // 'item_category_4': '', // future reference
+                                item_variant: 'Default',
+                                index: 1,
+                                quantity: medicineQty,
+                              },
+                            ],
+                          },
                         },
-                      },
-                    });
-                    /**Gtm code End  */
-                    applyCartOperations(cartItem);
-                    setAddMutationLoading(false);
-                  }}
-                >
-                  {' '}
-                  {addMutationLoading ? (
-                    <CircularProgress size={22} color="secondary" />
-                  ) : (
-                    'Add To Cart'
-                  )}
-                </AphButton>
+                      });
+                      /**Gtm code End  */
 
-                <AphButton
-                  color="primary"
-                  className={
-                    addMutationLoading || updateMutationLoading ? classes.disableButton : ''
-                  }
-                  disabled={addMutationLoading || updateMutationLoading}
-                  onClick={() => {
-                    setUpdateMutationLoading(true);
-                    applyCartOperations(cartItem);
-                    setTimeout(() => {
-                      window.location.href = clientRoutes.medicinesCart();
-                    }, 3000);
-                    buyNowTracking({
-                      productName: name,
-                      serviceArea: pinCode,
-                      productId: sku,
-                      brand: '',
-                      brandId: '',
-                      categoryName: params.searchText || '',
-                      categoryId: category_id,
-                      discountedPrice: special_price,
-                      price: price,
-                      quantity: medicineQty,
-                    });
-                  }}
-                >
-                  {updateMutationLoading ? (
-                    <CircularProgress size={22} color="secondary" />
-                  ) : (
-                    'Buy Now'
-                  )}
-                </AphButton>
-              </div>
+                      /**Gtm code start start */
+                      dataLayerTracking({
+                        event: 'Product Added to Cart',
+                        productlist: JSON.stringify([
+                          {
+                            item_name: name,
+                            item_id: sku,
+                            price: special_price || price,
+                            item_category: 'Pharmacy',
+                            item_category_2: type_id
+                              ? type_id.toLowerCase() === 'pharma'
+                                ? 'Drugs'
+                                : 'FMCG'
+                              : null,
+                            // 'item_category_4': '', // future reference
+                            item_variant: 'Default',
+                            index: 1,
+                            quantity: medicineQty,
+                          },
+                        ]),
+                      });
+                      /**Gtm code start end */
+
+                      applyCartOperations(cartItem);
+                      setAddMutationLoading(false);
+                      setShowAddMessage(true);
+                    }}
+                  >
+                    {' '}
+                    {addMutationLoading ? (
+                      <CircularProgress size={22} color="secondary" />
+                    ) : showAddMessage ? (
+                      'Added To Cart'
+                    ) : (
+                      'Add To Cart'
+                    )}
+                  </AphButton>
+                  <AphButton
+                    color="primary"
+                    className={
+                      addMutationLoading || updateMutationLoading ? classes.disableButton : ''
+                    }
+                    disabled={addMutationLoading || updateMutationLoading}
+                    onClick={() => {
+                      setUpdateMutationLoading(true);
+                      applyCartOperations(cartItem);
+                      setTimeout(() => {
+                        window.location.href = clientRoutes.medicinesCart();
+                      }, 3000);
+                      buyNowTracking({
+                        productName: name,
+                        serviceArea: pinCode,
+                        productId: sku,
+                        brand: '',
+                        brandId: '',
+                        categoryName: params.searchText || '',
+                        categoryId: category_id,
+                        discountedPrice: special_price,
+                        price: price,
+                        quantity: medicineQty,
+                      });
+
+                      /**Gtm code start start */
+                      dataLayerTracking({
+                        event: 'Product Added to Cart',
+                        productlist: JSON.stringify([
+                          {
+                            item_name: name,
+                            item_id: sku,
+                            price: special_price || price,
+                            item_category: 'Pharmacy',
+                            item_category_2: type_id
+                              ? type_id.toLowerCase() === 'pharma'
+                                ? 'Drugs'
+                                : 'FMCG'
+                              : null,
+                            // 'item_category_4': '', // future reference
+                            item_variant: 'Default',
+                            index: 1,
+                            quantity: medicineQty,
+                          },
+                        ]),
+                      });
+                      /**Gtm code start end */
+                    }}
+                  >
+                    {updateMutationLoading ? (
+                      <CircularProgress size={22} color="secondary" />
+                    ) : (
+                      'Buy Now'
+                    )}
+                  </AphButton>
+                </div>
+              </>
             ) : null}
           </>
         ) : (

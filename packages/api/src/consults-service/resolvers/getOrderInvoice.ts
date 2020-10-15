@@ -15,6 +15,7 @@ import path from 'path';
 
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import { getTime, format, addMinutes } from 'date-fns';
+import { log } from 'customWinstonLogger';
 
 export const getOrderInvoiceTypeDefs = gql`
   extend type Query {
@@ -269,8 +270,9 @@ const getOrderInvoice: Resolver<
       `${_capitalize(appointmentData[0].appointmentType)}`,
       doc.y + 10
     );
-
-    const nameLine = `${doctorInfo.salutation}. ${doctorInfo.firstName} ${doctorInfo.lastName}`;
+    const salutation =
+      doctorInfo.salutation.indexOf('.') > -1 ? doctorInfo.salutation : `${doctorInfo.salutation}.`;
+    const nameLine = `${salutation} ${doctorInfo.firstName} ${doctorInfo.lastName}`;
 
     const specialty = doctorInfo.specialty.name;
     renderFourColumnRow(
@@ -422,7 +424,15 @@ export const uploadRxPdf = async (
 
   const blob = await client.uploadFile({ name, filePath });
   const blobUrl = client.getBlobUrl(blob.name);
-  fs.unlink(filePath, (error) => console.log(error));
+  fs.unlink(filePath, (error) => {
+    log(
+      'consultServiceLogger',
+      'getOrderInvoice fs.unlink error',
+      'getOrderInvoice()->uploadRxPdf()->fs.unlink',
+      '',
+      JSON.stringify(error)
+    );
+  });
   return blobUrl;
 
   function delay(ms: number) {

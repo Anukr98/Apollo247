@@ -58,7 +58,7 @@ const TabContainer: React.FC = (props) => {
   return <Typography component="div">{props.children}</Typography>;
 };
 
-export const PrescriptionsLanding: React.FC = (props) => {
+const PrescriptionsLanding: React.FC = (props) => {
   const classes = useStyles({});
   const [tabValue, setTabValue] = useState<number>(0);
   const onePrimaryUser = hasOnePrimaryUser();
@@ -96,3 +96,5 @@ export const PrescriptionsLanding: React.FC = (props) => {
     </div>
   );
 };
+
+export default PrescriptionsLanding;

@@ -15,7 +15,6 @@ import {
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import AsyncStorage from '@react-native-community/async-storage';
-import { GetDiagnosticItDoseSlots_getDiagnosticItDoseSlots_slotInfo } from '@aph/mobile-patients/src/graphql/types/GetDiagnosticItDoseSlots';
 
 export interface DiagnosticsCartItem {
   id: string;
@@ -31,10 +30,19 @@ export interface DiagnosticClinic extends Clinic {
   date: number; // timestamp
 }
 
-export interface DiagnosticSlot
-  extends Omit<GetDiagnosticItDoseSlots_getDiagnosticItDoseSlots_slotInfo, '__typename'> {
+export interface DiagnosticSlot {
+  employeeSlotId: number;
+  diagnosticBranchCode: string;
+  diagnosticEmployeeCode: string;
+  slotStartTime: string;
+  slotEndTime: string;
   city: string;
   date: number; // timestamp
+}
+
+export interface DiagnosticArea {
+  key: number | string;
+  value: string;
 }
 
 export interface DiagnosticsCartContextProps {
@@ -53,6 +61,10 @@ export interface DiagnosticsCartContextProps {
   cartTotal: number;
   couponDiscount: number;
   deliveryCharges: number;
+
+  hcCharges: number;
+  setHcCharges: ((id: number) => void) | null;
+
   grandTotal: number;
 
   uploadPrescriptionRequired: boolean;
@@ -99,6 +111,12 @@ export interface DiagnosticsCartContextProps {
   diagnosticSlot: DiagnosticSlot | null;
   setDiagnosticSlot: ((item: DiagnosticSlot | null) => void) | null;
 
+  areaSelected: DiagnosticArea | {};
+  setAreaSelected: ((items: DiagnosticArea | {}) => void) | null;
+
+  diagnosticAreas: [];
+  setDiagnosticAreas: ((items: any | []) => void) | null;
+
   diagnosticClinic: DiagnosticClinic | null;
   setDiagnosticClinic: ((item: DiagnosticClinic) => void) | null;
 }
@@ -116,6 +134,10 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   cartTotal: 0,
   couponDiscount: 0,
   deliveryCharges: 0,
+
+  hcCharges: 0,
+  setHcCharges: null,
+
   grandTotal: 0,
 
   uploadPrescriptionRequired: false,
@@ -156,6 +178,10 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   diagnosticSlot: null,
   setDiagnosticClinic: null,
   setDiagnosticSlot: null,
+  areaSelected: {},
+  setAreaSelected: null,
+  diagnosticAreas: [],
+  setDiagnosticAreas: null,
 });
 
 const showGenericAlert = (message: string) => {
@@ -192,6 +218,8 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     DiagnosticsCartContextProps['deliveryAddressId']
   >('');
 
+  const [hcCharges, setHcCharges] = useState<DiagnosticsCartContextProps['hcCharges']>(0);
+
   const [deliveryType, setDeliveryType] = useState<DiagnosticsCartContextProps['deliveryType']>(
     null
   );
@@ -211,6 +239,11 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   const [diagnosticSlot, _setDiagnosticSlot] = useState<
     DiagnosticsCartContextProps['diagnosticSlot']
   >(null);
+
+  const [areaSelected, setAreaSelected] = useState<DiagnosticsCartContextProps['areaSelected']>({});
+  const [diagnosticAreas, setDiagnosticAreas] = useState<
+    DiagnosticsCartContextProps['diagnosticAreas']
+  >([]);
 
   const setDiagnosticClinic: DiagnosticsCartContextProps['setDiagnosticClinic'] = (item) => {
     _setDiagnosticClinic(item);
@@ -279,6 +312,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     }
     const newCartItems = [itemToAdd, ...cartItems];
     setCartItems(newCartItems);
+    //empty the slots and areas everytime due to dependency of api.
+    setDiagnosticSlot(null);
+    setAreaSelected!({});
+    setDiagnosticAreas([]);
   };
 
   const addMultipleCartItems: DiagnosticsCartContextProps['addMultipleCartItems'] = (
@@ -299,6 +336,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
 
   const removeCartItem: DiagnosticsCartContextProps['removeCartItem'] = (id) => {
     const newCartItems = cartItems.filter((item) => item.id !== id);
+    //empty the slots and areas everytime due to dependency of api.
+    setDiagnosticSlot(null);
+    setAreaSelected!({});
+    setDiagnosticAreas!([]);
     setCartItems(newCartItems);
   };
   const updateCartItem: DiagnosticsCartContextProps['updateCartItem'] = (itemUpdates) => {
@@ -316,11 +357,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   );
 
   const deliveryCharges =
-    deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-      ? 0
-      : cartTotal > 0 && cartTotal < AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY
-      ? AppConfig.Configuration.DIASGNOS_DELIVERY_CHARGES
-      : 0;
+    deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP ? 0 : cartTotal > 0 ? hcCharges : 0;
 
   const grandTotal = parseFloat((cartTotal + deliveryCharges - couponDiscount).toFixed(2));
 
@@ -377,6 +414,8 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setClinics([]);
     setCoupon(null);
     setDiagnosticSlot(null);
+    setAreaSelected({});
+    setDiagnosticAreas([]);
   };
 
   useEffect(() => {
@@ -444,6 +483,12 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         grandTotal,
         couponDiscount,
         deliveryCharges,
+        setAreaSelected,
+        areaSelected,
+        setDiagnosticAreas,
+        diagnosticAreas,
+        hcCharges,
+        setHcCharges,
 
         uploadPrescriptionRequired: false,
 

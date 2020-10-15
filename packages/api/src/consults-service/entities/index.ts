@@ -27,7 +27,6 @@ import {
   trackWebEngageEventForCasesheetUpdate,
   trackWebEngageEventForCasesheetInsert,
   trackWebEngageEventForExotelCall,
-  trackWebEngageEventForAppointmentComplete,
 } from 'notifications-service/resolvers/webEngageAPI';
 
 import { AppointmentCallFeedback } from './appointmentCallFeedbackEntity';
@@ -36,6 +35,7 @@ export enum APPOINTMENT_UPDATED_BY {
   DOCTOR = 'DOCTOR',
   PATIENT = 'PATIENT',
   ADMIN = 'ADMIN',
+  SYSTEM = 'SYSTEM',
 }
 
 export interface PaginateParams {
@@ -325,6 +325,9 @@ export class Appointment extends BaseEntity {
   })
   paymentInfo: Partial<AppointmentPayments>;
 
+  @Column({ nullable: true, default: false })
+  hideHealthRecordNudge: Boolean;
+
   @BeforeUpdate()
   async appointMentStatusConstraintCheck() {
     try {
@@ -422,11 +425,6 @@ export class Appointment extends BaseEntity {
   @AfterUpdate()
   async dropAppointmentCache() {
     await delCache(`patient:appointment:${this.id}`);
-  }
-
-  @AfterUpdate()
-  trackWebEngageEventForAppointmentComplete() {
-    trackWebEngageEventForAppointmentComplete(this);
   }
 
   @AfterUpdate()
@@ -707,8 +705,11 @@ export class AppointmentCallDetails extends BaseEntity {
   @Column({ nullable: true })
   updatedDate: Date;
 
-  @OneToOne(() => AppointmentCallFeedback, (appointmentCallFeedback) => appointmentCallFeedback.appointmentCallDetails)
-  appointmentCallFeedback: AppointmentCallFeedback
+  @OneToOne(
+    () => AppointmentCallFeedback,
+    (appointmentCallFeedback) => appointmentCallFeedback.appointmentCallDetails
+  )
+  appointmentCallFeedback: AppointmentCallFeedback;
 
   @BeforeInsert()
   updateDateCreation() {
@@ -1021,7 +1022,6 @@ export class CaseSheet extends BaseEntity {
 ///////////////////////////////////////////////////////////
 @Entity()
 export class ConsultQueueItem extends BaseEntity {
-
   @Index('ConsultQueueItem_appointmentId')
   @Column({ nullable: false })
   appointmentId: string;

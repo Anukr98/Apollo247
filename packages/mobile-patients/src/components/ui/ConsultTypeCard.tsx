@@ -12,6 +12,7 @@ import {
   OnlineHeader,
   CTLightGrayChat,
   CTLightGrayVideo,
+  CTPhone,
 } from './Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '../../theme/theme';
@@ -219,10 +220,14 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
         { image: <CTCalender />, description: string.consultType.online.point2 },
         { image: <CTPayment />, description: string.consultType.online.point3 },
         {
-          image: <CTLightGrayVideo />,
+          image: <CTPhone style={{ marginTop: 3 }} />,
           description: string.consultType.online.point4,
         },
-        { image: <CTPrescription />, description: string.consultType.online.point5 },
+        {
+          image: <CTLightGrayVideo />,
+          description: string.consultType.online.point5,
+        },
+        { image: <CTPrescription />, description: string.consultType.online.point6 },
         {
           image: <CTLightGrayChat />,
           description: string.consultType.follow_up_chat_days_text.replace('{0}', chatDays),

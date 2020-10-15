@@ -30,7 +30,7 @@ import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useAuth, useAllCurrentPatients } from 'hooks/authHooks';
 import { ManageProfile } from 'components/ManageProfile';
 import { BottomLinks } from 'components/BottomLinks';
-import { gtmTracking } from 'gtmTracking';
+import { gtmTracking, dataLayerTracking } from 'gtmTracking';
 import { getOpeningHrs, readableParam } from '../helpers/commonHelpers';
 import { SchemaMarkup } from 'SchemaMarkup';
 import { MetaTagsComp } from 'MetaTagsComp';
@@ -41,7 +41,7 @@ import { NavigationBottom } from 'components/NavigationBottom';
 import { GetDoctorNextAvailableSlot } from 'graphql/types/GetDoctorNextAvailableSlot';
 import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetailsType } from 'graphql/types/GetDoctorDetailsById';
 import { doctorProfileViewTracking } from 'webEngageTracking';
-import { getDiffInMinutes } from 'helpers/commonHelpers';
+import { getDiffInMinutes, deepLinkUtil } from 'helpers/commonHelpers';
 import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
 import { SAVE_PATIENT_SEARCH } from 'graphql/pastsearches';
 import { useLocation } from 'react-router';
@@ -253,18 +253,22 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     doctorAvailableSlots.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0];
 
   useEffect(() => {
+    deepLinkUtil(`Doctor?${doctorId}`);
+  }, []);
+
+  useEffect(() => {
     if (doctorSlots && doctorSlots.availableSlot) {
       const {
         doctorType,
         experience,
-        fullName,
+        displayName,
         specialty: { name },
       } = doctorData;
       const eventData = {
         availableInMins: getDiffInMinutes(doctorSlots.availableSlot),
         docCategory: doctorType,
         exp: experience,
-        name: fullName,
+        name: displayName,
         specialty: name,
       };
       doctorProfileViewTracking(eventData);
@@ -287,7 +291,7 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           setDoctorData(data.getDoctorDetailsById);
           const {
             id,
-            fullName,
+            displayName,
             photoUrl,
             firstName,
             lastName,
@@ -296,7 +300,6 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             onlineConsultationFees,
             physicalConsultationFees,
             consultHours,
-            salutation,
           } = data.getDoctorDetailsById;
           if (currentPatient && currentPatient.id) {
             saveSearchMutation({
@@ -335,10 +338,13 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               doctorHospital[0].facility.imageUrl ||
               'https://prodaphstorage.blob.core.windows.net/patientwebstaticfiles/hospital_image-e202f2.png';
           }
+
+          const docSpecialty = specialty && specialty.name ? specialty.name : '';
+
           setStructuredJSON({
             '@context': 'http://schema.org/',
             '@type': 'Physician',
-            name: fullName ? fullName : `${firstName} ${lastName}`,
+            name: displayName ? displayName : `Dr. ${firstName} ${lastName}`,
             url: window && window.location ? window.location.href : null,
             currenciesAccepted: 'INR',
             image: photoUrl || 'https://prodaphstorage.blob.core.windows.net/doctors/no_photo.png',
@@ -410,26 +416,34 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               {
                 '@type': 'ListItem',
                 position: 4,
-                name: fullName ? fullName : `${firstName} ${lastName}`,
+                name: displayName ? displayName : `Dr. ${firstName} ${lastName}`,
                 item: `https://www.apollo247.com/specialties/${readableParam(
                   specialty ? specialty.name : ''
-                )}/${readableParam(fullName ? fullName : `${firstName} ${lastName}`)}-${id}`,
+                )}/${readableParam(
+                  displayName ? displayName : `Dr. ${firstName} ${lastName}`
+                )}-${id}`,
               },
             ],
           });
           setMetaTagProps({
-            title: `${fullName}: ${
-              specialty && specialty.name ? specialty.name : ''
-            } - Online Consultation/Appointment - Apollo 247`,
-            description: `Book an appointment with ${fullName} - ${
-              specialty && specialty.name
-            } and consult online at Apollo 247. Know more about ${fullName} and his work here. Get medical help online in just a few clicks at Apollo 247.`,
+            title: `${displayName}, ${docSpecialty} in ${city}, Consult Online Now - Apollo 247`,
+            description: `Consult ${displayName} (${docSpecialty}) online now. Book online appointment and clinic visit with ${displayName} in just a few clicks. Know fees, availability, experience and more about ${displayName}.`,
             canonicalLink:
               window &&
               window.location &&
               window.location.origin &&
-              `${window.location.origin}/doctors/${readableParam(fullName)}-${id}`,
+              `${window.location.origin}/doctors/${readableParam(displayName)}-${id}`,
           });
+          /**Gtm code start start */
+          dataLayerTracking({
+            event: 'pageviewEvent',
+            pagePath: window.location.href,
+            pageName: 'Doctor Details Page',
+            pageLOB: 'Consultation',
+            pageType: 'Details Page',
+            productlist: JSON.stringify(data.getDoctorDetailsById),
+          });
+          /**Gtm code start end */
         }
         setError(false);
       })
@@ -504,7 +518,7 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     </>
                   ) : null}
 
-                  <span>{doctorData.fullName || ''}</span>
+                  <span>{doctorData.displayName || ''}</span>
                 </>
               )}
             </div>

@@ -78,7 +78,9 @@ export const OneApolloMembership: React.FC<OneApolloProps> = (props) => {
         setCredits(res.data.getOneApolloUser.availableHC);
         settier(res.data.getOneApolloUser.tier);
         setEarned(res.data.getOneApolloUser.earnedHC);
-        setRedeemed(res.data.getOneApolloUser.earnedHC - res.data.getOneApolloUser.availableHC);
+        setRedeemed(
+          res.data.getOneApolloUser.burnedCredits + res.data.getOneApolloUser.blockedCredits
+        );
         setFetchFailed(false);
       })
       .catch((error) => {

@@ -23,7 +23,7 @@ import {
   NotificationBinArchive,
   AppointmentUpdateHistory,
   ExotelDetails,
-  ConsultQueueItem
+  ConsultQueueItem,
 } from 'consults-service/entities';
 import {
   AdminDoctorMapper,
@@ -97,7 +97,11 @@ import {
   PatientEntitiySubscriber,
 } from 'profiles-service/entities';
 import { AppointmentEntitySubscriber } from 'consults-service/entities/observers/appointmentObserver';
-import { AppointmentCallFeedback } from 'consults-service/entities/appointmentCallFeedbackEntity'
+import { MedicineEntitySubscriber } from 'profiles-service/entities/observers/medicinePaymentSuccessObserver';
+import { DiagnosticEntitySubscriber } from 'profiles-service/entities/observers/diagnosticPaymentSuccessObserver';
+import { AppointmentCallFeedback } from 'consults-service/entities/appointmentCallFeedbackEntity';
+import { HealthCheckRecords } from 'profiles-service/entities/healthCheckRecordsEntity';
+import { HospitalizationRecords } from 'profiles-service/entities/hospitalizationRecordsEntity';
 
 export const connect = async () => {
   return await createConnections([
@@ -127,7 +131,7 @@ export const connect = async () => {
         AppointmentUpdateHistory,
         ExotelDetails,
         ConsultQueueItem,
-        AppointmentCallFeedback
+        AppointmentCallFeedback,
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,
@@ -223,6 +227,8 @@ export const connect = async () => {
         MedicineOrderCancelReason,
         PharmacologistConsult,
         MedicineOrderAddress,
+        HealthCheckRecords,
+        HospitalizationRecords,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,
@@ -230,7 +236,7 @@ export const connect = async () => {
       username: process.env.PROFILES_DB_USER,
       password: process.env.PROFILES_DB_PASSWORD,
       database: `profiles_${process.env.DB_NODE_ENV}`,
-      subscribers: [PatientEntitiySubscriber],
+      subscribers: [PatientEntitiySubscriber, MedicineEntitySubscriber, DiagnosticEntitySubscriber],
       logging: process.env.NODE_ENV === 'production' ? false : true,
       extra: {
         connectionLimit: process.env.CONNECTION_POOL_LIMIT,

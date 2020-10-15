@@ -28,16 +28,27 @@ import { CouponServiceContext } from 'coupons-service/couponServiceContext';
 import { log } from 'customWinstonLogger';
 import {
   PharmaItemsResponse,
-  StoreInventoryResp,
   PharmaLineItemResult,
   StoreItemDetail,
 } from 'types/medicineOrderTypes';
 import fetch from 'node-fetch';
 
 export const saveMedicineOrderOMSTypeDefs = gql`
+  enum BOOKINGSOURCE {
+    MOBILE
+    WEB
+  }
+
+  enum DEVICETYPE {
+    IOS
+    ANDROID
+    DESKTOP
+  }
+
   input MedicineCartOMSInput {
     quoteId: String
     shopId: String
+    tatType: String
     estimatedAmount: Float
     patientId: ID!
     medicineDeliveryType: MEDICINE_DELIVERY_TYPE!
@@ -92,6 +103,17 @@ export const saveMedicineOrderOMSTypeDefs = gql`
     READY_AT_STORE
     PURCHASED_IN_STORE
     PAYMENT_ABORTED
+    ON_HOLD
+    READY_FOR_VERIFICATION
+    VERIFICATION_DONE
+    RETURN_PENDING
+    RETURN_TO_ORIGIN
+    RETURN_REQUESTED
+    RVP_ASSIGNED
+    RETURN_PICKUP
+    RETURN_RTO
+    READY_TO_SHIP
+    SHIPPED
   }
 
   type SaveMedicineOrderResult {
@@ -115,6 +137,7 @@ export const saveMedicineOrderOMSTypeDefs = gql`
   input MedicineCartOMSItem {
     medicineSKU: String
     medicineName: String
+    couponFree: Int
     price: Float
     quantity: Int
     mrp: Float
@@ -138,6 +161,7 @@ export enum customerTypeInCoupons {
 type MedicineCartOMSInput = {
   quoteId: string;
   shopId: string;
+  tatType: string;
   estimatedAmount: number;
   patientId: string;
   medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
@@ -181,6 +205,7 @@ type MedicineCartOMSItem = {
   mou: number;
   isMedicine: string;
   specialPrice: number;
+  couponFree: number;
 };
 
 type SaveMedicineOrderResult = {
@@ -220,7 +245,10 @@ const saveMedicineOrderOMS: Resolver<
   ) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
   }
-  const medicineOrderAddressDetails: Partial<MedicineOrderAddress> = {};
+  const medicineOrderAddressDetails: Partial<MedicineOrderAddress> = {
+    name: patientDetails.firstName,
+    mobileNumber: patientDetails.mobileNumber,
+  };
   if (medicineCartOMSInput.patientAddressId) {
     const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
     const patientAddressDetails = await patientAddressRepo.findById(
@@ -243,14 +271,10 @@ const saveMedicineOrderOMS: Resolver<
 
       if (patientAddressDetails.name) {
         medicineOrderAddressDetails.name = patientAddressDetails.name;
-      } else {
-        medicineOrderAddressDetails.name = patientDetails.firstName;
       }
 
       if (patientAddressDetails.mobileNumber) {
         medicineOrderAddressDetails.mobileNumber = patientAddressDetails.mobileNumber;
-      } else {
-        medicineOrderAddressDetails.mobileNumber = patientDetails.mobileNumber;
       }
     }
   }
@@ -312,12 +336,27 @@ const saveMedicineOrderOMS: Resolver<
       }
     }
   }
+  let storeDetails = {
+    clusterId: '',
+    allocationProfileName: '',
+  };
+  if (medicineCartOMSInput.shopId) {
+    storeDetails = await getStoreDetails(medicineCartOMSInput.shopId);
+  }
+
+  if (medicineCartOMSInput.prescriptionImageUrl) {
+    const imgUrls = medicineCartOMSInput.prescriptionImageUrl.split(',');
+    if (imgUrls.some((url) => url.split('/').pop() == 'null')) {
+      throw new AphError(AphErrorMessages.INVALID_MEDICINE_PRESCRIPTION_URL, undefined, {});
+    }
+  }
 
   const medicineOrderattrs: Partial<MedicineOrders> = {
     patient: patientDetails,
     estimatedAmount: medicineCartOMSInput.estimatedAmount,
     orderType: MEDICINE_ORDER_TYPE.CART_ORDER,
     shopId: medicineCartOMSInput.shopId,
+    tatType: medicineCartOMSInput.tatType || '',
     quoteDateTime: new Date(),
     devliveryCharges: medicineCartOMSInput.devliveryCharges,
     deliveryType: medicineCartOMSInput.medicineDeliveryType,
@@ -337,6 +376,8 @@ const saveMedicineOrderOMS: Resolver<
     shopAddress: JSON.stringify(medicineCartOMSInput.shopAddress),
     customerComment: medicineCartOMSInput.customerComment,
     isOmsOrder: true,
+    clusterId: storeDetails.clusterId,
+    allocationProfileName: storeDetails.allocationProfileName,
   };
 
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
@@ -345,9 +386,10 @@ const saveMedicineOrderOMS: Resolver<
     const saveOrder = await medicineOrdersRepo.saveMedicineOrder(medicineOrderattrs);
     if (saveOrder) {
       const medicineOrderLineItems = medicineCartOMSInput.items.map(async (item) => {
+        const { couponFree, ...lineItems } = item;
         const orderItemAttrs: Partial<MedicineOrderLineItems> = {
           medicineOrders: saveOrder,
-          ...item,
+          ...lineItems,
         };
         await medicineOrdersRepo.saveMedicineOrderLineItem(orderItemAttrs);
       });
@@ -390,7 +432,7 @@ const validateStoreItems = async (medicineCartOMSInput: MedicineCartOMSInput) =>
   }
   medicineCartOMSInput.items.map((item) => {
     const storeItem = storeItemDetails.find((productItem: StoreItemDetail) => {
-      return productItem.itemId == item.medicineSKU;
+      return productItem.sku == item.medicineSKU;
     });
     const magentoItem = magentoItemDetails.find((productItem: PharmaLineItemResult) => {
       return productItem.sku == item.medicineSKU;
@@ -407,6 +449,7 @@ const validateStoreItems = async (medicineCartOMSInput: MedicineCartOMSInput) =>
       orderLineItems.push({
         itemId: item.medicineSKU,
         productName: item.medicineName,
+        couponFree: item.couponFree,
         productType:
           type == 'pharma'
             ? CouponCategoryApplicable.PHARMA
@@ -444,6 +487,7 @@ const validatePharmaItems = async (medicineCartOMSInput: MedicineCartOMSInput) =
         mrp: orderLineItem.price,
         specialPrice: orderLineItem.special_price || orderLineItem.price,
         quantity: item.quantity,
+        couponFree: item.couponFree,
       });
     }
   });
@@ -490,34 +534,27 @@ const getMagentoItems = async (items: MedicineCartOMSItem[]) => {
 };
 
 const getStoreItems = async (items: MedicineCartOMSItem[], shopId: string) => {
-  const storeInventoryCheck = process.env.PHARMACY_MED_STORE_INVENTORY_URL || '';
-  const authToken = process.env.PHARMACY_MED_DELIVERY_AUTH_TOKEN || '';
-  const itemdetails = items.map((item) => {
-    return {
-      ItemId: item.medicineSKU,
-    };
-  });
-  const reqBody = JSON.stringify({
-    shopId: shopId,
-    itemdetails,
-  });
+  const inventoryBaseUrl = process.env.INVENTORY_SYNC_URL || '';
+  const authToken = process.env.INVENTORY_SYNC_TOKEN || '';
+  const itemdetails = items.map((item) => item.medicineSKU);
+  const apiUrl = `${inventoryBaseUrl}/pricecheck?storeCode=${shopId}&sku=${itemdetails.join(',')}`;
+
   log(
     'profileServiceLogger',
-    `EXTERNAL_API_CALL_TO_PHARMACY: ${storeInventoryCheck}`,
+    `EXTERNAL_API_CALL_TO_PHARMACY: ${apiUrl}`,
     'FETCH_STORE_INVENTORY_FROM_PHARMACY__API_CALL_STARTING',
-    reqBody,
+    '',
     ''
   );
 
-  const pharmaResp = await fetch(storeInventoryCheck, {
-    method: 'POST',
-    body: reqBody,
-    headers: { 'Content-Type': 'application/json', Authentication: authToken },
+  const pharmaResp = await fetch(apiUrl, {
+    headers: { 'Content-Type': 'application/json', Authorization: authToken },
   });
+
   if (pharmaResp.status != 200) {
     log(
       'profileServiceLogger',
-      `EXTERNAL_API_CALL_TO_PHARMACY: ${storeInventoryCheck}`,
+      `EXTERNAL_API_CALL_TO_PHARMACY: ${apiUrl}`,
       'FETCH_STORE_INVENTORY_FROM_PHARMACY__API_CALL_FAILED',
       JSON.stringify(pharmaResp),
       ''
@@ -525,19 +562,70 @@ const getStoreItems = async (items: MedicineCartOMSItem[], shopId: string) => {
     return [];
   }
 
-  const storeItemsDetails: StoreInventoryResp = await pharmaResp.json();
-  if (!storeItemsDetails.requestStatus) {
+  const storeItemsDetails = await pharmaResp.json();
+
+  if (storeItemsDetails.errorMsg) {
     log(
       'profileServiceLogger',
-      `EXTERNAL_API_CALL_TO_PHARMACY: ${storeInventoryCheck}`,
+      `EXTERNAL_API_CALL_TO_PHARMACY: ${apiUrl}`,
       'FETCH_STORE_INVENTORY_FROM_PHARMACY__API_CALL_FAILED',
       JSON.stringify(pharmaResp),
       ''
     );
     return [];
   }
+  log(
+    'profileServiceLogger',
+    `EXTERNAL_API_CALL_TO_PHARMACY: ${apiUrl}`,
+    'FETCH_STORE_INVENTORY_FROM_PHARMACY_API_CALL_SUCCESS',
+    JSON.stringify(storeItemsDetails),
+    ''
+  );
+  return storeItemsDetails.response || [];
+};
 
-  return storeItemsDetails.itemDetails;
+const getStoreDetails = async (shopId: string) => {
+  const inventoryBaseUrl = process.env.INVENTORY_SYNC_URL || '';
+  const authToken = process.env.INVENTORY_SYNC_TOKEN || '';
+  const apiUrl = `${inventoryBaseUrl}/getstore?storeCode=${shopId}`;
+
+  log('profileServiceLogger', `FETCH_STORE_DETAILS:${shopId}`, 'saveMedicineOrderOMS', '', '');
+
+  const pharmaResp = await fetch(apiUrl, {
+    headers: { 'Content-Type': 'application/json', Authorization: authToken },
+  });
+
+  if (pharmaResp.status != 200) {
+    log(
+      'profileServiceLogger',
+      `FETCH_STORE_DETAILS: ${shopId}`,
+      'saveMedicineOrderOMS',
+      JSON.stringify(pharmaResp),
+      'FETCH_STORE_DETAILS_API_CALL_FAILED'
+    );
+    return {};
+  }
+
+  const storeDetails = await pharmaResp.json();
+
+  if (storeDetails.errorMsg) {
+    log(
+      'profileServiceLogger',
+      `FETCH_STORE_DETAILS:${shopId}`,
+      'saveMedicineOrderOMS',
+      JSON.stringify(storeDetails),
+      'FETCH_STORE_DETAILS_API_CALL_FAILED'
+    );
+    return {};
+  }
+  log(
+    'profileServiceLogger',
+    `FETCH_STORE_DETAILS_SUCCESS`,
+    'saveMedicineOrderOMS',
+    JSON.stringify(storeDetails),
+    ''
+  );
+  return storeDetails.response || {};
 };
 
 const isDiffLessThan25Percent = (num1: number, num2: number) => {

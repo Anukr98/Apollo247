@@ -39,7 +39,7 @@ import {
   ValidateConsultCouponVariables,
 } from 'graphql/types/ValidateConsultCoupon';
 import moment from 'moment';
-import { gtmTracking, _cbTracking } from '../gtmTracking';
+import { gtmTracking, _cbTracking, dataLayerTracking } from '../gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -227,7 +227,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
     VALIDATE_CONSULT_COUPON
   );
   const currentTime = new Date().getTime();
-  const doctorName = doctorDetails && doctorDetails.firstName ? doctorDetails.firstName : '';
+  const doctorName = doctorDetails && doctorDetails.displayName ? doctorDetails.displayName : '';
 
   const physicalConsultationFees =
     doctorDetails && doctorDetails && doctorDetails.physicalConsultationFees
@@ -239,7 +239,10 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
     afternoonSlots: number[] = [],
     eveningSlots: number[] = [],
     lateNightSlots: number[] = [];
-  const doctorAvailableTime = moment().add(props.doctorAvailableIn, 'm').toDate() || new Date();
+  const doctorAvailableTime =
+    moment()
+      .add(props.doctorAvailableIn, 'm')
+      .toDate() || new Date();
   const apiDateFormat =
     dateSelected === ''
       ? moment(doctorAvailableTime).format('YYYY-MM-DD')
@@ -439,7 +442,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
 
         const {
           city,
-          fullName,
+          displayName,
           id,
           doctorType,
           doctorHospital,
@@ -449,7 +452,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
           count = 0;
         onlineConsultationFees &&
           items.push({
-            item_name: fullName,
+            item_name: displayName,
             item_id: id,
             price: Number(onlineConsultationFees),
             item_brand:
@@ -471,7 +474,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
           });
         physicalConsultationFees &&
           items.push({
-            item_name: fullName,
+            item_name: displayName,
             item_id: id,
             price: Number(physicalConsultationFees),
             item_brand:
@@ -560,10 +563,6 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
     <div className={classes.root}>
       <Scrollbars autoHide={true} autoHeight autoHeightMax={isSmallScreen ? '50vh' : '65vh'}>
         <div className={classes.customScrollBar}>
-          <p className={`${classes.consultGroup} ${classes.infoNotes}`}>
-            Please note that after booking, you will need to download the Apollo 247 app to continue
-            with your consultation.
-          </p>
           <Grid container spacing={2}>
             <Grid item sm={6} xs={12}>
               <div className={classes.consultGroup}>
@@ -668,6 +667,15 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
                   speciality: getSpeciality(),
                 })
               );
+              /**Gtm code start start */
+              dataLayerTracking({
+                event: 'Pay Now Clicked',
+                Price: revisedAmount,
+                product: doctorId,
+                Time: appointmentDateTime,
+                Type: AppointmentType.PHYSICAL,
+              });
+              /**Gtm code start end */
             }}
             // onClick={(e) => {
             //   setMutationLoading(true);

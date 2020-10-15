@@ -7,7 +7,6 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 @EntityRepository(Diagnostics)
 export class DiagnosticsRepository extends Repository<Diagnostics> {
   async searchDiagnostics(itemName: string, city: string) {
-    console.log('itemName', itemName, 'city', city);
     //return this.find({ where: { itemName } });
     return await this.createQueryBuilder('diagnostics')
       .where('diagnostics.itemName like :name', { name: '%' + itemName + '%' })
@@ -17,7 +16,6 @@ export class DiagnosticsRepository extends Repository<Diagnostics> {
   }
 
   async searchDiagnosticswithoutcity(itemName: string) {
-    console.log('itemName', itemName, 'city', 'diagnosioticsrepo');
     //return this.find({ where: { itemName } });
     return await this.createQueryBuilder('diagnostics')
       .where('diagnostics.itemName like :name', { name: '%' + itemName + '%' })
@@ -26,7 +24,6 @@ export class DiagnosticsRepository extends Repository<Diagnostics> {
   }
 
   async getDiagnosticsCites(cityName: string) {
-    console.log('cityName', cityName);
     return await this.createQueryBuilder('diagnostics')
       .select([
         'max("city") as cityName',

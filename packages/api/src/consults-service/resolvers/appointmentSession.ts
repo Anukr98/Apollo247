@@ -193,7 +193,6 @@ const createJuniorAppointmentSession: Resolver<
       consultsDb,
       doctorsDb
     );
-    console.log(notificationResult, 'notificationResult');
     return {
       sessionId: apptSessionDets.sessionId,
       appointmentToken: apptSessionDets.juniorDoctorToken,
@@ -221,7 +220,6 @@ const createJuniorAppointmentSession: Resolver<
     consultsDb,
     doctorsDb
   );
-  console.log(notificationResult, 'notificationResult');
   const historyAttrs: Partial<AppointmentUpdateHistory> = {
     appointment: apptDetails,
     userType: APPOINTMENT_UPDATED_BY.PATIENT,
@@ -360,7 +358,6 @@ const createAppointmentSession: Resolver<
       consultsDb,
       doctorsDb
     );
-    console.log(notificationResult, 'notificationResult');
     if (
       createAppointmentSessionInput.requestRole != REQUEST_ROLES.JUNIOR &&
       currentDate < apptDetails.appointmentDateTime
@@ -423,7 +420,6 @@ const createAppointmentSession: Resolver<
     consultsDb,
     doctorsDb
   );
-  console.log(notificationResult, 'notificationResult');
 
   if (
     createAppointmentSessionInput.requestRole != REQUEST_ROLES.JUNIOR &&

@@ -34,6 +34,7 @@ import {
   PrescriptionInputArgs,
 } from 'profiles-service/resolvers/prescriptionUpload';
 import { Doctor, ROUTE_OF_ADMINISTRATION } from 'doctors-service/entities';
+import { log } from 'customWinstonLogger';
 
 export const convertCaseSheetToRxPdfData = async (
   caseSheet: Partial<CaseSheet>,
@@ -286,10 +287,12 @@ export const convertCaseSheetToRxPdfData = async (
       const patientAge =
         patientData.dateOfBirth === null
           ? ''
-          : Math.abs(
+          : new Date().getUTCFullYear() - new Date(patientData.dateOfBirth).getUTCFullYear() > -1
+          ? Math.floor(
               new Date(Date.now()).getUTCFullYear() -
                 new Date(patientData.dateOfBirth).getUTCFullYear()
-            ).toString();
+            ).toString()
+          : '0';
       patientInfo = {
         firstName: patientData.firstName,
         lastName: patientData.lastName,
@@ -342,7 +345,6 @@ export const convertCaseSheetToRxPdfData = async (
         specialty: doctordata.specialty.name,
         signature: doctordata.signature,
       };
-      console.log(doctorInfo);
     }
   }
 
@@ -373,20 +375,20 @@ export const convertCaseSheetToRxPdfData = async (
 
   let followUpDetails = '';
 
-  if (caseSheet.followUp) {
-    followUpDetails = 'Follow up ';
-    if (caseSheet.followUpConsultType)
-      followUpDetails = followUpDetails + '(' + _capitalize(caseSheet.followUpConsultType) + ') ';
-    let followUpDays;
-    if (caseSheet.followUpAfterInDays) {
-      followUpDays = caseSheet.followUpAfterInDays;
-      if (followUpDays) followUpDetails = followUpDetails + 'after ' + followUpDays + ' days';
-    } else if (caseSheet.followUpDate) {
-      //followUpDays = differenceInCalendarDays(caseSheet.followUpDate, caseSheet.createdDate!);
-      followUpDetails = followUpDetails + 'on ' + format(caseSheet.followUpDate, 'dd/MM/yyyy');
-    }
-    followUpDetails = followUpDetails + ' with reports';
-  }
+  // if (caseSheet.followUp) {
+  //   followUpDetails = 'Follow up ';
+  //   if (caseSheet.followUpConsultType)
+  //     followUpDetails = followUpDetails + '(' + _capitalize(caseSheet.followUpConsultType) + ') ';
+  //   let followUpDays;
+  //   if (caseSheet.followUpAfterInDays) {
+  //     followUpDays = caseSheet.followUpAfterInDays;
+  //     if (followUpDays) followUpDetails = followUpDetails + 'after ' + followUpDays + ' days';
+  //   } else if (caseSheet.followUpDate) {
+  //     //followUpDays = differenceInCalendarDays(caseSheet.followUpDate, caseSheet.createdDate!);
+  //     followUpDetails = followUpDetails + 'on ' + format(caseSheet.followUpDate, 'dd/MM/yyyy');
+  //   }
+  //   followUpDetails = followUpDetails + ' with reports';
+  // }
 
   const referralSpecialtyName = caseSheet.referralSpecialtyName
     ? caseSheet.referralSpecialtyName
@@ -1110,10 +1112,17 @@ export const uploadRxPdf = async (
 
   const blob = await client.uploadFile({ name, filePath });
   const blobUrl = client.getBlobUrl(blob.name);
-  console.log('blobUrl===', blobUrl);
   const base64pdf = await convertPdfUrlToBase64(blobUrl);
 
-  fs.unlink(filePath, (error) => console.log(error));
+  fs.unlink(filePath, (error) => {
+    log(
+      'consultServiceLogger',
+      'uploadRxPdf fs.unlink error',
+      'rxPdfGenerator()->uploadRxPdf()->fs.unlink',
+      '',
+      JSON.stringify(error)
+    );
+  });
   const uploadData = { ...blob, base64pdf }; // returning blob details and base64Pdf
 
   return uploadData;
@@ -1128,7 +1137,6 @@ const convertPdfUrlToBase64 = async (pdfUrl: string) => {
   util.promisify(pdf2base64);
   try {
     const base64pdf = await pdf2base64(pdfUrl);
-    console.log('pdfData:', base64pdf);
     return base64pdf;
   } catch (e) {
     throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
@@ -1213,6 +1221,10 @@ export const uploadPdfBase64ToPrism = async (
       diagnosis: [],
       diagnosticPrescription: diagnosticPrescription,
       medicinePrescriptions: caseSheetMedicinePrescription,
+      appointmentDisplayId:
+        caseSheet && caseSheet.appointment && caseSheet.appointment.displayId
+          ? caseSheet.appointment.displayId.toString()
+          : '',
     },
     uhid: patientDetails.uhid,
   };

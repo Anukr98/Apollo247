@@ -71,7 +71,6 @@ const getAvailableDoctors: Resolver<
         doctor.id,
         ChooseDoctorInput.slotDateTime
       );
-      console.log(doctor.id, apptCount, 'appt count');
       const availableDoctor: AvailableDoctor = {
         doctorFirstName: doctor.firstName,
         doctorLastName: doctor.lastName,
@@ -83,7 +82,6 @@ const getAvailableDoctors: Resolver<
         experience: doctor.experience,
       };
       if (apptCount === 0) {
-        console.log(availableDoctor, 'doctor');
         availalbeDoctors.push(availableDoctor);
       }
       resolve(availableDoctor);

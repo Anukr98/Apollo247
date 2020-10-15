@@ -266,8 +266,12 @@ export const styles = StyleSheet.create({
   healthvaultImage: {
     height: 100,
     width: 100,
-    resizeMode: 'cover',
-    borderRadius: 10,
+    borderRadius: 5,
+  },
+  imageHeadingText: {
+    ...theme.viewStyles.text('R', 10, '#4A4A4A'),
+    marginRight: 16,
+    marginBottom: 4,
   },
   materialContainer: {
     alignItems: 'flex-end',
@@ -345,5 +349,13 @@ export const styles = StyleSheet.create({
   infoTextStyle: {
     ...theme.viewStyles.text('R', 12, theme.colors.APP_GREEN, 1, 16, 1),
     marginLeft: 12,
+  },
+  headerView: {
+    marginHorizontal: 16,
+    marginBottom: 8,
+  },
+  activeBorderColor: {
+    borderColor: theme.colors.INPUT_CURSOR_COLOR,
+    minHeight: 64,
   },
 });

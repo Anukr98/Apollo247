@@ -8,7 +8,7 @@ import { ConsultDoctorProfile } from 'components/Consult/V2/ChatRoom/ConsultDoct
 import { OnlineConsult } from 'components/OnlineConsult';
 import { useParams } from 'hooks/routerHooks';
 import { useAuth } from 'hooks/authHooks';
-import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/doctors';
+import { GET_DOCTOR_DETAILS_BY_ID, GET_SECRETARY_DETAILS_BY_DOCTOR_ID } from 'graphql/doctors';
 import {
   GetDoctorDetailsById,
   GetDoctorDetailsByIdVariables,
@@ -40,7 +40,13 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import { GET_APPOINTMENT_DATA } from 'graphql/consult';
 import { GetAppointmentData, GetAppointmentDataVariables } from 'graphql/types/GetAppointmentData';
 import { GetAppointmentData_getAppointmentData_appointmentsHistory as AppointmentHistory } from 'graphql/types/GetAppointmentData';
-import { removeGraphQLKeyword } from 'helpers/commonHelpers';
+import { removeGraphQLKeyword, getDiffInMinutes } from 'helpers/commonHelpers';
+import {
+  getSecretaryDetailsByDoctorId,
+  getSecretaryDetailsByDoctorIdVariables,
+} from 'graphql/types/getSecretaryDetailsByDoctorId';
+import { reschedulePatientTracking } from 'webEngageTracking';
+import { dataLayerTracking } from 'gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -215,6 +221,10 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: theme.palette.common.white,
       position: 'relative',
       outline: 'none',
+      width: 700,
+      [theme.breakpoints.down('xs')]: {
+        width: 328,
+      },
     },
     popupHeading: {
       padding: '20px 10px',
@@ -352,6 +362,8 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 'bold',
       lineHeight: 1.85,
       backgroundColor: '#fff',
+      boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
+      minWidth: 135,
       '&:hover': {
         backgroundColor: '#fff',
       },
@@ -496,7 +508,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 type Params = { appointmentId: string; doctorId: string };
 
-export const ChatRoom: React.FC = () => {
+const ChatRoom: React.FC = () => {
   const classes = useStyles({});
   const params = useParams<Params>();
   const appointmentId = params.appointmentId;
@@ -506,6 +518,7 @@ export const ChatRoom: React.FC = () => {
   const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = React.useState<boolean>(false);
   const [jrDoctorJoined, setJrDoctorJoined] = useState<boolean>(false);
+  const [srDoctorJoined, setSrDoctorJoined] = useState<boolean>(false);
   const [nextSlotAvailable, setNextSlotAvailable] = useState<string>('');
   const [isRescheduleSuccess, setIsRescheduleSuccess] = useState<boolean>(false);
   const [rescheduledSlot, setRescheduledSlot] = useState<string | null>(null);
@@ -514,12 +527,27 @@ export const ChatRoom: React.FC = () => {
   const [apiLoading, setApiLoading] = useState<boolean>(false);
   const [rescheduleCount, setRescheduleCount] = useState<number | null>(null);
   const [reschedulesRemaining, setReschedulesRemaining] = useState<number | null>(null);
+  const [isConsultCompleted, setIsConsultCompleted] = useState<boolean>(false);
+  const [disableActions, setDisableActions] = useState<boolean>(false);
+
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const patientId = (currentPatient && currentPatient.id) || '';
 
   const [alertMessage, setAlertMessage] = useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: 'Chat Room Page',
+      pageLOB: 'Consultation',
+      pageType: 'Chat Room Page',
+    });
+    /**Gtm code start end */
+  }, []);
 
   const { data, loading, error } = useQueryWithSkip<
     GetDoctorDetailsById,
@@ -539,7 +567,25 @@ export const ChatRoom: React.FC = () => {
     fetchPolicy: 'no-cache',
   });
 
+  const {
+    data: secretaryData,
+    loading: secretaryDataLoading,
+    error: secretaryDataError,
+  } = useQueryWithSkip<getSecretaryDetailsByDoctorId, getSecretaryDetailsByDoctorIdVariables>(
+    GET_SECRETARY_DETAILS_BY_DOCTOR_ID,
+    {
+      variables: { doctorId },
+    }
+  );
+
   const bookAppointment = useMutation(BOOK_APPOINTMENT_RESCHEDULE);
+
+  const { fullName, mobileNumber } =
+    data && data.getDoctorDetailsById
+      ? data.getDoctorDetailsById
+      : { fullName: '', mobileNumber: '' };
+  const { mobileNumber: secretaryNumber, name: secretaryName } = (secretaryData &&
+    secretaryData.getSecretaryDetailsByDoctorId) || { name: '', mobileNumber: '' };
 
   const rescheduleAPI = (bookRescheduleInput: BookRescheduleAppointmentInput) => {
     bookAppointment({
@@ -555,6 +601,15 @@ export const ChatRoom: React.FC = () => {
         setReschedulesRemaining(3 - rescheduleCount - 1);
         setIsRescheduleSuccess(true);
         setRescheduledSlot(bookRescheduleInput.newDateTimeslot);
+        reschedulePatientTracking({
+          doctorName: fullName,
+          patientName:
+            (currentPatient && `${currentPatient.firstName} ${currentPatient.lastName}`) || '',
+          secretaryName: secretaryName || '',
+          doctorNumber: mobileNumber,
+          patientNumber: (currentPatient && currentPatient.mobileNumber) || '',
+          secretaryNumber: secretaryNumber || '',
+        });
       })
 
       .catch((e) => {
@@ -580,7 +635,10 @@ export const ChatRoom: React.FC = () => {
 
   const nextAvailableSlot = (slotDoctorId: string, date: Date) => {
     setIsNextSlotLoading(true);
-    const todayDate = moment.utc(date).local().format('YYYY-MM-DD');
+    const todayDate = moment
+      .utc(date)
+      .local()
+      .format('YYYY-MM-DD');
     availableSlot(slotDoctorId, todayDate)
       .then(({ data }: any) => {
         try {
@@ -639,13 +697,21 @@ export const ChatRoom: React.FC = () => {
   ) {
     appointmentDetails = patientAppointmentData.getAppointmentData.appointmentsHistory[0];
     displayId = appointmentDetails.displayId;
+
+    // check patient id is the current patient id who is logged in
+    // fix - 15092020 - Kumar
+    const appointmentPatientId = appointmentDetails.patientId;
+    if (appointmentPatientId !== patientId) window.location.href = clientRoutes.welcome();
   }
+
+  // console.log('appointment details', appointmentDetails, '-------------------');
 
   return (
     <div className={classes.root}>
       <Header />
+
       <div className={classes.container}>
-        {!isSignedIn || appointmentLoading || loading ? (
+        {!isSignedIn || appointmentLoading || loading || secretaryDataLoading ? (
           <LinearProgress />
         ) : appointmentDetails && data ? (
           <div className={classes.doctorListingPage}>
@@ -666,6 +732,11 @@ export const ChatRoom: React.FC = () => {
                     handleRescheduleOpen={handleRescheduleOpen}
                     doctorDetails={data}
                     appointmentDetails={appointmentDetails}
+                    srDoctorJoined={srDoctorJoined}
+                    isConsultCompleted={isConsultCompleted}
+                    secretaryData={secretaryData}
+                    setDisableActions={setDisableActions}
+                    disableActions={disableActions}
                   />
                 )}
               </div>
@@ -674,10 +745,18 @@ export const ChatRoom: React.FC = () => {
                   {displayId && <span className={classes.caseNumber}>Case #{displayId} </span>}
                   {appointmentDetails &&
                     appointmentDetails.status !== STATUS.CANCELLED &&
-                    appointmentDetails.status !== STATUS.COMPLETED && (
+                    appointmentDetails.status !== STATUS.COMPLETED &&
+                    !isConsultCompleted &&
+                    !disableActions &&
+                    !srDoctorJoined && (
                       <div className={classes.headerActions}>
                         <AphButton
-                          disabled={jrDoctorJoined}
+                          disabled={
+                            appointmentDetails.isSeniorConsultStarted ||
+                            srDoctorJoined ||
+                            disableActions ||
+                            isConsultCompleted
+                          }
                           classes={{
                             root: classes.viewButton,
                             disabled: classes.disabledButton,
@@ -696,6 +775,7 @@ export const ChatRoom: React.FC = () => {
                   <ChatWindow
                     doctorDetails={data}
                     jrDoctorJoined={jrDoctorJoined}
+                    setSrDoctorJoined={setSrDoctorJoined}
                     setJrDoctorJoined={setJrDoctorJoined}
                     isModalOpen={isModalOpen}
                     setIsModalOpen={setIsModalOpen}
@@ -703,6 +783,8 @@ export const ChatRoom: React.FC = () => {
                     availableNextSlot={nextAvailableSlot}
                     rescheduleAPI={rescheduleAPI}
                     appointmentDetails={appointmentDetails}
+                    setIsConsultCompleted={setIsConsultCompleted}
+                    secretaryData={secretaryData}
                   />
                 )}
               </div>
@@ -714,7 +796,9 @@ export const ChatRoom: React.FC = () => {
           )
         )}
       </div>
+
       {!onePrimaryUser && <ManageProfile />}
+
       {data && (
         <Modal
           open={isModalOpen}
@@ -722,7 +806,7 @@ export const ChatRoom: React.FC = () => {
           disableBackdropClick
           disableEscapeKeyDown
         >
-          <Paper className={classes.modalBox} style={{ width: isChangeSlot ? 700 : 328 }}>
+          <Paper className={classes.modalBox}>
             <div
               className={classes.modalBoxClose}
               onClick={() => {
@@ -753,18 +837,16 @@ export const ChatRoom: React.FC = () => {
                     ) : (
                       <h6>
                         {'Since you have already rescheduled 3 times with Dr. '}
-                        {`${
-                          data && data.getDoctorDetailsById && data.getDoctorDetailsById.firstName
-                        }`}{' '}
+                        {`${data &&
+                          data.getDoctorDetailsById &&
+                          data.getDoctorDetailsById.fullName}`}{' '}
                         {`, We will consider this a new paid appointment.`}
                       </h6>
                     )}
                     <br />
                     <h6>
                       Next slot for Dr.{' '}
-                      {`${
-                        data && data.getDoctorDetailsById && data.getDoctorDetailsById.firstName
-                      }`}
+                      {`${data && data.getDoctorDetailsById && data.getDoctorDetailsById.fullName}`}{' '}
                       is available on -
                     </h6>
                     <br />
@@ -860,287 +942,4 @@ export const ChatRoom: React.FC = () => {
   );
 };
 
-{
-  /* {data && (
-        <Modal
-          open={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          disableBackdropClick
-          disableEscapeKeyDown
-        >
-          <Paper className={classes.modalBox}>
-            <div className={classes.modalBoxClose} onClick={() => setIsModalOpen(false)}>
-              <img src={require('images/ic_cross_popup.svg')} alt="" />
-            </div>
-          </Paper>
-        </Modal>
-      )} */
-}
-
-{
-  /* <Popover
-        open={isPopoverOpen}
-        anchorEl={mascotRef.current}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        classes={{ paper: classes.bottomPopover }}
-      >
-        <div className={classes.successPopoverWindow}>
-          <div className={classes.windowWrap}>
-            <div className={classes.mascotIcon}>
-              <img src={require('images/ic-mascot.png')} alt="" />
-            </div>
-            <div className={classes.windowBody}>
-              <p>
-                We’re sorry that you have to reschedule. You can reschedule up to 3 times for free.
-              </p>
-              <p>
-                Next slot for Dr.{' '}
-                {`${data && data.getDoctorDetailsById && data.getDoctorDetailsById.firstName}`} is
-                available on -{moment(nextSlotAvailable).format('Do MMMM, dddd \nhh:mm a')}
-              </p>
-            </div>
-            <div className={classes.actions}>
-              <AphButton onClick={() => setIsModalOpen(true)}>CHANGE SLOT</AphButton>
-              <AphButton
-                onClick={() => {
-                  const bookRescheduleInput = {
-                    appointmentId: params.appointmentId,
-                    doctorId: params.doctorId,
-                    newDateTimeslot: nextSlotAvailable,
-                    initiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
-                    initiatedId: patientId,
-                    patientId: patientId,
-                    rescheduledId: '',
-                  };
-                  rescheduleAPI(bookRescheduleInput);
-                }}
-              >
-                ACCEPT
-              </AphButton>
-            </div>
-          </div>
-        </div>
-      </Popover> */
-}
-
-{
-  /* <Popover
-        open={isRescheduleSuccess}
-        anchorEl={mascotRef.current}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        classes={{ paper: classes.bottomPopover }}
-      >
-        <div className={classes.successPopoverWindow}>
-          <div className={classes.windowWrap}>
-            <div className={classes.mascotIcon}>
-              <img src={require('images/ic-mascot.png')} alt="" />
-            </div>
-            <div className={classes.windowBody}>
-              <p>Hi! :)</p>
-              <p>
-                Your appointment with Dr.
-                {` ${data && data.getDoctorDetailsById && data.getDoctorDetailsById.firstName} `}
-                has been rescheduled for{' '}
-                {rescheduledSlot && moment(rescheduledSlot).format('Do MMMM, dddd \nhh:mm a')}
-              </p>
-            </div>
-            <div className={classes.actions}>
-              <AphButton onClick={() => (window.location.href = clientRoutes.appointments())}>
-                OK, GOT IT
-              </AphButton>
-            </div>
-          </div>
-        </div>
-      </Popover> */
-}
-
-{
-  /* <div className={classes.headerActions}>
-        <div
-          onClick={() => {
-            setIsFeedbackPopoverOpen(true);
-          }}
-        >
-          <div className={classes.mascotIconFeedback}>
-            <img src={require('images/ic-mascot.png')} alt="" />
-          </div>
-        </div>
-      </div> */
-}
-
-{
-  /* <Popover
-        open={isFeedbackPopoverOpen}
-        anchorEl={mascotRef.current}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        classes={{ paper: classes.popoverBottom }}
-      >
-        <div className={classes.successPopoverWindow}>
-          <div className={`${classes.windowWrap} ${classes.feedbackWindow}`}>
-            <div className={classes.mascotIcon}>
-              <img src={require('images/ic-mascot.png')} alt="" />
-            </div>
-            <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 200px)'}>
-              <div className={classes.windowBody}>
-                <Typography variant="h2">We value your feedback! :)</Typography>
-                <p>How was your overall experience with the following consultation — </p>
-                <div className={classes.doctorProfile}>
-                  <div>
-                    <img className={classes.doctorPic} src={require('images/doctordp_01.png')} />
-                  </div>
-                  <div className={classes.doctorDetails}>
-                    <div className={classes.doctorName}>Dr. Simran Rai</div>
-                    <div className={classes.consultationTime}>
-                      <span>Today, 6:30 pm</span>
-                      <div className={classes.chatIcon}>
-                        <img src={require('images/ic_chat_icon_gray.svg')} alt="" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className={classes.feedbackImages}>
-                  <div className={classes.feedWrapper}>
-                    <img src={require('images/ic_poor.svg')} />
-                    <img className={classes.onActive} src={require('images/ic_poor_filled.svg')} />
-                    <div>Poor</div>
-                  </div>
-                  <div className={classes.feedWrapper}>
-                    <img src={require('images/ic_okay.svg')} />
-                    <div>okay</div>
-                  </div>
-                  <div className={classes.feedWrapper}>
-                    <img src={require('images/ic_good.svg')} />
-                    <div>good</div>
-                  </div>
-                  <div className={classes.feedWrapper}>
-                    <img src={require('images/ic_great.svg')} />
-                    <div>great</div>
-                  </div>
-                </div>
-                <div className={classes.feedbackDetailed}>
-                  <p>What went wrong?</p>
-                  <div>
-                    <div className={classes.checkboxOptions}>
-                      <FormControlLabel
-                        className={classes.radioLabel}
-                        control={<AphRadio color="primary" />}
-                        label="Doctor didn’t ask enough questions"
-                      />
-                    </div>
-                    <div className={classes.checkboxOptions}>
-                      <FormControlLabel
-                        className={classes.radioLabel}
-                        control={<AphRadio color="primary" />}
-                        label="Doctor was not polite"
-                      />
-                    </div>
-                    <div className={classes.checkboxOptions}>
-                      <FormControlLabel
-                        className={classes.radioLabel}
-                        control={<AphRadio color="primary" />}
-                        label="Doctor didn’t share prescription"
-                      />
-                    </div>
-                    <div className={classes.checkboxOptions}>
-                      <FormControlLabel
-                        className={classes.radioLabel}
-                        control={<AphRadio color="primary" />}
-                        label="Doctor hurried through the chat"
-                      />
-                    </div>
-                    <div className={classes.checkboxOptions}>
-                      <FormControlLabel
-                        className={classes.radioLabel}
-                        control={<AphRadio color="primary" />}
-                        label="Doctor replied late"
-                      />
-                    </div>
-                  </div>
-                </div>
-                <p className={classes.toImprove}>What can be improved? </p>
-                <AphTextField placeholder="Write your suggestion here..." />
-              </div>
-            </Scrollbars>
-            <div
-              className={classes.submitButton}
-              onClick={() => {
-                setIsSubmitPopoverOpen(true);
-                setIsFeedbackPopoverOpen(false);
-              }}
-            >
-              <AphButton color="primary">Submit Feedback</AphButton>
-            </div>
-          </div>
-        </div>
-      </Popover>
-
-
-      <Popover
-        open={isSubmitPopoverOpen}
-        anchorEl={mascotRef.current}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        classes={{ paper: classes.popoverBottom }}
-      >
-        <div className={classes.successPopoverWindow}>
-          <div className={`${classes.windowWrap} ${classes.feedbackWindow}`}>
-            <div className={classes.mascotIcon}>
-              <img src={require('images/ic-mascot.png')} alt="" />
-            </div>
-            <div className={classes.windowBody}>
-              <Typography variant="h2">Send Note</Typography>
-              <p>Write a thank you note for your Doctor!</p>
-              <AphTextField placeholder="Write your note here..." />
-              <div className={classes.note}>*This note would be viewed only by your Doctor</div>
-              <div className={classes.sendNoteActions}>
-                <AphButton
-                  color="default"
-                  onClick={() => {
-                    setIsSubmitPopoverOpen(false);
-                  }}
-                >
-                  SKIP
-                </AphButton>
-                <AphButton color="primary">SEND NOTE</AphButton>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Popover> */
-}
-
-{
-  /* <Alerts
-        setAlertMessage={setAlertMessage}
-        alertMessage={alertMessage}
-        isAlertOpen={isAlertOpen}
-        setIsAlertOpen={setIsAlertOpen}
-      /> */
-}
+export default ChatRoom;

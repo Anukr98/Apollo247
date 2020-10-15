@@ -42,7 +42,6 @@ export class RescheduleAppointmentRepository extends Repository<RescheduleAppoin
   ) {
     const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
     const doctorAppts = await apptRepo.getDoctorAppointmentsByDates(doctorId, startDate, endDate);
-    console.log(doctorAppts.length, 'appt length');
     if (doctorAppts.length > 0) {
       doctorAppts.map(async (appt) => {
         const rescheduleAppointmentAttrs = {
@@ -61,7 +60,6 @@ export class RescheduleAppointmentRepository extends Repository<RescheduleAppoin
           doctorsDb,
           patientsDb
         );
-        console.log(resResponse, 'reschedle response');
       });
     }
     return true;
@@ -83,7 +81,6 @@ export class RescheduleAppointmentRepository extends Repository<RescheduleAppoin
       throw new AphError(AphErrorMessages.RESCHEDULE_APPOINTMENT_ERROR, undefined, {});
     }
     const rescheduleAppt = await this.findRescheduleRecord(rescheduleAppointmentAttrs.appointment);
-    console.log(rescheduleAppt, 'rescheduleAppt');
     if (rescheduleAppt) {
       return rescheduleAppt;
     }
@@ -113,7 +110,6 @@ export class RescheduleAppointmentRepository extends Repository<RescheduleAppoin
       consultsDb,
       doctorsDb
     );
-    console.log(notificationResult, 'notificationResult');
     return createReschdule;
   }
 

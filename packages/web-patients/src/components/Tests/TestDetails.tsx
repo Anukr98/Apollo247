@@ -410,7 +410,7 @@ const TabContainer: React.FC = (props) => {
   return <Typography component="div">{props.children}</Typography>;
 };
 
-export const TestDetails: React.FC = (props) => {
+const TestDetails: React.FC = (props) => {
   const classes = useStyles({});
   const isSmallScreen = useMediaQuery('(max-width:767px)');
   const [tabValue, setTabValue] = useState<number>(0);
@@ -656,7 +656,7 @@ export const TestDetails: React.FC = (props) => {
                                 params.searchTestType === 'hot-seller'
                                   ? params.itemName.split('_').join(' ')
                                   : testDetails.itemName
-                              ),
+                              ).result,
                               price: testDetails.rate,
                               thumbnail: '',
                               collectionMethod: testDetails.collectionType!,
@@ -702,3 +702,5 @@ export const TestDetails: React.FC = (props) => {
     </div>
   );
 };
+
+export default TestDetails;

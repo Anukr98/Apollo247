@@ -24,7 +24,10 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { ConsultMode, DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  getNextAvailableSlots,
+  getSecretaryDetailsByDoctor,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
 import { FirebaseEventName } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import {
   callPermissions,
@@ -217,7 +220,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const { VirtualConsultationFee } = useAppCommonData();
   const [consultType, setConsultType] = useState<ConsultMode>(ConsultMode.BOTH);
   const [showVideo, setShowVideo] = useState<boolean>(false);
+  const [isFocused, setisFocused] = useState<boolean>(false);
   const callSaveSearch = props.navigation.getParam('callSaveSearch');
+  const [secretaryData, setSecretaryData] = useState<any>([]);
 
   useEffect(() => {
     if (!currentPatient) {
@@ -225,6 +230,23 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       getPatientApiCall();
     }
   }, [currentPatient]);
+
+  useEffect(() => {
+    getSecretaryData();
+  }, []);
+
+  useEffect(() => {
+    const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      setisFocused(true);
+    });
+    const didBlur = props.navigation.addListener('didBlur', (payload) => {
+      setisFocused(false);
+    });
+    return () => {
+      didFocus && didFocus.remove();
+      didBlur && didBlur.remove();
+    };
+  });
 
   const client = useApolloClient();
 
@@ -242,22 +264,24 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   });
 
   useEffect(() => {
-    setWebEngageScreenNames('Doctor Profile');
-    getNetStatus()
-      .then((status) => {
-        if (status) {
-          fetchDoctorDetails();
-          fetchAppointmentHistory();
-        } else {
-          setshowSpinner(false);
-          setshowOfflinePopup(true);
-        }
-      })
-      .catch((e) => {
-        CommonBugFender('DoctorDetails_getNetStatus', e);
-      });
+    if (isFocused) {
+      setWebEngageScreenNames('Doctor Profile');
+      getNetStatus()
+        .then((status) => {
+          if (status) {
+            fetchDoctorDetails();
+            fetchAppointmentHistory();
+          } else {
+            setshowSpinner(false);
+            setshowOfflinePopup(true);
+          }
+        })
+        .catch((e) => {
+          CommonBugFender('DoctorDetails_getNetStatus', e);
+        });
+    }
     // callPermissions();
-  }, []);
+  }, [isFocused]);
 
   useEffect(() => {
     const display = props.navigation.state.params
@@ -267,6 +291,19 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     setConsultMode(props.navigation.getParam('consultModeSelected'));
     setShowVideo(props.navigation.getParam('onVideoPressed'));
   }, [props.navigation.state.params]);
+
+  const getSecretaryData = () => {
+    getSecretaryDetailsByDoctor(client, doctorId)
+      .then((apiResponse: any) => {
+        console.log('apiResponse', apiResponse);
+        const secretaryDetails = g(apiResponse, 'data', 'data', 'getSecretaryDetailsByDoctorId');
+        setSecretaryData(secretaryDetails);
+        console.log('apiResponse');
+      })
+      .catch((error) => {
+        console.log('error', error);
+      });
+  };
 
   const fetchAppointmentHistory = () => {
     client
@@ -663,7 +700,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     }}
                   >
                     <View>
-                      <Text style={styles.onlineConsultLabel}>Chat/Audio/Video</Text>
+                      <Text style={styles.onlineConsultLabel}>Consult In-App</Text>
                       <Text style={styles.onlineConsultAmount}>
                         {Number(VirtualConsultationFee) <= 0 ||
                         VirtualConsultationFee === doctorDetails.onlineConsultationFees ? (
@@ -1043,9 +1080,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     item: getAppointmentHistory_getAppointmentHistory_appointmentsHistory
   ) => {
     const symptomsJson = g(item, 'caseSheet');
-    console.log('symptomsJson', symptomsJson);
     if (symptomsJson && symptomsJson.length != 0) {
-      console.log('symptomsJson-----', symptomsJson);
       return (
         <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
           {symptomsJson &&
@@ -1122,6 +1157,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         doctorClinics.length > 0 && doctorDetails!.doctorType !== DoctorType.PAYROLL
           ? `${doctorClinics[0].facility.city}`
           : '',
+      'Secretary Name': g(secretaryData, 'name'),
+      'Secretary Mobile Number': g(secretaryData, 'mobileNumber'),
+      'Doctor Mobile Number': g(doctorDetails, 'mobileNumber')!,
     };
     postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT, eventAttributes);
     const appsflyereventAttributes: AppsFlyerEvents[AppsFlyerEventName.BOOK_APPOINTMENT] = {

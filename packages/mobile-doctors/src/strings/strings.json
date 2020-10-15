@@ -79,7 +79,8 @@
     "not_doctor_message": "Seems like the mobile no. you entered is either not registered with us or your account has been disabled. If you are a doctor and wish to enroll with us, please contact admin@apollo247.com. If you are a patient, please click here to download application for patients.",
     "contact": "Contact",
     "download_patients": "Download Patients App",
-    "download_URL": "https://pmt.apollo247.com/deeplink?url=apollopatients"
+    "download_patients_android": "https://play.google.com/store/apps/details?id=com.apollo.patientapp",
+    "download_patients_ios": "https://apps.apple.com/in/app/apollo247/id1496740273"
   },
   "alerts": {
     "successfully_updated_delegate_num": "Successfully Updated Delegate Number",
@@ -96,7 +97,8 @@
     "missing_referral_description": "It seems referral description field is empty. Please fill the referral section's description field under the Case Sheet tab.",
     "casesheet_already_send": "Case sheet cannot be modified now as the consult is already completed",
     "Open_camera_in_video_call": "Image capturing is disabled during a video call. Please switch to the Audio call if you want to send an Image.",
-    "disable_Casesheet_view": "Case sheet view not allowed during the Audio/video call."
+    "disable_Casesheet_view": "Case sheet view not allowed during the Audio/video call.",
+    "reschedule_alert": "Reschedule request has been send to patient"
   },
   "popUP": {
     "awaiting_reschedule": "This appointment has been rescheduled. We’re waiting for the patient to confirm the slot."
@@ -493,14 +495,23 @@
       "audio": "AUDIO",
       "video": "VIDEO",
       "audioVideo": "AUDIOVIDEO"
-    }
+    },
+    "notes": "Notes",
+    "diagnosticTestResults": "Diagnostic Test Results",
+    "clinicalNotes": "Clinical observations/notes",
+    "jrDoctorNotes": "Junior Doctor Notes",
+    "typeYourNotes": "Type your notes here ....",
+    "typeDiagnosticTestResults": "Type your diagnostic test results here ....",
+    "typeClinicalNotes": "Type your clinical observations/notes here ...."
   },
   "consult_room": {
     "patient_is_not_acitve_descr": "We are sorry, but it seems your patient is no longer active on the application. You may wish to reschedule this consult.",
     "continue": "Continue",
     "reschedule": "Reschedule",
     "you_missed_voice_call": "You missed a voice call",
+    "patient_missed_voice_call": "Patient missed a voice call",
     "you_missed_video_call": "You missed a video call",
+    "patient_missed_video_call": "Patient missed a video call",
     "duration": "Duration",
     "your_appnt_with": "Your appointment with ",
     "is_scheduled_to_start": "is scheduled to start at",

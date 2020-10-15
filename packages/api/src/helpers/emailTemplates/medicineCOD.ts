@@ -32,7 +32,9 @@ export const medicineCOD = _.template(
      <% } %>
     </ul>
   </li>
+  <% if(!isCODEmailTemplate) {  %>
   <li>Cash on Delivery. </li>
+  <% } %>  
 
   </ul>
   </body> 

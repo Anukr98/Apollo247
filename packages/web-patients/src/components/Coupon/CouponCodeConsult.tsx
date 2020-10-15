@@ -3,9 +3,9 @@ import { Theme, FormControlLabel, CircularProgress } from '@material-ui/core';
 import React, { useEffect, useState } from 'react';
 import { AphRadio, AphTextField, AphButton } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
-import _each from 'lodash';
+//import _each from 'lodash';
 import { useAllCurrentPatients } from 'hooks/authHooks';
-import { gtmTracking } from '../../gtmTracking';
+import { gtmTracking, dataLayerTracking } from '../../gtmTracking';
 import fetchUtil from 'helpers/fetch';
 import { useLocationDetails } from 'components/LocationProvider';
 
@@ -174,10 +174,18 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
   const [muationLoading, setMuationLoading] = useState<boolean>(false);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  var packageId: string;
+  const userSubscriptions = JSON.parse(localStorage.getItem('userSubscriptions'));
+  if (userSubscriptions && userSubscriptions[0] && userSubscriptions[0].status == 'ACTIVE') {
+    packageId = `${userSubscriptions[0].group_plan.group.name}:${userSubscriptions[0].group_plan.plan_id}`;
+  }
 
   useEffect(() => {
     setIsLoading(true);
-    fetchUtil(process.env.GET_CONSULT_COUPONS, 'GET', {}, '', false)
+    const fetchCouponUrl = `${process.env.GET_CONSULT_COUPONS}?mobile=${
+      currentPatient.mobileNumber
+    }&email=${currentPatient.emailAddress}&packageId=${userSubscriptions ? packageId : ''}`;
+    fetchUtil(fetchCouponUrl, 'GET', {}, '', false)
       .then((data: any) => {
         if (data && data.response && data.response.length > 0) {
           setAvailableCoupons(data.response);
@@ -192,6 +200,8 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
   const validateCouponBody = {
     mobile: currentPatient && currentPatient.mobileNumber,
     billAmount: Number(props.cartValue),
+    email: currentPatient && currentPatient.emailAddress,
+    packageId: packageId,
     coupon: selectCouponCode,
     pinCode: currentPincode ? currentPincode : localStorage.getItem('currentPincode') || '',
     consultations: [
@@ -210,11 +220,24 @@ export const CouponCodeConsult: React.FC<ApplyCouponProps> = (props) => {
   const verifyCoupon = () => {
     if (currentPatient && currentPatient.id) {
       setMuationLoading(true);
-      fetchUtil(process.env.VALIDATE_CONSULT_COUPONS, 'POST', validateCouponBody, '', false)
+      const fetchCouponUrl = `${process.env.VALIDATE_CONSULT_COUPONS}?mobile=${
+        currentPatient.mobileNumber
+      }&email=${currentPatient.emailAddress}&packageId=${userSubscriptions ? packageId : ''}`;
+      fetchUtil(fetchCouponUrl, 'POST', validateCouponBody, '', false)
         .then((data: any) => {
           if (data && data.response) {
             const couponValidateResult = data.response;
             props.setValidityStatus(couponValidateResult.valid);
+
+            /**Gtm code start start */
+            dataLayerTracking({
+              event: 'Coupon Code Applied',
+              'GT-Coupon-Code': selectCouponCode,
+              'GT-Discount-Given': couponValidateResult.valid,
+              'GT-Discount': couponValidateResult.valid ? couponValidateResult.discount : 0,
+            });
+            /**Gtm code start end */
+
             if (couponValidateResult.valid) {
               props.setCouponCode(selectCouponCode);
               props.close(false);

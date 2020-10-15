@@ -250,4 +250,8 @@ export const ConsultRoomScreenStyles = StyleSheet.create({
     marginTop: 7,
     ...theme.viewStyles.text('SB', 10, theme.colors.WHITE),
   },
+  notNowText: {
+    marginRight: 7,
+    ...theme.viewStyles.text('M', 15, theme.colors.APP_YELLOW),
+  },
 });

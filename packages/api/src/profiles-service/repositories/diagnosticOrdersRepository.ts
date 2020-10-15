@@ -287,7 +287,6 @@ export class DiagnosticOrdersRepository extends Repository<DiagnosticOrders> {
         JSON.stringify(preBookingInput),
         ''
       );
-      console.log(preBookingInput, preBookingUrl, 'preBookingInput');
       const preBookingResp = await fetch(preBookingUrl, {
         method: 'POST',
         body: JSON.stringify(preBookingInput),
@@ -305,7 +304,6 @@ export class DiagnosticOrdersRepository extends Repository<DiagnosticOrders> {
       );
 
       const preBookResp: DiagnosticPreBookingResult = JSON.parse(textRes);
-      console.log(preBookResp, preBookResp.PreBookingID, 'text response');
       await this.updateDiagnosticOrder(
         diagnosticOrderInput.id,
         preBookResp.PreBookingID,
@@ -432,7 +430,6 @@ export class DiagnosticOrdersRepository extends Repository<DiagnosticOrders> {
       const addProcessUrl = process.env.DIAGNOSTIC_ADD_PROCESS_URL
         ? process.env.DIAGNOSTIC_ADD_PROCESS_URL
         : '';
-      console.log(addProcessInput, 'addProcessInput');
       log(
         'profileServiceLogger',
         `EXTERNAL_API_CALL_DIAGNOSTICS: ${addProcessUrl}`,

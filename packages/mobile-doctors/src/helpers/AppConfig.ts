@@ -1,3 +1,5 @@
+import DeviceInfo from 'react-native-device-info';
+
 export enum AppEnv {
   DEV = 'DEV',
   QA = 'QA',
@@ -12,7 +14,7 @@ export const updateAppConfig = (key: keyof typeof Configuration, value: object) 
   Configuration[key] = value as never;
 };
 
-const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
+const APP_ENV: AppEnv = AppEnv.DEV as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
 //Common keys
 const commonConfigs = {
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
@@ -23,22 +25,26 @@ const commonConfigs = {
   CHAT_ENCRYPTION_KEY: 'z2iQxQAuyLC0j2GNryyZ2JuGLTQyT0mK',
   APOLLO_BASE_URL: 'https://magento.apollo247.com',
   APOLLO_AUTH_TOKEN: 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d',
+  ENABLE_WEBENGAGE: true,
+  iOS_Version: DeviceInfo.getVersion(),
+  Android_Version: DeviceInfo.getVersion(),
 };
 
 //Development;
 const ConfigurationDev = {
   ...commonConfigs,
   LOG_ENVIRONMENT: 'debug',
-  iOS_Version: '1.0416',
-  Android_Version: '1.0416',
+  ENABLE_WEBENGAGE: true,
+  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: 'P3v8iM-UyGXqiCAJQRGBafA6fAgmtsqe5GWVZ',
+  CODE_PUSH_DEPLOYMENT_KEY_IOS: 'rIc46hTlgxeNY0zcnghZGdE7JBHrvNNIliv-7',
 };
 
 //QA
 const ConfigurationQA = {
   ...commonConfigs,
   LOG_ENVIRONMENT: 'release',
-  iOS_Version: '1.0425',
-  Android_Version: '1.0425',
+  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: '92aMp2ig2nAE_hhikkVjPl5pRodcAyuOSFIhC',
+  CODE_PUSH_DEPLOYMENT_KEY_IOS: '9sv6RjotCjBypmJlvVqhZ45lmbFa2MmCmFl6K',
 };
 
 //Prod
@@ -49,8 +55,8 @@ const ConfigurationProd = {
   PRO_TOKBOX_KEY: '46422952', // PRODUCTION
   PRO_PUBNUB_PUBLISH: 'pub-c-e275fde3-09e1-44dd-bc32-5c3d04c3b2ef', // PRODUCTION
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-517dafbc-d955-11e9-aa3a-6edd521294c5', // PRODUCTION
-  iOS_Version: '4.2.0',
-  Android_Version: '4.2.0',
+  CODE_PUSH_DEPLOYMENT_KEY_ANDROID: 'KxH39pCo6oa0qHrp0n3zf3Kyemn9QnoIzm4T_',
+  CODE_PUSH_DEPLOYMENT_KEY_IOS: 'K7emdXkQrTCpo_HDPs5NZCE0A9f1mGErBJyaR',
 };
 
 const Configuration =

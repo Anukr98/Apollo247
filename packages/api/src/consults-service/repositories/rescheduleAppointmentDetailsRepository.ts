@@ -37,11 +37,9 @@ export class RescheduleAppointmentDetailsRepository extends Repository<
           appointment: appt,
         };
         const rescheduleAppt = await this.findRescheduleRecord(appt);
-        console.log(rescheduleAppt, 'rescheduleAppt');
         if (!rescheduleAppt) {
           const createReschdule = await this.save(this.create(rescheduleAppointmentAttrs)).catch(
             (createErrors) => {
-              console.log(createErrors, 'createErrors');
               throw new AphError(AphErrorMessages.RESCHEDULE_APPOINTMENT_ERROR, undefined, {
                 createErrors,
               });
@@ -61,7 +59,6 @@ export class RescheduleAppointmentDetailsRepository extends Repository<
             consultsDb,
             doctorsDb
           );
-          console.log(notificationResult, createReschdule, 'notificationResult');
         }
       });
     }

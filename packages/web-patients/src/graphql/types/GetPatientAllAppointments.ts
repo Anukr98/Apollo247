@@ -9,6 +9,12 @@ import { APPOINTMENT_TYPE, STATUS, APPOINTMENT_STATE, DoctorType, Gender, DOCTOR
 // GraphQL query operation: GetPatientAllAppointments
 // ====================================================
 
+export interface GetPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet {
+  __typename: "CaseSheet";
+  followUpAfterInDays: string | null;
+  doctorType: DoctorType | null;
+}
+
 export interface GetPatientAllAppointments_getPatientAllAppointments_appointments_doctorInfo_bankAccount {
   __typename: "BankAccount";
   accountHolderName: string;
@@ -216,6 +222,7 @@ export interface GetPatientAllAppointments_getPatientAllAppointments_appointment
   isSeniorConsultStarted: boolean | null;
   isJdQuestionsComplete: boolean | null;
   symptoms: string | null;
+  caseSheet: (GetPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet | null)[] | null;
   doctorInfo: GetPatientAllAppointments_getPatientAllAppointments_appointments_doctorInfo | null;
 }
 

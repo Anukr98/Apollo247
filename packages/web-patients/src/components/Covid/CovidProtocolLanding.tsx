@@ -20,6 +20,7 @@ import fetchUtil from 'helpers/fetch';
 import { ManageProfile } from 'components/ManageProfile';
 import { Relation } from 'graphql/types/globalTypes';
 import { pageViewTracking } from '../../webEngageTracking';
+import { dataLayerTracking } from 'gtmTracking';
 
 interface CovidProtocolData {
   introductionBody: string;
@@ -200,7 +201,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const covidProtocolLanding: React.FC = (props: any) => {
+const covidProtocolLanding: React.FC = (props: any) => {
   const classes = useStyles({});
   const [seemore, setSeemore] = React.useState<string>('');
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
@@ -218,6 +219,14 @@ export const covidProtocolLanding: React.FC = (props: any) => {
     scrollToRef &&
       scrollToRef.current &&
       scrollToRef.current.scrollIntoView({ behavior: 'smooth' });
+
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: 'Medical Condition Page',
+      pageLOB: 'Covid-19',
+      pageType: 'Others',
+    });
   }, []);
 
   useEffect(() => {
@@ -354,3 +363,5 @@ export const covidProtocolLanding: React.FC = (props: any) => {
     </div>
   );
 };
+
+export default covidProtocolLanding;

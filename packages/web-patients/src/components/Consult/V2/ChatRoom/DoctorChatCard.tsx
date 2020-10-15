@@ -3,7 +3,7 @@ import { Theme, Avatar } from '@material-ui/core';
 import React from 'react';
 import { AphButton, AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-ui-components';
 import { ChooseDoctor } from 'components/Consult/V2/ChatRoom/ChooseDoctor';
-import { format } from 'date-fns';
+import format from 'date-fns/format';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {

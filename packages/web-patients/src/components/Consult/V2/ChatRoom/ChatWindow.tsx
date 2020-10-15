@@ -1,62 +1,83 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { Theme, Grid, Button, MenuItem, Modal } from '@material-ui/core';
-import { makeStyles } from '@material-ui/styles';
-import Scrollbars from 'react-custom-scrollbars';
-import { useAllCurrentPatients } from 'hooks/authHooks';
-import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
 import {
   AphButton,
-  AphTextField,
-  AphSelect,
   AphDialog,
   AphDialogClose,
   AphDialogTitle,
+  AphSelect,
+  AphTextField,
 } from '@aph/web-ui-components';
-import Slider from 'react-slick';
-import { ChatVideo } from 'components/Consult/V2/ChatRoom/ChatVideo';
-import WarningModel from 'components/WarningModel';
-import { PatientCard } from 'components/Consult/V2/ChatRoom/PatientCard';
-import { DoctorCard } from 'components/Consult/V2/ChatRoom/DoctorCard';
-import { WelcomeCard } from 'components/Consult/V2/ChatRoom/WelcomeCard';
-import { BookRescheduleAppointmentInput, STATUS } from 'graphql/types/globalTypes';
+import { Button, Grid, MenuItem, Modal, Theme } from '@material-ui/core';
+import CircularProgress from '@material-ui/core/CircularProgress';
 // import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import FormHelperText from '@material-ui/core/FormHelperText';
-import PubNub, { PubnubStatus, PublishResponse, HistoryResponse } from 'pubnub';
-import _startCase from 'lodash/startCase';
-import { useMutation } from 'react-apollo-hooks';
+import { makeStyles } from '@material-ui/styles';
+import { AppointmentCompleteCardMessage } from 'components/Consult/V2/ChatRoom/AppointmentCompleteCardMessage';
+import { BookAppointmentCard } from 'components/Consult/V2/ChatRoom/BookAppointmentCard';
+import { ChatVideo } from 'components/Consult/V2/ChatRoom/ChatVideo';
+import { DoctorCard } from 'components/Consult/V2/ChatRoom/DoctorCard';
+import { DoctorJoinedMessageCard } from 'components/Consult/V2/ChatRoom/DoctorJoinedMessageCard';
+import { ExotelMessageCard } from 'components/Consult/V2/ChatRoom/ExotelMessageCard';
+import { FirstMessageCard } from 'components/Consult/V2/ChatRoom/FirstMessageCard';
+import { JdInfoCard } from 'components/Consult/V2/ChatRoom/JuniordoctorInfoCard';
+import { PatientCard } from 'components/Consult/V2/ChatRoom/PatientCard';
+import { SecondMessageCard } from 'components/Consult/V2/ChatRoom/SecondMessageCard';
+import { UploadChatEPrescriptionCard } from 'components/Consult/V2/ChatRoom/UploadChatEPrescriptionCard';
+import { UploadChatPrescription } from 'components/Consult/V2/ChatRoom/UploadChatPrescriptions';
+import { WelcomeCard } from 'components/Consult/V2/ChatRoom/WelcomeCard';
+import WarningModel from 'components/WarningModel';
+import CryptoJS from 'crypto-js';
 import {
+  INSERT_MESSAGE_POST_CONSULT,
   JOIN_JDQ_WITH_AUTOMATED_QUESTIONS,
-  GET_APPOINTMENT_DATA,
-  UPDATE_APPOINTMENT_SESSION,
   PAST_APPOINTMENTS_COUNT,
+  UPDATE_APPOINTMENT_SESSION,
   UPDATE_SAVE_EXTERNAL_CONNECT,
 } from 'graphql/consult';
-import { downloadDocuments } from 'graphql/types/downloadDocuments';
 import { DOWNLOAD_DOCUMENT } from 'graphql/profiles';
 import {
   AddToConsultQueueWithAutomatedQuestions,
   AddToConsultQueueWithAutomatedQuestionsVariables,
 } from 'graphql/types/AddToConsultQueueWithAutomatedQuestions';
+import { downloadDocuments } from 'graphql/types/downloadDocuments';
+import { GetAppointmentData_getAppointmentData_appointmentsHistory as AppointmentHistory } from 'graphql/types/GetAppointmentData';
+import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
+import {
+  GetPastAppointmentsCount,
+  GetPastAppointmentsCountVariables,
+} from 'graphql/types/GetPastAppointmentsCount';
+import { getSecretaryDetailsByDoctorId } from 'graphql/types/getSecretaryDetailsByDoctorId';
+import {
+  BookRescheduleAppointmentInput,
+  DoctorType,
+  notificationEventName,
+  notificationStatus,
+  notificationType,
+  STATUS,
+} from 'graphql/types/globalTypes';
+import { InsertMessage, InsertMessageVariables } from 'graphql/types/InsertMessage';
 import {
   UpdateAppointmentSession,
   UpdateAppointmentSessionVariables,
 } from 'graphql/types/UpdateAppointmentSession';
 import {
-  GetPastAppointmentsCount,
-  GetPastAppointmentsCountVariables,
-} from 'graphql/types/GetPastAppointmentsCount';
-import {
   UpdateSaveExternalConnect,
   UpdateSaveExternalConnectVariables,
 } from 'graphql/types/UpdateSaveExternalConnect';
-import { useApolloClient } from 'react-apollo-hooks';
-import { UploadChatPrescription } from 'components/Consult/V2/ChatRoom/UploadChatPrescriptions';
-import { UploadChatEPrescriptionCard } from 'components/Consult/V2/ChatRoom/UploadChatEPrescriptionCard';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import { BookAppointmentCard } from 'components/Consult/V2/ChatRoom/BookAppointmentCard';
-import { isPastAppointment } from 'helpers/commonHelpers';
+import { consultWebengageEventsInfo, isPastAppointment } from 'helpers/commonHelpers';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 import { useParams } from 'hooks/routerHooks';
-import { GetAppointmentData_getAppointmentData_appointmentsHistory as AppointmentHistory } from 'graphql/types/GetAppointmentData';
+import _startCase from 'lodash/startCase';
+import PubNub, { HistoryResponse, PublishResponse, PubnubStatus } from 'pubnub';
+import React, { useEffect, useRef, useState } from 'react';
+import { useApolloClient, useMutation } from 'react-apollo-hooks';
+import Scrollbars from 'react-custom-scrollbars';
+import Slider from 'react-slick';
+import {
+  callEndedClickTracking,
+  callReceiveClickTracking,
+  medicalDetailsFillTracking,
+  messageSentPostConsultTracking,
+} from 'webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -278,7 +299,7 @@ const useStyles = makeStyles((theme: Theme) => {
         marginLeft: '75px',
         marginBottom: 15,
         borderLeft: '1px solid #00B38E',
-        padding: '0px 0 0px 10px !important',
+        padding: '0px 45px 0px 10px !important',
       },
     },
     consultRoom: {
@@ -398,10 +419,7 @@ const useStyles = makeStyles((theme: Theme) => {
     none: {
       display: 'block',
     },
-    doctorAvatar: {
-      position: 'absolute',
-    },
-    petient: {
+    patient: {
       color: '#fff',
       textAlign: 'left',
       padding: 12,
@@ -639,6 +657,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       [theme.breakpoints.down('xs')]: {
         height: 180,
+        padding: 15,
       },
     },
     slider: {
@@ -646,11 +665,13 @@ const useStyles = makeStyles((theme: Theme) => {
         position: 'static !important',
         [theme.breakpoints.down('xs')]: {
           position: 'absolute !important',
-          bottom: 50,
+          bottom: -20,
         },
         pointerEvents: 'none',
         '& li': {
-          margin: 0,
+          margin: '0 5px 0 0',
+          width: 8,
+          height: 8,
           '& button': {
             '&:before': {
               content: '.',
@@ -680,14 +701,17 @@ const useStyles = makeStyles((theme: Theme) => {
       lineHeight: '21px',
       textTransform: 'capitalize',
       [theme.breakpoints.down('xs')]: {
-        margin: '20px 10px 10px 2px',
+        margin: '20px 5px 10px 2px',
+        fontSize: 13,
+        minWidth: 50,
+        padding: 6,
       },
       '&:hover': {
         background: '#FFFFFF',
       },
     },
     quesSubmitBtn: {
-      marginTop: 40,
+      marginTop: 50,
       background: 'transparent',
       border: 'none',
       cursor: 'pointer',
@@ -697,6 +721,10 @@ const useStyles = makeStyles((theme: Theme) => {
       '&:disabled': {
         opacity: 0.5,
         pointerEvents: 'none',
+      },
+      [theme.breakpoints.down('xs')]: {
+        marginTop: 40,
+        float: 'right',
       },
     },
     btnActive: {
@@ -733,9 +761,6 @@ const useStyles = makeStyles((theme: Theme) => {
         maxHeight: 'calc(100vh - 90px)',
         minHeight: 'calc(100vh - 90px)',
       },
-    },
-    doctorCardMain: {
-      paddingLeft: 15,
     },
     patientCardMain: {
       textAlign: 'right',
@@ -806,6 +831,7 @@ interface AutoMessageStrings {
   imageconsult: string;
   startConsultjr: string;
   consultPatientStartedMsg: string;
+  jdInfoMsg: string;
   firstMessage: string;
   secondMessage: string;
   languageQue: string;
@@ -817,6 +843,9 @@ interface AutoMessageStrings {
   doctorAutoResponse: string;
   leaveChatRoom: string;
   patientJoinedMeetingRoom: string;
+  patientRejectedCall: string;
+  exotelCall: string;
+  vitalsCompletedByPatient: string;
 }
 
 interface ChatWindowProps {
@@ -828,7 +857,10 @@ interface ChatWindowProps {
   rescheduleAPI: (bookRescheduleInput: BookRescheduleAppointmentInput) => void;
   jrDoctorJoined: boolean;
   setJrDoctorJoined: (jrDoctorJoined: boolean) => void;
+  setSrDoctorJoined: (srDoctorJoined: boolean) => void;
+  setIsConsultCompleted: (isConsultCompleted: boolean) => void;
   appointmentDetails: AppointmentHistory;
+  secretaryData: getSecretaryDetailsByDoctorId;
 }
 
 interface MessagesObjectProps {
@@ -841,9 +873,11 @@ interface MessagesObjectProps {
   messageDate: string;
   cardType: string;
 }
+
 let insertText: MessagesObjectProps[] = [];
 let timerIntervalId: any;
 let stoppedConsulTimer: number;
+
 const ringtoneUrl = require('../../../../images/phone_ringing.mp3');
 const autoMessageStrings: AutoMessageStrings = {
   videoCallMsg: '^^callme`video^^',
@@ -861,6 +895,7 @@ const autoMessageStrings: AutoMessageStrings = {
   imageconsult: '^^#DocumentUpload',
   startConsultjr: '^^#startconsultJr',
   consultPatientStartedMsg: '^^#PatientConsultStarted',
+  jdInfoMsg: '^^#JdInfoMsg',
   firstMessage: '^^#firstMessage',
   secondMessage: '^^#secondMessage',
   languageQue: '^^#languageQue',
@@ -872,6 +907,9 @@ const autoMessageStrings: AutoMessageStrings = {
   doctorAutoResponse: '^^#doctorAutoResponse',
   leaveChatRoom: '^^#leaveChatRoom',
   patientJoinedMeetingRoom: '^^#patientJoinedMeetingRoom',
+  patientRejectedCall: '^^#PATIENT_REJECTED_CALL',
+  exotelCall: '^^#exotelCall',
+  vitalsCompletedByPatient: '^^#vitalsCompletedByPatient',
 };
 
 type Params = { appointmentId: string; doctorId: string };
@@ -879,7 +917,7 @@ type Params = { appointmentId: string; doctorId: string };
 export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const classes = useStyles({});
   const params = useParams<Params>();
-  const { appointmentDetails } = props;
+  const { appointmentDetails, secretaryData } = props;
   const { appointmentId, doctorId } = params;
   const [height, setHeight] = useState<string>('');
   const [weight, setWeight] = useState<string>('');
@@ -901,9 +939,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const [drugAllergyError, setDrugAllergyError] = useState<boolean>(false);
   const [dietAllergyError, setDietAllergyError] = useState<boolean>(false);
   const [bpError, setBpError] = useState<boolean>(false);
-  const [autoQuestionsCompleted, setAutoQuestionsCompleted] = useState(
-    appointmentDetails ? appointmentDetails.isJdQuestionsComplete : false
-  );
+  const [autoQuestionsCompleted, setAutoQuestionsCompleted] = useState(false);
   const [userMessage, setUserMessage] = useState<string>('');
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
   const [isEPrescriptionOpen, setIsEPrescriptionOpen] = React.useState<boolean>(false);
@@ -912,11 +948,17 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const [modalOpen, setModalOpen] = React.useState(false);
   const [imgPrevUrl, setImgPrevUrl] = React.useState<any>();
   const [doctorInteractionModal, setDoctorInteractionModal] = useState(true);
+  const [isJdAllowed, setIsJdAllowed] = useState<boolean>(false);
 
   const { currentPatient } = useAllCurrentPatients();
   const doctorDisplayName = props.doctorDetails.getDoctorDetailsById.displayName;
+  const doctorChatDays = props.doctorDetails.getDoctorDetailsById.chatDays;
   const scrollDivRef = useRef(null);
   const apolloClient = useApolloClient();
+  const doctorDetail = props.doctorDetails && props.doctorDetails.getDoctorDetailsById;
+
+  // console.log(currentPatient.id, '------------------------', appointmentDetails.doctorId);
+  // console.log(messages, 'messages are ...........');
 
   //AV states
   const [playRingtone, setPlayRingtone] = useState<boolean>(false);
@@ -926,7 +968,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
   const [isVideoCall, setIsVideoCall] = useState<boolean>(false);
   const [sessionId, setsessionId] = useState<string>('');
   const [token, settoken] = useState<string>('');
-  const [callAudio, setCallAudio] = useState(autoMessageStrings.audioCallMsg);
+  // const [callAudio, setCallAudio] = useState(autoMessageStrings.audioCallMsg);
   const [isNewMsg, setIsNewMsg] = useState<boolean>(false);
   const [convertVideo, setConvertVideo] = useState<boolean>(false);
   const [videoCall, setVideoCall] = useState(false);
@@ -954,6 +996,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     UpdateSaveExternalConnectVariables
   >(UPDATE_SAVE_EXTERNAL_CONNECT);
 
+  const mutationChatPostConsultWithDoctor = useMutation<InsertMessage, InsertMessageVariables>(
+    INSERT_MESSAGE_POST_CONSULT
+  );
+
   const getPrismUrls = (patientId: string, fileIds: string[]) => {
     return new Promise((res, rej) => {
       apolloClient
@@ -977,6 +1023,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         });
     });
   };
+
   const pubnubClient = new PubNub({
     publishKey: process.env.PUBLISH_KEY,
     subscribeKey: process.env.SUBSCRIBE_KEY,
@@ -992,7 +1039,144 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     }, 200);
   };
 
+  // console.log('insertText is.......', insertText);
   // subscribe for any udpates
+
+  const thirtySecondCall = () => {
+    // console.log('in thirty second call........');
+    const result = insertText.filter((obj: any) => {
+      // console.log('resultinsertText', obj.message);
+      return obj.message === autoMessageStrings.firstMessage;
+    });
+
+    const startConsultResult = insertText.filter((obj: any) => {
+      // console.log('resultinsertText', obj.message);
+      return obj.message === autoMessageStrings.startConsultMsg;
+    });
+
+    const startConsultjrResult = insertText.filter((obj: any) => {
+      // console.log('resultinsertText', obj.message);
+      return obj.message === autoMessageStrings.startConsultjr;
+    });
+
+    const jdThankyouResult = insertText.filter((obj: any) => {
+      // console.log('resultinsertText', obj.message);
+      return obj.message === autoMessageStrings.jdThankyou;
+    });
+
+    const stopConsultjrResult = insertText.filter((obj: any) => {
+      // console.log('resultinsertText', obj.message);
+      return obj.message === autoMessageStrings.stopConsultJr;
+    });
+
+    const languageQueueResult = insertText.filter((obj: any) => {
+      // console.log('resultinsertText', obj.message);
+      return obj.message === autoMessageStrings.languageQue;
+    });
+
+    if (
+      result.length === 0 &&
+      startConsultResult.length === 0 &&
+      startConsultjrResult.length === 0 &&
+      jdThankyouResult.length === 0 &&
+      stopConsultjrResult.length === 0 &&
+      languageQueueResult.length === 0 &&
+      !appointmentDetails.isJdQuestionsComplete &&
+      isJdAllowed
+    ) {
+      // console.log('result.length ', result);
+      pubnubClient.publish({
+        channel: appointmentId,
+        message: {
+          message: autoMessageStrings.firstMessage,
+          automatedText: `Hi ${currentPatient &&
+            currentPatient.firstName}, sorry to keep you waiting. ${
+            appointmentDetails.doctorInfo.displayName
+          }’s team is with another patient right now. Your consultation prep will start soon.`,
+          id: doctorId,
+          isTyping: true,
+          messageDate: new Date(),
+          cardType: 'doctor',
+        },
+        storeInHistory: true,
+        sendByPost: true,
+      });
+    }
+  };
+
+  const minuteCaller = () => {
+    console.log('in minute caller.....');
+    const result = insertText.filter((obj: any) => {
+      // console.log('resultinsertText', obj.message);
+      return obj.message === autoMessageStrings.secondMessage;
+    });
+
+    const startConsultResult = insertText.filter((obj: any) => {
+      // console.log('resultinsertText', obj.message);
+      return obj.message === autoMessageStrings.startConsultMsg;
+    });
+
+    const startConsultjrResult = insertText.filter((obj: any) => {
+      // console.log('resultinsertText', obj.message);
+      return obj.message === autoMessageStrings.startConsultjr;
+    });
+
+    const jdThankyouResult = insertText.filter((obj: any) => {
+      // console.log('resultinsertText', obj.message);
+      return obj.message === autoMessageStrings.jdThankyou;
+    });
+
+    const stopConsultjrResult = insertText.filter((obj: any) => {
+      // console.log('resultinsertText', obj.message);
+      return obj.message === autoMessageStrings.stopConsultJr;
+    });
+
+    const languageQueueResult = insertText.filter((obj: any) => {
+      // console.log('resultinsertText', obj.message);
+      return obj.message === autoMessageStrings.languageQue;
+    });
+
+    if (
+      result.length === 0 &&
+      startConsultResult.length === 0 &&
+      startConsultjrResult.length === 0 &&
+      jdThankyouResult.length === 0 &&
+      stopConsultjrResult.length === 0 &&
+      languageQueueResult.length === 0 &&
+      !appointmentDetails.isJdQuestionsComplete &&
+      isJdAllowed
+    ) {
+      // console.log('result.length ', result);
+      pubnubClient.publish({
+        channel: appointmentId,
+        message: {
+          message: autoMessageStrings.secondMessage,
+          automatedText: `Sorry, but all the members in ${appointmentDetails.doctorInfo.displayName}'s team are busy right now. We will send you a notification as soon as they are available for collecting your details`,
+          id: doctorId,
+          isTyping: true,
+          messageDate: new Date(),
+          cardType: 'doctor',
+        },
+        storeInHistory: true,
+        sendByPost: true,
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (isJdAllowed) {
+      const thirtySecCounter = setTimeout(() => {
+        thirtySecondCall();
+      }, 30000);
+      const oneMinuteCounter = setTimeout(() => {
+        minuteCaller();
+      }, 90000); // one minute after 30 seconds.
+      return () => {
+        clearTimeout(thirtySecCounter);
+        clearTimeout(oneMinuteCounter);
+      };
+    }
+  }, [isJdAllowed]);
 
   useEffect(() => {
     if (appointmentDetails) {
@@ -1043,10 +1227,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       // adding listener
       pubnubClient.addListener({
         status: (status) => {
-          console.log('status...............', status);
+          // console.log('status...............', status);
         },
         message: (message) => {
-          console.log(message);
+          // console.log(message);
           if (
             message.message &&
             (message.message.message === autoMessageStrings.videoCallMsg ||
@@ -1074,8 +1258,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       pubnubClient.history(
         { channel: appointmentId, count: 100, stringifiedTimeToken: true },
         (status: PubnubStatus, response: HistoryResponse) => {
+          // console.log(messages, 'messages........');
           if (response.messages.length === 0) sendWelcomeMessage();
-
           const newmessage: MessagesObjectProps[] = messages;
           response.messages.forEach((element: any, index: number) => {
             const item = element.entry;
@@ -1090,6 +1274,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
           });
           insertText = newmessage;
           setMessages(newmessage);
+          // find the messages for vital completed. if found set the state.
+          let isVitalsCompleted = false;
+          newmessage.map((messageDetails) => {
+            const autoMessage = messageDetails.automatedText;
+            if (autoMessage === autoMessageStrings.vitalsCompletedByPatient)
+              isVitalsCompleted = true;
+          });
+          if (isVitalsCompleted) setAutoQuestionsCompleted(true);
           scrollToBottomAction();
         }
       );
@@ -1098,6 +1290,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       };
     }
   }, [appointmentDetails]);
+
+  const { mobileNumber: secretaryNumber, name: secretaryName } = (secretaryData &&
+    secretaryData.getSecretaryDetailsByDoctorId) || { mobileNumber: '', name: '' };
 
   // publish a message to pubnub channel
   const publishMessage = (channelName: string, message: any) => {
@@ -1109,9 +1304,28 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       },
       (status: PubnubStatus, response: PublishResponse) => {
         if (status.error) {
-          console.log('message not published', status.error);
+          // console.log('message not published', status.error);
         } else {
-          console.log('message published', response);
+          // console.log('message published', response);
+          if (appointmentDetails && appointmentDetails.status.toLowerCase() === 'completed') {
+            messageSentPostConsultTracking({
+              doctorName:
+                (appointmentDetails &&
+                  appointmentDetails.doctorInfo &&
+                  appointmentDetails.doctorInfo.fullName) ||
+                '',
+              patientName:
+                (currentPatient && `${currentPatient.firstName} ${currentPatient.lastName}`) || '',
+              secretaryName: secretaryName || '',
+              doctorNumber:
+                (appointmentDetails &&
+                  appointmentDetails.doctorInfo &&
+                  appointmentDetails.doctorInfo.mobileNumber) ||
+                '',
+              patientNumber: (currentPatient && currentPatient.mobileNumber) || '',
+              secretaryNumber: secretaryNumber || '',
+            });
+          }
         }
       }
     );
@@ -1146,6 +1360,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     };
     publishMessage(appointmentId, composeMessage);
   };
+
   const toggelChatVideo = () => {
     setIsNewMsg(false);
     setShowVideoChat(!showVideoChat);
@@ -1158,6 +1373,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     setShowVideoChat(false);
     setIsVideoCall(false);
     setIsCalled(false);
+    const eventInfo = consultWebengageEventsInfo(doctorDetail, currentPatient);
+    callEndedClickTracking(eventInfo);
   };
 
   const convertCall = () => {
@@ -1222,6 +1439,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     startIntervalTimer(0);
     setCookiesAcceptcall();
     setShowVideo(true);
+    const eventInfo = consultWebengageEventsInfo(doctorDetail, currentPatient);
+    callReceiveClickTracking(eventInfo);
   };
 
   const mutationResponse = useMutation<UpdateAppointmentSession, UpdateAppointmentSessionVariables>(
@@ -1235,6 +1454,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       },
     }
   );
+
   const updateAppointmentSessionCall = () => {
     mutationResponse()
       .then((data) => {
@@ -1575,6 +1795,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             >
               No
             </AphButton>
+            <AphButton
+              className={`${classes.quesButton}  ${
+                smokeHabit === 'ex-smoker' ? classes.btnActive : ''
+              }`}
+              onClick={() => setSmokeHabit('ex-smoker')}
+            >
+              Ex-Smoker
+            </AphButton>
           </Grid>
           <Grid item xs={2} sm={3} md={3} lg={3}>
             <button
@@ -1585,7 +1813,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                   showNextSlide();
                   const composeMessage = {
                     id: currentPatient && currentPatient.id,
-                    message: `Smoke:\n${_startCase(smokeHabit)}`,
+                    message: `Smoke:\n${
+                      smokeHabit === 'ex-smoker' ? 'Ex-Smoker' : _startCase(smokeHabit) // needed for lodash
+                    }`,
                     automatedText: '',
                     duration: '',
                     url: '',
@@ -1594,8 +1824,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     cardType: 'patient',
                   };
                   publishMessage(appointmentId, composeMessage);
-                  if (smokeHabit === 'yes') showNextSlide();
-                  else slickGotoSlide(8);
+                  if (smokeHabit === 'yes') {
+                    showNextSlide();
+                  } else if (smokeHabit === 'ex-smoker') {
+                    setSmokes('Ex-Smoker');
+                    slickGotoSlide(8);
+                  } else {
+                    slickGotoSlide(8);
+                  }
                 }
               }}
             >
@@ -1839,7 +2075,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     return (
       <div>
         <Grid spacing={2} container>
-          <Grid item xs={10} sm={9} md={9} lg={9}>
+          <Grid item xs={11} sm={9} md={9} lg={9}>
             <label>What is your body temperature right now (in °F) ?</label>
             <AphButton
               className={`${classes.quesButton}  ${
@@ -1874,7 +2110,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               No Idea
             </AphButton>
           </Grid>
-          <Grid item xs={2} sm={3} md={3} lg={3}>
+          <Grid item xs={1} sm={3} md={3} lg={3}>
             <button
               className={classes.quesSubmitBtn}
               disabled={temperature.length === 0}
@@ -1882,7 +2118,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                 if (temperature.length > 0) {
                   const composeMessage = {
                     id: currentPatient && currentPatient.id,
-                    message: `Temperature:\n${temperature}°F`,
+                    message: `Temperature:\n${temperature} ${
+                      temperature !== 'No Idea' ? '°F' : ''
+                    }`,
                     automatedText: '',
                     duration: '',
                     url: '',
@@ -1977,11 +2215,46 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     },
                   })
                     .then((response) => {
+                      if (
+                        response &&
+                        response.data &&
+                        response.data.addToConsultQueueWithAutomatedQuestions &&
+                        response.data.addToConsultQueueWithAutomatedQuestions.isJdAllowed
+                      ) {
+                        const composeMessage = {
+                          id: currentPatient && currentPatient.id,
+                          message: 'jdInfo',
+                          automatedText: autoMessageStrings.jdInfoMsg,
+                          duration: '',
+                          url: '',
+                          transferInfo: '',
+                          messageDate: new Date(),
+                          cardType: 'jdInfo',
+                        };
+                        publishMessage(appointmentId, composeMessage);
+                      }
+                      const vitalsCompletedMessage = {
+                        id: currentPatient && currentPatient.id,
+                        message: autoMessageStrings.vitalsCompletedByPatient,
+                        automatedText: autoMessageStrings.vitalsCompletedByPatient,
+                        duration: '',
+                        url: '',
+                        transferInfo: '',
+                        messageDate: new Date(),
+                        cardType: 'patient',
+                      };
+                      publishMessage(appointmentId, vitalsCompletedMessage);
+
+                      const isJdAllowed =
+                        response.data.addToConsultQueueWithAutomatedQuestions.isJdAllowed;
                       setAutoQuestionsCompleted(true);
+                      const eventInfo = consultWebengageEventsInfo(doctorDetail, currentPatient);
+                      medicalDetailsFillTracking(eventInfo);
+                      setIsJdAllowed(isJdAllowed);
                       // console.log(response, 'response after mutation is.....');
                     })
                     .catch((error) => {
-                      // console.log(error, 'error after mutation.......');
+                      console.log(error, 'error after mutation.......');
                     });
                 } else {
                   setBpError(true);
@@ -2001,16 +2274,30 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     );
   };
 
-  console.log(autoQuestionsCompleted);
+  // console.log(autoQuestionsCompleted);
 
   const showNextSlide = () => {
     sliderRef.current.slickNext();
   };
 
-  const pastAppointment =
-    appointmentDetails && isPastAppointment(appointmentDetails.appointmentDateTime);
+  const caseSheets =
+    appointmentDetails && appointmentDetails.caseSheet ? appointmentDetails.caseSheet : [];
 
-  // console.log(messages, 'messages from pubnub.....');
+  const srdCaseSheet = caseSheets!.find(
+    (item) =>
+      item!.doctorType == DoctorType.STAR_APOLLO ||
+      item!.doctorType == DoctorType.APOLLO ||
+      item!.doctorType == DoctorType.PAYROLL
+  );
+
+  // const srdCaseSheet: any = null;
+
+  const followUpInDays =
+    srdCaseSheet && srdCaseSheet.followUpAfterInDays ? srdCaseSheet.followUpAfterInDays : 7;
+
+  const pastAppointment =
+    appointmentDetails &&
+    isPastAppointment(appointmentDetails.appointmentDateTime, Number(followUpInDays));
 
   return (
     <>
@@ -2105,9 +2392,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                 autoHeight
                 autoHeightMax={'calc(100vh - 332px)'}
               >
-                {messages.map((messageDetails: any) => {
+                {messages.map((messageDetails: any, idx: number) => {
                   const cardType = getCardType(messageDetails);
-
                   const message =
                     messageDetails && messageDetails.message ? messageDetails.message : '';
                   if (
@@ -2124,16 +2410,78 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                     messageDetails.message === autoMessageStrings.jdThankyou ||
                     messageDetails.message === autoMessageStrings.startConsultjr ||
                     messageDetails.message === autoMessageStrings.stopConsultJr ||
-                    messageDetails.message === autoMessageStrings.languageQue
+                    messageDetails.message === autoMessageStrings.languageQue ||
+                    messageDetails.message === autoMessageStrings.consultPatientStartedMsg ||
+                    messageDetails.message === autoMessageStrings.patientJoinedMeetingRoom ||
+                    messageDetails.message === autoMessageStrings.patientRejectedCall ||
+                    messageDetails.message === autoMessageStrings.leaveChatRoom ||
+                    messageDetails.message === autoMessageStrings.exotelCall ||
+                    messageDetails.message === autoMessageStrings.firstMessage ||
+                    messageDetails.message === autoMessageStrings.secondMessage ||
+                    messageDetails.message === autoMessageStrings.vitalsCompletedByPatient ||
+                    messageDetails.message === autoMessageStrings.leaveChatRoom
                   ) {
-                    return null;
+                    props.setSrDoctorJoined(
+                      messageDetails.message === autoMessageStrings.startConsultMsg
+                    );
+                    props.setIsConsultCompleted(
+                      messageDetails.message === autoMessageStrings.appointmentComplete
+                    );
+
+                    // console.log(messageDetails.message, '------------');
+
+                    if (messageDetails.message === autoMessageStrings.startConsultMsg) {
+                      return (
+                        <DoctorJoinedMessageCard
+                          doctorName={doctorDisplayName}
+                          messageDate={messageDetails.messageDate}
+                        />
+                      );
+                    } else if (messageDetails.message === autoMessageStrings.appointmentComplete) {
+                      return (
+                        <AppointmentCompleteCardMessage
+                          doctorName={doctorDisplayName}
+                          messageDate={messageDetails.messageDate}
+                        />
+                      );
+                    } else if (messageDetails.message === autoMessageStrings.exotelCall) {
+                      return (
+                        <ExotelMessageCard
+                          doctorName={doctorDisplayName}
+                          messageDate={messageDetails.messageDate}
+                          exotelNumber={messageDetails.exotelNumber}
+                        />
+                      );
+                    } else if (messageDetails.message === autoMessageStrings.firstMessage) {
+                      return (
+                        <FirstMessageCard
+                          doctorName={doctorDisplayName}
+                          messageDate={messageDetails.messageDate}
+                          patientName={currentPatient && currentPatient.firstName}
+                        />
+                      );
+                    } else if (messageDetails.message === autoMessageStrings.secondMessage) {
+                      return (
+                        <SecondMessageCard
+                          doctorName={doctorDisplayName}
+                          messageDate={messageDetails.messageDate}
+                          patientName={currentPatient && currentPatient.firstName}
+                        />
+                      );
+                    } else {
+                      return null;
+                    }
                   }
                   const duration = messageDetails.duration;
                   if (cardType === 'welcome') {
-                    return <WelcomeCard doctorName={doctorDisplayName} />;
+                    return <WelcomeCard doctorName={doctorDisplayName} chatDays={doctorChatDays} />;
+                  } else if (cardType === 'jdInfo') {
+                    return <JdInfoCard doctorName={doctorDisplayName} />;
                   } else if (cardType === 'doctor') {
                     return (
                       <DoctorCard
+                        idx={idx}
+                        totalLength={messages.length}
                         message={message}
                         duration={duration}
                         messageDetails={messageDetails}
@@ -2165,9 +2513,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                 <span id="scrollDiv" ref={scrollDivRef}></span>
               </Scrollbars>
             </div>
-            {autoQuestionsCompleted ||
-            appointmentDetails.isConsultStarted ||
-            appointmentDetails.isJdQuestionsComplete ? (
+            {autoQuestionsCompleted ? (
               <>
                 {pastAppointment && appointmentDetails && (
                   <BookAppointmentCard
@@ -2201,6 +2547,28 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                           cardType: 'patient',
                         };
                         publishMessage(appointmentId, composeMessage);
+                        if (appointmentDetails.status === STATUS.COMPLETED) {
+                          /* insert message post consult */
+                          const ciphertext = CryptoJS.AES.encrypt(
+                            e.target.value,
+                            process.env.NOTIFICATION_SMS_SECRECT_KEY
+                          ).toString();
+                          mutationChatPostConsultWithDoctor({
+                            variables: {
+                              messageInput: {
+                                fromId: currentPatient && currentPatient.id,
+                                toId: appointmentDetails.doctorId,
+                                eventName: notificationEventName.APPOINTMENT,
+                                eventId: appointmentDetails.id,
+                                message: ciphertext,
+                                status: notificationStatus.UNREAD,
+                                type: notificationType.CHAT,
+                              },
+                            },
+                          }).catch((e) => {
+                            console.log('Error in sending notification to Doctor', e);
+                          });
+                        }
                         setUserMessage('');
                       }
                     }}

@@ -17,7 +17,7 @@ import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Dimensions, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { Image } from 'react-native-elements';
+import { FastImageLoading } from '@aph/mobile-doctors/src/components/ui/FastImageLoading';
 import { NavigationScreenProps } from 'react-navigation';
 
 const { width } = Dimensions.get('window');
@@ -96,19 +96,10 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
           </TouchableOpacity>
         </View>
         {patientDetails && isValidImageUrl(patientDetails.photoUrl) ? (
-          <Image
-            source={{
-              uri: (patientDetails && patientDetails.photoUrl) || '',
-            }}
-            style={{ height: width, width: width, backgroundColor: theme.colors.WHITE }}
+          <FastImageLoading
+            uri={(patientDetails && patientDetails.photoUrl) || ''}
+            imageStyle={{ height: width, width: width, backgroundColor: theme.colors.WHITE }}
             resizeMode={'contain'}
-            placeholderStyle={{
-              height: width,
-              width: width,
-              alignItems: 'center',
-              backgroundColor: 'transparent',
-            }}
-            PlaceholderContent={<Spinner style={{ backgroundColor: 'transparent' }} />}
           />
         ) : (
           <UserPlaceHolder
@@ -117,8 +108,8 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
               width: width,
               alignItems: 'center',
               backgroundColor: 'white',
-              resizeMode: 'contain',
             }}
+            resizeMode="contain"
           />
         )}
       </View>
@@ -166,7 +157,7 @@ export const PatientDetailsPage: React.FC<PatientsProps> = (props) => {
                   marginLeft: 20,
                 }}
               >
-                {age > -1 ? Math.round(age).toString() : '-'}
+                {age > -1 ? Math.floor(age).toString() : '-'}
                 {PatientInfo && PatientInfo.gender ? `, ${PatientInfo.gender.charAt(0)} ` : ''}
                 {PatientInfo && PatientInfo.addressList && PatientInfo.addressList.length > 0
                   ? `, ${PatientInfo.addressList[0].city}`

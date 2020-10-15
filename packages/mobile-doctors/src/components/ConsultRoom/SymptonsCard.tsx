@@ -38,9 +38,7 @@ export const SymptonsCard: React.FC<CapsuleViewProps> = (props) => {
             justifyContent: 'space-between',
           }}
         >
-          <Text numberOfLines={1} style={styles.doctorNameStyles}>
-            {props.diseaseName}
-          </Text>
+          <Text style={styles.doctorNameStyles}>{props.diseaseName}</Text>
           <View style={{ flexDirection: 'row' }}>
             {editIcon && (
               <TouchableOpacity

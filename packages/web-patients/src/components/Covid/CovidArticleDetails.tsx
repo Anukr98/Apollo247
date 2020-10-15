@@ -6,14 +6,11 @@ import { Header } from 'components/Header';
 import { ArticleBanner } from 'components/Covid/ArticleBanner';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import fetchUtil from 'helpers/fetch';
-import { CallOurExperts } from 'components/CallOurExperts';
 import { FeedbackWidget } from 'components/Covid/FeedbackWidget';
-import { Link } from 'react-router-dom';
 import isEmpty from 'lodash/isEmpty';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { CommentsForm } from 'components/Covid/CommentsForm';
 import { CommentsList } from 'components/Covid/CommentsList';
-import { AphButton } from '@aph/web-ui-components';
 import { CheckRiskLevel } from 'components/Covid/CheckRiskLevel';
 import { BottomLinks } from 'components/BottomLinks';
 import moment from 'moment';
@@ -21,6 +18,7 @@ import { SchemaMarkup } from 'SchemaMarkup';
 import { MetaTagsComp } from 'MetaTagsComp';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
+import { dataLayerTracking } from 'gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -250,6 +248,13 @@ const CovidArticleDetails: React.FC = (props: any) => {
   const articleSlug = props && props.location.pathname && props.location.pathname.split('/').pop();
 
   useEffect(() => {
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: 'Covid-19 Article Page',
+      pageLOB: 'Covid-19',
+      pageType: 'Article',
+    });
     if (props && props.location && props.location.search && props.location.search.length) {
       const qParamsArr = props.location.search.split('=');
       if (qParamsArr && qParamsArr.length) {
@@ -363,6 +368,9 @@ const CovidArticleDetails: React.FC = (props: any) => {
                   source={source}
                   type={type}
                   isWebView={isWebView}
+                  pageType={
+                    window.location.pathname.split('/').slice(1)[0] === 'covid19' ? 'covid' : 'blog'
+                  }
                 />
                 <div className={classes.imageBanner}>
                   <img className={classes.mobileBanner} src={thumbnailMobile} alt="" />
@@ -377,7 +385,7 @@ const CovidArticleDetails: React.FC = (props: any) => {
                   />
                   {sourceUrl && sourceUrl.length && (
                     <>
-                      <a href={sourceUrl} target="_blank">
+                      <a href={sourceUrl} target="_blank" rel="noopener noreferrer">
                         <div>SOURCE</div>
                         <div className={classes.sourceUrl}>{sourceUrl}</div>
                       </a>

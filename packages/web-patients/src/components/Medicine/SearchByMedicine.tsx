@@ -1,42 +1,44 @@
-import React, { useState, useEffect } from 'react';
+import { AphButton, AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-ui-components';
+
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Theme } from '@material-ui/core';
-import { AphButton, AphDialog, AphDialogTitle, AphDialogClose } from '@aph/web-ui-components';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
-import { clientRoutes } from 'helpers/clientRoutes';
-import Scrollbars from 'react-custom-scrollbars';
-import { MedicineFilter } from 'components/Medicine/MedicineFilter';
-import { MedicinesCartContext } from 'components/MedicinesCartProvider';
-import { MedicineProduct } from './../../helpers/MedicineApiCalls';
-import { useParams } from 'hooks/routerHooks';
 import axios from 'axios';
 import _lowerCase from 'lodash/lowerCase';
-import _replace from 'lodash/replace';
 import { MedicineCard } from 'components/Medicine/MedicineCard';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from '../../helpers/onePrimaryUser';
 import { BottomLinks } from 'components/BottomLinks';
 import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
-import {
-  uploadPrescriptionTracking,
-  pharmacySearchEnterTracking,
-  pharmacyCategoryClickTracking,
-} from 'webEngageTracking';
-import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
+import { MedicineFilter } from 'components/Medicine/MedicineFilter';
+import { MedicinesCartContext, useShoppingCart } from 'components/MedicinesCartProvider';
 import { UploadEPrescriptionCard } from 'components/Prescriptions/UploadEPrescriptionCard';
-import { useCurrentPatient } from 'hooks/authHooks';
-import moment from 'moment';
-import { gtmTracking } from 'gtmTracking';
-import { MetaTagsComp } from 'MetaTagsComp';
+import { UploadPrescription } from 'components/Prescriptions/UploadPrescription';
+import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
 import { GET_RECOMMENDED_PRODUCTS_LIST } from 'graphql/profiles';
+import { getRecommendedProductsList_getRecommendedProductsList_recommendedProducts as recommendedProductsType } from 'graphql/types/getRecommendedProductsList';
+import { gtmTracking, dataLayerTracking } from 'gtmTracking';
+import { clientRoutes } from 'helpers/clientRoutes';
+import { getImageUrl, deepLinkUtil, readableParam } from 'helpers/commonHelpers';
+import { useCurrentPatient } from 'hooks/authHooks';
+import { useParams } from 'hooks/routerHooks';
+import _replace from 'lodash/replace';
+import { MetaTagsComp } from 'MetaTagsComp';
+import moment from 'moment';
 import { useMutation } from 'react-apollo-hooks';
 import { Link } from 'react-router-dom';
-import { useShoppingCart } from 'components/MedicinesCartProvider';
-import { useDiagnosticsCart } from 'components/Tests/DiagnosticsCartProvider';
-import { getRecommendedProductsList_getRecommendedProductsList_recommendedProducts as recommendedProductsType } from 'graphql/types/getRecommendedProductsList';
-import { getImageUrl } from 'helpers/commonHelpers';
+import {
+  pharmacyCategoryClickTracking,
+  pharmacySearchEnterTracking,
+  uploadPrescriptionTracking,
+  medicinePageOpenTracking,
+} from 'webEngageTracking';
+import { MedicineProduct } from './../../helpers/MedicineApiCalls';
 
+let tempData: any[] = [];
+let fetching = true;
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
@@ -45,6 +47,8 @@ const useStyles = makeStyles((theme: Theme) => {
     container: {
       maxWidth: 1064,
       margin: 'auto',
+      height: '100vh',
+      overflowY: 'scroll',
     },
     searchByBrandPage: {
       position: 'relative',
@@ -87,8 +91,10 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '20px 3px 20px 20px',
 
       [theme.breakpoints.down('xs')]: {
-        height: '100%',
+        // height: '100%',
         padding: 0,
+        height: '100vh',
+        overflowY: 'scroll',
       },
     },
     searchSection: {
@@ -261,15 +267,17 @@ type Params = { searchMedicineType: string; searchText: string };
 
 type PriceFilter = { fromPrice: string; toPrice: string };
 type DiscountFilter = { fromDiscount: string; toDiscount: string };
-
-export const SearchByMedicine: React.FC = (props) => {
+let currentPage = 1;
+let totalItems: number;
+const SearchByMedicine: React.FC = (props) => {
   const classes = useStyles({});
+  const scrollToRef = useRef<HTMLDivElement>(null);
   const patient = useCurrentPatient();
   const recommendedProductsMutation = useMutation(GET_RECOMMENDED_PRODUCTS_LIST);
   const [priceFilter, setPriceFilter] = useState<PriceFilter | null>(null);
   const [discountFilter, setDiscountFilter] = useState<DiscountFilter | null>(null);
   const [filterData, setFilterData] = useState([]);
-  const [medicineList, setMedicineList] = useState<MedicineProduct[] | null>(null);
+  const [medicineList, setMedicineList] = useState<MedicineProduct[]>(null);
   const [medicineListFiltered, setMedicineListFiltered] = useState<MedicineProduct[] | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [sortBy, setSortBy] = useState<string>('');
@@ -283,6 +291,34 @@ export const SearchByMedicine: React.FC = (props) => {
   const [heading, setHeading] = React.useState<string>('');
   const { cartItems } = useShoppingCart();
   const { diagnosticsCartItems } = useDiagnosticsCart();
+
+  useEffect(() => {
+    deepLinkUtil(`MedicineSearch?${categoryId},${params.searchText}`);
+    medicinePageOpenTracking();
+  }, [categoryId]);
+
+  const loadItemData = () => {
+    if (currentPage * 20 < totalItems) {
+      getCategoryProducts(currentPage);
+    }
+  };
+
+  useEffect(() => console.log(888, totalItems), [totalItems]);
+
+  const handleOnScroll = useCallback(() => {
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight * 0.8) {
+      if (!fetching) {
+        fetching = true;
+        loadItemData();
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (scrollToRef && scrollToRef.current) {
+      window.addEventListener('scroll', handleOnScroll);
+    }
+  }, [scrollToRef]);
 
   const getTitle = () => {
     let title = params.searchMedicineType;
@@ -316,6 +352,7 @@ export const SearchByMedicine: React.FC = (props) => {
       .then(({ data }) => {
         pharmacySearchEnterTracking(data.products && data.products.length);
         setMedicineList(data.products);
+        totalItems = data.count;
         setMedicineListFiltered(data.products);
         setHeading(data.search_heading || '');
         setIsLoading(false);
@@ -326,8 +363,7 @@ export const SearchByMedicine: React.FC = (props) => {
         setHeading('');
       });
   };
-
-  const getCategoryProducts = () => {
+  const getCategoryProducts = (pageNum?: number) => {
     axios
       .post(
         apiDetails.skuUrl || '',
@@ -340,12 +376,13 @@ export const SearchByMedicine: React.FC = (props) => {
       )
       .then((res) => {
         setCategoryId(res.data.category_id || paramSearchText);
+        deepLinkUtil(`MedicineSearch?${res.data.category_id || paramSearchText},${params.searchText}`);
         axios
           .post(
-            apiDetails.url || '',
+            `${apiDetails.url}` || '',
             {
               category_id: res.data.category_id || paramSearchText,
-              page_id: 1,
+              page_id: pageNum || 1,
             },
             {
               headers: {
@@ -356,9 +393,14 @@ export const SearchByMedicine: React.FC = (props) => {
           )
           .then(({ data }) => {
             if (data && data.products) {
+              // @ts-ignore
+              tempData = tempData.concat(data.products);
+              totalItems = data.count;
               setMedicineList(data.products);
               setHeading('');
               setIsLoading(false);
+              fetching = false;
+              currentPage = currentPage + 1;
               pharmacyCategoryClickTracking({
                 source: 'Home',
                 categoryName: paramSearchText,
@@ -494,6 +536,9 @@ export const SearchByMedicine: React.FC = (props) => {
   };
 
   useEffect(() => {
+    scrollToRef &&
+      scrollToRef.current &&
+      scrollToRef.current.scrollIntoView({ behavior: 'auto', block: 'end' });
     if (!medicineList && paramSearchType !== 'search-medicines') {
       setIsLoading(true);
       if (paramSearchText === 'recommended-products') {
@@ -504,7 +549,8 @@ export const SearchByMedicine: React.FC = (props) => {
     } else if (!medicineList && paramSearchText.length > 0) {
       onSearchMedicine();
     } else {
-      setMedicineListFiltered(medicineList);
+      const data = medicineList.length > tempData.length ? medicineList : tempData;
+      setMedicineListFiltered(data);
     }
   }, [medicineList, patient]);
 
@@ -634,31 +680,57 @@ export const SearchByMedicine: React.FC = (props) => {
     setIsUploadPreDialogOpen(true);
   };
 
-  const getMetaTitle =
-    paramSearchType === 'shop-by-category'
-      ? `Buy ${paramSearchText} - Online Pharmacy Store - Apollo 247`
-      : paramSearchType === 'shop-by-brand'
-      ? `Buy ${paramSearchText} Medicines Online - Apollo 247`
-      : `${paramSearchText} Online - Buy Special Medical Kits Online - Apollo 247`;
+  // const getMetaTitle =
+  //   paramSearchType === 'shop-by-category'
+  //     ? `Buy ${paramSearchText} - Online Pharmacy Store - Apollo 247`
+  //     : paramSearchType === 'shop-by-brand'
+  //     ? `Buy ${paramSearchText} Medicines Online - Apollo 247`
+  //     : `${paramSearchText} Online - Buy Special Medical Kits Online - Apollo 247`;
 
-  const getMetaDescription =
-    paramSearchType === 'shop-by-category'
-      ? `Buy ${paramSearchText} online at Apollo 247 - India's online pharmacy store. Get ${paramSearchText} medicines in just a few clicks. Buy ${paramSearchText} at best prices in India.`
-      : paramSearchType === 'shop-by-brand'
-      ? `Buy medicines from ${paramSearchText} online at Apollo 247 - India's online pharmacy store. Get all the medicines from ${paramSearchText} in a single place and buy them in just a few clicks.`
-      : `${paramSearchText} by Apollo 247. Get ${paramSearchText} to buy pre grouped essential medicines online. Buy medicines online at Apollo 247 in just a few clicks.`;
+  // const getMetaDescription =
+  //   paramSearchType === 'shop-by-category'
+  //     ? `Buy ${paramSearchText} online at Apollo 247 - India's online pharmacy store. Get ${paramSearchText} medicines in just a few clicks. Buy ${paramSearchText} at best prices in India.`
+  //     : paramSearchType === 'shop-by-brand'
+  //     ? `Buy medicines from ${paramSearchText} online at Apollo 247 - India's online pharmacy store. Get all the medicines from ${paramSearchText} in a single place and buy them in just a few clicks.`
+  //     : `${paramSearchText} by Apollo 247. Get ${paramSearchText} to buy pre grouped essential medicines online. Buy medicines online at Apollo 247 in just a few clicks.`;
+
+  const getMetaTitle = `Buy Best ${readableParam(
+    paramSearchText
+  )} Medicines & Products Online in India - Apollo 247`;
+
+  const getMetaDescription = `Search and buy best ${readableParam(
+    paramSearchText
+  )} medicines & products online from India's largest pharmacy chain. Order online and get the fastest home delivery at your doorsteps of your ${readableParam(
+    paramSearchText
+  )} products.`;
 
   const metaTagProps = {
     title: getMetaTitle,
     description: getMetaDescription,
     canonicalLink: window && window.location && window.location && window.location.href,
+    deepLink: window.location.href,
   };
+
+  useEffect(() => {
+    if (medicineListFiltered && paramSearchText) {
+      /**Gtm code start start */
+      dataLayerTracking({
+        event: 'pageviewEvent',
+        pagePath: window.location.href,
+        pageName: `${paramSearchText} Listing Page`,
+        pageLOB: 'Pharmacy',
+        pageType: 'Index',
+        productlist: JSON.stringify(medicineListFiltered),
+      });
+      /**Gtm code start end */
+    }
+  }, [medicineListFiltered, paramSearchText]);
 
   return (
     <div className={classes.root}>
       {paramSearchType !== 'search-medicines' && <MetaTagsComp {...metaTagProps} />}
       <Header />
-      <div className={classes.container}>
+      <div className={classes.container} ref={scrollToRef}>
         <div className={classes.searchByBrandPage}>
           <div className={classes.breadcrumbs}>
             <a onClick={() => window.history.back()}>
@@ -702,12 +774,12 @@ export const SearchByMedicine: React.FC = (props) => {
                 onClick={() =>
                   (window.location.href = clientRoutes.searchByMedicine(
                     'deals-of-the-day',
-                    'offer1'
+                    'exclusive-offers' // this is hardcoded as per the request.
                   ))
                 }
               >
                 <span>
-                  <img src={require('images/offer-icon.svg')} alt="" />
+                  <img src={require('images/offer-icon.svg')} alt="Offer Icon" />
                 </span>
                 <span>Special offers</span>
               </div>
@@ -732,18 +804,16 @@ export const SearchByMedicine: React.FC = (props) => {
               categoryId={categoryId}
             />
             <div className={classes.searchSection}>
-              <Scrollbars className={classes.scrollBar} autoHide={true}>
-                <div className={classes.customScroll}>
-                  <MedicinesCartContext.Consumer>
-                    {() => (
-                      <>
-                        <div className={classes.noData}>{heading}</div>
-                        <MedicineCard medicineList={medicineListFiltered} isLoading={isLoading} />
-                      </>
-                    )}
-                  </MedicinesCartContext.Consumer>
-                </div>
-              </Scrollbars>
+              <div className={classes.customScroll}>
+                <MedicinesCartContext.Consumer>
+                  {() => (
+                    <>
+                      <div className={classes.noData}>{heading}</div>
+                      <MedicineCard medicineList={medicineListFiltered} isLoading={isLoading} />
+                    </>
+                  )}
+                </MedicinesCartContext.Consumer>
+              </div>
             </div>
           </div>
         </div>
@@ -775,3 +845,5 @@ export const SearchByMedicine: React.FC = (props) => {
     </div>
   );
 };
+
+export default SearchByMedicine;

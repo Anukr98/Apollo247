@@ -16,7 +16,7 @@ import {
   validatePharmaCoupon,
 } from 'graphql/types/validatePharmaCoupon';
 import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
-import { gtmTracking } from '../../gtmTracking';
+import { gtmTracking, dataLayerTracking } from '../../gtmTracking';
 import { getTypeOfProduct } from 'helpers/commonHelpers';
 import fetchUtil from 'helpers/fetch';
 import { PharmaCoupon } from './MedicineCart';
@@ -179,34 +179,73 @@ interface ApplyCouponProps {
 export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
   const classes = useStyles({});
   const { currentPatient } = useAllCurrentPatients();
-  const { cartItems, setCouponCode, cartTotal, addCartItems } = useShoppingCart();
+  const {
+    cartItems,
+    setCouponCode,
+    cartTotal,
+    addCartItems,
+    updateCartItemQty,
+  } = useShoppingCart();
   const [selectCouponCode, setSelectCouponCode] = useState<string>(props.couponCode);
   const [availableCoupons, setAvailableCoupons] = useState<(consult_coupon | null)[]>(null);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [muationLoading, setMuationLoading] = useState<boolean>(false);
 
+  const handleQuantityFreeProduct = (response: any) => {
+    if (response.products && Array.isArray(response.products) && response.products.length) {
+      response.products.forEach((e: any) => {
+        if (e.couponFree && e.quantity > 1 && !localStorage.getItem('updatedFreeCoupon')) {
+          updateCartItemQty({ ...e, quantity: e.quantity, couponFree: 1 });
+        }
+      });
+      localStorage.setItem('updatedFreeCoupon', 'true');
+    }
+  };
+
+  var packageId: string;
+  const userSubscriptions = JSON.parse(localStorage.getItem('userSubscriptions'));
+  if (userSubscriptions && userSubscriptions[0] && userSubscriptions[0].status == 'ACTIVE') {
+    packageId = `${userSubscriptions[0].group_plan.group.name}:${userSubscriptions[0].group_plan.plan_id}`;
+  }
+
   const verifyCoupon = () => {
     const data = {
       mobile: localStorage.getItem('userMobileNo'),
       billAmount: cartTotal.toFixed(2),
+      email: currentPatient && currentPatient.emailAddress,
+      packageId: packageId,
       coupon: selectCouponCode,
       pinCode: localStorage.getItem('pharmaPincode'),
       products: cartItems.map((item) => {
-        const { sku, quantity, special_price, price, type_id } = item;
+        const { sku, quantity, special_price, price, type_id, couponFree } = item;
         return {
           sku,
           mrp: item.price,
           quantity,
+          couponFree: Number(couponFree) || 0,
           categoryId: type_id || '',
           specialPrice: special_price || price,
         };
       }),
     };
+    console.log(data, 'Checkpoint by Vasudev');
     if (currentPatient && currentPatient.id) {
       setMuationLoading(true);
-      fetchUtil(process.env.VALIDATE_CONSULT_COUPONS, 'POST', data, '', false)
+      const fetchCouponUrl = `${process.env.VALIDATE_CONSULT_COUPONS}?mobile=${
+        currentPatient.mobileNumber
+      }&email=${currentPatient.emailAddress}&packageId=${userSubscriptions ? packageId : ''}`;
+      fetchUtil(fetchCouponUrl, 'POST', data, '', false)
         .then((resp: any) => {
           if (resp.errorCode == 0) {
+            /**Gtm code start start */
+            dataLayerTracking({
+              event: 'Coupon Code Applied',
+              'GT-Coupon-Code': selectCouponCode,
+              'GT-Discount-Given': resp.response.valid,
+              'GT-Discount': resp.response.discount,
+            });
+            /**Gtm code start end */
+
             if (resp.response.valid) {
               const freeProductsSet = new Set(
                 resp.response.products && resp.response.products.length
@@ -215,6 +254,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
               );
               if (freeProductsSet.size) {
                 addDiscountedProducts(resp.response);
+                handleQuantityFreeProduct(resp.response);
               }
               props.setValidateCouponResult(resp.response);
               setCouponCode && setCouponCode(selectCouponCode);
@@ -226,6 +266,7 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
                 label: `Coupon Applied - ${selectCouponCode}`,
                 value: resp.response.discount,
               });
+
               return resp;
             } else {
               props.setValidateCouponResult(null);
@@ -248,59 +289,66 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
   const apiDetails = {
     url: process.env.PHARMACY_MED_PROD_DETAIL_URL,
     authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
+    bulk_product_info_url: process.env.PHARMACY_MED_BULK_PRODUCT_INFO_URL,
   };
 
   const addDiscountedProducts = (response: any) => {
-    const promises: Promise<any>[] = [];
+    const skus: Array<string> = [];
     if (response.products && Array.isArray(response.products) && response.products.length) {
       try {
         const cartSkuSet = new Set(
           cartItems && cartItems.length ? cartItems.map((cartItem) => cartItem.sku) : []
         );
         response.products.forEach((data: any) => {
-          if (!cartSkuSet.has(data.sku))
-            promises.push(
-              axios.post(
-                apiDetails.url || '',
-                { params: data.sku },
-                {
-                  headers: {
-                    Authorization: apiDetails.authToken,
-                  },
-                }
-              )
-            );
+          if (!cartSkuSet.has(data.sku) && data.couponFree) skus.push(data.sku);
         });
+
         const allData: MedicineCartItem[] = [];
-        Promise.all(promises)
-          .then((data: any) => {
-            data.forEach((e: any) => {
-              const cartItem: MedicineCartItem = {
-                MaxOrderQty: 1,
-                url_key: e.data.productdp[0].url_key,
-                description: e.data.productdp[0].description,
-                id: e.data.productdp[0].id,
-                image: e.data.productdp[0].image,
-                is_in_stock: e.data.productdp[0].is_in_stock,
-                is_prescription_required: e.data.productdp[0].is_prescription_required,
-                name: e.data.productdp[0].name,
-                price: 0,
-                sku: e.data.productdp[0].sku,
-                special_price: 0,
-                small_image: e.data.productdp[0].small_image,
-                status: e.data.productdp[0].status,
-                thumbnail: e.data.productdp[0].thumbnail,
-                type_id: e.data.productdp[0].type_id,
-                mou: e.data.productdp[0].mou,
-                quantity: 1,
-                isShippable: true,
-              };
-              allData.push(cartItem);
+        if (skus && skus.length) {
+          axios
+            .post(
+              apiDetails.bulk_product_info_url || '',
+              { params: skus.join(',') },
+              {
+                headers: {
+                  Authorization: apiDetails.authToken,
+                },
+              }
+            )
+            .then((resp) => {
+              if (resp && resp.data && resp.data.productdp && resp.data.productdp.length) {
+                resp &&
+                  resp.data &&
+                  resp.data.productdp.forEach((e: any) => {
+                    const cartItem: MedicineCartItem = {
+                      MaxOrderQty: 1,
+                      url_key: e.url_key,
+                      description: e.description,
+                      id: e.id,
+                      image: e.image,
+                      is_in_stock: e.is_in_stock,
+                      is_prescription_required: e.is_prescription_required,
+                      name: e.name,
+                      price: e.price,
+                      sku: e.sku,
+                      special_price: 0,
+                      couponFree: 1,
+                      small_image: e.small_image,
+                      status: e.status,
+                      thumbnail: e.thumbnail,
+                      type_id: e.type_id,
+                      mou: e.mou,
+                      quantity: 1,
+                      isShippable: true,
+                    };
+                    allData.push(cartItem);
+                  });
+              }
+            })
+            .then(() => {
+              addCartItems(allData);
             });
-          })
-          .then(() => {
-            addCartItems(allData);
-          });
+        }
       } catch (e) {
         console.error(e);
         throw e;
@@ -317,7 +365,10 @@ export const ApplyCoupon: React.FC<ApplyCouponProps> = (props) => {
   useEffect(() => {
     setIsLoading(true);
     // Since endpoint is the same for all coupons, this will be changed if searchlight gives a new endpoint
-    fetchUtil(process.env.GET_CONSULT_COUPONS, 'GET', {}, '', false)
+    const fetchCouponUrl = `${process.env.GET_CONSULT_COUPONS}?mobile=${
+      currentPatient.mobileNumber
+    }&email=${currentPatient.emailAddress}&packageId=${userSubscriptions ? packageId : ''}`;
+    fetchUtil(fetchCouponUrl, 'GET', {}, '', false)
       .then((res: any) => {
         if (res && res.response && res.response.length > 0) {
           setAvailableCoupons(res.response);

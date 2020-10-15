@@ -28,11 +28,11 @@ import {
   sendReminderNotification,
   sendNotification,
   sendDoctorRescheduleAppointmentNotification,
+  sendDoctorNotificationWhatsapp,
 } from 'notifications-service/handlers';
 import { NotificationType } from 'notifications-service/constants';
 import { differenceInDays } from 'date-fns';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
-import { AdminDoctorMap } from 'doctors-service/repositories/adminDoctorRepository';
 import { rescheduleAppointmentEmailTemplate } from 'helpers/emailTemplates/rescheduleAppointmentEmailTemplate';
 import { initiateRefund } from 'consults-service/helpers/refundHelper';
 import { PaytmResponse } from 'types/refundHelperTypes';
@@ -193,7 +193,7 @@ const getAppointmentRescheduleDetails: Resolver<
   const rescheduleDetails = await rescheduleRepo.getRescheduleDetailsByAppointment(apptDetails.id);
   if (!rescheduleDetails) throw new AphError(AphErrorMessages.NO_RESCHEDULE_DETAILS, undefined, {});
   const apptCount = await appointmentRepo.checkIfAppointmentExist(
-    rescheduleDetails.rescheduleInitiatedId,
+    apptDetails.doctorId,
     rescheduleDetails.rescheduledDateTime
   );
   if (rescheduleDetails.rescheduledDateTime < new Date() || apptCount > 0) {
@@ -201,7 +201,7 @@ const getAppointmentRescheduleDetails: Resolver<
     let availableSlot;
     while (true) {
       const nextSlot = await appointmentRepo.getDoctorNextSlotDate(
-        rescheduleDetails.rescheduleInitiatedId,
+        apptDetails.doctorId,
         nextDate,
         doctorsDb,
         apptDetails.appointmentType,
@@ -333,7 +333,6 @@ const initiateRescheduleAppointment: Resolver<
     consultsDb,
     doctorsDb
   );
-  console.log(notificationResult, 'notificationResult');
   const historyAttrs: Partial<AppointmentUpdateHistory> = {
     appointment,
     userType: APPOINTMENT_UPDATED_BY.DOCTOR,
@@ -383,6 +382,10 @@ const bookRescheduleAppointment: Resolver<
   if (!apptDetails) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
+  const oldApptDate = format(
+    addMinutes(new Date(apptDetails.appointmentDateTime), +330),
+    'yyyy-MM-dd hh:mm a'
+  );
   const rescheduleDetails = await rescheduleApptRepo.getRescheduleDetails(
     bookRescheduleAppointmentInput.appointmentId
   );
@@ -398,7 +401,7 @@ const bookRescheduleAppointment: Resolver<
   }
   // doctor details
   const doctor = doctorsDb.getCustomRepository(DoctorRepository);
-  const docDetails = await doctor.findById(apptDetails.doctorId);
+  const docDetails = await doctor.getDoctorSecretary(apptDetails.doctorId);
   if (!docDetails) {
     throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
   }
@@ -533,13 +536,7 @@ const bookRescheduleAppointment: Resolver<
       appointmentId: bookRescheduleAppointmentInput.appointmentId,
       notificationType,
     };
-    const notificationResult = sendReminderNotification(
-      pushNotificationInput,
-      patientsDb,
-      consultsDb,
-      doctorsDb
-    );
-    console.log(notificationResult, 'notificationResult');
+    sendReminderNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
   }
 
   if (bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.DOCTOR) {
@@ -663,8 +660,14 @@ const bookRescheduleAppointment: Resolver<
   if (!rescheduledapptDetails) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
+  let facilityDetsString = 'N/A';
+  let hospitalCity = 'N/A';
+  if (docDetails.doctorHospital.length > 0) {
+    const facilityDets = docDetails.doctorHospital[0].facility;
+    facilityDetsString = `${facilityDets.name} ${facilityDets.streetLine1} ${facilityDets.city} ${facilityDets.state}`;
+    hospitalCity = docDetails.doctorHospital[0].facility.city;
+  }
 
-  const hospitalCity = docDetails.doctorHospital[0].facility.city;
   //const istDateTime = addMilliseconds(rescheduledapptDetails.appointmentDateTime, 19800000);
   const apptDate = format(
     addMinutes(new Date(rescheduledapptDetails.appointmentDateTime), +330),
@@ -672,7 +675,7 @@ const bookRescheduleAppointment: Resolver<
   ); //format(istDateTime, 'dd/MM/yyyy');
   const apptTime = format(
     addMinutes(new Date(rescheduledapptDetails.appointmentDateTime), +330),
-    'hh:mm:aa'
+    'hh:mm aa'
   ); // format(istDateTime, 'hh:mm aa');
   const mailContent = rescheduleAppointmentEmailTemplate({
     hospitalCity: hospitalCity || 'N/A',
@@ -684,6 +687,23 @@ const bookRescheduleAppointment: Resolver<
     rescheduledapptNo: rescheduledapptDetails.displayId.toString() || 'N/A',
     docfirstName: docDetails.firstName || 'N/A',
   });
+  if (docDetails.doctorSecretary) {
+    const secretaryTemplateData: string[] = [
+      patientDetails.firstName + ' ' + patientDetails.lastName,
+      patientDetails.uhid,
+      docDetails.salutation + ' ' + docDetails.firstName,
+      facilityDetsString,
+      oldApptDate,
+      apptDate,
+      apptTime,
+      rescheduledapptDetails.appointmentType,
+    ];
+    sendDoctorNotificationWhatsapp(
+      ApiConstants.WHATSAPP_DOC_SECRETARY_RESCHDULE,
+      docDetails.doctorSecretary.secretary.mobileNumber,
+      secretaryTemplateData
+    );
+  }
 
   const emailsubject = _.template(`
     Appointment rescheduled for ${hospitalCity},  Hosp Doctor – ${apptDate} ${apptTime}hrs, Dr. ${docDetails.firstName} ${docDetails.lastName}`);
@@ -718,6 +738,7 @@ const bookRescheduleAppointment: Resolver<
   //   rescheduledapptDetails.doctorId,
   //   doctorsDb
   // );
+
   sendDoctorRescheduleAppointmentNotification(
     rescheduledapptDetails.appointmentDateTime,
     rescheduledapptDetails.patientName,
@@ -734,7 +755,7 @@ const bookRescheduleAppointment: Resolver<
   }
   const pushNotificationInput = {
     appointmentId: bookRescheduleAppointmentInput.appointmentId,
-    notificationType: NotificationType.ACCEPT_RESCHEDULED_APPOINTMENT,
+    notificationType: NotificationType.RESCHEDULE_APPOINTMENT_BY_PATIENT,
   };
   if (bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.DOCTOR) {
     // const notificationResult = await sendNotification(
@@ -750,13 +771,7 @@ const bookRescheduleAppointment: Resolver<
     //   appointmentId: bookRescheduleAppointmentInput.appointmentId,
     //   notificationType: NotificationType.RESCHEDULE_APPOINTMENT_BY_PATIENT,
     // };
-    const notificationResult = await sendNotification(
-      pushNotificationInput,
-      patientsDb,
-      consultsDb,
-      doctorsDb
-    );
-    console.log(notificationResult, 'appt rescheduled notification');
+    sendNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
   }
   return { appointmentDetails };
 };

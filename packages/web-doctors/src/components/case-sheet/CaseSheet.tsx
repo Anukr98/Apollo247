@@ -6,11 +6,8 @@ import {
   ExpansionPanel,
   ExpansionPanelSummary,
   ExpansionPanelDetails,
-  Divider,
-  Box,
 } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import { AphTextField, AphButton } from '@aph/web-ui-components';
 import {
   Symptoms,
   LifeStyle,
@@ -32,8 +29,8 @@ import { AuthContext, AuthContextProps } from 'components/AuthProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
-    container: {
-      padding: 20,
+    casesheetContainer: {
+      padding: '0 0 60px',
     },
     caseSheet: {
       minHeight: 'calc(100vh - 360px)',
@@ -149,13 +146,15 @@ const useStyles = makeStyles((theme: Theme) => {
     none: {
       display: 'none',
     },
+    displayBlock: {
+      display: 'block',
+    },
   };
 });
 
 interface CashSheetProps {
   startAppointment: boolean;
 }
-let autoSaveIntervalId: any;
 type Params = { id: string; patientId: string; tabValue: string };
 export const CaseSheet: React.FC<CashSheetProps> = (props) => {
   const classes = useStyles({});
@@ -211,7 +210,11 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
     setMedicationHistory,
     occupationHistory,
     setOccupationHistory,
-    patientDetails,
+    diagnosticTestResult,
+    setDiagnosticTestResult,
+    clinicalObservationNotes,
+    setClinicalObservationNotes,
+    casesheetVersion,
   } = useContext(CaseSheetContext);
   const params = useParams<Params>();
 
@@ -264,7 +267,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
     },
     {
       key: 'note',
-      value: "Junior Doctor's Notes",
+      value: 'Notes',
       state: noteState,
       component: <DoctorsNotes />,
     },
@@ -303,6 +306,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
           value={followUpAfterInDays[0]}
           onChange={setFollowUpAfterInDays}
           disabled={!caseSheetEdit}
+          casesheetVersion={casesheetVersion}
           info={`The follow up chat days count will be changed for this individual patient. Your default follow up chat day count is set at ${chatDays}.`}
         />
       ),
@@ -359,6 +363,8 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
           referralDescription: referralDescription,
           medicationHistory: medicationHistory,
           occupationHistory: occupationHistory,
+          diagnosticTestResult: diagnosticTestResult,
+          clinicalObservationNotes: clinicalObservationNotes,
         };
         updateLocalStorageItem(params.id, caseSheetObject);
         setFirstTimeLanding(false);
@@ -369,6 +375,8 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
         setTemperature(storageItem.temperature);
         setBp(storageItem.bp);
         setSRDNotes(storageItem.notes);
+        setDiagnosticTestResult(storageItem.diagnosticTestResult);
+        setClinicalObservationNotes(storageItem.clinicalObservationNotes);
         setPastMedicalHistory(storageItem.pastMedicalHistory);
         setPastSurgicalHistory(storageItem.pastSurgicalHistory);
         setDrugAllergies(storageItem.drugAllergies);
@@ -434,58 +442,38 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
     }
   };
 
-  const getNotesDefaultValue = () => {
-    const storageItem = getLocalStorageItem(params.id);
-    return storageItem ? storageItem.notes : notes;
-  };
-
-  const patientName = patientDetails!.firstName + ' ' + patientDetails!.lastName;
-
   return (
-    <div className={classes.container}>
+    <div className={classes.casesheetContainer}>
       <div className={classes.caseSheet}>
         <section className={`${classes.column} ${classes.right}`}>
           <UserCard />
         </section>
         <section className={classes.column}>
           {items.map((item) => (
-            <ExpansionPanel
-              key={item.key}
-              expanded={item.state}
-              onChange={handlePanelExpansion(item.key)}
-              className={`${classes.expandIcon}`}
+            <div
+              style={
+                casesheetVersion > 1 && item.key === 'followup'
+                  ? { display: 'none' }
+                  : { display: 'block' }
+              }
             >
-              <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography variant="h3">{item.value}</Typography>
-              </ExpansionPanelSummary>
-              <ExpansionPanelDetails>{item.component}</ExpansionPanelDetails>
-            </ExpansionPanel>
+              <ExpansionPanel
+                key={item.key}
+                expanded={item.state}
+                onChange={handlePanelExpansion(item.key)}
+                className={`${classes.expandIcon}`}
+              >
+                <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+                  <Typography variant="h3">{item.value}</Typography>
+                </ExpansionPanelSummary>
+                <ExpansionPanelDetails className={classes.displayBlock}>
+                  {item.component}
+                </ExpansionPanelDetails>
+              </ExpansionPanel>
+            </div>
           ))}
         </section>
       </div>
-      <Divider className={classes.divider} />
-      <Box boxShadow={5} borderRadius={10} className={classes.notesContainer}>
-        <Typography component="h4" variant="h4" className={classes.notesHeader}>
-          Personal Notes (What you enter here won't be shown to the patient..)
-        </Typography>
-        <Typography component="div" className={classes.textFieldWrapper}>
-          <AphTextField
-            fullWidth
-            className={classes.textFieldColor}
-            placeholder="What you enter here won't be shown to the patient.."
-            defaultValue={getNotesDefaultValue()}
-            onBlur={(e) => {
-              const storageItem = getLocalStorageItem(params.id);
-              if (storageItem) {
-                storageItem.notes = e.target.value;
-                updateLocalStorageItem(params.id, storageItem);
-              }
-              setSRDNotes(e.target.value);
-            }}
-            disabled={!props.startAppointment}
-          />
-        </Typography>
-      </Box>
     </div>
   );
 };

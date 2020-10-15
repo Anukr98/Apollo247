@@ -8,7 +8,7 @@ import { UploadDocumentInput } from 'profiles-service/resolvers/uploadDocumentTo
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format, getUnixTime } from 'date-fns';
-import { debugLog } from 'customWinstonLogger';
+import { debugLog, log } from 'customWinstonLogger';
 import { createPrismUser } from 'helpers/phrV1Services';
 import {
   PrescriptionInputArgs,
@@ -30,6 +30,7 @@ const dLogger = debugLog(
 );
 const REDIS_PATIENT_ID_KEY_PREFIX: string = 'patient:';
 const REDIS_PATIENT_MOBILE_KEY_PREFIX: string = 'patient:mobile:';
+const REDIS_PATIENT_CONSULT_KEY_PREFIX: string = 'patient:consult:';
 // const REDIS_PATIENT_DEVICE_COUNT_KEY_PREFIX: string = 'patient:deviceCodeCount:';
 @EntityRepository(Patient)
 export class PatientRepository extends Repository<Patient> {
@@ -98,7 +99,13 @@ export class PatientRepository extends Repository<Patient> {
         const patient: Patient | undefined = await this.getByIdCache(id);
         return resolve(patient);
       } catch (ex) {
-        console.log(`getPatientDetails`, ex);
+        log(
+          'profileServiceLogger',
+          'getPatientDetails error',
+          'getPatientDetails()->CATCH_BLOCK',
+          '',
+          JSON.stringify(ex)
+        );
         return reject(ex);
       }
     });
@@ -213,6 +220,49 @@ export class PatientRepository extends Repository<Patient> {
 
   async findDetailsByMobileNumber(mobileNumber: string) {
     return (await this.findByMobileNumber(mobileNumber))[0];
+  }
+
+  async setPatientConsultCache(id: string) {
+    const patients = await this.findOne({
+      where: { id, isActive: true },
+      relations: ['lifeStyle', 'familyHistory', 'patientAddress', 'patientMedicalHistory'],
+    });
+    const patientString = JSON.stringify(patients);
+    setCache(
+      `${REDIS_PATIENT_CONSULT_KEY_PREFIX}${id}`,
+      patientString,
+      ApiConstants.CACHE_EXPIRATION_3600
+    );
+    return patientString;
+  }
+
+  async getPatientConsultCache(id: string) {
+    const cache = await getCache(`${REDIS_PATIENT_CONSULT_KEY_PREFIX}${id}`);
+    let patient: Patient;
+    if (cache && typeof cache === 'string') {
+      patient = JSON.parse(cache);
+    } else {
+      patient = JSON.parse(await this.setPatientConsultCache(id));
+    }
+    if (patient.dateOfBirth) {
+      patient.dateOfBirth = new Date(patient.dateOfBirth);
+    }
+    return patient;
+  }
+
+  async getPatientDetailsForConsult(id: string) {
+    return await this.getPatientConsultCache(id);
+  }
+
+  async updatePatientDetailsConsultCache(patient: Patient) {
+    await delCache(`${REDIS_PATIENT_CONSULT_KEY_PREFIX}${patient.id}`);
+    const patientString = JSON.stringify(patient);
+    setCache(
+      `${REDIS_PATIENT_CONSULT_KEY_PREFIX}${patient.id}`,
+      patientString,
+      ApiConstants.CACHE_EXPIRATION_3600
+    );
+    return patient;
   }
 
   getPatientAddressById(id: PatientAddress['id']) {
@@ -595,6 +645,13 @@ export class PatientRepository extends Repository<Patient> {
       const getData = await this.findOne({ where: { id: patientId, mobileNumber } });
       if (getData) return true;
       else return false;
+    }
+  }
+  async removePartnerId(partnerId: string, mobileNumber: string) {
+    const patient: Patient | undefined = await this.findOne({ where: { partnerId, mobileNumber } });
+    if (patient) {
+      patient.partnerId = '';
+      patient.save();
     }
   }
 

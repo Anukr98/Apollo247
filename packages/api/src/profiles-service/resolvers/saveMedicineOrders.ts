@@ -194,7 +194,6 @@ const SaveMedicineOrder: Resolver<
         ...item,
       };
       const lineItemOrder = await medicineOrdersRepo.saveMedicineOrderLineItem(orderItemAttrs);
-      console.log(lineItemOrder);
     });
 
     const medicineOrderStatusAttrs: Partial<MedicineOrdersStatus> = {

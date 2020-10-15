@@ -9,7 +9,7 @@ import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepo
 import { format, addMinutes } from 'date-fns';
 import { DoctorType } from 'doctors-service/entities';
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
-
+import { getCache, setCache, delCache } from 'consults-service/database/connectRedis';
 import { CASESHEET_STATUS, APPOINTMENT_TYPE, CaseSheet } from 'consults-service/entities';
 import { ApiConstants } from 'ApiConstants';
 
@@ -33,6 +33,7 @@ type ApptReminderResult = {
   apptsListCount: number;
 };
 
+const REDIS_JDCASESHEET_LOCK_PREFIX = `jdcasesheet:lock:`;
 const autoSubmitJDCasesheet: Resolver<null, {}, ConsultServiceContext, String> = async (
   parent,
   args,
@@ -109,6 +110,16 @@ const autoSubmitJDCasesheet: Resolver<null, {}, ConsultServiceContext, String> =
         (appointment) => !pendingAppointmentIds.includes(appointment.id)
       );
 
+      let index = caseSheetsToBeAdded.length;
+      while (index--) {
+        const lockKey = `${REDIS_JDCASESHEET_LOCK_PREFIX}${caseSheetsToBeAdded[index]['id']}`;
+        const lockedAppointment = await getCache(lockKey);
+        if (lockedAppointment && typeof lockedAppointment == 'string') {
+          caseSheetsToBeAdded.splice(index, 1);
+        }
+        await setCache(lockKey, 'true', ApiConstants.CACHE_EXPIRATION_120);
+      }
+
       //adding case sheets
       const casesheetAttrsToAdd = caseSheetsToBeAdded.map((appointment) => {
         return {
@@ -126,7 +137,12 @@ const autoSubmitJDCasesheet: Resolver<null, {}, ConsultServiceContext, String> =
           isJdConsultStarted: true,
         };
       });
-      caseSheetRepo.saveMultipleCaseSheets(casesheetAttrsToAdd);
+      await caseSheetRepo.saveMultipleCaseSheets(casesheetAttrsToAdd);
+
+      caseSheetsToBeAdded.forEach(async (appointment) => {
+        const lockKey = `${REDIS_JDCASESHEET_LOCK_PREFIX}${appointment.id}`;
+        await delCache(lockKey);
+      });
 
       //updating case sheets
       const casesheetAttrsToUpdate = {
@@ -156,7 +172,6 @@ const sendApptReminderNotification: Resolver<
     args.inNextMin,
     APPOINTMENT_TYPE.ONLINE
   );
-  console.log(apptsList);
   if (apptsList.length > 0) {
     apptsList.map((appt) => {
       const pushNotificationInput = {
@@ -213,7 +228,6 @@ const sendPhysicalApptReminderNotification: Resolver<
     args.inNextMin,
     APPOINTMENT_TYPE.PHYSICAL
   );
-  console.log(apptsList);
   if (apptsList.length > 0) {
     apptsList.map((appt) => {
       const pushNotificationInput = {
@@ -241,7 +255,6 @@ const sendPhysicalApptReminderNotification: Resolver<
         consultsDb,
         doctorsDb
       );
-      console.log(notificationResult, 'appt notification');
     });
   }
 

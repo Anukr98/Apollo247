@@ -4,10 +4,10 @@ import { Theme } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
+import stripHtml from 'string-strip-html';
 import { searchDiagnostics_searchDiagnostics_diagnostics } from 'graphql/types/searchDiagnostics';
 import { getDiagnosticsData_getDiagnosticsData_diagnosticOrgans_diagnostics } from 'graphql/types/getDiagnosticsData';
 import { useDiagnosticsCart, DiagnosticsCartItem } from 'components/Tests/DiagnosticsCartProvider';
-import stripHtml from 'string-strip-html';
 import axios from 'axios';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -253,7 +253,7 @@ export const TestCard: React.FC<TestListCardProps> = (props) => {
                             itemId: `${testData.itemId}`,
                             id: testData.id,
                             mou: testDetailsPackage ? testcount : mou,
-                            name: stripHtml(testData.itemName),
+                            name: stripHtml(testData.itemName).result,
                             price: testData.rate,
                             thumbnail: '',
                             collectionMethod: testData.collectionType!,

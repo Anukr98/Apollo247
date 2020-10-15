@@ -5,7 +5,7 @@ import { AphButton, AphCustomDropdown } from '@aph/web-ui-components';
 import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvider';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { gtmTracking } from '../../gtmTracking';
+import { gtmTracking, dataLayerTracking } from '../../gtmTracking';
 import { validatePharmaCoupon_validatePharmaCoupon } from 'graphql/types/validatePharmaCoupon';
 import { removeFromCartTracking } from 'webEngageTracking';
 import { PharmaCoupon, CartProduct } from 'components/Cart/MedicineCart';
@@ -222,7 +222,7 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
               key={item.id}
               className={`${classes.medicineStrip} ${
                 item.is_in_stock ? '' : classes.medicineStripDisabled
-                }`}
+              }`}
             >
               <div className={classes.medicineStripWrap}>
                 <Link to={clientRoutes.medicineDetails(item.url_key)}>
@@ -245,8 +245,8 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                         ) : !item.is_in_stock ? (
                           'Out Of Stock'
                         ) : (
-                              <span className={classes.noService}>Not serviceable in your area.</span>
-                            )}
+                          <span className={classes.noService}>Not serviceable in your area.</span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -295,6 +295,35 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                             },
                           });
                           /* Gtm code end  */
+
+                          /**Gtm code start start */
+                          dataLayerTracking({
+                            event: 'Product Added to Cart',
+                            label: item.name,
+                            value: item.special_price || item.price,
+                            productlist: JSON.stringify([
+                              {
+                                item_name: item.name,
+                                item_id: item.sku,
+                                price: item.special_price || item.price,
+                                item_category: 'Pharmacy',
+                                item_category_2: item.type_id
+                                  ? item.type_id.toLowerCase() === 'pharma'
+                                    ? 'Drugs'
+                                    : 'FMCG'
+                                  : null,
+                                // 'item_category_4': '', // future reference
+                                item_variant: 'Default',
+                                index: 1,
+                                quantity:
+                                  quantity > item.quantity
+                                    ? quantity - item.quantity
+                                    : item.quantity - quantity,
+                              },
+                            ]),
+                          });
+                          /**Gtm code start end */
+
                           updateCartItemQty &&
                             updateCartItemQty({
                               MaxOrderQty: item.MaxOrderQty,
@@ -332,15 +361,15 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                         ))}
                       </AphCustomDropdown>
                     </div>
-                    {validateCouponResult && validateCouponResult.products ? (
+                    {validateCouponResult &&
+                    validateCouponResult.products &&
+                    validateCouponResult.products[idx] &&
+                    !validateCouponResult.products[idx].couponFree ? (
                       <>
                         <div className={`${classes.medicinePrice} ${classes.mrpPrice}`}>
-                          {validateCouponResult.products[idx].specialPrice !==
-                          validateCouponResult.products[idx].mrp ? (
-                            <span className={classes.lineThrough}>
-                              Rs. {validateCouponResult.products[idx].mrp}
-                            </span>
-                          ) : null}
+                          <span className={classes.lineThrough}>
+                            Rs. {validateCouponResult.products[idx].mrp}
+                          </span>
                           <div className={classes.mrpText}>(MRP)</div>
                         </div>
 
@@ -362,19 +391,22 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                         </div>
                       </>
                     ) : (
-                        <>
-                          <div className={`${classes.medicinePrice} ${classes.mrpPrice}`}>
-                            {item.special_price ? (
-                              <span className={classes.lineThrough}>Rs. {item.price}</span>
-                            ) : null}
-                            <div className={classes.mrpText}>(MRP)</div>
-                          </div>
+                      <>
+                        <div className={`${classes.medicinePrice} ${classes.mrpPrice}`}>
+                          {item.special_price === 0 || item.special_price ? (
+                            <span className={classes.lineThrough}>Rs. {item.price}</span>
+                          ) : null}
+                          <div className={classes.mrpText}>(MRP)</div>
+                        </div>
 
-                          <div className={classes.medicinePrice}>
-                            Rs. {item.special_price || item.price}
-                          </div>
-                        </>
-                      )}
+                        <div className={classes.medicinePrice}>
+                          Rs.{' '}
+                          {item.special_price === 0 || item.special_price
+                            ? item.special_price
+                            : item.price}
+                        </div>
+                      </>
+                    )}
                   </div>
                 ) : null}
                 <div className={classes.addToCart}>
@@ -416,6 +448,26 @@ export const MedicineListingCard: React.FC<MedicineListingCardProps> = (props) =
                         },
                       });
                       /**Gtm code End  */
+
+                      /**Gtm code start start */
+                      dataLayerTracking({
+                        event: 'Product Removed from Cart',
+                        label: item.name,
+                        value: item.special_price || item.price,
+                        productlist: JSON.stringify([
+                          {
+                            item_name: item.name,
+                            item_id: item.sku,
+                            price: item.special_price || item.price,
+                            item_category: 'Pharmacy',
+                            item_variant: 'Default',
+                            index: 1,
+                            quantity: item.quantity,
+                          },
+                        ]),
+                      });
+                      /**Gtm code start end */
+
                       removeCartItemSku && removeCartItemSku(item.sku);
                     }}
                   >

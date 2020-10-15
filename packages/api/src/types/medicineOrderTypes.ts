@@ -58,16 +58,17 @@ export interface PrescriptionPrismFileId {
 }
 
 export interface StoreInventoryResp {
-  shopId: string;
+  errorCode: string;
   requestStatus: string;
   requestMessage: string;
   itemDetails: StoreItemDetail[];
 }
 
 export interface StoreItemDetail {
-  itemId: string;
+  sku: string;
   qty: number;
   mrp: number;
+  exist: boolean;
 }
 
 export interface StoreAlertResp {

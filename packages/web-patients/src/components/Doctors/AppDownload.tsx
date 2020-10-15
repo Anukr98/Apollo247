@@ -3,6 +3,7 @@ import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { AphButton } from '@aph/web-ui-components';
 import { getAppStoreLink } from 'helpers/dateHelpers';
+import { dataLayerTracking } from 'gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -19,11 +20,15 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     appDownloadGroup: {
       '& h4': {
-        fontSize: 14,
+        fontSize: 12,
         fontWeight: 500,
-        color: '#00667c',
-        lineHeight: '15px',
+        color: 'rgba(1,71,91,0.6)',
+        lineHeight: '18px',
+        paddingRight: 20,
         margin: 0,
+        [theme.breakpoints.down('xs')]: {
+          paddingRight: 0,
+        },
       },
       '& p': {
         fontSize: 12,
@@ -35,7 +40,7 @@ const useStyles = makeStyles((theme: Theme) => {
     appDownload: {
       display: 'flex',
       alignItems: 'center',
-      paddingTop: 20,
+      paddingTop: 5,
       '& img': {
         maxWidth: 77,
       },
@@ -43,7 +48,11 @@ const useStyles = makeStyles((theme: Theme) => {
         flex: 1,
         color: '#fc9916',
         marginLeft: 16,
-        backgroundColor: '#fff',
+        backgroundColor: 'transparent',
+        boxShadow: 'none',
+        '&:hover': {
+          backgroundColor: 'transparent',
+        },
       },
     },
   });
@@ -55,12 +64,23 @@ export const AppDownload: React.FC = (props) => {
   return (
     <div className={classes.root}>
       <div className={classes.appDownloadGroup}>
-        <h4>To enjoy enhanced consultation experience download our mobile app</h4>
+        <h4>To enjoy services provided by Apollo 247 on Mobile, download our App</h4>
         <div className={classes.appDownload}>
           <span>
             <img src={require('images/apollo-logo.jpg')} alt="" />
           </span>
-          <AphButton onClick={() => window.open(getAppStoreLink())}>Download the App</AphButton>
+          <AphButton
+            onClick={() => {
+              /**Gtm code start start */
+              dataLayerTracking({
+                event: 'Download App Clicked',
+              });
+              /**Gtm code start end */
+              window.open(getAppStoreLink());
+            }}
+          >
+            Download the App
+          </AphButton>
         </div>
       </div>
     </div>

@@ -16,7 +16,11 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { formatAddress } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  formatAddressWithLandmark,
+  formatNameNumber,
+  formatAddress,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
@@ -26,12 +30,17 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingTop: 5,
   },
+  subtitleStyle: {
+    ...theme.fonts.IBMPlexSansMedium(13),
+    color: theme.colors.SHERPA_BLUE,
+    marginBottom: 5,
+  },
 });
 
 export interface SelectDeliveryAddressProps extends NavigationScreenProps {
   isTest?: boolean;
   selectedAddress: string;
-  isChanged: (val: boolean, id?: string) => void;
+  isChanged: (val: boolean, id?: string, pincode?: string) => void;
 }
 
 export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (props) => {
@@ -68,7 +77,7 @@ export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (prop
             setLoading(true);
             if (isTest) {
               reArrangeAddresses();
-              isChanged(true, selectedId);
+              isChanged(true, selectedId, selectedPinCode);
               props.navigation.goBack();
             } else {
               pinCodeServiceabilityApi247(selectedPinCode)
@@ -104,10 +113,21 @@ export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (prop
     );
   };
 
+  const _navigateToEditAddress = (dataname: string, address: any, comingFrom: string) => {
+    props.navigation.push(AppRoutes.AddAddress, {
+      KeyName: dataname,
+      DataAddress: address,
+      ComingFrom: comingFrom,
+    });
+  };
+
   const renderRadioButtonList = () => {
     return addressList.map((address, i) => (
       <RadioSelectionItem
-        title={formatAddress(address)}
+        title={formatAddressWithLandmark(address)}
+        showMultiLine={true}
+        subtitle={formatNameNumber(address)}
+        subtitleStyle={styles.subtitleStyle}
         isSelected={selectedId === address.id}
         onPress={() => {
           CommonLogEvent(AppRoutes.SelectDeliveryAddress, 'Select pincode and Id');
@@ -119,6 +139,10 @@ export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (prop
           paddingTop: 15,
         }}
         hideSeparator={i + 1 === addressList.length}
+        showEditIcon={true}
+        onPressEdit={() =>
+          _navigateToEditAddress('Update', address, AppRoutes.SelectDeliveryAddress)
+        }
       />
     ));
   };

@@ -13,6 +13,7 @@ import { useMutation } from 'react-apollo-hooks';
 import { SAVE_PATIENT_SEARCH } from 'graphql/pastsearches';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import { dataLayerTracking } from 'gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -130,6 +131,7 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 500,
         textTransform: 'uppercase',
         lineHeight: 'normal',
+        paddingRight: 20,
       },
       '& p': {
         margin: 0,
@@ -156,7 +158,13 @@ const useStyles = makeStyles((theme: Theme) => {
           paddingBottom: 10,
           '& span': {
             '&:first-child': {
-              paddingRight: 12,
+              width: 30,
+              display: 'inline-block',
+              textAlign: 'center',
+            },
+            '&:last-child': {
+              display: 'inline-block',
+              width: 'calc(100% - 30px)',
             },
           },
           '& img': {
@@ -263,6 +271,21 @@ const useStyles = makeStyles((theme: Theme) => {
       opacity: 0.5,
       cursor: 'not-allowed',
     },
+    mobileIcon: {
+      position: 'relative',
+      top: 3,
+    },
+    followUpText: {
+      backgroundColor: '#DBEBEE',
+      borderRadius: 5,
+      padding: 9,
+      fontSize: 12,
+      fontFamily: 'IBM Plex Sans',
+      lineHeight: '18px',
+      fontWeight: 'normal',
+      color: '#225E6F',
+      marginBottom: 15,
+    },
   });
 });
 interface HowCanConsultProps {
@@ -279,11 +302,14 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
   const { doctorDetails, doctorAvailablePhysicalSlots, doctorAvailableOnlineSlot } = props;
   const [onlineDirection, setOnlineDirection] = useState<boolean>(false);
   const [physicalDirection, setPhysicalDirection] = useState<boolean>(false);
-  const doctorName = doctorDetails && doctorDetails.fullName;
+  const doctorName = doctorDetails && doctorDetails.displayName;
   const physcalFee = doctorDetails && doctorDetails.physicalConsultationFees;
   const onlineFee = doctorDetails && doctorDetails.onlineConsultationFees;
   const doctorId = doctorDetails && doctorDetails.id;
+  const chatDays = doctorDetails && doctorDetails.chatDays;
   const isSmallScreen = useMediaQuery('(max-width:767px)');
+
+  // console.log('doctor details...............', doctorDetails);
 
   const consultMode =
     doctorAvailableOnlineSlot.length > 0 && doctorAvailablePhysicalSlots.length > 0
@@ -317,6 +343,10 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
   }, [consultMode]);
   return (
     <div className={classes.root}>
+      <div className={classes.followUpText}>
+        {doctorDetails.fullName} is available for a minimum of {doctorDetails.chatDays} days for free follow-up text post Consult. However, doctor can decide to increase the
+        follow-up text days as per case basis.
+      </div>
       <div className={classes.headerGroup}>
         <h3>How can I consult with {doctorName}:</h3>
         <ul className={classes.tabButtons}>
@@ -329,7 +359,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                   setPhysicalDirection(false);
                 }}
               >
-                <span>Chat/Audio/Video</span>
+                <span>Consult on Web</span>
                 <span className={classes.price}>Rs. {onlineFee}</span>
                 <span
                   className={`${classes.availability} ${
@@ -376,7 +406,9 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
             />
           </span>
           <div className={classes.groupDetails}>
-            <h4>{physicalDirection ? 'Meet in person' : 'How to consult via chat/audio/video?'}</h4>
+            <h4>
+              {physicalDirection ? 'Meet in person' : 'How to consult ON WEB via  audio/video ?'}
+            </h4>
             {(physicalDirection || (isSmallScreen && onlineDirection)) && (
               <p
                 className={
@@ -415,12 +447,26 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
               </span>
               <span>Make payment</span>
             </li>
-            <li className={classes.blueText}>
+
+            {onlineDirection && (
+              <li>
+                <span>
+                  <img
+                    src={require(onlineDirection
+                      ? 'images/ic-mobile.svg'
+                      : 'images/ic_hospital.svg')}
+                    alt=""
+                    className={classes.mobileIcon}
+                  />
+                </span>
+                <span>Be present in the consult room on apollo247.com at the time of consult</span>
+              </li>
+            )}
+
+            <li>
               <span>
                 <img
-                  src={require(onlineDirection
-                    ? 'images/ic_video-blue.svg'
-                    : 'images/ic_hospital.svg')}
+                  src={require(onlineDirection ? 'images/ic-video.svg' : 'images/ic_hospital.svg')}
                   alt=""
                 />
               </span>
@@ -430,6 +476,7 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                   : 'Visit the doctor at Hospital/Clinic'}
               </span>
             </li>
+
             <li>
               <span>
                 <img src={require('images/ic_prescription-sm.svg')} alt="" />
@@ -437,11 +484,11 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
               <span>Receive prescriptions instantly </span>
             </li>
             {onlineDirection && (
-              <li className={classes.blueText}>
+              <li>
                 <span>
-                  <img src={require('images/ic_chat.svg')} alt="" />
+                  <img src={require('images/ic-followchat.svg')} alt="" />
                 </span>
-                <span>Chat with the doctor for 6 days after your consult</span>
+                <span>Follow Up via text - validity {chatDays} days</span>
               </li>
             )}
           </ul>
@@ -453,6 +500,11 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
           <div className={classes.bottomActions}>
             <AphButton
               onClick={() => {
+                /**Gtm code start start */
+                dataLayerTracking({
+                  event: 'Book Appointment Clicked',
+                });
+                /**Gtm code start end */
                 if (!isSignedIn) {
                   protectWithLoginPopup();
                 } else {
@@ -485,6 +537,11 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
                       console.log(e);
                     })
                     .finally(() => {
+                      /**Gtm code start start */
+                      dataLayerTracking({
+                        event: 'Consult Now Pop-up Shown',
+                      });
+                      /**Gtm code start end */
                       setIsPopoverOpen(true);
                     });
                 }
@@ -495,10 +552,6 @@ export const HowCanConsult: React.FC<HowCanConsultProps> = (props) => {
             >
               {popupLoading ? <CircularProgress size={22} color="secondary" /> : 'BOOK APPOINTMENT'}
             </AphButton>
-            <p className={classes.noteInfo}>
-              Please note that after booking, you will need to download the Apollo 247 app to
-              continue with your consultation.
-            </p>
           </div>
         )}
       </ProtectedWithLoginPopup>

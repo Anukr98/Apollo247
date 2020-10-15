@@ -1,0 +1,14 @@
+{
+  "name": "validator",
+  "version": "0.0.1",
+  "description": "Common validator methods inspired from https://www.npmjs.com/package/validator",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Sawan Nirala",
+  "license": "ISC"
+}

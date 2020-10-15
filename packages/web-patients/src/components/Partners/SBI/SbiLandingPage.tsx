@@ -150,7 +150,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const SbiLandingPage: React.FC = (props) => {
+const SbiLandingPage: React.FC = (props) => {
   const classes = useStyles({});
   // const utmSource = 'sbi';
   // const utmMedium = 'banner';
@@ -233,3 +233,5 @@ export const SbiLandingPage: React.FC = (props) => {
     </div>
   );
 };
+
+export default SbiLandingPage;

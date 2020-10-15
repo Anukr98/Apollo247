@@ -5,6 +5,8 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import Slider from 'react-slick';
 import { DealsOfTheDaySection } from '../../../helpers/MedicineApiCalls';
+import { LazyIntersection } from '../../lib/LazyIntersection';
+import { getSlidesToScroll } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -42,6 +44,9 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     cardIcon: {
       width: '100%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     offerDetails: {
       position: 'absolute',
@@ -75,20 +80,32 @@ interface DayDealsProps {
 
 export const DayDeals: React.FC<DayDealsProps> = (props) => {
   const classes = useStyles({});
+  const [currIndex, setCurrIndex] = useState(0);
   const sliderSettings = {
-    infinite: true,
+    infinite: false,
     speed: 500,
     slidesToShow: 3,
-    slidesToScroll: 1,
-    nextArrow: <img src={require('images/ic_arrow_right.svg')} alt="" />,
-    prevArrow: <img src={require('images/ic_arrow_left.svg')} alt="" />,
+    slidesToScroll: getSlidesToScroll(props.data.length),
+    nextArrow: (
+      <div>
+        {currIndex !== props.data.length - 3 && (
+          <img src={require('images/ic_arrow_right.svg')} alt="" />
+        )}
+      </div>
+    ),
+    prevArrow: (
+      <div>{currIndex !== 0 && <img src={require('images/ic_arrow_left.svg')} alt="" />}</div>
+    ),
+    afterChange: (currentIndex: number) => {
+      setCurrIndex(currentIndex);
+    },
     responsive: [
       {
         breakpoint: 992,
         settings: {
           slidesToShow: 3,
           slidesToScroll: 3,
-          infinite: true,
+          infinite: false,
           dots: true,
         },
       },
@@ -108,7 +125,6 @@ export const DayDeals: React.FC<DayDealsProps> = (props) => {
         settings: {
           slidesToShow: 1,
           slidesToScroll: 1,
-          // centerMode: true,
           nextArrow: <img src={require('images/ic_white_arrow_right.svg')} alt="" />,
           prevArrow: <img src={require('images/ic_white_arrow_right.svg')} alt="" />,
         },
@@ -124,7 +140,12 @@ export const DayDeals: React.FC<DayDealsProps> = (props) => {
 
   return (
     <div className={classes.root}>
-      <Slider {...sliderSettings}>
+      <Slider
+        {...sliderSettings}
+        beforeChange={() => {
+          document.getElementById('searchProduct').blur();
+        }}
+      >
         {props.data &&
           props.data.map((deal, index) => (
             <div key={index} className={classes.card}>
@@ -134,7 +155,14 @@ export const DayDeals: React.FC<DayDealsProps> = (props) => {
               >
                 <div className={classes.cardWrap}>
                   <div className={classes.cardIcon}>
-                    <img src={`${apiDetails.url}${deal.image_url}`} width="100%" alt="" />
+                    <LazyIntersection
+                      src={`${apiDetails.url}${deal.image_url}`}
+                      alt={`Buy ${props.sectionName.replace(/_/g, ' ')} Products Online`}
+                      fallbackImage={require('images/ic_placeholder_rectangle.png')}
+                      style={{ maxWidth: '273px' }}
+                    />
+                    {/* <img
+                      src={`${apiDetails.url}${deal.image_url}`} width="100%" alt="" /> */}
                   </div>
                 </div>
                 {/* <div className={classes.offerDetails}>Upto 30% Off</div> */}

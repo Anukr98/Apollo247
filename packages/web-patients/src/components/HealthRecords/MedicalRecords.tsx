@@ -12,8 +12,20 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import moment from 'moment';
 import { RenderImage } from 'components/HealthRecords/RenderImage';
 import { getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response as LabResultsType } from '../../graphql/types/getPatientPrismMedicalRecords';
-import { DoctorsFilter } from 'components/DoctorsFilter';
-import { HEALTH_RECORDS_NO_DATA_FOUND, HEALTH_RECORDS_NOTE } from 'helpers/commonHelpers';
+import {
+  HEALTH_RECORDS_NO_DATA_FOUND,
+  HEALTH_RECORDS_NOTE,
+  removeGraphQLKeyword,
+} from 'helpers/commonHelpers';
+import { GET_LAB_RESULT_PDF } from 'graphql/profiles';
+import { getLabResultpdf, getLabResultpdfVariables } from 'graphql/types/getLabResultpdf';
+import { useApolloClient } from 'react-apollo-hooks';
+import { useAllCurrentPatients } from 'hooks/authHooks';
+import { Alerts } from 'components/Alerts/Alerts';
+import _lowerCase from 'lodash/lowerCase';
+import { MedicalRecordType } from '../../graphql/types/globalTypes';
+import { phrDownloadingMedicalRecordFileTracking } from '../../webEngageTracking';
+import { Route } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -265,7 +277,7 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
       borderRadius: 10,
       marginBottom: 12,
-      padding: 14,
+      padding: '14px 14px 14px 18px',
       '& hr': {
         opacity: '0.2',
       },
@@ -283,7 +295,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     reportsDetails: {
-      paddingLeft: 10,
+      paddingLeft: 0,
       paddingRight: 10,
       [theme.breakpoints.down('xs')]: {
         paddingLeft: 5,
@@ -338,11 +350,12 @@ const useStyles = makeStyles((theme: Theme) => {
       marginBottom: 5,
     },
     testName: {
-      fontSize: 16,
+      fontSize: 20,
       color: '#01475b',
-      fontWeight: 500,
+      fontWeight: 600,
       marginBottom: 12,
-      lineHeight: '21px',
+      lineHeight: '28px',
+      wordBreak: 'break-all',
     },
     checkDate: {
       fontSize: 14,
@@ -418,7 +431,8 @@ enum FILTER_TYPE {
 
 export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
   const classes = useStyles({});
-
+  const apolloClient = useApolloClient();
+  const { currentPatient } = useAllCurrentPatients();
   const {
     allCombinedData,
     setLabResults,
@@ -434,6 +448,13 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
   const [showMobileDetails, setShowMobileDetails] = useState<boolean>(false);
   const [filterApplied, setFilterApplied] = useState<FILTER_TYPE>(FILTER_TYPE.DATE);
   const [showPopover, setShowPopover] = useState<boolean>(false);
+  const [alertMessage, setAlertMessage] = useState<string>('');
+  const [isAlertOpen, setIsAlertOpen] = useState<boolean>(false);
+  const [isDownloading, setIsDownloading] = useState<boolean>(false);
+  const [localLabResultsData, setLocalLabResultsData] = useState<Array<{
+    key: string;
+    value: LabResultsType[];
+  }> | null>(null);
 
   const sortByTypeRecords = (type: FILTER_TYPE) => {
     return (
@@ -443,14 +464,14 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
           type === FILTER_TYPE.DATE
             ? moment(data1.date).toDate().getTime()
             : type === FILTER_TYPE.TEST
-            ? data1.labTestName
-            : data1.packageName;
+            ? _lowerCase(data1.labTestName)
+            : _lowerCase(data1.packageName);
         const filteredData2 =
           type === FILTER_TYPE.DATE
             ? moment(data2.date).toDate().getTime()
             : type === FILTER_TYPE.TEST
-            ? data2.labTestName
-            : data2.packageName;
+            ? _lowerCase(data2.labTestName)
+            : _lowerCase(data2.packageName);
         if (type === FILTER_TYPE.DATE) {
           return filteredData1 > filteredData2 ? -1 : filteredData1 < filteredData2 ? 1 : 0;
         }
@@ -461,14 +482,65 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
 
   useEffect(() => {
     const filteredData = sortByTypeRecords(filterApplied);
-    setLabResults(filteredData);
-    setActiveData(filteredData[0]);
-  }, [filterApplied]);
+    if (filteredData) {
+      const finalData: { key: string; value: LabResultsType[] }[] = [];
+      if (filterApplied) {
+        const filterAppliedString =
+          filterApplied === FILTER_TYPE.DATE
+            ? 'date'
+            : filterApplied === FILTER_TYPE.PACKAGE
+            ? 'packageName'
+            : 'labTestName';
+        filteredData.forEach((dataObject: LabResultsType) => {
+          const dataObjectArray: LabResultsType[] = [];
+          const dateExistsAt = finalData.findIndex(
+            (data: { key: string; value: LabResultsType[] }) => {
+              if (
+                filterApplied === FILTER_TYPE.PACKAGE &&
+                (!dataObject.packageName || dataObject.packageName === '-')
+              ) {
+                return data.key === dataObject.labTestName;
+              }
+              return data.key === dataObject[filterAppliedString];
+            }
+          );
+          if (dateExistsAt === -1 || finalData.length === 0) {
+            dataObjectArray.push(dataObject);
+            const obj = {
+              key:
+                filterApplied === FILTER_TYPE.PACKAGE &&
+                (!dataObject.packageName || dataObject.packageName === '-')
+                  ? dataObject.labTestName
+                  : dataObject[filterAppliedString],
+              value: dataObjectArray,
+            };
+            finalData.push(obj);
+          } else {
+            const array = finalData[dateExistsAt].value;
+            array.push(dataObject);
+            finalData[dateExistsAt].value = array;
+          }
+        });
+      }
+      setLocalLabResultsData(finalData);
+      setLabResults(filteredData);
+      setActiveData(filteredData[0]);
+    }
+  }, [filterApplied, allCombinedData]);
 
   const getFormattedDate = (combinedData: LabResultsType, dateFor: string) => {
     const formattedDate = moment(combinedData.date).format('DD MMM YYYY');
     return dateFor === 'title' &&
       moment().format('DD/MM/YYYY') === moment(combinedData.date).format('DD/MM/YYYY') ? (
+      <span>Today , {formattedDate}</span>
+    ) : (
+      <span>{formattedDate}</span>
+    );
+  };
+
+  const getFormattedTitleDate = (date: string) => {
+    const formattedDate = moment(date).format('DD MMM YYYY');
+    return moment().format('DD/MM/YYYY') === moment(date).format('DD/MM/YYYY') ? (
       <span>Today , {formattedDate}</span>
     ) : (
       <span>{formattedDate}</span>
@@ -494,12 +566,51 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
     return <div>Error while fetching the medical records</div>;
   }
 
+  const downloadTestReport = (recordId: string) => {
+    if (currentPatient && currentPatient.id) {
+      setIsDownloading(true);
+      apolloClient
+        .query<getLabResultpdf, getLabResultpdfVariables>({
+          query: GET_LAB_RESULT_PDF,
+          variables: {
+            patientId: currentPatient.id,
+            recordId,
+          },
+        })
+        .then(({ data }: any) => {
+          if (data && data.getLabResultpdf && data.getLabResultpdf.url) {
+            window.open(data.getLabResultpdf.url, '_blank');
+          }
+        })
+        .catch((e: any) => {
+          console.log(e);
+          setIsAlertOpen(true);
+          setAlertMessage(`Something went wrong while downloading(${removeGraphQLKeyword(e)})`);
+        })
+        .finally(() => {
+          setIsDownloading(false);
+        });
+    }
+  };
+
+  const getSourceName = (labTestSource: string, siteDisplayName: string) => {
+    if (
+      labTestSource === 'self' ||
+      labTestSource === '247self' ||
+      siteDisplayName === 'self' ||
+      siteDisplayName === '247self'
+    ) {
+      return 'Self upload';
+    }
+    return siteDisplayName || labTestSource;
+  };
+
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
         <div className={classes.noteText}>{HEALTH_RECORDS_NOTE}</div>
         <div className={classes.tabsWrapper}>
-          <Link className={classes.addReportMobile} to={clientRoutes.addRecords()}>
+          <Link className={classes.addReportMobile} to={clientRoutes.addHealthRecords('medical')}>
             <img src={require('images/ic_addfile.svg')} />
           </Link>
         </div>
@@ -523,48 +634,59 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
           }
         >
           <div className={classes.consultationsList}>
-            {allCombinedData &&
-              allCombinedData.length > 0 &&
-              allCombinedData.map((combinedData: LabResultsType) => (
-                <div
-                  className={classes.consultGroup}
-                  onClick={() => {
-                    setActiveData(combinedData);
-                    if (isSmallScreen) {
-                      setShowMobileDetails(true);
-                    }
-                  }}
-                >
-                  <div className={classes.consultGroupHeader}>
-                    <div className={classes.circle}></div>
-                    <span>
-                      {filterApplied === FILTER_TYPE.DATE
-                        ? getFormattedDate(combinedData, 'title')
-                        : filterApplied === FILTER_TYPE.TEST
-                        ? combinedData.labTestName
-                        : combinedData.packageName}
-                    </span>
-                  </div>
-                  <MedicalCard
-                    deleteReport={deleteReport}
-                    name={
-                      filterApplied === FILTER_TYPE.DATE
-                        ? combinedData.labTestName
-                        : getStringDate(combinedData)
-                    }
-                    source={
-                      combinedData && combinedData.siteDisplayName
-                        ? combinedData.siteDisplayName
-                        : !!combinedData.labTestSource
-                        ? combinedData.labTestSource
-                        : '-'
-                    }
-                    type={'LabResults'}
-                    id={`LabResults-${combinedData.id}`}
-                    isActiveCard={activeData && activeData === combinedData}
-                  />
-                </div>
-              ))}
+            {localLabResultsData &&
+              localLabResultsData.length > 0 &&
+              localLabResultsData.map(
+                (localLabResultsDataDetails: { key: string; value: LabResultsType[] }) =>
+                  localLabResultsDataDetails && (
+                    <>
+                      <div className={classes.consultGroup}>
+                        <div className={classes.consultGroupHeader}>
+                          <div className={classes.circle}></div>
+                          <span>
+                            {filterApplied === FILTER_TYPE.DATE
+                              ? getFormattedTitleDate(localLabResultsDataDetails.key)
+                              : localLabResultsDataDetails.key}
+                          </span>
+                        </div>
+                        {localLabResultsDataDetails.value &&
+                          localLabResultsDataDetails.value.length > 0 &&
+                          localLabResultsDataDetails.value.map((combinedData: LabResultsType) => (
+                            <div
+                              onClick={() => {
+                                setActiveData(combinedData);
+                                if (isSmallScreen) {
+                                  setShowMobileDetails(true);
+                                }
+                              }}
+                            >
+                              <MedicalCard
+                                deleteReport={deleteReport}
+                                name={
+                                  filterApplied === FILTER_TYPE.DATE
+                                    ? combinedData.labTestName
+                                    : getStringDate(combinedData)
+                                }
+                                source={
+                                  combinedData &&
+                                  combinedData.labTestSource &&
+                                  (_lowerCase(combinedData.labTestSource) === 'self' ||
+                                    combinedData.labTestSource === '247Self')
+                                    ? combinedData.labTestSource
+                                    : combinedData.siteDisplayName
+                                    ? combinedData.siteDisplayName
+                                    : combinedData.labTestSource || '-'
+                                }
+                                recordType={MedicalRecordType.TEST_REPORT}
+                                id={combinedData.id}
+                                isActiveCard={activeData && activeData === combinedData}
+                              />
+                            </div>
+                          ))}
+                      </div>
+                    </>
+                  )
+              )}
           </div>
           {isSmallScreen && allCombinedData && allCombinedData.length === 0 && (
             <div className={classes.noRecordFoundWrapper}>
@@ -573,17 +695,21 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
             </div>
           )}
         </Scrollbars>
-        <div className={classes.addReportActions}>
-          <AphButton
-            color="primary"
-            onClick={() => {
-              window.location.href = clientRoutes.addRecords();
-            }}
-            fullWidth
-          >
-            Add Record
-          </AphButton>
-        </div>
+        <Route
+          render={({ history }) => (
+            <div className={classes.addReportActions}>
+              <AphButton
+                color="primary"
+                onClick={() => {
+                  history.push(clientRoutes.addHealthRecords('medical'));
+                }}
+                fullWidth
+              >
+                Add Record
+              </AphButton>
+            </div>
+          )}
+        />
       </div>
       <div
         className={`${classes.rightSection} ${
@@ -628,12 +754,18 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                     )}
                     {!!activeData.labTestRefferedBy && (
                       <div className={`${classes.reportsDetails} ${classes.doctorName}`}>
-                        <div>Dr. {activeData.labTestRefferedBy}</div>
+                        <div>{activeData.labTestRefferedBy}</div>
                       </div>
                     )}
                     {activeData.siteDisplayName && (
                       <div className={classes.reportsDetails}>
-                        <div className={classes.sitedisplayName}>{activeData.siteDisplayName}</div>
+                        <div className={classes.sitedisplayName}>
+                          {activeData &&
+                            getSourceName(
+                              activeData.labTestSource || '-',
+                              activeData.siteDisplayName || '-'
+                            )}
+                        </div>
                       </div>
                     )}
                     <hr />
@@ -671,15 +803,22 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
                 </div>
               )}
             </Scrollbars>
-            {activeData && activeData.fileUrl && activeData.fileUrl.length > 0 && (
-              <a href={activeData.fileUrl}>
-                <div className={classes.addReportActions}>
-                  <AphButton color="primary" fullWidth>
-                    DOWNLOAD TEST REPORT
-                  </AphButton>
-                </div>
-              </a>
-            )}
+            <div className={classes.addReportActions}>
+              <AphButton
+                color="primary"
+                onClick={() => {
+                  phrDownloadingMedicalRecordFileTracking('Medical Record');
+                  downloadTestReport(activeData.id);
+                }}
+                fullWidth
+              >
+                {isDownloading ? (
+                  <CircularProgress size={22} color="secondary" />
+                ) : (
+                  'DOWNLOAD TEST REPORT'
+                )}
+              </AphButton>
+            </div>
           </>
         ) : (
           <div className={classes.noRecordFoundWrapper}>
@@ -735,32 +874,12 @@ export const MedicalRecords: React.FC<MedicalRecordProps> = (props) => {
           </li>
         </ul>
       </Popover>
+      <Alerts
+        setAlertMessage={setAlertMessage}
+        alertMessage={alertMessage}
+        isAlertOpen={isAlertOpen}
+        setIsAlertOpen={setIsAlertOpen}
+      />
     </div>
   );
 };
-
-// const getName = (combinedData: any, type: string) => {
-//   switch (type) {
-//     case 'lab':
-//       return combinedData.labTestName;
-//     case 'prescription':
-//       return combinedData.prescriptionName;
-//     default:
-//       return '';
-//   }
-// };
-
-// const getSource = (activeData: any, type: string) => {
-//   switch (type) {
-//     case 'lab':
-//       return activeData && activeData.siteDisplayName
-//         ? activeData.siteDisplayName
-//         : !!activeData.labTestSource
-//         ? activeData.labTestSource
-//         : '-';
-//     case 'prescription':
-//       return !!activeData.prescriptionSource ? activeData.prescriptionSource : '-';
-//     default:
-//       return '-';
-//   }
-// };

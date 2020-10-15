@@ -278,6 +278,16 @@ export enum TRANSFER_STATUS {
   REJECTED = "REJECTED",
 }
 
+export enum USER_STATUS {
+  ENTERING = "ENTERING",
+  LEAVING = "LEAVING",
+}
+
+export enum USER_TYPE {
+  DOCTOR = "DOCTOR",
+  PATIENT = "PATIENT",
+}
+
 export enum WebEngageEvent {
   DOCTOR_IN_CHAT_WINDOW = "DOCTOR_IN_CHAT_WINDOW",
   DOCTOR_LEFT_CHAT_WINDOW = "DOCTOR_LEFT_CHAT_WINDOW",
@@ -448,6 +458,8 @@ export interface ModifyCaseSheetInput {
   occupationHistory?: string | null;
   referralSpecialtyName?: string | null;
   referralDescription?: string | null;
+  diagnosticTestResult?: string | null;
+  clinicalObservationNotes?: string | null;
 }
 
 export interface OtherInstructionsInput {

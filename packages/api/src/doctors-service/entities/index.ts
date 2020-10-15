@@ -9,6 +9,8 @@ import {
   OneToOne,
   JoinColumn,
   Index,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Validate, IsDate } from 'class-validator';
 import { NameValidator, MobileNumberValidator, EmailValidator } from 'validators/entityValidators';
@@ -515,6 +517,19 @@ export class Doctor extends BaseEntity {
   updateDateUpdate() {
     this.updatedDate = new Date();
   }
+
+  @Column({ default: false })
+  isIvrSet: Boolean;
+
+  @Column({ nullable: true })
+  ivrConsultType: ConsultMode;
+
+  @Column({ type: 'smallint', nullable: true })
+  ivrCallTimeOnline: number;
+
+  @Column({ type: 'smallint', nullable: true })
+  ivrCallTimePhysical: number;
+
 }
 //doctor ends
 
@@ -1389,4 +1404,51 @@ export class DoctorHelpLine extends BaseEntity {
   createdDate: Date;
   @Column({ nullable: true, type: 'timestamp' })
   updatedAt: Date;
+}
+
+@Entity()
+export class AdminFilterMapper extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+  @Column({ nullable: true, type: 'text' })
+  filter_type: String;
+  @Column({ nullable: true, type: 'text' })
+  filter_name: String;
+  @Column({ nullable: true, type: 'text' })
+  filter_id: String;
+  @ManyToOne(
+    (type) => AdminUsers,
+    (adminuser) => adminuser.admindoctormapper
+  )
+  adminuser: AdminUsers;
+  @CreateDateColumn()
+  created_at: Date;
+  @UpdateDateColumn()
+  updated_at: Date;
+}
+
+@Entity()
+export class AuditorFilterMapper extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+  @Column({ nullable: true, type: 'text' })
+  filter_type: String;
+  @Column({ nullable: true, type: 'text' })
+  filter_name: String;
+  @Column({ nullable: true, type: 'text' })
+  filter_id: String;
+  @ManyToOne(
+    (type) => Auditor,
+    (auditor) => auditor.adminauditormapper
+  )
+  auditor: Auditor;
+  @ManyToOne(
+    (type) => AdminUsers,
+    (adminuser) => adminuser.admindoctormapper
+  )
+  adminuser: AdminUsers;
+  @CreateDateColumn()
+  created_at: Date;
+  @UpdateDateColumn()
+  updated_at: Date;
 }

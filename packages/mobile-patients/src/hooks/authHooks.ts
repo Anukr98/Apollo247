@@ -65,7 +65,7 @@ export const useAllCurrentPatients = () => {
         // console.log('allCurrentPatients==>', allCurrentPatients);
         const retrievedItem: any = await AsyncStorage.getItem('selectUserId');
         Promise.all([retrievedItem]).then((values) => {
-          setCurrentPatientId(values[0]);
+          values[0] && setCurrentPatientId(values[0]);
         });
       }
     } catch (error) {}

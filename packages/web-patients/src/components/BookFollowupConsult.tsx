@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
-import { DoctorType, ConsultMode } from 'graphql/types/globalTypes';
+import { ConsultMode, DoctorType } from 'graphql/types/globalTypes';
 import Paper from '@material-ui/core/Paper';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
@@ -11,6 +11,12 @@ import { VisitClinicFollowupConsult } from 'components/VisitClinicFollowupConsul
 import { LocationProvider } from 'components/LocationProvider';
 import { OnlineFollwupConsult } from 'components/OnlineFollowupConsult';
 import LinearProgress from '@material-ui/core/LinearProgress';
+import { useQueryWithSkip } from 'hooks/apolloHooks';
+import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/doctors';
+import {
+  GetDoctorDetailsById,
+  GetDoctorDetailsByIdVariables,
+} from 'graphql/types/GetDoctorDetailsById';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -68,22 +74,36 @@ const TabContainer: React.FC = (props) => {
 };
 interface DoctorCardProps {
   setIsPopoverOpen: (popover: boolean) => void;
-  doctorDetails: DoctorDetails;
-  setSelectedSlot: (selectedSlot: string) => void;
-  setFollwupAppoitnmentType: (followupAppointmentType: number) => void;
+  doctorId: string;
+  appointmentId: string;
 }
 
 export const BookFollowupConsult: React.FC<DoctorCardProps> = (props) => {
   const classes = useStyles({});
 
-  const { doctorDetails, setIsPopoverOpen, setSelectedSlot, setFollwupAppoitnmentType } = props;
+  const { doctorId, setIsPopoverOpen, appointmentId } = props;
   const [tabValue, setTabValue] = useState<number>(0);
 
-  if (doctorDetails) {
-    const isPayrollDoctor =
-      doctorDetails && doctorDetails.doctorType === DoctorType.PAYROLL ? true : false;
+  const { data, loading, error } = useQueryWithSkip<
+    GetDoctorDetailsById,
+    GetDoctorDetailsByIdVariables
+  >(GET_DOCTOR_DETAILS_BY_ID, {
+    variables: { id: doctorId },
+  });
 
-    const doctorId = doctorDetails && doctorDetails.id;
+  if (loading) {
+    return <LinearProgress />;
+  }
+  if (error) {
+    return <div>Error....</div>;
+  }
+
+  const doctorDetails = data && data.getDoctorDetailsById ? data.getDoctorDetailsById : null;
+
+  if (doctorDetails) {
+    const isPayrollDoctor = doctorDetails.doctorType === DoctorType.PAYROLL;
+
+    const doctorId = doctorDetails.id;
 
     const consultModeOnline: any = [];
     const consultModePhysical: any = [];
@@ -124,7 +144,6 @@ export const BookFollowupConsult: React.FC<DoctorCardProps> = (props) => {
           }}
           onChange={(e, newValue) => {
             setTabValue(newValue);
-            setFollwupAppoitnmentType(newValue);
           }}
         >
           {availableForVirtualConsultation && (
@@ -152,7 +171,7 @@ export const BookFollowupConsult: React.FC<DoctorCardProps> = (props) => {
             <OnlineFollwupConsult
               setIsPopoverOpen={setIsPopoverOpen}
               doctorDetails={doctorDetails}
-              setSelectedSlot={props.setSelectedSlot}
+              appointmentId={appointmentId}
             />
           </TabContainer>
         )}
@@ -162,7 +181,7 @@ export const BookFollowupConsult: React.FC<DoctorCardProps> = (props) => {
               <VisitClinicFollowupConsult
                 setIsPopoverOpen={setIsPopoverOpen}
                 doctorDetails={doctorDetails}
-                setSelectedSlot={setSelectedSlot}
+                appointmentId={appointmentId}
               />
             </LocationProvider>
           </TabContainer>

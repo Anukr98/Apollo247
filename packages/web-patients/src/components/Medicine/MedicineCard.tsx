@@ -6,7 +6,7 @@ import { useShoppingCart, MedicineCartItem } from 'components/MedicinesCartProvi
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Link } from 'react-router-dom';
 import { MedicineProduct } from './../../helpers/MedicineApiCalls';
-import { gtmTracking } from '../../gtmTracking';
+import { gtmTracking, dataLayerTracking } from '../../gtmTracking';
 import {
   notifyMeTracking,
   addToCartTracking,
@@ -16,6 +16,7 @@ import { NotifyMeNotification } from './NotifyMeNotification';
 import { useParams } from 'hooks/routerHooks';
 import _replace from 'lodash/replace';
 import { useAllCurrentPatients } from 'hooks/authHooks';
+import { LazyIntersection } from '../lib/LazyIntersection';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -80,16 +81,18 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     addToCartBtn: {
-      color: '#fc9916',
       boxShadow: 'none',
-      backgroundColor: 'transparent',
+      backgroundColor: '#fc9916',
       minWidth: 'auto',
       textAlign: 'center',
-      padding: 0,
-      marginTop: 10,
+      padding: 8,
+      color: '#fff',
+      margin: '10px -10px -10px -10px',
+      borderRadius: '0 0 8px 8px',
+      width: 'calc(100% + 20px)',
       '&:hover': {
-        backgroundColor: 'transparent',
-        color: '#fc9916',
+        backgroundColor: '#fc9916',
+        color: '#fff',
       },
       [theme.breakpoints.down('xs')]: {
         margin: 0,
@@ -197,6 +200,16 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: '5px !important',
       },
     },
+    notForSale: {
+      backgroundColor: 'rgba(137,0,0,0.5)',
+      fontSize: 12,
+      fontWeight: 600,
+      padding: 8,
+      color: '#fff',
+      margin: '10px -10px -10px -10px',
+      borderRadius: '0 0 8px 8px',
+      height: 38,
+    },
   };
 });
 export interface products {
@@ -271,7 +284,10 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                 >
                   <div className={classes.pdHeader}>
                     <div className={classes.bigAvatar}>
-                      <img src={`${apiDetails.imageUrl}${product.thumbnail}`} alt="" />
+                      <LazyIntersection
+                        src={`${apiDetails.imageUrl}${product.thumbnail}`}
+                        alt={`Buy ${product.name} Online`}
+                      />
                     </div>
                     <div className={classes.productName}>{product.name}</div>
                   </div>
@@ -284,8 +300,10 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                     )}
                   </div>
                   {!isInCart(product) &&
-                    (!product.is_in_stock && !currentPatient ? (
+                    (!product.is_in_stock && !currentPatient && !!product.sell_online ? (
                       <div className={classes.noStock}>Out Of Stock</div>
+                    ) : !product.sell_online ? (
+                      <div className={classes.notForSale}>NOT FOR SALE</div>
                     ) : (
                       <AphButton
                         className={classes.addToCartBtn}
@@ -353,6 +371,30 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                               },
                             });
                             /**Gtm code End  */
+
+                            /**Gtm code start start */
+                            dataLayerTracking({
+                              event: 'Product Added to Cart',
+                              productlist: JSON.stringify([
+                                {
+                                  item_name: product.name,
+                                  item_id: product.sku,
+                                  price: product.special_price || product.price,
+                                  item_category: 'Pharmacy',
+                                  item_category_2: product.type_id
+                                    ? product.type_id.toLowerCase() === 'pharma'
+                                      ? 'Drugs'
+                                      : 'FMCG'
+                                    : null,
+                                  // 'item_category_4': '', // future reference
+                                  item_variant: 'Default',
+                                  index: 1,
+                                  quantity: 1,
+                                },
+                              ]),
+                            });
+                            /**Gtm code start end */
+
                             const index = cartItems.findIndex((item) => item.sku === cartItem.sku);
                             if (index >= 0) {
                               updateCartItem && updateCartItem(cartItem);
@@ -394,6 +436,30 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                               value: product.special_price || product.price,
                             });
                             /* Gtm code end  */
+
+                            /**Gtm code start start */
+                            dataLayerTracking({
+                              event: 'Product Removed from Cart',
+                              productlist: JSON.stringify([
+                                {
+                                  item_name: product.name,
+                                  item_id: product.sku,
+                                  price: product.special_price || product.price,
+                                  item_category: 'Pharmacy',
+                                  item_category_2: product.type_id
+                                    ? product.type_id.toLowerCase() === 'pharma'
+                                      ? 'Drugs'
+                                      : 'FMCG'
+                                    : null,
+                                  // 'item_category_4': '', // future reference
+                                  item_variant: 'Default',
+                                  index: 1,
+                                  quantity: 1,
+                                },
+                              ]),
+                            });
+                            /**Gtm code start end */
+
                             removeCartItemSku && removeCartItemSku(product.sku);
                           } else {
                             const cartItem: MedicineCartItem = {
@@ -446,6 +512,30 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                               },
                             });
                             /* Gtm code end  */
+
+                            /**Gtm code start start */
+                            dataLayerTracking({
+                              event: 'Product Removed from Cart',
+                              productlist: JSON.stringify([
+                                {
+                                  item_name: product.name,
+                                  item_id: product.sku,
+                                  price: product.special_price || product.price,
+                                  item_category: 'Pharmacy',
+                                  item_category_2: product.type_id
+                                    ? product.type_id.toLowerCase() === 'pharma'
+                                      ? 'Drugs'
+                                      : 'FMCG'
+                                    : null,
+                                  // 'item_category_4': '', // future reference
+                                  item_variant: 'Default',
+                                  index: 1,
+                                  quantity: 1,
+                                },
+                              ]),
+                            });
+                            /**Gtm code start end */
+
                             updateCartItem && updateCartItem(cartItem);
                           }
                         }}
@@ -510,6 +600,30 @@ export const MedicineCard: React.FC<MedicineInformationProps> = (props) => {
                               },
                             });
                             /* Gtm code end  */
+
+                            /**Gtm code start start */
+                            dataLayerTracking({
+                              event: 'Product Added to Cart',
+                              productlist: JSON.stringify([
+                                {
+                                  item_name: product.name,
+                                  item_id: product.sku,
+                                  price: product.special_price || product.price,
+                                  item_category: 'Pharmacy',
+                                  item_category_2: product.type_id
+                                    ? product.type_id.toLowerCase() === 'pharma'
+                                      ? 'Drugs'
+                                      : 'FMCG'
+                                    : null,
+                                  // 'item_category_4': '', // future reference
+                                  item_variant: 'Default',
+                                  index: 1,
+                                  quantity: 1,
+                                },
+                              ]),
+                            });
+                            /**Gtm code start end */
+
                             updateCartItem && updateCartItem(cartItem);
                           }
                         }}

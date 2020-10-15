@@ -61,6 +61,7 @@ import stripHtml from 'string-strip-html';
 import { FilterRange, MedicineFilter, SortByOptions } from './MedicineFilter';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
+  ProductPageViewedSource,
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
@@ -278,6 +279,12 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
             resultsdisplayed: products.length,
           };
           postWebEngageEvent(WebEngageEventName.SEARCH, eventAttributes);
+          const searchEventAttribute: WebEngageEvents[WebEngageEventName.SEARCH_ENTER_CLICK] = {
+            keyword: searchText,
+            numberofresults: data.product_count,
+          };
+          postWebEngageEvent(WebEngageEventName.SEARCH_ENTER_CLICK, searchEventAttribute);
+
           try {
             trackTagalysEvent(
               {
@@ -435,7 +442,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
               onPress={() => {
                 CommonLogEvent(AppRoutes.SearchMedicineScene, 'Navigate to your cart');
                 props.navigation.navigate(
-                  diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.YourCart
+                  diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.MedicineCart
                 );
               }}
             >
@@ -467,12 +474,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           Source: 'Pharmacy Search',
         };
         postWebEngageEvent(WebEngageEventName.PHARMACY_SEARCH_RESULTS, eventAttributes);
-
-        const searchEventAttribute: WebEngageEvents[WebEngageEventName.SEARCH_ENTER_CLICK] = {
-          keyword: searchText,
-          numberofresults: medicineList.length,
-        };
-        postWebEngageEvent(WebEngageEventName.SEARCH_ENTER_CLICK, searchEventAttribute);
         onSearchProduct(searchText);
         setsearchSate(undefined);
       }
@@ -543,8 +544,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         onPress={() => {
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: pastSeacrh.typeId,
-            title: pastSeacrh.name,
-            movedFrom: 'search',
+            movedFrom: ProductPageViewedSource.FULL_SEARCH,
           });
         }}
       >
@@ -570,20 +570,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     );
   };
 
-  const postwebEngageProductClickedEvent = ({ name, sku, category_id }: MedicineProduct) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PRODUCT_CLICKED] = {
-      'product name': name,
-      'product id': sku,
-      Brand: '',
-      'Brand ID': '',
-      'category name': '',
-      'category ID': category_id,
-      Source: 'List',
-      'Section Name': 'SEARCH',
-    };
-    postWebEngageEvent(WebEngageEventName.PHARMACY_PRODUCT_CLICKED, eventAttributes);
-  };
-
   const renderMedicineCard = (
     medicine: MedicineProduct,
     index: number,
@@ -594,24 +580,14 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       index == 0 ? { marginTop: 20 } : {},
       index == array.length - 1 ? { marginBottom: 20 } : {},
     ];
-    const foundMedicineInCart = cartItems.find((item) => item.id == medicine.sku);
     const price = medicine.price;
-    const specialPrice = medicine.special_price
-      ? typeof medicine.special_price == 'string'
-        ? Number(medicine.special_price)
-        : medicine.special_price
-      : undefined;
+    const specialPrice = Number(medicine.special_price) || undefined;
 
     const onNotifyMeClick = () => {
       showAphAlert!({
         title: 'Okay! :)',
         description: `You will be notified when ${medicine.name} is back in stock.`,
       });
-    };
-    const isMedicineAddedToCart = cartItems.findIndex((item) => item.id == medicine.sku) != -1;
-    const getItemQuantity = (id: string) => {
-      const foundItem = cartItems.find((item) => item.id == id);
-      return foundItem ? foundItem.quantity : 1;
     };
 
     return (
@@ -620,11 +596,9 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         containerStyle={[medicineCardContainerStyle, {}]}
         onPress={() => {
           savePastSeacrh(medicine.sku, medicine.name).catch((e) => {});
-          postwebEngageProductClickedEvent(medicine);
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: medicine.sku,
-            title: medicine.name,
-            movedFrom: 'search',
+            movedFrom: ProductPageViewedSource.FULL_SEARCH,
           });
         }}
         medicineName={stripHtml(medicine.name)}
@@ -633,11 +607,8 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
             ? `${AppConfig.Configuration.IMAGES_BASE_URL[0]}${medicine.thumbnail}`
             : ''
         }
-        isTest={isTest}
-        // specialPrice={}
         price={price}
         specialPrice={specialPrice}
-        unit={(foundMedicineInCart && foundMedicineInCart.quantity) || 0}
         quantity={getItemQuantity(medicine.sku)}
         onPressAdd={() => {
           CommonLogEvent(AppRoutes.SearchMedicineScene, 'Add item to cart');
@@ -660,19 +631,8 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
             ? onRemoveCartItem(medicine)
             : onUpdateCartItem(medicine, getItemQuantity(medicine.sku) - 1)
         }
-        onChangeUnit={(unit) => {
-          CommonLogEvent(AppRoutes.SearchMedicineScene, 'Change unit in cart');
-          onUpdateCartItem(medicine, unit);
-        }}
-        isMedicineAddedToCart={isMedicineAddedToCart}
-        isCardExpanded={!!foundMedicineInCart}
         isInStock={!!medicine.is_in_stock}
-        packOfCount={(medicine.mou && Number(medicine.mou)) || undefined}
         isPrescriptionRequired={medicine.is_prescription_required == '1'}
-        subscriptionStatus={'unsubscribed'}
-        onChangeSubscription={() => {}}
-        onEditPress={() => {}}
-        onAddSubscriptionPress={() => {}}
         removeCartItem={() => removeCartItem!(medicine.sku)}
         maxOrderQty={getMaxQtyForMedicineItem(medicine.MaxOrderQty)}
       />
@@ -703,10 +663,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         description: `You will be notified when ${medicine.name} is back in stock.`,
       });
     };
-    const getItemQuantity = (id: string) => {
-      const foundItem = cartItems.find((item) => item.id == id);
-      return foundItem ? foundItem.quantity : 1;
-    };
 
     return (
       <SearchMedicineGridCard
@@ -714,10 +670,9 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         containerStyle={[medicineCardContainerStyle, {}]}
         onPress={() => {
           savePastSeacrh(medicine.sku, medicine.name).catch((e) => {});
-          postwebEngageProductClickedEvent(medicine);
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: medicine.sku,
-            title: medicine.name,
+            movedFrom: ProductPageViewedSource.FULL_SEARCH,
           });
         }}
         medicineName={stripHtml(medicine.name)}
@@ -1015,7 +970,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         onPress={() => {
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: item.sku,
-            movedFrom: 'search',
+            movedFrom: ProductPageViewedSource.PARTIAL_SEARCH,
           });
           resetSearchState();
         }}
@@ -1138,7 +1093,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         <StickyBottomComponent style={{ position: 'relative' }} defaultBG>
           <Button
             title={'PROCEED'}
-            onPress={() => props.navigation.navigate(AppRoutes.YourCart)}
+            onPress={() => props.navigation.navigate(AppRoutes.MedicineCart)}
             style={{ marginHorizontal: 40, flex: 1 }}
           />
         </StickyBottomComponent>

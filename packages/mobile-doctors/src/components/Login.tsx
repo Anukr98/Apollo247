@@ -180,7 +180,11 @@ export const Login: React.FC<LoginProps> = (props) => {
                         {
                           text: strings.login.download_patients,
                           onPress: () => {
-                            Linking.openURL(strings.login.download_URL).finally(() => {
+                            Linking.openURL(
+                              Platform.OS === 'ios'
+                                ? strings.login.download_patients_ios
+                                : strings.login.download_patients_android
+                            ).finally(() => {
                               hideAphAlert && hideAphAlert();
                             });
                           },

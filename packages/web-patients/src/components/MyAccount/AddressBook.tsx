@@ -60,7 +60,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const AddressBook: React.FC = (props) => {
+const AddressBook: React.FC = (props) => {
   const classes = useStyles({});
   const patient = useCurrentPatient();
   if (!patient)
@@ -92,3 +92,5 @@ export const AddressBook: React.FC = (props) => {
     </div>
   );
 };
+
+export default AddressBook;

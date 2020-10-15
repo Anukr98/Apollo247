@@ -126,9 +126,16 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
   const postUPrescriptionWEGEvent = (
     source: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED]['Source']
   ) => {
+    const uploadSource =
+      props!.type === 'cartOrMedicineFlow'
+        ? 'Cart'
+        : props!.type === 'nonCartFlow'
+        ? 'Upload Flow'
+        : 'Upload Flow';
     const eventAttributes: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED] = {
       Source: source,
     };
+    if (!!uploadSource) eventAttributes['Upload Source'] = uploadSource;
     postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED, eventAttributes);
   };
 
@@ -318,6 +325,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
       compressImageMaxHeight: 2096,
       compressImageMaxWidth: 2096,
       writeTempFile: false,
+      freeStyleCropEnabled: props.isProfileImage ? true : false,
     })
       .then((response) => {
         //console.log('res', response);
@@ -543,7 +551,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
 
   const options = [
     <Text style={{ ...theme.viewStyles.text('M', 14, '#01475b', 1, 18) }}>Photo Library</Text>,
-    <Text style={{ ...theme.viewStyles.text('M', 14, '#01475b', 1, 18) }}>Browse</Text>,
+    <Text style={{ ...theme.viewStyles.text('M', 14, '#01475b', 1, 18) }}>Upload Pdf</Text>,
     <Text style={{ ...theme.viewStyles.text('M', 14, '#01475b', 1, 18) }}>Cancel</Text>,
   ];
 

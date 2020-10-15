@@ -1,7 +1,11 @@
-import { BlockOneApolloPointsRequest, UnblockPointsRequest } from 'types/oneApolloTypes';
+import {
+  BlockOneApolloPointsRequest,
+  UnblockPointsRequest,
+  ONE_APOLLO_USER_REG,
+  OneApollTransaction,
+} from 'types/oneApolloTypes';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { OneApollTransaction, ONE_APOLLO_USER_REG } from 'profiles-service/entities';
 import AbortController from 'abort-controller';
 import { log } from 'customWinstonLogger';
 

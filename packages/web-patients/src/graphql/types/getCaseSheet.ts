@@ -99,6 +99,8 @@ export interface getCaseSheet_getCaseSheet_caseSheetDetails {
   otherInstructions: (getCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions | null)[] | null;
   patientId: string | null;
   symptoms: (getCaseSheet_getCaseSheet_caseSheetDetails_symptoms | null)[] | null;
+  referralSpecialtyName: string | null;
+  referralDescription: string | null;
 }
 
 export interface getCaseSheet_getCaseSheet_patientDetails {

@@ -54,6 +54,8 @@ export interface modifyCaseSheet_modifyCaseSheet_patientDetails_patientMedicalHi
   temperature: string | null;
   weight: string | null;
   medicationHistory: string | null;
+  diagnosticTestResult: string | null;
+  clinicalObservationNotes: string | null;
 }
 
 export interface modifyCaseSheet_modifyCaseSheet_patientDetails {

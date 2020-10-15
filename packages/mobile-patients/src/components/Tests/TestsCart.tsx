@@ -1,11 +1,24 @@
 import {
+  aphConsole,
   formatAddress,
+  formatAddressWithLandmark,
+  formatNameNumber,
   g,
   isValidTestSlot,
+  TestSlot,
+  TestSlotWithArea,
   formatTestSlot,
+  formatTestSlotWithBuffer,
+  getUniqueTestSlots,
+  getTestSlotDetailsByTime,
   postWebEngageEvent,
+  isValidTestSlotWithArea,
+  isEmptyObject,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  DiagnosticData,
+  useAppCommonData,
+} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import {
   DiagnosticsCartItem,
   useDiagnosticsCart,
@@ -20,7 +33,11 @@ import {
 import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { CalendarShow } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  CalendarShow,
+  DropdownGreen,
+  TestsIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCard';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -28,22 +45,31 @@ import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/St
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
+import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import {
   CommonLogEvent,
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  GET_DIAGNOSTIC_IT_DOSE_SLOTS,
+  GET_DIAGNOSTIC_SLOTS,
   GET_PATIENT_ADDRESS_LIST,
   UPLOAD_DOCUMENT,
   SEARCH_DIAGNOSTICS_BY_ID,
+  GET_DIAGNOSTIC_AREAS,
+  GET_DIAGNOSTIC_SLOTS_WITH_AREA_ID,
+  GET_DIAGNOSTICS_HC_CHARGES,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
-  GetDiagnosticItDoseSlots,
-  GetDiagnosticItDoseSlotsVariables,
-  GetDiagnosticItDoseSlots_getDiagnosticItDoseSlots_slotInfo,
-} from '@aph/mobile-patients/src/graphql/types/GetDiagnosticItDoseSlots';
+  getDiagnosticSlots,
+  getDiagnosticSlotsVariables,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlots';
+import {
+  getDiagnosticsHCCharges_getDiagnosticsHCCharges,
+  getDiagnosticsHCChargesVariables,
+  getDiagnosticsHCCharges,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticsHCCharges';
 import {
   getPatientAddressList,
   getPatientAddressListVariables,
@@ -71,8 +97,9 @@ import {
   TouchableOpacity,
   View,
   Keyboard,
+  Dimensions,
 } from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import Geolocation from '@react-native-community/geolocation';
 import {
   searchDiagnosticsById_searchDiagnosticsById_diagnostics,
@@ -84,7 +111,12 @@ import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEven
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { postPharmacyAddNewAddressClick } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
-
+import { getAreas, getAreasVariables } from '../../graphql/types/getAreas';
+import {
+  getDiagnosticSlotsWithAreaID,
+  getDiagnosticSlotsWithAreaIDVariables,
+} from '../../graphql/types/getDiagnosticSlotsWithAreaID';
+const { width: winWidth } = Dimensions.get('window');
 const styles = StyleSheet.create({
   labelView: {
     flexDirection: 'row',
@@ -116,9 +148,42 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.5,
     borderBottomColor: 'rgba(2, 71, 91, 0.2)',
   },
+  medicineCostStyle: {
+    ...theme.fonts.IBMPlexSansBold(11),
+    lineHeight: 20,
+    color: theme.colors.SHERPA_BLUE,
+  },
   rowSpaceBetweenStyle: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  subtitleStyle: {
+    ...theme.fonts.IBMPlexSansMedium(13),
+    color: theme.colors.SHERPA_BLUE,
+    marginBottom: 5,
+  },
+  menuItemContainer: {
+    marginHorizontal: 0,
+    padding: 0,
+    margin: 0,
+  },
+  menuMenuContainerStyle: {
+    marginLeft: winWidth * 0.25,
+    marginTop: 30,
+  },
+  menuScrollViewContainerStyle: { paddingVertical: 0 },
+  menuItemTextStyle: {
+    ...theme.viewStyles.text('M', 14, '#01475b'),
+    padding: 0,
+    margin: 0,
+  },
+  menuBottomPadding: { paddingBottom: 0 },
+  dropdownGreenContainer: { justifyContent: 'flex-end', marginBottom: -2 },
+  locationText: { ...theme.viewStyles.text('M', 14, '#01475b', 1, 18) },
+  locationTextUnderline: {
+    height: 2,
+    backgroundColor: '#00b38e',
+    opacity: 1,
   },
 });
 
@@ -127,10 +192,11 @@ type clinicHoursData = {
   time: string;
 };
 
-export type TestSlot = Omit<
-  GetDiagnosticItDoseSlots_getDiagnosticItDoseSlots_slotInfo,
-  '__typename'
->;
+export interface areaObject {
+  key: string;
+  value: string;
+}
+
 export interface TestsCartProps extends NavigationScreenProps {}
 
 export const TestsCart: React.FC<TestsCartProps> = (props) => {
@@ -158,11 +224,18 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     forPatientId,
     setPatientId,
     diagnosticSlot,
+
     setDiagnosticClinic,
     setDiagnosticSlot,
     setEPrescriptions,
     deliveryCharges,
+    setHcCharges,
+    hcCharges,
     coupon,
+    areaSelected,
+    setAreaSelected,
+    diagnosticAreas,
+    setDiagnosticAreas,
   } = useDiagnosticsCart();
   const { setAddresses: setMedAddresses } = useShoppingCart();
 
@@ -183,6 +256,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const [slots, setSlots] = useState<TestSlot[]>([]);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<TestSlot>();
+
   const [selectedTab, setselectedTab] = useState<string>(clinicId ? tabs[1].title : tabs[0].title);
   const { currentPatient } = useAllCurrentPatients();
   const currentPatientId = currentPatient && currentPatient!.id;
@@ -202,21 +276,42 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [isEPrescriptionUploadComplete, setisEPrescriptionUploadComplete] = useState<boolean>();
   const [storePickUpLoading, setStorePickUpLoading] = useState<boolean>(false);
   const [testCentresLoaded, setTestCentresLoaded] = useState<boolean>(false);
+
+  const itemsWithHC = cartItems!.filter((item) => item!.collectionMethod == 'HC');
+  const itemWithId = itemsWithHC!.map((item) => parseInt(item.id));
+
   const isValidPinCode = (text: string): boolean => /^(\s*|[1-9][0-9]*)$/.test(text);
 
+  const cartItemsWithId = cartItems!.map((item) => parseInt(item.id));
   useEffect(() => {
     fetchAddresses();
   }, [currentPatient]);
 
   useEffect(() => {
+    if (selectedTab == tabs[0].title) {
+      if (
+        selectedTimeSlot?.slotInfo?.slot! &&
+        areaSelected &&
+        deliveryAddressId != '' &&
+        cartItems
+      ) {
+        fetchHC_ChargesForTest(selectedTimeSlot!.slotInfo!.slot!);
+      }
+    } else {
+      setHcCharges!(0);
+    }
+  }, [selectedTab, selectedTimeSlot, deliveryAddressId, cartItems]);
+
+  useEffect(() => {
     if (cartItems.length) {
       const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CART_VIEWED] = {
+        'Patient UHID': g(currentPatient, 'uhid'),
+        'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
         'Total items in cart': cartItems.length,
         'Sub Total': cartTotal,
-        'Delivery charge': deliveryCharges,
         'Total Discount': couponDiscount,
         'Net after discount': grandTotal,
-        'Prescription Needed?': uploadPrescriptionRequired,
+        'Prescription Needed?': uploadPrescriptionRequired ? 'Mandatory' : 'Optional',
         'Cart Items': cartItems.map(
           (item) =>
             (({
@@ -228,25 +323,73 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         ),
         'Service Area': 'Diagnostic',
       };
+      if (diagnosticSlot) {
+        eventAttributes['Home Collection'] = hcCharges;
+      }
       if (coupon) {
         eventAttributes['Coupon code used'] = coupon.code;
       }
       postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_CART_VIEWED, eventAttributes);
     }
-  }, []);
+  }, [hcCharges]);
 
   const postwebEngageProceedToPayEvent = () => {
+    const diffInDays = date.getDate() - new Date().getDate();
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED] = {
+      'Patient Name selected': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Total items in cart': cartItems.length,
       'Sub Total': cartTotal,
-      'Delivery charge': deliveryCharges,
+      // 'Delivery charge': deliveryCharges,
       'Net after discount': grandTotal,
-      'Prescription Needed?': uploadPrescriptionRequired,
+      'Prescription Needed?': false, //from backend
+      'Prescription Mandatory?': uploadPrescriptionRequired,
       'Mode of Sample Collection': selectedTab === tabs[0].title ? 'Home Visit' : 'Clinic Visit',
       'Pin Code': pinCode,
       'Service Area': 'Diagnostic',
+      'Area Name': areaSelected.value,
+      'No of Days ahead of Order Date selected': diffInDays,
+      'Home collection charges': hcCharges,
+      'Collection Time Slot': selectedTimeSlot?.slotInfo?.startTime!,
     };
+    if (selectedTab === tabs[0].title) {
+      eventAttributes['Delivery Date Time'] = date;
+    }
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED, eventAttributes);
+  };
+
+  const setWebEngageEventForAddressNonServiceable = (pincode: string) => {
+    const selectedAddr = addresses.find((item) => item.id == deliveryAddressId);
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ADDRESS_NON_SERVICEABLE_CARTPAGE] = {
+      'Patient UHID': g(currentPatient, 'uhid'),
+      State: selectedAddr?.state || '',
+      City: selectedAddr?.city || '',
+      PinCode: parseInt(pincode!),
+      'Number of items in cart': cartItemsWithId.length,
+      'Items in cart': cartItems,
+    };
+    postWebEngageEvent(
+      WebEngageEventName.DIAGNOSTIC_ADDRESS_NON_SERVICEABLE_CARTPAGE,
+      eventAttributes
+    );
+  };
+
+  const setWebEngageEventForAreaSelection = (item: areaObject) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_AREA_SELECTED] = {
+      'Address Pincode': parseInt(selectedAddr?.zipcode!),
+      'Area Selected': item.value,
+    };
+    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_AREA_SELECTED, eventAttributes);
+  };
+
+  const setWebEnageEventForAppointmentTimeSlot = () => {
+    const diffInDays = date.getDate() - new Date().getDate();
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED] = {
+      'Address Pincode': parseInt(selectedAddr?.zipcode!),
+      'Area Selected': areaSelected.value,
+      'Time Selected': selectedTimeSlot?.slotInfo?.startTime!,
+      'No of Days ahead of Order Date selected': diffInDays,
+    };
+    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED, eventAttributes);
   };
 
   useEffect(() => {
@@ -262,20 +405,34 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       if (diagnosticSlot) {
         setDate(new Date(diagnosticSlot.date));
         setselectedTimeSlot({
-          // date: new Date(diagnosticSlot.date),
-          Timeslot: diagnosticSlot.Timeslot,
-          TimeslotID: diagnosticSlot.TimeslotID,
+          date: new Date(diagnosticSlot.date),
+          diagnosticBranchCode: '',
+          employeeCode: diagnosticSlot.diagnosticEmployeeCode,
+          employeeName: '', // not sending name to API hence keeping empty
+          slotInfo: {
+            __typename: 'SlotInfo',
+            endTime: diagnosticSlot.slotEndTime,
+            slot: diagnosticSlot.employeeSlotId,
+            startTime: diagnosticSlot.slotStartTime,
+            status: 'empty',
+          },
         });
+        // setselectedTimeSlot(`${diagnosticSlot.slotStartTime} - ${diagnosticSlot.slotEndTime}`);
       } else {
         setDate(new Date());
         setselectedTimeSlot(undefined);
+        setDiagnosticAreas!([]);
+        setAreaSelected!({});
         const selectedAddressIndex = addresses.findIndex(
           (address) => address.id == deliveryAddressId
         );
-        checkServicability(addresses[selectedAddressIndex]);
+        fetchAreasForAddress(
+          addresses[selectedAddressIndex].id,
+          addresses[selectedAddressIndex].zipcode!
+        );
       }
     }
-  }, [deliveryAddressId, diagnosticSlot]);
+  }, [deliveryAddressId, diagnosticSlot, cartItems]);
 
   useEffect(() => {
     clinics.length == 0 && fetchStorePickup();
@@ -295,6 +452,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                     obj.data.results.length > 0 &&
                     obj.data.results[0].address_components.length > 0
                   ) {
+                    const address = obj.data.results[0].address_components[0].short_name;
+                    console.log(address, 'address obj');
                     const addrComponents = obj.data.results[0].address_components || [];
                     const _pincode = (
                       addrComponents.find((item: any) => item.types.indexOf('postal_code') > -1) ||
@@ -308,12 +467,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               })
               .catch((error) => {
                 CommonBugFender('TestsCart_getPlaceInfoByLatLng', error);
+                console.log(error, 'geocode error');
               });
           },
-          (error) => {
-          },
+          (error) => {},
           { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
         );
+        console.log('pincode');
       } else {
         filterClinics(locationDetails.pincode || '');
       }
@@ -421,6 +581,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           fetchPolicy: 'no-cache',
         })
         .then(({ data }) => {
+          console.log('searchDiagnostics\n', { data });
           const product = g(data, 'searchDiagnosticsById', 'diagnostics', '0' as any);
           if (product) {
             func && func(product);
@@ -430,12 +591,69 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         })
         .catch((e) => {
           CommonBugFender('TestsCart_fetchPackageDetails', e);
+          console.log({ e });
           errorAlert();
         })
         .finally(() => {
           setLoading!(false);
         });
     }
+  };
+
+  /**
+   * fetching the areas
+   */
+
+  const fetchAreasForAddress = (id: string, pincode: string) => {
+    if (cartItems.length == 0) {
+      return;
+    }
+    setLoading!(true);
+    client
+      .query<getAreas, getAreasVariables>({
+        query: GET_DIAGNOSTIC_AREAS,
+        fetchPolicy: 'no-cache',
+        variables: {
+          pincode: parseInt(pincode!),
+          itemIDs: cartItemsWithId,
+        },
+      })
+      .then(({ data }) => {
+        setLoading!(false);
+        const getDiagnosticAreas = g(data, 'getAreas', 'areas') || [];
+        if (data.getAreas.status) {
+          setDiagnosticAreas!(getDiagnosticAreas);
+        } else {
+          setDeliveryAddressId && setDeliveryAddressId('');
+          setDiagnosticAreas!([]);
+          setAreaSelected!({});
+          setselectedTimeSlot(undefined);
+          setLoading!(false);
+          setWebEngageEventForAddressNonServiceable(pincode);
+          showAphAlert!({
+            title: 'Uh oh.. :(',
+            description:
+              'Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address.',
+          });
+        }
+      })
+      .catch((e) => {
+        setLoading!(false);
+        setDiagnosticAreas!([]);
+        setAreaSelected!({});
+        setselectedTimeSlot(undefined);
+        setWebEngageEventForAddressNonServiceable(pincode);
+        CommonBugFender('TestsCart_getArea selection', e);
+        console.log('error' + e);
+        showAphAlert!({
+          title: 'Uh oh.. :(',
+          description:
+            'Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address.',
+        });
+      })
+      .finally(() => {
+        setLoading!(false);
+      });
   };
 
   const renderItemsInCart = () => {
@@ -492,6 +710,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                       Gender: product.gender,
                       collectionType: test.collectionMethod,
                       preparation: product.testPreparationData,
+                      source: 'Cart Page',
+                      type: product.itemType,
                     } as TestPackageForDetails,
                   });
                 });
@@ -502,6 +722,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               onPressAdd={() => {}}
               onPressRemove={() => {
                 CommonLogEvent(AppRoutes.TestsCart, 'Remove item from cart');
+                cartItems.length == 0 ? setDeliveryAddressId!('') : null;
                 onRemoveCartItem(test);
               }}
               onChangeUnit={() => {}}
@@ -524,33 +745,142 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const [checkingServicability, setCheckingServicability] = useState(false);
 
+  const checkSlotSelection = (item: areaObject) => {
+    const selectedAddressIndex = addresses.findIndex((address) => address.id == deliveryAddressId);
+
+    client
+      .query<getDiagnosticSlotsWithAreaID, getDiagnosticSlotsWithAreaIDVariables>({
+        query: GET_DIAGNOSTIC_SLOTS_WITH_AREA_ID,
+        fetchPolicy: 'no-cache',
+        variables: {
+          selectedDate: moment(date).format('YYYY-MM-DD'),
+          areaID: parseInt(item.key!),
+        },
+      })
+      .then(({ data }) => {
+        const diagnosticSlots = g(data, 'getDiagnosticSlotsWithAreaID', 'slots') || [];
+        console.log('ORIGINAL DIAGNOSTIC SLOTS', { diagnosticSlots });
+        const slotsArray: TestSlot[] = [];
+        diagnosticSlots!.forEach((item) => {
+          if (isValidTestSlotWithArea(item!, date)) {
+            slotsArray.push({
+              employeeCode: 'apollo_employee_code',
+              employeeName: 'apollo_employee_name',
+              slotInfo: {
+                endTime: item?.Timeslot!,
+                status: 'empty',
+                startTime: item?.Timeslot!,
+                slot: item?.TimeslotID,
+              },
+              date: date,
+              diagnosticBranchCode: 'apollo_route',
+            } as TestSlot);
+          }
+        });
+
+        const uniqueSlots = getUniqueTestSlots(slotsArray);
+
+        console.log('ARRAY OF SLOTS', { slotsArray });
+
+        setSlots(slotsArray);
+        uniqueSlots.length &&
+          setselectedTimeSlot(
+            getTestSlotDetailsByTime(slotsArray, uniqueSlots[0].startTime!, uniqueSlots[0].endTime!)
+          );
+        setDisplaySchedule(true); //show slot popup
+
+        setDeliveryAddressId!(addresses[selectedAddressIndex].id);
+        setPinCode!(addresses[selectedAddressIndex]!.zipcode!);
+      })
+      .catch((e) => {
+        CommonBugFender('TestsCart_checkServicability', e);
+        console.log('Error occured', { e });
+        setDiagnosticSlot && setDiagnosticSlot(null);
+        setselectedTimeSlot(undefined);
+        const noHubSlots = g(e, 'graphQLErrors', '0', 'message') === 'NO_HUB_SLOTS';
+
+        if (noHubSlots) {
+          setDeliveryAddressId!(addresses[selectedAddressIndex].id);
+          setPinCode!(addresses[selectedAddressIndex]!.zipcode!);
+          showAphAlert!({
+            title: 'Uh oh.. :(',
+            description: `Sorry! There are no slots available on ${moment(date).format(
+              'DD MMM, YYYY'
+            )}. Please choose another date.`,
+            onPressOk: () => {
+              setDisplaySchedule(true);
+              hideAphAlert && hideAphAlert();
+            },
+          });
+        } else {
+          setDeliveryAddressId && setDeliveryAddressId('');
+          // setPinCode && setPinCode('');
+          showAphAlert!({
+            title: 'Uh oh.. :(',
+            description:
+              'Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address.',
+          });
+        }
+      });
+  };
+
   const checkServicability = (
     selectedAddress: savePatientAddress_savePatientAddress_patientAddress
   ) => {
     if (!checkingServicability) {
       setCheckingServicability(true);
       client
-        .query<GetDiagnosticItDoseSlots, GetDiagnosticItDoseSlotsVariables>({
-          query: GET_DIAGNOSTIC_IT_DOSE_SLOTS,
+        .query<getDiagnosticSlots, getDiagnosticSlotsVariables>({
+          query: GET_DIAGNOSTIC_SLOTS,
           fetchPolicy: 'no-cache',
           variables: {
             patientId: g(currentPatient, 'id') || '',
+            hubCode: 'HYD_HUB1', // not considering this field at backend
             selectedDate: moment(date).format('YYYY-MM-DD'),
-            zipCode: Number(selectedAddress.zipcode!),
+            zipCode: parseInt(selectedAddress.zipcode!),
           },
         })
         .then(({ data }) => {
-          const diagnosticSlots =
-            (g(data, 'getDiagnosticItDoseSlots', 'slotInfo') as TestSlot[]) || [];
-          const slotsArray = diagnosticSlots.filter((slot) => isValidTestSlot(slot, date));
+          const diagnosticSlots = g(data, 'getDiagnosticSlots', 'diagnosticSlot') || [];
+          console.log('ORIGINAL DIAGNOSTIC SLOTS', { diagnosticSlots });
+
+          const slotsArray: TestSlot[] = [];
+          diagnosticSlots!.forEach((item) => {
+            item!.slotInfo!.forEach((slot) => {
+              if (isValidTestSlot(slot!, date)) {
+                slotsArray.push({
+                  employeeCode: item!.employeeCode,
+                  employeeName: item!.employeeName,
+                  slotInfo: slot,
+                  date: date,
+                  diagnosticBranchCode: g(data, 'getDiagnosticSlots', 'diagnosticBranchCode'),
+                } as TestSlot);
+              }
+            });
+          });
+
+          const uniqueSlots = getUniqueTestSlots(slotsArray);
+
+          console.log('ARRAY OF SLOTS', { slotsArray });
+          console.log('UNIQUE SLOTS', { uniqueSlots });
+
           setSlots(slotsArray);
-          setselectedTimeSlot(slotsArray[0]);
+          uniqueSlots.length &&
+            setselectedTimeSlot(
+              getTestSlotDetailsByTime(
+                slotsArray,
+                uniqueSlots[0].startTime!,
+                uniqueSlots[0].endTime!
+              )
+            );
+
           setDeliveryAddressId!(selectedAddress.id);
           setPinCode!(selectedAddress.zipcode!);
           setDisplaySchedule(true);
         })
         .catch((e) => {
           CommonBugFender('TestsCart_checkServicability', e);
+          console.log('Error occured', { e });
           setDiagnosticSlot && setDiagnosticSlot(null);
           setselectedTimeSlot(undefined);
           const noHubSlots = g(e, 'graphQLErrors', '0', 'message') === 'NO_HUB_SLOTS';
@@ -584,6 +914,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     }
   };
 
+  const _navigateToEditAddress = (dataname: string, address: any, comingFrom: string) => {
+    props.navigation.push(AppRoutes.AddAddress, {
+      KeyName: dataname,
+      DataAddress: address,
+      ComingFrom: comingFrom,
+    });
+  };
+
   const renderHomeDelivery = () => {
     const selectedAddressIndex = addresses.findIndex((address) => address.id == deliveryAddressId);
     const addressListLength = addresses.length;
@@ -596,26 +934,16 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     return (
       <View
         style={{ marginTop: 8, marginHorizontal: 16 }}
-        pointerEvents={checkingServicability ? 'none' : 'auto'}
+        pointerEvents={cartItems.length > 0 ? 'auto' : 'none'}
       >
-        {checkingServicability ? (
-          <View
-            style={{
-              position: 'absolute',
-              width: '100%',
-              height: '100%',
-              alignSelf: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <ActivityIndicator size="large" color="green" />
-          </View>
-        ) : null}
         {addresses.slice(startIndex, startIndex + 2).map((item, index, array) => {
           return (
             <RadioSelectionItem
               key={item.id}
-              title={formatAddress(item)}
+              title={formatAddressWithLandmark(item)}
+              showMultiLine={true}
+              subtitle={formatNameNumber(item)}
+              subtitleStyle={styles.subtitleStyle}
               isSelected={deliveryAddressId == item.id}
               onPress={() => {
                 CommonLogEvent(AppRoutes.TestsCart, 'Check service availability');
@@ -634,10 +962,16 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                       )}), that can only be done at the centre, we request you to get all tests in your cart done at the centre of your convenience. Please proceed to select.`,
                   });
                 } else {
-                  checkServicability(item);
+                  setDeliveryAddressId!(item.id);
+                  setDiagnosticAreas!([]);
+                  setAreaSelected!({});
+                  setDiagnosticSlot!(null);
+                  // fetchAreasForAddress(item.id, item.zipcode!);
                 }
               }}
               containerStyle={{ marginTop: 16 }}
+              showEditIcon={true}
+              onPressEdit={() => _navigateToEditAddress('Update', item, AppRoutes.TestsCart)}
               hideSeparator={index + 1 === array.length}
             />
           );
@@ -665,11 +999,16 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                   props.navigation.navigate(AppRoutes.SelectDeliveryAddress, {
                     isTest: true,
                     selectedAddressId: deliveryAddressId,
-                    isChanged: (val: boolean, id?: string) => {
+                    isChanged: (val: boolean, id?: string, pincode?: string) => {
                       if (val && id) {
                         setDeliveryAddressId && setDeliveryAddressId(id);
                         setDiagnosticSlot && setDiagnosticSlot(null);
                         setselectedTimeSlot(undefined);
+
+                        setDiagnosticAreas!([]);
+                        setAreaSelected!({});
+
+                        // fetchAreasForAddress(id, pincode!);
                       }
                     },
                   });
@@ -696,6 +1035,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     searchClinicApi()
       .then((data) => {
         setStorePickUpLoading(false);
+        aphConsole.log('clinic response', data.data.data, data);
         setClinics && setClinics(data.data.data || []);
         setTimeout(() => {
           setTestCentresLoaded(true);
@@ -711,6 +1051,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const filterClinics = (key: string, isId?: boolean, hideLoader?: boolean) => {
     if (isId) {
       const data = clinics.filter((item) => item.CentreCode === key);
+      aphConsole.log('iid filer=', data);
       filterClinics(pinCode, false, true);
       setClinicDetails(data);
     } else {
@@ -726,6 +1067,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                   (item: any) => item.types.indexOf('locality') > -1
                 ) || {}
               ).long_name;
+              aphConsole.log('cityName', city);
               let filterArray;
               city &&
                 (filterArray = clinics.filter((item) =>
@@ -831,28 +1173,39 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     );
   };
 
+  /**
+   * if address selected + if area serviceable
+   */
   const renderPickupHours = () => {
+    const showTime = deliveryAddressId && areaSelected && !isEmptyObject(areaSelected);
     return (
       <View>
-        <View style={styles.rowSpaceBetweenStyle}>
-          <Text style={styles.dateTextStyle}>Date</Text>
-          <Text style={styles.dateTextStyle}>{moment(date).format('DD MMM, YYYY')}</Text>
-        </View>
-        <View style={styles.rowSpaceBetweenStyle}>
-          <Text style={styles.dateTextStyle}>Time</Text>
-          <Text style={styles.dateTextStyle}>
-            {selectedTimeSlot
-              ? `${formatTestSlot(selectedTimeSlot.Timeslot!)}`
-              : 'No slot selected'}
-          </Text>
-        </View>
+        {showTime ? (
+          <>
+            <View style={styles.rowSpaceBetweenStyle}>
+              <Text style={styles.dateTextStyle}>Date</Text>
+              <Text style={styles.dateTextStyle}>{moment(date).format('DD MMM, YYYY')}</Text>
+            </View>
+            <View style={styles.rowSpaceBetweenStyle}>
+              <Text style={styles.dateTextStyle}>Time</Text>
+              <Text style={styles.dateTextStyle}>
+                {selectedTimeSlot
+                  ? `${formatTestSlotWithBuffer(selectedTimeSlot.slotInfo.startTime!)}`
+                  : 'No slot selected'}
+              </Text>
+            </View>
+          </>
+        ) : null}
         <Text
-          style={[styles.yellowTextStyle, { padding: 0, paddingTop: 20, alignSelf: 'flex-end' }]}
+          style={[
+            styles.yellowTextStyle,
+            { padding: 0, paddingTop: 20, alignSelf: 'flex-end', opacity: showTime ? 1 : 0.5 },
+          ]}
           onPress={() => {
-            setDisplaySchedule(true);
+            showTime && setDisplaySchedule(true);
           }}
         >
-          PICK ANOTHER SLOT
+          {showTime ? 'PICK ANOTHER SLOT' : 'SELECT SLOT'}
         </Text>
       </View>
     );
@@ -873,9 +1226,84 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     );
   };
 
+  /**
+   * active only when added from the 0th tab + deliveryAddress selected
+   */
+  const renderAreaSelectionCard = () => {
+    const isSelectable = selectedTab === tabs[0].title && deliveryAddressId;
+    const options = diagnosticAreas.map((item: any) => ({ key: item.id, value: item.area }));
+    return (
+      <>
+        {selectedTab === tabs[0].title ? (
+          <View
+            style={{
+              ...theme.viewStyles.cardViewStyle,
+              marginHorizontal: 20,
+              margin: 16,
+              padding: 16,
+            }}
+          >
+            <MaterialMenu
+              options={options}
+              itemContainer={styles.menuItemContainer}
+              menuContainerStyle={[styles.menuMenuContainerStyle]}
+              scrollViewContainerStyle={styles.menuScrollViewContainerStyle}
+              itemTextStyle={styles.menuItemTextStyle}
+              bottomPadding={styles.menuBottomPadding}
+              onPress={(item) => {
+                setAreaSelected!(item);
+                checkSlotSelection(item);
+                setWebEngageEventForAreaSelection(item);
+                // checkServicability(selectedAddress);
+              }}
+            >
+              {renderAreaSelectionField()}
+            </MaterialMenu>
+          </View>
+        ) : null}
+      </>
+    );
+  };
+
+  const renderAreaSelectionField = () => {
+    const isAreaSelectable =
+      Object.keys(areaSelected).length === 0 && areaSelected.constructor === Object;
+    return (
+      <View style={{ paddingLeft: 15, marginTop: 3.5 }}>
+        <View style={{ marginTop: -7.5 }}>
+          <View style={{ flexDirection: 'row' }}>
+            <View style={{ width: '90%' }}>
+              <Text
+                style={{
+                  ...theme.viewStyles.text(
+                    'M',
+                    15,
+                    isAreaSelectable
+                      ? diagnosticAreas.length > 0
+                        ? '#01475b'
+                        : 'rgba(1,48,91, 0.3)'
+                      : '#01475b',
+                    1,
+                    18
+                  ),
+                  marginBottom: 5,
+                }}
+              >
+                {isAreaSelectable ? ' Select area' : areaSelected.value}
+              </Text>
+              <Spearator style={[styles.locationTextUnderline]} />
+            </View>
+            <View style={styles.dropdownGreenContainer}>
+              <DropdownGreen />
+            </View>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
   const renderTimingCard = () => {
-    return (selectedTab === tabs[0].title && deliveryAddressId && !checkingServicability) ||
-      (selectedTab === tabs[1].title && clinicId) ? (
+    return selectedTab === tabs[0].title || (selectedTab === tabs[1].title && clinicId) ? (
       <View
         style={{
           ...theme.viewStyles.cardViewStyle,
@@ -927,7 +1355,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               borderBottomColor: 'rgba(2, 71, 91, 0.2)',
             }}
             data={tabs}
-            onChange={(selectedTab) => {
+            onChange={(selectedTab: string) => {
               setselectedTab(selectedTab);
               setClinicId!('');
               setDeliveryAddressId!('');
@@ -937,6 +1365,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           />
           {selectedTab === tabs[0].title ? renderHomeDelivery() : renderStorePickup()}
         </View>
+        {renderAreaSelectionCard()}
         {renderTimingCard()}
       </View>
     );
@@ -946,10 +1375,40 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     return (
       <View>
         {renderLabel('TOTAL CHARGES')}
+        {/* <TouchableOpacity
+          activeOpacity={1}
+          style={{
+            ...theme.viewStyles.cardViewStyle,
+            marginHorizontal: 20,
+            marginTop: 16,
+            marginBottom: 4,
+            flexDirection: 'row',
+            height: 56,
+            paddingHorizontal: 16,
+            alignItems: 'center',
+          }}
+          onPress={() => props.navigation.navigate(AppRoutes.ApplyCouponScene, { isTest: true })}
+        >
+          <CouponIcon />
+          <Text
+            style={{
+              ...theme.fonts.IBMPlexSansMedium(16),
+              color: theme.colors.SHERPA_BLUE,
+              lineHeight: 24,
+              paddingLeft: 16,
+            }}
+          >
+            {!coupon ? 'Apply Coupon' : `${coupon.code} Applied`}
+          </Text>
+          <View style={{ flex: 1, alignItems: 'flex-end' }}>
+            <ArrowRight />
+          </View>
+        </TouchableOpacity> */}
         <View
           style={{
             ...theme.viewStyles.cardViewStyle,
             marginHorizontal: 20,
+            // marginTop: 4,
             marginBottom: 12,
             padding: 16,
             marginTop: 16,
@@ -965,6 +1424,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               <Text style={styles.blueTextStyle}>- Rs. {couponDiscount.toFixed(2)}</Text>
             </View>
           )}
+          {selectedTab == tabs[0].title && (
+            <View style={styles.rowSpaceBetweenStyle}>
+              <Text style={styles.blueTextStyle}>Home Collection Charges</Text>
+              <Text style={styles.blueTextStyle}>Rs. {hcCharges.toFixed(2)}</Text>
+            </View>
+          )}
           <View style={[styles.separatorStyle, { marginTop: 16, marginBottom: 7 }]} />
           <View style={styles.rowSpaceBetweenStyle}>
             <Text style={styles.blueTextStyle}>To Pay </Text>
@@ -977,6 +1442,79 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     );
   };
 
+  const medicineSuggestions = [
+    {
+      name: 'Metformin 500mg',
+      requirePrescription: false,
+      cost: 'Rs. 120',
+    },
+    {
+      name: 'Metformin 500mg',
+      requirePrescription: false,
+      cost: 'Rs. 120',
+    },
+    {
+      name: 'Metformin 500mg',
+      requirePrescription: false,
+      cost: 'Rs. 120',
+    },
+  ];
+
+  const renderMedicineItem = (
+    item: { name: string; cost: string },
+    index: number,
+    length: number
+  ) => {
+    return (
+      <View
+        style={{
+          ...theme.viewStyles.cardViewStyle,
+          shadowRadius: 4,
+          marginBottom: 20,
+          marginTop: 11,
+          marginHorizontal: 6,
+          paddingHorizontal: 16,
+          paddingTop: 12,
+          paddingBottom: 8,
+        }}
+      >
+        <TestsIcon />
+        <Text style={[styles.blueTextStyle, { paddingTop: 4 }]}>{item.name}</Text>
+        <View style={[styles.separatorStyle, { marginTop: 3, marginBottom: 5 }]} />
+        <Text style={styles.medicineCostStyle}>{item.cost}</Text>
+      </View>
+    );
+  };
+
+  const renderTestSuggestions = () => {
+    return (
+      <View
+        style={{
+          ...theme.viewStyles.cardContainer,
+          paddingTop: 16,
+          marginTop: 12,
+        }}
+      >
+        {renderLabel('YOU SHOULD ALSO ADD')}
+
+        <FlatList
+          contentContainerStyle={{
+            marginHorizontal: 14,
+            paddingRight: 28,
+          }}
+          horizontal={true}
+          bounces={false}
+          data={medicineSuggestions}
+          renderItem={({ item, index }) =>
+            renderMedicineItem(item, index, medicineSuggestions.length)
+          }
+          keyExtractor={(_, index) => index.toString()}
+          showsHorizontalScrollIndicator={false}
+        />
+      </View>
+    );
+  };
+
   const disableProceedToPay = !(
     cartItems.length > 0 &&
     forPatientId &&
@@ -985,6 +1523,21 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       ? physicalPrescriptions.length > 0 || ePrescriptions.length > 0
       : true)
   );
+
+  // const multiplePhysicalPrescriptionUpload = (prescriptions = physicalPrescriptions) => {
+  //   return Promise.all(
+  //     prescriptions.map((item) =>
+  //       client.mutate<uploadFile, uploadFileVariables>({
+  //         mutation: UPLOAD_FILE,
+  //         fetchPolicy: 'no-cache',
+  //         variables: {
+  //           fileType: item.fileType,
+  //           base64FileInput: item.base64,
+  //         },
+  //       })
+  //     )
+  //   );
+  // };
 
   const multiplePhysicalPrescriptionUpload = (prescriptions = physicalPrescriptions) => {
     return Promise.all(
@@ -1009,6 +1562,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     const prescriptions = physicalPrescriptions;
     setLoading!(true);
     const unUploadedPres = prescriptions.filter((item) => !item.uploadedUrl);
+    console.log('unUploadedPres', unUploadedPres);
     if (unUploadedPres.length > 0) {
       multiplePhysicalPrescriptionUpload(unUploadedPres)
         .then((data) => {
@@ -1029,12 +1583,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 prismPrescriptionFileId: uploadUrls![index]!.fileId,
               } as PhysicalPrescription)
           );
+          console.log('precp:di', newuploadedPrescriptions);
 
           setPhysicalPrescriptions && setPhysicalPrescriptions([...newuploadedPrescriptions]);
           setisPhysicalUploadComplete(true);
         })
         .catch((e) => {
           CommonBugFender('TestsCart_physicalPrescriptionUpload', e);
+          aphConsole.log({ e });
           setLoading!(false);
           showAphAlert!({
             title: 'Uh oh.. :(',
@@ -1158,6 +1714,198 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     }
   };
 
+  // const onPressProceedToPay = () => {
+  //   const prescriptions = physicalPrescriptions;
+  //   console.log(ePrescriptions, 'ePrescriptions');
+
+  //   if (prescriptions.length == 0 && ePrescriptions.length == 0) {
+  //     console.log('withoutdocumnets');
+
+  //     props.navigation.navigate(AppRoutes.TestsCheckoutScene);
+  //   } else {
+  //     if (prescriptions.length > 0) {
+  //       setLoading!(true);
+  //       const unUploadedPres = prescriptions.filter((item) => !item.uploadedUrl);
+  //       console.log('unUploadedPres', unUploadedPres);
+  //       multiplePhysicalPrescriptionUpload(unUploadedPres)
+  //         .then((data) => {
+  //           setLoading!(false);
+
+  //           const uploadUrlscheck = data.map((item) =>
+  //             item.data!.uploadDocument.status ? item.data!.uploadDocument.fileId : null
+  //           );
+  //           console.log('uploaddocumentsucces', uploadUrlscheck, uploadUrlscheck.length);
+  //           var filtered = uploadUrlscheck.filter(function(el) {
+  //             return el != null;
+  //           });
+  //           console.log('filtered', filtered);
+
+  //           if (filtered.length > 0) {
+  //             client
+  //               .query<downloadDocuments>({
+  //                 query: DOWNLOAD_DOCUMENT,
+  //                 fetchPolicy: 'no-cache',
+  //                 variables: {
+  //                   downloadDocumentsInput: {
+  //                     patientId: currentPatient && currentPatient.id,
+  //                     fileIds: uploadUrlscheck,
+  //                   },
+  //                 },
+  //               })
+  //               .then(({ data }) => {
+  //                 console.log(data, 'DOWNLOAD_DOCUMENT');
+  //                 const uploadUrlscheck = data.downloadDocuments.downloadPaths;
+  //                 console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
+  //                 const uploadUrls = uploadUrlscheck!.map((item) => item);
+  //                 console.log(uploadUrls, 'uploadUrls');
+  //                 const newuploadedPrescriptions = unUploadedPres.map(
+  //                   (item, index) =>
+  //                     ({
+  //                       ...item,
+  //                       uploadedUrl: uploadUrls[index],
+  //                     } as PhysicalPrescription)
+  //                 );
+  //                 console.log(newuploadedPrescriptions, 'newuploadedPrescriptions');
+  //                 setPhysicalPrescriptions &&
+  //                   setPhysicalPrescriptions([
+  //                     ...newuploadedPrescriptions,
+  //                     ...prescriptions.filter((item) => item.uploadedUrl),
+  //                   ]);
+  //                 setLoading!(false);
+  //                 ePrescriptions.length == 0 &&
+  //                   props.navigation.navigate(AppRoutes.TestsCheckoutScene);
+  //               })
+  //               .catch((e: string) => {
+  //                 console.log('Error occured', e);
+  //               })
+  //               .finally(() => {
+  //                 setshowSpinner(false);
+  //               });
+  //           } else {
+  //             Alert.alert('your uploaded images are failed');
+  //           }
+  //           // const uploadUrls = data.map((item) => item.data!.uploadFile.filePath);
+  //           // const newuploadedPrescriptions = unUploadedPres.map(
+  //           //   (item, index) =>
+  //           //     ({
+  //           //       ...item,
+  //           //       uploadedUrl: uploadUrls[index],
+  //           //     } as PhysicalPrescription)
+  //           // );
+  //           // setPhysicalPrescriptions &&
+  //           //   setPhysicalPrescriptions([
+  //           //     ...newuploadedPrescriptions,
+  //           //     ...prescriptions.filter((item) => item.uploadedUrl),
+  //           //   ]);
+  //           // setLoading!(false);
+  //           // props.navigation.navigate(AppRoutes.TestsCheckoutScene);
+  //         })
+  //         .catch((e) => {
+  //           aphConsole.log({ e });
+  //           setLoading!(false);
+  //           showAphAlert!({
+  //             title: 'Uh oh.. :(',
+  //             description: 'Error occurred while uploading prescriptions.',
+  //           });
+  //         });
+  //     }
+  //     if (ePrescriptions.length > 0) {
+  //       const ePresUrls = ePrescriptions.map((item) => {
+  //         console.log('item', item.prismPrescriptionFileId);
+
+  //         return item!.prismPrescriptionFileId;
+  //       });
+
+  //       console.log('ePresUrls', ePresUrls);
+  //       let ePresAndPhysicalPresUrls = [...ePresUrls];
+  //       console.log(
+  //         'ePresAndPhysicalPresUrls',
+  //         ePresAndPhysicalPresUrls
+  //           .join(',')
+  //           .split(',')
+  //           .map((item) => item.trim())
+  //           .filter((i) => i)
+  //       );
+  //       if (ePresAndPhysicalPresUrls.length > 0) {
+  //         client
+  //           .query<downloadDocuments>({
+  //             query: DOWNLOAD_DOCUMENT,
+  //             fetchPolicy: 'no-cache',
+  //             variables: {
+  //               downloadDocumentsInput: {
+  //                 patientId: currentPatient && currentPatient.id,
+  //                 fileIds: ePresAndPhysicalPresUrls
+  //                   .join(',')
+  //                   .split(',')
+  //                   .map((item) => item.trim())
+  //                   .filter((i) => i),
+  //               },
+  //             },
+  //           })
+  //           .then(({ data }) => {
+  //             console.log(data, 'DOWNLOAD_DOCUMENT');
+  //             const uploadUrlscheck = data.downloadDocuments.downloadPaths;
+  //             console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
+  //             if (uploadUrlscheck!.length > 0) {
+  //               const uploadUrlscheck = data.downloadDocuments.downloadPaths;
+  //               console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
+  //               const uploadUrls = uploadUrlscheck!.map((item) => item);
+  //               console.log(uploadUrls, 'uploadUrls');
+  //               const newuploadedPrescriptions = uploadUrls.map(
+  //                 (item, index) =>
+  //                   ({
+  //                     uploadedUrl: uploadUrls[index],
+  //                   } as EPrescription)
+  //               );
+  //               console.log(newuploadedPrescriptions, 'newuploadedPrescriptions');
+  //               setEPrescriptions && setEPrescriptions([...ePrescriptions.filter((item) => item)]);
+  //               setLoading!(false);
+  //               console.log(ePrescriptions, 'setEPrescriptions');
+
+  //               props.navigation.navigate(AppRoutes.TestsCheckoutScene);
+  //             } else {
+  //               Alert.alert('Images are not uploaded');
+  //             }
+  //           })
+  //           .catch((e: string) => {
+  //             console.log('Error occured', e);
+  //           })
+  //           .finally(() => {
+  //             setLoading!(false);
+  //           });
+  //       }
+  //     }
+  //   }
+  // };
+
+  const fetchHC_ChargesForTest = async (slotVal: string) => {
+    setLoading!(true);
+    try {
+      const HomeCollectionChargesApi = await client.query<
+        getDiagnosticsHCCharges,
+        getDiagnosticsHCChargesVariables
+      >({
+        query: GET_DIAGNOSTICS_HC_CHARGES,
+        variables: {
+          itemIDs: itemWithId,
+          totalCharges: cartTotal,
+          slotID: slotVal!,
+          pincode: parseInt(pinCode, 10),
+        },
+        fetchPolicy: 'no-cache',
+      });
+
+      let getCharges = g(HomeCollectionChargesApi.data, 'getDiagnosticsHCCharges', 'charges') || 0;
+      if (getCharges != null) {
+        setHcCharges!(getCharges);
+      }
+      setLoading!(false);
+    } catch (error) {
+      setLoading!(false);
+      renderAlert(`Something went wrong, unable to fetch Home collection charges.`);
+    }
+  };
+
   const renderProfiles = () => {
     return (
       <View>
@@ -1173,6 +1921,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             paddingBottom: 16,
           }}
         >
+          {/* {renderProfilePicker()} */}
           <ProfileList
             defaultText={'Select who are these tests for'}
             saveUserChange={true}
@@ -1201,6 +1950,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         <TestSlotSelectionOverlay
           heading="Schedule Appointment"
           date={date}
+          areaId={areaSelected?.key!}
           maxDate={moment()
             .add(AppConfig.Configuration.DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS, 'day')
             .toDate()}
@@ -1210,14 +1960,19 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           zipCode={parseInt(zipCode, 10)}
           slotInfo={selectedTimeSlot}
           onSchedule={(date: Date, slotInfo: TestSlot) => {
-
+            console.log({ slotInfo });
             setDate(date);
             setselectedTimeSlot(slotInfo);
             setDiagnosticSlot!({
-              ...slotInfo,
+              slotStartTime: slotInfo.slotInfo.startTime!,
+              slotEndTime: slotInfo.slotInfo.endTime!,
               date: date.getTime(),
+              employeeSlotId: slotInfo.slotInfo.slot!,
+              diagnosticBranchCode: slotInfo.diagnosticBranchCode,
+              diagnosticEmployeeCode: slotInfo.employeeCode,
               city: selectedAddr ? selectedAddr.city! : '', // not using city from this in order place API
             });
+            setWebEnageEventForAppointmentTimeSlot();
             setDisplaySchedule(false);
           }}
         />
@@ -1228,9 +1983,15 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           <View style={{ marginVertical: 24 }}>
             {renderItemsInCart()}
             {renderProfiles()}
-            <MedicineUploadPrescriptionView isTest={true} navigation={props.navigation} />
+            <MedicineUploadPrescriptionView
+              isTest={true}
+              navigation={props.navigation}
+              isMandatory={false}
+              listOfTest={[]}
+            />
             {renderDelivery()}
             {renderTotalCharges()}
+            {/* {renderTestSuggestions()} */}
           </View>
           <View style={{ height: 70 }} />
         </ScrollView>

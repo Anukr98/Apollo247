@@ -16,9 +16,10 @@ import {
   PrescriptionDownloadResponse,
   GetAuthTokenResponse,
   HealthChecksResponse,
-  DischargeSummaryResponse
+  DischargeSummaryResponse,
+  GetLabResultpdfResponse
 } from 'types/phrv1';
-import { format } from 'date-fns';
+import { format, formatISO } from 'date-fns';
 import { prescriptionSource } from 'profiles-service/resolvers/prescriptionUpload';
 
 export const getPatientMedicalRecordsTypeDefs = gql`
@@ -128,6 +129,7 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     labTestResults: [LabTestFileParameters]
     fileUrl: String!
     date: Date!
+    dateTime: DateTime
     testResultFiles: [PrecriptionFileParameters]
   }
 
@@ -152,6 +154,7 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     source: String!
     fileUrl: String!
     date: Date!
+    dateTime: DateTime
     hospital_name: String
     hospitalId: String
     prescriptionFiles: [PrecriptionFileParameters]
@@ -196,6 +199,7 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     id: String!
     fileUrl: String!
     date: Date!
+    dateTime: DateTime
     healthCheckName: String!
     healthCheckDate: Float
     healthCheckSummary: String
@@ -227,6 +231,7 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     id: String,
     fileUrl: String!
     date: Date!
+    dateTime: DateTime
     hospitalizationDate: Date
     dateOfHospitalization: Float,
     hospitalName: String,
@@ -257,10 +262,15 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     response: [DischargeSummaryBaseResponse]
   }
 
+  type GetLabResultpdfResponse {
+    url: String!
+  }
+
   extend type Query {
     getPatientMedicalRecords(patientId: ID!, offset: Int, limit: Int): MedicalRecordsResult
     getPatientPrismMedicalRecords(patientId: ID!): PrismMedicalRecordsResult
     getPrismAuthToken(uhid: String!): PrismAuthTokenResponse
+    getLabResultpdf(patientId: ID!, recordId: String!): GetLabResultpdfResponse
   }
 `;
 
@@ -396,6 +406,7 @@ const getPatientPrismMedicalRecords: Resolver<
       labresult.labTestDate = labresult.labTestDate * 1000;
     }
     labresult.date = new Date(format(new Date(labresult.labTestDate), 'yyyy-MM-dd'));
+    labresult.dateTime = new Date(formatISO(new Date(labresult.labTestDate)))
   });
 
   prescriptions.response = prescriptions.response.filter(
@@ -417,6 +428,7 @@ const getPatientPrismMedicalRecords: Resolver<
       prescription.dateOfPrescription = prescription.dateOfPrescription * 1000;
     }
     prescription.date = new Date(format(new Date(prescription.dateOfPrescription), 'yyyy-MM-dd'));
+    prescription.dateTime = new Date(formatISO(new Date(prescription.dateOfPrescription)))
   });
 
   //labtests, healthchecks, hospitalization keys preserved to support backWardCompatability
@@ -531,6 +543,7 @@ const getPatientPrismMedicalRecords: Resolver<
       healthCheckResult.healthCheckDate = healthCheckResult.healthCheckDate * 1000;
     }
     healthCheckResult.date = new Date(format(new Date(healthCheckResult.healthCheckDate), 'yyyy-MM-dd'));
+    healthCheckResult.dateTime = new Date(formatISO(new Date(healthCheckResult.healthCheckDate)))
   });
 
   /* Fetch patient discharge summary from prism */
@@ -556,6 +569,7 @@ const getPatientPrismMedicalRecords: Resolver<
       dischargeSummaryResult.dateOfDischarge = dischargeSummaryResult.dateOfDischarge * 1000;
     }
     dischargeSummaryResult.date = new Date(format(new Date(dischargeSummaryResult.dateOfDischarge), 'yyyy-MM-dd'));
+    dischargeSummaryResult.dateTime = new Date(formatISO(new Date(dischargeSummaryResult.dateOfDischarge)))
 
     /* Add hospitalization date field in ISO if found in prism data */
     if (dischargeSummaryResult.dateOfHospitalization) {
@@ -590,10 +604,39 @@ const getPrismAuthToken: Resolver<
   return await getAuthToken(args.uhid);
 };
 
+const getLabResultpdf: Resolver<
+  null,
+  { patientId: string, recordId: string },
+  ProfilesServiceContext,
+  GetLabResultpdfResponse
+> = async (parent, args, { profilesDb }) => {
+
+  const patientsRepo = profilesDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patientsRepo.getPatientDetails(args.patientId);
+
+  if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+
+  if (!patientDetails.uhid) throw new AphError(AphErrorMessages.INVALID_UHID);
+
+  if (!process.env.PHR_V1_GET_LABRESULT_PDF || !process.env.PHR_V1_ACCESS_TOKEN)
+    throw new AphError(AphErrorMessages.INVALID_PRISM_URL);
+  const getToken = await getAuthToken(patientDetails.uhid);
+
+  let labResultPdfDocumentUrl = process.env.PHR_V1_GET_LABRESULT_PDF.toString();
+
+  labResultPdfDocumentUrl = labResultPdfDocumentUrl.replace('{AUTH_KEY}', getToken.response);
+  labResultPdfDocumentUrl = labResultPdfDocumentUrl.replace('{RECORDID}', args.recordId);
+
+  return { url: labResultPdfDocumentUrl }
+};
+
+
+
 export const getPatientMedicalRecordsResolvers = {
   Query: {
     getPatientMedicalRecords,
     getPatientPrismMedicalRecords,
     getPrismAuthToken,
+    getLabResultpdf
   },
 };

@@ -408,3 +408,5 @@ export const OrderSummary: React.FC = () => {
     </div>
   );
 };
+
+export default OrderSummary;

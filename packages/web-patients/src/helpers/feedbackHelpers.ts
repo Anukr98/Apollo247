@@ -89,5 +89,23 @@ export const generalHelpSections = [
   {
     category: 'Unsubscribe',
     options: ['Marketing SMSes', 'Marketing Push Notifications', 'Both'],
-  }
+  },
+  {
+    category: 'Membership',
+    options: [
+      'Coupon related',
+      'Concierge Services',
+      'Digitization of Health Records',
+      'Covid Services',
+      'OneApollo Membership',
+      'Doctor on Call',
+      'Early Access to Offers & Sampling of New health products',
+      'Free Delivery',
+      'Base Diabetes Management Program',
+      'Advanced Diabetes Management Program Trial',
+      'Activating Membership',
+      'Membership Upgrade',
+      'Membership Downgrade',
+    ],
+  },
 ];

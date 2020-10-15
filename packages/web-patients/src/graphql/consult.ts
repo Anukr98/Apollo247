@@ -37,7 +37,12 @@ export const GET_APPOINTMENT_DATA = gql`
         isSeniorConsultStarted
         isConsultStarted
         symptoms
+        caseSheet {
+          followUpAfterInDays
+          doctorType
+        }
         doctorInfo {
+          mobileNumber
           id
           salutation
           firstName
@@ -49,6 +54,7 @@ export const GET_APPOINTMENT_DATA = gql`
           physicalConsultationFees
           specialty {
             name
+            id
           }
           qualification
           city
@@ -282,6 +288,8 @@ export const GET_CASESHEET_DETAILS = gql`
           howOften
           severity
         }
+        referralSpecialtyName
+        referralDescription
       }
       patientDetails {
         id
@@ -350,6 +358,23 @@ export const GET_APPOINTMENT_DOCTOR_RESCHEDULED_DETAILS = gql`
       rescheduleInitiatedBy
       rescheduleInitiatedId
       rescheduleStatus
+    }
+  }
+`;
+
+export const INSERT_MESSAGE_POST_CONSULT = gql`
+  mutation InsertMessage($messageInput: MessageInput) {
+    insertMessage(messageInput: $messageInput) {
+      notificationData {
+        fromId
+        toId
+        eventName
+        eventId
+        message
+        status
+        type
+        id
+      }
     }
   }
 `;

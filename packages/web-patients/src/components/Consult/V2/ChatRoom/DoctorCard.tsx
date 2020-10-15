@@ -171,6 +171,8 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 interface DoctorCardProps {
+  idx: number;
+  totalLength: number;
   message: string;
   duration: string;
   messageDetails: any;
@@ -185,16 +187,20 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const classes = useStyles({});
   const mascotRef = useRef(null);
   const message = props.message.replace(/\n/g, '<br />');
-  const chatDate = new Date(props.chatTime);
-  const chatTime = isToday(chatDate)
-    ? format(chatDate, 'hh:mm a')
-    : format(chatDate, 'do MMMM yyyy, hh:mm a');
+  // console.log(message, 'message....................');
+  let chatDate,
+    chatTime = '';
+  if (props.chatTime && props.chatTime.length > 0) {
+    chatDate = new Date(props.chatTime);
+    chatTime = isToday(chatDate)
+      ? format(chatDate, 'hh:mm a')
+      : format(chatDate, 'do MMMM yyyy, hh:mm a');
+  }
   const { appointmentDetails } = props;
-
   const isCancelledByDoctor =
     props.messageDetails && props.messageDetails.message === '^^#cancelConsultInitiated';
 
-  return (
+  return message.length > 0 ? (
     <div className={classes.doctorCardMain}>
       <div className={classes.doctorAvatar}>
         {message.toLocaleLowerCase() !== 'video call ended' &&
@@ -236,7 +242,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             }}
           >
             {props.messageDetails.fileType === 'pdf' ? (
-              <a href={props.messageDetails.url} target="_blank">
+              <a href={props.messageDetails.url} target="_blank" rel="noopener noreferrer">
                 <img src={require('images/pdf_thumbnail.png')} />
               </a>
             ) : (
@@ -247,6 +253,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       ) : props.messageDetails.message === '^^#followupconsult' ||
         props.messageDetails.message === '^^#rescheduleconsult' ? (
         <ViewPrescriptionCard
+          idx={props.idx}
+          totalLength={props.totalLength}
           message={props.message}
           duration={props.duration}
           messageDetails={props.messageDetails}
@@ -299,5 +307,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         </div>
       </Popover>
     </div>
+  ) : (
+    <></>
   );
 };

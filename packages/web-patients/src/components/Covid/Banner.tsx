@@ -2,11 +2,9 @@ import React, { useState } from 'react';
 import { Theme, Popover } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import Typography from '@material-ui/core/Typography';
-
-import { Link } from 'react-router-dom';
-import { clientRoutes } from 'helpers/clientRoutes';
 import { AphButton } from '@aph/web-ui-components';
 import { NewsletterSubscriptionForm } from './NewsletterSubscriptionForm';
+import { LazyIntersection } from '../lib/LazyIntersection';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -176,6 +174,7 @@ interface BannerProps {
   backLocation?: string;
   title: string;
   subtitle: string;
+  isBlog?: boolean;
 }
 
 export const Banner: React.FC<BannerProps> = (props) => {
@@ -185,7 +184,11 @@ export const Banner: React.FC<BannerProps> = (props) => {
   return (
     <div
       className={classes.root}
-      style={{ backgroundImage: `url(${require('images/covid-banner.jpg')})` }}
+      style={{
+        backgroundImage: props.isBlog
+          ? `url(${require('images/blog_head.png')})`
+          : `url(${require('images/covid-banner.jpg')})`,
+      }}
     >
       <div className={classes.bannerTop}>
         {/* {!props.isWebView && (
@@ -220,7 +223,7 @@ export const Banner: React.FC<BannerProps> = (props) => {
         <div className={classes.successPopoverWindow}>
           <div className={classes.windowWrap}>
             <div className={classes.mascotIcon}>
-              <img src={require('images/ic-mascot.png')} alt="" />
+              <LazyIntersection src={require('images/ic-mascot.png')} alt="" />
             </div>
             <div className={classes.noServiceRoot}>
               <div className={classes.windowBody}>

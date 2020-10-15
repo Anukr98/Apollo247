@@ -75,7 +75,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const Help: React.FC = (props) => {
+const Help: React.FC = (props) => {
   const classes = useStyles({});
   const patient = useCurrentPatient();
   const mascotRef = useRef(null);
@@ -125,3 +125,5 @@ export const Help: React.FC = (props) => {
     </div>
   );
 };
+
+export default Help;

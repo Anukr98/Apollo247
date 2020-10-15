@@ -33,8 +33,11 @@ import { MyProfile } from 'components/MyAccount/MyProfile';
 import {
   phrConsultTabClickTracking,
   phrMedicalRecordsTabClickTracking,
+  phrViewHealthCheckTracking,
+  phrViewDischargeSummaryTracking,
 } from '../../webEngageTracking';
 import { BottomLinks } from 'components/BottomLinks';
+import { MedicalRecordType } from '../../graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -133,8 +136,10 @@ type LandingProps = {
   };
 };
 
-export const PHRLanding: React.FC<LandingProps> = (props) => {
+const PHRLanding: React.FC<LandingProps> = (props) => {
   const classes = useStyles({});
+  const patient = useCurrentPatient();
+  const age = patient && patient.dateOfBirth ? moment().diff(patient.dateOfBirth, 'years') : null;
   const [tabValue, setTabValue] = useState<number>(0);
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
@@ -171,8 +176,41 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
     ) {
       setTabValue(1);
       window.history.pushState('', '', '');
+    } else if (
+      (props && props.location && props.location.state === 'healthCheck') ||
+      window.location.href.includes('active=healthCheck')
+    ) {
+      setTabValue(2);
+      window.history.pushState('', '', '');
+    } else if (
+      (props && props.location && props.location.state === 'hospitalization') ||
+      window.location.href.includes('active=hospitalization')
+    ) {
+      setTabValue(3);
+      window.history.pushState('', '', '');
     }
   }, [props]);
+
+  useEffect(() => {
+    if (patient) {
+      switch (tabValue) {
+        case 0:
+          phrConsultTabClickTracking({ ...patient, age });
+          return;
+        case 1:
+          phrMedicalRecordsTabClickTracking({ ...patient, age });
+          return;
+        case 2:
+          phrViewHealthCheckTracking({ ...patient, age });
+          return;
+        case 3:
+          phrViewDischargeSummaryTracking({ ...patient, age });
+          return;
+        default:
+          return;
+      }
+    }
+  }, [tabValue, patient]);
 
   const fetchPastConsultsData = () => {
     setConsultsLoading(true);
@@ -216,9 +254,15 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
         data1: HealthCheckType | HospitalizationType | LabResultsType,
         data2: HealthCheckType | HospitalizationType | LabResultsType
       ) => {
-        let date1 = moment(data1.date).toDate().getTime();
-        let date2 = moment(data2.date).toDate().getTime();
-        return date1 > date2 ? -1 : date1 < date2 ? 1 : 0;
+        const date1 = moment(data1.date).toDate().getTime();
+        const date2 = moment(data2.date).toDate().getTime();
+        return date1 > date2
+          ? -1
+          : date1 < date2
+          ? 1
+          : isNaN(parseInt(data2.id))
+          ? 0
+          : parseInt(data2.id) - parseInt(data1.id);
       }
     );
   };
@@ -281,13 +325,19 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
 
   const sortByDate = (array: any[]) => {
     return array.sort((a: any, b: any) => {
-      let date1 = moment(a.bookingDate || a.date || a.quoteDateTime)
+      const date1 = moment(a.bookingDate || a.date || a.quoteDateTime)
         .toDate()
         .getTime();
-      let date2 = moment(b.bookingDate || b.date || b.quoteDateTime)
+      const date2 = moment(b.bookingDate || b.date || b.quoteDateTime)
         .toDate()
         .getTime();
-      return date1 > date2 ? -1 : date1 < date2 ? 1 : a.id - b.id;
+      return date1 > date2
+        ? -1
+        : date1 < date2
+        ? 1
+        : isNaN(parseInt(b.id))
+        ? 0
+        : parseInt(b.id) - parseInt(a.id);
     });
   };
 
@@ -317,29 +367,45 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
 
   const deleteReportMutation = useMutation(DELETE_PATIENT_MEDICAL_RECORD);
 
-  const deleteReport = (id: string, type: string) => {
+  const deleteReport = (id: string, recordType: MedicalRecordType) => {
     setMedicalLoading(true);
     deleteReportMutation({
-      variables: { recordId: id },
+      variables: {
+        deletePatientPrismMedicalRecordInput: {
+          id,
+          patientId: currentPatient.id,
+          recordType,
+        },
+      },
       fetchPolicy: 'no-cache',
     })
       .then((_data) => {
-        if (type === 'lab') {
-          const newRecords = labResults && labResults.filter((record: any) => record.id !== id);
-          setLabResults(newRecords);
-        } else if (type === 'prescription') {
+        if (recordType === MedicalRecordType.TEST_REPORT) {
           const newRecords =
-            prescriptions && prescriptions.filter((record: any) => record.id !== id);
+            labResults && labResults.filter((record: LabResultsType) => record.id !== id);
+          setLabResults(newRecords);
+        } else if (recordType === MedicalRecordType.PRESCRIPTION) {
+          const newRecords =
+            prescriptions && prescriptions.filter((record: PrescriptionsType) => record.id !== id);
           setPrescriptions(newRecords);
+        } else if (recordType === MedicalRecordType.HEALTHCHECK) {
+          const newRecords =
+            healthChecks && healthChecks.filter((record: HealthCheckType) => record.id !== id);
+          setHealthChecks(newRecords);
+        } else if (recordType === MedicalRecordType.HOSPITALIZATION) {
+          const newRecords =
+            hospitalizations &&
+            hospitalizations.filter((record: HospitalizationType) => record.id !== id);
+          setHospitalization(newRecords);
         }
       })
       .catch((e) => {
         console.log('Error occured while render Delete MedicalOrder', { e });
+      })
+      .finally(() => {
+        setMedicalLoading(false);
       });
   };
-
-  const patient = useCurrentPatient();
-  const age = patient && patient.dateOfBirth ? moment().diff(patient.dateOfBirth, 'years') : null;
 
   return (
     <div className={classes.root}>
@@ -357,11 +423,11 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
                   classes={{ root: classes.tabsRoot, indicator: classes.tabsIndicator }}
                   onChange={(e, newValue) => {
                     setTabValue(newValue);
-                    if (newValue) {
-                      phrMedicalRecordsTabClickTracking({ ...patient, age });
-                    } else {
-                      phrConsultTabClickTracking({ ...patient, age });
-                    }
+                    // if (newValue === 1) {
+                    //   phrMedicalRecordsTabClickTracking({ ...patient, age });
+                    // } else if (newValue === 0) {
+                    //   phrConsultTabClickTracking({ ...patient, age });
+                    // }
                   }}
                 >
                   <Tab
@@ -389,6 +455,7 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
                       error={consultError}
                       consultsData={consultsData}
                       allConsultsData={allConsultsData}
+                      deleteReport={deleteReport}
                     />
                   </TabContainer>
                 )}
@@ -447,3 +514,4 @@ export const PHRLanding: React.FC<LandingProps> = (props) => {
     </div>
   );
 };
+export default PHRLanding;

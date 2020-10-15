@@ -155,9 +155,9 @@ const useStyles = makeStyles((theme: Theme) => {
     addMemberBtn: {
       boxShadow: 'none',
       backgroundColor: 'transparent',
-      marginLeft: 30,
       paddingBottom: 0,
       paddingRight: 0,
+      paddingLeft: 0,
       '&:hover': {
         backgroundColor: 'transparent',
       },
@@ -255,7 +255,7 @@ const SymptomsTracker: React.FC = () => {
                   <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
                 </div>
               </Link>
-              understand your symptoms
+              <h1>understand your symptoms</h1>
             </div>
             <Scrollbars
               autoHide={true}
@@ -314,7 +314,7 @@ const SymptomsTracker: React.FC = () => {
                               setIsAddNewProfileDialogOpen(true);
                             }}
                           >
-                            Add Member
+                            +Add Member
                           </AphButton>
                         </MenuItem>
                       </AphSelect>

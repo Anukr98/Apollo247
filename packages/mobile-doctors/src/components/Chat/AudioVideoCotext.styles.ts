@@ -84,14 +84,12 @@ export const AudioVideoStyles = StyleSheet.create({
     width: width,
     alignItems: 'center',
     backgroundColor: theme.colors.WHITE,
-    resizeMode: 'contain',
   },
   placeHolderImageMimimizedStyle: {
     width: 155,
     height: 205,
     alignItems: 'center',
     backgroundColor: theme.colors.WHITE,
-    resizeMode: 'contain',
   },
   chatIconContainer: {
     position: 'absolute',

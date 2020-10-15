@@ -4,9 +4,9 @@ import { Header } from '@aph/mobile-doctors/src/components/ui/Header';
 import {
   BackArrow,
   Cancel,
-  PlaceHolderDoctor,
   Selected,
   UnSelected,
+  UserPlaceHolder,
 } from '@aph/mobile-doctors/src/components/ui/Icons';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
@@ -93,7 +93,7 @@ export const ShareConsult: React.FC<ProfileProps> = (props) => {
               }}
             >
               <View style={{ height: 48, width: 48 }}>
-                <PlaceHolderDoctor />
+                <UserPlaceHolder />
               </View>
               <View style={{ flex: 2, marginLeft: 12 }}>
                 <Text

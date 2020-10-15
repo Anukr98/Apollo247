@@ -22,6 +22,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       physicalConsultationFees
       qualification
       doctorType
+      chatDays
       starTeam {
         associatedDoctor {
           fullName
@@ -90,6 +91,17 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
   }
 `;
 
+export const GET_SECRETARY_DETAILS_BY_DOCTOR_ID = gql`
+  query getSecretaryDetailsByDoctorId($doctorId: String!) {
+    getSecretaryDetailsByDoctorId(doctorId: $doctorId) {
+      id
+      name
+      mobileNumber
+      isActive
+    }
+  }
+`;
+
 export const GET_DOCTORS_BY_SPECIALITY_AND_FILTERS = gql`
   query GetDoctorsBySpecialtyAndFilters($filterInput: FilterDoctorInput) {
     getDoctorsBySpecialtyAndFilters(filterInput: $filterInput) {
@@ -98,6 +110,7 @@ export const GET_DOCTORS_BY_SPECIALITY_AND_FILTERS = gql`
         firstName
         lastName
         fullName
+        displayName
         specialty {
           id
           name
@@ -157,6 +170,22 @@ export const GET_DOCTORS_BY_SPECIALITY_AND_FILTERS = gql`
   }
 `;
 
+export const GET_DOCTOR_LIST = gql`
+  query GetDoctorList($filterInput: FilterDoctorInput) {
+    getDoctorList(filterInput: $filterInput) {
+      doctors
+      specialties {
+        id
+        name
+        specialtydisplayName
+        specialistPluralTerm
+      }
+      apolloDoctorCount
+      partnerDoctorCount
+    }
+  }
+`;
+
 export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
   query SearchDoctorAndSpecialtyByName(
     $searchText: String!
@@ -177,6 +206,7 @@ export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
         firstName
         lastName
         fullName
+        displayName
         specialty {
           id
           name
@@ -518,6 +548,10 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
         isSeniorConsultStarted
         isJdQuestionsComplete
         symptoms
+        caseSheet {
+          followUpAfterInDays
+          doctorType
+        }
         doctorInfo {
           awards
           city

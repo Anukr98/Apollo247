@@ -75,3 +75,11 @@ export const _obTracking = (params: any) => {
     console.log('GTM ERROR: ', err);
   }
 };
+
+export const dataLayerTracking = (obj: any) => {
+  try {
+    window && window.dataLayer && window.dataLayer.push(obj);
+  } catch (err) {
+    console.log('GTM DATALAYER ERROR: ', err);
+  }
+};

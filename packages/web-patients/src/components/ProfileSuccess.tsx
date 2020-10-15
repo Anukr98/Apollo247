@@ -3,6 +3,7 @@ import { Theme } from '@material-ui/core';
 import React from 'react';
 import Typography from '@material-ui/core/Typography';
 import { AphButton } from '@aph/web-ui-components';
+import { LazyIntersection } from './lib/LazyIntersection';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -106,7 +107,7 @@ export const ProfileSuccess: React.FC<ProfileSuccessProps> = (props) => {
     <div className={classes.signUpBar}>
       <div className={classes.signUpPop}>
         <div className={classes.mascotIcon}>
-          <img src={require('images/ic-mascot.png')} alt="" />
+          <LazyIntersection src={require('images/ic-mascot.png')} alt="" />
         </div>
         <div className={classes.signinGroup}>
           <Typography variant="h2">congratulations!</Typography>

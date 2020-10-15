@@ -42,15 +42,10 @@ import { buildBlockedCalendarItem } from 'consults-service/database/factories/bl
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
 
 (async () => {
-  console.log('Seeding doctors-db...');
-
-  console.log('Establishing connection...');
   await connect();
   const doctorsDb = getConnection();
   const consultsDb = getConnection('consults-db');
   const patientsDb = getConnection('patients-db');
-
-  console.log('Clearing all data...');
   await patientsDb.dropDatabase();
   await patientsDb.synchronize();
   await consultsDb.dropDatabase();
@@ -73,19 +68,10 @@ import { BlockedCalendarItemRepository } from 'doctors-service/repositories/bloc
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
 
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-
-  console.log('Building and saving records...');
-
-  console.log('Building facilities...');
   const facilities = await Promise.all(_times(5, () => faiclityRepo.save(buildFacility())));
-  console.log(facilities);
-
-  console.log('Building specialties...');
   const doctorSpecialties = await Promise.all(
     allSpecialties.map((name) => doctorSpecialtyRepo.save(buildDoctorSpecialty({ name })))
   );
-
-  console.log('Building doctors...');
   const jrKabir = buildDoctor({
     doctorType: DoctorType.JUNIOR,
     id: 'befa91a6-adb0-488d-a148-cc84ce3cacac',
@@ -112,9 +98,6 @@ import { BlockedCalendarItemRepository } from 'doctors-service/repositories/bloc
     )
   );
   const doctors = [...staticDoctors, ...randomDoctors];
-  console.log(doctors);
-
-  console.log('Building doctorAndHospitals...');
   const doctorAndHospitals = await Promise.all(
     _times(5, () => {
       const facility = _sample(facilities) as Facility;
@@ -122,7 +105,6 @@ import { BlockedCalendarItemRepository } from 'doctors-service/repositories/bloc
       return doctorHospitalRepo.save(buildDoctorAndHospital({ facility, doctor }));
     })
   );
-  console.log(doctorAndHospitals);
 
   // console.log('Building doctorBankAccounts...');
   // const doctorBankAccounts = await Promise.all(
@@ -131,14 +113,9 @@ import { BlockedCalendarItemRepository } from 'doctors-service/repositories/bloc
   //   )
   // );
   // console.log(doctorBankAccounts);
-
-  console.log('Building packages...');
   const packages = await Promise.all(
     allPackageNames.map((name) => packagesRepo.save(buildPackage({ name })))
   );
-  console.log(packages);
-
-  console.log('Building starTeams...');
   const numStarTeams = 5;
   const starCandidates = _sampleSize(doctors, numStarTeams);
   const possibleAssociatedCandidates = _reject(doctors, (doc) => starCandidates.includes(doc));
@@ -151,13 +128,7 @@ import { BlockedCalendarItemRepository } from 'doctors-service/repositories/bloc
       return starTeamRepo.save(starTeam);
     })
   );
-  console.log(starTeams);
-
-  console.log('Building patients...');
   const patients = await Promise.all(_times(50, () => patientRepo.save(buildPatient())));
-  console.log(patients);
-
-  console.log('Building appointments...');
   const jrKabirAppointments = await Promise.all(
     _times(15, async () => {
       const patient = _sample(patients)!;
@@ -174,9 +145,6 @@ import { BlockedCalendarItemRepository } from 'doctors-service/repositories/bloc
       );
     })
   );
-  console.log(jrKabirAppointments);
-
-  console.log('Building consultqueue...');
   const numConsultQueueItems = 10;
   const consultQueueDoctor = jrKabir;
   const consultQueueAppointments = _sampleSize(jrKabirAppointments, numConsultQueueItems);
@@ -191,9 +159,6 @@ import { BlockedCalendarItemRepository } from 'doctors-service/repositories/bloc
       )
     )
   );
-  console.log(consultQueue);
-
-  console.log('Blocking calendars...');
   const doctorsWithBlockedCalendars = [jrKabir, ..._sampleSize(randomDoctors, 10)];
   const blockedCalendars = await Promise.all(
     doctorsWithBlockedCalendars.flatMap((doc) => {
@@ -205,7 +170,4 @@ import { BlockedCalendarItemRepository } from 'doctors-service/repositories/bloc
       });
     })
   );
-  console.log(blockedCalendars);
-
-  console.log('Seeding doctors-db complete!');
 })();

@@ -14,7 +14,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import { AddNewProfile } from 'components/MyAccount/AddNewProfile';
 import { APPOINTMENT_TYPE, APPOINTMENT_STATE, STATUS } from 'graphql/types/globalTypes';
 import { GetOrderInvoice } from 'graphql/types/GetOrderInvoice';
-import { GET_PATIENT_ALL_APPOINTMENTS } from 'graphql/doctors';
+import { GET_PATIENT_ALL_APPOINTMENTS, GET_SECRETARY_DETAILS_BY_DOCTOR_ID } from 'graphql/doctors';
 import {
   GetPatientAllAppointments,
   GetPatientAllAppointmentsVariables,
@@ -34,7 +34,7 @@ import { GET_APPOINTMENT_DATA, GET_CONSULT_INVOICE } from 'graphql/consult';
 import { PAYMENT_TRANSACTION_STATUS } from 'graphql/payments';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
-import { gtmTracking } from '../../../gtmTracking';
+import { gtmTracking, dataLayerTracking } from '../../../gtmTracking';
 import { OrderStatusContent } from 'components/OrderStatusContent';
 import { readableParam, AppointmentFilterObject, isPastAppointment } from 'helpers/commonHelpers';
 import { consultationBookTracking } from 'webEngageTracking';
@@ -47,6 +47,10 @@ import { PaymentTransactionStatus_paymentTransactionStatus_appointment as paymen
 import _uniq from 'lodash/uniq';
 import FormControl from '@material-ui/core/FormControl';
 import CloseIcon from '@material-ui/icons/Close';
+import {
+  getSecretaryDetailsByDoctorId,
+  getSecretaryDetailsByDoctorId_getSecretaryDetailsByDoctorId as SecretaryData,
+} from 'graphql/types/getSecretaryDetailsByDoctorId';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -179,6 +183,7 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: 'none',
       backgroundColor: 'transparent',
       fontWeight: 700,
+      lineHeight: '12px',
       '&:hover': {
         backgroundColor: 'transparent',
       },
@@ -371,6 +376,14 @@ const useStyles = makeStyles((theme: Theme) => {
         right: 0,
       },
     },
+    disableIcon: {
+      opacity: 0.7,
+      [theme.breakpoints.down('xs')]: {
+        position: 'absolute',
+        top: -35,
+        right: 0,
+      },
+    },
     modalDialog: {
       display: 'flex',
       alignItems: 'center',
@@ -426,6 +439,9 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     searchInput: {
       padding: '0 0 0 30px',
+      '&:before': {
+        borderBottomStyle: 'solid !important',
+      },
       [theme.breakpoints.down('xs')]: {
         display: 'none',
       },
@@ -542,7 +558,7 @@ interface statusMap {
   [name: string]: statusActionInterface;
 }
 
-export const Appointments: React.FC<AppointmentProps> = (props) => {
+const Appointments: React.FC<AppointmentProps> = (props) => {
   const classes = useStyles({});
   const initialAppointmentFilterObject: AppointmentFilterObject = {
     appointmentStatus: [],
@@ -584,6 +600,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
   const [paymentData, setPaymentData] = React.useState<paymentTransactionAppointmentType | null>(
     null
   );
+  const [secretaryData, setSecretaryData] = React.useState<SecretaryData | null>(null);
   const [filterDoctorsList, setFilterDoctorsList] = React.useState<string[]>([]);
   const [filterSpecialtyList, setFilterSpecialtyList] = React.useState<string[]>([]);
   const doctorName = doctorDetail && doctorDetail.fullName;
@@ -602,7 +619,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
             appointmentDetail.doctorInfo.fullName
               .toLowerCase()
               .includes(searchKeyword.toLowerCase()) ||
-            appointmentDetail.doctorInfo.specialty.name
+            appointmentDetail.doctorInfo.specialty.specialistSingularTerm
               .toLowerCase()
               .includes(searchKeyword.toLowerCase())
           );
@@ -659,10 +676,32 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
     }
   };
 
+  const getSecretaryData = () => {
+    if (appointmentHistory && !secretaryData) {
+      apolloClient
+        .query<getSecretaryDetailsByDoctorId>({
+          query: GET_SECRETARY_DETAILS_BY_DOCTOR_ID,
+          variables: {
+            doctorId: (appointmentHistory && appointmentHistory.doctorId) || '',
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then(({ data }: any) => {
+          if (data && data.getSecretaryDetailsByDoctorId) {
+            setSecretaryData(data.getSecretaryDetailsByDoctorId);
+          }
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    }
+  };
+
   useEffect(() => {
     if (successApptId && successApptId.length) {
       getAppointmentHistory(successApptId);
       getPaymentData(successApptId);
+      getSecretaryData();
     }
   }, [successApptId, appointmentHistory, paymentData]);
 
@@ -697,9 +736,13 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
     if (!successApptId) {
       setIsLoading(false);
     }
-    if (!_isEmpty(appointmentHistory) && !_isEmpty(paymentData)) {
+    if (!_isEmpty(appointmentHistory) && !_isEmpty(paymentData) && !_isEmpty(currentPatient)) {
       const { appointmentDateTime, appointmentType, doctorInfo, doctorId, id } = appointmentHistory;
       const { displayId } = paymentData;
+      const { mobileNumber: secretaryNumber, name: secretaryName } = secretaryData || {
+        mobileNumber: '',
+        name: '',
+      };
       setDoctorDetail(doctorInfo);
       setDoctorId(doctorId);
       setIsLoading(false);
@@ -718,10 +761,16 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
         patientGender: currentPatient && currentPatient.gender,
         specialisation: doctorInfo && doctorInfo.specialty ? doctorInfo.specialty.name : '',
         relation: currentPatient && currentPatient.relation,
+        patientName:
+          (currentPatient && `${currentPatient.firstName} ${currentPatient.lastName}`) || '',
+        secretaryName: secretaryName || '',
+        doctorNumber: doctorInfo ? doctorInfo.mobileNumber : '',
+        patientNumber: (currentPatient && currentPatient.mobileNumber) || '',
+        secretaryNumber: secretaryNumber || '',
       };
       consultationBookTracking(eventData);
     }
-  }, [paymentData, appointmentHistory]);
+  }, [paymentData, appointmentHistory, secretaryData, currentPatient]);
 
   useEffect(() => {
     if (currentPatient && currentPatient.id) {
@@ -869,7 +918,9 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
     }
     if (appointmentStatus.includes('Follow-Up')) {
       const filteredList = localFilteredAppointmentsList.filter(
-        (appointment) => appointment.isFollowUp !== 'false'
+        (appointment) =>
+          appointment.status === STATUS.COMPLETED &&
+          !isPastAppointment(appointment.appointmentDateTime)
       );
       finalList = [...finalList, ...filteredList];
     }
@@ -1026,6 +1077,30 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
     });
 
   useEffect(() => {
+    if (paymentData && appointmentHistory) {
+      /**Gtm code start start */
+      dataLayerTracking({
+        event: 'pageviewEvent',
+        pagePath: window.location.href,
+        pageName: 'Consultation Order Completion Page',
+        pageLOB: 'Consultation',
+        pageType: 'Order Page',
+        Status: paymentData.paymentStatus,
+        OrderID: paymentData.displayId,
+        Price: paymentData.amountPaid,
+        doctorId: appointmentHistory.doctorId,
+        //CouponCode: 'CARE247', //if not used send it as null
+        //CouponValue: 123.4, //if no coupon code, send it as 0
+        'Payment Type': paymentData.responseMessage,
+        productlist: JSON.stringify({ ...paymentData, ...appointmentHistory }),
+        Time: appointmentHistory.appointmentDateTime,
+        Type: appointmentHistory.appointmentType,
+      });
+      /**Gtm code start end */
+    }
+  }, [paymentData, appointmentHistory]);
+
+  useEffect(() => {
     /**Gtm code start start */
     if (pageUrl.includes('failed')) {
       gtmTracking({
@@ -1140,11 +1215,12 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
                         <AphButton
                           color="primary"
                           classes={{ root: classes.addMemberBtn }}
+                          style={{ paddingLeft: 0 }}
                           onClick={() => {
                             setIsAddNewProfileDialogOpen(true);
                           }}
                         >
-                          Add Member
+                          +Add Member
                         </AphButton>
                       </MenuItem>
                     </AphSelect>
@@ -1163,6 +1239,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
                       onClick={() => setSearchClicked(true)}
                     />
                     <AphInput
+                      disabled={appointmentsList && appointmentsList.length === 0}
                       className={
                         searchClicked ? `${classes.searchInputActive}` : `${classes.searchInput}`
                       }
@@ -1199,7 +1276,16 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
 
               <div className={classes.appointmentOptions}>
                 {selectOtherMember('webDisplay')}
-                <div className={classes.filterIcon} onClick={() => setIsFilterOpen(true)}>
+                <div
+                  className={
+                    appointmentsList && appointmentsList.length > 0
+                      ? classes.filterIcon
+                      : classes.disableIcon
+                  }
+                  onClick={() =>
+                    appointmentsList && appointmentsList.length > 0 && setIsFilterOpen(true)
+                  }
+                >
                   <img src={require('images/ic_filterblack.svg')} alt="" />
                 </div>
               </div>
@@ -1329,7 +1415,7 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
                       )}
                       {followUpAppointments && followUpAppointments.length > 0 && (
                         <div className={classes.cardContainer}>
-                          <h1>Follow - Up Chat</h1>
+                          <h1>Follow up Text Consult</h1>
                           <ConsultationsCard
                             appointments={followUpAppointments}
                             pastOrCurrent="current"
@@ -1509,3 +1595,5 @@ export const Appointments: React.FC<AppointmentProps> = (props) => {
     </div>
   );
 };
+
+export default Appointments;

@@ -150,7 +150,6 @@ export async function sendCallsNotification(
     notification: {
       title: notificationTitle,
       body: notificationBody,
-      sound: 'incallmanager_ringtone.mp3',
       android_channel_id: 'fcm_FirebaseNotifiction_call_channel',
     },
     data: {
@@ -182,7 +181,9 @@ export async function sendCallsNotification(
   const devicetokensofFamily = await deviceTokenRepo.deviceTokensOfAllIds(listOfIds);
   if (devicetokensofFamily.length > 0) {
     devicetokensofFamily.forEach((values) => {
-      registrationToken.push(values.deviceToken);
+      if (values.deviceToken != '' && values.deviceToken != null) {
+        registrationToken.push(values.deviceToken);
+      }
     });
   }
   /*patientDetails.patientDeviceTokens.forEach((values) => {
@@ -206,6 +207,9 @@ export async function sendCallsNotification(
         callType: callType,
         appointmentCallId: appointmentCallId,
         doctorType: doctorType,
+      },
+      notification: {
+        channel_id: 'fcm_call_channel',
       },
     };
 
@@ -285,6 +289,7 @@ export async function sendCallsNotification(
     dataOnlyPayloadResponse: dataOnlyPayloadResponse,
   };
 }
+
 export async function sendReminderNotification(
   pushNotificationInput: PushNotificationInput,
   patientsDb: Connection,
@@ -605,6 +610,7 @@ export async function sendReminderNotification(
       "yyyy-MM-dd'T'HH:mm:ss'+0530'"
     );
     notificationBody = notificationBody.replace('{3}', apptDate);
+
     payload = {
       notification: {
         title: notificationTitle,
@@ -642,7 +648,9 @@ export async function sendReminderNotification(
   const devicetokensofFamily = await deviceTokenRepo.deviceTokensOfAllIds(listOfIds);
   if (devicetokensofFamily.length > 0) {
     devicetokensofFamily.forEach((values) => {
-      registrationToken.push(values.deviceToken);
+      if (values.deviceToken != '' && values.deviceToken != null) {
+        registrationToken.push(values.deviceToken);
+      }
     });
   }
   if (pushNotificationInput.notificationType == NotificationType.APPOINTMENT_REMINDER_15) {
@@ -761,7 +769,9 @@ export async function sendCallsDisconnectNotification(
   const devicetokensofFamily = await deviceTokenRepo.deviceTokensOfAllIds(listOfIds);
   if (devicetokensofFamily.length > 0) {
     devicetokensofFamily.forEach((values) => {
-      registrationToken.push(values.deviceToken);
+      if (values.deviceToken != '' && values.deviceToken != null) {
+        registrationToken.push(values.deviceToken);
+      }
     });
   }
 
@@ -881,7 +891,9 @@ export async function sendCartNotification(
   const devicetokensofFamily = await deviceTokenRepo.deviceTokensOfAllIds(listOfIds);
   if (devicetokensofFamily.length > 0) {
     devicetokensofFamily.forEach((values) => {
-      registrationToken.push(values.deviceToken);
+      if (values.deviceToken != '' && values.deviceToken != null) {
+        registrationToken.push(values.deviceToken);
+      }
     });
   }
   /*patientDetails.patientDeviceTokens.forEach((values) => {
@@ -1008,10 +1020,30 @@ export async function sendNotification(
     doctorSMS = doctorSMS.replace('{1}', appointment.displayId.toString());
     doctorSMS = doctorSMS.replace('{2}', patientDetails.firstName);
     doctorSMS = doctorSMS.replace('{3}', apptDate.toString());
-
     sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
-
     sendBrowserNotitication(doctorDetails.id, doctorSMS);
+    let facilityDetsString = 'N/A';
+    if (appointment.hospitalId != '' && appointment.hospitalId != null) {
+      const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
+      const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
+      if (facilityDets) {
+        facilityDetsString = `${facilityDets.name} ${facilityDets.streetLine1} ${facilityDets.city} ${facilityDets.state}`;
+      }
+    }
+    const secretaryTemplateData: string[] = [
+      patientDetails.firstName + ' ' + patientDetails.lastName,
+      patientDetails.uhid,
+      doctorDetails.salutation + ' ' + doctorDetails.firstName,
+      facilityDetsString,
+      format(istDateTime, 'dd/MM/yyyy'),
+      format(istDateTime, 'hh:mm a'),
+      appointment.appointmentType,
+    ];
+    sendDoctorNotificationWhatsapp(
+      ApiConstants.WHATSAPP_DOC_SECRETARY_CANCEL,
+      doctorDetails.doctorSecretary.secretary.mobileNumber,
+      secretaryTemplateData
+    );
   }
 
   //doctor cancel appointment
@@ -1158,6 +1190,14 @@ export async function sendNotification(
       '{0}',
       patientDetails.firstName
     );
+    let facilityDetsString = 'N/A';
+    if (appointment.hospitalId != '' && appointment.hospitalId != null) {
+      const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
+      const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
+      if (facilityDets) {
+        facilityDetsString = `${facilityDets.name} ${facilityDets.streetLine1} ${facilityDets.city} ${facilityDets.state}`;
+      }
+    }
     if (appointment.appointmentType == APPOINTMENT_TYPE.PHYSICAL) {
       content = ApiConstants.PHYSICAL_BOOK_APPOINTMENT_BODY.replace(
         '{0}',
@@ -1167,16 +1207,8 @@ export async function sendNotification(
         '{0}',
         patientDetails.firstName
       );
-
-      if (appointment.hospitalId != '' && appointment.hospitalId != null) {
-        const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
-        const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
-        if (facilityDets) {
-          const facilityDetsString = `${facilityDets.name} ${facilityDets.streetLine1} ${facilityDets.city} ${facilityDets.state}`;
-          content = content.replace('{4}', facilityDetsString);
-          smsLink = smsLink.replace('{4}', facilityDetsString);
-        }
-      }
+      content = content.replace('{4}', facilityDetsString);
+      smsLink = smsLink.replace('{4}', facilityDetsString);
     }
     content = content.replace('{1}', appointment.displayId.toString());
     content = content.replace('{2}', doctorDetails.firstName + ' ' + doctorDetails.lastName);
@@ -1226,6 +1258,25 @@ export async function sendNotification(
       differenceInHours(new Date(appointment.appointmentDateTime), new Date()),
       todaysDate,
       'todays date'
+    );
+    const secretaryTemplateData: string[] = [
+      patientDetails.firstName + ' ' + patientDetails.lastName,
+      patientDetails.uhid,
+      doctorDetails.salutation + ' ' + doctorDetails.firstName,
+      facilityDetsString,
+      format(istDateTime, 'dd/MM/yyyy'),
+      format(istDateTime, 'hh:mm a'),
+      appointment.appointmentType,
+    ];
+    console.log(
+      secretaryTemplateData,
+      doctorDetails.doctorSecretary.secretary.mobileNumber,
+      'secretaryTemplateData'
+    );
+    sendDoctorNotificationWhatsapp(
+      ApiConstants.WHATSAPP_DOC_SECRETARY_BOOKING,
+      doctorDetails.doctorSecretary.secretary.mobileNumber,
+      secretaryTemplateData
     );
     if (istDateTime <= todaysDate) {
       const finalTime = format(istDateTime, 'hh:mm a');
@@ -1334,12 +1385,9 @@ export async function sendNotification(
       '{2}',
       doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
-    //const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
-    const apptDate = format(
-      addMinutes(new Date(appointment.appointmentDateTime), +330),
-      'yyyy-MM-dd HH:mm:ss'
-    );
-    notificationBody = notificationBody.replace('{3}', apptDate);
+
+    const apptDate = addMilliseconds(new Date(appointment.appointmentDateTime), 19800000);
+    notificationBody = notificationBody.replace('{3}', format(apptDate, 'yyyy-MM-dd hh:mm'));
 
     /*let smsLink = process.env.SMS_LINK_BOOK_APOINTMENT
           ? ' Reschedule Now ' + process.env.SMS_LINK_BOOK_APOINTMENT
@@ -1362,7 +1410,6 @@ export async function sendNotification(
     );
     const istDateTime = addMilliseconds(new Date(appointment.appointmentDateTime), 19800000);
     notificationBody = notificationBody.replace('{3}', format(istDateTime, 'yyyy-MM-dd hh:mm'));
-    //sendNotificationSMS(doctorDetails.mobileNumber, notificationBody);
 
     sendNotificationSMS(doctorDetails.mobileNumber, notificationBody);
     //Send Browser Notification
@@ -1370,9 +1417,8 @@ export async function sendNotification(
   } else if (pushNotificationInput.notificationType == NotificationType.PRESCRIPTION_READY) {
     notificationTitle = ApiConstants.PRESCRIPTION_READY_TITLE;
     notificationBody = ApiConstants.PRESCRIPTION_READY_BODY.replace('{0}', patientDetails.firstName)
-      .replace('{1}', doctorDetails.firstName)
-      .replace('{2}', appointment.displayId.toString())
-      .replace('{3}', format(appointment.appointmentDateTime, 'yyyy-MM-dd'));
+      .replace('{1}', doctorDetails.salutation)
+      .replace('{2}', doctorDetails.firstName);
 
     if (!process.env.DEEPLINK_PRESCRIPTION) {
       log(
@@ -1403,7 +1449,7 @@ export async function sendNotification(
       '',
       ''
     );
-    console.log(`FinalDeeplink: ${prescriptionDeeplink}`);
+
     sendNotificationSMS(patientDetails.mobileNumber, prescriptionDeeplink);
 
     // not sending whatsapp, leaving code here for future implementation purposes
@@ -1664,13 +1710,17 @@ export async function sendNotification(
   const devicetokensofFamily = await deviceTokenRepo.deviceTokensOfAllIds(listOfIds);
   if (devicetokensofFamily.length > 0) {
     devicetokensofFamily.forEach((values) => {
-      registrationToken.push(values.deviceToken);
+      if (values.deviceToken != '' && values.deviceToken != null) {
+        registrationToken.push(values.deviceToken);
+      }
     });
   }
   /*patientDetails.patientDeviceTokens.forEach((values) => {
       registrationToken.push(values.deviceToken);
     });*/
+  console.log(registrationToken, 'registrationToken');
   if (registrationToken.length == 0) return;
+
   admin
     .messaging()
     .sendToDevice(registrationToken, payload, options)
@@ -1707,8 +1757,6 @@ export async function sendNotification(
       console.log('PushNotification Failed::' + error);
       throw new AphError(AphErrorMessages.PUSH_NOTIFICATION_FAILED);
     });
-
-  console.log(notificationResponse, 'notificationResponse');
 
   return notificationResponse;
 }
@@ -1757,7 +1805,9 @@ export async function sendDoctorAppointmentNotification(
   const registrationToken: string[] = [];
   if (deviceTokensList.length > 0) {
     deviceTokensList.forEach((values) => {
-      registrationToken.push(values.deviceToken);
+      if (values.deviceToken != '' && values.deviceToken != null) {
+        registrationToken.push(values.deviceToken);
+      }
     });
 
     console.log(registrationToken, 'registrationToken doctor');
@@ -1845,7 +1895,9 @@ export async function sendDoctorRescheduleAppointmentNotification(
   const registrationToken: string[] = [];
   if (deviceTokensList.length > 0) {
     deviceTokensList.forEach((values) => {
-      registrationToken.push(values.deviceToken);
+      if (values.deviceToken != '' && values.deviceToken != null) {
+        registrationToken.push(values.deviceToken);
+      }
     });
 
     console.log(registrationToken, 'registrationToken doctor');

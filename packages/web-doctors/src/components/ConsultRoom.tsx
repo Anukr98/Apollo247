@@ -20,6 +20,7 @@ import { GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_appointmentDocum
 import { useAuth } from 'hooks/authHooks';
 import ReactPanZoom from 'react-image-pan-zoom-rotate';
 import { useParams } from 'hooks/routerHooks';
+import { webEngageEventTracking } from 'webEngageTracking';
 
 const client = new AphStorageClient(
   process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
@@ -362,8 +363,8 @@ interface MessagesObjectProps {
 
 interface ConsultRoomProps {
   startConsult: string;
-  sessionId: string;
-  token: string;
+  // sessionId: string;
+  // token: string;
   appointmentId: string;
   doctorId: string;
   patientId: string;
@@ -373,6 +374,8 @@ interface ConsultRoomProps {
   messages: MessagesObjectProps[];
   postDoctorConsultEventAction: (eventType: WebEngageEvent, displayId: string) => void;
   appointmentStatus: string;
+  setIsCallAccepted: (flag: boolean) => void;
+  isCallAccepted: boolean;
 }
 
 let timerIntervalId: any;
@@ -388,12 +391,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [messages, setMessages] = useState<MessagesObjectProps[]>(props.messages);
   const [messageText, setMessageText] = useState<string>('');
   const [msg, setMsg] = useState<string>('');
-  const [isCallAccepted, setIsCallAccepted] = useState<boolean>(false);
+
   const [isNewMsg, setIsNewMsg] = useState<boolean>(false);
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [fileUploading, setFileUploading] = React.useState<boolean>(false);
   const [fileUploadErrorMessage, setFileUploadErrorMessage] = React.useState<string>('');
   const [modalOpen, setModalOpen] = React.useState(false);
+
   const [imgPrevUrl, setImgPrevUrl] = React.useState<any>();
   const { currentPatient, isSignedIn } = useAuth();
   const { documentArray, setDocumentArray, patientDetails, appointmentInfo } = useContext(
@@ -427,6 +431,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const patientJoinedMeetingRoom = '^^#patientJoinedMeetingRoom';
   const leaveChatRoom = '^^#leaveChatRoom';
   const exotelCall = '^^#exotelCall';
+  const vitalCompletedByPatient = '^^#vitalsCompletedByPatient';
 
   const { doctorId, patientId } = props;
   const channel = props.appointmentId;
@@ -463,10 +468,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   useEffect(() => {
-    if (isCallAccepted) {
+    if (props.isCallAccepted) {
       startIntervalTimer(0);
     }
-  }, [isCallAccepted]);
+  }, [props.isCallAccepted]);
 
   useEffect(() => {
     if (params.tabValue === '1') {
@@ -476,6 +481,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   useEffect(() => {
     const lastMsg = props.lastMsg;
+    console.log({ lastMsg });
     if (lastMsg && lastMsg !== null) {
       if (
         !showVideoChat &&
@@ -505,7 +511,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         setIsNewMsg(false);
       }
       if (lastMsg.message && lastMsg.message.message === acceptcallMsg) {
-        setIsCallAccepted(true);
+        props.setIsCallAccepted(true);
       }
       srollToBottomAction();
       resetMessagesAction();
@@ -524,7 +530,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         setMessageText('');
         srollToBottomAction();
         if (props.appointmentStatus === 'COMPLETED') {
-          props.postDoctorConsultEventAction(WebEngageEvent.DOCTOR_SENT_MESSAGE, (appointmentInfo && appointmentInfo.displayId) || '');
+          props.postDoctorConsultEventAction(
+            WebEngageEvent.DOCTOR_SENT_MESSAGE,
+            (appointmentInfo && appointmentInfo.displayId) || ''
+          );
         }
       }
     );
@@ -564,22 +573,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         }
       })
       .catch((error: ApolloError) => {
-        const patientName = patientDetails!.firstName + ' ' + patientDetails!.lastName;
-        const logObject = {
-          api: 'AddChatDocument',
-          inputParam: JSON.stringify({ appointmentId: props.appointmentId, documentPath: url }),
-          appointmentId: props.appointmentId,
-          doctorId: doctorId,
-          doctorDisplayName: currentPatient!.displayName,
-          patientId: patientId,
-          patientName: patientName,
-          currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
-          appointmentDateTime: moment(new Date(appointmentInfo!.appointmentDateTime)).format(
-            'MMMM DD YYYY h:mm:ss a'
-          ),
-          error: JSON.stringify(error),
-        };
-        props.sessionClient.notify(JSON.stringify(logObject));
+        webEngageEventTracking(
+          {
+            'API name': 'AddChatDocument',
+            ErrorDetails: JSON.stringify(error),
+            'Consultation Display ID': (appointmentInfo && appointmentInfo.displayId) || '',
+            'Consult ID': props.appointmentId,
+          },
+          'Front_end - Doctor API-Error on Casesheet'
+        );
       });
   };
   const convertChatTime = (timeStamp: any) => {
@@ -620,7 +622,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       (status: any, response: any) => {
         resetMessagesAction();
         if (props.appointmentStatus === 'COMPLETED') {
-          props.postDoctorConsultEventAction(WebEngageEvent.DOCTOR_SENT_MESSAGE, (appointmentInfo && appointmentInfo.displayId) || '');
+          props.postDoctorConsultEventAction(
+            WebEngageEvent.DOCTOR_SENT_MESSAGE,
+            (appointmentInfo && appointmentInfo.displayId) || ''
+          );
         }
       }
     );
@@ -634,9 +639,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message === jdThankyou
     ) {
       return rowData.automatedText;
-    }else if(rowData.id === doctorId && rowData.message === exotelCall){	
-      return 'A Telephonic Voice call is initiated from '+ rowData.exotelNumber+'. Request you to answer the call.';	
-    }  else {
+    } else if (rowData.id === doctorId && rowData.message === exotelCall) {
+      return (
+        'A Telephonic Voice call is initiated from ' +
+        rowData.exotelNumber +
+        '. Request you to answer the call.'
+      );
+    } else {
       return rowData.message;
     }
   };
@@ -663,7 +672,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== appointmentComplete &&
       rowData.message !== doctorAutoResponse &&
       rowData.message !== patientJoinedMeetingRoom &&
-      rowData.message !== leaveChatRoom
+      rowData.message !== leaveChatRoom &&
+      rowData.message !== vitalCompletedByPatient
     ) {
       leftComponent++;
       rightComponent = 0;
@@ -726,7 +736,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                         src={rowData.url}
                         alt={rowData.url}
                         onError={(e: any) => {
-                          handleImageError(e, rowData.url);
+                          console.error({ event: e, url: rowData.url });
                         }}
                       />
                     )}
@@ -771,7 +781,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== appointmentComplete &&
       rowData.message !== doctorAutoResponse &&
       rowData.message !== patientJoinedMeetingRoom &&
-      rowData.message !== leaveChatRoom
+      rowData.message !== leaveChatRoom &&
+      rowData.message !== vitalCompletedByPatient
     ) {
       leftComponent = 0;
       jrDrComponent = 0;
@@ -838,7 +849,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                         src={rowData.url}
                         alt={rowData.url}
                         onError={(e: any) => {
-                          handleImageError(e, rowData.url);
+                          console.error({ event: e, url: rowData.url });
                         }}
                       />
                     )}
@@ -949,7 +960,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                         src={rowData.url}
                         alt={rowData.url}
                         onError={(e: any) => {
-                          handleImageError(e, rowData.url);
+                          console.error({ event: e, url: rowData.url });
                         }}
                       />
                     )}
@@ -1075,12 +1086,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   inputProps={{ type: 'text' }}
                   placeholder="Type here..."
                   value={messageText}
-                  onKeyPress={(e) => {
+                  onKeyPress={(e: any) => {
                     if ((e.which == 13 || e.keyCode == 13) && messageText.trim() !== '') {
                       send();
                     }
                   }}
-                  onChange={(event) => {
+                  onChange={(event: any) => {
                     setMessageText(event.currentTarget.value);
                   }}
                 />

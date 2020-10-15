@@ -1,5 +1,9 @@
 export interface InventorySyncRequest {
   storeCode: string;
+  orderId: string;
+  pincode: string;
+  lat: number;
+  lng: number;
   items: Items[];
 }
 export interface Items {
