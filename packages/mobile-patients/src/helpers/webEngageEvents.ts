@@ -746,7 +746,6 @@ export interface WebEngageEvents {
     'Total items in cart': number;
     'Prescription Needed?': 'Mandatory' | 'Optional';
     'Sub Total': number;
-    'Delivery charge': number;
     'Coupon code used'?: string;
     'Total Discount': number;
     'Net after discount': number; //item total
@@ -768,9 +767,10 @@ export interface WebEngageEvents {
     'Patient Name selected': string;
     'Total items in cart': number;
     'Sub Total': number;
-    'Delivery charge': number;
+    // 'Delivery charge': number;
     'Net after discount': number;
     'Prescription Needed?': boolean;
+   'Prescrition Mandatory?': boolean;
     'Mode of Sample Collection': 'Home' | 'Pickup' | 'Home Visit' | 'Clinic Visit';
     'Delivery Date Time'?: string | Date; // Optional (only if Home)
     'Pin Code': string | number;
