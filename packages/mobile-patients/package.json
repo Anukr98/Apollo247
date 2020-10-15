@@ -54,7 +54,7 @@
     "prettier": "^1.18.2",
     "react-native-typescript-transformer": "^1.2.12",
     "react-test-renderer": "16.8.3",
-    "reactotron-react-native": "^4.0.2",
+    "reactotron-react-native": "^5.0.0",
     "typescript": "^3.5.2"
   },
   "dependencies": {
@@ -126,6 +126,7 @@
     "react-native-permissions": "^1.2.0",
     "react-native-popup-menu": "^0.15.6",
     "react-native-render-html": "^4.1.2",
+    "react-native-screens": "^2.10.1",
     "react-native-set-soft-input-mode": "^1.1.0",
     "react-native-sms-retriever": "^1.1.1",
     "react-native-snap-carousel": "^3.9.1",
