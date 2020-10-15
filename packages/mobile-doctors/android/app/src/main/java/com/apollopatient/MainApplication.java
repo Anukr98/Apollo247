@@ -6,6 +6,7 @@ import android.content.Context;
 
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
+import com.microsoft.codepush.react.CodePush;
 import com.dylanvann.fastimage.FastImageViewPackage;
 import com.learnium.RNDeviceInfo.RNDeviceInfo;
 import com.webengage.WebengagePackage;
@@ -24,6 +25,8 @@ import com.facebook.react.ReactPackage;
 import com.facebook.soloader.SoLoader;
 import com.masteratul.exceptionhandler.NativeExceptionHandlerIfc;
 import com.masteratul.exceptionhandler.ReactNativeExceptionHandlerModule;
+import com.reactnativecommunity.androidprogressbar.RNCProgressBarPackage;
+import com.reactnativecommunity.progressview.RNCProgressViewPackage;
 
 import android.graphics.Color;
 import android.os.Bundle;
@@ -45,6 +48,11 @@ import io.invertase.firebase.config.RNFirebaseRemoteConfigPackage;
 public class MainApplication extends Application implements ReactApplication {
 
     private final ReactNativeHost mReactNativeHost = new ReactNativeHost(this) {
+        @Override
+        protected String getJSBundleFile() {
+            return CodePush.getJSBundleFile();
+        }
+
         @Override
         public boolean getUseDeveloperSupport() {
             return BuildConfig.DEBUG;

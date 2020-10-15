@@ -202,6 +202,17 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
                 navigateToConsultRoom(doctorId, patientId, appId, apointmentData, prevCaseSheet);
               } else {
                 AsyncStorage.setItem('AppointmentSelect', 'false');
+                postWebEngageEvent(WebEngageEventName.DOCTOR_APPOINTMENT_UNABLETO_FORCE_START, {
+                  'Appointment Date time': g(apointmentData, 'appointmentDateTime') || '',
+                  'Appointment ID': g(apointmentData, 'id') || '',
+                  'Jd casesheet':
+                    apointmentData.caseSheet &&
+                    apointmentData.caseSheet.find(
+                      (
+                        j: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet | null
+                      ) => j && j.doctorType === DoctorType.JUNIOR
+                    ),
+                } as WebEngageEvents[WebEngageEventName.DOCTOR_APPOINTMENT_UNABLETO_FORCE_START]);
                 showAphAlert &&
                   showAphAlert({
                     title: `Hi ${
@@ -347,6 +358,11 @@ export const AppointmentsList: React.FC<AppointmentsListProps> = (props) => {
     ) {
       setLoading && setLoading(false);
       AsyncStorage.setItem('AppointmentSelect', 'false');
+      postWebEngageEvent(WebEngageEventName.DOCTOR_APPOINTMENT_UNABLETO_FORCE_START, {
+        'Appointment Date time': g(appointmentsHistory, 'appointmentDateTime') || '',
+        'Appointment ID': g(appointmentsHistory, 'id') || '',
+        'Jd casesheet': jrCaseSheet,
+      } as WebEngageEvents[WebEngageEventName.DOCTOR_APPOINTMENT_UNABLETO_FORCE_START]);
       showAphAlert &&
         showAphAlert({
           title: `Hi ${doctorDetails ? doctorDetails.displayName || 'Doctor' : 'Doctor'} :)`,

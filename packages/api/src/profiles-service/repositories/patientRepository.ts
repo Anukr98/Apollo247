@@ -243,7 +243,7 @@ export class PatientRepository extends Repository<Patient> {
       patient = JSON.parse(cache);
     } else {
       patient = JSON.parse(await this.setPatientConsultCache(id));
-    } 
+    }
     if (patient.dateOfBirth) {
       patient.dateOfBirth = new Date(patient.dateOfBirth);
     }
@@ -645,6 +645,13 @@ export class PatientRepository extends Repository<Patient> {
       const getData = await this.findOne({ where: { id: patientId, mobileNumber } });
       if (getData) return true;
       else return false;
+    }
+  }
+  async removePartnerId(partnerId: string, mobileNumber: string) {
+    const patient: Patient | undefined = await this.findOne({ where: { partnerId, mobileNumber } });
+    if (patient) {
+      patient.partnerId = '';
+      patient.save();
     }
   }
 

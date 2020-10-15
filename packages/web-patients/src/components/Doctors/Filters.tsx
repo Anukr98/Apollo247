@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
-import { Theme, RadioGroup, FormControlLabel, Checkbox, Modal } from '@material-ui/core';
+import React, { useState, useEffect } from 'react';
+import { Theme, FormControlLabel, Checkbox, Modal } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { AphButton, AphRadio } from '@aph/web-ui-components';
+import { AphButton } from '@aph/web-ui-components';
 import { AphCheckbox } from 'components/AphCheckbox';
 import Typography from '@material-ui/core/Typography';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
-import { AphTextField, AphInput } from '@aph/web-ui-components';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
+import { useParams } from 'hooks/routerHooks';
+import { LazyIntersection } from 'components/lib/LazyIntersection';
 
 import {
   SearchObject,
@@ -16,8 +17,11 @@ import {
   genderList,
   languageList,
   availabilityList,
+  hospitalGroupList,
 } from 'helpers/commonHelpers';
-import _cloneDeep from 'lodash/cloneDeep';
+import { ConsultMode, DoctorType } from 'graphql/types/globalTypes';
+import { Route } from 'react-router';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -146,7 +150,6 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingBottom: 4,
         paddingLeft: 9,
       },
-
     },
     filterBtns: {
       '& button': {
@@ -165,6 +168,21 @@ const useStyles = makeStyles((theme: Theme) => {
         [theme.breakpoints.down('sm')]: {
           marginRight: 6,
           marginBottom: 10,
+        },
+      },
+    },
+    filterBrands: {
+      paddingRight: 110,
+      [theme.breakpoints.down('sm')]: {
+        paddingRight: 0,
+      },
+      '& button': {
+        minWidth: 102,
+        height: 42,
+        marginBottom: 20,
+        fontSize: 14,
+        [theme.breakpoints.down('sm')]: {
+          minWidth: 87,
         },
       },
     },
@@ -253,7 +271,7 @@ const useStyles = makeStyles((theme: Theme) => {
         [theme.breakpoints.down('xs')]: {
           fontSize: 12,
           lineHeight: '16px',
-          width: '40%'
+          width: '40%',
         },
       },
     },
@@ -268,7 +286,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '& input': {
         paddingLeft: 30,
-      }
+      },
     },
     searchContainer: {
       display: 'flex',
@@ -296,6 +314,10 @@ interface FilterProps {
 
 export const Filters: React.FC<FilterProps> = (props) => {
   const classes = useStyles({});
+  const params = useParams<{
+    city: string;
+    specialty: string;
+  }>();
   const {
     isOnlineSelected,
     setIsOnlineSelected,
@@ -307,7 +329,11 @@ export const Filters: React.FC<FilterProps> = (props) => {
   } = props;
 
   const [isFilterOpen, setisFilterOpen] = useState(false);
-  const [localFilter, setLocalFilter] = useState<SearchObject>(_cloneDeep(filter));
+  const [localFilter, setLocalFilter] = useState<SearchObject>({ ...filter });
+
+  useEffect(() => {
+    setLocalFilter(filter);
+  }, [filter]);
 
   const applyClass = (type: Array<string>, value: string) => {
     return type.includes(value) ? classes.filterActive : '';
@@ -318,6 +344,18 @@ export const Filters: React.FC<FilterProps> = (props) => {
       valueList = valueList.filter((val) => val !== value);
     } else {
       valueList.push(value);
+    }
+    return valueList;
+  };
+
+  const filterOthersHospitalGroup = (valueList: Array<string>) => {
+    if (valueList.includes(DoctorType.PAYROLL) && valueList.includes(DoctorType.JUNIOR)) {
+      valueList = valueList.filter(
+        (val) => val !== DoctorType.PAYROLL && val !== DoctorType.JUNIOR
+      );
+    } else {
+      valueList.push(DoctorType.PAYROLL);
+      valueList.push(DoctorType.JUNIOR);
     }
     return valueList;
   };
@@ -338,14 +376,55 @@ export const Filters: React.FC<FilterProps> = (props) => {
     } else if (type === 'availability') {
       const availability = filterValues(localFilter.availability, value);
       setLocalFilter({ ...localFilter, availability });
+    } else if (type === 'hospitalGroup') {
+      const hospitalGroup =
+        value === 'others'
+          ? filterOthersHospitalGroup(localFilter.hospitalGroup)
+          : filterValues(localFilter.hospitalGroup, value);
+      setLocalFilter({ ...localFilter, hospitalGroup });
     }
   };
+
   const TabContainer: React.FC = (props) => {
     return <Typography component="div">{props.children}</Typography>;
   };
 
+  const clearAllFilters = (history: any) => {
+    const filterInitialValues: SearchObject = {
+      searchKeyword: '',
+      cityName: [],
+      experience: [],
+      availability: [],
+      fees: [],
+      gender: [],
+      language: [],
+      dateSelected: '',
+      specialtyName: '',
+      prakticeSpecialties: '',
+      hospitalGroup: [],
+      consultMode:
+        isOnlineSelected && isPhysicalSelected
+          ? ConsultMode.BOTH
+          : isOnlineSelected
+          ? ConsultMode.ONLINE
+          : ConsultMode.PHYSICAL,
+    };
+    setLocalFilter(filterInitialValues);
+    setFilter(filterInitialValues);
+    history.push(clientRoutes.specialties(params.specialty));
+    setisFilterOpen(false);
+  };
+
   const [tabValue, setTabValue] = useState<number>(0);
   const isSmallScreen = useMediaQuery('(max-width:767px)');
+
+  const structFilterUrl = (currentUrl: URL, type: string, typeArray: Array<string>) => {
+    currentUrl.searchParams.append(
+      type,
+      typeArray.map((typeValue: string) => typeValue.replace(/\s/g, '_')).join(',')
+    );
+  };
+
   return (
     <div className={classes.root}>
       <div className={classes.filters}>
@@ -382,7 +461,7 @@ export const Filters: React.FC<FilterProps> = (props) => {
             disabled={!isOnlineSelected && !isPhysicalSelected}
             onClick={() => setisFilterOpen(true)}
           >
-            Filters(5) <img src={require('images/ic_filters.svg')} alt="" />
+            Filters <img src={require('images/ic_filters.svg')} alt="" />
           </AphButton>
         </div>
       </div>
@@ -412,21 +491,21 @@ export const Filters: React.FC<FilterProps> = (props) => {
                 setTabValue(newValue);
               }}
             >
-              <Tab
+              {/* <Tab
                 classes={{
                   root: classes.tabRoot,
                   selected: classes.tabSelected,
                 }}
                 label="City"
                 title={'City'}
-              />
+              /> */}
               <Tab
                 classes={{
                   root: classes.tabRoot,
                   selected: classes.tabSelected,
                 }}
-                label="Brands"
-                title="Brands"
+                label="Hospital Group"
+                title="Hospital Group"
               />
               <Tab
                 classes={{
@@ -469,167 +548,127 @@ export const Filters: React.FC<FilterProps> = (props) => {
                 title="Language"
               />
             </Tabs>
-            {tabValue === 0 && (
+            {/* {tabValue === 0 && (
               <TabContainer>
                 <div className={classes.filterType}>
                   <div className={classes.searchContainer}>
                     <img src={require('images/ic-search.svg')} alt="" />
                     <AphInput
                       className={classes.searchInput}
-                      type="search" placeholder="Search City"
+                      type="search"
+                      placeholder="Search City"
                     />
                   </div>
                   <div className={classes.stateValues}>
                     <div className={classes.stateName}>Telangana</div>
-                    <FormControlLabel className={classes.stateList}
-                      control={
-                        <AphCheckbox
-                          color="primary"
-                          name="onlineconsults"
-                          checked
-                        />
-                      }
+                    <FormControlLabel
+                      className={classes.stateList}
+                      control={<AphCheckbox color="primary" name="onlineconsults" checked />}
                       label="Hyderabad"
                     />
-                    <FormControlLabel className={classes.stateList}
-                      control={
-                        <AphCheckbox
-                          color="primary"
-                          name="inperson"
-                          checked
-                        />
-                      }
+                    <FormControlLabel
+                      className={classes.stateList}
+                      control={<AphCheckbox color="primary" name="inperson" checked />}
                       label="Karimnagar"
                     />
-                    <FormControlLabel className={classes.stateList}
-                      control={
-                        <AphCheckbox
-                          color="primary"
-                          name="inperson"
-                          checked
-                        />
-                      }
+                    <FormControlLabel
+                      className={classes.stateList}
+                      control={<AphCheckbox color="primary" name="inperson" checked />}
                       label="Nizamabad"
                     />
-                    <FormControlLabel className={classes.stateList}
-                      control={
-                        <AphCheckbox
-                          color="primary"
-                          name="inperson"
-                          checked
-                        />
-                      }
+                    <FormControlLabel
+                      className={classes.stateList}
+                      control={<AphCheckbox color="primary" name="inperson" checked />}
                       label="Karimnagar"
                     />
-                    <FormControlLabel className={classes.stateList}
-                      control={
-                        <AphCheckbox
-                          color="primary"
-                          name="inperson"
-                          checked
-                        />
-                      }
+                    <FormControlLabel
+                      className={classes.stateList}
+                      control={<AphCheckbox color="primary" name="inperson" checked />}
                       label="Nalgonda"
                     />
-                    <FormControlLabel className={classes.stateList}
-                      control={
-                        <AphCheckbox
-                          color="primary"
-                          name="inperson"
-                          checked
-                        />
-                      }
+                    <FormControlLabel
+                      className={classes.stateList}
+                      control={<AphCheckbox color="primary" name="inperson" checked />}
                       label="Hyderabad"
                     />
                   </div>
                   <div className={classes.stateValues}>
                     <div className={classes.stateName}>Andhra Pradesh</div>
-                    <FormControlLabel className={classes.stateList}
-                      control={
-                        <AphCheckbox
-                          color="primary"
-                          name="onlineconsults"
-                          checked
-                        />
-                      }
+                    <FormControlLabel
+                      className={classes.stateList}
+                      control={<AphCheckbox color="primary" name="onlineconsults" checked />}
                       label="Guntur"
                     />
-                    <FormControlLabel className={classes.stateList}
-                      control={
-                        <AphCheckbox
-                          color="primary"
-                          name="inperson"
-                          checked
-                        />
-                      }
+                    <FormControlLabel
+                      className={classes.stateList}
+                      control={<AphCheckbox color="primary" name="inperson" checked />}
                       label="Tanuku"
                     />
-                    <FormControlLabel className={classes.stateList}
-                      control={
-                        <AphCheckbox
-                          color="primary"
-                          name="inperson"
-                          checked
-                        />
-                      }
+                    <FormControlLabel
+                      className={classes.stateList}
+                      control={<AphCheckbox color="primary" name="inperson" checked />}
                       label="Amaravathi"
                     />
-                    <FormControlLabel className={classes.stateList}
-                      control={
-                        <AphCheckbox
-                          color="primary"
-                          name="inperson"
-                          checked
-                        />
-                      }
+                    <FormControlLabel
+                      className={classes.stateList}
+                      control={<AphCheckbox color="primary" name="inperson" checked />}
                       label="Amaravathi"
                     />
-                    <FormControlLabel className={classes.stateList}
-                      control={
-                        <AphCheckbox
-                          color="primary"
-                          name="inperson"
-                          checked
-                        />
-                      }
+                    <FormControlLabel
+                      className={classes.stateList}
+                      control={<AphCheckbox color="primary" name="inperson" checked />}
                       label="Amaravathi"
                     />
-                    <FormControlLabel className={classes.stateList}
-                      control={
-                        <AphCheckbox
-                          color="primary"
-                          name="inperson"
-                          checked
-                        />
-                      }
+                    <FormControlLabel
+                      className={classes.stateList}
+                      control={<AphCheckbox color="primary" name="inperson" checked />}
                       label="Amaravathi"
                     />
                   </div>
                 </div>
               </TabContainer>
-            )}
+            )} */}
 
-            {tabValue === 1 && (
+            {tabValue === 0 && (
               <TabContainer>
                 <div className={classes.filterType}>
                   <h4>&nbsp;</h4>
-                  <div className={classes.filterBtns}>
-                    {experienceList.map((obj) => (
-                      <AphButton
-                        key={obj.key}
-                        className={applyClass(localFilter.experience, obj.key)}
-                        onClick={() => {
-                          setFilterValues('experience', obj.key);
-                        }}
-                      >
-                        {obj.value}
-                      </AphButton>
-                    ))}
+                  <div className={`${classes.filterBtns} ${classes.filterBrands}`}>
+                    {hospitalGroupList.map(
+                      (hospitalGroup: { key: string; value: string; imageUrl: string }) => (
+                        <AphButton
+                          key={hospitalGroup.key}
+                          className={applyClass(localFilter.hospitalGroup, hospitalGroup.key)}
+                          onClick={() => {
+                            setFilterValues('hospitalGroup', hospitalGroup.key);
+                          }}
+                        >
+                          <LazyIntersection src={hospitalGroup.imageUrl} alt="" />
+                        </AphButton>
+                      )
+                    )}
+                    {/* <AphButton>
+                      <img src={require('images/logo-apollo-cosmetic.svg')} alt="" />
+                    </AphButton> */}
+                    <AphButton
+                      key={'others'}
+                      className={
+                        localFilter.hospitalGroup.includes(DoctorType.JUNIOR) &&
+                        localFilter.hospitalGroup.includes(DoctorType.PAYROLL)
+                          ? classes.filterActive
+                          : ''
+                      }
+                      onClick={() => {
+                        setFilterValues('hospitalGroup', 'others');
+                      }}
+                    >
+                      Others
+                    </AphButton>
                   </div>
                 </div>
               </TabContainer>
             )}
-            {tabValue === 2 && (
+            {tabValue === 1 && (
               <TabContainer>
                 <div className={classes.filterType}>
                   <h4>In Years</h4>
@@ -649,7 +688,7 @@ export const Filters: React.FC<FilterProps> = (props) => {
                 </div>
               </TabContainer>
             )}
-            {tabValue === 3 && (
+            {tabValue === 2 && (
               <TabContainer>
                 <div className={classes.filterType}>
                   <h4>&nbsp;</h4>
@@ -669,27 +708,27 @@ export const Filters: React.FC<FilterProps> = (props) => {
                 </div>
               </TabContainer>
             )}
-            {tabValue === 4 && (
+            {tabValue === 3 && (
               <TabContainer>
                 <div className={classes.filterType}>
                   <h4>In Rupees</h4>
                   <div className={classes.filterBtns}>
                     {feeInRupees.map((fee) => (
                       <AphButton
-                        key={fee}
-                        className={applyClass(localFilter.fees, fee)}
+                        key={fee.key}
+                        className={applyClass(localFilter.fees, fee.key)}
                         onClick={() => {
-                          setFilterValues('fee', fee);
+                          setFilterValues('fee', fee.key);
                         }}
                       >
-                        {fee}
+                        {fee.value}
                       </AphButton>
                     ))}
                   </div>
                 </div>
               </TabContainer>
             )}
-            {tabValue === 5 && (
+            {tabValue === 4 && (
               <TabContainer>
                 <div className={classes.filterType}>
                   <h4>&nbsp;</h4>
@@ -709,7 +748,7 @@ export const Filters: React.FC<FilterProps> = (props) => {
                 </div>
               </TabContainer>
             )}
-            {tabValue === 6 && (
+            {tabValue === 5 && (
               <TabContainer>
                 <div className={classes.filterType}>
                   <h4>&nbsp;</h4>
@@ -729,125 +768,57 @@ export const Filters: React.FC<FilterProps> = (props) => {
                 </div>
               </TabContainer>
             )}
-            {/* <div className={classes.filterGroup}>
-              <div className={classes.filterType}>
-                <h4>Experience In Years</h4>
-                <div className={classes.filterBtns}>
-                  {experienceList.map((obj) => (
-                    <AphButton
-                      key={obj.key}
-                      className={applyClass(localFilter.experience, obj.key)}
-                      onClick={() => {
-                        setFilterValues('experience', obj.key);
-                      }}
-                    >
-                      {obj.value}
-                    </AphButton>
-                  ))}
-                </div>
-              </div>
-              <div className={classes.filterType}>
-                <h4>Availability</h4>
-                <div className={classes.filterBtns}>
-                  {availabilityList.map((availability: string) => (
-                    <AphButton
-                      key={availability}
-                      className={applyClass(localFilter.availability, availability)}
-                      onClick={() => {
-                        setFilterValues('availability', availability);
-                      }}
-                    >
-                      {availability}
-                    </AphButton>
-                  ))}
-                </div>
-              </div>
-              <div className={classes.filterType}>
-                <h4>Fees In Rupees</h4>
-                <div className={classes.filterBtns}>
-                  {feeInRupees.map((fee) => (
-                    <AphButton
-                      key={fee}
-                      className={applyClass(localFilter.fees, fee)}
-                      onClick={() => {
-                        setFilterValues('fee', fee);
-                      }}
-                    >
-                      {fee}
-                    </AphButton>
-                  ))}
-                </div>
-              </div>
-              <div className={classes.filterType}>
-                <h4>Gender</h4>
-                <div className={classes.filterBtns}>
-                  {genderList.map((gender) => (
-                    <AphButton
-                      key={gender.key}
-                      className={applyClass(localFilter.gender, gender.key)}
-                      onClick={() => {
-                        setFilterValues('gender', gender.key);
-                      }}
-                    >
-                      {gender.value}
-                    </AphButton>
-                  ))}
-                </div>
-              </div>
-              <div className={classes.filterType}>
-                <h4>Language</h4>
-                <div className={classes.filterBtns}>
-                  {languageList.map((language: string) => (
-                    <AphButton
-                      key={language}
-                      className={applyClass(localFilter.language, language)}
-                      onClick={() => {
-                        setFilterValues('language', language);
-                      }}
-                    >
-                      {language}
-                    </AphButton>
-                  ))}
-                </div>
-              </div>
-            </div> */}
           </div>
-          <div className={classes.dialogActions}>
-            <span className={classes.resultFound}>{onlyFilteredCount} Doctors found</span>
-            <span>
-              <AphButton
-                className={classes.clearBtn}
-                onClick={() => {
-                  const filterInitialValues: SearchObject = {
-                    searchKeyword: '',
-                    cityName: [],
-                    experience: [],
-                    availability: [],
-                    fees: [],
-                    gender: [],
-                    language: [],
-                    dateSelected: '',
-                    specialtyName: '',
-                    prakticeSpecialties: '',
-                  };
-                  setLocalFilter(filterInitialValues);
-                  setFilter(filterInitialValues);
-                  setisFilterOpen(false);
-                }}
-              >
-                Clear Filters
-              </AphButton>
-              <AphButton
-                onClick={() => {
-                  setFilter(localFilter);
-                  setisFilterOpen(false);
-                }}
-                className={classes.applyBtn}
-              >
-                Apply Filters
-              </AphButton>
-            </span>
-          </div>
+          <Route
+            render={({ history }) => (
+              <div className={classes.dialogActions}>
+                <span className={classes.resultFound}>{onlyFilteredCount} Doctors found</span>
+                <span>
+                  <AphButton
+                    className={classes.clearBtn}
+                    onClick={() => {
+                      clearAllFilters(history);
+                    }}
+                  >
+                    Clear Filters
+                  </AphButton>
+                  <AphButton
+                    onClick={() => {
+                      const newUrl = window.location.href;
+                      const currentUrl = new URL(`${newUrl.split('?')[0]}`);
+                      if (localFilter.hospitalGroup.length > 0) {
+                        structFilterUrl(currentUrl, 'hospitalGroup', localFilter.hospitalGroup);
+                      }
+                      if (localFilter.experience.length > 0) {
+                        structFilterUrl(currentUrl, 'experience', localFilter.experience);
+                      }
+                      if (localFilter.availability.length > 0) {
+                        structFilterUrl(currentUrl, 'availability', localFilter.availability);
+                      }
+                      if (localFilter.fees.length > 0) {
+                        structFilterUrl(currentUrl, 'fees', localFilter.fees);
+                      }
+                      if (localFilter.gender.length > 0) {
+                        structFilterUrl(currentUrl, 'gender', localFilter.gender);
+                      }
+                      if (localFilter.language.length > 0) {
+                        structFilterUrl(currentUrl, 'language', localFilter.language);
+                      }
+                      if (currentUrl.search.length > 0) {
+                        history.push(currentUrl.search);
+                      } else {
+                        history.push(currentUrl);
+                      }
+                      setisFilterOpen(false);
+                    }}
+                    className={classes.applyBtn}
+                  >
+                    Apply Filters
+                  </AphButton>
+                </span>
+              </div>
+            )}
+          />
         </div>
       </Modal>
     </div>

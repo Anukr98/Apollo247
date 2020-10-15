@@ -19,6 +19,10 @@ export default StyleSheet.create({
     height: 80,
     width: 80,
   },
+  imageStyle: {
+    width: '100%',
+    height: '100%',
+  },
   doctorNameStyles: {
     paddingTop: 15,
     paddingLeft: 0,
@@ -65,8 +69,8 @@ export default StyleSheet.create({
   },
   containerStyles: {
     height: 50,
-    borderRadius: 10,
     ...theme.viewStyles.whiteRoundedCornerCard,
+    borderRadius: 10,
     width: 160,
     alignItems: 'center',
     justifyContent: 'center',

@@ -26,6 +26,7 @@ export class PatientAddressRepository extends Repository<PatientAddress> {
   async getPatientAddressesFromDb(patient: string) {
     return this.find({ where: { patientId: patient } });
   }
+
   cacheKey(key: string, id: string) {
     return `${key}:${id}`;
   }
@@ -70,5 +71,14 @@ export class PatientAddressRepository extends Repository<PatientAddress> {
       delCache(this.cacheKey(REDIS_ADDRESS_PATIENT_ID_KEY_PREFIX, address.patientId));
       return this.delete(id);
     }
+  }
+
+  async markPatientAdrressAsNonDefault(patientId: string) {
+    delCache(this.cacheKey(REDIS_ADDRESS_PATIENT_ID_KEY_PREFIX, patientId));
+    return this.createQueryBuilder()
+      .update(PatientAddress)
+      .set({ defaultAddress: false })
+      .where('patientId = :patientId', { patientId })
+      .execute();
   }
 }

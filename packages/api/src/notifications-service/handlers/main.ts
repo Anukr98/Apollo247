@@ -40,8 +40,8 @@ export async function sendPatientRegistrationNotification(
   const notificationTitle = ApiConstants.PATIENT_REGISTRATION_TITLE.toString();
   let notificationBody: string = '';
   notificationBody = ApiConstants.PATIENT_REGISTRATION_BODY.replace('{0}', patient.firstName);
-  let smsContent = process.env.SMS_LINK ? ' Click here ' + process.env.SMS_LINK : '';
-  smsContent = notificationBody + smsContent;
+  const appLink = await getPatientDeeplink(ApiConstants.PATIENT_CONSULTS_DEEPLINK, ApiConstants.PATIENT_DEEPLINK_TEMPLATE_ID_APOLLO);
+  const smsContent = notificationBody + (appLink ? 'Click here ' + appLink : '');
   const payload = {
     notification: {
       title: notificationTitle,
@@ -219,13 +219,16 @@ export async function sendMedicineOrderStatusNotification(
 //Notification - Dignostic order Status
 export async function sendDiagnosticOrderStatusNotification(
   notificationType: NotificationType,
-  orderDetails: DiagnosticOrders,
-  patientsDb: Connection
+  patientsDb: Connection,
+  patientId: String,
+  mobileNumber: string,
+  patientFirstName: string,
+  displayId: number,
+  orderId: string
 ) {
-  //get all the patient device tokens
   let patientDeviceTokens: string[] = [];
-  const patientDetails = orderDetails.patient;
-  patientDeviceTokens = await getPatientDeviceTokens(patientDetails.mobileNumber, patientsDb);
+
+  patientDeviceTokens = await getPatientDeviceTokens(mobileNumber, patientsDb);
 
   if (patientDeviceTokens.length == 0) return;
 
@@ -250,8 +253,8 @@ export async function sendDiagnosticOrderStatusNotification(
       notificationBody = ApiConstants.DIAGNOSTIC_ORDER_SUCCESS_BODY;
   }
   //notification payload
-  const userName = patientDetails.firstName ? patientDetails.firstName : 'User';
-  const orderNumber = orderDetails.displayId ? orderDetails.displayId.toString() : '';
+  const userName = patientFirstName ? patientFirstName : 'User';
+  const orderNumber = displayId ? displayId.toString() : '';
 
   notificationTitle = notificationTitle.toString();
   notificationBody = notificationBody.replace('{0}', userName);
@@ -265,8 +268,8 @@ export async function sendDiagnosticOrderStatusNotification(
     data: {
       type: payloadDataType,
       displayId: orderNumber,
-      orderId: orderDetails.id,
-      firstName: patientDetails.firstName,
+      orderId: orderId,
+      firstName: patientFirstName,
       content: notificationBody,
     },
   };
@@ -277,16 +280,16 @@ export async function sendDiagnosticOrderStatusNotification(
     timeToLive: 60 * 60 * 24, //wait for one day.. if device is offline
   };
 
-  sendNotificationSMS(patientDetails.mobileNumber, notificationBody);
+  sendNotificationSMS(mobileNumber, notificationBody);
 
   admin
     .messaging()
     .sendToDevice(patientDeviceTokens, payload, options)
     .then((response: PushNotificationSuccessMessage) => {
       const logData = {
-        patientId: patientDetails.id,
+        patientId: patientId,
         displayId: orderNumber,
-        orderId: orderDetails.id,
+        orderId: orderId,
         multicastId: response.multicastId,
       };
       logNotificationResponse(notificationType, logData);
@@ -344,12 +347,12 @@ export async function sendChatMessageNotification(
   doctorsDb: Connection,
   chatMessage: string
 ) {
-  if (process.env.CHAT_DOCTOR_DEEP_LINK) {
-    const devLink = process.env.CHAT_DOCTOR_DEEP_LINK + appointment.id.toString();
+  const appLink = await getPatientDeeplink(ApiConstants.DOCTOR_DEEPLINK_CHAT + appointment.id.toString(), ApiConstants.PATIENT_DEEPLINK_TEMPLATE_ID_APOLLO);
+  if (appLink) {
     const templateData: string[] = [
       doctorDetails.salutation + ' ' + doctorDetails.firstName,
       patientDetails.firstName + ' ' + patientDetails.lastName,
-      devLink,
+      appLink,
     ];
     sendDoctorNotificationWhatsapp(
       ApiConstants.WHATSAPP_SD_CHAT_NOTIFICATION_ID,
@@ -468,7 +471,7 @@ export async function hitCallKitCurl(
     const curlCommand = `curl -v -d '{"name": "${doctorName}", 
       "${connecting ? 'isVideo' : 'disconnectCall'}": 
       ${connecting ? (callType == APPT_CALL_TYPE.VIDEO ? true : false) : true}, 
-      "appointmentId" : "${apptId}", "patientId": "${patientId}", "apns-expiration": ${0} }' --http2 --cert ${CERT_PATH}:${passphrase} ${domain}${token}`;
+      "appointmentId" : "${apptId}", "patientId": "${patientId}", "apns-expiration": ${0} }' --http2 --cert ${CERT_PATH}:${passphrase} ${domain}${token} apns-expiration=0`;
     const resp = child_process.execSync(curlCommand);
     const result = resp.toString('utf-8');
     console.log('voipCallKit result > ', result);

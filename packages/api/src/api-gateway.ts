@@ -8,7 +8,7 @@ import { AphAuthenticationError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { webPatientsBaseUrl, webDoctorsBaseUrl, getPortStr } from '@aph/universal/src/aphRoutes';
 import { winstonLogger } from 'customWinstonLogger';
-import { format, differenceInMilliseconds } from 'date-fns';
+import { format } from 'date-fns';
 
 //import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 // import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
@@ -17,6 +17,7 @@ console.log('gateway starting');
 
 export interface GatewayContext {
   mobileNumber: string;
+  authorization?: string;
 }
 
 export interface GatewayHeaders extends IncomingHttpHeaders {
@@ -62,6 +63,18 @@ export type Resolver<Parent, Args, Context, Result> = (
           process.env.NOTIFICATIONS_SERVICE_PORT ? process.env.NOTIFICATIONS_SERVICE_PORT : '80'
         )}/graphql`,
       },
+      {
+        name: 'subscriptions',
+        url: `http://${process.env.SUBSCRIPTION_SERVICE_HOST}${getPortStr(
+          process.env.SUBSCRIPTION_SERVICE_PORT ? process.env.SUBSCRIPTION_SERVICE_PORT : '80'
+        )}/graphql`,
+      },
+      {
+        name: 'diagnostics',
+        url: `http://${process.env.DIAGNOSTICS_SERVICE_HOST}${getPortStr(
+          process.env.DIAGNOSTICS_SERVICE_PORT ? process.env.DIAGNOSTICS_SERVICE_PORT : '80'
+        )}/graphql`,
+      },
     ],
     buildService({ name, url }) {
       return new RemoteGraphQLDataSource({
@@ -72,6 +85,7 @@ export type Resolver<Parent, Args, Context, Result> = (
           const context = (requestContext.context as any) as GatewayContext;
           if (request && request.http) {
             request.http.headers.set('mobilenumber', context.mobileNumber);
+            request.http.headers.set('authorization', context.authorization || '');
           }
         },
       });
@@ -202,7 +216,11 @@ export type Resolver<Parent, Args, Context, Result> = (
           mobileNumber: firebaseUser.uid || '',
         };
       }
-
+      /* Add jwt token to context */
+      gatewayContext['authorization'] =
+        req && req.headers && req.headers.authorization
+          ? req && req.headers && req.headers.authorization
+          : '';
       return gatewayContext;
     },
     plugins: [

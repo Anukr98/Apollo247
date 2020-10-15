@@ -13,6 +13,7 @@ export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDeta
   __typename: "AppointmentDocuments";
   documentPath: string | null;
   prismFileId: string | null;
+  createdDate: any | null;
 }
 
 export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_appointment_doctorInfo_specialty {

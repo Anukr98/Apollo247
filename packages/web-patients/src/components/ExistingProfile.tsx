@@ -291,7 +291,7 @@ export const ExistingProfile: React.FC<ExistingProfileProps> = (props) => {
         <div className={classes.signinGroup}>
           <Typography variant="h2">
             welcome
-            <br /> to apollo 24/7
+            <br /> to apollo 24|7
           </Typography>
           {patients.length > 1 ? (
             <p>

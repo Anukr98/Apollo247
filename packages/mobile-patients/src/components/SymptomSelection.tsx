@@ -27,6 +27,12 @@ import {
 import { Message } from '@aph/mobile-patients/src/components/SymptomTracker';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
 interface SymptomSelectionProps extends NavigationScreenProps {
   chatId: string;
@@ -53,6 +59,17 @@ export const SymptomSelection: React.FC<SymptomSelectionProps> = (props) => {
   const [searchQuery, setSearchQuery] = useState<any>({});
   const [symptoms, setSymptoms] = useState<AutoCompleteSymptoms[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const { currentPatient } = useAllCurrentPatients();
+
+  const patientInfoAttributes = {
+    'Patient UHID': g(currentPatient, 'uhid'),
+    'Patient ID': g(currentPatient, 'id'),
+    'Patient Name': g(currentPatient, 'firstName'),
+    'Mobile Number': g(currentPatient, 'mobileNumber'),
+    'Date of Birth': g(currentPatient, 'dateOfBirth'),
+    Email: g(currentPatient, 'emailAddress'),
+    Relation: g(currentPatient, 'relation'),
+  };
 
   useEffect(() => {
     return function cleanup() {
@@ -93,14 +110,24 @@ export const SymptomSelection: React.FC<SymptomSelectionProps> = (props) => {
           });
           search(symptoms);
         }}
-        placeholder={string.symptomChecker.typeSymptomOrChooseFromList}
+        placeholder={
+          selectedSymptoms?.length > 0
+            ? string.symptomChecker.removeSelectionPlaceholder
+            : string.symptomChecker.typeSymptomOrChooseFromList
+        }
         inputStyle={styles.inputStyle}
         autoFocus={true}
+        editable={selectedSymptoms?.length === 0}
       />
     );
   };
 
   const fetchSymptoms = async (searchString: string) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_SEARCH_SYMPTOMS] = {
+      ...patientInfoAttributes,
+      'Search String': searchString,
+    };
+    postWebEngageEvent(WebEngageEventName.SYMPTOM_TRACKER_SEARCH_SYMPTOMS, eventAttributes);
     setLoading(true);
     const queryParams: AutoCompleteSymptomsParams = {
       text: searchString,
@@ -139,6 +166,14 @@ export const SymptomSelection: React.FC<SymptomSelectionProps> = (props) => {
         key={index}
         style={styles.symptomsContainer}
         onPress={() => {
+          const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_SUGGESTED_SYMPTOMS_CLICKED] = {
+            ...patientInfoAttributes,
+            'Symptom Clicked': item.name,
+          };
+          postWebEngageEvent(
+            WebEngageEventName.SYMPTOM_TRACKER_SUGGESTED_SYMPTOMS_CLICKED,
+            eventAttributes
+          );
           symptomSelectionHandler(item);
         }}
       >
@@ -190,6 +225,14 @@ export const SymptomSelection: React.FC<SymptomSelectionProps> = (props) => {
             id: selectedSymptomsIds.toString(),
           };
           const { navigation } = props;
+          const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_ADD_SELECTED_SYMPTOMS_CLICKED] = {
+            ...patientInfoAttributes,
+            'Selected Symptoms': selectedSymptoms.join(', '),
+          };
+          postWebEngageEvent(
+            WebEngageEventName.SYMPTOM_TRACKER_ADD_SELECTED_SYMPTOMS_CLICKED,
+            eventAttributes
+          );
           navigation.goBack();
           navigation.state.params!.goBackCallback(newObj, chatId, storedMessages);
         }}

@@ -1,4 +1,5 @@
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { ProductPageViewedEventProps } from '@aph/mobile-patients/src/components/Medicines/MedicineDetailsScene';
 import { Props as ProductCardProps } from '@aph/mobile-patients/src/components/Medicines/ProductCard';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
@@ -25,12 +26,14 @@ export interface Props extends Omit<ListProps, 'renderItem'> {
   Component: React.FC<ProductCardProps>;
   addToCartSource: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Source'];
   movedFrom: ProductPageViewedSource;
+  productPageViewedEventProps?: ProductPageViewedEventProps;
   sectionName?: string;
 }
 
 export const ProductList: React.FC<Props> = ({
   addToCartSource,
   sectionName,
+  productPageViewedEventProps,
   movedFrom,
   navigation,
   Component,
@@ -45,7 +48,12 @@ export const ProductList: React.FC<Props> = ({
   const pharmacyPincode = pharmacyLocation?.pincode || locationDetails?.pincode;
 
   const onPress = (sku: string) => {
-    navigation.push(AppRoutes.MedicineDetailsScene, { sku, movedFrom, sectionName });
+    navigation.push(AppRoutes.MedicineDetailsScene, {
+      sku,
+      movedFrom,
+      sectionName,
+      productPageViewedEventProps,
+    });
   };
 
   const onPressNotify = (name: string) => {
@@ -95,7 +103,9 @@ export const ProductList: React.FC<Props> = ({
           ? styles.itemEndContainer
           : styles.itemContainer,
     };
-
+    if (movedFrom == ProductPageViewedSource.CART) {
+      props['onCartScreen'] = true;
+    }
     return <Component {...props} />;
   };
 

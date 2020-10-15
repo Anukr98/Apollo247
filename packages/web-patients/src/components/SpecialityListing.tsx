@@ -15,6 +15,7 @@ import { BottomLinks } from 'components/BottomLinks';
 import { PastSearches } from 'components/PastSearches';
 import { useAuth } from 'hooks/authHooks';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { isAlternateVersion } from 'helpers/commonHelpers';
 import { Link } from 'react-router-dom';
 import fetchUtil from 'helpers/fetch';
 import { SpecialtyDivision } from './SpecialtyDivision';
@@ -30,10 +31,17 @@ import { SchemaMarkup } from 'SchemaMarkup';
 import _debounce from 'lodash/debounce';
 import { DoctorDetails } from 'components/Doctors/SpecialtyDetails';
 import { GetDoctorList_getDoctorList_specialties } from 'graphql/types/GetDoctorList';
+import { SPECIALTY_SEARCH_PAGE_SIZE } from 'helpers/commonHelpers';
 
+let currentPage = 1;
+let apolloDoctorCount = 0;
+let partnerDoctorCount = 0;
 const useStyles = makeStyles((theme: Theme) => {
   return {
-    slContainer: {},
+    slContainer: {
+      height: '100vh',
+      overflowY: 'scroll',
+    },
     slContent: {
       padding: '0 20px 40px',
       background: '#f7f8f5',
@@ -57,7 +65,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
       [theme.breakpoints.down(650)]: {
         '&:after': {
-          height: 170,
+          height: 180,
         },
       },
     },
@@ -630,10 +638,13 @@ const SpecialityListing: React.FC = (props) => {
   >(null);
   const [searchDoctors, setSearchDoctors] = useState<DoctorDetails[] | null>(null);
   const [searchLoading, setSearchLoading] = useState<boolean>(false);
+  const [isAlternateVariant, setIsAlternateVariant] = useState<boolean>(true);
   const [faqs, setFaqs] = useState<any | null>(null);
   const [selectedCity, setSelectedCity] = useState<string>('');
   const [faqSchema, setFaqSchema] = useState(null);
   const [searchQuery, setSearchQuery] = useState<any>({});
+  const [pageNo, setPageNo] = useState<number>(1);
+  const [intialLoad, setInitalLoad] = useState<boolean>(true);
   const onePrimaryUser =
     allCurrentPatients && allCurrentPatients.filter((x) => x.relation === Relation.ME).length === 1;
 
@@ -642,6 +653,11 @@ const SpecialityListing: React.FC = (props) => {
   };
 
   useEffect(() => {
+    if (isAlternateVersion()) {
+      setIsAlternateVariant(true);
+    } else {
+      setIsAlternateVariant(false);
+    }
     /**Gtm code start start */
     /*gtmTracking({
       category: 'Consultations',
@@ -681,11 +697,15 @@ const SpecialityListing: React.FC = (props) => {
   };
 
   useEffect(() => {
+    const faqUrl = isAlternateVersion()
+      ? process.env.SPECIALTY_LISTING_FAQS + '?variant=2'
+      : process.env.SPECIALTY_LISTING_FAQS;
+
     if (!faqs) {
       scrollToRef &&
         scrollToRef.current &&
         scrollToRef.current.scrollIntoView({ behavior: 'auto', block: 'end' });
-      fetchUtil(process.env.SPECIALTY_LISTING_FAQS, 'GET', {}, '', true).then((res: any) => {
+      fetchUtil(faqUrl, 'GET', {}, '', true).then((res: any) => {
         if (res && res.success === 'true' && res.data && res.data.length > 0) {
           setFaqs(res.data[0]);
           createFaqSchema(res.data[0]);
@@ -699,17 +719,22 @@ const SpecialityListing: React.FC = (props) => {
       .query({
         query: GET_DOCTOR_LIST,
         variables: {
-          filterInput: { searchText: searchKeyword },
+          filterInput: { searchText: searchKeyword, pageNo, pageSize: SPECIALTY_SEARCH_PAGE_SIZE },
         },
         fetchPolicy: 'no-cache',
       })
       .then((response) => {
         const specialtiesAndDoctorsList = response && response.data && response.data.getDoctorList;
+        currentPage = currentPage + 1;
         if (specialtiesAndDoctorsList) {
+          apolloDoctorCount = specialtiesAndDoctorsList.apolloDoctorCount;
+          partnerDoctorCount = specialtiesAndDoctorsList.partnerDoctorCount;
           const doctorsArray = specialtiesAndDoctorsList.doctors || [];
           const specialtiesArray = specialtiesAndDoctorsList.specialties || [];
           setSearchSpecialty(specialtiesArray);
-          setSearchDoctors(doctorsArray);
+          intialLoad
+            ? setSearchDoctors(doctorsArray)
+            : setSearchDoctors(searchDoctors.concat(doctorsArray));
         }
       })
       .catch((e) => {
@@ -719,8 +744,12 @@ const SpecialityListing: React.FC = (props) => {
       })
       .finally(() => {
         setSearchLoading(false);
+        if (intialLoad) {
+          setInitalLoad(false);
+        }
       });
   };
+  const debounceLoadData = useCallback(_debounce(fetchData, 300), []);
 
   const debounceTracking = useCallback(
     _debounce((searchKeyword) => {
@@ -734,7 +763,8 @@ const SpecialityListing: React.FC = (props) => {
 
   useEffect(() => {
     if (searchKeyword.length > 2 || selectedCity.length) {
-      setSearchLoading(true);
+      selectedCity.length === 0 && setInitalLoad(true);
+      intialLoad && setSearchLoading(true);
       const search = _debounce(fetchData, 500);
       setSearchQuery((prevSearch: any) => {
         if (prevSearch.cancel) {
@@ -749,13 +779,14 @@ const SpecialityListing: React.FC = (props) => {
       debounceTracking(searchKeyword);
       /**Gtm code start end */
     }
-  }, [searchKeyword, selectedCity]);
+  }, [searchKeyword, selectedCity, pageNo]);
 
   const metaTagProps = {
     title: 'Online Doctor Consultation via Video Call / Audio / Chat - Apollo 247',
     description:
       'Online doctor consultation in 15 mins with 1000+ Top Specialist Doctors. Video Call or Chat with a Doctor from 100+ Specialties including General Physicians, Pediatricians, Dermatologists, Gynaecologists & more.',
-    canonicalLink: window && window.location && window.location.href,
+    canonicalLink:
+      window && window.location && `${window.location.origin}${window.location.pathname}`,
   };
 
   const breadcrumbJSON = {
@@ -814,6 +845,10 @@ const SpecialityListing: React.FC = (props) => {
                     setLocationPopup={setLocationPopup}
                     locationPopup={locationPopup}
                     setSelectedCity={setSelectedCity}
+                    currentPage={currentPage}
+                    apolloDoctorCount={apolloDoctorCount}
+                    partnerDoctorCount={partnerDoctorCount}
+                    setPageNo={setPageNo}
                   />
                   {currentPatient && currentPatient.id && searchKeyword.length <= 0 && (
                     <PastSearches />
@@ -859,8 +894,8 @@ const SpecialityListing: React.FC = (props) => {
                       </div>
                     </div>
                   </div>
-                  <WhyApollo />
-                  <HowItWorks />
+                  <WhyApollo alternateVariant={isAlternateVariant} />
+                  <HowItWorks alternateVariant={isAlternateVariant} />
                 </div>
               </Grid>
             </Grid>

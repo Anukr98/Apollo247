@@ -113,12 +113,16 @@ import {
   updateOrderStatusResolvers,
 } from 'profiles-service/resolvers/pharmaUpdateOrderStatus';
 import {
+  saveOrderShipmentsTypeDefs,
+  saveOrderShipmentsResolvers,
+} from 'profiles-service/resolvers/pharmaOrderShipmentsCreated';
+import {
   saveOrderShipmentInvoiceTypeDefs,
   saveOrderShipmentInvoiceResolvers,
 } from 'profiles-service/resolvers/pharmaOrderBilled';
 import {
-  saveOrderShipmentsTypeDefs,
-  saveOrderShipmentsResolvers,
+  saveOrderVerifiedTypeDefs,
+  saveOrderVerifiedResolvers,
 } from 'profiles-service/resolvers/pharmaOrderVerified';
 import {
   pharmaOrderConfirmationTypeDefs,
@@ -156,15 +160,6 @@ import {
   saveMedicineOrderInvoiceTypeDefs,
   saveMedicineOrderInvoiceResolvers,
 } from 'profiles-service/resolvers/pharmaOrderInvoice';
-import { diagnosticsTypeDefs, diagnosticsResolvers } from 'profiles-service/resolvers/diagnostics';
-import {
-  saveDiagnosticOrderTypeDefs,
-  saveDiagnosticOrderResolvers,
-} from 'profiles-service/resolvers/saveDiagnosticOrders';
-import {
-  saveDiagnosticOrderPaymentTypeDefs,
-  saveDiagnosticOrderPaymentResolvers,
-} from 'profiles-service/resolvers/saveDiagnosticOrderPayment';
 import {
   cancelDiagnosticOrdersTypeDefs,
   cancelDiagnosticOrdersResolvers,
@@ -218,6 +213,10 @@ import {
   patientDeviceVoipTokenTypeDefs,
   patientDeviceVoipTokenResolvers,
 } from 'profiles-service/resolvers/savepatientDeviceVoipToken';
+import {
+  validateHDFCCustomerTypeDefs,
+  validateHDFCCustomer,
+} from 'profiles-service/resolvers/hdfcCustomerValidation';
 
 import {
   addPatientHealthCheckRecordTypeDefs,
@@ -226,13 +225,38 @@ import {
 
 import {
   addPatientHospitalizationRecordTypeDefs,
-  addPatientHospitalizationRecordResolvers
+  addPatientHospitalizationRecordResolvers,
 } from 'profiles-service/resolvers/addHospitalizationRecords';
 
 import {
+  addPatientPrescriptionRecordsTypeDefs,
+  addPatientPrescriptionRecordResolvers,
+} from 'profiles-service/resolvers/addPrescriptionRecords';
+
+import {
   addPatientLabTestRecordTypeDefs,
-  addPatientLabTestRecordResolvers
+  addPatientLabTestRecordResolvers,
 } from 'profiles-service/resolvers/addLabTestRecords';
+
+import {
+  updateOrderOnHoldTypeDefs,
+  updateOrderOnHoldResolvers,
+} from 'profiles-service/resolvers/pharmaOrderOnHold';
+
+import {
+  orderReturnPostDeliveryTypeDefs,
+  orderReturnPostDeliveryResolvers,
+} from 'profiles-service/resolvers/pharmaOrderReturnPostDelivery';
+
+import {
+  orderReturnedTypeDefs,
+  orderReturnedResolvers,
+} from 'profiles-service/resolvers/pharmaOrderReturnPreDelivery';
+
+import {
+  deletePatientPrismMedicalRecordTypeDefs,
+  deletePatientPrismMedicalRecordResolvers,
+} from 'profiles-service/resolvers/deletePatientPrismMedicalRecord';
 
 (async () => {
   await connect();
@@ -251,6 +275,7 @@ import {
         doctorsDb,
         consultsDb,
         currentPatient,
+        headers: headers,
       };
       return context;
     },
@@ -440,18 +465,6 @@ import {
         resolvers: saveMedicineOrderInvoiceResolvers,
       },
       {
-        typeDefs: diagnosticsTypeDefs,
-        resolvers: diagnosticsResolvers,
-      },
-      {
-        typeDefs: saveDiagnosticOrderTypeDefs,
-        resolvers: saveDiagnosticOrderResolvers,
-      },
-      {
-        typeDefs: saveDiagnosticOrderPaymentTypeDefs,
-        resolvers: saveDiagnosticOrderPaymentResolvers,
-      },
-      {
         typeDefs: cancelDiagnosticOrdersTypeDefs,
         resolvers: cancelDiagnosticOrdersResolvers,
       },
@@ -500,8 +513,12 @@ import {
         resolvers: patientDeviceVoipTokenResolvers,
       },
       {
+        typeDefs: validateHDFCCustomerTypeDefs,
+        resolvers: validateHDFCCustomer,
+      },
+      {
         typeDefs: addPatientHealthCheckRecordTypeDefs,
-        resolvers: addPatientHealthCheckRecordsResolvers
+        resolvers: addPatientHealthCheckRecordsResolvers,
       },
       {
         typeDefs: addPatientHospitalizationRecordTypeDefs,
@@ -509,8 +526,32 @@ import {
       },
       {
         typeDefs: addPatientLabTestRecordTypeDefs,
-        resolvers: addPatientLabTestRecordResolvers
-      }
+        resolvers: addPatientLabTestRecordResolvers,
+      },
+      {
+        typeDefs: saveOrderVerifiedTypeDefs,
+        resolvers: saveOrderVerifiedResolvers,
+      },
+      {
+        typeDefs: updateOrderOnHoldTypeDefs,
+        resolvers: updateOrderOnHoldResolvers,
+      },
+      {
+        typeDefs: orderReturnPostDeliveryTypeDefs,
+        resolvers: orderReturnPostDeliveryResolvers,
+      },
+      {
+        typeDefs: orderReturnedTypeDefs,
+        resolvers: orderReturnedResolvers,
+      },
+      {
+        typeDefs: addPatientPrescriptionRecordsTypeDefs,
+        resolvers: addPatientPrescriptionRecordResolvers,
+      },
+      {
+        typeDefs: deletePatientPrismMedicalRecordTypeDefs,
+        resolvers: deletePatientPrismMedicalRecordResolvers,
+      },
     ]),
     plugins: [
       /* This plugin is defined in-line. */
@@ -562,6 +603,6 @@ import {
   });
 
   server.listen({ port: process.env.PROFILES_SERVICE_PORT }).then(({ url }) => {
-    console.log(`🚀 profiles-service ready`);
+    console.log(`🚀 profiles-service ready`, url);
   });
 })();

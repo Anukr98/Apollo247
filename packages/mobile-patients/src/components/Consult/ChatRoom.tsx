@@ -47,6 +47,7 @@ import {
   ADD_CHAT_DOCUMENTS,
   UPLOAD_MEDIA_DOCUMENT_PRISM,
   SEND_PATIENT_WAIT_NOTIFICATION,
+  UPDATE_HEALTH_RECORD_NUDGE_STATUS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   bookRescheduleAppointment,
@@ -56,6 +57,10 @@ import {
   bookTransferAppointment,
   bookTransferAppointmentVariables,
 } from '@aph/mobile-patients/src/graphql/types/bookTransferAppointment';
+import {
+  updateHealthRecordNudgeStatus,
+  updateHealthRecordNudgeStatusVariables,
+} from '@aph/mobile-patients/src/graphql/types/updateHealthRecordNudgeStatus';
 import { getAppointmentData_getAppointmentData_appointmentsHistory } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
 import { getPatinetAppointments_getPatinetAppointments_patinetAppointments } from '@aph/mobile-patients/src/graphql/types/getPatinetAppointments';
 import {
@@ -213,6 +218,7 @@ let callhandelBack: boolean = true;
 let jdCount: any = 1;
 let isJdAllowed: boolean = true;
 let abondmentStarted = false;
+let jdAssigned: boolean = false;
 
 type rescheduleType = {
   rescheduleCount: number;
@@ -429,6 +435,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         ? 0
         : Number(caseSheetChatDays) - 1
       : 6;
+  const fromSearchAppointmentScreen =
+    props.navigation.getParam('fromSearchAppointmentScreen') || false;
   const disableChat =
     props.navigation.getParam('disableChat') ||
     moment(new Date(appointmentData.appointmentDateTime))
@@ -609,6 +617,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const patientJoinedMeetingRoom = '^^#patientJoinedMeetingRoom';
   const patientRejectedCall = '^^#PATIENT_REJECTED_CALL';
   const exotelCall = '^^#exotelCall';
+  const vitalsCompletedByPatient = '^^#vitalsCompletedByPatient'; // ignore msg used by p-web
 
   const patientId = appointmentData.patientId;
   const channel = appointmentData.id;
@@ -724,6 +733,75 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         'facility',
         'city'
       )!,
+    };
+    postWebEngageEvent(type, eventAttributes);
+  };
+
+  const openTokWebEngageEvents = (
+    type:
+      | WebEngageEventName.DOCTOR_SUBSCRIBER_DISCONNECTED
+      | WebEngageEventName.DOCTOR_SUBSCRIBER_CONNECTED
+      | WebEngageEventName.DOCTOR_SUBSCRIBER_VIDEO_DISABLED
+      | WebEngageEventName.DOCTOR_SUBSCRIBER_VIDEO_ENABLED
+      | WebEngageEventName.PATIENT_PUBLISHER_STREAM_CREATED
+      | WebEngageEventName.PATIENT_PUBLISHER_STREAM_DESTROYED
+      | WebEngageEventName.PATIENT_SESSION_CONNECTION_CREATED
+      | WebEngageEventName.PATIENT_SESSION_CONNECTION_DESTROYED
+      | WebEngageEventName.PATIENT_SESSION_CONNECTED
+      | WebEngageEventName.PATIENT_SESSION_DISCONNECTED
+      | WebEngageEventName.PATIENT_SESSION_RECONNECTED
+      | WebEngageEventName.PATIENT_SESSION_RECONNECTING
+      | WebEngageEventName.PATIENT_SESSION_STREAM_CREATED
+      | WebEngageEventName.PATIENT_SESSION_STREAM_DESTROYED
+      | WebEngageEventName.PATIENT_SESSION_STREAM_PROPERTY_CHANGED,
+    data: string
+  ) => {
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.DOCTOR_SUBSCRIBER_DISCONNECTED]
+      | WebEngageEvents[WebEngageEventName.DOCTOR_SUBSCRIBER_CONNECTED]
+      | WebEngageEvents[WebEngageEventName.DOCTOR_SUBSCRIBER_VIDEO_DISABLED]
+      | WebEngageEvents[WebEngageEventName.DOCTOR_SUBSCRIBER_VIDEO_ENABLED]
+      | WebEngageEvents[WebEngageEventName.PATIENT_PUBLISHER_STREAM_CREATED]
+      | WebEngageEvents[WebEngageEventName.PATIENT_PUBLISHER_STREAM_DESTROYED]
+      | WebEngageEvents[WebEngageEventName.PATIENT_SESSION_CONNECTION_CREATED]
+      | WebEngageEvents[WebEngageEventName.PATIENT_SESSION_CONNECTION_DESTROYED]
+      | WebEngageEvents[WebEngageEventName.PATIENT_SESSION_CONNECTED]
+      | WebEngageEvents[WebEngageEventName.PATIENT_SESSION_DISCONNECTED]
+      | WebEngageEvents[WebEngageEventName.PATIENT_SESSION_RECONNECTED]
+      | WebEngageEvents[WebEngageEventName.PATIENT_SESSION_RECONNECTING]
+      | WebEngageEvents[WebEngageEventName.PATIENT_SESSION_STREAM_CREATED]
+      | WebEngageEvents[WebEngageEventName.PATIENT_SESSION_STREAM_DESTROYED]
+      | WebEngageEvents[WebEngageEventName.PATIENT_SESSION_STREAM_PROPERTY_CHANGED] = {
+      'Doctor ID': doctorId,
+      'Patient ID': patientId,
+      'Appointment ID': channel,
+      event: data,
+    };
+    postWebEngageEvent(type, eventAttributes);
+  };
+
+  const openTokErrorWebEngageEvents = (
+    type:
+      | WebEngageEventName.DOCTOR_SUBSCRIBER_ERROR
+      | WebEngageEventName.DOCTOR_SUBSCRIBER_OTRNERROR
+      | WebEngageEventName.PATIENT_PUBLISHER_ERROR
+      | WebEngageEventName.PATIENT_PUBLISHER_OTRNERROR
+      | WebEngageEventName.PATIENT_SESSION_ERROR
+      | WebEngageEventName.PATIENT_SESSION_OTRNERROR,
+    data: string
+  ) => {
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.DOCTOR_SUBSCRIBER_ERROR]
+      | WebEngageEvents[WebEngageEventName.DOCTOR_SUBSCRIBER_OTRNERROR]
+      | WebEngageEvents[WebEngageEventName.PATIENT_PUBLISHER_ERROR]
+      | WebEngageEvents[WebEngageEventName.PATIENT_PUBLISHER_OTRNERROR]
+      | WebEngageEvents[WebEngageEventName.PATIENT_SESSION_ERROR]
+      | WebEngageEvents[WebEngageEventName.PATIENT_SESSION_OTRNERROR] = {
+      'Doctor ID': doctorId,
+      'Patient ID': patientId,
+      'Appointment ID': channel,
+      error: data,
+      'Session ID': sessionId,
     };
     postWebEngageEvent(type, eventAttributes);
   };
@@ -961,15 +1039,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }
       getPastAppoinmentCount(client, doctorId, patientId, channel).then((data: any) => {
         const yesCount = g(data, 'data', 'data', 'getPastAppointmentsCount', 'yesCount');
-        const noCount = g(data, 'data', 'data', 'getPastAppointmentsCount', 'noCount');
         if (yesCount && yesCount > 0) {
           setShowConnectAlertPopup(false);
         } else {
-          if (noCount && noCount > 0) {
-            setShowConnectAlertPopup(false);
-          } else {
-            setShowConnectAlertPopup(true);
-          }
+          setShowConnectAlertPopup(true);
         }
       });
     } catch (error) {
@@ -1084,7 +1157,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         channel: channel,
         message: {
           message: doctorAutoResponse,
-          automatedText: `We have notified the query you have raised to the ${appointmentData.doctorInfo.displayName}. Doctor will get back to you within 24 hours. In case of emergency, please contact the nearby hospital`,
+          automatedText: `We have notified the query you raised to ${appointmentData.doctorInfo.displayName}. Doctor will get back to you within 24 hours. In case of any emergency, it is advisable to contact a nearby hospital!`,
           id: doctorId,
           isTyping: true,
           messageDate: new Date(),
@@ -1343,15 +1416,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
   };
 
-  const checkNudgeScreenVisibility = async () => {
-    const hideNudgeScreenappointmentID = (await AsyncStorage.getItem(appointmentData.id)) || '';
-    // console.log('hideNudgeScreenappointmentID', hideNudgeScreenappointmentID);
-    if (hideNudgeScreenappointmentID != appointmentData.id) {
-      setDisplayUploadHealthRecords(true);
-      console.log('if hideNudgeScreenappointmentID', hideNudgeScreenappointmentID);
-    } else {
-      setDisplayUploadHealthRecords(false);
-      console.log('else hideNudgeScreenappointmentID', hideNudgeScreenappointmentID);
+  const showAndUpdateNudgeScreenVisibility = async () => {
+    setDisplayUploadHealthRecords(true);
+    const input = {
+      appointmentId: appointmentData.id,
+      hideHealthRecordNudge: true,
+    };
+    try {
+      await client.mutate<updateHealthRecordNudgeStatus, updateHealthRecordNudgeStatusVariables>({
+        mutation: UPDATE_HEALTH_RECORD_NUDGE_STATUS,
+        variables: input,
+      });
+    } catch (error) {
+      CommonBugFender('ChatRoom_updateHealthRecordNudgeStatus', error);
     }
   };
 
@@ -1369,6 +1446,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             10
           );
           isJdAllowed = data.data.addToConsultQueueWithAutomatedQuestions.isJdAllowed;
+          jdAssigned = data.data.addToConsultQueueWithAutomatedQuestions.isJdAssigned;
         })
         .catch((e) => {
           CommonBugFender('ChatRoom_addToConsultQueueWithAutomatedQuestions', e);
@@ -1381,6 +1459,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           console.log(data, 'data res');
           jdCount = parseInt(data.data.addToConsultQueue.totalJuniorDoctorsOnline, 10);
           isJdAllowed = data.data.addToConsultQueue.isJdAllowed;
+          jdAssigned = data.data.addToConsultQueue.isJdAssigned;
         })
         .catch((e) => {
           CommonBugFender('ChatRoom_addToConsultQueue', e);
@@ -1712,20 +1791,37 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const publisherEventHandlers = {
     streamCreated: (event: string) => {
       console.log('Publisher stream created!', event);
+      openTokWebEngageEvents(
+        WebEngageEventName.PATIENT_PUBLISHER_STREAM_CREATED,
+        JSON.stringify(event)
+      );
       stopSound();
     },
     streamDestroyed: (event: string) => {
       console.log('Publisher stream destroyed!', event);
+      openTokWebEngageEvents(
+        WebEngageEventName.PATIENT_PUBLISHER_STREAM_DESTROYED,
+        JSON.stringify(event)
+      );
+
       patientJoinedCall.current = false;
       subscriberConnected.current = false;
       endVoipCall();
     },
     error: (error: string) => {
+      openTokErrorWebEngageEvents(
+        WebEngageEventName.PATIENT_PUBLISHER_ERROR,
+        JSON.stringify(error)
+      );
       AsyncStorage.setItem('callDisconnected', 'true');
       setSnackBar();
       console.log(`There was an error with the publisherEventHandlers: ${JSON.stringify(error)}`);
     },
     otrnError: (error: string) => {
+      openTokErrorWebEngageEvents(
+        WebEngageEventName.PATIENT_PUBLISHER_OTRNERROR,
+        JSON.stringify(error)
+      );
       AsyncStorage.setItem('callDisconnected', 'true');
       setSnackBar();
       console.log(`There was an error with the publisherEventHandlers: ${JSON.stringify(error)}`);
@@ -1736,8 +1832,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     error: (error: string) => {
       setSnackBar();
       console.log(`There was an error with the subscriberEventHandlers: ${JSON.stringify(error)}`);
+      openTokErrorWebEngageEvents(
+        WebEngageEventName.DOCTOR_SUBSCRIBER_ERROR,
+        JSON.stringify(error)
+      );
     },
     connected: (event: string) => {
+      openTokWebEngageEvents(WebEngageEventName.DOCTOR_SUBSCRIBER_CONNECTED, JSON.stringify(event));
       setSnackbarState(false);
       console.log('Subscribe stream connected!', event);
       subscriberConnected.current = true;
@@ -1746,18 +1847,30 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     disconnected: (event: string) => {
       // setSnackbarState(true);
       // setHandlerMessage('Falling back to audio due to bad network!!');
+      openTokWebEngageEvents(
+        WebEngageEventName.DOCTOR_SUBSCRIBER_DISCONNECTED,
+        JSON.stringify(event)
+      );
       console.log('Subscribe stream disconnected!', event);
       patientJoinedCall.current = false;
       subscriberConnected.current = false;
       endVoipCall();
     },
     otrnError: (error: string) => {
+      openTokErrorWebEngageEvents(
+        WebEngageEventName.DOCTOR_SUBSCRIBER_OTRNERROR,
+        JSON.stringify(error)
+      );
       setSnackBar();
       console.log(`There was an error with the subscriberEventHandlers: ${JSON.stringify(error)}`);
     },
     videoDisabled: (error: any) => {
       console.log(`videoDisabled subscriberEventHandlers: ${JSON.stringify(error)}`, error.reason);
       console.log('error.reason', error.reason, error.reason === 'quality');
+      openTokWebEngageEvents(
+        WebEngageEventName.DOCTOR_SUBSCRIBER_VIDEO_DISABLED,
+        JSON.stringify(error)
+      );
       if (error.reason === 'quality') {
         setSnackbarState(true);
         setHandlerMessage('Falling back to audio due to bad network!!');
@@ -1766,6 +1879,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     },
     videoEnabled: (error: any) => {
       console.log(`videoEnabled: ${JSON.stringify(error)}`);
+      openTokWebEngageEvents(
+        WebEngageEventName.DOCTOR_SUBSCRIBER_VIDEO_ENABLED,
+        JSON.stringify(error)
+      );
       if (error.reason === 'quality') {
         setSnackbarState(false);
         setDowngradeToAudio(false);
@@ -1796,6 +1913,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           1021,
         ].includes(error.code)
       ) {
+        openTokErrorWebEngageEvents(
+          WebEngageEventName.PATIENT_SESSION_ERROR,
+          JSON.stringify(error)
+        );
         eventsAfterConnectionDestroyed();
         setTimeout(() => {
           setSnackbarState(true);
@@ -1807,10 +1928,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       console.log(`There was an error with the sessionEventHandlers: ${JSON.stringify(error)}`);
     },
     connectionCreated: (event: string) => {
+      openTokWebEngageEvents(
+        WebEngageEventName.PATIENT_SESSION_CONNECTION_CREATED,
+        JSON.stringify(event)
+      );
       setSnackbarState(false);
       console.log('session stream connectionCreated!', event);
     },
     connectionDestroyed: (event: string) => {
+      openTokWebEngageEvents(
+        WebEngageEventName.PATIENT_SESSION_CONNECTION_DESTROYED,
+        JSON.stringify(event)
+      );
       setTimeout(() => {
         AsyncStorage.getItem('callDisconnected').then((data) => {
           if (!JSON.parse(data || 'false')) {
@@ -1823,20 +1952,30 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       eventsAfterConnectionDestroyed();
     },
     sessionConnected: (event: string) => {
+      openTokWebEngageEvents(WebEngageEventName.PATIENT_SESSION_CONNECTED, JSON.stringify(event));
       setSnackbarState(false);
       console.log('session stream sessionConnected!', event);
       KeepAwake.activate();
     },
     sessionDisconnected: (event: string) => {
+      openTokWebEngageEvents(
+        WebEngageEventName.PATIENT_SESSION_DISCONNECTED,
+        JSON.stringify(event)
+      );
       console.log('session stream sessionDisconnected!', event);
       eventsAfterConnectionDestroyed();
     },
     sessionReconnected: (event: string) => {
+      openTokWebEngageEvents(WebEngageEventName.PATIENT_SESSION_RECONNECTED, JSON.stringify(event));
       setSnackbarState(false);
       console.log('session stream sessionReconnected!', event);
       KeepAwake.activate();
     },
     sessionReconnecting: (event: string) => {
+      openTokWebEngageEvents(
+        WebEngageEventName.PATIENT_SESSION_RECONNECTING,
+        JSON.stringify(event)
+      );
       console.log('session stream sessionReconnecting!', event);
       setSessionReconnectMsg();
       KeepAwake.activate();
@@ -1845,13 +1984,25 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       console.log('session stream signal!', event);
     },
     streamCreated: (event: string) => {
+      openTokWebEngageEvents(
+        WebEngageEventName.PATIENT_SESSION_STREAM_CREATED,
+        JSON.stringify(event)
+      );
       console.log('session streamCreated created!', event);
     },
     streamDestroyed: (event: string) => {
+      openTokWebEngageEvents(
+        WebEngageEventName.PATIENT_SESSION_STREAM_DESTROYED,
+        JSON.stringify(event)
+      );
       console.log('session streamDestroyed destroyed!', event); // is called when the doctor network is disconnected
       eventsAfterConnectionDestroyed();
     },
     streamPropertyChanged: (event: OptntokChangeProp) => {
+      openTokWebEngageEvents(
+        WebEngageEventName.PATIENT_SESSION_STREAM_PROPERTY_CHANGED,
+        JSON.stringify(event)
+      );
       console.log('session streamPropertyChanged!', event); // is called when the doctor network is disconnected
       if (event.stream.name !== (g(currentPatient, 'firstName') || 'patient')) {
         setCallerAudio(event.stream.hasAudio);
@@ -1859,6 +2010,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }
     },
     otrnError: (error: string) => {
+      openTokErrorWebEngageEvents(
+        WebEngageEventName.PATIENT_SESSION_OTRNERROR,
+        JSON.stringify(error)
+      );
       AsyncStorage.getItem('callDisconnected').then((data) => {
         if (!JSON.parse(data || 'false')) {
           setSnackBar();
@@ -1937,35 +2092,21 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }
       },
       message: (message) => {
-        // console.log('messageevent', message);]
-        const messageType = g(message, 'message', 'message');
-        console.log(`pubnub.addListener - ${messageType}`, { message });
+        const messageType = message?.message?.message;
 
         if (messageType == followupconsult) {
           // setStatus(STATUS.COMPLETED);  //Uncomment it if you are not getting the automated message
           postAppointmentWEGEvent(WebEngageEventName.PRESCRIPTION_RECEIVED);
-        }
-        if (messageType == stopConsultJr) {
+        } else if (messageType == stopConsultJr) {
           postAppointmentWEGEvent(WebEngageEventName.JD_COMPLETED);
-        }
-        if (messageType == startConsultMsg) {
-          // Disc
+        } else if (messageType == startConsultMsg) {
           postAppointmentWEGEvent(WebEngageEventName.SD_CONSULTATION_STARTED);
-        }
-        if (messageType == videoCallMsg && name == 'DOCTOR') {
+        } else if (messageType == videoCallMsg && name == 'DOCTOR') {
           postAppointmentWEGEvent(WebEngageEventName.SD_VIDEO_CALL_STARTED);
         }
 
-        message &&
-          message.message &&
-          message.message.message &&
-          message.message.message === '^^#startconsult' &&
-          setname('DOCTOR');
-        message &&
-          message.message &&
-          message.message.message &&
-          message.message.message === '^^#startconsultJr' &&
-          setname('JUNIOR');
+        messageType === startConsultMsg && setname('DOCTOR');
+        messageType === startConsultjr && setname('JUNIOR');
         pubNubMessages(message);
       },
       // presence: (presenceEvent) => {    // APP-2803: removed No show logic
@@ -2421,8 +2562,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (appointmentData.isJdQuestionsComplete) {
       console.log({});
       requestToJrDoctor();
-      if (!disableChat && status !== STATUS.COMPLETED) {
-        checkNudgeScreenVisibility();
+      if (
+        !disableChat &&
+        status !== STATUS.COMPLETED &&
+        !appointmentData.hideHealthRecordNudge &&
+        !isVoipCall &&
+        !fromIncomingCall
+      ) {
+        showAndUpdateNudgeScreenVisibility();
       }
       // startJoinTimer(0);
       // thirtySecondCall();
@@ -2483,10 +2630,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             channel: channel,
             message: {
               message: firstMessage,
-              automatedText: `Hi ${currentPatient &&
-                currentPatient.firstName}, sorry to keep you waiting. ${
+              automatedText: strings.common.jdAssignedMessage.replace(
+                /0/gi,
                 appointmentData.doctorInfo.displayName
-              }’s team is with another patient right now. Your consultation prep will start soon.`,
+              ),
               id: doctorId,
               isTyping: true,
               messageDate: new Date(),
@@ -2549,7 +2696,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         jdCount > 0 &&
         isJdAllowed === true &&
         !!(textChange && !jrDoctorJoined.current) &&
-        status !== STATUS.COMPLETED
+        status !== STATUS.COMPLETED &&
+        jdAssigned
       ) {
         // console.log('result.length ', result);
         pubnub.publish(
@@ -2659,7 +2807,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const [showFeedback, setShowFeedback] = useState(false);
-  const { showAphAlert, audioTrack, setPrevVolume, maxVolume } = useUIElements();
+  const { showAphAlert, audioTrack, setPrevVolume, maxVolume, hideAphAlert } = useUIElements();
   const pubNubMessages = (message: Pubnub.MessageEvent) => {
     console.log('pubNubMessages', message.message.sentBy);
     if (message.message.isTyping) {
@@ -4571,6 +4719,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       rowData.message === stopConsultMsg ||
       rowData.message === cancelConsultInitiated ||
       rowData.message === callAbandonment ||
+      rowData.message === vitalsCompletedByPatient ||
       rowData.message === patientRejectedCall ||
       rowData === patientRejectedCall
     ) {
@@ -6311,6 +6460,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setIsAudioCall(true);
     } else {
       setIsCall(true);
+      if (patientJoinedCall.current) {
+        setTimeout(() => {
+          setShowVideo(false);
+        }, 1000);
+      }
     }
     setLoading(false);
   };
@@ -6508,6 +6662,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const uploadPrescriptionPopup = () => {
     return (
       <UploadPrescriprionPopup
+        type={'nonCartFlow'}
         heading="Attach File(s)"
         instructionHeading="Instructions For Uploading Files"
         instructions={[
@@ -6885,7 +7040,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           leftIcon="backArrow"
           container={{ borderBottomWidth: 0, zIndex: 100 }}
           onPressLeftIcon={() => {
-            if (callhandelBack) {
+            if (fromSearchAppointmentScreen) {
+              props.navigation.goBack();
+            } else if (callhandelBack) {
               // handleCallTheEdSessionAPI();
               setDoctorJoinedChat && setDoctorJoinedChat(false);
               props.navigation.dispatch(
@@ -7432,7 +7589,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           navigation={props.navigation}
         />
       )}
-      {showConnectAlertPopup && (
+      {showConnectAlertPopup && !callAccepted && (
         <CustomAlert
           description={`Have you consulted with ${appointmentData.doctorInfo.displayName} before?`}
           onNoPress={() => {

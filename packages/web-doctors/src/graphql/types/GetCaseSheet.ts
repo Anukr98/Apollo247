@@ -72,6 +72,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_appointm
   __typename: "AppointmentDocuments";
   documentPath: string | null;
   prismFileId: string | null;
+  createdDate: any | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment {

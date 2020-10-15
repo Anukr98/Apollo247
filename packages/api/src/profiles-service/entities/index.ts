@@ -131,6 +131,17 @@ export enum MEDICINE_ORDER_STATUS {
   ORDER_BILLED = 'ORDER_BILLED',
   PURCHASED_IN_STORE = 'PURCHASED_IN_STORE',
   PAYMENT_ABORTED = 'PAYMENT_ABORTED',
+  ON_HOLD = 'ON_HOLD',
+  READY_FOR_VERIFICATION = 'READY_FOR_VERIFICATION',
+  VERIFICATION_DONE = 'VERIFICATION_DONE',
+  RETURN_PENDING = 'RETURN_PENDING',
+  RETURN_TO_ORIGIN = 'RETURN_TO_ORIGIN',
+  RETURN_REQUESTED = 'RETURN_REQUESTED',
+  RVP_ASSIGNED = 'RVP_ASSIGNED',
+  RETURN_PICKUP = 'RETURN_PICKUP',
+  RETURN_RTO = 'RETURN_RTO',
+  READY_TO_SHIP = 'READY_TO_SHIP',
+  SHIPPED = 'SHIPPED',
 }
 
 export enum UPLOAD_FILE_TYPES {
@@ -295,6 +306,11 @@ export enum PROFILE_SOURCE {
   MFINE = 'MFINE',
 }
 
+export type DriverDetails = {
+  driverName: string;
+  driverPhone: string;
+};
+
 @EventSubscriber()
 export class PatientEntitiySubscriber implements EntitySubscriberInterface<Patient> {
   beforeUpdate(event: UpdateEvent<any>): Promise<any> | void {
@@ -427,7 +443,7 @@ export class MedicineOrders extends BaseEntity {
   @Column({ nullable: true })
   allocationProfileName: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedDate: Date;
 
   @BeforeInsert()
@@ -841,7 +857,7 @@ export class MedicineOrdersStatus extends BaseEntity {
   @Column({ nullable: true })
   customReason: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedDate: Date;
 
   @BeforeInsert()
@@ -1361,6 +1377,9 @@ export class PatientAddress extends BaseEntity {
 
   @Column({ nullable: true })
   addressType: PATIENT_ADDRESS_TYPE;
+
+  @Column({ nullable: true, default: false })
+  defaultAddress: boolean;
 
   @Column({ nullable: true })
   city: string;
@@ -2062,6 +2081,9 @@ export class Diagnostics extends BaseEntity {
   @Column({ nullable: true })
   cityId: number;
 
+  @Column({ nullable: true })
+  subCategoryId: number;
+
   @Column({ default: TEST_COLLECTION_TYPE.HC })
   collectionType: TEST_COLLECTION_TYPE;
 
@@ -2677,6 +2699,9 @@ export class MedicineOrderShipments extends BaseEntity {
   @Column({ nullable: true })
   cancelReasonCode: string;
 
+  @Column({ nullable: true, type: 'jsonb' })
+  driverDetails: DriverDetails;
+
   @Column({ nullable: true })
   currentStatus: MEDICINE_ORDER_STATUS;
 
@@ -2689,7 +2714,7 @@ export class MedicineOrderShipments extends BaseEntity {
   })
   oneApolloTransaction: OneApollTransaction;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedDate: Date;
 
   @Column({ nullable: true, type: 'json' })

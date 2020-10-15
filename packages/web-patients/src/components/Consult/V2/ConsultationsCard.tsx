@@ -39,6 +39,8 @@ import {
 } from 'graphql/types/getAppointmentRescheduleDetails';
 import { GET_APPOINTMENT_DOCTOR_RESCHEDULED_DETAILS } from 'graphql/consult';
 import { BookFollowupConsult } from 'components/BookFollowupConsult';
+import PubNub from 'pubnub';
+import { useAllCurrentPatients } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -506,6 +508,7 @@ interface ConsultationsCardProps {
 export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
   const classes = useStyles({});
   const client = useApolloClient();
+  const { currentPatient } = useAllCurrentPatients();
   const mascotRef = useRef(null);
   const [appointmentData, setAppointmentData] = useState<AppointmentDetails | null>(null);
   // const [nextSlotAvailable, setNextSlotAvailable] = useState<string>('');
@@ -711,6 +714,14 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
     }
   };
 
+  const pubnubClient = new PubNub({
+    publishKey: process.env.PUBLISH_KEY,
+    subscribeKey: process.env.SUBSCRIBE_KEY,
+    uuid: currentPatient && currentPatient.id,
+    ssl: false,
+    origin: 'apollo.pubnubapi.com',
+  });
+
   const bookAppointment = useMutation(BOOK_APPOINTMENT_RESCHEDULE);
 
   const rescheduleAPI = (
@@ -724,6 +735,23 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
       fetchPolicy: 'no-cache',
     })
       .then((data: any) => {
+        pubnubClient.publish({
+          channel: bookRescheduleInput.appointmentId,
+          message: {
+            message: `The appointment is rescheduled to ${moment(
+              bookRescheduleInput.newDateTimeslot
+            ).format('Do MMMM, dddd \nhh:mm a')}`,
+            automatedText: `The appointment is rescheduled to ${moment(
+              bookRescheduleInput.newDateTimeslot
+            ).format('Do MMMM, dddd \nhh:mm a')}`,
+            id: bookRescheduleInput.doctorId,
+            isTyping: true,
+            messageDate: new Date(),
+            cardType: 'patient',
+          },
+          storeInHistory: true,
+          sendByPost: true,
+        });
         setIsModalOpen(false);
         setApiLoading(false);
         setReschedulesRemaining(

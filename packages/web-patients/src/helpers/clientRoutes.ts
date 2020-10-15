@@ -2,7 +2,7 @@ import { webPatientsBaseUrl } from '@aph/universal/dist/aphRoutes';
 
 export const clientRoutes = {
   patients: () => '/patients',
-
+  specialtyDetailsWithCity: (specialty: string, city: string) =>`/doctors/${specialty}-in-${city}-scity`,
   welcome: () => '/',
   doctorDetails: (doctorName: string, doctorId: string) => `/doctors/${doctorName}-${doctorId}`,
   specialtyDoctorDetails: (specialty: string, doctorName: string, doctorId: string) =>
@@ -10,6 +10,7 @@ export const clientRoutes = {
   doctorsLanding: () => '/track-symptoms/doctors',
   specialties: (specialty: string) => `/specialties/${specialty}`,
   citySpecialties: (city: string, specialty: string) => `/${city}/specialties/${specialty}`,
+ 
   appointments: () => '/appointments',
   appointmentSuccess: () => `/appointments/${status}`,
   testsAndMedicine: () => '/tests-medicines',
@@ -53,8 +54,10 @@ export const clientRoutes = {
   partnerSBI: () => '/partners/sbi',
   contactUs: () => '/contact',
   covidLanding: () => '/covid19',
+  knowledgeBaseLanding: () => '/blog',
   kavachLanding: () => '/covid19/kavach',
   covidDetails: () => '/covid19/*',
+  articleDetails: () => '/blog/*',
   aboutUs: () => '/aboutUs',
   needHelp: () => '/needHelp',
   myPayments: () => '/my-payments',
@@ -64,8 +67,17 @@ export const clientRoutes = {
   prescriptionReview: () => '/prescription-review',
   specialityListing: () => '/specialties',
   medicinePrescription: () => '/medicine-prescription',
+  covidDiabetes: () => '/medical-condition/covid-and-diabetes',
+  partnersHdfc: () => '/partners/hdfc',
+  membershipHdfc: () => '/partners/hdfc-membership',
+  myMembership: () => '/my-membership',
+  membershipPlanLocked: () => '/partners/hdfc-membership-locked',
+  membershipPlanDetail: () => '/partners/hdfc-membership-plan-detail',
   covidProtocol: () => '/medical-condition',
+  dietetics: () => 'specialties/dietetics',
   prescription: (appointmentId: string) => `/prescription/${appointmentId}`,
+  sitemap: (sitemap: string) => `/static/${sitemap}`,
+  childSitemap: (sitemap: string, pageNo: string) => `/static/${sitemap}/${pageNo}`,
   oneApolloMembership: () => '/oneapollo-membership',
   // sitemap: (sitemap: string) => `/${sitemap}`,
   // childSitemap: (sitemap: string, pageNo: string) => `/${sitemap}/${pageNo}`,

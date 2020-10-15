@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { makeStyles } from '@material-ui/core';
-import { Theme } from '@material-ui/core';
+import React, { useEffect } from 'react';
+import { makeStyles, Theme } from '@material-ui/core';
 import { Header } from 'components/Header';
 import { BottomLinks } from 'components/BottomLinks';
 import { NavigationBottom } from 'components/NavigationBottom';
-import { dataLayerTracking } from 'gtmTracking';
 import { MetaTagsComp } from 'MetaTagsComp';
+import { dataLayerTracking } from 'gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -91,6 +90,12 @@ const useStyles = makeStyles((theme: Theme) => {
 
 const TermsAndConditions: React.FC = () => {
   const classes = useStyles({});
+  const metaTagProps = {
+    title: 'Apollo 247 - Terms and Conditions - Apollo Hospitals',
+    description:
+      'Apollo 247 - Read all of our terms and conditions. Apollo 24|7 is a part of the multi-specialty healthcare group Apollo Hospitals.',
+    canonicalLink: typeof window !== 'undefined' && window.location && window.location.href,
+  };
 
   useEffect(() => {
     /**Gtm code start start */
@@ -104,16 +109,9 @@ const TermsAndConditions: React.FC = () => {
     /**Gtm code start end */
   }, []);
 
-  const [metaTagProps, setMetaTagProps] = useState(null);
-  setMetaTagProps({
-    title: 'Apollo 247 - Terms and Conditions - Apollo Hospitals',
-    description:
-      'Apollo 247 - Read all of our terms and conditions. Apollo 24|7 is a part of the multi-specialty healthcare group Apollo Hospitals.',
-    canonicalLink: typeof window !== 'undefined' && window.location && window.location.href,
-  });
   return (
     <div className={classes.root}>
-      {metaTagProps && <MetaTagsComp {...metaTagProps} />}
+      <MetaTagsComp {...metaTagProps} />
       <Header />
       <div className={classes.container}>
         <div className={classes.pageContainer}>

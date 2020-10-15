@@ -9,6 +9,8 @@ import {
   DIAGNOSTIC_ORDER_STATUS,
 } from 'profiles-service/entities';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { sendDiagnosticOrderStatusNotification } from 'notifications-service/handlers/main';
+import { NotificationType } from 'notifications-service/constants';
 
 export const cancelDiagnosticOrdersTypeDefs = gql`
   type DiagnosticOrderCancelResult {
@@ -28,6 +30,21 @@ export const cancelDiagnosticOrdersTypeDefs = gql`
     centerCity: String!
     centerState: String!
     centerLocality: String!
+  }
+
+  type SendDiagnosticOrderNotificationResponse {
+    status: Boolean
+  }
+
+  extend type Query {
+    sendDiagnosticOrderNotification(
+      type: String
+      patientID: String
+      mobileNumber: String
+      patientFirstName: String
+      displayID: Int
+      orderID: String
+    ): SendDiagnosticOrderNotificationResponse!
   }
 
   extend type Mutation {
@@ -55,6 +72,10 @@ type UpdateDiagnosticOrderInput = {
   centerCity: string;
   centerState: string;
   centerLocality: string;
+};
+
+type SendDiagnosticOrderNotificationResponse = {
+  status: boolean;
 };
 
 type UpdateOrderInputArgs = { updateDiagnosticOrderInput: UpdateDiagnosticOrderInput };
@@ -112,9 +133,53 @@ const cancelDiagnosticOrder: Resolver<
   return { message: 'Order cancelled successfully' };
 };
 
+const sendDiagnosticOrderNotification: Resolver<
+  null,
+  {
+    type: string;
+    patientID: string;
+    mobileNumber: string;
+    patientFirstName: string;
+    displayID: number;
+    orderID: string;
+  },
+  ProfilesServiceContext,
+  SendDiagnosticOrderNotificationResponse
+> = async (parent, args, { profilesDb }) => {
+  console.log(args);
+  let notificationType: NotificationType;
+  switch (args.type) {
+    case NotificationType.DIAGNOSTIC_ORDER_SUCCESS:
+      notificationType = NotificationType.DIAGNOSTIC_ORDER_SUCCESS;
+      break;
+    case NotificationType.DIAGNOSTIC_ORDER_PAYMENT_FAILED:
+      notificationType = NotificationType.DIAGNOSTIC_ORDER_PAYMENT_FAILED;
+      break;
+    default:
+      console.log(args.type);
+      throw new AphError(AphErrorMessages.UNKNOWN_NOTIFICATION_ERROR);
+  }
+  const notification = await sendDiagnosticOrderStatusNotification(
+    notificationType,
+    profilesDb,
+    args.patientID,
+    args.mobileNumber,
+    args.patientFirstName,
+    args.displayID,
+    args.orderID
+  );
+  if (!notification) {
+    return { status: false };
+  }
+  return { status: notification.status };
+};
+
 export const cancelDiagnosticOrdersResolvers = {
   Mutation: {
     cancelDiagnosticOrder,
     updateDiagnosticOrder,
+  },
+  Query: {
+    sendDiagnosticOrderNotification,
   },
 };

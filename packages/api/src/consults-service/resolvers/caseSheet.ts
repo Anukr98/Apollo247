@@ -226,6 +226,7 @@ export const caseSheetTypeDefs = gql`
   type AppointmentDocuments {
     documentPath: String
     prismFileId: String
+    createdDate: DateTime
   }
 
   type CaseSheetFullDetails {
@@ -622,6 +623,7 @@ const getJuniorDoctorCaseSheet: Resolver<
 type AppointmentDocuments = {
   documentPath: string;
   prismFileId: string;
+  createdDate: Date;
 };
 
 type AppointmentDetails = {
@@ -805,12 +807,12 @@ const modifyCaseSheet: Resolver<
   const getCaseSheetDetails = await caseSheetRepo.getCaseSheetById(inputArguments.id);
   if (getCaseSheetDetails == null) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID);
 
-  const getCaseSheetData =  caseSheetRepo.modifyCasesheetData(inputArguments,getCaseSheetDetails);
+  const getCaseSheetData = caseSheetRepo.modifyCasesheetData(inputArguments, getCaseSheetDetails);
 
   // this check is necessary til doctor-app's new version is not released
   if (!getCaseSheetData.followUpAfterInDays && (inputArguments.followUpAfterInDays === 0 || inputArguments.followUpAfterInDays === undefined || inputArguments.followUpAfterInDays === null)) {
     const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
-    const getDoctorDetails = await doctorRepo.findDoctorByIdWithoutRelations(getCaseSheetData.appointment.doctorId);  
+    const getDoctorDetails = await doctorRepo.findDoctorByIdWithoutRelations(getCaseSheetData.appointment.doctorId);
     getCaseSheetData.followUpAfterInDays = (getDoctorDetails && getDoctorDetails.chatDays) || 7;
   }
 
@@ -837,7 +839,7 @@ const modifyCaseSheet: Resolver<
 
   const getCaseSheetDataWithoutStatus = _.omit(getCaseSheetData, 'status');
   //medicalHistory upsert ends
-  const caseSheetAttrs: Omit<Partial<CaseSheet>, 'id'> = getCaseSheetDataWithoutStatus;  
+  const caseSheetAttrs: Omit<Partial<CaseSheet>, 'id'> = getCaseSheetDataWithoutStatus;
   promises.push(
     caseSheetRepo
       .updateCaseSheetWithPartialData(inputArguments.id, caseSheetAttrs, getCaseSheetDataWithoutStatus)
@@ -1169,7 +1171,7 @@ const submitJDCaseSheet: Resolver<
 
   //post event to webengage
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-//  const patientDetails = await patientRepo.findByIdWithRelations(appointmentData.patientId, []);
+  //  const patientDetails = await patientRepo.findByIdWithRelations(appointmentData.patientId, []);
   const patientDetails = await patientRepo.getPatientDetailsForConsult(appointmentData.patientId);
 
   const postBody: Partial<WebEngageInput> = {

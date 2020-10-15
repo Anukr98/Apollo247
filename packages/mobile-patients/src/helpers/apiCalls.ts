@@ -39,12 +39,10 @@ interface PharmaOverview {
   Unit: string;
   Strength: string;
   Strengh: string;
-  Overview:
-    | {
-        Caption: string;
-        CaptionDesc: string;
-      }[]
-    | string;
+  Overview: {
+    Caption: string;
+    CaptionDesc: string;
+  }[]; // type can be string if information not available
 }
 
 export interface MedicineProductDetailsResponse {
@@ -139,6 +137,8 @@ export interface ServiceAbilityApiInput {
 export interface GetAvailabilityResponse247 {
   response: {
     sku: string;
+    qty: number;
+    mrp: number;
     exist: boolean;
   }[];
   errorMSG?: string;
@@ -153,10 +153,14 @@ export interface GetTatResponse247 {
       exist: boolean;
     }[];
     storeCode: string;
+    pincode: number;
+    lat: number;
+    lng: number;
     tat: string;
     tatU: number;
     inventoryExist: boolean;
     storeType: string;
+    ordertime: number;
   };
   errorMSG?: string;
 }
@@ -512,13 +516,11 @@ export const pinCodeServiceabilityApi247 = (
   pincode: string
 ): Promise<AxiosResponse<{ response: boolean }>> => {
   const url = `${config.UATTAT_CONFIG[0]}/serviceable?pincode=${pincode}`;
-  return Axios.get(url,
-    {
-      headers: {
-        Authorization: config.UATTAT_CONFIG[1],
-      },
-    }
-  );
+  return Axios.get(url, {
+    headers: {
+      Authorization: config.UATTAT_CONFIG[1],
+    },
+  });
 };
 
 export const availabilityApi247 = (
@@ -526,13 +528,11 @@ export const availabilityApi247 = (
   sku: string
 ): Promise<AxiosResponse<GetAvailabilityResponse247>> => {
   const url = `${config.UATTAT_CONFIG[0]}/availability?sku=${sku}&pincode=${pincode}`;
-  return Axios.get(url,
-    {
-      headers: {
-        Authorization: config.UATTAT_CONFIG[1],
-      },
-    }
-  );
+  return Axios.get(url, {
+    headers: {
+      Authorization: config.UATTAT_CONFIG[1],
+    },
+  });
 };
 
 export const medCartItemsDetailsApi = (
@@ -799,15 +799,22 @@ export const getTxnStatus = (orderID: string): Promise<AxiosResponse<any>> => {
   return Axios.post(url, { orderID: orderID });
 };
 
-export const fetchConsultCoupons = (): Promise<AxiosResponse<any>> => {
+export const fetchConsultCoupons = (packageId: string): Promise<AxiosResponse<any>> => {
   const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
-  const url = `${baseUrl}/frontend`;
+  let url = `${baseUrl}/frontend`;
+  if (!!packageId) {
+    url += `?packageId=${packageId}`;
+  }
   return Axios.get(url);
 };
 
 export const validateConsultCoupon = (data: any): Promise<AxiosResponse<any>> => {
+  const { mobile, packageId, email } = data;
   const baseUrl = AppConfig.Configuration.CONSULT_COUPON_BASE_URL;
-  const url = `${baseUrl}/validate`;
+  let url = `${baseUrl}/validate?mobile=${mobile}&email=${email}`;
+  if (!!packageId) {
+    url += `&packageId=${packageId}`;
+  }
   return Axios.post(url, data);
 };
 

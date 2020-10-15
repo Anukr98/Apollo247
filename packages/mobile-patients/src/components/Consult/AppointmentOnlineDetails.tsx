@@ -170,9 +170,9 @@ const styles = StyleSheet.create({
   },
   cancelViewStyles: {
     backgroundColor: 'white',
-    width: 100,
-    height: 45,
-    marginLeft: width - 120,
+    width: 200,
+    height: 55.5,
+    marginLeft: width - 220,
     marginTop: 40,
     borderRadius: 10,
     alignItems: 'center',
@@ -183,7 +183,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     color: '#02475b',
     ...theme.fonts.IBMPlexSansMedium(16),
-    textAlign: 'center',
   },
   cancelMainView: { margin: 0, height: height, width: width, backgroundColor: 'transparent' },
   dropdownOverlayStyle: {
@@ -965,7 +964,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                   }}
                 >
                   <View style={styles.cancelViewStyles}>
-                    <Text style={styles.cancelText}>Cancel</Text>
+                    <Text style={styles.cancelText}>Cancel Appointment</Text>
                   </View>
                 </TouchableOpacity>
               </View>
@@ -976,7 +975,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
           <BottomPopUp
             title={`Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`}
             description={
-              'Since you could not complete the appointment, you can choose to cancel or reschedule.'
+              "Since you're cancelling 15 minutes before your appointment, we'll issue you a full refund!"
             }
           >
             <View

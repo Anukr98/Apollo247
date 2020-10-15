@@ -16,10 +16,8 @@ import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/St
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import {
-  CommonLogEvent,
-  CommonBugFender,
-} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { helpers } from '@aph/mobile-patients/src/components/MedicineDetails';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   getMedicineDetailsApi,
   getSubstitutes,
@@ -216,11 +214,19 @@ const styles = StyleSheet.create({
   stickyBottomComponent: { height: 'auto', flexDirection: 'column' },
 });
 
+type PharmacyTatApiCalled = WebEngageEvents[WebEngageEventName.PHARMACY_TAT_API_CALLED];
+
+export type ProductPageViewedEventProps = Pick<
+  WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED],
+  'Category ID' | 'Category Name' | 'Section Name'
+>;
+
 export interface MedicineDetailsSceneProps
   extends NavigationScreenProps<{
     sku: string;
     /** movedFrom prop is mandatory. It is used as source in Product page viewed event */
     movedFrom: ProductPageViewedSource;
+    productPageViewedEventProps?: ProductPageViewedEventProps;
     deliveryError: string;
     sectionName?: string;
   }> {}
@@ -231,6 +237,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const [medicineDetails, setmedicineDetails] = useState<MedicineProductDetails>(
     {} as MedicineProductDetails
   );
+  const [tatEventData, setTatEventData] = useState<PharmacyTatApiCalled>();
   const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
   const pharmacyPincode = g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
@@ -250,84 +257,11 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
   const { showAphAlert, setLoading: setGlobalLoading } = useUIElements();
 
-  const formatTabData = (
-    index: number,
-    array: {
-      Caption: string;
-      CaptionDesc: string;
-    }[]
-  ) => {
-    const findDesc = (key: string) =>
-      (
-        array.find((item) => (item.Caption || '').toLowerCase() == key.toLowerCase()) || {
-          CaptionDesc: '',
-        }
-      ).CaptionDesc;
-
-    return index == 0
-      ? findDesc('Uses')
-      : index == 1
-      ? `${findDesc('How to use')}\n${findDesc('How it works')}`
-      : index == 2
-      ? `${findDesc('Side effects')}`
-      : index == 3
-      ? `${
-          findDesc('DRUG ALCOHOL INTERACTION')
-            ? `Alcohol:\n${findDesc('DRUG ALCOHOL INTERACTION')}\n`
-            : ''
-        }${
-          findDesc('DRUG PREGNANCY INTERACTION')
-            ? `Pregnancy:\n${findDesc('DRUG PREGNANCY INTERACTION')}\n`
-            : ''
-        }${
-          findDesc('DRUG MACHINERY INTERACTION (DRIVING)')
-            ? `Driving:\n${findDesc('DRUG MACHINERY INTERACTION (DRIVING)')}\n`
-            : ''
-        }${findDesc('KIDNEY') ? `Kidney:\n${findDesc('KIDNEY')}\n` : ''}${
-          findDesc('LIVER') ? `Liver:\n${findDesc('LIVER')}` : ''
-        }`
-      : index == 4
-      ? `${findDesc('DRUGS WARNINGS')}`
-      : `${findDesc('STORAGE')}`;
-  };
-
-  const _medicineOverview = g(medicineDetails, 'PharmaOverview', '0' as any, 'Overview');
+  const overview = medicineDetails?.PharmaOverview?.[0]?.Overview;
   const medicineOverview =
-    typeof _medicineOverview == 'string'
-      ? []
-      : (
-          (_medicineOverview &&
-            _medicineOverview
-              .filter((item) => item.Caption.length > 0 && item.CaptionDesc.length > 0)
-              .map((item) => {
-                const Caption =
-                  item.Caption.charAt(0).toUpperCase() + item.Caption.slice(1).toLowerCase();
-                return { ...item, Caption: Caption };
-              })) ||
-          []
-        )
-          .map((item, index, array) => {
-            return {
-              Caption:
-                index == 0
-                  ? 'Overview'
-                  : index == 1
-                  ? 'Usage'
-                  : index == 2
-                  ? 'Side Effects'
-                  : index == 3
-                  ? 'Precautions'
-                  : index == 4
-                  ? 'Drug Warnings'
-                  : 'Storage',
-              CaptionDesc: formatTabData(index, array),
-            };
-          })
-          .slice(0, 6)
-          .filter((i) => i.CaptionDesc) || [];
+    (!overview || typeof overview == 'string') ? [] : helpers.getMedicineOverview(overview || []);
 
   const sku = props.navigation.getParam('sku'); // 'MED0017';
-  aphConsole.log('SKU\n', sku);
 
   const { addCartItem, cartItems, updateCartItem, removeCartItem } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
@@ -341,6 +275,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const scrollViewRef = React.useRef<KeyboardAwareScrollView>(null);
   const cartItemsCount = cartItems.length + diagnosticCartItems.length;
   const movedFrom = props.navigation.getParam('movedFrom');
+  const productPageViewedEventProps = props.navigation.getParam('productPageViewedEventProps');
 
   useEffect(() => {
     if (!_deliveryError) {
@@ -390,6 +325,19 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     }
   }, [deliveryTime, deliveryError]);
 
+  useEffect(() => {
+    try {
+      if (medicineDetails?.price && tatEventData) {
+        const eventAttributes: PharmacyTatApiCalled = {
+          ...tatEventData,
+          Input_MRP: medicineDetails.price,
+          Response_MRP: tatEventData.Response_MRP * Number(medicineDetails.mou || 1),
+        };
+        postWebEngageEvent(WebEngageEventName.PHARMACY_TAT_API_CALLED, eventAttributes);
+      }
+    } catch (error) {}
+  }, [medicineDetails, tatEventData]);
+
   const trackTagalysViewEvent = (details: MedicineProductDetails) => {
     try {
       trackTagalysEvent(
@@ -414,6 +362,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         ProductId: sku,
         ProductName: name,
         'Stock availability': !!is_in_stock ? 'Yes' : 'No',
+        ...productPageViewedEventProps,
       };
       postWebEngageEvent(WebEngageEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
     }
@@ -493,6 +442,20 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
       const checkAvailabilityRes = await availabilityApi247(pincode, sku);
       const outOfStock = !!!checkAvailabilityRes?.data?.response[0]?.exist;
+      try {
+        const { mrp, exist, qty } = checkAvailabilityRes.data.response[0];
+        const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED] = {
+          Source: 'PDP',
+          Input_SKU: sku,
+          Input_Pincode: pincode,
+          Input_MRP: medicineDetails?.price,
+          No_of_items_in_the_cart: 1,
+          Response_Exist: exist ? 'Yes' : 'No',
+          Response_MRP: mrp,
+          Response_Qty: qty,
+        };
+        postWebEngageEvent(WebEngageEventName.PHARMACY_AVAILABILITY_API_CALLED, eventAttributes);
+      } catch (error) {}
 
       if (outOfStock) {
         setdeliveryTime('');
@@ -522,7 +485,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       }
 
       getDeliveryTAT247({
-        items: [{ sku: sku, qty: getItemQuantity(sku) }],
+        items: [{ sku: sku, qty: getItemQuantity(sku) || 1 }],
         pincode: pincode,
         lat: lattitude,
         lng: longitude,
@@ -555,6 +518,32 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             setdeliveryError(pincodeServiceableItemOutOfStockMsg);
             setdeliveryTime('');
           }
+          try {
+            const response = res.data.response;
+            const item = response.items[0];
+            const eventAttributes: PharmacyTatApiCalled = {
+              Source: 'PDP',
+              Input_sku: sku,
+              Input_qty: getItemQuantity(sku) || 1,
+              Input_lat: lattitude,
+              Input_long: longitude,
+              Input_pincode: pincode,
+              Input_MRP: medicineDetails?.price, // overriding this value after PDP API call
+              No_of_items_in_the_cart: 1,
+              Response_Exist: item.exist ? 'Yes' : 'No',
+              Response_MRP: item.mrp, // overriding this value after PDP API call
+              Response_Qty: item.qty,
+              Response_lat: response.lat,
+              Response_lng: response.lng,
+              Response_ordertime: response.ordertime,
+              Response_pincode: `${response.pincode}`,
+              Response_storeCode: response.storeCode,
+              Response_storeType: response.storeType,
+              Response_tat: response.tat,
+              Response_tatU: response.tatU,
+            };
+            setTatEventData(eventAttributes);
+          } catch (error) {}
         })
         .catch(() => {
           // Intentionally show T+2 days as Delivery Date
@@ -1285,7 +1274,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           data={medicineDetails.similar_products}
           Component={ProductUpSellingCard}
           navigation={props.navigation}
-          addToCartSource={'Pharmacy PDP'}
+          addToCartSource={'Similar Widget'}
           movedFrom={ProductPageViewedSource.SIMILAR_PRODUCTS}
         />,
       ];

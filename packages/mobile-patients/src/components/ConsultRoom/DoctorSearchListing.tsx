@@ -29,7 +29,11 @@ import {
   CommonLogEvent,
   setBugFenderLog,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { DOCTOR_SPECIALITY_BY_FILTERS } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  DOCTOR_SPECIALITY_BY_FILTERS,
+  GET_DOCTOR_LIST,
+  GET_DOCTORLIST_FILTERS,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getDoctorsBySpecialtyAndFilters,
   getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors,
@@ -37,6 +41,7 @@ import {
   getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability,
   getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_specialty,
 } from '@aph/mobile-patients/src/graphql/types/getDoctorsBySpecialtyAndFilters';
+import { getDoctorList } from '@aph/mobile-patients/src/graphql/types/getDoctorList';
 import {
   ConsultMode,
   FilterDoctorInput,
@@ -189,14 +194,10 @@ export type filterDataType = {
 export type locationType = { lat: number | string; lng: number | string };
 export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) => {
   const specialistPluralTerm = props.navigation.getParam('specialistPluralTerm');
-  const docFilters = props.navigation.getParam('filters');
   const typeOfConsult = props.navigation.getParam('typeOfConsult');
   const doctorTypeFilter = props.navigation.getParam('doctorType');
   const cityFilter = props.navigation.getParam('city');
   const brandFilter = props.navigation.getParam('brand');
-  const [docFiltersOptions, setDocFilterOptions] = useState<any>(
-    !docFilters ? searchFilters : docFilters
-  );
   const scrollViewRef = React.useRef<ScrollView | null>(null);
   const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
   const [displayFilter, setDisplayFilter] = useState<boolean>(false);
@@ -220,16 +221,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const { locationForDiagnostics, locationDetails, setLocationDetails } = useAppCommonData();
   const { clearCartInfo } = useDiagnosticsCart();
   const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
-
-  const [doctorsAvailability, setdoctorsAvailability] = useState<
-    | (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsAvailability | null)[]
-    | null
-  >([]);
-
-  const [doctorsNextAvailability, setdoctorsNextAvailability] = useState<
-    | (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability | null)[]
-    | null
-  >([]);
 
   const [
     specialities,
@@ -292,9 +283,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
 
     return filterData;
   };
-  const [FilterData, setFilterData] = useState<filterDataType[]>([
-    ...filterOptions(docFiltersOptions),
-  ]);
+  const [FilterData, setFilterData] = useState<filterDataType[]>([...filterOptions(searchFilters)]);
   const [pageNo, setpageNo] = useState<number>(1);
   const [pageSize, setpageSize] = useState<number>(AppConfig.Configuration.Doctors_Page_Size);
   const [fetching, setfetching] = useState<boolean>(false);
@@ -303,7 +292,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   useEffect(() => {
     async function fetchFilter() {
       const retrievedFilterOptions: any = await AsyncStorage.getItem('FilterOptions');
-      retrievedFilterOptions && setDocFilterOptions(JSON.parse(retrievedFilterOptions));
+      retrievedFilterOptions && setFilterData(filterOptions(JSON.parse(retrievedFilterOptions)));
     }
     fetchFilter();
   }, []);
@@ -316,10 +305,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     }
   }, [currentPatient]);
 
-  const vaueChange = (data: any) => {
-    const filterGetData =
-      data && data.getDoctorsBySpecialtyAndFilters ? data.getDoctorsBySpecialtyAndFilters : null;
-    if (filterGetData.sort === 'distance') {
+  const vaueChange = (sort: any) => {
+    if (sort === 'distance') {
       setNearyByFlag(true);
       setAvailabilityFlag(false);
     } else {
@@ -360,7 +347,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         lng: locationDetails.longitude || '',
       };
       latlng = coordinates;
-      fetchSpecialityFilterData(filterMode, FilterData, latlng);
+      fetchSpecialityFilterData(filterMode, FilterData, latlng, 'availability', undefined, false, doctorSearch);
       setcurrentLocation(locationDetails.displayName);
       setLocationSearchText(locationDetails.displayName);
     }
@@ -370,22 +357,36 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     };
   }, []);
 
+  useEffect(() => {
+    fetchFilters();
+  }, []);
+
+  const fetchFilters = () => {
+    client
+      .query({
+        query: GET_DOCTORLIST_FILTERS,
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data }) => {
+        if (data?.getDoctorListFilters?.filters) {
+          setFilterData(filterOptions(data?.getDoctorListFilters?.filters)),
+            AsyncStorage.setItem(
+              'FilterOptions',
+              JSON.stringify(data?.getDoctorListFilters?.filters)
+            );
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('fetchDoctorsFilterData', e);
+      });
+  };
+
   const filterDoctors = (
-    data: (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null)[],
+    data: any,
     type: string,
     searchText: string = doctorSearch
   ) => {
-    const doctorsApollo =
-      data && data.length && searchText
-        ? data.filter(
-            (i) =>
-              i &&
-              (i.fullName || '')
-                .toString()
-                .toLowerCase()
-                .includes(searchText.toLowerCase())
-          )
-        : data;
+    const doctorsApollo =data;
     if (type == 'APOLLO') {
       const apolloDoctors = doctorsApollo.filter((item) => {
         return item && item.doctorType !== 'DOCTOR_CONNECT';
@@ -399,38 +400,14 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     }
   };
 
-  const setData = (
-    data: getDoctorsBySpecialtyAndFilters,
-    docTabSelected: boolean = false,
-    pageNo?: number
-  ) => {
+  const setData = (data: any, docTabSelected: boolean = false, pageNo?: number) => {
     try {
-      const filterGetData =
-        data && data.getDoctorsBySpecialtyAndFilters ? data.getDoctorsBySpecialtyAndFilters : null;
-      if (filterGetData) {
-        if (filterGetData.doctors) {
-          let array = pageNo ? doctorsList || [] : [];
-          array = array.concat(filterGetData.doctors);
-          setDoctorsList(array);
-          filterDoctors(array, docTabSelected ? 'PARTNERS' : 'APOLLO');
-        }
-
-        if (filterGetData.doctorsAvailability) {
-          let array = pageNo ? doctorsAvailability || [] : [];
-          array = array.concat(filterGetData.doctorsAvailability);
-          setdoctorsAvailability(array);
-          !pageNo && setshowSpinner(false);
-        }
-        if (filterGetData.specialty) {
-          setspecialities(filterGetData.specialty);
-          !pageNo && setshowSpinner(false);
-        }
-        if (filterGetData.doctorsNextAvailability) {
-          let array = pageNo ? doctorsNextAvailability || [] : [];
-          array = array.concat(filterGetData.doctorsNextAvailability);
-          setdoctorsNextAvailability(array);
-          !pageNo && setshowSpinner(false);
-        }
+      const filterGetData = data && data.getDoctorList ? data.getDoctorList : null;
+      if (filterGetData?.doctors) {
+        let array = pageNo ? doctorsList || [] : [];
+        array = array.concat(filterGetData.doctors);
+        setDoctorsList(array);
+        filterDoctors(array, docTabSelected ? 'PARTNERS' : 'APOLLO');
       }
     } catch (e) {
       CommonBugFender('DoctorSearchListing_fetchSpecialityFilterData_try', e);
@@ -484,7 +461,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                         },
                         'distance',
                         response.pincode,
-                        docTabSelected
+                        docTabSelected,
+                        doctorSearch
                       );
                   })
                   .catch((e) => {
@@ -502,15 +480,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           </View>
         ),
       });
-    } else {
-      fetchSpecialityFilterData(
-        filterMode,
-        FilterData,
-        latlng,
-        'distance',
-        undefined,
-        docTabSelected
-      );
     }
   };
 
@@ -519,8 +488,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     SearchData: filterDataType[] = FilterData,
     location: locationType | null = latlng,
     sort: string | null = sortValue,
-    pinCode?: string,
+    pinCode: string | undefined,
     docTabSelected: boolean = false,
+    searchText:string,
     pageNo?: number
   ) => {
     const experienceArray: Range[] = [];
@@ -631,52 +601,45 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       sort: sort,
       pageNo: pageNo ? pageNo + 1 : 1,
       pageSize: pageSize,
+      searchText: searchText ,
     };
     setBugFenderLog('DOCTOR_FILTER_INPUT', JSON.stringify(FilterInput));
     !pageNo && setshowSpinner(true);
     client
-      .query<getDoctorsBySpecialtyAndFilters>({
-        query: DOCTOR_SPECIALITY_BY_FILTERS,
+      .query<getDoctorList>({
+        query: GET_DOCTOR_LIST,
         fetchPolicy: 'no-cache',
         variables: {
           filterInput: FilterInput,
         },
       })
       .then(({ data }) => {
-        console.log(
-          'pageNo >>',
-          pageNo ? pageNo + 1 : 1,
-          'DocsLength >>',
-          data.getDoctorsBySpecialtyAndFilters!.doctors?.length
-        );
         setfetching(false);
         pageNo ? setpageNo(pageNo + 1) : setpageNo(1);
         setData(data, docTabSelected, pageNo);
         !pageNo &&
           (setshowSpinner(false),
-          vaueChange(data),
-          setDocFilterOptions(data.getDoctorsBySpecialtyAndFilters!.filters),
-          setFilterData(filterOptions(data.getDoctorsBySpecialtyAndFilters!.filters)),
-          setApolloDocsNumber(data.getDoctorsBySpecialtyAndFilters!.apolloDoctorCount),
-          setPartnerDocsNumber(data.getDoctorsBySpecialtyAndFilters!.partnerDoctorCount),
-          AsyncStorage.setItem(
-            'FilterOptions',
-            JSON.stringify(data.getDoctorsBySpecialtyAndFilters!.filters)
+          sort && vaueChange(sort),
+          setApolloDocsNumber(
+            data.getDoctorList?.apolloDoctorCount ? data.getDoctorList?.apolloDoctorCount : 0
+          ),
+          setPartnerDocsNumber(
+            data.getDoctorList?.partnerDoctorCount ? data.getDoctorList?.partnerDoctorCount : 0
           ));
         //log data
 
-        const doctorInfo =
-          data &&
-          data.getDoctorsBySpecialtyAndFilters &&
-          data.getDoctorsBySpecialtyAndFilters.doctors === null
-            ? {}
-            : data &&
-              data.getDoctorsBySpecialtyAndFilters &&
-              data.getDoctorsBySpecialtyAndFilters.doctors &&
-              data.getDoctorsBySpecialtyAndFilters.doctors[0];
+        // const doctorInfo =
+        //   data &&
+        //   data.getDoctorsBySpecialtyAndFilters &&
+        //   data.getDoctorsBySpecialtyAndFilters.doctors === null
+        //     ? {}
+        //     : data &&
+        //       data.getDoctorsBySpecialtyAndFilters &&
+        //       data.getDoctorsBySpecialtyAndFilters.doctors &&
+        //       data.getDoctorsBySpecialtyAndFilters.doctors[0];
         // filterOptions(data.getDoctorsBySpecialtyAndFilters.filters);
 
-        setBugFenderLog('DOCTOR_FILTER_DATA', JSON.stringify(doctorInfo));
+        // setBugFenderLog('DOCTOR_FILTER_DATA', JSON.stringify(doctorInfo));
         //end log data
       })
       .catch((e) => {
@@ -789,7 +752,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                   },
                   sortValue,
                   findAddrComponents('postal_code', addrComponents),
-                  doctorsType === 'PARTNERS' ? true : false
+                  doctorsType === 'PARTNERS' ? true : false,
+                  doctorSearch
                 );
                 latlng = {
                   lat: coordinates.lat,
@@ -920,7 +884,18 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               onPress={() => {
                 setSearchIconClicked(!searchIconClicked);
                 setDoctorSearch('');
-                filterDoctors(doctorsList, doctorsType, '');
+                // filterDoctors(doctorsList, doctorsType, '');
+                if(searchIconClicked){
+                  fetchSpecialityFilterData(
+                    filterMode,
+                    FilterData,
+                    latlng,
+                    'availability',
+                    undefined,
+                    doctorsType === 'PARTNERS' ? true : false,
+                    ''
+                  );
+                }
               }}
             >
               <View
@@ -937,7 +912,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   };
 
   const postDoctorClickWEGEvent = (
-    doctorDetails: getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors,
+    doctorDetails: any,
     source: WebEngageEvents[WebEngageEventName.DOCTOR_CLICKED]['Source'],
     type?: 'consult-now' | 'book-appointment'
   ) => {
@@ -945,22 +920,20 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       'Doctor Name': doctorDetails.fullName!,
       Source: source,
       'Doctor ID': doctorDetails.id,
-      'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
+      'Speciality ID': props.navigation.getParam('specialityId') || '',
       'Doctor Category': doctorDetails.doctorType,
-      'Online Price': Number(doctorDetails.onlineConsultationFees),
-      'Physical Price': Number(doctorDetails.physicalConsultationFees),
-      'Doctor Speciality': g(doctorDetails, 'specialty', 'name')!,
+      Fee: Number(doctorDetails?.fee),
+      'Doctor Speciality': doctorDetails?.specialistSingularTerm,
     };
 
     const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.DOCTOR_CLICKED] = {
       DoctorName: doctorDetails.fullName!,
       Source: source,
       DoctorID: doctorDetails.id,
-      SpecialityID: g(doctorDetails, 'specialty', 'id')!,
+      SpecialityID: props.navigation.getParam('specialityId') || '',
       DoctorCategory: doctorDetails.doctorType,
-      OnlinePrice: Number(doctorDetails.onlineConsultationFees),
-      PhysicalPrice: Number(doctorDetails.physicalConsultationFees),
-      DoctorSpeciality: g(doctorDetails, 'specialty', 'name')!,
+      Fee: Number(doctorDetails?.fee),
+      DoctorSpeciality: doctorDetails?.specialistSingularTerm,
     };
 
     if (type == 'consult-now') {
@@ -968,7 +941,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       const appsflyereventAttributes: AppsFlyerEvents[AppsFlyerEventName.CONSULT_NOW_CLICKED] = {
         'customer id': currentPatient ? currentPatient.id : '',
         'doctor id': doctorDetails.id,
-        'specialty id': g(doctorDetails, 'specialty', 'id')!,
+        'specialty id': props.navigation.getParam('specialityId') || '',
       };
       postAppsFlyerEvent(AppsFlyerEventName.CONSULT_NOW_CLICKED, appsflyereventAttributes);
       postFirebaseEvent(FirebaseEventName.CONSULT_NOW_CLICKED, eventAttributesFirebase);
@@ -984,7 +957,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       const appsflyereventAttributes: AppsFlyerEvents[AppsFlyerEventName.DOCTOR_CLICKED] = {
         'customer id': currentPatient ? currentPatient.id : '',
         'doctor id': doctorDetails.id,
-        'specialty id': g(doctorDetails, 'specialty', 'id')!,
+        'specialty id': props.navigation.getParam('specialityId') || '',
       };
       postAppsFlyerEvent(AppsFlyerEventName.DOCTOR_CLICKED, appsflyereventAttributes);
       postFirebaseEvent(FirebaseEventName.DOCTOR_CLICKED, eventAttributesFirebase);
@@ -1004,19 +977,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     }
   };
 
-  const getDoctorAvailableMode = (id: string) => {
-    let availableMode: ConsultMode | null = null;
-    if (doctorsAvailability) {
-      const itemIndex = doctorsAvailability.findIndex((i) => i && i.doctorId === id);
-      if (itemIndex > -1) {
-        availableMode = (doctorsAvailability[itemIndex]!.availableModes || [null])[0];
-      }
-    }
-    return availableMode;
-  };
-
   const renderSearchDoctorResultsRow = (
-    rowData: getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null,
+    rowData: any,
     index: number,
     styles: StyleProp<ViewStyle> = {},
     numberOfLines?: number,
@@ -1029,10 +991,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           rowId={index + 1}
           rowData={rowData}
           navigation={props.navigation}
-          doctorsNextAvailability={doctorsNextAvailability}
           style={styles}
           numberOfLines={numberOfLines}
-          availableModes={getDoctorAvailableMode(rowData.id)}
+          availableModes={rowData.consultMode}
           callSaveSearch={callSaveSearch}
           onPress={() => {
             postDoctorClickWEGEvent(rowData, 'List');
@@ -1050,34 +1011,13 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     return null;
   };
 
-  const consultionType = (id: string, filter: ConsultMode) => {
-    let filterType = false;
-    doctorsAvailability &&
-      doctorsAvailability.forEach((element) => {
-        if (
-          element &&
-          element.doctorId === id &&
-          element.availableModes &&
-          element.availableModes.includes(filter)
-        ) {
-          filterType = true;
-        }
-      });
-    return filterType;
-  };
-
   const renderDoctorSearches = (filter?: ConsultMode, searchText?: string) => {
     const doctors =
       filteredDoctorsList.length && filter
-        ? filteredDoctorsList.filter(
-            (
-              obj: getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null
-            ) => {
-              return consultionType(obj!.id, filter) || consultionType(obj!.id, ConsultMode.BOTH);
-            }
-          )
+        ? filteredDoctorsList.filter((obj: any) => {
+            return obj?.consultMode == ConsultMode.BOTH || obj?.consultMode == filter;
+          })
         : filteredDoctorsList;
-
     if (doctors.length === 0 && !showSpinner) {
       const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_SPECIALITY_SEARCH_NO_RESULT] = {
         'Text Searched': doctorSearch,
@@ -1128,7 +1068,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                       latlng,
                       sortValue,
                       undefined,
-                      doctorsType === 'PARTNERS' ? true : false
+                      doctorsType === 'PARTNERS' ? true : false,
+                      doctorSearch
                     );
                   } else {
                     setshowSpinner(false);
@@ -1194,6 +1135,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         sortValue,
         undefined,
         doctorsType === 'PARTNERS' ? true : false,
+        doctorSearch,
         pageNo
       );
     }
@@ -1209,13 +1151,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       : undefined;
     const doctors =
       filteredDoctorsList.length && filter
-        ? filteredDoctorsList.filter(
-            (
-              obj: getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null
-            ) => {
-              return consultionType(obj!.id, filter) || consultionType(obj!.id, ConsultMode.BOTH);
-            }
-          )
+        ? filteredDoctorsList.filter((obj : any) => {
+              return  obj?.consultMode == filter  || obj?.consultMode == ConsultMode.BOTH;
+          })
         : filteredDoctorsList;
     scrollViewRef.current && scrollViewRef.current.scrollTo({ x: 0, y: 0, animated: false });
     doctors.length > 0 && DoctorsflatListRef.scrollToOffset({ x: 0, y: 0, animated: false });
@@ -1360,6 +1298,19 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     );
   };
   const [doctorSearch, setDoctorSearch] = useState<string>('');
+  useEffect(() => {
+    if(isValidSearch(doctorSearch) && doctorSearch.length >2){
+      fetchSpecialityFilterData(
+        filterMode,
+        FilterData,
+        latlng,
+        'availability',
+        undefined,
+        doctorsType === 'PARTNERS' ? true : false,
+        doctorSearch
+      );
+    }
+  }, [doctorSearch])
 
   const renderDoctorSearchBar = () => {
     return (
@@ -1372,15 +1323,14 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           underlineColorAndroid="transparent"
           onChangeText={(value) => {
             if (isValidSearch(value)) {
-              setDoctorSearch(value);
-              const search = _.debounce(filterDoctors, 300);
+              const search = _.debounce(setDoctorSearch, 300);
               setSearchQuery((prevSearch: any) => {
                 if (prevSearch.cancel) {
                   prevSearch.cancel();
                 }
                 return search;
               });
-              search(doctorsList, doctorsType, value);
+              setDoctorSearch(value);
             }
           }}
         />
@@ -1439,7 +1389,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         latlng,
         'availability',
         undefined,
-        docTabSelected
+        docTabSelected,
+        doctorSearch
       );
     }
   };
@@ -1597,6 +1548,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       postTabBarClickWEGEvent('APOLLO');
       setDoctorsType('APOLLO');
       // onPressAvailabiltyRadioButton();
+      setFilteredDoctorsList([])
       filterDoctors(doctorsList, 'APOLLO');
       scrollToTop();
     }
@@ -1607,6 +1559,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       postTabBarClickWEGEvent('PARTNERS');
       setDoctorsType('PARTNERS');
       // onPressNearByRadioButton(true);
+      setFilteredDoctorsList([])
       filterDoctors(doctorsList, 'PARTNERS');
       scrollToTop();
     }
@@ -1707,7 +1660,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                     latlng,
                     sortValue,
                     undefined,
-                    doctorsType === 'PARTNERS' ? true : false
+                    doctorsType === 'PARTNERS' ? true : false,
+                    doctorSearch
                   );
                   CommonLogEvent(
                     AppRoutes.DoctorSearchListing,

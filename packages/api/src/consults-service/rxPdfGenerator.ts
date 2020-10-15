@@ -67,29 +67,29 @@ export const convertCaseSheetToRxPdfData = async (
       let genericName;
       const plural =
         csRx.medicineUnit == MEDICINE_UNIT.ML ||
-          csRx.medicineUnit == MEDICINE_UNIT.MG ||
-          csRx.medicineUnit == MEDICINE_UNIT.AS_PRESCRIBED
+        csRx.medicineUnit == MEDICINE_UNIT.MG ||
+        csRx.medicineUnit == MEDICINE_UNIT.AS_PRESCRIBED
           ? ''
           : '(s)';
       const customDosage = csRx.medicineCustomDosage
         ? csRx.medicineCustomDosage
-          .split('-')
-          .filter((value) => parseInt(value, 10))
-          .join(
-            ' ' +
-            csRx.medicineUnit
-              .split('_')
-              .join(' ')
-              .toLowerCase() +
-            plural +
-            ' - '
-          ) +
-        ' ' +
-        csRx.medicineUnit
-          .split('_')
-          .join(' ')
-          .toLowerCase() +
-        plural
+            .split('-')
+            .filter((value) => parseInt(value, 10))
+            .join(
+              ' ' +
+                csRx.medicineUnit
+                  .split('_')
+                  .join(' ')
+                  .toLowerCase() +
+                plural +
+                ' - '
+            ) +
+          ' ' +
+          csRx.medicineUnit
+            .split('_')
+            .join(' ')
+            .toLowerCase() +
+          plural
         : '';
       if (csRx.medicineCustomDetails) {
         frequency = csRx.medicineCustomDetails;
@@ -287,10 +287,12 @@ export const convertCaseSheetToRxPdfData = async (
       const patientAge =
         patientData.dateOfBirth === null
           ? ''
-          : Math.abs(
-            new Date(Date.now()).getUTCFullYear() -
-            new Date(patientData.dateOfBirth).getUTCFullYear()
-          ).toString();
+          : new Date().getUTCFullYear() - new Date(patientData.dateOfBirth).getUTCFullYear() > -1
+          ? Math.floor(
+              new Date(Date.now()).getUTCFullYear() -
+                new Date(patientData.dateOfBirth).getUTCFullYear()
+            ).toString()
+          : '0';
       patientInfo = {
         firstName: patientData.firstName,
         lastName: patientData.lastName,
@@ -540,8 +542,9 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       .image(loadAsset('apolloLogo.png'), margin, margin / 2, { width: 87, height: 64 });
 
     //Doctor Details
-    const nameLine = `${doctorInfo.salutation.replace('.', '')}. ${doctorInfo.firstName} ${doctorInfo.lastName
-      }`;
+    const nameLine = `${doctorInfo.salutation.replace('.', '')}. ${doctorInfo.firstName} ${
+      doctorInfo.lastName
+    }`;
     const specialty = doctorInfo.specialty;
     const registrationLine = `Reg.No. ${doctorInfo.registrationNumber}`;
 
@@ -567,8 +570,9 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       .text(`${specialty} | ${registrationLine}`);
 
     //Doctor Address Details
-    const addressLastLine = `${hospitalAddress.city}  ${hospitalAddress.zipcode ? ' - ' + hospitalAddress.zipcode : ''
-      } | ${hospitalAddress.state}, ${hospitalAddress.country}`;
+    const addressLastLine = `${hospitalAddress.city}  ${
+      hospitalAddress.zipcode ? ' - ' + hospitalAddress.zipcode : ''
+    } | ${hospitalAddress.state}, ${hospitalAddress.country}`;
 
     doc
       .moveDown(0.3)
@@ -738,10 +742,12 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
           .font(assetsDir + '/fonts/IBMPlexSans-Regular.ttf')
           .fillColor('#666666')
           .text(
-            `To be ${prescription.medicineFormTypes != MEDICINE_FORM_TYPES.OTHERS ? 'Applied' : 'taken'
-            }: ${prescription.routeOfAdministration != ROUTE_OF_ADMINISTRATION.INTRA_ARTICULAR
-              ? prescription.routeOfAdministration.split('_').join(' ')
-              : 'Intra-articular'
+            `To be ${
+              prescription.medicineFormTypes != MEDICINE_FORM_TYPES.OTHERS ? 'Applied' : 'taken'
+            }: ${
+              prescription.routeOfAdministration != ROUTE_OF_ADMINISTRATION.INTRA_ARTICULAR
+                ? prescription.routeOfAdministration.split('_').join(' ')
+                : 'Intra-articular'
             } `,
             margin + 30
           )
@@ -996,8 +1002,9 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       }
 
       //Doctor Details
-      const nameLine = `${doctorInfo.salutation.replace('.', '')}. ${doctorInfo.firstName} ${doctorInfo.lastName
-        }`;
+      const nameLine = `${doctorInfo.salutation.replace('.', '')}. ${doctorInfo.firstName} ${
+        doctorInfo.lastName
+      }`;
       const specialty = doctorInfo.specialty;
       const registrationLine = `Reg.No. ${doctorInfo.registrationNumber}`;
 
@@ -1214,6 +1221,10 @@ export const uploadPdfBase64ToPrism = async (
       diagnosis: [],
       diagnosticPrescription: diagnosticPrescription,
       medicinePrescriptions: caseSheetMedicinePrescription,
+      appointmentDisplayId:
+        caseSheet && caseSheet.appointment && caseSheet.appointment.displayId
+          ? caseSheet.appointment.displayId.toString()
+          : '',
     },
     uhid: patientDetails.uhid,
   };
