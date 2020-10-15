@@ -187,8 +187,9 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     filterActive: {
-      backgroundColor: '#00b38e !important',
+      backgroundColor: '#fff !important',
       color: '#fff !important',
+      border: '2px solid #00b38e',
     },
     dialogActions: {
       padding: 20,
@@ -643,7 +644,8 @@ export const Filters: React.FC<FilterProps> = (props) => {
                             setFilterValues('hospitalGroup', hospitalGroup.key);
                           }}
                         >
-                          <LazyIntersection src={hospitalGroup.imageUrl} alt="" />
+                          {/* <LazyIntersection src={hospitalGroup.imageUrl} alt="" /> */}
+                          <img src={hospitalGroup.imageUrl} alt="brand logo" />
                         </AphButton>
                       )
                     )}
