@@ -254,15 +254,9 @@ export class PatientRepository extends Repository<Patient> {
     return await this.getPatientConsultCache(id);
   }
 
-  async updatePatientDetailsConsultCache(patient: Patient) {
-    await delCache(`${REDIS_PATIENT_CONSULT_KEY_PREFIX}${patient.id}`);
-    const patientString = JSON.stringify(patient);
-    setCache(
-      `${REDIS_PATIENT_CONSULT_KEY_PREFIX}${patient.id}`,
-      patientString,
-      ApiConstants.CACHE_EXPIRATION_3600
-    );
-    return patient;
+  async updatePatientDetailsConsultCache(id: string) {
+    await delCache(`${REDIS_PATIENT_CONSULT_KEY_PREFIX}${id}`);
+    return await this.getPatientConsultCache(id);
   }
 
   getPatientAddressById(id: PatientAddress['id']) {
