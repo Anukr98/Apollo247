@@ -665,14 +665,10 @@ export async function sendReminderNotification(
       throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND);
     }
 
-    if (process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM) {
-      const chatroom_sms_link = process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM.replace(
-        '{0}',
-        appointment.id.toString()
-      ); //Replacing the placeholder with appointmentid
-
+    const appLink = await getPatientDeeplink(ApiConstants.PATIENT_CHATROOM_DEEPLINK + appointment.id.toString(), ApiConstants.PATIENT_DEEPLINK_TEMPLATE_ID_APOLLO);
+    if (appLink) {
       //Final deeplink URL
-      notificationBody = notificationBody + ApiConstants.CLICK_HERE + chatroom_sms_link;
+      notificationBody = notificationBody + ApiConstants.CLICK_HERE + appLink;
     } else {
       throw new AphError(AphErrorMessages.SMS_DEEPLINK_APPOINTMENT_CHATROOM_MISSING);
     }
@@ -1321,13 +1317,9 @@ export async function sendNotification(
     smsLink = smsLink.replace('{2}', doctorDetails.firstName + ' ' + doctorDetails.lastName);
     smsLink = smsLink.replace('{3}', apptDate.toString());
 
-    if (process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM) {
-      const chatroom_sms_link = process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM.replace(
-        '{0}',
-        appointment.id.toString()
-      ); // Replacing the placeholder with appointmentid
-
-      smsLink = smsLink.replace('{5}', chatroom_sms_link);
+    const appLink = await getPatientDeeplink(ApiConstants.PATIENT_CHATROOM_DEEPLINK + appointment.id.toString(), ApiConstants.PATIENT_DEEPLINK_TEMPLATE_ID_APOLLO);
+    if (appLink) {
+      smsLink = smsLink.replace('{5}', appLink);
     } else {
       throw new AphError(AphErrorMessages.SMS_DEEPLINK_APPOINTMENT_CHATROOM_MISSING);
     }

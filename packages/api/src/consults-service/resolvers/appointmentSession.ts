@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
-
+import { getPatientDeeplink } from 'helpers/appsflyer';
 import { AppointmentsSessionRepository } from 'consults-service/repositories/appointmentsSessionRepository';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import {
@@ -363,12 +363,13 @@ const createAppointmentSession: Resolver<
       currentDate < apptDetails.appointmentDateTime
     ) {
       if (patientData && doctorData) {
+        const appLink = await getPatientDeeplink(ApiConstants.PATIENT_APPT_DEEPLINK, ApiConstants.PATIENT_DEEPLINK_TEMPLATE_ID_APOLLO);
         const messageBody = ApiConstants.AUTO_SUBMIT_BY_SD_SMS_TEXT.replace(
           '{0}',
           patientData.firstName
         )
           .replace('{1}', doctorData.firstName)
-          .replace('{2}', process.env.SMS_LINK_BOOK_APOINTMENT);
+          .replace('{2}', appLink);
         sendNotificationSMS(patientData.mobileNumber, messageBody);
       }
     }
@@ -426,12 +427,13 @@ const createAppointmentSession: Resolver<
     currentDate < apptDetails.appointmentDateTime
   ) {
     if (patientData && doctorData) {
+      const appLink = await getPatientDeeplink(ApiConstants.PATIENT_APPT_DEEPLINK, ApiConstants.PATIENT_DEEPLINK_TEMPLATE_ID_APOLLO);
       const messageBody = ApiConstants.AUTO_SUBMIT_BY_SD_SMS_TEXT.replace(
         '{0}',
         patientData.firstName
       )
         .replace('{1}', doctorData.firstName)
-        .replace('{2}', process.env.SMS_LINK_BOOK_APOINTMENT);
+        .replace('{2}', appLink);
       sendNotificationSMS(patientData.mobileNumber, messageBody);
     }
   }
