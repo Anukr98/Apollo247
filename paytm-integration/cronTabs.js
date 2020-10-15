@@ -636,3 +636,171 @@ exports.saveMedicineInfoRedis = (req, res) => {
       console.log('error', error);
     });
 };
+
+exports.update247PatientProfile = (req, res) => {
+
+  if (!(process.env && process.env.PRISM_API_KEY_FOR_247)) {
+    res.status(500).send({
+      errCode: "",
+      errMsg: "",
+      errDetail: "API key missing in environment to authenticate. Please contact Apollo 247 Team",
+      err: true,
+      success: false,
+      data: null
+    })
+    res.end()
+    return;
+  }
+
+  if (!(req.headers && req.headers.apikey && req.headers.apikey == process.env.PRISM_API_KEY_FOR_247)) {
+    res.status(401).send({
+      errCode: "UNAUTHORIZED",
+      errMsg: "",
+      errDetail: "UNAUTHORIZED",
+      err: true,
+      success: false,
+      data: null
+    })
+    res.end()
+    return;
+  }
+
+  const genderMap247Prism = {
+    "male": "MALE",
+    "female": "FEMALE",
+    "other": "OTHER"
+  }
+
+  let queryString = `mutation syncPatientProfileUpdatesFromPRISM{
+    syncPatientProfileUpdatesFromPRISM(syncPatientProfileUpdatesFromPRISMInput:{
+      uhid : "${req.body.uhid}",
+      mobileNumber : "${req.body.mobileNumber}",
+      updateAttributes : {`
+
+  /* Patient Profile table updates */
+  if (
+    (req.body && req.body.userBasicInfo && req.body.userBasicInfo.sex) ||
+    (req.body && req.body.userContactInfo && req.body.userContactInfo.email1) ||
+    (req.body && req.body.firstName) ||
+    (req.body && req.body.lastName)
+  ) {
+
+    queryString += `patientProfile : {`
+
+    if (req.body && req.body.firstName) {
+      queryString += `firstName : "${req.body.firstName}",`
+    }
+
+    if (req.body && req.body.lastName) {
+      queryString += `lastName : "${req.body.lastName}",`
+    }
+
+    if (req.body && req.body.userBasicInfo && req.body.userBasicInfo.sex && genderMap247Prism[req.body.userBasicInfo.sex]) {
+      queryString += `gender : ${genderMap247Prism[req.body.userBasicInfo.sex]},`
+    }
+
+    if (req.body && req.body.userContactInfo && req.body.userContactInfo.email1) {
+      queryString += `emailAddress : "${req.body.userContactInfo.email1}",`
+    }
+
+    if (req.body && req.body.userBasicInfo && req.body.userBasicInfo.dateOfBirth) {
+      queryString += `dateOfBirth : "${req.body.userBasicInfo.dateOfBirth}",`
+    }
+
+    queryString += `}`
+  }
+
+  /* Patient Address table updates 
+  - to be integrated later*/
+
+  // if (
+  //   (req.body && req.body.userContactInfo && req.body.userContactInfo.addressLine1) ||
+  //   (req.body && req.body.userContactInfo && req.body.userContactInfo.addressLine2) ||
+  //   (req.body && req.body.userContactInfo && req.body.userContactInfo.city) ||
+  //   (req.body && req.body.userContactInfo && req.body.userContactInfo.state) ||
+  //   (req.body && req.body.userContactInfo && req.body.userContactInfo.pincode)
+  // ) {
+  //   queryString += `patientAddress : {`
+
+  //   if (req.body && req.body.userContactInfo && req.body.userContactInfo.addressLine1) {
+  //     queryString += `addressLine1 : ${req.body.userContactInfo.addressLine1},`
+  //   }
+
+  //   if (req.body && req.body.userContactInfo && req.body.userContactInfo.addressLine2) {
+  //     queryString += `addressLine2 : ${req.body.userContactInfo.addressLine2},`
+  //   }
+
+  //   if (req.body && req.body.userContactInfo && req.body.userContactInfo.city) {
+  //     queryString += `city : ${req.body.userContactInfo.city},`
+  //   }
+
+  //   if (req.body && req.body.userContactInfo && req.body.userContactInfo.state) {
+  //     queryString += `state : ${req.body.userContactInfo.state},`
+  //   }
+
+  //   if (req.body && req.body.userContactInfo && req.body.userContactInfo.pincode) {
+  //     queryString += `zipcode : ${req.body.userContactInfo.pincode},`
+  //   }
+
+  //   queryString += `}`
+  // }
+
+  queryString += `}
+  })
+  {
+    status
+  }
+  }`
+
+  axios
+    ({
+      url: process.env.API_URL,
+      method: 'post',
+      data: {
+        query: queryString,
+      },
+      headers: {
+        'authorization': Constants.AUTH_TOKEN
+      }
+    })
+    .then((response) => {
+      if (response.data && !response.data.errors) {
+
+        res.status(200).send({
+          errCode: "",
+          errMsg: "",
+          errDetail: null,
+          err: false,
+          success: true,
+          data: null
+        })
+
+      } else {
+
+        res.status(500).send({
+          errCode: "",
+          errMsg: "",
+          errDetail: response.data.errors,
+          err: true,
+          success: false,
+          data: null
+        })
+      }
+
+    })
+    .catch((err) => {
+
+      res.status(400).send({
+        errCode: "",
+        errMsg: "",
+        errDetail: err,
+        err: true,
+        success: false,
+        data: null
+      })
+
+    })
+
+
+
+}

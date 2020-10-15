@@ -591,9 +591,9 @@ export class PatientRepository extends Repository<Patient> {
     return uhidResp;
   }
 
-  // not used anywhere
+
   async updatePatientDetails(patientDetails: Patient) {
-    await this.save(patientDetails);
+    return this.save(patientDetails)
   }
 
   async getIdsByMobileNumber(mobileNumber: string) {
@@ -657,5 +657,11 @@ export class PatientRepository extends Repository<Patient> {
 
   findByUhid(uhid: string) {
     return this.findOne({ where: { uhid } });
+  }
+
+  async findByUhidAndMobile(uhid: string, mobileNumber: string) {
+    return this.findOne({
+      where: { uhid, mobileNumber }
+    });
   }
 }

@@ -834,6 +834,7 @@ const modifyCaseSheet: Resolver<
   const medicalHistoryRepo = patientsDb.getCustomRepository(PatientMedicalHistoryRepository);
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
 
+<<<<<<< HEAD
   const promises: object[] = [
     familyHistoryRepo
       .upsertPatientFamilyHistory(inputArguments.familyHistory, patientData)
@@ -899,6 +900,39 @@ const modifyCaseSheet: Resolver<
   patientData.patientMedicalHistory = patientMedicalHistory;
   patientRepo.updatePatientDetailsConsultCache(patientData);
 
+=======
+  getCaseSheetData.updatedDate = new Date();
+  getCaseSheetData.preperationTimeInSeconds = differenceInSeconds(
+    getCaseSheetData.updatedDate,
+    getCaseSheetData.createdDate
+  );
+
+  const getCaseSheetDataWithoutStatus = _.omit(getCaseSheetData, 'status');
+
+  //medicalHistory upsert ends
+  const caseSheetAttrs: Omit<Partial<CaseSheet>, 'id'> = getCaseSheetDataWithoutStatus;
+  await caseSheetRepo.updateCaseSheetWithPartialData(inputArguments.id, caseSheetAttrs, getCaseSheetDataWithoutStatus);
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const appointmentData = await appointmentRepo.findById(getCaseSheetData.appointment.id);
+  if (appointmentData) {
+    let reason = ApiConstants.CASESHEET_MODIFIED_HISTORY.toString();
+    if (caseSheetAttrs.doctorType == DoctorType.JUNIOR) {
+      reason = ApiConstants.JD_CASESHEET_COMPLETED_HISTORY.toString();
+    }
+    const historyAttrs: Partial<AppointmentUpdateHistory> = {
+      appointment: appointmentData,
+      userType: APPOINTMENT_UPDATED_BY.DOCTOR,
+      fromValue: appointmentData.status,
+      toValue: appointmentData.status,
+      valueType: VALUE_TYPE.STATUS,
+      fromState: appointmentData.appointmentState,
+      toState: appointmentData.appointmentState,
+      userName: caseSheetAttrs.createdDoctorId,
+      reason,
+    };
+    appointmentRepo.saveAppointmentHistory(historyAttrs);
+  }
+>>>>>>> a0987d99519761ae02fd05bc201b9c8e45378013
   return getCaseSheetData;
 };
 
@@ -1174,14 +1208,18 @@ const submitJDCaseSheet: Resolver<
       notes: ApiConstants.AUTO_SUBMIT_BY_SD.toString(),
       isJdConsultStarted: true,
     };
-    await caseSheetRepo.updateCaseSheet(
+
+    await caseSheetRepo.updateCaseSheetAttributes(
       juniorDoctorcaseSheet.id,
       casesheetAttrsToUpdate,
-      juniorDoctorcaseSheet
     );
 
     //update all existing JDcassheets to completed
     await caseSheetRepo.updateAllJDCaseSheet(juniorDoctorcaseSheet.appointment.id);
+<<<<<<< HEAD
+=======
+
+>>>>>>> a0987d99519761ae02fd05bc201b9c8e45378013
   } else {
     const casesheetAttrsToAdd = {
       createdDate: createdDate,
