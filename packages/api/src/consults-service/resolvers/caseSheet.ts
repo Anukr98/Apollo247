@@ -1031,7 +1031,7 @@ const modifyCaseSheet: Resolver<
     getCaseSheetData.updatedDate,
     getCaseSheetData.createdDate
   );
-   
+
   const getCaseSheetDataWithoutStatus = _.omit(getCaseSheetData, 'status');
 
   //medicalHistory upsert ends
@@ -1332,15 +1332,15 @@ const submitJDCaseSheet: Resolver<
       notes: ApiConstants.AUTO_SUBMIT_BY_SD.toString(),
       isJdConsultStarted: true,
     };
-    await caseSheetRepo.updateCaseSheet(
+
+    await caseSheetRepo.updateCaseSheetAttributes(
       juniorDoctorcaseSheet.id,
       casesheetAttrsToUpdate,
-      juniorDoctorcaseSheet
     );
-    
+
     //update all existing JDcassheets to completed
     await caseSheetRepo.updateAllJDCaseSheet(juniorDoctorcaseSheet.appointment.id);
-    
+
   } else {
     const casesheetAttrsToAdd = {
       createdDate: createdDate,

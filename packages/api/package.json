@@ -80,6 +80,7 @@
     "abort-controller": "^3.0.0",
     "apollo-server": "^2.6.3",
     "apollo-server-core": "^2.6.7",
+    "axios": "^0.20.0",
     "azure-sb": "^0.11.1",
     "class-validator": "^0.9.1",
     "convert-excel-to-json": "^1.6.1",

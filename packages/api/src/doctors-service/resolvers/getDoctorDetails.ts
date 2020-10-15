@@ -73,13 +73,13 @@ export const getDoctorDetailsTypeDefs = gql`
   }
 
   type BankAccount {
-    accountHolderName: String!
-    accountNumber: String!
-    accountType: AccountType!
-    bankName: String!
-    city: String!
-    id: ID!
-    IFSCcode: String!
+    accountHolderName: String
+    accountNumber: String
+    accountType: AccountType
+    bankName: String
+    city: String
+    id: ID
+    IFSCcode: String
     state: String
     streetLine1: String
   }
