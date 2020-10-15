@@ -789,6 +789,7 @@ export interface WebEngageEvents {
     'Total items in cart': number;
     'Prescription Needed?': 'Mandatory' | 'Optional';
     'Sub Total': number;
+    'Delivery charge': number;
     'Coupon code used'?: string;
     'Total Discount': number;
     'Net after discount': number; //item total
