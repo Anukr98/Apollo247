@@ -11,10 +11,11 @@ export interface TatCardProps {
   deliveryTime: string;
   deliveryAddress: string;
   onPressChangeAddress: () => void;
+  onPressTatCard?: () => void;
 }
 
 export const TatCard: React.FC<TatCardProps> = (props) => {
-  const { deliveryTime, deliveryAddress, onPressChangeAddress } = props;
+  const { deliveryTime, deliveryAddress, onPressChangeAddress, onPressTatCard } = props;
   const { cartItems } = useShoppingCart();
   const unServiceable = cartItems.find((item) => item.unserviceable);
 
@@ -24,7 +25,7 @@ export const TatCard: React.FC<TatCardProps> = (props) => {
       .set('hours', 20)
       .set('minutes', 0)
       .format(AppConfig.Configuration.TAT_API_RESPONSE_DATE_FORMAT);
-    return genericServiceableDate;
+    return <Text style={styles.dateTime}>{`${format(genericServiceableDate, 'D-MMM-YYYY')}`}</Text>;
   }
 
   function getDeliveryDate() {
@@ -40,7 +41,11 @@ export const TatCard: React.FC<TatCardProps> = (props) => {
     }
   }
   return (
-    <View style={{ backgroundColor: '#02475B', paddingHorizontal: 20 }}>
+    <TouchableOpacity
+      activeOpacity={1}
+      onPress={onPressTatCard}
+      style={{ backgroundColor: '#02475B', paddingHorizontal: 13 }}
+    >
       <View
         style={{
           ...styles.subCont1,
@@ -65,7 +70,7 @@ export const TatCard: React.FC<TatCardProps> = (props) => {
           Deliver to : <Text style={styles.dateTime}>{deliveryAddress}</Text>
         </Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 

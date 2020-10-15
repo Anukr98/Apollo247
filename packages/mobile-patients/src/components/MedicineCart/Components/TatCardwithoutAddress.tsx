@@ -4,6 +4,8 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { DeliveryIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { getDate } from '@aph/mobile-patients/src/utils/dateUtil';
 import { format } from 'date-fns';
+import moment from 'moment';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 export interface TatCardwithoutAddressProps {
   style?: StyleProp<ViewStyle>;
@@ -12,6 +14,22 @@ export interface TatCardwithoutAddressProps {
 
 export const TatCardwithoutAddress: React.FC<TatCardwithoutAddressProps> = (props) => {
   const { style, deliveryDate } = props;
+
+  function getGenericDate() {
+    const genericServiceableDate = moment()
+      .add(2, 'days')
+      .set('hours', 20)
+      .set('minutes', 0)
+      .format(AppConfig.Configuration.TAT_API_RESPONSE_DATE_FORMAT);
+    return (
+      <View>
+        <Text style={styles.normalTxt}>Delivery by</Text>
+        <Text style={styles.boldTxt}>
+          {`${format(genericServiceableDate, 'dddd')}, ${format(genericServiceableDate, 'Do MMM')}`}
+        </Text>
+      </View>
+    );
+  }
 
   function getDeliveryMsg() {
     let tommorowDate = new Date();
@@ -46,7 +64,7 @@ export const TatCardwithoutAddress: React.FC<TatCardwithoutAddressProps> = (prop
   return (
     <View style={[styles.card, style]}>
       <DeliveryIcon />
-      <View style={{ marginLeft: 10 }}>{getDeliveryMsg()}</View>
+      <View style={{ marginLeft: 10 }}>{deliveryDate ? getDeliveryMsg() : getGenericDate()}</View>
     </View>
   );
 };

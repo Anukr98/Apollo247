@@ -44,6 +44,7 @@ import {
   getDeliveryTAT247,
   validateConsultCoupon,
   userSpecificCoupon,
+  searchPickupStoresApi,
   getProductsByCategoryApi,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
@@ -90,6 +91,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     physicalPrescriptions,
     ePrescriptions,
     setPhysicalPrescriptions,
+    pinCode,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -104,14 +106,18 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   const [isfocused, setisfocused] = useState<boolean>(false);
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
   const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>(false);
+  const [showStorePickupCard, setshowStorePickupCard] = useState<boolean>(false);
   const [suggestedProducts, setsuggestedProducts] = useState<MedicineProduct[]>([]);
   const shoppingCart = useShoppingCart();
   const navigatedFrom = props.navigation.getParam('movedFrom') || '';
+  const pharmacyPincode =
+    selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
 
   useEffect(() => {
     fetchAddress();
     availabilityTat();
     fetchUserSpecificCoupon();
+    fetchPickupStores(pharmacyPincode);
     fetchProductSuggestions();
     cartItems.length && PharmacyCartViewedEvent(shoppingCart, g(currentPatient, 'id'));
   }, []);
@@ -133,7 +139,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     if (!deliveryAddressId && cartItems.length > 0) {
       setCartItems!(cartItems.map((item) => ({ ...item, unserviceable: false })));
     } else if (deliveryAddressId && cartItems.length > 0) {
-      availabilityTat();
+      isfocused ? availabilityTat(true) : availabilityTat();
     }
   }, [deliveryAddressId]);
 
@@ -208,6 +214,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       console.log(data);
       if (data.response) {
         setDeliveryAddressId && setDeliveryAddressId(address.id);
+        fetchPickupStores(address?.zipcode || '');
       } else {
         setDeliveryAddressId && setDeliveryAddressId('');
         setloading(false);
@@ -220,7 +227,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     }
   }
 
-  async function availabilityTat() {
+  async function availabilityTat(addressChange?: boolean) {
     const newCartItems =
       cartItems.map(({ id, quantity }) => id + quantity).toString() + deliveryAddressId;
     if (newCartItems == lastCartItems) {
@@ -270,33 +277,42 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
                 setStoreType(g(res, 'data', 'response', 'storeCode'));
                 setShopId(g(res, 'data', 'response', 'storeType'));
                 setdeliveryTime(deliveryDate);
+                addressChange && NavigateToCartSummary(deliveryDate);
                 updatePricesAfterTat(inventoryData, updatedCartItems);
               }
+              addressChange && NavigateToCartSummary(deliveryDate);
             } else {
-              setdeliveryTime('...');
-              setloading(false);
-              validatePharmaCoupon();
+              addressChange && NavigateToCartSummary('');
+              handleTatApiFailure(selectedAddress, {});
             }
           } else {
-            setdeliveryTime('...');
-            postTatResponseFailureEvent(cartItems, selectedAddress.zipcode || '', {});
-            setloading(false);
-            validatePharmaCoupon();
+            handleTatApiFailure(selectedAddress, {});
+            addressChange && NavigateToCartSummary('');
           }
         } catch (error) {
-          postTatResponseFailureEvent(cartItems, selectedAddress.zipcode || '', error);
-          setloading(false);
-          validatePharmaCoupon();
+          handleTatApiFailure(selectedAddress, error);
+          addressChange && NavigateToCartSummary('');
         }
       } catch (error) {
-        postTatResponseFailureEvent(cartItems, selectedAddress.zipcode || '', error);
-        setloading(false);
-        validatePharmaCoupon();
+        handleTatApiFailure(selectedAddress, error);
       }
+    } else if (!deliveryAddressId) {
+      setlastCartItems(newCartItems);
+      validatePharmaCoupon();
     }
   }
 
-  function updatePricesAfterTat(
+  function handleTatApiFailure(
+    selectedAddress: savePatientAddress_savePatientAddress_patientAddress,
+    error: any
+  ) {
+    setdeliveryTime('');
+    postTatResponseFailureEvent(cartItems, selectedAddress.zipcode || '', error);
+    setloading(false);
+    validatePharmaCoupon();
+  }
+
+  async function updatePricesAfterTat(
     inventoryData: GetTatResponse247['response']['items'],
     updatedCartItems: ShoppingCartItem[]
   ) {
@@ -317,8 +333,13 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       Items.push(object);
     });
     setCartItems!(Items);
-    validatePharmaCoupon();
+    await validatePharmaCoupon();
     console.log(loading);
+  }
+  function NavigateToCartSummary(deliveryTime: string) {
+    props.navigation.navigate(AppRoutes.CartSummary, {
+      deliveryTime: deliveryTime,
+    });
   }
 
   async function validatePharmaCoupon() {
@@ -407,6 +428,24 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     });
   };
 
+  async function fetchPickupStores(pincode: string) {
+    if (pincode.length == 6) {
+      try {
+        const response = await searchPickupStoresApi(pincode);
+        const { data } = response;
+        const { Stores } = data;
+        console.log(Stores?.length && Stores[0]?.message != 'Data Not Available');
+        if (Stores?.length && Stores[0]?.message != 'Data Not Available') {
+          setshowStorePickupCard(true);
+        } else {
+          setshowStorePickupCard(false);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  }
+
   const getMedicineDetailsOfCouponProducts = () => {
     setloading!(true);
     Promise.all(couponProducts.map((item) => getMedicineDetailsApi(item!.sku!)))
@@ -430,7 +469,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             isInStock: !!medicineDetails.is_in_stock,
             maxOrderQty: medicineDetails.MaxOrderQty,
             productType: medicineDetails.type_id,
-            isFreeCouponProduct: !!(couponProducts[index]!.couponFree),
+            isFreeCouponProduct: !!couponProducts[index]!.couponFree,
           } as ShoppingCartItem;
         });
         addMultipleCartItems!(medicinesAll as ShoppingCartItem[]);
@@ -514,6 +553,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   function showAddressPopup() {
     showAphAlert!({
       title: string.common.selectAddress,
+      removeTopIcon: true,
       children: (
         <ChooseAddress
           addresses={addresses}
@@ -688,6 +728,11 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         onClickClose={() => setshowPopUp(false)}
         navigation={props.navigation}
         type={'cartOrMedicineFlow'}
+        onUpload={() =>
+          props.navigation.navigate(AppRoutes.CartSummary, {
+            deliveryTime: deliveryTime,
+          })
+        }
       />
     );
   };
@@ -702,30 +747,31 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   };
 
   const renderKerbSidePickup = () => {
-    return (
+    return showStorePickupCard ? (
       <KerbSidePickup
         style={{ marginTop: suggestedProducts?.length ? 10 : 20 }}
         onPressProceed={() => {
           props.navigation.navigate(AppRoutes.StorePickup);
         }}
       />
-    );
+    ) : null;
   };
 
   const renderProceedBar = () => {
     return (
       <ProceedBar
         onPressAddDeliveryAddress={() => showAddressPopup()}
-        onPressUploadPrescription={() =>
-          props.navigation.navigate(AppRoutes.CartSummary, {
-            deliveryTime: deliveryTime,
-          })
-        }
+        onPressUploadPrescription={() => setshowPopUp(true)}
         onPressProceedtoPay={() => {
           physicalPrescriptions?.length > 0 ? uploadPhysicalPrescriptons() : onPressProceedtoPay();
         }}
         deliveryTime={deliveryTime}
         onPressChangeAddress={showAddressPopup}
+        onPressTatCard={() =>
+          props.navigation.navigate(AppRoutes.CartSummary, {
+            deliveryTime: deliveryTime,
+          })
+        }
       />
     );
   };

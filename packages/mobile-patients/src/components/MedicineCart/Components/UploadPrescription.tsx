@@ -13,6 +13,7 @@ export interface UploadPrescriptionProps extends NavigationScreenProps {
   showPopUp: boolean;
   onClickClose: () => void;
   type: string;
+  onUpload?: () => void;
 }
 
 export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => {
@@ -22,7 +23,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     setEPrescriptions,
     ePrescriptions,
   } = useShoppingCart();
-  const { showPopUp, onClickClose, type } = props;
+  const { showPopUp, onClickClose, type, onUpload } = props;
   const [showEprescriptionUpload, setshowEprescriptionUpload] = useState<boolean>(false);
 
   const updatePhysicalPrescriptions = (uploadPrescriptions: PhysicalPrescription[]) => {
@@ -60,6 +61,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           } else {
             setshowEprescriptionUpload(true);
           }
+          onUpload!();
         }}
       />
     ) : null;

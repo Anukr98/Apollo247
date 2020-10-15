@@ -131,6 +131,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: 10,
     paddingVertical: 8,
+    minHeight: 95,
   },
   itemName: {
     color: 'rgb(1,28,36)',
