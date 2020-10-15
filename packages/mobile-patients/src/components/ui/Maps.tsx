@@ -591,7 +591,7 @@ export const Maps: React.FC<MapProps> = (props) => {
         onMapReady={() => console.log('ready')}
         onRegionChangeComplete={(region) => _onRegionChangeComplete(region)}
         onDoublePress={_setMapDragging}
-        onPanDrag={_setMapDragging}
+        onPanDrag={() => setMapDragging(true)}
         // initialRegion={{latitude: latitude,longitude: longitude,latitudeDelta: latitudeDelta,longitudeDelta: longitudeDelta,}}
       ></MapView>
     );
