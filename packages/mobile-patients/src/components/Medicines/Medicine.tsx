@@ -468,8 +468,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     try {
       if (addresses.length) {
         const deliveryAddress = addresses.find((item) => item.defaultAddress);
-        deliveryAddress && setDeliveryAddressId!(deliveryAddress?.id);
-        return;
+        if(deliveryAddress){
+          setDeliveryAddressId!(deliveryAddress?.id);
+          updateServiceability(deliveryAddress?.zipcode!);
+          setPharmacyLocation!(formatAddressToLocation(deliveryAddress));
+          return;
+        }
       }
       globalLoading!(true);
       const response = await client.query<getPatientAddressList, getPatientAddressListVariables>({

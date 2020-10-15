@@ -14,6 +14,7 @@ export interface GetDoctorList_getDoctorList_specialties {
   id: string | null;
   name: string | null;
   specialtydisplayName: string | null;
+  specialistPluralTerm: string | null;
 }
 
 export interface GetDoctorList_getDoctorList {

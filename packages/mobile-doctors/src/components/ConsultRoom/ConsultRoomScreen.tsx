@@ -27,7 +27,7 @@ import {
 import { ImageViewer } from '@aph/mobile-doctors/src/components/ui/ImageViewer';
 import { OptionsObject } from '@aph/mobile-doctors/src/components/ui/MaterialMenu';
 import { NotificationHeader } from '@aph/mobile-doctors/src/components/ui/NotificationHeader';
-import { RenderPdf } from '@aph/mobile-doctors/src/components/ui/RenderPdf';
+import { DocumentCorousel } from '@aph/mobile-doctors/src/components/ui/DocumentCorousel';
 import { Spinner } from '@aph/mobile-doctors/src/components/ui/Spinner';
 import { TabsComponent } from '@aph/mobile-doctors/src/components/ui/TabsComponent';
 import { TextInputComponent } from '@aph/mobile-doctors/src/components/ui/TextInputComponent';
@@ -266,15 +266,11 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     (GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms | null)[] | null
   >([]);
 
-  const [showPDF, setShowPDF] = useState<boolean>(false);
-  const [patientImageshow, setPatientImageshow] = useState<boolean>(false);
-  const [url, setUrl] = useState('');
   const [showCancelPopup, setshowCancelPopup] = useState<boolean>(false);
   const [showCancelReason, setshowCancelReason] = useState<boolean>(false);
   const [selectedReason, setselectedReason] = useState<string>(reasons[0]);
   const [otherReason, setotherReason] = useState<string>('');
   const [isAutoSaved, setIsAutoSaved] = useState<boolean>(false);
-
   const [savedTime, setSavedTime] = useState<string>('');
   const mutationCancelSrdConsult = useMutation<cancelAppointment, cancelAppointmentVariables>(
     CANCEL_APPOINTMENT
@@ -2278,6 +2274,7 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
     );
   };
   const onEndConsult = () => {
+    updateNumberOfParticipants(USER_STATUS.LEAVING);
     stopAllCalls();
     endCallNotificationAPI(false);
     postWebEngageEvent(WebEngageEventName.DOCTOR_STOP_CONSULT, {
@@ -2327,8 +2324,18 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
           />
         );
       } else if (type === 'pdf') {
-        setUrl(newUrl || '');
-        setShowPDF(true);
+        setOverlayDisplay(
+          <DocumentCorousel
+            pdfFiles={allFiles.filter(
+              (item) =>
+                item.fileType === 'pdf' && ((!isChatRoom && item.id === patientId) || isChatRoom)
+            )}
+            patientDetails={patientDetails}
+            onClose={() => setOverlayDisplay(null)}
+            navigation={props.navigation}
+            scrollToURL={newUrl}
+          />
+        );
       } else {
         Linking.openURL(newUrl).catch((err) => console.error('An error occurred', err));
       }
@@ -3375,25 +3382,6 @@ export const ConsultRoomScreen: React.FC<ConsultRoomScreenProps> = (props) => {
         {renderTabPage()}
         {showPopUp && CallPopUp()}
         {uploadPrescriptionPopup()}
-        {showPDF && (
-          <RenderPdf
-            uri={url}
-            title={`${patientDetails ? patientDetails.firstName || 'Patient' : 'Patient'}_${url
-              .split('/')
-              .pop()!
-              .split('.pdf')[0] || 'Appointment_Document'}`}
-            pdfTitle={`${patientDetails ? patientDetails.firstName || 'Patient' : 'Patient'}_${url
-              .split('/')
-              .pop()!
-              .split('.pdf')[0] || 'Appointment_Document'}.pdf`}
-            isPopup={true}
-            setDisplayPdf={() => {
-              setShowPDF(false);
-              setUrl('');
-            }}
-            navigation={props.navigation}
-          />
-        )}
         {showCancelPopup && renderCancelPopup()}
       </SafeAreaView>
     </View>

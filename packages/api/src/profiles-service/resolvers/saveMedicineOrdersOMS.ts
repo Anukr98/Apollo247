@@ -112,6 +112,8 @@ export const saveMedicineOrderOMSTypeDefs = gql`
     RVP_ASSIGNED
     RETURN_PICKUP
     RETURN_RTO
+    READY_TO_SHIP
+    SHIPPED
   }
 
   type SaveMedicineOrderResult {

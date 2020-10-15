@@ -39,12 +39,10 @@ interface PharmaOverview {
   Unit: string;
   Strength: string;
   Strengh: string;
-  Overview:
-    | {
-        Caption: string;
-        CaptionDesc: string;
-      }[]
-    | string;
+  Overview: {
+    Caption: string;
+    CaptionDesc: string;
+  }[]; // type can be string if information not available
 }
 
 export interface MedicineProductDetailsResponse {
