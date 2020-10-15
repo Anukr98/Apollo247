@@ -31,7 +31,11 @@ export const Coupon: React.FC<CouponProps> = (props) => {
         <View style={styles.rowStyle}>
           <CouponIcon />
           <View style={{ marginLeft: 10, marginVertical: 4 }}>
-            <Text style={styles.couponAppliedText}>{`Coupon Applied : ${coupon?.coupon}`} </Text>
+            <Text style={styles.couponAppliedText}>
+              {couponDiscount > 0
+                ? `Coupon Applied : ${coupon?.coupon}`
+                : `Coupon : ${coupon?.coupon}`}{' '}
+            </Text>
             <Text style={styles.applicable}>
               {couponDiscount > 0
                 ? coupon?.message
