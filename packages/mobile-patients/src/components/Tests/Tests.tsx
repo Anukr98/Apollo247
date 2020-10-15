@@ -317,7 +317,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         );
       }
     }
-  }, []);
+  }, [diagnosticPincode]);
 
   const setWebEngageEventOnSearchItem = (keyword: string, results: []) => {
     if (keyword.length > 2) {
