@@ -813,7 +813,7 @@ export interface WebEngageEvents {
     'Sub Total': number;
     // 'Delivery charge': number;
     'Net after discount': number;
-    'Prescription Needed?': boolean;
+    'Prescription Uploaded?': boolean;
     'Prescription Mandatory?': boolean;
     'Mode of Sample Collection': 'Home' | 'Pickup' | 'Home Visit' | 'Clinic Visit';
     'Delivery Date Time'?: string | Date; // Optional (only if Home)
