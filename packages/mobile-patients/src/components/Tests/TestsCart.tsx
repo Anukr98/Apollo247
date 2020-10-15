@@ -290,7 +290,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   useEffect(() => {
     if (selectedTab == tabs[0].title) {
       if (
-        selectedTimeSlot &&
         selectedTimeSlot?.slotInfo?.slot! &&
         areaSelected &&
         deliveryAddressId != '' &&
