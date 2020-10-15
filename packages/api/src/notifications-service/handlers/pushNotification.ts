@@ -209,7 +209,7 @@ export async function sendCallsNotification(
         doctorType: doctorType,
       },
       notification: {
-        channel_id: "fcm_call_channel"
+        channel_id: 'fcm_call_channel',
       },
     };
 
@@ -659,7 +659,7 @@ export async function sendReminderNotification(
   if (
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15 ||
     pushNotificationInput.notificationType ==
-    NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
+      NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
   ) {
     if (!(appointment && appointment.id)) {
       throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND);
@@ -1416,10 +1416,9 @@ export async function sendNotification(
     sendBrowserNotitication(doctorDetails.id, notificationBody);
   } else if (pushNotificationInput.notificationType == NotificationType.PRESCRIPTION_READY) {
     notificationTitle = ApiConstants.PRESCRIPTION_READY_TITLE;
-    notificationBody = ApiConstants.PRESCRIPTION_READY_BODY.replace(
-      '{0}',
-      patientDetails.firstName
-    ).replace('{1}', doctorDetails.firstName);
+    notificationBody = ApiConstants.PRESCRIPTION_READY_BODY.replace('{0}', patientDetails.firstName)
+      .replace('{1}', doctorDetails.salutation)
+      .replace('{2}', doctorDetails.firstName);
 
     if (!process.env.DEEPLINK_PRESCRIPTION) {
       log(
