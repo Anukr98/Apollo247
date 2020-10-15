@@ -669,10 +669,8 @@ export async function sendReminderNotification(
 
     const appLink = await getPatientDeeplink(ApiConstants.PATIENT_CHATROOM_DEEPLINK + appointment.id.toString(), ApiConstants.PATIENT_DEEPLINK_TEMPLATE_ID_APOLLO);
     if (appLink) {
-      const chatroom_sms_link = appLink;
-
       //Final deeplink URL
-      notificationBody = notificationBody + ApiConstants.CLICK_HERE + chatroom_sms_link;
+      notificationBody = notificationBody + ApiConstants.CLICK_HERE + appLink;
     } else {
       throw new AphError(AphErrorMessages.SMS_DEEPLINK_APPOINTMENT_CHATROOM_MISSING);
     }
@@ -1323,9 +1321,7 @@ export async function sendNotification(
 
     const appLink = await getPatientDeeplink(ApiConstants.PATIENT_CHATROOM_DEEPLINK + appointment.id.toString(), ApiConstants.PATIENT_DEEPLINK_TEMPLATE_ID_APOLLO);
     if (appLink) {
-      const chatroom_sms_link = appLink;
-
-      smsLink = smsLink.replace('{5}', chatroom_sms_link);
+      smsLink = smsLink.replace('{5}', appLink);
     } else {
       throw new AphError(AphErrorMessages.SMS_DEEPLINK_APPOINTMENT_CHATROOM_MISSING);
     }
