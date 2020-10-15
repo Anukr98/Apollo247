@@ -309,6 +309,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
         'Total items in cart': cartItems.length,
         'Sub Total': cartTotal,
+        'Delivery charge': deliveryCharges,
         'Total Discount': couponDiscount,
         'Net after discount': grandTotal,
         'Prescription Needed?': uploadPrescriptionRequired ? 'Mandatory' : 'Optional',
