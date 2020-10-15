@@ -45,12 +45,14 @@ import {
   validateConsultCoupon,
   userSpecificCoupon,
   searchPickupStoresApi,
+  getProductsByCategoryApi,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { Prescriptions } from '@aph/mobile-patients/src/components/MedicineCart/Components/Prescriptions';
 import { UploadPrescription } from '@aph/mobile-patients/src/components/MedicineCart/Components/UploadPrescription';
 import { UnServiceable } from '@aph/mobile-patients/src/components/MedicineCart/Components/UnServiceable';
+import { SuggestProducts } from '@aph/mobile-patients/src/components/MedicineCart/Components/SuggestProducts';
 import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
@@ -68,6 +70,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
 import { ProductPageViewedSource } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
 
 export interface MedicineCartProps extends NavigationScreenProps {}
 
@@ -104,6 +107,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
   const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>(false);
   const [showStorePickupCard, setshowStorePickupCard] = useState<boolean>(false);
+  const [suggestedProducts, setsuggestedProducts] = useState<MedicineProduct[]>([]);
   const shoppingCart = useShoppingCart();
   const navigatedFrom = props.navigation.getParam('movedFrom') || '';
   const pharmacyPincode =
@@ -114,6 +118,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     availabilityTat();
     fetchUserSpecificCoupon();
     fetchPickupStores(pharmacyPincode);
+    fetchProductSuggestions();
     cartItems.length && PharmacyCartViewedEvent(shoppingCart, g(currentPatient, 'id'));
   }, []);
 
@@ -483,6 +488,14 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     }
   };
 
+  async function fetchProductSuggestions() {
+    const categoryId = AppConfig.Configuration.PRODUCT_SUGGESTIONS_CATEGORYID;
+    const pageCount = AppConfig.Configuration.PRODUCT_SUGGESTIONS_COUNT;
+    const response = await getProductsByCategoryApi(categoryId, pageCount);
+    const products = response?.data?.products.slice(0, 10) || [];
+    setsuggestedProducts(products);
+  }
+
   const multiplePhysicalPrescriptionUpload = (prescriptions = physicalPrescriptions) => {
     return Promise.all(
       prescriptions.map((item) =>
@@ -704,6 +717,10 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     return <Savings />;
   };
 
+  const renderSuggestProducts = () => {
+    return <SuggestProducts products={suggestedProducts} navigation={props.navigation} />;
+  };
+
   const renderuploadPrescriptionPopup = () => {
     return (
       <UploadPrescription
@@ -721,13 +738,18 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   };
 
   const renderPrescriptions = () => {
-    return <Prescriptions onPressUploadMore={() => setshowPopUp(true)} />;
+    return (
+      <Prescriptions
+        onPressUploadMore={() => setshowPopUp(true)}
+        style={{ marginTop: suggestedProducts?.length ? 0 : 20 }}
+      />
+    );
   };
 
   const renderKerbSidePickup = () => {
     return showStorePickupCard ? (
       <KerbSidePickup
-        style={{ marginTop: 20 }}
+        style={{ marginTop: suggestedProducts?.length ? 10 : 20 }}
         onPressProceed={() => {
           props.navigation.navigate(AppRoutes.StorePickup);
         }}
@@ -767,6 +789,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           {renderAvailFreeDelivery()}
           {renderAmountSection()}
           {renderSavings()}
+          {renderSuggestProducts()}
           {renderPrescriptions()}
           {renderKerbSidePickup()}
         </ScrollView>

@@ -48,9 +48,9 @@ export async function getDeeplink(deepLinkInput: DeepLinkInput, doctorType: Doct
   }
 }
 
-export async function getPatientDeeplink(appDeepLink: string) {
+export async function getPatientDeeplink(appDeepLink: string, template?: string) {
   const apiUrl =
-    ApiConstants.DOCTOR_DEEPLINK_URL + ApiConstants.DOCTOR_DEEPLINK_TEMPLATE_ID_APOLLO.toString();
+    ApiConstants.DOCTOR_DEEPLINK_URL + (template ? template.toString() : ApiConstants.DOCTOR_DEEPLINK_TEMPLATE_ID_APOLLO.toString());
   const deepLinkInput: DeepLinkInput = {
     //brand_domain: ApiConstants.BRAND_DOMAIN.toString(),
     ttl: ApiConstants.LINK_TTL.toString(),

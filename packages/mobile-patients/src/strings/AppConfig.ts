@@ -66,7 +66,9 @@ const appStaticVariables = {
   MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK: 'https://bit.ly/apollo247medicines',
   Doctors_Page_Size: 25,
   CUSTOMER_CARE_HELP_TEXT: string.common.customerCareHelpText,
-  CUSTOMER_CARE_NUMBER: string.common.customerCareNumber
+  CUSTOMER_CARE_NUMBER: string.common.customerCareNumber,
+  PRODUCT_SUGGESTIONS_CATEGORYID: '41920',
+  PRODUCT_SUGGESTIONS_COUNT: 10,
 };
 
 const DEV_top6_specailties = [
@@ -835,14 +837,14 @@ export const NeedHelp = [
 ];
 
 export const CancelConsultation = {
-  reason :[
+  reason: [
     string.ReasonFor_Cancel_Consultation.doctorDidNotJoin,
     string.ReasonFor_Cancel_Consultation.bookedForWrongUser,
     string.ReasonFor_Cancel_Consultation.doctorDeniedMode,
     string.ReasonFor_Cancel_Consultation.audioVideoIssue,
     string.ReasonFor_Cancel_Consultation.otherReasons,
-  ]
-}
+  ],
+};
 
 type SpecialitiesType = {
   [key: string]: string[];

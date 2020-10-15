@@ -1401,7 +1401,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           webEngageEventTracking(
             {
               'API name': 'EndAppointmentSession',
-              'ErrorDetails': JSON.stringify(e),
+              ErrorDetails: JSON.stringify(e),
               'Consultation Display ID': props.webengageConsultTrackingObject.appointmentDisplayId,
               'Consult ID': props.webengageConsultTrackingObject.appointmentId,
             },
@@ -1606,7 +1606,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         webEngageEventTracking(
           {
             'API name': 'SendCallDisconnectNotification',
-            'ErrorDetails': JSON.stringify(error),
+            ErrorDetails: JSON.stringify(error),
             'Consultation Display ID': props.webengageConsultTrackingObject.appointmentDisplayId,
             'Consult ID': props.webengageConsultTrackingObject.appointmentId,
           },
@@ -2230,7 +2230,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         webEngageEventTracking(
           {
             'API name': 'initiateRescheduleAppointment',
-            'ErrorDetails': JSON.stringify(e),
+            ErrorDetails: JSON.stringify(e),
             'Consultation Display ID': props.webengageConsultTrackingObject.appointmentDisplayId,
             'Consult ID': props.webengageConsultTrackingObject.appointmentId,
           },
@@ -2343,11 +2343,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [vitalIgnored, setVitalIgnored] = useState<boolean>(false);
   const [connectCall, setConnectCall] = useState<boolean>(false);
   const consultWebengageObject: any = {
-    'appointmentId': props.appointmentId,
-    'patientId': params.patientId,
-    'doctorId': props.doctorId,
-    'sessionId': sessionId,
-  }
+    appointmentId: props.appointmentId,
+    patientId: params.patientId,
+    doctorId: props.doctorId,
+    sessionId: sessionId,
+  };
   return (
     <div className={classes.stickyHeader}>
       {playRingtone && (
@@ -2710,8 +2710,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         webEngageEventTracking(
                           {
                             'API name': 'GetDoctorNextAvailableSlot',
-                            'ErrorDetails': JSON.stringify(e),
-                            'Consultation Display ID': props.webengageConsultTrackingObject.appointmentDisplayId,
+                            ErrorDetails: JSON.stringify(e),
+                            'Consultation Display ID':
+                              props.webengageConsultTrackingObject.appointmentDisplayId,
                             'Consult ID': props.webengageConsultTrackingObject.appointmentId,
                           },
                           'Front_end - Doctor API-Error on Casesheet'
@@ -2730,7 +2731,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 aria-describedby={id}
                 variant="contained"
                 onClick={(e) => {
-                  handleClick(e); 
+                  handleClick(e);
                   setsessionId('');
                   settoken('');
                 }}
@@ -2762,7 +2763,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   <img src={require('images/ic_cross.svg')} alt="" onClick={() => handleClose()} />
                 </Button>
                 <div className={`${classes.loginFormWrap} ${classes.helpWrap}`}>
-                  <p>{isCallConnecting ? 'please wait..' : 'How do you want to talk to the patient?'}</p>
+                  <p>
+                    {isCallConnecting ? 'please wait..' : 'How do you want to talk to the patient?'}
+                  </p>
                   <Button
                     variant="contained"
                     color="primary"
@@ -2790,37 +2793,38 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       setIsVideoCall(false);
                       setIsCallConnecting(true);
                       client
-                      .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
-                        mutation: CREATE_APPOINTMENT_SESSION,
-                        variables: {
-                          createAppointmentSessionInput: {
-                            appointmentId: channel,
-                            requestRole: REQUEST_ROLES.DOCTOR,
+                        .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
+                          mutation: CREATE_APPOINTMENT_SESSION,
+                          variables: {
+                            createAppointmentSessionInput: {
+                              appointmentId: channel,
+                              requestRole: REQUEST_ROLES.DOCTOR,
+                            },
                           },
-                        },
-                      })
-                      .then((_data: any) => {
-                        setsessionId(_data.data.createAppointmentSession.sessionId);
-                        settoken(_data.data.createAppointmentSession.appointmentToken);
-                        handleClose();
-                        autoSend(audioCallMsg);
-                        setDisableOnCancel(true);
-                        missedCallIntervalTimer(45);
-                        setIscall(true);
-                        setIsCallConnecting(false);
-                      })
-                      .catch((e: any) => {
-                        setIsCallConnecting(false);
-                        webEngageEventTracking(
-                          {
-                            'API name': 'CreateAppointmentSession',
-                            'ErrorDetails': JSON.stringify(e),
-                            'Consultation Display ID': props.webengageConsultTrackingObject.appointmentDisplayId,
-                            'Consult ID': props.webengageConsultTrackingObject.appointmentId,
-                          },
-                          'Front_end - Doctor API-Error on Casesheet'
-                        );
-                      });
+                        })
+                        .then((_data: any) => {
+                          setsessionId(_data.data.createAppointmentSession.sessionId);
+                          settoken(_data.data.createAppointmentSession.appointmentToken);
+                          handleClose();
+                          autoSend(audioCallMsg);
+                          setDisableOnCancel(true);
+                          missedCallIntervalTimer(45);
+                          setIscall(true);
+                          setIsCallConnecting(false);
+                        })
+                        .catch((e: any) => {
+                          setIsCallConnecting(false);
+                          webEngageEventTracking(
+                            {
+                              'API name': 'CreateAppointmentSession',
+                              ErrorDetails: JSON.stringify(e),
+                              'Consultation Display ID':
+                                props.webengageConsultTrackingObject.appointmentDisplayId,
+                              'Consult ID': props.webengageConsultTrackingObject.appointmentId,
+                            },
+                            'Front_end - Doctor API-Error on Casesheet'
+                          );
+                        });
                     }}
                   >
                     <img src={require('images/call_popup.svg')} alt="" />
@@ -2853,37 +2857,38 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       setIsVideoCall(true);
                       setIsCallConnecting(true);
                       client
-                      .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
-                        mutation: CREATE_APPOINTMENT_SESSION,
-                        variables: {
-                          createAppointmentSessionInput: {
-                            appointmentId: channel,
-                            requestRole: REQUEST_ROLES.DOCTOR,
+                        .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
+                          mutation: CREATE_APPOINTMENT_SESSION,
+                          variables: {
+                            createAppointmentSessionInput: {
+                              appointmentId: channel,
+                              requestRole: REQUEST_ROLES.DOCTOR,
+                            },
                           },
-                        },
-                      })
-                      .then((_data: any) => {
-                        setsessionId(_data.data.createAppointmentSession.sessionId);
-                        settoken(_data.data.createAppointmentSession.appointmentToken);
-                        handleClose();
-                        autoSend(videoCallMsg);
-                        setDisableOnCancel(true);
-                        missedCallIntervalTimer(45);
-                        setIscall(true);
-                        setIsCallConnecting(false);
-                      })
-                      .catch((e: any) => {
-                        setIsCallConnecting(false);
-                        webEngageEventTracking(
-                          {
-                            'API name': 'CreateAppointmentSession',
-                            'ErrorDetails': JSON.stringify(e),
-                            'Consultation Display ID': props.webengageConsultTrackingObject.appointmentDisplayId,
-                            'Consult ID': props.webengageConsultTrackingObject.appointmentId,
-                          },
-                          'Front_end - Doctor API-Error on Casesheet'
-                        );
-                      });
+                        })
+                        .then((_data: any) => {
+                          setsessionId(_data.data.createAppointmentSession.sessionId);
+                          settoken(_data.data.createAppointmentSession.appointmentToken);
+                          handleClose();
+                          autoSend(videoCallMsg);
+                          setDisableOnCancel(true);
+                          missedCallIntervalTimer(45);
+                          setIscall(true);
+                          setIsCallConnecting(false);
+                        })
+                        .catch((e: any) => {
+                          setIsCallConnecting(false);
+                          webEngageEventTracking(
+                            {
+                              'API name': 'CreateAppointmentSession',
+                              ErrorDetails: JSON.stringify(e),
+                              'Consultation Display ID':
+                                props.webengageConsultTrackingObject.appointmentDisplayId,
+                              'Consult ID': props.webengageConsultTrackingObject.appointmentId,
+                            },
+                            'Front_end - Doctor API-Error on Casesheet'
+                          );
+                        });
                     }}
                   >
                     <img src={require('images/video_popup.svg')} alt="" />
@@ -3064,24 +3069,27 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         appointmentId: appointmentId,
                       };
                       setConnectCall(false);
-                      client.query({
-                        query: INITIATE_CONFERENCE_TELEPHONE_CALL,
-                        variables: {
-                          exotelInput: exotelInput,
-                        },
-                        fetchPolicy: 'no-cache',
-                      }).catch((error: ApolloError) => {
-                        webEngageEventTracking(
-                          {
-                            'API name': 'InitateConferenceTelephoneCall',
-                            'ErrorDetails': JSON.stringify(error),
-                            'Consultation Display ID': props.webengageConsultTrackingObject.appointmentDisplayId,
-                            'Consult ID': props.webengageConsultTrackingObject.appointmentId,
+                      client
+                        .query({
+                          query: INITIATE_CONFERENCE_TELEPHONE_CALL,
+                          variables: {
+                            exotelInput: exotelInput,
                           },
-                          'Front_end - Doctor API-Error on Casesheet'
-                        );
-                        console.log('Error in INITIATE_CONFERENCE_TELEPHONE_CALL', error.message);
-                      });
+                          fetchPolicy: 'no-cache',
+                        })
+                        .catch((error: ApolloError) => {
+                          webEngageEventTracking(
+                            {
+                              'API name': 'InitateConferenceTelephoneCall',
+                              ErrorDetails: JSON.stringify(error),
+                              'Consultation Display ID':
+                                props.webengageConsultTrackingObject.appointmentDisplayId,
+                              'Consult ID': props.webengageConsultTrackingObject.appointmentId,
+                            },
+                            'Front_end - Doctor API-Error on Casesheet'
+                          );
+                          console.log('Error in INITIATE_CONFERENCE_TELEPHONE_CALL', error.message);
+                        });
                       webEngageEventTracking(
                         {
                           'Doctor name': props.webengageConsultTrackingObject.doctorName,
@@ -3493,8 +3501,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       webEngageEventTracking(
                         {
                           'API name': 'CancelAppointment',
-                          'ErrorDetails': JSON.stringify(e),
-                          'Consultation Display ID': props.webengageConsultTrackingObject.appointmentDisplayId,
+                          ErrorDetails: JSON.stringify(e),
+                          'Consultation Display ID':
+                            props.webengageConsultTrackingObject.appointmentDisplayId,
                           'Consult ID': props.webengageConsultTrackingObject.appointmentId,
                         },
                         'Front_end - Doctor API-Error on Casesheet'
@@ -3607,8 +3616,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     webEngageEventTracking(
                       {
                         'API name': 'CancelAppointment',
-                        'ErrorDetails': JSON.stringify(e),
-                        'Consultation Display ID': props.webengageConsultTrackingObject.appointmentDisplayId,
+                        ErrorDetails: JSON.stringify(e),
+                        'Consultation Display ID':
+                          props.webengageConsultTrackingObject.appointmentDisplayId,
                         'Consult ID': props.webengageConsultTrackingObject.appointmentId,
                       },
                       'Front_end - Doctor API-Error on Casesheet'
@@ -3895,39 +3905,40 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           }}
           onClick={() => {
             client
-            .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
-              mutation: CREATE_APPOINTMENT_SESSION,
-              variables: {
-                createAppointmentSessionInput: {
-                  appointmentId: channel,
-                  requestRole: REQUEST_ROLES.DOCTOR,
+              .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
+                mutation: CREATE_APPOINTMENT_SESSION,
+                variables: {
+                  createAppointmentSessionInput: {
+                    appointmentId: channel,
+                    requestRole: REQUEST_ROLES.DOCTOR,
+                  },
                 },
-              },
-            })
-            .then((_data: any) => {
-              props.setStartConsultAction(true);
-              setsessionId(_data.data.createAppointmentSession.sessionId);
-              settoken(_data.data.createAppointmentSession.appointmentToken);
-              handleClose();
-              autoSend(videoCallMsg);
-              setIsVideoCall(true);
-              setDisableOnCancel(true);
-              setIscall(true);
-              props.setIsCallAccepted(true);
-            })
-            .catch((e: any) => {
-              setIsCallConnecting(false);
-              webEngageEventTracking(
-                {
-                  'API name': 'CreateAppointmentSession',
-                  'ErrorDetails': JSON.stringify(e),
-                  'Consultation Display ID': props.webengageConsultTrackingObject.appointmentDisplayId,
-                  'Consult ID': props.webengageConsultTrackingObject.appointmentId,
-                },
-                'Front_end - Doctor API-Error on Casesheet'
-              );
-            });
-            
+              })
+              .then((_data: any) => {
+                props.setStartConsultAction(true);
+                setsessionId(_data.data.createAppointmentSession.sessionId);
+                settoken(_data.data.createAppointmentSession.appointmentToken);
+                handleClose();
+                autoSend(videoCallMsg);
+                setIsVideoCall(true);
+                setDisableOnCancel(true);
+                setIscall(true);
+                props.setIsCallAccepted(true);
+              })
+              .catch((e: any) => {
+                setIsCallConnecting(false);
+                webEngageEventTracking(
+                  {
+                    'API name': 'CreateAppointmentSession',
+                    ErrorDetails: JSON.stringify(e),
+                    'Consultation Display ID':
+                      props.webengageConsultTrackingObject.appointmentDisplayId,
+                    'Consult ID': props.webengageConsultTrackingObject.appointmentId,
+                  },
+                  'Front_end - Doctor API-Error on Casesheet'
+                );
+              });
+
             webEngageEventTracking(
               {
                 'Doctor name': props.webengageConsultTrackingObject.doctorName,
@@ -3986,39 +3997,44 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 cursor: 'pointer',
               }}
               onClick={() => {
+                props.setStartConsultAction(true);
+                setIsVideoCall(false);
+                setIsCallConnecting(true);
                 client
-                .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
-                  mutation: CREATE_APPOINTMENT_SESSION,
-                  variables: {
-                    createAppointmentSessionInput: {
-                      appointmentId: channel,
-                      requestRole: REQUEST_ROLES.DOCTOR,
+                  .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
+                    mutation: CREATE_APPOINTMENT_SESSION,
+                    variables: {
+                      createAppointmentSessionInput: {
+                        appointmentId: channel,
+                        requestRole: REQUEST_ROLES.DOCTOR,
+                      },
                     },
-                  },
-                })
-                .then((_data: any) => {
-                  setsessionId(_data.data.createAppointmentSession.sessionId);
-                  settoken(_data.data.createAppointmentSession.appointmentToken);
-                  handleClose();
-                  autoSend(videoCallMsg);
-                  setIsVideoCall(false);
-                  setDisableOnCancel(true);
-                  setIscall(true);
-                  setJoinPrompt(false);
-                  props.setIsCallAccepted(true);
-                })
-                .catch((e: any) => {
-                  setIsCallConnecting(false);
-                  webEngageEventTracking(
-                    {
-                      'API name': 'CreateAppointmentSession',
-                      'ErrorDetails': JSON.stringify(e),
-                      'Consultation Display ID': props.webengageConsultTrackingObject.appointmentDisplayId,
-                      'Consult ID': props.webengageConsultTrackingObject.appointmentId,
-                    },
-                    'Front_end - Doctor API-Error on Casesheet'
-                  );
-                });  
+                  })
+                  .then((_data: any) => {
+                    setsessionId(_data.data.createAppointmentSession.sessionId);
+                    settoken(_data.data.createAppointmentSession.appointmentToken);
+                    handleClose();
+                    autoSend(videoCallMsg);
+                    setDisableOnCancel(true);
+                    setIscall(true);
+                    props.setIsCallAccepted(true);
+                    setConvertVideo(false);
+                    convertCall();
+                    setJoinPrompt(false);
+                  })
+                  .catch((e: any) => {
+                    setIsCallConnecting(false);
+                    webEngageEventTracking(
+                      {
+                        'API name': 'CreateAppointmentSession',
+                        ErrorDetails: JSON.stringify(e),
+                        'Consultation Display ID':
+                          props.webengageConsultTrackingObject.appointmentDisplayId,
+                        'Consult ID': props.webengageConsultTrackingObject.appointmentId,
+                      },
+                      'Front_end - Doctor API-Error on Casesheet'
+                    );
+                  });
               }}
             >
               {'JOIN'}

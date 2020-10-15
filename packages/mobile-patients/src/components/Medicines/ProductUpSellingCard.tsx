@@ -26,6 +26,7 @@ export interface Props extends MedicineProduct {
   onPressSubtractQty: () => void;
   quantity: number;
   containerStyle?: TouchableOpacityProps['style'];
+  onCartScreen?: boolean;
 }
 
 export const ProductUpSellingCard: React.FC<Props> = ({
@@ -44,6 +45,7 @@ export const ProductUpSellingCard: React.FC<Props> = ({
   onPressNotify,
   onPressAddQty,
   onPressSubtractQty,
+  onCartScreen,
 }) => {
   const isPrescriptionRequired = is_prescription_required == 1;
 
@@ -68,13 +70,19 @@ export const ProductUpSellingCard: React.FC<Props> = ({
     return (
       <View style={styles.priceAndAddToCartContainer}>
         {!!discount && (
-          <Text>
-            <Text style={styles.priceStrikeOff}>(Rs. {price})</Text>
-            <Text style={styles.discountPercentage}>{`  ${discount}% off`}</Text>
-          </Text>
+          <View style={{ flexDirection: 'row' }}>
+            <Text style={{ ...styles.priceStrikeOff }}>
+              {onCartScreen ? `(₹${price})` : `(Rs. ${price})`}
+            </Text>
+            <Text
+              style={{ ...styles.discountPercentage, color: onCartScreen ? '#00B38E' : '#01475B' }}
+            >{`  ${discount}% off`}</Text>
+          </View>
         )}
         <View style={[styles.priceAndAddToCartButton, { marginTop: !!discount ? 0 : 12 }]}>
-          <Text style={styles.price}>{`Rs. ${discount ? special_price : price}`}</Text>
+          <Text style={styles.price}>
+            {(onCartScreen ? '₹' : 'Rs.') + (discount ? special_price : price)}
+          </Text>
           {sell_online
             ? is_in_stock
               ? renderAddToCartButton()
@@ -120,12 +128,12 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.card(),
     marginVertical: 16,
     marginHorizontal: 0,
-    paddingVertical: 12,
+    paddingVertical: 10,
     width: Dimensions.get('window').width * 0.55,
   },
   imageAndTitle: { flexDirection: 'row', alignItems: 'center' },
   image: {
-    height: 68,
+    height: 50,
     width: 50,
   },
   title: {

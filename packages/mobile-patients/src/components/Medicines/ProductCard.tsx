@@ -23,6 +23,7 @@ export interface Props extends MedicineProduct {
   onPressSubtractQty: () => void;
   quantity: number;
   containerStyle?: TouchableOpacityProps['style'];
+  onCartScreen?: boolean;
 }
 
 export const ProductCard: React.FC<Props> = ({
