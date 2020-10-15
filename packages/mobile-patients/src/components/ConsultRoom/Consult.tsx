@@ -805,7 +805,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                     }
                   }
                 });
-                combinationActiveFollowUp.push({ type: 'Active', data: activeAppointments });
+                activeAppointments.length > 0 &&
+                  combinationActiveFollowUp.push({ type: 'Active', data: activeAppointments });
                 followUpAppointments.length > 0 &&
                   combinationActiveFollowUp.push({
                     type: 'Follow-up Chat',
