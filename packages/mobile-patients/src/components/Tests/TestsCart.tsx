@@ -343,7 +343,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       // 'Delivery charge': deliveryCharges,
       'Net after discount': grandTotal,
       'Prescription Needed?': false, //from backend
-      'Prescrition Mandatory?': uploadPrescriptionRequired,
+      'Prescription Mandatory?': uploadPrescriptionRequired,
       'Mode of Sample Collection': selectedTab === tabs[0].title ? 'Home Visit' : 'Clinic Visit',
       'Pin Code': pinCode,
       'Service Area': 'Diagnostic',
