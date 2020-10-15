@@ -1,7 +1,7 @@
 import azure from 'azure-sb';
 
 export const AZURE_SERVICE_BUS_GENERAL = (function() {
-  if (!process.env.HDFC_SERVICE_BUS) throw new Error('Must provide connection string');
+  if (!process.env.GENERAL_SERVICE_BUS) throw new Error('Must provide connection string');
   let instance: azure.ServiceBusService;
 
   function createInstance() {
