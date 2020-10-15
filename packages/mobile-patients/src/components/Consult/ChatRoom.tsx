@@ -2093,7 +2093,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       },
       message: (message) => {
         const messageType = message?.message?.message;
-        const automatedText = message?.message?.automatedText;
 
         if (messageType == followupconsult) {
           // setStatus(STATUS.COMPLETED);  //Uncomment it if you are not getting the automated message
@@ -2104,11 +2103,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           postAppointmentWEGEvent(WebEngageEventName.SD_CONSULTATION_STARTED);
         } else if (messageType == videoCallMsg && name == 'DOCTOR') {
           postAppointmentWEGEvent(WebEngageEventName.SD_VIDEO_CALL_STARTED);
-        }
-
-        if (automatedText === vitalsCompletedByPatient) {
-          // ignore automatedText messages here
-          return;
         }
 
         messageType === startConsultMsg && setname('DOCTOR');
@@ -4725,6 +4719,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       rowData.message === stopConsultMsg ||
       rowData.message === cancelConsultInitiated ||
       rowData.message === callAbandonment ||
+      rowData.message === vitalsCompletedByPatient ||
       rowData.message === patientRejectedCall ||
       rowData === patientRejectedCall
     ) {
