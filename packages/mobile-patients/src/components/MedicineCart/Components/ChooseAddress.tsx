@@ -66,7 +66,7 @@ export const ChooseAddress: React.FC<ChooseAddressProps> = (props) => {
     const length = addresses ? addresses.length : 0;
     return (
       <TouchableOpacity
-        style={{ ...styles.addAddressCard, height: length % 2 == 0 ? 75 : undefined }}
+        style={{ ...styles.addAddressCard, height: length % 2 == 0 ? 80 : undefined }}
         onPress={onPressAddAddress}
       >
         <Text style={styles.addAddress}>Add</Text>
@@ -76,12 +76,7 @@ export const ChooseAddress: React.FC<ChooseAddressProps> = (props) => {
   };
   const renderChooseAddress = () => {
     return (
-      <ScrollView
-        contentContainerStyle={{
-          ...styles.container,
-          justifyContent: addresses?.length ? 'center' : undefined,
-        }}
-      >
+      <ScrollView contentContainerStyle={styles.container}>
         {addresses.map((item) => {
           return renderAddress(item);
         })}
@@ -95,11 +90,11 @@ export const ChooseAddress: React.FC<ChooseAddressProps> = (props) => {
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 0.04 * windowWidth,
+    paddingHorizontal: 0.055 * windowWidth,
     flexDirection: 'row',
     flexWrap: 'wrap',
     marginTop: 10,
-    paddingBottom: 40,
+    paddingBottom: 30,
   },
   addressCard: {
     ...theme.viewStyles.cardViewStyle,
