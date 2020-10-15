@@ -307,7 +307,7 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       state: (locationForDiagnostics || {}).state!,
       stateId: `${(locationForDiagnostics || {}).stateId!}`,
       cityId: `${(locationForDiagnostics || {}).cityId!}`,
-      areaId: (areaSelected || {}).key!,
+      areaID: (areaSelected || {}).key!,
       diagnosticDate: moment(date).format('YYYY-MM-DD'),
       prescriptionUrl: [
         ...physicalPrescriptions.map((item) => item.uploadedUrl),
