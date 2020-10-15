@@ -291,7 +291,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     if (selectedTab == tabs[0].title) {
       if (
         selectedTimeSlot &&
-        selectedTimeSlot!.slotInfo!.slot! &&
+        selectedTimeSlot?.slotInfo?.slot! &&
         areaSelected &&
         deliveryAddressId != '' &&
         cartItems
@@ -1006,7 +1006,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                         setDiagnosticSlot && setDiagnosticSlot(null);
                         setselectedTimeSlot(undefined);
 
-                        setDiagnosticAreas([]);
+                        setDiagnosticAreas!([]);
                         setAreaSelected!({});
 
                         // fetchAreasForAddress(id, pincode!);
