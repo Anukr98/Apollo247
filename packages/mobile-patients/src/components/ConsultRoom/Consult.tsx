@@ -947,6 +947,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           mainContainerStyle={{ maxHeight: height - 200 }}
           setdisplayoverlay={() => setdisplayoverlay(false)}
           navigation={props.navigation}
+          scrollToSlot={false}
           doctor={appointmentItem?.doctorInfo || null}
           patientId={currentPatient ? currentPatient.id : ''}
           clinics={appointmentItem?.doctorInfo?.doctorHospital || []}
@@ -1482,7 +1483,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             zIndex: 1,
             shadowOpacity: 0.4,
             shadowRadius: 5,
-            elevation: 15,
+            elevation: displayoverlay ? 0 : 15,
           }
         : {};
     return <TabHeader containerStyle={containerStyle} navigation={props.navigation} />;
