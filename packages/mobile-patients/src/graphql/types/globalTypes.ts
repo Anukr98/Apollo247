@@ -669,7 +669,7 @@ export interface DiagnosticOrderInput {
   paymentType?: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
   items?: (DiagnosticLineItem | null)[] | null;
   slotId?: string | null;
-  areaID?: number | null;
+  areaId?: number | null;
 }
 
 export interface DoctorAvailabilityInput {
