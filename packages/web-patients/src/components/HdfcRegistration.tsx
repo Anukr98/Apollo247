@@ -57,7 +57,7 @@ const useStyles = makeStyles((theme: Theme) => {
         background: '#E52936',
         color: '#fff',
         [theme.breakpoints.down('sm')]: {
-          bottom: 20,
+          bottom: 10,
           fontSize: 12,
         },
         '&:hover': {
