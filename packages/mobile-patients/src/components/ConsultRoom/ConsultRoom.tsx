@@ -952,6 +952,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         if (createSubscriptionData!.success) {
           setShowHdfcOtpView(false);
           setShowCongratulations(true);
+          const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_PLAN_SUSBCRIBED] = {
+            'Mobile Number': g(currentPatient, 'mobileNumber'),
+            'DOB': g(currentPatient, 'dateOfBirth'),
+            'Email ID': g(currentPatient, 'emailAddress'),
+            'Plan Name': g(createSubscriptionData, 'response', 'group_plan', 'name'),
+            'Partner ID': g(currentPatient, 'partnerId'),
+          };
+          postWebEngageEvent(WebEngageEventName.HDFC_PLAN_SUSBCRIBED, eventAttributes);
           // getUserSubscriptionsWithBenefits();
         }
       })
@@ -1748,7 +1756,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           marginBottom: 10,
         }}
       >
-        <Text style={theme.viewStyles.text('B', 13, '#164884', 1, 28, 0.35)}>
+        <Text style={theme.viewStyles.text('B', 15, '#164884', 1, 28, 0.35)}>
           #ApolloHealthyLife
         </Text>
         <HdfcBankLogo style={styles.hdfcLogo} />
@@ -1873,10 +1881,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             }}
           />
           <View>
-            <Text style={theme.viewStyles.text('B', 17, '#01475B', 1, 30, 0.35)}>
+            <Text style={theme.viewStyles.text('B', 17, '#02475B', 1, 30, 0.35)}>
               One last step to start your
             </Text>
-            <Text style={theme.viewStyles.text('B', 17, '#01475B', 1, 30, 0.35)}>
+            <Text style={theme.viewStyles.text('B', 17, '#02475B', 1, 30, 0.35)}>
               HealthyLife journey
             </Text>
           </View>
