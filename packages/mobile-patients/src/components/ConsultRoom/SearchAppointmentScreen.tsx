@@ -236,6 +236,7 @@ const styles = StyleSheet.create({
 export interface SearchAppointmentScreenProps
   extends NavigationScreenProps<{
     allAppointments: getPatientAllAppointments_getPatientAllAppointments_appointments;
+    onPressBack: () => void;
   }> {}
 
 export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (props) => {
@@ -265,7 +266,11 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
         title={'SEARCH APPOINTMENTS'}
         leftIcon={'backArrow'}
         container={{ borderBottomWidth: 0 }}
-        onPressLeftIcon={() => props.navigation.goBack()}
+        onPressLeftIcon={() => {
+          props.navigation.state.params?.onPressBack &&
+            props.navigation.state.params?.onPressBack();
+          props.navigation.goBack();
+        }}
       />
     );
   };
