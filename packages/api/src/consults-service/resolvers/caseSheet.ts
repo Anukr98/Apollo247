@@ -856,7 +856,7 @@ const modifyCaseSheet: Resolver<
   );
 
   await Promise.all(promises);
-  patientRepo.updatePatientDetailsConsultCache(patientData);
+  patientRepo.updatePatientDetailsConsultCache(patientData.id);
 
   return getCaseSheetData;
 };
