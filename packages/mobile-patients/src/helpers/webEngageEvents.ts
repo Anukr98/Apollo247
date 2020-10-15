@@ -228,6 +228,7 @@ export enum WebEngageEventName {
   HDFC_DIGITAL_VAULT_CLICK = 'HDFC Digital Vault Click',
   HDFC_7000_DOCTORS_CLICK = 'HDFC 7000 Doctors Click',
   HDFC_FREE_MED_CHECK_CLICK = 'HDFC Free Med Check Click',
+  HDFC_PLAN_SUSBCRIBED = 'HDFC Plan Subscribed',
 
   // Opentok Events
   DOCTOR_SUBSCRIBER_ERROR = 'Doctor Subscriber Error',
@@ -1692,6 +1693,13 @@ export interface WebEngageEvents {
   [WebEngageEventName.HDFC_DIGITAL_VAULT_CLICK]: HdfcBenefitInfo;
   [WebEngageEventName.HDFC_7000_DOCTORS_CLICK]: HdfcBenefitInfo;
   [WebEngageEventName.HDFC_FREE_MED_CHECK_CLICK]: HdfcBenefitInfo;
+  [WebEngageEventName.HDFC_PLAN_SUSBCRIBED]: {
+    'DOB': string;
+    'Email ID': string;
+    'Mobile Number': string;
+    'Partner ID': string;
+    'Plan Name': string;
+  };
 
   // ********** Opentok Events ********** \\
 
