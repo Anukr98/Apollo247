@@ -2092,23 +2092,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }
       },
       message: (message) => {
-        // console.log('messageevent', message);]
-        const messageType = g(message, 'message', 'message');
+        const messageType = message?.message?.message;
         const automatedText = message?.message?.automatedText;
-        console.log(`pubnub.addListener - ${messageType}`, { message });
 
         if (messageType == followupconsult) {
           // setStatus(STATUS.COMPLETED);  //Uncomment it if you are not getting the automated message
           postAppointmentWEGEvent(WebEngageEventName.PRESCRIPTION_RECEIVED);
-        }
-        if (messageType == stopConsultJr) {
+        } else if (messageType == stopConsultJr) {
           postAppointmentWEGEvent(WebEngageEventName.JD_COMPLETED);
-        }
-        if (messageType == startConsultMsg) {
-          // Disc
+        } else if (messageType == startConsultMsg) {
           postAppointmentWEGEvent(WebEngageEventName.SD_CONSULTATION_STARTED);
-        }
-        if (messageType == videoCallMsg && name == 'DOCTOR') {
+        } else if (messageType == videoCallMsg && name == 'DOCTOR') {
           postAppointmentWEGEvent(WebEngageEventName.SD_VIDEO_CALL_STARTED);
         }
 
@@ -2117,16 +2111,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           return;
         }
 
-        message &&
-          message.message &&
-          message.message.message &&
-          message.message.message === '^^#startconsult' &&
-          setname('DOCTOR');
-        message &&
-          message.message &&
-          message.message.message &&
-          message.message.message === '^^#startconsultJr' &&
-          setname('JUNIOR');
+        messageType === startConsultMsg && setname('DOCTOR');
+        messageType === startConsultjr && setname('JUNIOR');
         pubNubMessages(message);
       },
       // presence: (presenceEvent) => {    // APP-2803: removed No show logic
