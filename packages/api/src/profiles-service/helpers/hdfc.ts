@@ -7,7 +7,6 @@ import * as cryptojs from 'crypto-js';
 import * as jwt from 'jsonwebtoken';
 import { debugLog } from 'customWinstonLogger';
 import { AZURE_SERVICE_BUS_GENERAL } from 'profiles-service/database/connectAzureServiceBus';
-import { try } from 'bluebird';
 
 const INSTANCE_ID = '8888';
 const assetsDir = <string>process.env.ASSETS_DIRECTORY;
@@ -118,7 +117,7 @@ export async function generateOtp(mobile: String) {
       },
     },
   };
-  reconSendToQueue(
+  sendApiCallLogToQueue(
     `26, ${refNo}, XXXXXX${mobile.slice(-4)}, ${('0' + requestTime.getDate()).slice(-2)}${(
       '0' +
       (requestTime.getMonth() + 1)
@@ -175,9 +174,8 @@ export async function verifyOtp(otp: String, mobile: String) {
         fillerField5: '',
       },
     },
-    s,
   };
-  reconSendToQueue(
+  sendApiCallLogToQueue(
     `26, ${refNo}, XXXXXX${mobile.slice(-4)}, ${('0' + requestTime.getDate()).slice(-2)}${(
       '0' +
       (requestTime.getMonth() + 1)
@@ -423,44 +421,44 @@ function checkStatus(response: any) {
   }
 }
 
-async function reconSendToQueue(message: string) {
-  try{
-  const azureServiceBus = AZURE_SERVICE_BUS_GENERAL.getInstance();
-  azureServiceBus.createQueueIfNotExists(process.env.HDFC_RECON_QUEUE, (queueError) => {
-    if (queueError) {
-      dLogger(
-        new Date(),
-        'recon HDFC azureServiceBus.createQueueIfNotExists ERROR',
-        `${JSON.stringify(message)} --- ${JSON.stringify(queueError)}`
-      );
-    }
-    dLogger(
-      new Date(),
-      'recon HDFC azureServiceBus.createQueueIfNotExists END',
-      `${JSON.stringify(message)} --- ${JSON.stringify(process.env.HDFC_RECON_QUEUE)}`
-    );
-
-    azureServiceBus.sendQueueMessage(process.env.HDFC_RECON_QUEUE, message, (sendMsgError) => {
-      if (sendMsgError) {
+async function sendApiCallLogToQueue(message: string) {
+  try {
+    const azureServiceBus = AZURE_SERVICE_BUS_GENERAL.getInstance();
+    azureServiceBus.createQueueIfNotExists(process.env.HDFC_LOG_API_QUEUE, (queueError) => {
+      if (queueError) {
         dLogger(
           new Date(),
-          'recon HDFC azureServiceBus.sendQueueMessage ERROR',
-          `${JSON.stringify(process.env.HDFC_RECON_QUEUE)} --- ${message} --- ${JSON.stringify(
-            sendMsgError
-          )}`
+          'Log API HDFC azureServiceBus.createQueueIfNotExists ERROR',
+          `${JSON.stringify(message)} --- ${JSON.stringify(queueError)}`
         );
       }
       dLogger(
         new Date(),
-        'recon HDFC azureServiceBus.sendQueueMessage END',
-        `${JSON.stringify(process.env.HDFC_RECON_QUEUE)} --- ${message}`
+        'Log API HDFC azureServiceBus.createQueueIfNotExists END',
+        `${JSON.stringify(message)} --- ${JSON.stringify(process.env.HDFC_LOG_API_QUEUE)}`
       );
+
+      azureServiceBus.sendQueueMessage(process.env.HDFC_LOG_API_QUEUE, message, (sendMsgError) => {
+        if (sendMsgError) {
+          dLogger(
+            new Date(),
+            'Log API HDFC azureServiceBus.sendQueueMessage ERROR',
+            `${JSON.stringify(process.env.HDFC_LOG_API_QUEUE)} --- ${message} --- ${JSON.stringify(
+              sendMsgError
+            )}`
+          );
+        }
+        dLogger(
+          new Date(),
+          'Log API HDFC azureServiceBus.sendQueueMessage END',
+          `${JSON.stringify(process.env.HDFC_LOG_API_QUEUE)} --- ${message}`
+        );
+      });
     });
-  });}
-  catch(error){
+  } catch (error) {
     dLogger(
       new Date(),
-      'recon HDFC azureServiceBus.createQueueIfNotExists ERROR',
+      'Log API HDFC azureServiceBus.createQueueIfNotExists ERROR',
       `${JSON.stringify(message)} --- ${JSON.stringify(error)}`
     );
   }
