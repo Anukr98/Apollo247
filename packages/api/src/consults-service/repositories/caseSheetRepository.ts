@@ -343,14 +343,45 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
     return getCaseSheetData;
   }
   
-  async getCaseSheetByFilters(appointmentId: string) {
-    const caseSheets = await this.createQueryBuilder('case_sheet')
+  async getCaseSheetByFilters(appointmentId: string, caseSheetType: string) {
+
+    const juniorDoctorType = DoctorType.JUNIOR;
+    let query = this.createQueryBuilder('case_sheet')
     .leftJoinAndSelect('case_sheet.appointment', 'appointment')
-    .where('case_sheet.appointment = :appointmentId', { appointmentId })
-    .orderBy('case_sheet.createdDate', 'DESC')
-    .getMany();
+    .where('case_sheet.appointment = :appointmentId', { appointmentId });
+
+    if(caseSheetType === 'JDCaseSheet'){
+      query = query.andWhere('case_sheet.doctorType = :juniorDoctorType', { juniorDoctorType });
+      query = query.leftJoinAndSelect('appointment.appointmentDocuments', 'appointmentDocuments');
+      query = query.limit(1)
+    }else if(caseSheetType === 'SDCaseSheet') {
+      query.leftJoinAndSelect('appointment.appointmentDocuments', 'appointmentDocuments')      
+    }
+    query.orderBy('case_sheet.version', 'DESC')
+    .orderBy('case_sheet.createdDate', 'DESC');
+    
+    const caseSheets = await query.getMany();
+
     const JDCaseSheet = caseSheets.filter((casesheet) => casesheet.doctorType === 'JUNIOR');
-    const SDCaseSheet = caseSheets.filter((casesheet) => casesheet.doctorType != 'JUNIOR');
-    return { SDCaseSheet, JDCaseSheet };
+    const SDCaseSheet = caseSheets.filter((casesheet) => {
+      if (casesheet.doctorType != 'JUNIOR' && caseSheetType != 'SDCaseSheet') {
+        return casesheet;
+      } else if (caseSheetType === 'SDCaseSheet' && casesheet.sentToPatient === true) {
+        return casesheet;
+      }
+    });
+
+    if (caseSheetType === 'JDCaseSheet' && JDCaseSheet.length < 1) {
+      throw new AphError(AphErrorMessages.NO_CASESHEET_EXIST);
+    } else if(caseSheetType != 'JDCaseSheet') {
+      if (SDCaseSheet.length < 1) throw new AphError(AphErrorMessages.NO_CASESHEET_EXIST);
+      if (JDCaseSheet.length < 1)
+        throw new AphError(AphErrorMessages.JUNIOR_DOCTOR_CASESHEET_NOT_CREATED);
+        
+    }
+    const caseSheetDetails = caseSheetType != 'JDCaseSheet' ? SDCaseSheet[0] :  JDCaseSheet[0];
+    const juniorDoctorCaseSheet = JDCaseSheet[0];
+    return { caseSheetDetails, juniorDoctorCaseSheet };
   }
+
 }
