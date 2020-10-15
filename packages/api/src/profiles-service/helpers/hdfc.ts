@@ -6,8 +6,7 @@ import * as crypto from 'crypto';
 import * as cryptojs from 'crypto-js';
 import * as jwt from 'jsonwebtoken';
 import { debugLog } from 'customWinstonLogger';
-import { AZURE_SERVICE_BUS_HDFC } from 'profiles-service/database/connectAzureServiceBus';
-import { DATE } from 'asn1js';
+import { AZURE_SERVICE_BUS_GENERAL } from 'profiles-service/database/connectAzureServiceBus';
 
 const INSTANCE_ID = '8888';
 const assetsDir = <string>process.env.ASSETS_DIRECTORY;
@@ -175,6 +174,7 @@ export async function verifyOtp(otp: String, mobile: String) {
         fillerField5: '',
       },
     },
+    s,
   };
   reconSendToQueue(
     `26, ${refNo}, XXXXXX${mobile.slice(-4)}, ${('0' + requestTime.getDate()).slice(-2)}${(
@@ -423,8 +423,8 @@ function checkStatus(response: any) {
 }
 
 function reconSendToQueue(message: string) {
-  const azureServiceBus = AZURE_SERVICE_BUS_HDFC.getInstance();
-  azureServiceBus.createTopicIfNotExists(process.env.HDFC_QUEUE_NAME, (topicError) => {
+  const azureServiceBus = AZURE_SERVICE_BUS_GENERAL.getInstance();
+  azureServiceBus.createQueueIfNotExists(process.env.HDFC_QUEUE_NAME, (topicError) => {
     if (topicError) {
       dLogger(
         new Date(),
@@ -438,7 +438,7 @@ function reconSendToQueue(message: string) {
       `${JSON.stringify(message)} --- ${JSON.stringify(process.env.HDFC_QUEUE_NAME)}`
     );
 
-    azureServiceBus.sendTopicMessage(process.env.HDFC_QUEUE_NAME, message, (sendMsgError) => {
+    azureServiceBus.sendQueueMessage(process.env.HDFC_QUEUE_NAME, message, (sendMsgError) => {
       if (sendMsgError) {
         dLogger(
           new Date(),
