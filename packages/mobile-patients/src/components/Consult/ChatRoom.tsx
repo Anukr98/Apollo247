@@ -581,7 +581,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [showPDF, setShowPDF] = useState<boolean>(false);
   const [fileNamePDF, setFileNamePDF] = useState<string>('');
   const [textChange, setTextChange] = useState(false);
-  const [sendMessageToDoctor, setSendMessageToDoctor] = useState<boolean>(false);
   const [callerAudio, setCallerAudio] = useState<boolean>(true);
   const [callerVideo, setCallerVideo] = useState<boolean>(true);
   const [downgradeToAudio, setDowngradeToAudio] = React.useState<boolean>(false);
@@ -2218,16 +2217,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         const occupancyDoctor = data.filter((obj: any) => {
           return obj.uuid === 'DOCTOR' || obj.uuid.indexOf('DOCTOR_') > -1;
         });
-
+        InsertMessageToDoctor(message);
         console.log('callAbondmentMethodoccupancyDoctor -------> ', occupancyDoctor);
-        if (response.totalOccupancy >= 2) {
-          setSendMessageToDoctor(false);
-        } else {
-          if (response.totalOccupancy == 1 && occupancyDoctor.length == 0) {
-            setSendMessageToDoctor(true);
-            InsertMessageToDoctor(message);
-          }
-        }
       })
       .catch((error) => {
         CommonBugFender('ChatRoom_PUBNUB_PRESENCE', error);
