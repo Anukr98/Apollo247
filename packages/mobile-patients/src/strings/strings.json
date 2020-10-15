@@ -296,7 +296,8 @@
     "removeThisTestCTA": "Remove this test from cart",
     "removeTheseTestsCTA": "Remove these tests from cart",
     "itemsAddedSuccessfullyCTA": " Item successfully added",
-    "proceedToCartCTA": "PROCEED TO CART"
+    "proceedToCartCTA": "PROCEED TO CART",
+    "noPreparationRequiredText": "No special preparation required"
   },
   "orders": {
     "urOrders": "MY ORDERS",

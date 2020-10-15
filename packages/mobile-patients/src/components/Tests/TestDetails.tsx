@@ -385,7 +385,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     return (
       <View style={styles.descriptionStyles}>
         <Text style={styles.descriptionTextStyles}>
-          {(testInfo && testInfo.preparation) || 'Not available'}
+          {(testInfo && testInfo.preparation) || string.diagnostics.noPreparationRequiredText}
         </Text>
       </View>
     );
