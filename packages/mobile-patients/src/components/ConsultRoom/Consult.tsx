@@ -457,6 +457,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const [showSchdulesView, setShowSchdulesView] = useState<boolean>(false);
   const [newAppointmentTime, setNewAppointmentTime] = useState<string>('');
   const [newRescheduleCount, setNewRescheduleCount] = useState<number>(0);
+  const [callFetchAppointmentApi, setCallFetchAppointmentApi] = useState(true);
 
   const [transferfollowup, setTransferfollowup] = useState<boolean>(false);
   const [followupdone, setFollowupDone] = useState<boolean>(false);
@@ -804,7 +805,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                     }
                   }
                 });
-                combinationActiveFollowUp.push({ type: 'Active', data: activeAppointments });
+                activeAppointments.length > 0 &&
+                  combinationActiveFollowUp.push({ type: 'Active', data: activeAppointments });
                 followUpAppointments.length > 0 &&
                   combinationActiveFollowUp.push({
                     type: 'Follow-up Chat',
@@ -1530,6 +1532,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     );
   };
 
+  const searchAppointmentBackPressed = () => {
+    setCallFetchAppointmentApi(false);
+  };
+
   const renderSearchFilterView = () => {
     const numberOfAppoinmentText =
       filterLength > 0
@@ -1548,6 +1554,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             onPress={() =>
               props.navigation.navigate(AppRoutes.SearchAppointmentScreen, {
                 allAppointments: consultations,
+                onPressBack: searchAppointmentBackPressed,
               })
             }
           >
@@ -1740,8 +1747,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       <NavigationEvents
         onDidFocus={(payload) => {
           console.log('did focus', payload);
-          setLoading && setLoading(true);
-          fetchAppointments();
+          if (callFetchAppointmentApi) {
+            setLoading && setLoading(true);
+            fetchAppointments();
+          }
         }}
         onDidBlur={(payload) => console.log('did blur', payload)}
       />
