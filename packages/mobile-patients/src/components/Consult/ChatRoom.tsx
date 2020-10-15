@@ -617,6 +617,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const patientJoinedMeetingRoom = '^^#patientJoinedMeetingRoom';
   const patientRejectedCall = '^^#PATIENT_REJECTED_CALL';
   const exotelCall = '^^#exotelCall';
+  const vitalsCompletedByPatient = '^^#vitalsCompletedByPatient'; // ignore msg used by p-web
 
   const patientId = appointmentData.patientId;
   const channel = appointmentData.id;
@@ -803,8 +804,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       'Session ID': sessionId,
     };
     postWebEngageEvent(type, eventAttributes);
-  }
-  
+  };
+
   const postConsultCardEvents = (
     type:
       | WebEngageEventName.CHAT_WITH_DOCTOR
@@ -2093,6 +2094,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       message: (message) => {
         // console.log('messageevent', message);]
         const messageType = g(message, 'message', 'message');
+        const automatedText = message?.message?.automatedText;
         console.log(`pubnub.addListener - ${messageType}`, { message });
 
         if (messageType == followupconsult) {
@@ -2108,6 +2110,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }
         if (messageType == videoCallMsg && name == 'DOCTOR') {
           postAppointmentWEGEvent(WebEngageEventName.SD_VIDEO_CALL_STARTED);
+        }
+
+        if (automatedText === vitalsCompletedByPatient) {
+          // ignore automatedText messages here
+          return;
         }
 
         message &&
