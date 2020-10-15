@@ -18,7 +18,8 @@ import Slider from 'react-slick';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
-      width: '193px !important',
+      width: '192px !important',
+      height: '145px !important',
       backgroundColor: theme.palette.common.white,
       borderRadius: 10,
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
