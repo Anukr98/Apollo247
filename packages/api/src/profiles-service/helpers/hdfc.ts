@@ -7,6 +7,7 @@ import * as cryptojs from 'crypto-js';
 import * as jwt from 'jsonwebtoken';
 import { debugLog } from 'customWinstonLogger';
 import { AZURE_SERVICE_BUS_GENERAL } from 'profiles-service/database/connectAzureServiceBus';
+import { try } from 'bluebird';
 
 const INSTANCE_ID = '8888';
 const assetsDir = <string>process.env.ASSETS_DIRECTORY;
@@ -422,37 +423,45 @@ function checkStatus(response: any) {
   }
 }
 
-function reconSendToQueue(message: string) {
+async function reconSendToQueue(message: string) {
+  try{
   const azureServiceBus = AZURE_SERVICE_BUS_GENERAL.getInstance();
-  azureServiceBus.createQueueIfNotExists(process.env.HDFC_QUEUE_NAME, (topicError) => {
-    if (topicError) {
+  azureServiceBus.createQueueIfNotExists(process.env.HDFC_RECON_QUEUE, (queueError) => {
+    if (queueError) {
       dLogger(
         new Date(),
-        'recon HDFC azureServiceBus.createTopicIfNotExists ERROR',
-        `${JSON.stringify(message)} --- ${JSON.stringify(topicError)}`
+        'recon HDFC azureServiceBus.createQueueIfNotExists ERROR',
+        `${JSON.stringify(message)} --- ${JSON.stringify(queueError)}`
       );
     }
     dLogger(
       new Date(),
-      'addToPatientPrismQueue azureServiceBus.createTopicIfNotExists END',
-      `${JSON.stringify(message)} --- ${JSON.stringify(process.env.HDFC_QUEUE_NAME)}`
+      'recon HDFC azureServiceBus.createQueueIfNotExists END',
+      `${JSON.stringify(message)} --- ${JSON.stringify(process.env.HDFC_RECON_QUEUE)}`
     );
 
-    azureServiceBus.sendQueueMessage(process.env.HDFC_QUEUE_NAME, message, (sendMsgError) => {
+    azureServiceBus.sendQueueMessage(process.env.HDFC_RECON_QUEUE, message, (sendMsgError) => {
       if (sendMsgError) {
         dLogger(
           new Date(),
-          'addToPatientPrismQueue azureServiceBus.sendTopicMessage ERROR',
-          `${JSON.stringify(process.env.HDFC_QUEUE_NAME)} --- ${message} --- ${JSON.stringify(
+          'recon HDFC azureServiceBus.sendQueueMessage ERROR',
+          `${JSON.stringify(process.env.HDFC_RECON_QUEUE)} --- ${message} --- ${JSON.stringify(
             sendMsgError
           )}`
         );
       }
       dLogger(
         new Date(),
-        'addToPatientPrismQueue azureServiceBus.sendTopicMessage END',
-        `${JSON.stringify(process.env.HDFC_QUEUE_NAME)} --- ${message}`
+        'recon HDFC azureServiceBus.sendQueueMessage END',
+        `${JSON.stringify(process.env.HDFC_RECON_QUEUE)} --- ${message}`
       );
     });
-  });
+  });}
+  catch(error){
+    dLogger(
+      new Date(),
+      'recon HDFC azureServiceBus.createQueueIfNotExists ERROR',
+      `${JSON.stringify(message)} --- ${JSON.stringify(error)}`
+    );
+  }
 }
