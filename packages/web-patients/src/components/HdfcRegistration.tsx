@@ -53,10 +53,16 @@ const useStyles = makeStyles((theme: Theme) => {
         boxShadow: 'none',
         display: 'block',
         marginLeft: 'auto',
+        fontSize: 16,
         background: '#E52936',
         color: '#fff',
         [theme.breakpoints.down('sm')]: {
-          bottom: 20,
+          bottom: 10,
+          fontSize: 12,
+        },
+        '&:hover': {
+          background: '#E52936',
+          color: '#fff',
         },
         '&:hover': {
           background: '#E52936',
@@ -83,6 +89,8 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('sm')]: {
         fontSize: 10,
         bottom: 0,
+        left:0,
+        width: '60%',
       },
     },
     note: {
@@ -413,6 +421,11 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       justifyContent: 'space-between',
       padding: '0 0 10px',
+      '& img':{
+        [theme.breakpoints.down('sm')]: {
+          width: 120,
+        }
+      }
     },
   };
 });

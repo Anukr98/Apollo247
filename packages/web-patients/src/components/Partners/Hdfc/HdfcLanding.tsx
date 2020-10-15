@@ -119,7 +119,7 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: '0 30px 0 0',
       '& img': {
         [theme.breakpoints.down('sm')]: {
-          width: 100,
+          width: 80,
         },
       },
     },
@@ -382,6 +382,14 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       justifyContent: 'space-between',
       padding: '0 30px',
+      [theme.breakpoints.down('sm')]: {
+        padding:0
+      },
+      '& img':{
+        [theme.breakpoints.down('sm')]: {
+          width: 120,
+        }
+      }
     },
     bannerFooter: {
       display: 'flex',
@@ -390,6 +398,9 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'absolute',
       right: 50,
       bottom: 50,
+      [theme.breakpoints.down('sm')]: {
+        position: 'static'
+      },
       '& button': {
         margin: '0 0 0 20px',
         
@@ -755,6 +766,7 @@ export const HdfcLanding: React.FC = (props) => {
                   The HealthyLife offering is the marketing program offered by Apollo 24|7, an app
                   managed by Apollo Hospitals Enterprise Limited (AHEL) only for HDFC Bank
                   customers.
+                  </li>
                   <li>
                     The validity of membership is 1 year and the validity of program (“Term”) is
                     till 30th September 2021, unless extended by Apollo 24|7 and HDFC Bank
@@ -828,8 +840,7 @@ export const HdfcLanding: React.FC = (props) => {
                     Conciliation Act, 1996. The place of arbitration shall be at Chennai and
                     language of arbitration shall be English. The existence of a dispute, if at all,
                     shall not constitute a claim against Apollo 24|7.
-                  </li>
-                </li>
+                  </li>              
               </ul>
             </div>
           </div>
@@ -889,7 +900,7 @@ export const HdfcLanding: React.FC = (props) => {
           })
         : ''}
 
-      {hasExistingProfile && currentPatient.partnerId === HDFC_REF_CODE
+      {hasExistingProfile && currentPatient && currentPatient.partnerId === HDFC_REF_CODE
         ? (window.location.href = '/')
         : ''}
 
