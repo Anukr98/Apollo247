@@ -40,6 +40,7 @@ import {
   SadFaceYellow,
   HdfcBankLogo,
   CovidOrange,
+  DashedLine,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
@@ -289,8 +290,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 1,
     marginVertical: 16,
-    backgroundColor: theme.colors.SHERPA_BLUE,
-    opacity: 0.2,
   },
 });
 
@@ -2326,8 +2325,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         </ImageBackground>
         {/* <Image style={{ position: 'absolute', top: 24, alignSelf: 'center', width: 80, height: 80 }} source={require('@aph/mobile-patients/src/images/home/coronavirus_image.png')} /> */}
         <View style={{ padding: 16, paddingTop: 24 }}>
-          {renderContent(string.common.knowledgeBase, string.common.knowledgeBaseDescription)}
-          {renderContent('COVID-19', string.common.covidDescription)}
+          {renderContent(string.common.healthBlog, string.common.healthBlogDescription)}
+          {renderContent(string.common.covid19VaccineInfo, string.common.covidDescription)}
           {renderCovidHelpButtons()}
         </View>
       </View>
@@ -2342,14 +2341,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           {description}
         </Text>
         {renderContentButton(title)}
-        {title === 'COVID-19' ? renderContentButton(string.common.covidVaccineTracker) : null}
-        {renderPlainLine()}
+        {title === string.common.covid19VaccineInfo
+          ? renderContentButton(string.common.covidVaccineTracker)
+          : null}
+        {renderDashedLine()}
       </View>
     );
   };
 
-  const renderPlainLine = () => {
-    return <View style={styles.plainLine} />;
+  const renderDashedLine = () => {
+    return <DashedLine style={styles.plainLine} />;
   };
 
   const renderCovidHelpButtons = () => {
@@ -2386,9 +2387,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     const btnTitle =
       title === string.common.covidVaccineTracker
         ? string.common.covidVaccineTracker
-        : title === string.common.knowledgeBase
+        : title === string.common.healthBlog
         ? string.common.readLatestArticles
-        : title === 'COVID-19'
+        : title === string.common.covid19VaccineInfo
         ? string.common.learnAboutCovid
         : '';
     return (

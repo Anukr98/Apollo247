@@ -1190,3 +1190,7 @@ export const EmptyCartIcon: React.FC<IconProps> = (props) => (
 export const CovidOrange: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_covid_orange.png')} />
 );
+
+export const DashedLine: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/dashedLine.png')} />
+);

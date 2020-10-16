@@ -41,14 +41,15 @@
     "covidVaccineTrackerText": "Covid Vaccine Tracker",
     "healthcareEcosystemBannerText": "HEALTHCARE AS ONE ECOSYSTEM",
     "healthcareEcosystemBannerDescription": "Learn more about healthcare in today’s world with rapid increase in medications and dietery habits round the globe.",
-    "knowledgeBase": "KNOWLEDGE BASE",
-    "knowledgeBaseDescription": "We know there is too much information out there. We have compiled the most science-based articles for you on how to stay safe, prevention and what to do in case you are infected.",
+    "healthBlog": "HEALTH BLOG",
+    "healthBlogDescription": "Explore healthcare content created every day by our experts.",
     "readLatestArticles": "Read the latest articles",
-    "covidDescription": "We know there is too much information out there. We have compiled the most science-based articles for you on how to stay safe, prevention and what to do in case you are infected.",
-    "learnAboutCovid": "Learn about Covid-19",
+    "covidDescription": "The latest Coronavirus information to keep you safe and healthy.",
+    "learnAboutCovid": "Learn about COVID-19 Vaccines",
     "covidVaccineTracker": "COVID-19 Vaccine Tracker",
     "getCovidVaccineUpdates": "Get updates and know which is the first vaccine to come out.",
-    "knowMore": "KNOW MORE"
+    "knowMore": "KNOW MORE",
+    "covid19VaccineInfo": "COVID-19 AND VACCINE INFORMATION"
   },
   "components": {
     "medicineDetails": {
