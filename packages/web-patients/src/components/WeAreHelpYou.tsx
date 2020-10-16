@@ -193,7 +193,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     hcDetails: {
       display: 'flex',
-      alignItems: 'center',
+      alignItems: 'flex-start',
       justifyContent: 'space-between',
       [theme.breakpoints.down('sm')]: {
         flexDirection: 'column',
@@ -207,14 +207,20 @@ const useStyles = makeStyles((theme: Theme) => {
         width: '70%',
       },
       '& a': {
+        padding: '9px 13px 9px 13px',
+        fontSize:13,
         color: '#FC9916',
         borderRadius: 10,
         margin: '0 0 0 20px',
         textTransform: 'none',
+        boxShadow: '0 2px 4px 0 rgba(0,0,0, 0.2)',
+        fontWeight: 700,
+        display: 'flex',
+        alignItems: 'center',
         [theme.breakpoints.down('sm')]: {
           margin: '20px 0 0',
         },
-        '& img': {
+        '& img, & span': {
           margin: '0 10px 0 0',
         },
       },
@@ -231,31 +237,18 @@ const useStyles = makeStyles((theme: Theme) => {
     pt0: {
       paddingTop: 0,
     },
-    vcContainer:{
-      display: 'flex',
-      alignItems: 'center',
+    covidBtns:{
+      textAlign: 'right',
       [theme.breakpoints.down('sm')]: {
-        alignItems: 'flex-start'
+        textAlign: 'left',
+        margin: '20px 0 0'
       },
-      '& img':{
-        margin: '0 30px 0 0',
-        [theme.breakpoints.down('sm')]: {
-          margin: '0 20px 0 0'
-        }
-      }
-    },
-    vcDetails:{
-      width: '100%',
       '& a':{
-        boxShadow: 'none',
-        [theme.breakpoints.down('sm')]: {
-          marginLeft: 'auto',
-          display: 'block'
-        },
-      },
-      '& p':{
-        [theme.breakpoints.down('sm')]: {
-        width: '100% !important',
+        '&:first-child':{
+          margin: '0 0 10px',
+          [theme.breakpoints.down('sm')]: {
+            margin: 0
+          }
         }
       }
     }
@@ -302,37 +295,32 @@ export const WeAreHelpYou: React.FC = (props) => {
             </div>
           </div>
           <div className={classes.hcContent}>
-            <Typography component="h3">Coronavirus (COVID-19)</Typography>
+            <Typography component="h3">COVID-19 and Vaccine Information</Typography>
             <div className={classes.hcDetails}>
               <Typography>
                 The latest Coronavirus information to keep you safe and healthy.
               </Typography>
+              <div className={classes.covidBtns}>
               <AphButton href={clientRoutes.covidLanding()}>
                 <img src={'images/covid.svg'} alt="" />
-                Learn About COVID-19
+                Learn About COVID-19 Vaccines
               </AphButton>
-            </div>
-            </div>
-            <div className={classes.hcContent}>
-              <div className={classes.vcContainer}>
-                <img src={require('images/vaccine-tracker.svg')} />
-              <div className={classes.vcDetails}>
-              <Typography component="h3">COVID-19 Vaccine Tracker</Typography>
-                <div className={classes.hcDetails}>
-                  <Typography>
-                  Get updates and know which is the first vaccine to come out.
-                  </Typography>
-                  <AphButton href={clientRoutes.covidLanding()}>
-                  Know More                
-                  </AphButton>
+              <a href='https://www.apollo247.com/covid-vaccine-tracker'>
+              <span  style={{ width: '24px', height: '24px' }}>
+                    <LazyIntersection
+                      style={{ width: '24px' }}
+                      src={require('images/ic_covid-white.svg')}
+                      alt=""
+                    />
+                  </span>
+                Sign up for the Vaccine Tracker
+              </a>
               </div>
              
-              
-           
-             
             </div>
-          </div>
-          <div className={classes.helpSection}>
+            </div>
+      
+      <div className={classes.helpSection}>
             <div className={classes.helpSectionHead}>You can also</div>
             <div className={classes.serviceContent}>
               <div className={classes.serviceCard}>
@@ -389,10 +377,9 @@ export const WeAreHelpYou: React.FC = (props) => {
               </Link> */}
             </div>
           </div>
-        </div>
-      </div>
-      </div>
-            <AphDialog open={iscoronaDialogOpen} maxWidth="sm">
+          </div>
+      </div> 
+     <AphDialog open={iscoronaDialogOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIscoronaDialogOpen(false)} title={'Close'} />
         <AphDialogTitle></AphDialogTitle>
         <div className={classes.expertBox}>
