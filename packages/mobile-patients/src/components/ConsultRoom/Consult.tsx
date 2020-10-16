@@ -40,6 +40,7 @@ import {
   followUpChatDaysCaseSheet,
   getDiffInMinutes,
   overlyCallPermissions,
+  isPastAppointment,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -764,25 +765,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 let doctorsList: string[] = [];
                 let specialtyList: string[] = [];
                 data.getPatientAllAppointments.appointments.forEach((item) => {
-                  const caseSheet = followUpChatDaysCaseSheet(item.caseSheet);
-                  const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpAfterInDays');
-                  const followUpAfterInDays =
-                    caseSheetChatDays || caseSheetChatDays === '0'
-                      ? caseSheetChatDays === '0'
-                        ? 0
-                        : Number(caseSheetChatDays) - 1
-                      : 6;
-
                   doctorsList.push(item?.doctorInfo?.fullName || '');
                   specialtyList.push(item?.doctorInfo?.specialty?.name || '');
 
-                  if (
-                    item?.status === STATUS.CANCELLED ||
-                    !moment(new Date(item?.appointmentDateTime))
-                      .add(followUpAfterInDays, 'days')
-                      .startOf('day')
-                      .isSameOrAfter(moment(new Date()).startOf('day'))
-                  ) {
+                  if (isPastAppointment(item?.caseSheet, item)) {
                     pastAppointments.push(item);
                   } else {
                     const tomorrowAvailabilityHourTime = moment('00:00', 'HH:mm');
@@ -871,33 +857,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       .catch((e) => {
         CommonBugFender('Consult_getNetStatus', e);
       });
-  };
-
-  const isPastAppointment = (
-    caseSheet:
-      | (getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet | null)[]
-      | null,
-    item: getPatientAllAppointments_getPatientAllAppointments_appointments
-  ) => {
-    const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpAfterInDays');
-    const followUpAfterInDays =
-      caseSheetChatDays || caseSheetChatDays === '0'
-        ? caseSheetChatDays === '0'
-          ? 0
-          : Number(caseSheetChatDays) - 1
-        : 6;
-    return (
-      item?.status === STATUS.CANCELLED ||
-      !moment(new Date(item?.appointmentDateTime))
-        .add(followUpAfterInDays, 'days')
-        .startOf('day')
-        .isSameOrAfter(moment(new Date()).startOf('day'))
-    );
-  };
-
-  const isTomorrow = (date: Moment) => {
-    const tomorrow = moment(new Date()).add(1, 'days');
-    return date.year == tomorrow.year && date.month == tomorrow.month && date.date == tomorrow.date;
   };
 
   const { availability, appointmentStatus, doctorsList, specialtyList } = filter;
@@ -1044,12 +1003,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         ? 'Tomorrow'
         : moment(appointmentDateTime).format('ddd, DD MMM YYYY');
     const showDateText = index === 0 ? true : displayTopDateTime;
-    const pastAppointmentItem =
-      item?.status === STATUS.CANCELLED ||
-      !moment(new Date(item?.appointmentDateTime))
-        .add(followUpAfterInDays, 'days')
-        .startOf('day')
-        .isSameOrAfter(moment(new Date()).startOf('day'));
+    const pastAppointmentItem = isPastAppointment(item?.caseSheet, item);
     const medicinePrescription = g(caseSheet, '0' as any, 'medicinePrescription');
     const getMedicines = (
       medicines: (getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet_medicinePrescription | null)[]

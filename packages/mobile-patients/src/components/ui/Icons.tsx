@@ -1179,6 +1179,14 @@ export const GpsIcon: React.FC<IconProps> = (props) => (
   />
 );
 
+export const EmptyCartIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 113, height: 103 }}
+    {...props}
+    source={require('./icons/emptyCart.png')}
+  />
+);
+
 export const CovidOrange: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_covid_orange.png')} />
 );
