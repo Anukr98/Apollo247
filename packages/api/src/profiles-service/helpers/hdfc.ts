@@ -424,7 +424,7 @@ function checkStatus(response: any) {
 async function sendApiCallLogToQueue(message: string) {
   try {
     const azureServiceBus = AZURE_SERVICE_BUS_GENERAL.getInstance();
-    azureServiceBus.createQueueIfNotExists(process.env.HDFC_LOG_API_QUEUE, (queueError) => {
+    azureServiceBus.createQueueIfNotExists(`${process.env.HDFC_LOG_API_QUEUE}`, (queueError) => {
       if (queueError) {
         dLogger(
           new Date(),
@@ -438,22 +438,26 @@ async function sendApiCallLogToQueue(message: string) {
         `${JSON.stringify(message)} --- ${JSON.stringify(process.env.HDFC_LOG_API_QUEUE)}`
       );
 
-      azureServiceBus.sendQueueMessage(process.env.HDFC_LOG_API_QUEUE, message, (sendMsgError) => {
-        if (sendMsgError) {
+      azureServiceBus.sendQueueMessage(
+        `${process.env.HDFC_LOG_API_QUEUE}`,
+        message,
+        (sendMsgError) => {
+          if (sendMsgError) {
+            dLogger(
+              new Date(),
+              'Log API HDFC azureServiceBus.sendQueueMessage ERROR',
+              `${JSON.stringify(
+                process.env.HDFC_LOG_API_QUEUE
+              )} --- ${message} --- ${JSON.stringify(sendMsgError)}`
+            );
+          }
           dLogger(
             new Date(),
-            'Log API HDFC azureServiceBus.sendQueueMessage ERROR',
-            `${JSON.stringify(process.env.HDFC_LOG_API_QUEUE)} --- ${message} --- ${JSON.stringify(
-              sendMsgError
-            )}`
+            'Log API HDFC azureServiceBus.sendQueueMessage END',
+            `${JSON.stringify(process.env.HDFC_LOG_API_QUEUE)} --- ${message}`
           );
         }
-        dLogger(
-          new Date(),
-          'Log API HDFC azureServiceBus.sendQueueMessage END',
-          `${JSON.stringify(process.env.HDFC_LOG_API_QUEUE)} --- ${message}`
-        );
-      });
+      );
     });
   } catch (error) {
     dLogger(
