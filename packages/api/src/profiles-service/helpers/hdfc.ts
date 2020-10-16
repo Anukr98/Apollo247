@@ -6,6 +6,7 @@ import * as crypto from 'crypto';
 import * as cryptojs from 'crypto-js';
 import * as jwt from 'jsonwebtoken';
 import { debugLog } from 'customWinstonLogger';
+import { AZURE_SERVICE_BUS_GENERAL } from 'profiles-service/database/connectAzureServiceBus';
 
 const INSTANCE_ID = '8888';
 const assetsDir = <string>process.env.ASSETS_DIRECTORY;
@@ -34,11 +35,24 @@ async function generateAuthToken() {
   const body = JSON.parse(await response.text());
   return body['access_token'];
 }
-
+function ornRefNumber(requestTime: Date) {
+  return `26${('0' + requestTime.getDate()).slice(-2)}${('0' + (requestTime.getMonth() + 1)).slice(
+    -2
+  )}${requestTime
+    .getFullYear()
+    .toString()
+    .slice(-2)}${('0' + requestTime.getHours()).slice(-2)}${('0' + requestTime.getMinutes()).slice(
+    -2
+  )}${('0' + requestTime.getSeconds()).slice(-2)}${('0' + requestTime.getMilliseconds()).slice(
+    -2
+  )}`;
+}
 export async function generateOtp(mobile: String) {
   const formattedMobile = mobile.substr(mobile.length - 10);
   const linkData = `000000091${formattedMobile}`;
-  const refNo = refNoGenerator();
+  const requestTime = new Date();
+  const refNo = ornRefNumber(requestTime);
+
   const shaMessageHash = crypto
     .createHash('sha1')
     .update(
@@ -59,7 +73,7 @@ export async function generateOtp(mobile: String) {
   const requestBeforeEncryption = {
     ccotpserviceRequest: {
       Trace_Number: refNo,
-      Transaction_DateTimeStamp: new Date().toISOString(),
+      Transaction_DateTimeStamp: requestTime.toISOString(),
       ATM_POS_IVR_ID: 'CCIVR1',
       Credit_Card_Number: linkData,
       callerId: process.env.HDFC_CALLER_ID,
@@ -76,7 +90,7 @@ export async function generateOtp(mobile: String) {
       mobilenumber: `91${formattedMobile}`,
       msgtxt: process.env.HDFC_SMS_TEXT,
       departmentcode: process.env.HDFC_DEPARTMENT_CODE,
-      submitdate: new Date().toISOString(),
+      submitdate: requestTime.toISOString(),
       author: '',
       subAuthor: '',
       broadcastname: process.env.HDFC_BROADCAST_NAME,
@@ -103,6 +117,17 @@ export async function generateOtp(mobile: String) {
       },
     },
   };
+  sendApiCallLogToQueue(
+    `26, ${refNo}, XXXXXX${mobile.slice(-4)}, ${('0' + requestTime.getDate()).slice(-2)}${(
+      '0' +
+      (requestTime.getMonth() + 1)
+    ).slice(-2)}${`${requestTime
+      .getFullYear()
+      .toString()
+      .slice(-2)}`}, ${('0' + requestTime.getHours()).slice(-2)}${(
+      '0' + requestTime.getMinutes()
+    ).slice(-2)}${('0' + requestTime.getSeconds()).slice(-2)}`
+  );
   const response = await highRequest(requestBeforeEncryption, '/API/OTP_Gen');
   return response;
 }
@@ -113,7 +138,8 @@ function refNoGenerator(): string {
 }
 export async function verifyOtp(otp: String, mobile: String) {
   const formattedMobile = mobile.substr(mobile.length - 10);
-  const refNo = refNoGenerator();
+  const requestTime = new Date();
+  const refNo = ornRefNumber(requestTime);
   const linkData = `000000091${formattedMobile}`;
   const shaMessageHash = crypto
     .createHash('sha1')
@@ -149,6 +175,17 @@ export async function verifyOtp(otp: String, mobile: String) {
       },
     },
   };
+  sendApiCallLogToQueue(
+    `26, ${refNo}, XXXXXX${mobile.slice(-4)}, ${('0' + requestTime.getDate()).slice(-2)}${(
+      '0' +
+      (requestTime.getMonth() + 1)
+    ).slice(-2)}${`${requestTime
+      .getFullYear()
+      .toString()
+      .slice(-2)}`}, ${('0' + requestTime.getHours()).slice(-2)}${(
+      '0' + requestTime.getMinutes()
+    ).slice(-2)}${('0' + requestTime.getSeconds()).slice(-2)}`
+  );
   const response = await highRequest(requestBeforeEncryption, '/API/OTP_Val_v2');
   return response;
 }
@@ -381,5 +418,48 @@ function checkStatus(response: any) {
   } else {
     return response;
     console.log('error:', response.status);
+  }
+}
+
+async function sendApiCallLogToQueue(message: string) {
+  try {
+    const azureServiceBus = AZURE_SERVICE_BUS_GENERAL.getInstance();
+    azureServiceBus.createQueueIfNotExists(process.env.HDFC_LOG_API_QUEUE, (queueError) => {
+      if (queueError) {
+        dLogger(
+          new Date(),
+          'Log API HDFC azureServiceBus.createQueueIfNotExists ERROR',
+          `${JSON.stringify(message)} --- ${JSON.stringify(queueError)}`
+        );
+      }
+      dLogger(
+        new Date(),
+        'Log API HDFC azureServiceBus.createQueueIfNotExists END',
+        `${JSON.stringify(message)} --- ${JSON.stringify(process.env.HDFC_LOG_API_QUEUE)}`
+      );
+
+      azureServiceBus.sendQueueMessage(process.env.HDFC_LOG_API_QUEUE, message, (sendMsgError) => {
+        if (sendMsgError) {
+          dLogger(
+            new Date(),
+            'Log API HDFC azureServiceBus.sendQueueMessage ERROR',
+            `${JSON.stringify(process.env.HDFC_LOG_API_QUEUE)} --- ${message} --- ${JSON.stringify(
+              sendMsgError
+            )}`
+          );
+        }
+        dLogger(
+          new Date(),
+          'Log API HDFC azureServiceBus.sendQueueMessage END',
+          `${JSON.stringify(process.env.HDFC_LOG_API_QUEUE)} --- ${message}`
+        );
+      });
+    });
+  } catch (error) {
+    dLogger(
+      new Date(),
+      'Log API HDFC azureServiceBus.createQueueIfNotExists ERROR',
+      `${JSON.stringify(message)} --- ${JSON.stringify(error)}`
+    );
   }
 }
