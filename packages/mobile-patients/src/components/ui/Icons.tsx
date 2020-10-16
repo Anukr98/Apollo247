@@ -57,7 +57,7 @@ export const CloseCal: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/closeCal.png')} />
 );
 export const LatestArticle: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/ic_feed.png')} />
+  <IconBase size="md" {...props} source={require('./icons/ic_feed_orange.png')} />
 );
 
 export const More: React.FC<IconProps> = (props) => (
@@ -1080,4 +1080,12 @@ export const BotIcon: React.FC<IconProps> = (props) => (
 
 export const InfoIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/info.png')} />
+);
+
+export const CovidOrange: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_covid_orange.png')} />
+);
+
+export const DashedLine: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/dashedLine.png')} />
 );
