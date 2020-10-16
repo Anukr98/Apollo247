@@ -714,7 +714,7 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
                 <Typography component="h2">Congratulations ! </Typography>
                 <Typography>
                   You are now a{' '}
-                  <span className={classes.planName}>{planName.split(' ')[0]} Gold +  Member</span>
+                  <span className={classes.planName}>{planName.split(' ')[0]} Member</span>
                 </Typography>
                 <Typography className={classes.remark}>As a limited period offer, the minimum spend limit of Rs.{minTransactionValue} has been waived off, specially for you. </Typography>
               </div>
