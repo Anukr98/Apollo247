@@ -95,6 +95,7 @@ import {
   PharmacologistConsult,
   MedicineOrderAddress,
   PatientEntitiySubscriber,
+  MedicineOrderHoldReasons,
 } from 'profiles-service/entities';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
@@ -242,6 +243,7 @@ export const connect = async () => {
         MedicineOrderAddress,
         HealthCheckRecords,
         HospitalizationRecords,
+        MedicineOrderHoldReasons,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,
