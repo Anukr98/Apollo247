@@ -943,11 +943,11 @@ const getMedicineOrderOMSDetailsWithAddress: Resolver<
         }
       );
       if (reasonCode) {
-        const cancellationReasons = await medicineOrdersRepo.getMedicineOrderCancelReasonByCode(
+        const onHoldReasonObj = await medicineOrdersRepo.getMedicineOrderHoldReasonByCode(
           reasonCode.statusMessage
         );
-        if (cancellationReasons) {
-          reasonCode.statusMessage = cancellationReasons.displayMessage;
+        if (onHoldReasonObj) {
+          reasonCode.statusMessage = JSON.stringify(onHoldReasonObj);
         } else {
           reasonCode.statusMessage = '';
         }

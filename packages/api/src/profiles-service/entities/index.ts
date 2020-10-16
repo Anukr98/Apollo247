@@ -2795,3 +2795,28 @@ export class PharmacologistConsult extends BaseEntity {
   )
   patient: Patient;
 }
+
+@Entity()
+export class MedicineOrderHoldReasons extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Index('MedicineOrderHoldReasons_reasonCode')
+  @Column({ nullable: true })
+  reasonCode: string;
+
+  @Column({ nullable: true })
+  reUploadPrescription: boolean;
+
+  @Column({ nullable: true })
+  enableChatSupport: boolean;
+
+  @Column({ nullable: true })
+  diplayText: string;
+
+  @Column({ nullable: true })
+  showOnHold: boolean;
+}
