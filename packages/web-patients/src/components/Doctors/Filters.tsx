@@ -188,7 +188,6 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     filterActive: {
       backgroundColor: '#fff !important',
-      color: '#fff !important',
       border: '2px solid #00b38e',
     },
     dialogActions: {
