@@ -188,9 +188,7 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 700,
         color: '#07AE8B',
         textTransform: 'uppercase',
-        [theme.breakpoints.down('sm')]: {
         margin: '0 0 10px',
-        }
       },
     },
     hcDetails: {
@@ -246,8 +244,12 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: '20px 0 0'
       },
       '& a':{
+        width: 270,
+        [theme.breakpoints.down(600)]: {
+          width: '100%'
+        },
         '&:first-child':{
-          margin: '0 0 10px',
+          marginBottom: 10,
           [theme.breakpoints.down('sm')]: {
             margin: 0
           }
