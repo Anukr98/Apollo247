@@ -40,7 +40,6 @@ import {
   SadFaceYellow,
   HdfcBankLogo,
   CovidOrange,
-  CovidVaccineTracker,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
@@ -2327,7 +2326,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         </ImageBackground>
         {/* <Image style={{ position: 'absolute', top: 24, alignSelf: 'center', width: 80, height: 80 }} source={require('@aph/mobile-patients/src/images/home/coronavirus_image.png')} /> */}
         <View style={{ padding: 16, paddingTop: 24 }}>
-          {/* {renderContent(string.common.covidVaccineTracker, string.common.getCovidVaccineUpdates)} */}
           {renderContent(string.common.knowledgeBase, string.common.knowledgeBaseDescription)}
           {renderContent('COVID-19', string.common.covidDescription)}
           {renderCovidHelpButtons()}
