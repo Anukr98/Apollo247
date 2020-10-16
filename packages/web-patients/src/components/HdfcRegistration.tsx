@@ -64,10 +64,6 @@ const useStyles = makeStyles((theme: Theme) => {
           background: '#E52936',
           color: '#fff',
         },
-        '&:hover': {
-          background: '#E52936',
-          color: '#fff',
-        },
       },
       [theme.breakpoints.down('xs')]: {
         width: '100%',
