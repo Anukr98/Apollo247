@@ -8,7 +8,11 @@ import {
   RadioButtonIcon,
   RadioButtonUnselectedIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { MedicineProductsResponse } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import {
+  getProductsByCategoryApi,
+  MedicineProductsResponse,
+} from '@aph/mobile-patients/src/helpers/apiCalls';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { MultiSliderProps } from '@ptomasroos/react-native-multi-slider';
 import { isEqual } from 'lodash';
@@ -35,17 +39,19 @@ export interface Props extends Omit<OverlayProps, 'children'> {
 }
 
 export const MedicineListingFilter: React.FC<Props> = ({
-  filters,
+  filters: _filters,
   selectedFilters: _selectedFilters,
   onApplyFilters,
   onClose,
   ...overlayProps
 }) => {
-  const [selectedOption, setSelectedOption] = useState<Filter | null>(filters[0]);
+  const [filters, setFilters] = useState<Filter[]>(_filters);
+  const [selectedOption, setSelectedOption] = useState<Filter | null>(_filters[0]);
   const [selectedFilters, setSelectedFilters] = useState<SelectedFilters>(_selectedFilters || {});
   const [alertVisible, setAlertVisible] = useState<boolean>(false);
+  const [isLoading, setLoading] = useState<boolean>(false);
   const isFiltersApplied = Object.keys(selectedFilters).find((k) => selectedFilters[k]?.length);
-  const isFiltersAvailable = !!filters.find((f) => f.values?.length);
+  const isFiltersAvailable = !!_filters.find((f) => f.values?.length);
 
   const onRequestClose = () => {
     if (isEqual(_selectedFilters, selectedFilters)) {
@@ -107,13 +113,27 @@ export const MedicineListingFilter: React.FC<Props> = ({
       const subOptions = selectedFilters[filter.attribute];
       const isSelected = !!subOptions?.find((subOption) => subOption == value);
 
-      const onPress = () => {
+      const onPress = async () => {
         const updatedFilter = isSelected
           ? subOptions?.filter((subOption) => subOption != value)
           : isMulti
           ? [...(subOptions || []), value]
           : [value];
         setSelectedFilters({ ...selectedFilters, [attribute]: updatedFilter });
+
+        if (!isSelected && attribute == 'category') {
+          // update associated brand filter on selection of category
+          setLoading(true);
+          const { data } = await getProductsByCategoryApi(value, 1, null, null);
+          const brandFilter = data.filters.find(({ attribute }) => attribute === 'brand');
+          if (brandFilter) {
+            const updatedFilter = filters.map((filter) =>
+              filter.attribute === 'brand' ? brandFilter : filter
+            );
+            setFilters([...updatedFilter]);
+          }
+          setLoading(false);
+        }
       };
 
       return (
@@ -218,24 +238,13 @@ export const MedicineListingFilter: React.FC<Props> = ({
   };
 
   const renderFilters = () => {
-    if (isFiltersAvailable) {
-      return (
-        <View style={styles.container}>
-          {renderInScrollView(filters.map(renderFilterOption), width * 0.4)}
-          <View style={styles.verticalDivider} />
-          {renderInScrollView(
-            selectedOption && renderFilterSubOptions(selectedOption),
-            width * 0.55
-          )}
-        </View>
-      );
-    }
-  };
-
-  const renderFiltersNotAvailable = () => {
-    if (!isFiltersAvailable) {
-      return <Text style={styles.noFiltersAvailable}>No filters available.</Text>;
-    }
+    return (
+      <View style={styles.container}>
+        {renderInScrollView(filters.map(renderFilterOption), width * 0.4)}
+        <View style={styles.verticalDivider} />
+        {renderInScrollView(selectedOption && renderFilterSubOptions(selectedOption), width * 0.55)}
+      </View>
+    );
   };
 
   return (
@@ -249,10 +258,10 @@ export const MedicineListingFilter: React.FC<Props> = ({
         {renderHeader()}
         <View style={styles.horizontalDivider} />
         {renderFilters()}
-        {renderFiltersNotAvailable()}
         <View style={styles.horizontalDivider} />
         {renderButton()}
         {renderDiscardChangesAlert()}
+        {isLoading && <Spinner />}
       </SafeAreaView>
     </Overlay>
   );
@@ -356,11 +365,5 @@ const styles = StyleSheet.create({
   },
   alertOutlineButtonTitle: {
     color: BUTTON_BG,
-  },
-  noFiltersAvailable: {
-    flex: 1,
-    ...text('M', 14, LIGHT_BLUE),
-    padding: 16,
-    textAlign: 'center',
   },
 });
