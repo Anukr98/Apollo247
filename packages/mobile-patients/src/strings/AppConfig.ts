@@ -300,6 +300,9 @@ const ConfigurationDev = {
   CONSULT_COUPON_BASE_URL: 'https://uatvalidcoupon.apollo247.com',
   KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
   SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
+  COVID_VACCINE_TRACKER_URL:
+    'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
+  BLOG_URL: 'https://www.apollo247.com/blog',
 };
 
 // QA
@@ -341,6 +344,9 @@ const ConfigurationQA = {
   CONSULT_COUPON_BASE_URL: 'https://uatvalidcoupon.apollo247.com',
   KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
   SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
+  COVID_VACCINE_TRACKER_URL:
+    'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
+  BLOG_URL: 'https://www.apollo247.com/blog',
 };
 
 // QA2
@@ -382,6 +388,9 @@ const ConfigurationQA2 = {
   CONSULT_COUPON_BASE_URL: 'https://validcoupon.apollo247.com',
   KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
   SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
+  COVID_VACCINE_TRACKER_URL:
+    'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
+  BLOG_URL: 'https://www.apollo247.com/blog',
 };
 
 // VAPT
@@ -423,6 +432,9 @@ const ConfigurationVAPT = {
   CONSULT_COUPON_BASE_URL: 'https://uatvalidcoupon.apollo247.com',
   KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
   SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
+  COVID_VACCINE_TRACKER_URL:
+    'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
+  BLOG_URL: 'https://www.apollo247.com/blog',
 };
 //Production
 const ConfigurationProd = {
@@ -463,6 +475,8 @@ const ConfigurationProd = {
   CONSULT_COUPON_BASE_URL: 'https://validcoupon.apollo247.com',
   KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
   SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
+  COVID_VACCINE_TRACKER_URL: 'https://www.apollo247.com/covid-vaccine-tracker',
+  BLOG_URL: 'https://www.apollo247.com/blog',
 };
 
 //PERFORMANCE
@@ -505,6 +519,9 @@ const ConfigurationPERFORM = {
   CONSULT_COUPON_BASE_URL: 'https://uatvalidcoupon.apollo247.com',
   KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
   SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
+  COVID_VACCINE_TRACKER_URL:
+    'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
+  BLOG_URL: 'https://www.apollo247.com/blog',
 };
 
 //DevelopmentReplica
@@ -547,6 +564,9 @@ const ConfigurationDevReplica = {
   CONSULT_COUPON_BASE_URL: 'https://uatvalidcoupon.apollo247.com',
   KAVACH_URL: 'https://www.apollo247.com/covid19/kavach?utm_source=mobile_app&utm_medium=Webview',
   SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
+  COVID_VACCINE_TRACKER_URL:
+    'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
+  BLOG_URL: 'https://www.apollo247.com/blog',
 };
 
 const Configuration =
