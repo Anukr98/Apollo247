@@ -61,7 +61,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           } else {
             setshowEprescriptionUpload(true);
           }
-          onUpload!();
+          onUpload?.();
         }}
       />
     ) : null;
