@@ -45,51 +45,6 @@ const assetsDir = <string>process.env.ASSETS_DIRECTORY;
 // console.log('assets', assetsDir);
 const loadAsset = (file: string) => path.resolve(assetsDir, file);
 
-// const getOrderInvoice: Resolver<
-//   null,
-//   { patientId: string; appointmentId: string },
-//   ConsultServiceContext,
-//   string
-// > = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
-
-
-//   /**
-//    * Method checks if appoinment related to appointmentId exists, 
-//    * if yes then return type AppointmentsResult
-//    */
-//   const appointmentsResult = await getAppointmentDetails(consultsDb, doctorsDb, patientsDb, args);
-//   const {
-//     appointments
-//   } = appointmentsResult
-//   const appointment = appointments[0];
-
-//   // either blobUrl is returned or boolean false is returned
-//   const response = await checkIfBlobExists(appointment);
-
-//   // If invoice exists in storage for the appointment, return the URL  
-//   if (response) {
-//     return response;
-//   }
-
-//   // Generate the pdf document with required details
-//   const doc = invoiceFormat(appointmentsResult);
-
-//   // Upload pdf doc to azure storage
-//   const [blobUrl] = await uploadRxPdf(appointment.id, appointment.appointmentDateTime, doc).catch(e => {
-//     log(
-//       'consultServiceLogger',
-//       `UPLOAD_TO_AZURE_STORAGE_FAILED - ${appointment.id}`,
-//       'uploadRxPdf()',
-//       e.stack,
-//       'true'
-//     )
-//     throw new AphError(AphErrorMessages.UPLOAD_INVOICE_TO_STORAGE_FAILED, undefined, e);
-
-//   })
-//   return blobUrl;
-
-// };
-
 const getOrderInvoice: Resolver<
   null,
   { patientId: string; appointmentId: string, emailId?: string },
