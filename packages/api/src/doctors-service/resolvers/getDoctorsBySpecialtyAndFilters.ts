@@ -92,6 +92,9 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
     name: String
     specialtydisplayName: String
     specialistPluralTerm: String
+    image: String
+    shortDescription: String
+    symptoms: String
   }
   type DoctorSlotAvailability {
     doctorId: String
@@ -143,6 +146,9 @@ type Specialty = {
   name: string;
   specialtydisplayName: string;
   specialistPluralTerm: string;
+  image: string;
+  shortDescription: string;
+  symptoms: string;
 };
 
 type DefaultfilterType = {
