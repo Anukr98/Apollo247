@@ -2815,7 +2815,7 @@ export class MedicineOrderHoldReasons extends BaseEntity {
   enableChatSupport: boolean;
 
   @Column({ nullable: true })
-  diplayText: string;
+  displayText: string;
 
   @Column({ nullable: true })
   showOnHold: boolean;
