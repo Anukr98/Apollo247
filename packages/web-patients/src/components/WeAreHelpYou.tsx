@@ -289,7 +289,31 @@ export const WeAreHelpYou: React.FC = (props) => {
           </div> */}
         </div>
         <div className={classes.cardContent}>
-          <div className={`${classes.hcContent} ${classes.pt0}`}>
+        <div className={`${classes.hcContent} ${classes.pt0}`}>
+            <Typography component="h3">COVID-19 Vaccine Information</Typography>
+            <div className={classes.hcDetails}>
+              <Typography>
+                The latest Coronavirus information to keep you safe and healthy.
+              </Typography>
+              <div className={classes.covidBtns}>
+              <a href='https://www.apollo247.com/covid-vaccine-tracker'>
+              <span  style={{ width: '24px', height: '24px' }}>
+                    <LazyIntersection
+                      style={{ width: '24px' }}
+                      src={require('images/ic_covid-orange.svg')}
+                      alt=""
+                    />
+                  </span>
+                  COVID-19 Vaccine Tracker
+              </a>
+              <AphButton href={clientRoutes.covidLanding()}>
+                <img src={'images/covid.svg'} alt="" />
+                Learn About COVID-19 Vaccines
+              </AphButton>
+              </div>             
+            </div>
+            </div>
+            <div className={classes.hcContent}>
             <Typography component="h3">Health Blog</Typography>
             <div className={classes.hcDetails}>
               <Typography>Explore healthcare content created every day by our experts.</Typography>
@@ -298,32 +322,6 @@ export const WeAreHelpYou: React.FC = (props) => {
               </AphButton>
             </div>
           </div>
-          <div className={classes.hcContent}>
-            <Typography component="h3">COVID-19 and Vaccine Information</Typography>
-            <div className={classes.hcDetails}>
-              <Typography>
-                The latest Coronavirus information to keep you safe and healthy.
-              </Typography>
-              <div className={classes.covidBtns}>
-              <AphButton href={clientRoutes.covidLanding()}>
-                <img src={'images/covid.svg'} alt="" />
-                Learn About COVID-19 Vaccines
-              </AphButton>
-              <a href='https://www.apollo247.com/covid-vaccine-tracker'>
-              <span  style={{ width: '24px', height: '24px' }}>
-                    <LazyIntersection
-                      style={{ width: '24px' }}
-                      src={require('images/ic_covid-white.svg')}
-                      alt=""
-                    />
-                  </span>
-                Sign up for the Vaccine Tracker
-              </a>
-              </div>
-             
-            </div>
-            </div>
-      
       <div className={classes.helpSection}>
             <div className={classes.helpSectionHead}>You can also</div>
             <div className={classes.serviceContent}>
