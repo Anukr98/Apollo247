@@ -303,6 +303,11 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                   });
                   /* webengage code end */
                   if (props.customSignUp.referral === 'HDFCBANK') {
+                    /* GA Tracking */
+                    (window as any).dataLayer.push({
+                      event: 'RegistrationForm Submitted',
+                    });
+                    /*******************/
                     hdfcSignupDoneTracking();
                     HdfcUserSignupDetailTracking({
                       firstName: values.firstName,

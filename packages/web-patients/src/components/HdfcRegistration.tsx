@@ -64,10 +64,6 @@ const useStyles = makeStyles((theme: Theme) => {
           background: '#E52936',
           color: '#fff',
         },
-        '&:hover': {
-          background: '#E52936',
-          color: '#fff',
-        },
       },
       [theme.breakpoints.down('xs')]: {
         width: '100%',
@@ -324,6 +320,10 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    remark:{
+
+
+    },
     description: {
       fontSize: '14px !important',
       fontWeight: 300,
@@ -443,6 +443,7 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
   const [otp, setOtp] = React.useState('');
   const [otpError, setOtpError] = React.useState<boolean>(false);
   const [planName, setPlanName] = React.useState('');
+  const [minTransactionValue, setMinTransactionValue] = React.useState(499);
   const [userSubscriptionInput, setUserSubscriptionInput] = React.useState<
     CreateUserSubscriptionInput
   >();
@@ -588,8 +589,15 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
           response.data.CreateUserSubscription.response &&
           response.data.CreateUserSubscription.response.group_plan &&
           response.data.CreateUserSubscription.response.group_plan.name;
+        const min_transaction_value =
+          response.data &&
+          response.data.CreateUserSubscription &&
+          response.data.CreateUserSubscription.response &&
+          response.data.CreateUserSubscription.response.group_plan &&
+          response.data.CreateUserSubscription.response.group_plan.min_transaction_value;
 
         setPlanName(plan);
+        setMinTransactionValue(min_transaction_value)
         setLoading(false);
         setShowOTPValidator(false);
         setShowCongratulations(true);
@@ -699,6 +707,7 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
                   You are now a{' '}
                   <span className={classes.planName}>{planName.split(' ')[0]} Member</span>
                 </Typography>
+                <Typography className={classes.remark}>As a limited period offer, the minimum spend limit of Rs.{minTransactionValue} has been waived off, specially for you. </Typography>
               </div>
             </div>
             <AphButton
