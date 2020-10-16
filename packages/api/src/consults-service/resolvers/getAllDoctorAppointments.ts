@@ -55,6 +55,11 @@ const getAllDoctorAppointments: Resolver<
   GetAllDoctorAppointmentsResult
 > = async (parent, { doctorId }, context) => {
   const { patRepo, apptRepo, docRepo, mobileNumber } = getRepos(context);
+  // mocking fot tes
+
+  if (mobileNumber == '+919534517427') {
+    throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR);
+  }
   await checkAuth(docRepo, mobileNumber, doctorId);
   const allDocAppointments = await apptRepo.find({
     where: { doctorId },
