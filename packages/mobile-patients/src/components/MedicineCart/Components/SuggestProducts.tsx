@@ -1,7 +1,10 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { ProductList } from '@aph/mobile-patients/src/components/Medicines/ProductList';
+import {
+  ProductList,
+  Props as ProductListProps,
+} from '@aph/mobile-patients/src/components/Medicines/ProductList';
 import { ProductUpSellingCard } from '@aph/mobile-patients/src/components/Medicines/ProductUpSellingCard';
 import { ProductPageViewedSource } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { NavigationScreenProps } from 'react-navigation';
@@ -22,11 +25,15 @@ export const SuggestProducts: React.FC<SuggestProductsProps> = (props) => {
     );
   };
 
+  const renderComponent: ProductListProps['renderComponent'] = ({ item }) => (
+    <ProductUpSellingCard {...item} onCartScreen={true} />
+  );
+
   const renderProducts = () => {
     return (
       <ProductList
         data={products}
-        Component={ProductUpSellingCard}
+        renderComponent={renderComponent}
         navigation={navigation}
         addToCartSource={'Pharmacy Cart'}
         movedFrom={ProductPageViewedSource.CART}
