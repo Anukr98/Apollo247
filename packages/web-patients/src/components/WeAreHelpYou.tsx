@@ -188,7 +188,9 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 700,
         color: '#07AE8B',
         textTransform: 'uppercase',
-        // margin: '0 0 10px',
+        [theme.breakpoints.down('sm')]: {
+        margin: '0 0 10px',
+        }
       },
     },
     hcDetails: {
