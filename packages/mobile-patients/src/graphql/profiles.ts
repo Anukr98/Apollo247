@@ -3281,6 +3281,9 @@ export const GET_DOCTOR_LIST = gql`
         id
         name
         specialtydisplayName
+        image
+        shortDescription
+        symptoms
       }
       apolloDoctorCount
       partnerDoctorCount
