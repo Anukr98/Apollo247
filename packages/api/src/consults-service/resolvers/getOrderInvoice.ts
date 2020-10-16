@@ -12,6 +12,8 @@ import _isEmpty from 'lodash/isEmpty';
 import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
+import _ from 'lodash';
+import { promises as fsPromises } from 'fs';
 
 
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
@@ -96,7 +98,8 @@ const getOrderInvoice: Resolver<
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
   const appointmentsResult = await getAppointmentDetails(consultsDb, doctorsDb, patientsDb, args);
   const {
-    appointments
+    appointments,
+    patient
   } = appointmentsResult
   const appointment = appointments[0];
 
@@ -130,10 +133,10 @@ const getOrderInvoice: Resolver<
       }
     } else {
       const [blobUrl, filePath] = await generatePDFAndUpload();
-      attachmentContent = fs.readFileSync(filePath).toString("base64");
+      const binaryContent = await fsPromises.readFile(filePath);
+      attachmentContent = binaryContent.toString('base64');
       blobUrlCreated = blobUrl;
       unlinkFile(filePath);
-
     }
     attachment.push({
       content: attachmentContent,
@@ -144,13 +147,13 @@ const getOrderInvoice: Resolver<
 
     const emailContent: EmailMessage = {
       messageContent: <string>invoiceEmail({
-        name: appointment.patientName,
+        name: _.startCase(_.toLower(patient.firstName)),
         displayId: appointment.displayId
       }),
       fromEmail: <string>ApiConstants.PATIENT_HELP_FROM_EMAILID,
       fromName: <string>ApiConstants.PATIENT_HELP_FROM_NAME,
       toEmail: <string>args.emailId,
-      subject: `Invoice for Appointment- ${appointment.displayId}`,
+      subject: `Invoice_Consult Id-${appointment.displayId}`,
       attachments: attachment
     };
     sendMail(emailContent);
