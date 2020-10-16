@@ -111,7 +111,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     helpSection: {
-      paddingTop: 30,
+      paddingTop: 16,
       '& h3': {
         fontSize: 12,
         fontWeight: 500,
