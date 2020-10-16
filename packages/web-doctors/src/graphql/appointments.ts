@@ -5,6 +5,7 @@ export const GET_DOCTOR_APPOINTMENTS = gql`
     getDoctorAppointments(doctorId: $doctorId, startDate: $startDate, endDate: $endDate) {
       appointmentsHistory {
         id
+        displayId
         patientId
         isJdQuestionsComplete
         appointmentDateTime
@@ -23,6 +24,7 @@ export const GET_DOCTOR_APPOINTMENTS = gql`
           id
           firstName
           lastName
+          mobileNumber
           photoUrl
         }
       }
@@ -33,5 +35,28 @@ export const GET_DOCTOR_APPOINTMENTS = gql`
 export const SUBMIT_JD_CASESHEET = gql`
   mutation SubmitJdCasesheet($appointmentId: String) {
     submitJDCaseSheet(appointmentId: $appointmentId)
+  }
+`;
+
+export const GET_PAST_CONSULT_QUEUE = gql`
+  query GetPastConsultQueue($doctorId: String!, $limit: Int, $offset: Int) {
+    getPastConsultQueue(doctorId: $doctorId, limit: $limit, offset: $offset) {
+      consultQueue {
+        id
+        isActive
+        patient {
+          firstName
+          lastName
+          uhid
+          photoUrl
+          id
+        }
+        appointment {
+          id
+          appointmentType
+          appointmentDateTime
+        }
+      }
+    }
   }
 `;

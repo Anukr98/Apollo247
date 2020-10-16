@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
-import { makeStyles } from '@material-ui/core';
-import { Theme } from '@material-ui/core';
+import { makeStyles, Theme } from '@material-ui/core';
 import { Header } from 'components/Header';
 import { BottomLinks } from 'components/BottomLinks';
 import { NavigationBottom } from 'components/NavigationBottom';

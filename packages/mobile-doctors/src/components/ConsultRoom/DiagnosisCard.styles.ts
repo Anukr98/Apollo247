@@ -7,12 +7,11 @@ export default StyleSheet.create({
   containerStyle: {
     flexDirection: 'row',
     backgroundColor: theme.colors.APP_GREEN,
-    borderRadius: 100,
+    borderRadius: 10,
     padding: 6,
     margin: 5,
     maxWidth: width - 60,
   },
-
   diseaseNameStyles: {
     ...theme.viewStyles.text('SB', 14, theme.colors.WHITE),
     marginHorizontal: 10,

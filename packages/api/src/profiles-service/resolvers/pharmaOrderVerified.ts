@@ -4,82 +4,56 @@ import { MedicineOrdersRepository } from 'profiles-service/repositories/Medicine
 import {
   MEDICINE_ORDER_STATUS,
   MedicineOrdersStatus,
-  MedicineOrderShipments,
-  MEDICINE_DELIVERY_TYPE,
+  MEDICINE_ORDER_TYPE,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import {
-  sendMedicineOrderStatusNotification,
-  sendCartNotification,
-} from 'notifications-service/handlers';
-import { NotificationType } from 'notifications-service/constants';
 import { format, addMinutes, parseISO } from 'date-fns';
 import { log } from 'customWinstonLogger';
-import { WebEngageInput, postEvent } from 'helpers/webEngage';
-import { ApiConstants } from 'ApiConstants';
-import Decimal from 'decimal.js';
 
-export const saveOrderShipmentsTypeDefs = gql`
-  input SaveOrderShipmentsInput {
+export const saveOrderVerifiedTypeDefs = gql`
+  input OrderVerifiedInput {
     orderId: Int!
-    split: Boolean
-    referenceNo: String
-    shipments: [Shipment]
-  }
-
-  input Shipment {
     status: MEDICINE_ORDER_STATUS!
-    siteId: String
-    siteName: String
-    apOrderNo: String
     updatedDate: String!
-    itemDetails: [ItemArticleDetails]
+    items: [ItemArticleDetails]
   }
 
-  input ItemArticleDetails {
-    articleCode: String
-    articleName: String
-    quantity: Int
-    batch: String
-    unitPrice: Float
-    packSize: Int
-  }
-
-  type SaveOrderShipmentsResult {
-    status: String
+  type OrderVerifiedResult {
+    status: MEDICINE_ORDER_STATUS
     errorCode: Int
     errorMessage: String
     orderId: Int
+    tat: String
+    siteId: String
+    tatType: String
+    allocationProfile: String
+    clusterId: String
   }
 
   extend type Mutation {
-    saveOrderShipments(saveOrderShipmentsInput: SaveOrderShipmentsInput): SaveOrderShipmentsResult!
+    saveOrderVerified(orderVerifiedInput: OrderVerifiedInput): OrderVerifiedResult!
   }
 `;
 
-type SaveOrderShipmentsResult = {
+type SaveOrderVerifiedResult = {
   status: MEDICINE_ORDER_STATUS;
   errorCode: number;
   errorMessage: string;
   orderId: number;
-};
-
-type SaveOrderShipmentsInput = {
-  orderId: number;
-  split: boolean;
-  referenceNo: String;
-  shipments: Shipment[];
-};
-
-type Shipment = {
+  tat: string;
   siteId: string;
-  siteName: string;
-  apOrderNo: string;
-  updatedDate: string;
+  tatType: string;
+  allocationProfile: string;
+  clusterId: string;
+};
+
+type SaveOrderVerifiedInput = {
+  orderId: number;
   status: MEDICINE_ORDER_STATUS;
-  itemDetails: ItemArticleDetails[];
+  updatedDate: string;
+  items: [ItemArticleDetails];
 };
 
 type ItemArticleDetails = {
@@ -89,21 +63,22 @@ type ItemArticleDetails = {
   batch: string;
   unitPrice: number;
   packSize: number;
+  posAvailability: boolean;
 };
 
-type SaveOrderShipmentsInputArgs = {
-  saveOrderShipmentsInput: SaveOrderShipmentsInput;
+type SaveOrderVerifiedInputArgs = {
+  orderVerifiedInput: SaveOrderVerifiedInput;
 };
 
-const saveOrderShipments: Resolver<
+const saveOrderVerified: Resolver<
   null,
-  SaveOrderShipmentsInputArgs,
+  SaveOrderVerifiedInputArgs,
   ProfilesServiceContext,
-  SaveOrderShipmentsResult
-> = async (parent, { saveOrderShipmentsInput }, { profilesDb }) => {
+  SaveOrderVerifiedResult
+> = async (parent, { orderVerifiedInput }, { profilesDb }) => {
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const orderDetails = await medicineOrdersRepo.getMedicineOrderWithShipments(
-    saveOrderShipmentsInput.orderId
+    orderVerifiedInput.orderId
   );
   if (!orderDetails) {
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
@@ -112,167 +87,54 @@ const saveOrderShipments: Resolver<
   if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED) {
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
   }
-
   log(
     'profileServiceLogger',
-    `ORDER_VERIFIED_FOR_ORDER_ID:${saveOrderShipmentsInput.orderId}`,
-    `order verified call from OMS`,
-    JSON.stringify(saveOrderShipmentsInput),
+    `ORDER_VERIFICATION_DONE_FOR_ORDER_ID:${orderVerifiedInput.orderId}`,
+    `saveOrderVerified call from OMS`,
+    JSON.stringify(orderVerifiedInput),
     ''
   );
-
-  let shipmentsInput = saveOrderShipmentsInput.shipments;
-  const existingShipments: Shipment[] = [];
-  if (orderDetails.medicineOrderShipments && orderDetails.medicineOrderShipments.length > 0) {
-    shipmentsInput = shipmentsInput.filter((shipment) => {
-      const savedShipment = orderDetails.medicineOrderShipments.find((savdShipment) => {
-        return savdShipment.apOrderNo == shipment.apOrderNo;
-      });
-      if (savedShipment) {
-        existingShipments.push({ ...savedShipment, ...shipment });
-      }
-      return !savedShipment;
-    });
-  }
-  if (existingShipments.length > 0) {
-    try {
-      const shipmentsPromise = existingShipments.map(async (shipment, index) => {
-        const orderShipmentsAttrs: Partial<MedicineOrderShipments> = {
-          siteId: shipment.siteId,
-          siteName: shipment.siteName,
-        };
-        return await medicineOrdersRepo.updateMedicineOrderShipment(
-          orderShipmentsAttrs,
-          shipment.apOrderNo
-        );
-      });
-      await Promise.all(shipmentsPromise);
-    } catch (e) {
-      throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_SHIPMENT_ERROR, undefined, e);
-    }
-  }
-  if (shipmentsInput.length == 0) {
-    return {
-      status: MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
-      errorCode: 0,
-      errorMessage: '',
-      orderId: orderDetails.orderAutoId,
-    };
-  }
-  let shipmentsResults;
-  try {
-    const shipmentsPromise = shipmentsInput.map(async (shipment, index) => {
-      const itemDetails = shipment.itemDetails.map((item) => {
-        return {
-          ...item,
-          quantity: +new Decimal(item.quantity).dividedBy(item.packSize).toFixed(4),
-          mrp: +new Decimal(item.unitPrice).times(item.packSize).toFixed(4),
-        };
-      });
-      const orderShipmentsAttrs: Partial<MedicineOrderShipments> = {
-        currentStatus: MEDICINE_ORDER_STATUS[shipment.status],
-        medicineOrders: orderDetails,
-        apOrderNo: shipment.apOrderNo,
-        siteId: shipment.siteId,
-        siteName: shipment.siteName,
-        itemDetails: JSON.stringify(itemDetails),
-      };
-      return await medicineOrdersRepo.saveMedicineOrderShipment(orderShipmentsAttrs);
-    });
-    shipmentsResults = await Promise.all(shipmentsPromise);
-  } catch (e) {
-    throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_SHIPMENT_ERROR, undefined, e);
-  }
-  shipmentsResults.forEach(async (shipmentsResult, index) => {
-    const statusDate = format(
-      addMinutes(parseISO(shipmentsInput[index].updatedDate), -330),
-      "yyyy-MM-dd'T'HH:mm:ss.SSSX"
-    );
-    medicineOrdersRepo.saveMedicineOrderStatus(
-      {
-        orderStatus: MEDICINE_ORDER_STATUS.ORDER_PLACED,
-        medicineOrderShipments: shipmentsResult,
-        statusDate: new Date(orderDetails.orderDateTime),
-      },
-      orderDetails.orderAutoId
-    );
-    const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
-      orderStatus: MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
-      medicineOrderShipments: shipmentsResult,
-      statusDate: new Date(statusDate),
-    };
-    medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
-  });
   const statusDate = format(
-    addMinutes(parseISO(shipmentsInput[0].updatedDate), -330),
+    addMinutes(parseISO(orderVerifiedInput.updatedDate), -330),
     "yyyy-MM-dd'T'HH:mm:ss.SSSX"
   );
   const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
-    orderStatus: MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
+    orderStatus: MEDICINE_ORDER_STATUS.VERIFICATION_DONE,
     medicineOrders: orderDetails,
     statusDate: new Date(statusDate),
+    hideStatus: false,
   };
   await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
 
-  await medicineOrdersRepo.updateMedicineOrderDetails(
-    orderDetails.id,
-    orderDetails.orderAutoId,
-    new Date(),
-    MEDICINE_ORDER_STATUS.ORDER_VERIFIED
-  );
+  // calculate tat for non cart orders
 
-  if (orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP) {
-    sendMedicineOrderStatusNotification(
-      NotificationType.MEDICINE_ORDER_READY_AT_STORE,
-      orderDetails,
-      profilesDb
-    );
-
-    //post order ready at store event to webEngage
-    const postBody: Partial<WebEngageInput> = {
-      userId: orderDetails.patient.mobileNumber,
-      eventName: ApiConstants.MEDICINE_ORDER_KERB_STORE_READY_EVENT_NAME.toString(),
-      eventData: {
-        orderId: orderDetails.orderAutoId,
-        statusDateTime: format(
-          parseISO(shipmentsInput[0].updatedDate),
-          "yyyy-MM-dd'T'HH:mm:ss'+0530'"
-        ),
-      },
-    };
-    postEvent(postBody);
-  } else {
-    const pushNotificationInput = {
-      orderAutoId: orderDetails.orderAutoId,
-      notificationType: NotificationType.MEDICINE_ORDER_CONFIRMED,
-    };
-    sendCartNotification(pushNotificationInput, profilesDb);
+  let tat = '',
+    siteId = '',
+    tatType = '',
+    allocationProfile = '',
+    clusterId = '';
+  if (orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION) {
+    tat = '16-Oct-2020 14:30';
+    siteId = '15732';
+    tatType = 'Hub';
+    allocationProfile = 'DEFAULT';
+    clusterId = 'DEFAULT';
   }
-
-  //post order verified event to webEngage
-  const postBody: Partial<WebEngageInput> = {
-    userId: orderDetails.patient.mobileNumber,
-    eventName: ApiConstants.MEDICINE_ORDER_VERIFIED_EVENT_NAME.toString(),
-    eventData: {
-      orderId: orderDetails.orderAutoId,
-      statusDateTime: format(
-        parseISO(shipmentsInput[0].updatedDate),
-        "yyyy-MM-dd'T'HH:mm:ss'+0530'"
-      ),
-    },
-  };
-  postEvent(postBody);
-
   return {
-    status: MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
+    status: MEDICINE_ORDER_STATUS.VERIFICATION_DONE,
     errorCode: 0,
     errorMessage: '',
     orderId: orderDetails.orderAutoId,
+    tat,
+    siteId,
+    tatType,
+    allocationProfile,
+    clusterId,
   };
 };
 
-export const saveOrderShipmentsResolvers = {
+export const saveOrderVerifiedResolvers = {
   Mutation: {
-    saveOrderShipments,
+    saveOrderVerified,
   },
 };

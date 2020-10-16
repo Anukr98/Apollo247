@@ -37,6 +37,11 @@ import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider, useMutation } from 'react-apollo-hooks';
 import _uniqueId from 'lodash/uniqueId';
 import bugsnag from '@bugsnag/js';
+import {
+  webengageUserDetailTracking,
+  webengageUserLoginTracking,
+  webEngageEventTracking,
+} from 'webEngageTracking';
 
 const bugsnagClient = bugsnag({
   apiKey: `${process.env.BUGSNAG_API_KEY}`,
@@ -187,7 +192,7 @@ export const AuthProvider: React.FC = (props) => {
   const [chatDays, setChatDays] = useState<AuthContextProps['chatDays']>(null);
 
   const loginApiCall = async (mobileNumber: string) => {
-    const [loginResult, loginError] = await wait(
+    const [result, loginError] = await wait(
       apolloClient.mutate<Login, LoginVariables>({
         variables: {
           mobileNumber: mobileNumber,
@@ -195,44 +200,38 @@ export const AuthProvider: React.FC = (props) => {
         },
         mutation: LOGIN,
       })
+      .then((loginResult) => {
+        setIsSendingOtp(false);
+        if (
+          loginResult &&
+          loginResult.data &&
+          loginResult.data.login &&
+          loginResult.data.login.status &&
+          loginResult.data.login.loginId
+        ) {
+          setSendOtpError(false);
+          return loginResult.data.login.loginId;
+        } else {
+          setSendOtpError(true);
+          return false;
+        }
+      })
+      .catch((error: ApolloError) => {
+        setIsSendingOtp(false);
+        setSendOtpError(true);
+        const networkErrorMessage = error.networkError ? error.networkError.message : null;
+        const allMessages = error.graphQLErrors
+          .map((e) => e.message)
+          .concat(networkErrorMessage ? networkErrorMessage : []);
+          const isNotDoctor = allMessages.includes('NOT_A_DOCTOR');
+        if (isNotDoctor) {
+          return 'NOT_A_DOCTOR';
+        }else{
+          return false;
+        }
+      })
     );
-    setIsSendingOtp(false);
-    if (
-      loginResult &&
-      loginResult.data &&
-      loginResult.data.login &&
-      loginResult.data.login.status &&
-      loginResult.data.login.loginId
-    ) {
-      setSendOtpError(false);
-      return loginResult.data.login.loginId;
-    } else if (loginError) {
-      const logObject = {
-        api: 'Login',
-        inputParam: JSON.stringify({
-          mobileNumber: mobileNumber,
-          loginType: LOGIN_TYPE.DOCTOR,
-        }),
-        currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
-        error: JSON.stringify(loginError),
-      };
-      sessionClient.notify(JSON.stringify(logObject));
-      setSendOtpError(true);
-      return false;
-    } else {
-      const logObject = {
-        api: 'Login',
-        inputParam: JSON.stringify({
-          mobileNumber: mobileNumber,
-          loginType: LOGIN_TYPE.DOCTOR,
-        }),
-        currentTime: moment(new Date()).format('MMMM DD YYYY h:mm:ss a'),
-        error: JSON.stringify(loginResult),
-      };
-      sessionClient.notify(JSON.stringify(logObject));
-      setSendOtpError(true);
-      return false;
-    }
+    return result;
   };
   const resendOtpApiCall = async (mobileNumber: string, loginId: string) => {
     const [resendOtpResult, resendOtpError] = await wait(
@@ -377,9 +376,11 @@ export const AuthProvider: React.FC = (props) => {
       setIsVerifyingOtp(true);
       otpCheckApiCall(otp, loginId).then((res) => {
         if (!res) {
+          webEngageEventTracking({ Successful: 'No' }, 'Front_end - Doctor OTP Verification');
           setVerifyOtpError(true);
           setIsSigningIn(false);
         } else {
+          webEngageEventTracking({ Successful: 'Yes' }, 'Front_end - Doctor OTP Verification');
           setVerifyOtpError(false);
           app.auth().signInWithCustomToken(res);
         }
@@ -525,6 +526,13 @@ export const AuthProvider: React.FC = (props) => {
             setSignInError(false);
             setIsSigningIn(false);
           }
+          webengageUserLoginTracking(doctors.id);
+          webengageUserDetailTracking({
+            emailAddress: doctors && doctors.emailAddress ? doctors.emailAddress : '',
+            firstName: doctors && doctors.firstName ? doctors.firstName : '',
+            lastName: doctors && doctors.lastName ? doctors.lastName : '',
+            mobileNumber: doctors && doctors.mobileNumber ? doctors.mobileNumber : '',
+          });
         } else if (
           res.data &&
           res.data.findLoggedinUserDetails &&

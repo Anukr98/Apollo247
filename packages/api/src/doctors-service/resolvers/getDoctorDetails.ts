@@ -73,13 +73,13 @@ export const getDoctorDetailsTypeDefs = gql`
   }
 
   type BankAccount {
-    accountHolderName: String!
-    accountNumber: String!
-    accountType: AccountType!
-    bankName: String!
-    city: String!
-    id: ID!
-    IFSCcode: String!
+    accountHolderName: String
+    accountNumber: String
+    accountType: AccountType
+    bankName: String
+    city: String
+    id: ID
+    IFSCcode: String
     state: String
     streetLine1: String
   }
@@ -113,6 +113,10 @@ export const getDoctorDetailsTypeDefs = gql`
     isActive: Boolean!
     id: ID!
     chatDays: Int
+    isIvrSet: Boolean
+    ivrConsultType: ConsultMode
+    ivrCallTimeOnline: Int
+    ivrCallTimePhysical: Int
     languages: String
     lastName: String!
     mobileNumber: String!
@@ -139,6 +143,12 @@ export const getDoctorDetailsTypeDefs = gql`
     specialty: DoctorSpecialties
     starTeam: [StarTeam]
     availableModes: [ConsultMode]
+    doctorNextAvailSlots:DoctorNextAvailSlots
+  }
+
+  type DoctorNextAvailSlots {
+    onlineSlot: String
+    physicalSlot: String
   }
 
   type DoctorDetailsWithStatusExclude @key(fields: "id") {
@@ -158,6 +168,10 @@ export const getDoctorDetailsTypeDefs = gql`
     isActive: Boolean!
     id: ID!
     chatDays: Int
+    isIvrSet: Boolean
+    ivrConsultType: ConsultMode
+    ivrCallTimeOnline: Int
+    ivrCallTimePhysical: Int
     languages: String
     lastName: String!
     mobileNumber: String!
@@ -176,6 +190,7 @@ export const getDoctorDetailsTypeDefs = gql`
     streetLine3: String
     thumbnailUrl: String
     zip: String
+    isJdAllowed: Boolean
     bankAccount: [BankAccount]
     consultHours: [ConsultHours]
     doctorHospital: [DoctorHospital!]!

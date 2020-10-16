@@ -26,6 +26,8 @@ import { log } from 'customWinstonLogger';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata';
+import { HealthCheckRecords } from 'profiles-service/entities/healthCheckRecordsEntity';
+import { HospitalizationRecords } from 'profiles-service/entities/hospitalizationRecordsEntity';
 
 export interface PaginateParams {
   take?: number;
@@ -129,6 +131,17 @@ export enum MEDICINE_ORDER_STATUS {
   ORDER_BILLED = 'ORDER_BILLED',
   PURCHASED_IN_STORE = 'PURCHASED_IN_STORE',
   PAYMENT_ABORTED = 'PAYMENT_ABORTED',
+  ON_HOLD = 'ON_HOLD',
+  READY_FOR_VERIFICATION = 'READY_FOR_VERIFICATION',
+  VERIFICATION_DONE = 'VERIFICATION_DONE',
+  RETURN_PENDING = 'RETURN_PENDING',
+  RETURN_TO_ORIGIN = 'RETURN_TO_ORIGIN',
+  RETURN_REQUESTED = 'RETURN_REQUESTED',
+  RVP_ASSIGNED = 'RVP_ASSIGNED',
+  RETURN_PICKUP = 'RETURN_PICKUP',
+  RETURN_RTO = 'RETURN_RTO',
+  READY_TO_SHIP = 'READY_TO_SHIP',
+  SHIPPED = 'SHIPPED',
 }
 
 export enum UPLOAD_FILE_TYPES {
@@ -194,6 +207,7 @@ export enum DiscountType {
   PRICEOFF = 'PRICEOFF',
 }
 
+/* to be deprecated soon - Free text string is used as unit input from user >= release 5.0.0 */
 export enum MedicalTestUnit {
   GM = 'GM',
   _PERCENT_ = '_PERCENT_',
@@ -209,6 +223,8 @@ export enum MedicalRecordType {
   TEST_REPORT = 'TEST_REPORT',
   CONSULTATION = 'CONSULTATION ',
   PRESCRIPTION = 'PRESCRIPTION',
+  HEALTHCHECK = 'HEALTHCHECK',
+  HOSPITALIZATION = 'HOSPITALIZATION',
 }
 
 export enum DIAGNOSTIC_ORDER_STATUS {
@@ -289,6 +305,11 @@ export enum PROFILE_SOURCE {
   ORDER_PUNCHING_TOOL = 'ORDER_PUNCHING_TOOL',
   MFINE = 'MFINE',
 }
+
+export type DriverDetails = {
+  driverName: string;
+  driverPhone: string;
+};
 
 @EventSubscriber()
 export class PatientEntitiySubscriber implements EntitySubscriberInterface<Patient> {
@@ -422,7 +443,7 @@ export class MedicineOrders extends BaseEntity {
   @Column({ nullable: true })
   allocationProfileName: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedDate: Date;
 
   @BeforeInsert()
@@ -836,7 +857,7 @@ export class MedicineOrdersStatus extends BaseEntity {
   @Column({ nullable: true })
   customReason: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedDate: Date;
 
   @BeforeInsert()
@@ -1053,6 +1074,18 @@ export class Patient extends BaseEntity {
     (medicalRecords) => medicalRecords.patient
   )
   medicalRecords: MedicalRecords[];
+
+  @OneToMany(
+    (type) => HealthCheckRecords,
+    (healthCheckRecord) => healthCheckRecord.patient
+  )
+  healthCheckRecords: HealthCheckRecords[];
+
+  @OneToMany(
+    (type) => HospitalizationRecords,
+    (hospitalizationRecords) => hospitalizationRecords.patient
+  )
+  hospitalizationRecords: HospitalizationRecords[];
 
   @OneToMany(
     (type) => PatientFeedback,
@@ -1302,6 +1335,9 @@ export class SearchHistory extends BaseEntity {
   @Column()
   type: SEARCH_TYPE;
 
+  @Column()
+  image: string;
+
   @Index()
   @Column()
   typeId: string;
@@ -1341,6 +1377,9 @@ export class PatientAddress extends BaseEntity {
 
   @Column({ nullable: true })
   addressType: PATIENT_ADDRESS_TYPE;
+
+  @Column({ nullable: true, default: false })
+  defaultAddress: boolean;
 
   @Column({ nullable: true })
   city: string;
@@ -1680,7 +1719,7 @@ export class MedicalRecordParameters extends BaseEntity {
   result: number;
 
   @Column()
-  unit: MedicalTestUnit;
+  unit: string;
 
   @Column({ type: 'timestamp', nullable: true })
   updatedDate: Date;
@@ -1944,6 +1983,12 @@ export class PatientMedicalHistory extends BaseEntity {
 
   @Column({ nullable: true })
   weight: string;
+
+  @Column({ nullable: true, type: 'text' })
+  clinicalObservationNotes: string;
+
+  @Column({ nullable: true, type: 'text' })
+  diagnosticTestResult: string;
 
   @BeforeInsert()
   updateDateCreation() {
@@ -2654,6 +2699,9 @@ export class MedicineOrderShipments extends BaseEntity {
   @Column({ nullable: true })
   cancelReasonCode: string;
 
+  @Column({ nullable: true, type: 'jsonb' })
+  driverDetails: DriverDetails;
+
   @Column({ nullable: true })
   currentStatus: MEDICINE_ORDER_STATUS;
 
@@ -2666,7 +2714,7 @@ export class MedicineOrderShipments extends BaseEntity {
   })
   oneApolloTransaction: OneApollTransaction;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedDate: Date;
 
   @Column({ nullable: true, type: 'json' })

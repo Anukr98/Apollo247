@@ -494,10 +494,16 @@ export const Header: React.FC<HeaderProps> = (props) => {
                                   }}
                                 >
                                   <span>
-                                    <img src={require('images/ic_manageprofile.svg')} alt="" />{' '}
+                                    <img
+                                      src={require('images/ic_manageprofile.svg')}
+                                      alt="Manage Profiles"
+                                    />{' '}
                                     Manage Profiles
                                   </span>
-                                  <img src={require('images/ic_arrow_right.svg')} alt="" />
+                                  <img
+                                    src={require('images/ic_arrow_right.svg')}
+                                    alt="Right Arrow"
+                                  />
                                 </Link>
                               </li>
 
@@ -514,10 +520,16 @@ export const Header: React.FC<HeaderProps> = (props) => {
                                   }}
                                 >
                                   <span>
-                                    <img src={require('images/ic_location.svg')} alt="" /> Address
-                                    Book
+                                    <img
+                                      src={require('images/ic_location.svg')}
+                                      alt="Address Book"
+                                    />{' '}
+                                    Address Book
                                   </span>
-                                  <img src={require('images/ic_arrow_right.svg')} alt="" />
+                                  <img
+                                    src={require('images/ic_arrow_right.svg')}
+                                    alt="Right Arrow"
+                                  />
                                 </Link>
                               </li>
                               {userSubscriptions.length != 0 && (
@@ -549,10 +561,13 @@ export const Header: React.FC<HeaderProps> = (props) => {
                                     }}
                                   >
                                     <span>
-                                      <img src={require('images/ic_invoice.svg')} alt="" /> My
-                                      Orders
+                                      <img src={require('images/ic_invoice.svg')} alt="My Orders" />{' '}
+                                      My Orders
                                     </span>
-                                    <img src={require('images/ic_arrow_right.svg')} alt="" />
+                                    <img
+                                      src={require('images/ic_arrow_right.svg')}
+                                      alt="Right Arrow"
+                                    />
                                   </Link>
                                 </li>
                               )}
@@ -570,9 +585,13 @@ export const Header: React.FC<HeaderProps> = (props) => {
                                   }}
                                 >
                                   <span>
-                                    <img src={require('images/ic_fees.svg')} alt="" /> My Payments
+                                    <img src={require('images/ic_fees.svg')} alt="My Payments" /> My
+                                    Payments
                                   </span>
-                                  <img src={require('images/ic_arrow_right.svg')} alt="" />
+                                  <img
+                                    src={require('images/ic_arrow_right.svg')}
+                                    alt="Right Arrow"
+                                  />
                                 </Link>
                               </li>
 
@@ -591,16 +610,34 @@ export const Header: React.FC<HeaderProps> = (props) => {
                                   >
                                     <span>
                                       <img
-                                        src={require('images/ic_notificaiton_accounts.svg')}
-                                        alt=""
+                                        src={require('images/ic_myhealth.svg')}
+                                        alt="Health Records"
                                       />{' '}
                                       Health Records
                                     </span>
-                                    <img src={require('images/ic_arrow_right.svg')} alt="" />
+                                    <img
+                                      src={require('images/ic_arrow_right.svg')}
+                                      alt="Right Arrow"
+                                    />
                                   </Link>
                                 </li>
                               )}
-
+                              <li>
+                                <Link to={clientRoutes.oneApolloMembership()}>
+                                  <span>
+                                    <img
+                                      src={require('images/one-apollo.svg')}
+                                      width="25"
+                                      alt="One Apollo Membership"
+                                    />
+                                    One Apollo Membership
+                                  </span>
+                                  <img
+                                    src={require('images/ic_arrow_right.svg')}
+                                    alt="Right Arrow"
+                                  />
+                                </Link>
+                              </li>
                               <li>
                                 <Link
                                   to={clientRoutes.needHelp()}
@@ -614,17 +651,24 @@ export const Header: React.FC<HeaderProps> = (props) => {
                                   }}
                                 >
                                   <span>
-                                    <img src={require('images/ic_round_live_help.svg')} alt="" />{' '}
+                                    <img
+                                      src={require('images/ic_round_live_help.svg')}
+                                      alt="Need Help"
+                                    />{' '}
                                     Need Help
                                   </span>
-                                  <img src={require('images/ic_arrow_right.svg')} alt="" />
+                                  <img
+                                    src={require('images/ic_arrow_right.svg')}
+                                    alt="Right Arrow"
+                                  />
                                 </Link>
                               </li>
 
                               <li>
                                 <a href="javascript:void(0)" onClick={() => signOut()}>
                                   <span>
-                                    <img src={require('images/ic_logout.svg')} alt="" /> Logout
+                                    <img src={require('images/ic_logout.svg')} alt="Logout" />{' '}
+                                    Logout
                                   </span>
                                 </a>
                               </li>

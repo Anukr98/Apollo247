@@ -93,6 +93,8 @@ import {
   Text,
   TouchableOpacity,
   View,
+  StyleProp,
+  ViewStyle,
 } from 'react-native';
 import firebase from 'react-native-firebase';
 import { ScrollView } from 'react-native-gesture-handler';
@@ -102,6 +104,20 @@ import { FirebaseEventName } from '../../helpers/firebaseEvents';
 import { WhatsAppStatus } from '../ui/WhatsAppStatus';
 
 const { width, height } = Dimensions.get('window');
+
+const styles = StyleSheet.create({
+  mainViewStyle: {
+    backgroundColor: '#f7f8f5',
+    marginTop: 16,
+    // width: width - 40,
+    width: width - 40,
+    height: 'auto',
+    maxHeight: height - 98,
+    padding: 0,
+    borderRadius: 10,
+    overflow: 'hidden',
+  },
+});
 
 export interface ConsultOverlayProps extends NavigationScreenProps {
   // dispalyoverlay: boolean;
@@ -119,6 +135,8 @@ export interface ConsultOverlayProps extends NavigationScreenProps {
   availableMode: string;
   consultedWithDoctorBefore: boolean;
   callSaveSearch: string;
+  mainContainerStyle?: StyleProp<ViewStyle>;
+  scrollToSlot?: boolean;
 }
 export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const client = useApolloClient();
@@ -170,7 +188,9 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
 
   const todayDate = new Date().toDateString().split('T')[0];
   const scrollToSlots = (top: number = 400) => {
-    scrollViewRef.current && scrollViewRef.current.scrollTo({ x: 0, y: top, animated: true });
+    if (props.scrollToSlot) {
+      scrollViewRef.current && scrollViewRef.current.scrollTo({ x: 0, y: top, animated: true });
+    }
   };
   useEffect(() => {
     if (props.consultModeSelected === ConsultMode.ONLINE) {
@@ -882,7 +902,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         },
       ],
       packageId: packageId,
-      email: g(currentPatient, 'emailAddress')
+      email: g(currentPatient, 'emailAddress'),
     };
 
     return new Promise((res, rej) => {
@@ -1097,19 +1117,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             alignItems: 'center',
           }}
         >
-          <View
-            style={{
-              backgroundColor: '#f7f8f5',
-              marginTop: 16,
-              // width: width - 40,
-              width: width - 40,
-              height: 'auto',
-              maxHeight: height - 98,
-              padding: 0,
-              borderRadius: 10,
-              overflow: 'hidden',
-            }}
-          >
+          <View style={[styles.mainViewStyle, props.mainContainerStyle]}>
             <TabsComponent
               style={{
                 ...theme.viewStyles.cardViewStyle,
@@ -1205,4 +1213,8 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
     </View>
   );
+};
+
+ConsultOverlay.defaultProps = {
+  scrollToSlot: true,
 };

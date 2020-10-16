@@ -202,6 +202,7 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     deliveryCharges,
     couponDiscount,
     coupon,
+    areaSelected,
   } = useDiagnosticsCart();
   const { locationForDiagnostics } = useAppCommonData();
   const client = useApolloClient();
@@ -306,6 +307,7 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       state: (locationForDiagnostics || {}).state!,
       stateId: `${(locationForDiagnostics || {}).stateId!}`,
       cityId: `${(locationForDiagnostics || {}).cityId!}`,
+      areaId: (areaSelected || {}).key!,
       diagnosticDate: moment(date).format('YYYY-MM-DD'),
       prescriptionUrl: [
         ...physicalPrescriptions.map((item) => item.uploadedUrl),

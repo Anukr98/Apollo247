@@ -206,13 +206,13 @@ export const MyProfile: React.FC = (props) => {
                 }}
               >
                 <span className={classes.serviceImg}>
-                  <img src={require('images/ic_manageprofile.svg')} alt="" />
+                  <img src={require('images/ic_manageprofile.svg')} alt="Manage Profiles" />
                 </span>
                 <span className={classes.linkText} title={'Manage Profiles'}>
                   Manage Profiles
                 </span>
                 <span className={classes.rightArrow}>
-                  <img src={require('images/ic_arrow_right.svg')} alt="" />
+                  <img src={require('images/ic_arrow_right.svg')} alt="Right Arrow" />
                 </span>
               </Link>
             </div>
@@ -233,13 +233,13 @@ export const MyProfile: React.FC = (props) => {
                 }}
               >
                 <span className={classes.serviceImg}>
-                  <img src={require('images/ic_fees.svg')} alt="" />
+                  <img src={require('images/ic_fees.svg')} alt="My Payments" />
                 </span>
                 <span className={classes.linkText} title={'My Payments'}>
                   My Payments
                 </span>
                 <span className={classes.rightArrow}>
-                  <img src={require('images/ic_arrow_right.svg')} alt="" />
+                  <img src={require('images/ic_arrow_right.svg')} alt="Right Arrow" />
                 </span>
               </Link>
             </div>
@@ -260,11 +260,11 @@ export const MyProfile: React.FC = (props) => {
                 }}
               >
                 <span className={classes.serviceImg}>
-                  <img src={require('images/ic_notificaiton_accounts.svg')} alt="" />
+                  <img src={require('images/ic_myhealth.svg')} alt="Health Records" />
                 </span>
                 <span className={classes.linkText}>Health Records</span>
                 <span className={classes.rightArrow}>
-                  <img src={require('images/ic_arrow_right.svg')} alt="" />
+                  <img src={require('images/ic_arrow_right.svg')} alt="Right Arrow" />
                 </span>
               </Link>
             </div>
@@ -304,13 +304,36 @@ export const MyProfile: React.FC = (props) => {
                 }}
               >
                 <span className={classes.serviceImg}>
-                  <img src={require('images/ic_location.svg')} alt="" />
+                  <img src={require('images/ic_location.svg')} alt="Address Book" />
                 </span>
                 <span className={classes.linkText} title={'Address Book'}>
                   Address Book
                 </span>
                 <span className={classes.rightArrow}>
-                  <img src={require('images/ic_arrow_right.svg')} alt="" />
+                  <img src={require('images/ic_arrow_right.svg')} alt="Right Arrow" />
+                </span>
+              </Link>
+            </div>
+            <div className={classes.sectionGroup}>
+              <Link
+                className={`${classes.serviceType} ${classes.textVCenter} ${
+                  currentPath === clientRoutes.oneApolloMembership() ? classes.menuActive : ''
+                }`}
+                to={clientRoutes.oneApolloMembership()}
+                title={'OneApollo Membership'}
+              >
+                <span className={classes.serviceImg}>
+                  <img
+                    src={require('images/one-apollo.svg')}
+                    alt="OneApollo Membership"
+                    width="25"
+                  />
+                </span>
+                <span className={classes.linkText} title={'OneApollo Membership'}>
+                  OneApollo Membership
+                </span>
+                <span className={classes.rightArrow}>
+                  <img src={require('images/ic_arrow_right.svg')} alt="Right Arrow" />
                 </span>
               </Link>
             </div>
@@ -331,13 +354,13 @@ export const MyProfile: React.FC = (props) => {
                 }}
               >
                 <span className={classes.serviceImg}>
-                  <img src={require('images/ic_round_live_help.svg')} alt="" />
+                  <img src={require('images/ic_round_live_help.svg')} alt="Need Help" />
                 </span>
                 <span className={classes.linkText} title={'Need Help'}>
                   Need Help
                 </span>
                 <span className={classes.rightArrow}>
-                  <img src={require('images/ic_arrow_right.svg')} alt="" />
+                  <img src={require('images/ic_arrow_right.svg')} alt="Right Arrow" />
                 </span>
               </Link>
             </div>
@@ -371,13 +394,13 @@ export const MyProfile: React.FC = (props) => {
             <div className={`${classes.sectionGroup}`} onClick={() => signOut()} title={'Logout'}>
               <div className={`${classes.serviceType} ${classes.textVCenter}`}>
                 <span className={classes.serviceImg}>
-                  <img src={require('images/ic_logout.svg')} alt="" />
+                  <img src={require('images/ic_logout.svg')} alt="Logout" />
                 </span>
                 <span className={classes.linkText} title={'Logout'}>
                   Logout
                 </span>
                 <span className={classes.rightArrow}>
-                  <img src={require('images/ic_arrow_right.svg')} alt="" />
+                  <img src={require('images/ic_arrow_right.svg')} alt="Right Arrow" />
                 </span>
               </div>
             </div>
@@ -406,13 +429,13 @@ export const MyProfile: React.FC = (props) => {
                     }}
                   >
                     <span className={classes.serviceImg}>
-                      <img src={require('images/ic_manageprofile.svg')} alt="" />
+                      <img src={require('images/ic_manageprofile.svg')} alt="Manage Profiles" />
                     </span>
                     <span className={classes.linkText} title={'Manage Profiles'}>
                       Manage Profiles
                     </span>
                     <span className={classes.rightArrow}>
-                      <img src={require('images/ic_arrow_right.svg')} alt="" />
+                      <img src={require('images/ic_arrow_right.svg')} alt="Right Arrow" />
                     </span>
                   </Link>
                 </div>
@@ -433,13 +456,13 @@ export const MyProfile: React.FC = (props) => {
                     }}
                   >
                     <span className={classes.serviceImg}>
-                      <img src={require('images/ic_fees.svg')} alt="" />
+                      <img src={require('images/ic_fees.svg')} alt="My Payments" />
                     </span>
                     <span className={classes.linkText} title={'My Payments'}>
                       My Payments
                     </span>
                     <span className={classes.rightArrow}>
-                      <img src={require('images/ic_arrow_right.svg')} alt="" />
+                      <img src={require('images/ic_arrow_right.svg')} alt="Right Arrow" />
                     </span>
                   </Link>
                 </div>
@@ -460,11 +483,11 @@ export const MyProfile: React.FC = (props) => {
                     }}
                   >
                     <span className={classes.serviceImg}>
-                      <img src={require('images/ic_notificaiton_accounts.svg')} alt="" />
+                      <img src={require('images/ic_myhealth.svg')} alt="Health Records" />
                     </span>
                     <span className={classes.linkText}>Health Records</span>
                     <span className={classes.rightArrow}>
-                      <img src={require('images/ic_arrow_right.svg')} alt="" />
+                      <img src={require('images/ic_arrow_right.svg')} alt="Right Arrow" />
                     </span>
                   </Link>
                 </div>
@@ -485,13 +508,13 @@ export const MyProfile: React.FC = (props) => {
                     }}
                   >
                     <span className={classes.serviceImg}>
-                      <img src={require('images/ic_location.svg')} alt="" />
+                      <img src={require('images/ic_location.svg')} alt="Address Book" />
                     </span>
                     <span className={classes.linkText} title={'Address Book'}>
                       Address Book
                     </span>
                     <span className={classes.rightArrow}>
-                      <img src={require('images/ic_arrow_right.svg')} alt="" />
+                      <img src={require('images/ic_arrow_right.svg')} alt="Right Arrow" />
                     </span>
                   </Link>
                 </div>
@@ -531,13 +554,13 @@ export const MyProfile: React.FC = (props) => {
                     }}
                   >
                     <span className={classes.serviceImg}>
-                      <img src={require('images/ic_round_live_help.svg')} alt="" />
+                      <img src={require('images/ic_round_live_help.svg')} alt="Need Help" />
                     </span>
                     <span className={classes.linkText} title={'Need Help'}>
                       Need Help
                     </span>
                     <span className={classes.rightArrow}>
-                      <img src={require('images/ic_arrow_right.svg')} alt="" />
+                      <img src={require('images/ic_arrow_right.svg')} alt="Right Arrow" />
                     </span>
                   </Link>
                 </div>
@@ -575,13 +598,13 @@ export const MyProfile: React.FC = (props) => {
                 >
                   <div className={`${classes.serviceType} ${classes.textVCenter}`}>
                     <span className={classes.serviceImg}>
-                      <img src={require('images/ic_logout.svg')} alt="" />
+                      <img src={require('images/ic_logout.svg')} alt="Logout" />
                     </span>
                     <span className={classes.linkText} title={'Logout'}>
                       Logout
                     </span>
                     <span className={classes.rightArrow}>
-                      <img src={require('images/ic_arrow_right.svg')} alt="" />
+                      <img src={require('images/ic_arrow_right.svg')} alt="Right Arrow" />
                     </span>
                   </div>
                 </div>

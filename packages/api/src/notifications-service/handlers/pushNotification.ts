@@ -181,7 +181,9 @@ export async function sendCallsNotification(
   const devicetokensofFamily = await deviceTokenRepo.deviceTokensOfAllIds(listOfIds);
   if (devicetokensofFamily.length > 0) {
     devicetokensofFamily.forEach((values) => {
-      registrationToken.push(values.deviceToken);
+      if (values.deviceToken != '' && values.deviceToken != null) {
+        registrationToken.push(values.deviceToken);
+      }
     });
   }
   /*patientDetails.patientDeviceTokens.forEach((values) => {
@@ -205,6 +207,9 @@ export async function sendCallsNotification(
         callType: callType,
         appointmentCallId: appointmentCallId,
         doctorType: doctorType,
+      },
+      notification: {
+        channel_id: 'fcm_call_channel',
       },
     };
 
@@ -244,38 +249,38 @@ export async function sendCallsNotification(
     console.log(dataOnlyPayloadResponse, 'dataOnlyPayloadResponse');
   }
 
-  admin
-    .messaging()
-    .sendToDevice(registrationToken, payload, options)
-    .then((response: PushNotificationSuccessMessage) => {
-      notificationPayloadResponse = response;
-      if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
-        const fileName =
-          process.env.NODE_ENV + '_callnotification_' + format(new Date(), 'yyyyMMdd') + '.txt';
-        let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
-        if (process.env.NODE_ENV != 'local') {
-          assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
-        }
-        let content =
-          format(new Date(), 'yyyy-MM-dd hh:mm') +
-          '\n apptid: ' +
-          pushNotificationInput.appointmentId +
-          '\n multicastId: ';
-        content +=
-          response.multicastId.toString() +
-          '\n------------------------------------------------------------------------------------\n';
-        fs.appendFile(assetsDir + '/' + fileName, content, (err) => {
-          if (err) {
-            console.log('file saving error', err);
-          }
-          console.log('notification results saved');
-        });
-      }
-    })
-    .catch((error: JSON) => {
-      console.log('PushNotification Failed::' + error);
-      throw new AphError(AphErrorMessages.PUSH_NOTIFICATION_FAILED);
-    });
+  // admin
+  //   .messaging()
+  //   .sendToDevice(registrationToken, payload, options)
+  //   .then((response: PushNotificationSuccessMessage) => {
+  //     notificationPayloadResponse = response;
+  //     if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
+  //       const fileName =
+  //         process.env.NODE_ENV + '_callnotification_' + format(new Date(), 'yyyyMMdd') + '.txt';
+  //       let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+  //       if (process.env.NODE_ENV != 'local') {
+  //         assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
+  //       }
+  //       let content =
+  //         format(new Date(), 'yyyy-MM-dd hh:mm') +
+  //         '\n apptid: ' +
+  //         pushNotificationInput.appointmentId +
+  //         '\n multicastId: ';
+  //       content +=
+  //         response.multicastId.toString() +
+  //         '\n------------------------------------------------------------------------------------\n';
+  //       fs.appendFile(assetsDir + '/' + fileName, content, (err) => {
+  //         if (err) {
+  //           console.log('file saving error', err);
+  //         }
+  //         console.log('notification results saved');
+  //       });
+  //     }
+  //   })
+  //   .catch((error: JSON) => {
+  //     console.log('PushNotification Failed::' + error);
+  //     throw new AphError(AphErrorMessages.PUSH_NOTIFICATION_FAILED);
+  //   });
 
   console.log(notificationPayloadResponse, 'notificationPayloadResponse');
 
@@ -643,7 +648,9 @@ export async function sendReminderNotification(
   const devicetokensofFamily = await deviceTokenRepo.deviceTokensOfAllIds(listOfIds);
   if (devicetokensofFamily.length > 0) {
     devicetokensofFamily.forEach((values) => {
-      registrationToken.push(values.deviceToken);
+      if (values.deviceToken != '' && values.deviceToken != null) {
+        registrationToken.push(values.deviceToken);
+      }
     });
   }
   if (pushNotificationInput.notificationType == NotificationType.APPOINTMENT_REMINDER_15) {
@@ -652,20 +659,16 @@ export async function sendReminderNotification(
   if (
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15 ||
     pushNotificationInput.notificationType ==
-      NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
+    NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
   ) {
     if (!(appointment && appointment.id)) {
       throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND);
     }
 
-    if (process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM) {
-      const chatroom_sms_link = process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM.replace(
-        '{0}',
-        appointment.id.toString()
-      ); //Replacing the placeholder with appointmentid
-
+    const appLink = await getPatientDeeplink(ApiConstants.PATIENT_CHATROOM_DEEPLINK + appointment.id.toString(), ApiConstants.PATIENT_DEEPLINK_TEMPLATE_ID_APOLLO);
+    if (appLink) {
       //Final deeplink URL
-      notificationBody = notificationBody + ApiConstants.CLICK_HERE + chatroom_sms_link;
+      notificationBody = notificationBody + ApiConstants.CLICK_HERE + appLink;
     } else {
       throw new AphError(AphErrorMessages.SMS_DEEPLINK_APPOINTMENT_CHATROOM_MISSING);
     }
@@ -762,7 +765,9 @@ export async function sendCallsDisconnectNotification(
   const devicetokensofFamily = await deviceTokenRepo.deviceTokensOfAllIds(listOfIds);
   if (devicetokensofFamily.length > 0) {
     devicetokensofFamily.forEach((values) => {
-      registrationToken.push(values.deviceToken);
+      if (values.deviceToken != '' && values.deviceToken != null) {
+        registrationToken.push(values.deviceToken);
+      }
     });
   }
 
@@ -882,7 +887,9 @@ export async function sendCartNotification(
   const devicetokensofFamily = await deviceTokenRepo.deviceTokensOfAllIds(listOfIds);
   if (devicetokensofFamily.length > 0) {
     devicetokensofFamily.forEach((values) => {
-      registrationToken.push(values.deviceToken);
+      if (values.deviceToken != '' && values.deviceToken != null) {
+        registrationToken.push(values.deviceToken);
+      }
     });
   }
   /*patientDetails.patientDeviceTokens.forEach((values) => {
@@ -1009,10 +1016,30 @@ export async function sendNotification(
     doctorSMS = doctorSMS.replace('{1}', appointment.displayId.toString());
     doctorSMS = doctorSMS.replace('{2}', patientDetails.firstName);
     doctorSMS = doctorSMS.replace('{3}', apptDate.toString());
-
     sendNotificationSMS(doctorDetails.mobileNumber, doctorSMS);
-
     sendBrowserNotitication(doctorDetails.id, doctorSMS);
+    let facilityDetsString = 'N/A';
+    if (appointment.hospitalId != '' && appointment.hospitalId != null) {
+      const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
+      const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
+      if (facilityDets) {
+        facilityDetsString = `${facilityDets.name} ${facilityDets.streetLine1} ${facilityDets.city} ${facilityDets.state}`;
+      }
+    }
+    const secretaryTemplateData: string[] = [
+      patientDetails.firstName + ' ' + patientDetails.lastName,
+      patientDetails.uhid,
+      doctorDetails.salutation + ' ' + doctorDetails.firstName,
+      facilityDetsString,
+      format(istDateTime, 'dd/MM/yyyy'),
+      format(istDateTime, 'hh:mm a'),
+      appointment.appointmentType,
+    ];
+    sendDoctorNotificationWhatsapp(
+      ApiConstants.WHATSAPP_DOC_SECRETARY_CANCEL,
+      doctorDetails.doctorSecretary.secretary.mobileNumber,
+      secretaryTemplateData
+    );
   }
 
   //doctor cancel appointment
@@ -1159,6 +1186,14 @@ export async function sendNotification(
       '{0}',
       patientDetails.firstName
     );
+    let facilityDetsString = 'N/A';
+    if (appointment.hospitalId != '' && appointment.hospitalId != null) {
+      const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
+      const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
+      if (facilityDets) {
+        facilityDetsString = `${facilityDets.name} ${facilityDets.streetLine1} ${facilityDets.city} ${facilityDets.state}`;
+      }
+    }
     if (appointment.appointmentType == APPOINTMENT_TYPE.PHYSICAL) {
       content = ApiConstants.PHYSICAL_BOOK_APPOINTMENT_BODY.replace(
         '{0}',
@@ -1168,16 +1203,8 @@ export async function sendNotification(
         '{0}',
         patientDetails.firstName
       );
-
-      if (appointment.hospitalId != '' && appointment.hospitalId != null) {
-        const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
-        const facilityDets = await facilityRepo.getfacilityDetails(appointment.hospitalId);
-        if (facilityDets) {
-          const facilityDetsString = `${facilityDets.name} ${facilityDets.streetLine1} ${facilityDets.city} ${facilityDets.state}`;
-          content = content.replace('{4}', facilityDetsString);
-          smsLink = smsLink.replace('{4}', facilityDetsString);
-        }
-      }
+      content = content.replace('{4}', facilityDetsString);
+      smsLink = smsLink.replace('{4}', facilityDetsString);
     }
     content = content.replace('{1}', appointment.displayId.toString());
     content = content.replace('{2}', doctorDetails.firstName + ' ' + doctorDetails.lastName);
@@ -1228,6 +1255,25 @@ export async function sendNotification(
       todaysDate,
       'todays date'
     );
+    const secretaryTemplateData: string[] = [
+      patientDetails.firstName + ' ' + patientDetails.lastName,
+      patientDetails.uhid,
+      doctorDetails.salutation + ' ' + doctorDetails.firstName,
+      facilityDetsString,
+      format(istDateTime, 'dd/MM/yyyy'),
+      format(istDateTime, 'hh:mm a'),
+      appointment.appointmentType,
+    ];
+    console.log(
+      secretaryTemplateData,
+      doctorDetails.doctorSecretary.secretary.mobileNumber,
+      'secretaryTemplateData'
+    );
+    sendDoctorNotificationWhatsapp(
+      ApiConstants.WHATSAPP_DOC_SECRETARY_BOOKING,
+      doctorDetails.doctorSecretary.secretary.mobileNumber,
+      secretaryTemplateData
+    );
     if (istDateTime <= todaysDate) {
       const finalTime = format(istDateTime, 'hh:mm a');
       const templateData: string[] = [
@@ -1271,13 +1317,9 @@ export async function sendNotification(
     smsLink = smsLink.replace('{2}', doctorDetails.firstName + ' ' + doctorDetails.lastName);
     smsLink = smsLink.replace('{3}', apptDate.toString());
 
-    if (process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM) {
-      const chatroom_sms_link = process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM.replace(
-        '{0}',
-        appointment.id.toString()
-      ); // Replacing the placeholder with appointmentid
-
-      smsLink = smsLink.replace('{5}', chatroom_sms_link);
+    const appLink = await getPatientDeeplink(ApiConstants.PATIENT_CHATROOM_DEEPLINK + appointment.id.toString(), ApiConstants.PATIENT_DEEPLINK_TEMPLATE_ID_APOLLO);
+    if (appLink) {
+      smsLink = smsLink.replace('{5}', appLink);
     } else {
       throw new AphError(AphErrorMessages.SMS_DEEPLINK_APPOINTMENT_CHATROOM_MISSING);
     }
@@ -1366,10 +1408,9 @@ export async function sendNotification(
     sendBrowserNotitication(doctorDetails.id, notificationBody);
   } else if (pushNotificationInput.notificationType == NotificationType.PRESCRIPTION_READY) {
     notificationTitle = ApiConstants.PRESCRIPTION_READY_TITLE;
-    notificationBody = ApiConstants.PRESCRIPTION_READY_BODY.replace(
-      '{0}',
-      patientDetails.firstName
-    ).replace('{1}', doctorDetails.firstName);
+    notificationBody = ApiConstants.PRESCRIPTION_READY_BODY.replace('{0}', patientDetails.firstName)
+      .replace('{1}', doctorDetails.salutation)
+      .replace('{2}', doctorDetails.firstName);
 
     if (!process.env.DEEPLINK_PRESCRIPTION) {
       log(
@@ -1661,13 +1702,17 @@ export async function sendNotification(
   const devicetokensofFamily = await deviceTokenRepo.deviceTokensOfAllIds(listOfIds);
   if (devicetokensofFamily.length > 0) {
     devicetokensofFamily.forEach((values) => {
-      registrationToken.push(values.deviceToken);
+      if (values.deviceToken != '' && values.deviceToken != null) {
+        registrationToken.push(values.deviceToken);
+      }
     });
   }
   /*patientDetails.patientDeviceTokens.forEach((values) => {
       registrationToken.push(values.deviceToken);
     });*/
+  console.log(registrationToken, 'registrationToken');
   if (registrationToken.length == 0) return;
+
   admin
     .messaging()
     .sendToDevice(registrationToken, payload, options)
@@ -1704,8 +1749,6 @@ export async function sendNotification(
       console.log('PushNotification Failed::' + error);
       throw new AphError(AphErrorMessages.PUSH_NOTIFICATION_FAILED);
     });
-
-  console.log(notificationResponse, 'notificationResponse');
 
   return notificationResponse;
 }
@@ -1754,7 +1797,9 @@ export async function sendDoctorAppointmentNotification(
   const registrationToken: string[] = [];
   if (deviceTokensList.length > 0) {
     deviceTokensList.forEach((values) => {
-      registrationToken.push(values.deviceToken);
+      if (values.deviceToken != '' && values.deviceToken != null) {
+        registrationToken.push(values.deviceToken);
+      }
     });
 
     console.log(registrationToken, 'registrationToken doctor');
@@ -1842,7 +1887,9 @@ export async function sendDoctorRescheduleAppointmentNotification(
   const registrationToken: string[] = [];
   if (deviceTokensList.length > 0) {
     deviceTokensList.forEach((values) => {
-      registrationToken.push(values.deviceToken);
+      if (values.deviceToken != '' && values.deviceToken != null) {
+        registrationToken.push(values.deviceToken);
+      }
     });
 
     console.log(registrationToken, 'registrationToken doctor');

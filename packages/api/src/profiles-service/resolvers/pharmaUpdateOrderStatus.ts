@@ -7,7 +7,6 @@ import {
   MEDICINE_ORDER_STATUS,
   MedicineOrdersStatus,
   MedicineOrderShipments,
-  MEDICINE_DELIVERY_TYPE,
   MedicineOrderInvoice,
 } from 'profiles-service/entities';
 
@@ -21,6 +20,7 @@ import { log } from 'customWinstonLogger';
 import { calculateRefund } from 'profiles-service/helpers/refundHelper';
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
 import { ApiConstants } from 'ApiConstants';
+
 import { syncInventory } from 'helpers/inventorySync';
 import { SYNC_TYPE } from 'types/inventorySync';
 import { ItemDetails } from 'types/oneApolloTypes';
@@ -37,6 +37,8 @@ export const updateOrderStatusTypeDefs = gql`
     apOrderNo: String
     updatedDate: String!
     referenceNo: String
+    driverName: String
+    driverPhone: String
   }
 
   type UpdateOrderStatusResult {
@@ -64,6 +66,8 @@ type OrderStatusInput = {
   trackingNo: string;
   trackingUrl: string;
   trackingProvider: string;
+  driverName: string;
+  driverPhone: string;
   referenceNo: string;
   reasonCode: string;
   apOrderNo: string;
@@ -73,6 +77,8 @@ type OrderStatusInput = {
 type OrderStatusInputArgs = {
   updateOrderStatusInput: OrderStatusInput;
 };
+
+const inernal_statuses = ['READY_FOR_VERIFICATION', 'VERIFICATION_DONE'];
 
 const updateOrderStatus: Resolver<
   null,
@@ -102,61 +108,53 @@ const updateOrderStatus: Resolver<
   if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED) {
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
   }
-  const shipmentDetails = orderDetails.medicineOrderShipments.find((shipment) => {
-    return shipment.apOrderNo == updateOrderStatusInput.apOrderNo;
-  });
 
-  if (!shipmentDetails && status != MEDICINE_ORDER_STATUS.CANCELLED) {
-    throw new AphError(AphErrorMessages.INVALID_MEDICINE_SHIPMENT_ID, undefined, {});
-  }
   const statusDate = format(
     addMinutes(parseISO(updateOrderStatusInput.updatedDate), -330),
     "yyyy-MM-dd'T'HH:mm:ss.SSSX"
   );
-  if (!shipmentDetails && status == MEDICINE_ORDER_STATUS.CANCELLED) {
+  // shipments are not created. order level status updates
+  if (!updateOrderStatusInput.apOrderNo || !orderDetails.medicineOrderShipments) {
     await medicineOrdersRepo.updateMedicineOrderDetails(
       orderDetails.id,
       orderDetails.orderAutoId,
       new Date(statusDate),
-      MEDICINE_ORDER_STATUS.CANCELLED
+      status
     );
     const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
-      orderStatus: MEDICINE_ORDER_STATUS.CANCELLED,
+      orderStatus: status,
       medicineOrders: orderDetails,
       statusDate: new Date(statusDate),
       statusMessage: updateOrderStatusInput.reasonCode,
     };
     await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
-    calculateRefund(
-      orderDetails,
-      0,
-      profilesDb,
-      medicineOrdersRepo,
-      updateOrderStatusInput.reasonCode
-    );
-  }
-
-  if (
-    status == MEDICINE_ORDER_STATUS.DELIVERED &&
-    orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-  ) {
-    status = MEDICINE_ORDER_STATUS.PICKEDUP;
-
-    //post order picked up  event to webEngage
-    const postBody: Partial<WebEngageInput> = {
-      userId: orderDetails.patient.mobileNumber,
-      eventName: ApiConstants.MEDICINE_ORDER_KERB_PICKEDUP_EVENT_NAME.toString(),
-      eventData: {
-        orderId: orderDetails.orderAutoId,
-        statusDateTime: format(
-          parseISO(updateOrderStatusInput.updatedDate),
-          "yyyy-MM-dd'T'HH:mm:ss'+0530'"
-        ),
-      },
-    };
-    postEvent(postBody);
-  }
-  if (shipmentDetails) {
+    if (status == MEDICINE_ORDER_STATUS.CANCELLED) {
+      calculateRefund(
+        orderDetails,
+        0,
+        profilesDb,
+        medicineOrdersRepo,
+        updateOrderStatusInput.reasonCode
+      );
+      const medicineOrderStatus = orderDetails.medicineOrdersStatus;
+      const isOrderBilled = medicineOrderStatus.find((orderStatusObj) => {
+        return orderStatusObj.orderStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED;
+      });
+      // if billed, inventory release would have happened already at the time of billing
+      if (!isOrderBilled) {
+        orderDetails.medicineOrderLineItems = await medicineOrdersRepo.getMedicineOrderLineItemByOrderId(
+          orderDetails.id
+        );
+        syncInventory(orderDetails, SYNC_TYPE.CANCEL);
+      }
+    }
+  } else {
+    const shipmentDetails = orderDetails.medicineOrderShipments.find((shipment) => {
+      return shipment.apOrderNo == updateOrderStatusInput.apOrderNo;
+    });
+    if (!shipmentDetails) {
+      throw new AphError(AphErrorMessages.INVALID_MEDICINE_SHIPMENT_ID, undefined, {});
+    }
     if (shipmentDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED) {
       throw new AphError(AphErrorMessages.INVALID_MEDICINE_SHIPMENT_ID, undefined, {});
     }
@@ -173,11 +171,18 @@ const updateOrderStatus: Resolver<
     }
     const orderShipmentsAttrs: Partial<MedicineOrderShipments> = {
       currentStatus: status,
-      trackingNo: updateOrderStatusInput.trackingNo || shipmentDetails.trackingNo,
-      trackingUrl: updateOrderStatusInput.trackingUrl || shipmentDetails.trackingUrl,
-      trackingProvider: updateOrderStatusInput.trackingProvider || shipmentDetails.trackingProvider,
       cancelReasonCode: updateOrderStatusInput.reasonCode || shipmentDetails.cancelReasonCode,
     };
+    if (status == MEDICINE_ORDER_STATUS.READY_TO_SHIP) {
+      orderShipmentsAttrs.trackingNo = updateOrderStatusInput.trackingNo;
+      orderShipmentsAttrs.trackingUrl = updateOrderStatusInput.trackingUrl;
+      orderShipmentsAttrs.trackingProvider = updateOrderStatusInput.trackingProvider;
+    } else if (status == MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY) {
+      orderShipmentsAttrs.driverDetails = {
+        driverName: updateOrderStatusInput.driverName,
+        driverPhone: updateOrderStatusInput.driverPhone,
+      };
+    }
     try {
       await medicineOrdersRepo.updateMedicineOrderShipment(
         orderShipmentsAttrs,
@@ -246,17 +251,24 @@ const updateOrderStatus: Resolver<
     });
 
     if (!shipmentsWithDifferentStatus || shipmentsWithDifferentStatus.length == 0) {
-      await medicineOrdersRepo.updateMedicineOrderDetails(
-        orderDetails.id,
-        orderDetails.orderAutoId,
-        new Date(statusDate),
-        status
-      );
+      let hideStatus = true;
+      if (inernal_statuses.indexOf(status) > -1) {
+        hideStatus = false;
+      } else {
+        await medicineOrdersRepo.updateMedicineOrderDetails(
+          orderDetails.id,
+          orderDetails.orderAutoId,
+          new Date(statusDate),
+          status
+        );
+      }
+
       const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
         orderStatus: status,
         medicineOrders: orderDetails,
         statusDate: new Date(statusDate),
         statusMessage: updateOrderStatusInput.reasonCode,
+        hideStatus,
       };
       await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
       if (status == MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY) {
@@ -332,55 +344,52 @@ const updateOrderStatus: Resolver<
         postEvent(postBody);
       }
     }
-    if (!hasUnresolvedShipments && status === MEDICINE_ORDER_STATUS.CANCELLED) {
-      totalOrderBilling = invoices.reduce(
-        (acc: number, curValue: Partial<MedicineOrderInvoice>) => {
-          if (
-            curValue.billDetails &&
-            curValue.medicineOrderShipments &&
-            resolvedShipments.includes(curValue.medicineOrderShipments.id)
-          ) {
-            const invoiceValue: number = JSON.parse(curValue.billDetails).invoiceValue;
-            return +new Decimal(acc).plus(invoiceValue);
-          }
-          return acc;
-        },
-        0
-      );
-      calculateRefund(
-        orderDetails,
-        totalOrderBilling,
-        profilesDb,
-        medicineOrdersRepo,
-        updateOrderStatusInput.reasonCode
-      );
-    }
-  }
-
-  // release inventory blocked
-  if (status == MEDICINE_ORDER_STATUS.CANCELLED) {
-    const medicineOrderStatus = shipmentDetails
-      ? shipmentDetails.medicineOrdersStatus
-      : orderDetails.medicineOrdersStatus;
-    const isOrderBilled = medicineOrderStatus.find((orderStatusObj) => {
-      return orderStatusObj.orderStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED;
-    });
-    // if billed, inventory release woould have happened already at the time of billing
-    if (!isOrderBilled) {
-      orderDetails.medicineOrderLineItems = await medicineOrdersRepo.getMedicineOrderLineItemByOrderId(
-        orderDetails.id
-      );
-      if (shipmentDetails) {
-        const itemDetails: ItemDetails[] = JSON.parse(shipmentDetails.itemDetails);
-        orderDetails.medicineOrderLineItems = orderDetails.medicineOrderLineItems.filter(
-          (lineItem) => {
-            return itemDetails.find((inputItem) => {
-              return inputItem.itemId == lineItem.medicineSKU;
-            });
-          }
+    if (status === MEDICINE_ORDER_STATUS.CANCELLED) {
+      if (!hasUnresolvedShipments) {
+        totalOrderBilling = invoices.reduce(
+          (acc: number, curValue: Partial<MedicineOrderInvoice>) => {
+            if (
+              curValue.billDetails &&
+              curValue.medicineOrderShipments &&
+              resolvedShipments.includes(curValue.medicineOrderShipments.id)
+            ) {
+              const invoiceValue: number = JSON.parse(curValue.billDetails).invoiceValue;
+              return +new Decimal(acc).plus(invoiceValue);
+            }
+            return acc;
+          },
+          0
+        );
+        calculateRefund(
+          orderDetails,
+          totalOrderBilling,
+          profilesDb,
+          medicineOrdersRepo,
+          updateOrderStatusInput.reasonCode
         );
       }
-      syncInventory(orderDetails, SYNC_TYPE.CANCEL);
+      // release inventory blocked
+      const medicineOrderStatus = shipmentDetails.medicineOrdersStatus;
+      const isOrderBilled = medicineOrderStatus.find((orderStatusObj) => {
+        return orderStatusObj.orderStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED;
+      });
+      // if billed, inventory release woould have happened already at the time of billing
+      if (!isOrderBilled) {
+        orderDetails.medicineOrderLineItems = await medicineOrdersRepo.getMedicineOrderLineItemByOrderId(
+          orderDetails.id
+        );
+        if (shipmentDetails) {
+          const itemDetails: ItemDetails[] = JSON.parse(shipmentDetails.itemDetails);
+          orderDetails.medicineOrderLineItems = orderDetails.medicineOrderLineItems.filter(
+            (lineItem) => {
+              return itemDetails.find((inputItem) => {
+                return inputItem.itemId == lineItem.medicineSKU;
+              });
+            }
+          );
+        }
+        syncInventory(orderDetails, SYNC_TYPE.CANCEL);
+      }
     }
   }
 

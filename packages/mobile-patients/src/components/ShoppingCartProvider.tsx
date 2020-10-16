@@ -69,6 +69,7 @@ export interface EPrescription {
 
 export interface PharmaCoupon extends validatePharmaCoupon_validatePharmaCoupon {
   coupon: string;
+  message?: string;
   discount: number;
   valid: boolean;
   reason: String;
@@ -97,6 +98,7 @@ export interface ShoppingCartContextProps {
   updateCartItem:
     | ((itemUpdates: Partial<ShoppingCartItem> & { id: ShoppingCartItem['id'] }) => void)
     | null;
+  getCartItemQty: (id: string) => number;
   cartTotal: number;
   cartTotalOfRxProducts: number;
   couponDiscount: number;
@@ -166,6 +168,7 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   addMultipleCartItems: null,
   removeCartItem: null,
   updateCartItem: null,
+  getCartItemQty: () => 0,
   cartTotal: 0,
   cartTotalOfRxProducts: 0,
   couponDiscount: 0,
@@ -353,7 +356,18 @@ export const ShoppingCartProvider: React.FC = (props) => {
 
   const removeCartItem: ShoppingCartContextProps['removeCartItem'] = (id) => {
     const newCartItems = cartItems.filter((item) => item.id !== id);
-    setCartItems(newCartItems);
+    const newCartTotal = 
+      newCartItems.reduce(
+        (currTotal, currItem) =>
+          currTotal + currItem.quantity * 
+            (typeof currItem.specialPrice !== 'undefined' ? currItem.specialPrice : currItem.price),
+        0
+      );
+    if (newCartTotal <= 0){
+      setCartItems([]);
+    } else {
+      setCartItems(newCartItems);
+    }
   };
   const updateCartItem: ShoppingCartContextProps['updateCartItem'] = (itemUpdates) => {
     const foundIndex = cartItems.findIndex((item) => item.id == itemUpdates.id);
@@ -363,9 +377,27 @@ export const ShoppingCartProvider: React.FC = (props) => {
         g(currentPatient, 'id')
       );
       cartItems[foundIndex] = { ...cartItems[foundIndex], ...itemUpdates };
-      setCartItems([...cartItems]);
+      const newCartTotal = 
+        cartItems.reduce(
+          (currTotal, currItem) =>
+            currTotal + currItem.quantity * 
+              (
+                typeof currItem.specialPrice !== 'undefined' ? 
+                (currItem.isFreeCouponProduct && currItem.quantity === 1) ? 0 : currItem.specialPrice : 
+                currItem.price
+              ),
+          0
+        );
+      if (newCartTotal <= 0){
+        setCartItems([]);
+      } else {
+        setCartItems([...cartItems]);
+      }
     }
   };
+
+  const getCartItemQty: ShoppingCartContextProps['getCartItemQty'] = (id) =>
+    cartItems.find(({ id: cId }) => cId == id)?.quantity || 0;
 
   const setCouponProducts: ShoppingCartContextProps['setCouponProducts'] = (items) => {
     _setCouponProducts(items);
@@ -385,10 +417,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   );
 
   const deliveryCharges =
-    !deliveryType || deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP || isFreeDelivery
+    isFreeDelivery || deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
       ? 0
-      : deliveryType == MEDICINE_DELIVERY_TYPE.HOME_DELIVERY &&
-        cartTotal > 0 &&
+      : cartTotal > 0 &&
         cartTotal - productDiscount - couponDiscount <
           AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY
       ? AppConfig.Configuration.DELIVERY_CHARGES
@@ -494,14 +525,18 @@ export const ShoppingCartProvider: React.FC = (props) => {
     updateCartItemsFromStorage();
   }, []);
 
-  const getDiscountPrice = (
-    cartItem: ShoppingCartItem,
-    lineItems: validatePharmaCoupon_validatePharmaCoupon_pharmaLineItemsWithDiscountedPrice[]
-  ) => {
+  function formatNumber(value: number | string) {
+    return Number(Number(value).toFixed(2));
+  }
+
+  const getDiscountPrice = (cartItem: ShoppingCartItem, lineItems: CartProduct[]) => {
     const foundItem = lineItems.find((item) => item.sku == cartItem.id);
-    return foundItem
+    return foundItem && foundItem.discountAmt != 0
       ? foundItem.onMrp
-        ? foundItem.mrp - foundItem.discountAmt
+        ? formatNumber(foundItem!.discountAmt) >
+          formatNumber(foundItem!.mrp - foundItem!.specialPrice)
+          ? foundItem.mrp - foundItem.discountAmt
+          : undefined
         : foundItem.specialPrice - foundItem.discountAmt
       : undefined;
   };
@@ -526,12 +561,15 @@ export const ShoppingCartProvider: React.FC = (props) => {
       );
 
     if (coupon) {
+      let couponDiscount: number = coupon?.discount;
       if (
-        g(coupon, 'discount') != 0 &&
-        g(coupon, 'discount') > deductProductDiscount(coupon.products)
+        couponDiscount != 0 &&
+        Number(couponDiscount) - Number(deductProductDiscount(coupon.products)) > 0.1
       ) {
-        setCouponDiscount(g(coupon, 'discount') - deductProductDiscount(coupon.products) || 0);
-        setProductDiscount(productDiscount);
+        setCouponDiscount(
+          Number(couponDiscount) - Number(deductProductDiscount(coupon.products)) || 0
+        );
+        setProductDiscount(getProductDiscount(coupon.products) || 0);
         setCartItems(
           cartItems.map((item) => ({
             ...item,
@@ -540,7 +578,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
         );
       } else {
         setCouponDiscount(0);
-        setProductDiscount(productDiscount);
+        setProductDiscount(getProductDiscount(coupon.products) || 0);
         setCartItems(
           cartItems.map((item) => ({
             ...item,
@@ -559,11 +597,11 @@ export const ShoppingCartProvider: React.FC = (props) => {
     let discount = 0;
     products &&
       products.forEach((item) => {
-        if (item.onMrp) {
-          discount = discount + (item.mrp - (item.specialPrice || item.mrp)) * item.quantity;
+        if (item.mrp != item.specialPrice && item.onMrp) {
+          discount = discount + (item.mrp - item.specialPrice) * item.quantity;
         }
       });
-    return discount;
+    return Number(discount).toFixed(2);
   };
 
   const getProductDiscount = (products: CartProduct[]) => {
@@ -571,7 +609,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     products &&
       products.forEach((item) => {
         let quantity = item.quantity;
-        if (item.couponFree) {
+        if (!!item.couponFree) {
           quantity = 1; // one free product
           discount = discount + item.mrp * quantity;
         } else if (item.mrp != item.specialPrice) {
@@ -604,6 +642,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
         addMultipleCartItems,
         removeCartItem,
         updateCartItem,
+        getCartItemQty,
         cartTotal, // MRP Total
         cartTotalOfRxProducts,
         grandTotal,

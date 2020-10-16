@@ -58,6 +58,7 @@ export interface ButtonProps {
   style?: StyleProp<ViewStyle>;
   children?: React.ReactNode;
   onPressBack?: () => void;
+  removeTopIcon?: boolean;
 }
 
 export const BottomPopUp: React.FC<ButtonProps> = (props) => {
@@ -72,7 +73,7 @@ export const BottomPopUp: React.FC<ButtonProps> = (props) => {
             <Text style={styles.congratulationsDescriptionStyle}>{props.description}</Text>
           )}
           {props.children}
-          <Mascot style={{ position: 'absolute', top: -32, right: 20 }} />
+          {!props.removeTopIcon && <Mascot style={{ position: 'absolute', top: -32, right: 20 }} />}
         </TouchableOpacity>
       </TouchableOpacity>
     </View>

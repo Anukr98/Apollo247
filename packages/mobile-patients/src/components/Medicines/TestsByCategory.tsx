@@ -14,14 +14,18 @@ import {
   CommonLogEvent,
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { SAVE_SEARCH, SEARCH_DIAGNOSTICS } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  SAVE_SEARCH,
+  SEARCH_DIAGNOSTICS_BY_CITY_ID,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import { getDiagnosticsData_getDiagnosticsData_diagnosticOrgans_diagnostics } from '@aph/mobile-patients/src/graphql/types/getDiagnosticsData';
 import { DIAGNOSTICS_TYPE, SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
-  searchDiagnostics,
-  searchDiagnosticsVariables,
-  searchDiagnostics_searchDiagnostics_diagnostics,
-} from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
+  searchDiagnosticsByCityID,
+  searchDiagnosticsByCityIDVariables,
+  searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics,
+} from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
+
 import { getPackageData, PackageInclusion } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   g,
@@ -106,7 +110,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
     getDiagnosticsData_getDiagnosticsData_diagnosticOrgans_diagnostics[]
   >(products || []);
   const [medicineList, setMedicineList] = useState<
-    searchDiagnostics_searchDiagnostics_diagnostics[]
+    searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
   >([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [searchSate, setsearchSate] = useState<'load' | 'success' | 'fail' | undefined>();
@@ -193,7 +197,12 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
   };
 
   const onAddCartItem = (
-    { itemId, collectionType, itemName, rate }: searchDiagnostics_searchDiagnostics_diagnostics,
+    {
+      itemId,
+      collectionType,
+      itemName,
+      rate,
+    }: searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics,
     testsIncluded: number
   ) => {
     postDiagnosticAddToCartEvent(itemName, `${itemId}`, rate, rate);
@@ -207,7 +216,9 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
     });
   };
 
-  const onRemoveCartItem = ({ itemId }: searchDiagnostics_searchDiagnostics_diagnostics) => {
+  const onRemoveCartItem = ({
+    itemId,
+  }: searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics) => {
     removeCartItem && removeCartItem(`${itemId}`);
   };
 
@@ -336,7 +347,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
   };
 
   const renderSearchSuggestionItemView = (
-    data: ListRenderItemInfo<searchDiagnostics_searchDiagnostics_diagnostics>
+    data: ListRenderItemInfo<searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics>
   ) => {
     const { index, item } = data;
     const imgUri = undefined; //`${config.IMAGES_BASE_URL[0]}${1}`;
@@ -349,6 +360,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
       fromAgeInDays,
       testPreparationData,
       toAgeInDays,
+      itemType,
     } = item;
     return renderSearchSuggestionItem({
       onPress: () => {
@@ -362,6 +374,8 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
             ToAgeInDays: toAgeInDays,
             collectionType: collectionType,
             preparation: testPreparationData,
+            source: 'Landing Page',
+            type: itemType,
           } as TestPackageForDetails,
         });
       },
@@ -464,9 +478,9 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
   };
 
   const renderMedicineCard = (
-    medicine: searchDiagnostics_searchDiagnostics_diagnostics,
+    medicine: searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics,
     index: number,
-    array: searchDiagnostics_searchDiagnostics_diagnostics[]
+    array: searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
   ) => {
     const medicineCardContainerStyle = [
       { marginBottom: 8, marginHorizontal: 20 },
@@ -503,6 +517,8 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
               FromAgeInDays: medicine!.fromAgeInDays,
               ToAgeInDays: medicine!.toAgeInDays,
               preparation: medicine!.testPreparationData,
+              source: 'Landing Page',
+              type: medicine!.itemType,
             } as TestPackageForDetails,
           });
         }}
@@ -605,19 +621,20 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
   const onSearchTest = (_searchText: string) => {
     setsearchSate('load');
     client
-      .query<searchDiagnostics, searchDiagnosticsVariables>({
-        query: SEARCH_DIAGNOSTICS,
+      .query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
+        query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
         variables: {
           searchText: _searchText,
-          city: locationForDiagnostics && locationForDiagnostics.city,
-          patientId: (currentPatient && currentPatient.id) || '',
+          cityID: parseInt(locationForDiagnostics?.cityId!, 10),
         },
         fetchPolicy: 'no-cache',
       })
       .then(({ data }) => {
         // aphConsole.log({ data });
-        const products = g(data, 'searchDiagnostics', 'diagnostics') || [];
-        setMedicineList(products as searchDiagnostics_searchDiagnostics_diagnostics[]);
+        const products = g(data, 'searchDiagnosticsByCityID', 'diagnostics') || [];
+        setMedicineList(
+          products as searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
+        );
         setsearchSate('success');
       })
       .catch((e) => {

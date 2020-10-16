@@ -27,6 +27,7 @@ import {
   CloseCal,
   SearchIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+
 const styles = StyleSheet.create({
   container: {
     // ...theme.viewStyles.container,
@@ -339,6 +340,7 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
   const renderFilterSection = (id: number) => {
     const sectionData = data[id];
     const { label, options, selectedOptions } = sectionData;
+    const ifAvailability = selectedOptions && id === 3;
     return (
       <>
         {label.length ? (
@@ -411,6 +413,7 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
                   setData(dataCopy);
 
                   setDate(date);
+                  setshowCalander(false);
                 }}
                 showWeekView={false}
               />
@@ -450,18 +453,47 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
                 }}
               />
             ))}
+          {ifAvailability &&
+            data[3].selectedOptions.map((name, index) =>
+              moment(name)! && moment(name).format('D MMM YYYY') === 'Invalid date' ? null : (
+                <Button
+                  title={moment(name).format('D MMM YYYY')}
+                  style={[
+                    styles.buttonStyle,
+                    selectedOptions.includes(name)
+                      ? { backgroundColor: theme.colors.APP_GREEN }
+                      : null,
+                    label === 'Availability' && id === 3 ? { marginRight: 10 } : null,
+                  ]}
+                  titleTextStyle={[
+                    styles.buttonTextStyle,
+                    selectedOptions.includes(name) ? { color: theme.colors.WHITE } : null,
+                  ]}
+                  onPress={() => {
+                    let selectedData = [...data][id]['selectedOptions'] || [];
+                    const dataCopy = [...data];
+
+                    if (selectedData.includes(name)) {
+                      selectedData = selectedData.filter((item: string) => item !== name);
+                    } else {
+                      selectedData.push(name);
+                    }
+                    dataCopy[id] = {
+                      ...dataCopy[id],
+                      selectedOptions: selectedData,
+                    };
+                    setData(dataCopy);
+                  }}
+                />
+              )
+            )}
           {label === 'Availability' ? (
             <TouchableOpacity
               style={{ position: 'absolute', right: 10, top: 15 }}
               activeOpacity={1}
               onPress={() => {
                 setshowCalander(!showCalander);
-                const selectedData = [];
-
-                if (!showCalander) {
-                  const selectedDate = moment(date).format('YYYY-MM-DD');
-                  selectedData.push(selectedDate);
-                }
+                const selectedData: string[] = [];
                 const dataCopy = [...data];
                 dataCopy[3] = {
                   ...dataCopy[3],

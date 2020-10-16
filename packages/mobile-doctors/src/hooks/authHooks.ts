@@ -17,6 +17,8 @@ export const useAuth = () => {
     setDoctorDetailsError,
     getSpecialties,
     specialties,
+    getHelplineNumbers,
+    helpLineNumbers,
   } = useContext(AuthContext);
   return {
     analytics,
@@ -32,5 +34,7 @@ export const useAuth = () => {
     setDoctorDetailsError,
     getSpecialties,
     specialties,
+    getHelplineNumbers,
+    helpLineNumbers,
   };
 };

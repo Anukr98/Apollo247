@@ -103,6 +103,17 @@ export const saveMedicineOrderOMSTypeDefs = gql`
     READY_AT_STORE
     PURCHASED_IN_STORE
     PAYMENT_ABORTED
+    ON_HOLD
+    READY_FOR_VERIFICATION
+    VERIFICATION_DONE
+    RETURN_PENDING
+    RETURN_TO_ORIGIN
+    RETURN_REQUESTED
+    RVP_ASSIGNED
+    RETURN_PICKUP
+    RETURN_RTO
+    READY_TO_SHIP
+    SHIPPED
   }
 
   type SaveMedicineOrderResult {
@@ -331,6 +342,13 @@ const saveMedicineOrderOMS: Resolver<
   };
   if (medicineCartOMSInput.shopId) {
     storeDetails = await getStoreDetails(medicineCartOMSInput.shopId);
+  }
+
+  if (medicineCartOMSInput.prescriptionImageUrl) {
+    const imgUrls = medicineCartOMSInput.prescriptionImageUrl.split(',');
+    if (imgUrls.some((url) => url.split('/').pop() == 'null')) {
+      throw new AphError(AphErrorMessages.INVALID_MEDICINE_PRESCRIPTION_URL, undefined, {});
+    }
   }
 
   const medicineOrderattrs: Partial<MedicineOrders> = {

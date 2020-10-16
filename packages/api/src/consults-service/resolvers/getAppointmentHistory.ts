@@ -276,10 +276,19 @@ const getAppointmentData: Resolver<
   { appointmentId: string },
   ConsultServiceContext,
   AppointmentResult
-> = async (parent, args, { consultsDb, doctorsDb, mobileNumber }) => {
+> = async (parent, args, { consultsDb, patientsDb, mobileNumber }) => {
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointmentsHistory = await appointmentRepo.findByAppointmentId(args.appointmentId);
   if (appointmentsHistory == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const patientIdCheck = patientRepo.checkMobileIdInfo(
+    mobileNumber,
+    '',
+    appointmentsHistory[0].patientId
+  );
+  if (!patientIdCheck) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
+  }
   return { appointmentsHistory };
 };
 

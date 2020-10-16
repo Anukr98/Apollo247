@@ -46,6 +46,7 @@ export const addPatientAddressTypeDefs = gql`
     latitude: Float
     longitude: Float
     stateCode: String
+    defaultAddress: Boolean
   }
 
   type PatientAddress {
@@ -54,6 +55,7 @@ export const addPatientAddressTypeDefs = gql`
     addressLine1: String
     addressLine2: String
     city: String
+    defaultAddress: Boolean
     mobileNumber: String
     state: String
     zipcode: String
@@ -90,6 +92,7 @@ export const addPatientAddressTypeDefs = gql`
       UpdatePatientAddressInput: UpdatePatientAddressInput
     ): AddPatientAddressResult
     deletePatientAddress(id: String): DeletePatientAddressResult!
+    makeAdressAsDefault(patientAddressId: ID!): AddPatientAddressResult
   }
 `;
 type PatientAddressInput = {
@@ -124,6 +127,7 @@ type UpdatePatientAddressInput = {
   latitude: number;
   longitude: number;
   stateCode: string;
+  defaultAddress: boolean;
 };
 
 type PatientAddressInputArgs = { PatientAddressInput: PatientAddressInput };
@@ -147,8 +151,19 @@ const getPatientAddressList: Resolver<
   ProfilesServiceContext,
   patientAddressListResult
 > = async (parent, args, { profilesDb }) => {
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patientRepo.getPatientDetails(args.patientId);
+  if (!patientDetails) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  }
   const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
-  const addressList = await patientAddressRepo.getPatientAddressList(args.patientId);
+  const patients = await patientRepo.getIdsByMobileNumber(patientDetails.mobileNumber);
+  const addressResps = await Promise.all(
+    patients.map((patient) => {
+      return patientAddressRepo.getPatientAddressList(patient.id);
+    })
+  );
+  const addressList = addressResps.reduce((acc, addressResp) => acc.concat(addressResp), []);
   return { addressList };
 };
 
@@ -170,8 +185,17 @@ const updatePatientAddress: Resolver<
   UpdatePatientAddressInputArgs,
   ProfilesServiceContext,
   AddPatientAddressResult
-> = async (parent, { UpdatePatientAddressInput }, { profilesDb }) => {
+> = async (parent, { UpdatePatientAddressInput }, { profilesDb, mobileNumber }) => {
   const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
+  const patientAddressDetails = await patientAddressRepo.findById(UpdatePatientAddressInput.id);
+  if (!patientAddressDetails)
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
+
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patientRepo.getPatientDetails(patientAddressDetails.patientId);
+  if (!patientDetails || patientDetails.mobileNumber != mobileNumber)
+    throw new AphError(AphErrorMessages.UNAUTHORIZED, undefined, {});
+
   if (
     UpdatePatientAddressInput.latitude &&
     UpdatePatientAddressInput.longitude &&
@@ -182,9 +206,14 @@ const updatePatientAddress: Resolver<
     UpdatePatientAddressInput.latitude = UpdatePatientAddressInput.longitude;
     UpdatePatientAddressInput.longitude = latitude;
   }
+
   const updatePatientAddressAttrs: Omit<UpdatePatientAddressInput, 'id'> = {
     ...UpdatePatientAddressInput,
   };
+
+  if (updatePatientAddressAttrs.defaultAddress)
+    await patientAddressRepo.markPatientAdrressAsNonDefault(patientAddressDetails.patientId);
+
   const patientAddress = await patientAddressRepo.updatePatientAddress(
     UpdatePatientAddressInput.id,
     updatePatientAddressAttrs
@@ -243,11 +272,46 @@ const savePatientAddress: Resolver<
   return { patientAddress };
 };
 
+const makeAdressAsDefault: Resolver<
+  null,
+  { patientAddressId: string },
+  ProfilesServiceContext,
+  AddPatientAddressResult
+> = async (parent, args, { profilesDb, mobileNumber }) => {
+  //check patientAddressId is valid or not
+  const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
+  const patientAddressDetails = await patientAddressRepo.findById(args.patientAddressId);
+  if (!patientAddressDetails)
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
+
+  if (patientAddressDetails.defaultAddress) return { patientAddress: patientAddressDetails };
+
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patientRepo.getPatientDetails(patientAddressDetails.patientId);
+  if (!patientDetails || patientDetails.mobileNumber != mobileNumber)
+    throw new AphError(AphErrorMessages.UNAUTHORIZED, undefined, {});
+
+  //make rest of them as non default
+  await patientAddressRepo.markPatientAdrressAsNonDefault(patientAddressDetails.patientId);
+
+  const address: Partial<PatientAddress> = {
+    defaultAddress: true,
+  };
+
+  const patientAddress = (await patientAddressRepo.updatePatientAddress(
+    args.patientAddressId,
+    address
+  )) as PatientAddress;
+
+  return { patientAddress };
+};
+
 export const addPatientAddressResolvers = {
   Mutation: {
     savePatientAddress,
     updatePatientAddress,
     deletePatientAddress,
+    makeAdressAsDefault,
   },
   Query: {
     getPatientAddressList,
