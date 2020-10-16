@@ -249,38 +249,38 @@ export async function sendCallsNotification(
     console.log(dataOnlyPayloadResponse, 'dataOnlyPayloadResponse');
   }
 
-  admin
-    .messaging()
-    .sendToDevice(registrationToken, payload, options)
-    .then((response: PushNotificationSuccessMessage) => {
-      notificationPayloadResponse = response;
-      if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
-        const fileName =
-          process.env.NODE_ENV + '_callnotification_' + format(new Date(), 'yyyyMMdd') + '.txt';
-        let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
-        if (process.env.NODE_ENV != 'local') {
-          assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
-        }
-        let content =
-          format(new Date(), 'yyyy-MM-dd hh:mm') +
-          '\n apptid: ' +
-          pushNotificationInput.appointmentId +
-          '\n multicastId: ';
-        content +=
-          response.multicastId.toString() +
-          '\n------------------------------------------------------------------------------------\n';
-        fs.appendFile(assetsDir + '/' + fileName, content, (err) => {
-          if (err) {
-            console.log('file saving error', err);
-          }
-          console.log('notification results saved');
-        });
-      }
-    })
-    .catch((error: JSON) => {
-      console.log('PushNotification Failed::' + error);
-      throw new AphError(AphErrorMessages.PUSH_NOTIFICATION_FAILED);
-    });
+  // admin
+  //   .messaging()
+  //   .sendToDevice(registrationToken, payload, options)
+  //   .then((response: PushNotificationSuccessMessage) => {
+  //     notificationPayloadResponse = response;
+  //     if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
+  //       const fileName =
+  //         process.env.NODE_ENV + '_callnotification_' + format(new Date(), 'yyyyMMdd') + '.txt';
+  //       let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+  //       if (process.env.NODE_ENV != 'local') {
+  //         assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
+  //       }
+  //       let content =
+  //         format(new Date(), 'yyyy-MM-dd hh:mm') +
+  //         '\n apptid: ' +
+  //         pushNotificationInput.appointmentId +
+  //         '\n multicastId: ';
+  //       content +=
+  //         response.multicastId.toString() +
+  //         '\n------------------------------------------------------------------------------------\n';
+  //       fs.appendFile(assetsDir + '/' + fileName, content, (err) => {
+  //         if (err) {
+  //           console.log('file saving error', err);
+  //         }
+  //         console.log('notification results saved');
+  //       });
+  //     }
+  //   })
+  //   .catch((error: JSON) => {
+  //     console.log('PushNotification Failed::' + error);
+  //     throw new AphError(AphErrorMessages.PUSH_NOTIFICATION_FAILED);
+  //   });
 
   console.log(notificationPayloadResponse, 'notificationPayloadResponse');
 
@@ -659,7 +659,7 @@ export async function sendReminderNotification(
   if (
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15 ||
     pushNotificationInput.notificationType ==
-      NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
+    NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
   ) {
     if (!(appointment && appointment.id)) {
       throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND);
