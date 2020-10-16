@@ -53,6 +53,7 @@ import { Prescriptions } from '@aph/mobile-patients/src/components/MedicineCart/
 import { UploadPrescription } from '@aph/mobile-patients/src/components/MedicineCart/Components/UploadPrescription';
 import { UnServiceable } from '@aph/mobile-patients/src/components/MedicineCart/Components/UnServiceable';
 import { SuggestProducts } from '@aph/mobile-patients/src/components/MedicineCart/Components/SuggestProducts';
+import { EmptyCart } from '@aph/mobile-patients/src/components/MedicineCart/Components/EmptyCart';
 import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
@@ -779,8 +780,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   const renderUnServiceable = () => {
     return <UnServiceable style={{ marginTop: 24 }} />;
   };
-  return (
-    <View style={{ flex: 1 }}>
+
+  const renderScreen = () => {
+    return (
       <SafeAreaView style={theme.viewStyles.container}>
         <ScrollView contentContainerStyle={{ paddingBottom: 200 }}>
           {renderHeader()}
@@ -797,8 +799,22 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         {renderProceedBar()}
         {loading && <Spinner />}
       </SafeAreaView>
-    </View>
-  );
+    );
+  };
+
+  const renderEmptyCart = () => {
+    return (
+      <SafeAreaView style={theme.viewStyles.container}>
+        {renderHeader()}
+        <EmptyCart
+          onPressAddMedicines={() => {
+            props.navigation.navigate('MEDICINES');
+          }}
+        />
+      </SafeAreaView>
+    );
+  };
+  return <View style={{ flex: 1 }}>{cartItems?.length ? renderScreen() : renderEmptyCart()}</View>;
 };
 
 const styles = StyleSheet.create({
