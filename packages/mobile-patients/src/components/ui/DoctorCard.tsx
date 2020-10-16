@@ -145,9 +145,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     }
   }, [currentPatient]);
 
-
   const client = useApolloClient();
-
 
   const navigateToDetails = (id: string, params?: {}) => {
     if (props.saveSearch) {
@@ -245,8 +243,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           try {
             if (rowData.doctorType === DoctorType.PAYROLL) {
               const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CONNECT_CARD_CLICK] = {
-                'Online Price': Number(g(rowData, 'onlineConsultationFees')),
-                'Physical Price': Number(g(rowData, 'physicalConsultationFees')),
+                Fee: Number(rowData?.fee),
                 'Doctor Speciality': g(rowData, 'specialty', 'name')!,
                 'Doctor Name': g(rowData, 'fullName')!,
                 Source: 'List',
