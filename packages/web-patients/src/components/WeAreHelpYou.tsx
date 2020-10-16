@@ -111,7 +111,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     helpSection: {
-      paddingTop: 16,
+      paddingTop: 30,
       '& h3': {
         fontSize: 12,
         fontWeight: 500,
@@ -188,7 +188,7 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 700,
         color: '#07AE8B',
         textTransform: 'uppercase',
-        margin: '0 0 10px',
+        // margin: '0 0 10px',
       },
     },
     hcDetails: {
@@ -231,6 +231,34 @@ const useStyles = makeStyles((theme: Theme) => {
     pt0: {
       paddingTop: 0,
     },
+    vcContainer:{
+      display: 'flex',
+      alignItems: 'center',
+      [theme.breakpoints.down('sm')]: {
+        alignItems: 'flex-start'
+      },
+      '& img':{
+        margin: '0 30px 0 0',
+        [theme.breakpoints.down('sm')]: {
+          margin: '0 20px 0 0'
+        }
+      }
+    },
+    vcDetails:{
+      width: '100%',
+      '& a':{
+        boxShadow: 'none',
+        [theme.breakpoints.down('sm')]: {
+          marginLeft: 'auto',
+          display: 'block'
+        },
+      },
+      '& p':{
+        [theme.breakpoints.down('sm')]: {
+        width: '100% !important',
+        }
+      }
+    }
   };
 });
 
@@ -252,7 +280,7 @@ export const WeAreHelpYou: React.FC = (props) => {
         >
           <div className={classes.contentGroup}>
             <img src={require('images/h-medicine.svg')} alt="" />
-            <div className={classes.title}>Health Articles & Resources</div>
+            <div className={classes.title}>Health Articles &amp; Resources</div>
             <p>Make better health choices with our curated blogs, videos and expert advice.</p>
           </div>
           {/* <div className={classes.rightGroup}>
@@ -283,6 +311,25 @@ export const WeAreHelpYou: React.FC = (props) => {
                 <img src={'images/covid.svg'} alt="" />
                 Learn About COVID-19
               </AphButton>
+            </div>
+            </div>
+            <div className={classes.hcContent}>
+              <div className={classes.vcContainer}>
+                <img src={require('images/vaccine-tracker.svg')} />
+              <div className={classes.vcDetails}>
+              <Typography component="h3">COVID-19 Vaccine Tracker</Typography>
+                <div className={classes.hcDetails}>
+                  <Typography>
+                  Get updates and know which is the first vaccine to come out.
+                  </Typography>
+                  <AphButton href={clientRoutes.covidLanding()}>
+                  Know More                
+                  </AphButton>
+              </div>
+             
+              
+           
+             
             </div>
           </div>
           <div className={classes.helpSection}>
@@ -344,8 +391,8 @@ export const WeAreHelpYou: React.FC = (props) => {
           </div>
         </div>
       </div>
-
-      <AphDialog open={iscoronaDialogOpen} maxWidth="sm">
+      </div>
+            <AphDialog open={iscoronaDialogOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIscoronaDialogOpen(false)} title={'Close'} />
         <AphDialogTitle></AphDialogTitle>
         <div className={classes.expertBox}>
