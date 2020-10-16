@@ -236,11 +236,17 @@ const CovidLanding: React.FC = (props: any) => {
   const isDesktopOnly = useMediaQuery('(min-width:768px)');
   const headingArr = [
     {
+      heading: 'How close are we to a COVID-19 vaccine?',
+      subheading: 'Get the latest news, articles and updates related to the COVID-19 vaccine.',
+      category: 'vaccine-tracker',
+      defaultExpanded: true,
+    },
+    {
       heading: 'How can I stay safe?',
       subheading:
         'Articles and videos on precautions and protective measures to avoid Coronavirus.',
       category: 'stay-safe',
-      defaultExpanded: true,
+      defaultExpanded: false,
     },
     {
       heading: 'What to do if I have symptoms',
@@ -252,12 +258,6 @@ const CovidLanding: React.FC = (props: any) => {
       heading: 'How are we getting ahead?',
       subheading: 'Learn about the efforts around the world to win over Coronavirus.',
       category: 'going-ahead',
-      defaultExpanded: false,
-    },
-    {
-      heading: 'How close are we to a COVID-19 vaccine?',
-      subheading: 'Get the latest news, articles and updates related to the COVID-19 vaccine.',
-      category: 'vaccine-tracker',
       defaultExpanded: false,
     },
   ];
