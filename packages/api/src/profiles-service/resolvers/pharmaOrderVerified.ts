@@ -113,7 +113,7 @@ const saveOrderVerified: Resolver<
     tatType = '',
     allocationProfile = '',
     clusterId = '';
-  if (orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER) {
+  if (orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION) {
     tat = '16-Oct-2020 14:30';
     siteId = '15732';
     tatType = 'Hub';
