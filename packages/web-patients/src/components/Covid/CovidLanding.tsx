@@ -254,6 +254,12 @@ const CovidLanding: React.FC = (props: any) => {
       category: 'going-ahead',
       defaultExpanded: false,
     },
+    {
+      heading: 'How close are we to a COVID-19 vaccine?',
+      subheading: 'Get the latest news, articles and updates related to the COVID-19 vaccine.',
+      category: 'vaccine-tracker',
+      defaultExpanded: false,
+    },
   ];
   interface CovidContentInterface {
     [key: string]: any;
@@ -303,10 +309,15 @@ const CovidLanding: React.FC = (props: any) => {
       const sortedStaySafeData = !_isEmpty(body['stay-safe']) && body['stay-safe'];
       const sortedCovidSymptomsData = !_isEmpty(body['covid-symptoms']) && body['covid-symptoms'];
       const sortedGoingAheadData = !_isEmpty(body['going-ahead']) && body['going-ahead'];
+      const sortedCovidVaccineUpdateData =
+        !_isEmpty(body['vaccine-tracker']) && body['vaccine-tracker'];
+
       let covidObj: CovidContentInterface = {};
       covidObj['stay-safe'] = sortedStaySafeData;
       covidObj['covid-symptoms'] = sortedCovidSymptomsData;
       covidObj['going-ahead'] = sortedGoingAheadData;
+      covidObj['vaccine-tracker'] = sortedCovidVaccineUpdateData;
+
       covidObj['total-term'] = body['totalterm'];
       setCovidContent(covidObj);
     });
