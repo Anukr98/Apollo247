@@ -2819,4 +2819,12 @@ export class MedicineOrderHoldReasons extends BaseEntity {
 
   @Column({ nullable: true })
   showOnHold: boolean;
+
+  @Column({ nullable: true, type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  updatedDate: Date;
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
 }

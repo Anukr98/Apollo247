@@ -8,11 +8,12 @@ export class APP44541602837734354 implements MigrationInterface {
             "reUploadPrescription" boolean,
             "enableChatSupport" boolean,
             "showOnHold" boolean,
-            "diplayText" varchar,
-            "createdDate" TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+            "displayText" varchar,
+            "createdDate" TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+            "updatedDate" TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
         )`);
     if (process.env.NODE_ENV !== 'production') {
-      await queryRunner.query(`INSERT INTO medicine_order_hold_reasons ("reasonCode", "reUploadPrescription", "enableChatSupport", "showOnHold", "diplayText") values 
+      await queryRunner.query(`INSERT INTO medicine_order_hold_reasons ("reasonCode", "reUploadPrescription", "enableChatSupport", "showOnHold", "displayText") values 
       ('RS2111', true,  true, true, 'Your Order is On Hold as your prescription is expired. Please re-upload a valid prescription within last 1 year.'),
       ('RS2112', false, false, false, null),
       ('RS2113', false, true, true, 'We were unable to reach you. Please chat with our Agent to provide necessary details so we can process your order faster');`);
