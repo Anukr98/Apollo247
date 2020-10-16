@@ -114,7 +114,7 @@ export const ProductList: React.FC<Props> = ({
           ? styles.itemEndContainer
           : styles.itemContainer,
     };
-
+    
     return renderComponent ? (
       renderComponent({ ...info, item: props })
     ) : Component ? (

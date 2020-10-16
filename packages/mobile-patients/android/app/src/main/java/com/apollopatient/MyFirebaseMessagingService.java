@@ -100,9 +100,9 @@ public class MyFirebaseMessagingService
                     if(remoteMessage.getData().get("author") != null){
                         VitaTasksNotificationsManager.INSTANCE.createNotificationTwilio(this, remoteMessage.getData());
                     } else  {
-                            (new io.invertase.firebase.messaging.RNFirebaseMessagingService()).onMessageReceived(remoteMessage);
+                        (new io.invertase.firebase.messaging.RNFirebaseMessagingService()).onMessageReceived(remoteMessage);
 
-                    }
+                }
 
 
                 } catch (Exception e) {
@@ -125,6 +125,7 @@ public class MyFirebaseMessagingService
                 i.putExtra("APPOINTMENT_ID",remoteMessage.getData().get("appointmentId"));
                 i.putExtra("CALL_TYPE",remoteMessage.getData().get("callType"));
                 i.putExtra("APP_STATE",isAppRunning);
+                i.putExtra("FALL_BACK",false);
                 startActivity(i);
         }else if(disconnectCallType.equals((notifDataType))){
             LocalBroadcastManager localBroadcastManager = LocalBroadcastManager
@@ -166,8 +167,9 @@ public class MyFirebaseMessagingService
         i.putExtra("APPOINTMENT_ID",remoteMessage.getData().get("appointmentId"));
         i.putExtra("CALL_TYPE",remoteMessage.getData().get("callType"));
         i.putExtra("APP_STATE",isAppRunning());
+        i.putExtra("FALL_BACK",true);
         PendingIntent fullScreenIntent = PendingIntent.getActivity(this, 0 /* Request code */, i,
-                PendingIntent.FLAG_ONE_SHOT);
+                PendingIntent.FLAG_CANCEL_CURRENT);
         //end
 
         //channel info start
@@ -207,7 +209,7 @@ public class MyFirebaseMessagingService
         Log.e("notificationBuilder", String.valueOf(notificationId));
         NotificationManager notificationManager =
             (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        
+
 
         int importance = NotificationManager.IMPORTANCE_MAX;
 

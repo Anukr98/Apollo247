@@ -690,7 +690,6 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
         '. Request you to answer the call.'
       );
     } else {
-      srollToBottomAction();
       return rowData.message;
     }
   };

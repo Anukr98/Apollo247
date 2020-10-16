@@ -290,12 +290,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   useEffect(() => {
     if (selectedTab == tabs[0].title) {
       if (
-        selectedTimeSlot &&
-        selectedTimeSlot!.slotInfo!.slot! &&
+        selectedTimeSlot?.slotInfo?.slot! &&
+        areaSelected &&
         deliveryAddressId != '' &&
         cartItems
       ) {
-        console.log('s');
         fetchHC_ChargesForTest(selectedTimeSlot!.slotInfo!.slot!);
       }
     } else {
@@ -333,7 +332,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       }
       postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_CART_VIEWED, eventAttributes);
     }
-  }, []);
+  }, [hcCharges]);
 
   const postwebEngageProceedToPayEvent = () => {
     const diffInDays = date.getDate() - new Date().getDate();
@@ -341,9 +340,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       'Patient Name selected': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Total items in cart': cartItems.length,
       'Sub Total': cartTotal,
-      'Delivery charge': deliveryCharges,
+      // 'Delivery charge': deliveryCharges,
       'Net after discount': grandTotal,
-      'Prescription Needed?': uploadPrescriptionRequired,
+      'Prescription Uploaded?': false, //from backend
+      'Prescription Mandatory?': uploadPrescriptionRequired,
       'Mode of Sample Collection': selectedTab === tabs[0].title ? 'Home Visit' : 'Clinic Visit',
       'Pin Code': pinCode,
       'Service Area': 'Diagnostic',
@@ -374,10 +374,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     );
   };
 
-  const setWebEngageEventForAreaSelection = () => {
+  const setWebEngageEventForAreaSelection = (item: areaObject) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_AREA_SELECTED] = {
       'Address Pincode': parseInt(selectedAddr?.zipcode!),
-      'Area Selected': areaSelected.value,
+      'Area Selected': item.value,
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_AREA_SELECTED, eventAttributes);
   };
@@ -712,6 +712,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                       collectionType: test.collectionMethod,
                       preparation: product.testPreparationData,
                       source: 'Cart Page',
+                      type: product.itemType,
                     } as TestPackageForDetails,
                   });
                 });
@@ -1005,7 +1006,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                         setDiagnosticSlot && setDiagnosticSlot(null);
                         setselectedTimeSlot(undefined);
 
-                        setDiagnosticAreas([]);
+                        setDiagnosticAreas!([]);
                         setAreaSelected!({});
 
                         // fetchAreasForAddress(id, pincode!);
@@ -1253,7 +1254,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               onPress={(item) => {
                 setAreaSelected!(item);
                 checkSlotSelection(item);
-                setWebEngageEventForAreaSelection();
+                setWebEngageEventForAreaSelection(item);
                 // checkServicability(selectedAddress);
               }}
             >

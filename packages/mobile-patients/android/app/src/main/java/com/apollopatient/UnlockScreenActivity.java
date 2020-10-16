@@ -94,10 +94,9 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
         this.ringtone= RingtoneManager.getRingtone(getApplicationContext(), incoming_call_notif);
         //ringtoneManager end
 
+        Boolean fallBack = intent.getBooleanExtra("FALL_BACK",true);
         if(notifMessageType.equals(incomingCallStart)){
-            if(!Settings.canDrawOverlays(this)){
-                return;
-            }else{
+            if(!fallBack) {
                 ringtone.setLooping(true);
                 ringtone.play();
             }

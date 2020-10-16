@@ -23,7 +23,6 @@ export enum ProductPageViewedSource {
   SIMILAR_PRODUCTS = 'similar products',
 }
 
-
 export enum WebEngageEventName {
   MOBILE_ENTRY = 'Mobile Entry',
   MOBILE_NUMBER_ENTERED = 'Mobile Number Entered',
@@ -117,7 +116,7 @@ export enum WebEngageEventName {
   // Diagnostics Events
   DIAGNOSTIC_LANDING_PAGE_VIEWED = 'Diagnostic Landing Page Viewed',
   DIAGNOSTIC_LANDING_ITEM_SEARCHED = 'Item searched in diagnsotic landing page',
-  DIAGNOSTIC_LANDING_ITEM_CLICKED_AFTER_SEARCH = "Item clicked in diagnostic landing page after search",
+  DIAGNOSTIC_LANDING_ITEM_CLICKED_AFTER_SEARCH = 'Item clicked in diagnostic landing page after search',
   DIAGNOSTIC_MY_ORDERS = 'Diagnostics - My Orders Viewed',
   DIAGNOSTIC_LANDING_PAGE_NON_SERVICEABLE = 'Diagnostic Landing Page Non Serviceable',
   DIAGNOSTIC_LANDING_PAGE_SERVICEABLE = 'Diagnostic Landing Page - Serviceable',
@@ -229,6 +228,7 @@ export enum WebEngageEventName {
   HDFC_DIGITAL_VAULT_CLICK = 'HDFC Digital Vault Click',
   HDFC_7000_DOCTORS_CLICK = 'HDFC 7000 Doctors Click',
   HDFC_FREE_MED_CHECK_CLICK = 'HDFC Free Med Check Click',
+  HDFC_PLAN_SUSBCRIBED = 'HDFC Plan Subscribed',
 
   // Opentok Events
   DOCTOR_SUBSCRIBER_ERROR = 'Doctor Subscriber Error',
@@ -299,9 +299,9 @@ export interface DiagnosticUserInfo {
 
 export interface DiagnosticServiceble {
   'Patient UHID': string;
-  'State': string ;
-  'City': string;
-  'PinCode Entered': number ;
+  State: string;
+  City: string;
+  'PinCode Entered': number;
 }
 
 export interface ConsultRoomDoctorPatientInfo {
@@ -398,7 +398,7 @@ export interface ReorderMedicine extends PatientInfo {
   source: string;
   orderType: 'Cart' | 'Non Cart' | 'Offline';
   noOfItemsNotAvailable?: number;
-} 
+}
 
 export interface ItemSearchedOnLanding extends DiagnosticUserInfo {
   'Keyword Entered': string;
@@ -406,13 +406,13 @@ export interface ItemSearchedOnLanding extends DiagnosticUserInfo {
   'Item in Results': object[];
 }
 
-export interface ItemClickedOnLanding extends DiagnosticUserInfo{
+export interface ItemClickedOnLanding extends DiagnosticUserInfo {
   'Item Clicked': object;
 }
 
-export interface DiagnosticPinCode extends DiagnosticUserInfo{
+export interface DiagnosticPinCode extends DiagnosticUserInfo {
   Method: string;
-  'Pincode': number | string; 
+  Pincode: number | string;
 }
 
 export interface WebEngageEvents {
@@ -546,7 +546,8 @@ export interface WebEngageEvents {
       | 'Pharmacy List'
       | 'Pharmacy Partial Search'
       | 'Pharmacy Full Search'
-      | 'Similar Widget';
+      | 'Similar Widget'
+      | 'Pharmacy Cart';
     Brand?: string;
     'Brand ID'?: string;
     'category name'?: string;
@@ -715,31 +716,32 @@ export interface WebEngageEvents {
     'Mobile Number': string;
   };
 
-  // ********** Diagnostic Events ******* 
+  // ********** Diagnostic Events *******
 
-  [WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED]:DiagnosticUserInfo;
-  [WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_SEARCHED]:ItemSearchedOnLanding;
-  [WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_CLICKED_AFTER_SEARCH]:ItemClickedOnLanding;
-  [WebEngageEventName.DIAGNOSTIC_MY_ORDERS]:{ //comment
+  [WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED]: DiagnosticUserInfo;
+  [WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_SEARCHED]: ItemSearchedOnLanding;
+  [WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_CLICKED_AFTER_SEARCH]: ItemClickedOnLanding;
+  [WebEngageEventName.DIAGNOSTIC_MY_ORDERS]: {
+    //comment
     'Patient UHID': string;
-    'Active Orders':number;
-    'Past Orders':number;
-  }
-  [WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_NON_SERVICEABLE]: DiagnosticServiceble
-  [WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_SERVICEABLE]:DiagnosticServiceble
-  [WebEngageEventName.DIAGNOSTIC_ADDRESS_NON_SERVICEABLE_CARTPAGE]:{
+    'Active Orders': number;
+    'Past Orders': number;
+  };
+  [WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_NON_SERVICEABLE]: DiagnosticServiceble;
+  [WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_SERVICEABLE]: DiagnosticServiceble;
+  [WebEngageEventName.DIAGNOSTIC_ADDRESS_NON_SERVICEABLE_CARTPAGE]: {
     'Patient UHID': string;
-    'State': string;
-    'City': string;
-    'PinCode': number;
-    'Number of items in cart':number;
-    'Items in cart': object[]; 
-  }
-  [WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED]:{
+    State: string;
+    City: string;
+    PinCode: number;
+    'Number of items in cart': number;
+    'Items in cart': object[];
+  };
+  [WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED]: {
     'OrderID:': string;
     'Sample Collection Date': string; //Date
-  }
-  [WebEngageEventName.DIAGNOSTIC_ENTER_DELIVERY_PINCODE_CLICKED]: DiagnosticPinCode
+  };
+  [WebEngageEventName.DIAGNOSTIC_ENTER_DELIVERY_PINCODE_CLICKED]: DiagnosticPinCode;
   [WebEngageEventName.FEATURED_TEST_CLICKED]: {
     'Product name': string;
     'Product id (SKUID)': string;
@@ -771,20 +773,21 @@ export interface WebEngageEvents {
     'Patient Name': string;
     'Item Name': string;
     'Item ID': string;
-    'Type': string;
+    Type: string;
   };
-  [WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION]:{
-    'Patient UHID' : string;
+  [WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION]: {
+    'Patient UHID': string;
     'Patient Name': string;
     Source: 'Search Page' | 'Landing Page' | 'Cart Page';
-    'Item Name': string,
-    'Item Type' : string,
+    'Item Name': string;
+    'Item Type': string;
     'Item Code': string;
-    'Item Price': number
+    'Item Price': number;
   };
-  
-  [WebEngageEventName.DIAGNOSTIC_CART_VIEWED]: { //this is already done
-    'Patient UHID' : string;
+
+  [WebEngageEventName.DIAGNOSTIC_CART_VIEWED]: {
+    //this is already done
+    'Patient UHID': string;
     'Patient Name': string;
     'Total items in cart': number;
     'Prescription Needed?': 'Mandatory' | 'Optional';
@@ -797,23 +800,25 @@ export interface WebEngageEvents {
     'Cart Items': object[];
     'Service Area': 'Pharmacy' | 'Diagnostic';
   };
-  [WebEngageEventName.DIAGNOSTIC_AREA_SELECTED]:{
+  [WebEngageEventName.DIAGNOSTIC_AREA_SELECTED]: {
     'Address Pincode': number;
     'Area Selected': string;
-  }
-  [WebEngageEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED]:{
+  };
+  [WebEngageEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED]: {
     'Address Pincode': number;
     'Area Selected': string;
     'Time Selected': string;
     'No of Days ahead of Order Date selected': number;
-  }
-  [WebEngageEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED]: { //already exists
+  };
+  [WebEngageEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED]: {
+    //already exists
     'Patient Name selected': string;
     'Total items in cart': number;
     'Sub Total': number;
-    'Delivery charge': number;
+    // 'Delivery charge': number;
     'Net after discount': number;
-    'Prescription Needed?': boolean;
+    'Prescription Uploaded?': boolean;
+    'Prescription Mandatory?': boolean;
     'Mode of Sample Collection': 'Home' | 'Pickup' | 'Home Visit' | 'Clinic Visit';
     'Delivery Date Time'?: string | Date; // Optional (only if Home)
     'Pin Code': string | number;
@@ -821,26 +826,26 @@ export interface WebEngageEvents {
     'Area Name': string;
     'No of Days ahead of Order Date selected': number;
     'Home collection charges'?: number;
-    'Discount'?:number;
-    'Collection Time Slot': string
+    Discount?: number;
+    'Collection Time Slot': string;
   };
-  [WebEngageEventName.DIAGNOSTIC_TRACK_ORDER_VIEWED]:{
-    'Patient UHID' : string;
+  [WebEngageEventName.DIAGNOSTIC_TRACK_ORDER_VIEWED]: {
+    'Patient UHID': string;
     'Patient Name': string;
     'Latest Order Status': string;
-    'Order ID': string 
-  }
-  [WebEngageEventName.DIAGNOSTIC_VIEW_REPORT_CLICKED]:{
-    'Patient UHID' : string;
+    'Order ID': string;
+  };
+  [WebEngageEventName.DIAGNOSTIC_VIEW_REPORT_CLICKED]: {
+    'Patient UHID': string;
     'Patient Name': string;
     'Order ID': string;
     'Order Date': Date;
     'Reports Generated On': Date;
   };
-  [WebEngageEventName.DIAGNOSTIC_FEEDBACK_GIVEN]:{
-    'Patient UHID' : string;
+  [WebEngageEventName.DIAGNOSTIC_FEEDBACK_GIVEN]: {
+    'Patient UHID': string;
     'Patient Name': string;
-    'Rating': string | number;
+    Rating: string | number;
     'Thing to Imporve selected': string;
   };
 
@@ -968,8 +973,7 @@ export interface WebEngageEvents {
     Rank?: number;
   };
   [WebEngageEventName.DOCTOR_CONNECT_CARD_CLICK]: {
-    'Online Price': number;
-    'Physical Price': number;
+    Fee: number;
     'Doctor Speciality': string;
     'Doctor Name': string;
     Source: 'List' | 'Profile';
@@ -1692,6 +1696,13 @@ export interface WebEngageEvents {
   [WebEngageEventName.HDFC_DIGITAL_VAULT_CLICK]: HdfcBenefitInfo;
   [WebEngageEventName.HDFC_7000_DOCTORS_CLICK]: HdfcBenefitInfo;
   [WebEngageEventName.HDFC_FREE_MED_CHECK_CLICK]: HdfcBenefitInfo;
+  [WebEngageEventName.HDFC_PLAN_SUSBCRIBED]: {
+    DOB: string;
+    'Email ID': string;
+    'Mobile Number': string;
+    'Partner ID': string;
+    'Plan Name': string;
+  };
 
   // ********** Opentok Events ********** \\
 

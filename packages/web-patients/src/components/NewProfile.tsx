@@ -24,6 +24,7 @@ import {
   webengageUserLoginTracking,
   webengageUserDetailTracking,
   HdfcUserSignupDetailTracking,
+  hdfcSignupDoneTracking,
 } from '../webEngageTracking';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { PARTNER_TP_REF_CODES } from 'helpers/constants';
@@ -309,6 +310,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                   });
                   /* webengage code end */
                   if (props.customSignUp.referral === 'HDFCBANK') {
+                    hdfcSignupDoneTracking();
                     HdfcUserSignupDetailTracking({
                       firstName: values.firstName,
                       lastName: values.lastName,

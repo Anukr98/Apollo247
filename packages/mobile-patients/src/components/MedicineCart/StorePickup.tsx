@@ -43,35 +43,35 @@ export const StorePickup: React.FC<StorePickupProps> = (props) => {
     setStoresInventory,
     cartItems,
     setCartItems,
+    addresses,
+    deliveryAddressId,
   } = useShoppingCart();
-  const { locationDetails } = useAppCommonData();
+  const { locationDetails, pharmacyLocation } = useAppCommonData();
 
   const [loading, setloading] = useState<boolean>(false);
-  const [zipcode, setzipcode] = useState<string>(pinCode);
   const [showDriveWayPopup, setShowDriveWayPopup] = useState<boolean>(false);
   const selectedStore =
     (storeId && storesFromContext.find((item) => item.storeid == storeId)) || undefined;
+  const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
   const isValidPinCode = (text: string): boolean => /^(\s*|[1-9][0-9]*)$/.test(text);
+  const pharmacyPincode =
+    selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
+  const [zipcode, setzipcode] = useState<string>(pharmacyPincode);
 
   useEffect(() => {
     setStoreId!('');
-    if (!pinCode) {
-      const location = locationDetails;
-      if (!(location && location.pincode)) {
-        doRequestAndAccessLocationModified()
-          .then((response) => {
-            if (response) {
-              fetchPickupStores(response.pincode || '');
-            }
-          })
-          .catch((e) => {
-            CommonBugFender('YourCart_getPlaceInfoByLatLng', e);
-          });
-      } else {
-        fetchPickupStores(location.pincode);
-      }
+    if (pharmacyPincode) {
+      fetchPickupStores(pharmacyPincode);
     } else {
-      fetchPickupStores(pinCode);
+      doRequestAndAccessLocationModified()
+        .then((response) => {
+          if (response) {
+            fetchPickupStores(response.pincode || '');
+          }
+        })
+        .catch((e) => {
+          CommonBugFender('YourCart_getPlaceInfoByLatLng', e);
+        });
     }
   }, []);
 

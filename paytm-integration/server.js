@@ -1,6 +1,5 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const Constants = require('./Constants');
 const axios = require('axios');
 const cors = require('cors');
 const ejs = require('ejs');
@@ -32,10 +31,8 @@ const {
 const listOfPaymentMethods = require('./consult-integrations/helpers/list-of-payment-method');
 
 const {
+  exotelCallEndHandler,
   getAddressDetails,
-  getCache,
-  CreateUserSubscription,
-  getCallDetails,
 } = require('./commons');
 const { getMedicineOrderQuery } = require('./pharma-integrations/helpers/medicine-order-query');
 const getPrescriptionUrls = require('./pharma-integrations/controllers/pharma-prescription-urls');
@@ -61,24 +58,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(express.static(__dirname + '/views'));
 app.set('view engine', 'ejs');
-app.post('/exotelCallEnd', async (req, res) => {
-  try {
-    const EXOTEL_HDFC_CALL_PREFIX = 'exotelcall:hdfc';
-
-    const { mobileNumber } = req.query;
-    const key = `${EXOTEL_HDFC_CALL_PREFIX}:${mobileNumber}`;
-    let callEndResponse = await getCache(key);
-    callEndResponse = JSON.parse(callEndResponse);
-    const { benefitId } = callEndResponse;
-    const callDetails = await getCallDetails(callEndResponse);
-    if (callDetails['Call']['Status'] == Constants.EXOTEL_CALL_END_STATUS.COMPLETED) {
-      await CreateUserSubscription(mobileNumber, benefitId);
-    }
-    res.json({ success: true });
-  } catch (error) {
-    throw new Error(error);
-  }
-});
+app.post('/exotelCallEnd', exotelCallEndHandler);
 app.get(
   '/deeplink',
   deeplink({
@@ -95,6 +75,8 @@ app.get(
     ios_store_link: 'https://apps.apple.com/in/app/apollo-doctor-247/id1507758016',
   })
 );
+
+app.patch('/update247PatientProfile', cronTabs.update247PatientProfile);
 
 app.post('/saveMedicineInfoRedis', cronTabs.saveMedicineInfoRedis);
 app.get('/sendCallStartNotification', cronTabs.sendCallStartNotification);
@@ -166,7 +148,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\nupdateUtilizationCapacity Response\n' +
         JSON.stringify(response.data.data.updateUtilizationCapacity) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -187,7 +169,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\nupdatePhrDocSummary Response\n' +
         JSON.stringify(response.data.data.updatePhrDocSummary) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -209,7 +191,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\ngetAvailableDoctorsCount Response\n' +
         JSON.stringify(response.data.data.getAvailableDoctorsCount) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -231,7 +213,7 @@ app.get('/invokeDashboardSummaries', (req, res) => {
         '\nupdateConsultRating Response\n' +
         JSON.stringify(response.data.data.updateConsultRating) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -266,7 +248,7 @@ app.get('/updateSpecialtyCount', (req, res) => {
         '\nupdateSpecialtyCount Response\n' +
         JSON.stringify(response.data.data.updateSpecialtyCount) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -305,7 +287,7 @@ app.get('/updateDoctorsAwayAndOnlineCount', (req, res) => {
         '\nupdateDoctorsAwayAndOnlineCount Response\n' +
         JSON.stringify(response.data.data.updateDoctorsAwayAndOnlineCount) +
         '\n-------------------\n';
-      fs.appendFile(fileName, content, function(err) {
+      fs.appendFile(fileName, content, function (err) {
         if (err) throw err;
         console.log('Updated!');
       });
@@ -442,10 +424,7 @@ app.get('/diagnosticpayment', (req, res) => {
             req.query.price
           )}|APOLLO247|${firstName}|${emailAddress}|||||||||||eCwWELxi`;
 
-          const hash = crypto
-            .createHash('sha512')
-            .update(code)
-            .digest('hex');
+          const hash = crypto.createHash('sha512').update(code).digest('hex');
 
           console.log('paymentCode==>', code);
           console.log('paymentHash==>', hash);
@@ -883,7 +862,7 @@ app.get('/processOrders', (req, res) => {
                   '\n---------------------------\n' +
                   JSON.stringify(pharmaInput) +
                   '\n-------------------\n';
-                fs.appendFile(fileName, content, function(err) {
+                fs.appendFile(fileName, content, function (err) {
                   if (err) throw err;
                   console.log('Updated!');
                 });
@@ -903,7 +882,7 @@ app.get('/processOrders', (req, res) => {
                     console.log('pharma resp', resp, resp.data.ordersResult);
                     //const orderData = JSON.parse(resp.data);
                     content = resp.data.ordersResult + '\n==================================\n';
-                    fs.appendFile(fileName, content, function(err) {
+                    fs.appendFile(fileName, content, function (err) {
                       if (err) throw err;
                       console.log('Updated!');
                     });
@@ -1134,8 +1113,7 @@ app.get('/processOmsOrders', (req, res) => {
                     );
                   } catch (e) {
                     logger.error(
-                      `Error while fetching prescription urls for orderid ${orderDetails.orderAutoId
-                      } ${JSON.stringify(e)}`
+                      `Error while fetching prescription urls for orderid ${orderDetails.orderAutoId} ${JSON.stringify(e)}`
                     );
                     res.send({
                       status: 'Failed',
@@ -1198,6 +1176,8 @@ app.get('/processOmsOrders', (req, res) => {
                   issubscribe: false,
                   tattype: orderDetails.tatType || '',
                   orderchannel: orderDetails.bookingSource || '',
+                  clusterid: orderDetails.clusterId || '',
+                  additionalmisc1: orderDetails.allocationProfileName || '',
                   customerdetails: {
                     billingaddress: deliveryAddress.trim(),
                     billingpincode: deliveryZipcode,
@@ -1637,7 +1617,7 @@ app.get('/processOrderById', (req, res) => {
             '\n---------------------------\n' +
             JSON.stringify(pharmaInput) +
             '\n-------------------\n';
-          fs.appendFile(fileName, content, function(err) {
+          fs.appendFile(fileName, content, function (err) {
             if (err) throw err;
             console.log('Updated!');
           });
@@ -1652,7 +1632,7 @@ app.get('/processOrderById', (req, res) => {
               console.log('pharma resp', resp, resp.data.ordersResult);
               //const orderData = JSON.parse(resp.data);
               content = resp.data.ordersResult + '\n==================================\n';
-              fs.appendFile(fileName, content, function(err) {
+              fs.appendFile(fileName, content, function (err) {
                 if (err) throw err;
                 console.log('Updated!');
               });

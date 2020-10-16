@@ -138,6 +138,7 @@ export class AphStorageClient {
     name?: Parameters<typeof BlobURL.fromContainerURL>[1];
     filePath: Parameters<typeof uploadFileToBlockBlob>[1];
   }) => {
+
     const blockBlobUrl = BlockBlobURL.fromBlobURL(
       BlobURL.fromContainerURL(this.containerUrl, name)
     );
@@ -145,6 +146,12 @@ export class AphStorageClient {
     const aphBlob: AphBlob = { ...blob, name };
     return aphBlob;
   };
+  downloadFile = async (
+    blobName: Parameters<typeof BlobURL.fromContainerURL>[1]
+  ) => {
+    const blobUrl = BlobURL.fromContainerURL(this.containerUrl, blobName);
+    return blobUrl.download(Aborter.none, 0)
+  }
 
   uploadPdfFile = async ({
     name = uuid(),
