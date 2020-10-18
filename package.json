@@ -14,8 +14,9 @@
     "reset": "npm run delete:package-lock && npm run bootstrap:web"
   },
   "devDependencies": {
-    "typescript": "3.5.2",
-    "lerna": "^3.15.0"
+    "apollo": "^2.31.0",
+    "lerna": "^3.15.0",
+    "typescript": "3.5.2"
   },
   "dependencies": {
     "@sendgrid/mail": "^7.1.1",
