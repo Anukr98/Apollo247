@@ -48,6 +48,8 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import isLessThan from 'semver/functions/lt';
+import coerce from 'semver/functions/coerce';
 import RNCallKeep from 'react-native-callkeep';
 import VoipPushNotification from 'react-native-voip-push-notification';
 import { string } from '../strings/string';
@@ -866,20 +868,21 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             );
           } catch (error) {}
 
-          if (Platform.OS === 'ios') {
-            const iosVersion = AppConfig.Configuration.iOS_Version;
-            const iosLatestVersion = getRemoteConfigValue('ios_Latest_version', snapshot);
-            const isMandatory: boolean = getRemoteConfigValue('ios_mandatory', snapshot);
-            if (`${iosLatestVersion}` > iosVersion) {
-              showUpdateAlert(isMandatory);
-            }
-          } else {
-            const androidVersion = AppConfig.Configuration.Android_Version;
-            const androidLatestVersion = getRemoteConfigValue('android_latest_version', snapshot);
-            const isMandatory: boolean = getRemoteConfigValue('Android_mandatory', snapshot);
-            if (`${androidLatestVersion}` > androidVersion) {
-              showUpdateAlert(isMandatory);
-            }
+          const { iOS_Version, Android_Version } = AppConfig.Configuration;
+          const isIOS = Platform.OS === 'ios';
+          const appVersion = coerce(isIOS ? iOS_Version : Android_Version)?.version;
+          const appLatestVersionFromConfig = getRemoteConfigValue(
+            isIOS ? 'ios_Latest_version' : 'android_latest_version',
+            snapshot
+          );
+          const appLatestVersion = coerce(appLatestVersionFromConfig)?.version;
+          const isMandatory: boolean = getRemoteConfigValue(
+            isIOS ? 'ios_mandatory' : 'Android_mandatory',
+            snapshot
+          );
+
+          if (appVersion && appLatestVersion && isLessThan(appVersion, appLatestVersion)) {
+            showUpdateAlert(isMandatory);
           }
         })
         .catch((error) => {

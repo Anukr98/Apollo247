@@ -9,6 +9,7 @@ import {
   MEDICINE_ORDER_TYPE,
   MedicineOrderShipments,
   MedicineOrderCancelReason,
+  MedicineOrderHoldReasons,
   MedicineOrderAddress,
   MEDICINE_ORDER_PAYMENT_TYPE,
   MEDICINE_DELIVERY_TYPE,
@@ -632,6 +633,16 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       where: { reasonCode },
     }).catch((medicineOrderError) => {
       throw new AphError(AphErrorMessages.GET_MEDICINE_ORDER_CANCEL_REASONS_ERROR, undefined, {
+        medicineOrderError,
+      });
+    });
+  }
+
+  getMedicineOrderHoldReasonByCode(reasonCode: String) {
+    return MedicineOrderHoldReasons.findOne({
+      where: { reasonCode },
+    }).catch((medicineOrderError) => {
+      throw new AphError(AphErrorMessages.GET_MEDICINE_ORDER_HOLD_REASON_ERROR, undefined, {
         medicineOrderError,
       });
     });

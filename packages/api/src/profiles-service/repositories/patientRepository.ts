@@ -254,15 +254,9 @@ export class PatientRepository extends Repository<Patient> {
     return await this.getPatientConsultCache(id);
   }
 
-  async updatePatientDetailsConsultCache(patient: Patient) {
-    await delCache(`${REDIS_PATIENT_CONSULT_KEY_PREFIX}${patient.id}`);
-    const patientString = JSON.stringify(patient);
-    setCache(
-      `${REDIS_PATIENT_CONSULT_KEY_PREFIX}${patient.id}`,
-      patientString,
-      ApiConstants.CACHE_EXPIRATION_3600
-    );
-    return patient;
+  async updatePatientDetailsConsultCache(id: string) {
+    await delCache(`${REDIS_PATIENT_CONSULT_KEY_PREFIX}${id}`);
+    return await this.getPatientConsultCache(id);
   }
 
   getPatientAddressById(id: PatientAddress['id']) {
@@ -591,9 +585,9 @@ export class PatientRepository extends Repository<Patient> {
     return uhidResp;
   }
 
-  // not used anywhere
+
   async updatePatientDetails(patientDetails: Patient) {
-    await this.save(patientDetails);
+    return this.save(patientDetails)
   }
 
   async getIdsByMobileNumber(mobileNumber: string) {
@@ -657,5 +651,11 @@ export class PatientRepository extends Repository<Patient> {
 
   findByUhid(uhid: string) {
     return this.findOne({ where: { uhid } });
+  }
+
+  async findByUhidAndMobile(uhid: string, mobileNumber: string) {
+    return this.findOne({
+      where: { uhid, mobileNumber }
+    });
   }
 }

@@ -21,6 +21,8 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '5px 0',
       margin: '0 10px 0 0',
       cursor: 'pointer',
+      position: 'relative',
+
       '& >img': {
         margin: '0 10px 0 0',
       },
@@ -61,6 +63,8 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down(700)]: {
         flexDirection: 'column',
         alignItems: 'flex-start',
+        padding: 20,
+        background: '#fff',
       },
     },
     cityActive: {
@@ -271,7 +275,16 @@ export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
             </Typography>
             <img src={require('images/ic_dropdown_green.svg')} alt="" />
           </div>
+          {locationPopup && (
+            <Cities
+              setSelectedCity={setSelectedCity}
+              locationPopup={locationPopup}
+              setLocationPopup={setLocationPopup}
+              selectedCity={selectedCity}
+            />
+          )}
         </div> */}
+
         <div className={classes.searchContainer}>
           <img src={require('images/ic-search.svg')} alt="" />
           <AphInput
@@ -361,14 +374,6 @@ export const SpecialtySearch: React.FC<SpecialtySearchProps> = (props) => {
             )}
         </div>
       </div>
-      {locationPopup && (
-        <Cities
-          setSelectedCity={setSelectedCity}
-          locationPopup={locationPopup}
-          setLocationPopup={setLocationPopup}
-          selectedCity={selectedCity}
-        />
-      )}
     </>
   );
 };

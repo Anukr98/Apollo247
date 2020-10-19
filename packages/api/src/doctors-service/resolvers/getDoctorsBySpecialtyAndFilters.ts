@@ -91,6 +91,10 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
     id: String
     name: String
     specialtydisplayName: String
+    specialistPluralTerm: String
+    image: String
+    shortDescription: String
+    symptoms: String
   }
   type DoctorSlotAvailability {
     doctorId: String
@@ -141,6 +145,10 @@ type Specialty = {
   id: string;
   name: string;
   specialtydisplayName: string;
+  specialistPluralTerm: string;
+  image: string;
+  shortDescription: string;
+  symptoms: string;
 };
 
 type DefaultfilterType = {
@@ -275,8 +283,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
 
   const finalDoctorNextAvailSlots: DoctorSlotAvailability[] = [],
     finalDoctorsConsultModeAvailability: DoctorConsultModeAvailability[] = [];
-  const finalSpecialtyDetails: any = [];
-  let doctors = [];
+  const doctors = [];
   const elasticMatch = [];
   const elasticSort = [];
   let apolloDoctorCount: number = 0,
@@ -298,7 +305,16 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       elasticSlotDateAvailability.push({
         bool: {
           must: [
-            { match: { 'doctorSlots.slotDate': availability } },
+            {
+              nested: {
+                path: 'doctorSlots',
+                query: {
+                  bool: {
+                    must: [{ match: { 'doctorSlots.slotDate': availability } }],
+                  },
+                },
+              },
+            },
             {
               nested: {
                 path: 'doctorSlots.slots',
@@ -361,7 +377,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   } else if (elasticSlotDateAvailability.length > 0) {
     elasticMatch.push({ bool: { should: elasticSlotDateAvailability } });
   } else if (args.filterInput.availableNow) {
-    elasticMatch.push(elasticSlotAvailabileNow);
+    elasticMatch.push({ bool: { must: elasticSlotAvailabileNow } });
   }
 
   if (args.filterInput.specialtyName && args.filterInput.specialtyName.length > 0) {
@@ -503,10 +519,9 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     }
     doctor['availableMode'] = [];
     doctor['earliestSlotavailableInMinutes'] = 0;
-    let bufferTime = 5;
+
     for (const consultHour of doctor.consultHours) {
       consultHour['id'] = consultHour['consultHoursId'];
-      bufferTime = consultHour['consultBuffer'];
       if (!doctor['availableMode'].includes(consultHour.consultMode)) {
         doctor['availableMode'].push(consultHour.consultMode);
       }
@@ -962,7 +977,7 @@ const getDoctorList: Resolver<
     doctorObj['doctorType'] = doctor.doctorType;
     doctorObj['doctorfacility'] = doctor.facility[0].name + ' ' + doctor.facility[0].city;
     doctorObj['specialistSingularTerm'] = doctor.specialty.specialistSingularTerm;
-    doctorObj['specialtydisplayName'] = doctor.specialty.userFriendlyNomenclature;
+    doctorObj['specialistPluralTerm'] = doctor.specialty.specialistPluralTerm;
     doctorObj['consultMode'] = [];
     doctorObj['slot'] = null;
     doctorObj['earliestSlotInMinutes'] = null;

@@ -52,6 +52,7 @@ import {
   postWebEngageEvent,
   g,
   followUpChatDaysCaseSheet,
+  isPastAppointment,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const { width, height } = Dimensions.get('window');
@@ -236,6 +237,7 @@ const styles = StyleSheet.create({
 export interface SearchAppointmentScreenProps
   extends NavigationScreenProps<{
     allAppointments: getPatientAllAppointments_getPatientAllAppointments_appointments;
+    onPressBack: () => void;
   }> {}
 
 export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (props) => {
@@ -265,7 +267,11 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
         title={'SEARCH APPOINTMENTS'}
         leftIcon={'backArrow'}
         container={{ borderBottomWidth: 0 }}
-        onPressLeftIcon={() => props.navigation.goBack()}
+        onPressLeftIcon={() => {
+          props.navigation.state.params?.onPressBack &&
+            props.navigation.state.params?.onPressBack();
+          props.navigation.goBack();
+        }}
       />
     );
   };
@@ -452,12 +458,7 @@ export const SearchAppointmentScreen: React.FC<SearchAppointmentScreenProps> = (
     day1.diff(day2, 'days'); // 1
     const numberDaysToConsultText =
       '(' + day1.diff(day2, 'days') + (day1.diff(day2, 'days') == 1 ? ' day left)' : ' days left)');
-    const pastAppointmentItem =
-      item?.status === STATUS.CANCELLED ||
-      !moment(new Date(item?.appointmentDateTime))
-        .add(followUpAfterInDays, 'days')
-        .startOf('day')
-        .isSameOrAfter(moment(new Date()).startOf('day'));
+    const pastAppointmentItem = isPastAppointment(item?.caseSheet, item);
     const medicinePrescription = g(caseSheet, '0' as any, 'medicinePrescription');
     const getMedicines = (
       medicines: (getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet_medicinePrescription | null)[]

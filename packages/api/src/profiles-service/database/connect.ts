@@ -68,6 +68,7 @@ import {
   PharmacologistConsult,
   MedicineOrderAddress,
   PatientEntitiySubscriber,
+  MedicineOrderHoldReasons,
 } from 'profiles-service/entities';
 import { DiagnosticItdosePincodeHubs } from 'profiles-service/entities/diagnostic_itdose_pincode_hub';
 import 'reflect-metadata';
@@ -153,6 +154,7 @@ export const connect = async () => {
         MedicineOrderAddress,
         HealthCheckRecords,
         HospitalizationRecords,
+        MedicineOrderHoldReasons,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,

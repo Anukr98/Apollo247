@@ -1108,6 +1108,7 @@ export const trackLanding = (location: any) => {
   }
 };
 
+
 export const medicalDetailsFillTracking = (data: any) => {
   if (typeof window !== 'undefined') {
     try {
@@ -1115,6 +1116,27 @@ export const medicalDetailsFillTracking = (data: any) => {
         'Medical details filled (web)',
         consultWebengageEventsCommonInfo(data)
       );
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const trackLoginMobileNumber = () => {
+  if (typeof window !== 'undefined') {
+    try {
+      window.webengage.track('Login Mobile Number Entered '+ window.location.href.split('/').pop(), {});
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+
+export const trackLoginOtpSubmitted = () => {
+  if (typeof window !== 'undefined') {
+    try {
+      window.webengage.track('Login OTP Submitted '+ window.location.href.split('/').pop(), {});
     } catch (err) {
       console.log('WebEngage Err: ', err);
     }
@@ -1156,6 +1178,26 @@ export const HdfcUserSignupDetailTracking = (userDetailData: UserDetail) => {
       window.webengage.user.setAttribute('we_last_name', lastName);
     } catch (err) {
       console.log('Webengage user tracking err: ', err);
+    }
+  }
+};
+
+export const hdfcSignupFormShown = () => {
+  if (typeof window !== 'undefined') {
+    try {
+      window.webengage.track('HDFC Landing Registration Form Shown - web', {});
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const hdfcSignupDoneTracking = () => {
+  if (typeof window !== 'undefined') {
+    try {
+      window.webengage.track('HDFC Landing Registration Done - web', {});
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
     }
   }
 };
@@ -1310,7 +1352,7 @@ export const HDFCHomePageCardClicked = (data: any) => {
     try {
       window.webengage.user.setAttribute('HDFCMembershipLevel', planName);
       window.webengage.user.setAttribute('HDFCMembershipState', planStatus);
-      window.webengage.track('HDFC Home Page Card Clicked - web', {
+      window.webengage.track('HDFC Home Page InactiveCard Clicked - web', {
         mobileNumber: mobileNumber,
         DOB: DOB,
         emailId: emailId,

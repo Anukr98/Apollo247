@@ -140,6 +140,8 @@ export enum MEDICINE_ORDER_STATUS {
   RVP_ASSIGNED = 'RVP_ASSIGNED',
   RETURN_PICKUP = 'RETURN_PICKUP',
   RETURN_RTO = 'RETURN_RTO',
+  READY_TO_SHIP = 'READY_TO_SHIP',
+  SHIPPED = 'SHIPPED',
 }
 
 export enum UPLOAD_FILE_TYPES {
@@ -303,6 +305,11 @@ export enum PROFILE_SOURCE {
   ORDER_PUNCHING_TOOL = 'ORDER_PUNCHING_TOOL',
   MFINE = 'MFINE',
 }
+
+export type DriverDetails = {
+  driverName: string;
+  driverPhone: string;
+};
 
 @EventSubscriber()
 export class PatientEntitiySubscriber implements EntitySubscriberInterface<Patient> {
@@ -2692,6 +2699,9 @@ export class MedicineOrderShipments extends BaseEntity {
   @Column({ nullable: true })
   cancelReasonCode: string;
 
+  @Column({ nullable: true, type: 'jsonb' })
+  driverDetails: DriverDetails;
+
   @Column({ nullable: true })
   currentStatus: MEDICINE_ORDER_STATUS;
 
@@ -2784,4 +2794,37 @@ export class PharmacologistConsult extends BaseEntity {
     (patient) => patient.pharmacologistConsult
   )
   patient: Patient;
+}
+
+@Entity()
+export class MedicineOrderHoldReasons extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Index('MedicineOrderHoldReasons_reasonCode')
+  @Column({ nullable: true })
+  reasonCode: string;
+
+  @Column({ nullable: true })
+  reUploadPrescription: boolean;
+
+  @Column({ nullable: true })
+  enableChatSupport: boolean;
+
+  @Column({ nullable: true })
+  displayText: string;
+
+  @Column({ nullable: true })
+  showOnHold: boolean;
+
+  @Column({ nullable: true, type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  updatedDate: Date;
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
 }

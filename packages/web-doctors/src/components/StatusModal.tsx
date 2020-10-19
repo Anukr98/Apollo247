@@ -247,7 +247,10 @@ const StatusModal = (props: any) => {
                         }
                       }
                     })
-                    .catch((exception: any) => console.log('something went wrong', exception));
+                    .catch((exception: any) => {
+                      props.onClose();
+                      alert('Something went wrong, please try again');
+                    });
                 }}
               >
                 {'yes, start consult'}

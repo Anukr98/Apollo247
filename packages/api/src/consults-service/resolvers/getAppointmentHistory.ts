@@ -234,7 +234,10 @@ const getDoctorAppointments: Resolver<
 > = async (parent, args, { consultsDb, doctorsDb, mobileNumber }) => {
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   let doctordata;
-
+  console.log('mocking APP-4813', mobileNumber)
+  if (mobileNumber == '+919534517427' || mobileNumber == '9534517427') {
+    throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR);
+  }
   if (args.doctorId === undefined || args.doctorId == null) {
     doctordata = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
   } else {

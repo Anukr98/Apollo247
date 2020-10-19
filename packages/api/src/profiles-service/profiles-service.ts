@@ -173,6 +173,11 @@ import {
   getMedicineOrderCancelReasonsTypeDefs,
   getMedicineOrderCancelReasonsResolvers,
 } from 'profiles-service/resolvers/getMedicineOrderCancelReasons';
+import {
+  reUploadPrescriptionTypeDefs,
+  reUploadPrescriptionResolvers,
+} from 'profiles-service/resolvers/reUploadPrescription';
+
 import 'reflect-metadata';
 import { getConnection } from 'typeorm';
 import { helpTypeDefs, helpResolvers } from 'profiles-service/resolvers/help';
@@ -551,6 +556,10 @@ import {
       {
         typeDefs: deletePatientPrismMedicalRecordTypeDefs,
         resolvers: deletePatientPrismMedicalRecordResolvers,
+      },
+      {
+        typeDefs: reUploadPrescriptionTypeDefs,
+        resolvers: reUploadPrescriptionResolvers,
       },
     ]),
     plugins: [

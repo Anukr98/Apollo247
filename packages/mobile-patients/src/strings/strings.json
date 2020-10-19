@@ -37,7 +37,36 @@
     "consultCompleteMessage": "Please wait while {0} is preparing your prescription. The prescription will be sent here in the consult room itself. However, this might take a while!",
     "customerCareNumber": 4041894343,
     "customerCareHelpText": "I need help with my order",
-    "selectAddress": "Choose from saved address"
+    "selectAddress": "Choose from saved address",
+    "covidVaccineTrackerText": "Covid Vaccine Tracker",
+    "healthcareEcosystemBannerText": "HEALTH ARTICLES &\nRESOURCES",
+    "healthcareEcosystemBannerDescription": "Make better health choices with our curated blogs, videos and expert advice.",
+    "healthBlog": "HEALTH BLOG",
+    "healthBlogDescription": "Explore healthcare content created every day by our experts.",
+    "readLatestArticles": "Read the latest articles",
+    "covidDescription": "The latest Coronavirus information to keep you safe and healthy.",
+    "learnAboutCovid": "Learn about COVID-19 Vaccines",
+    "covidVaccineTracker": "COVID-19 Vaccine Tracker",
+    "getCovidVaccineUpdates": "Get updates and know which is the first vaccine to come out.",
+    "knowMore": "KNOW MORE",
+    "covid19VaccineInfo": "COVID-19 AND VACCINE INFORMATION"
+  },
+  "components": {
+    "medicineDetails": {
+      "helpers": {
+        "overview": "Overview",
+        "usage": "Usage",
+        "sideEffects": "Side Effects",
+        "precautions": "Precautions",
+        "drugWarnings": "Drug Warnings",
+        "storage": "Storage",
+        "alcohol": "Alcohol:\n",
+        "pregnancy": "Pregnancy:\n",
+        "driving": "Driving:\n",
+        "kidney": "Kidney:\n",
+        "liver": "Liver:\n"
+      }
+    }
   },
   "consultType": {
     "mainHeading": "How would you like to consult with",
@@ -278,9 +307,9 @@
     "disabledDiagnosticsFailureMsg": "Sorry, we are unable to verify items in your cart right now. Please try again later.",
     "removeThisTestCTA": "Remove this test from cart",
     "removeTheseTestsCTA": "Remove these tests from cart",
-    "itemsAddedSuccessfullyCTA":" Item successfully added",
-    "proceedToCartCTA":"PROCEED TO CART"
-
+    "itemsAddedSuccessfullyCTA": " Item successfully added",
+    "proceedToCartCTA": "PROCEED TO CART",
+    "noPreparationRequiredText": "No special preparation required"
   },
   "orders": {
     "urOrders": "MY ORDERS",
@@ -495,7 +524,8 @@
     "consultDoctor": "Consult Doctor",
     "restartSymptomTrackerDiscription": "This will end your symptom tracking and you’ll have to start it again. Do you want to continue tracking your symptoms or go back?",
     "symptomTracker": "Symptom Tracker",
-    "addAnotherSymptom": "Would you like to report another symptom?"
+    "addAnotherSymptom": "Would you like to report another symptom?",
+    "removeSelectionPlaceholder": "Remove selection to type your own symptom"
   },
   "callRelatedPermissions": {
     "allPermissions": "For a smooth consultation experience with {0} and to ensure that you do not miss out your doctor's call, Apollo 247 needs your camera, microphone and call display permissions.",

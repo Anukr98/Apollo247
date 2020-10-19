@@ -400,10 +400,12 @@ export const SignIn: React.FC<PopupProps> = (props) => {
             setOtp([]);
             setSubmitCount(0);
             sendOtp(mobileNumberWithPrefix, loginId).then((res: any) => {
-              if (res) {
+              if (res && res !== 'NOT_A_DOCTOR') {
                 setLoginId(res);
-              }else{
+              }else if(res && res === 'NOT_A_DOCTOR'){
                 setIsErrorPopoverOpen(true);
+              }else{
+                alert('something went wrong, please try again');
               }
             });
           }}
@@ -472,14 +474,15 @@ export const SignIn: React.FC<PopupProps> = (props) => {
                 'Front_end - Doctor Mobile Number entered'
               );
               sendOtp(mobileNumberWithPrefix, '').then((res: any) => {
-                if (res) {
+                if (res && res !== 'NOT_A_DOCTOR') {
                   setLoginId(res);
                   setDisplayOtpInput(true);
-                }else{
+                }else if(res && res === 'NOT_A_DOCTOR'){
                   setIsErrorPopoverOpen(true);
                   //alert('error in mobile number');
+                }else{
+                  alert('something went wrong, please try again');
                 }
-  
               });
               setStickyPopupValue();
             }
@@ -510,11 +513,13 @@ export const SignIn: React.FC<PopupProps> = (props) => {
               'Front_end - Doctor Mobile Number entered'
             );
             sendOtp(mobileNumberWithPrefix, '').then((res: any) => {
-              if (res) {
+              if (res && res !== 'NOT_A_DOCTOR') {
                 setLoginId(res);
                 setDisplayOtpInput(true);
-              }else{
+              }else if(res && res === 'NOT_A_DOCTOR'){
                 setIsErrorPopoverOpen(true);
+              }else{
+                alert('something went wrong, please try again');
               }
             });
             setStickyPopupValue();

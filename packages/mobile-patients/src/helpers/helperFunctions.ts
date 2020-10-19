@@ -14,6 +14,7 @@ import {
   MEDICINE_ORDER_STATUS,
   Relation,
   MEDICINE_UNIT,
+  STATUS,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import Geolocation from '@react-native-community/geolocation';
@@ -35,7 +36,10 @@ import {
   getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails,
   getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems,
 } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetails';
-import { getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
+import {
+  getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet,
+  getPatientAllAppointments_getPatientAllAppointments_appointments,
+} from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
 import { DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import ApolloClient from 'apollo-client';
 import {
@@ -47,7 +51,10 @@ import {
   searchDiagnosticsByCityIDVariables,
   searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics,
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
-import { SEARCH_DIAGNOSTICS, SEARCH_DIAGNOSTICS_BY_CITY_ID } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  SEARCH_DIAGNOSTICS,
+  SEARCH_DIAGNOSTICS_BY_CITY_ID,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -185,6 +192,29 @@ export const formatNameNumber = (address: savePatientAddress_savePatientAddress_
   }
 };
 
+export const isPastAppointment = (
+  caseSheet:
+    | (getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet | null)[]
+    | null,
+  item: getPatientAllAppointments_getPatientAllAppointments_appointments
+) => {
+  const case_sheet = followUpChatDaysCaseSheet(caseSheet);
+  const caseSheetChatDays = g(case_sheet, '0' as any, 'followUpAfterInDays');
+  const followUpAfterInDays =
+    caseSheetChatDays || caseSheetChatDays === '0'
+      ? caseSheetChatDays === '0'
+        ? 0
+        : Number(caseSheetChatDays) - 1
+      : 6;
+  return (
+    item?.status === STATUS.CANCELLED ||
+    !moment(new Date(item?.appointmentDateTime))
+      .add(followUpAfterInDays, 'days')
+      .startOf('day')
+      .isSameOrAfter(moment(new Date()).startOf('day'))
+  );
+};
+
 export const followUpChatDaysCaseSheet = (
   caseSheet:
     | (getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet | null)[]
@@ -216,13 +246,15 @@ export const formatOrderAddress = (
 export const formatSelectedAddress = (
   address: savePatientAddress_savePatientAddress_patientAddress
 ) => {
-  const formattedAddress =
-    address?.addressLine1 +
-    ', ' +
-    (address?.addressLine2 + ', ') +
-    (address?.city + ', ') +
-    (address?.state + ', ') +
-    address?.zipcode;
+  const formattedAddress = [
+    address?.addressLine1,
+    address?.addressLine2,
+    address?.city,
+    address?.state,
+    address?.zipcode,
+  ]
+    .filter((item) => item)
+    .join(', ');
   return formattedAddress;
 };
 
@@ -887,7 +919,7 @@ export const addTestsToCart = async (
       variables: {
         searchText: name,
         city: city,
-        patientId: ''
+        patientId: '',
       },
       fetchPolicy: 'no-cache',
     });
@@ -1100,8 +1132,8 @@ const webengage = new WebEngage();
 
 export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Object) => {
   try {
-    const logContent = `[WebEngage] Event: ${eventName}\n`;
-    console.log(logContent, '\n' /*attributes, '\n'*/);
+    const logContent = `[WebEngage Event] ${eventName}`;
+    console.log(logContent);
     webengage.track(eventName, attributes);
   } catch (error) {
     console.log('********* Unable to post WebEngageEvent *********', { error });
@@ -1346,11 +1378,8 @@ export const APPStateActive = () => {
 
 export const postAppsFlyerEvent = (eventName: AppsFlyerEventName, attributes: Object) => {
   try {
-    console.log('\n********* AppsFlyerEvent Start *********\n');
-    console.log(`AppsFlyerEvent ${eventName}`, { eventName, attributes });
-    console.log('\n********* AppsFlyerEvent End *********\n');
-    // if (getBuildEnvironment() !== 'DEV') {
-    // Don't post events in DEV environment
+    const logContent = `[AppsFlyer Event] ${eventName}`;
+    console.log(logContent);
     appsFlyer.trackEvent(
       eventName,
       attributes,
@@ -1361,7 +1390,6 @@ export const postAppsFlyerEvent = (eventName: AppsFlyerEventName, attributes: Ob
         console.error('AppsFlyerEventError', err);
       }
     );
-    // }
   } catch (error) {
     console.log('********* Unable to post AppsFlyerEvent *********', { error });
   }
@@ -1402,8 +1430,8 @@ export const postAppsFlyerAddToCartEvent = (
 
 export const postFirebaseEvent = (eventName: FirebaseEventName, attributes: Object) => {
   try {
-    const logContent = `[Firebase] Event: ${eventName}\n`;
-    console.log(logContent, '\n' /*attributes, '\n'*/);
+    const logContent = `[Firebase Event] ${eventName}`;
+    console.log(logContent);
     firebase.analytics().logEvent(eventName, attributes);
   } catch (error) {
     console.log('********* Unable to post FirebaseEvent *********', { error });

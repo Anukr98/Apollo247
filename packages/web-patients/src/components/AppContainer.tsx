@@ -29,6 +29,9 @@ const Welcome = loadable(() => import('components/Welcome'));
 const NotificationSettings = loadable(() =>
   import('components/Notifications/NotificationSettings')
 );
+const SpecialtyDetailsWithCity = loadable(() =>
+  import('components/Doctors/SpecialtyDetailsWithCity')
+);
 const SbiLandingPage = loadable(() => import('components/Partners/SBI/SbiLandingPage'));
 const PatientsList = loadable(() => import('components/PatientsList'));
 const PrescriptionReview = loadable(() => import('components/PrescriptionReview'));
@@ -121,6 +124,11 @@ const App: React.FC = () => {
       <Switch>
         <Route exact path={clientRoutes.welcome()} component={Welcome} />
         <Route exact path={clientRoutes.aboutUs()} component={AboutUs} />
+        <Route
+          exact
+          path={clientRoutes.specialtyDetailsWithCity(':specialty', ':city')}
+          component={SpecialtyDetailsWithCity}
+        />
         <Route exact path={clientRoutes.covidLanding()} component={CovidLanding} />
         <Route exact path={clientRoutes.articleDetails()} component={CovidArticleDetails} />
         <Route exact path={clientRoutes.kavachLanding()} component={KavachLanding} />

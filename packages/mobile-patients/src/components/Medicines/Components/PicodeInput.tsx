@@ -18,7 +18,7 @@ export const PincodeInput: React.FC<PincodeInputProps> = (props) => {
     return (
       <View style={styles.header}>
         <TouchableOpacity onPress={onPressBack}>
-          <BackArrow style={styles.icon} />
+          <BackArrow />
         </TouchableOpacity>
         <Text style={styles.headerText}>Enter a pincode</Text>
       </View>
@@ -37,6 +37,7 @@ export const PincodeInput: React.FC<PincodeInputProps> = (props) => {
           conatinerstyles={styles.inputContainer}
           value={pincode}
           onChangeText={(text) => setPincode(text)}
+          onSubmitEditing={(e) => onPressApply(e.nativeEvent.text)}
         />
       </View>
     );
@@ -68,22 +69,17 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 30,
+    marginTop: 15,
+    paddingBottom: 10,
     paddingHorizontal: 16,
     borderBottomWidth: 0.5,
     borderBottomColor: 'rgba(2,71,91, 0.2)',
   },
   headerText: {
-    ...theme.fonts.IBMPlexSansSemiBold(14),
+    ...theme.fonts.IBMPlexSansSemiBold(17),
     lineHeight: 18,
     color: '#01475B',
     marginLeft: 8,
-    marginBottom: 8,
-  },
-  icon: {
-    width: 15,
-    height: 9.6,
-    marginBottom: 8,
   },
   inputContainer: {
     paddingHorizontal: 10,

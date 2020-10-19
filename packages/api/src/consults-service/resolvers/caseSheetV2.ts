@@ -61,7 +61,7 @@ export const caseSheetV2TypeDefs = gql`
   }
 
   extend type Query {
-    caseSheet(appointmentId: String): CaseSheetDetails
+    caseSheet(appointmentId: String, caseSheetType: String): CaseSheetDetails
     pastAppointmentsWithCompletedCaseSheet(appointmentId: String,unreadMessagesCount: Boolean): pastAppointments
   }
 `;
@@ -96,7 +96,7 @@ type AppointmentDetails = {
 
 const caseSheet: Resolver<
   null,
-  { appointmentId: string },
+  { appointmentId: string, caseSheetType: string },
   ConsultServiceContext,
   {
     caseSheetDetails: CaseSheet;
@@ -121,18 +121,11 @@ const caseSheet: Resolver<
     throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
-  const { SDCaseSheet, JDCaseSheet } = await caseSheetRepo.getCaseSheetByFilters(
-    appointmentData.id
+  const { caseSheetDetails, juniorDoctorCaseSheet } = await caseSheetRepo.getCaseSheetByFilters(
+    appointmentData.id,
+    args.caseSheetType
   );
-  if (SDCaseSheet == null || SDCaseSheet.length < 1)
-    throw new AphError(AphErrorMessages.NO_CASESHEET_EXIST);
-  if (JDCaseSheet == null || JDCaseSheet.length < 1)
-    throw new AphError(AphErrorMessages.JUNIOR_DOCTOR_CASESHEET_NOT_CREATED);
 
-  const caseSheetDetails = SDCaseSheet[0];
-  const juniorDoctorCaseSheet = JDCaseSheet[0];
-  console.log('JDCaseSheet', JDCaseSheet);
-  console.log('SDCaseSheet', SDCaseSheet);
 
   return {
     caseSheetDetails,

@@ -356,7 +356,7 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
                   .join('\n')
               )
             : null}
-          {renderFollowUp()}
+          {/* {renderFollowUp()} */}
           {renderReferral()}
         </View>
       </View>
@@ -553,9 +553,7 @@ export const PreviewPrescription: React.FC<PreviewPrescriptionProps> = (props) =
           ? renderMedicine()
           : null}
         {tests && tests.length > 0 && renderTest()}
-        {(advice && advice.length > 0) ||
-        (referralData && referralData.referTo) ||
-        followUp.doFollowUp
+        {(advice && advice.length > 0) || (referralData && referralData.referTo)
           ? renderAdvice()
           : null}
         {renderDoctorSign()}

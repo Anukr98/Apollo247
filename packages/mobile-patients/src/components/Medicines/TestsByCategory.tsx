@@ -360,6 +360,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
       fromAgeInDays,
       testPreparationData,
       toAgeInDays,
+      itemType,
     } = item;
     return renderSearchSuggestionItem({
       onPress: () => {
@@ -373,6 +374,8 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
             ToAgeInDays: toAgeInDays,
             collectionType: collectionType,
             preparation: testPreparationData,
+            source: 'Landing Page',
+            type: itemType,
           } as TestPackageForDetails,
         });
       },
@@ -514,6 +517,8 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
               FromAgeInDays: medicine!.fromAgeInDays,
               ToAgeInDays: medicine!.toAgeInDays,
               preparation: medicine!.testPreparationData,
+              source: 'Landing Page',
+              type: medicine!.itemType,
             } as TestPackageForDetails,
           });
         }}

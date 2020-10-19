@@ -15,6 +15,7 @@ export interface ProceedBarProps {
   deliveryTime?: string;
   onPressChangeAddress?: () => void;
   screen?: string;
+  onPressTatCard?: () => void;
 }
 
 export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
@@ -33,6 +34,7 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
     onPressProceedtoPay,
     deliveryTime,
     onPressChangeAddress,
+    onPressTatCard,
     screen,
   } = props;
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
@@ -105,6 +107,7 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
           deliveryTime={deliveryTime}
           deliveryAddress={formatSelectedAddress(selectedAddress!)}
           onPressChangeAddress={onPressChangeAddress!}
+          onPressTatCard={onPressTatCard}
         />
       );
     } else {
