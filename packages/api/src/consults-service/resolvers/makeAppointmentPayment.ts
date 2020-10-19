@@ -422,7 +422,7 @@ const makeAppointmentPayment: Resolver<
       apptsRepo.saveAppointmentHistory(historyAttrs);
     }
 
-    if (doctorDets.isIvrSet) {
+    if (doctorDets.isIvrSet && doctorDets.isIvrSet === true) {
       sendMessageToASBQueue(doctorDets, processingAppointment);
     }
 
