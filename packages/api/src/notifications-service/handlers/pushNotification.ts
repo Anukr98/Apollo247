@@ -1154,20 +1154,20 @@ export async function sendNotification(
     );
   }
 
-  // //senior doctor schedule
-  // else if (
-  //   pushNotificationInput.notificationType == NotificationType.INITIATE_SENIOR_APPT_SESSION
-  // ) {
-  //   notificationTitle = ApiConstants.SENIOR_APPT_SESSION_TITLE;
-  //   notificationBody = ApiConstants.SENIOR_APPT_SESSION_BODY.replace(
-  //     '{0}',
-  //     patientDetails.firstName
-  //   );
-  //   notificationBody = notificationBody.replace(
-  //     '{1}',
-  //     doctorDetails.firstName + ' ' + doctorDetails.lastName
-  //   );
-  // }
+  //senior doctor schedule
+  else if (
+    pushNotificationInput.notificationType == NotificationType.INITIATE_SENIOR_APPT_SESSION
+  ) {
+    notificationTitle = ApiConstants.SENIOR_APPT_SESSION_TITLE;
+    notificationBody = ApiConstants.SENIOR_APPT_SESSION_BODY.replace(
+      '{0}',
+      patientDetails.firstName
+    );
+    notificationBody = notificationBody.replace(
+      '{1}',
+      doctorDetails.firstName + ' ' + doctorDetails.lastName
+    );
+  }
 
   //book appointment
   else if (pushNotificationInput.notificationType == NotificationType.BOOK_APPOINTMENT) {
@@ -1467,18 +1467,15 @@ export async function sendNotification(
   }
 
   //building payload
-  let payload;
-  if (notificationTitle && notificationBody) {
-    payload = {
-      notification: {
-        title: notificationTitle,
-        body: notificationBody,
-        sound: notificationSound,
-        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
-      },
-      data: {},
-    };
-  }
+  let payload = {
+    notification: {
+      title: notificationTitle,
+      body: notificationBody,
+      sound: notificationSound,
+      android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
+    },
+    data: {},
+  };
 
   if (pushNotificationInput.notificationType == NotificationType.BOOK_APPOINTMENT) {
     payload = {
@@ -1631,8 +1628,8 @@ export async function sendNotification(
   }
 
   if (
-    pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT
-    // || pushNotificationInput.notificationType == NotificationType.INITIATE_SENIOR_APPT_SESSION
+    pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT ||
+    pushNotificationInput.notificationType == NotificationType.INITIATE_SENIOR_APPT_SESSION
   ) {
     payload = {
       notification: {
