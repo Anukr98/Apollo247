@@ -101,6 +101,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   const [loading, setloading] = useState<boolean>(false);
   const [lastCartItems, setlastCartItems] = useState('');
   const [storeType, setStoreType] = useState<string | undefined>('');
+  const [storeDistance, setStoreDistance] = useState(0);
   const [shopId, setShopId] = useState<string | undefined>('');
   const [deliveryTime, setdeliveryTime] = useState<string>('');
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
@@ -267,21 +268,24 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         };
         try {
           const res = await getDeliveryTAT247(tatInput);
-          console.log('res >>', res.data);
-          const tatTimeStamp = g(res, 'data', 'response', 'tatU');
+          const response = res?.data?.response;
+          const tatTimeStamp = response?.tatU;
           if (tatTimeStamp && tatTimeStamp !== -1) {
-            const deliveryDate = g(res, 'data', 'response', 'tat');
+            const deliveryDate = response?.tat;
+            const { distance, storeCode, storeType } = response;
             if (deliveryDate) {
-              const inventoryData = g(res, 'data', 'response', 'items') || [];
+              const inventoryData = response?.items || [];
               setloading!(false);
-              if (inventoryData && inventoryData.length) {
-                setStoreType(g(res, 'data', 'response', 'storeCode'));
-                setShopId(g(res, 'data', 'response', 'storeType'));
+              if (inventoryData?.length) {
+                setStoreType(storeType);
+                setShopId(storeCode);
+                setStoreDistance(distance);
                 setdeliveryTime(deliveryDate);
-                addressChange && NavigateToCartSummary(deliveryDate);
+                addressChange &&
+                  NavigateToCartSummary(deliveryDate, distance, storeType, storeCode);
                 updatePricesAfterTat(inventoryData, updatedCartItems);
               }
-              addressChange && NavigateToCartSummary(deliveryDate);
+              addressChange && NavigateToCartSummary(deliveryDate, distance, storeType, storeCode);
             } else {
               addressChange && NavigateToCartSummary('');
               handleTatApiFailure(selectedAddress, {});
@@ -337,9 +341,18 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     await validatePharmaCoupon();
     console.log(loading);
   }
-  function NavigateToCartSummary(deliveryTime: string) {
+
+  function NavigateToCartSummary(
+    deliveryTime: string,
+    storeDistance?: number,
+    storeType?: string,
+    shopId?: string
+  ) {
     props.navigation.navigate(AppRoutes.CartSummary, {
       deliveryTime: deliveryTime,
+      storeDistance: storeDistance,
+      tatType: storeType,
+      shopId: shopId,
     });
   }
 
@@ -597,6 +610,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     props.navigation.navigate(AppRoutes.CheckoutSceneNew, {
       deliveryTime,
       isChennaiOrder: isChennaiAddress ? true : false,
+      storeDistance: storeDistance,
       tatType: storeType,
       shopId: shopId,
     });
@@ -732,6 +746,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         onUpload={() =>
           props.navigation.navigate(AppRoutes.CartSummary, {
             deliveryTime: deliveryTime,
+            storeDistance: storeDistance,
+            tatType: storeType,
+            shopId: shopId,
           })
         }
       />
@@ -771,6 +788,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         onPressTatCard={() =>
           props.navigation.navigate(AppRoutes.CartSummary, {
             deliveryTime: deliveryTime,
+            storeDistance: storeDistance,
+            tatType: storeType,
+            shopId: shopId,
           })
         }
       />
