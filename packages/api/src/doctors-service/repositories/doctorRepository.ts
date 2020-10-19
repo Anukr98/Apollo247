@@ -238,9 +238,9 @@ export class DoctorRepository extends Repository<Doctor> {
               .getUTCHours()
               .toString()
               .padStart(2, '0')}:${appt.appointmentDateTime
-              .getUTCMinutes()
-              .toString()
-              .padStart(2, '0')}:00.000Z`;
+                .getUTCMinutes()
+                .toString()
+                .padStart(2, '0')}:00.000Z`;
             if (availableSlots.indexOf(sl) >= 0) {
               doctorSlots[availableSlots.indexOf(sl)].status = ES_DOCTOR_SLOT_STATUS.BOOKED;
             }
@@ -290,7 +290,6 @@ export class DoctorRepository extends Repository<Doctor> {
     const getDetails = await client.search(searchParams);
     client.close();
     let doctorData, facilities;
-
     if (getDetails.body.hits.hits && getDetails.body.hits.hits.length > 0) {
       doctorData = getDetails.body.hits.hits[0]._source;
       if (doctorData['languages'] instanceof Array) {
@@ -365,11 +364,12 @@ export class DoctorRepository extends Repository<Doctor> {
         'starTeam.associatedDoctor.doctorHospital.facility',
         'doctorSecretary',
         'doctorSecretary.secretary',
+        'doctorPricing'
       ],
     });
   }
 
-  getDoctorDetailswithRelations() {}
+  getDoctorDetailswithRelations() { }
 
   updateFirebaseId(id: string, firebaseToken: string) {
     return this.update(id, { firebaseToken: firebaseToken });
@@ -436,6 +436,7 @@ export class DoctorRepository extends Repository<Doctor> {
           'starTeam.associatedDoctor.specialty',
           'starTeam.associatedDoctor.doctorHospital',
           'starTeam.associatedDoctor.doctorHospital.facility',
+          'doctorPricing'
         ],
         take: limit,
         skip: offset,
@@ -455,6 +456,7 @@ export class DoctorRepository extends Repository<Doctor> {
           'starTeam.associatedDoctor.specialty',
           'starTeam.associatedDoctor.doctorHospital',
           'starTeam.associatedDoctor.doctorHospital.facility',
+          'doctorPricing'
         ],
       });
     }
@@ -840,8 +842,8 @@ export class DoctorRepository extends Repository<Doctor> {
                 fee.maximum === -1
                   ? qb.where('doctor.onlineConsultationFees >= ' + fee.minimum)
                   : qb
-                      .where('doctor.onlineConsultationFees >= ' + fee.minimum)
-                      .andWhere('doctor.onlineConsultationFees <= ' + fee.maximum);
+                    .where('doctor.onlineConsultationFees >= ' + fee.minimum)
+                    .andWhere('doctor.onlineConsultationFees <= ' + fee.maximum);
               })
             );
           });
@@ -858,8 +860,8 @@ export class DoctorRepository extends Repository<Doctor> {
                 exp.maximum === -1
                   ? qb.where('doctor.experience >= ' + exp.minimum)
                   : qb
-                      .where('doctor.experience >= ' + exp.minimum)
-                      .andWhere('doctor.experience <= ' + exp.maximum);
+                    .where('doctor.experience >= ' + exp.minimum)
+                    .andWhere('doctor.experience <= ' + exp.maximum);
               })
             );
           });
