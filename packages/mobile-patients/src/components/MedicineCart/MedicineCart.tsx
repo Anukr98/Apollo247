@@ -484,6 +484,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             maxOrderQty: medicineDetails.MaxOrderQty,
             productType: medicineDetails.type_id,
             isFreeCouponProduct: !!couponProducts[index]!.couponFree,
+            couponPrice: 0,
           } as ShoppingCartItem;
         });
         addMultipleCartItems!(medicinesAll as ShoppingCartItem[]);
@@ -675,7 +676,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   };
 
   const removeFreeProductsFromCart = () => {
-    const updatedCartItems = cartItems.filter((item) => item.price != 0);
+    const updatedCartItems = cartItems.filter((item) => item.specialPrice != 0);
     setCartItems!(updatedCartItems);
     setCouponProducts!([]);
   };
@@ -712,8 +713,13 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
 
   const renderCouponSection = () => {
     return (
-      <Coupon onPressApplyCoupon={() => applyCoupon()} onPressRemove={() => setCoupon!(null)} />
+      <Coupon onPressApplyCoupon={() => applyCoupon()} onPressRemove={() => removeCoupon()} />
     );
+  };
+
+  const removeCoupon = () => {
+    setCoupon!(null);
+    removeFreeProductsFromCart();
   };
 
   const renderAmountSection = () => {
