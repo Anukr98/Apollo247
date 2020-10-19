@@ -112,6 +112,8 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   PAYMENT_PENDING = "PAYMENT_PENDING",
   PICKUP_CONFIRMED = "PICKUP_CONFIRMED",
   PICKUP_REQUESTED = "PICKUP_REQUESTED",
+  REPORT_GENERATED = "REPORT_GENERATED",
+  SAMPLE_COLLECTED = "SAMPLE_COLLECTED",
 }
 
 export enum DOCTOR_ONLINE_STATUS {
@@ -150,6 +152,12 @@ export enum Gender {
   FEMALE = "FEMALE",
   MALE = "MALE",
   OTHER = "OTHER",
+}
+
+export enum HDFC_CUSTOMER {
+  NOT_HDFC_CUSTOMER = "NOT_HDFC_CUSTOMER",
+  OTP_GENERATED = "OTP_GENERATED",
+  OTP_NOT_GENERATED = "OTP_NOT_GENERATED",
 }
 
 export enum LOGIN_TYPE {
@@ -204,6 +212,7 @@ export enum MEDICINE_ORDER_STATUS {
   CANCEL_REQUEST = "CANCEL_REQUEST",
   DELIVERED = "DELIVERED",
   ITEMS_RETURNED = "ITEMS_RETURNED",
+  ON_HOLD = "ON_HOLD",
   ORDER_BILLED = "ORDER_BILLED",
   ORDER_CONFIRMED = "ORDER_CONFIRMED",
   ORDER_FAILED = "ORDER_FAILED",
@@ -221,8 +230,18 @@ export enum MEDICINE_ORDER_STATUS {
   PURCHASED_IN_STORE = "PURCHASED_IN_STORE",
   QUOTE = "QUOTE",
   READY_AT_STORE = "READY_AT_STORE",
+  READY_FOR_VERIFICATION = "READY_FOR_VERIFICATION",
+  READY_TO_SHIP = "READY_TO_SHIP",
   RETURN_ACCEPTED = "RETURN_ACCEPTED",
   RETURN_INITIATED = "RETURN_INITIATED",
+  RETURN_PENDING = "RETURN_PENDING",
+  RETURN_PICKUP = "RETURN_PICKUP",
+  RETURN_REQUESTED = "RETURN_REQUESTED",
+  RETURN_RTO = "RETURN_RTO",
+  RETURN_TO_ORIGIN = "RETURN_TO_ORIGIN",
+  RVP_ASSIGNED = "RVP_ASSIGNED",
+  SHIPPED = "SHIPPED",
+  VERIFICATION_DONE = "VERIFICATION_DONE",
 }
 
 export enum MEDICINE_ORDER_TYPE {
@@ -429,6 +448,14 @@ export enum SpecialtySearchType {
   NAME = "NAME",
 }
 
+export enum SubscriptionStatus {
+  ACTIVE = "ACTIVE",
+  CANCELLED = "CANCELLED",
+  DEFERRED_INACTIVE = "DEFERRED_INACTIVE",
+  DISABLED = "DISABLED",
+  UPGRADED = "UPGRADED",
+}
+
 export enum TEST_COLLECTION_TYPE {
   CENTER = "CENTER",
   HC = "HC",
@@ -491,6 +518,7 @@ export enum notificationType {
 }
 
 export interface AddHealthCheckRecordInput {
+  id?: string | null;
   patientId: string;
   recordType: MedicalRecordType;
   healthCheckName: string;
@@ -499,6 +527,7 @@ export interface AddHealthCheckRecordInput {
 }
 
 export interface AddHospitalizationRecordInput {
+  id?: string | null;
   patientId: string;
   recordType: MedicalRecordType;
   dischargeDate: any;
@@ -508,6 +537,7 @@ export interface AddHospitalizationRecordInput {
 }
 
 export interface AddLabTestRecordInput {
+  id?: string | null;
   patientId: string;
   recordType: MedicalRecordType;
   labTestName: string;
@@ -637,6 +667,27 @@ export interface ConsultQueueInput {
   drugAllergies?: string | null;
   age?: number | null;
   gender?: Gender | null;
+}
+
+export interface CreateUserSubscriptionInput {
+  _id?: string | null;
+  plan_id: string;
+  payment_reference_id?: string | null;
+  coupon_availed?: string | null;
+  mobile_number: string;
+  order_id?: string | null;
+  transaction_date_time?: any | null;
+  status?: SubscriptionStatus | null;
+  start_date?: any | null;
+  end_date?: any | null;
+  deactivation_date?: any | null;
+  CustomerId?: string | null;
+  FirstName?: string | null;
+  LastName?: string | null;
+  Email?: string | null;
+  Gender?: string | null;
+  DOB?: any | null;
+  storeCode: string;
 }
 
 export interface DiagnosticLineItem {
@@ -821,6 +872,7 @@ export interface MedicineCartOMSInput {
   showPrescriptionAtStore?: boolean | null;
   shopAddress?: ShopAddress | null;
   customerComment?: string | null;
+  storeDistanceKm?: number | null;
 }
 
 export interface MedicineCartOMSItem {
@@ -1051,6 +1103,7 @@ export interface UpdatePatientAddressInput {
   latitude?: number | null;
   longitude?: number | null;
   stateCode?: string | null;
+  defaultAddress?: boolean | null;
 }
 
 export interface UpdatePatientInput {

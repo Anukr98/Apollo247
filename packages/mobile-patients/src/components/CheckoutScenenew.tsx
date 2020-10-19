@@ -90,6 +90,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   const deliveryTime = props.navigation.getParam('deliveryTime');
   const isChennaiOrder = props.navigation.getParam('isChennaiOrder');
   const tatType = props.navigation.getParam('tatType');
+  const storeDistance: number = props.navigation.getParam('storeDistance');
   const paramShopId = props.navigation.getParam('shopId');
   const isStorePickup = props.navigation.getParam('isStorePickup');
   const { currentPatient } = useAllCurrentPatients();
@@ -459,6 +460,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     const orderInfo: saveMedicineOrderOMSVariables = {
       medicineCartOMSInput: {
         tatType: tatType,
+        storeDistanceKm: Number(storeDistance?.toFixed(3)) || 0,
         coupon: coupon ? coupon.coupon : '',
         couponDiscount: coupon ? getFormattedAmount(couponDiscount) : 0,
         productDiscount: getFormattedAmount(productDiscount) || 0,
