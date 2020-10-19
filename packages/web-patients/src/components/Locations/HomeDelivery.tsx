@@ -345,6 +345,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
                 fetchDeliveryTime(zipCode, lat.toString(), lng.toString());
               }
               props.selectedZipCode(zipCode);
+              localStorage.setItem('pharmaPincode', zipCode);
               setSelectedAddressDataIndex(index || 0);
             } else {
               setSelectedAddressDataIndex(0);
