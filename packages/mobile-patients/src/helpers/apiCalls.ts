@@ -183,6 +183,7 @@ export interface GetTatResponse247 {
     inventoryExist: boolean;
     storeType: string;
     ordertime: number;
+    distance: number;
   };
   errorMSG?: string;
 }

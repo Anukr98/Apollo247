@@ -60,12 +60,18 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setloading] = useState<boolean>(false);
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
-  const [storeType, setStoreType] = useState<string | undefined>('');
-  const [shopId, setShopId] = useState<string | undefined>('');
+  const [storeType, setStoreType] = useState<string | undefined>(
+    props.navigation.getParam('tatType') || ''
+  );
+  const [storeDistance, setStoreDistance] = useState(
+    props.navigation.getParam('storeDistance') || 0
+  );
+  const [shopId, setShopId] = useState<string | undefined>(
+    props.navigation.getParam('shopId') || ''
+  );
   const [deliveryTime, setdeliveryTime] = useState<string>(
     props.navigation.getParam('deliveryTime')
   );
-  const orderType = props.navigation.getParam('orderType');
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
   const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>(false);
   const shoppingCart = useShoppingCart();
@@ -122,16 +128,17 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
           items: serviceableItems,
         };
         const res = await getDeliveryTAT247(tatInput);
-        console.log('res >>', res.data);
         setloading!(false);
-        const tatTimeStamp = g(res, 'data', 'response', 'tatU');
+        const tatResponse = res?.data?.response;
+        const tatTimeStamp = tatResponse?.tatU;
         if (tatTimeStamp && tatTimeStamp !== -1) {
-          const deliveryDate = g(res, 'data', 'response', 'tat');
+          const deliveryDate = tatResponse?.tat;
           if (deliveryDate) {
-            const inventoryData = g(res, 'data', 'response', 'items') || [];
+            const inventoryData = tatResponse?.items || [];
             if (inventoryData && inventoryData.length) {
-              setStoreType(g(res, 'data', 'response', 'storeCode'));
-              setShopId(g(res, 'data', 'response', 'storeType'));
+              setStoreType(tatResponse?.storeType);
+              setShopId(tatResponse?.storeCode);
+              setStoreDistance(tatResponse?.distance);
               setdeliveryTime(deliveryDate);
               updatePricesAfterTat(inventoryData, updatedCartItems);
               if (unserviceableSkus.length) {
@@ -243,6 +250,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     props.navigation.navigate(AppRoutes.CheckoutSceneNew, {
       deliveryTime,
       isChennaiOrder: isChennaiAddress ? true : false,
+      storeDistance: storeDistance,
       tatType: storeType,
       shopId: shopId,
     });

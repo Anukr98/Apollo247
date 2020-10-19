@@ -49,6 +49,14 @@ export interface WebEngageEventData {
   secretaryNumber: string;
   patientName: string;
   doctorNumber: string;
+  source: string;
+  prescriptionUploaded: boolean;
+  tat: number;
+  tatDuration: number;
+  paymentType: string;
+  storeId: string;
+  storeType: string;
+  skuCodes: string[];
 }
 
 export enum WebEngageEvent {

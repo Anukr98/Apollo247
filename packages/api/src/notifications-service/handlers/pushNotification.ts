@@ -145,26 +145,26 @@ export async function sendCallsNotification(
     doctorDetails.firstName + ' ' + doctorDetails.lastName
   );
 
-  //building payload
-  const payload = {
-    notification: {
-      title: notificationTitle,
-      body: notificationBody,
-      android_channel_id: 'fcm_FirebaseNotifiction_call_channel',
-    },
-    data: {
-      type: 'call_started',
-      appointmentId: appointment.id.toString(),
-      patientName: patientDetails.firstName,
-      doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
-      callType,
-      appointmentCallId,
-      doctorType,
-      content: notificationBody,
-    },
-  };
+  // //building payload
+  // const payload = {
+  //   notification: {
+  //     title: notificationTitle,
+  //     body: notificationBody,
+  //     android_channel_id: 'fcm_FirebaseNotifiction_call_channel',
+  //   },
+  //   data: {
+  //     type: 'call_started',
+  //     appointmentId: appointment.id.toString(),
+  //     patientName: patientDetails.firstName,
+  //     doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
+  //     callType,
+  //     appointmentCallId,
+  //     doctorType,
+  //     content: notificationBody,
+  //   },
+  // };
 
-  console.log(payload, 'notification payload', pushNotificationInput.notificationType);
+  // console.log(payload, 'notification payload', pushNotificationInput.notificationType);
   //options
   const options = {
     priority: NotificationPriority.high,

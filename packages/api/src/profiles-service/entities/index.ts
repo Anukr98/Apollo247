@@ -443,6 +443,9 @@ export class MedicineOrders extends BaseEntity {
   @Column({ nullable: true })
   allocationProfileName: string;
 
+  @Column({ type: 'float8', nullable: true })
+  storeDistanceKm: number;
+
   @Column({ nullable: true, type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedDate: Date;
 
@@ -2794,4 +2797,37 @@ export class PharmacologistConsult extends BaseEntity {
     (patient) => patient.pharmacologistConsult
   )
   patient: Patient;
+}
+
+@Entity()
+export class MedicineOrderHoldReasons extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Index('MedicineOrderHoldReasons_reasonCode')
+  @Column({ nullable: true })
+  reasonCode: string;
+
+  @Column({ nullable: true })
+  reUploadPrescription: boolean;
+
+  @Column({ nullable: true })
+  enableChatSupport: boolean;
+
+  @Column({ nullable: true })
+  displayText: string;
+
+  @Column({ nullable: true })
+  showOnHold: boolean;
+
+  @Column({ nullable: true, type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  updatedDate: Date;
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
 }

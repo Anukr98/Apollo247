@@ -53,6 +53,7 @@ import { Prescriptions } from '@aph/mobile-patients/src/components/MedicineCart/
 import { UploadPrescription } from '@aph/mobile-patients/src/components/MedicineCart/Components/UploadPrescription';
 import { UnServiceable } from '@aph/mobile-patients/src/components/MedicineCart/Components/UnServiceable';
 import { SuggestProducts } from '@aph/mobile-patients/src/components/MedicineCart/Components/SuggestProducts';
+import { EmptyCart } from '@aph/mobile-patients/src/components/MedicineCart/Components/EmptyCart';
 import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
@@ -100,6 +101,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   const [loading, setloading] = useState<boolean>(false);
   const [lastCartItems, setlastCartItems] = useState('');
   const [storeType, setStoreType] = useState<string | undefined>('');
+  const [storeDistance, setStoreDistance] = useState(0);
   const [shopId, setShopId] = useState<string | undefined>('');
   const [deliveryTime, setdeliveryTime] = useState<string>('');
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
@@ -266,21 +268,24 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         };
         try {
           const res = await getDeliveryTAT247(tatInput);
-          console.log('res >>', res.data);
-          const tatTimeStamp = g(res, 'data', 'response', 'tatU');
+          const response = res?.data?.response;
+          const tatTimeStamp = response?.tatU;
           if (tatTimeStamp && tatTimeStamp !== -1) {
-            const deliveryDate = g(res, 'data', 'response', 'tat');
+            const deliveryDate = response?.tat;
+            const { distance, storeCode, storeType } = response;
             if (deliveryDate) {
-              const inventoryData = g(res, 'data', 'response', 'items') || [];
+              const inventoryData = response?.items || [];
               setloading!(false);
-              if (inventoryData && inventoryData.length) {
-                setStoreType(g(res, 'data', 'response', 'storeCode'));
-                setShopId(g(res, 'data', 'response', 'storeType'));
+              if (inventoryData?.length) {
+                setStoreType(storeType);
+                setShopId(storeCode);
+                setStoreDistance(distance);
                 setdeliveryTime(deliveryDate);
-                addressChange && NavigateToCartSummary(deliveryDate);
+                addressChange &&
+                  NavigateToCartSummary(deliveryDate, distance, storeType, storeCode);
                 updatePricesAfterTat(inventoryData, updatedCartItems);
               }
-              addressChange && NavigateToCartSummary(deliveryDate);
+              addressChange && NavigateToCartSummary(deliveryDate, distance, storeType, storeCode);
             } else {
               addressChange && NavigateToCartSummary('');
               handleTatApiFailure(selectedAddress, {});
@@ -336,9 +341,18 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     await validatePharmaCoupon();
     console.log(loading);
   }
-  function NavigateToCartSummary(deliveryTime: string) {
+
+  function NavigateToCartSummary(
+    deliveryTime: string,
+    storeDistance?: number,
+    storeType?: string,
+    shopId?: string
+  ) {
     props.navigation.navigate(AppRoutes.CartSummary, {
       deliveryTime: deliveryTime,
+      storeDistance: storeDistance,
+      tatType: storeType,
+      shopId: shopId,
     });
   }
 
@@ -596,6 +610,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     props.navigation.navigate(AppRoutes.CheckoutSceneNew, {
       deliveryTime,
       isChennaiOrder: isChennaiAddress ? true : false,
+      storeDistance: storeDistance,
       tatType: storeType,
       shopId: shopId,
     });
@@ -731,6 +746,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         onUpload={() =>
           props.navigation.navigate(AppRoutes.CartSummary, {
             deliveryTime: deliveryTime,
+            storeDistance: storeDistance,
+            tatType: storeType,
+            shopId: shopId,
           })
         }
       />
@@ -770,6 +788,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         onPressTatCard={() =>
           props.navigation.navigate(AppRoutes.CartSummary, {
             deliveryTime: deliveryTime,
+            storeDistance: storeDistance,
+            tatType: storeType,
+            shopId: shopId,
           })
         }
       />
@@ -779,8 +800,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   const renderUnServiceable = () => {
     return <UnServiceable style={{ marginTop: 24 }} />;
   };
-  return (
-    <View style={{ flex: 1 }}>
+
+  const renderScreen = () => {
+    return (
       <SafeAreaView style={theme.viewStyles.container}>
         <ScrollView contentContainerStyle={{ paddingBottom: 200 }}>
           {renderHeader()}
@@ -797,8 +819,22 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         {renderProceedBar()}
         {loading && <Spinner />}
       </SafeAreaView>
-    </View>
-  );
+    );
+  };
+
+  const renderEmptyCart = () => {
+    return (
+      <SafeAreaView style={theme.viewStyles.container}>
+        {renderHeader()}
+        <EmptyCart
+          onPressAddMedicines={() => {
+            props.navigation.navigate('MEDICINES');
+          }}
+        />
+      </SafeAreaView>
+    );
+  };
+  return <View style={{ flex: 1 }}>{cartItems?.length ? renderScreen() : renderEmptyCart()}</View>;
 };
 
 const styles = StyleSheet.create({

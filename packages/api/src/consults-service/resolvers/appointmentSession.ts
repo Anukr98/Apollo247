@@ -352,12 +352,12 @@ const createAppointmentSession: Resolver<
       caseSheetRepo.findAndUpdateJdConsultStatus(createAppointmentSessionInput.appointmentId);
       pushNotificationInput.notificationType = NotificationType.INITIATE_JUNIOR_APPT_SESSION;
     }
-    const notificationResult = await sendNotification(
-      pushNotificationInput,
-      patientsDb,
-      consultsDb,
-      doctorsDb
-    );
+    // const notificationResult = await sendNotification(
+    //   pushNotificationInput,
+    //   patientsDb,
+    //   consultsDb,
+    //   doctorsDb
+    // );
     if (
       createAppointmentSessionInput.requestRole != REQUEST_ROLES.JUNIOR &&
       currentDate < apptDetails.appointmentDateTime
@@ -415,12 +415,12 @@ const createAppointmentSession: Resolver<
     caseSheetRepo.findAndUpdateJdConsultStatus(createAppointmentSessionInput.appointmentId);
     pushNotificationInput.notificationType = NotificationType.INITIATE_JUNIOR_APPT_SESSION;
   }
-  const notificationResult = await sendNotification(
-    pushNotificationInput,
-    patientsDb,
-    consultsDb,
-    doctorsDb
-  );
+  // const notificationResult = await sendNotification(
+  //   pushNotificationInput,
+  //   patientsDb,
+  //   consultsDb,
+  //   doctorsDb
+  // );
 
   if (
     createAppointmentSessionInput.requestRole != REQUEST_ROLES.JUNIOR &&

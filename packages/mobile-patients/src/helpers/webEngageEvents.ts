@@ -112,6 +112,8 @@ export enum WebEngageEventName {
   FIND_A_DOCTOR = 'Find a Doctor',
   TABBAR_APPOINTMENTS_CLICKED = 'Appointments Clicked on tab bar',
   APOLLO_KAVACH_PROGRAM = 'Apollo Kavach Program',
+  COVID_VACCINE_TRACKER = 'Covid Vaccine Tracker',
+  READ_ARTICLES = 'Read Articles',
 
   // Diagnostics Events
   DIAGNOSTIC_LANDING_PAGE_VIEWED = 'Diagnostic Landing Page Viewed',

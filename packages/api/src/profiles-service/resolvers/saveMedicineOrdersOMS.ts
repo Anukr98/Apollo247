@@ -67,6 +67,7 @@ export const saveMedicineOrderOMSTypeDefs = gql`
     showPrescriptionAtStore: Boolean
     shopAddress: ShopAddress
     customerComment: String
+    storeDistanceKm: Float
   }
 
   enum MEDICINE_DELIVERY_TYPE {
@@ -180,6 +181,7 @@ type MedicineCartOMSInput = {
   showPrescriptionAtStore: boolean;
   shopAddress: ShopAddress;
   customerComment: string;
+  storeDistanceKm: number;
 };
 
 type ShopAddress = {
@@ -339,6 +341,8 @@ const saveMedicineOrderOMS: Resolver<
   let storeDetails = {
     clusterId: '',
     allocationProfileName: '',
+    lat: 0,
+    lng: 0,
   };
   if (medicineCartOMSInput.shopId) {
     storeDetails = await getStoreDetails(medicineCartOMSInput.shopId);
@@ -349,6 +353,20 @@ const saveMedicineOrderOMS: Resolver<
     if (imgUrls.some((url) => url.split('/').pop() == 'null')) {
       throw new AphError(AphErrorMessages.INVALID_MEDICINE_PRESCRIPTION_URL, undefined, {});
     }
+  }
+  if (
+    !medicineCartOMSInput.storeDistanceKm &&
+    medicineOrderAddressDetails.latitude &&
+    medicineOrderAddressDetails.longitude &&
+    storeDetails.lat &&
+    storeDetails.lng
+  ) {
+    medicineCartOMSInput.storeDistanceKm = getDistanceBetweenPoints(
+      medicineOrderAddressDetails.latitude,
+      storeDetails.lat,
+      medicineOrderAddressDetails.longitude,
+      storeDetails.lng
+    );
   }
 
   const medicineOrderattrs: Partial<MedicineOrders> = {
@@ -378,6 +396,7 @@ const saveMedicineOrderOMS: Resolver<
     isOmsOrder: true,
     clusterId: storeDetails.clusterId,
     allocationProfileName: storeDetails.allocationProfileName,
+    storeDistanceKm: medicineCartOMSInput.storeDistanceKm,
   };
 
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
@@ -634,6 +653,26 @@ const isDiffLessThan25Percent = (num1: number, num2: number) => {
 };
 const getSpecialPriceFromRelativePrices = (price: number, specialPrice: number, newPrice: number) =>
   Number(((specialPrice / price) * newPrice).toFixed(2));
+
+const getDistanceBetweenPoints = (lat1: number, lat2: number, lng1: number, lng2: number) => {
+  const theta = lng1 - lng2;
+  let dist =
+    Math.sin(toRadians(lat1)) * Math.sin(toRadians(lat2)) +
+    Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) * Math.cos(toRadians(theta));
+  dist = Math.acos(dist);
+  dist = toDegrees(dist);
+  dist = dist * 60 * 1.1515;
+  dist = dist * 1.609344;
+  return dist;
+};
+
+const toRadians = (d: number) => {
+  return d * (Math.PI / 180);
+};
+
+const toDegrees = (r: number) => {
+  return r * (180 / Math.PI);
+};
 
 export const saveMedicineOrderOMSResolvers = {
   Mutation: {

@@ -491,6 +491,7 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
   const [specialtyId, setSpecialtyId] = useState<string>('');
   const [specialtyName, setSpecialtyName] = useState<string>('');
   const [specialtyPlural, setSpecialtyPlural] = useState<string>('');
+  const [specialtyImage, setSpecialtyImage] = useState<string>('');
   const [locationPopup, setLocationPopup] = useState<boolean>(false);
   const [isAlternateVariant, setIsAlternateVariant] = useState<boolean>(true);
   const [selectedCity, setSelectedCity] = useState<string>(
@@ -740,6 +741,7 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
                 setSpecialtyName(specialty.name);
                 setSlugName(specialty.slugName);
                 setSpecialtyPlural(specialty.specialistPluralTerm);
+                setSpecialtyImage(specialty.image);
               }
             });
         });
@@ -747,18 +749,23 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
   }, [params.specialty]);
 
   useEffect(() => {
-    if (slugName !== '') {
+    if (slugName !== '' && selectedCity) {
       axios
-        .get(`${process.env.CMS_BASE_URL}/api/specialty-details/${readableParam(specialtyName)}`, {
-          headers: { 'Content-Type': 'application/json', Authorization: process.env.CMS_TOKEN },
-        })
+        .get(
+          `${process.env.CMS_BASE_URL}/api/specialty-details/${readableParam(
+            specialtyName
+          )}?ct=${selectedCity}`,
+          {
+            headers: { 'Content-Type': 'application/json', Authorization: process.env.CMS_TOKEN },
+          }
+        )
         .then((res: any) => {
           if (res && res.data && res.data.success) {
             setFaqData(res && res.data && res.data.data);
           }
         });
     }
-  }, [slugName]);
+  }, [slugName, selectedCity]);
 
   let expRange: Range = [],
     feeRange: Range = [];
@@ -921,11 +928,17 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
   }, [currentLat, currentLong, filter, specialtyId, specialtyName, selectedCity]);
 
   const metaTagProps = {
-    title: (faqData && faqData[0].specialtyMetaTitle) || '',
-    description: (faqData && faqData[0].specialtyMetaDescription) || '',
+    title: (faqData && faqData[0].specialtyMetaTitleCity) || '',
+    description: (faqData && faqData[0].specialtyMetaDescriptionCity) || '',
     canonicalLink:
-      (faqData && faqData[0].canonicalUrl) ||
-      (window && window.location && `${window.location.host}${window.location.pathname}`),
+      window && window.location && `${window.location.host}${window.location.pathname}`,
+    og: {
+      title: (faqData && faqData[0].specialtyMetaTitleCity) || '',
+      description: (faqData && faqData[0].specialtyMetaDescriptionCity) || '',
+      url: window.location.href,
+      image: specialtyImage,
+      site_name: 'Apollo 24|7',
+    },
   };
 
   return (
@@ -952,7 +965,7 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
                   <img src={require('images/triangle.svg')} alt="" />
                   <Link to={clientRoutes.specialityListing()}>Online Doctor Consultation</Link>
                   <img src={require('images/triangle.svg')} alt="" />
-                  <Link to={clientRoutes.specialties(readableParam(params.specialty))}>
+                  <Link to={clientRoutes.specialties(readableParam(specialtyName))}>
                     {faqData && faqData[0].breadCrumbTitle}
                   </Link>
                   <img src={require('images/triangle.svg')} alt="" />
