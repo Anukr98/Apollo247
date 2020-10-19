@@ -113,6 +113,12 @@ export interface getDoctorDetailsById_getDoctorDetailsById_consultHours {
   facility: getDoctorDetailsById_getDoctorDetailsById_consultHours_facility | null;
 }
 
+export interface getDoctorDetailsById_getDoctorDetailsById_doctorNextAvailSlots {
+  __typename: "DoctorNextAvailSlots";
+  onlineSlot: string | null;
+  physicalSlot: string | null;
+}
+
 export interface getDoctorDetailsById_getDoctorDetailsById {
   __typename: "DoctorDetails";
   id: string;
@@ -140,6 +146,7 @@ export interface getDoctorDetailsById_getDoctorDetailsById {
   doctorHospital: getDoctorDetailsById_getDoctorDetailsById_doctorHospital[];
   starTeam: (getDoctorDetailsById_getDoctorDetailsById_starTeam | null)[] | null;
   consultHours: (getDoctorDetailsById_getDoctorDetailsById_consultHours | null)[] | null;
+  doctorNextAvailSlots: getDoctorDetailsById_getDoctorDetailsById_doctorNextAvailSlots | null;
 }
 
 export interface getDoctorDetailsById {
