@@ -49,6 +49,7 @@ export const saveMedicineOrderPaymentMqTypeDefs = gql`
   }
 
   input MedicinePaymentMqInput {
+    mid: String
     orderAutoId: Int!
     paymentType: MEDICINE_ORDER_PAYMENT_TYPE!
     amountPaid: Float!
@@ -66,6 +67,7 @@ export const saveMedicineOrderPaymentMqTypeDefs = gql`
     paymentMode: PAYMENT_METHODS
     healthCredits: Float
     partnerInfo: String
+    planId: String
   }
 
   type SaveMedicineOrderPaymentMqResult {
@@ -83,6 +85,7 @@ export const saveMedicineOrderPaymentMqTypeDefs = gql`
 `;
 
 type MedicinePaymentMqInput = {
+  mid: string;
   orderAutoId: number;
   paymentType: MEDICINE_ORDER_PAYMENT_TYPE;
   amountPaid: number;
@@ -99,6 +102,7 @@ type MedicinePaymentMqInput = {
   paymentMode: PAYMENT_METHODS_REVERSE;
   healthCredits: number;
   partnerInfo: string;
+  planId: string;
 };
 
 enum CODCity {
@@ -422,16 +426,16 @@ const SaveMedicineOrderPaymentMq: Resolver<
 
       const toEmailId =
         process.env.NODE_ENV == 'dev' ||
-        process.env.NODE_ENV == 'development' ||
-        process.env.NODE_ENV == 'local'
+          process.env.NODE_ENV == 'development' ||
+          process.env.NODE_ENV == 'local'
           ? ApiConstants.MEDICINE_SUPPORT_EMAILID
           : ApiConstants.MEDICINE_SUPPORT_EMAILID_PRODUCTION;
 
       //medicine support cc email is '' and input is used, hence retaining this
       let ccEmailIds =
         process.env.NODE_ENV == 'dev' ||
-        process.env.NODE_ENV == 'development' ||
-        process.env.NODE_ENV == 'local'
+          process.env.NODE_ENV == 'development' ||
+          process.env.NODE_ENV == 'local'
           ? ''
           : <string>ApiConstants.MEDICINE_SUPPORT_CC_EMAILID_PRODUCTION;
 

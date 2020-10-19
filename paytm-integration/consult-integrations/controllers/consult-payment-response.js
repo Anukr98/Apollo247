@@ -33,11 +33,14 @@ module.exports = async (req, res, next) => {
       default:
         transactionStatus = 'success';
     }
-    const merc_unq_ref = payload.MERC_UNQ_REF.split(':');
+    const [bookingSource, appointmentId, paymentTypeId, planId] = payload.MERC_UNQ_REF.split(':');
 
-    // Source of booking
-    bookingSource = merc_unq_ref[0];
-    const appointmentId = merc_unq_ref[1];
+    if (paymentTypeId) {
+      payload.PARTNERINFO = paymentTypeId;
+    }
+    if (planId) {
+      payload.PLANID = planId;
+    }
 
     if (
       process.env.NODE_ENV == 'dev' ||
@@ -49,7 +52,7 @@ module.exports = async (req, res, next) => {
         headers: {
           'authorization': process.env.API_TOKEN
         }
-      }
+      };
 
       logger.info(`consults query - ${consultsOrderQuery(payload)}`);
 

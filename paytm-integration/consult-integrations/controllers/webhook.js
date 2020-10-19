@@ -28,6 +28,14 @@ module.exports = async (req, res, next) => {
       headers: {
         'authorization': process.env.API_TOKEN
       }
+    };
+    const [bookingSource, appointmentId, paymentTypeId, planId] = payload.MERC_UNQ_REF.split(':');
+
+    if (paymentTypeId) {
+      payload.PARTNERINFO = paymentTypeId;
+    }
+    if (planId) {
+      payload.PLANID = planId;
     }
 
     // this needs to be altered later.

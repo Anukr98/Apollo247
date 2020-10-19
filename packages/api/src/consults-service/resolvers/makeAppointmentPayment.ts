@@ -59,6 +59,7 @@ export const makeAppointmentPaymentTypeDefs = gql`
   }
 
   input AppointmentPaymentInput {
+    mid: String
     amountPaid: Float!
     paymentRefId: String
     paymentStatus: String!
@@ -71,6 +72,7 @@ export const makeAppointmentPaymentTypeDefs = gql`
     refundAmount: Float
     paymentMode: PAYMENT_METHODS
     partnerInfo: String
+    planId: String
   }
 
   type AppointmentPayment {
@@ -115,6 +117,7 @@ type AppointmentPayment = {
 };
 
 type AppointmentPaymentInput = {
+  mid: string;
   amountPaid: number;
   paymentRefId: string;
   paymentStatus: string;
@@ -127,6 +130,7 @@ type AppointmentPaymentInput = {
   refundAmount: number;
   paymentMode: PAYMENT_METHODS_REVERSE;
   partnerInfo: string;
+  planId: string;
 };
 
 type AppointmentInputArgs = { paymentInput: AppointmentPaymentInput };
@@ -275,7 +279,7 @@ const makeAppointmentPayment: Resolver<
           {
             appointment: processingAppointment,
             appointmentPayments: paymentInfo,
-            refundAmount: paymentInfo.amountPaid,
+            refundAmount: processingAppointment.discountedAmount,
             txnId: paymentInfo.paymentRefId,
             orderId: processingAppointment.paymentOrderId,
           },
@@ -355,7 +359,7 @@ const makeAppointmentPayment: Resolver<
     }
     if (
       timeDifference / 60 <=
-        parseInt(ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString(), 10) ||
+      parseInt(ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString(), 10) ||
       submitFlag == 1
     ) {
       const consultQueueRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
@@ -569,8 +573,8 @@ const sendPatientAcknowledgements = async (
   const toEmailId = process.env.BOOK_APPT_TO_EMAIL ? process.env.BOOK_APPT_TO_EMAIL : '';
   const ccEmailIds =
     process.env.NODE_ENV == 'dev' ||
-    process.env.NODE_ENV == 'development' ||
-    process.env.NODE_ENV == 'local'
+      process.env.NODE_ENV == 'development' ||
+      process.env.NODE_ENV == 'local'
       ? ApiConstants.PATIENT_APPT_CC_EMAILID
       : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
   const emailContent: EmailMessage = {

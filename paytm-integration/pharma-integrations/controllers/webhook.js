@@ -28,15 +28,14 @@ module.exports = async (req, res, next) => {
       headers: {
         'authorization': process.env.API_TOKEN
       }
-    }
+    };
 
-    payload.partnerInfo = '';
-    if (payload.MERC_UNQ_REF) {
-      const info = payload.MERC_UNQ_REF.split(':');
-      if (info.length == 3) {
-        payload.partnerInfo = info[2];
-      }
-      payload.HEALTH_CREDITS = info[1];
+    const [bookingSource, healthCredits, paymentTypeId, planId] = payload.MERC_UNQ_REF.split(':');
+    if (paymentTypeId) {
+      payload.PARTNERINFO = paymentTypeId;
+    }
+    if (planId) {
+      payload.PLANID = planId;
     }
     //const [bookingSource, healthCredits] = payload.MERC_UNQ_REF.split(':');
     // this needs to be altered later.

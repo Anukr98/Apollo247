@@ -256,7 +256,7 @@ const checkIfReschedule: Resolver<
     } else {
       if (
         Math.abs(differenceInDays(apptDetails.appointmentDateTime, args.rescheduleDate)) >
-          ApiConstants.APPOINTMENT_RESCHEDULE_DAYS_LIMIT &&
+        ApiConstants.APPOINTMENT_RESCHEDULE_DAYS_LIMIT &&
         apptDetails.isFollowPaid === false
       ) {
         isPaid = 1;
@@ -475,7 +475,7 @@ const bookRescheduleAppointment: Resolver<
           {
             appointment: apptDetails,
             appointmentPayments: appointmentPayment,
-            refundAmount: appointmentPayment.amountPaid,
+            refundAmount: apptDetails.discountedAmount,
             txnId: appointmentPayment.paymentRefId,
             orderId: appointmentPayment.orderId,
           },

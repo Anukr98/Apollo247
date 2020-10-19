@@ -1,10 +1,12 @@
 //@ts-check
 'use strict';
 const { default: axios } = require('axios');
+const { default: Decimal } = require('decimal.js');
 const logger = require('../../winston-logger')('Consults-logs');
 const {
   initPayment,
   generatePaymentOrderId,
+  addAdditionalMERC,
   singlePaymentAdditionalParams,
 } = require('../helpers/common');
 
@@ -12,13 +14,14 @@ module.exports = async (req, res) => {
   let appointmentIdGlobal;
 
   try {
-    const { appointmentId } = req.query;
+    const { appointmentId, planId, paymentTypeID: paymentTypeId, bankCode, paymentModeOnly } = req.query;
     appointmentIdGlobal = appointmentId;
-    //res.send('consult payment');
     let source = 'MOBILE';
     if (req.query.source) {
       source = req.query.source;
     }
+    let merc_unq_ref = `${source}:${appointmentId}`;
+    merc_unq_ref += addAdditionalMERC(paymentTypeId, planId);
 
     let addParams = {};
 
@@ -26,40 +29,78 @@ module.exports = async (req, res) => {
      * If paymentModeOnly key == 'YES' then add additional params
      * I.E AUTH_MODE|BANK_CODE|PAYMENT_TYPE_ID
      */
-    if (req.query.paymentModeOnly === 'YES') {
-      addParams = singlePaymentAdditionalParams(req.query.paymentTypeID, req.query.bankCode);
-      addParams['PAYMENT_MODE_ONLY'] = req.query.paymentModeOnly;
-    }
+    if (paymentModeOnly === 'YES') {
 
+      addParams = singlePaymentAdditionalParams(paymentTypeId, bankCode);
+      addParams['PAYMENT_MODE_ONLY'] = paymentModeOnly;
+    }
     const axiosConfig = {
       headers: {
         'authorization': process.env.API_TOKEN
       }
-    }
+    };
 
     const getAptRequestJson = {
       query:
-        'query { getAppointmentData(appointmentId:"' +
+        'query getAppointmentData { getAppointmentData(appointmentId:"' +
         appointmentId +
         '"){ appointmentsHistory { discountedAmount patientId } } }',
     };
-    const aptResp = await axios.post(process.env.API_URL, getAptRequestJson, axiosConfig);
+    const prePaymentRequests = [];
+    prePaymentRequests.push(axios.post(process.env.API_URL, getAptRequestJson, axiosConfig));
 
-    logger.info(`${appointmentId} - getAppointmentData - ${JSON.stringify(aptResp.data)}`);
+    /**
+     * If plan id is passed, we need to get the price
+     */
+    if (planId) {
+      const getPlanPrice = {
+        query:
+          'query getAppointmentData { getAppointmentData(appointmentId:"' +
+          appointmentId +
+          '"){ appointmentsHistory { discountedAmount patientId } } }',
+      };
+      prePaymentRequests.push(axios.post(process.env.API_URL, getPlanPrice, axiosConfig));
+    }
 
-    if (aptResp.data.errors && aptResp.data.errors.length) {
+    const [appointmentData, planData] = await Promise.all(prePaymentRequests);
+
+    logger.info(`${appointmentId} - getAppointmentData - ${JSON.stringify(appointmentData.data)}`);
+    let totalPayAmount = 0;
+
+    /**
+     * If error occurs at getAppointmentData API, throw error and exit
+     */
+    if (appointmentData.data.errors && appointmentData.data.errors.length) {
       logger.error(
-        `${appointmentId} - consult-payment-request - ${JSON.stringify(aptResp.data.errors)}`
+        `${appointmentId} - consult-payment-request-getAppointmentData - ${JSON.stringify(appointmentData.data.errors)}`
       );
       throw new Error(`Error Occured in getAppointmentData for appointmentID:${appointmentId}`);
     }
 
-    const merc_unq_ref = `${source}:${appointmentId}`;
+    /**
+     * If error occurs at getPlanPrice API, throw error and exit
+     */
+    if (planData) {
+      if (planData.data.errors && planData.data.errors.length) {
+        logger.error(
+          `${appointmentId} - consult-payment-request-getPlanPrice - ${JSON.stringify(planData.data.errors)}`
+        );
+        throw new Error(`Error Occured in getAppointmentData for appointmentID:${appointmentId}`);
+      }
+      //totalPayAmount += planData.data.data.getPlanPrice.price;
+      totalPayAmount = 300;
+    }
+
     const {
       discountedAmount,
       patientId: patientIdExisting,
-    } = aptResp.data.data.getAppointmentData.appointmentsHistory[0];
-
+    } = appointmentData.data.data.getAppointmentData.appointmentsHistory[0];
+    totalPayAmount += discountedAmount;
+    if (planId) {
+      //get price from planId
+      const planPrice = 300;
+      totalPayAmount = +new Decimal(planPrice).plus(totalPayAmount);
+    }
     const paymentOrderId = generatePaymentOrderId();
 
     const requestJSON = {
@@ -85,7 +126,7 @@ module.exports = async (req, res) => {
     const success = await initPayment(
       patientIdExisting,
       paymentOrderId,
-      discountedAmount,
+      totalPayAmount,
       merc_unq_ref,
       addParams,
       req.query.paymentTypeID
@@ -110,3 +151,5 @@ module.exports = async (req, res) => {
     });
   }
 };
+
+

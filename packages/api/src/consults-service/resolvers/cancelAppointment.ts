@@ -23,8 +23,7 @@ import { addMilliseconds, format } from 'date-fns';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
-import { AdminDoctorMap } from 'doctors-service/repositories/adminDoctorRepository';
-import { initiateRefund } from 'consults-service/helpers/refundHelper';
+=import { initiateRefund } from 'consults-service/helpers/refundHelper';
 import { log } from 'customWinstonLogger';
 import { PaytmResponse } from 'types/refundHelperTypes';
 
@@ -123,7 +122,7 @@ const cancelAppointment: Resolver<
       {
         orderId: appointment.paymentOrderId,
         txnId: appointment.appointmentPayments[0].paymentRefId,
-        refundAmount: appointment.appointmentPayments[0].amountPaid,
+        refundAmount: appointment.discountedAmount,
         appointment: appointment,
         appointmentPayments: appointment.appointmentPayments[0],
       },

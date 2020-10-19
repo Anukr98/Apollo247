@@ -26,8 +26,14 @@ module.exports = async (req, res, next) => {
     }
 
     // Source of booking
-    const [bookingSource, healthCredits] = payload.MERC_UNQ_REF.split(':');
+    const [bookingSource, healthCredits, paymentTypeId, planId] = payload.MERC_UNQ_REF.split(':');
     payload.HEALTH_CREDITS = healthCredits;
+    if (paymentTypeId) {
+      payload.PARTNERINFO = paymentTypeId;
+    }
+    if (planId) {
+      payload.PLANID = planId;
+    }
     /* make success and failure response */
     switch (payload.STATUS) {
       case 'TXN_FAILURE':
@@ -52,7 +58,7 @@ module.exports = async (req, res, next) => {
         headers: {
           'authorization': process.env.API_TOKEN
         }
-      }
+      };
 
       logger.info(`pharma-response-${medicineOrderQuery(payload)}`);
 

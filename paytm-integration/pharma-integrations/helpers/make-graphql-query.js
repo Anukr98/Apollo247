@@ -9,6 +9,7 @@ const medicineOrderQuery = (payload) => {
   }
 
   let params = `orderAutoId: ${payload.ORDERID}, 
+    mid: "${payload.MID}",
     paymentType: CASHLESS, 
     amountPaid: ${payload.TXNAMOUNT},
     healthCredits: ${payload.HEALTH_CREDITS},
@@ -17,8 +18,15 @@ const medicineOrderQuery = (payload) => {
     paymentDateTime: "${txnDate}", 
     responseCode: "${payload.RESPCODE}", 
     responseMessage: "${payload.RESPMSG}", 
-    bankTxnId: "${payload.BANKTXNID}",
-    partnerInfo: "${payload.partnerInfo}"`;
+    bankTxnId: "${payload.BANKTXNID}"`;
+
+  if (payload.PARTNERINFO) {
+    params += `, partnerInfo: "${payload.PARTNERINFO}"`;
+  }
+
+  if (payload.PLANID) {
+    params += `, planId: "${payload.PLANID}"`;
+  }
 
   if (payload.REFUNDAMT) {
     params += `, refundAmount: ${payload.REFUNDAMT}`;

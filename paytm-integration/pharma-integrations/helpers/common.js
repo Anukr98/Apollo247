@@ -19,7 +19,6 @@ const initPayment = function (
     let merchantId = process.env.MID_PHARMACY;
     if (paymentTypeID == process.env.PARTNER_SBI) {
       merchantId = process.env.SBI_MID_PHARMACY;
-      merc_unq_ref += ':' + process.env.PARTNER_SBI;
     }
     let paymentObj = {
       ORDER_ID: orderAutoId,
@@ -76,7 +75,14 @@ const singlePaymentAdditionalParams = (paymentTypeID, bankCode) => {
   return paymentTypeParams;
 };
 
+const addAdditionalMERC = (paymentTypeId, planId) => {
+  let merc = ":" + (paymentTypeId === process.env.PARTNER_SBI ? paymentTypeId : 0);
+  merc += ":" + (planId ? planId : 0);
+  return merc;
+};
+
 module.exports = {
   initPayment,
   singlePaymentAdditionalParams,
+  addAdditionalMERC
 };
