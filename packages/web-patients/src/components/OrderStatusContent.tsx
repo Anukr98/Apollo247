@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import Grid from '@material-ui/core/Grid';
-
+import { isEmailValid } from '@aph/universal/dist/aphValidators';
 import { Link, Theme, Typography } from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
 import Modal from '@material-ui/core/Modal';
@@ -299,13 +299,24 @@ interface OrderStatusDetail {
   consultMode?: string;
   onClose: () => void;
   ctaText: string;
-  fetchConsultInvoice?: (fetchInvoice: boolean) => void;
+	fetchConsultInvoice?: (fetchInvoice: boolean) => void;
+	fetchUserEmailForInvoice?: (fetchEmail: string) => void;
   doctorFullName?: string;
 }
 
 export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
-  const classes = useStyles({});
-  const { currentPatient } = useAllCurrentPatients();
+	const classes = useStyles({});
+	const [showEmailTextArea, setEmailTextArea] = useState<boolean>(false);
+	const [invoiceEmail, setInvoiceEmail] = useState<string>(null);
+ 	const [emailValid, setEmailValid] = useState<boolean>(true);
+	const [isEmailSent, setEmailSent] = useState<boolean>(false);
+	const { currentPatient } = useAllCurrentPatients();
+	if (currentPatient && currentPatient.emailAddress) {
+		if (invoiceEmail === null) {
+			setEmailValid(false);
+			setInvoiceEmail(currentPatient.emailAddress);
+		}
+	}
   const {
     paymentStatus,
     paymentInfo,
@@ -321,7 +332,8 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
     consultMode,
     onClose,
     ctaText,
-    fetchConsultInvoice,
+		fetchConsultInvoice,
+		fetchUserEmailForInvoice,
     doctorFullName,
   } = props;
   interface statusMap {
@@ -332,7 +344,30 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
     failed: 'PAYMENT FAILED',
     pending: 'PAYMENT PENDING',
     aborted: 'PAYMENT ABORTED',
+	};
+	
+	const emailInvoiceBtnHandler = () => {
+		setEmailTextArea(true);
+		setEmailSent(false);
+		setEmailValid(true);
+		setEmailValid(false);
+	}
+
+	const handleEmailValidityCheck = (email: string) => {
+		setInvoiceEmail(email);
+    if (email.length && !isEmailValid(email)) {
+      setEmailValid(true);
+    } else {
+      setEmailValid(false);
+    }
   };
+
+	const sendInvoiceOnEmailHandler = () => {
+		fetchUserEmailForInvoice(invoiceEmail);
+		fetchConsultInvoice(true);
+		setEmailSent(true);
+		setInvoiceEmail(currentPatient.emailAddress);
+	}
 
   const doctorAddressDetail =
     (doctorDetail &&
@@ -375,34 +410,54 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
             <>
               <AphButton
                 className={classes.viewInvoice}
-                onClick={() => fetchConsultInvoice(true)}
+                onClick={() => { 
+									setInvoiceEmail(null);
+									fetchConsultInvoice(true);
+								}}
               >
                 View Invoice
             </AphButton>
-              <AphButton
-                className={classes.viewInvoice}
-              >
-                Email Invoice
+							<AphButton
+								className={classes.viewInvoice}
+								onClick={emailInvoiceBtnHandler}
+							>
+								Email Invoice
             </AphButton>
-              <div
-                className={classes.chatWindowFooter}
-              >
-                <AphTextField
-                  autoFocus
-                  className={classes.searchInput}
-                  inputProps={{ type: 'text' }}
-                  placeholder="Type here..."
-                />
-                <AphButton
-                  className={classes.chatSend}
-                  disabled
-                >
-                  <img src={require('images/ic_send.svg')} alt="" />
-                </AphButton>
-                {/* <div className={classes.successMsg}>
-                  Invoice has been sent to garimasuri@gmail.com!
-                </div> */}
-              </div>
+							{showEmailTextArea && (
+								<div
+									className={classes.chatWindowFooter}
+								>
+									{!isEmailSent ? (
+										<>
+										<AphTextField
+										autoFocus
+										className={classes.searchInput}
+										inputProps={{ type: 'text', value: invoiceEmail }}
+										placeholder="Enter your email id"
+										onChange={(event) => handleEmailValidityCheck(event.target.value)}
+										//onChange={(event) => setInvoiceEmail(event.target.value)}
+										
+										//onBlur={handleEmailValidityCheck}
+									/>
+									<AphButton
+										className={classes.chatSend}
+										disabled={emailValid}
+										onClick={sendInvoiceOnEmailHandler}
+									>
+										<img src={require('images/ic_send.svg')} alt="" />
+									</AphButton>
+										</>
+									) : (
+										<div className={classes.successMsg}>
+												Invoice has been sent to {invoiceEmail}!
+										</div> 
+									)}
+									
+									{/* <div className={classes.successMsg}>
+									Invoice has been sent to garimasuri@gmail.com!
+								</div> */}
+								</div>
+							)}
             </>
           )}
         </div>

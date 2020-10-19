@@ -574,7 +574,8 @@ const Appointments: React.FC<AppointmentProps> = (props) => {
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
   const [tabValue, setTabValue] = React.useState<number>(0);
   const [isConfirmedPopoverOpen, setIsConfirmedPopoverOpen] = React.useState<boolean>(true);
-  const [triggerInvoice, setTriggerInvoice] = React.useState<boolean>(false);
+	const [triggerInvoice, setTriggerInvoice] = React.useState<boolean>(false);
+	const [triggerInvoiceOverMail, setTriggerMail] = React.useState<string>(null);
   const [filter, setFilter] = React.useState<AppointmentFilterObject>(
     initialAppointmentFilterObject
   );
@@ -707,19 +708,26 @@ const Appointments: React.FC<AppointmentProps> = (props) => {
 
   useEffect(() => {
     if (triggerInvoice) {
-      setIsLoading(true);
+			if (triggerInvoiceOverMail === null) {
+				setIsLoading(true);
+			}
       apolloClient
         .query<GetOrderInvoice>({
           query: GET_CONSULT_INVOICE,
           variables: {
             appointmentId: successApptId,
-            patientId: currentPatient && currentPatient.id,
+						patientId: currentPatient && currentPatient.id,
+						emailId: triggerInvoiceOverMail
           },
           fetchPolicy: 'cache-first',
         })
         .then(({ data }) => {
           if (data && data.getOrderInvoice && data.getOrderInvoice.length) {
-            window.open(data.getOrderInvoice, '_blank');
+						if (triggerInvoiceOverMail === null) {
+							window.open(data.getOrderInvoice, '_blank');
+						} else {
+							setTriggerMail(null)
+						}
           }
         })
         .catch((e) => {
@@ -1569,7 +1577,8 @@ const Appointments: React.FC<AppointmentProps> = (props) => {
                   onClose={() => handlePaymentModalClose()}
                   ctaText={statusActions[paymentData.paymentStatus].ctaText}
                   orderStatusCallback={statusActions[paymentData.paymentStatus].callbackFunction}
-                  fetchConsultInvoice={setTriggerInvoice}
+									fetchConsultInvoice={setTriggerInvoice}
+									fetchUserEmailForInvoice={setTriggerMail}
                 />
               )}
             </>
