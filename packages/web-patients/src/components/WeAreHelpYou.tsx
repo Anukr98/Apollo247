@@ -351,7 +351,7 @@ export const WeAreHelpYou: React.FC = (props) => {
                 </a>
               </div>
 
-              <div
+              {/* <div
                 onClick={() => {
                   setIscoronaDialogOpen(true);
                 }}
@@ -365,9 +365,9 @@ export const WeAreHelpYou: React.FC = (props) => {
                   />
                 </span>
                 <span>Call our experts</span>
-              </div>
+              </div> */}
 
-              {/* <Link className={classes.serviceCard} to={clientRoutes.kavachLanding()}>
+              <Link className={classes.serviceCard} to={clientRoutes.kavachLanding()}>
                 <span>
                   <LazyIntersection
                     src={require('images/apollo-kavach.png')}
@@ -376,7 +376,7 @@ export const WeAreHelpYou: React.FC = (props) => {
                   />
                 </span>
                 <span>Explore the Apollo Kavach Program</span>
-              </Link> */}
+              </Link>
             </div>
           </div>
           </div>
