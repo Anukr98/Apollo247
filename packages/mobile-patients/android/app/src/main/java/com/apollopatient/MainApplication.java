@@ -11,6 +11,7 @@ import fr.bamlab.rnimageresizer.ImageResizerPackage;
 import com.microsoft.codepush.react.CodePush;
 import io.github.elyx0.reactnativedocumentpicker.DocumentPickerPackage;
 import io.wazo.callkeep.RNCallKeepPackage;
+import com.BV.LinearGradient.LinearGradientPackage;
 import com.ocetnik.timer.BackgroundTimerPackage;
 import com.brentvatne.react.ReactVideoPackage;
 import com.zmxv.RNSound.RNSoundPackage;
@@ -123,6 +124,7 @@ public class MainApplication extends Application implements ReactApplication {
                     packages.add(new RNFirebaseRemoteConfigPackage());
                     packages.add(new RNFirebaseDatabasePackage());
                     packages.add(new RNAppSignatureHelperPackage());
+                    packages.add(new LinearGradientPackage());
                     // packages.add(new ReactNativeExceptionHandlerPackage());
                     return packages;
                 }

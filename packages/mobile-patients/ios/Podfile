@@ -110,6 +110,8 @@ target 'ApolloPatient' do
 
   pod 'react-native-progress-bar-android', :path => '../node_modules/@react-native-community/progress-bar-android'
 
+  pod 'BVLinearGradient', :path => '../node_modules/react-native-linear-gradient'
+
   target 'NotificationService' do
       platform :ios, '10.0'
       pod 'WebEngageBannerPush'
