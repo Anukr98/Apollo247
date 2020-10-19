@@ -873,7 +873,12 @@ const getDoctorList: Resolver<
     const elasticFee: { [index: string]: any } = [];
     args.filterInput.fees.forEach((fee) => {
       elasticFee.push({
-        range: { onlineConsultationFees: { gte: fee.minimum, lte: fee.maximum } },
+        bool: {
+          must: [
+            { range: { onlineConsultationFees: { gte: fee.minimum, lte: fee.maximum } },},
+            { range: { physicalConsultationFees: { gte: fee.minimum, lte: fee.maximum } },},
+          ],
+        },
       });
     });
     if (elasticFee.length > 0) {
