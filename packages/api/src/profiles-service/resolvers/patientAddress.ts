@@ -23,6 +23,7 @@ export const addPatientAddressTypeDefs = gql`
     latitude: Float
     longitude: Float
     stateCode: String
+    defaultAddress: Boolean
   }
 
   enum PATIENT_ADDRESS_TYPE {
@@ -110,6 +111,7 @@ type PatientAddressInput = {
   latitude: number;
   longitude: number;
   stateCode: string;
+  defaultAddress: boolean;
 };
 
 type UpdatePatientAddressInput = {
@@ -266,7 +268,12 @@ const savePatientAddress: Resolver<
     ...PatientAddressInput,
     patient: patientDetails,
   };
+
   const patientAddressRepository = profilesDb.getCustomRepository(PatientAddressRepository);
+
+  if (savePatientaddressAttrs.defaultAddress)
+    await patientAddressRepository.markPatientAdrressAsNonDefault(PatientAddressInput.patientId);
+
   const patientAddress = await patientAddressRepository.savePatientAddress(savePatientaddressAttrs);
 
   return { patientAddress };
