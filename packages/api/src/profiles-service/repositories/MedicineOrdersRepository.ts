@@ -674,7 +674,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
   getMedicineOrderPlacedDetails(orderAutoId: number) {
     return this.findOne({
       where: { orderAutoId },
-      relations: ['patient', 'medicineOrderAddress'],
+      relations: ['patient', 'medicineOrderAddress', 'medicineOrderPayments'],
     });
   }
 
