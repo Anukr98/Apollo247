@@ -412,7 +412,7 @@ export const DiagnosticPrescription: React.FC = () => {
       .query<SearchDiagnostics, any>({
         query: SEARCH_DIAGNOSTICS,
         variables: {
-          city: '',
+          city: 'Hyderabad',
           patientId: patientDetails && patientDetails.id ? patientDetails.id : '',
           searchText: value,
         },
