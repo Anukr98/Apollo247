@@ -965,7 +965,7 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
                   <img src={require('images/triangle.svg')} alt="" />
                   <Link to={clientRoutes.specialityListing()}>Online Doctor Consultation</Link>
                   <img src={require('images/triangle.svg')} alt="" />
-                  <Link to={clientRoutes.specialties(readableParam(params.specialty))}>
+                  <Link to={clientRoutes.specialties(readableParam(specialtyName))}>
                     {faqData && faqData[0].breadCrumbTitle}
                   </Link>
                   <img src={require('images/triangle.svg')} alt="" />

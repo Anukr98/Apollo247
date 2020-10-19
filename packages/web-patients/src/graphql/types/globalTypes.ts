@@ -642,6 +642,7 @@ export interface ConsultQueueInput {
 }
 
 export interface CreateUserSubscriptionInput {
+  _id?: string | null;
   plan_id: string;
   payment_reference_id?: string | null;
   coupon_availed?: string | null;
@@ -839,6 +840,7 @@ export interface MedicineCartOMSInput {
   showPrescriptionAtStore?: boolean | null;
   shopAddress?: ShopAddress | null;
   customerComment?: string | null;
+  storeDistanceKm?: number | null;
 }
 
 export interface MedicineCartOMSItem {
