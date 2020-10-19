@@ -443,6 +443,9 @@ export class MedicineOrders extends BaseEntity {
   @Column({ nullable: true })
   allocationProfileName: string;
 
+  @Column({ type: 'float8', nullable: true })
+  storeDistanceKm: number;
+
   @Column({ nullable: true, type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedDate: Date;
 
