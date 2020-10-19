@@ -1467,15 +1467,18 @@ export async function sendNotification(
   }
 
   //building payload
-  let payload = {
-    notification: {
-      title: notificationTitle,
-      body: notificationBody,
-      sound: notificationSound,
-      android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
-    },
-    data: {},
-  };
+  let payload;
+  if (notificationTitle && notificationBody) {
+    payload = {
+      notification: {
+        title: notificationTitle,
+        body: notificationBody,
+        sound: notificationSound,
+        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
+      },
+      data: {},
+    };
+  }
 
   if (pushNotificationInput.notificationType == NotificationType.BOOK_APPOINTMENT) {
     payload = {
