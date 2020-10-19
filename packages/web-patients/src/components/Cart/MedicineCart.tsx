@@ -833,7 +833,6 @@ export const MedicineCart: React.FC = (props) => {
     setShopId(tatRes.storeCode);
     setTatType(tatRes.storeType);
     setDistance(tatRes.distance);
-    // checkForCartChanges(pincode, lat, lng);
     checkCartChangesUtil(tatRes.items);
   };
 
