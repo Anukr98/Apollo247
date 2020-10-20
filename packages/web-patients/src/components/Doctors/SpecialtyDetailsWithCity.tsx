@@ -492,6 +492,7 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
   const [specialtyName, setSpecialtyName] = useState<string>('');
   const [specialtyPlural, setSpecialtyPlural] = useState<string>('');
   const [specialtyImage, setSpecialtyImage] = useState<string>('');
+  const [specialtyInfo, setSpecialtyInfo] = useState<any>({});
   const [locationPopup, setLocationPopup] = useState<boolean>(false);
   const [isAlternateVariant, setIsAlternateVariant] = useState<boolean>(true);
   const [selectedCity, setSelectedCity] = useState<string>(
@@ -711,7 +712,7 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
       window.dataLayer.push({
         event: 'pageviewEvent',
         pagePath: window.location.href,
-        pageName: `${readableParam(specialtyName)} Listing Page`,
+        pageName: `${specialtyName}-${selectedCity} Listing Page`,
         pageLOB: 'Consultation',
         pageType: 'Index',
         productlist: JSON.stringify(doctorData),
@@ -742,6 +743,7 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
                 setSlugName(specialty.slugName);
                 setSpecialtyPlural(specialty.specialistPluralTerm);
                 setSpecialtyImage(specialty.image);
+                setSpecialtyInfo(specialty);
               }
             });
         });
@@ -864,13 +866,13 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
               {
                 '@type': 'ListItem',
                 position: 3,
-                name: specialtyName,
+                name: specialtyPlural,
                 item: `https://www.apollo247.com/specialties/${readableParam(specialtyName)}`,
               },
               {
                 '@type': 'ListItem',
                 position: 4,
-                name: `${specialtyPlural} - ${selectedCity}`,
+                name: `${specialtyPlural} in ${selectedCity}`,
                 item: `https://www.apollo247.com/doctors/${readableParam(
                   specialtyPlural
                 )}-in-${selectedCity}-scity`,
@@ -905,16 +907,6 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
             setFilteredDoctorData(filteredObj);
             const specialtiesArray = response.data.getDoctorList.specialties || [];
             setSearchSpecialty(specialtiesArray);
-            /**Gtm code start start */
-            dataLayerTracking({
-              event: 'pageviewEvent',
-              pagePath: window.location.href,
-              pageName: `${specialtyName}-${selectedCity} Listing Page`,
-              pageLOB: 'Consultation',
-              pageType: 'Listing',
-              productlist: JSON.stringify(doctors),
-            });
-            /**Gtm code start end */
           }
           setData(response.data);
         })
@@ -925,17 +917,22 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
           setInitalLoad(false);
         });
     }
-  }, [currentLat, currentLong, filter, specialtyId, specialtyName, selectedCity]);
+  }, [currentLat, currentLong, filter, specialtyId, specialtyName, selectedCity, specialtyPlural]);
 
   const metaTagProps = {
-    title: (faqData && faqData[0].specialtyMetaTitleCity) || '',
-    description: (faqData && faqData[0].specialtyMetaDescriptionCity) || '',
-    canonicalLink:
-      window && window.location && `${window.location.host}${window.location.pathname}`,
+    title: `Best ${specialtyPlural} in ${selectedCity} - Book Online Consultation Now | Apollo 247`,
+    description: `${specialtyPlural} in ${selectedCity} - Book online doctor consultation and in-person visit with ${apolloDoctorCount +
+      partnerDoctorCount} ${specialtyName} Specialists in ${selectedCity} within 15 min. Get world-class treatment from Best ${specialtyPlural} in ${selectedCity} ${
+      specialtyInfo.shortDescription
+    } such as ${specialtyInfo.symptoms} and more.`,
+    canonicalLink: window && window.location && window.location.href,
     og: {
-      title: (faqData && faqData[0].specialtyMetaTitleCity) || '',
-      description: (faqData && faqData[0].specialtyMetaDescriptionCity) || '',
-      url: window.location.href,
+      title: `Best ${specialtyPlural} in ${selectedCity} - Book Online Consultation Now | Apollo 247`,
+      description: `${specialtyPlural} in ${selectedCity} - Book online doctor consultation and in-person visit with ${apolloDoctorCount +
+        partnerDoctorCount} ${specialtyName} Specialists in ${selectedCity} within 15 min. Get world-class treatment from Best ${specialtyPlural} in ${selectedCity} ${
+        specialtyInfo.shortDescription
+      } such as ${specialtyInfo.symptoms} and more.`,
+      url: window && window.location && window.location.href,
       image: specialtyImage,
       site_name: 'Apollo 24|7',
     },
@@ -1012,7 +1009,7 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
               />
               <div className={classes.tabsFilter}>
                 <h2>
-                  {`${filteredDoctorData ? filteredDoctorData[doctorType].length : 0}`}{' '}
+                  {`${apolloDoctorCount + partnerDoctorCount}`}{' '}
                   <span>{faqData && faqData[0].breadCrumbTitle.toLowerCase()}</span> found in{' '}
                   <span>{selectedCity}</span>
                 </h2>
