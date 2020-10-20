@@ -72,6 +72,7 @@ import {
 import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
 import { ProductPageViewedSource } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
+import moment from 'moment';
 
 export interface MedicineCartProps extends NavigationScreenProps {}
 
@@ -287,16 +288,16 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
               }
               addressChange && NavigateToCartSummary(deliveryDate, distance, storeType, storeCode);
             } else {
-              addressChange && NavigateToCartSummary('');
+              addressChange && NavigateToCartSummary(genericServiceableDate);
               handleTatApiFailure(selectedAddress, {});
             }
           } else {
             handleTatApiFailure(selectedAddress, {});
-            addressChange && NavigateToCartSummary('');
+            addressChange && NavigateToCartSummary(genericServiceableDate);
           }
         } catch (error) {
           handleTatApiFailure(selectedAddress, error);
-          addressChange && NavigateToCartSummary('');
+          addressChange && NavigateToCartSummary(genericServiceableDate);
         }
       } catch (error) {
         handleTatApiFailure(selectedAddress, error);
@@ -307,11 +308,17 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     }
   }
 
+  const genericServiceableDate = moment()
+    .add(2, 'days')
+    .set('hours', 20)
+    .set('minutes', 0)
+    .format(AppConfig.Configuration.TAT_API_RESPONSE_DATE_FORMAT);
+
   function handleTatApiFailure(
     selectedAddress: savePatientAddress_savePatientAddress_patientAddress,
     error: any
   ) {
-    setdeliveryTime('');
+    setdeliveryTime(genericServiceableDate);
     postTatResponseFailureEvent(cartItems, selectedAddress.zipcode || '', error);
     setloading(false);
     validatePharmaCoupon();
