@@ -496,7 +496,7 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
   const [locationPopup, setLocationPopup] = useState<boolean>(false);
   const [isAlternateVariant, setIsAlternateVariant] = useState<boolean>(true);
   const [selectedCity, setSelectedCity] = useState<string>(
-    params && params.city ? params.city : ''
+    params && params.city ? params.city.charAt(0).toUpperCase() + params.city.slice(1) : ''
   );
   const [searchKeyword, setSearchKeyword] = useState<string>('');
   const [isFetching, setIsFetching] = useState<boolean>(false);
@@ -986,8 +986,7 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
               {faqData && faqData[0].breadCrumbTitle && (
                 <div className={classes.sectionHeader}>
                   <h1>
-                    Best <span>{faqData[0].breadCrumbTitle.toLowerCase()}</span> in{' '}
-                    <span>{selectedCity}</span>
+                    Best <span>{specialtyPlural}</span> in <span>{selectedCity}</span>
                   </h1>
                 </div>
               )}
@@ -1007,9 +1006,8 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
               />
               <div className={classes.tabsFilter}>
                 <h2>
-                  {`${apolloDoctorCount + partnerDoctorCount}`}{' '}
-                  <span>{faqData && faqData[0].breadCrumbTitle.toLowerCase()}</span> found in{' '}
-                  <span>{selectedCity}</span>
+                  {`${apolloDoctorCount + partnerDoctorCount}`} <span>{specialtyPlural}</span> found
+                  in <span>{selectedCity}</span>
                 </h2>
               </div>
               <div className={classes.filterButtons}>
@@ -1020,8 +1018,7 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
                   className={doctorType === DOCTOR_CATEGORY.APOLLO ? classes.buttonActive : ''}
                 >
                   <h2>
-                    Apollo {faqData && faqData[0].breadCrumbTitle.toLowerCase()} (
-                    {apolloDoctorCount})
+                    Apollo {specialtyPlural} ({apolloDoctorCount})
                   </h2>
                 </AphButton>
                 <AphButton
@@ -1031,8 +1028,7 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
                   }}
                 >
                   <h2>
-                    Partner {faqData && faqData[0].breadCrumbTitle.toLowerCase()} (
-                    {partnerDoctorCount})
+                    Partner {specialtyPlural} ({partnerDoctorCount})
                   </h2>
                 </AphButton>
               </div>
@@ -1093,12 +1089,12 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
                   'no results found'
                 )}
               </div>
-              {faqData && faqData.length > 0 && (
+              {/* {faqData && faqData.length > 0 && (
                 <>
                   <BookBest faqData={faqData[0]} specialityName={specialtyName} />
                   <FrequentlyQuestions faqData={faqData[0].specialityFaq} />
                 </>
-              )}
+              )} */}
             </div>
             <div className={classes.rightBar}>
               <div className={classes.stickyBlock}>
