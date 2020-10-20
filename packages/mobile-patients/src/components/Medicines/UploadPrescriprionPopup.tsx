@@ -262,29 +262,21 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
         copyTo: 'documentDirectory',
       });
 
-      const result = documents.filter((obj) => {
-        if (obj.name.toLowerCase().match(/\.(jpeg|jpg|png|jfif|pdf)$/)) {
-          if (obj.name.toLowerCase().endsWith('.pdf')) {
-            if (obj.size > 2000000) {
-              Alert.alert(
-                strings.common.uhOh,
-                `Only images and PDF(less than 2MB) are supported.\n\n${obj.name}`
-              );
-              setshowSpinner(false);
-              return;
-            } else {
-              return obj;
-            }
-          } else {
-            return obj;
-          }
-        } else {
-          Alert.alert(strings.common.uhOh, `Only images and PDF are supported.\n\n${obj.name}`);
-          setshowSpinner(false);
-          return;
-        }
-      });
-      const base64Array = await Promise.all(getBase64(result));
+      const isValidPdf = documents.find(({ name }) => name.toLowerCase().endsWith('.pdf'));
+      const isValidSize = documents.find(({ size }) => size < MAX_FILE_SIZE);
+
+      if (!isValidPdf || !isValidSize) {
+        setshowSpinner(false);
+        Alert.alert(
+          strings.common.uhOh,
+          !isValidPdf
+            ? `Invalid File Type. File type must be PDF.`
+            : `Invalid File Size. File size must be less than 2MB.`
+        );
+        return;
+      }
+
+      const base64Array = await Promise.all(getBase64(documents));
 
       const base64FormattedArray = base64Array.map(
         (base64, index) =>
