@@ -259,6 +259,7 @@ const sendCallNotification: Resolver<
       args.numberOfParticipants,
       args.patientId
     );
+
   } else {
     const pushNotificationInput = {
       appointmentId: args.appointmentId,
@@ -276,6 +277,23 @@ const sendCallNotification: Resolver<
       args.numberOfParticipants,
       args.patientId
     );
+
+    const pushNotificationSessionInput = {
+      appointmentId: args.appointmentId,
+      notificationType: NotificationType.INITIATE_SENIOR_APPT_SESSION,
+    };
+
+    if (args.doctorType === DOCTOR_CALL_TYPE.JUNIOR) {
+      pushNotificationSessionInput.notificationType = NotificationType.INITIATE_JUNIOR_APPT_SESSION;
+    }
+
+    const sessionNotificationResult = await sendNotification(
+      pushNotificationSessionInput,
+      patientsDb,
+      consultsDb,
+      doctorsDb
+    );
+
   }
 
   const REDIS_NUMBEROFPARTICIPANTS_KEY_PREFIX = `numberOfParticipants:key:`;
