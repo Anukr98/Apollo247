@@ -1,25 +1,29 @@
-
 import { Doctor } from 'doctors-service/entities';
 import { AZURE_SERVICE_BUS } from 'consults-service/database/connectAzureServiceBus';
 import {
-    APPOINTMENT_TYPE
+    APPOINTMENT_STATE,
+    APPOINTMENT_TYPE,
+    STATUS
 } from 'consults-service/entities';
 import { log } from 'customWinstonLogger';
 import {
     format,
     subMinutes,
-    addHours
 } from 'date-fns';
 import { exotelCalling } from 'consults-service/resolvers/exotelCalling';
+import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
+import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { getConnection } from 'typeorm';
 
 type AppointmentBooking = {
     appointmentDateTime: Date;
     appointmentType: APPOINTMENT_TYPE;
+    id: string
 };
 
 export const sendMessageToASBQueue = async (
     doctorDetails: Doctor,
-    appointmentDetails: Pick<AppointmentBooking, "appointmentDateTime" | "appointmentType">
+    appointmentDetails: Pick<AppointmentBooking, "appointmentDateTime" | "appointmentType" | "id">
 ) => {
     const sbService = AZURE_SERVICE_BUS.getInstance();
     const queueName = process.env.ASB_DOCTOR_APPOINTMENT_REMINDER_QUEUE || 'doctor-appointment-reminder-queue';
@@ -37,12 +41,18 @@ export const sendMessageToASBQueue = async (
             var message = {
                 body: JSON.stringify({
                     From: parseInt(doctorDetails.mobileNumber, 10),
-                    CustomField: format(appointmentDetails.appointmentDateTime, "yyyy-MM-dd'T'HH:mm:00.000X") + '_' + appointmentDetails.appointmentType
+                    CustomField: format(appointmentDetails.appointmentDateTime, "yyyy-MM-dd'T'HH:mm:00.000X") + '_' + appointmentDetails.appointmentType,
+                    doctorId: doctorDetails.id,
+                    appointmentId: appointmentDetails.id,
                 }),
                 brokerProperties: {
                     ScheduledEnqueueTimeUtc: appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE ?
-                        format(subMinutes(appointmentDetails.appointmentDateTime, doctorDetails.ivrCallTimeOnline), "yyyy-MM-dd'T'HH:mm:00.000X") :
-                        format(subMinutes(appointmentDetails.appointmentDateTime, doctorDetails.ivrCallTimePhysical), "yyyy-MM-dd'T'HH:mm:00.000X")
+                        (doctorDetails.ivrCallTimeOnline
+                            ? format(subMinutes(appointmentDetails.appointmentDateTime, doctorDetails.ivrCallTimeOnline), "yyyy-MM-dd'T'HH:mm:00.000X")
+                            : format(subMinutes(appointmentDetails.appointmentDateTime, 10), "yyyy-MM-dd'T'HH:mm:00.000X")) :
+                        (doctorDetails.ivrCallTimePhysical
+                            ? format(subMinutes(appointmentDetails.appointmentDateTime, doctorDetails.ivrCallTimePhysical), "yyyy-MM-dd'T'HH:mm:00.000X")
+                            : format(subMinutes(appointmentDetails.appointmentDateTime, 10), "yyyy-MM-dd'T'HH:mm:00.000X"))
                 }
             };
             sbService.sendQueueMessage(queueName, message, function (sendMsgError) {
@@ -101,7 +111,22 @@ const receiveMessageFromASBQueue = (function () {
                             CustomField: message.CustomField
                         };
 
-                        await exotelCalling({ exotelUrl, exotelRequest });
+                        const doctorDb = getConnection('doctors-db');
+                        const docRepo = doctorDb.getCustomRepository(DoctorRepository);
+                        const doctor = await docRepo.findById(message.doctorId);
+
+                        const consultsDb = getConnection();
+                        const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
+                        const appointment = await apptRepo.findById(message.appointmentId);
+
+                        if (appointment && doctor && doctor.isIvrSet) {
+                            if (appointment.appointmentState === APPOINTMENT_STATE.RESCHEDULE) {
+                                sendMessageToASBQueue(doctor, appointment);
+                            }
+                            if (appointment.appointmentState === APPOINTMENT_STATE.NEW && (appointment.status === STATUS.IN_PROGRESS || appointment.status === STATUS.PENDING)) {
+                                await exotelCalling({ exotelUrl, exotelRequest });
+                            }
+                        }
                         sbService.deleteMessage(lockedMessage, function (errorInDelete) {
                             if (errorInDelete) {
                                 console.error('Failed to delete message: ', errorInDelete);
