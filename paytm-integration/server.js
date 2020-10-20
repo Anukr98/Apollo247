@@ -1178,7 +1178,9 @@ app.get('/processOmsOrders', (req, res) => {
                   orderchannel: orderDetails.bookingSource || '',
                   clusterid: orderDetails.clusterId || '',
                   additionalmisc1: orderDetails.allocationProfileName || '',
-                  distancekm: orderDetails.storeDistanceKm,
+                  distancekm: orderDetails.storeDistanceKm
+                    ? parseFloat(Math.abs(orderDetails.storeDistanceKm).toFixed(3))
+                    : 0,
                   customerdetails: {
                     billingaddress: deliveryAddress.trim(),
                     billingpincode: deliveryZipcode,
