@@ -77,6 +77,24 @@ export async function sendCallsNotification(
   const patientDetails = await patientRepo.getPatientDetails(appointment.patientId);
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
+  const currentDate = new Date();
+  if (
+    doctorType !== DOCTOR_CALL_TYPE.JUNIOR &&
+    currentDate < appointment.appointmentDateTime &&
+    callType === APPT_CALL_TYPE.CHAT
+  ) {
+    if (patientDetails && doctorDetails) {
+      const appLink = await getPatientDeeplink(ApiConstants.PATIENT_APPT_DEEPLINK, ApiConstants.PATIENT_DEEPLINK_TEMPLATE_ID_APOLLO);
+      const messageBody = ApiConstants.AUTO_SUBMIT_BY_SD_SMS_TEXT.replace(
+        '{0}',
+        patientDetails.firstName
+      )
+        .replace('{1}', doctorDetails.firstName)
+        .replace('{2}', appLink);
+      sendNotificationSMS(patientDetails.mobileNumber, messageBody);
+    }
+  }
+
   const deviceTokenRepo = patientsDb.getCustomRepository(PatientDeviceTokenRepository);
 
   patientId = patientId || patientDetails.id;
