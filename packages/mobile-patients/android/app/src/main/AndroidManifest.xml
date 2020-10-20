@@ -45,7 +45,6 @@
         tools:replace="android:allowBackup,android:theme"
         android:allowBackup="false"
         android:largeHeap="true"
-        android:requestLegacyExternalStorage="true"
       android:theme="@style/AppTheme">
       <activity
         android:name=".MainActivity"
