@@ -888,7 +888,7 @@ const SearchByMedicine: React.FC = (props) => {
               </div>
             </div>
           </div>
-          <div className={classes.contentContainer}>
+          {/* <div className={classes.contentContainer}>
             <div className={classes.mcContainer}>
               <div className={classes.mcContent}>
                 <Typography component="h1">
@@ -1078,6 +1078,7 @@ const SearchByMedicine: React.FC = (props) => {
               </div>
             </div>
           </div>
+        */}
         </div>
       </div>
       <AphDialog open={isUploadPreDialogOpen} maxWidth="sm">
