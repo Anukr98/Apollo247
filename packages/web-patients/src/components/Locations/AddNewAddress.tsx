@@ -26,7 +26,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     addAddressContent: {
       padding: 20,
-      height: 500,
+      height: 380,
       overflow: 'auto',
       '&::-webkit-scrollbar': {
         width: 4,
