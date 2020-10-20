@@ -79,7 +79,9 @@ export const reUploadPrescription: Resolver<
     success = false;
   }
   const updateMedOrderAttrs: Partial<MedicineOrders> = {
-    prescriptionImageUrl: (orderDetails.prescriptionImageUrl || '') + prescriptionInput.fileUrl,
+    prescriptionImageUrl:
+      (orderDetails.prescriptionImageUrl ? orderDetails.prescriptionImageUrl + ',' : '') +
+      prescriptionInput.fileUrl,
     prismPrescriptionFileId: prescriptionInput.prismPrescriptionFileId,
   };
   medRepo.updateMedicineOrder(orderDetails.id, orderDetails.orderAutoId, updateMedOrderAttrs);
