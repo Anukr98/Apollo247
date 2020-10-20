@@ -27,6 +27,17 @@ export const ChooseAddress: React.FC<ChooseAddressProps> = (props) => {
   } = props;
   const { currentPatient } = useAllCurrentPatients();
 
+  function sortAddresses(addresses: savePatientAddress_savePatientAddress_patientAddress[]) {
+    if (addresses) {
+      const array1 = addresses.filter((item) => item.id == deliveryAddressId);
+      const array2 = addresses.filter((item) => item.id != deliveryAddressId);
+      const sortedAddresses = array1.concat(array2);
+      return sortedAddresses;
+    } else {
+      return [];
+    }
+  }
+
   const formatText = (text: string, count: number) => {
     if (text) {
       return text.length > count ? `${text.slice(0, count)}...` : text;
@@ -77,7 +88,7 @@ export const ChooseAddress: React.FC<ChooseAddressProps> = (props) => {
   const renderChooseAddress = () => {
     return (
       <ScrollView contentContainerStyle={styles.container}>
-        {addresses.map((item) => {
+        {sortAddresses(addresses).map((item) => {
           return renderAddress(item);
         })}
         {renderAddAddress()}

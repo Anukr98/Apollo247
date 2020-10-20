@@ -23,9 +23,9 @@ export const Savings: React.FC<SavingsProps> = (props) => {
   return getSavings() && getSavings() != 0 ? (
     <View style={styles.savingsCard}>
       <Text style={{ ...theme.fonts.IBMPlexSansRegular(13), lineHeight: 17, color: '#00B38E' }}>
-        You{' '}
+        Total savings of{' '}
         <Text style={{ ...theme.fonts.IBMPlexSansSemiBold(13), lineHeight: 17, color: '#00B38E' }}>
-          saved ₹{getSavings()}
+          ₹{getSavings()}
         </Text>{' '}
         on your purchase
       </Text>

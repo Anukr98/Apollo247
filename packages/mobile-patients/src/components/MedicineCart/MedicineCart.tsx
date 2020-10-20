@@ -1,6 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
-import { View, SafeAreaView, TouchableOpacity, Text, StyleSheet, ScrollView } from 'react-native';
+import {
+  View,
+  SafeAreaView,
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+  ScrollView,
+  AppState,
+  AppStateStatus,
+} from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
@@ -32,9 +41,14 @@ import {
 import {
   GET_PATIENT_ADDRESS_LIST,
   UPLOAD_DOCUMENT,
+  SET_DEFAULT_ADDRESS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
-import { g, formatAddress } from '@aph/mobile-patients/src//helpers/helperFunctions';
+import {
+  g,
+  formatAddress,
+  formatAddressToLocation,
+} from '@aph/mobile-patients/src//helpers/helperFunctions';
 import {
   pinCodeServiceabilityApi247,
   availabilityApi247,
@@ -62,6 +76,8 @@ import {
   PricemismatchEvent,
   postTatResponseFailureEvent,
   applyCouponClickedEvent,
+  selectDeliveryAddressClickedEvent,
+  uploadPrescriptionClickedEvent,
 } from '@aph/mobile-patients/src/components/MedicineCart/Events';
 import {
   postPhamracyCartAddressSelectedFailure,
@@ -72,6 +88,11 @@ import {
 import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
 import { ProductPageViewedSource } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
+import moment from 'moment';
+import {
+  makeAdressAsDefaultVariables,
+  makeAdressAsDefault,
+} from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
 
 export interface MedicineCartProps extends NavigationScreenProps {}
 
@@ -96,7 +117,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
-  const { locationDetails, pharmacyLocation } = useAppCommonData();
+  const { locationDetails, pharmacyLocation, setPharmacyLocation } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setloading] = useState<boolean>(false);
   const [lastCartItems, setlastCartItems] = useState('');
@@ -117,7 +138,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
 
   useEffect(() => {
     fetchAddress();
-    availabilityTat();
+    availabilityTat(false);
     fetchUserSpecificCoupon();
     fetchPickupStores(pharmacyPincode);
     fetchProductSuggestions();
@@ -127,6 +148,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setisfocused(true);
+      AppState.addEventListener('change', handleAppStateChange);
     });
     const didBlur = props.navigation.addListener('didBlur', (payload) => {
       setisfocused(false);
@@ -134,6 +156,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     return () => {
       didFocus && didFocus.remove();
       didBlur && didBlur.remove();
+      AppState.removeEventListener('change', handleAppStateChange);
     };
   }, []);
 
@@ -141,13 +164,13 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     if (!deliveryAddressId && cartItems.length > 0) {
       setCartItems!(cartItems.map((item) => ({ ...item, unserviceable: false })));
     } else if (deliveryAddressId && cartItems.length > 0) {
-      isfocused ? availabilityTat(true) : availabilityTat();
+      isfocused ? availabilityTat(false, true) : availabilityTat(false);
     }
   }, [deliveryAddressId]);
 
   useEffect(() => {
     if (isfocused) {
-      availabilityTat();
+      availabilityTat(false);
     }
   }, [cartItems]);
 
@@ -160,6 +183,10 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   useEffect(() => {
     onFinishUpload();
   }, [isPhysicalUploadComplete]);
+
+  const handleAppStateChange = (nextAppState: AppStateStatus) => {
+    nextAppState === 'active' && availabilityTat(true);
+  };
 
   async function fetchAddress() {
     try {
@@ -216,6 +243,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       console.log(data);
       if (data.response) {
         setDeliveryAddressId && setDeliveryAddressId(address.id);
+        setDefaultAddress(address);
         fetchPickupStores(address?.zipcode || '');
       } else {
         setDeliveryAddressId && setDeliveryAddressId('');
@@ -229,10 +257,10 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     }
   }
 
-  async function availabilityTat(addressChange?: boolean) {
+  async function availabilityTat(forceCheck: boolean, addressChange?: boolean) {
     const newCartItems =
       cartItems.map(({ id, quantity }) => id + quantity).toString() + deliveryAddressId;
-    if (newCartItems == lastCartItems) {
+    if (newCartItems == lastCartItems && !forceCheck) {
       return;
     }
     if (deliveryAddressId && cartItems.length > 0) {
@@ -281,6 +309,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
                 setShopId(storeCode);
                 setStoreDistance(distance);
                 setdeliveryTime(deliveryDate);
+                addressSelectedEvent(selectedAddress, deliveryDate);
                 addressChange &&
                   NavigateToCartSummary(deliveryDate, distance, storeType, storeCode);
                 updatePricesAfterTat(inventoryData, updatedCartItems);
@@ -312,9 +341,46 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     error: any
   ) {
     setdeliveryTime('');
+    addressSelectedEvent(selectedAddress, '');
     postTatResponseFailureEvent(cartItems, selectedAddress.zipcode || '', error);
     setloading(false);
     validatePharmaCoupon();
+  }
+
+  function addressSelectedEvent(
+    address: savePatientAddress_savePatientAddress_patientAddress,
+    tatDate: string
+  ) {
+    const currentDate = moment();
+    postPhamracyCartAddressSelectedSuccess(
+      address?.zipcode!,
+      formatAddress(address),
+      'Yes',
+      moment(tatDate, AppConfig.Configuration.MED_DELIVERY_DATE_DISPLAY_FORMAT).toDate(),
+      moment(tatDate).diff(currentDate, 'd')
+    );
+  }
+
+  async function setDefaultAddress(address: savePatientAddress_savePatientAddress_patientAddress) {
+    try {
+      const response = await client.query<makeAdressAsDefault, makeAdressAsDefaultVariables>({
+        query: SET_DEFAULT_ADDRESS,
+        variables: { patientAddressId: address?.id },
+        fetchPolicy: 'no-cache',
+      });
+      const { data } = response;
+      const patientAddress = data?.makeAdressAsDefault?.patientAddress;
+      const updatedAddresses = addresses.map((item) => ({
+        ...item,
+        defaultAddress: patientAddress?.id == item.id ? patientAddress?.defaultAddress : false,
+      }));
+      setAddresses!(updatedAddresses);
+      patientAddress?.defaultAddress && setDeliveryAddressId!(patientAddress?.id);
+      const deliveryAddress = updatedAddresses.find(({ id }) => patientAddress?.id == id);
+      setPharmacyLocation!(formatAddressToLocation(deliveryAddress! || null));
+    } catch (error) {
+      CommonBugFender('set_default_Address_on_Cart_Page', error);
+    }
   }
 
   async function updatePricesAfterTat(
@@ -778,8 +844,20 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   const renderProceedBar = () => {
     return (
       <ProceedBar
-        onPressAddDeliveryAddress={() => showAddressPopup()}
-        onPressUploadPrescription={() => setshowPopUp(true)}
+        onPressAddDeliveryAddress={() => {
+          props.navigation.navigate(AppRoutes.AddAddress, {
+            source: 'Cart' as AddressSource,
+          });
+          postPharmacyAddNewAddressClick('Cart');
+        }}
+        onPressSelectDeliveryAddress={() => {
+          selectDeliveryAddressClickedEvent(currentPatient?.id);
+          showAddressPopup();
+        }}
+        onPressUploadPrescription={() => {
+          uploadPrescriptionClickedEvent(currentPatient?.id);
+          setshowPopUp(true);
+        }}
         onPressProceedtoPay={() => {
           physicalPrescriptions?.length > 0 ? uploadPhysicalPrescriptons() : onPressProceedtoPay();
         }}

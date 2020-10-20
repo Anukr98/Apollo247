@@ -258,6 +258,21 @@ export const formatSelectedAddress = (
   return formattedAddress;
 };
 
+export const formatAddressToLocation = (
+  address: savePatientAddress_savePatientAddress_patientAddress
+): LocationData => ({
+  displayName: address?.city!,
+  latitude: address?.latitude!,
+  longitude: address?.longitude!,
+  area: '',
+  city: address?.city!,
+  state: address?.state!,
+  stateCode: address?.stateCode!,
+  country: '',
+  pincode: address?.zipcode!,
+  lastUpdated: new Date().getTime(),
+});
+
 export const getUuidV4 = () => {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
