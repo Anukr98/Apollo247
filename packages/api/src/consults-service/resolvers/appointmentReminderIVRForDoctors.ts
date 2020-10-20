@@ -23,7 +23,8 @@ type AppointmentBooking = {
 
 export const sendMessageToASBQueue = async (
     doctorDetails: Doctor,
-    appointmentDetails: Pick<AppointmentBooking, "appointmentDateTime" | "appointmentType" | "id">
+    appointmentDetails: Pick<AppointmentBooking, "appointmentDateTime" | "appointmentType" | "id">,
+    repeatTimes?: number
 ) => {
     const sbService = AZURE_SERVICE_BUS.getInstance();
     const queueName = process.env.ASB_DOCTOR_APPOINTMENT_REMINDER_QUEUE || 'doctor-appointment-reminder-queue';
@@ -44,6 +45,7 @@ export const sendMessageToASBQueue = async (
                     CustomField: format(appointmentDetails.appointmentDateTime, "yyyy-MM-dd'T'HH:mm:00.000X") + '_' + appointmentDetails.appointmentType,
                     doctorId: doctorDetails.id,
                     appointmentId: appointmentDetails.id,
+                    repeatTimes: (repeatTimes ? repeatTimes + 1 : 1),
                 }),
                 brokerProperties: {
                     ScheduledEnqueueTimeUtc: appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE ?
@@ -121,7 +123,9 @@ const receiveMessageFromASBQueue = (function () {
 
                         if (appointment && doctor && doctor.isIvrSet) {
                             if (appointment.appointmentState === APPOINTMENT_STATE.RESCHEDULE) {
-                                sendMessageToASBQueue(doctor, appointment);
+                                message.repeatTimes > 1
+                                    ? await exotelCalling({ exotelUrl, exotelRequest })
+                                    : sendMessageToASBQueue(doctor, appointment, message.repeatTimes);
                             }
                             if (appointment.appointmentState === APPOINTMENT_STATE.NEW && (appointment.status === STATUS.IN_PROGRESS || appointment.status === STATUS.PENDING)) {
                                 await exotelCalling({ exotelUrl, exotelRequest });
