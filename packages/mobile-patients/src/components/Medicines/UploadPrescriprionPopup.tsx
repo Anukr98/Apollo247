@@ -119,6 +119,8 @@ export interface UploadPrescriprionPopupProps {
   isProfileImage?: boolean;
 }
 
+const MAX_FILE_SIZE = 2000000; // 2MB
+
 export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   let actionSheetRef: ActionSheet;
@@ -328,14 +330,14 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
       freeStyleCropEnabled: props.isProfileImage ? true : false,
     })
       .then((response) => {
-        //console.log('res', response);
-
+        const images = response as ImageCropPickerResponse[];
+        const isGreaterThanSpecifiedSize = images.find(({ size }) => size > MAX_FILE_SIZE);
         setshowSpinner(false);
-        props.onResponse(
-          'CAMERA_AND_GALLERY',
-          formatResponse(response as ImageCropPickerResponse[]),
-          'Gallery'
-        );
+        if (isGreaterThanSpecifiedSize) {
+          Alert.alert(strings.common.uhOh, `Invalid File Size. File size must be less than 2MB.`);
+          return;
+        }
+        props.onResponse('CAMERA_AND_GALLERY', formatResponse(images), 'Gallery');
       })
       .catch((e: Error) => {
         CommonBugFender('UploadPrescriprionPopup_onClickGallery', e);
