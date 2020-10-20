@@ -926,16 +926,14 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
       specialtyInfo.shortDescription
     } such as ${specialtyInfo.symptoms} and more.`,
     canonicalLink: window && window.location && window.location.href,
-    og: {
-      title: `Best ${specialtyPlural} in ${selectedCity} - Book Online Consultation Now | Apollo 247`,
-      description: `${specialtyPlural} in ${selectedCity} - Book online doctor consultation and in-person visit with ${apolloDoctorCount +
-        partnerDoctorCount} ${specialtyName} Specialists in ${selectedCity} within 15 min. Get world-class treatment from Best ${specialtyPlural} in ${selectedCity} ${
-        specialtyInfo.shortDescription
-      } such as ${specialtyInfo.symptoms} and more.`,
-      url: window && window.location && window.location.href,
-      image: specialtyImage,
-      site_name: 'Apollo 24|7',
-    },
+    ogtitle: `Best ${specialtyPlural} in ${selectedCity} - Book Online Consultation Now | Apollo 247`,
+    ogdescription: `${specialtyPlural} in ${selectedCity} - Book online doctor consultation and in-person visit with ${apolloDoctorCount +
+      partnerDoctorCount} ${specialtyName} Specialists in ${selectedCity} within 15 min. Get world-class treatment from Best ${specialtyPlural} in ${selectedCity} ${
+      specialtyInfo.shortDescription
+    } such as ${specialtyInfo.symptoms} and more.`,
+    ogurl: window && window.location && window.location.href,
+    ogimage: specialtyImage,
+    ogsite_name: 'Apollo 24|7',
   };
 
   return (
