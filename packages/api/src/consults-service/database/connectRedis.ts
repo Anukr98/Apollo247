@@ -61,10 +61,10 @@ export async function hgetAllCache(key: string) {
   }
 }
 
-export async function setCache(key: string, value: string, expiry: number) {
+export async function setCache(key: string, value: string, expiry?: number) {
   try {
     const set = client.set(key, value);
-    client.expire(key, expiry);
+    if (expiry) client.expire(key, expiry);
     dLogger(new Date(), 'Redis Cache write', `Cache hit ${key}`);
     return set;
   } catch (e) {
