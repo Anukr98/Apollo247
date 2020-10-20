@@ -330,7 +330,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
             style={styles.inputStyle}
           />
         </View>
-        <View style={{ flex: 0.15, alignItems: 'flex-end' }}>{rightIconView()}</View>
+        <View style={styles.rightIcon}>{rightIconView()}</View>
       </View>
     );
   };
@@ -343,11 +343,9 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       >
         <Text
           style={{
-            marginVertical: 4,
-            textAlign: length > 20 ? 'center' : 'auto',
-            color: 'rgba(74, 165, 74, 0.6)',
             lineHeight: length > 20 ? 18 : 30,
-            ...theme.fonts.IBMPlexSansMedium(11),
+            textAlign: length > 20 ? 'center' : 'auto',
+            ...styles.sentMsg,
           }}
         >
           {length < 21
@@ -467,14 +465,14 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       <View style={[styles.statusCardStyle, { backgroundColor: statusCardColour() }]}>
         <View style={styles.statusCardSubContainerStyle}>{statusIcon()}</View>
         <View style={{ alignItems: 'center' }}>{statusText()}</View>
-        <View style={{ alignItems: 'center', marginTop: 4 }}>
+        <View style={styles.priceCont}>
           {textComponent(priceText, undefined, theme.colors.SHADE_GREY, false)}
         </View>
-        <View style={{ alignItems: 'center', marginTop: 4 }}>
+        <View style={styles.priceCont}>
           {textComponent(orderIdText, undefined, theme.colors.SHADE_GREY, false)}
         </View>
-        <View style={{}}>
-          <View style={{ justifyContent: 'flex-start', alignItems: 'center', marginTop: 8 }}>
+        <View>
+          <View style={styles.paymentRef}>
             {textComponent('Payment Ref. Number - ', undefined, theme.colors.SHADE_GREY, false)}
             <TouchableOpacity
               style={styles.refStyles}
@@ -803,5 +801,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  rightIcon: {
+    flex: 0.15,
+    alignItems: 'flex-end',
+  },
+  sentMsg: {
+    color: 'rgba(74, 165, 74, 0.6)',
+    marginVertical: 4,
+    ...theme.fonts.IBMPlexSansMedium(11),
+  },
+  priceCont: {
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  paymentRef: {
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    marginTop: 8,
   },
 });

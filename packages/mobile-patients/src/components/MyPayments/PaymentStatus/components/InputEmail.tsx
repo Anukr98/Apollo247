@@ -58,7 +58,7 @@ const InputEmail: FC<InputEmailProps> = (props) => {
             style={styles.inputStyle}
           />
         </View>
-        <View style={{ flex: 0.15, alignItems: 'flex-end' }}>{rightIconView()}</View>
+        <View style={styles.rightIcon}>{rightIconView()}</View>
       </View>
     );
   };
@@ -95,6 +95,7 @@ const styles = StyleSheet.create({
     color: 'rgba(74, 165, 74, 0.6)',
     ...theme.fonts.IBMPlexSansMedium(11),
   },
+  rightIcon: { flex: 0.15, alignItems: 'flex-end' },
 });
 
 export default InputEmail;
