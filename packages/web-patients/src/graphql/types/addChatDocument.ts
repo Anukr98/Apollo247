@@ -4,22 +4,20 @@
 // This file was automatically generated and should not be edited.
 
 // ====================================================
-// GraphQL mutation operation: addChatDocument
+// GraphQL mutation operation: AddChatDocument
 // ====================================================
 
-export interface addChatDocument_addChatDocument {
+export interface AddChatDocument_addChatDocument {
   __typename: "UploadedDocumentDetails";
   id: string | null;
   documentPath: string | null;
-  prismFileId: string | null;
 }
 
-export interface addChatDocument {
-  addChatDocument: addChatDocument_addChatDocument | null;
+export interface AddChatDocument {
+  addChatDocument: AddChatDocument_addChatDocument | null;
 }
 
-export interface addChatDocumentVariables {
+export interface AddChatDocumentVariables {
   appointmentId: string;
-  documentPath?: string | null;
-  prismFileId?: string | null;
+  documentPath: string;
 }

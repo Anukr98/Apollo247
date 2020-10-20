@@ -15,6 +15,7 @@ import {
 } from 'notifications-service/handlers';
 import { PatientDeviceTokenRepository } from 'profiles-service/repositories/patientDeviceTokenRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
+import { setCache } from 'consults-service/database/connectRedis';
 
 export const loginTypeDefs = gql`
   enum LOGIN_TYPE {
@@ -37,6 +38,10 @@ export const loginTypeDefs = gql`
   type testSMSResult {
     send: Boolean
   }
+  type WhiteListResult {
+    success: Boolean
+  }
+
   type LogoutResult{
     isError: Boolean
     response: String
@@ -47,15 +52,21 @@ export const loginTypeDefs = gql`
     testSendSMS(mobileNumber: String!): testSMSResult!
   }
   extend type Mutation {
+    whitelistMobile(mobileNumber: String!): WhiteListResult!
     logout(mobileNumber: String!): LogoutResult!
   }
 `;
 
+const REDIS_PREFIX_WHITELISTED_KEY = 'whitelisted:mobilenumber:';
 type LoginResult = {
   status: Boolean;
   loginId: String | null;
   message: string;
 };
+
+type WhiteListResult = {
+  success: boolean
+}
 
 const login: Resolver<
   null,
@@ -324,6 +335,21 @@ const logout: Resolver<
   }
 };
 
+
+const whitelistMobile: Resolver<
+  null,
+  { mobileNumber: string; loginType: LOGIN_TYPE; hashCode: string },
+  null,
+  WhiteListResult> = async (parent, args) => {
+    if (process.env.NODE_ENV == 'production') {
+      return {
+        success: false
+      }
+    }
+    const { mobileNumber } = args;
+    await setCache(`${REDIS_PREFIX_WHITELISTED_KEY}${mobileNumber}`, "true")
+    return { success: true }
+  };
 export const loginResolvers = {
   Query: {
     login,
@@ -331,7 +357,8 @@ export const loginResolvers = {
     testSendSMS,
   },
   Mutation: {
-    logout
+    logout,
+    whitelistMobile
   }
 };
 

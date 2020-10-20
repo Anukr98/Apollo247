@@ -3006,8 +3006,8 @@ export const PHARMACY_ORDER_PAYMENT_DETAILS = gql`
 `;
 
 export const CONSULT_ORDER_INVOICE = gql`
-  query getOrderInvoice($patientId: String!, $appointmentId: String!) {
-    getOrderInvoice(patientId: $patientId, appointmentId: $appointmentId)
+  query getOrderInvoice($patientId: String!, $appointmentId: String!, $emailId: Email) {
+    getOrderInvoice(patientId: $patientId, appointmentId: $appointmentId, emailId: $emailId)
   }
 `;
 

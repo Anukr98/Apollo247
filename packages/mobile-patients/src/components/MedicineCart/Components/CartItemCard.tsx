@@ -72,12 +72,14 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
 
   const renderProduct = () => {
     return (
-      <TouchableOpacity style={{ flex: 1 }} onPress={onPressProduct}>
+      <View style={{ flex: 1 }}>
         <View style={{ flexDirection: 'row', marginBottom: 5 }}>
           <View style={{ flex: 0.85 }}>
-            <Text style={{ ...styles.itemName, opacity: !item.unserviceable ? 1 : 0.3 }}>
-              {item.name}
-            </Text>
+            <TouchableOpacity onPress={onPressProduct}>
+              <Text style={{ ...styles.itemName, opacity: !item.unserviceable ? 1 : 0.3 }}>
+                {item.name}
+              </Text>
+            </TouchableOpacity>
             {item.mou && (
               <Text
                 style={{ ...styles.info, opacity: !item.unserviceable ? 1 : 0.3 }}
@@ -89,7 +91,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
           </TouchableOpacity>
         </View>
         {renderLowerCont()}
-      </TouchableOpacity>
+      </View>
     );
   };
 

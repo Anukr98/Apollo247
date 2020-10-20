@@ -343,21 +343,21 @@ const createAppointmentSession: Resolver<
       );
     }
 
-    // send notification
-    const pushNotificationInput = {
-      appointmentId: createAppointmentSessionInput.appointmentId,
-      notificationType: NotificationType.INITIATE_SENIOR_APPT_SESSION,
-    };
+    // // send notification
+    // const pushNotificationInput = {
+    //   appointmentId: createAppointmentSessionInput.appointmentId,
+    //   notificationType: NotificationType.INITIATE_SENIOR_APPT_SESSION,
+    // };
     if (createAppointmentSessionInput.requestRole == REQUEST_ROLES.JUNIOR) {
       caseSheetRepo.findAndUpdateJdConsultStatus(createAppointmentSessionInput.appointmentId);
-      pushNotificationInput.notificationType = NotificationType.INITIATE_JUNIOR_APPT_SESSION;
+      // pushNotificationInput.notificationType = NotificationType.INITIATE_JUNIOR_APPT_SESSION;
     }
-    const notificationResult = await sendNotification(
-      pushNotificationInput,
-      patientsDb,
-      consultsDb,
-      doctorsDb
-    );
+    // const notificationResult = await sendNotification(
+    //   pushNotificationInput,
+    //   patientsDb,
+    //   consultsDb,
+    //   doctorsDb
+    // );
     if (
       createAppointmentSessionInput.requestRole != REQUEST_ROLES.JUNIOR &&
       currentDate < apptDetails.appointmentDateTime
@@ -406,21 +406,21 @@ const createAppointmentSession: Resolver<
     );
   }
 
-  // send notification
-  const pushNotificationInput = {
-    appointmentId: createAppointmentSessionInput.appointmentId,
-    notificationType: NotificationType.INITIATE_SENIOR_APPT_SESSION,
-  };
+  // // send notification
+  // const pushNotificationInput = {
+  //   appointmentId: createAppointmentSessionInput.appointmentId,
+  //   notificationType: NotificationType.INITIATE_SENIOR_APPT_SESSION,
+  // };
   if (createAppointmentSessionInput.requestRole == REQUEST_ROLES.JUNIOR) {
     caseSheetRepo.findAndUpdateJdConsultStatus(createAppointmentSessionInput.appointmentId);
-    pushNotificationInput.notificationType = NotificationType.INITIATE_JUNIOR_APPT_SESSION;
+    // pushNotificationInput.notificationType = NotificationType.INITIATE_JUNIOR_APPT_SESSION;
   }
-  const notificationResult = await sendNotification(
-    pushNotificationInput,
-    patientsDb,
-    consultsDb,
-    doctorsDb
-  );
+  // const notificationResult = await sendNotification(
+  //   pushNotificationInput,
+  //   patientsDb,
+  //   consultsDb,
+  //   doctorsDb
+  // );
 
   if (
     createAppointmentSessionInput.requestRole != REQUEST_ROLES.JUNIOR &&
