@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { AphButton, AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-ui-components';
-import { Theme, Typography } from '@material-ui/core';
+import { Theme, Typography, CircularProgress } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import axios from 'axios';
@@ -321,6 +321,12 @@ const useStyles = makeStyles((theme: Theme) => {
         lineHeight: '20px',
       },
     },
+    seeMoreTag: {
+      margin: 10,
+      textAlign: 'center',
+      color: '#fc9916',
+      cursor: 'pointer',
+    },
   };
 });
 
@@ -369,26 +375,10 @@ const SearchByMedicine: React.FC = (props) => {
 
   const loadItemData = () => {
     if (currentPage * 20 < totalItems) {
+      setIsLoading(true);
       getCategoryProducts(currentPage);
     }
   };
-
-  useEffect(() => console.log(888, totalItems), [totalItems]);
-
-  const handleOnScroll = useCallback(() => {
-    if (window.innerHeight + window.scrollY >= document.body.offsetHeight * 0.8) {
-      if (!fetching) {
-        fetching = true;
-        loadItemData();
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    if (scrollToRef && scrollToRef.current) {
-      window.addEventListener('scroll', handleOnScroll);
-    }
-  }, [scrollToRef]);
 
   const getTitle = () => {
     let title = params.searchMedicineType;
@@ -882,6 +872,15 @@ const SearchByMedicine: React.FC = (props) => {
                     <>
                       <div className={classes.noData}>{heading}</div>
                       <MedicineCard medicineList={medicineListFiltered} isLoading={isLoading} />
+                      {currentPage * 20 < totalItems && (
+                        <div className={classes.seeMoreTag} onClick={() => loadItemData()}>
+                          {isLoading ? (
+                            <CircularProgress size={22} color="secondary" />
+                          ) : (
+                            'See More'
+                          )}
+                        </div>
+                      )}
                     </>
                   )}
                 </MedicinesCartContext.Consumer>
