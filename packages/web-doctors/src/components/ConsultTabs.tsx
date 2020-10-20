@@ -7,6 +7,7 @@ import Paper from '@material-ui/core/Paper';
 import { CallPopover } from 'components/CallPopover';
 import ApolloClient from 'apollo-client';
 import Pubnub from 'pubnub';
+import { format } from 'date-fns';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
@@ -490,7 +491,10 @@ export const ConsultTabs: React.FC = () => {
 
   const [giveRating, setGiveRating] = useState<boolean>(false);
   const [isCallAccepted, setIsCallAccepted] = useState<boolean>(false);
-
+  const getWebengageAppointmentDatetime = (apptDateTime : any) => {
+    const datetime = (apptDateTime && apptDateTime !== '') ? format(new Date(apptDateTime), 'dd MMM, yyyy') +' '+ format(new Date(apptDateTime), 'h:mm a') : '';
+    return datetime;
+  }
   const subscribekey: string = process.env.SUBSCRIBE_KEY ? process.env.SUBSCRIBE_KEY : '';
   const publishkey: string = process.env.PUBLISH_KEY ? process.env.PUBLISH_KEY : '';
 
@@ -608,7 +612,7 @@ export const ConsultTabs: React.FC = () => {
           'Patient name': webengageConsultTrackingObject.patientName,
           'Patient mobile number': webengageConsultTrackingObject.patientMobileNumber,
           'Doctor Mobile number': webengageConsultTrackingObject.doctorMobileNumber,
-          'Appointment Date time': webengageConsultTrackingObject.appointmentDateTime,
+          'Appointment Date time': getWebengageAppointmentDatetime(webengageConsultTrackingObject.appointmentDateTime),
           'Appointment display ID': webengageConsultTrackingObject.appointmentDisplayId,
           'Appointment ID': webengageConsultTrackingObject.appointmentId,
         },
@@ -1551,7 +1555,7 @@ export const ConsultTabs: React.FC = () => {
           'Patient name': webengageConsultTrackingObject.patientName,
           'Patient mobile number': webengageConsultTrackingObject.patientMobileNumber,
           'Doctor Mobile number': webengageConsultTrackingObject.doctorMobileNumber,
-          'Appointment Date time': webengageConsultTrackingObject.appointmentDateTime,
+          'Appointment Date time': getWebengageAppointmentDatetime(webengageConsultTrackingObject.appointmentDateTime),
           'Appointment display ID': webengageConsultTrackingObject.appointmentDisplayId,
           'Appointment ID': webengageConsultTrackingObject.appointmentId,
         },
@@ -1590,7 +1594,7 @@ export const ConsultTabs: React.FC = () => {
                 'Patient name': webengageConsultTrackingObject.patientName,
                 'Patient mobile number': webengageConsultTrackingObject.patientMobileNumber,
                 'Doctor Mobile number': webengageConsultTrackingObject.doctorMobileNumber,
-                'Appointment Date time': webengageConsultTrackingObject.appointmentDateTime,
+                'Appointment Date time': getWebengageAppointmentDatetime(webengageConsultTrackingObject.appointmentDateTime),
                 'Appointment display ID': webengageConsultTrackingObject.appointmentDisplayId,
                 'Appointment ID': webengageConsultTrackingObject.appointmentId,
                 'Blob URL': url,
@@ -1809,7 +1813,7 @@ export const ConsultTabs: React.FC = () => {
             'Patient name': webengageConsultTrackingObject.patientName,
             'Patient mobile number': webengageConsultTrackingObject.patientMobileNumber,
             'Doctor Mobile number': webengageConsultTrackingObject.doctorMobileNumber,
-            'Appointment Date time': webengageConsultTrackingObject.appointmentDateTime,
+            'Appointment Date time': getWebengageAppointmentDatetime(webengageConsultTrackingObject.appointmentDateTime),
             'Appointment display ID': webengageConsultTrackingObject.appointmentDisplayId,
             'Appointment ID': webengageConsultTrackingObject.appointmentId,
           },
