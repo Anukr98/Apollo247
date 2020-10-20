@@ -364,7 +364,12 @@ const getMedicineOrdersOMSList: Resolver<
   const medicineOrdersList = await medicineOrdersRepo.getMedicineOrdersListWithoutAbortedStatus(
     primaryPatientIds
   );
-
+  medicineOrdersList.forEach((order) => {
+    // want to hide on hold status to old users
+    if (order.currentStatus == MEDICINE_ORDER_STATUS.ON_HOLD) {
+      order.currentStatus = MEDICINE_ORDER_STATUS.ORDER_PLACED;
+    }
+  });
   //to know later if medicineOrderList is updated or not
   const saveCount = medicineOrdersList.length;
 
@@ -949,7 +954,7 @@ const getMedicineOrderOMSDetailsWithAddress: Resolver<
         );
         if (onHoldReasonObj) {
           if (!onHoldReasonObj.showOnHold) {
-            medicineOrderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED;
+            medicineOrderDetails.currentStatus = MEDICINE_ORDER_STATUS.ORDER_PLACED;
           }
           reasonCode.statusMessage = JSON.stringify(onHoldReasonObj);
         } else {
