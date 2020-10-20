@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { NavigationScreenProps } from 'react-navigation';
-import { View, SafeAreaView, TouchableOpacity, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, SafeAreaView, StyleSheet, ScrollView, AppState, AppStateStatus } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
@@ -25,7 +25,11 @@ import { TatCardwithoutAddress } from '@aph/mobile-patients/src/components/Medic
 import { UploadPrescription } from '@aph/mobile-patients/src/components/MedicineCart/Components/UploadPrescription';
 import { Prescriptions } from '@aph/mobile-patients/src/components/MedicineCart/Components/Prescriptions';
 import { ProceedBar } from '@aph/mobile-patients/src/components/MedicineCart/Components/ProceedBar';
-import { g, formatAddress } from '@aph/mobile-patients/src//helpers/helperFunctions';
+import {
+  g,
+  formatAddress,
+  formatAddressToLocation,
+} from '@aph/mobile-patients/src//helpers/helperFunctions';
 import {
   pinCodeServiceabilityApi247,
   availabilityApi247,
@@ -34,12 +38,24 @@ import {
   getDeliveryTAT247,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { postwebEngageProceedToPayEvent } from '@aph/mobile-patients/src/components/MedicineCart/Events';
-import { UPLOAD_DOCUMENT } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  postwebEngageProceedToPayEvent,
+  uploadPrescriptionClickedEvent,
+} from '@aph/mobile-patients/src/components/MedicineCart/Events';
+import { UPLOAD_DOCUMENT, SET_DEFAULT_ADDRESS } from '@aph/mobile-patients/src/graphql/profiles';
 import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
 import { useApolloClient } from 'react-apollo-hooks';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { postPhamracyCartAddressSelectedFailure } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
+import {
+  postPhamracyCartAddressSelectedFailure,
+  postPharmacyAddNewAddressClick,
+} from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
+import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  makeAdressAsDefaultVariables,
+  makeAdressAsDefault,
+} from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
 
 export interface CartSummaryProps extends NavigationScreenProps {}
 
@@ -54,7 +70,9 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     ePrescriptions,
     setCartItems,
     setPhysicalPrescriptions,
+    setAddresses,
   } = useShoppingCart();
+  const { setPharmacyLocation } = useAppCommonData();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
@@ -77,8 +95,19 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   const shoppingCart = useShoppingCart();
 
   useEffect(() => {
+    AppState.addEventListener('change', handleAppStateChange);
+    return () => {
+      AppState.removeEventListener('change', handleAppStateChange);
+    };
+  }, []);
+
+  useEffect(() => {
     onFinishUpload();
   }, [isPhysicalUploadComplete]);
+
+  const handleAppStateChange = (nextAppState: AppStateStatus) => {
+    nextAppState === 'active' && availabilityTat(deliveryAddressId);
+  };
 
   async function checkServicability(address: savePatientAddress_savePatientAddress_patientAddress) {
     if (deliveryAddressId && deliveryAddressId == address.id) {
@@ -90,12 +119,35 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     if (data.response) {
       setloading(false);
       setDeliveryAddressId && setDeliveryAddressId(address.id);
+      setDefaultAddress(address);
       availabilityTat(address.id);
     } else {
       setDeliveryAddressId && setDeliveryAddressId('');
       setloading!(false);
       postPhamracyCartAddressSelectedFailure(address.zipcode!, formatAddress(address), 'No');
       renderAlert(string.medicine_cart.pharmaAddressUnServiceableAlert);
+    }
+  }
+
+  async function setDefaultAddress(address: savePatientAddress_savePatientAddress_patientAddress) {
+    try {
+      const response = await client.query<makeAdressAsDefault, makeAdressAsDefaultVariables>({
+        query: SET_DEFAULT_ADDRESS,
+        variables: { patientAddressId: address?.id },
+        fetchPolicy: 'no-cache',
+      });
+      const { data } = response;
+      const patientAddress = data?.makeAdressAsDefault?.patientAddress;
+      const updatedAddresses = addresses.map((item) => ({
+        ...item,
+        defaultAddress: patientAddress?.id == item.id ? patientAddress?.defaultAddress : false,
+      }));
+      setAddresses!(updatedAddresses);
+      patientAddress?.defaultAddress && setDeliveryAddressId!(patientAddress?.id);
+      const deliveryAddress = updatedAddresses.find(({ id }) => patientAddress?.id == id);
+      setPharmacyLocation!(formatAddressToLocation(deliveryAddress! || null));
+    } catch (error) {
+      CommonBugFender('set_default_Address_on_Cart_Page', error);
     }
   }
 
@@ -267,13 +319,25 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   function showAddressPopup() {
     showAphAlert!({
       title: string.common.selectAddress,
+      removeTopIcon: true,
       children: (
         <ChooseAddress
           addresses={addresses}
           deliveryAddressId={deliveryAddressId}
-          onPressAddAddress={() => {}}
+          onPressAddAddress={() => {
+            props.navigation.navigate(AppRoutes.AddAddress, {
+              source: 'Cart' as AddressSource,
+            });
+            postPharmacyAddNewAddressClick('Cart');
+            hideAphAlert!();
+          }}
           onPressEditAddress={(address) => {
-            console.log(address);
+            props.navigation.push(AppRoutes.AddAddress, {
+              KeyName: 'Update',
+              DataAddress: address,
+              ComingFrom: AppRoutes.MedicineCart,
+            });
+            hideAphAlert!();
           }}
           onPressSelectAddress={(address) => {
             checkServicability(address);
@@ -339,7 +403,10 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
         <Button
           disabled={false}
           title={'UPLOAD PRESCRIPTION'}
-          onPress={() => setshowPopUp(true)}
+          onPress={() => {
+            uploadPrescriptionClickedEvent(currentPatient?.id);
+            setshowPopUp(true);
+          }}
           titleTextStyle={{ fontSize: 13, lineHeight: 24, marginVertical: 8 }}
           style={{ borderRadius: 10 }}
         />

@@ -527,7 +527,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       CommonBugFender('set_default_Address_on_Medicine_Page', error);
       showAphAlert!({
         title: string.common.uhOh,
-        description: "We're sorry! Unable to set default address. Please try again after some time",
+        description:
+          "We're sorry! Unable to set delivery address. Please try again after some time",
       });
     }
   }
