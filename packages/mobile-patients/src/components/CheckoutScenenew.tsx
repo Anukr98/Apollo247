@@ -493,7 +493,11 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           ...physicalPrescriptions.map((item) => item.prismPrescriptionFileId),
           ...ePrescriptions.map((item) => item.prismPrescriptionFileId),
         ].join(','),
-        orderTat: deliveryAddressId && moment(deliveryTime).isValid ? deliveryTime : '',
+        orderTat:
+          deliveryAddressId &&
+          moment(deliveryTime, AppConfig.Configuration.TAT_API_RESPONSE_DATE_FORMAT).isValid()
+            ? deliveryTime
+            : '',
         items: cartItems.map((item) => {
           const discountedPrice = getFormattedAmount(
             (coupon && item.couponPrice) || item.specialPrice || item.price
@@ -622,7 +626,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     );
     const deliveryTimeMomentFormat = moment(
       deliveryTime,
-      AppConfig.Configuration.MED_DELIVERY_DATE_API_FORMAT
+      AppConfig.Configuration.TAT_API_RESPONSE_DATE_FORMAT
     );
     showAphAlert!({
       // unDismissable: true,
