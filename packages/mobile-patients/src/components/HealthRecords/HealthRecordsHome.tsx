@@ -6,11 +6,21 @@ import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Med
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
-  DropdownGreen,
   Filter,
-  LinkedUhidIcon,
   AddFileIcon,
   NoData,
+  AccountCircleDarkIcon,
+  BloodIcon,
+  HeightIcon,
+  WeightIcon,
+  ArrowRight,
+  HealthConditionPhrIcon,
+  LabTestIcon,
+  ClinicalDocumentPhrIcon,
+  PrescriptionPhrIcon,
+  BillPhrIcon,
+  InsurancePhrIcon,
+  HospitalPhrIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
@@ -61,8 +71,10 @@ import {
   ViewStyle,
   ScrollView,
   FlatList,
+  TextInput,
+  Image,
 } from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import {
   getPatientPrismMedicalRecords,
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizationsNew_response,
@@ -84,8 +96,15 @@ import {
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { TabHeader } from '@aph/mobile-patients/src/components/ui/TabHeader';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import _ from 'lodash';
+import { ListItem } from 'react-native-elements';
 
 const styles = StyleSheet.create({
+  containerStyle: {
+    flex: 1,
+    backgroundColor: '#E5E5E5',
+  },
   filterViewStyle: {
     height: 60,
     ...theme.viewStyles.lightSeparatorStyle,
@@ -129,6 +148,82 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     paddingHorizontal: 20,
     marginBottom: 16,
+  },
+  selectedMemberTextStyle: {
+    ...theme.viewStyles.text('B', isIphone5s() ? 11 : 13, '#FC9916', 1, 24),
+    marginLeft: 8,
+  },
+  userHeightTextStyle: {
+    ...theme.viewStyles.text('SB', 16, '#02475B', 1, 20.8),
+    paddingLeft: 10,
+    flex: 1,
+    paddingTop: 0,
+    paddingBottom: 0,
+  },
+  userBloodTextStyle: {
+    ...theme.viewStyles.text('R', 12, '#00B38E', 1, 16),
+  },
+  profileDetailsMainViewStyle: {
+    backgroundColor: '#FFFFFF',
+    marginTop: 16,
+    paddingTop: 26,
+    paddingHorizontal: 18,
+    paddingBottom: 70,
+  },
+  profileDetailsCardView: {
+    ...theme.viewStyles.cardViewStyle,
+    width: '100%',
+    position: 'absolute',
+    alignSelf: 'center',
+    bottom: -22,
+  },
+  profileDetailsViewStyle: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 14,
+    marginBottom: 18,
+    marginLeft: 22,
+    marginRight: 25,
+  },
+  heightWeightViewStyle: {
+    flexDirection: 'row',
+    flex: 1,
+    alignItems: 'center',
+  },
+  separatorLineStyle: {
+    width: 0.5,
+    backgroundColor: 'rgba(2,71,91,0.2)',
+    marginHorizontal: 10,
+    marginBottom: 0,
+  },
+  listItemTitleStyle: {
+    ...theme.viewStyles.text('M', 16, '#02475B', 1, 21),
+    paddingHorizontal: 6,
+    paddingLeft: 14,
+  },
+  listItemViewStyle: {
+    paddingLeft: 0,
+    paddingRight: 3,
+    marginTop: 7,
+    borderBottomColor: 'rgba(2,71,91,0.2)',
+    borderBottomWidth: 0.5,
+  },
+  listItemCardStyle: {
+    ...theme.viewStyles.cardViewStyle,
+    marginTop: 11,
+    overflow: 'hidden',
+    paddingLeft: 18,
+    paddingRight: 25,
+  },
+  clinicalDocumentViewStyle: {
+    ...theme.viewStyles.cardViewStyle,
+    marginTop: 11,
+    overflow: 'hidden',
+    paddingLeft: 18,
+    paddingRight: 25,
+    marginBottom: 50,
+    marginHorizontal: 20,
   },
 });
 
@@ -195,6 +290,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
   const { showAphAlert } = useUIElements();
   const { deliveryAddressId, storeId } = useShoppingCart();
+  const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
 
   useEffect(() => {
     currentPatient && setProfile(currentPatient!);
@@ -245,7 +341,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             ...c,
           };
         });
-
+        console.log('_data', _data);
         medOrders.forEach((c) => {
           consultsAndMedOrders[c!.quoteDateTime] = {
             ...consultsAndMedOrders[c!.quoteDateTime],
@@ -328,16 +424,16 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
-    setPastDataLoader(true);
-    setPrismdataLoader(true);
-    fetchPastData();
-    fetchTestData();
+    // setPastDataLoader(true);
+    // setPrismdataLoader(true);
+    // fetchPastData();
+    // fetchTestData();
   }, [currentPatient]);
 
   useEffect(() => {
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-      fetchPastData();
-      fetchTestData();
+      // fetchPastData();
+      // fetchTestData();
       setFilterData(FilterData);
       setDisplayFilter(false);
     });
@@ -768,82 +864,253 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     });
   };
 
+  const renderProfileImage = () => {
+    return currentPatient?.photoUrl?.match(
+      /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jpeg|JPEG)/
+    ) ? (
+      <Image
+        source={{ uri: currentPatient?.photoUrl }}
+        style={{ height: 30, width: 30, borderRadius: 15, marginTop: 8 }}
+      />
+    ) : (
+      <AccountCircleDarkIcon
+        style={{
+          height: 36,
+          width: 36,
+          borderRadius: 18,
+          marginTop: 5,
+        }}
+      />
+    );
+  };
+
+  const renderHeader = () => {
+    console.log('currentPatient', currentPatient);
+    return (
+      <Header
+        title={'HEALTH RECORDS'}
+        leftIcon={'homeIcon'}
+        rightComponent={
+          <ProfileList
+            showProfilePic={true}
+            navigation={props.navigation}
+            saveUserChange={true}
+            childView={renderProfileImage()}
+            listContainerStyle={{ marginLeft: 6, marginTop: 44 }}
+            selectedProfile={profile}
+            setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+            unsetloaderDisplay={true}
+          ></ProfileList>
+        }
+        container={{ borderBottomWidth: 0 }}
+        onPressLeftIcon={() => {
+          props.navigation.dispatch(
+            StackActions.reset({
+              index: 0,
+              key: null,
+              actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+            })
+          );
+        }}
+      />
+    );
+  };
+
+  const renderProfileDetailsView = () => {
+    const separatorLineView = () => {
+      return <View style={styles.separatorLineStyle} />;
+    };
+
+    const patientTextView = (text: string) => {
+      return (
+        <Text numberOfLines={1} style={styles.userHeightTextStyle}>
+          {text}
+        </Text>
+      );
+    };
+
+    return (
+      <View style={styles.profileDetailsMainViewStyle}>
+        <View style={{ flexDirection: 'row' }}>
+          {renderProfileImage()}
+          <View style={{ marginLeft: 8 }}>
+            <Text
+              style={{ ...theme.viewStyles.text('SB', 36, '#02475B', 1, 47) }}
+              numberOfLines={1}
+            >
+              {'hi ' + (currentPatient && currentPatient!.firstName!.toLowerCase() + '!') || ''}
+            </Text>
+            <View>
+              <Text style={{ ...theme.viewStyles.text('R', 18, '#67919D', 1, 21) }}>
+                {moment(currentPatient?.dateOfBirth).format('DD MMM YYYY')}
+                {'    |    '}
+                {_.capitalize(currentPatient?.gender) || ''}
+              </Text>
+            </View>
+          </View>
+        </View>
+        <View style={styles.profileDetailsCardView}>
+          <View style={styles.profileDetailsViewStyle}>
+            <View style={{ flex: 1 }}>
+              <View style={{ paddingLeft: 30 }}>
+                <Text style={styles.userBloodTextStyle}>{'Height'}</Text>
+              </View>
+              <View style={styles.heightWeightViewStyle}>
+                <HeightIcon style={{ width: 14, height: 22.14 }} />
+                {currentPatient?.patientMedicalHistory?.height &&
+                currentPatient?.patientMedicalHistory?.height !== 'No Idea' &&
+                currentPatient?.patientMedicalHistory?.height !== 'Not Recorded' ? (
+                  patientTextView(currentPatient?.patientMedicalHistory?.height || '')
+                ) : (
+                  <TextInput
+                    placeholder={'-'}
+                    style={styles.userHeightTextStyle}
+                    numberOfLines={1}
+                    underlineColorAndroid={'transparent'}
+                  />
+                )}
+              </View>
+            </View>
+            {separatorLineView()}
+            <View style={{ flex: 1 }}>
+              <View style={{ paddingLeft: 25 }}>
+                <Text style={styles.userBloodTextStyle}>{'Weight'}</Text>
+              </View>
+              <View style={styles.heightWeightViewStyle}>
+                <WeightIcon style={{ width: 14, height: 14, paddingBottom: 8 }} />
+                {currentPatient?.patientMedicalHistory?.weight &&
+                currentPatient?.patientMedicalHistory?.weight !== 'No Idea' &&
+                currentPatient?.patientMedicalHistory?.weight !== 'Not Recorded' ? (
+                  patientTextView(
+                    currentPatient?.patientMedicalHistory?.weight
+                      ? currentPatient?.patientMedicalHistory?.weight + ' kg'
+                      : ''
+                  )
+                ) : (
+                  <TextInput
+                    placeholder={'-'}
+                    style={styles.userHeightTextStyle}
+                    underlineColorAndroid={'transparent'}
+                  />
+                )}
+              </View>
+            </View>
+            {separatorLineView()}
+            <View style={{ flex: 1 }}>
+              <View style={{ paddingLeft: 23 }}>
+                <Text style={styles.userBloodTextStyle}>{'Blood'}</Text>
+              </View>
+              <View style={styles.heightWeightViewStyle}>
+                <BloodIcon style={{ width: 14, height: 15.58 }} />
+                {false ? (
+                  <TextInput
+                    placeholder={'-'}
+                    style={styles.userHeightTextStyle}
+                    underlineColorAndroid={'transparent'}
+                  />
+                ) : (
+                  patientTextView('B+')
+                )}
+              </View>
+            </View>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
+  const renderListItemView = (title: string, id: number) => {
+    const renderLeftAvatar = () => {
+      switch (id) {
+        case 1:
+          return <PrescriptionPhrIcon style={{ height: 23, width: 20 }} />;
+          break;
+        case 2:
+          return <LabTestIcon style={{ height: 21.3, width: 20 }} />;
+          break;
+        case 3:
+          return <HospitalPhrIcon style={{ height: 23.3, width: 20 }} />;
+          break;
+        case 4:
+          return <HealthConditionPhrIcon style={{ height: 24.94, width: 20 }} />;
+          break;
+        case 5:
+          return <BillPhrIcon style={{ height: 18.63, width: 24 }} />;
+          break;
+        case 6:
+          return <InsurancePhrIcon style={{ height: 16.71, width: 20 }} />;
+          break;
+        case 7:
+          return <ClinicalDocumentPhrIcon style={{ height: 27.92, width: 20 }} />;
+          break;
+      }
+    };
+
+    return (
+      <ListItem
+        title={title}
+        titleProps={{ numberOfLines: 1 }}
+        titleStyle={styles.listItemTitleStyle}
+        pad={0}
+        containerStyle={[
+          styles.listItemViewStyle,
+          (id === 7 || id === 4 || id === 6) && { borderBottomWidth: 0 },
+        ]}
+        leftAvatar={renderLeftAvatar()}
+        rightAvatar={<ArrowRight style={{ height: 24, width: 24 }} />}
+      />
+    );
+  };
+
+  const renderHealthCategoriesView = () => {
+    return (
+      <View style={{ marginTop: 54, marginHorizontal: 20, marginBottom: 25 }}>
+        <Text style={{ ...theme.viewStyles.text('B', 18, '#02475B', 1, 21) }}>
+          {'Health Categories'}
+        </Text>
+        <View style={styles.listItemCardStyle}>
+          {renderListItemView('Consult & Rx', 1)}
+          {renderListItemView('Test Reports', 2)}
+          {renderListItemView('Hospitalization', 3)}
+          {renderListItemView('Health Conditions', 4)}
+        </View>
+      </View>
+    );
+  };
+
+  const renderBillsInsuranceView = () => {
+    return (
+      <View style={{ marginHorizontal: 20, marginBottom: 14 }}>
+        <Text style={{ ...theme.viewStyles.text('B', 18, '#02475B', 1, 21) }}>
+          {'More From Health'}
+        </Text>
+        <View style={styles.listItemCardStyle}>
+          {renderListItemView('Bills', 5)}
+          {renderListItemView('Insurance', 6)}
+        </View>
+      </View>
+    );
+  };
+
+  const renderClinicalDocumentsView = () => {
+    return (
+      <View style={styles.clinicalDocumentViewStyle}>
+        {renderListItemView('Clinical Documents', 7)}
+      </View>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
-        {renderTopView()}
-        <ScrollView
-          style={{ flex: 1 }}
-          bounces={false}
-          stickyHeaderIndices={[1]}
-          onScroll={handleScroll}
-          scrollEventThrottle={20}
-        >
-          {renderProfileChangeView()}
-          {renderTabSwitch()}
-          {selectedTab === tabs[0].title && renderConsults()}
-          {selectedTab === tabs[1].title && (
-            <MedicalRecords navigation={props.navigation} labResultsData={labResults} />
-          )}
-          {selectedTab === tabs[2].title && (
-            <MedicalRecords navigation={props.navigation} healthChecksNewData={healthChecksNew} />
-          )}
-          {selectedTab === tabs[3].title && (
-            <MedicalRecords
-              navigation={props.navigation}
-              hospitalizationsNewData={hospitalizationsNew}
-            />
-          )}
+        {renderHeader()}
+        <ScrollView style={{ flex: 1 }} bounces={false}>
+          {renderProfileDetailsView()}
+          {renderHealthCategoriesView()}
+          {renderBillsInsuranceView()}
+          {renderClinicalDocumentsView()}
         </ScrollView>
       </SafeAreaView>
-      {displayFilter && (
-        <FilterHealthRecordScene
-          onClickClose={(data: filterDataType[]) => {
-            setDisplayFilter(false);
-          }}
-          onResetClick={() => {
-            setPastDataLoader(false);
-          }}
-          setData={(data) => {
-            setFilterData(data);
-            setFilterSelected(true);
-            fetchPastData(data);
-          }}
-          data={JSON.parse(JSON.stringify(FilterData))}
-          filterLength={() => {
-            setFilterSelected(false);
-            setTimeout(() => {
-              setLoading && setLoading(false);
-            }, 500);
-          }}
-        />
-      )}
-      {displayOrderPopup && (
-        <UploadPrescriprionPopup
-          isVisible={displayOrderPopup}
-          disabledOption="NONE"
-          type="nonCartFlow"
-          heading={'Upload Prescription(s)'}
-          instructionHeading={'Instructions For Uploading Prescriptions'}
-          instructions={[
-            'Take clear picture of your entire prescription.',
-            'Doctor details & date of the prescription should be clearly visible.',
-            'Medicines will be dispensed as per prescription.',
-          ]}
-          optionTexts={{
-            camera: 'TAKE A PHOTO',
-            gallery: 'CHOOSE\nFROM GALLERY',
-          }}
-          onClickClose={() => setdisplayOrderPopup(false)}
-          onResponse={(selectedType, response) => {
-            setdisplayOrderPopup(false);
-            if (selectedType == 'CAMERA_AND_GALLERY') {
-              if (response.length == 0) return;
-              UploadPrescriptionData(response);
-            }
-          }}
-        />
-      )}
     </View>
   );
 };
