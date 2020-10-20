@@ -583,6 +583,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             props.navigation.push(AppRoutes.AddAddress, {
               KeyName: 'Update',
               DataAddress: address,
+              ComingFrom: AppRoutes.MedicineCart,
             });
             hideAphAlert!();
           }}
