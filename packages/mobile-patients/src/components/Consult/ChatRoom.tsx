@@ -2218,6 +2218,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           return obj.uuid === 'DOCTOR' || obj.uuid.indexOf('DOCTOR_') > -1;
         });
         InsertMessageToDoctor(message);
+
         console.log('callAbondmentMethodoccupancyDoctor -------> ', occupancyDoctor);
       })
       .catch((error) => {
