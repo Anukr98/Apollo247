@@ -36,7 +36,6 @@ import {
 } from 'webEngageTracking';
 import { MedicineProduct } from './../../helpers/MedicineApiCalls';
 
-let tempData: any[] = [];
 let fetching = true;
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -326,6 +325,10 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'center',
       color: '#fc9916',
       cursor: 'pointer',
+      fontWeight: 500,
+      [theme.breakpoints.down('sm')]: {
+        padding: '12px 10px 24px 10px',
+      },
     },
   };
 });
@@ -343,6 +346,7 @@ type Params = { searchMedicineType: string; searchText: string };
 
 type PriceFilter = { fromPrice: string; toPrice: string };
 type DiscountFilter = { fromDiscount: string; toDiscount: string };
+let tempData: any[] = [];
 let currentPage = 1;
 let totalItems: number;
 const SearchByMedicine: React.FC = (props) => {
@@ -371,13 +375,14 @@ const SearchByMedicine: React.FC = (props) => {
   useEffect(() => {
     deepLinkUtil(`MedicineSearch?${categoryId},${params.searchText}`);
     medicinePageOpenTracking();
+    tempData = [];
+    totalItems = 0;
+    currentPage = 1;
   }, [categoryId]);
 
   const loadItemData = () => {
-    if (currentPage * 20 < totalItems) {
-      setIsLoading(true);
-      getCategoryProducts(currentPage);
-    }
+    setIsLoading(true);
+    getCategoryProducts(currentPage);
   };
 
   const getTitle = () => {
