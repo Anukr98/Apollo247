@@ -316,16 +316,16 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
               }
               addressChange && NavigateToCartSummary(deliveryDate, distance, storeType, storeCode);
             } else {
-              addressChange && NavigateToCartSummary('');
+              addressChange && NavigateToCartSummary(genericServiceableDate);
               handleTatApiFailure(selectedAddress, {});
             }
           } else {
             handleTatApiFailure(selectedAddress, {});
-            addressChange && NavigateToCartSummary('');
+            addressChange && NavigateToCartSummary(genericServiceableDate);
           }
         } catch (error) {
           handleTatApiFailure(selectedAddress, error);
-          addressChange && NavigateToCartSummary('');
+          addressChange && NavigateToCartSummary(genericServiceableDate);
         }
       } catch (error) {
         handleTatApiFailure(selectedAddress, error);
@@ -336,12 +336,18 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     }
   }
 
+  const genericServiceableDate = moment()
+    .add(2, 'days')
+    .set('hours', 20)
+    .set('minutes', 0)
+    .format(AppConfig.Configuration.TAT_API_RESPONSE_DATE_FORMAT);
+
   function handleTatApiFailure(
     selectedAddress: savePatientAddress_savePatientAddress_patientAddress,
     error: any
   ) {
-    setdeliveryTime('');
     addressSelectedEvent(selectedAddress, '');
+    setdeliveryTime(genericServiceableDate);
     postTatResponseFailureEvent(cartItems, selectedAddress.zipcode || '', error);
     setloading(false);
     validatePharmaCoupon();
@@ -550,6 +556,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             maxOrderQty: medicineDetails.MaxOrderQty,
             productType: medicineDetails.type_id,
             isFreeCouponProduct: !!couponProducts[index]!.couponFree,
+            couponPrice: 0,
           } as ShoppingCartItem;
         });
         addMultipleCartItems!(medicinesAll as ShoppingCartItem[]);
@@ -649,6 +656,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             props.navigation.push(AppRoutes.AddAddress, {
               KeyName: 'Update',
               DataAddress: address,
+              ComingFrom: AppRoutes.MedicineCart,
             });
             hideAphAlert!();
           }}
@@ -741,7 +749,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   };
 
   const removeFreeProductsFromCart = () => {
-    const updatedCartItems = cartItems.filter((item) => item.price != 0);
+    const updatedCartItems = cartItems.filter((item) => item.specialPrice != 0);
     setCartItems!(updatedCartItems);
     setCouponProducts!([]);
   };
@@ -777,9 +785,12 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   };
 
   const renderCouponSection = () => {
-    return (
-      <Coupon onPressApplyCoupon={() => applyCoupon()} onPressRemove={() => setCoupon!(null)} />
-    );
+    return <Coupon onPressApplyCoupon={() => applyCoupon()} onPressRemove={() => removeCoupon()} />;
+  };
+
+  const removeCoupon = () => {
+    setCoupon!(null);
+    removeFreeProductsFromCart();
   };
 
   const renderAmountSection = () => {

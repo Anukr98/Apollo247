@@ -169,7 +169,7 @@ public class MyFirebaseMessagingService
         i.putExtra("APP_STATE",isAppRunning());
         i.putExtra("FALL_BACK",true);
         PendingIntent fullScreenIntent = PendingIntent.getActivity(this, 0 /* Request code */, i,
-                PendingIntent.FLAG_CANCEL_CURRENT);
+                PendingIntent.FLAG_ONE_SHOT);
         //end
 
         //channel info start
