@@ -435,9 +435,6 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
 										inputProps={{ type: 'text', value: invoiceEmail }}
 										placeholder="Enter your email id"
 										onChange={(event) => handleEmailValidityCheck(event.target.value)}
-										//onChange={(event) => setInvoiceEmail(event.target.value)}
-										
-										//onBlur={handleEmailValidityCheck}
 									/>
 									<AphButton
 										className={classes.chatSend}
@@ -452,10 +449,6 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
 												Invoice has been sent to {invoiceEmail}!
 										</div> 
 									)}
-									
-									{/* <div className={classes.successMsg}>
-									Invoice has been sent to garimasuri@gmail.com!
-								</div> */}
 								</div>
 							)}
             </>

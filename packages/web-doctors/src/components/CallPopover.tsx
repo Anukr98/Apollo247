@@ -1977,7 +1977,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           'Patient name': props.webengageConsultTrackingObject.patientName,
           'Patient mobile number': props.webengageConsultTrackingObject.patientMobileNumber,
           'Doctor Mobile number': props.webengageConsultTrackingObject.doctorMobileNumber,
-          'Appointment Date time': props.webengageConsultTrackingObject.appointmentDateTime,
+          'Appointment Date time': props.appointmentDateTime,
           'Appointment display ID': props.webengageConsultTrackingObject.appointmentDisplayId,
           'Appointment ID': props.webengageConsultTrackingObject.appointmentId,
           'Blob URL': props.prescriptionPdf,
@@ -2170,7 +2170,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             'Patient name': props.webengageConsultTrackingObject.patientName,
             'Patient mobile number': props.webengageConsultTrackingObject.patientMobileNumber,
             'Doctor Mobile number': props.webengageConsultTrackingObject.doctorMobileNumber,
-            'Appointment Date time': props.webengageConsultTrackingObject.appointmentDateTime,
+            'Appointment Date time': props.appointmentDateTime,
             'Appointment display ID': props.webengageConsultTrackingObject.appointmentDisplayId,
             'Appointment ID': props.webengageConsultTrackingObject.appointmentId,
             'Reschedule date':
@@ -2616,8 +2616,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                           props.webengageConsultTrackingObject.patientMobileNumber,
                         'Doctor Mobile number':
                           props.webengageConsultTrackingObject.doctorMobileNumber,
-                        'Appointment Date time':
-                          props.webengageConsultTrackingObject.appointmentDateTime,
+                        'Appointment Date time': props.appointmentDateTime,
                         'Appointment display ID':
                           props.webengageConsultTrackingObject.appointmentDisplayId,
                         'Appointment ID': props.webengageConsultTrackingObject.appointmentId,
@@ -2780,8 +2779,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                             props.webengageConsultTrackingObject.patientMobileNumber,
                           'Doctor Mobile number':
                             props.webengageConsultTrackingObject.doctorMobileNumber,
-                          'Appointment Date time':
-                            props.webengageConsultTrackingObject.appointmentDateTime,
+                          'Appointment Date time': props.appointmentDateTime,
                           'Appointment display ID':
                             props.webengageConsultTrackingObject.appointmentDisplayId,
                           'Appointment ID': props.webengageConsultTrackingObject.appointmentId,
@@ -2845,7 +2843,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                           'Doctor Mobile number':
                             props.webengageConsultTrackingObject.doctorMobileNumber,
                           'Appointment Date time':
-                            props.webengageConsultTrackingObject.appointmentDateTime,
+                            props.appointmentDateTime,
                           'Appointment display ID':
                             props.webengageConsultTrackingObject.appointmentDisplayId,
                           'Appointment ID': props.webengageConsultTrackingObject.appointmentId,
@@ -3099,7 +3097,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                           'Doctor Mobile number':
                             props.webengageConsultTrackingObject.doctorMobileNumber,
                           'Appointment Date time':
-                            props.webengageConsultTrackingObject.appointmentDateTime,
+                            props.appointmentDateTime,
                           'Appointment display ID':
                             props.webengageConsultTrackingObject.appointmentDisplayId,
                           'Appointment ID': props.webengageConsultTrackingObject.appointmentId,
@@ -3464,7 +3462,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                           'Doctor Mobile number':
                             props.webengageConsultTrackingObject.doctorMobileNumber,
                           'Appointment Date time':
-                            props.webengageConsultTrackingObject.appointmentDateTime,
+                            props.appointmentDateTime,
                           'Appointment display ID':
                             props.webengageConsultTrackingObject.appointmentDisplayId,
                           'Appointment ID': props.webengageConsultTrackingObject.appointmentId,
@@ -3945,7 +3943,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 'Patient name': props.webengageConsultTrackingObject.patientName,
                 'Patient mobile number': props.webengageConsultTrackingObject.patientMobileNumber,
                 'Doctor Mobile number': props.webengageConsultTrackingObject.doctorMobileNumber,
-                'Appointment Date time': props.webengageConsultTrackingObject.appointmentDateTime,
+                'Appointment Date time': props.appointmentDateTime,
                 'Appointment display ID': props.webengageConsultTrackingObject.appointmentDisplayId,
                 'Appointment ID': props.webengageConsultTrackingObject.appointmentId,
                 'Type of call': 'Join Acceptance',
