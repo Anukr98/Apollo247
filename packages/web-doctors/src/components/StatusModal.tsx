@@ -198,7 +198,7 @@ const StatusModal = (props: any) => {
                 text.messageText !== '' ? classes.button : `${classes.button} ${classes.oKButton}`
               }
               onClick={() => {	
-                props.onClose	
+                props.onClose();	
                 if(text.messageText !== ''){	
                   webEngageEventTracking(	
                     {	
