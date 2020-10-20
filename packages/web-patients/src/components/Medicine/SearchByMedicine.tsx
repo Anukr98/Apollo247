@@ -1,5 +1,6 @@
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { AphButton, AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-ui-components';
-import { Theme, Typography } from '@material-ui/core';
+import { Theme, Typography, CircularProgress } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import axios from 'axios';
@@ -25,9 +26,7 @@ import { useParams } from 'hooks/routerHooks';
 import _replace from 'lodash/replace';
 import { MetaTagsComp } from 'MetaTagsComp';
 import moment from 'moment';
-import React, { useEffect, useState } from 'react';
 import { useMutation } from 'react-apollo-hooks';
-import Scrollbars from 'react-custom-scrollbars';
 import { Link } from 'react-router-dom';
 import {
   pharmacyCategoryClickTracking,
@@ -36,6 +35,7 @@ import {
 } from 'webEngageTracking';
 import { MedicineProduct } from './../../helpers/MedicineApiCalls';
 
+let fetching = true;
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
@@ -44,6 +44,8 @@ const useStyles = makeStyles((theme: Theme) => {
     container: {
       maxWidth: 1064,
       margin: 'auto',
+      height: '100vh',
+      overflowY: 'scroll',
     },
     searchByBrandPage: {
       position: 'relative',
@@ -85,8 +87,10 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       padding: '20px 3px 20px 20px',
       [theme.breakpoints.down('xs')]: {
-        height: '100%',
+        // height: '100%',
         padding: 0,
+        height: '100vh',
+        overflowY: 'scroll',
       },
     },
     searchSection: {
@@ -315,6 +319,16 @@ const useStyles = makeStyles((theme: Theme) => {
         lineHeight: '20px',
       },
     },
+    seeMoreTag: {
+      margin: 10,
+      textAlign: 'center',
+      color: '#fc9916',
+      cursor: 'pointer',
+      fontWeight: 500,
+      [theme.breakpoints.down('sm')]: {
+        padding: '12px 10px 24px 10px',
+      },
+    },
   };
 });
 
@@ -331,15 +345,18 @@ type Params = { searchMedicineType: string; searchText: string };
 
 type PriceFilter = { fromPrice: string; toPrice: string };
 type DiscountFilter = { fromDiscount: string; toDiscount: string };
-
+let tempData: any[] = [];
+let currentPage = 1;
+let totalItems: number;
 const SearchByMedicine: React.FC = (props) => {
   const classes = useStyles({});
+  const scrollToRef = useRef<HTMLDivElement>(null);
   const patient = useCurrentPatient();
   const recommendedProductsMutation = useMutation(GET_RECOMMENDED_PRODUCTS_LIST);
   const [priceFilter, setPriceFilter] = useState<PriceFilter | null>(null);
   const [discountFilter, setDiscountFilter] = useState<DiscountFilter | null>(null);
   const [filterData, setFilterData] = useState([]);
-  const [medicineList, setMedicineList] = useState<MedicineProduct[] | null>(null);
+  const [medicineList, setMedicineList] = useState<MedicineProduct[]>(null);
   const [medicineListFiltered, setMedicineListFiltered] = useState<MedicineProduct[] | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [sortBy, setSortBy] = useState<string>('');
@@ -353,6 +370,18 @@ const SearchByMedicine: React.FC = (props) => {
   const [heading, setHeading] = React.useState<string>('');
   const { cartItems } = useShoppingCart();
   const { diagnosticsCartItems } = useDiagnosticsCart();
+
+  useEffect(() => {
+    deepLinkUtil(`MedicineSearch?${categoryId},${params.searchText}`);
+    tempData = [];
+    totalItems = 0;
+    currentPage = 1;
+  }, [categoryId]);
+
+  const loadItemData = () => {
+    setIsLoading(true);
+    getCategoryProducts(currentPage);
+  };
 
   const getTitle = () => {
     let title = params.searchMedicineType;
@@ -386,6 +415,7 @@ const SearchByMedicine: React.FC = (props) => {
       .then(({ data }) => {
         pharmacySearchEnterTracking(data.products && data.products.length);
         setMedicineList(data.products);
+        totalItems = data.count;
         setMedicineListFiltered(data.products);
         setHeading(data.search_heading || '');
         setIsLoading(false);
@@ -396,8 +426,7 @@ const SearchByMedicine: React.FC = (props) => {
         setHeading('');
       });
   };
-
-  const getCategoryProducts = () => {
+  const getCategoryProducts = (pageNum?: number) => {
     axios
       .post(
         apiDetails.skuUrl || '',
@@ -415,10 +444,10 @@ const SearchByMedicine: React.FC = (props) => {
         );
         axios
           .post(
-            apiDetails.url || '',
+            `${apiDetails.url}` || '',
             {
               category_id: res.data.category_id || paramSearchText,
-              page_id: 1,
+              page_id: pageNum || 1,
             },
             {
               headers: {
@@ -429,9 +458,14 @@ const SearchByMedicine: React.FC = (props) => {
           )
           .then(({ data }) => {
             if (data && data.products) {
+              // @ts-ignore
+              tempData = tempData.concat(data.products);
+              totalItems = data.count;
               setMedicineList(data.products);
               setHeading('');
               setIsLoading(false);
+              fetching = false;
+              currentPage = currentPage + 1;
               pharmacyCategoryClickTracking({
                 source: 'Home',
                 categoryName: paramSearchText,
@@ -567,6 +601,9 @@ const SearchByMedicine: React.FC = (props) => {
   };
 
   useEffect(() => {
+    scrollToRef &&
+      scrollToRef.current &&
+      scrollToRef.current.scrollIntoView({ behavior: 'auto', block: 'end' });
     if (!medicineList && paramSearchType !== 'search-medicines') {
       setIsLoading(true);
       if (paramSearchText === 'recommended-products') {
@@ -577,7 +614,8 @@ const SearchByMedicine: React.FC = (props) => {
     } else if (!medicineList && paramSearchText.length > 0) {
       onSearchMedicine();
     } else {
-      setMedicineListFiltered(medicineList);
+      const data = medicineList.length > tempData.length ? medicineList : tempData;
+      setMedicineListFiltered(data);
     }
   }, [medicineList, patient]);
 
@@ -757,7 +795,7 @@ const SearchByMedicine: React.FC = (props) => {
     <div className={classes.root}>
       {paramSearchType !== 'search-medicines' && <MetaTagsComp {...metaTagProps} />}
       <Header />
-      <div className={classes.container}>
+      <div className={classes.container} ref={scrollToRef}>
         <div className={classes.searchByBrandPage}>
           <div className={classes.breadcrumbs}>
             <a onClick={() => window.history.back()}>
@@ -831,18 +869,25 @@ const SearchByMedicine: React.FC = (props) => {
               categoryId={categoryId}
             />
             <div className={classes.searchSection}>
-              <Scrollbars className={classes.scrollBar} autoHide={true}>
-                <div className={classes.customScroll}>
-                  <MedicinesCartContext.Consumer>
-                    {() => (
-                      <>
-                        <div className={classes.noData}>{heading}</div>
-                        <MedicineCard medicineList={medicineListFiltered} isLoading={isLoading} />
-                      </>
-                    )}
-                  </MedicinesCartContext.Consumer>
-                </div>
-              </Scrollbars>
+              <div className={classes.customScroll}>
+                <MedicinesCartContext.Consumer>
+                  {() => (
+                    <>
+                      <div className={classes.noData}>{heading}</div>
+                      <MedicineCard medicineList={medicineListFiltered} isLoading={isLoading} />
+                      {currentPage * 20 < totalItems && (
+                        <div className={classes.seeMoreTag} onClick={() => loadItemData()}>
+                          {isLoading ? (
+                            <CircularProgress size={22} color="secondary" />
+                          ) : (
+                            'See More'
+                          )}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </MedicinesCartContext.Consumer>
+              </div>
             </div>
           </div>
           {/* <div className={classes.contentContainer}>
