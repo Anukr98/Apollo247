@@ -952,8 +952,6 @@ const getMedicineOrderOMSDetailsWithAddress: Resolver<
             medicineOrderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED;
           }
           reasonCode.statusMessage = JSON.stringify(onHoldReasonObj);
-        } else {
-          reasonCode.statusMessage = '';
         }
       }
     }

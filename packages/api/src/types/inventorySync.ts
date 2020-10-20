@@ -6,6 +6,13 @@ export interface InventorySyncRequest {
   lng: number;
   items: Items[];
 }
+
+export interface TatRequest {
+  pincode: string;
+  lat: number;
+  lng: number;
+  items: Items[];
+}
 export interface Items {
   sku: string;
   qty: number;

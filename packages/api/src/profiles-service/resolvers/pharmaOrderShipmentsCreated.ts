@@ -20,6 +20,7 @@ import { log } from 'customWinstonLogger';
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
 import { ApiConstants } from 'ApiConstants';
 import Decimal from 'decimal.js';
+import { orderShipmentCreated } from 'profiles-service/helpers/inventorySync';
 
 export const saveOrderShipmentsTypeDefs = gql`
   input SaveOrderShipmentsInput {
@@ -45,6 +46,7 @@ export const saveOrderShipmentsTypeDefs = gql`
     batch: String
     unitPrice: Float
     packSize: Int
+    posAvailability: Boolean
   }
 
   type SaveOrderShipmentsResult {
@@ -89,6 +91,7 @@ type ItemArticleDetails = {
   batch: string;
   unitPrice: number;
   packSize: number;
+  posAvailability: boolean;
 };
 
 type SaveOrderShipmentsInputArgs = {
@@ -269,6 +272,22 @@ const saveOrderShipments: Resolver<
     },
   };
   postEvent(postBody);
+  const shipmentDetails = saveOrderShipmentsInput.shipments[0];
+  const shipmentReq = {
+    storeCode: shipmentDetails.siteId,
+    orderId: saveOrderShipmentsInput.orderId,
+    pincode: string;
+    lat: number;
+    lng: number;
+    items: shipmentDetails.itemDetails.map((item) => {
+      return {
+        sku: item.articleCode,
+        qty: item.quantity / item.packSize,
+      };
+    })
+  }
+
+  orderShipmentCreated(shipmentReq);
 
   return {
     status: MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
