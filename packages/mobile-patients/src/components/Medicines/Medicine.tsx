@@ -557,6 +557,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               KeyName: 'Update',
               DataAddress: address,
               source: 'Medicine' as AddressSource,
+              ComingFrom: AppRoutes.Medicine,
             });
             hideAphAlert!();
           }}
