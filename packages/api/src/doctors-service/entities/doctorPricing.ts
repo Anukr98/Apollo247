@@ -5,7 +5,7 @@ enum PLAN {
   ALL = 'ALL',
   CARE_PLAN = 'CARE_PLAN'
 }
-enum STATUS {
+enum PLAN_STATUS {
   ACTIVE = 'ACTIVE',
   INACTIVE = 'INACTIVE'
 }
@@ -36,7 +36,7 @@ export class DoctorPricing extends BaseEntity {
   end_date: Date;
 
   @Column()
-  status: STATUS;
+  status: PLAN_STATUS;
 
   @Column({ nullable: true })
   doctor_share: Number
