@@ -3945,7 +3945,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 'Appointment ID': props.webengageConsultTrackingObject.appointmentId,
                 'Type of call': 'Join Acceptance',
               },
-              'Front_end - Accepted to Join the session'
+              'Front_end - Doctor Accepted to Join the session'
             );
           }}
         >
@@ -4030,6 +4030,19 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       'Front_end - Doctor API-Error on Casesheet'
                     );
                   });
+                  webEngageEventTracking(
+                    {
+                      'Doctor name': props.webengageConsultTrackingObject.doctorName,
+                      'Patient name': props.webengageConsultTrackingObject.patientName,
+                      'Patient mobile number': props.webengageConsultTrackingObject.patientMobileNumber,
+                      'Doctor Mobile number': props.webengageConsultTrackingObject.doctorMobileNumber,
+                      'Appointment Date time': props.appointmentDateTime,
+                      'Appointment display ID': props.webengageConsultTrackingObject.appointmentDisplayId,
+                      'Appointment ID': props.webengageConsultTrackingObject.appointmentId,
+                      'Type of call': 'Join Acceptance',
+                    },
+                    'Front_end - Doctor Accepted to Join the session'
+                  );
               }}
             >
               {'JOIN'}
