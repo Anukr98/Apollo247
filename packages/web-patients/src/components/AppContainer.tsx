@@ -23,7 +23,7 @@ import { HdfcMemberShip } from 'components/Partners/Hdfc/HdfcMembership';
 import { MyMembership } from 'components/Partners/Hdfc/MyMembership';
 import { MembershipPlanLocked } from 'components/Partners/Hdfc/MembershipPlanLocked';
 import { MembershipPlanDetail } from 'components/Partners/Hdfc/MembershipPlanDetail';
-import PageNotFound from 'components/PageNotFound';
+import { PageNotFound } from 'components/PageNotFound';
 
 const Welcome = loadable(() => import('components/Welcome'));
 
