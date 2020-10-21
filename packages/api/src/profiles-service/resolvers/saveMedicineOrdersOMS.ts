@@ -354,19 +354,22 @@ const saveMedicineOrderOMS: Resolver<
       throw new AphError(AphErrorMessages.INVALID_MEDICINE_PRESCRIPTION_URL, undefined, {});
     }
   }
-  if (
-    !medicineCartOMSInput.storeDistanceKm &&
-    medicineOrderAddressDetails.latitude &&
-    medicineOrderAddressDetails.longitude &&
-    storeDetails.lat &&
-    storeDetails.lng
-  ) {
-    medicineCartOMSInput.storeDistanceKm = getDistanceBetweenPoints(
-      medicineOrderAddressDetails.latitude,
-      storeDetails.lat,
-      medicineOrderAddressDetails.longitude,
+  if (!medicineCartOMSInput.storeDistanceKm || medicineCartOMSInput.storeDistanceKm <= 0) {
+    if (
+      medicineOrderAddressDetails.latitude &&
+      medicineOrderAddressDetails.longitude &&
+      storeDetails.lat &&
       storeDetails.lng
-    );
+    ) {
+      medicineCartOMSInput.storeDistanceKm = getDistanceBetweenPoints(
+        medicineOrderAddressDetails.latitude,
+        storeDetails.lat,
+        medicineOrderAddressDetails.longitude,
+        storeDetails.lng
+      );
+    } else {
+      medicineCartOMSInput.storeDistanceKm = 0;
+    }
   }
 
   const medicineOrderattrs: Partial<MedicineOrders> = {
