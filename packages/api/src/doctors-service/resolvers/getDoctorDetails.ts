@@ -114,6 +114,7 @@ export const getDoctorDetailsTypeDefs = gql`
     status: STATUS
     doctor_share: Float
     apollo_share: Float
+    mrp: Float
   }
   type DoctorDetails @key(fields: "id") {
     awards: String
