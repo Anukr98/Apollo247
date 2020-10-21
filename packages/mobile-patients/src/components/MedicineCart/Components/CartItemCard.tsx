@@ -87,7 +87,8 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
             )}
           </View>
           <TouchableOpacity onPress={onPressDelete} style={styles.delete}>
-            {!item.unserviceable ? <DeleteIcon /> : <DeleteBoldIcon />}
+            {/* {!item?.isFreeCouponProduct ? renderDelete() : null} */}
+            {renderDelete()}
           </TouchableOpacity>
         </View>
         {renderLowerCont()}
@@ -95,15 +96,31 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     );
   };
 
+  const renderDelete = () => {
+    return !item.unserviceable ? !item?.isFreeCouponProduct && <DeleteIcon /> : <DeleteBoldIcon />;
+  };
+
   const renderLowerCont = () => {
     return (
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <View>
           {renderQuantity()}
-          {!item.unserviceable && coupon && renderCoupon()}
+          {!item.unserviceable && !item?.isFreeCouponProduct && coupon && renderCoupon()}
         </View>
-        {discountedPrice || discountedPrice == 0 ? renderPrice(discountedPrice) : renderPrice(mrp)}
+        {!item?.isFreeCouponProduct
+          ? discountedPrice || discountedPrice == 0
+            ? renderPrice(discountedPrice)
+            : renderPrice(mrp)
+          : renderFree()}
       </View>
+    );
+  };
+
+  const renderFree = () => {
+    return (
+      <Text style={{ ...theme.fonts.IBMPlexSansMedium(14), lineHeight: 20, color: '#00B38E' }}>
+        FREE
+      </Text>
     );
   };
 
@@ -117,37 +134,43 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     }).map((_, i) => {
       return { key: (i + 1).toString(), value: i + 1 };
     });
-    return (
-      <View>
-        <View style={{ ...styles.quantityContainer, opacity: !item.unserviceable ? 1 : 0.3 }}>
-          <MaterialMenu
-            options={opitons}
-            selectedText={item.quantity!.toString()}
-            selectedTextStyle={{ ...theme.viewStyles.text('M', 16, '#00b38e') }}
-            onPress={(selectedQuantity) => {
-              !item.unserviceable && onUpdateQuantity(selectedQuantity.value as number);
-            }}
-          >
-            <View style={{ flexDirection: 'row' }}>
-              <View style={{ justifyContent: 'center' }}>
-                <Text style={styles.quantity}>{`QTY : ${item.quantity}`}</Text>
-              </View>
-              <DropdownGreen />
+    return !item?.isFreeCouponProduct ? (
+      <View style={{ ...styles.quantityContainer, opacity: !item.unserviceable ? 1 : 0.3 }}>
+        <MaterialMenu
+          options={opitons}
+          selectedText={item.quantity!.toString()}
+          selectedTextStyle={{ ...theme.viewStyles.text('M', 16, '#00b38e') }}
+          onPress={(selectedQuantity) => {
+            !item.unserviceable && onUpdateQuantity(selectedQuantity.value as number);
+          }}
+        >
+          <View style={{ flexDirection: 'row' }}>
+            <View style={{ justifyContent: 'center' }}>
+              <Text style={styles.quantity}>{`QTY : ${item.quantity}`}</Text>
             </View>
-          </MaterialMenu>
-        </View>
+            <DropdownGreen />
+          </View>
+        </MaterialMenu>
+      </View>
+    ) : (
+      <View style={styles.quantityContainer}>
+        <Text style={styles.quantity}>{`QTY : ${item.quantity}`}</Text>
       </View>
     );
   };
 
   const renderCoupon = () => {
-    return item.couponPrice || item.couponPrice == 0 ? (
+    return item.couponPrice ? (
       <View style={styles.coupon}>
         <Text style={styles.couponText}>{`${coupon?.coupon} Applied`}</Text>
       </View>
     ) : (
       <View style={{ ...styles.coupon, backgroundColor: 'rgba(137,0,0,0.2)' }}>
-        <Text style={styles.couponText}>{`${coupon?.coupon} Not Applicable`}</Text>
+        <Text style={styles.couponText}>
+          {!item?.applicable
+            ? `${coupon?.coupon} Not Applicable`
+            : 'Item already at higher discount'}
+        </Text>
       </View>
     );
   };
