@@ -1257,10 +1257,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       range.select();
     }
   };
-  const getWebengageAppointmentDatetime = () => {
-    const datetime = (props.appointmentDateTime && props.appointmentDateTime !== '') ? format(new Date(props.appointmentDateTime), 'dd MMM, yyyy') +' '+ format(new Date(props.appointmentDateTime), 'h:mm a') : '';
-    return datetime;
-  } 
+   
   const [dateSelected, setDateSelected] = useState<string>(moment(new Date()).format('YYYY-MM-DD'));
 
   // timer for audio/video call start
