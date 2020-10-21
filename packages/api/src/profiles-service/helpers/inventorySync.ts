@@ -8,7 +8,7 @@ import {
   MedicineOrderLineItems,
   MedicineOrderAddress,
 } from 'profiles-service/entities';
-import { InventorySyncRequest, SYNC_TYPE, TatRequest } from 'types/inventorySync';
+import { InventorySyncRequest, SYNC_TYPE, TatRequest, LHUB_UPDATE_TYPE } from 'types/inventorySync';
 
 const inventorySyncTimeout = Number(process.env.INVENTORY_SYNC_TIMEOUT);
 
@@ -148,7 +148,7 @@ export async function getTat(
   return tatResponse.response;
 }
 
-export async function orderShipmentCreated(reqBody: InventorySyncRequest) {
+export async function updateLhub(reqBody: InventorySyncRequest, updateType: LHUB_UPDATE_TYPE) {
   if (!process.env.INVENTORY_SYNC_URL || !process.env.INVENTORY_SYNC_TOKEN)
     throw new AphError(AphErrorMessages.INVALID_INVENTORY_SYNC_URL);
 
@@ -161,8 +161,12 @@ export async function orderShipmentCreated(reqBody: InventorySyncRequest) {
     controller.abort();
   }, inventorySyncTimeout);
 
-  const apiUrl = `${baseUrl}/ordershipped`;
-
+  let apiUrl = baseUrl;
+  if ((updateType = LHUB_UPDATE_TYPE.SHIPPED)) {
+    apiUrl = `${apiUrl}/ordershipped`;
+  } else if ((updateType = LHUB_UPDATE_TYPE.DSP_CHANGE)) {
+    apiUrl = `${apiUrl}/changedsp`;
+  }
   const resp = await fetch(apiUrl, {
     method: 'POST',
     body: JSON.stringify(reqBody),
@@ -175,13 +179,13 @@ export async function orderShipmentCreated(reqBody: InventorySyncRequest) {
   if (resp.status != 200) {
     dLogger(
       reqStartTime,
-      'ORDER_SHIPPED_TAT_API_ERROR',
+      `LHUB_${updateType}_API_ERROR`,
       `${apiUrl} --- ${JSON.stringify(reqBody)} --- ${JSON.stringify(resp)}`
     );
   } else {
     dLogger(
       reqStartTime,
-      'ORDER_SHIPPED_TAT_API_SUCCESS',
+      `LHUB_${updateType}_API_SUCCESS`,
       `${apiUrl} --- ${JSON.stringify(reqBody)} --- ${JSON.stringify(resp)}`
     );
   }

@@ -23,3 +23,8 @@ export enum SYNC_TYPE {
   RELEASE = 'RELEASE',
   CANCEL = 'CANCEL',
 }
+
+export enum LHUB_UPDATE_TYPE {
+  DSP_CHANGE = 'DSP_CHANGE',
+  SHIPPED = 'SHIPPED',
+}

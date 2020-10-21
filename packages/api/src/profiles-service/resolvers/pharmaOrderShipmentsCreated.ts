@@ -20,7 +20,8 @@ import { log } from 'customWinstonLogger';
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
 import { ApiConstants } from 'ApiConstants';
 import Decimal from 'decimal.js';
-import { orderShipmentCreated } from 'profiles-service/helpers/inventorySync';
+import { updateLhub } from 'profiles-service/helpers/inventorySync';
+import { LHUB_UPDATE_TYPE } from 'types/inventorySync';
 
 export const saveOrderShipmentsTypeDefs = gql`
   input SaveOrderShipmentsInput {
@@ -273,21 +274,23 @@ const saveOrderShipments: Resolver<
   };
   postEvent(postBody);
   const shipmentDetails = saveOrderShipmentsInput.shipments[0];
-  const shipmentReq = {
-    storeCode: shipmentDetails.siteId,
-    orderId: saveOrderShipmentsInput.orderId,
-    pincode: string;
-    lat: number;
-    lng: number;
-    items: shipmentDetails.itemDetails.map((item) => {
-      return {
-        sku: item.articleCode,
-        qty: item.quantity / item.packSize,
-      };
-    })
+  const orderAddress = await medicineOrdersRepo.getMedicineOrderAddress(orderDetails.id);
+  if (orderAddress) {
+    const shipmentReq = {
+      storeCode: shipmentDetails.siteId,
+      orderId: orderDetails.orderAutoId.toString(),
+      pincode: orderAddress.zipcode,
+      lat: orderAddress?.latitude,
+      lng: orderAddress?.longitude,
+      items: shipmentDetails.itemDetails.map((item) => {
+        return {
+          sku: item.articleCode,
+          qty: item.quantity / item.packSize,
+        };
+      }),
+    };
+    updateLhub(shipmentReq, LHUB_UPDATE_TYPE.SHIPPED);
   }
-
-  orderShipmentCreated(shipmentReq);
 
   return {
     status: MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
