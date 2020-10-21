@@ -98,6 +98,7 @@ import { AppointmentEntitySubscriber } from 'consults-service/entities/observers
 import { AppointmentCallFeedback } from 'consults-service/entities/appointmentCallFeedbackEntity'
 import { MedicineEntitySubscriber } from 'profiles-service/entities/observers/medicinePaymentSuccessObserver';
 import { DiagnosticEntitySubscriber } from 'profiles-service/entities/observers/diagnosticPaymentSuccessObserver';
+import { DoctorPricing } from 'doctors-service/entities/doctorPricing';
 
 export const connect = async () => {
   return await createConnections([
@@ -147,6 +148,7 @@ export const connect = async () => {
         BlockedCalendarItem,
         ConsultHours,
         Deeplink,
+        DoctorPricing,
         Doctor,
         DoctorAndHospital,
         DoctorBankAccounts,

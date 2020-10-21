@@ -100,7 +100,7 @@ export const getDoctorDetailsTypeDefs = gql`
     ALL
     CARE_PLAN
   }
-  enum STATUS {
+  enum PLAN_STATUS {
     ACTIVE 
     INACTIVE 
   }
@@ -111,7 +111,7 @@ export const getDoctorDetailsTypeDefs = gql`
     group_plan: String
     start_date: Date
     end_date: Date
-    status: STATUS
+    status: PLAN_STATUS
     doctor_share: Float
     apollo_share: Float
     mrp: Float
