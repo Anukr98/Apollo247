@@ -611,7 +611,7 @@ export const ConsultTabs: React.FC = () => {
           'Patient name': webengageConsultTrackingObject.patientName,
           'Patient mobile number': webengageConsultTrackingObject.patientMobileNumber,
           'Doctor Mobile number': webengageConsultTrackingObject.doctorMobileNumber,
-          'Appointment Date time': webengageConsultTrackingObject.appointmentDateTime,
+          'Appointment Date time': new Date(webengageConsultTrackingObject.appointmentDateTime),
           'Appointment display ID': webengageConsultTrackingObject.appointmentDisplayId,
           'Appointment ID': webengageConsultTrackingObject.appointmentId,
           'Patient ID': webengageConsultTrackingObject.patientuhid,
@@ -1556,21 +1556,6 @@ export const ConsultTabs: React.FC = () => {
   };
 
   const sendToPatientAction = () => {
-    if (casesheetVersion < 2) {
-      webEngageEventTracking(
-        {
-          'Doctor name': webengageConsultTrackingObject.doctorName,
-          'Patient name': webengageConsultTrackingObject.patientName,
-          'Patient mobile number': webengageConsultTrackingObject.patientMobileNumber,
-          'Doctor Mobile number': webengageConsultTrackingObject.doctorMobileNumber,
-          'Appointment Date time': webengageConsultTrackingObject.appointmentDateTime,
-          'Appointment display ID': webengageConsultTrackingObject.appointmentDisplayId,
-          'Appointment ID': webengageConsultTrackingObject.appointmentId,
-          'Patient ID': webengageConsultTrackingObject.patientuhid,
-        },
-        'Front_end - Doctor Send Prescription'
-      );
-    }
     client
       .mutate<UpdatePatientPrescriptionSentStatus, UpdatePatientPrescriptionSentStatusVariables>({
         mutation: UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS,
@@ -1596,14 +1581,28 @@ export const ConsultTabs: React.FC = () => {
           );
           setPrescriptionPdf(url);
           setShowConfirmPrescription(false);
-          if (casesheetVersion > 1) {
+          if (casesheetVersion < 2) {
             webEngageEventTracking(
               {
                 'Doctor name': webengageConsultTrackingObject.doctorName,
                 'Patient name': webengageConsultTrackingObject.patientName,
                 'Patient mobile number': webengageConsultTrackingObject.patientMobileNumber,
                 'Doctor Mobile number': webengageConsultTrackingObject.doctorMobileNumber,
-                'Appointment Date time': webengageConsultTrackingObject.appointmentDateTime,
+                'Appointment Date time': new Date(webengageConsultTrackingObject.appointmentDateTime),
+                'Appointment display ID': webengageConsultTrackingObject.appointmentDisplayId,
+                'Appointment ID': webengageConsultTrackingObject.appointmentId,
+                'Blob URL': url,
+              },
+              'Front_end - Doctor Send Prescription'
+            );
+          } else {
+            webEngageEventTracking(
+              {
+                'Doctor name': webengageConsultTrackingObject.doctorName,
+                'Patient name': webengageConsultTrackingObject.patientName,
+                'Patient mobile number': webengageConsultTrackingObject.patientMobileNumber,
+                'Doctor Mobile number': webengageConsultTrackingObject.doctorMobileNumber,
+                'Appointment Date time': new Date(webengageConsultTrackingObject.appointmentDateTime),
                 'Appointment display ID': webengageConsultTrackingObject.appointmentDisplayId,
                 'Appointment ID': webengageConsultTrackingObject.appointmentId,
                 'Blob URL': url,
@@ -1630,7 +1629,7 @@ export const ConsultTabs: React.FC = () => {
       .catch((e) => {
         webEngageEventTracking(
           {
-            'API name': 'createSessionAction',
+            'API name': 'UpdatePatientPrescriptionSentStatus',
             'ErrorDetails': JSON.stringify(e),
             'Consultation Display ID': webengageConsultTrackingObject.appointmentDisplayId,
             'Consult ID': appointmentId,
@@ -1823,7 +1822,7 @@ export const ConsultTabs: React.FC = () => {
             'Patient name': webengageConsultTrackingObject.patientName,
             'Patient mobile number': webengageConsultTrackingObject.patientMobileNumber,
             'Doctor Mobile number': webengageConsultTrackingObject.doctorMobileNumber,
-            'Appointment Date time': webengageConsultTrackingObject.appointmentDateTime,
+            'Appointment Date time': new Date(webengageConsultTrackingObject.appointmentDateTime),
             'Appointment display ID': webengageConsultTrackingObject.appointmentDisplayId,
             'Appointment ID': webengageConsultTrackingObject.appointmentId,
             'Patient ID': webengageConsultTrackingObject.patientuhid,
