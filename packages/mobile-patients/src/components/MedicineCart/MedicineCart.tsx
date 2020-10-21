@@ -122,7 +122,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setloading] = useState<boolean>(false);
   const [lastCartItems, setlastCartItems] = useState('');
-  const [lastCart, setLastCart] = useState('');
   const [storeType, setStoreType] = useState<string | undefined>('');
   const [storeDistance, setStoreDistance] = useState(0);
   const [shopId, setShopId] = useState<string | undefined>('');
@@ -148,10 +147,10 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   }, []);
 
   useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setisfocused(true);
       AppState.addEventListener('change', handleAppStateChange);
-      BackHandler.addEventListener('hardwareBackPress', handleBack);
     });
     const didBlur = props.navigation.addListener('didBlur', (payload) => {
       setisfocused(false);
@@ -340,6 +339,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         handleTatApiFailure(selectedAddress, error);
       }
     } else if (!deliveryAddressId) {
+      setlastCartItems(newCartItems);
       validatePharmaCoupon();
     }
   }
@@ -419,7 +419,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     });
     setCartItems!(Items);
     await validatePharmaCoupon();
-    console.log(loading);
   }
   function hasUnserviceableproduct() {
     const unserviceableItems = cartItems.filter((item) => item.unserviceable) || [];
@@ -442,12 +441,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
 
   async function validatePharmaCoupon() {
     if (coupon && cartTotal > 0) {
-      const newCart = cartItems.map(({ id, quantity }) => id + quantity).toString();
-      if (lastCart == newCart) {
-        return;
-      }
       try {
-        setLastCart(newCart);
         await validateCoupon(coupon.coupon, coupon.message);
       } catch (error) {
         return;
@@ -492,7 +486,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       mobile: g(currentPatient, 'mobileNumber'),
       billAmount: cartTotal.toFixed(2),
       coupon: coupon,
-      pinCode: locationDetails && locationDetails.pincode,
+      pinCode: pharmacyPincode,
       products: cartItems.map((item) => ({
         sku: item.id,
         categoryId: item.productType,
