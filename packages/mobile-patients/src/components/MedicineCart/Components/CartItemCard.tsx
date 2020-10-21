@@ -105,7 +105,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <View>
           {renderQuantity()}
-          {!item.unserviceable && !item?.isFreeCouponProduct && coupon && renderCoupon()}
+          {!item.unserviceable && !item?.isFreeCouponProduct && !!coupon && renderCoupon()}
         </View>
         {!item?.isFreeCouponProduct
           ? discountedPrice || discountedPrice == 0
