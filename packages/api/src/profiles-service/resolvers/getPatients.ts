@@ -80,7 +80,7 @@ export const getPatientTypeDefs = gql`
       whatsAppConsult: Boolean
       patientId: String
     ): UpdateWhatsAppStatusResult!
-    createNewUHID(patientId: String!): String
+    createNewUHID(patientID: String!): String
   }
 `;
 
@@ -360,7 +360,7 @@ const getLinkedPatientIds: Resolver<
   LinkedPatientIds
 > = async (parent, args, { profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientId = args.patientId
+  const patientId = args.patientId;
   const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientId });
   if (!primaryPatientIds) throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS);
 
@@ -376,7 +376,7 @@ export const getPatientResolvers = {
     getPatients,
     getAthsToken,
     getDeviceCodeCount,
-    getLinkedPatientIds
+    getLinkedPatientIds,
   },
   Mutation: {
     deleteProfile,
