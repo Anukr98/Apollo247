@@ -74,6 +74,10 @@ import {
   doctorDataElasticResolvers,
 } from 'doctors-service/resolvers/doctorDataElastic';
 
+import {
+  doctorPricingResolvers,
+  addDoctorPricingTypeDefs
+} from 'doctors-service/resolvers/doctorPricing';
 import { winstonLogger } from 'customWinstonLogger';
 import { deepLinkTypeDefs, deepLinkResolvers } from 'doctors-service/resolvers/deepLink';
 import { sitemapTypeDefs, sitemapResolvers } from 'doctors-service/resolvers/sitemap';
@@ -200,10 +204,14 @@ import { updateDoctorChatDaysResolvers, updateDoctorChatDaysTypeDefs } from 'doc
       {
         typeDefs: getDoctorHelplineTypeDef,
         resolvers: getDoctorHelplineResolver,
-      }, 
+      },
       {
         typeDefs: updateDoctorChatDaysTypeDefs,
-        resolvers: updateDoctorChatDaysResolvers, 
+        resolvers: updateDoctorChatDaysResolvers,
+      },
+      {
+        typeDefs: addDoctorPricingTypeDefs,
+        resolvers: doctorPricingResolvers
       }
     ]),
     plugins: [

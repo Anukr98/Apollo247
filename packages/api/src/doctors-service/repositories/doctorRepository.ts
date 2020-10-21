@@ -27,6 +27,7 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 import { ApiConstants } from 'ApiConstants';
 import { Client, RequestParams } from '@elastic/elasticsearch';
+import { DoctorPricing } from 'doctors-service/entities/doctorPricing';
 
 //import { DoctorNextAvaialbleSlotsRepository } from 'consults-service/repositories/DoctorNextAvaialbleSlotsRepository';
 
@@ -1232,6 +1233,10 @@ export class DoctorRepository extends Repository<Doctor> {
       .andWhere('doctor.doctorType != :junior', { junior: DoctorType.JUNIOR })
       .andWhere('doctor.id not in (:...ids)', { ids })
       .getMany();
+  }
+
+  async addDoctorPricing(args: DoctorPricing) {
+    const { slashed_price, mrp, start_date, status, end_date, apollo_share, doctor_share, available_to, doctor } = args;
   }
 }
 
