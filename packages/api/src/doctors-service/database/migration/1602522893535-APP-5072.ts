@@ -6,6 +6,7 @@ export class APP50721602522893535 implements MigrationInterface {
     await queryRunner.query(`CREATE TABLE "doctor_pricing" (
       "id" uuid NOT NULL DEFAULT uuid_generate_v4(), 
       "slashed_price" double precision NOT NULL, 
+      "mrp"  double precision NOT NULL,
       "available_to" character varying NOT NULL, 
       "group_plan" character varying NOT NULL,
       "start_date" TIMESTAMP NOT NULL, 

@@ -18,6 +18,10 @@ export class DoctorPricing extends BaseEntity {
   @Column({ type: 'float8' })
   slashed_price: Number
 
+
+  @Column({ type: 'float8' })
+  mrp: Number
+
   @Column()
   available_to: PLAN;
 
@@ -42,5 +46,7 @@ export class DoctorPricing extends BaseEntity {
 
   @ManyToOne((type) => Doctor, (doctor) => { doctor.doctorPricing })
   doctor: Doctor;
+
+
 
 }
