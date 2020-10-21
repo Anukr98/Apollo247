@@ -259,7 +259,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '0 0 30px',
       alignItems: 'center',
       [theme.breakpoints.down('sm')]: {
-        padding: '10px 0 30px',
+        padding: '10px 0 90px',
       },
 
       '& a,button': {
@@ -280,10 +280,10 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     cContent: {
-      width: '70%',
-      margin: '0  auto',
+      width: '80%',
+      // margin: '0  auto',
       display: 'flex',
-      alignItems: 'center',
+      alignItems: 'center', 
       justifyContent: 'center',
       [theme.breakpoints.down('sm')]: {
         width: '100%',
@@ -307,18 +307,22 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
       '& p': {
-        fontSize: 18,
-        lineHeight: '24px',
-        margin: '0 0 5px',
-        fontWeight: 500,
-        [theme.breakpoints.down('sm')]: {
-          fontSize: 14,
-          lineHeight: '12px',
-        },
+       
         '& span': {
-          color: '#E52936',
+          // color: '#E52936',
         },
       },
+    },
+    remark:{
+      fontSize:14,
+      fontWeight: 500,
+      [theme.breakpoints.down('sm')]: {
+      position: 'absolute',
+      left: 0,
+      bottom: 20,
+      fontSize: 12,
+      margin: '0 0 40px'
+      }
     },
     description: {
       fontSize: '14px !important',
@@ -410,8 +414,17 @@ const useStyles = makeStyles((theme: Theme) => {
       overflow: 'hidden',
     },
     planName: {
-      color: '#d3a047',
+      fontSize: 18,
+        lineHeight: '24px',
+        margin: '0 0 5px',
+        fontWeight: 500,
+        color: '#E52936',
+        [theme.breakpoints.down('sm')]: {
+          fontSize: 14,
+          lineHeight: '12px',
+        },
     },
+   
     hdcHeader: {
       display: 'flex',
       alignItems: 'center',
@@ -439,6 +452,7 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
   const [otp, setOtp] = React.useState('');
   const [otpError, setOtpError] = React.useState<boolean>(false);
   const [planName, setPlanName] = React.useState('');
+  const [minTransactionValue, setMinTransactionValue] = React.useState(499);
   const [userSubscriptionInput, setUserSubscriptionInput] = React.useState<
     CreateUserSubscriptionInput
   >();
@@ -584,8 +598,15 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
           response.data.CreateUserSubscription.response &&
           response.data.CreateUserSubscription.response.group_plan &&
           response.data.CreateUserSubscription.response.group_plan.name;
+        const min_transaction_value =
+          response.data &&
+          response.data.CreateUserSubscription &&
+          response.data.CreateUserSubscription.response &&
+          response.data.CreateUserSubscription.response.group_plan &&
+          response.data.CreateUserSubscription.response.group_plan.min_transaction_value;
 
         setPlanName(plan);
+        setMinTransactionValue(min_transaction_value)
         setLoading(false);
         setShowOTPValidator(false);
         setShowCongratulations(true);
@@ -695,6 +716,7 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
                   You are now a{' '}
                   <span className={classes.planName}>{planName.split(' ')[0]} Member</span>
                 </Typography>
+                <Typography className={classes.remark}>As a limited period offer, the minimum spend limit of Rs.{minTransactionValue} has been waived off, specially for you. </Typography>
               </div>
             </div>
             <AphButton

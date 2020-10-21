@@ -13,6 +13,7 @@ export interface CreateUserSubscription_CreateUserSubscription_response_group_pl
   __typename: "GroupPlanType";
   name: string;
   plan_id: string;
+  min_transaction_value: number;
 }
 
 export interface CreateUserSubscription_CreateUserSubscription_response {

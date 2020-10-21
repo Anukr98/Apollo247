@@ -384,7 +384,7 @@ const bookRescheduleAppointment: Resolver<
   }
   const oldApptDate = format(
     addMinutes(new Date(apptDetails.appointmentDateTime), +330),
-    'yyyy-MM-dd hh:mm a'
+    'yyyy-MM-ddhh:mm a'
   );
   const rescheduleDetails = await rescheduleApptRepo.getRescheduleDetails(
     bookRescheduleAppointmentInput.appointmentId
