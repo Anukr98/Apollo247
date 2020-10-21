@@ -171,10 +171,6 @@ const StatusModal = (props: any) => {
   const classes = useStyles({});
   let text = props.text;
 
-  const getWebengageAppointmentDatetime = (apptDateTime : any) => {
-    const datetime = (apptDateTime && apptDateTime !== '') ? format(new Date(apptDateTime), 'dd MMM, yyyy') +' '+ format(new Date(apptDateTime), 'h:mm a') : '';
-    return datetime;
-  }
   return (
     <Popover
       open={props.isDialogOpen}
@@ -206,7 +202,7 @@ const StatusModal = (props: any) => {
                       'Patient name': text.patientName,	
                       'Patient mobile number': text.patientMobileNumber,	
                       'Doctor Mobile number': text.doctorMobileNumber,	
-                      'Appointment Date time': getWebengageAppointmentDatetime(text.appointmentDateTime),	
+                      'Appointment Date time': text.appointmentDateTime,	
                       'Appointment display ID': text.displayId,	
                       'Appointment ID': text.appointmentId,	
                     },	
@@ -227,7 +223,7 @@ const StatusModal = (props: any) => {
                       'Patient name': text.patientName,	
                       'Patient mobile number': text.patientMobileNumber,	
                       'Doctor Mobile number': text.doctorMobileNumber,	
-                      'Appointment Date time': getWebengageAppointmentDatetime(text.appointmentDateTime),	
+                      'Appointment Date time': text.appointmentDateTime,	
                       'Appointment display ID': text.displayId,	
                       'Appointment ID': text.appointmentId,	
                     },	

@@ -95,6 +95,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   const shoppingCart = useShoppingCart();
 
   useEffect(() => {
+    hasUnserviceableproduct();
     AppState.addEventListener('change', handleAppStateChange);
     return () => {
       AppState.removeEventListener('change', handleAppStateChange);
@@ -108,6 +109,11 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   const handleAppStateChange = (nextAppState: AppStateStatus) => {
     nextAppState === 'active' && availabilityTat(deliveryAddressId);
   };
+
+  function hasUnserviceableproduct() {
+    const unserviceableItems = cartItems.filter((item) => item.unserviceable) || [];
+    unserviceableItems?.length && props.navigation.goBack();
+  }
 
   async function checkServicability(address: savePatientAddress_savePatientAddress_patientAddress) {
     if (deliveryAddressId && deliveryAddressId == address.id) {

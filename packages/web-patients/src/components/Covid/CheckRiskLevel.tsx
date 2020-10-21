@@ -228,18 +228,20 @@ export const CheckRiskLevel: React.FC = (props: any) => {
               <span>Check your COVID-19 risk level</span>
             </AphButton>
           </a>
-          <a className={classes.callBtn} href={isDesktopOnly ? '#' : `tel:${customerCareNumber}`}>
-            <div
-              onClick={() => {
-                isDesktopOnly ? setIscoronaDialogOpen(true) : '';
-              }}
-            >
-              <span>
-                <img src={require('images/call-24.svg')} alt="" />
-              </span>
-              <span>Call our Coronavirus Experts</span>
-            </div>
-          </a>
+          {window.location.pathname !== clientRoutes.knowledgeBaseLanding() && (
+            <a className={classes.callBtn} href={isDesktopOnly ? '#' : `tel:${customerCareNumber}`}>
+              <div
+                onClick={() => {
+                  isDesktopOnly ? setIscoronaDialogOpen(true) : '';
+                }}
+              >
+                <span>
+                  <img src={require('images/call-24.svg')} alt="" />
+                </span>
+                <span>Call our Coronavirus Experts</span>
+              </div>
+            </a>
+          )}
         </div>
       </div>
 
