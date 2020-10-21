@@ -1655,7 +1655,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             shadowRadius: 5,
             elevation: 5,
           }}
-          title={'Active Appointments'}
+          title={'Doctor Appointments'}
           leftIcon={renderListCount(currentAppointments)}
           onPress={() => {
             postHomeWEGEvent(WebEngageEventName.ACTIVE_APPOINTMENTS);
