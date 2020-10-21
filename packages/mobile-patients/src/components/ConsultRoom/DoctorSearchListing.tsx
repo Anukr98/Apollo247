@@ -95,6 +95,8 @@ import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEven
 import { getValuesArray } from '@aph/mobile-patients/src/utils/commonUtils';
 import _ from 'lodash';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { CareLogo } from '@aph/mobile-patients/src/components/ui/CareLogo';
+import { Switch } from '@aph/mobile-patients/src/components/ui/Switch';
 
 const searchFilters = require('@aph/mobile-patients/src/strings/filters');
 const { width: screenWidth } = Dimensions.get('window');
@@ -175,6 +177,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderBottomWidth: 4,
   },
+  rowContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 20,
+  },
+  careLogo: {
+    width: 32,
+    height: 15,
+  },
+  careLogoText: {
+    fontSize: 5,
+  },
+  careHeadingText: {
+    ...theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE),
+    marginLeft: 10,
+  },
 });
 
 let latlng: locationType | null = null;
@@ -249,6 +267,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [value, setValue] = useState<boolean>(false);
   const [sortValue, setSortValue] = useState<string>('');
   const [searchIconClicked, setSearchIconClicked] = useState<boolean>(false);
+  const [careDoctorsSwitch, setCareDoctorsSwitch] = useState<boolean>(false);
   let DoctorsflatListRef: any;
   const filterOptions = (filters: any) => {
     let preFilters = filters;
@@ -1657,6 +1676,29 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       );
     }
   };
+
+  const renderViewCareSwitch = () => {
+    return (
+      <View style={styles.rowContainer}>
+        <CareLogo style={styles.careLogo} textStyle={styles.careLogoText} />
+        <Text style={styles.careHeadingText}>{string.careDoctors.viewCareDoctors}</Text>
+        <Switch
+          value={careDoctorsSwitch}
+          containerStyle={{ marginLeft: 14 }}
+          onChange={(value) => {
+            setCareDoctorsSwitch(value);
+          }}
+          pathColor={{ left: 'rgba(0, 179, 142, 0.3)', right: 'rgba(0, 179, 142, 0.3)' }}
+          dotColor={{ left: 'white', right: theme.colors.SEARCH_UNDERLINE_COLOR }}
+          dotBorderColor={{
+            left: theme.colors.SEARCH_UNDERLINE_COLOR,
+            right: theme.colors.SEARCH_UNDERLINE_COLOR,
+          }}
+        />
+      </View>
+    );
+  };
+
   return (
     <View style={styles.mainContainer}>
       <SafeAreaView style={theme.viewStyles.container}>
@@ -1674,6 +1716,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                   specialistPluralTerm || 'Doctors'
                 )}
               </Text>
+              {renderViewCareSwitch()}
               {renderDoctorSearches(
                 onlineCheckBox
                   ? physicalCheckBox

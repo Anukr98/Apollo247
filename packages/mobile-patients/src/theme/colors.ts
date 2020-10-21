@@ -88,6 +88,7 @@ const Common = {
   TURQUOISE_BLUE: '#0589BB',
   EXTREME_LIGHT_BLUE: '#2096C2',
   OFF_WHITE: '#F7F7F7',
+  DEEP_RED: '#F0533B',
 };
 
 const Header = {

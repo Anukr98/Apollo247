@@ -472,5 +472,10 @@
     "mpAndOverlayPermission": "For a smooth consultation experience with {0} and to ensure that you do not miss out your doctor's call, Apollo 247 needs your microphone and call display permissions.",
     "onlyCameraPermission": "For a smooth consultation experience with {0}, Apollo 247 needs your camera permission.",
     "onlyMPPermission": "For a smooth consultation experience with {0}, Apollo 247 needs your microphone permission."
+  },
+  "careDoctors": {
+    "care": "CARE",
+    "viewCareDoctors": "View CARE Doctors",
+    "seeMore": "See More"
   }
 }

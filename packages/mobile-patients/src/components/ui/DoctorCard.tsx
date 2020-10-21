@@ -50,6 +50,7 @@ import {
 import { NavigationScreenProps } from 'react-navigation';
 import { SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors } from '../../graphql/types/SearchDoctorAndSpecialtyByName';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
+import { CareLogo } from '@aph/mobile-patients/src/components/ui/CareLogo';
 
 const styles = StyleSheet.create({
   doctorView: {
@@ -104,6 +105,30 @@ const styles = StyleSheet.create({
     paddingLeft: 0,
     ...theme.fonts.IBMPlexSansMedium(12),
     color: theme.colors.SEARCH_EDUCATION_COLOR,
+  },
+  careLogo: {
+    alignSelf: 'center',
+    marginBottom: 10,
+  },
+  rowContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  seeMoreText: {
+    ...theme.viewStyles.text('SB', 10, theme.colors.APP_YELLOW_COLOR),
+  },
+  price: {
+    ...theme.viewStyles.text('M', 13, theme.colors.SKY_BLUE),
+    paddingTop: 1,
+  },
+  carePrice: {
+    ...theme.viewStyles.text('M', 15, theme.colors.BORDER_BOTTOM_COLOR),
+    textDecorationLine: 'line-through',
+    textDecorationStyle: 'solid',
+  },
+  careDiscountedPrice: {
+    ...theme.viewStyles.text('M', 12, theme.colors.DEEP_RED),
+    marginLeft: 6,
   },
 });
 
@@ -238,27 +263,39 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       parseInt(rowData.physicalConsultationFees, 10)
     ) {
       return (
-        <View style={{ flexDirection: 'row', marginTop: 5 }}>
-          <Text style={{ ...theme.viewStyles.text('M', 15, theme.colors.SKY_BLUE) }}>
+        <View style={{ flexDirection: 'row', marginTop: 5, alignItems: 'center' }}>
+          <Text
+            style={
+              true ? styles.carePrice : { ...theme.viewStyles.text('M', 15, theme.colors.SKY_BLUE) }
+            }
+          >
             {string.common.Rs}
-            {'  '}
+            {true ? '' : '  '}
           </Text>
-          <Text style={{ ...theme.viewStyles.text('M', 13, theme.colors.SKY_BLUE), paddingTop: 1 }}>
+          <Text style={true ? styles.carePrice : styles.price}>
             {rowData.onlineConsultationFees}
           </Text>
+          {true && (
+            <Text style={styles.careDiscountedPrice}>
+              {string.common.Rs}
+              {rowData.onlineConsultationFees}
+            </Text>
+          )}
         </View>
       );
     } else {
       return (
-        <View style={{ flexDirection: 'row', marginTop: 5 }}>
+        <View style={{ flexDirection: 'row', marginTop: 5, alignItems: 'center' }}>
           <Text style={{ ...theme.viewStyles.text('M', 10, theme.colors.SKY_BLUE), paddingTop: 3 }}>
             {consultTypeBoth && `Starts at  `}
           </Text>
-          <Text style={theme.viewStyles.text('M', 15, theme.colors.SKY_BLUE)}>
+          <Text
+            style={true ? styles.carePrice : theme.viewStyles.text('M', 15, theme.colors.SKY_BLUE)}
+          >
             {string.common.Rs}
-            {'  '}
+            {true ? '' : '  '}
           </Text>
-          <Text style={{ ...theme.viewStyles.text('M', 13, theme.colors.SKY_BLUE), paddingTop: 1 }}>
+          <Text style={true ? styles.carePrice : styles.price}>
             {consultTypeBoth ? (
               Math.min(
                 Number(rowData.physicalConsultationFees),
@@ -272,9 +309,55 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               </>
             )}
           </Text>
+          {true && (
+            <Text style={styles.careDiscountedPrice}>
+              {string.common.Rs}
+              {rowData.onlineConsultationFees}
+            </Text>
+          )}
         </View>
       );
     }
+  };
+
+  const renderCareLogo = () => {
+    return <CareLogo style={styles.careLogo} />;
+  };
+
+  const renderSpecialityCareView = () => {
+    return (
+      <View>
+        <View style={styles.rowContainer}>
+          <Text
+            style={[
+              styles.doctorSpecializationStyles,
+              {
+                width: '80%',
+              },
+            ]}
+          >
+            {rowData?.specialty?.name || ''}
+          </Text>
+          <TouchableOpacity>
+            <Text style={styles.seeMoreText}>{string.careDoctors.seeMore}</Text>
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.doctorSpecializationStyles}>
+          {rowData?.experience} YR
+          {Number(rowData?.experience) != 1 ? 'S Exp.' : ' Exp.'}
+        </Text>
+      </View>
+    );
+  };
+
+  const renderSpecialityNonCareView = () => {
+    return (
+      <Text style={styles.doctorSpecializationStyles}>
+        {rowData?.specialty?.name || ''}
+        {'   '}|{'  '} {rowData?.experience} YR
+        {Number(rowData?.experience) != 1 ? 'S Exp.' : ' Exp.'}
+      </Text>
+    );
   };
 
   if (rowData) {
@@ -382,6 +465,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                   /> */}
               </View>
               {/* </TouchableOpacity> */}
+              {renderCareLogo()}
               <View
                 style={{
                   flexDirection: 'row',
@@ -427,12 +511,13 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
 
             <View style={{ flex: 1, paddingRight: 16, marginBottom: 16 }}>
               <Text style={styles.doctorNameStyles}>{rowData.fullName}</Text>
-              <Text style={styles.doctorSpecializationStyles}>
-                {rowData.specialty && rowData.specialty.name ? rowData.specialty.name : ''}
-                {'   '}|{'  '} {rowData.experience} YR
-                {Number(rowData.experience) != 1 ? 'S Exp.' : ' Exp.'}
-              </Text>
+              {true ? renderSpecialityCareView() : renderSpecialityNonCareView()}
               {calculatefee(rowData, isBoth, isOnline)}
+              {true && (
+                <Text style={theme.viewStyles.text('M', 10, theme.colors.DEEP_RED)}>
+                  You save ₹ 100 on this consult
+                </Text>
+              )}
               <Text style={styles.educationTextStyles} numberOfLines={props.numberOfLines}>
                 {rowData.qualification}
               </Text>
