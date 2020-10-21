@@ -96,6 +96,25 @@ export const getDoctorDetailsTypeDefs = gql`
     consultDuration: Int
     consultBuffer: Int
   }
+  enum PLAN {
+    ALL
+    CARE_PLAN
+  }
+  enum STATUS {
+    ACTIVE 
+    INACTIVE 
+  }
+
+  type DoctorPricing {
+    slashed_price: Float
+    available_to: PLAN
+    group_plan: String
+    start_date: Date
+    end_date: Date
+    status: STATUS
+    doctor_share: Float
+    apollo_share: Float
+  }
   type DoctorDetails @key(fields: "id") {
     awards: String
     city: String
@@ -138,7 +157,8 @@ export const getDoctorDetailsTypeDefs = gql`
     packages: [Packages]
     specialty: DoctorSpecialties
     starTeam: [StarTeam]
-    availableModes: [ConsultMode]
+    availableModes: [ConsultMode],
+    doctorPricing : [DoctorPricing]
   }
 
   type DoctorDetailsWithStatusExclude @key(fields: "id") {
