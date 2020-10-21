@@ -1981,6 +1981,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           'Appointment display ID': props.webengageConsultTrackingObject.appointmentDisplayId,
           'Appointment ID': props.webengageConsultTrackingObject.appointmentId,
           'Blob URL': props.prescriptionPdf,
+          'Patient ID':  props.webengageConsultTrackingObject.patientuhid,
         },
         'Front_end - Doctor resent Prescription'
       );
@@ -2182,6 +2183,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 ? moment(dateSelected + 'T' + timeSelected + ':00.000').format('h:mm a')
                 : moment(doctorNextAvailableSlot).format('h:mm a'),
             'Reschedule reason ': reason === 'Other' ? otherTextValue : reason,
+            'Patient ID':  props.webengageConsultTrackingObject.patientuhid,
           },
           'Front_end - Doctor rescheduled the appointment'
         );
@@ -2620,6 +2622,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         'Appointment display ID':
                           props.webengageConsultTrackingObject.appointmentDisplayId,
                         'Appointment ID': props.webengageConsultTrackingObject.appointmentId,
+                        'Patient ID':  props.webengageConsultTrackingObject.patientuhid,
                       },
                       'Front_end - Doctor started the consult'
                     );
@@ -2784,6 +2787,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                             props.webengageConsultTrackingObject.appointmentDisplayId,
                           'Appointment ID': props.webengageConsultTrackingObject.appointmentId,
                           'Type of call': 'Audio',
+                          'Patient ID':  props.webengageConsultTrackingObject.patientuhid,
                         },
                         'Front_end - Doctor Started the Audio call'
                       );
@@ -2847,6 +2851,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                             props.webengageConsultTrackingObject.appointmentDisplayId,
                           'Appointment ID': props.webengageConsultTrackingObject.appointmentId,
                           'Type of call': 'Video',
+                          'Patient ID':  props.webengageConsultTrackingObject.patientuhid,
                         },
                         'Front_end - Doctor Started the Video call'
                       );
@@ -3101,6 +3106,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                           'Appointment ID': props.webengageConsultTrackingObject.appointmentId,
                           'Type of call': 'Telephonic',
                           'Exotel number': process.env.EXOTEL_CALLER_ID,
+                          'Patient ID':  props.webengageConsultTrackingObject.patientuhid,
                         },
                         'Front_end - Doctor Started the Exotel call'
                       );
@@ -3465,6 +3471,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                           'Appointment ID': props.webengageConsultTrackingObject.appointmentId,
                           'Cancel reason':
                             cancelReason === 'Other' ? otherTextCancelValue : cancelReason,
+                          'Patient ID':  props.webengageConsultTrackingObject.patientuhid,
                         },
                         'Front_end - Doctor cancelled appointment'
                       );
@@ -3944,6 +3951,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 'Appointment display ID': props.webengageConsultTrackingObject.appointmentDisplayId,
                 'Appointment ID': props.webengageConsultTrackingObject.appointmentId,
                 'Type of call': 'Join Acceptance',
+                'Patient ID':  props.webengageConsultTrackingObject.patientuhid,
               },
               'Front_end - Doctor Accepted to Join the session'
             );
@@ -4040,6 +4048,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       'Appointment display ID': props.webengageConsultTrackingObject.appointmentDisplayId,
                       'Appointment ID': props.webengageConsultTrackingObject.appointmentId,
                       'Type of call': 'Join Acceptance',
+                      'Patient ID':  props.webengageConsultTrackingObject.patientuhid,
                     },
                     'Front_end - Doctor Accepted to Join the session'
                   );

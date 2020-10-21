@@ -341,6 +341,7 @@ interface WebengageConsultTrackingProps {
   appointmentDateTime: string;
   appointmentDisplayId: string;
   appointmentId: string;
+  patientuhid: string;
 }
 interface MessagesObjectProps {
   id: string;
@@ -379,6 +380,7 @@ export const ConsultTabs: React.FC = () => {
     appointmentDateTime: '',
     appointmentDisplayId: '',
     appointmentId: '',
+    patientuhid: '',
   });
   const [isClickedOnEdit, setIsClickedOnEdit] = useState(false);
   const [isUnauthorized, setIsUnauthorized] = useState(false);
@@ -612,6 +614,7 @@ export const ConsultTabs: React.FC = () => {
           'Appointment Date time': webengageConsultTrackingObject.appointmentDateTime,
           'Appointment display ID': webengageConsultTrackingObject.appointmentDisplayId,
           'Appointment ID': webengageConsultTrackingObject.appointmentId,
+          'Patient ID': webengageConsultTrackingObject.patientuhid,
         },
         'Front_end - Doctor Sent a message to the patient after End consult'
       );
@@ -806,6 +809,10 @@ export const ConsultTabs: React.FC = () => {
             appointmentDisplayId: _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!
               .displayId,
             appointmentId: appointmentId,
+            patientuhid: _data!.data!.getCaseSheet!.patientDetails &&
+            _data!.data!.getCaseSheet!.patientDetails!.uhid
+              ? _data!.data!.getCaseSheet!.patientDetails!.uhid
+              : '',
           };
           setWebengageConsultTrackingObject(webEngageData);
           setCasesheetInfo(_data.data);
@@ -1196,6 +1203,10 @@ export const ConsultTabs: React.FC = () => {
             appointmentDisplayId: _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
               .appointment!.displayId,
             appointmentId: appointmentId,
+            patientuhid: _data!.data!.getJuniorDoctorCaseSheet!.patientDetails &&
+            _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.uhid
+              ? _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.uhid
+              : '',
           };
           setWebengageConsultTrackingObject(webEngageData);
           setCasesheetInfo(_data.data);
@@ -1555,6 +1566,7 @@ export const ConsultTabs: React.FC = () => {
           'Appointment Date time': webengageConsultTrackingObject.appointmentDateTime,
           'Appointment display ID': webengageConsultTrackingObject.appointmentDisplayId,
           'Appointment ID': webengageConsultTrackingObject.appointmentId,
+          'Patient ID': webengageConsultTrackingObject.patientuhid,
         },
         'Front_end - Doctor Send Prescription'
       );
@@ -1595,6 +1607,7 @@ export const ConsultTabs: React.FC = () => {
                 'Appointment display ID': webengageConsultTrackingObject.appointmentDisplayId,
                 'Appointment ID': webengageConsultTrackingObject.appointmentId,
                 'Blob URL': url,
+                'Patient ID': webengageConsultTrackingObject.patientuhid,
               },
               'Front_end - Doctor re-issued new Prescription'
             );
@@ -1813,6 +1826,7 @@ export const ConsultTabs: React.FC = () => {
             'Appointment Date time': webengageConsultTrackingObject.appointmentDateTime,
             'Appointment display ID': webengageConsultTrackingObject.appointmentDisplayId,
             'Appointment ID': webengageConsultTrackingObject.appointmentId,
+            'Patient ID': webengageConsultTrackingObject.patientuhid,
           },
           'Front_end - Doctor Ended the consult'
         );
