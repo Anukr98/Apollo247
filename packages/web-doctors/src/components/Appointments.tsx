@@ -428,10 +428,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
       return false;
     }
   };
-  const getWebengageAppointmentDatetime = (apptDateTime : any) => {
-    const datetime = (apptDateTime && apptDateTime !== '') ? format(new Date(apptDateTime), 'dd MMM, yyyy') +' '+ format(new Date(apptDateTime), 'h:mm a') : '';
-    return datetime;
-  }
+
   const getAppointmentStatusClass = (appointmentStatus: string) => {
     if (appointmentStatus === STATUS.NO_SHOW) return classes.missing;
     if (appointmentStatus === STATUS.COMPLETED) return classes.completed;
@@ -649,7 +646,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                           'Patient name': (appointment && appointment.details && appointment.details.patientName) || '',
                           'Patient mobile number': (appointment && appointment.details && appointment.details.mobileNumber) || '',
                           'Doctor Mobile number': (currentPatient && currentPatient.mobileNumber) || '',
-                          'Appointment Date time': (appointment && appointment.appointmentDateTime) ? getWebengageAppointmentDatetime(appointment.appointmentDateTime) : '',
+                          'Appointment Date time': (appointment && appointment.appointmentDateTime) || '',
                           'Appointment display ID': (appointment && appointment.displayId) || '',
                           'Appointment ID': (appointment && appointment.id) || '',
                         },

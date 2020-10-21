@@ -9,6 +9,7 @@ import {
   ScrollView,
   AppState,
   AppStateStatus,
+  BackHandler,
 } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -146,17 +147,19 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   }, []);
 
   useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setisfocused(true);
       AppState.addEventListener('change', handleAppStateChange);
     });
     const didBlur = props.navigation.addListener('didBlur', (payload) => {
       setisfocused(false);
+      AppState.removeEventListener('change', handleAppStateChange);
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
     });
     return () => {
       didFocus && didFocus.remove();
       didBlur && didBlur.remove();
-      AppState.removeEventListener('change', handleAppStateChange);
     };
   }, []);
 
@@ -186,6 +189,11 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
 
   const handleAppStateChange = (nextAppState: AppStateStatus) => {
     nextAppState === 'active' && availabilityTat(true);
+    setCoupon!(null);
+  };
+
+  const handleBack = () => {
+    setCoupon!(null);
   };
 
   async function fetchAddress() {
@@ -411,21 +419,24 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     });
     setCartItems!(Items);
     await validatePharmaCoupon();
-    console.log(loading);
   }
-
+  function hasUnserviceableproduct() {
+    const unserviceableItems = cartItems.filter((item) => item.unserviceable) || [];
+    return unserviceableItems?.length ? true : false;
+  }
   function NavigateToCartSummary(
     deliveryTime: string,
     storeDistance?: number,
     storeType?: string,
     shopId?: string
   ) {
-    props.navigation.navigate(AppRoutes.CartSummary, {
-      deliveryTime: deliveryTime,
-      storeDistance: storeDistance,
-      tatType: storeType,
-      shopId: shopId,
-    });
+    !hasUnserviceableproduct() &&
+      props.navigation.navigate(AppRoutes.CartSummary, {
+        deliveryTime: deliveryTime,
+        storeDistance: storeDistance,
+        tatType: storeType,
+        shopId: shopId,
+      });
   }
 
   async function validatePharmaCoupon() {
@@ -464,9 +475,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
 
   const removeCouponWithAlert = (message: string) => {
     setCoupon!(null);
-    if (couponProducts.length) {
-      removeFreeProductsFromCart();
-    }
     renderAlert(message);
   };
 
@@ -478,7 +486,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       mobile: g(currentPatient, 'mobileNumber'),
       billAmount: cartTotal.toFixed(2),
       coupon: coupon,
-      pinCode: locationDetails && locationDetails.pincode,
+      pinCode: pharmacyPincode,
       products: cartItems.map((item) => ({
         sku: item.id,
         categoryId: item.productType,
@@ -557,6 +565,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             productType: medicineDetails.type_id,
             isFreeCouponProduct: !!couponProducts[index]!.couponFree,
             couponPrice: 0,
+            unserviceable: false,
           } as ShoppingCartItem;
         });
         addMultipleCartItems!(medicinesAll as ShoppingCartItem[]);
@@ -698,9 +707,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         onPress={() => {
           props.navigation.navigate('MEDICINES', { focusSearch: true });
           setCoupon!(null);
-          if (couponProducts.length) {
-            removeFreeProductsFromCart();
-          }
           navigatedFrom === 'registration'
             ? props.navigation.dispatch(
                 StackActions.reset({
@@ -732,9 +738,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         onPressLeftIcon={() => {
           CommonLogEvent(AppRoutes.MedicineCart, 'Go back to add items');
           setCoupon!(null);
-          if (couponProducts.length) {
-            removeFreeProductsFromCart();
-          }
           props.navigation.goBack();
         }}
       />
@@ -748,12 +751,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     });
   };
 
-  const removeFreeProductsFromCart = () => {
-    const updatedCartItems = cartItems.filter((item) => item.specialPrice != 0);
-    setCartItems!(updatedCartItems);
-    setCouponProducts!([]);
-  };
-
   function applyCoupon() {
     if (cartTotal == 0) {
       renderAlert('Please add items in the cart to apply coupon.');
@@ -761,9 +758,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       props.navigation.navigate(AppRoutes.ApplyCouponScene);
       setCoupon!(null);
       applyCouponClickedEvent(g(currentPatient, 'id'));
-      if (couponProducts.length) {
-        removeFreeProductsFromCart();
-      }
     }
   }
 
@@ -785,12 +779,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   };
 
   const renderCouponSection = () => {
-    return <Coupon onPressApplyCoupon={() => applyCoupon()} onPressRemove={() => removeCoupon()} />;
-  };
-
-  const removeCoupon = () => {
-    setCoupon!(null);
-    removeFreeProductsFromCart();
+    return (
+      <Coupon onPressApplyCoupon={() => applyCoupon()} onPressRemove={() => setCoupon!(null)} />
+    );
   };
 
   const renderAmountSection = () => {
@@ -821,6 +812,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         navigation={props.navigation}
         type={'cartOrMedicineFlow'}
         onUpload={() =>
+          !hasUnserviceableproduct() &&
           props.navigation.navigate(AppRoutes.CartSummary, {
             deliveryTime: deliveryTime,
             storeDistance: storeDistance,
@@ -875,6 +867,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         deliveryTime={deliveryTime}
         onPressChangeAddress={showAddressPopup}
         onPressTatCard={() =>
+          !hasUnserviceableproduct() &&
           props.navigation.navigate(AppRoutes.CartSummary, {
             deliveryTime: deliveryTime,
             storeDistance: storeDistance,
