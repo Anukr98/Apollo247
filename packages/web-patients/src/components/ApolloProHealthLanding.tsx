@@ -739,7 +739,13 @@ const ApolloProHealthLanding: React.FC = (props) => {
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails className={classes.panelDetails}>
                   <div className={classes.detailsContent}>
-                    <Typography> Lorem Ipsum</Typography>
+                    <Typography>
+                      ProHealth is a combination of Health Risk Assessment, Investigations, Medical
+                      Consults, Lifestyle and Mental Health Assessment & Support. Curated
+                      rehabilitation plans to address post Covid-19 health issues if required. You
+                      will also be followed up by your dedicated health mentor and get access to a
+                      ProHealth App to keep track of your health goals.
+                    </Typography>
                   </div>
                 </ExpansionPanelDetails>
               </ExpansionPanel>
@@ -763,7 +769,15 @@ const ApolloProHealthLanding: React.FC = (props) => {
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails className={classes.panelDetails}>
                   <div className={classes.detailsContent}>
-                    <Typography> Lorem Ipsum</Typography>
+                    <Typography>
+                      NCDs are non communicable diseases like Diabetes, Hypertension, Obesity, Heart
+                      diseases, Cancers and Depression. People with NCDs may show no symptoms until
+                      the disease has progressed substantially and the first symptom may be a heart
+                      attack or stroke. Infact studies show that the Covid 19 complications are
+                      severe in those with NCDs, especially if they are not controlled. With Apollo
+                      ProHealth, you will be screened for NCD risk factors and put on a pathway to
+                      prevent progression of the disease.
+                    </Typography>
                   </div>
                 </ExpansionPanelDetails>
               </ExpansionPanel>
@@ -787,7 +801,12 @@ const ApolloProHealthLanding: React.FC = (props) => {
                 </ExpansionPanelSummary>
                 <ExpansionPanelDetails className={classes.panelDetails}>
                   <div className={classes.detailsContent}>
-                    <Typography> Lorem Ipsum</Typography>
+                    <Typography>
+                      Through Apollo ProHealth, you will be assigned a dedicated health mentor, who
+                      will connect with you every month. The follow up will help you in monitoring
+                      your NCD related parameters. For post Covid-19 patients, it will help in
+                      recovery and support with customized rehabilitation plans as needed.
+                    </Typography>
                   </div>
                 </ExpansionPanelDetails>
               </ExpansionPanel>
