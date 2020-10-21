@@ -61,32 +61,37 @@ export interface MedicineOrderBilledItem {
 
 export interface MedicineProductsResponse {
   products: MedicineProduct[];
+  product_count?: number;
+  count?: number;
+}
+
+export interface CategoryProductsApiResponse {
+  products: MedicineProduct[];
+  count: number;
+  filters: MedFilter[];
+  sort_by: Value[];
+}
+
+export interface PopcSrchPrdApiResponse {
+  products: MedicineProduct[];
   product_count: number;
   search_heading: string;
-  // all the below field only for category API
-  count: number;
-  filters: Filter[];
-  sort_by: SortBy;
+  filters: MedFilter[];
+  sort_by: Value[];
 }
 
 interface Value {
-  label: string;
-  value: string;
-}
-interface Filter {
+  id: string;
   name: string;
-  attribute: string // 'category' | 'brand' ...
-  select_type: 'single' | 'multi' | 'range';
+}
+export interface MedFilter {
+  name: string;
+  attribute: string; // 'category' | 'brand' ...
+  select_type: 'single' | 'multi';
   min?: number;
   max?: number;
   values?: Value[];
 }
-interface SortBy {
-  label: string;
-  key: string;
-  values: Value[];
-}
-
 export interface Brand {
   category_id: string;
   image_url: number;
@@ -467,7 +472,7 @@ export const searchMedicineApi = async (
   pageId: number = 1,
   sortBy: string | null,
   filters: { [key: string]: string[] } | null
-): Promise<AxiosResponse<MedicineProductsResponse>> => {
+): Promise<AxiosResponse<PopcSrchPrdApiResponse>> => {
   return Axios({
     url: config.MED_SEARCH[0],
     method: 'POST',
@@ -475,13 +480,23 @@ export const searchMedicineApi = async (
       params: searchText,
       page_id: pageId,
       sort_by: sortBy,
-      filters: filters,
+      filters: formatFilters(filters),
     },
     headers: {
       Authorization: config.MED_SEARCH[1],
     },
   });
 };
+
+const formatFilters = (filters: { [key: string]: string[] } | null) =>
+  filters &&
+  Object.keys(filters).reduce(
+    (prevVal, currKey) => ({
+      ...prevVal,
+      ...(filters[currKey]?.length ? { [currKey]: filters[currKey] } : {}),
+    }),
+    {}
+  );
 
 export const searchPickupStoresApi = async (
   pincode: string
@@ -603,18 +618,35 @@ export const getProductsByCategoryApi = (
   pageId: number = 1,
   sortBy: string | null,
   filters: { [key: string]: string[] } | null
-): Promise<AxiosResponse<MedicineProductsResponse>> => {
+): Promise<AxiosResponse<CategoryProductsApiResponse>> => {
   return Axios.post(
     config.PRODUCTS_BY_CATEGORY[0],
     {
       category_id: categoryId,
       page_id: pageId,
       sort_by: sortBy,
-      filters: filters,
+      filters: formatFilters(filters),
     },
     {
       headers: {
         Authorization: config.PRODUCTS_BY_CATEGORY[1],
+      },
+      transformResponse: (_reponse: any) => {
+        const reponse = JSON.parse(_reponse || '{}');
+
+        const modifiedFilters = reponse?.filters?.map((f: any) => {
+          const modifiedValues = f?.values.map((item: any) => ({
+            id: item.value,
+            name: item.label,
+          }));
+          return { ...f, values: modifiedValues };
+        });
+
+        const modifiedSortBy = reponse?.sort_by?.values?.map((v: any) => {
+          return { ...v, id: v.value, name: v.label };
+        });
+
+        return { ...reponse, filters: modifiedFilters || [], sort_by: modifiedSortBy || [] };
       },
     }
   );

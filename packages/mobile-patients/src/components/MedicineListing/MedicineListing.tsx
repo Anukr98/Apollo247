@@ -13,6 +13,7 @@ import { OptionSelectionOverlay } from '@aph/mobile-patients/src/components/Medi
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
   getProductsByCategoryApi,
+  MedFilter,
   MedicineProduct,
   MedicineProductsResponse,
   searchMedicineApi,
@@ -25,8 +26,11 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, SafeAreaView, StyleSheet, Text } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 
-export type SortByOption = MedicineProductsResponse['sort_by']['values'][0];
-export type Filter = MedicineProductsResponse['filters'][0];
+export type SortByOption = {
+  id: string;
+  name: string;
+};
+export type Filter = MedFilter;
 export type SelectedFilters = { [key: string]: string[] };
 
 export interface Props
@@ -72,13 +76,13 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
 
   useEffect(() => {
     if (searchText.length >= 3) {
-      searchProducts(searchText, 1, sortBy?.value || null, filterBy);
+      searchProducts(searchText, 1, sortBy?.id || null, filterBy);
     }
   }, [sortBy, filterBy]);
 
   useEffect(() => {
     if (categoryId && !searchText) {
-      searchProductsByCategory(categoryId, 1, sortBy?.value || null, filterBy);
+      searchProductsByCategory(categoryId, 1, sortBy?.id || null, filterBy);
     }
   }, [sortBy, filterBy]);
 
@@ -105,9 +109,8 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
       setProductsTotal(data.product_count);
       updateLoading(pageId, false);
       setPageId(pageId + 1);
-      // TODO: transform response format of search API
-      // setSortByOptions(data.sort_by.values || []);
-      // setFilterOptions(data.filters);
+      setSortByOptions(data?.sort_by || []);
+      setFilterOptions(data?.filters || []);
       setPageTitle(data.search_heading || '');
       if (pageId == 1) {
         MedicineListingEvents.searchEnterClick({
@@ -141,7 +144,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
       setProductsTotal(data.count);
       updateLoading(pageId, false);
       setPageId(pageId + 1);
-      setSortByOptions(data.sort_by.values || []);
+      setSortByOptions(data?.sort_by || []);
       setFilterOptions(data.filters);
     } catch (error) {
       updateLoading(pageId, false);
@@ -198,9 +201,9 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     const onEndReached = () => {
       if (!isLoadingMore && products.length < productsTotal) {
         if (searchText) {
-          searchProducts(searchText, pageId, sortBy?.value || null, filterBy);
+          searchProducts(searchText, pageId, sortBy?.id || null, filterBy);
         } else {
-          searchProductsByCategory(categoryId, pageId, sortBy?.value || null, filterBy);
+          searchProductsByCategory(categoryId, pageId, sortBy?.id || null, filterBy);
         }
       }
     };
@@ -230,12 +233,12 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
         <OptionSelectionOverlay
           isVisible={true}
           title={'SORT BY'}
-          options={sortByOptions.map(({ value, label }) => ({
-            title: label,
-            isSelected: sortBy?.value === value,
+          options={sortByOptions.map(({ id, name }) => ({
+            title: name,
+            isSelected: sortBy?.id === id,
             onPress: () => {
               setSortByVisible(false);
-              setSortBy({ value, label });
+              setSortBy({ id, name });
             },
           }))}
           onRequestClose={() => setSortByVisible(false)}

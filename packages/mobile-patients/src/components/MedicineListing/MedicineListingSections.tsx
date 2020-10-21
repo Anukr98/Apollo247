@@ -88,7 +88,7 @@ export const MedicineListingSections: React.FC<Props> = ({
         {
           icon: <CartIcon />, // TODO: Replace icon
           title: 'Sort By',
-          subtitle: sortBy?.label || 'Apply sorting',
+          subtitle: sortBy?.name || 'Apply sorting',
           onPress: () => setSortByVisible(true),
           containerStyle: styles.sortByContainer,
         },

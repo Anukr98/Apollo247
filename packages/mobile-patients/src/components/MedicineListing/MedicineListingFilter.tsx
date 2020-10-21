@@ -1,3 +1,7 @@
+import {
+  Filter,
+  SelectedFilters,
+} from '@aph/mobile-patients/src/components/MedicineListing/MedicineListing';
 import { MedicineListingFilterSlider } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListingFilterSlider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -9,10 +13,7 @@ import {
   RadioButtonUnselectedIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import {
-  getProductsByCategoryApi,
-  MedicineProductsResponse,
-} from '@aph/mobile-patients/src/helpers/apiCalls';
+import { getProductsByCategoryApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { MultiSliderProps } from '@ptomasroos/react-native-multi-slider';
 import { isEqual } from 'lodash';
@@ -27,9 +28,6 @@ import {
   View,
 } from 'react-native';
 import { CheckBox, ListItem, Overlay, OverlayProps } from 'react-native-elements';
-
-type Filter = MedicineProductsResponse['filters'][0];
-type SelectedFilters = { [key: string]: string[] };
 
 export interface Props extends Omit<OverlayProps, 'children'> {
   filters: Filter[];
@@ -52,6 +50,8 @@ export const MedicineListingFilter: React.FC<Props> = ({
   const [isLoading, setLoading] = useState<boolean>(false);
   const isFiltersApplied = Object.keys(selectedFilters).find((k) => selectedFilters[k]?.length);
   const isFiltersAvailable = !!_filters.find((f) => f.values?.length);
+  const categoryFilterProps = ['category', '__categories'];
+  const brandFilterProps = ['brand', 'product_brand'];
 
   const onRequestClose = () => {
     if (isEqual(_selectedFilters, selectedFilters)) {
@@ -102,44 +102,50 @@ export const MedicineListingFilter: React.FC<Props> = ({
   };
 
   const renderFilterSubOptions = (filter: Filter) => {
-    if (filter.select_type == 'range') {
+    if (filter.select_type == 'single' && filter.min && filter.max) {
       return renderRange(filter);
     }
-    return filter.values?.map(({ label, value }) => {
+    return filter.values?.map(({ name, id }) => {
       const { select_type, attribute } = filter;
       const isMulti = select_type == 'multi';
       const checkedIcon = isMulti ? <CheckedIcon /> : <RadioButtonIcon />;
       const uncheckedIcon = isMulti ? <CheckUnselectedIcon /> : <RadioButtonUnselectedIcon />;
       const subOptions = selectedFilters[filter.attribute];
-      const isSelected = !!subOptions?.find((subOption) => subOption == value);
+      const isSelected = !!subOptions?.find((subOption) => subOption == id);
 
       const onPress = async () => {
         const updatedFilter = isSelected
-          ? subOptions?.filter((subOption) => subOption != value)
+          ? subOptions?.filter((subOption) => subOption != id)
           : isMulti
-          ? [...(subOptions || []), value]
-          : [value];
+          ? [...(subOptions || []), id]
+          : [id];
         setSelectedFilters({ ...selectedFilters, [attribute]: updatedFilter });
 
-        if (!isSelected && attribute == 'category') {
+        if (!isSelected && categoryFilterProps.includes(attribute)) {
           // update associated brand filter on selection of category
-          setLoading(true);
-          const { data } = await getProductsByCategoryApi(value, 1, null, null);
-          const brandFilter = data.filters.find(({ attribute }) => attribute === 'brand');
-          if (brandFilter) {
-            const updatedFilter = filters.map((filter) =>
-              filter.attribute === 'brand' ? brandFilter : filter
+          try {
+            setLoading(true);
+            const { data } = await getProductsByCategoryApi(id, 1, null, null);
+            const brandFilter = data.filters.find(({ attribute }) =>
+              brandFilterProps.includes(attribute)
             );
-            setFilters([...updatedFilter]);
+            if (brandFilter) {
+              const updatedFilter = filters.map((filter) =>
+                brandFilterProps.includes(filter.attribute) ? brandFilter : filter
+              );
+              setFilters([...updatedFilter]);
+            }
+            setLoading(false);
+          } catch (error) {
+            setLoading(false);
           }
-          setLoading(false);
         }
       };
 
       return (
         <CheckBox
-          key={value}
-          title={label}
+          key={id}
+          title={name}
           checked={isSelected}
           onPress={onPress}
           checkedIcon={checkedIcon}
