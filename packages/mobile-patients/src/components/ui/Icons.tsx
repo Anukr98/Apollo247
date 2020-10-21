@@ -699,6 +699,10 @@ export const WhiteSearchIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/ic_search.png')} />
 );
 
+export const SearchDarkPhrIcon: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/ic_search_dark_phr.png')} />
+);
+
 export const WhiteListViewIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/list_view_white.png')} />
 );

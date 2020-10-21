@@ -212,14 +212,12 @@ const styles = StyleSheet.create({
   listItemCardStyle: {
     ...theme.viewStyles.cardViewStyle,
     marginTop: 11,
-    overflow: 'hidden',
     paddingLeft: 18,
     paddingRight: 25,
   },
   clinicalDocumentViewStyle: {
     ...theme.viewStyles.cardViewStyle,
     marginTop: 11,
-    overflow: 'hidden',
     paddingLeft: 18,
     paddingRight: 25,
     marginBottom: 50,
@@ -424,16 +422,16 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
-    // setPastDataLoader(true);
-    // setPrismdataLoader(true);
-    // fetchPastData();
-    // fetchTestData();
+    setPastDataLoader(true);
+    setPrismdataLoader(true);
+    fetchPastData();
+    fetchTestData();
   }, [currentPatient]);
 
   useEffect(() => {
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-      // fetchPastData();
-      // fetchTestData();
+      fetchPastData();
+      fetchTestData();
       setFilterData(FilterData);
       setDisplayFilter(false);
     });
@@ -1046,6 +1044,32 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       }
     };
 
+    const onPressListItem = () => {
+      switch (id) {
+        case 1:
+          props.navigation.navigate(AppRoutes.ConsultRxScreen, { consultRxData: combination });
+          break;
+        case 2:
+          props.navigation.navigate(AppRoutes.TestReportScreen);
+          break;
+        case 3:
+          props.navigation.navigate(AppRoutes.HospitalizationScreen);
+          break;
+        case 4:
+          props.navigation.navigate(AppRoutes.HealthConditionScreen);
+          break;
+        case 5:
+          props.navigation.navigate(AppRoutes.BillScreen);
+          break;
+        case 6:
+          props.navigation.navigate(AppRoutes.InsuranceScreen);
+          break;
+        case 7:
+          props.navigation.navigate(AppRoutes.ClinicalDocumentScreen);
+          break;
+      }
+    };
+
     return (
       <ListItem
         title={title}
@@ -1056,6 +1080,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           styles.listItemViewStyle,
           (id === 7 || id === 4 || id === 6) && { borderBottomWidth: 0 },
         ]}
+        underlayColor={'#FFFFFF'}
+        activeOpacity={1}
+        onPress={onPressListItem}
         leftAvatar={renderLeftAvatar()}
         rightAvatar={<ArrowRight style={{ height: 24, width: 24 }} />}
       />
