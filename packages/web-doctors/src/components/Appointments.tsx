@@ -646,7 +646,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                           'Patient name': (appointment && appointment.details && appointment.details.patientName) || '',
                           'Patient mobile number': (appointment && appointment.details && appointment.details.mobileNumber) || '',
                           'Doctor Mobile number': (currentPatient && currentPatient.mobileNumber) || '',
-                          'Appointment Date time': (appointment && appointment.appointmentDateTime) || '',
+                          'Appointment Date time': (appointment && appointment.appointmentDateTime) ? new Date(appointment.appointmentDateTime) : '',
                           'Appointment display ID': (appointment && appointment.displayId) || '',
                           'Appointment ID': (appointment && appointment.id) || '',
                         },
