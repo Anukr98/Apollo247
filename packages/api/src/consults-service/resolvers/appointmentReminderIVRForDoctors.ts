@@ -122,15 +122,18 @@ const receiveMessageFromASBQueue = (function () {
                         const appointment = await apptRepo.findById(message.appointmentId);
 
                         if (appointment && doctor && doctor.isIvrSet) {
+
                             if (appointment.appointmentState === APPOINTMENT_STATE.RESCHEDULE) {
-                                if (message.repeatTimes && message.repeatTimes >= 2) {
+                                if (message.repeatTimes && message.repeatTimes >= 2
+                                    && (message.repeatTimes > (appointment.rescheduleCount + appointment.rescheduleCountByDoctor))) {
                                     await exotelCalling({ exotelUrl, exotelRequest })
                                 } else {
                                     sbService.deleteMessage(lockedMessage, function (errorInDelete) {
                                         if (errorInDelete) {
                                             console.error('Failed to delete message: ', errorInDelete);
+                                        } else {
+                                            sendMessageToASBQueue(doctor, appointment, message.repeatTimes);
                                         }
-                                        sendMessageToASBQueue(doctor, appointment, message.repeatTimes);
                                     });
                                 }
                             }
