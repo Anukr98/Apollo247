@@ -228,7 +228,7 @@ export const CheckRiskLevel: React.FC = (props: any) => {
               <span>Check your COVID-19 risk level</span>
             </AphButton>
           </a>
-          {window.location.pathname !== clientRoutes.knowledgeBaseLanding() && (
+          {/* {window.location.pathname !== clientRoutes.knowledgeBaseLanding() && (
             <a className={classes.callBtn} href={isDesktopOnly ? '#' : `tel:${customerCareNumber}`}>
               <div
                 onClick={() => {
@@ -241,7 +241,7 @@ export const CheckRiskLevel: React.FC = (props: any) => {
                 <span>Call our Coronavirus Experts</span>
               </div>
             </a>
-          )}
+          )} */}
         </div>
       </div>
 
