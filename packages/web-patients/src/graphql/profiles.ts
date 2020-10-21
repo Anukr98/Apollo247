@@ -1072,6 +1072,7 @@ export const CREATE_SUBSCRIPTION = gql`
         group_plan {
           name
           plan_id
+          min_transaction_value
         }
       }
     }
