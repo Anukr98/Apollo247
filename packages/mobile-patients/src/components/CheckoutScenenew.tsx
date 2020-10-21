@@ -507,7 +507,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             medicineName: item.name,
             quantity: item.quantity,
             mrp: getFormattedAmount(item.price),
-            price: discountedPrice,
+            price: item?.isFreeCouponProduct ? 0 : discountedPrice,
             specialPrice: Number(item.specialPrice || item.price),
             itemValue: getFormattedAmount(item.price * item.quantity), // (multiply MRP with quantity)
             itemDiscount: getFormattedAmount(
