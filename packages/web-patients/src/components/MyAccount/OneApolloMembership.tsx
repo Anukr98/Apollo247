@@ -266,7 +266,7 @@ export const OneApolloMembership: React.FC = () => {
   const [totalEarned, setTotalEarned] = useState<number>(0);
 	const [totalRedeemed, setTotalRedeemed] = useState<number>(0);
 	const { error, loading, data } = useQuery<getOneApolloUserTransactions>(GET_ONEAPOLLO_USERTXNS);
-	const oneApolloTrxnList = data && data.getOneApolloUserTransactions;
+	const oneApolloTrxnList = (data && data.getOneApolloUserTransactions) ? data.getOneApolloUserTransactions : [];
   useEffect(() => {
     if (currentPatient && currentPatient.id) {
       client
@@ -364,8 +364,8 @@ export const OneApolloMembership: React.FC = () => {
                           </div>
                         </div>
                         <ul className={classes.transactionList}>
-                          {oneApolloTrxnList.length > 0 &&
-                            oneApolloTrxnList.map((transaction, index) => {
+														{oneApolloTrxnList.length > 0 ?
+															(oneApolloTrxnList.map((transaction, index) => {
                               return (
                                 <li key={index}>
                                   <div className={classes.tContainer}>
@@ -402,7 +402,11 @@ export const OneApolloMembership: React.FC = () => {
                                   </Typography>
                                 </li>
                               );
-                            })}
+                            })) : (
+															<li>
+																Record not found
+															</li>
+														)}
                         </ul>
                       </TabContainer>
                     )}

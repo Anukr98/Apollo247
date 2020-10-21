@@ -1,9 +1,17 @@
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Dimensions, StyleSheet, Text, View } from 'react-native';
 import { getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList } from '../graphql/types/getDiagnosticOrderDetails';
 import moment from 'moment';
-import { g, formatTestSlotWithBuffer } from '../helpers/helperFunctions';
+import {
+  g,
+  formatTestSlotWithBuffer,
+  postWebEngageEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 const { height } = Dimensions.get('window');
 
@@ -95,6 +103,18 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
   const getFormattedDateTime = (time: string) => {
     return moment(time).format('D MMM YYYY | hh:mm A');
   };
+
+  //need to add
+  // useEffect(()=>{
+  //   const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED] = {
+  //     'Patient UHID': orderDetails.uhid, //should come in order details
+  //     'Patient Number': orderDetails.mobileNumber,
+  //     'OrderID:': orderDetails.id,
+  //     'Sample Collection Date': orderDetails.diagnosticDate ;
+  //   };
+  //   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED, eventAttributes);
+
+  // },[])
 
   const formatSlot = (slot: string /*07:00-07:30 */) => {
     /**

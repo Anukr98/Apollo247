@@ -63,6 +63,8 @@ import { getRelations } from '../../helpers/helperFunctions';
 import AsyncStorage from '@react-native-community/async-storage';
 import moment from 'moment';
 
+const screenWidth = Dimensions.get('window').width;
+
 const styles = StyleSheet.create({
   yellowTextStyle: {
     ...theme.viewStyles.yellowTextStyle,
@@ -145,9 +147,9 @@ const styles = StyleSheet.create({
     width: 90,
     height: 90,
     marginTop: -30,
+    paddingLeft: screenWidth > 370 ? 0 : 8,
   },
   importantTextStyle: {
-    ...theme.viewStyles.text('M', 12, '#0087BA', 1, 16),
     flex: 1,
     marginTop: -58,
     marginLeft: -8,
@@ -1151,7 +1153,13 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           marginHorizontal: 20,
         }}
       >
-        <Text style={styles.importantTextStyle} numberOfLines={2}>
+        <Text
+          style={[
+            styles.importantTextStyle,
+            { ...theme.viewStyles.text('M', isEditProfile ? 12 : 11.5, '#0087BA', 1, 16) },
+          ]}
+          numberOfLines={2}
+        >
           {isEditProfile ? string.common.edit_profile_imp_text : string.common.add_profile_imp_text}
         </Text>
         {renderProfileImage()}

@@ -7,6 +7,7 @@ import Paper from '@material-ui/core/Paper';
 import { CallPopover } from 'components/CallPopover';
 import ApolloClient from 'apollo-client';
 import Pubnub from 'pubnub';
+import { format } from 'date-fns';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
@@ -1835,6 +1836,7 @@ export const ConsultTabs: React.FC = () => {
           (status: any, response: any) => {}
         );
         setIsPdfPageOpen(true);
+        getSetNumberOfParticipants(paramId, USER_STATUS.LEAVING);
       })
       .catch((e) => {
         webEngageEventTracking(

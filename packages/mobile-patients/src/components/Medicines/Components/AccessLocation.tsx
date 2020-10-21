@@ -33,6 +33,21 @@ export const AccessLocation: React.FC<AccessLocationProps> = (props) => {
     onPressCurrentLocaiton,
     onPressPincode,
   } = props;
+
+  function sortAddresses(addresses: savePatientAddress_savePatientAddress_patientAddress[]) {
+    if (addresses) {
+      const array1 = addresses.filter((item) => item.defaultAddress);
+      const array2 = addresses.filter((item) => !item.defaultAddress);
+      const sortedAddresses = array1.concat(array2);
+      return sortedAddresses;
+    } else {
+      return [];
+    }
+  }
+
+  const renderHeader = () => {
+    return <Text style={styles.addressHeader}>Select delivery location</Text>;
+  };
   const renderCurrentLocationAccess = () => {
     return (
       <TouchableOpacity style={styles.buttonContainer} onPress={onPressCurrentLocaiton}>
@@ -57,9 +72,9 @@ export const AccessLocation: React.FC<AccessLocationProps> = (props) => {
   const renderAddresses = () => {
     return (
       <View>
-        <Text style={styles.addressHeader}>Choose from saved address</Text>
+        <Text style={styles.addressHeader}>Choose from saved addresses</Text>
         <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
-          {addresses.map((item) => {
+          {sortAddresses(addresses).map((item) => {
             return (
               <AddressCard
                 item={item}
@@ -75,17 +90,23 @@ export const AccessLocation: React.FC<AccessLocationProps> = (props) => {
   };
   const renderAddAddress = () => {
     return (
-      <TouchableOpacity
-        style={{ ...styles.addressCard, height: addresses.length ? undefined : 75 }}
-        onPress={onPressAddAddress}
+      <View
+        style={{
+          ...styles.addAddressCard,
+          height: sortAddresses(addresses).length ? undefined : 75,
+        }}
       >
-        <Text style={styles.addAddress}>Add Address...</Text>
-      </TouchableOpacity>
+        <TouchableOpacity style={{}} onPress={onPressAddAddress}>
+          <Text style={styles.addAddress}>Add</Text>
+          <Text style={styles.addAddress}>new address...</Text>
+        </TouchableOpacity>
+      </View>
     );
   };
 
   return (
     <View style={{ paddingHorizontal: 20 }}>
+      {renderHeader()}
       {renderCurrentLocationAccess()}
       {renderDeliveryPincode()}
       {renderAddresses()}
@@ -100,7 +121,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#F7F8F5',
     borderRadius: 5,
     alignItems: 'center',
-    marginTop: 30,
   },
   currentLocation: {
     ...theme.fonts.IBMPlexSansMedium(17),
@@ -116,20 +136,19 @@ const styles = StyleSheet.create({
     color: '#01475B',
     marginVertical: 15,
   },
-  addressCard: {
-    ...theme.viewStyles.cardViewStyle,
+  addAddress: {
+    ...theme.fonts.IBMPlexSansSemiBold(14),
+    lineHeight: 18,
+    color: '#01475B',
+    textAlign: 'center',
+  },
+  addAddressCard: {
+    borderRadius: 10,
     marginHorizontal: 6,
-    width: 0.35 * windowWidth,
-    paddingHorizontal: 12,
-    marginTop: 2,
+    width: 0.4 * windowWidth,
     marginBottom: 20,
+    backgroundColor: 'rgba(1, 71, 91, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  addAddress: {
-    ...theme.fonts.IBMPlexSansMedium(12),
-    lineHeight: 14,
-    color: '#01475B',
-    opacity: 0.8,
   },
 });

@@ -1,4 +1,5 @@
 const axios = require('axios');
+
 import { TransactionType } from 'ApiConstants';
 import { format, addMinutes } from 'date-fns';
 import { log } from 'customWinstonLogger';
@@ -129,7 +130,7 @@ export const checkDocOnCallAvailable = async function (mobileNumber: string, ben
     }`,
   };
   const response = await axios.post(url, requestJSON);
-  let benefits = response?.data?.data?.GetAllUserSubscriptionsWithPlanBenefits?.response[0]?.benefits;
+  const benefits = response?.data?.data?.GetAllUserSubscriptionsWithPlanBenefits?.response[0]?.benefits;
   if (benefits) {
     return benefits.filter((el: any) => {
       return (el._id == benefitId && el.attribute == "Doc on Call") ? true : false;

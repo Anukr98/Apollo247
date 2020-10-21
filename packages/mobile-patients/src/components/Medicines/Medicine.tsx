@@ -401,6 +401,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             })
             .catch((error) => {
               showAphAlert!({
+                unDismissable: isunDismissable(),
                 title: 'We’re sorry!',
                 description:
                   'We are not serviceable in your area. Please change your location or call 1860 500 0101 for Pharmacy stores nearby.',
@@ -414,6 +415,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                   },
                 ],
               });
+              globalLoading!(false);
               console.log('getNearByStoreDetailsApi error', error);
             });
         }
@@ -468,8 +470,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     try {
       if (addresses.length) {
         const deliveryAddress = addresses.find((item) => item.defaultAddress);
-        deliveryAddress && setDeliveryAddressId!(deliveryAddress?.id);
-        return;
+        if (deliveryAddress) {
+          setDeliveryAddressId!(deliveryAddress?.id);
+          updateServiceability(deliveryAddress?.zipcode!);
+          setPharmacyLocation!(formatAddressToLocation(deliveryAddress));
+          return;
+        }
       }
       globalLoading!(true);
       const response = await client.query<getPatientAddressList, getPatientAddressListVariables>({
@@ -521,7 +527,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       CommonBugFender('set_default_Address_on_Medicine_Page', error);
       showAphAlert!({
         title: string.common.uhOh,
-        description: "We're sorry! Unable to set default address. Please try again after some time",
+        description:
+          "We're sorry! Unable to set delivery address. Please try again after some time",
       });
     }
   }
@@ -539,6 +546,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const showAccessAccessLocationPopup = (pincodeInput?: boolean) => {
     return showAphAlert!({
       unDismissable: isunDismissable(),
+      removeTopIcon: true,
       children: !pincodeInput ? (
         <AccessLocation
           addresses={addresses}
@@ -550,6 +558,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               KeyName: 'Update',
               DataAddress: address,
               source: 'Medicine' as AddressSource,
+              ComingFrom: AppRoutes.Medicine,
             });
             hideAphAlert!();
           }}
@@ -571,8 +580,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       ) : (
         <PincodeInput
           onPressApply={(pincode) => {
-            hideAphAlert!();
-            updatePlaceInfoByPincode(pincode);
+            if (pincode?.length == 6) {
+              hideAphAlert!();
+              updatePlaceInfoByPincode(pincode);
+            }
           }}
           onPressBack={() => showAccessAccessLocationPopup(false)}
         />
@@ -844,19 +855,17 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 showAccessAccessLocationPopup(false);
               }}
             >
+              <Text numberOfLines={1} style={localStyles.deliverToText}>
+                Deliver to {formatText(g(currentPatient, 'firstName') || '', 30)}
+              </Text>
               <View style={{ flexDirection: 'row' }}>
                 <View>
-                  <Text numberOfLines={1} style={localStyles.deliverToText}>
-                    Deliver to {formatText(g(currentPatient, 'firstName') || '', 15)}
-                  </Text>
-                  <View>
-                    <Text style={localStyles.locationText}>{location}</Text>
-                    {!serviceabilityMsg ? (
-                      <Spearator style={localStyles.locationTextUnderline} />
-                    ) : (
-                      <View style={{ height: 2 }} />
-                    )}
-                  </View>
+                  <Text style={localStyles.locationText}>{location}</Text>
+                  {!serviceabilityMsg ? (
+                    <Spearator style={localStyles.locationTextUnderline} />
+                  ) : (
+                    <View style={{ height: 2 }} />
+                  )}
                 </View>
                 <View style={localStyles.dropdownGreenContainer}>
                   <DropdownGreen />

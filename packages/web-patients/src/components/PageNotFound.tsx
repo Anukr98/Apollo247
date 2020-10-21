@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { NavigationBottom } from 'components/NavigationBottom';
 import { BottomLinks } from 'components/BottomLinks';
+import { readableParam } from 'helpers/commonHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -121,6 +122,12 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     gridContainer: {
       padding: '30px 0 0',
+      display: 'flex',
+      alignItems: 'flex-start',
+      justifyContent: 'center',
+      [theme.breakpoints.down('sm')]: {
+        flexDirection: 'column',
+      },
       '& h4': {
         fontSize: 20,
         fontWeight: 700,
@@ -134,11 +141,115 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'none',
       },
     },
+    ulContent: {
+      width: '30%',
+      padding: '0 30px',
+      [theme.breakpoints.down('sm')]: {
+        width: '100%',
+        padding: '0 0 10px',
+      },
+    },
   };
 });
 
-const PageNotFound: React.FC = (props) => {
+interface TopSpecialtyType {
+  specialtyName: string;
+  slugName: string;
+}
+interface TopPharmacyLinkType {
+  title: string;
+  url_key: string;
+}
+const PageNotFound: React.FC = () => {
+  const shopBy = 'shop-by-healthareas';
   const classes = useStyles({});
+  const topSpecialtyListing = [
+    {
+      specialtyName: 'Paediatrics',
+      slugName: 'Paediatrics',
+    },
+    {
+      specialtyName: 'General Physician',
+      slugName: 'General Physician/ Internal Medicine',
+    },
+    {
+      specialtyName: 'Dermatology',
+      slugName: 'Dermatology',
+    },
+    {
+      specialtyName: 'Gynaecology',
+      slugName: 'Obstetrics & Gynaecology',
+    },
+  ];
+  const pharmacyLinkListing = [
+    {
+      title: 'Corona-virus Care',
+      url_key: 'coronavirus-prevention',
+    },
+    {
+      title: 'Cold & Immunity',
+      url_key: 'cold-immunity',
+    },
+    {
+      title: 'Diabetes Care',
+      url_key: 'diabetic',
+    },
+    {
+      title: 'Pain Relief',
+      url_key: 'pain-relief',
+    },
+    {
+      title: 'Skin Care',
+      url_key: 'beauty-skin-car',
+    },
+    {
+      title: 'Cardiac',
+      url_key: 'cardiac',
+    },
+    {
+      title: 'Stomach Care',
+      url_key: 'stomach-care',
+    },
+    {
+      title: 'Respiratory',
+      url_key: 'respiratory',
+    },
+    {
+      title: 'Sexual Health',
+      url_key: 'sexual-health',
+    },
+    {
+      title: 'Eye and Ear Care',
+      url_key: 'eye-ear-care',
+    },
+    {
+      title: 'Adult Care',
+      url_key: 'adult-care',
+    },
+  ];
+  const covid19LinkListing = [
+    {
+      title: 'Latest Updates',
+      url_key: 'covid19',
+    },
+    {
+      title: 'Check your Risk Level',
+      url_key: 'covid19/cough-scan',
+    },
+    {
+      title: 'About Us',
+      url_key: 'aboutUs',
+    },
+    {
+      title: 'Frequently Asked Questions',
+      url_key: 'faq',
+    },
+    {
+      title: 'Terms & Conditions',
+      url_key: 'terms',
+    },
+  ];
+  const searchText = shopBy.replace(/_/g, '-');
   return (
     <div className={classes.pnfContainer}>
       <Header />
@@ -159,92 +270,54 @@ const PageNotFound: React.FC = (props) => {
             <Typography component="h3">
               <span>Useful Links</span>
             </Typography>
-            <Grid container spacing={2} className={classes.gridContainer}>
-              <Grid item xs={12} md={4}>
+            <div className={classes.gridContainer}>
+              <div className={classes.ulContent}>
                 <Typography component="h4">Doctors</Typography>
                 <ul className={classes.usefulLinksList}>
-                  <li>
-                    <Link to="#">Consult Online</Link>
-                  </li>
-                  <li>
-                    <Link to="#">Speciality 1</Link>
-                  </li>
-                  <li>
-                    <Link to="#">Speciality 2</Link>
-                  </li>
-                  <li>
-                    <Link to="#">Speciality 3</Link>
-                  </li>
+                  {topSpecialtyListing &&
+                    topSpecialtyListing.length > 0 &&
+                    topSpecialtyListing.map((specialityDetails: TopSpecialtyType, index) => {
+                      return (
+                        <li key={index}>
+                          <Link
+                            to={clientRoutes.specialties(readableParam(specialityDetails.slugName))}
+                          >
+                            {specialityDetails.specialtyName}
+                          </Link>
+                        </li>
+                      );
+                    })}
                 </ul>
-              </Grid>
-              <Grid item xs={12} md={4}>
+              </div>
+              <div className={classes.ulContent}>
                 <Typography component="h4">Pharmacy</Typography>
                 <ul className={classes.usefulLinksList}>
-                  <li>
-                    <Link to="#">Order Medicines</Link>
-                  </li>
-                  <li>
-                    <Link to="#">Healthcare Products</Link>
-                  </li>
-                  <li>
-                    <Link to="#">Ayurvedic Products</Link>
-                  </li>
-                  <li>
-                    <Link to="#">Surgicals</Link>
-                  </li>
-                  <li>
-                    <Link to="#">Diabetes care</Link>
-                  </li>
-                  <li>
-                    <Link to="#">Pain Releif</Link>
-                  </li>
-                  <li>
-                    <Link to="#">Cold &amp; Immunity</Link>
-                  </li>
-                  <li>
-                    <Link to="#">Cardiac</Link>
-                  </li>
-                  <li>
-                    <Link to="#">Stomach care</Link>
-                  </li>
-                  <li>
-                    <Link to="#">Respiratory</Link>
-                  </li>
-                  <li>
-                    <Link to="#">Sexual Health</Link>
-                  </li>
-                  <li>
-                    <Link to="#">Eye &amp; Ear care</Link>
-                  </li>
-                  <li>
-                    <Link to="#">Adult care</Link>
-                  </li>
+                  {pharmacyLinkListing &&
+                    pharmacyLinkListing.length > 0 &&
+                    pharmacyLinkListing.map((phamacyLink: TopPharmacyLinkType, index) => {
+                      return (
+                        <li key={index}>
+                          <Link to={clientRoutes.searchByMedicine(searchText, phamacyLink.url_key)}>
+                            {phamacyLink.title}
+                          </Link>
+                        </li>
+                      );
+                    })}
                 </ul>
-              </Grid>
-              <Grid item xs={12} md={4}>
+              </div>
+              <div className={classes.ulContent}>
                 <Typography component="h4">Covid 19</Typography>
                 <ul className={classes.usefulLinksList}>
-                  <li>
-                    <Link to="#">Latest Updates</Link>
-                  </li>
-                  <li>
-                    <Link to="#">Check your Risk Level</Link>
-                  </li>
-                  <li>
-                    <Link to="#">Call our Experts</Link>
-                  </li>
-                  <li>
-                    <Link to="#">About Us</Link>
-                  </li>
-                  <li>
-                    <Link to="#">Frequently Asked Questions</Link>
-                  </li>
-                  <li>
-                    <Link to="#">Terms &amp; Conditions</Link>
-                  </li>
+                  {covid19LinkListing &&
+                    covid19LinkListing.length > 0 &&
+                    covid19LinkListing.map((covid19: TopPharmacyLinkType, index) => (
+                      <li key={index}>
+                        <Link to={covid19.url_key}>{covid19.title}</Link>
+                      </li>
+                    ))}
                 </ul>
-              </Grid>
-            </Grid>
+              </div>
+            </div>
           </div>
         </div>
         <div className={classes.footerLinks}>

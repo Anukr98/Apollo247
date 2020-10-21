@@ -13,7 +13,7 @@ import React, { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { Config, setConfig } from 'react-hot-loader';
 import { hot } from 'react-hot-loader/root';
-import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import { BrowserRouter, Route, Switch, Redirect } from 'react-router-dom';
 import { DiagnosticsCartProvider } from './Tests/DiagnosticsCartProvider';
 import { MedicinesCartProvider } from 'components/MedicinesCartProvider';
 import { OneApolloMembership } from 'components/MyAccount/OneApolloMembership';
@@ -23,11 +23,15 @@ import { HdfcMemberShip } from 'components/Partners/Hdfc/HdfcMembership';
 import { MyMembership } from 'components/Partners/Hdfc/MyMembership';
 import { MembershipPlanLocked } from 'components/Partners/Hdfc/MembershipPlanLocked';
 import { MembershipPlanDetail } from 'components/Partners/Hdfc/MembershipPlanDetail';
+import PageNotFound from 'components/PageNotFound';
 
 const Welcome = loadable(() => import('components/Welcome'));
 
 const NotificationSettings = loadable(() =>
   import('components/Notifications/NotificationSettings')
+);
+const SpecialtyDetailsWithCity = loadable(() =>
+  import('components/Doctors/SpecialtyDetailsWithCity')
 );
 const SbiLandingPage = loadable(() => import('components/Partners/SBI/SbiLandingPage'));
 const PatientsList = loadable(() => import('components/PatientsList'));
@@ -123,6 +127,11 @@ const App: React.FC = () => {
       <Switch>
         <Route exact path={clientRoutes.welcome()} component={Welcome} />
         <Route exact path={clientRoutes.aboutUs()} component={AboutUs} />
+        <Route
+          exact
+          path={clientRoutes.specialtyDetailsWithCity(':specialty', ':city')}
+          component={SpecialtyDetailsWithCity}
+        />
         <Route exact path={clientRoutes.covidLanding()} component={CovidLanding} />
         <Route exact path={clientRoutes.articleDetails()} component={CovidArticleDetails} />
         <Route exact path={clientRoutes.kavachLanding()} component={KavachLanding} />
@@ -244,6 +253,7 @@ const App: React.FC = () => {
         />
         <Route exact path={clientRoutes.pageNotFound()} component={PageNotFound} />
         <Route exact path={clientRoutes.apolloProHealth()} component={ApolloProHealth} />
+        <Redirect to={clientRoutes.pageNotFound()} />
       </Switch>
     </div>
   );

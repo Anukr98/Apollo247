@@ -136,6 +136,7 @@ export interface ConsultOverlayProps extends NavigationScreenProps {
   consultedWithDoctorBefore: boolean;
   callSaveSearch: string;
   mainContainerStyle?: StyleProp<ViewStyle>;
+  scrollToSlot?: boolean;
 }
 export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const client = useApolloClient();
@@ -187,7 +188,9 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
 
   const todayDate = new Date().toDateString().split('T')[0];
   const scrollToSlots = (top: number = 400) => {
-    scrollViewRef.current && scrollViewRef.current.scrollTo({ x: 0, y: top, animated: true });
+    if (props.scrollToSlot) {
+      scrollViewRef.current && scrollViewRef.current.scrollTo({ x: 0, y: top, animated: true });
+    }
   };
   useEffect(() => {
     if (props.consultModeSelected === ConsultMode.ONLINE) {
@@ -899,7 +902,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         },
       ],
       packageId: packageId,
-      email: g(currentPatient, 'emailAddress')
+      email: g(currentPatient, 'emailAddress'),
     };
 
     return new Promise((res, rej) => {
@@ -1210,4 +1213,8 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
     </View>
   );
+};
+
+ConsultOverlay.defaultProps = {
+  scrollToSlot: true,
 };

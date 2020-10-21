@@ -122,13 +122,18 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
     cartItems,
     cartTotal,
     setCouponProducts,
+    pinCode,
+    addresses,
+    deliveryAddressId,
   } = useShoppingCart();
   const { showAphAlert } = useUIElements();
   const [loading, setLoading] = useState<boolean>(true);
   const client = useApolloClient();
   const isEnableApplyBtn = couponText.length >= 4;
-  const { locationDetails, hdfcUserSubscriptions } = useAppCommonData();
-
+  const { locationDetails, hdfcUserSubscriptions, pharmacyLocation } = useAppCommonData();
+  const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
+  const pharmacyPincode =
+    selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
   let packageId = '';
   if (!!g(hdfcUserSubscriptions, '_id') && !!g(hdfcUserSubscriptions, 'isActive')) {
     packageId =
@@ -160,7 +165,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
       mobile: g(currentPatient, 'mobileNumber'),
       billAmount: cartTotal.toFixed(2),
       coupon: coupon,
-      pinCode: locationDetails && locationDetails.pincode,
+      pinCode: pharmacyPincode,
       products: cartItems.map((item) => ({
         sku: item.id,
         categoryId: item.productType,
@@ -185,7 +190,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
           const products = g(resp.data, 'response', 'products');
           if (products && products.length) {
             const freeProducts = products.filter((product) => {
-              return product.couponFree === true;
+              return product.couponFree === 1;
             });
             setCouponProducts!(freeProducts);
           }

@@ -764,6 +764,7 @@ export const MedicineCart: React.FC = (props) => {
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [shopId, setShopId] = useState<string>('');
   const [tatType, setTatType] = useState<string>('');
+  const [distance, setDistance] = useState<string>('');
   const [couponDiscount, setCouponDiscount] = useState<number>(0);
   const [latitude, setLatitude] = React.useState<string>('');
   const [longitude, setLongitude] = React.useState<string>('');
@@ -831,8 +832,7 @@ export const MedicineCart: React.FC = (props) => {
   const checkForPriceUpdate = (tatRes: any) => {
     setShopId(tatRes.storeCode);
     setTatType(tatRes.storeType);
-
-    // checkForCartChanges(pincode, lat, lng);
+    setDistance(tatRes.distance);
     checkCartChangesUtil(tatRes.items);
   };
 
@@ -2054,6 +2054,7 @@ export const MedicineCart: React.FC = (props) => {
                                   shopId: shopId,
                                   deliveryAddressId,
                                   tatType,
+                                  distance,
                                 })
                               );
                               history.push(clientRoutes.payMedicine('pharmacy'));
@@ -2170,6 +2171,7 @@ export const MedicineCart: React.FC = (props) => {
                               shopId: shopId,
                               deliveryAddressId,
                               tatType,
+                              distance,
                             })
                           );
                           history.push(clientRoutes.payMedicine('pharmacy'));

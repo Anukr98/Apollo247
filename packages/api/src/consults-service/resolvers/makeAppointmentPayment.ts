@@ -41,6 +41,7 @@ import { AcceptCouponRequest } from 'types/coupons';
 import { updateDoctorSlotStatusES } from 'doctors-service/entities/doctorElastic';
 import { transactionSuccessTrigger } from 'helpers/subscriptionHelper';
 import { ApiConstants, TransactionType } from 'ApiConstants';
+import { sendMessageToASBQueue } from 'consults-service/resolvers/appointmentReminderIVRForDoctors';
 
 export const makeAppointmentPaymentTypeDefs = gql`
   enum APPOINTMENT_PAYMENT_TYPE {
@@ -343,6 +344,11 @@ const makeAppointmentPayment: Resolver<
     //submit casesheet if skipAutoQuestions:false, isJdrequired = false
     const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
     const doctorDets = await doctorRepo.findById(processingAppointment.doctorId);
+
+    if (!doctorDets) {
+      throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
+    }
+
     let submitFlag = 0;
 
     let notes = ApiConstants.APPOINTMENT_BOOKED_WITHIN_10_MIN.toString().replace(
@@ -355,7 +361,7 @@ const makeAppointmentPayment: Resolver<
     }
     if (
       timeDifference / 60 <=
-        parseInt(ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString(), 10) ||
+      parseInt(ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString(), 10) ||
       submitFlag == 1
     ) {
       const consultQueueRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
@@ -415,6 +421,11 @@ const makeAppointmentPayment: Resolver<
       };
       apptsRepo.saveAppointmentHistory(historyAttrs);
     }
+
+    if (doctorDets.isIvrSet && doctorDets.isIvrSet === true) {
+      sendMessageToASBQueue(doctorDets, processingAppointment);
+    }
+
   } else if (paymentInput.paymentStatus == 'TXN_FAILURE') {
     const historyAttrs: Partial<AppointmentUpdateHistory> = {
       appointment: processingAppointment,
@@ -569,8 +580,8 @@ const sendPatientAcknowledgements = async (
   const toEmailId = process.env.BOOK_APPT_TO_EMAIL ? process.env.BOOK_APPT_TO_EMAIL : '';
   const ccEmailIds =
     process.env.NODE_ENV == 'dev' ||
-    process.env.NODE_ENV == 'development' ||
-    process.env.NODE_ENV == 'local'
+      process.env.NODE_ENV == 'development' ||
+      process.env.NODE_ENV == 'local'
       ? ApiConstants.PATIENT_APPT_CC_EMAILID
       : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
   const emailContent: EmailMessage = {

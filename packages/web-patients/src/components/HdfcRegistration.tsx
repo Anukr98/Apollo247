@@ -24,7 +24,7 @@ import { Link } from '@material-ui/core';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     hdcContainer: {
-      background: `#fff url(${require('images/hdfc/bg.svg')}) no-repeat 0 0`,
+      background: `#C4E8EF url(${require('images/hdfc/bg.svg')}) no-repeat 0 0`,
       backgroundPosition: 'bottom',
       boxShadow: ' 0px 5px 20px rgba(128, 128, 128, 0.3)',
       borderRadius: 10,
@@ -53,9 +53,16 @@ const useStyles = makeStyles((theme: Theme) => {
         boxShadow: 'none',
         display: 'block',
         marginLeft: 'auto',
-        color: '#FC9916',
+        fontSize: 16,
+        background: '#E52936',
+        color: '#fff',
         [theme.breakpoints.down('sm')]: {
-          bottom: 20,
+          bottom: 10,
+          fontSize: 12,
+        },
+        '&:hover': {
+          background: '#E52936',
+          color: '#fff',
         },
       },
       [theme.breakpoints.down('xs')]: {
@@ -78,6 +85,8 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('sm')]: {
         fontSize: 10,
         bottom: 0,
+        left:0,
+        width: '60%',
       },
     },
     note: {
@@ -177,9 +186,11 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: '0 0 0 10px',
         '&:first-child': {
           boxShadow: 'none',
-          color: '#FC9916',
+          color: '#E52936',
         },
         '&:last-child': {
+          background: '#E52936',
+          color: '#fff',
           '& img': {
             display: 'none',
             [theme.breakpoints.down('sm')]: {
@@ -230,7 +241,7 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: '0 0 0 10px',
         '&:first-child': {
           boxShadow: 'none',
-          color: '#FC9916',
+          color: '#E52936',
         },
       },
     },
@@ -257,9 +268,14 @@ const useStyles = makeStyles((theme: Theme) => {
         bottom: 0,
         right: 0,
         boxShadow: 'none',
-        color: '#FC9916',
+        background: '#E52936',
+        color: '#fff',
         [theme.breakpoints.down('sm')]: {
           margin: '20px 0 0 0',
+        },
+        '&:hover': {
+          background: '#E52936',
+          color: '#fff',
         },
       },
     },
@@ -299,6 +315,9 @@ const useStyles = makeStyles((theme: Theme) => {
           fontSize: 14,
           lineHeight: '12px',
         },
+        '& span': {
+          color: '#E52936',
+        },
       },
     },
     description: {
@@ -314,11 +333,11 @@ const useStyles = makeStyles((theme: Theme) => {
     recheckOtpContent: {
       '& button': {
         boxShadow: 'none',
-        color: '#FC9916',
+        color: '#E52936',
       },
       '& a': {
         boxShadow: 'none',
-        color: '#FC9916',
+        color: '#E52936',
         fontWeight: 600,
         textTransform: 'uppercase',
         fontSize: 13,
@@ -371,7 +390,7 @@ const useStyles = makeStyles((theme: Theme) => {
       '& h2': {
         fontSize: 32,
         fontWeight: 700,
-        color: '#02475b',
+        color: '#005CA8',
         lineHeight: '42px',
         [theme.breakpoints.down('sm')]: {
           fontSize: 14,
@@ -398,6 +417,11 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       justifyContent: 'space-between',
       padding: '0 0 10px',
+      '& img':{
+        [theme.breakpoints.down('sm')]: {
+          width: 120,
+        }
+      }
     },
   };
 });
@@ -594,10 +618,11 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
     <div className={`${classes.hdcContainer}`}>
       <div className={classes.hdcContent}>
         <div className={classes.hdcHeader}>
-          <img src={require('images/hdfc/apollo-hashtag.svg')} alt="HDFC Call Doctor" width="100" />
-          <img src={require('images/hdfc/hdfc-logo.svg')} alt="HDFC Call Doctor" width="100" />
+          <img src={require('images/hdfc/apollo-hashtag.svg')} alt="HDFC Call Doctor" width="150" />
+          <img src={require('images/hdfc/hdfc-logo.svg')} alt="HDFC Call Doctor" width="150" />
         </div>
         {/* Intro */}
+
         {showIntro && (
           <div className={classes.hdfcIntro}>
             <div className={classes.newContent}>
@@ -651,12 +676,8 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
                 <AphButton onClick={() => queryIdentifyHDFCCustomer()}>
                   {loading ? <CircularProgress size={30} /> : <Typography>Resend Otp</Typography>}
                 </AphButton>
-                <AphButton color="primary" variant="contained" onClick={() => validateHDFCOtp()}>
-                  {loading ? (
-                    <CircularProgress size={30} color="secondary" />
-                  ) : (
-                    <Typography>Submit Otp</Typography>
-                  )}
+                <AphButton variant="contained" onClick={() => validateHDFCOtp()}>
+                  {loading ? <CircularProgress size={30} /> : <Typography>Submit Otp</Typography>}
                   <img src={require('images/ic_arrow_forward.svg')} alt="" />
                 </AphButton>
               </div>

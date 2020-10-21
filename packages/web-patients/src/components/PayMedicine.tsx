@@ -575,6 +575,7 @@ const PayMedicine: React.FC = (props) => {
     shopId,
     deliveryAddressId,
     tatType,
+    distance,
   } = cartValues;
   const deliveryCharges = freeDelivery
     ? 0
@@ -761,6 +762,7 @@ const PayMedicine: React.FC = (props) => {
           deviceType: getDeviceType(),
           shopId: shopId,
           tatType,
+          storeDistanceKm: distance,
         },
       },
     }

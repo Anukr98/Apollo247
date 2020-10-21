@@ -40,6 +40,7 @@ import {
   followUpChatDaysCaseSheet,
   getDiffInMinutes,
   overlyCallPermissions,
+  isPastAppointment,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -457,6 +458,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const [showSchdulesView, setShowSchdulesView] = useState<boolean>(false);
   const [newAppointmentTime, setNewAppointmentTime] = useState<string>('');
   const [newRescheduleCount, setNewRescheduleCount] = useState<number>(0);
+  const [callFetchAppointmentApi, setCallFetchAppointmentApi] = useState(true);
 
   const [transferfollowup, setTransferfollowup] = useState<boolean>(false);
   const [followupdone, setFollowupDone] = useState<boolean>(false);
@@ -763,25 +765,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 let doctorsList: string[] = [];
                 let specialtyList: string[] = [];
                 data.getPatientAllAppointments.appointments.forEach((item) => {
-                  const caseSheet = followUpChatDaysCaseSheet(item.caseSheet);
-                  const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpAfterInDays');
-                  const followUpAfterInDays =
-                    caseSheetChatDays || caseSheetChatDays === '0'
-                      ? caseSheetChatDays === '0'
-                        ? 0
-                        : Number(caseSheetChatDays) - 1
-                      : 6;
-
                   doctorsList.push(item?.doctorInfo?.fullName || '');
                   specialtyList.push(item?.doctorInfo?.specialty?.name || '');
 
-                  if (
-                    item?.status === STATUS.CANCELLED ||
-                    !moment(new Date(item?.appointmentDateTime))
-                      .add(followUpAfterInDays, 'days')
-                      .startOf('day')
-                      .isSameOrAfter(moment(new Date()).startOf('day'))
-                  ) {
+                  if (isPastAppointment(item?.caseSheet, item)) {
                     pastAppointments.push(item);
                   } else {
                     const tomorrowAvailabilityHourTime = moment('00:00', 'HH:mm');
@@ -804,7 +791,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                     }
                   }
                 });
-                combinationActiveFollowUp.push({ type: 'Active', data: activeAppointments });
+                activeAppointments.length > 0 &&
+                  combinationActiveFollowUp.push({ type: 'Active', data: activeAppointments });
                 followUpAppointments.length > 0 &&
                   combinationActiveFollowUp.push({
                     type: 'Follow-up Chat',
@@ -871,33 +859,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       });
   };
 
-  const isPastAppointment = (
-    caseSheet:
-      | (getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet | null)[]
-      | null,
-    item: getPatientAllAppointments_getPatientAllAppointments_appointments
-  ) => {
-    const caseSheetChatDays = g(caseSheet, '0' as any, 'followUpAfterInDays');
-    const followUpAfterInDays =
-      caseSheetChatDays || caseSheetChatDays === '0'
-        ? caseSheetChatDays === '0'
-          ? 0
-          : Number(caseSheetChatDays) - 1
-        : 6;
-    return (
-      item?.status === STATUS.CANCELLED ||
-      !moment(new Date(item?.appointmentDateTime))
-        .add(followUpAfterInDays, 'days')
-        .startOf('day')
-        .isSameOrAfter(moment(new Date()).startOf('day'))
-    );
-  };
-
-  const isTomorrow = (date: Moment) => {
-    const tomorrow = moment(new Date()).add(1, 'days');
-    return date.year == tomorrow.year && date.month == tomorrow.month && date.date == tomorrow.date;
-  };
-
   const { availability, appointmentStatus, doctorsList, specialtyList } = filter;
 
   const filterLength =
@@ -945,6 +906,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           mainContainerStyle={{ maxHeight: height - 200 }}
           setdisplayoverlay={() => setdisplayoverlay(false)}
           navigation={props.navigation}
+          scrollToSlot={false}
           doctor={appointmentItem?.doctorInfo || null}
           patientId={currentPatient ? currentPatient.id : ''}
           clinics={appointmentItem?.doctorInfo?.doctorHospital || []}
@@ -1041,12 +1003,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         ? 'Tomorrow'
         : moment(appointmentDateTime).format('ddd, DD MMM YYYY');
     const showDateText = index === 0 ? true : displayTopDateTime;
-    const pastAppointmentItem =
-      item?.status === STATUS.CANCELLED ||
-      !moment(new Date(item?.appointmentDateTime))
-        .add(followUpAfterInDays, 'days')
-        .startOf('day')
-        .isSameOrAfter(moment(new Date()).startOf('day'));
+    const pastAppointmentItem = isPastAppointment(item?.caseSheet, item);
     const medicinePrescription = g(caseSheet, '0' as any, 'medicinePrescription');
     const getMedicines = (
       medicines: (getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet_medicinePrescription | null)[]
@@ -1480,7 +1437,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             zIndex: 1,
             shadowOpacity: 0.4,
             shadowRadius: 5,
-            elevation: 15,
+            elevation: displayoverlay ? 0 : 15,
           }
         : {};
     return <TabHeader containerStyle={containerStyle} navigation={props.navigation} />;
@@ -1530,6 +1487,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     );
   };
 
+  const searchAppointmentBackPressed = () => {
+    setCallFetchAppointmentApi(false);
+  };
+
   const renderSearchFilterView = () => {
     const numberOfAppoinmentText =
       filterLength > 0
@@ -1548,6 +1509,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             onPress={() =>
               props.navigation.navigate(AppRoutes.SearchAppointmentScreen, {
                 allAppointments: consultations,
+                onPressBack: searchAppointmentBackPressed,
               })
             }
           >
@@ -1740,8 +1702,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       <NavigationEvents
         onDidFocus={(payload) => {
           console.log('did focus', payload);
-          setLoading && setLoading(true);
-          fetchAppointments();
+          if (callFetchAppointmentApi) {
+            setLoading && setLoading(true);
+            fetchAppointments();
+          }
         }}
         onDidBlur={(payload) => console.log('did blur', payload)}
       />

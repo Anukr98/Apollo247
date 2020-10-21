@@ -650,7 +650,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                           'Appointment display ID': (appointment && appointment.displayId) || '',
                           'Appointment ID': (appointment && appointment.id) || '',
                         },
-                        'Front_end - Doctor started Appointment session'
+                        'Front_end - Doctor Clicked on Appointment'
                       );
                     }}>
                       {localStorage.setItem('callBackUrl', '/calendar')}

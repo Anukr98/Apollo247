@@ -98,6 +98,7 @@ import {
   PharmacologistConsult,
   PatientEntitiySubscriber,
   MedicineOrderAddress,
+  MedicineOrderHoldReasons,
 } from 'profiles-service/entities';
 import { AppointmentEntitySubscriber } from 'consults-service/entities/observers/appointmentObserver';
 import { migrationDir } from 'ApiConstants';
@@ -242,6 +243,7 @@ export const connect = async () => {
         MedicineOrderAddress,
         HealthCheckRecords,
         HospitalizationRecords,
+        MedicineOrderHoldReasons,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,
