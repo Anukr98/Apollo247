@@ -586,12 +586,12 @@ exports.appointmentReminderTemplate = (req, res) => {
     );
     const appointmentType = urlObject.query.CustomField.split('_')[1];
 
-    console.log(`Hi, You have an upcoming appointment at ${appointmentDateTime} today from Apollo 247. 
-    It will be ${appointmentType} consultation.Dial 1 to repeat the same message. `);
+    console.log(`Hi, You have an upcoming appointment at ${appointmentDateTime} today from Apollo 2 4 7.  
+    It will be ${appointmentType} consultation. Dial 1 to repeat the same message. `);
 
     return res.contentType('text/plain').status(200)
-      .send(`Hi, You have an upcoming appointment at ${appointmentDateTime} today from Apollo 247. 
-         It will be ${appointmentType} consultation.Dial 1 to repeat the same message. `);
+      .send(`Hi, You have an upcoming appointment at ${appointmentDateTime} today from Apollo 2 4 7.
+         It will be ${appointmentType} consultation. Dial 1 to repeat the same message. `);
   } catch (ex) {
     console.error(ex);
     return res.status(400).end();
