@@ -507,7 +507,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             medicineName: item.name,
             quantity: item.quantity,
             mrp: getFormattedAmount(item.price),
-            price: item?.isFreeCouponProduct ? 0 : discountedPrice,
+            price: discountedPrice,
             specialPrice: Number(item.specialPrice || item.price),
             itemValue: getFormattedAmount(item.price * item.quantity), // (multiply MRP with quantity)
             itemDiscount: getFormattedAmount(
@@ -516,6 +516,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             isPrescriptionNeeded: item.prescriptionRequired ? 1 : 0,
             mou: Number(item.mou),
             isMedicine: item.isMedicine ? '1' : '0',
+            couponFree: item?.isFreeCouponProduct ? 1 : 0,
           } as MedicineCartOMSItem;
         }),
         bookingSource: BOOKINGSOURCE.MOBILE,
