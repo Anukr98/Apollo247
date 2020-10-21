@@ -176,7 +176,7 @@ const SaveMedicineOrderPayment: Resolver<
   }
   let patientAge = 30;
   if (patientDetails.dateOfBirth && patientDetails.dateOfBirth != null) {
-    patientAge = Math.abs(differenceInYears(new Date(), patientDetails.dateOfBirth));
+    patientAge = Math.max(0, Math.floor(differenceInYears(new Date(), patientDetails.dateOfBirth)));
   }
   let payStatus = medicinePaymentInput.paymentStatus;
   if (medicinePaymentInput.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.COD) {

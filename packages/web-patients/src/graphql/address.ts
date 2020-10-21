@@ -19,6 +19,7 @@ export const GET_PATIENT_ADDRESSES_LIST = gql`
         latitude
         longitude
         stateCode
+        name
       }
     }
   }
@@ -42,6 +43,7 @@ export const SAVE_PATIENT_ADDRESS = gql`
         latitude
         longitude
         stateCode
+        name
       }
     }
   }
@@ -66,6 +68,7 @@ export const UPDATE_PATIENT_ADDRESS = gql`
         latitude
         longitude
         stateCode
+        name
       }
     }
   }

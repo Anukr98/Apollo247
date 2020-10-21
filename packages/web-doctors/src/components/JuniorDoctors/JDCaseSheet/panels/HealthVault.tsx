@@ -7,8 +7,7 @@ import { DOWNLOAD_DOCUMENTS } from 'graphql/profiles';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import { downloadDocuments } from 'graphql/types/downloadDocuments';
 import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
-import ReactPanZoom from 'react-image-pan-zoom-rotate';
-import moment from 'moment';
+import GallerySlider from 'components/GallerySlider';
 import { GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointments } from 'graphql/types/GetJuniorDoctorCaseSheet';
 import { GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_appointment_appointmentDocuments as appointmentDocumentType } from 'graphql/types/GetJuniorDoctorCaseSheet';
 
@@ -39,71 +38,6 @@ const useStyles = makeStyles((theme: Theme) => ({
     overFlow: 'hidden',
     textOverflow: 'ellipsis',
     marginBottom: 10,
-  },
-  modalWindowWrap: {
-    display: 'table',
-    height: '100%',
-    width: '100%',
-    outline: 'none',
-    '&:focus': {
-      outline: 'none',
-    },
-  },
-  modalWindow: {
-    backgroundColor: theme.palette.common.black,
-    maxWidth: 1150,
-    margin: 'auto',
-    borderRadius: 10,
-    boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.2)',
-    outline: 'none',
-    '&:focus': {
-      outline: 'none',
-    },
-  },
-  tableContent: {
-    display: 'table-cell',
-    verticalAlign: 'middle',
-    width: '100%',
-    '&:focus': {
-      outline: 'none',
-    },
-  },
-  modalContent: {
-    textAlign: 'center',
-    maxHeight: 'calc(100vh - 212px)',
-    overflow: 'hidden',
-    position: 'relative',
-    '& img': {
-      maxWidth: '100%',
-      width: 'auto',
-      maxHeight: 'calc(100vh - 212px)',
-    },
-  },
-  modalHeader: {
-    minHeight: 56,
-    textAlign: 'center',
-    fontSize: 13,
-    fontWeight: 600,
-    letterSpacing: 0.5,
-    color: theme.palette.common.white,
-    padding: '16px 50px',
-    textTransform: 'uppercase',
-    position: 'relative',
-    wordBreak: 'break-word',
-  },
-  modalClose: {
-    position: 'absolute',
-    right: 16,
-    top: 16,
-    width: 24,
-    height: 24,
-    cursor: 'pointer',
-  },
-  modalFooter: {
-    height: 56,
-    textAlign: 'center',
-    padding: 16,
-    textTransform: 'uppercase',
   },
   bigAvatar: {
     width: 60,
@@ -329,9 +263,16 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
 export const HealthVault: React.FC = () => {
   const classes = useStyles({});
   const ischild: boolean = false;
-  const { appointmentDocuments, pastAppointments, patientDetails } = useContext(
+  const { appointmentInfo, appointmentDocuments, pastAppointments, patientDetails } = useContext(
     CaseSheetContextJrd
   );
+  const filteredPastAppointments =
+    pastAppointments && pastAppointments.length > 0
+      ? pastAppointments.filter(function(e: any) {
+          return e.appointmentDateTime !== appointmentInfo.appointmentDateTime;
+        })
+      : [];
+
   const client = useApolloClient();
   var prismIdList: any = [];
   const [prismImageList, setPrismImageList] = useState<any>([]);
@@ -340,6 +281,8 @@ export const HealthVault: React.FC = () => {
   const [imgPrevUrl, setImgPrevUrl] = React.useState<any>();
   const { documentArray, setDocumentArray } = useContext(CaseSheetContextJrd);
   const [loading, setLoading] = React.useState(true);
+  const [currentIndex, setCurrentIndex] = useState(null);
+
   useEffect(() => {
     if (documentArray && documentArray.documentPath) {
       const data = {
@@ -369,17 +312,41 @@ export const HealthVault: React.FC = () => {
         });
     }
   }, []);
+
+  const handleChange = React.useCallback((type) => {
+    switch (type) {
+      case 'next':
+        setCurrentIndex((index: number) => index + 1);
+        break;
+      case 'prev':
+        setCurrentIndex((index: number) => index - 1);
+        break;
+      default:
+        setCurrentIndex(null);
+    }
+  }, []);
+
   return (
     <div className={classes.root}>
       <div className={classes.sectionGroup}>
         <div className={classes.sectionTitle}>Photos uploaded </div>
         <div className={classes.listContainer}>
+          {appointmentDocuments && appointmentDocuments.length > 0 && (
+            <GallerySlider
+              currentIndex={currentIndex}
+              onClose={handleChange}
+              onChange={handleChange}
+              documents={appointmentDocuments}
+              appointmentDate={appointmentInfo.appointmentDateTime}
+            />
+          )}
           {appointmentDocuments && appointmentDocuments.length > 0 ? (
             appointmentDocuments!.map((item, index) => (
               <div
                 key={index}
                 className={classes.listItem}
                 onClick={() => {
+                  setCurrentIndex(index);
                   if (
                     item &&
                     item.documentPath &&
@@ -397,13 +364,11 @@ export const HealthVault: React.FC = () => {
                     className={classes.bigAvatar}
                   />
                 ) : (
-                  <a href={item.documentPath as string} target="_blank">
-                    <Avatar
-                      alt={item.documentPath as string}
-                      src={require('images/pdf_thumbnail.png')}
-                      className={classes.bigAvatar}
-                    />
-                  </a>
+                  <Avatar
+                    alt={item.documentPath as string}
+                    src={require('images/pdf_thumbnail.png')}
+                    className={classes.bigAvatar}
+                  />
                 )}
                 <div className={classes.listData}>
                   <h4 className={classes.fileName}>
@@ -441,13 +406,13 @@ export const HealthVault: React.FC = () => {
         </div>
       </div>
       <div className={classes.sectionGroup}></div>
-      {
+      {/*
         <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
           <div className={classes.modalWindowWrap}>
             <div className={classes.tableContent}>
               <div className={classes.modalWindow}>
                 <div className={classes.modalHeader}>
-                  {/* IMAGE001.JPG */}
+                  
                   <div className={classes.modalClose} onClick={() => setModalOpen(false)}>
                     <img src={require('images/ic_round_clear.svg')} alt="" />
                   </div>
@@ -460,10 +425,10 @@ export const HealthVault: React.FC = () => {
             </div>
           </div>
         </Modal>
-      }
+      */}
       <div className={classes.sectionGroup}>
         <div className={classes.sectionTitle}>Past Consultations</div>
-        <PastAppointment data={pastAppointments} isChild={ischild} />
+        <PastAppointment data={filteredPastAppointments} isChild={ischild} />
       </div>
     </div>
   );

@@ -15,6 +15,8 @@
 //#import <Crashlytics/Crashlytics.h>
 #import "RNSplashScreen.h"
 #import "ReactNativeExceptionHandler.h"
+#import <WebEngage/WebEngage.h>
+#import <CodePush/CodePush.h>
 
 @implementation AppDelegate
 
@@ -80,7 +82,7 @@
     // or  you can call
     // [ReactNativeExceptionHandler releaseExceptionHold]; when you are done to release the UI lock.
   }];
-
+  [[WebEngage sharedInstance] application:application didFinishLaunchingWithOptions:launchOptions];
   return YES;
 }
 
@@ -89,7 +91,7 @@
 #if DEBUG
   return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index" fallbackResource:nil];
 #else
-  return [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
+  return [CodePush bundleURL];
 #endif
 }
 

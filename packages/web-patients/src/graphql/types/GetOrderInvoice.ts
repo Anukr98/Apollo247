@@ -14,4 +14,5 @@ export interface GetOrderInvoice {
 export interface GetOrderInvoiceVariables {
   patientId: string;
   appointmentId: string;
+  emailId?: any | null;
 }

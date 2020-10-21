@@ -164,7 +164,7 @@ export enum ApiConstants {
   DAILY_APPOINTMENT_SUMMARY_RESPONSE = 'Daily Appointment summaries have been sent to {0} Doctor(s) successfully',
   FOLLOW_UP_NOTIFICATION_RESPONSE = 'Follow up notifications sent to {0} patients successfully',
   PRESCRIPTION_READY_TITLE = 'Prescription ready',
-  PRESCRIPTION_READY_BODY = 'Namaste {0}, {1} has shared the prescription with you.',
+  PRESCRIPTION_READY_BODY = 'Namaste {0},{1}{2} has shared the prescription with you.',
 
   REFERRAL_CODE_TEXT = 'Hi {0}, Use code "CARE247" to avail discount up to Rs. 149  on the 1st Apollo Doctor consult on your Apollo 24|7 app. Click to learn https://youtu.be/gwIRbcO3hpk',
   REFERRAL_CODE_TEXT_WITH_COUPON = 'Hi {0}, Use code "{1}" to avail discount up to Rs. 299  on the 1st Apollo Doctor consult on your Apollo 24|7 app. Click to learn https://youtu.be/XF7MWPebtkw',
@@ -184,6 +184,7 @@ export enum ApiConstants {
   APPT_STATE_CHANGED_2 = 'Appointment state changed to RESCHEDULED',
   APPT_STATE_CHANGED_3 = 'Appointment cancelled due to max. reschedules',
   APPT_UPDATE_SEPERATOR = '-rescheduledBy247-',
+  SYSTEM_CANCELLED_REASON = 'System cancelled the appointment and refunded, as another appointment for same time for same doctor is booked by another patient',
 
   /*** push-notification messages end here ***/
 
@@ -372,11 +373,12 @@ export enum ApiConstants {
   DOCTOR_CHAT_SMS_LAST_DAY = 'Namaste {0}, you have pending chat messages from {1} patient(s). Please login to your doctor portal to reply. Please note that for {2} patient(s), today is the last day to reply.',
   CASESHEET_PROVISIONAL_HEADING = 'Diagnosis',
   CASESHEET_WHATSAPP_LABEL = 'WhatsApp',
-  CASESHEET_WHATSAPP_NUMBER = '+91 80471 04009 ', //'+91 93550 31397',
+  CASESHEET_WHATSAPP_NUMBER = '+91 80471 04009', //'+91 93550 31397',
   CASESHEET_EMAIL_LABEL = 'E-mail',
   CASESHEET_EMAIL = 'Helpdesk@apollo247.com',
   AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT = 30,
   AUTO_SUBMIT_CASESHEET_TIME = 30,
+  APPOINTMENTS_HOUR_LIMIT = 2,
   STAT_LOWECASE = 'stat',
   STAT_UPPERCASE = 'STAT(Immediately)',
 
@@ -390,9 +392,12 @@ export enum ApiConstants {
   DEEPLINK_AUTHORIZATION = '1b3u1l4h0013X00002bmthKQAQ1s6h3a2t',
   DOCTOR_DEEPLINK_URL = 'https://onelink.appsflyer.com/shortlink/v1/',
   DOCTOR_DEEPLINK_CONSTANT = 'apollopatients://Doctor?',
+  DOCTOR_DEEPLINK_CHAT = 'apollodoctors://chat?',
   DOCTOR_DEEPLINK_TEMPLATE_ID_APOLLO = 'AEkA',
   DOCTOR_DEEPLINK_TEMPLATE_ID_NON_APOLLO = 'MGY5',
+  PATIENT_DEEPLINK_TEMPLATE_ID_APOLLO = 'lC3O',
   PATIENT_APPT_DEEPLINK = 'apollopatients://Consult',
+  PATIENT_CONSULTS_DEEPLINK = 'apollopatients://consults',
   PATIENT_CHATROOM_DEEPLINK = 'apollopatients://ChatRoom?',
   PATIENT_PRESCRIPTION_DEEPLINK = 'apollopatients://ConsultDetails?',
   DOCTOR_DEEPLINK_WEB_URL = 'https://www.apollo247.com/doctors/<DoctorID>',
@@ -409,6 +414,8 @@ export enum ApiConstants {
   //PHRV1 constants start
   LABTEST_SOURCE_SELF_UPLOADED = '247self',
   PRESCRIPTION_SOURCE_PREFIX = '247',
+  HEALTHCHECK_SELF_UPLOAD = '247self',
+  HOSPITALIZATION_SELF_UPLOAD = '247self',
   //PHRV1 constants end
 
   //REDIS KEYS
@@ -458,12 +465,20 @@ export enum ApiConstants {
   WHATSAPP_SD_CONSULT_DELAY = 'inf_sd_consult_delay_1',
   WHATSAPP_DOC_SUMMARY = 'inf_doc_8am_summary_namaste3',
 
+  WHATSAPP_DOC_SECRETARY_RESCHDULE = 'inf_secratory_consult_rescheduled_1',
+  WHATSAPP_DOC_SECRETARY_CANCEL = 'inf_secratory_consult_cancelled',
+  WHATSAPP_DOC_SECRETARY_BOOKING = 'inf_secratory_consult_booked',
+
+  WHATSAPP_DOC_SUMMARY_NEW = 'inf_doc_8am_summary_namaste3',
+
   ONE_APOLLO_ORDER_CANCELLATION_REASON_CODE = 'R000247',
 
   PARTNER_SBI = 'SBIYONO',
 
   PRESCRIPTION_DEEPLINK_PLACEHOLDER = '<appointmentId>',
   PRESCRIPTION_CLICK_HERE = 'You can now access it from here:',
+
+  DOCTOR_APP_APPTS_LINK = 'apollodoctors://appointments',
 }
 
 export enum PATIENT_REPO_RELATIONS {

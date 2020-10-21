@@ -57,7 +57,6 @@ export default StyleSheet.create({
   imageStyle: {
     minHeight: 178,
     width: '100%',
-    resizeMode: 'contain',
     backgroundColor: theme.colors.WHITE,
   },
   shareLinkContainer: {

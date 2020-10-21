@@ -99,6 +99,7 @@ const useStyles = makeStyles((theme: Theme) => {
     bottomActions: {
       display: 'flex',
       alignItems: 'center',
+
       '& button': {
         boxShadow: 'none',
         padding: 0,
@@ -126,6 +127,7 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 10,
       boxShadow: '0 -5px 20px 0 #ffffff',
       position: 'relative',
+
       '& button': {
         borderRadius: 10,
       },
@@ -206,6 +208,38 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     weAreSorry: {
       color: '#890000',
+    },
+    dialogTitle: {
+      zIndex: 1,
+      '& h2': {
+        fontSize: 16,
+        fontWeight: 500,
+      },
+    },
+    dialogBox: {
+      '& >div': {
+        '& >div': {
+          maxWidth: 400,
+          margin: '30px auto 0',
+          [theme.breakpoints.down('xs')]: {
+            borderRadius: 0,
+            margin: 0,
+            height: '100vh',
+            maxHeight: 'inherit',
+            background: '#F7F8F5',
+          },
+        },
+      },
+    },
+    goBack: {
+      display: 'none',
+      [theme.breakpoints.down('xs')]: {
+        display: 'block',
+        position: 'absolute',
+        top: 10,
+        zIndex: 5,
+        boxShadow: 'none',
+      },
     },
   };
 });
@@ -311,6 +345,7 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
                 fetchDeliveryTime(zipCode, lat.toString(), lng.toString());
               }
               props.selectedZipCode(zipCode);
+              localStorage.setItem('pharmaPincode', zipCode);
               setSelectedAddressDataIndex(index || 0);
             } else {
               setSelectedAddressDataIndex(0);
@@ -533,7 +568,11 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
   const updateAddressMutation = useMutation(UPDATE_PATIENT_ADDRESS);
 
   const checkLatLongStateCodeAvailability = (address: Address) => {
-    const googleMapApi = `https://maps.googleapis.com/maps/api/geocode/json?address=${address.zipcode}&components=country:in&key=${process.env.GOOGLE_API_KEY}`;
+    const pincodeAndAddress = [address.zipcode, address.addressLine1]
+      .filter((v) => (v || '').trim())
+      .join(',');
+
+    const googleMapApi = `https://maps.googleapis.com/maps/api/geocode/json?address=pincode:${pincodeAndAddress}&components=country:in&key=${process.env.GOOGLE_API_KEY}`;
     if (!address.latitude || !address.longitude || !address.stateCode) {
       // get lat long
       if (address.zipcode && address.zipcode.length === 6) {
@@ -713,9 +752,16 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
         </div>
       )}
 
-      <AphDialog open={isAddAddressDialogOpen} maxWidth="sm">
+      <AphDialog open={isAddAddressDialogOpen} className={classes.dialogBox}>
         <AphDialogClose onClick={() => setIsAddAddressDialogOpen(false)} title={'Close'} />
-        <AphDialogTitle>Add New Address</AphDialogTitle>
+        <AphButton
+          onClick={() => setIsAddAddressDialogOpen(false)}
+          title={'Close'}
+          className={classes.goBack}
+        >
+          <img src={require('images/ic_back.svg')} alt="Back Button" />
+        </AphButton>
+        <AphDialogTitle className={classes.dialogTitle}>Add New Address</AphDialogTitle>
         <AddNewAddress
           setIsAddAddressDialogOpen={setIsAddAddressDialogOpen}
           checkServiceAvailability={checkServiceAvailabilityCheck}

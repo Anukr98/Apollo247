@@ -90,8 +90,10 @@ type exotelInputArgs = { exotelInput: exotelInput };
 
 type ExotelRequest = {
   From: string;
-  To: string;
+  To?: string;
   CallerId: string | undefined;
+  Url?: string;
+  CustomField?: string;
 };
 
 type callInputs = {
@@ -111,7 +113,7 @@ type ExotelCallFlowResponse = {
   success: boolean;
 };
 
-async function exotelCalling(callInputs: callInputs): Promise<ExotelCalling> {
+export async function exotelCalling(callInputs: callInputs): Promise<ExotelCalling> {
   if (!callInputs.exotelUrl || !callInputs.exotelRequest.CallerId) {
     throw new AphError(AphErrorMessages.INVALID_EXOTEL_PARAMETERS, undefined, {});
   }
@@ -140,7 +142,7 @@ async function exotelCalling(callInputs: callInputs): Promise<ExotelCalling> {
       const exotelResult = {
         isError: false,
         from: callInputs.exotelRequest.From,
-        to: callInputs.exotelRequest.To,
+        to: callInputs.exotelRequest.To || callInputs.exotelRequest.Url || '',
         response: JSON.stringify(res),
         errorMessage: '',
       };
@@ -161,7 +163,7 @@ async function exotelCalling(callInputs: callInputs): Promise<ExotelCalling> {
       const exotelResult = {
         isError: true,
         from: callInputs.exotelRequest.From,
-        to: callInputs.exotelRequest.To,
+        to: callInputs.exotelRequest.To || callInputs.exotelRequest.Url || '',
         response: '',
         errorMessage: JSON.stringify(error),
       };
@@ -272,7 +274,6 @@ const initiateCallForPartner: Resolver<
   null,
   ExotelCallFlowResponse
 > = async (parent, { mobileNumber, benefitId }) => {
-
   const isDocOnCallAvailable = await checkDocOnCallAvailable(mobileNumber, benefitId);
   if (!isDocOnCallAvailable) {
     throw new AphError(AphErrorMessages.NO_DOCTOR_ON_CALL_BENEFIT);
@@ -461,10 +462,6 @@ const getCallDetailsByAppintment: Resolver<
 
   return { calls: callsArray };
 };
-
-
-
-
 
 export const exotelCallingResolvers = {
   Query: {

@@ -32,6 +32,7 @@ import {
   pharmacyCategoryClickTracking,
   pharmacySearchEnterTracking,
   uploadPrescriptionTracking,
+  medicinePageOpenTracking,
 } from 'webEngageTracking';
 import { MedicineProduct } from './../../helpers/MedicineApiCalls';
 
@@ -373,6 +374,7 @@ const SearchByMedicine: React.FC = (props) => {
 
   useEffect(() => {
     deepLinkUtil(`MedicineSearch?${categoryId},${params.searchText}`);
+    medicinePageOpenTracking();
     tempData = [];
     totalItems = 0;
     currentPage = 1;

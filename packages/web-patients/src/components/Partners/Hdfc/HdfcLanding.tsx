@@ -519,13 +519,11 @@ export const HdfcLanding: React.FC = (props) => {
     description:
       'Apollo 24|7 - The Healthy Life offering is the marketing program offered by Apollo 24|7, an online portal and app managed by Apollo Hospitals Enterprise Limited (AHEL) only for HDFC Bank customers.',
     canonicalLink: typeof window !== 'undefined' && window.location && window.location.href,
-    og:{
-      title: 'Apollo HealthyLife Program for HDFC customers',
-      description: 'The HealthyLife offering is the marketing program offered by Apollo 24|7, an app managed by Apollo Hospitals Enterprise Limited (AHEL) only for HDFC Bank customers.',
-      url: 'https://www.apollo247.com/partners/hdfc',
-      image: 'https://assets.apollo247.com/images/hdfc-og-image.jpg',
-      site_name: 'Apollo 24|7',
-    }
+      ogtitle: 'Apollo HealthyLife Program for HDFC customers',
+      ogdescription: 'The HealthyLife offering is the marketing program offered by Apollo 24|7, an app managed by Apollo Hospitals Enterprise Limited (AHEL) only for HDFC Bank customers.',
+      ogurl: 'https://www.apollo247.com/partners/hdfc',
+      ogimage: 'https://assets.apollo247.com/images/hdfc-og-image.jpg',
+      ogsite_name: 'Apollo 24|7',
   };
 
   useEffect(() => {

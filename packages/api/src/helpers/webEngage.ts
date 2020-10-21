@@ -42,9 +42,21 @@ export interface WebEngageEventData {
   consultMode: string;
   doctorName: string;
   orderStatus: MEDICINE_ORDER_STATUS;
-  refundAmount:number;
-  healthCreditsToRefund:number;
-  paymentRefundId:string;
+  refundAmount: number;
+  healthCreditsToRefund: number;
+  paymentRefundId: string;
+  secretaryName: string;
+  secretaryNumber: string;
+  patientName: string;
+  doctorNumber: string;
+  source: string;
+  prescriptionUploaded: boolean;
+  tat: number;
+  tatDuration: number;
+  paymentType: string;
+  storeId: string;
+  storeType: string;
+  skuCodes: string[];
 }
 
 export enum WebEngageEvent {

@@ -44,9 +44,12 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
 import { GET_APPOINTMENT_DATA } from '@aph/mobile-patients/src/graphql/profiles';
 import {
+  ProductPageViewedSource,
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import isLessThan from 'semver/functions/lt';
+import coerce from 'semver/functions/coerce';
 import RNCallKeep from 'react-native-callkeep';
 import VoipPushNotification from 'react-native-voip-push-notification';
 import { string } from '../strings/string';
@@ -434,42 +437,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       setAllPatients(allPatients);
 
-      // console.log(allPatients, 'allPatientssplash');
-      // console.log(mePatient, 'mePatientsplash');
-      const navigationPropsString: string | null = await AsyncStorage.getItem('NAVIGATION_PROPS');
-
-      // console.log('onboarding', onboarding);
-      // console.log('userLoggedIn', userLoggedIn);
-
       setTimeout(
         () => {
-          if (JSON.parse(navigationPropsString || 'false')) {
-            const navigationProps = JSON.parse(navigationPropsString || '');
-            if (navigationProps) {
-              let navi: any[] = [];
-              navigationProps.scenes.map((i: any) => {
-                navi.push(
-                  NavigationActions.navigate({
-                    routeName: i.descriptor.navigation.state.routeName,
-                    params: i.descriptor.navigation.state.params,
-                  })
-                );
-                // props.navigation.push(
-                //   i.descriptor.navigation.state.routeName,
-                //   i.descriptor.navigation.state.params
-                // );
-              });
-              if (navi.length > 0) {
-                props.navigation.dispatch(
-                  StackActions.reset({
-                    index: navi.length - 1,
-                    key: null,
-                    actions: navi,
-                  })
-                );
-              }
-            }
-          } else if (userLoggedIn == 'true') {
+          if (userLoggedIn == 'true') {
             setshowSpinner(false);
 
             if (mePatient) {
@@ -479,21 +449,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
                 props.navigation.replace(AppRoutes.Login);
               }
             }
-          }
-          // else if (onboarding == 'true') {
-          //   setshowSpinner(false);
-
-          //   if (signUp == 'true') {
-          //     props.navigation.replace(AppRoutes.SignUp);
-          //   } else if (multiSignUp == 'true') {
-          //     if (mePatient) {
-          //       props.navigation.replace(AppRoutes.MultiSignup);
-          //     }
-          //   } else {
-          //     props.navigation.replace(AppRoutes.Login);
-          //   }
-          // }
-          else {
+          } else {
             setshowSpinner(false);
 
             if (signUp == 'true') {
@@ -571,7 +527,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         console.log('MedicineDetail');
         props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
           sku: id,
-          movedFrom: 'deeplink',
+          movedFrom: ProductPageViewedSource.DEEP_LINK,
         });
         break;
 
@@ -640,7 +596,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
       case 'MedicineCart':
         console.log('MedicineCart handleopen');
-        props.navigation.navigate(AppRoutes.YourCart, {
+        props.navigation.navigate(AppRoutes.MedicineCart, {
           movedFrom: 'splashscreen',
         });
         break;
@@ -912,20 +868,21 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             );
           } catch (error) {}
 
-          if (Platform.OS === 'ios') {
-            const iosVersion = AppConfig.Configuration.iOS_Version;
-            const iosLatestVersion = getRemoteConfigValue('ios_Latest_version', snapshot);
-            const isMandatory: boolean = getRemoteConfigValue('ios_mandatory', snapshot);
-            if (`${iosLatestVersion}` > iosVersion) {
-              showUpdateAlert(isMandatory);
-            }
-          } else {
-            const androidVersion = AppConfig.Configuration.Android_Version;
-            const androidLatestVersion = getRemoteConfigValue('android_latest_version', snapshot);
-            const isMandatory: boolean = getRemoteConfigValue('Android_mandatory', snapshot);
-            if (`${androidLatestVersion}` > androidVersion) {
-              showUpdateAlert(isMandatory);
-            }
+          const { iOS_Version, Android_Version } = AppConfig.Configuration;
+          const isIOS = Platform.OS === 'ios';
+          const appVersion = coerce(isIOS ? iOS_Version : Android_Version)?.version;
+          const appLatestVersionFromConfig = getRemoteConfigValue(
+            isIOS ? 'ios_Latest_version' : 'android_latest_version',
+            snapshot
+          );
+          const appLatestVersion = coerce(appLatestVersionFromConfig)?.version;
+          const isMandatory: boolean = getRemoteConfigValue(
+            isIOS ? 'ios_mandatory' : 'Android_mandatory',
+            snapshot
+          );
+
+          if (appVersion && appLatestVersion && isLessThan(appVersion, appLatestVersion)) {
+            showUpdateAlert(isMandatory);
           }
         })
         .catch((error) => {

@@ -44,16 +44,23 @@ export const sendDoctorNotificationWhatsapp = async (
   phoneNumber: string,
   templateData: string[]
 ) => {
-  const isWhitelisted = await isNotificationAllowed(phoneNumber);
-  if (!isWhitelisted) {
-    return;
-  }
-  let scenarioKey = '';
   const fileName = process.env.NODE_ENV + '_whatsapp_' + format(new Date(), 'yyyyMMdd') + '.txt';
   let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
   if (process.env.NODE_ENV != 'local') {
     assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
   }
+  const content =
+    phoneNumber +
+    templateData +
+    '\n------------------------------------------------------------------------------------\n';
+  fs.appendFile(assetsDir + '/' + fileName, content, (err) => {});
+  const isWhitelisted = await isNotificationAllowed(phoneNumber);
+  if (!isWhitelisted) {
+    return;
+  }
+
+  let scenarioKey = '';
+
   if (!process.env.WHATSAPP_SCENARIO_KEY || process.env.WHATSAPP_SCENARIO_KEY == '') {
     let content =
       format(new Date(), 'yyyy-MM-dd hh:mm') + '\n ' + phoneNumber + ' - ' + templateName;
@@ -68,10 +75,9 @@ export const sendDoctorNotificationWhatsapp = async (
       ''
     );
   } else {
-    console.log(`Scenario key`, process.env.WHATSAPP_SCENARIO_KEY);
     scenarioKey = process.env.WHATSAPP_SCENARIO_KEY;
     const url = process.env.WHATSAPP_SEND_URL ? process.env.WHATSAPP_SEND_URL : '';
-    if (templateName == ApiConstants.WHATSAPP_DOC_SUMMARY) {
+    if (templateName == ApiConstants.WHATSAPP_DOC_SUMMARY_NEW) {
       const response = await fetch(url, {
         method: 'POST',
         body: JSON.stringify({
@@ -84,7 +90,9 @@ export const sendDoctorNotificationWhatsapp = async (
                 documentUrl: templateData[0],
                 documentFilename: templateData[1],
               },
-              body: { placeholders: [templateData[2], templateData[3]] },
+              body: {
+                placeholders: [templateData[4], templateData[2], templateData[5], templateData[3]],
+              },
             },
             language: 'en',
           },

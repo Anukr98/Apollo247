@@ -2,7 +2,7 @@ import { webPatientsBaseUrl } from '@aph/universal/dist/aphRoutes';
 
 export const clientRoutes = {
   patients: () => '/patients',
-
+  specialtyDetailsWithCity: (specialty: string, city: string) =>`/doctors/${specialty}-in-${city}-scity`,
   welcome: () => '/',
   doctorDetails: (doctorName: string, doctorId: string) => `/doctors/${doctorName}-${doctorId}`,
   specialtyDoctorDetails: (specialty: string, doctorName: string, doctorId: string) =>
@@ -10,6 +10,7 @@ export const clientRoutes = {
   doctorsLanding: () => '/track-symptoms/doctors',
   specialties: (specialty: string) => `/specialties/${specialty}`,
   citySpecialties: (city: string, specialty: string) => `/${city}/specialties/${specialty}`,
+ 
   appointments: () => '/appointments',
   appointmentSuccess: () => `/appointments/${status}`,
   testsAndMedicine: () => '/tests-medicines',
@@ -28,7 +29,7 @@ export const clientRoutes = {
   chatRoom: (appointmentId: string, doctorId: string) => `/chat-room/${appointmentId}/${doctorId}`,
   myAccount: () => '/my-account',
   notificationSettings: () => '/settings',
-  addRecords: () => '/add-records',
+  addHealthRecords: (type: string) => `/add-record/${type}`,
   yourOrders: () => '/orders',
   medicineAllBrands: () => '/medicine/brands',
   medicineSearchByBrand: (id: string) => `/search-by-brand/${id}`,
@@ -77,6 +78,8 @@ export const clientRoutes = {
   prescription: (appointmentId: string) => `/prescription/${appointmentId}`,
   sitemap: (sitemap: string) => `/static/${sitemap}`,
   childSitemap: (sitemap: string, pageNo: string) => `/static/${sitemap}/${pageNo}`,
+	oneApolloMembership: () => '/oneapollo-membership',
+	pageNotFound: () => '/page-not-found',
   // sitemap: (sitemap: string) => `/${sitemap}`,
   // childSitemap: (sitemap: string, pageNo: string) => `/${sitemap}/${pageNo}`,
 };

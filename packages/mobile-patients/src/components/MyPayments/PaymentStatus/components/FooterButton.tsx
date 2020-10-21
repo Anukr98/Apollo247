@@ -34,7 +34,7 @@ const FooterButton: FC<FooterButtonProps> = (props) => {
       };
     } else {
       const { medicineOrderPayments, orderAutoId, currentStatus } = item;
-      const { medicineOrderRefunds } = medicineOrderPayments[0]
+      const { medicineOrderRefunds } = medicineOrderPayments[0];
       orderID = orderAutoId;
       if (!medicineOrderPayments.length) {
         status = 'PENDING';
@@ -90,7 +90,7 @@ const FooterButton: FC<FooterButtonProps> = (props) => {
       }
     } else {
       if (status === FAILED) {
-        props.navigationProps.navigate(AppRoutes.YourCart, {});
+        props.navigationProps.navigate(AppRoutes.MedicineCart, {});
       } else if (status === SUCCESS) {
         props.navigationProps.navigate(AppRoutes.OrderDetailsScene, {
           goToHomeOnBack: true,

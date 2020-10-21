@@ -27,6 +27,7 @@ import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/a
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import AsyncStorage from '@react-native-community/async-storage';
 import Moment from 'moment';
+import { differenceInYears, parse } from 'date-fns';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -213,6 +214,12 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       });
   }, [currentPatient, profileDetails]);
 
+  const getAge = (dob: string) => {
+    const now = new Date();
+    let age = parse(dob);
+    return differenceInYears(now, age);
+  };
+
   const renderDetails = () => {
     if (profileDetails)
       return (
@@ -246,11 +253,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
               </Text>
               <Text style={styles.doctorSpecializationStyles}>
                 {profileDetails.gender ? profileDetails.gender : '-'} |{' '}
-                {profileDetails.dateOfBirth
-                  ? Math.round(
-                      Moment().diff(profileDetails.dateOfBirth, 'years', true)
-                    ).toString() || '-'
-                  : '-'}
+                {profileDetails.dateOfBirth ? getAge(profileDetails.dateOfBirth) || '-' : '-'}
               </Text>
             </View>
             <View style={styles.separatorStyle} />
@@ -302,7 +305,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
 
     const input = {
-      deviceToken: currentDeviceToken.deviceToken,
+      deviceToken: currentDeviceToken,
       patientId: currentPatient ? currentPatient && currentPatient.id : '',
     };
     console.log('deleteDeviceTokenInput', input);

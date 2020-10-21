@@ -18,6 +18,7 @@ export interface GetAppointmentData_getAppointmentData_appointmentsHistory_caseS
 export interface GetAppointmentData_getAppointmentData_appointmentsHistory_doctorInfo_specialty {
   __typename: "DoctorSpecialties";
   name: string;
+  id: string;
 }
 
 export interface GetAppointmentData_getAppointmentData_appointmentsHistory_doctorInfo_doctorHospital_facility {
@@ -37,6 +38,7 @@ export interface GetAppointmentData_getAppointmentData_appointmentsHistory_docto
 
 export interface GetAppointmentData_getAppointmentData_appointmentsHistory_doctorInfo {
   __typename: "DoctorDetailsWithStatusExclude";
+  mobileNumber: string;
   id: string;
   salutation: string | null;
   firstName: string;

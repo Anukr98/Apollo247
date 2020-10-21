@@ -1,6 +1,7 @@
 import { StyleSheet } from 'react-native';
 
 import { theme } from '@aph/mobile-doctors/src/theme/theme';
+import { isIphoneX } from 'react-native-iphone-x-helper';
 
 export default StyleSheet.create({
   showPopUp: {
@@ -17,6 +18,7 @@ export default StyleSheet.create({
   },
   subViewPopup: {
     marginTop: 150,
+    paddingBottom: isIphoneX() ? 30 : 0,
     backgroundColor: 'white',
     width: '100%',
     borderTopLeftRadius: 10,

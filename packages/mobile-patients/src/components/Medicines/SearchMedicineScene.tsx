@@ -61,6 +61,7 @@ import stripHtml from 'string-strip-html';
 import { FilterRange, MedicineFilter, SortByOptions } from './MedicineFilter';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
+  ProductPageViewedSource,
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
@@ -278,6 +279,12 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
             resultsdisplayed: products.length,
           };
           postWebEngageEvent(WebEngageEventName.SEARCH, eventAttributes);
+          const searchEventAttribute: WebEngageEvents[WebEngageEventName.SEARCH_ENTER_CLICK] = {
+            keyword: searchText,
+            numberofresults: data.product_count,
+          };
+          postWebEngageEvent(WebEngageEventName.SEARCH_ENTER_CLICK, searchEventAttribute);
+
           try {
             trackTagalysEvent(
               {
@@ -435,7 +442,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
               onPress={() => {
                 CommonLogEvent(AppRoutes.SearchMedicineScene, 'Navigate to your cart');
                 props.navigation.navigate(
-                  diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.YourCart
+                  diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.MedicineCart
                 );
               }}
             >
@@ -467,12 +474,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           Source: 'Pharmacy Search',
         };
         postWebEngageEvent(WebEngageEventName.PHARMACY_SEARCH_RESULTS, eventAttributes);
-
-        const searchEventAttribute: WebEngageEvents[WebEngageEventName.SEARCH_ENTER_CLICK] = {
-          keyword: searchText,
-          numberofresults: medicineList.length,
-        };
-        postWebEngageEvent(WebEngageEventName.SEARCH_ENTER_CLICK, searchEventAttribute);
         onSearchProduct(searchText);
         setsearchSate(undefined);
       }
@@ -543,8 +544,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         onPress={() => {
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: pastSeacrh.typeId,
-            title: pastSeacrh.name,
-            movedFrom: 'search',
+            movedFrom: ProductPageViewedSource.FULL_SEARCH,
           });
         }}
       >
@@ -568,20 +568,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         </View>
       </ScrollView>
     );
-  };
-
-  const postwebEngageProductClickedEvent = ({ name, sku, category_id }: MedicineProduct) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PRODUCT_CLICKED] = {
-      'product name': name,
-      'product id': sku,
-      Brand: '',
-      'Brand ID': '',
-      'category name': '',
-      'category ID': category_id,
-      Source: 'List',
-      'Section Name': 'SEARCH',
-    };
-    postWebEngageEvent(WebEngageEventName.PHARMACY_PRODUCT_CLICKED, eventAttributes);
   };
 
   const renderMedicineCard = (
@@ -610,11 +596,9 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         containerStyle={[medicineCardContainerStyle, {}]}
         onPress={() => {
           savePastSeacrh(medicine.sku, medicine.name).catch((e) => {});
-          postwebEngageProductClickedEvent(medicine);
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: medicine.sku,
-            title: medicine.name,
-            movedFrom: 'search',
+            movedFrom: ProductPageViewedSource.FULL_SEARCH,
           });
         }}
         medicineName={stripHtml(medicine.name)}
@@ -686,10 +670,9 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         containerStyle={[medicineCardContainerStyle, {}]}
         onPress={() => {
           savePastSeacrh(medicine.sku, medicine.name).catch((e) => {});
-          postwebEngageProductClickedEvent(medicine);
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: medicine.sku,
-            title: medicine.name,
+            movedFrom: ProductPageViewedSource.FULL_SEARCH,
           });
         }}
         medicineName={stripHtml(medicine.name)}
@@ -987,7 +970,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         onPress={() => {
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: item.sku,
-            movedFrom: 'search',
+            movedFrom: ProductPageViewedSource.PARTIAL_SEARCH,
           });
           resetSearchState();
         }}
@@ -1110,7 +1093,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         <StickyBottomComponent style={{ position: 'relative' }} defaultBG>
           <Button
             title={'PROCEED'}
-            onPress={() => props.navigation.navigate(AppRoutes.YourCart)}
+            onPress={() => props.navigation.navigate(AppRoutes.MedicineCart)}
             style={{ marginHorizontal: 40, flex: 1 }}
           />
         </StickyBottomComponent>

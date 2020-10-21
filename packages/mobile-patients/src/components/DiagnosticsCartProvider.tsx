@@ -40,6 +40,11 @@ export interface DiagnosticSlot {
   date: number; // timestamp
 }
 
+export interface DiagnosticArea {
+  key: number | string;
+  value: string;
+}
+
 export interface DiagnosticsCartContextProps {
   forPatientId: string;
   setPatientId: ((id: string) => void) | null;
@@ -106,6 +111,12 @@ export interface DiagnosticsCartContextProps {
   diagnosticSlot: DiagnosticSlot | null;
   setDiagnosticSlot: ((item: DiagnosticSlot | null) => void) | null;
 
+  areaSelected: DiagnosticArea | {};
+  setAreaSelected: ((items: DiagnosticArea | {}) => void) | null;
+
+  diagnosticAreas: [];
+  setDiagnosticAreas: ((items: any | []) => void) | null;
+
   diagnosticClinic: DiagnosticClinic | null;
   setDiagnosticClinic: ((item: DiagnosticClinic) => void) | null;
 }
@@ -167,6 +178,10 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   diagnosticSlot: null,
   setDiagnosticClinic: null,
   setDiagnosticSlot: null,
+  areaSelected: {},
+  setAreaSelected: null,
+  diagnosticAreas: [],
+  setDiagnosticAreas: null,
 });
 
 const showGenericAlert = (message: string) => {
@@ -224,6 +239,11 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   const [diagnosticSlot, _setDiagnosticSlot] = useState<
     DiagnosticsCartContextProps['diagnosticSlot']
   >(null);
+
+  const [areaSelected, setAreaSelected] = useState<DiagnosticsCartContextProps['areaSelected']>({});
+  const [diagnosticAreas, setDiagnosticAreas] = useState<
+    DiagnosticsCartContextProps['diagnosticAreas']
+  >([]);
 
   const setDiagnosticClinic: DiagnosticsCartContextProps['setDiagnosticClinic'] = (item) => {
     _setDiagnosticClinic(item);
@@ -292,6 +312,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     }
     const newCartItems = [itemToAdd, ...cartItems];
     setCartItems(newCartItems);
+    //empty the slots and areas everytime due to dependency of api.
+    setDiagnosticSlot(null);
+    setAreaSelected!({});
+    setDiagnosticAreas([]);
   };
 
   const addMultipleCartItems: DiagnosticsCartContextProps['addMultipleCartItems'] = (
@@ -312,6 +336,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
 
   const removeCartItem: DiagnosticsCartContextProps['removeCartItem'] = (id) => {
     const newCartItems = cartItems.filter((item) => item.id !== id);
+    //empty the slots and areas everytime due to dependency of api.
+    setDiagnosticSlot(null);
+    setAreaSelected!({});
+    setDiagnosticAreas!([]);
     setCartItems(newCartItems);
   };
   const updateCartItem: DiagnosticsCartContextProps['updateCartItem'] = (itemUpdates) => {
@@ -386,6 +414,8 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setClinics([]);
     setCoupon(null);
     setDiagnosticSlot(null);
+    setAreaSelected({});
+    setDiagnosticAreas([]);
   };
 
   useEffect(() => {
@@ -453,6 +483,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         grandTotal,
         couponDiscount,
         deliveryCharges,
+        setAreaSelected,
+        areaSelected,
+        setDiagnosticAreas,
+        diagnosticAreas,
         hcCharges,
         setHcCharges,
 

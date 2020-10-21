@@ -112,6 +112,7 @@ export interface ApplyCouponSceneProps extends NavigationScreenProps {}
 export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
   // const isTest = props.navigation.getParam('isTest');
   const [couponText, setCouponText] = useState<string>('');
+  const [couponMsg, setcouponMsg] = useState<string>('');
   const [couponError, setCouponError] = useState<string>('');
   const [couponList, setcouponList] = useState<pharma_coupon[]>([]);
   const { currentPatient } = useAllCurrentPatients();
@@ -121,13 +122,18 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
     cartItems,
     cartTotal,
     setCouponProducts,
+    pinCode,
+    addresses,
+    deliveryAddressId,
   } = useShoppingCart();
   const { showAphAlert } = useUIElements();
   const [loading, setLoading] = useState<boolean>(true);
   const client = useApolloClient();
   const isEnableApplyBtn = couponText.length >= 4;
-  const { locationDetails, hdfcUserSubscriptions } = useAppCommonData();
-
+  const { locationDetails, hdfcUserSubscriptions, pharmacyLocation } = useAppCommonData();
+  const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
+  const pharmacyPincode =
+    selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
   let packageId = '';
   if (!!g(hdfcUserSubscriptions, '_id') && !!g(hdfcUserSubscriptions, 'isActive')) {
     packageId =
@@ -159,7 +165,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
       mobile: g(currentPatient, 'mobileNumber'),
       billAmount: cartTotal.toFixed(2),
       coupon: coupon,
-      pinCode: locationDetails && locationDetails.pincode,
+      pinCode: pharmacyPincode,
       products: cartItems.map((item) => ({
         sku: item.id,
         categoryId: item.productType,
@@ -174,7 +180,8 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
       .then((resp: any) => {
         if (resp.data.errorCode == 0) {
           if (resp.data.response.valid) {
-            setCoupon!(g(resp.data, 'response')!);
+            console.log(g(resp.data, 'response'));
+            setCoupon!({ ...g(resp.data, 'response')!, message: couponMsg });
             props.navigation.goBack();
           } else {
             setCouponError(g(resp.data, 'response', 'reason'));
@@ -183,7 +190,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
           const products = g(resp.data, 'response', 'products');
           if (products && products.length) {
             const freeProducts = products.filter((product) => {
-              return product.couponFree === true;
+              return product.couponFree === 1;
             });
             setCouponProducts!(freeProducts);
           }
@@ -250,6 +257,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
             if (/^\S*$/.test(text)) {
               couponError && setCouponError('');
               setCouponText(text);
+              setcouponMsg('');
             }
           }}
           textInputprops={{
@@ -299,7 +307,10 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
         activeOpacity={1}
         style={styles.radioButtonContainer}
         key={i}
-        onPress={() => setCouponText(coupon!.coupon == couponText ? '' : coupon!.coupon!)}
+        onPress={() => {
+          setCouponText(coupon!.coupon == couponText ? '' : coupon!.coupon!);
+          setcouponMsg(coupon?.message);
+        }}
       >
         {coupon!.coupon == couponText ? <RadioButtonIcon /> : <RadioButtonUnselectedIcon />}
         <View style={styles.radioButtonTitleDescContainer}>

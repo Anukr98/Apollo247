@@ -9,6 +9,7 @@ import {
   MEDICINE_ORDER_TYPE,
   MedicineOrderShipments,
   MedicineOrderCancelReason,
+  MedicineOrderHoldReasons,
   MedicineOrderAddress,
   MEDICINE_ORDER_PAYMENT_TYPE,
   MEDICINE_DELIVERY_TYPE,
@@ -637,6 +638,16 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     });
   }
 
+  getMedicineOrderHoldReasonByCode(reasonCode: String) {
+    return MedicineOrderHoldReasons.findOne({
+      where: { reasonCode },
+    }).catch((medicineOrderError) => {
+      throw new AphError(AphErrorMessages.GET_MEDICINE_ORDER_HOLD_REASON_ERROR, undefined, {
+        medicineOrderError,
+      });
+    });
+  }
+
   getLatestMedicineOrderDetails(patientId: string) {
     return MedicineOrders.createQueryBuilder('medicine_orders')
       .leftJoinAndSelect('medicine_orders.medicineOrderLineItems', 'medicineOrderLineItems')
@@ -663,7 +674,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
   getMedicineOrderPlacedDetails(orderAutoId: number) {
     return this.findOne({
       where: { orderAutoId },
-      relations: ['patient', 'medicineOrderAddress'],
+      relations: ['patient', 'medicineOrderAddress', 'medicineOrderPayments'],
     });
   }
 

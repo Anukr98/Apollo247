@@ -1,14 +1,13 @@
-import React, { useState, useContext, useEffect } from 'react';
-import { makeStyles } from '@material-ui/styles';
-import { Theme, MenuItem, CircularProgress } from '@material-ui/core';
+import React from 'react';
+
 import { AphButton, AphCustomDropdown } from '@aph/web-ui-components';
-import { array } from 'prop-types';
-import { Link } from 'react-router-dom';
+import { CircularProgress, MenuItem, Theme } from '@material-ui/core';
+import { makeStyles } from '@material-ui/styles';
+import { MedicineCartItem, useShoppingCart } from 'components/MedicinesCartProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { useShoppingCart } from 'components/MedicinesCartProvider';
-import { MedicineProduct } from './../../helpers/MedicineApiCalls';
-import { MedicineCartItem } from 'components/MedicinesCartProvider';
+import { Link } from 'react-router-dom';
 import { gtmTracking } from '../../gtmTracking';
+import { MedicineProduct } from './../../helpers/MedicineApiCalls';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {

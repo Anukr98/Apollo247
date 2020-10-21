@@ -7,9 +7,17 @@ import {
 import AddMedicinePopUpStyles from '@aph/mobile-doctors/src/components/ui/AddMedicinePopUp.styles';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
 import { ChipViewCard } from '@aph/mobile-doctors/src/components/ui/ChipViewCard';
-import { AddPlus, BackArrow, Dropdown, Remove } from '@aph/mobile-doctors/src/components/ui/Icons';
+import {
+  AddPlus,
+  BackArrow,
+  CheckboxGrey,
+  CheckboxOrangeSelected,
+  Dropdown,
+  Remove,
+} from '@aph/mobile-doctors/src/components/ui/Icons';
 import { MaterialMenu, OptionsObject } from '@aph/mobile-doctors/src/components/ui/MaterialMenu';
 import { RadioButtons } from '@aph/mobile-doctors/src/components/ui/RadioButtons';
+import { Switch } from '@aph/mobile-doctors/src/components/ui/Switch';
 import { useUIElements } from '@aph/mobile-doctors/src/components/ui/UIElementsProvider';
 import { GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription } from '@aph/mobile-doctors/src/graphql/types/GetCaseSheet';
 import { GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList } from '@aph/mobile-doctors/src/graphql/types/GetDoctorFavouriteMedicineList';
@@ -81,6 +89,11 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
   const [forTextDisabled, setForTextDisabled] = useState<boolean>(false);
   const [defaultForm, setDefaultForm] = useState<boolean>(true);
   const [renderType, setRenderType] = useState<string>('');
+  const [freeTextSwitch, setFreeTextSwitch] = useState<boolean>(false);
+  const [displayGenericMedicine, setDisplayGenericMedicine] = useState<boolean>(false);
+  const [genericName, setGenericName] = useState<string>('');
+  const [medicineCustomDetails, setMedicineCustomDetails] = useState<string>('');
+
   const radioOptions = [
     { key: MEDICINE_FORM_TYPES.OTHERS, label: 'Take' },
     { key: MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT, label: 'Apply' },
@@ -323,6 +336,16 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
         if (data.medicineFormTypes) {
           setRenderType(data.medicineFormTypes);
         }
+        if (data.medicineCustomDetails) {
+          setMedicineCustomDetails(data.medicineCustomDetails);
+          setFreeTextSwitch(true);
+        }
+        if (data.genericName) {
+          setGenericName(data.genericName);
+        }
+        if (data.includeGenericNameInPrescription) {
+          setDisplayGenericMedicine(true);
+        }
         if (data.routeOfAdministration) {
           setRouteOfAdminDrop(
             routeOfAdminOptions.find((i) => i.key === data.routeOfAdministration) ||
@@ -536,111 +559,132 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
         <Button
           title={data ? strings.smartPrescr.update_medicine : strings.smartPrescr.add_medicine}
           onPress={() => {
-            if (
-              defaultForm &&
-              medicineDosage.length === 0 &&
-              !(
-                typeDrop.key === MEDICINE_UNIT.AS_PRESCRIBED &&
-                renderType === MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT &&
-                medicineDosage.length === 0
-              )
-            ) {
-              showAphAlert &&
-                showAphAlert({
-                  title: 'Alert!',
-                  description: 'Enter dosage',
-                });
-              return;
-            } else if (
-              !defaultForm &&
-              medTimingAnswers.filter(
-                (i) =>
-                  ![MEDICINE_TIMINGS.AS_NEEDED, MEDICINE_TIMINGS.NOT_SPECIFIC].includes(i.key) &&
-                  i.selected &&
-                  (i.value.length === 0 || (i.value !== '' && Number(i.value) === 0))
-              ).length > 0
-            ) {
-              showAphAlert &&
-                showAphAlert({
-                  title: 'Alert!',
-                  description: `Enter (${medTimingAnswers
-                    .filter(
-                      (i) =>
-                        ![MEDICINE_TIMINGS.AS_NEEDED, MEDICINE_TIMINGS.NOT_SPECIFIC].includes(
-                          i.key
-                        ) &&
-                        i.selected &&
-                        (i.value.length === 0 || (i.value !== '' && Number(i.value) === 0))
-                    )
-                    .map((i) => nameFormater(i.key, 'lower'))
-                    .join(', ')}) dosage(s).\nSelected timing dosages can't be empty or '0'.`,
-                });
-              return;
-            } else if (
-              !defaultForm &&
-              medTimingAnswers.filter(
-                (i) =>
-                  ![MEDICINE_TIMINGS.AS_NEEDED, MEDICINE_TIMINGS.NOT_SPECIFIC].includes(i.key) &&
-                  (i.selected || (i.value !== '' && !i.selected && Number(i.value) === 0))
-              ).length !==
+            if (!freeTextSwitch) {
+              if (
+                defaultForm &&
+                medicineDosage.length === 0 &&
+                !(
+                  typeDrop.key === MEDICINE_UNIT.AS_PRESCRIBED &&
+                  renderType === MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT &&
+                  medicineDosage.length === 0
+                )
+              ) {
+                showAphAlert &&
+                  showAphAlert({
+                    title: 'Alert!',
+                    description: 'Enter dosage',
+                  });
+                return;
+              } else if (
+                !defaultForm &&
                 medTimingAnswers.filter(
                   (i) =>
                     ![MEDICINE_TIMINGS.AS_NEEDED, MEDICINE_TIMINGS.NOT_SPECIFIC].includes(i.key) &&
-                    i.value.length !== 0
-                ).length
-            ) {
+                    i.selected &&
+                    (i.value.length === 0 || (i.value !== '' && Number(i.value) === 0))
+                ).length > 0
+              ) {
+                showAphAlert &&
+                  showAphAlert({
+                    title: 'Alert!',
+                    description: `Enter (${medTimingAnswers
+                      .filter(
+                        (i) =>
+                          ![MEDICINE_TIMINGS.AS_NEEDED, MEDICINE_TIMINGS.NOT_SPECIFIC].includes(
+                            i.key
+                          ) &&
+                          i.selected &&
+                          (i.value.length === 0 || (i.value !== '' && Number(i.value) === 0))
+                      )
+                      .map((i) => nameFormater(i.key, 'lower'))
+                      .join(', ')}) dosage(s).\nSelected timing dosages can't be empty or '0'.`,
+                  });
+                return;
+              } else if (
+                !defaultForm &&
+                medTimingAnswers.filter(
+                  (i) =>
+                    ![MEDICINE_TIMINGS.AS_NEEDED, MEDICINE_TIMINGS.NOT_SPECIFIC].includes(i.key) &&
+                    (i.selected || (i.value !== '' && !i.selected && Number(i.value) === 0))
+                ).length !==
+                  medTimingAnswers.filter(
+                    (i) =>
+                      ![MEDICINE_TIMINGS.AS_NEEDED, MEDICINE_TIMINGS.NOT_SPECIFIC].includes(
+                        i.key
+                      ) && i.value.length !== 0
+                  ).length
+              ) {
+                showAphAlert &&
+                  showAphAlert({
+                    title: 'Alert!',
+                    description: `Timings (${medTimingAnswers
+                      .filter(
+                        (i) =>
+                          ![MEDICINE_TIMINGS.AS_NEEDED, MEDICINE_TIMINGS.NOT_SPECIFIC].includes(
+                            i.key
+                          ) &&
+                          !i.selected &&
+                          i.value.length !== 0
+                      )
+                      .map((i) => nameFormater(i.key, 'lower'))
+                      .join(
+                        ', '
+                      )}) have dosages, select the timing(s) or empty the input field(s).`,
+                  });
+                return;
+              } else if (defaultForm && medTimingAnswers.filter((i) => i.selected).length === 0) {
+                showAphAlert &&
+                  showAphAlert({
+                    title: 'Alert!',
+                    description:
+                      'Select at least one timing\n(Morning/Noon/Evening/Night/As Needed/Not Specific)',
+                  });
+                return;
+              } else if (
+                !defaultForm &&
+                medTimingAnswers.filter(
+                  (i) =>
+                    ![MEDICINE_TIMINGS.AS_NEEDED, MEDICINE_TIMINGS.NOT_SPECIFIC].includes(i.key) &&
+                    i.selected
+                ).length === 0 &&
+                !(
+                  typeDrop.key === MEDICINE_UNIT.AS_PRESCRIBED &&
+                  renderType === MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT &&
+                  medicineDosage.length === 0
+                )
+              ) {
+                showAphAlert &&
+                  showAphAlert({
+                    title: 'Alert!',
+                    description: 'Select at least one timing\n(Morning/Noon/Evening/Night)',
+                  });
+                return;
+              } else if (
+                forTime.length === 0 &&
+                Number(forTime) === 0 &&
+                forTimeDrop.key !== MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
+              ) {
+                showAphAlert &&
+                  showAphAlert({
+                    title: 'Alert!',
+                    description: 'Enter number of ' + forTimeDrop.value,
+                  });
+                return;
+              }
+            } else if (freeTextSwitch && medicineCustomDetails === '') {
               showAphAlert &&
                 showAphAlert({
                   title: 'Alert!',
-                  description: `Timings (${medTimingAnswers
-                    .filter(
-                      (i) =>
-                        ![MEDICINE_TIMINGS.AS_NEEDED, MEDICINE_TIMINGS.NOT_SPECIFIC].includes(
-                          i.key
-                        ) &&
-                        !i.selected &&
-                        i.value.length !== 0
-                    )
-                    .map((i) => nameFormater(i.key, 'lower'))
-                    .join(', ')}) have dosages, select the timing(s) or empty the input field(s).`,
+                  description: 'Please enter Directions of Medicine.',
                 });
               return;
-            } else if (defaultForm && medTimingAnswers.filter((i) => i.selected).length === 0) {
+            }
+            if (displayGenericMedicine && genericName === '') {
               showAphAlert &&
                 showAphAlert({
                   title: 'Alert!',
                   description:
-                    'Select at least one timing\n(Morning/Noon/Evening/Night/As Needed/Not Specific)',
-                });
-              return;
-            } else if (
-              !defaultForm &&
-              medTimingAnswers.filter(
-                (i) =>
-                  ![MEDICINE_TIMINGS.AS_NEEDED, MEDICINE_TIMINGS.NOT_SPECIFIC].includes(i.key) &&
-                  i.selected
-              ).length === 0 &&
-              !(
-                typeDrop.key === MEDICINE_UNIT.AS_PRESCRIBED &&
-                renderType === MEDICINE_FORM_TYPES.GEL_LOTION_OINTMENT &&
-                medicineDosage.length === 0
-              )
-            ) {
-              showAphAlert &&
-                showAphAlert({
-                  title: 'Alert!',
-                  description: 'Select at least one timing\n(Morning/Noon/Evening/Night)',
-                });
-              return;
-            } else if (
-              forTime.length === 0 &&
-              Number(forTime) === 0 &&
-              forTimeDrop.key !== MEDICINE_CONSUMPTION_DURATION.TILL_NEXT_REVIEW
-            ) {
-              showAphAlert &&
-                showAphAlert({
-                  title: 'Alert!',
-                  description: 'Enter number of ' + forTimeDrop.value,
+                    'Please enter Generic Name or Un-check the option to include generic-name in prescription.',
                 });
               return;
             }
@@ -648,46 +692,54 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
               medicineName: medName,
               id: data ? data.id : '',
               externalId: externalId,
-              medicineDosage: defaultForm ? medicineDosage : '',
+              medicineDosage: !freeTextSwitch && defaultForm ? medicineDosage : '',
               medicineFormTypes: renderType,
               medicineUnit: typeDrop.key,
-              medicineInstructions: instructions,
-              medicineFrequency: defaultForm ? takeDrop.key : null,
+              medicineInstructions: !freeTextSwitch ? instructions : '',
+              medicineFrequency: defaultForm && !freeTextSwitch ? takeDrop.key : null,
               medicineConsumptionDurationUnit: forTimeDrop.key,
-              medicineConsumptionDurationInDays: forTime,
-              medicineTimings: medTimingsArray
-                .map((item) => {
-                  return (
-                    (medTimingAnswers.find((i) => i.key === item.key && i.selected) || {}).key || ''
-                  );
-                })
-                .filter((i) => i !== ''),
-              medicineToBeTaken: [
-                afterFoodValue ? MEDICINE_TO_BE_TAKEN.AFTER_FOOD : '',
-                beforeFoodValue ? MEDICINE_TO_BE_TAKEN.BEFORE_FOOD : '',
-              ].filter((i) => i !== ''),
-              routeOfAdministration: routeOfAdminDrop.key,
-              medicineCustomDosage: !defaultForm
+              medicineConsumptionDurationInDays: !freeTextSwitch ? forTime : '',
+              medicineTimings: !freeTextSwitch
                 ? medTimingsArray
                     .map((item) => {
-                      if (
-                        [MEDICINE_TIMINGS.AS_NEEDED, MEDICINE_TIMINGS.NOT_SPECIFIC].includes(
-                          item.key
-                        )
-                      ) {
-                        return '';
-                      } else {
-                        return (
-                          (medTimingAnswers.find((i) => i.key === item.key) || {}).value || 'n'
-                        );
-                      }
+                      return (
+                        (medTimingAnswers.find((i) => i.key === item.key && i.selected) || {})
+                          .key || ''
+                      );
                     })
                     .filter((i) => i !== '')
-                    .join('-')
-                    .replace(/n/g, '')
-                : null,
+                : [],
+              medicineToBeTaken: !freeTextSwitch
+                ? [
+                    afterFoodValue ? MEDICINE_TO_BE_TAKEN.AFTER_FOOD : '',
+                    beforeFoodValue ? MEDICINE_TO_BE_TAKEN.BEFORE_FOOD : '',
+                  ].filter((i) => i !== '')
+                : [],
+              routeOfAdministration: routeOfAdminDrop.key,
+              medicineCustomDosage:
+                !defaultForm && !freeTextSwitch
+                  ? medTimingsArray
+                      .map((item) => {
+                        if (
+                          [MEDICINE_TIMINGS.AS_NEEDED, MEDICINE_TIMINGS.NOT_SPECIFIC].includes(
+                            item.key
+                          )
+                        ) {
+                          return '';
+                        } else {
+                          return (
+                            (medTimingAnswers.find((i) => i.key === item.key) || {}).value || 'n'
+                          );
+                        }
+                      })
+                      .filter((i) => i !== '')
+                      .join('-')
+                      .replace(/n/g, '')
+                  : null,
+              medicineCustomDetails: freeTextSwitch ? medicineCustomDetails : null,
+              includeGenericNameInPrescription: displayGenericMedicine,
+              genericName: genericName,
             };
-            console.log(dataSend, 'data');
             onAddnew &&
               onAddnew(dataSend as
                 | GetDoctorFavouriteMedicineList_getDoctorFavouriteMedicineList_medicineList
@@ -760,20 +812,59 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
     }
   };
 
-  const renderMedicineType = () => {
+  const renderGenericMedicine = () => {
     return (
-      <View style={{ margin: 16 }}>
-        <RadioButtons
-          data={radioOptions}
-          selectedItem={renderType}
-          setselectedItem={(type) => {
-            setRenderType(type);
+      <View style={styles.medicineInputContainer}>
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => {
+            setDisplayGenericMedicine(!displayGenericMedicine);
           }}
-          containerStyle={{ flexDirection: 'row' }}
-          itemStyle={{ marginRight: 20 }}
-        />
-        <View style={styles.medTypeView}>
-          {renderTakeInput()}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            {displayGenericMedicine ? (
+              <CheckboxOrangeSelected style={styles.checkboxIconStyles} />
+            ) : (
+              <CheckboxGrey style={styles.checkboxIconStyles} />
+            )}
+            <Text style={theme.viewStyles.text('R', 12, theme.colors.SHARP_BLUE, 1, 16, 0.02)}>
+              Include Generic medicine name in the prescription.
+            </Text>
+          </View>
+        </TouchableOpacity>
+        {displayGenericMedicine ? (
+          <View style={styles.genericNameContainer}>
+            <TextInput
+              value={genericName}
+              style={styles.genericTextStyle}
+              onChange={(value) => {
+                setGenericName(value.nativeEvent.text);
+              }}
+              selectionColor={theme.colors.APP_GREEN}
+              underlineColorAndroid={theme.colors.TRANSPARENT}
+            />
+            {/* <View style={{ marginLeft: 10 }}>
+              <TouchableOpacity>
+                <Text style={theme.viewStyles.text('SB', 14, theme.colors.APP_YELLOW, 1, 16, 0.02)}>
+                  Report
+                </Text>
+              </TouchableOpacity>
+            </View> */}
+          </View>
+        ) : null}
+      </View>
+    );
+  };
+
+  const renderQuantity = () => {
+    return (
+      <View style={styles.medTypeView}>
+        <View style={styles.medicineInputContainer}>
+          <Text style={styles.headingTextStyle}>Quantity</Text>
+          <View style={styles.medTypeView}>{renderTakeInput()}</View>
+        </View>
+        <View style={{ marginTop: 20 }}>
+          <Text style={styles.headingTextStyle}>Medication</Text>
           <MaterialMenu
             options={dosagesOption}
             selectedText={typeDrop ? typeDrop.key : ''}
@@ -786,13 +877,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
             itemContainer={styles.itemContainerStyle}
             bottomPadding={{ paddingBottom: 10 }}
           >
-            <View
-              style={{
-                flexDirection: 'row',
-                marginLeft: 0,
-                marginTop: 10,
-              }}
-            >
+            <View style={styles.dropDownValueView}>
               <View
                 style={[
                   styles.MtextView,
@@ -812,75 +897,133 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
             </View>
           </MaterialMenu>
         </View>
-        {defaultForm && (
-          <MaterialMenu
-            options={takeTime}
-            selectedText={takeDrop.key}
-            menuContainerStyle={styles.menuContainerStyle}
-            onPress={(item) => {
-              setTakeDrop(item);
-            }}
-            selectedTextStyle={styles.seleTextStyle}
-            itemTextStyle={styles.itemTextStyle}
-            itemContainer={styles.MaterialitemContainerStyle}
-            bottomPadding={{ paddingBottom: 10 }}
+      </View>
+    );
+  };
+
+  const renderTakeApply = () => {
+    return (
+      <View style={styles.takeApplyContainer}>
+        <RadioButtons
+          disabled={freeTextSwitch}
+          data={radioOptions}
+          selectedItem={renderType}
+          setselectedItem={(type) => {
+            if (!freeTextSwitch) {
+              setRenderType(type);
+            }
+          }}
+          containerStyle={{ flexDirection: 'row' }}
+          itemStyle={{ marginRight: 20 }}
+          checkStyles={'circle'}
+        />
+        <View style={styles.freeTextContainer}>
+          <Text
+            style={theme.viewStyles.text(
+              'M',
+              14,
+              freeTextSwitch ? theme.colors.APP_GREEN : theme.colors.SHADOW_GRAY,
+              freeTextSwitch ? 1 : 0.47,
+              18,
+              0.02
+            )}
           >
-            <View style={styles.dropDownValueView}>
-              <View style={styles.dropdownView}>
-                <Text style={styles.takeDropdownText}>{takeDrop.value}</Text>
-                <View style={styles.dropdownGreenView}>
-                  <Dropdown />
-                </View>
+            Free Text
+          </Text>
+          <Switch
+            value={freeTextSwitch}
+            containerStyle={{ marginLeft: 10 }}
+            onChange={(value) => setFreeTextSwitch(value)}
+            pathColor={{ left: 'rgba(128,128,128,0.47)', right: theme.colors.APP_GREEN }}
+          />
+        </View>
+      </View>
+    );
+  };
+
+  const renderIntake = () => {
+    return defaultForm ? (
+      <View style={styles.medicineInputContainer}>
+        <Text style={styles.headingTextStyle}>Intake</Text>
+        <MaterialMenu
+          options={takeTime}
+          selectedText={takeDrop.key}
+          menuContainerStyle={styles.menuContainerStyle}
+          onPress={(item) => {
+            setTakeDrop(item);
+          }}
+          selectedTextStyle={styles.seleTextStyle}
+          itemTextStyle={styles.itemTextStyle}
+          itemContainer={styles.MaterialitemContainerStyle}
+          bottomPadding={{ paddingBottom: 10 }}
+        >
+          <View style={styles.dropDownValueView}>
+            <View style={styles.dropdownView}>
+              <Text style={styles.takeDropdownText}>{takeDrop.value}</Text>
+              <View style={styles.dropdownGreenView}>
+                <Dropdown />
               </View>
             </View>
-          </MaterialMenu>
-        )}
-        <View style={styles.customTextContainer}>
-          <TouchableOpacity
-            onPress={() => {
-              setDefaultForm(!defaultForm);
-              if (defaultForm) {
-                setMedTimingAnswers(
-                  medTimingsArray.map((item) => {
-                    setFromSearch(false);
-                    const existing = medTimingAnswers.findIndex((i) => i.key === item.key);
-                    if (item.key !== MEDICINE_TIMINGS.AS_NEEDED) {
-                      return {
-                        key: item.key,
-                        selected: isFromSearch
-                          ? false
-                          : existing > -1
-                          ? medTimingAnswers[existing].selected
+          </View>
+        </MaterialMenu>
+      </View>
+    ) : null;
+  };
+
+  const renderCustomDefaultButtion = () => {
+    return (
+      <View style={styles.customTextContainer}>
+        <TouchableOpacity
+          onPress={() => {
+            setDefaultForm(!defaultForm);
+            if (defaultForm) {
+              setMedTimingAnswers(
+                medTimingsArray.map((item) => {
+                  setFromSearch(false);
+                  const existing = medTimingAnswers.findIndex((i) => i.key === item.key);
+                  if (item.key !== MEDICINE_TIMINGS.AS_NEEDED) {
+                    return {
+                      key: item.key,
+                      selected: isFromSearch
+                        ? false
+                        : existing > -1
+                        ? medTimingAnswers[existing].selected
+                        : true,
+                      value: isFromSearch
+                        ? ''
+                        : existing > -1
+                        ? medTimingAnswers[existing].value
+                        : '',
+                    };
+                  } else {
+                    return {
+                      key: item.key,
+                      selected:
+                        existing > -1
+                          ? medTimingAnswers[existing].value !== ''
+                            ? true
+                            : medTimingAnswers[existing].selected
                           : true,
-                        value: isFromSearch
-                          ? ''
-                          : existing > -1
-                          ? medTimingAnswers[existing].value
-                          : '',
-                      };
-                    } else {
-                      return {
-                        key: item.key,
-                        selected:
-                          existing > -1
-                            ? medTimingAnswers[existing].value !== ''
-                              ? true
-                              : medTimingAnswers[existing].selected
-                            : true,
-                        value: '',
-                      };
-                    }
-                  })
-                );
-              }
-            }}
-          >
-            <Text style={styles.customTextStyle}>
-              {defaultForm ? strings.common.custom : strings.common.default}
-            </Text>
-          </TouchableOpacity>
-        </View>
-        <Text style={styles.inTheText}>{strings.smartPrescr.in_the}</Text>
+                      value: '',
+                    };
+                  }
+                })
+              );
+            }
+          }}
+        >
+          <Text style={styles.customTextStyle}>
+            {defaultForm ? strings.common.custom : strings.common.default}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const renderTimings = () => {
+    return (
+      <View style={styles.medicineInputContainer}>
+        <Text style={styles.headingTextStyle}>{strings.smartPrescr.in_the}</Text>
         <View style={styles.sessionsView}>
           {medTimingsArray.map((item) => {
             if (
@@ -953,6 +1096,7 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
             }
           })}
         </View>
+        <Text style={styles.headingTextStyle}>When</Text>
         <View style={styles.chipCardView}>
           <ChipViewCard
             title={strings.smartPrescr.after_food}
@@ -976,8 +1120,15 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
             textSelectedStyle={styles.chipSelectedTextStyle}
           />
         </View>
-        <Text style={styles.forLable}>{strings.smartPrescr.for}</Text>
-        <View style={styles.forInputView}>
+      </View>
+    );
+  };
+
+  const renderDuration = () => {
+    return (
+      <View style={styles.forInputView}>
+        <View>
+          <Text style={styles.headingTextStyle}>{strings.smartPrescr.for}</Text>
           <TextInput
             style={forTextDisabled ? styles.textInputDisabledStyles : styles.textInputStyles}
             placeholder=""
@@ -988,6 +1139,9 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
             onChange={(text) => setForTime((formatInt(text.nativeEvent.text) || '').toString())}
             editable={!forTextDisabled}
           />
+        </View>
+        <View>
+          <Text style={styles.headingTextStyle}>Duration</Text>
           <MaterialMenu
             options={forTimeArray}
             selectedText={forTimeDrop.key}
@@ -1016,7 +1170,32 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
             </View>
           </MaterialMenu>
         </View>
-        <Text style={styles.routeOfAdminText}>{strings.smartPrescr.route_of_administration}</Text>
+      </View>
+    );
+  };
+
+  const renderAdditionalInstructions = () => {
+    return (
+      <View style={styles.medicineInputContainer}>
+        <Text style={styles.headingTextStyle}>{strings.smartPrescr.additional_instru}</Text>
+        <TextInput
+          placeholder={strings.smartPrescr.type_here}
+          style={styles.additionalInstrInputstyle}
+          placeholderTextColor={theme.colors.placeholderTextColor}
+          textAlignVertical={'top'}
+          multiline={true}
+          value={instructions}
+          onChange={(text) => setInstructions(text.nativeEvent.text)}
+          selectionColor={theme.colors.INPUT_CURSOR_COLOR}
+        />
+      </View>
+    );
+  };
+
+  const renderRouteOfAdminstration = () => {
+    return (
+      <View style={styles.medicineInputContainer}>
+        <Text style={styles.headingTextStyle}>{strings.smartPrescr.route_of_administration}</Text>
         <MaterialMenu
           options={routeOfAdminOptions}
           selectedText={routeOfAdminDrop.key}
@@ -1038,16 +1217,41 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
             </View>
           </View>
         </MaterialMenu>
-        <Text style={styles.additionalInstrLabel}>{strings.smartPrescr.additional_instru}</Text>
+      </View>
+    );
+  };
+
+  const renderCustomDetails = () => {
+    return (
+      <View style={styles.medicineInputContainer}>
+        <Text style={styles.headingTextStyle}>Directions of the Medicine</Text>
         <TextInput
           placeholder={strings.smartPrescr.type_here}
           style={styles.additionalInstrInputstyle}
           placeholderTextColor={theme.colors.placeholderTextColor}
           textAlignVertical={'top'}
           multiline={true}
-          value={instructions}
-          onChange={(text) => setInstructions(text.nativeEvent.text)}
+          value={medicineCustomDetails}
+          onChange={(text) => setMedicineCustomDetails(text.nativeEvent.text)}
+          selectionColor={theme.colors.INPUT_CURSOR_COLOR}
         />
+      </View>
+    );
+  };
+
+  const renderMedicineType = () => {
+    return (
+      <View style={{ margin: 16 }}>
+        {renderTakeApply()}
+        {!freeTextSwitch ? renderQuantity() : null}
+        {!freeTextSwitch ? renderIntake() : null}
+        {!freeTextSwitch ? renderCustomDefaultButtion() : null}
+        {!freeTextSwitch ? renderTimings() : null}
+        {!freeTextSwitch ? renderDuration() : null}
+        {!freeTextSwitch ? renderRouteOfAdminstration() : null}
+        {freeTextSwitch ? renderCustomDetails() : null}
+        {renderGenericMedicine()}
+        {!freeTextSwitch ? renderAdditionalInstructions() : null}
       </View>
     );
   };
@@ -1150,6 +1354,13 @@ export const AddMedicinePopUp: React.FC<AddMedicinePopUpProps> = (props) => {
           data.data.productdp[0] && data.data.productdp[0].PharmaOverview.length
             ? data.data.productdp[0].PharmaOverview[0].Doseform
             : '';
+        setGenericName(
+          data.data.productdp[0].PharmaOverview.length
+            ? data.data.productdp[0].PharmaOverview.map((item) => item.generic)
+                .join(', ')
+                .trim()
+            : ''
+        );
         setMedType(medtype);
       })
       .finally(() => setMedDetailLoading(false));
