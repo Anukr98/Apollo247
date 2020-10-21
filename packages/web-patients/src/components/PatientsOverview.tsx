@@ -121,7 +121,7 @@ const PatientsOverview: React.FC = () => {
           <div className={classes.totalConsults}>
             {loading ? <CircularProgress size={10} /> : activeAppointments}
           </div>
-          <span>Doctor Appointments</span>
+          <span>Upcoming Appointments</span>
           <span className={classes.rightArrow}>
             <img src={require('images/ic_arrow_right.svg')} />
           </span>
