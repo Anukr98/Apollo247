@@ -147,9 +147,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    BackHandler.addEventListener('hardwareBackPress', handleBack);
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setisfocused(true);
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
       AppState.addEventListener('change', handleAppStateChange);
     });
     const didBlur = props.navigation.addListener('didBlur', (payload) => {
@@ -194,6 +194,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
 
   const handleBack = () => {
     setCoupon!(null);
+    BackHandler.removeEventListener('hardwareBackPress', handleBack);
   };
 
   async function fetchAddress() {
@@ -228,6 +229,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             const coupon = couponList[0].coupon;
             const msg = couponList[0].message;
             try {
+              setCoupon!(null);
               await validateCoupon(coupon, msg, true);
             } catch (error) {
               return;
