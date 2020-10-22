@@ -27,6 +27,8 @@ import moment from 'moment';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
 import { useAllCurrentPatients } from '../../hooks/authHooks';
 import { CareLogo } from '@aph/mobile-patients/src/components/ui/CareLogo';
+import { getDoctorDetailsById_getDoctorDetailsById_doctorPricing } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
+import { PLAN_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 const styles = StyleSheet.create({
   mainView: {
@@ -134,6 +136,7 @@ export interface ConsultTypeCardProps {
   DoctorName: string | null;
   nextAppointemntOnlineTime: string;
   nextAppointemntInPresonTime: string;
+  careDoctorPricing?: (getDoctorDetailsById_getDoctorDetailsById_doctorPricing | null)[] | null;
 }
 
 type stepsObject = {
@@ -152,24 +155,28 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
     DoctorName,
     nextAppointemntOnlineTime,
     nextAppointemntInPresonTime,
+    careDoctorPricing,
   } = props;
 
   const { currentPatient } = useAllCurrentPatients();
 
   const [consultDoctorName, setConsultDocotrName] = useState<string>(DoctorName ? DoctorName : '');
+  const isCareDoctor = careDoctorPricing?.[0]?.status === PLAN_STATUS.ACTIVE;
+  const careDoctorMRPPrice = careDoctorPricing?.[0]?.mrp;
+  const careDoctorSlashedPrice = careDoctorPricing?.[0]?.slashed_price;
 
   const renderCareDoctorPricing = () => {
     return (
       <View style={{ justifyContent: 'center' }}>
         <Text style={styles.carePrice}>
           {string.common.Rs}
-          500
+          {careDoctorMRPPrice}
         </Text>
         <View style={styles.rowContainer}>
           <CareLogo style={styles.careLogo} textStyle={styles.careLogoText} />
           <Text style={styles.careDiscountedPrice}>
             {string.common.Rs}
-            100
+            {careDoctorSlashedPrice}
           </Text>
         </View>
       </View>
@@ -199,7 +206,7 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
               </Text>
             ) : null}
           </View>
-          {true && renderCareDoctorPricing()}
+          {isCareDoctor && renderCareDoctorPricing()}
         </View>
         <View style={styles.stepsMainContainer}>
           <Text style={theme.viewStyles.text('M', 12, theme.colors.SHERPA_BLUE, 1, 18)}>

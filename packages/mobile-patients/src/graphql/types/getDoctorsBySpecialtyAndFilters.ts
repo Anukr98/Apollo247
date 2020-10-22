@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { FilterDoctorInput, ConsultMode, DoctorType, PLAN, PLAN_STATUS } from "./globalTypes";
+import { FilterDoctorInput, ConsultMode, DoctorType } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getDoctorsBySpecialtyAndFilters
@@ -37,14 +37,6 @@ export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters
   facility: getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_doctorHospital_facility;
 }
 
-export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_doctorPricing {
-  __typename: "DoctorPricing";
-  slashed_price: number | null;
-  available_to: PLAN | null;
-  status: PLAN_STATUS | null;
-  mrp: number | null;
-}
-
 export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors {
   __typename: "DoctorDetails";
   id: string;
@@ -65,7 +57,6 @@ export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters
   consultHours: (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_consultHours | null)[] | null;
   doctorType: DoctorType;
   doctorHospital: getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_doctorHospital[];
-  doctorPricing: (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_doctorPricing | null)[] | null;
 }
 
 export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsAvailability {

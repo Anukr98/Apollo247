@@ -797,6 +797,7 @@ export interface FilterDoctorInput {
   pageNo?: number | null;
   pageSize?: number | null;
   searchText?: string | null;
+  isCare?: boolean | null;
 }
 
 export interface Geolocation {

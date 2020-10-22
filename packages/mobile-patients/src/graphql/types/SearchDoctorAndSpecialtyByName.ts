@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { Geolocation, DoctorType, PLAN, PLAN_STATUS } from "./globalTypes";
+import { Geolocation, DoctorType } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: SearchDoctorAndSpecialtyByName
@@ -31,14 +31,6 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_d
   facility: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_doctorHospital_facility;
 }
 
-export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_doctorPricing {
-  __typename: "DoctorPricing";
-  slashed_price: number | null;
-  available_to: PLAN | null;
-  status: PLAN_STATUS | null;
-  mrp: number | null;
-}
-
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors {
   __typename: "DoctorDetails";
   id: string;
@@ -58,7 +50,6 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_d
   thumbnailUrl: string | null;
   doctorType: DoctorType;
   doctorHospital: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_doctorHospital[];
-  doctorPricing: (SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_doctorPricing | null)[] | null;
 }
 
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctorsNextAvailability {

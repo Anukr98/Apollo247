@@ -163,11 +163,11 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const rowData = props.rowData;
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
-  const isCareDoctor =
-    rowData?.doctorPricing?.length > 0 && rowData?.doctorPricing[0]?.status === PLAN_STATUS.ACTIVE;
+  const isCareDoctor = rowData?.doctorPricing?.[0]?.status === PLAN_STATUS.ACTIVE;
   const careDoctorDiscountedPrice =
-    rowData?.doctorPricing?.length > 0 &&
-    rowData?.doctorPricing[0]?.mrp - rowData?.doctorPricing[0]?.slashed_price;
+    rowData?.doctorPricing?.[0]?.mrp - rowData?.doctorPricing?.[0]?.slashed_price;
+  const careDoctorMRPPrice = rowData?.doctorPricing?.[0]?.mrp;
+  const careDoctorSlashedPrice = rowData?.doctorPricing?.[0]?.slashed_price;
 
   useEffect(() => {
     if (!currentPatient) {
@@ -233,13 +233,11 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       <View style={{ flexDirection: 'row', marginTop: 5, alignItems: 'center' }}>
         <Text style={styles.carePrice}>
           {string.common.Rs}
-          {/* {rowData?.doctorPricing[0]?.mrp || ''} */}
-          500
+          {careDoctorMRPPrice}
         </Text>
         <Text style={styles.careDiscountedPrice}>
           {string.common.Rs}
-          {/* {rowData?.doctorPricing[0]?.slashed_price || ''} */}
-          100
+          {careDoctorSlashedPrice}
         </Text>
       </View>
     );
@@ -295,7 +293,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     );
   };
 
-  console.log('rowData', rowData);
   if (rowData) {
     const clinicAddress = rowData?.doctorfacility;
     const isPhysical = props.availableModes
@@ -400,7 +397,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                 )}
               </View>
               {/* </TouchableOpacity> */}
-              {true && renderCareLogo()}
+              {isCareDoctor && renderCareLogo()}
               <View
                 style={{
                   flexDirection: 'row',
@@ -446,9 +443,9 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
 
             <View style={{ flex: 1, paddingRight: 16, marginBottom: 16 }}>
               <Text style={styles.doctorNameStyles}>{rowData.displayName}</Text>
-              {true ? renderSpecialityCareView() : renderSpecialityNonCareView()}
-              {true ? renderCareDoctorsFee() : calculatefee(rowData, isBoth, isOnline)}
-              {true && careDoctorDiscountedPrice > -1 && (
+              {isCareDoctor ? renderSpecialityCareView() : renderSpecialityNonCareView()}
+              {isCareDoctor ? renderCareDoctorsFee() : calculatefee(rowData, isBoth, isOnline)}
+              {isCareDoctor && careDoctorDiscountedPrice > -1 && (
                 <Text style={theme.viewStyles.text('M', 10, theme.colors.DEEP_RED)}>
                   You save ₹ {careDoctorDiscountedPrice} on this consult
                 </Text>

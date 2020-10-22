@@ -260,6 +260,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [sortValue, setSortValue] = useState<string>('');
   const [searchIconClicked, setSearchIconClicked] = useState<boolean>(false);
   const [careDoctorsSwitch, setCareDoctorsSwitch] = useState<boolean>(false);
+  const [filterActionTaken, setFilterActionTaken] = useState<boolean>(false);
+
   let DoctorsflatListRef: any;
   const filterOptions = (filters: any) => {
     let preFilters = filters;
@@ -324,6 +326,20 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       getPatientApiCall();
     }
   }, [currentPatient]);
+
+  useEffect(() => {
+    if (filterActionTaken) {
+      fetchSpecialityFilterData(
+        filterMode,
+        FilterData,
+        latlng,
+        sortValue,
+        undefined,
+        false,
+        doctorSearch
+      );
+    }
+  }, [careDoctorsSwitch]);
 
   const vaueChange = (sort: any) => {
     if (sort === 'distance') {
@@ -626,6 +642,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       pageNo: pageNo ? pageNo + 1 : 1,
       pageSize: pageSize,
       searchText: searchText,
+      isCare: careDoctorsSwitch,
     };
     setBugFenderLog('DOCTOR_FILTER_INPUT', JSON.stringify(FilterInput));
     !pageNo && setshowSpinner(true);
@@ -1112,7 +1129,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     }
     return (
       <View style={{ flex: 1 }}>
-        {renderViewCareSwitch()}
+        {doctorsType === 'APOLLO' && renderViewCareSwitch()}
         {doctors.length > 0 && (
           <FlatList
             ref={(ref) => {
@@ -1664,6 +1681,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           containerStyle={{ marginLeft: 14 }}
           onChange={(value) => {
             setCareDoctorsSwitch(value);
+            setFilterActionTaken(true);
           }}
           pathColor={{ left: 'rgba(0, 179, 142, 0.3)', right: 'rgba(0, 179, 142, 0.3)' }}
           dotColor={{ left: 'white', right: theme.colors.SEARCH_UNDERLINE_COLOR }}
@@ -1693,7 +1711,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                   specialistPluralTerm || 'Doctors'
                 )}
               </Text>
-              {/* {renderViewCareSwitch()} */}
               {renderDoctorSearches(
                 onlineCheckBox
                   ? physicalCheckBox

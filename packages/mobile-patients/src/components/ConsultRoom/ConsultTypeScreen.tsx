@@ -29,7 +29,7 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { ConsultMode } from '../../graphql/types/globalTypes';
+import { ConsultMode, PLAN_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppRoutes } from '../NavigatorContainer';
 import { useApolloClient } from 'react-apollo-hooks';
 import { useUIElements } from '../UIElementsProvider';
@@ -46,6 +46,7 @@ import {
 import { useAllCurrentPatients } from '../../hooks/authHooks';
 import { CommonBugFender } from '../../FunctionHelpers/DeviceHelper';
 import moment from 'moment';
+import { CareLogo } from '@aph/mobile-patients/src/components/ui/CareLogo';
 
 const styles = StyleSheet.create({
   mainContainer: {
@@ -148,6 +149,29 @@ const styles = StyleSheet.create({
     marginRight: 12,
     height: '100%',
   },
+  carePrice: {
+    ...theme.viewStyles.text('M', 15, theme.colors.BORDER_BOTTOM_COLOR),
+    textDecorationLine: 'line-through',
+    textDecorationStyle: 'solid',
+    marginLeft: 'auto',
+  },
+  careDiscountedPrice: {
+    ...theme.viewStyles.text('M', 12, theme.colors.DEEP_RED),
+    marginLeft: 'auto',
+  },
+  rowContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  careLogo: {
+    width: 27,
+    height: 11,
+    borderRadius: 5,
+    marginRight: 4,
+  },
+  careLogoText: {
+    ...theme.viewStyles.text('M', 4, 'white'),
+  },
 });
 
 export interface ConsultTypeScreenProps extends NavigationScreenProps {
@@ -181,6 +205,9 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
   const { currentPatientId, currentPatient } = useAllCurrentPatients();
   const [doctorDetails, setdoctorDetails] = useState<getDoctorDetailsById_getDoctorDetailsById>();
   const callSaveSearch = props.navigation.getParam('callSaveSearch');
+  const isCareDoctor = doctorDetails?.doctorPricing?.[0]?.status === PLAN_STATUS.ACTIVE;
+  const careDoctorMRPPrice = doctorDetails?.doctorPricing?.[0]?.mrp;
+  const careDoctorSlashedPrice = doctorDetails?.doctorPricing?.[0]?.slashed_price;
 
   const client = useApolloClient();
 
@@ -281,6 +308,24 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
     );
   };
 
+  const renderCareDoctorPricing = () => {
+    return (
+      <View style={{ justifyContent: 'center' }}>
+        <Text style={styles.carePrice}>
+          {string.common.Rs}
+          {careDoctorMRPPrice}
+        </Text>
+        <View style={styles.rowContainer}>
+          <CareLogo style={styles.careLogo} textStyle={styles.careLogoText} />
+          <Text style={styles.careDiscountedPrice}>
+            {string.common.Rs}
+            {careDoctorSlashedPrice}
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
   const renderCard = (
     headingImage: Element,
     heading: string,
@@ -305,7 +350,11 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
               </Text>
             ) : null}
           </View>
-          <Text style={styles.priceTextStyle}>{`Rs. ${price}`}</Text>
+          {isCareDoctor ? (
+            renderCareDoctorPricing()
+          ) : (
+            <Text style={styles.priceTextStyle}>{`Rs. ${price}`}</Text>
+          )}
         </View>
         <View style={styles.stepsMainContainer}>
           <Text style={theme.viewStyles.text('M', 12, theme.colors.SHERPA_BLUE, 1, 18)}>

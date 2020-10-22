@@ -23,7 +23,11 @@ import {
   getDoctorDetailsById_getDoctorDetailsById,
 } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { ConsultMode, DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  ConsultMode,
+  DoctorType,
+  PLAN_STATUS,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   getNextAvailableSlots,
   getSecretaryDetailsByDoctor,
@@ -256,6 +260,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [isFocused, setisFocused] = useState<boolean>(false);
   const callSaveSearch = props.navigation.getParam('callSaveSearch');
   const [secretaryData, setSecretaryData] = useState<any>([]);
+  const isCareDoctor = doctorDetails?.doctorPricing?.[0]?.status === PLAN_STATUS.ACTIVE;
+  const careDoctorMRPPrice = doctorDetails?.doctorPricing?.[0]?.mrp;
+  const careDoctorSlashedPrice = doctorDetails?.doctorPricing?.[0]?.slashed_price;
 
   useEffect(() => {
     if (!currentPatient) {
@@ -585,6 +592,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         DoctorName={doctorDetails ? doctorDetails.fullName : ''}
         nextAppointemntOnlineTime={availableTime}
         nextAppointemntInPresonTime={physicalAvailableTime}
+        careDoctorPricing={doctorDetails?.doctorPricing}
       />
     );
   };
@@ -611,12 +619,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       <View style={{ paddingBottom: 16 }}>
         <Text style={styles.carePrice}>
           {string.common.Rs}
-          500
+          {careDoctorMRPPrice}
         </Text>
         <View style={styles.rowContainer}>
           <Text style={styles.careDiscountedPrice}>
             {string.common.Rs}
-            100
+            {careDoctorSlashedPrice}
           </Text>
           <CareLogo style={styles.smallCareLogo} textStyle={styles.smallCareLogoText} />
         </View>
@@ -716,10 +724,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                       style={{
                         position: 'absolute',
                         width: (width - 42) / 2,
-                        height: true
+                        height: isCareDoctor
                           ? Platform.OS == 'android'
-                            ? 144
-                            : 139
+                            ? 154
+                            : 149
                           : Platform.OS == 'android'
                           ? 134
                           : 129,
@@ -758,7 +766,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   >
                     <View>
                       <Text style={styles.onlineConsultLabel}>Consult In-App</Text>
-                      {true ? (
+                      {isCareDoctor ? (
                         renderCareDoctorPricing()
                       ) : (
                         <Text style={styles.onlineConsultAmount}>
@@ -797,10 +805,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     styles.consultViewStyles,
                     {
                       marginLeft: 6,
-                      height: true
+                      height: isCareDoctor
                         ? Platform.OS == 'android'
-                          ? 125
-                          : 120
+                          ? 135
+                          : 130
                         : Platform.OS == 'android'
                         ? 115
                         : 110,
@@ -853,7 +861,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                       {doctorDetails.doctorType !== DoctorType.PAYROLL && (
                         <>
                           <Text style={styles.onlineConsultLabel}>Meet in Person</Text>
-                          {true ? (
+                          {isCareDoctor ? (
                             renderCareDoctorPricing()
                           ) : (
                             <Text style={styles.onlineConsultAmount}>
@@ -1380,7 +1388,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   source={{ uri: doctorDetails!.photoUrl }}
                   style={{ top: 0, height: 140, width: 140, opacity: imgOp, alignSelf: 'center' }}
                 />
-                {true && <CareLogo style={styles.careLogo} textStyle={styles.careLogoText} />}
+                {isCareDoctor && (
+                  <CareLogo style={styles.careLogo} textStyle={styles.careLogoText} />
+                )}
               </Animated.View>
               {/* <TouchableOpacity
                 activeOpacity={1}
