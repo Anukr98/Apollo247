@@ -892,8 +892,7 @@ export const HdfcLanding: React.FC = (props) => {
 
       {defaultNewProfile && !hasExistingProfile /* GA Tracking */
         ? (window as any).dataLayer.push({
-            event: 'UserLoggedIn',
-            Type: 'Registration',
+            event: 'Registration Form Shown',
             'User ID': localStorage.getItem('userMobileNo'),
           })
         : ''}

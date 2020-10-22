@@ -785,6 +785,8 @@ const ChatRoom: React.FC = () => {
                     appointmentDetails={appointmentDetails}
                     setIsConsultCompleted={setIsConsultCompleted}
                     secretaryData={secretaryData}
+                    isConsultCompleted={isConsultCompleted}
+                    srDoctorJoined={srDoctorJoined}
                   />
                 )}
               </div>

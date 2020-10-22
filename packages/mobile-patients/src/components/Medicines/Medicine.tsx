@@ -201,7 +201,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setLocationDetails,
   } = useAppCommonData();
   const [ShowPopop, setShowPopop] = useState<boolean>(!!showUploadPrescriptionPopup);
-  const [pincodePopupVisible, setPincodePopupVisible] = useState<boolean>(false);
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
   const {
     cartItems,
@@ -236,7 +235,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const defaultAddress = addresses.find((item) => item.defaultAddress);
   const hasLocation = locationDetails || pharmacyLocation || defaultAddress;
   const pharmacyPincode = pharmacyLocation?.pincode || locationDetails?.pincode;
-
+  type addressListType = savePatientAddress_savePatientAddress_patientAddress[];
   const postwebEngageCategoryClickedEvent = (
     categoryId: string,
     categoryName: string,
@@ -283,11 +282,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     pincode: string,
     type?: 'autoDetect' | 'pincode' | 'addressSelect'
   ) => {
-    const onPresChangeAddress = () => {
-      hideAphAlert!();
-      setPincodePopupVisible(true);
-    };
-
     const CalltheNearestPharmacyEvent = () => {
       let eventAttributes: WebEngageEvents[WebEngageEventName.CALL_THE_NEAREST_PHARMACY] = {
         pincode: pincode,
@@ -391,7 +385,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                         paddingLeft: 12,
                       }}
                       titleTextStyle={{ ...theme.viewStyles.text('B', 13, '#ffffff', 1, 24, 0) }}
-                      onPress={() => showAccessAccessLocationPopup(false)}
+                      onPress={() => showAccessAccessLocationPopup(addresses, false)}
                     />
                   </View>
                 ),
@@ -411,7 +405,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                   {
                     text: 'CHANGE THE ADDRESS',
                     type: 'orange-link',
-                    onPress: showAccessAccessLocationPopup,
+                    onPress: () => showAccessAccessLocationPopup(addresses),
                   },
                 ],
               });
@@ -491,11 +485,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         updateServiceability(deliveryAddress?.zipcode!);
         setPharmacyLocation!(formatAddressToLocation(deliveryAddress));
       } else {
-        checkLocation();
+        checkLocation(addressList);
       }
       globalLoading!(false);
     } catch (error) {
-      checkLocation();
+      checkLocation(addresses);
       globalLoading!(false);
       CommonBugFender('fetching_Addresses_on_Medicine_Page', error);
     }
@@ -524,6 +518,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       globalLoading!(false);
     } catch (error) {
       globalLoading!(false);
+      checkLocation(addresses);
       CommonBugFender('set_default_Address_on_Medicine_Page', error);
       showAphAlert!({
         title: string.common.uhOh,
@@ -533,23 +528,23 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     }
   }
 
-  const checkLocation = () => {
+  const checkLocation = (addresses: addressListType) => {
     !defaultAddress &&
       !locationDetails &&
       !pharmacyLocation &&
-      showAccessAccessLocationPopup(false);
+      showAccessAccessLocationPopup(addresses, false);
   };
 
   function isunDismissable() {
     return !defaultAddress && !locationDetails && !pharmacyLocation ? true : false;
   }
-  const showAccessAccessLocationPopup = (pincodeInput?: boolean) => {
+  const showAccessAccessLocationPopup = (addressList: addressListType, pincodeInput?: boolean) => {
     return showAphAlert!({
       unDismissable: isunDismissable(),
       removeTopIcon: true,
       children: !pincodeInput ? (
         <AccessLocation
-          addresses={addresses}
+          addresses={addressList}
           onPressSelectAddress={(address) => {
             setDefaultAddress(address);
           }}
@@ -570,11 +565,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           }}
           onPressCurrentLocaiton={() => {
             hideAphAlert!();
-            autoDetectLocation();
+            autoDetectLocation(addressList);
           }}
           onPressPincode={() => {
             hideAphAlert!();
-            showAccessAccessLocationPopup(true);
+            showAccessAccessLocationPopup(addressList, true);
           }}
         />
       ) : (
@@ -585,7 +580,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               updatePlaceInfoByPincode(pincode);
             }
           }}
-          onPressBack={() => showAccessAccessLocationPopup(false)}
+          onPressBack={() => showAccessAccessLocationPopup(addressList, false)}
         />
       ),
     });
@@ -704,7 +699,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     return <Spinner style={{ height, position: 'relative', backgroundColor: 'transparent' }} />;
   };
 
-  const autoDetectLocation = () => {
+  const autoDetectLocation = (addresses: addressListType) => {
     globalLoading!(true);
     doRequestAndAccessLocationModified()
       .then((response) => {
@@ -715,8 +710,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         updateServiceability(response.pincode, 'autoDetect');
       })
       .catch((e) => {
-        CommonBugFender('Medicine__ALLOW_AUTO_DETECT', e);
         globalLoading!(false);
+        checkLocation(addresses);
+        CommonBugFender('Medicine__ALLOW_AUTO_DETECT', e);
         e &&
           typeof e == 'string' &&
           !e.includes('denied') &&
@@ -752,7 +748,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 {
                   text: 'CHANGE PINCODE',
                   type: 'orange-link',
-                  onPress: () => showAccessAccessLocationPopup(true),
+                  onPress: () => showAccessAccessLocationPopup(addresses, true),
                 },
               ],
             });
@@ -852,7 +848,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             <TouchableOpacity
               style={{ marginTop: -7.5 }}
               onPress={() => {
-                showAccessAccessLocationPopup(false);
+                showAccessAccessLocationPopup(addresses, false);
               }}
             >
               <Text numberOfLines={1} style={localStyles.deliverToText}>
@@ -1847,27 +1843,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
-  const renderPincodePopup = () => {
-    const onClose = (serviceable?: boolean, response?: LocationData) => {
-      setPincodePopupVisible(false);
-      if (serviceable) {
-        setServiceabilityMsg('');
-        setPharmacyLocationServiceable!(true);
-      }
-    };
-    return (
-      pincodePopupVisible && (
-        <PincodePopup
-          onClickClose={() => {
-            onClose();
-            checkLocation();
-          }}
-          onComplete={onClose}
-        />
-      )
-    );
-  };
-
   const renderOverlay = () => {
     const isNoResultsFound =
       searchSate != 'load' && searchText.length > 2 && medicineList.length == 0;
@@ -1914,7 +1889,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       </SafeAreaView>
       {isSelectPrescriptionVisible && renderEPrescriptionModal()}
       {ShowPopop && renderUploadPrescriprionPopup()}
-      {renderPincodePopup()}
       {renderMedicineReOrderOverlay()}
     </View>
   );

@@ -88,7 +88,7 @@ export const getPatientTypeDefs = gql`
       whatsAppConsult: Boolean
       patientId: String
     ): UpdateWhatsAppStatusResult!
-    createNewUHID(patientId: String!): String
+    createNewUHID(patientID: String!): String
   }
 `;
 

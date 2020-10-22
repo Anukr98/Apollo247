@@ -465,7 +465,7 @@ export enum ApiConstants {
   WHATSAPP_SD_CONSULT_DELAY = 'inf_sd_consult_delay_1',
   WHATSAPP_DOC_SUMMARY = 'inf_doc_8am_summary_namaste3',
 
-  WHATSAPP_DOC_SECRETARY_RESCHDULE = 'inf_secratory_consult_rescheduled',
+  WHATSAPP_DOC_SECRETARY_RESCHDULE = 'inf_secratory_consult_rescheduled_1',
   WHATSAPP_DOC_SECRETARY_CANCEL = 'inf_secratory_consult_cancelled',
   WHATSAPP_DOC_SECRETARY_BOOKING = 'inf_secratory_consult_booked',
 

@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   discountTagText: {
-    ...theme.viewStyles.text('B', 12, '#ffffff', 1, 24),
+    ...theme.viewStyles.text('B', 10, '#ffffff', 1, 24),
     flex: 1,
     position: 'absolute',
     left: 0,

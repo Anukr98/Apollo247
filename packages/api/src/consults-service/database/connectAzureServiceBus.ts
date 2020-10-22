@@ -1,7 +1,7 @@
 import azure from 'azure-sb';
 
 export const AZURE_SERVICE_BUS = (function () {
-    const connectionStringASB = process.env.ASB_DOCTOR_APPOINTMENT_REMINDER_CONNECTION;
+    const connectionStringASB = process.env.CONSULTS_SERVICE_BUS;
     if (!connectionStringASB) throw new Error('Must provide connection string');
     let instance: azure.ServiceBusService;
 

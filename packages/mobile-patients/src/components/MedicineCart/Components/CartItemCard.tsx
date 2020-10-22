@@ -24,7 +24,7 @@ export interface CartItemCardProps {
 }
 
 export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
-  const { coupon } = useShoppingCart();
+  const { coupon, isProuctFreeCouponApplied } = useShoppingCart();
   const { item, onUpdateQuantity, onPressDelete, onPressProduct } = props;
   const [discountedPrice, setDiscountedPrice] = useState<any>(undefined);
   const [mrp, setmrp] = useState<number>(0);
@@ -105,7 +105,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <View>
           {renderQuantity()}
-          {!item.unserviceable && !item?.isFreeCouponProduct && !!coupon && renderCoupon()}
+          {!item.unserviceable && !isProuctFreeCouponApplied && !!coupon && renderCoupon()}
         </View>
         {!item?.isFreeCouponProduct
           ? discountedPrice || discountedPrice == 0
@@ -160,7 +160,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   };
 
   const renderCoupon = () => {
-    return item.couponPrice ? (
+    return item.couponPrice || item.couponPrice == 0 ? (
       <View style={styles.coupon}>
         <Text style={styles.couponText}>{`${coupon?.coupon} Applied`}</Text>
       </View>
