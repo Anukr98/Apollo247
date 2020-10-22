@@ -389,7 +389,8 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       elasticMatch.push({ bool: { should: elasticFee } });
     }
   }
-  if (args.filterInput.isCare) elasticMatch.push({ match: { 'doctorPricing': !null } })
+  if (args.filterInput.isCare) elasticMatch.push({ match: { 'doctorPricing.status': "ACTIVE" } });
+
   if (args.filterInput.gender && args.filterInput.gender.length > 0) {
     elasticMatch.push({ match: { gender: args.filterInput.gender.join(',') } });
   }
@@ -794,7 +795,7 @@ const getDoctorList: Resolver<
   if (args.filterInput.availability || args.filterInput.availableNow) {
     elasticMatch.push(elasticDoctorAvailabilityFilter(args.filterInput));
   }
-
+  if (args.filterInput.isCare) elasticMatch.push({ match: { 'doctorPricing.status': "ACTIVE" } });
   elasticMatch.push(elasticDoctorLatestSlotFilter());
   if (args.filterInput.specialtyName && args.filterInput.specialtyName.length > 0) {
     elasticMatch.push({ terms: { 'specialty.name.keyword': args.filterInput.specialtyName } });
@@ -902,7 +903,7 @@ const getDoctorList: Resolver<
     doctorObj['consultMode'] = [];
     doctorObj['slot'] = null;
     doctorObj['earliestSlotInMinutes'] = null;
-
+    doctorObj['doctorPricing'] = doctor.doctorPricing;
     specialtyObj['id'] = doctor.specialty.specialtyId;
     specialtyObj['name'] = doctor.specialty.name;
     specialtyObj['specialtydisplayName'] = doctor.specialty.userFriendlyNomenclature;
