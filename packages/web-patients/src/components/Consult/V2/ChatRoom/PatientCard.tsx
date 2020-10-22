@@ -54,6 +54,7 @@ const useStyles = makeStyles((theme: Theme) => {
     chatImgBubble: {
       padding: 0,
       border: 'none',
+      margin: '0 0 10px 45px',
       '& img': {
         maxWidth: '100%',
         verticalAlign: 'middle',
@@ -67,7 +68,6 @@ const useStyles = makeStyles((theme: Theme) => {
       marginLeft: 10,
       position: 'relative',
       top: -4,
-      display: 'inline',
       fontWeight: 500,
     },
     missedCall: {

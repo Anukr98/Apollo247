@@ -38,6 +38,7 @@ import {
   TouchableOpacity,
   View,
   Clipboard,
+  TextInput,
 } from 'react-native';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';
@@ -51,6 +52,7 @@ import firebase from 'react-native-firebase';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { NotificationPermissionAlert } from '@aph/mobile-patients/src/components/ui/NotificationPermissionAlert';
 import { Snackbar } from 'react-native-paper';
+import { SearchSendIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -82,6 +84,10 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const [notificationAlert, setNotificationAlert] = useState(false);
   const [copiedText, setCopiedText] = useState('');
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
+  const [showEmailInput, setshowEmailInput] = useState<boolean>(false);
+  const [email, setEmail] = useState<string>(currentPatient?.emailAddress || '');
+  const [emailSent, setEmailSent] = useState<boolean>(false);
+
   const copyToClipboard = (refId: string) => {
     Clipboard.setString(refId);
     setSnackbarState(true);
@@ -293,16 +299,104 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const renderViewInvoice = () => {
     if (status === success) {
       return (
-        <TouchableOpacity
-          style={{ justifyContent: 'flex-end' }}
-          onPress={() => {
-            requestStoragePermission();
-          }}
-        >
-          {textComponent('VIEW INVOICE', undefined, theme.colors.APP_YELLOW, false)}
-        </TouchableOpacity>
+        <View style={styles.viewInvoice}>
+          <TouchableOpacity onPress={() => requestStoragePermission()}>
+            {textComponent('VIEW INVOICE', undefined, theme.colors.APP_YELLOW, false)}
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setshowEmailInput(!showEmailInput)}>
+            {textComponent(
+              'EMAIL INVOICE',
+              undefined,
+              !showEmailInput ? theme.colors.APP_YELLOW : 'rgba(252, 153, 22, 0.5)',
+              false
+            )}
+          </TouchableOpacity>
+        </View>
       );
     }
+  };
+
+  const renderEmailInputContainer = () => {
+    return showEmailInput ? <View>{!emailSent ? renderInputEmail() : renderSentMsg()}</View> : null;
+  };
+
+  const renderInputEmail = () => {
+    return (
+      <View style={styles.inputContainer}>
+        <View style={{ flex: 0.85 }}>
+          <TextInput
+            value={`${email}`}
+            onChangeText={(email) => setEmail(email)}
+            style={styles.inputStyle}
+          />
+        </View>
+        <View style={styles.rightIcon}>{rightIconView()}</View>
+      </View>
+    );
+  };
+
+  const renderSentMsg = () => {
+    const length = email?.length || 0;
+    return (
+      <View
+        style={{ ...styles.inputContainer, justifyContent: length > 20 ? 'center' : undefined }}
+      >
+        <Text
+          style={{
+            lineHeight: length > 20 ? 18 : 30,
+            textAlign: length > 20 ? 'center' : 'auto',
+            ...styles.sentMsg,
+          }}
+        >
+          {length < 21
+            ? `Invoice has been sent to ${email}!`
+            : `Invoice has been sent to ${'\n'} ${email}!`}
+        </Text>
+      </View>
+    );
+  };
+
+  const rightIconView = () => {
+    console.log(isSatisfyingEmailRegex(email.trim()));
+    return (
+      <View style={{ paddingBottom: 0, opacity: isSatisfyingEmailRegex(email.trim()) ? 1 : 0.5 }}>
+        <TouchableOpacity
+          activeOpacity={1}
+          disabled={!isSatisfyingEmailRegex(email.trim())}
+          onPress={() => {
+            emailInvoice();
+            setEmailSent(true);
+          }}
+        >
+          <SearchSendIcon />
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const isSatisfyingEmailRegex = (value: string) =>
+    /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
+      value
+    );
+
+  const emailInvoice = () => {
+    client
+      .query({
+        query: CONSULT_ORDER_INVOICE,
+        variables: {
+          patientId: currentPatient.id,
+          appointmentId: orderId,
+          emailId: email,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((res) => {
+        console.log(res);
+      })
+      .catch((error) => {
+        CommonBugFender('Error while sending invoice on mail', error);
+      })
+      .finally(() => {});
   };
 
   const downloadInvoice = () => {
@@ -370,35 +464,15 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     return (
       <View style={[styles.statusCardStyle, { backgroundColor: statusCardColour() }]}>
         <View style={styles.statusCardSubContainerStyle}>{statusIcon()}</View>
-        <View
-          style={{
-            flex: 0.15,
-            alignItems: 'center',
-            justifyContent: 'flex-start',
-          }}
-        >
-          {statusText()}
-        </View>
-        <View
-          style={{
-            flex: 0.12,
-            alignItems: 'center',
-            justifyContent: 'flex-start',
-          }}
-        >
+        <View style={{ alignItems: 'center' }}>{statusText()}</View>
+        <View style={styles.priceCont}>
           {textComponent(priceText, undefined, theme.colors.SHADE_GREY, false)}
         </View>
-        <View
-          style={{
-            flex: 0.12,
-            alignItems: 'center',
-            justifyContent: 'flex-start',
-          }}
-        >
+        <View style={styles.priceCont}>
           {textComponent(orderIdText, undefined, theme.colors.SHADE_GREY, false)}
         </View>
-        <View style={{ flex: 0.39, justifyContent: 'flex-start', alignItems: 'center' }}>
-          <View style={{ flex: 0.6, justifyContent: 'flex-start', alignItems: 'center' }}>
+        <View>
+          <View style={styles.paymentRef}>
             {textComponent('Payment Ref. Number - ', undefined, theme.colors.SHADE_GREY, false)}
             <TouchableOpacity
               style={styles.refStyles}
@@ -408,9 +482,8 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
               <Copy style={styles.iconStyle} />
             </TouchableOpacity>
           </View>
-          <View style={{ flex: 0.4, justifyContent: 'flex-start', alignItems: 'center' }}>
-            {renderViewInvoice()}
-          </View>
+          <View style={{}}>{renderViewInvoice()}</View>
+          {renderEmailInputContainer()}
           <Snackbar
             style={{ position: 'absolute', zIndex: 1001, bottom: -10 }}
             visible={snackbarState}
@@ -437,8 +510,8 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const appointmentCard = () => {
     return (
       <View style={styles.appointmentCardStyle}>
-        <View style={{ flex: 0.5, paddingTop: 0.05 * windowWidth }}>
-          <View style={{ flex: 0.4, justifyContent: 'center' }}>
+        <View style={{ marginVertical: 20 }}>
+          <View style={{ justifyContent: 'center' }}>
             {textComponent(
               'Date & Time of Appointment',
               undefined,
@@ -446,9 +519,8 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
               false
             )}
           </View>
-          <View style={{ flex: 0.6, justifyContent: 'flex-start' }}>
+          <View style={{ justifyContent: 'flex-start', marginTop: 5 }}>
             {textComponent(
-              // appointmentDateTime.toDateString() + '  ' + appointmentDateTime.toLocaleTimeString(),
               getDate(appointmentDateTime),
               undefined,
               theme.colors.SHADE_CYAN_BLUE,
@@ -456,20 +528,20 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
             )}
           </View>
         </View>
-        <View style={{ flex: 0.5, flexDirection: 'row' }}>
+        <View style={{ flexDirection: 'row', marginBottom: 20 }}>
           <View style={{ flex: 0.5 }}>
-            <View style={{ flex: 0.4, justifyContent: 'center' }}>
+            <View style={{ justifyContent: 'center' }}>
               {textComponent('Doctor Name', undefined, theme.colors.ASTRONAUT_BLUE, false)}
             </View>
-            <View style={{ flex: 0.6, justifyContent: 'flex-start' }}>
+            <View style={{ justifyContent: 'flex-start', marginTop: 5 }}>
               {textComponent(doctorName, undefined, theme.colors.SHADE_CYAN_BLUE, false)}
             </View>
           </View>
-          <View style={{ flex: 0.5 }}>
-            <View style={{ flex: 0.4, justifyContent: 'center' }}>
+          <View style={{ flex: 0.5, marginLeft: 10 }}>
+            <View style={{ justifyContent: 'center' }}>
               {textComponent('Mode of Consult', undefined, theme.colors.ASTRONAUT_BLUE, false)}
             </View>
-            <View style={{ flex: 0.6, justifyContent: 'flex-start' }}>
+            <View style={{ justifyContent: 'flex-start', marginTop: 5 }}>
               {textComponent(appointmentType, undefined, theme.colors.SHADE_CYAN_BLUE, false)}
             </View>
           </View>
@@ -646,10 +718,10 @@ const styles = StyleSheet.create({
     height: 45,
   },
   statusCardStyle: {
-    height: 0.32 * windowHeight,
     margin: 0.06 * windowWidth,
     flex: 1,
     borderRadius: 10,
+    paddingBottom: 15,
     shadowColor: '#808080',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.4,
@@ -657,13 +729,11 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   statusCardSubContainerStyle: {
-    flex: 0.22,
     marginVertical: 18,
     justifyContent: 'center',
     alignItems: 'center',
   },
   appointmentCardStyle: {
-    height: 0.23 * windowHeight,
     marginVertical: 0.03 * windowWidth,
     paddingLeft: 0.06 * windowWidth,
     marginHorizontal: 0.06 * windowWidth,
@@ -706,5 +776,48 @@ const styles = StyleSheet.create({
     marginTop: 5,
     width: 9,
     height: 10,
+  },
+  inputStyle: {
+    lineHeight: 18,
+    ...theme.fonts.IBMPlexSansMedium(11),
+    color: '#6D7278',
+    borderBottomWidth: 0,
+    justifyContent: 'center',
+  },
+  inputContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    borderRadius: 8,
+    backgroundColor: '#fff',
+    marginHorizontal: 20,
+    marginBottom: 12,
+    paddingHorizontal: 10,
+    alignItems: 'center',
+  },
+  viewInvoice: {
+    marginTop: 10,
+    marginBottom: 10,
+    paddingHorizontal: 40,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  rightIcon: {
+    flex: 0.15,
+    alignItems: 'flex-end',
+  },
+  sentMsg: {
+    color: 'rgba(74, 165, 74, 0.6)',
+    marginVertical: 4,
+    ...theme.fonts.IBMPlexSansMedium(11),
+  },
+  priceCont: {
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  paymentRef: {
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    marginTop: 8,
   },
 });

@@ -2,7 +2,14 @@ import React from 'react';
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphButton } from '@aph/web-ui-components';
-import { SearchObject, experienceList, genderList } from 'helpers/commonHelpers';
+import {
+  SearchObject,
+  experienceList,
+  genderList,
+  hospitalGroupList,
+  feeInRupees,
+} from 'helpers/commonHelpers';
+import { DoctorType } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -88,6 +95,40 @@ export const AddedFilters: React.FC<AddedFiltersProps> = (props) => {
     <div className={classes.root}>
       <div className={classes.dialogContent}>
         <div className={classes.filterGroup}>
+          {filter.hospitalGroup.length > 0 && (
+            <div className={classes.filterType}>
+              <h4>Hospital Group</h4>
+              <div className={classes.filterBtns}>
+                {filter.hospitalGroup.map((hospitalGroupName) => {
+                  let filteredHospitalGroup: { key: DoctorType; value: string; imageUrl: string };
+                  if (
+                    hospitalGroupName !== DoctorType.JUNIOR &&
+                    hospitalGroupName !== DoctorType.PAYROLL
+                  ) {
+                    filteredHospitalGroup = hospitalGroupList.find(
+                      (hospitalGroupObject: { key: DoctorType; value: string; imageUrl: string }) =>
+                        hospitalGroupObject.key === hospitalGroupName
+                    );
+                  } else {
+                    filteredHospitalGroup =
+                      hospitalGroupName === DoctorType.JUNIOR
+                        ? { key: DoctorType.JUNIOR, value: 'Junior', imageUrl: '' }
+                        : { key: DoctorType.PAYROLL, value: 'Payroll', imageUrl: '' };
+                  }
+                  return (
+                    filteredHospitalGroup && (
+                      <AphButton
+                        disabled
+                        className={applyClass(filter.hospitalGroup, hospitalGroupName)}
+                      >
+                        {filteredHospitalGroup.value}
+                      </AphButton>
+                    )
+                  );
+                })}
+              </div>
+            </div>
+          )}
           {filter.experience.length > 0 && (
             <div className={classes.filterType}>
               <h4>Experience In Years</h4>
@@ -123,11 +164,16 @@ export const AddedFilters: React.FC<AddedFiltersProps> = (props) => {
             <div className={classes.filterType}>
               <h4>Fees In Rupees</h4>
               <div className={classes.filterBtns}>
-                {filter.fees.map((fee) => (
-                  <AphButton disabled className={applyClass(filter.experience, fee)}>
-                    {fee}
-                  </AphButton>
-                ))}
+                {filter.fees.map((fee) => {
+                  const filterdFee = feeInRupees.find((feeObj) => feeObj.key === fee);
+                  return (
+                    filterdFee && (
+                      <AphButton disabled className={applyClass(filter.fees, fee)}>
+                        {filterdFee.value}
+                      </AphButton>
+                    )
+                  );
+                })}
               </div>
             </div>
           )}

@@ -42,6 +42,7 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'center',
       '& img': {
         maxWidth: 70,
+        maxHeight: 70,
         margin: 'auto',
       },
     },

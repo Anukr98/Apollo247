@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+import { getAge } from 'helpers/Utils';
 import {
   Card,
   CardMedia,
@@ -19,12 +20,7 @@ export const UserCard: React.FC = () => {
   const userCardStrip = [];
   const displayId = (appointmentInfo && appointmentInfo.displayId) || '';
   if (patientDetails && patientDetails.dateOfBirth && patientDetails.dateOfBirth !== '') {
-    userCardStrip.push(
-      Math.abs(
-        new Date(Date.now()).getUTCFullYear() -
-          new Date(patientDetails.dateOfBirth).getUTCFullYear()
-      ).toString()
-    );
+    userCardStrip.push(getAge(patientDetails.dateOfBirth)); 
   }
   if (patientDetails && patientDetails.gender) {
     if (patientDetails.gender === Gender.FEMALE) {

@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 import { STATUS, APPOINTMENT_TYPE, DoctorType } from "./globalTypes";
@@ -26,12 +27,14 @@ export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory
   id: string;
   firstName: string | null;
   lastName: string | null;
+  mobileNumber: string;
   photoUrl: string | null;
 }
 
 export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory {
   __typename: "AppointmentHistory";
   id: string;
+  displayId: number | null;
   patientId: string;
   isJdQuestionsComplete: boolean | null;
   appointmentDateTime: any;

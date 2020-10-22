@@ -24,7 +24,7 @@ import { Link } from '@material-ui/core';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     hdcContainer: {
-      background: `#fff url(${require('images/hdfc/bg.svg')}) no-repeat 0 0`,
+      background: `#C4E8EF url(${require('images/hdfc/bg.svg')}) no-repeat 0 0`,
       backgroundPosition: 'bottom',
       boxShadow: ' 0px 5px 20px rgba(128, 128, 128, 0.3)',
       borderRadius: 10,
@@ -53,9 +53,16 @@ const useStyles = makeStyles((theme: Theme) => {
         boxShadow: 'none',
         display: 'block',
         marginLeft: 'auto',
-        color: '#FC9916',
+        fontSize: 16,
+        background: '#E52936',
+        color: '#fff',
         [theme.breakpoints.down('sm')]: {
-          bottom: 20,
+          bottom: 10,
+          fontSize: 12,
+        },
+        '&:hover': {
+          background: '#E52936',
+          color: '#fff',
         },
       },
       [theme.breakpoints.down('xs')]: {
@@ -78,6 +85,8 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('sm')]: {
         fontSize: 10,
         bottom: 0,
+        left:0,
+        width: '60%',
       },
     },
     note: {
@@ -177,9 +186,11 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: '0 0 0 10px',
         '&:first-child': {
           boxShadow: 'none',
-          color: '#FC9916',
+          color: '#E52936',
         },
         '&:last-child': {
+          background: '#E52936',
+          color: '#fff',
           '& img': {
             display: 'none',
             [theme.breakpoints.down('sm')]: {
@@ -230,7 +241,7 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: '0 0 0 10px',
         '&:first-child': {
           boxShadow: 'none',
-          color: '#FC9916',
+          color: '#E52936',
         },
       },
     },
@@ -248,7 +259,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '0 0 30px',
       alignItems: 'center',
       [theme.breakpoints.down('sm')]: {
-        padding: '10px 0 30px',
+        padding: '10px 0 90px',
       },
 
       '& a,button': {
@@ -257,17 +268,22 @@ const useStyles = makeStyles((theme: Theme) => {
         bottom: 0,
         right: 0,
         boxShadow: 'none',
-        color: '#FC9916',
+        background: '#E52936',
+        color: '#fff',
         [theme.breakpoints.down('sm')]: {
           margin: '20px 0 0 0',
+        },
+        '&:hover': {
+          background: '#E52936',
+          color: '#fff',
         },
       },
     },
     cContent: {
-      width: '70%',
-      margin: '0  auto',
+      width: '80%',
+      // margin: '0  auto',
       display: 'flex',
-      alignItems: 'center',
+      alignItems: 'center', 
       justifyContent: 'center',
       [theme.breakpoints.down('sm')]: {
         width: '100%',
@@ -291,15 +307,22 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
       '& p': {
-        fontSize: 18,
-        lineHeight: '24px',
-        margin: '0 0 5px',
-        fontWeight: 500,
-        [theme.breakpoints.down('sm')]: {
-          fontSize: 14,
-          lineHeight: '12px',
+       
+        '& span': {
+          // color: '#E52936',
         },
       },
+    },
+    remark:{
+      fontSize:14,
+      fontWeight: 500,
+      [theme.breakpoints.down('sm')]: {
+      position: 'absolute',
+      left: 0,
+      bottom: 20,
+      fontSize: 12,
+      margin: '0 0 40px'
+      }
     },
     description: {
       fontSize: '14px !important',
@@ -314,11 +337,11 @@ const useStyles = makeStyles((theme: Theme) => {
     recheckOtpContent: {
       '& button': {
         boxShadow: 'none',
-        color: '#FC9916',
+        color: '#E52936',
       },
       '& a': {
         boxShadow: 'none',
-        color: '#FC9916',
+        color: '#E52936',
         fontWeight: 600,
         textTransform: 'uppercase',
         fontSize: 13,
@@ -371,7 +394,7 @@ const useStyles = makeStyles((theme: Theme) => {
       '& h2': {
         fontSize: 32,
         fontWeight: 700,
-        color: '#02475b',
+        color: '#005CA8',
         lineHeight: '42px',
         [theme.breakpoints.down('sm')]: {
           fontSize: 14,
@@ -391,13 +414,27 @@ const useStyles = makeStyles((theme: Theme) => {
       overflow: 'hidden',
     },
     planName: {
-      color: '#d3a047',
+      fontSize: 18,
+        lineHeight: '24px',
+        margin: '0 0 5px',
+        fontWeight: 500,
+        color: '#E52936',
+        [theme.breakpoints.down('sm')]: {
+          fontSize: 14,
+          lineHeight: '12px',
+        },
     },
+   
     hdcHeader: {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
       padding: '0 0 10px',
+      '& img':{
+        [theme.breakpoints.down('sm')]: {
+          width: 120,
+        }
+      }
     },
   };
 });
@@ -415,6 +452,7 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
   const [otp, setOtp] = React.useState('');
   const [otpError, setOtpError] = React.useState<boolean>(false);
   const [planName, setPlanName] = React.useState('');
+  const [minTransactionValue, setMinTransactionValue] = React.useState(499);
   const [userSubscriptionInput, setUserSubscriptionInput] = React.useState<
     CreateUserSubscriptionInput
   >();
@@ -560,8 +598,15 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
           response.data.CreateUserSubscription.response &&
           response.data.CreateUserSubscription.response.group_plan &&
           response.data.CreateUserSubscription.response.group_plan.name;
+        const min_transaction_value =
+          response.data &&
+          response.data.CreateUserSubscription &&
+          response.data.CreateUserSubscription.response &&
+          response.data.CreateUserSubscription.response.group_plan &&
+          response.data.CreateUserSubscription.response.group_plan.min_transaction_value;
 
         setPlanName(plan);
+        setMinTransactionValue(min_transaction_value)
         setLoading(false);
         setShowOTPValidator(false);
         setShowCongratulations(true);
@@ -594,10 +639,11 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
     <div className={`${classes.hdcContainer}`}>
       <div className={classes.hdcContent}>
         <div className={classes.hdcHeader}>
-          <img src={require('images/hdfc/apollo-hashtag.svg')} alt="HDFC Call Doctor" width="100" />
-          <img src={require('images/hdfc/hdfc-logo.svg')} alt="HDFC Call Doctor" width="100" />
+          <img src={require('images/hdfc/apollo-hashtag.svg')} alt="HDFC Call Doctor" width="150" />
+          <img src={require('images/hdfc/hdfc-logo.svg')} alt="HDFC Call Doctor" width="150" />
         </div>
         {/* Intro */}
+
         {showIntro && (
           <div className={classes.hdfcIntro}>
             <div className={classes.newContent}>
@@ -651,12 +697,8 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
                 <AphButton onClick={() => queryIdentifyHDFCCustomer()}>
                   {loading ? <CircularProgress size={30} /> : <Typography>Resend Otp</Typography>}
                 </AphButton>
-                <AphButton color="primary" variant="contained" onClick={() => validateHDFCOtp()}>
-                  {loading ? (
-                    <CircularProgress size={30} color="secondary" />
-                  ) : (
-                    <Typography>Submit Otp</Typography>
-                  )}
+                <AphButton variant="contained" onClick={() => validateHDFCOtp()}>
+                  {loading ? <CircularProgress size={30} /> : <Typography>Submit Otp</Typography>}
                   <img src={require('images/ic_arrow_forward.svg')} alt="" />
                 </AphButton>
               </div>
@@ -674,6 +716,7 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
                   You are now a{' '}
                   <span className={classes.planName}>{planName.split(' ')[0]} Member</span>
                 </Typography>
+                <Typography className={classes.remark}>As a limited period offer, the minimum spend limit of Rs.{minTransactionValue} has been waived off, specially for you. </Typography>
               </div>
             </div>
             <AphButton

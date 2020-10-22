@@ -121,7 +121,9 @@ const ArticleItem: React.FC<ArticleItemProps> = (props) => {
   const image = screen.width > 768 ? thumbnailWeb : thumbnailMobile;
   const linkTo = () => {
     const baseUrl = props.pageType === 'covid' ? 'covid19' : 'blog';
-    return type.toLowerCase() === 'video' || type.toLowerCase() === 'infographic'
+    return type.toLowerCase() === 'video' ||
+      type.toLowerCase() === 'infographic' ||
+      type.toLowerCase() === 'visual story'
       ? '#'
       : !props.isWebView
       ? props.pageType === 'covid'
@@ -139,6 +141,8 @@ const ArticleItem: React.FC<ArticleItemProps> = (props) => {
           onClick={
             type.toLowerCase() === 'infographic'
               ? () => props.handleInfographicClick({ image, postTitle, sourceUrl })
+              : type.toLowerCase() === 'visual story'
+              ? () => window.open(sourceUrl)
               : () => {}
           }
         >

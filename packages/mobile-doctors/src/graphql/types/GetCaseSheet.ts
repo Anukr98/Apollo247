@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { Gender, Relation, PATIENT_ADDRESS_TYPE, APPOINTMENT_TYPE, STATUS, DoctorType, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION, ROUTE_OF_ADMINISTRATION } from "./globalTypes";
+import { Gender, Relation, PATIENT_ADDRESS_TYPE, APPOINTMENT_TYPE, DoctorType, STATUS, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, MEDICINE_FORM_TYPES, MEDICINE_FREQUENCY, MEDICINE_CONSUMPTION_DURATION, ROUTE_OF_ADMINISTRATION } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetCaseSheet
@@ -111,6 +111,8 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails_patie
   temperature: string | null;
   weight: string | null;
   medicationHistory: string | null;
+  diagnosticTestResult: string | null;
+  clinicalObservationNotes: string | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_patientDetails {
@@ -139,6 +141,38 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_appointm
   prismFileId: string | null;
 }
 
+export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_doctorInfo_doctorHospital_facility {
+  __typename: "Facility";
+  id: string;
+  facilityType: string;
+}
+
+export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_doctorInfo_doctorHospital {
+  __typename: "DoctorHospital";
+  facility: GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_doctorInfo_doctorHospital_facility;
+}
+
+export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_doctorInfo_specialty {
+  __typename: "DoctorSpecialties";
+  id: string;
+  name: string;
+  specialistSingularTerm: string | null;
+  specialistPluralTerm: string | null;
+  userFriendlyNomenclature: string | null;
+}
+
+export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_doctorInfo {
+  __typename: "Profile";
+  id: string;
+  fullName: string | null;
+  doctorType: DoctorType;
+  mobileNumber: string;
+  onlineConsultationFees: string;
+  physicalConsultationFees: string;
+  doctorHospital: GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_doctorInfo_doctorHospital[];
+  specialty: GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_doctorInfo_specialty;
+}
+
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment {
   __typename: "Appointment";
   id: string;
@@ -148,6 +182,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment {
   appointmentType: APPOINTMENT_TYPE;
   displayId: string;
   doctorId: string;
+  doctorInfo: GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_doctorInfo | null;
   hospitalId: string | null;
   patientId: string;
   parentId: string | null;
@@ -220,6 +255,9 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription
   medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null;
   routeOfAdministration: ROUTE_OF_ADMINISTRATION | null;
   medicineCustomDosage: string | null;
+  medicineCustomDetails: string | null;
+  includeGenericNameInPrescription: boolean | null;
+  genericName: string | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_removedMedicinePrescription {
@@ -239,6 +277,9 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_removedMedicinePresc
   medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null;
   routeOfAdministration: ROUTE_OF_ADMINISTRATION | null;
   medicineCustomDosage: string | null;
+  medicineCustomDetails: string | null;
+  includeGenericNameInPrescription: boolean | null;
+  genericName: string | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions {
@@ -263,6 +304,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis {
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription {
   __typename: "DiagnosticPrescription";
   itemname: string | null;
+  testInstruction: string | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails {
@@ -302,6 +344,7 @@ export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosis 
 export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription {
   __typename: "DiagnosticPrescription";
   itemname: string | null;
+  testInstruction: string | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_symptoms {
@@ -330,6 +373,9 @@ export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_medicinePr
   medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null;
   routeOfAdministration: ROUTE_OF_ADMINISTRATION | null;
   medicineCustomDosage: string | null;
+  medicineCustomDetails: string | null;
+  includeGenericNameInPrescription: boolean | null;
+  genericName: string | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_removedMedicinePrescription {
@@ -349,6 +395,9 @@ export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_removedMed
   medicineConsumptionDurationUnit: MEDICINE_CONSUMPTION_DURATION | null;
   routeOfAdministration: ROUTE_OF_ADMINISTRATION | null;
   medicineCustomDosage: string | null;
+  medicineCustomDetails: string | null;
+  includeGenericNameInPrescription: boolean | null;
+  genericName: string | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_otherInstructions {

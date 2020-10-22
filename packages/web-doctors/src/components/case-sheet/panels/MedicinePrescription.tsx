@@ -2869,7 +2869,7 @@ export const MedicinePrescription: React.FC = () => {
                 variant="contained"
                 color="primary"
                 classes={{ root: classes.updateSymptom }}
-                onClick={(id) => {
+                onClick={() => {
                   setIsEditFavMedicine(true);
                   updateFavMedicine(medicine);
                 }}
@@ -3085,7 +3085,7 @@ export const MedicinePrescription: React.FC = () => {
                 variant="contained"
                 color="primary"
                 classes={{ root: classes.updateSymptom }}
-                onClick={(id) => {
+                onClick={() => {
                   setIsEditFavMedicine(true);
                   updateFavMedicine(medicine);
                 }}
@@ -3375,9 +3375,16 @@ export const MedicinePrescription: React.FC = () => {
                           variant="contained"
                           color="primary"
                           classes={{ root: classes.addMedicine }}
-                          onClick={(id) => {
-                            setIsEditFavMedicine(true);
-                            updateFavMedicine(favMedicine);
+                          onClick={(id: any) => {
+                            let sel = selectedMedicinesArr.find(
+                              (x) => x.medicineName === favMedicine.medicineName
+                            );
+                            if (sel) {
+                              alert('Already Exists');
+                            } else {
+                              setIsEditFavMedicine(true);
+                              updateFavMedicine(favMedicine);
+                            }
                           }}
                         >
                           <img
@@ -3458,7 +3465,7 @@ export const MedicinePrescription: React.FC = () => {
                       <RadioGroup
                         className={classes.radioGroup}
                         value={medicineForm}
-                        onChange={(e) => {
+                        onChange={(e: any) => {
                           setMedicineForm(
                             (e.target as HTMLInputElement).value as MEDICINE_FORM_TYPES
                           );
@@ -3520,7 +3527,7 @@ export const MedicinePrescription: React.FC = () => {
                                         setInTheTime('morning', false);
                                       }
                                     }}
-                                    onKeyPress={(e) => {
+                                    onKeyPress={(e: any) => {
                                       if (
                                         isNaN(parseInt(e.key, 10)) &&
                                         e.key !== '/' &&
@@ -3556,7 +3563,7 @@ export const MedicinePrescription: React.FC = () => {
                                         setInTheTime('noon', false);
                                       }
                                     }}
-                                    onKeyPress={(e) => {
+                                    onKeyPress={(e: any) => {
                                       if (
                                         isNaN(parseInt(e.key, 10)) &&
                                         e.key !== '/' &&
@@ -3592,7 +3599,7 @@ export const MedicinePrescription: React.FC = () => {
                                         setInTheTime('evening', false);
                                       }
                                     }}
-                                    onKeyPress={(e) => {
+                                    onKeyPress={(e: any) => {
                                       if (
                                         isNaN(parseInt(e.key, 10)) &&
                                         e.key !== '/' &&
@@ -3628,7 +3635,7 @@ export const MedicinePrescription: React.FC = () => {
                                         setInTheTime('night', false);
                                       }
                                     }}
-                                    onKeyPress={(e) => {
+                                    onKeyPress={(e: any) => {
                                       if (
                                         isNaN(parseInt(e.key, 10)) &&
                                         e.key !== '/' &&
@@ -3694,7 +3701,7 @@ export const MedicinePrescription: React.FC = () => {
                                     onChange={(event: any) => {
                                       setTabletsCount(event.target.value);
                                     }}
-                                    onKeyPress={(e) => {
+                                    onKeyPress={(e: any) => {
                                       if (
                                         isNaN(parseInt(e.key, 10)) &&
                                         e.key !== '/' &&
@@ -3830,7 +3837,7 @@ export const MedicinePrescription: React.FC = () => {
                               onChange={(event: any) => {
                                 setConsumptionDuration(event.target.value);
                               }}
-                              onKeyPress={(e) => {
+                              onKeyPress={(e: any) => {
                                 if (isNaN(parseInt(e.key, 10))) e.preventDefault();
                               }}
                               //error={errorState.durationErr}
@@ -4193,6 +4200,7 @@ export const MedicinePrescription: React.FC = () => {
                 setShowDosage(false);
                 setFreeTextSwitch(false);
                 handleClearRequested();
+                setMedicine('');
               }}
             >
               <img src={require('images/ic_cross.svg')} alt="" />
@@ -4207,7 +4215,10 @@ export const MedicinePrescription: React.FC = () => {
                       single: '',
                       popper: '',
                     });
-                    getMedicineDetails(suggestion);
+
+                    let sel = selectedMedicinesArr.find((x) => x.medicineName === suggestion.label);
+                    if (sel) alert('Already Exists');
+                    else getMedicineDetails(suggestion);
                   }}
                   {...autosuggestProps}
                   inputProps={{
@@ -4217,7 +4228,7 @@ export const MedicinePrescription: React.FC = () => {
                     placeholder: 'Search',
                     value: state.single,
                     onChange: handleChange('single'),
-                    onKeyPress: (e) => {
+                    onKeyPress: (e: any) => {
                       if (e.which == 13 || e.keyCode == 13) {
                         if (suggestions.length === 1) {
                           setState({
@@ -4245,7 +4256,7 @@ export const MedicinePrescription: React.FC = () => {
                     </Paper>
                   )}
                 />
-                {medicine.trim().length > 2 && !loading && (
+                {/* {medicine.trim().length > 2 && !loading && (
                   <AphButton
                     className={classes.darkGreenaddBtn}
                     variant="contained"
@@ -4268,7 +4279,7 @@ export const MedicinePrescription: React.FC = () => {
                   >
                     <img src={require('images/ic_add_circle.svg')} alt="" />
                   </AphButton>
-                )}
+                )} */}
                 {loading ? <CircularProgress className={classes.loader} /> : null}
               </div>
             ) : (
@@ -4280,7 +4291,7 @@ export const MedicinePrescription: React.FC = () => {
                         <RadioGroup
                           className={classes.radioGroup}
                           value={medicineForm}
-                          onChange={(e) => {
+                          onChange={(e: any) => {
                             setMedicineForm(
                               (e.target as HTMLInputElement).value as MEDICINE_FORM_TYPES
                             );
@@ -4342,7 +4353,7 @@ export const MedicinePrescription: React.FC = () => {
                                           setInTheTime('morning', false);
                                         }
                                       }}
-                                      onKeyPress={(e) => {
+                                      onKeyPress={(e: any) => {
                                         if (
                                           isNaN(parseInt(e.key, 10)) &&
                                           e.key !== '/' &&
@@ -4378,7 +4389,7 @@ export const MedicinePrescription: React.FC = () => {
                                           setInTheTime('noon', false);
                                         }
                                       }}
-                                      onKeyPress={(e) => {
+                                      onKeyPress={(e: any) => {
                                         if (
                                           isNaN(parseInt(e.key, 10)) &&
                                           e.key !== '/' &&
@@ -4414,7 +4425,7 @@ export const MedicinePrescription: React.FC = () => {
                                           setInTheTime('evening', false);
                                         }
                                       }}
-                                      onKeyPress={(e) => {
+                                      onKeyPress={(e: any) => {
                                         if (
                                           isNaN(parseInt(e.key, 10)) &&
                                           e.key !== '/' &&
@@ -4450,7 +4461,7 @@ export const MedicinePrescription: React.FC = () => {
                                           setInTheTime('night', false);
                                         }
                                       }}
-                                      onKeyPress={(e) => {
+                                      onKeyPress={(e: any) => {
                                         if (
                                           isNaN(parseInt(e.key, 10)) &&
                                           e.key !== '/' &&
@@ -4516,7 +4527,7 @@ export const MedicinePrescription: React.FC = () => {
                                       onChange={(event: any) => {
                                         setTabletsCount(event.target.value);
                                       }}
-                                      onKeyPress={(e) => {
+                                      onKeyPress={(e: any) => {
                                         if (
                                           isNaN(parseInt(e.key, 10)) &&
                                           e.key !== '/' &&
@@ -4651,7 +4662,7 @@ export const MedicinePrescription: React.FC = () => {
                                 onChange={(event: any) => {
                                   setConsumptionDuration(event.target.value);
                                 }}
-                                onKeyPress={(e) => {
+                                onKeyPress={(e: any) => {
                                   if (isNaN(parseInt(e.key, 10))) e.preventDefault();
                                 }}
                                 //error={errorState.durationErr}

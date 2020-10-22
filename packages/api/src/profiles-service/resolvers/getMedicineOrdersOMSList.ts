@@ -8,6 +8,7 @@ import {
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import {
   MedicineOrders,
+  MedicineOrdersStatus,
   MEDICINE_ORDER_STATUS,
   MEDICINE_ORDER_TYPE,
   MEDICINE_DELIVERY_TYPE,
@@ -74,6 +75,7 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     alertStore: Boolean
     clusterId: String
     allocationProfileName: String
+    storeDistanceKm: Float
   }
 
   type MedicineOrderOMSLineItems {
@@ -362,7 +364,12 @@ const getMedicineOrdersOMSList: Resolver<
   const medicineOrdersList = await medicineOrdersRepo.getMedicineOrdersListWithoutAbortedStatus(
     primaryPatientIds
   );
-
+  medicineOrdersList.forEach((order) => {
+    // want to hide on hold status to old users
+    if (order.currentStatus == MEDICINE_ORDER_STATUS.ON_HOLD) {
+      order.currentStatus = MEDICINE_ORDER_STATUS.ORDER_PLACED;
+    }
+  });
   //to know later if medicineOrderList is updated or not
   const saveCount = medicineOrdersList.length;
 
@@ -528,9 +535,11 @@ const getMedicineOrderOMSDetails: Resolver<
       throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
     }
     if (medicineOrderDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED) {
-      const reasonCode = medicineOrderDetails.medicineOrdersStatus.find((orderStatusObj: any) => {
-        return orderStatusObj.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED;
-      });
+      const reasonCode = medicineOrderDetails.medicineOrdersStatus.find(
+        (orderStatusObj: MedicineOrdersStatus) => {
+          return orderStatusObj.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED;
+        }
+      );
       if (reasonCode) {
         try {
           const cancellationReasons = await medicineOrdersRepo.getMedicineOrderCancelReasonByCode(
@@ -908,9 +917,11 @@ const getMedicineOrderOMSDetailsWithAddress: Resolver<
       throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
     }
     if (medicineOrderDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED) {
-      const reasonCode = medicineOrderDetails.medicineOrdersStatus.find((orderStatusObj: any) => {
-        return orderStatusObj.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED;
-      });
+      const reasonCode = medicineOrderDetails.medicineOrdersStatus.find(
+        (orderStatusObj: MedicineOrdersStatus) => {
+          return orderStatusObj.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED;
+        }
+      );
       if (reasonCode) {
         try {
           const cancellationReasons = await medicineOrdersRepo.getMedicineOrderCancelReasonByCode(
@@ -929,6 +940,25 @@ const getMedicineOrderOMSDetailsWithAddress: Resolver<
             '',
             JSON.stringify(e)
           );
+        }
+      }
+    } else if (medicineOrderDetails.currentStatus == MEDICINE_ORDER_STATUS.ON_HOLD) {
+      const reasonCode = medicineOrderDetails.medicineOrdersStatus.find(
+        (orderStatusObj: MedicineOrdersStatus) => {
+          return orderStatusObj.orderStatus == MEDICINE_ORDER_STATUS.ON_HOLD;
+        }
+      );
+      if (reasonCode) {
+        const onHoldReasonObj = await medicineOrdersRepo.getMedicineOrderHoldReasonByCode(
+          reasonCode.statusMessage
+        );
+        if (onHoldReasonObj) {
+          if (!onHoldReasonObj.showOnHold) {
+            medicineOrderDetails.currentStatus = MEDICINE_ORDER_STATUS.ORDER_PLACED;
+          }
+          reasonCode.statusMessage = JSON.stringify(onHoldReasonObj);
+        } else {
+          reasonCode.statusMessage = '';
         }
       }
     }

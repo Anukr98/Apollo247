@@ -10,7 +10,11 @@ import { DoctorType, ConsultMode, ConsultType, WeekDay, AccountType } from "./gl
 
 export interface GetDoctorDetails_getDoctorDetails_specialty {
   __typename: "DoctorSpecialties";
+  id: string;
   name: string;
+  specialistSingularTerm: string | null;
+  specialistPluralTerm: string | null;
+  userFriendlyNomenclature: string | null;
 }
 
 export interface GetDoctorDetails_getDoctorDetails_consultHours {
@@ -126,6 +130,7 @@ export interface GetDoctorDetails_getDoctorDetails {
   firstName: string;
   isActive: boolean;
   id: string;
+  chatDays: number | null;
   languages: string | null;
   lastName: string;
   mobileNumber: string;
@@ -142,6 +147,10 @@ export interface GetDoctorDetails_getDoctorDetails {
   streetLine3: string | null;
   zip: string | null;
   signature: string | null;
+  isIvrSet: boolean | null;
+  ivrConsultType: ConsultMode | null;
+  ivrCallTimeOnline: number | null;
+  ivrCallTimePhysical: number | null;
   specialty: GetDoctorDetails_getDoctorDetails_specialty | null;
   consultHours: (GetDoctorDetails_getDoctorDetails_consultHours | null)[] | null;
   packages: (GetDoctorDetails_getDoctorDetails_packages | null)[] | null;

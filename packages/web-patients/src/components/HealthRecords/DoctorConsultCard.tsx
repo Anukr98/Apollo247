@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Avatar } from '@material-ui/core';
-import { AphButton } from '@aph/web-ui-components';
+import { Theme, Avatar, Popover } from '@material-ui/core';
+import { AphButton, AphDialog, AphDialogTitle } from '@aph/web-ui-components';
 import {
   getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet as CaseSheetType,
   getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_symptoms as SymptomType,
 } from '../../graphql/types/getPatientPastConsultsAndPrescriptions';
 import moment from 'moment';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
+import _lowerCase from 'lodash/lowerCase';
+import { MedicalRecordType } from '../../graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -104,6 +106,26 @@ const useStyles = makeStyles((theme: Theme) => {
         marginLeft: 'auto',
       },
     },
+    dialogBody: {
+      padding: 20,
+      color: '#01475b',
+      fontWeight: 500,
+      fontSize: 14,
+      '& span': {
+        fontWeight: 'bold',
+      },
+    },
+    dialogActions: {
+      padding: 16,
+      textAlign: 'center',
+      display: 'flex',
+      '& button': {
+        flex: 1,
+        '&:first-child': {
+          marginRight: 10,
+        },
+      },
+    },
     activeCard: {
       border: '1px solid #00b38e',
       position: 'relative',
@@ -137,12 +159,30 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    moreProfileActions: {
+      position: 'absolute',
+      right: 10,
+      cursor: 'pointer',
+      '& img': {
+        verticalAlign: 'middle',
+      },
+    },
+    cancelBtn: {
+      textTransform: 'none',
+      color: '#02475b',
+      fontSize: 16,
+      fontWeight: 500,
+    },
+    cancelPopover: {
+      marginTop: -10,
+    },
   };
 });
 
 type ConsultCardProps = {
   consult: any;
   isActiveCard: boolean;
+  deleteReport: (id: string, type: string) => void;
   downloadPrescription: () => void;
 };
 
@@ -153,8 +193,11 @@ const client = new AphStorageClient(
 
 export const DoctorConsultCard: React.FC<ConsultCardProps> = (props) => {
   const classes = useStyles({});
-  const { consult, isActiveCard } = props;
+  const delteRecordRef = useRef(null);
+  const { consult, isActiveCard, deleteReport } = props;
   const symptoms: SymptomType[] = [];
+  const [showPopup, setShowPopup] = useState<boolean>(false);
+  const [showDeletePopover, setShowDeletePopover] = useState<boolean>(false);
 
   consult.caseSheet &&
     consult.caseSheet.forEach(
@@ -179,119 +222,220 @@ export const DoctorConsultCard: React.FC<ConsultCardProps> = (props) => {
     }
   };
 
-  return consult ? (
-    consult.patientId ? (
-      <div className={`${classes.root} ${isActiveCard ? classes.activeCard : ''}`}>
-        <div className={classes.doctorInfoGroup}>
-          <div className={classes.doctorImg}>
-            <Avatar
-              alt="Dr. Simran Rai"
-              src={
-                consult.doctorInfo &&
-                consult.doctorInfo.photoUrl &&
-                consult.doctorInfo.photoUrl.length > 0
-                  ? consult.doctorInfo.photoUrl
-                  : ''
-              }
-              className={classes.avatar}
-            />
-          </div>
-          <div className={classes.doctorInfo}>
-            <div className={classes.doctorName}>
-              {consult.doctorInfo
-                ? `Dr. ${consult.doctorInfo.firstName || ''} ${consult.doctorInfo.lastName || ''}`
-                : ''}
-            </div>
-            <div className={classes.doctorService}>
-              {consult.isFollowUp ? (
-                <span>Follow-up to {consult.followUpTo}</span>
-              ) : (
-                <span>New Consult</span>
-              )}
-              <span>
-                <img src={require('images/ic_onlineconsult.svg')} alt="" />
-              </span>
-            </div>
-            <div className={classes.doctorService}>
-              {
-                <span>
-                  {symptoms && symptoms.length > 0
-                    ? symptoms.map((symptom: SymptomType, idx: number) => {
-                        if (idx !== 0) {
-                          return `, ${symptom.symptom} `;
-                        }
-                        return symptom.symptom;
-                      })
-                    : 'No Symptoms'}
-                </span>
-              }
-              <span onClick={() => prescriptionDownload(consult.caseSheet)}>
-                <img src={require('images/ic_prescription_blue.svg')} alt="" />
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    ) : consult.prescriptionName ? (
-      <div className={`${classes.root} ${isActiveCard ? classes.activeCard : ''}`}>
-        <div className={classes.doctorInfoGroup}>
-          <div className={classes.doctorImg}>
-            <img src={require('images/ic_prescription_icon.svg')} alt="" />
-          </div>
-          <div className={classes.doctorInfo}>
-            <div className={classes.doctorName}>{consult.prescriptionName}</div>
-            <div className={classes.dateField}>
-              <span>{consult.date && moment(consult.date).format('MM/DD/YYYY')}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    ) : consult.medicineOrderLineItems && consult.medicineOrderLineItems.length === 0 ? (
-      <div className={`${classes.root} ${isActiveCard ? classes.activeCard : ''}`}>
-        <div className={classes.doctorInfoGroup}>
-          <div className={classes.doctorImg}>
-            <img src={require('images/ic_prescription_icon.svg')} alt="" />
-          </div>
-          <div className={classes.doctorInfo}>
-            <div className={classes.doctorName}>Prescription uploaded by Patient</div>
-            <div className={classes.dateField}>
-              <span>
-                {consult.quoteDateTime && moment(consult.quoteDateTime).format('MM/DD/YYYY')}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    ) : consult && consult.medicineOrderLineItems ? (
-      consult.medicineOrderLineItems.map((medicine: any) => (
-        <div className={`${classes.root} ${isActiveCard ? classes.activeCard : ''}`}>
-          <div className={classes.doctorInfoGroup}>
-            <div className={classes.doctorImg}>
-              <Avatar
-                alt="Dr. Simran Rai"
-                src={
-                  consult.doctorInfo &&
-                  consult.doctorInfo.photoUrl &&
-                  consult.doctorInfo.photoUrl.length > 0
-                    ? consult.doctorInfo.photoUrl
-                    : ''
-                }
-                className={classes.avatar}
-              />
-            </div>
-            <div className={classes.doctorInfo}>
-              <div className={classes.doctorName}>
-                <span>{medicine.medicineName}</span>
+  return (
+    <>
+      {consult ? (
+        consult.patientId ? (
+          <div className={`${classes.root} ${isActiveCard ? classes.activeCard : ''}`}>
+            <div className={classes.doctorInfoGroup}>
+              {/* {consult.source &&
+                (consult.source === '247self' || _lowerCase(consult.source) === 'self') && (
+                  <div
+                    onClick={() => setShowDeletePopover(true)}
+                    ref={delteRecordRef}
+                    className={classes.moreProfileActions}
+                  >
+                    <img src={require('images/ic_more.svg')} alt="" />
+                  </div>
+                )} */}
+              <div className={classes.doctorImg}>
+                <Avatar
+                  alt="Dr. Simran Rai"
+                  src={
+                    consult.doctorInfo &&
+                    consult.doctorInfo.photoUrl &&
+                    consult.doctorInfo.photoUrl.length > 0
+                      ? consult.doctorInfo.photoUrl
+                      : ''
+                  }
+                  className={classes.avatar}
+                />
               </div>
-              <div className={classes.dateField}>
-                <span>
-                  {consult.quoteDateTime && moment(consult.quoteDateTime).format('MM/DD/YYYY')}
-                </span>
+              <div className={classes.doctorInfo}>
+                <div className={classes.doctorName}>
+                  {consult.doctorInfo
+                    ? `Dr. ${consult.doctorInfo.firstName || ''} ${
+                        consult.doctorInfo.lastName || ''
+                      }`
+                    : ''}
+                </div>
+                <div className={classes.doctorService}>
+                  {consult.isFollowUp ? (
+                    <span>Follow-up to {consult.followUpTo}</span>
+                  ) : (
+                    <span>New Consult</span>
+                  )}
+                  <span>
+                    <img src={require('images/ic_onlineconsult.svg')} alt="" />
+                  </span>
+                </div>
+                <div className={classes.doctorService}>
+                  {
+                    <span>
+                      {symptoms && symptoms.length > 0
+                        ? symptoms.map((symptom: SymptomType, idx: number) => {
+                            if (idx !== 0) {
+                              return `, ${symptom.symptom} `;
+                            }
+                            return symptom.symptom;
+                          })
+                        : 'No Symptoms'}
+                    </span>
+                  }
+                  <span onClick={() => prescriptionDownload(consult.caseSheet)}>
+                    <img src={require('images/ic_prescription_blue.svg')} alt="" />
+                  </span>
+                </div>
               </div>
             </div>
           </div>
+        ) : consult.prescriptionName ? (
+          <div className={`${classes.root} ${isActiveCard ? classes.activeCard : ''}`}>
+            <div className={classes.doctorInfoGroup}>
+              {/* {consult.source &&
+                (consult.source === '247self' || _lowerCase(consult.source) === 'self') && (
+                  <div
+                    onClick={() => setShowDeletePopover(true)}
+                    ref={delteRecordRef}
+                    className={classes.moreProfileActions}
+                  >
+                    <img src={require('images/ic_more.svg')} alt="" />
+                  </div>
+                )} */}
+              <div className={classes.doctorImg}>
+                <img src={require('images/ic_prescription_icon.svg')} alt="" />
+              </div>
+              <div className={classes.doctorInfo}>
+                <div className={classes.doctorName}>{consult.prescriptionName}</div>
+                <div className={classes.dateField}>
+                  <span>{consult.date && moment(consult.date).format('MM/DD/YYYY')}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : consult.medicineOrderLineItems && consult.medicineOrderLineItems.length === 0 ? (
+          <div className={`${classes.root} ${isActiveCard ? classes.activeCard : ''}`}>
+            <div className={classes.doctorInfoGroup}>
+              {/* {consult.source &&
+                (consult.source === '247self' || _lowerCase(consult.source) === 'self') && (
+                  <div
+                    onClick={() => setShowDeletePopover(true)}
+                    ref={delteRecordRef}
+                    className={classes.moreProfileActions}
+                  >
+                    <img src={require('images/ic_more.svg')} alt="" />
+                  </div>
+                )} */}
+              <div className={classes.doctorImg}>
+                <img src={require('images/ic_prescription_icon.svg')} alt="" />
+              </div>
+              <div className={classes.doctorInfo}>
+                <div className={classes.doctorName}>Prescription uploaded by Patient</div>
+                <div className={classes.dateField}>
+                  <span>
+                    {consult.quoteDateTime && moment(consult.quoteDateTime).format('MM/DD/YYYY')}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : consult && consult.medicineOrderLineItems ? (
+          consult.medicineOrderLineItems.map((medicine: any) => (
+            <div className={`${classes.root} ${isActiveCard ? classes.activeCard : ''}`}>
+              <div className={classes.doctorInfoGroup}>
+                {/* {consult.source &&
+                  (consult.source === '247self' || _lowerCase(consult.source) === 'self') && (
+                    <div
+                      onClick={() => setShowDeletePopover(true)}
+                      ref={delteRecordRef}
+                      className={classes.moreProfileActions}
+                    >
+                      <img src={require('images/ic_more.svg')} alt="" />
+                    </div>
+                  )} */}
+                <div className={classes.doctorImg}>
+                  <Avatar
+                    alt="Dr. Simran Rai"
+                    src={
+                      consult.doctorInfo &&
+                      consult.doctorInfo.photoUrl &&
+                      consult.doctorInfo.photoUrl.length > 0
+                        ? consult.doctorInfo.photoUrl
+                        : ''
+                    }
+                    className={classes.avatar}
+                  />
+                </div>
+                <div className={classes.doctorInfo}>
+                  <div className={classes.doctorName}>
+                    <span>{medicine.medicineName}</span>
+                  </div>
+                  <div className={classes.dateField}>
+                    <span>
+                      {consult.quoteDateTime && moment(consult.quoteDateTime).format('MM/DD/YYYY')}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))
+        ) : null
+      ) : null}
+      <Popover
+        open={showDeletePopover}
+        anchorEl={delteRecordRef.current}
+        onClose={() => setShowDeletePopover(false)}
+        classes={{
+          paper: classes.cancelPopover,
+        }}
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+      >
+        <AphButton onClick={() => setShowPopup(true)} className={classes.cancelBtn}>
+          Delete
+        </AphButton>
+      </Popover>
+      <AphDialog
+        open={showPopup}
+        disableBackdropClick
+        disableEscapeKeyDown
+        onClose={() => setShowPopup(false)}
+        maxWidth="sm"
+      >
+        <AphDialogTitle>Delete Report</AphDialogTitle>
+        <div className={classes.dialogBody}>
+          Are you sure you want to delete the selected record?
         </div>
-      ))
-    ) : null
-  ) : null;
+        <div className={classes.dialogActions}>
+          <AphButton
+            color="default"
+            onClick={() => {
+              setShowDeletePopover(false);
+              setShowPopup(false);
+            }}
+            autoFocus
+          >
+            Cancel
+          </AphButton>
+          <AphButton
+            color="primary"
+            onClick={() => {
+              deleteReport(consult.id, MedicalRecordType.PRESCRIPTION);
+              setShowPopup(false);
+              setShowDeletePopover(false);
+            }}
+            autoFocus
+          >
+            Ok
+          </AphButton>
+        </div>
+      </AphDialog>
+    </>
+  );
 };

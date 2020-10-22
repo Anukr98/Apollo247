@@ -8,7 +8,7 @@ const useStyles = makeStyles((theme: Theme) => {
     root: {
       padding: 5,
       height: 20,
-      width: 42,
+      width: 46,
     },
     track: {
       backgroundColor: '#00b38e !important',

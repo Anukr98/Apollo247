@@ -1,7 +1,6 @@
 import { Audio, Video } from '@aph/mobile-doctors/src/components/ui/Icons';
 import React from 'react';
 import {
-  Image,
   ImageSourcePropType,
   ImageStyle,
   StyleProp,
@@ -12,6 +11,7 @@ import {
 } from 'react-native';
 import { colors } from '@aph/mobile-doctors/src/theme/colors';
 import PastConsultCardStyles from '@aph/mobile-doctors/src/components/ui/PastConsultCard.styles';
+import FastImage from 'react-native-fast-image';
 
 const styles = PastConsultCardStyles;
 
@@ -40,7 +40,7 @@ export const PastConsultCard: React.FC<CalendarCardProps> = (props) => {
       <View style={[styles.containerStyle, containerStyle, props.containerStyle]}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <View style={styles.imageView}>
-            <Image
+            <FastImage
               source={require('../../images/doctor/rahul.png')}
               style={{ height: 44, width: 44 }}
             />

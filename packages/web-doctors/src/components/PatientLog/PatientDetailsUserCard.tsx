@@ -5,6 +5,7 @@ import { Card, CardMedia, CardContent, Typography, CircularProgress } from '@mat
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { Gender } from 'graphql/types/globalTypes';
 import { GetCaseSheet_getCaseSheet_patientDetails } from 'graphql/types/GetCaseSheet';
+import { getAge } from 'helpers/Utils';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -59,12 +60,7 @@ export const PatientDetailsUserCard: React.FC<PatientDetailsProps> = (props) => 
     patientDetails!.dateOfBirth !== null &&
     patientDetails!.dateOfBirth !== ''
   ) {
-    userCardStrip.push(
-      Math.abs(
-        new Date(Date.now()).getUTCFullYear() -
-          new Date(patientDetails!.dateOfBirth).getUTCFullYear()
-      ).toString()
-    );
+    userCardStrip.push(getAge(patientDetails!.dateOfBirth))
   }
   if (patientDetails && patientDetails!.gender && patientDetails!.gender !== null) {
     if (patientDetails!.gender === Gender.FEMALE) {

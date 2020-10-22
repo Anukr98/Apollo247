@@ -58,6 +58,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
         id
         image
         name
+        specialistSingularTerm
       }
       zip
       doctorType
@@ -87,6 +88,17 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
         isActive
         actualDay
       }
+    }
+  }
+`;
+
+export const GET_SECRETARY_DETAILS_BY_DOCTOR_ID = gql`
+  query getSecretaryDetailsByDoctorId($doctorId: String!) {
+    getSecretaryDetailsByDoctorId(doctorId: $doctorId) {
+      id
+      name
+      mobileNumber
+      isActive
     }
   }
 `;
@@ -152,6 +164,22 @@ export const GET_DOCTORS_BY_SPECIALITY_AND_FILTERS = gql`
       doctorsAvailability {
         doctorId
         availableModes
+      }
+      apolloDoctorCount
+      partnerDoctorCount
+    }
+  }
+`;
+
+export const GET_DOCTOR_LIST = gql`
+  query GetDoctorList($filterInput: FilterDoctorInput) {
+    getDoctorList(filterInput: $filterInput) {
+      doctors
+      specialties {
+        id
+        name
+        specialtydisplayName
+        specialistPluralTerm
       }
       apolloDoctorCount
       partnerDoctorCount

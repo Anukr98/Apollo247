@@ -1,4 +1,3 @@
 module.exports.getAddressDetails = require('./getAddressDetails').getAddressDetails;
-module.exports.getCache = require('./connectRedis').getCache;
-module.exports.CreateUserSubscription = require('./exotel').CreateUserSubscription;
-module.exports.getCallDetails = require('./exotel').getCallDetails;
+module.exports.exotelCallEndHandler = require('./exotel').exotelCallEndHandler;
+module.exports.postWebEngageEvent = require('./webEngage').postWebEngageEvent;

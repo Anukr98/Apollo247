@@ -8,7 +8,7 @@ import { AphAuthenticationError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { webPatientsBaseUrl, webDoctorsBaseUrl, getPortStr } from '@aph/universal/src/aphRoutes';
 import { winstonLogger } from 'customWinstonLogger';
-import { format, differenceInMilliseconds } from 'date-fns';
+import { format } from 'date-fns';
 
 //import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 // import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
@@ -126,7 +126,8 @@ export type Resolver<Parent, Args, Context, Result> = (
     'https://stagingpatients.apollo247.com',
     'https://stagingdoctors.apollo247.com',
     'https://stagingpmt.apollo247.com',
-    'https://consult-qa.apollo247.com',
+    'https://consult-booking-qa.apollo247.com',
+    'https://consult-tool-qa.apollo247.com',
     'https://qathreepatients.apollo247.com',
     'https://qathreedoctors.apollo247.com',
     'https://qathreepmt.apollo247.com',

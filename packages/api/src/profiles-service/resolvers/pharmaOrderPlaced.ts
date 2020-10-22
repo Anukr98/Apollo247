@@ -14,7 +14,7 @@ import { sendMedicineOrderStatusNotification } from 'notifications-service/handl
 import { NotificationType } from 'notifications-service/constants';
 import { ApiConstants } from 'ApiConstants';
 import { postEvent, WebEngageInput } from 'helpers/webEngage';
-import { format, addMinutes } from 'date-fns';
+import { format, addMinutes, differenceInHours, differenceInCalendarDays } from 'date-fns';
 import { syncInventory } from 'helpers/inventorySync';
 
 export const pharmaOrderPlacedTypeDefs = gql`
@@ -88,6 +88,13 @@ const saveOrderPlacedStatus: Resolver<
     profilesDb
   );
 
+  orderDetails.medicineOrderLineItems = await medicineOrdersRepo.getMedicineOrderLineItemByOrderId(
+    orderDetails.id
+  );
+  if (orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.HOME_DELIVERY) {
+    syncInventory(orderDetails, SYNC_TYPE.BLOCK);
+  }
+  const orderTat = orderDetails.orderTat ? new Date(Date.parse(orderDetails.orderTat)) : null;
   //post order placed event to webEngage
   const postBody: Partial<WebEngageInput> = {
     userId: orderDetails.patient.mobileNumber,
@@ -97,19 +104,29 @@ const saveOrderPlacedStatus: Resolver<
       orderType: orderDetails.orderType,
       statusDateTime: format(addMinutes(new Date(), +330), "yyyy-MM-dd'T'HH:mm:ss'+0530'"),
       orderAmount: orderDetails.estimatedAmount.toString(),
-      orderTAT: orderDetails.orderTat
-        ? format(new Date(Date.parse(orderDetails.orderTat)), "yyyy-MM-dd'T'HH:mm:ss")
-        : '',
+      orderTAT: orderTat ? format(orderTat, "yyyy-MM-dd'T'HH:mm:ss") : '',
+      source: orderDetails.bookingSource,
+      prescriptionUploaded: !!orderDetails.prescriptionImageUrl,
+      tat: orderTat
+        ? differenceInCalendarDays(
+            new Date(Date.parse(orderDetails.orderTat)),
+            new Date(orderDetails.createdDate)
+          )
+        : -1,
+      tatDuration: orderTat
+        ? differenceInHours(
+            new Date(Date.parse(orderDetails.orderTat)),
+            new Date(orderDetails.createdDate)
+          )
+        : -1,
+      paymentType:
+        orderDetails.medicineOrderPayments[0] && orderDetails.medicineOrderPayments[0].paymentType,
+      storeId: orderDetails.siteId,
+      storeType: orderDetails.tatType,
+      skuCodes: orderDetails.medicineOrderLineItems.map((lineItem) => lineItem.medicineSKU),
     },
   };
   postEvent(postBody);
-
-  orderDetails.medicineOrderLineItems = await medicineOrdersRepo.getMedicineOrderLineItemByOrderId(
-    orderDetails.id
-  );
-  if (orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.HOME_DELIVERY) {
-    syncInventory(orderDetails, SYNC_TYPE.BLOCK);
-  }
 
   return { message: 'Order placed successfully' };
 };

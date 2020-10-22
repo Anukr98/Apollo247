@@ -1,22 +1,20 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Avatar, Modal, Paper, CircularProgress, Popover } from '@material-ui/core';
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import moment from 'moment';
 import { AphButton, AphDialogTitle } from '@aph/web-ui-components';
 import { OnlineConsult } from 'components/OnlineConsult';
-import {
-  TRANSFER_INITIATED_TYPE,
-  BookRescheduleAppointmentInput,
-  APPOINTMENT_STATE,
-} from 'graphql/types/globalTypes';
+import { TRANSFER_INITIATED_TYPE, BookRescheduleAppointmentInput } from 'graphql/types/globalTypes';
 import { BOOK_APPOINTMENT_RESCHEDULE } from 'graphql/profiles';
 import { useMutation } from 'react-apollo-hooks';
 import { Alerts } from 'components/Alerts/Alerts';
-import { removeGraphQLKeyword } from 'helpers/commonHelpers';
+import { removeGraphQLKeyword, consultWebengageEventsInfo } from 'helpers/commonHelpers';
 import { GetAppointmentData_getAppointmentData_appointmentsHistory as AppointmentHistory } from 'graphql/types/GetAppointmentData';
+import { prescriptionReceivedTracking } from 'webEngageTracking';
+import PubNub from 'pubnub';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -255,6 +253,8 @@ interface ViewPrescriptionCardProps {
   messageDetails: any;
   chatTime: string;
   appointmentDetails: AppointmentHistory;
+  totalLength: number;
+  idx: number;
 }
 
 export const ViewPrescriptionCard: React.FC<ViewPrescriptionCardProps> = (props) => {
@@ -272,6 +272,23 @@ export const ViewPrescriptionCard: React.FC<ViewPrescriptionCardProps> = (props)
   const { messageDetails, chatTime, appointmentDetails } = props;
 
   const { currentPatient } = useAllCurrentPatients();
+  const doctorDetail =
+    messageDetails && messageDetails.transferInfo && messageDetails.transferInfo.doctorInfo;
+
+  useEffect(() => {
+    if (doctorDetail) {
+      const eventInfo = consultWebengageEventsInfo(doctorDetail, currentPatient);
+      prescriptionReceivedTracking(eventInfo);
+    }
+  }, [doctorDetail]);
+
+  const pubnubClient = new PubNub({
+    publishKey: process.env.PUBLISH_KEY,
+    subscribeKey: process.env.SUBSCRIBE_KEY,
+    uuid: currentPatient && currentPatient.id,
+    ssl: false,
+    origin: 'apollo.pubnubapi.com',
+  });
 
   const bookAppointment = useMutation(BOOK_APPOINTMENT_RESCHEDULE);
   const rescheduleAPI = (
@@ -286,6 +303,23 @@ export const ViewPrescriptionCard: React.FC<ViewPrescriptionCardProps> = (props)
       fetchPolicy: 'no-cache',
     })
       .then((data: any) => {
+        pubnubClient.publish({
+          channel: appointmentDetails.id,
+          message: {
+            message: `The appointment is rescheduled to ${moment(
+              bookRescheduleInput.newDateTimeslot
+            ).format('Do MMMM, dddd \nhh:mm a')}`,
+            automatedText: `The appointment is rescheduled to ${moment(
+              bookRescheduleInput.newDateTimeslot
+            ).format('Do MMMM, dddd \nhh:mm a')}`,
+            id: appointmentDetails.doctorId,
+            isTyping: true,
+            messageDate: new Date(),
+            cardType: 'patient',
+          },
+          storeInHistory: true,
+          sendByPost: true,
+        });
         setIsModalOpen(false);
         setApiLoading(false);
         setReschedulesRemaining(
@@ -379,11 +413,19 @@ export const ViewPrescriptionCard: React.FC<ViewPrescriptionCardProps> = (props)
               )}
 
               <div>
-                <button className={classes.downloadBtn} onClick={() => setIsModalOpen(true)}>
+                <button
+                  disabled={props.idx !== props.totalLength - 1}
+                  className={classes.downloadBtn}
+                  onClick={() => setIsModalOpen(true)}
+                >
                   CHANGE SLOT
                 </button>
 
-                <button className={classes.viewBtn} onClick={() => handleAcceptReschedule()}>
+                <button
+                  disabled={props.idx !== props.totalLength - 1}
+                  className={classes.viewBtn}
+                  onClick={() => handleAcceptReschedule()}
+                >
                   {apiLoading ? (
                     <CircularProgress size={22} color="secondary" />
                   ) : (

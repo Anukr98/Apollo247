@@ -11,7 +11,6 @@ import {
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { sendDiagnosticOrderStatusNotification } from 'notifications-service/handlers/main';
 import { NotificationType } from 'notifications-service/constants';
-import { notificationType } from 'consults-service/entities';
 
 export const cancelDiagnosticOrdersTypeDefs = gql`
   type DiagnosticOrderCancelResult {
@@ -31,15 +30,6 @@ export const cancelDiagnosticOrdersTypeDefs = gql`
     centerCity: String!
     centerState: String!
     centerLocality: String!
-  }
-
-  input DiagnosticsOrderNotificationInput {
-    type: String
-    patientID: String
-    mobileNumber: String
-    patientFirstName: String
-    displayID: Int
-    orderID: String
   }
 
   type SendDiagnosticOrderNotificationResponse {

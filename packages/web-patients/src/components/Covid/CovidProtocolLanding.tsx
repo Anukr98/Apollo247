@@ -20,6 +20,7 @@ import fetchUtil from 'helpers/fetch';
 import { ManageProfile } from 'components/ManageProfile';
 import { Relation } from 'graphql/types/globalTypes';
 import { pageViewTracking } from '../../webEngageTracking';
+import { dataLayerTracking } from 'gtmTracking';
 
 interface CovidProtocolData {
   introductionBody: string;
@@ -218,6 +219,14 @@ const covidProtocolLanding: React.FC = (props: any) => {
     scrollToRef &&
       scrollToRef.current &&
       scrollToRef.current.scrollIntoView({ behavior: 'smooth' });
+
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: 'Medical Condition Page',
+      pageLOB: 'Covid-19',
+      pageType: 'Others',
+    });
   }, []);
 
   useEffect(() => {
