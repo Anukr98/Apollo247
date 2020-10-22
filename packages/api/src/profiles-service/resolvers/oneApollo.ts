@@ -19,6 +19,11 @@ export const oneApolloTypeDefs = gql`
     burnedCredits: Float!
     blockedCredits: Float
   }
+  enum ONE_APOLLO_STORE_CODE {
+    ANDCUS 
+    IOSCUS
+    WEBCUS
+  }
 
   type TransactionDetails {
     businessUnit: String!

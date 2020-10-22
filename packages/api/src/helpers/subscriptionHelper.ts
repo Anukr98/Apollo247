@@ -3,6 +3,9 @@ import { TransactionType } from 'ApiConstants';
 import { format, addMinutes } from 'date-fns';
 import { log } from 'customWinstonLogger';
 import { getPortStr } from '@aph/universal/src/aphRoutes';
+import { ONE_APOLLO_STORE_CODE } from 'types/oneApolloTypes';
+import { AphError } from 'AphError';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 type SuccessTransactionInputForSubscription = {
   amount: string;
@@ -118,6 +121,62 @@ export async function transactionSuccessTrigger(args: SuccessTransactionInputFor
     });
 }
 
+export async function activateSubscription(storeCode: ONE_APOLLO_STORE_CODE, planId: string, subPlanId: string, mobileNumber: string) {
+  try {
+    let paramString = `plan_id:"${planId}",storeCode:"${storeCode}",mobile_number:"${mobileNumber}"`;
+    if (subPlanId) {
+      paramString += `,sub_plan_id:"${subPlanId}"`;
+    }
+    const mutation = {
+      query: `
+      mutation CreateUserSubscription {
+        CreateUserSubscription(UserSubscription:{
+          ${paramString}
+        }){
+          message
+          code
+          response{
+            status
+            version
+            start_date
+          }
+        }
+      }`
+    };
+    const url = `http://${process.env.SUBSCRIPTION_SERVICE_HOST}${getPortStr(
+      process.env.SUBSCRIPTION_SERVICE_PORT ? process.env.SUBSCRIPTION_SERVICE_PORT : '80'
+    )}`;
+    const response = await fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(mutation),
+      headers: {
+        'authorization': <string>process.env.SUBSCRIPTION_SERVICE_AUTH_TOKEN,
+        'Content-Type': 'application/json'
+      },
+    });
+    const resp = await response.json();
+    if (resp.code > 299) {
+      throw new AphError(AphErrorMessages.SUBSCRIPTION_CREATION_FAILED, resp.code, { mobileNumber })
+      log(
+        'profileServiceLogger',
+        `Subscriptionservice response - ${mobileNumber}`,
+        "saveMedicineOrderPaymentMq()->activateSubscription",
+        resp,
+        'true'
+      )
+    }
+    return true;
+  } catch (e) {
+    log(
+      'profileServiceLogger',
+      `Subscriptionservice exception - ${mobileNumber}`,
+      "saveMedicineOrderPaymentMq()->activateSubscription",
+      e.stack,
+      'true'
+    )
+    throw new AphError(AphErrorMessages.SUBSCRIPTION_CREATION_FAILED, "", { mobileNumber })
+  }
+}
 
 export const checkDocOnCallAvailable = async function (mobileNumber: string, benefitId: string) {
   const url = `http://${process.env.SUBSCRIPTION_SERVICE_HOST}:${process.env.SUBSCRIPTION_SERVICE_PORT}`;
@@ -129,7 +188,7 @@ export const checkDocOnCallAvailable = async function (mobileNumber: string, ben
     }`,
   };
   const response = await axios.post(url, requestJSON);
-  let benefits = response?.data?.data?.GetAllUserSubscriptionsWithPlanBenefits?.response[0]?.benefits;
+  const benefits = response?.data?.data?.GetAllUserSubscriptionsWithPlanBenefits?.response[0]?.benefits;
   if (benefits) {
     return benefits.filter((el: any) => {
       return (el._id == benefitId && el.attribute == "Doc on Call") ? true : false;

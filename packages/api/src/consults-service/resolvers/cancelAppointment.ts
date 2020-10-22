@@ -23,7 +23,7 @@ import { addMilliseconds, format } from 'date-fns';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
-=import { initiateRefund } from 'consults-service/helpers/refundHelper';
+import { initiateRefund } from 'consults-service/helpers/refundHelper';
 import { log } from 'customWinstonLogger';
 import { PaytmResponse } from 'types/refundHelperTypes';
 

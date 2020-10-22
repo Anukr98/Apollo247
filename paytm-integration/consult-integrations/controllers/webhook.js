@@ -29,14 +29,8 @@ module.exports = async (req, res, next) => {
         'authorization': process.env.API_TOKEN
       }
     };
-    const [bookingSource, appointmentId, paymentTypeId, planId] = payload.MERC_UNQ_REF.split(':');
-
-    if (paymentTypeId) {
-      payload.PARTNERINFO = paymentTypeId;
-    }
-    if (planId) {
-      payload.PLANID = planId;
-    }
+    const mercUnqRef = JSON.parse(payload.MERC_UNQ_REF);
+    payload = { ...payload, ...mercUnqRef };
 
     // this needs to be altered later.
     const requestJSON = {

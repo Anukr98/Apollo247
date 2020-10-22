@@ -30,14 +30,10 @@ module.exports = async (req, res, next) => {
       }
     };
 
-    const [bookingSource, healthCredits, paymentTypeId, planId] = payload.MERC_UNQ_REF.split(':');
-    if (paymentTypeId) {
-      payload.PARTNERINFO = paymentTypeId;
-    }
-    if (planId) {
-      payload.PLANID = planId;
-    }
-    //const [bookingSource, healthCredits] = payload.MERC_UNQ_REF.split(':');
+    // Source of booking
+    mercUnqRef = JSON.parse(payload.MERC_UNQ_REF);
+    payload = { ...mercUnqRef, ...payload };
+
     // this needs to be altered later.
     const requestJSON = {
       query: medicineOrderQuery(payload),

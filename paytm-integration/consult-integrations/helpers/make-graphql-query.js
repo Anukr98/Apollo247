@@ -24,18 +24,24 @@ const consultsOrderQuery = (payload) => {
     responseMessage: "${payload.RESPMSG}", 
     bankTxnId: "${payload.BANKTXNID}"`;
 
-  if (payload.PARTNERINFO) {
-    params += `, partnerInfo: "${payload.PARTNERINFO}"`;
+  if (payload.partnerInfo) {
+    params += `, partnerInfo: "${payload.partnerInfo}"`;
   }
 
-  if (payload.PLANID) {
-    params += `, partnerInfo: "${payload.PLANID}"`;
+  if (payload.planId) {
+    params += `, planId: "${payload.planId}"`;
+  }
+  if (payload.subPlanId) {
+    params += `, subPlanId: "${payload.subPlanId}"`;
+  }
+
+  if (payload.storeCode) {
+    params += `, storeCode: ${payload.storeCode}`;
   }
 
   if (payload.REFUNDAMT) {
     params += `, refundAmount: ${payload.REFUNDAMT}`;
   }
-
 
   if (payload.BANKNAME) {
     params += `, bankName: "${payload.BANKNAME}"`;

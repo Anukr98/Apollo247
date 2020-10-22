@@ -9,7 +9,7 @@ module.exports = async (req, res, next) => {
   let transactionStatus = '';
   let bookingSource = 'MOBILE';
   try {
-    const payload = req.body;
+    let payload = req.body;
     orderId = payload.ORDERID;
     logger.info(`${orderId} - Payload received - ${JSON.stringify(payload)}`);
     const checksum = payload.CHECKSUMHASH;
@@ -33,14 +33,10 @@ module.exports = async (req, res, next) => {
       default:
         transactionStatus = 'success';
     }
-    const [bookingSource, appointmentId, paymentTypeId, planId] = payload.MERC_UNQ_REF.split(':');
-
-    if (paymentTypeId) {
-      payload.PARTNERINFO = paymentTypeId;
-    }
-    if (planId) {
-      payload.PLANID = planId;
-    }
+    const mercUnqRef = JSON.parse(payload.MERC_UNQ_REF);
+    payload = { ...payload, ...mercUnqRef };
+    const appointmentId = payload.appointmentId;
+    bookingSource = payload.bookingSource;
 
     if (
       process.env.NODE_ENV == 'dev' ||

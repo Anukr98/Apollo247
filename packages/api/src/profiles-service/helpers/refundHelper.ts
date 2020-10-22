@@ -192,7 +192,7 @@ export const calculateRefund = async (
     healthCreditsRedemptionRequest,
   } = paymentInfo as MedicineOrderPayments;
 
-  const amountPaid = orderDetails.estimatedAmount;
+  const amountPaid = paymentInfo.amountPaid;
   /**
    * Multiple refunds are possible so we need to see how much refund is initiated till now.
    */

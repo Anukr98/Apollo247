@@ -12,7 +12,7 @@ const medicineOrderQuery = (payload) => {
     mid: "${payload.MID}",
     paymentType: CASHLESS, 
     amountPaid: ${payload.TXNAMOUNT},
-    healthCredits: ${payload.HEALTH_CREDITS},
+    healthCredits: ${payload.healthCredits},
     paymentRefId: "${payload.TXNID}", 
     paymentStatus: "${payload.STATUS}", 
     paymentDateTime: "${txnDate}", 
@@ -20,12 +20,19 @@ const medicineOrderQuery = (payload) => {
     responseMessage: "${payload.RESPMSG}", 
     bankTxnId: "${payload.BANKTXNID}"`;
 
-  if (payload.PARTNERINFO) {
-    params += `, partnerInfo: "${payload.PARTNERINFO}"`;
+  if (payload.partnerInfo) {
+    params += `, partnerInfo: "${payload.partnerInfo}"`;
   }
 
-  if (payload.PLANID) {
-    params += `, planId: "${payload.PLANID}"`;
+  if (payload.planId) {
+    params += `, planId: "${payload.planId}"`;
+  }
+  if (payload.subPlanId) {
+    params += `, subPlanId: "${payload.subPlanId}"`;
+  }
+
+  if (payload.storeCode) {
+    params += `, storeCode: ${payload.storeCode}`;
   }
 
   if (payload.REFUNDAMT) {

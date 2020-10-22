@@ -3,10 +3,11 @@
 const { default: axios } = require('axios');
 const { default: Decimal } = require('decimal.js');
 const logger = require('../../winston-logger')('Consults-logs');
+const { getCurrentSellingPrice, additionalMercUnqRef } = require('../../commons/paymentCommon.js');
+
 const {
   initPayment,
   generatePaymentOrderId,
-  addAdditionalMERC,
   singlePaymentAdditionalParams,
 } = require('../helpers/common');
 
@@ -14,14 +15,24 @@ module.exports = async (req, res) => {
   let appointmentIdGlobal;
 
   try {
-    const { appointmentId, planId, paymentTypeID: paymentTypeId, bankCode, paymentModeOnly } = req.query;
+    const {
+      appointmentId,
+      planId,
+      paymentTypeID: paymentTypeId,
+      bankCode, paymentModeOnly,
+      subPlanId,
+      storeCode
+    } = req.query;
     appointmentIdGlobal = appointmentId;
     let source = 'MOBILE';
     if (req.query.source) {
       source = req.query.source;
     }
-    let merc_unq_ref = `${source}:${appointmentId}`;
-    merc_unq_ref += addAdditionalMERC(paymentTypeId, planId);
+    const mercUnqRefInit = { bookingSource: source, appointmentId };
+    const partnerInfo = paymentTypeId === process.env.PARTNER_SBI ? paymentTypeId : undefined;
+
+    const mercUnqRef = additionalMercUnqRef(mercUnqRefInit, { partnerInfo, planId, storeCode, subPlanId });
+
 
     let addParams = {};
 
@@ -46,62 +57,38 @@ module.exports = async (req, res) => {
         appointmentId +
         '"){ appointmentsHistory { discountedAmount patientId } } }',
     };
-    const prePaymentRequests = [];
-    prePaymentRequests.push(axios.post(process.env.API_URL, getAptRequestJson, axiosConfig));
-
-    /**
-     * If plan id is passed, we need to get the price
-     */
-    if (planId) {
-      const getPlanPrice = {
-        query:
-          'query getAppointmentData { getAppointmentData(appointmentId:"' +
-          appointmentId +
-          '"){ appointmentsHistory { discountedAmount patientId } } }',
-      };
-      prePaymentRequests.push(axios.post(process.env.API_URL, getPlanPrice, axiosConfig));
-    }
-
-    const [appointmentData, planData] = await Promise.all(prePaymentRequests);
-
-    logger.info(`${appointmentId} - getAppointmentData - ${JSON.stringify(appointmentData.data)}`);
-    let totalPayAmount = 0;
+    const appointmentData = await axios.post(process.env.API_URL, getAptRequestJson, axiosConfig);
 
     /**
      * If error occurs at getAppointmentData API, throw error and exit
      */
     if (appointmentData.data.errors && appointmentData.data.errors.length) {
       logger.error(
-        `${appointmentId} - consult-payment-request-getAppointmentData - ${JSON.stringify(appointmentData.data.errors)}`
+        `${appointmentId} - consult - payment - request - getAppointmentData - ${JSON.stringify(appointmentData.data.errors)} `
       );
-      throw new Error(`Error Occured in getAppointmentData for appointmentID:${appointmentId}`);
+      throw new Error(`Error Occured in getAppointmentData for appointmentID: ${appointmentId}`);
     }
+    const paymentOrderId = generatePaymentOrderId();
 
     /**
-     * If error occurs at getPlanPrice API, throw error and exit
+     * If user did not buy subscription along with consult order, then use 0 for the plan price as default
      */
-    if (planData) {
-      if (planData.data.errors && planData.data.errors.length) {
-        logger.error(
-          `${appointmentId} - consult-payment-request-getPlanPrice - ${JSON.stringify(planData.data.errors)}`
-        );
-        throw new Error(`Error Occured in getAppointmentData for appointmentID:${appointmentId}`);
-      }
-      //totalPayAmount += planData.data.data.getPlanPrice.price;
-      totalPayAmount = 300;
+    let planPrice = 0;
+
+    /**
+     * If plan id is passed, we need to get the price
+     */
+
+    if (planId) {
+      planPrice = await getCurrentSellingPrice(paymentOrderId, planId, subPlanId);
     }
 
     const {
       discountedAmount,
       patientId: patientIdExisting,
     } = appointmentData.data.data.getAppointmentData.appointmentsHistory[0];
-    totalPayAmount += discountedAmount;
-    if (planId) {
-      //get price from planId
-      const planPrice = 300;
-      totalPayAmount = +new Decimal(planPrice).plus(totalPayAmount);
-    }
-    const paymentOrderId = generatePaymentOrderId();
+    let totalPayAmount = +new Decimal(planPrice).plus(discountedAmount);
+
 
     const requestJSON = {
       query:
@@ -118,7 +105,7 @@ module.exports = async (req, res) => {
     logger.info(`${appointmentId} - updatePaymentOrderId - ${JSON.stringify(updateResp.data)}`);
     if (updateResp.data.errors && updateResp.data.errors.length) {
       logger.error(
-        `${appointmentId} - consult-payment-request - ${JSON.stringify(updateResp.data.errors)}`
+        `${appointmentId} - consult - payment - request - ${JSON.stringify(updateResp.data.errors)} `
       );
       throw new Error(`Error Occured in updatePaymentOrderId for appoinment id: ${appointmentId}`);
     }
@@ -127,7 +114,7 @@ module.exports = async (req, res) => {
       patientIdExisting,
       paymentOrderId,
       totalPayAmount,
-      merc_unq_ref,
+      mercUnqRef,
       addParams,
       req.query.paymentTypeID
     );
@@ -139,10 +126,10 @@ module.exports = async (req, res) => {
   } catch (e) {
     if (e.response && e.response.data) {
       logger.error(
-        `${appointmentIdGlobal} - consult-payment-request - ${JSON.stringify(e.response.data)}`
+        `${appointmentIdGlobal} - consult - payment - request - ${JSON.stringify(e.response.data)}`
       );
     } else {
-      logger.error(`${appointmentIdGlobal} - consult-payment-request -  ${e.stack}`);
+      logger.error(`${appointmentIdGlobal} - consult - payment - request - ${e.stack}`);
     }
     res.status(400).json({
       status: 'failed',
@@ -151,5 +138,3 @@ module.exports = async (req, res) => {
     });
   }
 };
-
-

@@ -26,11 +26,11 @@ import { EmailMessage } from 'types/notificationMessageTypes';
 import { log } from 'customWinstonLogger';
 import { acceptCoupon } from 'helpers/couponServices';
 import { AcceptCouponRequest } from 'types/coupons';
-import { BlockOneApolloPointsRequest, BlockUserPointsResponse } from 'types/oneApolloTypes';
+import { BlockOneApolloPointsRequest, BlockUserPointsResponse, ONE_APOLLO_STORE_CODE } from 'types/oneApolloTypes';
 import { OneApollo } from 'helpers/oneApollo';
 import { getStoreCodeFromDevice } from 'profiles-service/helpers/OneApolloTransactionHelper';
 import { calculateRefund } from 'profiles-service/helpers/refundHelper';
-import { transactionSuccessTrigger } from 'helpers/subscriptionHelper';
+import { activateSubscription, transactionSuccessTrigger } from 'helpers/subscriptionHelper';
 
 export const saveMedicineOrderPaymentMqTypeDefs = gql`
   enum CODCity {
@@ -68,6 +68,8 @@ export const saveMedicineOrderPaymentMqTypeDefs = gql`
     healthCredits: Float
     partnerInfo: String
     planId: String
+    storeCode: ONE_APOLLO_STORE_CODE
+    subPlanId: String
   }
 
   type SaveMedicineOrderPaymentMqResult {
@@ -103,6 +105,8 @@ type MedicinePaymentMqInput = {
   healthCredits: number;
   partnerInfo: string;
   planId: string;
+  subPlanId: string;
+  storeCode: ONE_APOLLO_STORE_CODE;
 };
 
 enum CODCity {
@@ -321,10 +325,20 @@ const SaveMedicineOrderPaymentMq: Resolver<
       medicinePaymentMqInput.paymentStatus != 'TXN_FAILURE' &&
       medicinePaymentMqInput.paymentStatus != 'PENDING'
     ) {
+
+      if (medicinePaymentMqInput.planId) {
+        activateSubscription(
+          medicinePaymentMqInput.storeCode,
+          medicinePaymentMqInput.planId,
+          medicinePaymentMqInput.subPlanId || '',
+          orderDetails.patient.mobileNumber
+        )
+      }
       if (
         medicinePaymentMqInput.healthCredits &&
         !Object.keys(savePaymentDetails.healthCreditsRedemptionRequest).length
       ) {
+
         try {
           const oneApolloresponse = await blockOneApolloUserPoints(
             {
@@ -451,7 +465,6 @@ const SaveMedicineOrderPaymentMq: Resolver<
         toEmail: <string>toEmailId,
         ccEmail: <string>ccEmailIds,
       };
-
       sendMail(emailContent);
     }
   }
