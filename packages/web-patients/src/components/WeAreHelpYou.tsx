@@ -193,7 +193,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     hcDetails: {
       display: 'flex',
-      alignItems: 'center',
+      alignItems: 'flex-start',
       justifyContent: 'space-between',
       [theme.breakpoints.down('sm')]: {
         flexDirection: 'column',
@@ -207,14 +207,20 @@ const useStyles = makeStyles((theme: Theme) => {
         width: '70%',
       },
       '& a': {
+        padding: '9px 13px 9px 13px',
+        fontSize:13,
         color: '#FC9916',
         borderRadius: 10,
         margin: '0 0 0 20px',
         textTransform: 'none',
+        boxShadow: '0 2px 4px 0 rgba(0,0,0, 0.2)',
+        fontWeight: 700,
+        display: 'flex',
+        alignItems: 'center',
         [theme.breakpoints.down('sm')]: {
           margin: '20px 0 0',
         },
-        '& img': {
+        '& img, & span': {
           margin: '0 10px 0 0',
         },
       },
@@ -231,6 +237,25 @@ const useStyles = makeStyles((theme: Theme) => {
     pt0: {
       paddingTop: 0,
     },
+    covidBtns:{
+      textAlign: 'right',
+      [theme.breakpoints.down('sm')]: {
+        textAlign: 'left',
+        margin: '20px 0 0'
+      },
+      '& a':{
+        width: 270,
+        [theme.breakpoints.down(600)]: {
+          width: '100%'
+        },
+        '&:first-child':{
+          marginBottom: 10,
+          [theme.breakpoints.down('sm')]: {
+            margin: 0
+          }
+        }
+      }
+    }
   };
 });
 
@@ -252,7 +277,7 @@ export const WeAreHelpYou: React.FC = (props) => {
         >
           <div className={classes.contentGroup}>
             <img src={require('images/h-medicine.svg')} alt="" />
-            <div className={classes.title}>Health Articles & Resources</div>
+            <div className={classes.title}>Health Articles &amp; Resources</div>
             <p>Make better health choices with our curated blogs, videos and expert advice.</p>
           </div>
           {/* <div className={classes.rightGroup}>
@@ -264,7 +289,31 @@ export const WeAreHelpYou: React.FC = (props) => {
           </div> */}
         </div>
         <div className={classes.cardContent}>
-          <div className={`${classes.hcContent} ${classes.pt0}`}>
+        <div className={`${classes.hcContent} ${classes.pt0}`}>
+            <Typography component="h3">COVID-19 Vaccine Information</Typography>
+            <div className={classes.hcDetails}>
+              <Typography>
+                The latest Coronavirus information to keep you safe and healthy.
+              </Typography>
+              <div className={classes.covidBtns}>
+              <a href='https://www.apollo247.com/covid-vaccine-tracker'>
+              <span  style={{ width: '24px', height: '24px' }}>
+                    <LazyIntersection
+                      style={{ width: '24px' }}
+                      src={require('images/ic_covid-orange.svg')}
+                      alt=""
+                    />
+                  </span>
+                  COVID-19 Vaccine Tracker
+              </a>
+              <AphButton href={clientRoutes.covidLanding()}>
+                <img src={'images/covid.svg'} alt="" />
+                Learn About COVID-19 Vaccines
+              </AphButton>
+              </div>             
+            </div>
+            </div>
+            <div className={classes.hcContent}>
             <Typography component="h3">Health Blog</Typography>
             <div className={classes.hcDetails}>
               <Typography>Explore healthcare content created every day by our experts.</Typography>
@@ -273,19 +322,7 @@ export const WeAreHelpYou: React.FC = (props) => {
               </AphButton>
             </div>
           </div>
-          <div className={classes.hcContent}>
-            <Typography component="h3">Coronavirus (COVID-19)</Typography>
-            <div className={classes.hcDetails}>
-              <Typography>
-                The latest Coronavirus information to keep you safe and healthy.
-              </Typography>
-              <AphButton href={clientRoutes.covidLanding()}>
-                <img src={'images/covid.svg'} alt="" />
-                Learn About COVID-19
-              </AphButton>
-            </div>
-          </div>
-          <div className={classes.helpSection}>
+      <div className={classes.helpSection}>
             <div className={classes.helpSectionHead}>You can also</div>
             <div className={classes.serviceContent}>
               <div className={classes.serviceCard}>
@@ -314,7 +351,7 @@ export const WeAreHelpYou: React.FC = (props) => {
                 </a>
               </div>
 
-              <div
+              {/* <div
                 onClick={() => {
                   setIscoronaDialogOpen(true);
                 }}
@@ -328,9 +365,9 @@ export const WeAreHelpYou: React.FC = (props) => {
                   />
                 </span>
                 <span>Call our experts</span>
-              </div>
+              </div> */}
 
-              {/* <Link className={classes.serviceCard} to={clientRoutes.kavachLanding()}>
+              <Link className={classes.serviceCard} to={clientRoutes.kavachLanding()}>
                 <span>
                   <LazyIntersection
                     src={require('images/apollo-kavach.png')}
@@ -339,13 +376,12 @@ export const WeAreHelpYou: React.FC = (props) => {
                   />
                 </span>
                 <span>Explore the Apollo Kavach Program</span>
-              </Link> */}
+              </Link>
             </div>
           </div>
-        </div>
-      </div>
-
-      <AphDialog open={iscoronaDialogOpen} maxWidth="sm">
+          </div>
+      </div> 
+     <AphDialog open={iscoronaDialogOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIscoronaDialogOpen(false)} title={'Close'} />
         <AphDialogTitle></AphDialogTitle>
         <div className={classes.expertBox}>

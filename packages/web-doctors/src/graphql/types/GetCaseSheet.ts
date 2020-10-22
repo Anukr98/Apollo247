@@ -27,6 +27,8 @@ export interface GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory 
   temperature: string | null;
   weight: string | null;
   medicationHistory: string | null;
+  diagnosticTestResult: string | null;
+  clinicalObservationNotes: string | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_patientDetails_familyHistory {
@@ -70,6 +72,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_appointm
   __typename: "AppointmentDocuments";
   documentPath: string | null;
   prismFileId: string | null;
+  createdDate: any | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment {

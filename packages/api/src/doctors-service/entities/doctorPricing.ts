@@ -5,7 +5,7 @@ enum PLAN {
   ALL = 'ALL',
   CARE_PLAN = 'CARE_PLAN'
 }
-enum STATUS {
+enum PLAN_STATUS {
   ACTIVE = 'ACTIVE',
   INACTIVE = 'INACTIVE'
 }
@@ -17,6 +17,10 @@ export class DoctorPricing extends BaseEntity {
 
   @Column({ type: 'float8' })
   slashed_price: Number
+
+
+  @Column({ type: 'float8' })
+  mrp: Number
 
   @Column()
   available_to: PLAN;
@@ -32,7 +36,7 @@ export class DoctorPricing extends BaseEntity {
   end_date: Date;
 
   @Column()
-  status: STATUS;
+  status: PLAN_STATUS;
 
   @Column({ nullable: true })
   doctor_share: Number
@@ -42,5 +46,7 @@ export class DoctorPricing extends BaseEntity {
 
   @ManyToOne((type) => Doctor, (doctor) => { doctor.doctorPricing })
   doctor: Doctor;
+
+
 
 }

@@ -54,10 +54,11 @@ export class AppointmentDocumentRepository extends Repository<AppointmentDocumen
       .getRawOne();
   }
 
-  async getDocumentDataByPrismFileIds(prismFileId: string[]) {
+  async getDocumentDataByPrismFileIds(prismFileId: string[], appointmentIds: string[]) {
     return this.createQueryBuilder('appointment_document')
       .select(['appointment_document."prismFilePath"', 'appointment_document."prismFileId"'])
       .andWhere('appointment_document."prismFileId" in(:...prismFileId)', { prismFileId })
+      .andWhere('appointment_document."appointmentId" in(:...appointmentIds)', { appointmentIds })
       .getRawMany();
   }
 }

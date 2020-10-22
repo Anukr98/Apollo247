@@ -111,6 +111,8 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   PAYMENT_PENDING = "PAYMENT_PENDING",
   PICKUP_CONFIRMED = "PICKUP_CONFIRMED",
   PICKUP_REQUESTED = "PICKUP_REQUESTED",
+  REPORT_GENERATED = "REPORT_GENERATED",
+  SAMPLE_COLLECTED = "SAMPLE_COLLECTED",
 }
 
 export enum DOCTOR_ONLINE_STATUS {
@@ -218,6 +220,7 @@ export enum MEDICINE_ORDER_STATUS {
   CANCEL_REQUEST = "CANCEL_REQUEST",
   DELIVERED = "DELIVERED",
   ITEMS_RETURNED = "ITEMS_RETURNED",
+  ON_HOLD = "ON_HOLD",
   ORDER_BILLED = "ORDER_BILLED",
   ORDER_CONFIRMED = "ORDER_CONFIRMED",
   ORDER_FAILED = "ORDER_FAILED",
@@ -235,8 +238,18 @@ export enum MEDICINE_ORDER_STATUS {
   PURCHASED_IN_STORE = "PURCHASED_IN_STORE",
   QUOTE = "QUOTE",
   READY_AT_STORE = "READY_AT_STORE",
+  READY_FOR_VERIFICATION = "READY_FOR_VERIFICATION",
+  READY_TO_SHIP = "READY_TO_SHIP",
   RETURN_ACCEPTED = "RETURN_ACCEPTED",
   RETURN_INITIATED = "RETURN_INITIATED",
+  RETURN_PENDING = "RETURN_PENDING",
+  RETURN_PICKUP = "RETURN_PICKUP",
+  RETURN_REQUESTED = "RETURN_REQUESTED",
+  RETURN_RTO = "RETURN_RTO",
+  RETURN_TO_ORIGIN = "RETURN_TO_ORIGIN",
+  RVP_ASSIGNED = "RVP_ASSIGNED",
+  SHIPPED = "SHIPPED",
+  VERIFICATION_DONE = "VERIFICATION_DONE",
 }
 
 export enum MEDICINE_ORDER_TYPE {
@@ -293,6 +306,8 @@ export enum MEDICINE_UNIT {
 export enum MedicalRecordType {
   CONSULTATION = "CONSULTATION",
   EHR = "EHR",
+  HEALTHCHECK = "HEALTHCHECK",
+  HOSPITALIZATION = "HOSPITALIZATION",
   OPERATIVE_REPORT = "OPERATIVE_REPORT",
   PATHOLOGY_REPORT = "PATHOLOGY_REPORT",
   PHYSICAL_EXAMINATION = "PHYSICAL_EXAMINATION",
@@ -328,6 +343,17 @@ export enum PAYMENT_METHODS {
   UPI = "UPI",
 }
 
+export enum PAYMENT_METHODS_REVERSE {
+  COD = "COD",
+  CREDIT_CARD = "CREDIT_CARD",
+  CREDIT_CARD_EMI = "CREDIT_CARD_EMI",
+  DEBIT_CARD = "DEBIT_CARD",
+  NET_BANKING = "NET_BANKING",
+  PAYTM_POSTPAID = "PAYTM_POSTPAID",
+  PAYTM_WALLET = "PAYTM_WALLET",
+  UPI = "UPI",
+}
+
 export enum PRISM_DOCUMENT_CATEGORY {
   HealthChecks = "HealthChecks",
   OpSummary = "OpSummary",
@@ -337,6 +363,13 @@ export enum PRISM_DOCUMENT_CATEGORY {
 export enum PharmaDiscountApplicableOn {
   MRP = "MRP",
   SPECIAL_PRICE = "SPECIAL_PRICE",
+}
+
+export enum REFUND_STATUS {
+  REFUND_FAILED = "REFUND_FAILED",
+  REFUND_REQUEST_NOT_RAISED = "REFUND_REQUEST_NOT_RAISED",
+  REFUND_REQUEST_RAISED = "REFUND_REQUEST_RAISED",
+  REFUND_SUCCESSFUL = "REFUND_SUCCESSFUL",
 }
 
 export enum REQUEST_ROLES {
@@ -475,6 +508,38 @@ export enum notificationType {
   CHAT = "CHAT",
 }
 
+export interface AddHealthCheckRecordInput {
+  id?: string | null;
+  patientId: string;
+  recordType: MedicalRecordType;
+  healthCheckName: string;
+  healthCheckDate: any;
+  healthCheckFiles?: (HealthCheckFileProperties | null)[] | null;
+}
+
+export interface AddHospitalizationRecordInput {
+  id?: string | null;
+  patientId: string;
+  recordType: MedicalRecordType;
+  dischargeDate: any;
+  hospitalName: string;
+  doctorName: string;
+  hospitalizationFiles?: (HospitalizationFileProperties | null)[] | null;
+}
+
+export interface AddLabTestRecordInput {
+  id?: string | null;
+  patientId: string;
+  recordType: MedicalRecordType;
+  labTestName: string;
+  labTestDate: any;
+  referringDoctor?: string | null;
+  observations?: string | null;
+  additionalNotes?: string | null;
+  labTestResults?: (LabTestParameters | null)[] | null;
+  testResultFiles?: (LabTestFileProperties | null)[] | null;
+}
+
 export interface AddMedicalRecordInput {
   additionalNotes?: string | null;
   documentURLs?: string | null;
@@ -577,6 +642,7 @@ export interface ConsultQueueInput {
 }
 
 export interface CreateUserSubscriptionInput {
+  _id?: string | null;
   plan_id: string;
   payment_reference_id?: string | null;
   coupon_availed?: string | null;
@@ -594,6 +660,12 @@ export interface CreateUserSubscriptionInput {
   Gender?: string | null;
   DOB?: any | null;
   storeCode: string;
+}
+
+export interface DeletePatientPrismMedicalRecordInput {
+  id?: string | null;
+  patientId: string;
+  recordType: MedicalRecordType;
 }
 
 export interface DiagnosticLineItem {
@@ -626,6 +698,7 @@ export interface DiagnosticOrderInput {
   paymentType?: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
   items?: (DiagnosticLineItem | null)[] | null;
   slotId?: string | null;
+  areaId?: number | null;
 }
 
 export interface DoctorAvailabilityInput {
@@ -689,6 +762,12 @@ export interface Geolocation {
   longitude: number;
 }
 
+export interface HealthCheckFileProperties {
+  fileName?: string | null;
+  mimeType?: string | null;
+  content?: string | null;
+}
+
 export interface HelpEmailInput {
   category?: string | null;
   reason?: string | null;
@@ -697,10 +776,30 @@ export interface HelpEmailInput {
   email?: string | null;
 }
 
+export interface HospitalizationFileProperties {
+  fileName?: string | null;
+  mimeType?: string | null;
+  content?: string | null;
+}
+
 export interface LabResultFileProperties {
   fileName: string;
   mimeType: string;
   content: string;
+}
+
+export interface LabTestFileProperties {
+  fileName?: string | null;
+  mimeType?: string | null;
+  content?: string | null;
+}
+
+export interface LabTestParameters {
+  maximum?: number | null;
+  minimum?: number | null;
+  parameterName?: string | null;
+  result?: number | null;
+  unit?: string | null;
 }
 
 export interface MediaPrescriptionFileProperties {
@@ -741,6 +840,7 @@ export interface MedicineCartOMSInput {
   showPrescriptionAtStore?: boolean | null;
   shopAddress?: ShopAddress | null;
   customerComment?: string | null;
+  storeDistanceKm?: number | null;
 }
 
 export interface MedicineCartOMSItem {
@@ -964,6 +1064,7 @@ export interface UpdatePatientAddressInput {
   latitude?: number | null;
   longitude?: number | null;
   stateCode?: string | null;
+  defaultAddress?: boolean | null;
 }
 
 export interface UpdatePatientInput {

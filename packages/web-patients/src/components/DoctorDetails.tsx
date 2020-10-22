@@ -339,7 +339,7 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               'https://prodaphstorage.blob.core.windows.net/patientwebstaticfiles/hospital_image-e202f2.png';
           }
 
-          const docSpecialty = specialty && specialty.name ? specialty.name : '';
+          const docSpecialtySingularTerm = specialty && specialty.specialistSingularTerm ? specialty.specialistSingularTerm : '';
 
           setStructuredJSON({
             '@context': 'http://schema.org/',
@@ -426,8 +426,8 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             ],
           });
           setMetaTagProps({
-            title: `${displayName}, ${docSpecialty} in ${city}, Consult Online Now - Apollo 247`,
-            description: `Consult ${displayName} (${docSpecialty}) online now. Book online appointment and clinic visit with ${displayName} in just a few clicks. Know fees, availability, experience and more about ${displayName}.`,
+            title: `${displayName}, ${docSpecialtySingularTerm} in ${city}, Consult Online Now - Apollo 247`,
+            description: `Consult ${displayName} (${docSpecialtySingularTerm}) online now. Book online appointment and clinic visit with ${displayName} in just a few clicks. Know fees, availability, experience and more about ${displayName}.`,
             canonicalLink:
               window &&
               window.location &&

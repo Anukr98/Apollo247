@@ -12,7 +12,7 @@ const client = createClient({
   host: process.env.REDIS_HOST,
   password: process.env.REDIS_PASSWORD,
   db: process.env.REDIS_DB || 0,
-  retry_strategy: function(options) {
+  retry_strategy: function (options) {
     if (options.error) {
       dLogger(
         new Date(),
@@ -61,10 +61,10 @@ export async function hgetAllCache(key: string) {
   }
 }
 
-export async function setCache(key: string, value: string, expiry: number) {
+export async function setCache(key: string, value: string, expiry?: number) {
   try {
     const set = client.set(key, value);
-    client.expire(key, expiry);
+    if (expiry) client.expire(key, expiry);
     dLogger(new Date(), 'Redis Cache write', `Cache hit ${key}`);
     return set;
   } catch (e) {

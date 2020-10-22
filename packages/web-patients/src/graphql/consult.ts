@@ -42,6 +42,7 @@ export const GET_APPOINTMENT_DATA = gql`
           doctorType
         }
         doctorInfo {
+          mobileNumber
           id
           salutation
           firstName
@@ -53,6 +54,7 @@ export const GET_APPOINTMENT_DATA = gql`
           physicalConsultationFees
           specialty {
             name
+            id
           }
           qualification
           city
@@ -162,8 +164,8 @@ export const GET_CONSULT_PAYMENTS = gql`
 `;
 
 export const GET_CONSULT_INVOICE = gql`
-  query GetOrderInvoice($patientId: String!, $appointmentId: String!) {
-    getOrderInvoice(patientId: $patientId, appointmentId: $appointmentId)
+  query GetOrderInvoice($patientId: String!, $appointmentId: String!, $emailId: Email) {
+    getOrderInvoice(patientId: $patientId, appointmentId: $appointmentId, emailId: $emailId)
   }
 `;
 

@@ -10,6 +10,7 @@ import {
   pharmacyPdpPincodeTracking,
   addToCartTracking,
   buyNowTracking,
+  pharmaAvailabilityApiTracking,
 } from 'webEngageTracking';
 import { SubstituteDrugsList } from 'components/Medicine/SubstituteDrugsList';
 import {
@@ -255,10 +256,13 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 'bold',
     },
     medicineNoOnline: {
-      color: '#890000',
-      lineHeight: '32px',
-      fontWeight: 'bold',
-      boxShadow: '0 2px 4px 0 rgba(0,0,0, 0.2)',
+      lineHeight: '18px',
+      backgroundColor: 'rgba(137,0,0,0.5)',
+      fontSize: 12,
+      fontWeight: 600,
+      padding: '3px 8px',
+      color: '#fff',
+      display: 'inline-block',
     },
     selectMenuItem: {
       backgroundColor: 'transparent',
@@ -362,6 +366,14 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         display: 'block',
       },
+    },
+    calltoOrder: {
+      position: 'absolute',
+      bottom: 20,
+      textAlign: 'center',
+      fontSize: 17,
+      fontWeight: 500,
+      color: '#0087ba',
     },
   });
 });
@@ -588,18 +600,27 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
   const checkDeliveryTime = (pinCode: string, sku: string) => {
     checkSkuAvailability(sku, pinCode)
       .then((res: any) => {
-        if (
-          res &&
-          res.data &&
-          res.data.response &&
-          res.data.response.length > 0 &&
-          res.data.response[0].exist
-        ) {
-          fetchDeliveryTime(pinCode);
-        } else {
-          setDeliveryTime('');
-          setErrorMessage(OUT_OF_STOCK_MESSAGE);
-          dataLayerTrackingFn(pincodeCity, pinCode, OUT_OF_STOCK_MESSAGE);
+        if (res && res.data && res.data.response && res.data.response.length > 0) {
+          /** Webengage Tracking */
+          const { exist, mrp, qty } = res.data.response[0];
+          pharmaAvailabilityApiTracking({
+            source: 'PDP',
+            inputSku: sku,
+            inputPincode: pinCode,
+            inputMrp: price,
+            itemsInCart: 1,
+            resExist: exist,
+            resMrp: mrp * parseInt(mou),
+            resQty: qty,
+          });
+          /** Webengage Tracking */
+          if (res.data.response[0].exist) {
+            fetchDeliveryTime(pinCode);
+          } else {
+            setDeliveryTime('');
+            setErrorMessage(OUT_OF_STOCK_MESSAGE);
+            dataLayerTrackingFn(pincodeCity, pinCode, OUT_OF_STOCK_MESSAGE);
+          }
         }
       })
       .catch((e) => {
@@ -682,6 +703,7 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
     ) : (
       <div className={classes.outOfOnline}>
         <div className={classes.medicineNoOnline}>{NO_ONLINE_SERVICE}</div>
+        <div className={classes.calltoOrder}>Please call 1860-500-0101 to order</div>
       </div>
     );
   };
@@ -797,7 +819,11 @@ export const MedicineInformation: React.FC<MedicineInformationProps> = (props) =
                         }}
                         onClick={() => {
                           const { sku, name } = data;
-                          checkDeliveryTime(pinCode, sku);
+                          if (!pharmaAddressDetails.lat || !pharmaAddressDetails.lng) {
+                            getPlaceDetails(pinCode);
+                          } else {
+                            checkDeliveryTime(pinCode, sku);
+                          }
                           const eventData = {
                             pinCode,
                             productId: sku,

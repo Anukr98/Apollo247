@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
 export interface SelectDeliveryAddressProps extends NavigationScreenProps {
   isTest?: boolean;
   selectedAddress: string;
-  isChanged: (val: boolean, id?: string) => void;
+  isChanged: (val: boolean, id?: string, pincode?: string) => void;
 }
 
 export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (props) => {
@@ -77,7 +77,7 @@ export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (prop
             setLoading(true);
             if (isTest) {
               reArrangeAddresses();
-              isChanged(true, selectedId);
+              isChanged(true, selectedId, selectedPinCode);
               props.navigation.goBack();
             } else {
               pinCodeServiceabilityApi247(selectedPinCode)
@@ -113,6 +113,14 @@ export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (prop
     );
   };
 
+  const _navigateToEditAddress = (dataname: string, address: any, comingFrom: string) => {
+    props.navigation.push(AppRoutes.AddAddress, {
+      KeyName: dataname,
+      DataAddress: address,
+      ComingFrom: comingFrom,
+    });
+  };
+
   const renderRadioButtonList = () => {
     return addressList.map((address, i) => (
       <RadioSelectionItem
@@ -131,6 +139,10 @@ export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (prop
           paddingTop: 15,
         }}
         hideSeparator={i + 1 === addressList.length}
+        showEditIcon={true}
+        onPressEdit={() =>
+          _navigateToEditAddress('Update', address, AppRoutes.SelectDeliveryAddress)
+        }
       />
     ));
   };

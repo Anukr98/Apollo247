@@ -12,8 +12,12 @@ import {
   CommonBugFender,
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { SAVE_SEARCH } from '@aph/mobile-patients/src/graphql/profiles';
-import { getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
+import { SAVE_SEARCH, GET_DOCTOR_DETAILS_BY_ID } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor,
+  getDoctorDetailsById,
+  getDoctorDetailsById_getDoctorDetailsById,
+} from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import {
   getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors,
   getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability,
@@ -133,10 +137,12 @@ const styles = StyleSheet.create({
 });
 
 export interface DoctorCardProps extends NavigationScreenProps {
+  rowId?: number;
   rowData:
     | SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors
     | getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors
     | getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor
+    | any
     | null;
   onPress?: (doctorId: string) => void;
   onPressConsultNowOrBookAppointment?: (type: 'consult-now' | 'book-appointment') => void;
@@ -153,12 +159,6 @@ export interface DoctorCardProps extends NavigationScreenProps {
 }
 
 export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
-  const [availableInMin, setavailableInMin] = useState<number>();
-  const [availableTime, setavailableTime] = useState<string>('');
-  const [doctorsNextAvailability, setdoctorsNextAvailability] = useState<
-    | (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability | null)[]
-    | null
-  >([]);
   const rowData = props.rowData;
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
@@ -171,52 +171,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   }, [currentPatient]);
 
   const client = useApolloClient();
-
-  const setNextAvailability = useCallback(
-    (
-      doctorAvailalbeSlots:
-        | (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability | null)[]
-        | null
-    ) => {
-      const filterData = doctorAvailalbeSlots
-        ? doctorAvailalbeSlots.filter((item) => {
-            if (item && rowData) {
-              return item.doctorId === rowData.id;
-            }
-          })
-        : [];
-      let nextSlot;
-      if (props.availableModes) {
-        nextSlot =
-          props.availableModes === ConsultMode.ONLINE
-            ? g(filterData, '0' as any, 'onlineSlot')
-            : props.availableModes === ConsultMode.PHYSICAL
-            ? g(filterData, '0' as any, 'physicalSlot')
-            : g(filterData, '0' as any, 'referenceSlot');
-        // console.log(props.availableModes, nextSlot, filterData);
-      } else if (filterData.length > 0 && g(filterData, '0' as any, 'referenceSlot')) {
-        nextSlot = filterData[0] ? g(filterData, '0' as any, 'referenceSlot') : ''; //availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!
-      }
-      if (nextSlot) {
-        let timeDiff: number = 0;
-        const today: Date = new Date();
-        const date2: Date = new Date(nextSlot);
-        if (date2 && today) {
-          timeDiff = Math.round(((date2 as any) - (today as any)) / 60000);
-        }
-        setavailableTime(nextSlot);
-        setavailableInMin(timeDiff);
-      }
-    },
-    [rowData]
-  );
-
-  useEffect(() => {
-    if (props.doctorsNextAvailability && props.doctorsNextAvailability != doctorsNextAvailability) {
-      setdoctorsNextAvailability(props.doctorsNextAvailability);
-      setNextAvailability(props.doctorsNextAvailability);
-    }
-  }, [props.doctorsNextAvailability, doctorsNextAvailability, setNextAvailability]);
 
   const navigateToDetails = (id: string, params?: {}) => {
     if (props.saveSearch) {
@@ -240,17 +194,11 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           console.log('Error occured', { error });
         });
     }
-    const availability = doctorsNextAvailability
-      ? doctorsNextAvailability.find((i) => i && i.doctorId === id)
-      : null;
 
     props.navigation.navigate(AppRoutes.ConsultTypeScreen, {
       DoctorName: nameFormater((rowData && rowData.displayName) || '', 'title'),
       DoctorId: id,
-      nextAppointemntOnlineTime: availability ? availability.onlineSlot : null,
-      nextAppointemntInPresonTime: availability ? availability.physicalSlot : null,
-      onlinePrice: rowData && rowData.onlineConsultationFees,
-      InpersonPrice: rowData && rowData.physicalConsultationFees,
+      nextSlot: rowData ? rowData.slot : null,
       ConsultType: props.availableModes,
       callSaveSearch: props.callSaveSearch,
       params: params,
@@ -258,119 +206,34 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   };
 
   const calculatefee = (rowData: any, consultTypeBoth: boolean, consultTypeOnline: boolean) => {
-    if (
-      parseInt(rowData.onlineConsultationFees, 10) ===
-      parseInt(rowData.physicalConsultationFees, 10)
-    ) {
-      return (
-        <View style={{ flexDirection: 'row', marginTop: 5, alignItems: 'center' }}>
-          <Text
-            style={
-              true ? styles.carePrice : { ...theme.viewStyles.text('M', 15, theme.colors.SKY_BLUE) }
-            }
-          >
-            {string.common.Rs}
-            {true ? '' : '  '}
-          </Text>
-          <Text style={true ? styles.carePrice : styles.price}>
-            {rowData.onlineConsultationFees}
-          </Text>
-          {true && (
-            <Text style={styles.careDiscountedPrice}>
-              {string.common.Rs}
-              {rowData.onlineConsultationFees}
-            </Text>
-          )}
-        </View>
-      );
-    } else {
-      return (
-        <View style={{ flexDirection: 'row', marginTop: 5, alignItems: 'center' }}>
-          <Text style={{ ...theme.viewStyles.text('M', 10, theme.colors.SKY_BLUE), paddingTop: 3 }}>
-            {consultTypeBoth && `Starts at  `}
-          </Text>
-          <Text
-            style={true ? styles.carePrice : theme.viewStyles.text('M', 15, theme.colors.SKY_BLUE)}
-          >
-            {string.common.Rs}
-            {true ? '' : '  '}
-          </Text>
-          <Text style={true ? styles.carePrice : styles.price}>
-            {consultTypeBoth ? (
-              Math.min(
-                Number(rowData.physicalConsultationFees),
-                Number(rowData.onlineConsultationFees)
-              )
-            ) : (
-              <>
-                {consultTypeOnline
-                  ? Number(rowData.onlineConsultationFees)
-                  : Number(rowData.physicalConsultationFees)}
-              </>
-            )}
-          </Text>
-          {true && (
-            <Text style={styles.careDiscountedPrice}>
-              {string.common.Rs}
-              {rowData.onlineConsultationFees}
-            </Text>
-          )}
-        </View>
-      );
-    }
-  };
-
-  const renderCareLogo = () => {
-    return <CareLogo style={styles.careLogo} />;
-  };
-
-  const renderSpecialityCareView = () => {
     return (
-      <View>
-        <View style={styles.rowContainer}>
-          <Text
-            style={[
-              styles.doctorSpecializationStyles,
-              {
-                width: '80%',
-              },
-            ]}
-          >
-            {rowData?.specialty?.name || ''}
-          </Text>
-          <TouchableOpacity>
-            <Text style={styles.seeMoreText}>{string.careDoctors.seeMore}</Text>
-          </TouchableOpacity>
-        </View>
-        <Text style={styles.doctorSpecializationStyles}>
-          {rowData?.experience} YR
-          {Number(rowData?.experience) != 1 ? 'S Exp.' : ' Exp.'}
+      <View style={{ flexDirection: 'row', marginTop: 5 }}>
+        <Text style={{ ...theme.viewStyles.text('M', 10, theme.colors.SKY_BLUE), paddingTop: 3 }}>
+          {consultTypeBoth && `Starts at  `}
+        </Text>
+        <Text style={{ ...theme.viewStyles.text('M', 15, theme.colors.SKY_BLUE) }}>
+          {string.common.Rs}
+          {'  '}
+        </Text>
+        <Text style={{ ...theme.viewStyles.text('M', 13, theme.colors.SKY_BLUE), paddingTop: 1 }}>
+          {rowData.fee}
         </Text>
       </View>
     );
   };
 
-  const renderSpecialityNonCareView = () => {
-    return (
-      <Text style={styles.doctorSpecializationStyles}>
-        {rowData?.specialty?.name || ''}
-        {'   '}|{'  '} {rowData?.experience} YR
-        {Number(rowData?.experience) != 1 ? 'S Exp.' : ' Exp.'}
-      </Text>
-    );
-  };
+  function getTimeDiff(nextSlot: any) {
+    let timeDiff: number = 0;
+    const today: Date = new Date();
+    const date2: Date = new Date(nextSlot);
+    if (date2 && today) {
+      timeDiff = Math.round(((date2 as any) - (today as any)) / 60000);
+    }
+    return timeDiff;
+  }
 
   if (rowData) {
-    const doctorClinics = rowData.doctorHospital.filter((item: any) => {
-      if (item && item.facility && item.facility.facilityType)
-        return item.facility.facilityType === 'HOSPITAL';
-    });
-    const clinicAddress =
-      doctorClinics.length > 0 && rowData.doctorType !== DoctorType.PAYROLL
-        ? `${doctorClinics[0].facility.name}${doctorClinics[0].facility.name ? ', ' : ''}${
-            doctorClinics[0].facility.city
-          }`
-        : '';
+    const clinicAddress = rowData?.doctorfacility;
     const isPhysical = props.availableModes
       ? [ConsultMode.PHYSICAL, ConsultMode.BOTH].includes(props.availableModes)
       : false;
@@ -378,7 +241,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       ? [ConsultMode.ONLINE, ConsultMode.BOTH].includes(props.availableModes)
       : false;
     const isBoth = props.availableModes ? [ConsultMode.BOTH].includes(props.availableModes) : false;
-
     return (
       <TouchableOpacity
         key={rowData.id}
@@ -406,8 +268,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           try {
             if (rowData.doctorType === DoctorType.PAYROLL) {
               const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CONNECT_CARD_CLICK] = {
-                'Online Price': Number(g(rowData, 'onlineConsultationFees')),
-                'Physical Price': Number(g(rowData, 'physicalConsultationFees')),
+                Fee: Number(rowData?.fee),
                 'Doctor Speciality': g(rowData, 'specialty', 'name')!,
                 'Doctor Name': g(rowData, 'fullName')!,
                 Source: 'List',
@@ -416,14 +277,38 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               postWebEngageEvent(WebEngageEventName.DOCTOR_CONNECT_CARD_CLICK, eventAttributes);
             }
           } catch (error) {}
+          try {
+            const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK] = {
+              'Patient Name': currentPatient.firstName,
+              'Doctor ID': rowData.id,
+              'Speciality ID': rowData?.specialty?.id,
+              'Doctor Speciality': rowData?.specialty?.name,
+              'Doctor Experience': Number(rowData?.experience),
+              'Hospital Name': rowData?.doctorHospital?.[0]?.facility?.name,
+              'Hospital City': rowData?.doctorHospital?.[0]?.facility?.city,
+              'Availability Minutes': getTimeDiff(rowData?.slot),
+              Source: 'List',
+              'Patient UHID': currentPatient.uhid,
+              Relation: currentPatient?.relation,
+              'Patient Age': Math.round(
+                moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)
+              ),
+              'Patient Gender': currentPatient.gender,
+              'Customer ID': currentPatient.id,
+            };
+            if (props.rowId) {
+              eventAttributes['Rank'] = props.rowId;
+            }
+            postWebEngageEvent(WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK, eventAttributes);
+          } catch (error) {}
 
           props.onPress ? props.onPress(rowData.id!) : navigateToDetails(rowData.id!);
         }}
       >
         <View style={{ borderRadius: 10, flex: 1, zIndex: 1 }}>
           <View style={{ flexDirection: 'row' }}>
-            {availableTime ? (
-              <AvailabilityCapsule availableTime={availableTime} styles={styles.availableView} />
+            {rowData.slot ? (
+              <AvailabilityCapsule availableTime={rowData.slot} styles={styles.availableView} />
             ) : null}
             <View style={{ position: 'absolute', top: -6, right: -6 }}>
               {rowData.doctorType !== 'DOCTOR_CONNECT' ? (
@@ -433,16 +318,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               )}
             </View>
             <View>
-              {/* <TouchableOpacity
-                key={rowData.id}
-                activeOpacity={1}
-                onPress={() => {
-                  props.navigation.navigate(AppRoutes.DoctorDetails, {
-                    doctorId: rowData.id,
-                    onVideoPressed: true,
-                  });
-                }}
-              > */}
               <View style={styles.imageView}>
                 {!!g(rowData, 'thumbnailUrl') ? (
                   <Image
@@ -459,13 +334,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                 ) : (
                   <DoctorPlaceholderImage />
                 )}
-                {/* <VideoPlayIcon
-                    style={{ height: 19, width: 19, position: 'absolute', top: 58, left: 31 }}
-                    resizeMode={'contain'}
-                  /> */}
               </View>
-              {/* </TouchableOpacity> */}
-              {renderCareLogo()}
               <View
                 style={{
                   flexDirection: 'row',
@@ -510,8 +379,12 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             </View>
 
             <View style={{ flex: 1, paddingRight: 16, marginBottom: 16 }}>
-              <Text style={styles.doctorNameStyles}>{rowData.fullName}</Text>
-              {true ? renderSpecialityCareView() : renderSpecialityNonCareView()}
+              <Text style={styles.doctorNameStyles}>{rowData.displayName}</Text>
+              <Text style={styles.doctorSpecializationStyles}>
+                {rowData.specialtydisplayName ? rowData.specialtydisplayName : ''}
+                {'   '}|{'  '} {rowData.experience} YR
+                {Number(rowData.experience) != 1 ? 'S Exp.' : ' Exp.'}
+              </Text>
               {calculatefee(rowData, isBoth, isOnline)}
               {true && (
                 <Text style={theme.viewStyles.text('M', 10, theme.colors.DEEP_RED)}>
@@ -565,22 +438,24 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                       const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK] = {
                         'Patient Name': currentPatient.firstName,
                         'Doctor ID': rowData.id,
-                        'Speciality ID': g(rowData, 'specialty', 'id')!,
-                        'Doctor Speciality': g(rowData, 'specialty', 'name')!,
-                        'Doctor Experience': Number(g(rowData, 'experience')!),
-                        'Language Known': rowData.languages,
-                        'Hospital Name': rowData.doctorHospital[0].facility.name,
-                        'Hospital City': rowData.doctorHospital[0].facility.city,
-                        'Availability Minutes': parseInt(availableTime),
+                        'Speciality ID': rowData?.specialty?.id,
+                        'Doctor Speciality': rowData?.specialty?.name,
+                        'Doctor Experience': Number(rowData?.experience),
+                        'Hospital Name': rowData?.doctorHospital?.[0]?.facility?.name,
+                        'Hospital City': rowData?.doctorHospital?.[0]?.facility?.city,
+                        'Availability Minutes': getTimeDiff(rowData?.slot),
                         Source: 'List',
                         'Patient UHID': currentPatient.uhid,
-                        Relation: g(currentPatient, 'relation'),
+                        Relation: currentPatient?.relation,
                         'Patient Age': Math.round(
-                          moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+                          moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)
                         ),
                         'Patient Gender': currentPatient.gender,
                         'Customer ID': currentPatient.id,
                       };
+                      if (props.rowId) {
+                        eventAttributes['Rank'] = props.rowId;
+                      }
                       postWebEngageEvent(
                         WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK,
                         eventAttributes
@@ -589,7 +464,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
 
                     props.onPressConsultNowOrBookAppointment &&
                       props.onPressConsultNowOrBookAppointment(
-                        availableTime && moment(availableTime).isValid()
+                        rowData.slot && moment(rowData.slot).isValid()
                           ? 'consult-now'
                           : 'book-appointment'
                       );
@@ -610,8 +485,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                       },
                     ]}
                   >
-                    {availableTime && moment(availableTime).isValid()
-                      ? nextAvailability(availableTime, 'Consult')
+                    {rowData.slot && moment(rowData.slot).isValid()
+                      ? nextAvailability(rowData.slot, 'Consult')
                       : string.common.book_apointment}
                   </Text>
                 </TouchableOpacity>

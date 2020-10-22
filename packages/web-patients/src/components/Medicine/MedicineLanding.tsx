@@ -29,6 +29,7 @@ import {
   uploadPrescriptionTracking,
   pharmacyUploadPresClickTracking,
   uploadPhotoTracking,
+  medicinePageOpenTracking,
 } from '../../webEngageTracking';
 import moment from 'moment';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
@@ -43,6 +44,10 @@ import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { useAuth } from 'hooks/authHooks';
 import { deepLinkUtil } from 'helpers/commonHelpers';
 import { isAlternateVersion } from 'helpers/commonHelpers';
+import ExpansionPanel from '@material-ui/core/ExpansionPanel';
+import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
+import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -449,6 +454,138 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    mBannerContainer: {
+      padding: '20px 0',
+      position: 'relative',
+    },
+    mBannerContent: {
+      padding: 20,
+      background: '#fff',
+      display: 'flex',
+      alignItems: 'center',
+      [theme.breakpoints.down('sm')]: {
+        padding: 10,
+        height: 80,
+        alignItems: 'flex-start',
+        position: 'relative',
+      },
+
+      '& img': {
+        margin: '0 10px',
+        [theme.breakpoints.down('sm')]: {
+          width: 40,
+          // display: 'none',
+        },
+      },
+    },
+    medicineImg: {
+      margin: '0 !important',
+      position: 'relative',
+      right: -30,
+      [theme.breakpoints.down('sm')]: {
+        width: '100px !important',
+      },
+      [theme.breakpoints.down('xs')]: {
+        right: 10,
+        bottom: 0,
+        width: '60px !important',
+        position: 'absolute',
+      },
+    },
+    mBannerDetail: {
+      '& h1': {
+        fontSize: 24,
+        fontWeight: 600,
+        color: '#579BCC',
+        borderBottom: '1px solid #579BCC',
+        textTransform: 'uppercase',
+        [theme.breakpoints.down('sm')]: {
+          fontSize: 18,
+        },
+        [theme.breakpoints.down('xs')]: {
+          fontSize: 12,
+        },
+      },
+      '& h2': {
+        fontSize: 18,
+        fontWeight: 400,
+        [theme.breakpoints.down('sm')]: {
+          fontSize: 14,
+        },
+        [theme.breakpoints.down('xs')]: {
+          fontSize: 10,
+        },
+      },
+    },
+    mcContainer: {
+      background: '#fff',
+      padding: 20,
+    },
+    mcContent: {
+      padding: '0 0 10px',
+      '& h1': {
+        fontSize: 16,
+        lineHeight: '20px',
+        fontWeight: 500,
+        textTransform: 'uppercase',
+        margin: '0 0 10px',
+      },
+      '& p': {
+        fontSize: 14,
+        lineHeight: '20px',
+      },
+    },
+    mcList: {
+      margin: '10px 0',
+      listStyle: 'none',
+      padding: '0 0 0 10px',
+      '& li': {
+        fontSize: 14,
+        lineHeight: '18px',
+        padding: '2px 0',
+      },
+    },
+    mcDetail: {
+      padding: '10px 0',
+      '& h2': {
+        fontSize: 14,
+        lineHeight: '18px',
+        fontWeight: 600,
+        margin: '0 0 10px',
+      },
+      '& p': {
+        fontSize: 14,
+        lineHeight: '20px',
+        '& span': {
+          fontWeight: 700,
+          display: 'block',
+        },
+      },
+    },
+    mfaqContainer: {
+      margin: '20px 0',
+      background: '#fff',
+      padding: 20,
+      '& >p': {
+        fontSize: 16,
+        fontWeight: 500,
+        margin: '0 0 10px',
+        textTransform: 'uppercase',
+      },
+    },
+    mfaqDetail: {
+      padding: '10px 0',
+      '& h2': {
+        fontSize: 14,
+        lineHeight: '18px',
+        fontWeight: 600,
+        margin: '0 0 10px',
+      },
+      '& p': {
+        fontSize: 14,
+        lineHeight: '20px',
+      },
+    },
   };
 });
 
@@ -527,6 +664,7 @@ const MedicineLanding: React.FC = (props: any) => {
   const [latestMedicineOrder, setLatestMedicineOrder] = useState<medicineOrderDetailsType | null>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const latestOrdereDetails = useMutation(GET_LATEST_MEDICINE_ORDER);
+  const [expanded, setExpanded] = React.useState<string | false>(false);
 
   const apiDetails = {
     url: process.env.PHARMACY_MED_PROD_SEARCH_BY_BRAND,
@@ -534,6 +672,7 @@ const MedicineLanding: React.FC = (props: any) => {
     imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
   useEffect(() => {
+    medicinePageOpenTracking();
     deepLinkUtil(`Medicine`);
   }, []);
 
@@ -639,7 +778,27 @@ const MedicineLanding: React.FC = (props: any) => {
                       <ShopByCategory data={sectionData} sectionName={section.section_key} />
                     )
                   ) : (
-                    <DayDeals data={sectionData} sectionName={section.section_key} />
+                    <div>
+                      <DayDeals data={sectionData} sectionName={section.section_key} />
+                      <div className={classes.mBannerContainer}>
+                        <div className={classes.mBannerContent}>
+                          <div className={classes.mBannerDetail}>
+                            <Typography component="h1">Order Medicine Online</Typography>
+                            <Typography component="h2">Genuine medicines and essentials</Typography>
+                          </div>
+                          <img src={require('images/24-7.svg')} alt="" />
+                          <div className={classes.mBannerDetail}>
+                            <Typography component="h1">From Apollo Pharmacy</Typography>
+                            <Typography component="h2">delivered in a jiffy!</Typography>
+                          </div>
+                          <img
+                            src={require('images/online-medicine.svg')}
+                            className={classes.medicineImg}
+                            alt="Order Medicine Online"
+                          />
+                        </div>
+                      </div>
+                    </div>
                   );
                 }
               };
@@ -749,6 +908,10 @@ const MedicineLanding: React.FC = (props: any) => {
   };
 
   const orderTitle = latestMedicineOrder ? getOrderTitle(latestMedicineOrder) : '';
+
+  const handleChange = (panel: string) => (event: React.ChangeEvent<{}>, isExpanded: boolean) => {
+    setExpanded(isExpanded ? panel : false);
+  };
 
   return (
     <div className={classes.root}>
@@ -932,6 +1095,200 @@ const MedicineLanding: React.FC = (props: any) => {
                       </div>
                     )
                 )}
+              <div className={classes.mcContainer}>
+                <div className={classes.mcContent}>
+                  <Typography component="h1">
+                    Effortless Online Medicine Orders at Apollo 24/7
+                  </Typography>
+                  <Typography>
+                    Because ordering medicines online need not be complicated but rather a cakewalk.
+                    And at Apollo 24/7 we ensure that. All you need to do is:
+                  </Typography>
+                  <ul className={classes.mcList}>
+                    <li>Browse through our wide variety of products</li>
+                    <li>Add products to your cart and complete the payment. Voila!</li>
+                    <li>Your order will be on its way to you.</li>
+                  </ul>
+                  <Typography>
+                    Apollo 24/7 is your go-to online pharmacy store for all your medicine needs – be
+                    it your regular medications, or over-the-counter (OTC) medicines. We also have a
+                    range of products in the personalcare, baby care, health and nutrition,
+                    wellness, and lifestyle categories. Come explore ‘everything under the sun’
+                    related to healthcare at Apollo 24/7.
+                  </Typography>
+                </div>
+                <div className={classes.mcDetail}>
+                  <Typography component="h2">Reasons To Buy Medicine From Apollo 247</Typography>
+                  <Typography component="p">
+                    For over 32 years, Apollo Pharmacy has been providing you with genuine medicines
+                    round-the-clock, through 24-hour pharmacies. And now through Apollo 24/7, we
+                    intend to make your lives easier – by getting your medicines delivered to you.
+                    Yes, no more stepping out to get your medicines, no more standing in long
+                    queues, no more worrying about the genuineness of medicines, no more sweat! Here
+                    are more reasons why you should buy your medicines from Apollo 24/7:
+                  </Typography>
+                  <ul className={classes.mcList}>
+                    <li>
+                      Super-fast deliveries. In select cities, deliveries are done in as less as 1
+                      day
+                    </li>
+                    <li>Largest pharmacy chain in India with over 3,500 stores</li>
+                    <li>Attractive deals on medicines and other FMCG products</li>
+                    <li>Get Health Credits on purchases (not applicable on discounted products)</li>
+                    <li>Prescriptions can be uploaded directly to place an order</li>
+                    <li>Option to consult with a pharmacologist to check medicine interactions</li>
+                    <li>Wide range of healthcare products to choose from</li>
+                    <li>Only genuine and top-quality products delivered.</li>
+                  </ul>
+                </div>
+                <div className={classes.mcDetail}>
+                  <Typography component="h2">
+                    Apollo 247 - Largest Online Pharmacy In India
+                  </Typography>
+                  <Typography component="p">
+                    With more than 3,500 stores in India, Apollo 24/7 is not just the largest online
+                    pharmacy store in India but in Asia as well. Our pharmacy chain has been
+                    operational and been providing genuine quality healthcare products for more than
+                    32 years. Our wide range of products ensures that everything you need related to
+                    healthcare, you will find it on our platform.
+                  </Typography>
+                </div>
+                <div className={classes.mcDetail}>
+                  <Typography component="h2">Most Trusted Online Medical Store Of India</Typography>
+                  <Typography component="p">
+                    As pioneers in the healthcare segment, we understand the importance of trust.
+                    And that is why, over the years, we worked on building that trust. We ensure
+                    that every product sold through our offline/online stores are checked for their
+                    authenticity, quality, and compliance with the Central Drugs Standard Control
+                    Organization, the national regulatory body for Indian pharmaceuticals and
+                    medical devices.
+                  </Typography>
+                </div>
+                <div className={classes.mcDetail}>
+                  <Typography component="h2">100% Genuine Medicine From Apollo Pharmacy</Typography>
+                  <Typography component="p">
+                    All medicines/healthcare products sold on Apollo 24/7 are procured from our
+                    sister company - Apollo Pharmacy, with a reputation of selling only 100% genuine
+                    products. The products sold through Apollo Pharmacy are inspected thoroughly to
+                    ensure only genuine products make the cut. We believe that when it comes to
+                    medicines, quality and authenticity should never be compromised.
+                  </Typography>
+                </div>
+                <div className={classes.mcDetail}>
+                  <Typography component="h2">Over 3,500 Pharmacy Stores In India</Typography>
+                  <Typography component="p">
+                    Our strong network lets us deliver medicines to every nook and corner of the
+                    country. We have more than 3,500 pharmacy stores in India catering to all your
+                    medicine needs. Our network is so vast that you may find an Apollo Pharmacy
+                    store at every 1 km. We are leveraging this vast network to now become an online
+                    medical store – by getting these medicines delivered to you.
+                  </Typography>
+                </div>
+                <div className={classes.mcDetail}>
+                  <Typography component="h2">Fastest Home Delivery Of Your Order</Typography>
+                  <Typography component="p">
+                    When it comes to medicines, most of us do not want to take a chance. Which is
+                    why most of us prefer going to a store physically to get medicines. But you know
+                    what happens at the stores. First, you need to go there physically which means
+                    you have to drive/walk/ride for at least 10-15 minutes. Second, you need to wait
+                    for your turn which may come after 10-15 minutes. Third, you can only buy the
+                    products you are sure about, e.g. prescribed medicines. What if you want to buy
+                    an FMCG product but are not sure which one? You cannot expect the pharmacist to
+                    give you too many options.
+                  </Typography>
+                  <Typography component="p">
+                    Apollo 24/7 is the solution to all these. We deliver the medicines to you
+                    without you having to step out or wait in the queue to buy medicines. And we
+                    give you the option to browse through a variety of non-pharma products to choose
+                    from.
+                  </Typography>
+                  <Typography component="p">
+                    Are we missing something here? Yes, the time we take to deliver your order. We
+                    understand that you may sometimes require medicines in urgency and that is why
+                    we assure you the fastest home delivery of your medicines. Also, depending on
+                    the city you reside in, medicines can be delivered in as less as 1 hour.
+                  </Typography>
+                </div>
+                <div className={classes.mcDetail}>
+                  <Typography component="h2">
+                    Best Pharmacologist Available To Check Medicine Interactions
+                  </Typography>
+                  <Typography component="p">
+                    Sometimes, the medicines prescribed by your doctor may react with your existing
+                    medications, food, beverage, or supplements. This is known as medicine
+                    interaction and may prevent your medicine to perform as expected. Hence, on
+                    Apollo 24/7, we offer you an option to consult with a pharmacologist, an expert
+                    in medicine interactions, before you make any purchase.
+                  </Typography>
+                </div>
+                <div className={classes.mcDetail}>
+                  <Typography component="h2">Extra Benefits Of Online Medicine Orders</Typography>
+                  <Typography component="p">
+                    When you order medicines at Apollo 24/7, not only do you get your medicines
+                    delivered on time and at your doorstep, but you also get additional benefits.
+                    You can earn Apollo Health Credits whenever you order medicine online and also
+                    when you purchase other non-pharma products (not applicable on discounted
+                    products including the ones where coupon codes have been applied). You can use
+                    these Health Credits to make more purchases on our platform. And not to forget
+                    the discounts and exclusive offers we bring out from time to time.
+                  </Typography>
+                </div>
+                <div className={classes.mcDetail}>
+                  <Typography component="h2">Additional Services I Will Receive</Typography>
+                  <Typography component="p">
+                    Besides purchasing medicines, the additional services you can avail on our
+                    platform are doctor consultations, symptom checker, ordering diagnostic tests,
+                    and digitization of your health records. These services let you consult with
+                    doctors from over 70 specialities, check and understand your symptoms, book
+                    diagnostics tests, and converts your physical health records into digital
+                    records.
+                    <span>
+                      With so many services under our umbrella, you wouldn’t need to go anywhere
+                      else.
+                    </span>
+                  </Typography>
+                </div>
+              </div>
+              {/* <div className={classes.mfaqContainer}>
+                <Typography>Frequently Asked Questions</Typography>
+                <div className={classes.mfaqDetail}>
+                  <Typography component="h2">Additional Services I Will Receive</Typography>
+                  <Typography>
+                    Besides purchasing medicines, the additional services you can avail on our
+                    platform are doctor consultations, symptom checker, ordering diagnostic tests,
+                    and digitization of your health records. These services let you consult with
+                    doctors from over 70 specialities, check and understand your symptoms, book
+                    diagnostics tests, and converts your physical health records into digital
+                    records. With so many services under our umbrella, you wouldn’t need to go
+                    anywhere else.
+                  </Typography>
+                </div>
+                <div className={classes.mfaqDetail}>
+                  <Typography component="h2">Extra Benefits Of Online Medicine Orders</Typography>
+                  <Typography>
+                    When you order medicines at Apollo 24/7, not only do you get your medicines
+                    delivered on time and at your doorstep, but you also get additional benefits.
+                    You can earn Apollo Health Credits whenever you order medicine online and also
+                    when you purchase other non-pharma products (not applicable on discounted
+                    products including the ones where coupon codes have been applied). You can use
+                    these Health Credits to make more purchases on our platform. And not to forget
+                    the discounts and exclusive offers we bring out from time to time.
+                  </Typography>
+                </div>
+                <div className={classes.mfaqDetail}>
+                  <Typography component="h2">Extra Benefits Of Online Medicine Orders</Typography>
+                  <Typography>
+                    When you order medicines at Apollo 24/7, not only do you get your medicines
+                    delivered on time and at your doorstep, but you also get additional benefits.
+                    You can earn Apollo Health Credits whenever you order medicine online and also
+                    when you purchase other non-pharma products (not applicable on discounted
+                    products including the ones where coupon codes have been applied). You can use
+                    these Health Credits to make more purchases on our platform. And not to forget
+                    the discounts and exclusive offers we bring out from time to time.
+                  </Typography>
+                </div>
+              </div>
+            */}
             </div>
           )}
         </div>

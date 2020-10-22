@@ -9,6 +9,7 @@ import {
 } from '@material-ui/core';
 import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 import { Gender } from 'graphql/types/globalTypes';
+import { getAge } from 'helpers/Utils';
 
 export const UserCard: React.FC = () => {
   const { loading, patientDetails, caseSheetId, appointmentInfo } = useContext(CaseSheetContextJrd);
@@ -22,12 +23,7 @@ export const UserCard: React.FC = () => {
     patientDetails!.dateOfBirth !== null &&
     patientDetails!.dateOfBirth !== ''
   ) {
-    userCardStrip.push(
-      Math.abs(
-        new Date(Date.now()).getUTCFullYear() -
-          new Date(patientDetails!.dateOfBirth).getUTCFullYear()
-      ).toString()
-    );
+    userCardStrip.push(getAge(patientDetails!.dateOfBirth));
   }
   if (patientDetails!.gender && patientDetails!.gender !== null) {
     if (patientDetails!.gender === Gender.FEMALE) {

@@ -69,6 +69,9 @@ const styles = StyleSheet.create({
 export interface PincodePopupProps {
   onClickClose: () => void;
   onComplete: (serviceable: boolean, response: LocationData) => void;
+  subText?: string;
+  onPressSubmit?: (pincode: string) => void;
+  toBeShownOn?: string;
 }
 
 export const PincodePopup: React.FC<PincodePopupProps> = (props) => {
@@ -211,9 +214,7 @@ export const PincodePopup: React.FC<PincodePopupProps> = (props) => {
         <View style={{ width: '9.72%' }} />
         <View style={styles.popupView}>
           <Text style={styles.hiText}>Hi! :)</Text>
-          <Text style={styles.descText}>
-            Allow us to serve you better by entering your delivery pincode below.
-          </Text>
+          <Text style={styles.descText}>{props.subText}</Text>
           <TextInputComponent
             // textInputprops={{ autoFocus: true }}
             value={pincode}
@@ -269,7 +270,11 @@ export const PincodePopup: React.FC<PincodePopupProps> = (props) => {
               disabled={pincode.length !== 6}
               style={styles.submitButton}
               title="SUBMIT"
-              onPress={() => checkServiceabilityAndUpdatePlaceInfo(pincode)}
+              onPress={() =>
+                props.toBeShownOn == 'Diagnostics'
+                  ? props.onPressSubmit(pincode)
+                  : checkServiceabilityAndUpdatePlaceInfo(pincode)
+              }
             />
           )}
         </View>
@@ -277,4 +282,9 @@ export const PincodePopup: React.FC<PincodePopupProps> = (props) => {
       </View>
     </View>
   );
+};
+
+PincodePopup.defaultProps = {
+  subText: ' Allow us to serve you better by entering your delivery pincode below.',
+  toBeShownOn: 'Pharmacy',
 };

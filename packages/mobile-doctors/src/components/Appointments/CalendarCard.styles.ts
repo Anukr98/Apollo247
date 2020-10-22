@@ -51,6 +51,7 @@ export default StyleSheet.create({
     height: 44,
     width: 44,
     borderRadius: 22,
+    backgroundColor: theme.colors.WHITE,
   },
   placeHolderLoading: {
     alignItems: 'center',

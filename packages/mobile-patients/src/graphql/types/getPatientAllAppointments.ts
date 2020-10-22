@@ -23,13 +23,13 @@ export interface getPatientAllAppointments_getPatientAllAppointments_appointment
 
 export interface getPatientAllAppointments_getPatientAllAppointments_appointments_doctorInfo_bankAccount {
   __typename: "BankAccount";
-  accountHolderName: string;
-  accountNumber: string;
-  accountType: AccountType;
-  bankName: string;
-  city: string;
-  id: string;
-  IFSCcode: string;
+  accountHolderName: string | null;
+  accountNumber: string | null;
+  accountType: AccountType | null;
+  bankName: string | null;
+  city: string | null;
+  id: string | null;
+  IFSCcode: string | null;
   state: string | null;
   streetLine1: string | null;
 }
@@ -129,6 +129,7 @@ export interface getPatientAllAppointments_getPatientAllAppointments_appointment
   awards: string | null;
   city: string | null;
   country: string | null;
+  chatDays: number | null;
   dateOfBirth: string | null;
   displayName: string | null;
   doctorType: DoctorType;
@@ -168,17 +169,25 @@ export interface getPatientAllAppointments_getPatientAllAppointments_appointment
   starTeam: (getPatientAllAppointments_getPatientAllAppointments_appointments_doctorInfo_starTeam | null)[] | null;
 }
 
+export interface getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet_medicinePrescription {
+  __typename: "MedicinePrescription";
+  id: string | null;
+  medicineName: string | null;
+}
+
 export interface getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet {
   __typename: "CaseSheet";
   followUpAfterInDays: string | null;
   version: number | null;
   doctorType: DoctorType | null;
+  medicinePrescription: (getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet_medicinePrescription | null)[] | null;
 }
 
 export interface getPatientAllAppointments_getPatientAllAppointments_appointments {
   __typename: "PatinetAppointments";
   appointmentPayments: (getPatientAllAppointments_getPatientAllAppointments_appointments_appointmentPayments | null)[] | null;
   id: string;
+  hideHealthRecordNudge: boolean | null;
   patientId: string;
   doctorId: string;
   appointmentDateTime: any;

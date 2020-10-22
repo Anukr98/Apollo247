@@ -84,10 +84,11 @@ const Common = {
   LIGHT_GRAY_2: lightGray2,
   BORDER_BOTTOM_COLOR: '#979797',
   APP_RED: red,
-  LIGHT_YELLOW: lightYellow,
   TURQUOISE_BLUE: '#0589BB',
   EXTREME_LIGHT_BLUE: '#2096C2',
   OFF_WHITE: '#F7F7F7',
+  LIGHT_YELLOW: lightYellow,
+  GREEN: '#07AE8B',
   DEEP_RED: '#F0533B',
 };
 

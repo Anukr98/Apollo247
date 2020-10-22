@@ -14,14 +14,11 @@ export interface CapsuleViewProps {
 export const DiagnosisCard: React.FC<CapsuleViewProps> = (props) => {
   return (
     <View style={[styles.containerStyle, props.containerStyle]}>
-      <Text style={styles.diseaseNameStyles} numberOfLines={1}>
-        {props.diseaseName}
-      </Text>
+      <Text style={styles.diseaseNameStyles}>{props.diseaseName}</Text>
       <View
         style={{
-          alignItems: 'center',
-          justifyContent: 'center',
-          alignSelf: 'center',
+          alignItems: 'flex-start',
+          justifyContent: 'flex-start',
         }}
       >
         <TouchableOpacity

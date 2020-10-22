@@ -40,6 +40,8 @@ export const addPatientMedicalRecordTypeDefs = gql`
     PHYSICAL_EXAMINATION
     OPERATIVE_REPORT
     PATHOLOGY_REPORT
+    HEALTHCHECK
+    HOSPITALIZATION
   }
 
   input AddMedicalRecordInput {
@@ -112,6 +114,9 @@ type MedicalRecordInputArgs = { addMedicalRecordInput: AddMedicalRecordInput };
 type AddMedicalRecordResult = {
   status: boolean;
 };
+
+/* >= release 5.0.0 not used for lab tests
+>= release 5.0.0 not used for adding prescriptions from phr section */
 
 const addPatientMedicalRecord: Resolver<
   null,

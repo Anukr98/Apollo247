@@ -1,103 +1,115 @@
+import { AddToCartButtons } from '@aph/mobile-patients/src/components/Medicines/AddToCartButtons';
+import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
+import { MedicineIcon, MedicineRxIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
-  AddToCartButtons,
-  AddToCartButtonsProps,
-} from '@aph/mobile-patients/src/components/Medicines/AddToCartButtons';
-import { getDiscountPercentage } from '@aph/mobile-patients/src/helpers/helperFunctions';
+  getDiscountPercentage,
+  productsThumbnailUrl,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import {
   Dimensions,
-  StyleProp,
   StyleSheet,
   Text,
   TouchableOpacity,
+  TouchableOpacityProps,
   View,
-  ViewStyle,
 } from 'react-native';
 import { Divider, Image } from 'react-native-elements';
-import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
 
-export interface Props extends Omit<AddToCartButtonsProps, 'containerStyle'> {
-  title: string;
-  imageUrl: string;
-  price: number;
-  specialPrice?: number | string;
-  isInStock: boolean;
-  isSellOnline: boolean;
+export interface Props extends MedicineProduct {
   onPress: () => void;
-  onAddToCart: () => void;
-  onNotify: () => void;
-  containerStyle?: StyleProp<ViewStyle>;
-  addToCartButtonContainerStyle?: StyleProp<ViewStyle>;
+  onPressAddToCart: () => void;
+  onPressNotify: () => void;
+  onPressAddQty: () => void;
+  onPressSubtractQty: () => void;
+  quantity: number;
+  containerStyle?: TouchableOpacityProps['style'];
+  onCartScreen?: boolean;
 }
 
 export const ProductUpSellingCard: React.FC<Props> = ({
-  title,
-  imageUrl,
+  name,
   price,
-  specialPrice,
-  isInStock,
-  isSellOnline,
-  onPress,
-  onAddToCart,
-  onNotify,
+  special_price,
+  thumbnail,
+  is_in_stock,
+  sell_online,
+  is_prescription_required,
+  MaxOrderQty,
+  quantity,
   containerStyle,
-  numberOfItemsInCart,
-  addToCartButtonContainerStyle,
-  ...restOfProps
+  onPress,
+  onPressAddToCart,
+  onPressNotify,
+  onPressAddQty,
+  onPressSubtractQty,
+  onCartScreen,
 }) => {
+  const isPrescriptionRequired = is_prescription_required == 1;
+
   const renderImageAndTitle = () => (
     <View style={styles.imageAndTitle}>
       <Image
-        placeholderStyle={theme.viewStyles.imagePlaceholderStyle}
-        source={{ uri: imageUrl }}
+        placeholderStyle={styles.imagePlaceHolder}
+        PlaceholderContent={isPrescriptionRequired ? <MedicineRxIcon /> : <MedicineIcon />}
+        source={{ uri: productsThumbnailUrl(thumbnail) }}
         style={styles.image}
         resizeMode="contain"
       />
       <Text numberOfLines={4} style={styles.title}>
-        {title}
+        {name}
       </Text>
     </View>
   );
   const renderNotForSaleTag = () => <NotForSaleBadge containerStyle={{ alignSelf: 'center' }} />;
 
   const renderPriceAndAddToCartButton = () => {
-    const discount = getDiscountPercentage(price, specialPrice);
+    const discount = getDiscountPercentage(price, special_price);
     return (
       <View style={styles.priceAndAddToCartContainer}>
         {!!discount && (
-          <Text>
-            <Text style={styles.priceStrikeOff}>(Rs. {price})</Text>
-            <Text style={styles.discountPercentage}>{`  ${discount}% off`}</Text>
-          </Text>
+          <View style={{ flexDirection: 'row' }}>
+            <Text style={{ ...styles.priceStrikeOff }}>
+              {onCartScreen ? `(₹${price})` : `(Rs. ${price})`}
+            </Text>
+            <Text
+              style={{ ...styles.discountPercentage, color: onCartScreen ? '#00B38E' : '#01475B' }}
+            >{`  ${discount}% off`}</Text>
+          </View>
         )}
         <View style={[styles.priceAndAddToCartButton, { marginTop: !!discount ? 0 : 12 }]}>
-          <Text style={styles.price}>{`Rs. ${discount ? specialPrice : price}`}</Text>
-          {isInStock
-            ? isSellOnline
+          <Text style={styles.price}>
+            {(onCartScreen ? '₹' : 'Rs.') + (discount ? special_price : price)}
+          </Text>
+          {sell_online
+            ? is_in_stock
               ? renderAddToCartButton()
-              : renderNotForSaleTag()
-            : renderNotifyButton()}
+              : renderNotifyButton()
+            : renderNotForSaleTag()}
         </View>
       </View>
     );
   };
 
   const renderAddToCartButton = () =>
-    !numberOfItemsInCart ? (
-      <Text onPress={onAddToCart} style={styles.addToCart}>
+    !quantity ? (
+      <Text onPress={onPressAddToCart} style={styles.addToCart}>
         {'ADD TO CART'}
       </Text>
     ) : (
       <AddToCartButtons
-        numberOfItemsInCart={numberOfItemsInCart}
-        containerStyle={addToCartButtonContainerStyle}
-        {...restOfProps}
+        numberOfItemsInCart={quantity}
+        maxOrderQty={MaxOrderQty}
+        addToCart={onPressAddQty}
+        removeItemFromCart={onPressSubtractQty}
+        removeFromCart={onPressSubtractQty}
       />
     );
 
   const renderNotifyButton = () => (
-    <Text onPress={onNotify} style={styles.addToCart}>
+    <Text onPress={onPressNotify} style={styles.addToCart}>
       {'NOTIFY ME'}
     </Text>
   );
@@ -116,12 +128,12 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.card(),
     marginVertical: 16,
     marginHorizontal: 0,
-    paddingVertical: 12,
+    paddingVertical: 10,
     width: Dimensions.get('window').width * 0.55,
   },
   imageAndTitle: { flexDirection: 'row', alignItems: 'center' },
   image: {
-    height: 68,
+    height: 50,
     width: 50,
   },
   title: {
@@ -158,4 +170,5 @@ const styles = StyleSheet.create({
   discountPercentage: {
     ...theme.viewStyles.text('M', 11, '#01475B', 1, 24),
   },
+  imagePlaceHolder: { backgroundColor: 'transparent' },
 });

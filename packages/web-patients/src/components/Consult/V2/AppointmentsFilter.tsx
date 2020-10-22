@@ -105,6 +105,18 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     dialogContent: {
       padding: '0 20px',
+      height: 360,
+      overflow: 'auto',      
+      '&::-webkit-scrollbar': { 
+        width: 6,
+      },
+      '&::-webkit-scrollbar-track': {
+        background: 'transparent',
+      },
+      '&::-webkit-scrollbar-thumb': {
+        background: '#ccc',
+        borderRadius: 5,
+      },
     },
     filterGroup: {
       display: 'flex',

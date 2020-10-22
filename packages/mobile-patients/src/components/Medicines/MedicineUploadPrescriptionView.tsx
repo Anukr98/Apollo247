@@ -22,7 +22,8 @@ import { postWebEngageEvent, g } from '@aph/mobile-patients/src/helpers/helperFu
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { postShowPrescriptionAtStoreSelected } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
-import { useAllCurrentPatients } from '../../hooks/authHooks';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -41,12 +42,31 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.yellowTextStyle,
     padding: 16,
   },
+  testsOuterView: {
+    marginLeft: 16,
+    flexDirection: 'row',
+    marginBottom: 6,
+  },
+  testBulletStyle: {
+    color: theme.colors.SHERPA_BLUE,
+    fontSize: 6,
+    textAlign: 'center',
+    paddingTop: 3,
+  },
+  testTestStyle: {
+    color: theme.colors.SHERPA_BLUE,
+    ...fonts.IBMPlexSansMedium(14),
+    textAlign: 'left',
+    marginHorizontal: 5,
+  },
 });
 
 export interface MedicineUploadPrescriptionViewProps extends NavigationScreenProps {
   isTest?: boolean;
   selectedTab?: string; // should be one of 'Home Delivery' | 'Store Pick Up';
   setSelectedTab?: (selectedTab: string) => void;
+  isMandatory?: boolean;
+  listOfTest?: [];
 }
 
 export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescriptionViewProps> = (
@@ -96,6 +116,7 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
       <UploadPrescriprionPopup
         isVisible={showPopup}
         hideTAndCs={isTest}
+        type="cartOrMedicineFlow"
         disabledOption={'NONE'}
         heading={'Upload Prescription(s)'}
         instructionHeading={'Instructions For Uploading Prescriptions'}
@@ -334,7 +355,13 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
     if (uploadPrescriptionRequired || isTest) {
       return (
         <View>
-          {renderLabel(isTest ? 'UPLOAD PRESCRIPTION (OPTIONAL)' : 'UPLOAD PRESCRIPTION')}
+          {renderLabel(
+            isTest
+              ? props.isMandatory
+                ? 'UPLOAD PRESCRIPTION (MANDATORY)'
+                : 'UPLOAD PRESCRIPTION (OPTIONAL)'
+              : 'UPLOAD PRESCRIPTION'
+          )}
           {physicalPrescriptions.length == 0 && ePrescriptions.length == 0 ? (
             <View
               style={{
@@ -366,9 +393,21 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
                   }}
                 >
                   {isTest
-                    ? `Prescriptions help the pathologists to understand the requirements better. If you have a prescription, you can upload them.`
+                    ? props.isMandatory
+                      ? `Prescription is mandatory for the following tests: `
+                      : `Prescriptions help the pathologists to understand the requirements better. If you have a prescription, you can upload them.`
                     : `Items in your cart marked with ‘Rx’ need prescriptions to complete your purchase. Please upload the necessary prescriptions`}
                 </Text>
+                {isTest &&
+                  props.isMandatory &&
+                  props?.listOfTest?.map((items) => {
+                    return (
+                      <View style={styles.testsOuterView}>
+                        <Text style={styles.testBulletStyle}>{'\u2B24'}</Text>
+                        <Text style={styles.testTestStyle}>{items}</Text>
+                      </View>
+                    );
+                  })}
                 <Text
                   style={{
                     ...styles.yellowTextStyle,
