@@ -160,7 +160,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   };
 
   const renderCoupon = () => {
-    return item.couponPrice ? (
+    return item.couponPrice || item.couponPrice == 0 ? (
       <View style={styles.coupon}>
         <Text style={styles.couponText}>{`${coupon?.coupon} Applied`}</Text>
       </View>
