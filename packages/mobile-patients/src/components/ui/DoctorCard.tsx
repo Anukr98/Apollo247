@@ -26,6 +26,7 @@ import {
   ConsultMode,
   DoctorType,
   SEARCH_TYPE,
+  PLAN_STATUS,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { saveSearch } from '@aph/mobile-patients/src/graphql/types/saveSearch';
 import {
@@ -162,6 +163,11 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const rowData = props.rowData;
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
+  const isCareDoctor =
+    rowData?.doctorPricing?.length > 0 && rowData?.doctorPricing[0]?.status === PLAN_STATUS.ACTIVE;
+  const careDoctorDiscountedPrice =
+    rowData?.doctorPricing?.length > 0 &&
+    rowData?.doctorPricing[0]?.mrp - rowData?.doctorPricing[0]?.slashed_price;
 
   useEffect(() => {
     if (!currentPatient) {
@@ -222,6 +228,27 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     );
   };
 
+  const renderCareDoctorsFee = () => {
+    return (
+      <View style={{ flexDirection: 'row', marginTop: 5, alignItems: 'center' }}>
+        <Text style={styles.carePrice}>
+          {string.common.Rs}
+          {/* {rowData?.doctorPricing[0]?.mrp || ''} */}
+          500
+        </Text>
+        <Text style={styles.careDiscountedPrice}>
+          {string.common.Rs}
+          {/* {rowData?.doctorPricing[0]?.slashed_price || ''} */}
+          100
+        </Text>
+      </View>
+    );
+  };
+
+  const renderCareLogo = () => {
+    return <CareLogo style={styles.careLogo} />;
+  };
+
   function getTimeDiff(nextSlot: any) {
     let timeDiff: number = 0;
     const today: Date = new Date();
@@ -232,6 +259,43 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     return timeDiff;
   }
 
+  const renderSpecialityNonCareView = () => {
+    return (
+      <Text style={styles.doctorSpecializationStyles}>
+        {rowData?.specialtydisplayName || ''}
+        {'   '}|{'  '} {rowData?.experience} YR
+        {Number(rowData?.experience) != 1 ? 'S Exp.' : ' Exp.'}
+      </Text>
+    );
+  };
+
+  const renderSpecialityCareView = () => {
+    return (
+      <View>
+        <View style={styles.rowContainer}>
+          <Text
+            style={[
+              styles.doctorSpecializationStyles,
+              {
+                width: '80%',
+              },
+            ]}
+          >
+            {rowData?.specialtydisplayName || ''}
+          </Text>
+          <TouchableOpacity>
+            <Text style={styles.seeMoreText}>{string.careDoctors.seeMore}</Text>
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.doctorSpecializationStyles}>
+          {rowData?.experience} YR
+          {Number(rowData?.experience) != 1 ? 'S Exp.' : ' Exp.'}
+        </Text>
+      </View>
+    );
+  };
+
+  console.log('rowData', rowData);
   if (rowData) {
     const clinicAddress = rowData?.doctorfacility;
     const isPhysical = props.availableModes
@@ -335,6 +399,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                   <DoctorPlaceholderImage />
                 )}
               </View>
+              {/* </TouchableOpacity> */}
+              {true && renderCareLogo()}
               <View
                 style={{
                   flexDirection: 'row',
@@ -380,15 +446,11 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
 
             <View style={{ flex: 1, paddingRight: 16, marginBottom: 16 }}>
               <Text style={styles.doctorNameStyles}>{rowData.displayName}</Text>
-              <Text style={styles.doctorSpecializationStyles}>
-                {rowData.specialtydisplayName ? rowData.specialtydisplayName : ''}
-                {'   '}|{'  '} {rowData.experience} YR
-                {Number(rowData.experience) != 1 ? 'S Exp.' : ' Exp.'}
-              </Text>
-              {calculatefee(rowData, isBoth, isOnline)}
-              {true && (
+              {true ? renderSpecialityCareView() : renderSpecialityNonCareView()}
+              {true ? renderCareDoctorsFee() : calculatefee(rowData, isBoth, isOnline)}
+              {true && careDoctorDiscountedPrice > -1 && (
                 <Text style={theme.viewStyles.text('M', 10, theme.colors.DEEP_RED)}>
-                  You save ₹ 100 on this consult
+                  You save ₹ {careDoctorDiscountedPrice} on this consult
                 </Text>
               )}
               <Text style={styles.educationTextStyles} numberOfLines={props.numberOfLines}>

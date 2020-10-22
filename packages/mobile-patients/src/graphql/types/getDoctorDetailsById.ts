@@ -1,12 +1,21 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
-import { DoctorType, ConsultMode, WeekDay } from "./globalTypes";
+import { DoctorType, ConsultMode, PLAN, PLAN_STATUS, WeekDay } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getDoctorDetailsById
 // ====================================================
+
+export interface getDoctorDetailsById_getDoctorDetailsById_doctorPricing {
+  __typename: "DoctorPricing";
+  slashed_price: number | null;
+  available_to: PLAN | null;
+  status: PLAN_STATUS | null;
+  mrp: number | null;
+}
 
 export interface getDoctorDetailsById_getDoctorDetailsById_specialty {
   __typename: "DoctorSpecialties";
@@ -138,6 +147,7 @@ export interface getDoctorDetailsById_getDoctorDetailsById {
   awards: string | null;
   photoUrl: string | null;
   availableModes: (ConsultMode | null)[] | null;
+  doctorPricing: (getDoctorDetailsById_getDoctorDetailsById_doctorPricing | null)[] | null;
   specialty: getDoctorDetailsById_getDoctorDetailsById_specialty | null;
   registrationNumber: string;
   onlineConsultationFees: string;

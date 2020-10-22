@@ -74,6 +74,7 @@ import {
   VideoPlayIcon,
   CTGrayChat,
 } from '../ui/Icons';
+import { CareLogo } from '@aph/mobile-patients/src/components/ui/CareLogo';
 // import { NotificationListener } from '../NotificationListener';
 
 const { height, width } = Dimensions.get('window');
@@ -173,6 +174,38 @@ const styles = StyleSheet.create({
     padding: 12,
     ...theme.viewStyles.shadowStyle,
     height: Platform.OS == 'android' ? 115 : 110,
+  },
+  careLogo: {
+    marginLeft: 'auto',
+    marginRight: 20,
+    marginTop: -40,
+    width: 72,
+    height: 30,
+    borderRadius: 14,
+  },
+  careLogoText: {
+    ...theme.viewStyles.text('M', 11, 'white'),
+  },
+  carePrice: {
+    ...theme.viewStyles.text('M', 15, theme.colors.BORDER_BOTTOM_COLOR),
+    textDecorationLine: 'line-through',
+    textDecorationStyle: 'solid',
+  },
+  careDiscountedPrice: {
+    ...theme.viewStyles.text('M', 12, theme.colors.DEEP_RED),
+  },
+  rowContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  smallCareLogo: {
+    marginLeft: 5,
+    height: 11,
+    width: 27,
+    borderRadius: 5,
+  },
+  smallCareLogoText: {
+    ...theme.viewStyles.text('M', 4, 'white'),
   },
 });
 type Appointments = {
@@ -573,6 +606,24 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       });
   };
 
+  const renderCareDoctorPricing = () => {
+    return (
+      <View style={{ paddingBottom: 16 }}>
+        <Text style={styles.carePrice}>
+          {string.common.Rs}
+          500
+        </Text>
+        <View style={styles.rowContainer}>
+          <Text style={styles.careDiscountedPrice}>
+            {string.common.Rs}
+            100
+          </Text>
+          <CareLogo style={styles.smallCareLogo} textStyle={styles.smallCareLogoText} />
+        </View>
+      </View>
+    );
+  };
+
   const renderDoctorDetails = () => {
     if (doctorDetails && doctorDetails.doctorHospital && doctorDetails.doctorHospital.length > 0) {
       const doctorClinics = doctorDetails.doctorHospital.filter((item) => {
@@ -665,7 +716,13 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                       style={{
                         position: 'absolute',
                         width: (width - 42) / 2,
-                        height: Platform.OS == 'android' ? 134 : 129,
+                        height: true
+                          ? Platform.OS == 'android'
+                            ? 144
+                            : 139
+                          : Platform.OS == 'android'
+                          ? 134
+                          : 129,
                         flex: 2,
                         left: -3,
                         top: -2,
@@ -701,24 +758,31 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   >
                     <View>
                       <Text style={styles.onlineConsultLabel}>Consult In-App</Text>
-                      <Text style={styles.onlineConsultAmount}>
-                        {Number(VirtualConsultationFee) <= 0 ||
-                        VirtualConsultationFee === doctorDetails.onlineConsultationFees ? (
-                          <Text>{`Rs. ${doctorDetails.onlineConsultationFees}`}</Text>
-                        ) : (
-                          <>
-                            <Text
-                              style={{
-                                textDecorationLine: 'line-through',
-                                textDecorationStyle: 'solid',
-                              }}
-                            >
-                              {`(Rs. ${doctorDetails.onlineConsultationFees})`}
-                            </Text>
-                            <Text> Rs. {VirtualConsultationFee}</Text>
-                          </>
-                        )}
-                      </Text>
+                      {true ? (
+                        renderCareDoctorPricing()
+                      ) : (
+                        <Text style={styles.onlineConsultAmount}>
+                          {Number(VirtualConsultationFee) <= 0 ||
+                          VirtualConsultationFee === doctorDetails.onlineConsultationFees ? (
+                            <Text>{`${string.common.Rs} ${doctorDetails.onlineConsultationFees}`}</Text>
+                          ) : (
+                            <>
+                              <Text
+                                style={{
+                                  textDecorationLine: 'line-through',
+                                  textDecorationStyle: 'solid',
+                                }}
+                              >
+                                {`(${string.common.Rs} ${doctorDetails.onlineConsultationFees})`}
+                              </Text>
+                              <Text>
+                                {' '}
+                                {string.common.Rs} {VirtualConsultationFee}
+                              </Text>
+                            </>
+                          )}
+                        </Text>
+                      )}
                       <AvailabilityCapsule
                         titleTextStyle={{ paddingHorizontal: 7 }}
                         styles={{ marginTop: -5 }}
@@ -733,6 +797,13 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     styles.consultViewStyles,
                     {
                       marginLeft: 6,
+                      height: true
+                        ? Platform.OS == 'android'
+                          ? 125
+                          : 120
+                        : Platform.OS == 'android'
+                        ? 115
+                        : 110,
                     },
                   ]}
                 >
@@ -782,9 +853,13 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                       {doctorDetails.doctorType !== DoctorType.PAYROLL && (
                         <>
                           <Text style={styles.onlineConsultLabel}>Meet in Person</Text>
-                          <Text style={styles.onlineConsultAmount}>
-                            Rs. {doctorDetails.physicalConsultationFees}
-                          </Text>
+                          {true ? (
+                            renderCareDoctorPricing()
+                          ) : (
+                            <Text style={styles.onlineConsultAmount}>
+                              {string.common.Rs} {doctorDetails.physicalConsultationFees}
+                            </Text>
+                          )}
                           <AvailabilityCapsule
                             titleTextStyle={{ paddingHorizontal: 7 }}
                             styles={{ marginTop: -5 }}
@@ -1293,10 +1368,20 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           {!showVideo && !!g(doctorDetails, 'photoUrl') ? (
             <>
               <View style={{ height: 20, width: '100%' }} />
-              <Animated.Image
-                source={{ uri: doctorDetails!.photoUrl }}
-                style={{ top: 0, height: 140, width: 140, opacity: imgOp }}
-              />
+              <Animated.View
+                style={{
+                  top: 0,
+                  height: 140,
+                  width: '100%',
+                  opacity: imgOp,
+                }}
+              >
+                <Animated.Image
+                  source={{ uri: doctorDetails!.photoUrl }}
+                  style={{ top: 0, height: 140, width: 140, opacity: imgOp, alignSelf: 'center' }}
+                />
+                {true && <CareLogo style={styles.careLogo} textStyle={styles.careLogoText} />}
+              </Animated.View>
               {/* <TouchableOpacity
                 activeOpacity={1}
                 onPress={() => {

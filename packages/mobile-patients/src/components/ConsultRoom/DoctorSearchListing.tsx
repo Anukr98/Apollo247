@@ -186,6 +186,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginHorizontal: 20,
+    marginBottom: 10,
   },
   careLogo: {
     width: 32,
@@ -1111,6 +1112,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     }
     return (
       <View style={{ flex: 1 }}>
+        {renderViewCareSwitch()}
         {doctors.length > 0 && (
           <FlatList
             ref={(ref) => {
@@ -1691,7 +1693,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                   specialistPluralTerm || 'Doctors'
                 )}
               </Text>
-              {renderViewCareSwitch()}
+              {/* {renderViewCareSwitch()} */}
               {renderDoctorSearches(
                 onlineCheckBox
                   ? physicalCheckBox

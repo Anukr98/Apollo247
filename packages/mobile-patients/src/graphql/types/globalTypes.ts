@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 //==============================================================
@@ -351,6 +352,16 @@ export enum PAYMENT_METHODS_REVERSE {
   PAYTM_POSTPAID = "PAYTM_POSTPAID",
   PAYTM_WALLET = "PAYTM_WALLET",
   UPI = "UPI",
+}
+
+export enum PLAN {
+  ALL = "ALL",
+  CARE_PLAN = "CARE_PLAN",
+}
+
+export enum PLAN_STATUS {
+  ACTIVE = "ACTIVE",
+  INACTIVE = "INACTIVE",
 }
 
 export enum PRISM_DOCUMENT_CATEGORY {

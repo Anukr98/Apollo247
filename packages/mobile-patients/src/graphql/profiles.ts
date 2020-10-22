@@ -609,6 +609,12 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
             facilityType
           }
         }
+        doctorPricing {
+          slashed_price
+          available_to
+          status
+          mrp
+        }
       }
       doctorsNextAvailability {
         doctorId
@@ -748,6 +754,12 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       awards
       photoUrl
       availableModes
+      doctorPricing {
+        slashed_price
+        available_to
+        status
+        mrp
+      }
       specialty {
         id
         name
@@ -871,6 +883,12 @@ export const DOCTOR_SPECIALITY_BY_FILTERS = gql`
             city
             facilityType
           }
+        }
+        doctorPricing {
+          slashed_price
+          available_to
+          status
+          mrp
         }
       }
       doctorsAvailability {
