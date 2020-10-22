@@ -1,4 +1,8 @@
 import {
+  Breadcrumb,
+  Props as BreadcrumbProps,
+} from '@aph/mobile-patients/src/components/MedicineListing/Breadcrumb';
+import {
   SelectedFilters,
   SortByOption,
 } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListing';
@@ -20,6 +24,7 @@ export interface Props {
   productsTotal: number;
   filterBy: SelectedFilters;
   sortBy: SortByOption | null;
+  breadCrumb: BreadcrumbProps['links'];
   showListView: boolean;
   setShowListView: React.Dispatch<React.SetStateAction<boolean>>;
   setFilterVisible: React.Dispatch<React.SetStateAction<boolean>>;
@@ -34,6 +39,7 @@ export const MedicineListingSections: React.FC<Props> = ({
   productsTotal,
   filterBy,
   sortBy,
+  breadCrumb,
   showListView,
   setShowListView,
   setFilterVisible,
@@ -47,6 +53,8 @@ export const MedicineListingSections: React.FC<Props> = ({
     (categoryId || Number(categoryId) == 0) && !searchText && productsTotal
       ? ` | ${productsTotal} Products`
       : '';
+
+  const breadCrumbView = <Breadcrumb links={breadCrumb} />;
 
   const pageTitleView = !!_pageTitle && (
     <Text style={styles.pageTitle}>
@@ -119,7 +127,7 @@ export const MedicineListingSections: React.FC<Props> = ({
     />
   );
 
-  const views = [pageTitleView, [divider, optionsView]];
+  const views = [breadCrumbView, pageTitleView, [divider, optionsView]];
 
   return (
     <View style={styles.sectionWrapper}>
@@ -133,7 +141,8 @@ const styles = StyleSheet.create({
   paddingView: { width: 20, height: 0 },
   sectionWrapper: {
     ...card(20, 0, 0, '#fff', 5),
-    paddingVertical: 10,
+    paddingTop: 0,
+    paddingBottom: 10,
     marginBottom: 16,
   },
   pageTitle: {

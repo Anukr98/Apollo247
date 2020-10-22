@@ -7,7 +7,7 @@ import { FlatList, ListRenderItemInfo, StyleSheet, View, ViewProps } from 'react
 import { ListItem } from 'react-native-elements';
 
 export interface Props {
-  onPressCategory: (category: Category) => void;
+  onPressCategory: (category: Category, categoryTree: Category[]) => void;
   categories: Category[];
   containerStyle: ViewProps['style'];
 }
@@ -1177,7 +1177,7 @@ export const MedicineCategoryTree: React.FC<Props> = ({
       if (Child?.length) {
         setCategoryTree([item, ...categoryTree]);
       } else {
-        onPressCategory(item);
+        onPressCategory(item, [...categoryTree.reverse(), item]);
       }
     };
     return (

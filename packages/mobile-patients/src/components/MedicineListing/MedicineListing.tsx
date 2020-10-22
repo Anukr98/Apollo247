@@ -10,8 +10,10 @@ import {
   Props as MedicineListingSectionsProps,
 } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListingSections';
 import { OptionSelectionOverlay } from '@aph/mobile-patients/src/components/Medicines/OptionSelectionOverlay';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
+  Category,
   getProductsByCategoryApi,
   MedFilter,
   MedicineProduct,
@@ -43,6 +45,7 @@ export interface Props
     sortBy?: SortByOption; // support for deep link
     filterBy?: SelectedFilters; // support for deep link
     movedFrom?: 'registration' | 'deeplink' | 'home';
+    breadCrumb?: Pick<Category, 'title' | 'category_id'>[];
   }> {}
 
 export const MedicineListing: React.FC<Props> = ({ navigation }) => {
@@ -54,6 +57,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   const sortByNavProp = navigation.getParam('sortBy') || null;
   const filterByNavProp = navigation.getParam('filterBy') || {};
   const titleNavProp = navigation.getParam('title') || '';
+  const breadCrumb = navigation.getParam('breadCrumb') || [];
 
   // states
   const [isLoading, setLoading] = useState(false);
@@ -181,6 +185,16 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   };
 
   const renderSections = () => {
+    const homeBreadCrumb: MedicineListingSectionsProps['breadCrumb'][0] = { title: 'Home' };
+
+    const breadCrumbInfo: MedicineListingSectionsProps['breadCrumb'] =
+      !breadCrumb.length && !searchText
+        ? [{ title: pageTitle }]
+        : breadCrumb.map(({ title, category_id }) => ({
+            title,
+            onPress: () => navigation.push(AppRoutes.MedicineListing, { category_id, title }),
+          }));
+
     const props: MedicineListingSectionsProps = {
       searchText,
       categoryId,
@@ -190,6 +204,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
       filterBy,
       sortBy,
       showListView,
+      breadCrumb: searchText ? [] : [homeBreadCrumb, ...breadCrumbInfo],
       setShowListView,
       setFilterVisible,
       setSortByVisible,

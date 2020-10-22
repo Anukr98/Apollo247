@@ -1888,11 +1888,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const renderCategoryTree = () => {
-    const onPressCategory: MedicineCategoryTreeProps['onPressCategory'] = (c) => {
+    const onPressCategory: MedicineCategoryTreeProps['onPressCategory'] = (category, tree) => {
       setCategoryTreeVisible(false);
       props.navigation.navigate(AppRoutes.MedicineListing, {
-        category_id: c.category_id,
-        title: c.title,
+        category_id: category.category_id,
+        title: category.title,
+        breadCrumb: tree,
       });
     };
     const onPressDismissView = () => {
