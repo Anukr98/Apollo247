@@ -22,6 +22,7 @@ const getMedicineOrderQuery = (method, patientId, orderId) => {
             customerComment
             clusterId
             allocationProfileName
+            storeDistanceKm
             medicineOrderAddress {
               mobileNumber
               name

@@ -1,7 +1,5 @@
 import React, { useEffect } from 'react';
 import { Theme } from '@material-ui/core';
-import { Link } from 'react-router-dom';
-import { clientRoutes } from 'helpers/clientRoutes';
 import { makeStyles } from '@material-ui/styles';
 import { BottomLinks } from 'components/BottomLinks';
 import { Header } from 'components/Header';

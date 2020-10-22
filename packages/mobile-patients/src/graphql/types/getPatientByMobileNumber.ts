@@ -56,6 +56,7 @@ export interface getPatientByMobileNumber_getPatientByMobileNumber_patients {
   familyHistory: (getPatientByMobileNumber_getPatientByMobileNumber_patients_familyHistory | null)[] | null;
   lifeStyle: (getPatientByMobileNumber_getPatientByMobileNumber_patients_lifeStyle | null)[] | null;
   patientMedicalHistory: getPatientByMobileNumber_getPatientByMobileNumber_patients_patientMedicalHistory | null;
+  partnerId: string | null;
 }
 
 export interface getPatientByMobileNumber_getPatientByMobileNumber {

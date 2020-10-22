@@ -4,8 +4,8 @@ import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import { BottomLinks } from 'components/BottomLinks';
 import { NavigationBottom } from 'components/NavigationBottom';
-import { MetaTagsComp } from 'MetaTagsComp';
 import { dataLayerTracking } from 'gtmTracking';
+import { MetaTagsComp } from 'MetaTagsComp';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -43,6 +43,19 @@ const useStyles = makeStyles((theme: Theme) => {
 
 const ContactUs: React.FC = (props) => {
   const classes = useStyles({});
+
+  useEffect(() => {
+    /**Gtm code start start */
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: 'Contact Page',
+      pageLOB: 'Others',
+      pageType: 'Contact Page',
+    });
+    /**Gtm code start end */
+  }, []);
+
   const [metaTagProps, setMetaTagProps] = useState(null);
   useEffect(() => {
     setMetaTagProps({

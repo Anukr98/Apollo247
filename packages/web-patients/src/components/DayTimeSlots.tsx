@@ -45,7 +45,7 @@ const useStyles = makeStyles((theme: Theme) => {
         textTransform: 'none',
         padding: '9px 13px',
         [theme.breakpoints.down('xs')]: {
-          minWidth: 99,
+          minWidth: 88,
         },
       },
     },

@@ -200,7 +200,8 @@ export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const { cardDetails } = props;
   const [isConfirmedPopoverOpen, setIsConfirmedPopoverOpen] = React.useState<boolean>(false);
-  const [triggerInvoice, setTriggerInvoice] = React.useState<boolean>(false);
+	const [triggerInvoice, setTriggerInvoice] = React.useState<boolean>(false);
+	const [triggerInvoiceOverMail, setTriggerMail] = React.useState<string>(null);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   let paymentStatus,
     paymentRefId = '';
@@ -237,19 +238,26 @@ export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
 
   useEffect(() => {
     if (triggerInvoice) {
-      setIsLoading(true);
+			if (triggerInvoiceOverMail === null) {
+				setIsLoading(true);
+			}
       apolloClient
         .query<GetOrderInvoice>({
           query: GET_CONSULT_INVOICE,
           variables: {
             appointmentId: cardDetails.id,
-            patientId: currentPatient && currentPatient.id,
+						patientId: currentPatient && currentPatient.id,
+						emailId: triggerInvoiceOverMail
           },
           fetchPolicy: 'cache-first',
         })
         .then(({ data }) => {
           if (data && data.getOrderInvoice && data.getOrderInvoice.length) {
-            window.open(data.getOrderInvoice, '_blank');
+						if (triggerInvoiceOverMail === null) {
+							window.open(data.getOrderInvoice, '_blank');
+						} else {
+							setTriggerMail(null)
+						}
           }
         })
         .catch((e) => {
@@ -400,10 +408,7 @@ export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
               paymentInfo={statusActions(paymentStatus).info}
               orderId={Number(cardDetails.displayId)}
               amountPaid={amountPaid}
-              doctorDetail={{
-                fullName: cardDetails.doctor.name,
-                doctorHospital: [],
-              }}
+              doctorFullName={cardDetails.doctor.name}
               paymentRefId={paymentRefId}
               bookingDateTime={moment(cardDetails.appointmentDateTime)
                 .format('DD MMM YYYY, h:mm[ ]A')
@@ -416,7 +421,8 @@ export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
               onClose={() => handlePaymentModalClose()}
               ctaText={statusActions(paymentStatus).ctaText}
               orderStatusCallback={statusActions(paymentStatus).callbackFunction}
-              fetchConsultInvoice={setTriggerInvoice}
+							fetchConsultInvoice={setTriggerInvoice}
+							fetchUserEmailForInvoice={setTriggerMail}
             />
           )}
         </Modal>

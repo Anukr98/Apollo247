@@ -20,6 +20,7 @@ import { BottomLinks } from 'components/BottomLinks';
 import { useAllCurrentPatients } from 'hooks/authHooks';
 import { ManageProfile } from 'components/ManageProfile';
 import { hasOnePrimaryUser } from 'helpers/onePrimaryUser';
+import { dataLayerTracking } from 'gtmTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -236,11 +237,17 @@ const CovidLanding: React.FC = (props: any) => {
   const isDesktopOnly = useMediaQuery('(min-width:768px)');
   const headingArr = [
     {
+      heading: 'How close are we to a COVID-19 vaccine?',
+      subheading: 'Get the latest news, articles and updates related to the COVID-19 vaccine.',
+      category: 'vaccine-tracker',
+      defaultExpanded: true,
+    },
+    {
       heading: 'How can I stay safe?',
       subheading:
         'Articles and videos on precautions and protective measures to avoid Coronavirus.',
       category: 'stay-safe',
-      defaultExpanded: true,
+      defaultExpanded: false,
     },
     {
       heading: 'What to do if I have symptoms',
@@ -279,6 +286,14 @@ const CovidLanding: React.FC = (props: any) => {
     scrollToRef &&
       scrollToRef.current &&
       scrollToRef.current.scrollIntoView({ behavior: 'smooth' });
+
+    dataLayerTracking({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: 'Covid-19 Index Page',
+      pageLOB: 'Covid-19',
+      pageType: 'Index',
+    });
   }, []);
 
   useEffect(() => {
@@ -303,10 +318,15 @@ const CovidLanding: React.FC = (props: any) => {
       const sortedStaySafeData = !_isEmpty(body['stay-safe']) && body['stay-safe'];
       const sortedCovidSymptomsData = !_isEmpty(body['covid-symptoms']) && body['covid-symptoms'];
       const sortedGoingAheadData = !_isEmpty(body['going-ahead']) && body['going-ahead'];
+      const sortedCovidVaccineUpdateData =
+        !_isEmpty(body['vaccine-tracker']) && body['vaccine-tracker'];
+
       let covidObj: CovidContentInterface = {};
       covidObj['stay-safe'] = sortedStaySafeData;
       covidObj['covid-symptoms'] = sortedCovidSymptomsData;
       covidObj['going-ahead'] = sortedGoingAheadData;
+      covidObj['vaccine-tracker'] = sortedCovidVaccineUpdateData;
+
       covidObj['total-term'] = body['totalterm'];
       setCovidContent(covidObj);
     });

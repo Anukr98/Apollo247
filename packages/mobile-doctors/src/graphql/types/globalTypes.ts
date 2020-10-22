@@ -37,6 +37,12 @@ export enum BOOKINGSOURCE {
   WEB = "WEB",
 }
 
+export enum CALL_FEEDBACK_RESPONSES_TYPES {
+  AUDIO = "AUDIO",
+  AUDIOVIDEO = "AUDIOVIDEO",
+  VIDEO = "VIDEO",
+}
+
 export enum CASESHEET_STATUS {
   COMPLETED = "COMPLETED",
   PENDING = "PENDING",
@@ -272,6 +278,22 @@ export enum TRANSFER_STATUS {
   REJECTED = "REJECTED",
 }
 
+export enum USER_STATUS {
+  ENTERING = "ENTERING",
+  LEAVING = "LEAVING",
+}
+
+export enum USER_TYPE {
+  DOCTOR = "DOCTOR",
+  PATIENT = "PATIENT",
+}
+
+export enum WebEngageEvent {
+  DOCTOR_IN_CHAT_WINDOW = "DOCTOR_IN_CHAT_WINDOW",
+  DOCTOR_LEFT_CHAT_WINDOW = "DOCTOR_LEFT_CHAT_WINDOW",
+  DOCTOR_SENT_MESSAGE = "DOCTOR_SENT_MESSAGE",
+}
+
 export enum WeekDay {
   FRIDAY = "FRIDAY",
   MONDAY = "MONDAY",
@@ -346,6 +368,15 @@ export interface DoctorAvailabilityInput {
   doctorId: string;
 }
 
+export interface DoctorConsultEventInput {
+  mobileNumber: string;
+  eventName: WebEngageEvent;
+  consultID: string;
+  displayId: string;
+  consultMode: ConsultMode;
+  doctorFullName: string;
+}
+
 export interface DoctorNextAvailableSlotInput {
   availableDate: any;
   doctorIds: string[];
@@ -383,6 +414,9 @@ export interface MedicinePrescriptionInput {
   medicineUnit?: MEDICINE_UNIT | null;
   routeOfAdministration?: ROUTE_OF_ADMINISTRATION | null;
   medicineCustomDosage?: string | null;
+  medicineCustomDetails?: string | null;
+  includeGenericNameInPrescription?: boolean | null;
+  genericName?: string | null;
 }
 
 export interface MessageInput {
@@ -424,6 +458,8 @@ export interface ModifyCaseSheetInput {
   occupationHistory?: string | null;
   referralSpecialtyName?: string | null;
   referralDescription?: string | null;
+  diagnosticTestResult?: string | null;
+  clinicalObservationNotes?: string | null;
 }
 
 export interface OtherInstructionsInput {
@@ -443,6 +479,13 @@ export interface RescheduleAppointmentInput {
   rescheduleInitiatedId: string;
   rescheduledDateTime?: any | null;
   autoSelectSlot?: number | null;
+}
+
+export interface SaveAppointmentCallFeedbackInput {
+  appointmentCallDetailsId: string;
+  ratingValue: number;
+  feedbackResponseType?: CALL_FEEDBACK_RESPONSES_TYPES | null;
+  feedbackResponses?: string | null;
 }
 
 export interface SaveDoctorDeviceTokenInput {
@@ -467,6 +510,9 @@ export interface SaveDoctorsFavouriteMedicineInput {
   medicineUnit: MEDICINE_UNIT;
   routeOfAdministration?: ROUTE_OF_ADMINISTRATION | null;
   medicineCustomDosage?: string | null;
+  medicineCustomDetails?: string | null;
+  includeGenericNameInPrescription?: boolean | null;
+  genericName?: string | null;
 }
 
 export interface SymptomInput {
@@ -503,6 +549,9 @@ export interface UpdateDoctorsFavouriteMedicineInput {
   medicineUnit?: MEDICINE_UNIT | null;
   routeOfAdministration?: ROUTE_OF_ADMINISTRATION | null;
   medicineCustomDosage?: string | null;
+  medicineCustomDetails?: string | null;
+  includeGenericNameInPrescription?: boolean | null;
+  genericName?: string | null;
 }
 
 export interface UpdatePatientInput {
@@ -519,12 +568,14 @@ export interface UpdatePatientInput {
   photoUrl?: string | null;
   deviceCode?: string | null;
   employeeId?: string | null;
+  partnerId?: string | null;
 }
 
 export interface exotelInput {
   from?: string | null;
   to?: string | null;
-  appointmentId?: string | null;
+  appointmentId: string;
+  deviceType?: DEVICETYPE | null;
 }
 
 //==============================================================

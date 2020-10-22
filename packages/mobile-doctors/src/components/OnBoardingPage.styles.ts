@@ -53,7 +53,7 @@ export default StyleSheet.create({
     }),
   },
   imageStyle: {
-    marginTop: -90,
+    height: '45.5%',
     width: '90%',
   },
   skipTextStyle: {

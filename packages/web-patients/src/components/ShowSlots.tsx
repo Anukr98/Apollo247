@@ -30,9 +30,8 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 6,
     },
     scheduleTimeSlots: {
-      // display: 'none',
       padding: 10,
-      minHeight: 278,
+      minHeight: 318,
       marginBottom: 0,
     },
     showTimeSlot: {
@@ -67,7 +66,7 @@ export const ShowSlots: React.FC<ShowSlotsProps> = (props) => {
     afternoonSlots: number[] = [],
     eveningSlots: number[] = [],
     lateNightSlots: number[] = [];
-  const morningStartTime = getIstTimestamp(new Date(apiDateFormat), '06:01');
+  const morningStartTime = getIstTimestamp(new Date(apiDateFormat), '06:00');
   const morningTime = getIstTimestamp(new Date(apiDateFormat), '12:01');
   const afternoonTime = getIstTimestamp(new Date(apiDateFormat), '17:01');
   const eveningTime = getIstTimestamp(new Date(apiDateFormat), '21:01');
@@ -77,10 +76,11 @@ export const ShowSlots: React.FC<ShowSlotsProps> = (props) => {
       const slotTime = new Date(slot).getTime();
       const currentTime = new Date(new Date().toISOString()).getTime();
       if (slotTime > currentTime) {
-        if (slotTime < morningTime && slotTime > morningStartTime) morningSlots.push(slotTime);
+        if (slotTime < morningTime && slotTime >= morningStartTime) morningSlots.push(slotTime);
         else if (slotTime >= morningTime && slotTime < afternoonTime) afternoonSlots.push(slotTime);
         else if (slotTime >= afternoonTime && slotTime < eveningTime) eveningSlots.push(slotTime);
         else if (slotTime >= eveningTime) lateNightSlots.push(slotTime);
+        else lateNightSlots.push(slotTime);
       }
     });
 

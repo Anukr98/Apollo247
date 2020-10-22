@@ -384,6 +384,8 @@ interface ConsultRoomProps {
   setSubscriberError: (error: any) => void;
   setIscall: (value: boolean) => void;
   isCall: boolean;
+  setUserMessageOnCall: (msg: string) => void;
+  userMessageOnCall: string;
 }
 
 export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
@@ -431,6 +433,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const appointmentComplete = '^^#appointmentComplete';
   const doctorAutoResponse = '^^#doctorAutoResponse';
   const exotelCall = '^^#exotelCall';
+  const vitalCompletedByPatient = '^^#vitalsCompletedByPatient';
 
   const doctorId = props.doctorId;
   const patientId = props.patientId;
@@ -525,7 +528,8 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
           message.message.message !== cancelConsultInitiated &&
           message.message.message !== callAbandonment &&
           message.message.message !== appointmentComplete &&
-          message.message.message !== doctorAutoResponse
+          message.message.message !== doctorAutoResponse &&
+          message.message.message !== vitalCompletedByPatient
         ) {
           setIsNewMsg(true);
           props.isNewMessage(true);
@@ -686,7 +690,6 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
         '. Request you to answer the call.'
       );
     } else {
-      srollToBottomAction();
       return rowData.message;
     }
   };
@@ -708,7 +711,8 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== cancelConsultInitiated &&
       rowData.message !== callAbandonment &&
       rowData.message !== appointmentComplete &&
-      rowData.message !== doctorAutoResponse
+      rowData.message !== doctorAutoResponse &&
+      rowData.message !== vitalCompletedByPatient
     ) {
       leftComponent++;
       rightComponent = 0;
@@ -809,7 +813,8 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== cancelConsultInitiated &&
       rowData.message !== callAbandonment &&
       rowData.message !== appointmentComplete &&
-      rowData.message !== doctorAutoResponse
+      rowData.message !== doctorAutoResponse &&
+      rowData.message !== vitalCompletedByPatient
     ) {
       leftComponent = 0;
       rightComponent++;
@@ -1014,6 +1019,8 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
             setSubscriberError={props.setSubscriberError}
             isCall={props.isCall}
             setIscall={props.setIscall}
+            setUserMessageOnCall={props.setUserMessageOnCall}
+            userMessageOnCall={props.userMessageOnCall}
           />
         )}
         {(!showVideo || showVideoChat) && (

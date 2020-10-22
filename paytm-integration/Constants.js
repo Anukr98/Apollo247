@@ -9,6 +9,7 @@ module.exports = Object.freeze({
   DOCTOR_APPT_REMINDER: `query { sendDoctorReminderNotifications(nextMin: {0} ){status apptsListCount }}`,
   FOLLOW_UP_NOTIFICATION: `query { sendFollowUpNotification }`,
   DAILY_APPOINTMENT_SUMMARY: `query { sendDailyAppointmentSummary }`,
+  DAILY_APPOINTMENT_SUMMARY_OPS: `query { sendAppointmentSummaryOps }`,
   PHYSICAL_APPT_REMINDER: `query { sendPhysicalApptReminderNotification(inNextMin: {0} ){status apptsListCount }}`,
   UPDATE_SD_SUMMARY: `mutation{ updateSdSummary(summaryDate:"{0}",doctorId:"0",docLimit: {1} ,docOffset: {2} ){ doctorId doctorName appointmentDateTime totalConsultation } }`,
   UPDATE_JD_SUMMARY: `mutation{ updateJdSummary(summaryDate:"{0}",doctorId:"0",docLimit: {1} ,docOffset: {2} ){ doctorId doctorName appointmentDateTime totalConsultation } }`,

@@ -13,6 +13,7 @@ export const saveSearchTypeDefs = gql`
     type: SEARCH_TYPE
     typeId: ID!
     typeName: String
+    image: String
     patient: ID!
   }
 
@@ -21,6 +22,7 @@ export const saveSearchTypeDefs = gql`
     typeId: ID!
     type: SEARCH_TYPE!
     patient: Patient
+    image: String
   }
 
   type SaveSearchResult {
@@ -36,6 +38,7 @@ type SaveSearchInput = {
   type: SEARCH_TYPE;
   typeId: string;
   typeName: string;
+  image: string;
   patient: Patient;
 };
 

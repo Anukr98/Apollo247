@@ -13,10 +13,16 @@ import {
   elasticDoctorTextSearch,
   elasticDoctorLatestSlotFilter,
   elasticDoctorAvailabilityFilter,
+  elasticDoctorConsultModeFilter,
   elasticDoctorDistanceSort,
   elasticDoctorAvailabilitySort,
   elasticDoctorDoctorTypeSort,
   elasticDoctorSearch,
+  elasticSpecialtySearch,
+  elasticDoctorFilters,
+  ifKeyExist,
+  capitalize,
+  rangeCompare
 } from 'doctors-service/entities/doctorElastic';
 import { Client, RequestParams } from '@elastic/elasticsearch';
 import { differenceInMinutes } from 'date-fns';
@@ -77,10 +83,18 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
     partnerDoctorCount: Int
   }
 
-  type Specialty  {
+  type DoctorsFiltersResult {
+    filters: filters
+  }
+
+  type Specialty {
     id: String
     name: String
     specialtydisplayName: String
+    specialistPluralTerm: String
+    image: String
+    shortDescription: String
+    symptoms: String
   }
   type DoctorSlotAvailability {
     doctorId: String
@@ -124,6 +138,7 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
   extend type Query {
     getDoctorsBySpecialtyAndFilters(filterInput: FilterDoctorInput): FilterDoctorsResult
     getDoctorList(filterInput: FilterDoctorInput): DoctorListResult
+    getDoctorListFilters: DoctorsFiltersResult
   }
 `;
 
@@ -131,6 +146,10 @@ type Specialty = {
   id: string;
   name: string;
   specialtydisplayName: string;
+  specialistPluralTerm: string;
+  image: string;
+  shortDescription: string;
+  symptoms: string;
 };
 
 type DefaultfilterType = {
@@ -175,6 +194,10 @@ type DoctorsListResult = {
   specialties: Specialty[];
   apolloDoctorCount: number;
   partnerDoctorCount: number;
+};
+
+type DoctorsFiltersResult = {
+  filters: filters;
 };
 
 export type DoctorConsultModeAvailability = {
@@ -262,8 +285,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
 
   const finalDoctorNextAvailSlots: DoctorSlotAvailability[] = [],
     finalDoctorsConsultModeAvailability: DoctorConsultModeAvailability[] = [];
-  const finalSpecialtyDetails: any = [];
-  let doctors = [];
+  const doctors = [];
   const elasticMatch = [];
   const elasticSort = [];
   let apolloDoctorCount: number = 0,
@@ -285,7 +307,16 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       elasticSlotDateAvailability.push({
         bool: {
           must: [
-            { match: { 'doctorSlots.slotDate': availability } },
+            {
+              nested: {
+                path: 'doctorSlots',
+                query: {
+                  bool: {
+                    must: [{ match: { 'doctorSlots.slotDate': availability } }],
+                  },
+                },
+              },
+            },
             {
               nested: {
                 path: 'doctorSlots.slots',
@@ -348,7 +379,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   } else if (elasticSlotDateAvailability.length > 0) {
     elasticMatch.push({ bool: { should: elasticSlotDateAvailability } });
   } else if (args.filterInput.availableNow) {
-    elasticMatch.push(elasticSlotAvailabileNow);
+    elasticMatch.push({ bool: { must: elasticSlotAvailabileNow } });
   }
 
   if (args.filterInput.specialtyName && args.filterInput.specialtyName.length > 0) {
@@ -443,6 +474,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   elasticSort.push(elasticDoctorDoctorTypeSort());
 
 
+
   if (!process.env.ELASTIC_INDEX_DOCTORS) {
     throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
   }
@@ -494,10 +526,9 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     }
     doctor['availableMode'] = [];
     doctor['earliestSlotavailableInMinutes'] = 0;
-    let bufferTime = 5;
+
     for (const consultHour of doctor.consultHours) {
       consultHour['id'] = consultHour['consultHoursId'];
-      bufferTime = consultHour['consultBuffer'];
       if (!doctor['availableMode'].includes(consultHour.consultMode)) {
         doctor['availableMode'].push(consultHour.consultMode);
       }
@@ -674,18 +705,35 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     gender: [],
   };
 
+  const brandMappings: any = {
+    APOLLO: 'APOLLO_HOSPITALS',
+    CLINIC: 'APOLLO_CLINIC',
+    CRADLE: 'APOLLO_CRADLE',
+    DOCTOR_CONNECT: 'DOCTOR_CONNECT',
+    FERTILITY: 'APOLLO_FERTILITY',
+    JUNIOR: 'JUNIOR',
+    PAYROLL: 'APOLLO',
+    SPECTRA: 'APOLLO_SPECTRA_HOSPITALS',
+    STAR_APOLLO: 'STAR_APOLLO',
+    SUGAR: 'APOLLO_SUGAR_CLINICS',
+    APOLLO_HOMECARE: 'APOLLO_HOMECARE',
+    WHITE_DENTAL: 'APOLLO_WHITE_DENTAL',
+  };
+
   function pushInFilters(esObject: any, field: string) {
     esObject[field]['buckets'].forEach((element: { key: 'string'; doc_count: number }) => {
       if (
         element['key'] &&
         !('name' in ifKeyExist(filters[field], 'name', capitalize(element['key'])))
       ) {
-        if (field != 'brands') {
+        if (field == 'gender') {
+          filters[field].push({ name: element['key'].toUpperCase() });
+        } else if (field != 'brands') {
           filters[field].push({ name: capitalize(element['key']) });
         } else {
           filters[field].push({
             name: element['key'],
-            brandName: capitalize(element['key']),
+            brandName: capitalize(brandMappings[element['key']]),
             image: '',
           });
         }
@@ -779,6 +827,8 @@ const getDoctorList: Resolver<
   const specialties: Specialty[] = [];
   const elasticMatch = [];
   const elasticSort = [];
+  let getDetails: any = [],
+    matchedSpecialties: any = [];
 
   let apolloDoctorCount: number = 0,
     partnerDoctorCount: number = 0;
@@ -790,7 +840,11 @@ const getDoctorList: Resolver<
 
   // check elastic search index  /package/api/helpers/elasticIndex.ts
   if (args.filterInput.searchText) {
-    elasticMatch.push(elasticDoctorTextSearch(args.filterInput.searchText));
+    let searchText = args.filterInput.searchText.trim().toLowerCase();
+    if (searchText.slice(0, 3) === 'dr.' || searchText.slice(0, 3) === 'dr ') {
+      searchText = searchText.slice(3);
+    }
+    elasticMatch.push(elasticDoctorTextSearch(searchText));
   }
   if (args.filterInput.availability || args.filterInput.availableNow) {
     elasticMatch.push(elasticDoctorAvailabilityFilter(args.filterInput));
@@ -827,7 +881,12 @@ const getDoctorList: Resolver<
     const elasticFee: { [index: string]: any } = [];
     args.filterInput.fees.forEach((fee) => {
       elasticFee.push({
-        range: { onlineConsultationFees: { gte: fee.minimum, lte: fee.maximum } },
+        bool: {
+          must: [
+            { range: { onlineConsultationFees: { gte: fee.minimum, lte: fee.maximum } }, },
+            { range: { physicalConsultationFees: { gte: fee.minimum, lte: fee.maximum } }, },
+          ],
+        },
       });
     });
     if (elasticFee.length > 0) {
@@ -845,6 +904,9 @@ const getDoctorList: Resolver<
 
   if (args.filterInput.doctorType && args.filterInput.doctorType.length > 0) {
     elasticMatch.push({ match: { doctorType: args.filterInput.doctorType.join(',') } });
+  }
+  if (args.filterInput.consultMode && args.filterInput.consultMode.length > 0) {
+    elasticMatch.push(elasticDoctorConsultModeFilter(args.filterInput.consultMode));
   }
 
   if (args.filterInput.city && args.filterInput.city.length) {
@@ -872,7 +934,36 @@ const getDoctorList: Resolver<
     elasticMatch
   );
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
-  const getDetails = await client.search(searchParams);
+
+  if (!args.filterInput.searchText) {
+    getDetails = await client.search(searchParams);
+  } else {
+    const specialtiesSearchParams: RequestParams.Search = elasticSpecialtySearch(args.filterInput.searchText);
+    const promises: object[] = [
+      client.search(searchParams),
+      client.search(specialtiesSearchParams),
+    ];
+
+    await Promise.all(promises).then((res) => {
+      [getDetails, matchedSpecialties] = res;
+    });
+
+    const specialityBuckets = matchedSpecialties.body.aggregations.matched_specialities.buckets;
+    if (specialityBuckets && specialityBuckets.length) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      matchedSpecialties = specialityBuckets.map((speciality: any) => {
+        speciality = speciality.matched_specialities_hits.hits.hits[0]['_source']['specialty'];
+        if (!speciality['id']) {
+          speciality['id'] = speciality['specialtyId'];
+        }
+        speciality['specialtydisplayName'] = speciality['userFriendlyNomenclature'];
+        return speciality;
+      });
+    } else {
+      matchedSpecialties = specialityBuckets;
+    }
+  }
+
   client.close();
 
   const doctorTypeCount = getDetails.body.aggregations.doctorTypeCount.buckets;
@@ -899,7 +990,7 @@ const getDoctorList: Resolver<
     doctorObj['doctorType'] = doctor.doctorType;
     doctorObj['doctorfacility'] = doctor.facility[0].name + ' ' + doctor.facility[0].city;
     doctorObj['specialistSingularTerm'] = doctor.specialty.specialistSingularTerm;
-    doctorObj['specialtydisplayName'] = doctor.specialty.userFriendlyNomenclature;
+    doctorObj['specialistPluralTerm'] = doctor.specialty.specialistPluralTerm;
     doctorObj['consultMode'] = [];
     doctorObj['slot'] = null;
     doctorObj['earliestSlotInMinutes'] = null;
@@ -934,27 +1025,115 @@ const getDoctorList: Resolver<
       );
     }
 
-    if (
-      specialties.findIndex((specialty) => specialty.id == specialtyObj['id']) == -1 &&
-      args.filterInput.searchText
-    ) {
-      specialties.push(specialtyObj);
-    }
     doctors.push(doctorObj);
   }
 
   searchLogger(`API_CALL___END`);
   return {
     doctors: doctors,
-    specialties: specialties,
+    specialties: matchedSpecialties,
     apolloDoctorCount,
     partnerDoctorCount,
   };
+};
+
+const getDoctorListFilters: Resolver<
+  null,
+  {},
+  DoctorsServiceContext,
+  DoctorsFiltersResult
+> = async (parent, args, { }) => {
+  const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
+
+  const searchFilters = elasticDoctorFilters();
+  const aggnData = await client.search(searchFilters);
+  client.close();
+
+  const filters: any = {
+    city: [],
+    brands: [],
+    language: [],
+    experience: [],
+    availability: [],
+    fee: [],
+    gender: [],
+  };
+
+  const brandMappings: any = {
+    APOLLO: 'APOLLO_HOSPITALS',
+    CLINIC: 'APOLLO_CLINIC',
+    CRADLE: 'APOLLO_CRADLE',
+    DOCTOR_CONNECT: 'DOCTOR_CONNECT',
+    FERTILITY: 'APOLLO_FERTILITY',
+    JUNIOR: 'JUNIOR',
+    PAYROLL: 'APOLLO',
+    SPECTRA: 'APOLLO_SPECTRA_HOSPITALS',
+    STAR_APOLLO: 'STAR_APOLLO',
+    SUGAR: 'APOLLO_SUGAR_CLINICS',
+    APOLLO_HOMECARE: 'APOLLO_HOMECARE',
+    WHITE_DENTAL: 'APOLLO_WHITE_DENTAL',
+  };
+
+  function pushInFilters(esObject: any, field: string) {
+    esObject[field]['buckets'].forEach((element: { key: 'string'; doc_count: number }) => {
+      if (
+        element['key'] &&
+        !('name' in ifKeyExist(filters[field], 'name', capitalize(element['key'])))
+      ) {
+        if (field == 'gender') {
+          filters[field].push({ name: element['key'].toUpperCase() });
+        } else if (field != 'brands') {
+          filters[field].push({ name: capitalize(element['key']) });
+        } else {
+          filters[field].push({
+            name: element['key'],
+            brandName: capitalize(brandMappings[element['key']]),
+            image: '',
+          });
+        }
+      }
+    });
+  }
+
+  pushInFilters(aggnData.body.aggregations, 'brands');
+  pushInFilters(aggnData.body.aggregations, 'language');
+  pushInFilters(aggnData.body.aggregations, 'gender');
+  pushInFilters(aggnData.body.aggregations, 'fee');
+  pushInFilters(aggnData.body.aggregations, 'experience');
+
+  aggnData.body.aggregations.state.buckets.forEach((state: any) => {
+    if (
+      state['key'] &&
+      !('name' in ifKeyExist(filters['city'], 'state', capitalize(state['key'])))
+    ) {
+      const cityObject: { state: string; data: string[] } = { state: '', data: [] };
+      state.city.buckets.forEach((city: any) => {
+        if (city['key'] && !cityObject.data.includes(capitalize(city['key']))) {
+          cityObject.data.push(capitalize(city['key']));
+        }
+      });
+      cityObject.state = capitalize(state['key']);
+      filters.city.push(cityObject);
+    }
+  });
+
+  filters.availability = [
+    { name: 'Now' },
+    { name: 'Today' },
+    { name: 'Tomorrow' },
+    { name: 'Next 3 Days' },
+  ];
+
+  filters.experience.sort(rangeCompare('name'));
+  filters.fee.sort(rangeCompare('name'));
+
+  return { filters: filters };
 };
 
 export const getDoctorsBySpecialtyAndFiltersTypeDefsResolvers = {
   Query: {
     getDoctorsBySpecialtyAndFilters,
     getDoctorList,
+    getDoctorListFilters
   },
 };

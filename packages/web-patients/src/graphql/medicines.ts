@@ -237,6 +237,25 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
           responseCode
           responseMessage
           bankTxnId
+          healthCreditsRedeemed
+          healthCreditsRedemptionRequest {
+            Success
+            Message
+            RequestNumber
+            AvailablePoints
+            BalancePoints
+            RedeemedPoints
+            PointsValue
+          }
+          paymentMode
+          refundAmount
+        }
+        medicineOrderRefunds {
+          refundAmount
+          refundStatus
+          refundId
+          orderId
+          createdDate
         }
         medicineOrdersStatus {
           id
@@ -322,6 +341,19 @@ export const GET_PATIENT_FEEDBACK = gql`
       feedback {
         rating
       }
+    }
+  }
+`;
+
+export const GET_ONE_APOLLO = gql`
+  query GetOneApollo($patientId: String) {
+    getOneApolloUser(patientId: $patientId) {
+      availableHC
+      name
+      earnedHC
+      tier
+      burnedCredits
+      blockedCredits
     }
   }
 `;

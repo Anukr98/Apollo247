@@ -32,6 +32,7 @@ export interface CreateSeniorDoctorCaseSheet_createSeniorDoctorCaseSheet_diagnos
 export interface CreateSeniorDoctorCaseSheet_createSeniorDoctorCaseSheet_diagnosticPrescription {
   __typename: "DiagnosticPrescription";
   itemname: string | null;
+  testInstruction: string | null;
 }
 
 export interface CreateSeniorDoctorCaseSheet_createSeniorDoctorCaseSheet_medicinePrescription {

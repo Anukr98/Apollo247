@@ -63,6 +63,7 @@ const useStyles = makeStyles((theme: Theme) => {
     bannerContainer: {
       padding: '20px 0',
       borderRadius: 10,
+      
     },
     mainBanner: {
       width: '100%',
@@ -76,15 +77,14 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     bannerContent: {
-      padding: 30,
+      padding: '10px 30px',
       display: 'flex',
       alignItems: 'center',
       [theme.breakpoints.down('sm')]: {
         padding: '20px 0',
       },
-
       '& p': {
-        fontSize: 18,
+        fontSize: 24,
         lineHeight: '24px',
         fontWeight: 600,
         color: '#005CA8',
@@ -95,9 +95,10 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '& h1': {
         fontSize: 32,
-        lineHeight: '38px',
+        lineHeight: '40px',
         fontWeight: 700,
         color: '#005CA8',
+        margin: '0 0 10px',
         [theme.breakpoints.down('sm')]: {
           fontSize: 20,
           lineHeight: '22px',
@@ -118,7 +119,7 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: '0 30px 0 0',
       '& img': {
         [theme.breakpoints.down('sm')]: {
-          width: 100,
+          width: 80,
         },
       },
     },
@@ -132,6 +133,7 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 10,
       background: ' linear-gradient(160.46deg, #1D3052 0%, #1E5F74 46.19%, #41A8A8 98.44%)',
       padding: 30,
+      position: 'relative',
       [theme.breakpoints.down('sm')]: {
         padding: 20,
       },
@@ -148,6 +150,10 @@ const useStyles = makeStyles((theme: Theme) => {
           fontSize: 16,
         },
       },
+      '& button':{
+        margin: '20px 20px 0 auto',
+        display: 'block'
+,      }
     },
     benefitList: {
       padding: 0,
@@ -375,14 +381,29 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
-      // padding: '0 0 20px',
+      padding: '0 30px',
+      [theme.breakpoints.down('sm')]: {
+        padding:0
+      },
+      '& img':{
+        [theme.breakpoints.down('sm')]: {
+          width: 120,
+        }
+      }
     },
     bannerFooter: {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'flex-end',
+      position: 'absolute',
+      right: 50,
+      bottom: 50,
+      [theme.breakpoints.down('sm')]: {
+        position: 'static'
+      },
       '& button': {
         margin: '0 0 0 20px',
+        
       },
       '& p': {
         fontSize: 14,
@@ -393,9 +414,10 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     unlockNow: {
-      padding: 10,
+      padding: '10px 20px',
       background: '#E52936',
       color: '#fff',
+      fontSize: 16,
       [theme.breakpoints.down('sm')]: {
         fontSize: 10,
       },
@@ -497,6 +519,11 @@ export const HdfcLanding: React.FC = (props) => {
     description:
       'Apollo 24|7 - The Healthy Life offering is the marketing program offered by Apollo 24|7, an online portal and app managed by Apollo Hospitals Enterprise Limited (AHEL) only for HDFC Bank customers.',
     canonicalLink: typeof window !== 'undefined' && window.location && window.location.href,
+      ogtitle: 'Apollo HealthyLife Program for HDFC customers',
+      ogdescription: 'The HealthyLife offering is the marketing program offered by Apollo 24|7, an app managed by Apollo Hospitals Enterprise Limited (AHEL) only for HDFC Bank customers.',
+      ogurl: 'https://www.apollo247.com/partners/hdfc',
+      ogimage: 'https://assets.apollo247.com/images/hdfc-og-image.jpg',
+      ogsite_name: 'Apollo 24|7',
   };
 
   useEffect(() => {
@@ -549,12 +576,12 @@ export const HdfcLanding: React.FC = (props) => {
                 <img
                   src={require('images/hdfc/apollo-hashtag.svg')}
                   alt="HDFC Call Doctor"
-                  width="100"
+                  width="150"
                 />
                 <img
                   src={require('images/hdfc/hdfc-health-first.svg')}
                   alt="HDFC Call Doctor"
-                  width="100"
+                  width="150"
                 />
               </div>
               <div className={classes.bannerContent}>
@@ -564,10 +591,11 @@ export const HdfcLanding: React.FC = (props) => {
 
                 <div className={classes.bannerDetails}>
                   <Typography component="h1">Apollo HealthyLife Program for you !</Typography>
+                  <Typography>Exclusively for HDFC Bank customers</Typography>
                 </div>
               </div>
               <div className={classes.bannerFooter}>
-                <Typography>Exclusively for HDFC Bank customers</Typography>
+              
                 {loading ? (
                   <CircularProgress size={30} />
                 ) : (
@@ -676,7 +704,57 @@ export const HdfcLanding: React.FC = (props) => {
                 </div>
               </li>
             </ul>
-          </div>
+                     
+              {loading ? (
+                <CircularProgress size={30} />
+              ) : (
+                <Route
+                  render={({ history }) => (
+                    <AphButton
+                      className={classes.unlockNow}
+                      onClick={() => {
+                        hdfcUnlockNowTracking('HDFC Unlock Now Clicked');
+                        if (!isSignedIn) {
+                          /* GA Tracking */
+                          (window as any).dataLayer.push({
+                            event: 'Unlock Now Clicked',
+                          });
+                          /*******************/
+                          setIsLoginPopupVisible(true);
+                        } else {
+                          /* GA Tracking */
+                          (window as any).dataLayer.push({
+                            event: 'Explore Benefits Clicked',
+                          });
+                          /*******************/
+                          setLoading(true);
+                          updatePatient({
+                            variables: {
+                              patientInput: {
+                                id: currentPatient.id,
+                                partnerId: currentPatient.partnerId
+                                  ? currentPatient.partnerId
+                                  : 'HDFCBANK',
+                              },
+                            },
+                          })
+                            .then(() => {
+                              setLoading(false);
+                              history.push(clientRoutes.welcome());
+                            })
+                            .catch((error) => {
+                              setLoading(false);
+                              console.error(error);
+                            });
+                        }
+                      }}
+                    >
+                      {isSignedIn ? 'Explore Benefits' : 'Unlock Now'}
+                    </AphButton>
+                  )}
+                />
+              )}
+            </div>
 
           <div className={classes.tncContainer}>
             <div className={classes.tncContent}>
@@ -686,6 +764,7 @@ export const HdfcLanding: React.FC = (props) => {
                   The HealthyLife offering is the marketing program offered by Apollo 24|7, an app
                   managed by Apollo Hospitals Enterprise Limited (AHEL) only for HDFC Bank
                   customers.
+                  </li>
                   <li>
                     The validity of membership is 1 year and the validity of program (“Term”) is
                     till 30th September 2021, unless extended by Apollo 24|7 and HDFC Bank
@@ -708,7 +787,7 @@ export const HdfcLanding: React.FC = (props) => {
                     The T&amp;C’s of the OneApollo silver, gold and platinum membership offered in
                     the HealthyLife program shall be governed by the terms &amp; conditions of the
                     website -{' '}
-                    <a href="https://www.oneapollo.com/terms-conditions/">
+                    <a rel="nofollow" href="https://www.oneapollo.com/terms-conditions/">
                       https://www.oneapollo.com/terms-conditions/
                     </a>
                   </li>
@@ -759,8 +838,7 @@ export const HdfcLanding: React.FC = (props) => {
                     Conciliation Act, 1996. The place of arbitration shall be at Chennai and
                     language of arbitration shall be English. The existence of a dispute, if at all,
                     shall not constitute a claim against Apollo 24|7.
-                  </li>
-                </li>
+                  </li>              
               </ul>
             </div>
           </div>
@@ -814,8 +892,7 @@ export const HdfcLanding: React.FC = (props) => {
 
       {defaultNewProfile && !hasExistingProfile /* GA Tracking */
         ? (window as any).dataLayer.push({
-            event: 'UserLoggedIn',
-            Type: 'Registration',
+            event: 'Registration Form Shown',
             'User ID': localStorage.getItem('userMobileNo'),
           })
         : ''}

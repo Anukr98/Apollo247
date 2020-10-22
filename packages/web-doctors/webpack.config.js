@@ -29,7 +29,10 @@ const plugins = [
     filename: 'index.html',
     chunks: ['index'],
     template: './index.html',
-    templateParameters: { env: process.env.NODE_ENV },
+    templateParameters: { 
+      env: process.env.NODE_ENV,
+      licenseCode: process.env.WEBENGAGE_DOCTOR_ID, 
+    },
     inject: true,
     favicon: './favicon.png',
   }),

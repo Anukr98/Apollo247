@@ -40,7 +40,7 @@ import {
   updatePatient,
   updatePatient_updatePatient_patient,
 } from '@aph/mobile-patients/src/graphql/types/updatePatient';
-import { UPDATE_PATIENT } from '@aph/mobile-patients/src/graphql/profiles';
+import { UPDATE_PATIENT, CREATE_ONE_APOLLO_USER } from '@aph/mobile-patients/src/graphql/profiles';
 import { Mutation } from 'react-apollo';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import moment from 'moment';
@@ -62,6 +62,7 @@ import {
 import { TextInputComponent } from './ui/TextInputComponent';
 import AsyncStorage from '@react-native-community/async-storage';
 import {
+  ProductPageViewedSource,
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
@@ -73,6 +74,10 @@ import DeviceInfo from 'react-native-device-info';
 import { FirebaseEventName, FirebaseEvents } from '../helpers/firebaseEvents';
 import { useApolloClient } from 'react-apollo-hooks';
 import { getDeviceTokenCount } from '../helpers/clientCalls';
+import {
+  createOneApolloUser,
+  createOneApolloUserVariables,
+} from '@aph/mobile-patients/src/graphql/types/createOneApolloUser';
 
 const { width, height } = Dimensions.get('window');
 
@@ -163,6 +168,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   const [isSignupEventFired, setSignupEventFired] = useState(false);
   const [deviceToken, setDeviceToken] = useState<string>('');
   const [showReferralCode, setShowReferralCode] = useState<boolean>(false);
+  const [oneApolloRegistrationCalled, setoneApolloRegistrationCalled] = useState<boolean>(false);
 
   useEffect(() => {
     const isValidReferralCode = /^[a-zA-Z]{4}[0-9]{4}$/.test(referral);
@@ -238,6 +244,21 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   }, []);
 
   const client = useApolloClient();
+
+  async function createOneApolloUser(patientId: string) {
+    setoneApolloRegistrationCalled(true);
+    if (!oneApolloRegistrationCalled) {
+      try {
+        const response = await client.mutate<createOneApolloUser, createOneApolloUserVariables>({
+          mutation: CREATE_ONE_APOLLO_USER,
+          variables: { patientId: patientId },
+        });
+      } catch (error) {
+        console.log(error);
+        CommonBugFender('oneApollo Registration', error);
+      }
+    }
+  }
 
   const getDeviceCountAPICall = async () => {
     const uniqueId = await DeviceInfo.getUniqueId();
@@ -626,7 +647,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                     routeName: AppRoutes.MedicineDetailsScene,
                     params: {
                       sku: id,
-                      movedFrom: 'registration',
+                      movedFrom: ProductPageViewedSource.REGISTRATION,
                     },
                   }),
                 ],
@@ -752,7 +773,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                 key: null,
                 actions: [
                   NavigationActions.navigate({
-                    routeName: AppRoutes.YourCart,
+                    routeName: AppRoutes.MedicineCart,
                     params: {
                       movedFrom: 'registration',
                     },
@@ -838,6 +859,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                   AsyncStorage.setItem('userLoggedIn', 'true'),
                   AsyncStorage.setItem('multiSignUp', 'false'),
                   AsyncStorage.setItem('gotIt', 'false'),
+                  createOneApolloUser(data?.updatePatient?.patient?.id!),
                   handleOpenURL())
                 : null}
               {error

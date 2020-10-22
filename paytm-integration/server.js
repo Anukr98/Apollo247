@@ -1,6 +1,5 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const Constants = require('./Constants');
 const axios = require('axios');
 const cors = require('cors');
 const ejs = require('ejs');
@@ -31,12 +30,7 @@ const {
 
 const listOfPaymentMethods = require('./consult-integrations/helpers/list-of-payment-method');
 
-const {
-  getAddressDetails,
-  getCache,
-  CreateUserSubscription,
-  getCallDetails,
-} = require('./commons');
+const { exotelCallEndHandler, getAddressDetails } = require('./commons');
 const { getMedicineOrderQuery } = require('./pharma-integrations/helpers/medicine-order-query');
 const getPrescriptionUrls = require('./pharma-integrations/controllers/pharma-prescription-urls');
 require('dotenv').config();
@@ -61,24 +55,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(express.static(__dirname + '/views'));
 app.set('view engine', 'ejs');
-app.post('/exotelCallEnd', async (req, res) => {
-  try {
-    const EXOTEL_HDFC_CALL_PREFIX = 'exotelcall:hdfc';
-
-    const { mobileNumber } = req.query;
-    const key = `${EXOTEL_HDFC_CALL_PREFIX}:${mobileNumber}`;
-    let callEndResponse = await getCache(key);
-    callEndResponse = JSON.parse(callEndResponse);
-    const { benefitId } = callEndResponse;
-    const callDetails = await getCallDetails(callEndResponse);
-    if (callDetails['Call']['Status'] == Constants.EXOTEL_CALL_END_STATUS.COMPLETED) {
-      await CreateUserSubscription(mobileNumber, benefitId);
-    }
-    res.json({ success: true });
-  } catch (error) {
-    throw new Error(error);
-  }
-});
+app.post('/exotelCallEnd', exotelCallEndHandler);
 app.get(
   '/deeplink',
   deeplink({
@@ -109,11 +86,13 @@ app.get('/invokeFollowUpNotification', cronTabs.FollowUpNotification);
 app.get('/invokeApptReminder', cronTabs.ApptReminder);
 app.get('/invokeDoctorApptReminder', cronTabs.DoctorApptReminder);
 app.get('/invokeDailyAppointmentSummary', cronTabs.DailyAppointmentSummary);
+app.get('/invokeDailyAppointmentSummaryOps', cronTabs.DailyAppointmentSummaryOps);
 app.get('/invokePhysicalApptReminder', cronTabs.PhysicalApptReminder);
 app.get('/updateSdSummary', cronTabs.updateSdSummary);
 app.get('/updateJdSummary', cronTabs.updateJdSummary);
 app.get('/updateDoctorFeeSummary', cronTabs.updateDoctorFeeSummary);
 app.get('/updateDoctorSlotsEs', cronTabs.updateDoctorSlotsEs);
+app.get('/appointmentReminderTemplate', cronTabs.appointmentReminderTemplate);
 app.get('/invokeDashboardSummaries', (req, res) => {
   const currentDate = format(new Date(), 'yyyy-MM-dd');
 
@@ -319,8 +298,13 @@ app.get('/updateDoctorsAwayAndOnlineCount', (req, res) => {
   });
 });
 app.get('/getCmToken', (req, res) => {
-  axios.defaults.headers.common['authorization'] =
-    'ServerOnly eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcHBJZCI6ImFwb2xsb18yNF83IiwiaWF0IjoxNTcyNTcxOTIwLCJleHAiOjE1ODA4Mjg0ODUsImlzcyI6IlZpdGFDbG91ZC1BVVRIIiwic3ViIjoiVml0YVRva2VuIn0.ZGuLAK3M_O2leBCyCsPyghUKTGmQOgGX-j9q4SuLF-Y';
+  // axios.defaults.headers.common['authorization'] = 'ServerOnly eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcHBJZCI6ImFwb2xsb18yNF83IiwiaWF0IjoxNTcyNTcxOTIwLCJleHAiOjE1ODA4Mjg0ODUsImlzcyI6IlZpdGFDbG91ZC1BVVRIIiwic3ViIjoiVml0YVRva2VuIn0.ZGuLAK3M_O2leBCyCsPyghUKTGmQOgGX-j9q4SuLF-Y';
+  const axiosConfig = {
+    headers: {
+      authorization:
+        'ServerOnly eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcHBJZCI6ImFwb2xsb18yNF83IiwiaWF0IjoxNTcyNTcxOTIwLCJleHAiOjE1ODA4Mjg0ODUsImlzcyI6IlZpdGFDbG91ZC1BVVRIIiwic3ViIjoiVml0YVRva2VuIn0.ZGuLAK3M_O2leBCyCsPyghUKTGmQOgGX-j9q4SuLF-Y',
+    },
+  };
   axios
     .get(
       process.env.CM_API_URL +
@@ -333,7 +317,8 @@ app.get('/getCmToken', (req, res) => {
         '&emailId=' +
         req.query.emailId +
         '&phoneNumber=' +
-        req.query.phoneNumber
+        req.query.phoneNumber,
+      axiosConfig
     )
     .then((response) => {
       res.send({
@@ -1191,8 +1176,11 @@ app.get('/processOmsOrders', (req, res) => {
                   issubscribe: false,
                   tattype: orderDetails.tatType || '',
                   orderchannel: orderDetails.bookingSource || '',
-                  clusterid: orderDetails.clusterid || '',
+                  clusterid: orderDetails.clusterId || '',
                   additionalmisc1: orderDetails.allocationProfileName || '',
+                  distancekm: orderDetails.storeDistanceKm
+                    ? parseFloat(Math.abs(orderDetails.storeDistanceKm).toFixed(3))
+                    : 0,
                   customerdetails: {
                     billingaddress: deliveryAddress.trim(),
                     billingpincode: deliveryZipcode,
