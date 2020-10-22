@@ -67,7 +67,7 @@ const appStaticVariables = {
   Doctors_Page_Size: 25,
   CUSTOMER_CARE_HELP_TEXT: string.common.customerCareHelpText,
   CUSTOMER_CARE_NUMBER: string.common.customerCareNumber,
-  PRODUCT_SUGGESTIONS_COUNT: 10,
+  PRODUCT_SUGGESTIONS_COUNT: 15,
 };
 
 const DEV_top6_specailties = [
