@@ -162,7 +162,6 @@ export const getDoctorDetailsTypeDefs = gql`
     packages: [Packages]
     specialty: DoctorSpecialties
     starTeam: [StarTeam]
-    availableModes: [ConsultMode],
     doctorPricing : [DoctorPricing]
     availableModes: [ConsultMode]
     doctorNextAvailSlots:DoctorNextAvailSlots
