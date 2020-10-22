@@ -451,6 +451,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         : false;
       let mergeArray: { type: string; data: any }[] = [];
       arrayValues?.forEach((item: any) => {
+        item['myPrescriptionName'] = 'Prescription';
         mergeArray.push({ type: 'pastConsults', data: item });
       });
       if (!prescriptionSelect || filterSelectedOptions?.length === 0) {
