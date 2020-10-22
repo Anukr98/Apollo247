@@ -67,7 +67,6 @@ const appStaticVariables = {
   Doctors_Page_Size: 25,
   CUSTOMER_CARE_HELP_TEXT: string.common.customerCareHelpText,
   CUSTOMER_CARE_NUMBER: string.common.customerCareNumber,
-  PRODUCT_SUGGESTIONS_CATEGORYID: '41920',
   PRODUCT_SUGGESTIONS_COUNT: 10,
 };
 
@@ -221,6 +220,7 @@ const PharmaApiConfig = {
       'http://uatlims.apollohl.in/ApolloLive/CronJob/GetCentreDetail.aspx',
       testApiCredentialsDev,
     ],
+    PRODUCT_SUGGESTIONS_CATEGORYID: '41920',
   },
   prod: {
     TRACK_EVENT: [`${tagalysBaseUrl}/analytics/events/track`],
@@ -258,6 +258,7 @@ const PharmaApiConfig = {
       'https://report.apollodiagnostics.in/Apollo/CronJob/GetCentreDetail.aspx',
       testApiCredentialsProd,
     ],
+    PRODUCT_SUGGESTIONS_CATEGORYID: '2252',
   },
 };
 
