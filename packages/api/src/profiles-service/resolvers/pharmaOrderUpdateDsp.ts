@@ -9,14 +9,14 @@ import { log } from 'customWinstonLogger';
 import { updateLhub } from 'profiles-service/helpers/inventorySync';
 import { LHUB_UPDATE_TYPE } from 'types/inventorySync';
 
-export const updateOrderOnHoldTypeDefs = gql`
+export const updateOrderDspTypeDefs = gql`
   input UpdateOrderDspInput {
     orderId: Int!
-    apOrder: String!
+    apOrderNo: String!
   }
 
   type updateOrderDspResult {
-    status: boolean
+    status: Boolean
   }
 
   extend type Mutation {
@@ -30,7 +30,7 @@ type updateOrderDspResult = {
 
 type UpdateOrderDspInput = {
   orderId: number;
-  apOrder: string;
+  apOrderNo: string;
 };
 
 type ItemArticleDetails = {
@@ -69,7 +69,7 @@ const updateOrderDsp: Resolver<
   }
 
   const shimentDetails = orderDetails.medicineOrderShipments.find(
-    (shipment) => shipment.apOrderNo == updateOrderDspInput.apOrder
+    (shipment) => shipment.apOrderNo == updateOrderDspInput.apOrderNo
   );
 
   if (!shimentDetails) {
@@ -99,7 +99,7 @@ const updateOrderDsp: Resolver<
   };
 };
 
-export const updateOrderOnHoldResolvers = {
+export const updateOrderDspResolvers = {
   Mutation: {
     updateOrderDsp,
   },
