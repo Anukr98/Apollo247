@@ -308,7 +308,16 @@ export interface MedicinePageProducts {
   category_id?: number;
 }
 
+export interface Category {
+  category_id: string;
+  title: string;
+  url_key: string;
+  image_url?: string;
+  Child: Category[];
+}
+
 export interface MedicinePageAPiResponse {
+  categories: Category[];
   mainbanners: OfferBannerSection[];
   healthareas: MedicinePageSection[];
   deals_of_the_day: DealsOfTheDaySection[];

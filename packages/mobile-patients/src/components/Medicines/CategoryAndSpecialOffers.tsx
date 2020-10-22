@@ -35,7 +35,7 @@ export const CategoryAndSpecialOffers: React.FC<Props> = ({
   return (
     <View style={[styles.container, containerStyle]}>
       {renderShopByCategory()}
-      {renderSpecialOffers()}
+      {/* {renderSpecialOffers()} */}
     </View>
   );
 };

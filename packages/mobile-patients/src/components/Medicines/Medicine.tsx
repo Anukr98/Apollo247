@@ -114,6 +114,10 @@ import {
   MedicineReOrderOverlayProps,
   MedicineReOrderOverlay,
 } from '@aph/mobile-patients/src/components/Medicines/MedicineReOrderOverlay';
+import {
+  MedicineCategoryTree,
+  Props as MedicineCategoryTreeProps,
+} from '@aph/mobile-patients/src/components/Medicines/MedicineCategoryTree';
 import { ProductList } from '@aph/mobile-patients/src/components/Medicines/ProductList';
 import { ProductCard } from '@aph/mobile-patients/src/components/Medicines/ProductCard';
 import { ProductPageViewedEventProps } from '@aph/mobile-patients/src/components/Medicines/MedicineDetailsScene';
@@ -134,6 +138,8 @@ import {
   makeAdressAsDefault,
 } from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
 
+const { width: winWidth } = Dimensions.get('window');
+
 const styles = StyleSheet.create({
   sliderDotStyle: {
     height: 8,
@@ -152,6 +158,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     paddingHorizontal: 20,
     paddingBottom: 10,
+  },
+  categoryTreeWrapper: {
+    ...StyleSheet.absoluteFill,
+    marginTop: -20,
+    flexDirection: 'row',
+  },
+  categoryTreeContainer: {
+    height: '100%',
+    width: '75%',
+  },
+  categoryTreeDismissView: {
+    height: '100%',
+    width: winWidth,
+    backgroundColor: 'rgba(0,0,0,0.31)',
   },
 });
 
@@ -215,11 +235,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const [recommendedProducts, setRecommendedProducts] = useState<MedicineProduct[]>([]);
   const [data, setData] = useState<MedicinePageAPiResponse | null>(medicinePageAPiResponse);
+  const [categoryTreeVisible, setCategoryTreeVisible] = useState(false);
   const [loading, setLoading] = useState<boolean>(!medicinePageAPiResponse);
   const [error, setError] = useState<boolean>(false);
   const banners = !loading && !error && data ? filterBanners(g(data, 'mainbanners') || []) : [];
   const [imgHeight, setImgHeight] = useState(120);
-  const { width: winWidth } = Dimensions.get('window');
   const [bannerLoading, setBannerLoading] = useState(true);
   const defaultAddress = addresses.find((item) => item.defaultAddress);
   const hasLocation = locationDetails || pharmacyLocation || defaultAddress;
@@ -1815,7 +1835,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       <ScrollView removeClippedSubviews={true} bounces={false}>
         <CategoryAndSpecialOffers
           containerStyle={styles.categoryAndSpecialOffers}
-          onPressShopByCategory={() => {}}
+          onPressShopByCategory={() => setCategoryTreeVisible(true)}
           onPressSpecialOffers={() => {}}
         />
         {sectionsView}
@@ -1867,6 +1887,33 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
+  const renderCategoryTree = () => {
+    const onPressCategory: MedicineCategoryTreeProps['onPressCategory'] = (c) => {
+      setCategoryTreeVisible(false);
+      props.navigation.navigate(AppRoutes.MedicineListing, {
+        category_id: c.category_id,
+        title: c.title,
+      });
+    };
+    const onPressDismissView = () => {
+      setCategoryTreeVisible(false);
+    };
+    return (
+      categoryTreeVisible && (
+        <View style={styles.categoryTreeWrapper}>
+          <MedicineCategoryTree
+            containerStyle={styles.categoryTreeContainer}
+            onPressCategory={onPressCategory}
+            categories={data?.categories || []}
+          />
+          <TouchableOpacity onPress={onPressDismissView}>
+            <View style={styles.categoryTreeDismissView} />
+          </TouchableOpacity>
+        </View>
+      )
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ ...viewStyles.container }}>
@@ -1878,6 +1925,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         <View style={{ flex: 1 }}>
           {renderSections()}
           {renderOverlay()}
+          {renderCategoryTree()}
         </View>
       </SafeAreaView>
       {isSelectPrescriptionVisible && renderEPrescriptionModal()}
