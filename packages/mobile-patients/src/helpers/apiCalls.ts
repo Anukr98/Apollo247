@@ -644,7 +644,7 @@ export const getProductsByCategoryApi = (
         const reponse = JSON.parse(_reponse || '{}');
 
         const modifiedFilters = reponse?.filters?.map((f: any) => {
-          const modifiedValues = f?.values.map((item: any) => ({
+          const modifiedValues = f?.values?.map((item: any) => ({
             id: item.value,
             name: item.label,
           }));
