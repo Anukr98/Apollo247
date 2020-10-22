@@ -133,6 +133,7 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
     pageNo: Int
     pageSize: Int
     searchText: String
+    isCare: Boolean
   }
   extend type Query {
     getDoctorsBySpecialtyAndFilters(filterInput: FilterDoctorInput): FilterDoctorsResult
@@ -233,6 +234,7 @@ export type FilterDoctorInput = {
   pageNo: number;
   pageSize: number;
   searchText: string;
+  isCare: boolean;
 };
 
 export type ConsultModeAvailability = {
@@ -266,7 +268,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   { filterInput: FilterDoctorInput },
   DoctorsServiceContext,
   FilterDoctorsResult
-> = async (parent, args, {}) => {
+> = async (parent, args, { }) => {
   apiCallId = Math.floor(Math.random() * 1000000);
   callStartTime = new Date();
   identifier = args.filterInput.patientId;
@@ -412,10 +414,14 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         range: { onlineConsultationFees: { gte: fee.minimum, lte: fee.maximum } },
       });
     });
+
+    // doctor 
     if (elasticFee.length > 0) {
       elasticMatch.push({ bool: { should: elasticFee } });
     }
   }
+  if (args.filterInput.isCare) elasticMatch.push({ match: { 'doctorPricing.status': "ACTIVE" } });
+
   if (args.filterInput.gender && args.filterInput.gender.length > 0) {
     elasticMatch.push({ match: { gender: args.filterInput.gender.join(',') } });
   }
@@ -466,7 +472,8 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     },
   });
   elasticSort.push(elasticDoctorDoctorTypeSort());
-  
+
+
 
   if (!process.env.ELASTIC_INDEX_DOCTORS) {
     throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
@@ -801,7 +808,7 @@ const getDoctorList: Resolver<
   { filterInput: FilterDoctorInput },
   DoctorsServiceContext,
   DoctorsListResult
-> = async (parent, args, {}) => {
+> = async (parent, args, { }) => {
   apiCallId = Math.floor(Math.random() * 1000000);
   callStartTime = new Date();
   identifier = args.filterInput.patientId;
@@ -817,10 +824,11 @@ const getDoctorList: Resolver<
   searchLogger(`API_CALL___START`);
 
   const doctors = [];
+  const specialties: Specialty[] = [];
   const elasticMatch = [];
   const elasticSort = [];
-  let getDetails:any = [],
-  matchedSpecialties:any = [];
+  let getDetails: any = [],
+    matchedSpecialties: any = [];
 
   let apolloDoctorCount: number = 0,
     partnerDoctorCount: number = 0;
@@ -841,7 +849,7 @@ const getDoctorList: Resolver<
   if (args.filterInput.availability || args.filterInput.availableNow) {
     elasticMatch.push(elasticDoctorAvailabilityFilter(args.filterInput));
   }
-
+  if (args.filterInput.isCare) elasticMatch.push({ match: { 'doctorPricing.status': "ACTIVE" } });
   elasticMatch.push(elasticDoctorLatestSlotFilter());
   if (args.filterInput.specialtyName && args.filterInput.specialtyName.length > 0) {
     elasticMatch.push({ terms: { 'specialty.name.keyword': args.filterInput.specialtyName } });
@@ -875,8 +883,8 @@ const getDoctorList: Resolver<
       elasticFee.push({
         bool: {
           must: [
-            { range: { onlineConsultationFees: { gte: fee.minimum, lte: fee.maximum } },},
-            { range: { physicalConsultationFees: { gte: fee.minimum, lte: fee.maximum } },},
+            { range: { onlineConsultationFees: { gte: fee.minimum, lte: fee.maximum } }, },
+            { range: { physicalConsultationFees: { gte: fee.minimum, lte: fee.maximum } }, },
           ],
         },
       });
@@ -928,7 +936,7 @@ const getDoctorList: Resolver<
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
 
   if (!args.filterInput.searchText) {
-     getDetails = await client.search(searchParams);
+    getDetails = await client.search(searchParams);
   } else {
     const specialtiesSearchParams: RequestParams.Search = elasticSpecialtySearch(args.filterInput.searchText);
     const promises: object[] = [
@@ -950,7 +958,7 @@ const getDoctorList: Resolver<
         }
         speciality['specialtydisplayName'] = speciality['userFriendlyNomenclature'];
         return speciality;
-      }); 
+      });
     } else {
       matchedSpecialties = specialityBuckets;
     }
@@ -970,8 +978,8 @@ const getDoctorList: Resolver<
   for (const doc of getDetails.body.hits.hits) {
     const doctor = doc._source;
     const doctorObj: any = {};
-
-    let fee:number = doctor.onlineConsultationFees;
+    const specialtyObj: any = {};
+    let fee: number = doctor.onlineConsultationFees;
     doctorObj['id'] = doctor.doctorId;
     doctorObj['displayName'] = doctor.displayName;
     doctorObj['specialtydisplayName'] = doctor.specialty.userFriendlyNomenclature;
@@ -986,6 +994,10 @@ const getDoctorList: Resolver<
     doctorObj['consultMode'] = [];
     doctorObj['slot'] = null;
     doctorObj['earliestSlotInMinutes'] = null;
+    doctorObj['doctorPricing'] = doctor.doctorPricing;
+    specialtyObj['id'] = doctor.specialty.specialtyId;
+    specialtyObj['name'] = doctor.specialty.name;
+    specialtyObj['specialtydisplayName'] = doctor.specialty.userFriendlyNomenclature;
 
     for (const consultHour of doctor.consultHours) {
       if (!doctorObj['consultMode'].includes(consultHour.consultMode)) {
@@ -1030,7 +1042,7 @@ const getDoctorListFilters: Resolver<
   {},
   DoctorsServiceContext,
   DoctorsFiltersResult
-> = async (parent, args, {}) => {
+> = async (parent, args, { }) => {
   const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
 
   const searchFilters = elasticDoctorFilters();
