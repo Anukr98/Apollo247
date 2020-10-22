@@ -124,7 +124,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     bannerDetails: {
-      width: '60%',
+      width: '65%',
       [theme.breakpoints.down('sm')]: {
         width: '100%',
       },
@@ -590,7 +590,7 @@ export const HdfcLanding: React.FC = (props) => {
                 </div>
 
                 <div className={classes.bannerDetails}>
-                  <Typography component="h1">Apollo HealthyLife Program for you !</Typography>
+                  <Typography component="h1">Apollo Doctor On Call 24*7 at No Cost</Typography>
                   <Typography>Exclusively for HDFC Bank customers</Typography>
                 </div>
               </div>
