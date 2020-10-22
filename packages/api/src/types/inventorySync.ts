@@ -6,6 +6,13 @@ export interface InventorySyncRequest {
   lng: number;
   items: Items[];
 }
+
+export interface TatRequest {
+  pincode: string;
+  lat: number;
+  lng: number;
+  items: Items[];
+}
 export interface Items {
   sku: string;
   qty: number;
@@ -15,4 +22,9 @@ export enum SYNC_TYPE {
   BLOCK = 'BLOCK',
   RELEASE = 'RELEASE',
   CANCEL = 'CANCEL',
+}
+
+export enum LHUB_UPDATE_TYPE {
+  DSP_CHANGE = 'DSP_CHANGE',
+  SHIPPED = 'SHIPPED',
 }
