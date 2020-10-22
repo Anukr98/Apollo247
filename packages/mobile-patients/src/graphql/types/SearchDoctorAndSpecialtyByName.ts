@@ -1,6 +1,5 @@
 /* tslint:disable */
 /* eslint-disable */
-// @generated
 // This file was automatically generated and should not be edited.
 
 import { Geolocation, DoctorType, PLAN, PLAN_STATUS } from "./globalTypes";
