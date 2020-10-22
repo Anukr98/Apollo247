@@ -4,6 +4,8 @@ import { GatewayHeaders } from 'api-gateway';
 import { ApolloServer } from 'apollo-server';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { connect } from 'consults-service/database/connect';
+import { Email } from 'consults-service/helpers/scalar-types/email';
+
 import {
   createAppointmentSessionResolvers,
   createAppointmentSessionTypeDefs,
@@ -162,12 +164,14 @@ import {
             typeDefs: gql`
               scalar Date
               scalar Time
-              scalar DateTime
+              scalar DateTime,
+              scalar Email
             `,
             resolvers: {
               Date: GraphQLDate,
               Time: GraphQLTime,
               DateTime: GraphQLDateTime,
+              Email: Email
             },
           },
           {

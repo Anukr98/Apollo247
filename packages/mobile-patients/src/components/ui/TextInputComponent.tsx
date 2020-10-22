@@ -84,6 +84,7 @@ export interface TextInputComponentProps {
   icon?: ReactNode;
   autoCapitalize?: TextInputProps['autoCapitalize'];
   autoFocus?: boolean;
+  onSubmitEditing?: TextInputProps['onSubmitEditing'];
 }
 
 export const TextInputComponent: React.FC<TextInputComponentProps> = (props) => {
@@ -111,6 +112,7 @@ export const TextInputComponent: React.FC<TextInputComponentProps> = (props) => 
         autoFocus={props.autoFocus}
         selection={props.selection}
         autoFocus={props.autoFocus}
+        onSubmitEditing={props.onSubmitEditing}
       />
     );
   };

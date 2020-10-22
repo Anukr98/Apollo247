@@ -24,6 +24,7 @@ import {
   webengageUserLoginTracking,
   webengageUserDetailTracking,
   HdfcUserSignupDetailTracking,
+  hdfcSignupDoneTracking,
 } from '../webEngageTracking';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { PARTNER_TP_REF_CODES } from 'helpers/constants';
@@ -306,9 +307,16 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                     emailAddress: values.emailAddress,
                     dateOfBirth: values.dateOfBirth,
                     mobileNumber: patient.mobileNumber,
+                    referralCode: referralCode.length > 0 ? referralCode : '',
                   });
                   /* webengage code end */
                   if (props.customSignUp.referral === 'HDFCBANK') {
+                    /* GA Tracking */
+                    (window as any).dataLayer.push({
+                      event: 'RegistrationForm Submitted',
+                    });
+                    /*******************/
+                    hdfcSignupDoneTracking();
                     HdfcUserSignupDetailTracking({
                       firstName: values.firstName,
                       lastName: values.lastName,
@@ -316,6 +324,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                       emailAddress: values.emailAddress,
                       dateOfBirth: values.dateOfBirth,
                       mobileNumber: patient.mobileNumber,
+                      referralCode: referralCode.length > 0 ? referralCode : '',
                     });
                     history.push(clientRoutes.welcome());
                   } else {

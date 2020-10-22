@@ -802,9 +802,6 @@ const modifyCaseSheet: Resolver<
   CaseSheet
 > = async (parent, { ModifyCaseSheetInput }, { consultsDb, doctorsDb, patientsDb }) => {
   const inputArguments = ModifyCaseSheetInput;
-  let patientFamilyHistory: any = [],
-    patientLifeStyle: any = [],
-    patientMedicalHistory: any = [];
   //validate casesheetid
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
   const getCaseSheetDetails = await caseSheetRepo.getCaseSheetById(inputArguments.id);
@@ -820,12 +817,6 @@ const modifyCaseSheet: Resolver<
   }
 
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  // const patientData = await patientRepo.findByIdWithRelations(getCaseSheetData.patientId, [
-  //   // PATIENT_REPO_RELATIONS.PATIENT_ADDRESS,
-  //   PATIENT_REPO_RELATIONS.FAMILY_HISTORY,
-  //   PATIENT_REPO_RELATIONS.LIFESTYLE,
-  //   PATIENT_REPO_RELATIONS.PATIENT_MEDICAL_HISTORY,
-  // ]);
   const patientData = await patientRepo.getPatientDetailsForConsult(getCaseSheetData.patientId);
   if (patientData == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
@@ -835,31 +826,15 @@ const modifyCaseSheet: Resolver<
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
 
   const promises: object[] = [
-    familyHistoryRepo
-      .upsertPatientFamilyHistory(inputArguments.familyHistory, patientData)
-      .catch((error: any) => {
-        throw new AphError(AphErrorMessages.SAVE_PATIENT_FAMILY_HISTORY_ERROR, undefined, {
-          error,
-        });
-      }),
-    lifeStyleRepo
-      .upsertPatientLifeStyle(
-        {
-          description: inputArguments.lifeStyle,
-          occupationHistory: inputArguments.occupationHistory,
-        },
-        patientData
-      )
-      .catch((error: any) => {
-        throw new AphError(AphErrorMessages.SAVE_PATIENT_LIFE_STYLE_ERROR, undefined, { error });
-      }),
-    medicalHistoryRepo
-      .upsertPatientMedicalHistory(inputArguments, patientData)
-      .catch((error: any) => {
-        throw new AphError(AphErrorMessages.SAVE_PATIENT_MEDICAL_HISTORY_ERROR, undefined, {
-          error,
-        });
-      }),
+    familyHistoryRepo.upsertPatientFamilyHistory(inputArguments.familyHistory, patientData),
+    lifeStyleRepo.upsertPatientLifeStyle(
+      {
+        description: inputArguments.lifeStyle,
+        occupationHistory: inputArguments.occupationHistory,
+      },
+      patientData
+    ),
+    medicalHistoryRepo.upsertPatientMedicalHistory(inputArguments, patientData),
   ];
 
   const getCaseSheetDataWithoutStatus = _.omit(getCaseSheetData, 'status');
@@ -880,24 +855,8 @@ const modifyCaseSheet: Resolver<
       })
   );
 
-  //  await Promise.all(promises);
-  await Promise.all(promises).then((res) => {
-    [patientFamilyHistory, patientLifeStyle, patientMedicalHistory] = res;
-  });
-
-  delete patientFamilyHistory.patient;
-  delete patientLifeStyle.patient;
-  delete patientMedicalHistory.patient;
-
-  patientData.familyHistory.map((familyHistory) => {
-    if (familyHistory.id === patientFamilyHistory.id)
-      Object.assign(familyHistory, patientFamilyHistory);
-  });
-  patientData.lifeStyle.map((lifestyle) => {
-    if (lifestyle.id === patientLifeStyle.id) Object.assign(lifestyle, patientLifeStyle);
-  });
-  patientData.patientMedicalHistory = patientMedicalHistory;
-  patientRepo.updatePatientDetailsConsultCache(patientData);
+  await Promise.all(promises);
+  patientRepo.updatePatientDetailsConsultCache(patientData.id);
 
   return getCaseSheetData;
 };
@@ -1174,14 +1133,15 @@ const submitJDCaseSheet: Resolver<
       notes: ApiConstants.AUTO_SUBMIT_BY_SD.toString(),
       isJdConsultStarted: true,
     };
-    await caseSheetRepo.updateCaseSheet(
+
+    await caseSheetRepo.updateCaseSheetAttributes(
       juniorDoctorcaseSheet.id,
       casesheetAttrsToUpdate,
-      juniorDoctorcaseSheet
     );
 
     //update all existing JDcassheets to completed
     await caseSheetRepo.updateAllJDCaseSheet(juniorDoctorcaseSheet.appointment.id);
+
   } else {
     const casesheetAttrsToAdd = {
       createdDate: createdDate,

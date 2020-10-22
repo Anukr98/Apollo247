@@ -232,6 +232,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
+    getSecretaryData();
+  }, []);
+
+  useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setisFocused(true);
     });

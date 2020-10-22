@@ -382,10 +382,10 @@ const bookRescheduleAppointment: Resolver<
   if (!apptDetails) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
-  // const oldApptDate = format(
-  //   addMinutes(new Date(apptDetails.appointmentDateTime), +330),
-  //   'yyyy-MM-dd hh:mm a'
-  // );
+  const oldApptDate = format(
+    addMinutes(new Date(apptDetails.appointmentDateTime), +330),
+    'yyyy-MM-dd hh:mm a'
+  );
   const rescheduleDetails = await rescheduleApptRepo.getRescheduleDetails(
     bookRescheduleAppointmentInput.appointmentId
   );
@@ -693,6 +693,7 @@ const bookRescheduleAppointment: Resolver<
       patientDetails.uhid,
       docDetails.salutation + ' ' + docDetails.firstName,
       facilityDetsString,
+      oldApptDate,
       apptDate,
       apptTime,
       rescheduledapptDetails.appointmentType,

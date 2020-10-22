@@ -288,9 +288,9 @@ export class DoctorRepository extends Repository<Doctor> {
     let doctorData, facilities;
     let bufferTime = 5;
     const callStartTime: Date = new Date();
-    const doctorNextAvailSlots:any ={
-      physicalSlot:'',
-      onlineSlot:''
+    const doctorNextAvailSlots: any = {
+      physicalSlot: '',
+      onlineSlot: ''
     };
 
     if (getDetails.body.hits.hits && getDetails.body.hits.hits.length > 0) {
@@ -386,6 +386,7 @@ export class DoctorRepository extends Repository<Doctor> {
         'starTeam.associatedDoctor.doctorHospital.facility',
         'doctorSecretary',
         'doctorSecretary.secretary',
+        'doctorPricing'
       ],
     });
   }
@@ -466,6 +467,7 @@ export class DoctorRepository extends Repository<Doctor> {
           'starTeam.associatedDoctor.specialty',
           'starTeam.associatedDoctor.doctorHospital',
           'starTeam.associatedDoctor.doctorHospital.facility',
+          'doctorPricing'
         ],
         take: limit,
         skip: offset,
@@ -485,6 +487,7 @@ export class DoctorRepository extends Repository<Doctor> {
           'starTeam.associatedDoctor.specialty',
           'starTeam.associatedDoctor.doctorHospital',
           'starTeam.associatedDoctor.doctorHospital.facility',
+          'doctorPricing'
         ],
       });
     }

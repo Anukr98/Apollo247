@@ -10,11 +10,13 @@ import { TatCard } from '@aph/mobile-patients/src/components/MedicineCart/Compon
 
 export interface ProceedBarProps {
   onPressAddDeliveryAddress?: () => void;
+  onPressSelectDeliveryAddress?: () => void;
   onPressUploadPrescription?: () => void;
   onPressProceedtoPay?: () => void;
   deliveryTime?: string;
   onPressChangeAddress?: () => void;
   screen?: string;
+  onPressTatCard?: () => void;
 }
 
 export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
@@ -29,10 +31,12 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
   } = useShoppingCart();
   const {
     onPressAddDeliveryAddress,
+    onPressSelectDeliveryAddress,
     onPressUploadPrescription,
     onPressProceedtoPay,
     deliveryTime,
     onPressChangeAddress,
+    onPressTatCard,
     screen,
   } = props;
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
@@ -40,7 +44,9 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
 
   function getTitle() {
     return !deliveryAddressId
-      ? 'ADD DELIVERY ADDRESS'
+      ? addresses?.length
+        ? 'SELECT DELIVERY ADDRESS'
+        : 'ADD DELIVERY ADDRESS'
       : isPrescriptionRequired()
       ? 'UPLOAD PRESCRIPTION'
       : 'PROCEED TO PAY';
@@ -55,10 +61,12 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
   }
   function onPressButton() {
     return !deliveryAddressId
-      ? onPressAddDeliveryAddress!()
+      ? addresses?.length
+        ? onPressSelectDeliveryAddress?.()
+        : onPressAddDeliveryAddress?.()
       : isPrescriptionRequired()
-      ? onPressUploadPrescription!()
-      : onPressProceedtoPay!();
+      ? onPressUploadPrescription?.()
+      : onPressProceedtoPay?.();
   }
   const renderTotal = () => {
     return (
@@ -99,12 +107,13 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
   };
 
   const renderTatCard = () => {
-    if (selectedAddress && deliveryTime) {
+    if (selectedAddress && deliveryTime != undefined) {
       return (
         <TatCard
           deliveryTime={deliveryTime}
           deliveryAddress={formatSelectedAddress(selectedAddress!)}
           onPressChangeAddress={onPressChangeAddress!}
+          onPressTatCard={onPressTatCard}
         />
       );
     } else {

@@ -10,7 +10,7 @@ export interface CouponProps {
 }
 
 export const Coupon: React.FC<CouponProps> = (props) => {
-  const { coupon, couponDiscount } = useShoppingCart();
+  const { coupon, couponDiscount, isProuctFreeCouponApplied } = useShoppingCart();
   const { onPressApplyCoupon, onPressRemove } = props;
 
   const renderApplyCoupon = () => {
@@ -25,20 +25,32 @@ export const Coupon: React.FC<CouponProps> = (props) => {
     );
   };
 
+  const renderCouponMsg = () => {
+    return !isProuctFreeCouponApplied ? (
+      <Text style={styles.applicable}>
+        {couponDiscount > 0
+          ? coupon?.message
+            ? `(${coupon?.message})`
+            : `(Savings of ₹ ${Number(couponDiscount).toFixed(2)})`
+          : '(Coupon not applicable on your cart item(s) or item(s) with already higher discounts)'}
+      </Text>
+    ) : coupon?.message ? (
+      <Text style={styles.applicable}>{`(${coupon?.message})`}</Text>
+    ) : null;
+  };
+
   const renderCouponApplied = () => {
     return (
       <TouchableOpacity style={styles.couponApplied} onPress={onPressApplyCoupon}>
         <View style={styles.rowStyle}>
-          <CouponIcon />
+          <CouponIcon style={{ marginVertical: 10 }} />
           <View style={{ marginLeft: 10, marginVertical: 4 }}>
-            <Text style={styles.couponAppliedText}>{`Coupon Applied : ${coupon?.coupon}`} </Text>
-            <Text style={styles.applicable}>
+            <Text style={styles.couponAppliedText}>
               {couponDiscount > 0
-                ? coupon?.message
-                  ? `(${coupon?.message})`
-                  : `(Savings of ₹ ${Number(couponDiscount).toFixed(2)})`
-                : '(Coupon not applicable on your cart item(s) or item(s) with already higher discounts)'}
+                ? `Coupon Applied : ${coupon?.coupon}`
+                : `Coupon : ${coupon?.coupon}`}
             </Text>
+            {renderCouponMsg()}
           </View>
         </View>
         <TouchableOpacity style={{ marginTop: 10 }} onPress={onPressRemove}>

@@ -18,6 +18,7 @@ import {
   INVALID_FILE_TYPE_ERROR,
   toBase64,
 } from 'helpers/commonHelpers';
+import { useHistory } from 'react-router';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -159,6 +160,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   const [alertMessage, setAlertMessage] = React.useState<string>('');
   const [isAlertOpen, setIsAlertOpen] = React.useState<boolean>(false);
   const [isUploading, setIsUploading] = useState(false);
+  const history = useHistory();
 
   return (
     <div className={classes.root}>
@@ -233,7 +235,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                                     });
                                 });
                                 if (props.isNonCartFlow) {
-                                  window.location.href = clientRoutes.medicinePrescription();
+                                  history.push(clientRoutes.medicinePrescription());
                                 } else {
                                   props.closeDialog();
                                   setIsUploading(false);

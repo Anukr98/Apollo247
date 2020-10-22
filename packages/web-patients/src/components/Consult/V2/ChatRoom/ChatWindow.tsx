@@ -861,6 +861,8 @@ interface ChatWindowProps {
   setIsConsultCompleted: (isConsultCompleted: boolean) => void;
   appointmentDetails: AppointmentHistory;
   secretaryData: getSecretaryDetailsByDoctorId;
+  isConsultCompleted: boolean;
+  srDoctorJoined: boolean;
 }
 
 interface MessagesObjectProps {
@@ -1281,7 +1283,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             if (autoMessage === autoMessageStrings.vitalsCompletedByPatient)
               isVitalsCompleted = true;
           });
-          if (isVitalsCompleted) setAutoQuestionsCompleted(true);
+          if (isVitalsCompleted || appointmentDetails.status === STATUS.COMPLETED)
+            setAutoQuestionsCompleted(true);
           scrollToBottomAction();
         }
       );
@@ -1290,6 +1293,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       };
     }
   }, [appointmentDetails]);
+
+  useEffect(() => {
+    if (props.isConsultCompleted || props.srDoctorJoined) setAutoQuestionsCompleted(true);
+  }, [props.isConsultCompleted, props.srDoctorJoined]);
 
   const { mobileNumber: secretaryNumber, name: secretaryName } = (secretaryData &&
     secretaryData.getSecretaryDetailsByDoctorId) || { mobileNumber: '', name: '' };

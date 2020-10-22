@@ -825,7 +825,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
           id
         }
       }
-      doctorNextAvailSlots{
+      doctorNextAvailSlots {
         onlineSlot
         physicalSlot
       }
@@ -3006,8 +3006,8 @@ export const PHARMACY_ORDER_PAYMENT_DETAILS = gql`
 `;
 
 export const CONSULT_ORDER_INVOICE = gql`
-  query getOrderInvoice($patientId: String!, $appointmentId: String!) {
-    getOrderInvoice(patientId: $patientId, appointmentId: $appointmentId)
+  query getOrderInvoice($patientId: String!, $appointmentId: String!, $emailId: Email) {
+    getOrderInvoice(patientId: $patientId, appointmentId: $appointmentId, emailId: $emailId)
   }
 `;
 
@@ -3277,6 +3277,14 @@ export const GET_DOCTOR_LIST = gql`
   query getDoctorList($filterInput: FilterDoctorInput) {
     getDoctorList(filterInput: $filterInput) {
       doctors
+      specialties {
+        id
+        name
+        specialtydisplayName
+        image
+        shortDescription
+        symptoms
+      }
       apolloDoctorCount
       partnerDoctorCount
     }
@@ -3284,11 +3292,11 @@ export const GET_DOCTOR_LIST = gql`
 `;
 
 export const GET_DIAGNOSTIC_AREAS = gql`
-  query getAreas ($pincode: Int!,$itemIDs: [Int]!) {
+  query getAreas($pincode: Int!, $itemIDs: [Int]!) {
     getAreas(pincode: $pincode, itemIDs: $itemIDs) {
-     status
-     areas{
-        id 
+      status
+      areas {
+        id
         area
       }
     }
@@ -3329,10 +3337,9 @@ export const GET_DOCTORLIST_FILTERS = gql`
 `;
 
 export const GET_DIAGNOSTIC_SLOTS_WITH_AREA_ID = gql`
-  query getDiagnosticSlotsWithAreaID ($selectedDate: Date!,$areaID: Int!) {
-    getDiagnosticSlotsWithAreaID(selectedDate: 
-      $selectedDate, areaID: $areaID) {
-      slots{
+  query getDiagnosticSlotsWithAreaID($selectedDate: Date!, $areaID: Int!) {
+    getDiagnosticSlotsWithAreaID(selectedDate: $selectedDate, areaID: $areaID) {
+      slots {
         Timeslot
         TimeslotID
       }

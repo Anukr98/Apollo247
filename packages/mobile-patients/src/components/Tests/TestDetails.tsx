@@ -2,11 +2,13 @@ import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/Diagnost
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { CartIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { CartIcon, PendingIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getPackageData, TestPackage } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import {
   aphConsole,
   postWebEngageEvent,
@@ -40,6 +42,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsById';
 import { SEARCH_DIAGNOSTICS_BY_ID } from '@aph/mobile-patients/src/graphql/profiles';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   testNameStyles: {
@@ -94,6 +97,7 @@ const styles = StyleSheet.create({
     paddingRight: 20,
     marginBottom: 20,
   },
+  pendingIconStyle: { height: 15, width: 15, resizeMode: 'contain' },
   container: {
     flexDirection: 'column',
     justifyContent: 'space-between',
@@ -135,6 +139,12 @@ const styles = StyleSheet.create({
     color: '#658F9B',
     ...theme.fonts.IBMPlexSansMedium(12),
   },
+  notificationCard: {
+    ...theme.viewStyles.cardViewStyle,
+    flexDirection: 'row',
+    margin: 16,
+    padding: 16,
+  },
 });
 
 const tabs = [
@@ -151,6 +161,8 @@ const tabs = [
 export interface TestPackageForDetails extends TestPackage {
   collectionType: TEST_COLLECTION_TYPE;
   preparation: string;
+  source: 'Landing Page' | 'Search Page' | 'Cart Page';
+  type: string;
 }
 
 export interface TestDetailsProps
@@ -166,6 +178,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
   const [testInfo, setTestInfo] = useState<TestPackageForDetails>(testDetails);
   const TestDetailsDiscription = testInfo.PackageInClussion;
+  const { locationDetails, diagnosticLocation } = useAppCommonData();
   const { cartItems, addCartItem } = useDiagnosticsCart();
   const { cartItems: shopCartItems } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
@@ -174,6 +187,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   aphConsole.log('currentItemId : ' + currentItemId);
   const [searchSate, setsearchSate] = useState<'load' | 'success' | 'fail' | undefined>();
   const client = useApolloClient();
+  const { currentPatient } = useAllCurrentPatients();
 
   useEffect(() => {
     if (itemId) {
@@ -192,6 +206,19 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             setsearchSate('fail');
           });
     }
+  }, []);
+
+  useEffect(() => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION] = {
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      Source: testInfo.source,
+      'Item Name': testInfo.ItemName,
+      'Item Type': testInfo.type,
+      'Item Code': testInfo.ItemID,
+      'Item Price': testInfo.Rate,
+    };
+    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION, eventAttributes);
   }, []);
 
   const loadTestDetails = async (itemId: string) => {
@@ -293,7 +320,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               </Text>
             </View>
           )}
-
           {!!testInfo.Gender && !!gender[testInfo.Gender] && (
             <View style={styles.personDetailsView}>
               <Text style={styles.personDetailLabelStyles}>Gender</Text>
@@ -311,7 +337,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               </Text>
             </View>
           )}
-
           <View style={styles.personDetailsView}>
             <Text style={styles.personDetailLabelStyles}>Collection Method</Text>
             <Text style={styles.personDetailStyles}>
@@ -365,7 +390,21 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     return (
       <View style={styles.descriptionStyles}>
         <Text style={styles.descriptionTextStyles}>
-          {(testInfo && testInfo.preparation) || 'Not available'}
+          {(testInfo && testInfo.preparation) || string.diagnostics.noPreparationRequiredText}
+        </Text>
+      </View>
+    );
+  };
+
+  const renderNotification = () => {
+    if (testInfo.ItemID != '2411') {
+      return null;
+    }
+    return (
+      <View style={styles.notificationCard}>
+        <PendingIcon style={styles.pendingIconStyle} />
+        <Text style={[styles.personDetailStyles, { marginTop: 0, marginLeft: 4, marginRight: 6 }]}>
+          {string.diagnostics.priceNotificationForCovidText}
         </Text>
       </View>
     );
@@ -426,6 +465,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         {renderHeader()}
         <ScrollView bounces={false} keyboardDismissMode="on-drag">
           <View>{renderTestDetails()}</View>
+          {renderNotification()}
           {renderTabsData()}
           {selectedTab === tabs[0].title ? renderTestsIncludedData() : renderPreparation()}
           <View style={{ height: 100 }} />

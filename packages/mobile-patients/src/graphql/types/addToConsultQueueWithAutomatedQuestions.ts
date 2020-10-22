@@ -15,13 +15,14 @@ export interface addToConsultQueueWithAutomatedQuestions_addToConsultQueueWithAu
 }
 
 export interface addToConsultQueueWithAutomatedQuestions_addToConsultQueueWithAutomatedQuestions {
-  __typename: "AddToConsultQueueResult";
+  __typename: "AddToConsultQueueWithJdAutomatedQuestionsResult";
   id: number;
   doctorId: string;
   totalJuniorDoctorsOnline: number;
   juniorDoctorsList: (addToConsultQueueWithAutomatedQuestions_addToConsultQueueWithAutomatedQuestions_juniorDoctorsList | null)[];
   totalJuniorDoctors: number;
   isJdAllowed: boolean | null;
+  isJdAssigned: boolean | null;
 }
 
 export interface addToConsultQueueWithAutomatedQuestions {

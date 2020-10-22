@@ -20,6 +20,7 @@ export interface addToConsultQueue_addToConsultQueue {
   juniorDoctorsList: (addToConsultQueue_addToConsultQueue_juniorDoctorsList | null)[];
   totalJuniorDoctors: number;
   isJdAllowed: boolean | null;
+  isJdAssigned: boolean | null;
 }
 
 export interface addToConsultQueue {

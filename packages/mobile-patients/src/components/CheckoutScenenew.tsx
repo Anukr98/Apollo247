@@ -90,6 +90,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   const deliveryTime = props.navigation.getParam('deliveryTime');
   const isChennaiOrder = props.navigation.getParam('isChennaiOrder');
   const tatType = props.navigation.getParam('tatType');
+  const storeDistance: number = props.navigation.getParam('storeDistance');
   const paramShopId = props.navigation.getParam('shopId');
   const isStorePickup = props.navigation.getParam('isStorePickup');
   const { currentPatient } = useAllCurrentPatients();
@@ -459,6 +460,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     const orderInfo: saveMedicineOrderOMSVariables = {
       medicineCartOMSInput: {
         tatType: tatType,
+        storeDistanceKm: Number(storeDistance?.toFixed(3)) || 0,
         coupon: coupon ? coupon.coupon : '',
         couponDiscount: coupon ? getFormattedAmount(couponDiscount) : 0,
         productDiscount: getFormattedAmount(productDiscount) || 0,
@@ -491,7 +493,11 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
           ...physicalPrescriptions.map((item) => item.prismPrescriptionFileId),
           ...ePrescriptions.map((item) => item.prismPrescriptionFileId),
         ].join(','),
-        orderTat: deliveryAddressId && moment(deliveryTime).isValid ? deliveryTime : '',
+        orderTat:
+          deliveryAddressId &&
+          moment(deliveryTime, AppConfig.Configuration.TAT_API_RESPONSE_DATE_FORMAT).isValid()
+            ? deliveryTime
+            : '',
         items: cartItems.map((item) => {
           const discountedPrice = getFormattedAmount(
             (coupon && item.couponPrice) || item.specialPrice || item.price
@@ -510,6 +516,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             isPrescriptionNeeded: item.prescriptionRequired ? 1 : 0,
             mou: Number(item.mou),
             isMedicine: item.isMedicine ? '1' : '0',
+            couponFree: item?.isFreeCouponProduct ? 1 : 0,
           } as MedicineCartOMSItem;
         }),
         bookingSource: BOOKINGSOURCE.MOBILE,
@@ -620,7 +627,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     );
     const deliveryTimeMomentFormat = moment(
       deliveryTime,
-      AppConfig.Configuration.MED_DELIVERY_DATE_API_FORMAT
+      AppConfig.Configuration.TAT_API_RESPONSE_DATE_FORMAT
     );
     showAphAlert!({
       // unDismissable: true,

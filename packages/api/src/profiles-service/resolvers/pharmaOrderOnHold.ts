@@ -80,6 +80,7 @@ const updateOrderOnHold: Resolver<
     medicineOrders: orderDetails,
     statusDate: new Date(statusDate),
     statusMessage: updateOrderOnHoldInput.reasonCode,
+    hideStatus: false,
   };
   await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
   await medicineOrdersRepo.updateMedicineOrderDetails(

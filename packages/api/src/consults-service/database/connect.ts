@@ -98,12 +98,14 @@ import {
   PharmacologistConsult,
   PatientEntitiySubscriber,
   MedicineOrderAddress,
+  MedicineOrderHoldReasons,
 } from 'profiles-service/entities';
 import { AppointmentEntitySubscriber } from 'consults-service/entities/observers/appointmentObserver';
 import { migrationDir } from 'ApiConstants';
 import { AppointmentCallFeedback } from 'consults-service/entities/appointmentCallFeedbackEntity';
 import { DiagnosticEntitySubscriber } from 'profiles-service/entities/observers/diagnosticPaymentSuccessObserver';
 import { MedicineEntitySubscriber } from 'profiles-service/entities/observers/medicinePaymentSuccessObserver';
+import { DoctorPricing } from 'doctors-service/entities/doctorPricing';
 import { HealthCheckRecords } from 'profiles-service/entities/healthCheckRecordsEntity';
 import { HospitalizationRecords } from 'profiles-service/entities/hospitalizationRecordsEntity';
 
@@ -182,6 +184,7 @@ export const connect = async () => {
         DoctorPatientExternalConnect,
         AdminAuditLogs,
         DoctorProfileHistory,
+        DoctorPricing
       ],
       type: 'postgres',
       host: process.env.DOCTORS_DB_HOST,
@@ -242,6 +245,7 @@ export const connect = async () => {
         MedicineOrderAddress,
         HealthCheckRecords,
         HospitalizationRecords,
+        MedicineOrderHoldReasons,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,

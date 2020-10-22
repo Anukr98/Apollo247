@@ -13,12 +13,21 @@ interface UserDetail {
   gender: string | null;
   firstName: string | null;
   lastName: string | null;
+  referralCode: string | null;
 }
 
 window.webengage = window.webengage || {};
 
 export const webengageUserDetailTracking = (userDetailData: UserDetail) => {
-  const { emailAddress, dateOfBirth, mobileNumber, gender, firstName, lastName } = userDetailData;
+  const {
+    emailAddress,
+    dateOfBirth,
+    mobileNumber,
+    gender,
+    firstName,
+    lastName,
+    referralCode,
+  } = userDetailData;
   if (typeof window !== 'undefined') {
     try {
       window.webengage.user.setAttribute('we_email', emailAddress);
@@ -27,6 +36,7 @@ export const webengageUserDetailTracking = (userDetailData: UserDetail) => {
       window.webengage.user.setAttribute('we_gender', gender);
       window.webengage.user.setAttribute('we_first_name', firstName);
       window.webengage.user.setAttribute('we_last_name', lastName);
+      window.webengage.user.setAttribute('we_referral_code', referralCode);
     } catch (err) {
       console.log('Webengage user tracking err: ', err);
     }
@@ -1121,6 +1131,26 @@ export const medicalDetailsFillTracking = (data: any) => {
   }
 };
 
+export const trackLoginMobileNumber = () => {
+  if (typeof window !== 'undefined') {
+    try {
+      window.webengage.track('Login Mobile Number Entered '+ window.location.href.split('/').pop().split('?')[0], {});
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  } 
+};
+
+export const trackLoginOtpSubmitted = () => {
+  if (typeof window !== 'undefined') {
+    try {
+      window.webengage.track('Login OTP Submitted '+ window.location.href.split('/').pop().split('?')[0], {});
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
 export const hdfcUnlockNowTracking = (location: any) => {
   if (typeof window !== 'undefined') {
     try {
@@ -1145,7 +1175,15 @@ export const callReceiveClickTracking = (data: any) => {
 };
 
 export const HdfcUserSignupDetailTracking = (userDetailData: UserDetail) => {
-  const { emailAddress, dateOfBirth, mobileNumber, gender, firstName, lastName } = userDetailData;
+  const {
+    emailAddress,
+    dateOfBirth,
+    mobileNumber,
+    gender,
+    firstName,
+    lastName,
+    referralCode,
+  } = userDetailData;
   if (typeof window !== 'undefined') {
     try {
       window.webengage.user.setAttribute('we_email', emailAddress);
@@ -1154,8 +1192,29 @@ export const HdfcUserSignupDetailTracking = (userDetailData: UserDetail) => {
       window.webengage.user.setAttribute('we_gender', gender);
       window.webengage.user.setAttribute('we_first_name', firstName);
       window.webengage.user.setAttribute('we_last_name', lastName);
+      window.webengage.user.setAttribute('we_referral_code', referralCode);
     } catch (err) {
       console.log('Webengage user tracking err: ', err);
+    }
+  }
+};
+
+export const hdfcSignupFormShown = () => {
+  if (typeof window !== 'undefined') {
+    try {
+      window.webengage.track('HDFC Landing Registration Form Shown - web', {});
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
+    }
+  }
+};
+
+export const hdfcSignupDoneTracking = () => {
+  if (typeof window !== 'undefined') {
+    try {
+      window.webengage.track('HDFC Landing Registration Done - web', {});
+    } catch (err) {
+      console.log('WebEngage Err: ', err);
     }
   }
 };
@@ -1310,7 +1369,7 @@ export const HDFCHomePageCardClicked = (data: any) => {
     try {
       window.webengage.user.setAttribute('HDFCMembershipLevel', planName);
       window.webengage.user.setAttribute('HDFCMembershipState', planStatus);
-      window.webengage.track('HDFC Home Page Card Clicked - web', {
+      window.webengage.track('HDFC Home Page InactiveCard Clicked - web', {
         mobileNumber: mobileNumber,
         DOB: DOB,
         emailId: emailId,

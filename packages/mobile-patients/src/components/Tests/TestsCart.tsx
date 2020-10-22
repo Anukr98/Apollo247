@@ -15,7 +15,6 @@ import {
   isValidTestSlotWithArea,
   isEmptyObject,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
-import { TestSlotOverlay } from '@aph/mobile-patients/src/components/Tests/TestSlotOverlay';
 import {
   DiagnosticData,
   useAppCommonData,
@@ -291,12 +290,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   useEffect(() => {
     if (selectedTab == tabs[0].title) {
       if (
-        selectedTimeSlot &&
-        selectedTimeSlot!.slotInfo!.slot! &&
+        selectedTimeSlot?.slotInfo?.slot! &&
+        areaSelected &&
         deliveryAddressId != '' &&
         cartItems
       ) {
-        console.log('s');
         fetchHC_ChargesForTest(selectedTimeSlot!.slotInfo!.slot!);
       }
     } else {
@@ -307,12 +305,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   useEffect(() => {
     if (cartItems.length) {
       const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CART_VIEWED] = {
+        'Patient UHID': g(currentPatient, 'uhid'),
+        'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
         'Total items in cart': cartItems.length,
         'Sub Total': cartTotal,
         'Delivery charge': deliveryCharges,
         'Total Discount': couponDiscount,
         'Net after discount': grandTotal,
-        'Prescription Needed?': uploadPrescriptionRequired,
+        'Prescription Needed?': uploadPrescriptionRequired ? 'Mandatory' : 'Optional',
         'Cart Items': cartItems.map(
           (item) =>
             (({
@@ -324,25 +324,73 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         ),
         'Service Area': 'Diagnostic',
       };
+      if (diagnosticSlot) {
+        eventAttributes['Home Collection'] = hcCharges;
+      }
       if (coupon) {
         eventAttributes['Coupon code used'] = coupon.code;
       }
       postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_CART_VIEWED, eventAttributes);
     }
-  }, []);
+  }, [hcCharges]);
 
   const postwebEngageProceedToPayEvent = () => {
+    const diffInDays = date.getDate() - new Date().getDate();
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED] = {
+      'Patient Name selected': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       'Total items in cart': cartItems.length,
       'Sub Total': cartTotal,
-      'Delivery charge': deliveryCharges,
+      // 'Delivery charge': deliveryCharges,
       'Net after discount': grandTotal,
-      'Prescription Needed?': uploadPrescriptionRequired,
+      'Prescription Uploaded?': false, //from backend
+      'Prescription Mandatory?': uploadPrescriptionRequired,
       'Mode of Sample Collection': selectedTab === tabs[0].title ? 'Home Visit' : 'Clinic Visit',
       'Pin Code': pinCode,
       'Service Area': 'Diagnostic',
+      'Area Name': areaSelected.value,
+      'No of Days ahead of Order Date selected': diffInDays,
+      'Home collection charges': hcCharges,
+      'Collection Time Slot': selectedTimeSlot?.slotInfo?.startTime!,
     };
+    if (selectedTab === tabs[0].title) {
+      eventAttributes['Delivery Date Time'] = date;
+    }
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PROCEED_TO_PAY_CLICKED, eventAttributes);
+  };
+
+  const setWebEngageEventForAddressNonServiceable = (pincode: string) => {
+    const selectedAddr = addresses.find((item) => item.id == deliveryAddressId);
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ADDRESS_NON_SERVICEABLE_CARTPAGE] = {
+      'Patient UHID': g(currentPatient, 'uhid'),
+      State: selectedAddr?.state || '',
+      City: selectedAddr?.city || '',
+      PinCode: parseInt(pincode!),
+      'Number of items in cart': cartItemsWithId.length,
+      'Items in cart': cartItems,
+    };
+    postWebEngageEvent(
+      WebEngageEventName.DIAGNOSTIC_ADDRESS_NON_SERVICEABLE_CARTPAGE,
+      eventAttributes
+    );
+  };
+
+  const setWebEngageEventForAreaSelection = (item: areaObject) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_AREA_SELECTED] = {
+      'Address Pincode': parseInt(selectedAddr?.zipcode!),
+      'Area Selected': item.value,
+    };
+    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_AREA_SELECTED, eventAttributes);
+  };
+
+  const setWebEnageEventForAppointmentTimeSlot = () => {
+    const diffInDays = date.getDate() - new Date().getDate();
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED] = {
+      'Address Pincode': parseInt(selectedAddr?.zipcode!),
+      'Area Selected': areaSelected.value,
+      'Time Selected': selectedTimeSlot?.slotInfo?.startTime!,
+      'No of Days ahead of Order Date selected': diffInDays,
+    };
+    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED, eventAttributes);
   };
 
   useEffect(() => {
@@ -582,6 +630,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           setAreaSelected!({});
           setselectedTimeSlot(undefined);
           setLoading!(false);
+          setWebEngageEventForAddressNonServiceable(pincode);
           showAphAlert!({
             title: 'Uh oh.. :(',
             description:
@@ -594,6 +643,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         setDiagnosticAreas!([]);
         setAreaSelected!({});
         setselectedTimeSlot(undefined);
+        setWebEngageEventForAddressNonServiceable(pincode);
         CommonBugFender('TestsCart_getArea selection', e);
         console.log('error' + e);
         showAphAlert!({
@@ -661,6 +711,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                       Gender: product.gender,
                       collectionType: test.collectionMethod,
                       preparation: product.testPreparationData,
+                      source: 'Cart Page',
+                      type: product.itemType,
                     } as TestPackageForDetails,
                   });
                 });
@@ -954,7 +1006,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                         setDiagnosticSlot && setDiagnosticSlot(null);
                         setselectedTimeSlot(undefined);
 
-                        setDiagnosticAreas([]);
+                        setDiagnosticAreas!([]);
                         setAreaSelected!({});
 
                         // fetchAreasForAddress(id, pincode!);
@@ -1202,6 +1254,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               onPress={(item) => {
                 setAreaSelected!(item);
                 checkSlotSelection(item);
+                setWebEngageEventForAreaSelection(item);
                 // checkServicability(selectedAddress);
               }}
             >
@@ -1920,6 +1973,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               diagnosticEmployeeCode: slotInfo.employeeCode,
               city: selectedAddr ? selectedAddr.city! : '', // not using city from this in order place API
             });
+            setWebEnageEventForAppointmentTimeSlot();
             setDisplaySchedule(false);
           }}
         />
@@ -1930,7 +1984,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           <View style={{ marginVertical: 24 }}>
             {renderItemsInCart()}
             {renderProfiles()}
-            <MedicineUploadPrescriptionView isTest={true} navigation={props.navigation} />
+            <MedicineUploadPrescriptionView
+              isTest={true}
+              navigation={props.navigation}
+              isMandatory={false}
+              listOfTest={[]}
+            />
             {renderDelivery()}
             {renderTotalCharges()}
             {/* {renderTestSuggestions()} */}

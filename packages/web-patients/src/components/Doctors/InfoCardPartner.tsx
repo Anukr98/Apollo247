@@ -157,10 +157,11 @@ interface InfoCardProps {
   doctorType: string;
   specialityType?: string;
   specialtyId: string;
+  selectedCity?: string;
 }
 
 export const InfoCardPartner: React.FC<InfoCardProps> = (props) => {
-  const { doctorInfo, doctorType, specialtyId } = props;
+  const { doctorInfo, doctorType, specialtyId, specialityType, selectedCity } = props;
   const consultMode = doctorInfo.consultMode;
   const differenceInMinutes = doctorInfo ? doctorInfo.earliestSlotInMinutes : 0;
   const { isSignedIn } = useAuth();
@@ -196,7 +197,8 @@ export const InfoCardPartner: React.FC<InfoCardProps> = (props) => {
         <div className={classes.topContent}>
           <div className={classes.iconGroup}>
             <Avatar
-              alt={`Consult ${doctorInfo.displayName} (${props.specialityType}) Online`}
+              alt={`${doctorInfo.displayName}, ${specialityType} in ${selectedCity}`}
+              title={`${doctorInfo.displayName}, ${specialityType} in ${selectedCity}`}
               src={doctorInfo.photoUrl || require('images/no_photo_icon_round.svg')}
               className={classes.doctorAvatar}
             />

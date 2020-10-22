@@ -99,6 +99,7 @@ import {
 import { AppointmentEntitySubscriber } from 'consults-service/entities/observers/appointmentObserver';
 import { MedicineEntitySubscriber } from 'profiles-service/entities/observers/medicinePaymentSuccessObserver';
 import { DiagnosticEntitySubscriber } from 'profiles-service/entities/observers/diagnosticPaymentSuccessObserver';
+import { DoctorPricing } from 'doctors-service/entities/doctorPricing';
 import { AppointmentCallFeedback } from 'consults-service/entities/appointmentCallFeedbackEntity';
 import { HealthCheckRecords } from 'profiles-service/entities/healthCheckRecordsEntity';
 import { HospitalizationRecords } from 'profiles-service/entities/hospitalizationRecordsEntity';
@@ -154,6 +155,7 @@ export const connect = async () => {
         ConsultHours,
         Deeplink,
         Doctor,
+        DoctorPricing,
         DoctorAndHospital,
         DoctorBankAccounts,
         DoctorDeviceTokens,

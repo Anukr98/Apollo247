@@ -77,6 +77,27 @@ export async function sendCallsNotification(
   const patientDetails = await patientRepo.getPatientDetails(appointment.patientId);
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
+  const currentDate = new Date();
+  if (
+    doctorType !== DOCTOR_CALL_TYPE.JUNIOR &&
+    currentDate < appointment.appointmentDateTime &&
+    callType === APPT_CALL_TYPE.CHAT
+  ) {
+    if (patientDetails && doctorDetails) {
+      const appLink = await getPatientDeeplink(
+        ApiConstants.PATIENT_APPT_DEEPLINK,
+        ApiConstants.PATIENT_DEEPLINK_TEMPLATE_ID_APOLLO
+      );
+      const messageBody = ApiConstants.AUTO_SUBMIT_BY_SD_SMS_TEXT.replace(
+        '{0}',
+        patientDetails.firstName
+      )
+        .replace('{1}', doctorDetails.firstName)
+        .replace('{2}', appLink);
+      sendNotificationSMS(patientDetails.mobileNumber, messageBody);
+    }
+  }
+
   const deviceTokenRepo = patientsDb.getCustomRepository(PatientDeviceTokenRepository);
 
   patientId = patientId || patientDetails.id;
@@ -145,26 +166,26 @@ export async function sendCallsNotification(
     doctorDetails.firstName + ' ' + doctorDetails.lastName
   );
 
-  //building payload
-  const payload = {
-    notification: {
-      title: notificationTitle,
-      body: notificationBody,
-      android_channel_id: 'fcm_FirebaseNotifiction_call_channel',
-    },
-    data: {
-      type: 'call_started',
-      appointmentId: appointment.id.toString(),
-      patientName: patientDetails.firstName,
-      doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
-      callType,
-      appointmentCallId,
-      doctorType,
-      content: notificationBody,
-    },
-  };
+  // //building payload
+  // const payload = {
+  //   notification: {
+  //     title: notificationTitle,
+  //     body: notificationBody,
+  //     android_channel_id: 'fcm_FirebaseNotifiction_call_channel',
+  //   },
+  //   data: {
+  //     type: 'call_started',
+  //     appointmentId: appointment.id.toString(),
+  //     patientName: patientDetails.firstName,
+  //     doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
+  //     callType,
+  //     appointmentCallId,
+  //     doctorType,
+  //     content: notificationBody,
+  //   },
+  // };
 
-  console.log(payload, 'notification payload', pushNotificationInput.notificationType);
+  // console.log(payload, 'notification payload', pushNotificationInput.notificationType);
   //options
   const options = {
     priority: NotificationPriority.high,
@@ -208,10 +229,8 @@ export async function sendCallsNotification(
         appointmentCallId: appointmentCallId,
         doctorType: doctorType,
       },
-      android: {
-        notification: {
-          channel_id: "fcm_call_channel"
-        }
+      notification: {
+        channel_id: 'fcm_call_channel',
       },
     };
 
@@ -251,38 +270,38 @@ export async function sendCallsNotification(
     console.log(dataOnlyPayloadResponse, 'dataOnlyPayloadResponse');
   }
 
-  admin
-    .messaging()
-    .sendToDevice(registrationToken, payload, options)
-    .then((response: PushNotificationSuccessMessage) => {
-      notificationPayloadResponse = response;
-      if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
-        const fileName =
-          process.env.NODE_ENV + '_callnotification_' + format(new Date(), 'yyyyMMdd') + '.txt';
-        let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
-        if (process.env.NODE_ENV != 'local') {
-          assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
-        }
-        let content =
-          format(new Date(), 'yyyy-MM-dd hh:mm') +
-          '\n apptid: ' +
-          pushNotificationInput.appointmentId +
-          '\n multicastId: ';
-        content +=
-          response.multicastId.toString() +
-          '\n------------------------------------------------------------------------------------\n';
-        fs.appendFile(assetsDir + '/' + fileName, content, (err) => {
-          if (err) {
-            console.log('file saving error', err);
-          }
-          console.log('notification results saved');
-        });
-      }
-    })
-    .catch((error: JSON) => {
-      console.log('PushNotification Failed::' + error);
-      throw new AphError(AphErrorMessages.PUSH_NOTIFICATION_FAILED);
-    });
+  // admin
+  //   .messaging()
+  //   .sendToDevice(registrationToken, payload, options)
+  //   .then((response: PushNotificationSuccessMessage) => {
+  //     notificationPayloadResponse = response;
+  //     if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
+  //       const fileName =
+  //         process.env.NODE_ENV + '_callnotification_' + format(new Date(), 'yyyyMMdd') + '.txt';
+  //       let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+  //       if (process.env.NODE_ENV != 'local') {
+  //         assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
+  //       }
+  //       let content =
+  //         format(new Date(), 'yyyy-MM-dd hh:mm') +
+  //         '\n apptid: ' +
+  //         pushNotificationInput.appointmentId +
+  //         '\n multicastId: ';
+  //       content +=
+  //         response.multicastId.toString() +
+  //         '\n------------------------------------------------------------------------------------\n';
+  //       fs.appendFile(assetsDir + '/' + fileName, content, (err) => {
+  //         if (err) {
+  //           console.log('file saving error', err);
+  //         }
+  //         console.log('notification results saved');
+  //       });
+  //     }
+  //   })
+  //   .catch((error: JSON) => {
+  //     console.log('PushNotification Failed::' + error);
+  //     throw new AphError(AphErrorMessages.PUSH_NOTIFICATION_FAILED);
+  //   });
 
   console.log(notificationPayloadResponse, 'notificationPayloadResponse');
 
@@ -661,20 +680,19 @@ export async function sendReminderNotification(
   if (
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15 ||
     pushNotificationInput.notificationType ==
-    NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
+      NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
   ) {
     if (!(appointment && appointment.id)) {
       throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND);
     }
 
-    if (process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM) {
-      const chatroom_sms_link = process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM.replace(
-        '{0}',
-        appointment.id.toString()
-      ); //Replacing the placeholder with appointmentid
-
+    const appLink = await getPatientDeeplink(
+      ApiConstants.PATIENT_CHATROOM_DEEPLINK + appointment.id.toString(),
+      ApiConstants.PATIENT_DEEPLINK_TEMPLATE_ID_APOLLO
+    );
+    if (appLink) {
       //Final deeplink URL
-      notificationBody = notificationBody + ApiConstants.CLICK_HERE + chatroom_sms_link;
+      notificationBody = notificationBody + ApiConstants.CLICK_HERE + appLink;
     } else {
       throw new AphError(AphErrorMessages.SMS_DEEPLINK_APPOINTMENT_CHATROOM_MISSING);
     }
@@ -1032,20 +1050,22 @@ export async function sendNotification(
         facilityDetsString = `${facilityDets.name} ${facilityDets.streetLine1} ${facilityDets.city} ${facilityDets.state}`;
       }
     }
-    const secretaryTemplateData: string[] = [
-      patientDetails.firstName + ' ' + patientDetails.lastName,
-      patientDetails.uhid,
-      doctorDetails.salutation + ' ' + doctorDetails.firstName,
-      facilityDetsString,
-      format(istDateTime, 'dd/MM/yyyy'),
-      format(istDateTime, 'hh:mm a'),
-      appointment.appointmentType,
-    ];
-    sendDoctorNotificationWhatsapp(
-      ApiConstants.WHATSAPP_DOC_SECRETARY_CANCEL,
-      doctorDetails.doctorSecretary.secretary.mobileNumber,
-      secretaryTemplateData
-    );
+    if (doctorDetails.doctorSecretary.secretary.mobileNumber) {
+      const secretaryTemplateData: string[] = [
+        patientDetails.firstName + ' ' + patientDetails.lastName,
+        patientDetails.uhid,
+        doctorDetails.salutation + ' ' + doctorDetails.firstName,
+        facilityDetsString,
+        format(istDateTime, 'dd/MM/yyyy'),
+        format(istDateTime, 'hh:mm a'),
+        appointment.appointmentType,
+      ];
+      sendDoctorNotificationWhatsapp(
+        ApiConstants.WHATSAPP_DOC_SECRETARY_CANCEL,
+        doctorDetails.doctorSecretary.secretary.mobileNumber,
+        secretaryTemplateData
+      );
+    }
   }
 
   //doctor cancel appointment
@@ -1261,25 +1281,28 @@ export async function sendNotification(
       todaysDate,
       'todays date'
     );
-    const secretaryTemplateData: string[] = [
-      patientDetails.firstName + ' ' + patientDetails.lastName,
-      patientDetails.uhid,
-      doctorDetails.salutation + ' ' + doctorDetails.firstName,
-      facilityDetsString,
-      format(istDateTime, 'dd/MM/yyyy'),
-      format(istDateTime, 'hh:mm a'),
-      appointment.appointmentType,
-    ];
-    console.log(
-      secretaryTemplateData,
-      doctorDetails.doctorSecretary.secretary.mobileNumber,
-      'secretaryTemplateData'
-    );
-    sendDoctorNotificationWhatsapp(
-      ApiConstants.WHATSAPP_DOC_SECRETARY_BOOKING,
-      doctorDetails.doctorSecretary.secretary.mobileNumber,
-      secretaryTemplateData
-    );
+    if (doctorDetails.doctorSecretary.secretary.mobileNumber) {
+      const secretaryTemplateData: string[] = [
+        patientDetails.firstName + ' ' + patientDetails.lastName,
+        patientDetails.uhid,
+        doctorDetails.salutation + ' ' + doctorDetails.firstName,
+        facilityDetsString,
+        format(istDateTime, 'dd/MM/yyyy'),
+        format(istDateTime, 'hh:mm a'),
+        appointment.appointmentType,
+      ];
+      console.log(
+        secretaryTemplateData,
+        doctorDetails.doctorSecretary.secretary.mobileNumber,
+        'secretaryTemplateData'
+      );
+      sendDoctorNotificationWhatsapp(
+        ApiConstants.WHATSAPP_DOC_SECRETARY_BOOKING,
+        doctorDetails.doctorSecretary.secretary.mobileNumber,
+        secretaryTemplateData
+      );
+    }
+
     if (istDateTime <= todaysDate) {
       const finalTime = format(istDateTime, 'hh:mm a');
       const templateData: string[] = [
@@ -1323,13 +1346,12 @@ export async function sendNotification(
     smsLink = smsLink.replace('{2}', doctorDetails.firstName + ' ' + doctorDetails.lastName);
     smsLink = smsLink.replace('{3}', apptDate.toString());
 
-    if (process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM) {
-      const chatroom_sms_link = process.env.SMS_DEEPLINK_APPOINTMENT_CHATROOM.replace(
-        '{0}',
-        appointment.id.toString()
-      ); // Replacing the placeholder with appointmentid
-
-      smsLink = smsLink.replace('{5}', chatroom_sms_link);
+    const appLink = await getPatientDeeplink(
+      ApiConstants.PATIENT_CHATROOM_DEEPLINK + appointment.id.toString(),
+      ApiConstants.PATIENT_DEEPLINK_TEMPLATE_ID_APOLLO
+    );
+    if (appLink) {
+      smsLink = smsLink.replace('{5}', appLink);
     } else {
       throw new AphError(AphErrorMessages.SMS_DEEPLINK_APPOINTMENT_CHATROOM_MISSING);
     }
@@ -1418,10 +1440,9 @@ export async function sendNotification(
     sendBrowserNotitication(doctorDetails.id, notificationBody);
   } else if (pushNotificationInput.notificationType == NotificationType.PRESCRIPTION_READY) {
     notificationTitle = ApiConstants.PRESCRIPTION_READY_TITLE;
-    notificationBody = ApiConstants.PRESCRIPTION_READY_BODY.replace(
-      '{0}',
-      patientDetails.firstName
-    ).replace('{1}', doctorDetails.firstName);
+    notificationBody = ApiConstants.PRESCRIPTION_READY_BODY.replace('{0}', patientDetails.firstName)
+      .replace('{1}', doctorDetails.salutation)
+      .replace('{2}', doctorDetails.firstName);
 
     if (!process.env.DEEPLINK_PRESCRIPTION) {
       log(

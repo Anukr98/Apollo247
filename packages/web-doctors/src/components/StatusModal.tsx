@@ -7,6 +7,7 @@ import { useApolloClient, useMutation } from 'react-apollo-hooks';
 import { withRouter } from 'react-router-dom';
 import { SubmitJdCasesheet, SubmitJdCasesheetVariables } from 'graphql/types/SubmitJdCasesheet';
 import { webEngageEventTracking } from 'webEngageTracking';
+import { format } from 'date-fns';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -193,7 +194,7 @@ const StatusModal = (props: any) => {
                 text.messageText !== '' ? classes.button : `${classes.button} ${classes.oKButton}`
               }
               onClick={() => {	
-                props.onClose	
+                props.onClose();	
                 if(text.messageText !== ''){	
                   webEngageEventTracking(	
                     {	
@@ -201,7 +202,7 @@ const StatusModal = (props: any) => {
                       'Patient name': text.patientName,	
                       'Patient mobile number': text.patientMobileNumber,	
                       'Doctor Mobile number': text.doctorMobileNumber,	
-                      'Appointment Date time': text.appointmentDateTime,	
+                      'Appointment Date time': new Date(text.appointmentDateTime),	
                       'Appointment display ID': text.displayId,	
                       'Appointment ID': text.appointmentId,	
                     },	
@@ -222,7 +223,7 @@ const StatusModal = (props: any) => {
                       'Patient name': text.patientName,	
                       'Patient mobile number': text.patientMobileNumber,	
                       'Doctor Mobile number': text.doctorMobileNumber,	
-                      'Appointment Date time': text.appointmentDateTime,	
+                      'Appointment Date time': new Date(text.appointmentDateTime),	
                       'Appointment display ID': text.displayId,	
                       'Appointment ID': text.appointmentId,	
                     },	
@@ -247,7 +248,10 @@ const StatusModal = (props: any) => {
                         }
                       }
                     })
-                    .catch((exception: any) => console.log('something went wrong', exception));
+                    .catch((exception: any) => {
+                      props.onClose();
+                      alert('Something went wrong, please try again');
+                    });
                 }}
               >
                 {'yes, start consult'}

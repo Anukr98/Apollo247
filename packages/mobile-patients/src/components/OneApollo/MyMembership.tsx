@@ -225,16 +225,6 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
           Redeem your health credits on transactions at Apollo 247 pharmacy orders at a value of
           <Text style={{ color: theme.colors.LIGHT_BLUE }}> 1 HC = ₹ 1</Text>
         </Text>
-        <Text
-          style={{
-            paddingLeft: 20,
-            paddingBottom: 20,
-            color: theme.colors.LIGHT_BLUE,
-            ...theme.fonts.IBMPlexSansMedium(13),
-          }}
-        >
-          Coming Soon!
-        </Text>
       </CollapseCard>
     );
   };
@@ -244,7 +234,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
       <CollapseCard
         heading="MEMBERSHIP UPGRADES"
         collapse={showMembershipUpgrades}
-        headingStyle={{ paddingBottom: 10 }}
+        headingStyle={{ paddingBottom: 10, paddingTop: 15 }}
         onPress={() => {
           setShowMembershipUpgrades(!showMembershipUpgrades);
         }}

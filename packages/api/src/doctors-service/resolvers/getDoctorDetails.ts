@@ -73,13 +73,13 @@ export const getDoctorDetailsTypeDefs = gql`
   }
 
   type BankAccount {
-    accountHolderName: String!
-    accountNumber: String!
-    accountType: AccountType!
-    bankName: String!
-    city: String!
-    id: ID!
-    IFSCcode: String!
+    accountHolderName: String
+    accountNumber: String
+    accountType: AccountType
+    bankName: String
+    city: String
+    id: ID
+    IFSCcode: String
     state: String
     streetLine1: String
   }
@@ -95,6 +95,26 @@ export const getDoctorDetailsTypeDefs = gql`
     weekDay: WeekDay!
     consultDuration: Int
     consultBuffer: Int
+  }
+  enum PLAN {
+    ALL
+    CARE_PLAN
+  }
+  enum PLAN_STATUS {
+    ACTIVE 
+    INACTIVE 
+  }
+
+  type DoctorPricing {
+    slashed_price: Float
+    available_to: PLAN
+    group_plan: String
+    start_date: Date
+    end_date: Date
+    status: PLAN_STATUS
+    doctor_share: Float
+    apollo_share: Float
+    mrp: Float
   }
   type DoctorDetails @key(fields: "id") {
     awards: String
@@ -142,6 +162,7 @@ export const getDoctorDetailsTypeDefs = gql`
     packages: [Packages]
     specialty: DoctorSpecialties
     starTeam: [StarTeam]
+    doctorPricing : [DoctorPricing]
     availableModes: [ConsultMode]
     doctorNextAvailSlots:DoctorNextAvailSlots
   }

@@ -234,7 +234,6 @@ const getDoctorAppointments: Resolver<
 > = async (parent, args, { consultsDb, doctorsDb, mobileNumber }) => {
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   let doctordata;
-
   if (args.doctorId === undefined || args.doctorId == null) {
     doctordata = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
   } else {

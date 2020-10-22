@@ -347,7 +347,15 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         lng: locationDetails.longitude || '',
       };
       latlng = coordinates;
-      fetchSpecialityFilterData(filterMode, FilterData, latlng, 'availability', undefined, false, doctorSearch);
+      fetchSpecialityFilterData(
+        filterMode,
+        FilterData,
+        latlng,
+        'availability',
+        undefined,
+        false,
+        doctorSearch
+      );
       setcurrentLocation(locationDetails.displayName);
       setLocationSearchText(locationDetails.displayName);
     }
@@ -381,12 +389,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       });
   };
 
-  const filterDoctors = (
-    data: any,
-    type: string,
-    searchText: string = doctorSearch
-  ) => {
-    const doctorsApollo =data;
+  const filterDoctors = (data: any, type: string, searchText: string = doctorSearch) => {
+    const doctorsApollo = data;
     if (type == 'APOLLO') {
       const apolloDoctors = doctorsApollo.filter((item) => {
         return item && item.doctorType !== 'DOCTOR_CONNECT';
@@ -490,7 +494,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     sort: string | null = sortValue,
     pinCode: string | undefined,
     docTabSelected: boolean = false,
-    searchText:string,
+    searchText: string,
     pageNo?: number
   ) => {
     const experienceArray: Range[] = [];
@@ -601,7 +605,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       sort: sort,
       pageNo: pageNo ? pageNo + 1 : 1,
       pageSize: pageSize,
-      searchText: searchText ,
+      searchText: searchText,
     };
     setBugFenderLog('DOCTOR_FILTER_INPUT', JSON.stringify(FilterInput));
     !pageNo && setshowSpinner(true);
@@ -885,7 +889,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                 setSearchIconClicked(!searchIconClicked);
                 setDoctorSearch('');
                 // filterDoctors(doctorsList, doctorsType, '');
-                if(searchIconClicked){
+                if (searchIconClicked) {
                   fetchSpecialityFilterData(
                     filterMode,
                     FilterData,
@@ -1151,8 +1155,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       : undefined;
     const doctors =
       filteredDoctorsList.length && filter
-        ? filteredDoctorsList.filter((obj : any) => {
-              return  obj?.consultMode == filter  || obj?.consultMode == ConsultMode.BOTH;
+        ? filteredDoctorsList.filter((obj: any) => {
+            return obj?.consultMode == filter || obj?.consultMode == ConsultMode.BOTH;
           })
         : filteredDoctorsList;
     scrollViewRef.current && scrollViewRef.current.scrollTo({ x: 0, y: 0, animated: false });
@@ -1299,7 +1303,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   };
   const [doctorSearch, setDoctorSearch] = useState<string>('');
   useEffect(() => {
-    if(isValidSearch(doctorSearch) && doctorSearch.length >2){
+    if (isValidSearch(doctorSearch) && doctorSearch.length > 2) {
       fetchSpecialityFilterData(
         filterMode,
         FilterData,
@@ -1310,7 +1314,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         doctorSearch
       );
     }
-  }, [doctorSearch])
+  }, [doctorSearch]);
 
   const renderDoctorSearchBar = () => {
     return (
@@ -1370,7 +1374,24 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         'Sort By': 'distance',
       });
       setSortValue('distance');
-      checkLocation(doctorTabsSelected);
+      if (locationDetails) {
+        const coordinates = {
+          lat: locationDetails.latitude || '',
+          lng: locationDetails.longitude || '',
+        };
+        latlng = coordinates;
+        fetchSpecialityFilterData(
+          filterMode,
+          FilterData,
+          latlng,
+          'distance',
+          undefined,
+          doctorTabsSelected,
+          doctorSearch
+        );
+      } else {
+        checkLocation(doctorTabsSelected);
+      }
     }
   };
 
@@ -1548,7 +1569,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       postTabBarClickWEGEvent('APOLLO');
       setDoctorsType('APOLLO');
       // onPressAvailabiltyRadioButton();
-      setFilteredDoctorsList([])
+      setFilteredDoctorsList([]);
       filterDoctors(doctorsList, 'APOLLO');
       scrollToTop();
     }
@@ -1559,7 +1580,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       postTabBarClickWEGEvent('PARTNERS');
       setDoctorsType('PARTNERS');
       // onPressNearByRadioButton(true);
-      setFilteredDoctorsList([])
+      setFilteredDoctorsList([]);
       filterDoctors(doctorsList, 'PARTNERS');
       scrollToTop();
     }

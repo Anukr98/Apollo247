@@ -1,7 +1,11 @@
 import gql from 'graphql-tag';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
-import { MEDICINE_ORDER_STATUS, MedicineOrdersStatus } from 'profiles-service/entities';
+import {
+  MEDICINE_ORDER_STATUS,
+  MedicineOrdersStatus,
+  MEDICINE_ORDER_TYPE,
+} from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -83,7 +87,6 @@ const saveOrderVerified: Resolver<
   if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED) {
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
   }
-
   log(
     'profileServiceLogger',
     `ORDER_VERIFICATION_DONE_FOR_ORDER_ID:${orderVerifiedInput.orderId}`,
@@ -99,28 +102,34 @@ const saveOrderVerified: Resolver<
     orderStatus: MEDICINE_ORDER_STATUS.VERIFICATION_DONE,
     medicineOrders: orderDetails,
     statusDate: new Date(statusDate),
+    hideStatus: false,
   };
   await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
 
-  await medicineOrdersRepo.updateMedicineOrderDetails(
-    orderDetails.id,
-    orderDetails.orderAutoId,
-    new Date(),
-    MEDICINE_ORDER_STATUS.VERIFICATION_DONE
-  );
-
   // calculate tat for non cart orders
 
+  let tat = '',
+    siteId = '',
+    tatType = '',
+    allocationProfile = '',
+    clusterId = '';
+  if (orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION) {
+    tat = '16-Oct-2020 14:30';
+    siteId = '15732';
+    tatType = 'Hub';
+    allocationProfile = 'DEFAULT';
+    clusterId = 'DEFAULT';
+  }
   return {
     status: MEDICINE_ORDER_STATUS.VERIFICATION_DONE,
     errorCode: 0,
     errorMessage: '',
     orderId: orderDetails.orderAutoId,
-    tat: '',
-    siteId: '',
-    tatType: '',
-    allocationProfile: '',
-    clusterId: '',
+    tat,
+    siteId,
+    tatType,
+    allocationProfile,
+    clusterId,
   };
 };
 

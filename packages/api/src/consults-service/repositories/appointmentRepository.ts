@@ -124,7 +124,7 @@ export class AppointmentRepository extends Repository<Appointment> {
           status4: STATUS.PAYMENT_FAILED,
           status5: STATUS.PAYMENT_PENDING_PG,
           status6: STATUS.PAYMENT_ABORTED,
-          status7: STATUS.COMPLETED
+          status7: STATUS.COMPLETED,
         }
       )
       .getCount();
@@ -724,17 +724,13 @@ export class AppointmentRepository extends Repository<Appointment> {
       .leftJoinAndSelect('appointment.caseSheet', 'caseSheet')
       .leftJoinAndSelect('appointment.appointmentPayments', 'appointmentPayments')
       .andWhere('appointment.patientId IN (:...ids)', { ids })
-      .andWhere(
-        'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',
-        {
-          status1: STATUS.CANCELLED,
-          status2: STATUS.PAYMENT_PENDING,
-          status3: STATUS.UNAVAILABLE_MEDMANTRA,
-          status4: STATUS.PAYMENT_FAILED,
-          status5: STATUS.PAYMENT_PENDING_PG,
-          status6: STATUS.PAYMENT_ABORTED,
-        }
-      )
+      .andWhere('appointment.status not in(:status1,:status2,:status3,:status4,:status5)', {
+        status1: STATUS.PAYMENT_PENDING,
+        status2: STATUS.UNAVAILABLE_MEDMANTRA,
+        status3: STATUS.PAYMENT_FAILED,
+        status4: STATUS.PAYMENT_PENDING_PG,
+        status5: STATUS.PAYMENT_ABORTED,
+      })
       .offset(offset)
       .limit(limit)
       .orderBy('appointment.appointmentDateTime', 'DESC')
@@ -1256,7 +1252,18 @@ export class AppointmentRepository extends Repository<Appointment> {
       ])
       .addSelect('COUNT(*) AS consultsCount')
       .where('appointment.doctorId = :doctorId', { doctorId: doctorId })
-      .andWhere('appointment.status = :status', { status: STATUS.COMPLETED });
+      .andWhere(
+        'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',
+        {
+          status1: STATUS.CANCELLED,
+          status2: STATUS.PAYMENT_PENDING,
+          status3: STATUS.UNAVAILABLE_MEDMANTRA,
+          status4: STATUS.PAYMENT_FAILED,
+          status5: STATUS.PAYMENT_PENDING_PG,
+          status6: STATUS.PAYMENT_ABORTED,
+        }
+      );
+    // .andWhere('appointment.status = :status', { status: STATUS.COMPLETED });
 
     if (type == patientLogType.FOLLOW_UP) {
       results.andWhere('appointment.sdConsultationDate > :tenDays', {
@@ -1383,11 +1390,16 @@ export class AppointmentRepository extends Repository<Appointment> {
       apptUpdatePartial['patientCancelReason'] = cancelReason;
     }
 
-    return this.createUpdateAppointment(
-      apptDetails,
-      apptUpdatePartial,
-      AphErrorMessages.CANCEL_APPOINTMENT_ERROR
-    );
+    // return this.createUpdateAppointment(
+    //   apptDetails,
+    //   apptUpdatePartial,
+    //   AphErrorMessages.CANCEL_APPOINTMENT_ERROR
+    // );
+
+    return this.update(apptDetails.id, apptUpdatePartial)
+      .catch((error) => {
+        throw new AphError(AphErrorMessages.CANCEL_APPOINTMENT_ERROR, undefined, {});
+      });
   }
 
   systemCancelAppointment(

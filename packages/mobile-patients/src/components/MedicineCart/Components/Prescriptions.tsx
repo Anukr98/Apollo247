@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, ScrollView } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  ScrollView,
+  StyleProp,
+  ViewStyle,
+} from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import {
   useShoppingCart,
@@ -12,6 +20,7 @@ import { PhysicalPrescriptionCard } from '@aph/mobile-patients/src/components/Me
 export interface PrescriptionsProps {
   onPressUploadMore: () => void;
   screen?: string;
+  style?: StyleProp<ViewStyle>;
 }
 
 export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
@@ -21,7 +30,7 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
     removeEPrescription,
     removePhysicalPrescription,
   } = useShoppingCart();
-  const { onPressUploadMore, screen } = props;
+  const { onPressUploadMore, screen, style } = props;
 
   const renderHeader = () => {
     return (
@@ -119,7 +128,7 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
   }
 
   return showPresritionCard() ? (
-    <View>
+    <View style={[styles.container, style]}>
       {renderHeader()}
       <View style={styles.card}>
         {physicalPrescriptions.length > 0 && renderPhysicalPrescriptions()}
@@ -133,13 +142,15 @@ export const Prescriptions: React.FC<PrescriptionsProps> = (props) => {
 };
 
 const styles = StyleSheet.create({
+  container: {
+    marginTop: 20,
+  },
   Header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingBottom: 4,
     borderBottomWidth: 0.5,
     borderColor: 'rgba(2,71,91, 0.3)',
-    marginTop: 20,
     marginHorizontal: 20,
   },
   HeaderText: {

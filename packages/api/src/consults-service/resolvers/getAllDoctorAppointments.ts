@@ -55,6 +55,9 @@ const getAllDoctorAppointments: Resolver<
   GetAllDoctorAppointmentsResult
 > = async (parent, { doctorId }, context) => {
   const { patRepo, apptRepo, docRepo, mobileNumber } = getRepos(context);
+  // mocking fot tes
+
+
   await checkAuth(docRepo, mobileNumber, doctorId);
   const allDocAppointments = await apptRepo.find({
     where: { doctorId },

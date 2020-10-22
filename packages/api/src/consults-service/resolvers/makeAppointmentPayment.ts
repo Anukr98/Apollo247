@@ -42,6 +42,7 @@ import { updateDoctorSlotStatusES } from 'doctors-service/entities/doctorElastic
 import { activateSubscription, transactionSuccessTrigger } from 'helpers/subscriptionHelper';
 import { ApiConstants, TransactionType } from 'ApiConstants';
 import { ONE_APOLLO_STORE_CODE } from 'types/oneApolloTypes';
+import { sendMessageToASBQueue } from 'consults-service/resolvers/appointmentReminderIVRForDoctors';
 
 export const makeAppointmentPaymentTypeDefs = gql`
   enum APPOINTMENT_PAYMENT_TYPE {
@@ -360,6 +361,11 @@ const makeAppointmentPayment: Resolver<
     //submit casesheet if skipAutoQuestions:false, isJdrequired = false
     const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
     const doctorDets = await doctorRepo.findById(processingAppointment.doctorId);
+
+    if (!doctorDets) {
+      throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
+    }
+
     let submitFlag = 0;
 
     let notes = ApiConstants.APPOINTMENT_BOOKED_WITHIN_10_MIN.toString().replace(
@@ -432,6 +438,11 @@ const makeAppointmentPayment: Resolver<
       };
       apptsRepo.saveAppointmentHistory(historyAttrs);
     }
+
+    if (doctorDets.isIvrSet && doctorDets.isIvrSet === true) {
+      sendMessageToASBQueue(doctorDets, processingAppointment);
+    }
+
   } else if (paymentInput.paymentStatus == 'TXN_FAILURE') {
     const historyAttrs: Partial<AppointmentUpdateHistory> = {
       appointment: processingAppointment,

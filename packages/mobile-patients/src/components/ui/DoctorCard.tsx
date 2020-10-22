@@ -145,9 +145,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     }
   }, [currentPatient]);
 
-
   const client = useApolloClient();
-
 
   const navigateToDetails = (id: string, params?: {}) => {
     if (props.saveSearch) {
@@ -245,8 +243,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           try {
             if (rowData.doctorType === DoctorType.PAYROLL) {
               const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CONNECT_CARD_CLICK] = {
-                'Online Price': Number(g(rowData, 'onlineConsultationFees')),
-                'Physical Price': Number(g(rowData, 'physicalConsultationFees')),
+                Fee: Number(rowData?.fee),
                 'Doctor Speciality': g(rowData, 'specialty', 'name')!,
                 'Doctor Name': g(rowData, 'fullName')!,
                 Source: 'List',
@@ -254,6 +251,30 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               };
               postWebEngageEvent(WebEngageEventName.DOCTOR_CONNECT_CARD_CLICK, eventAttributes);
             }
+          } catch (error) {}
+          try {
+            const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK] = {
+              'Patient Name': currentPatient.firstName,
+              'Doctor ID': rowData.id,
+              'Speciality ID': rowData?.specialty?.id,
+              'Doctor Speciality': rowData?.specialty?.name,
+              'Doctor Experience': Number(rowData?.experience),
+              'Hospital Name': rowData?.doctorHospital?.[0]?.facility?.name,
+              'Hospital City': rowData?.doctorHospital?.[0]?.facility?.city,
+              'Availability Minutes': getTimeDiff(rowData?.slot),
+              Source: 'List',
+              'Patient UHID': currentPatient.uhid,
+              Relation: currentPatient?.relation,
+              'Patient Age': Math.round(
+                moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)
+              ),
+              'Patient Gender': currentPatient.gender,
+              'Customer ID': currentPatient.id,
+            };
+            if (props.rowId) {
+              eventAttributes['Rank'] = props.rowId;
+            }
+            postWebEngageEvent(WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK, eventAttributes);
           } catch (error) {}
 
           props.onPress ? props.onPress(rowData.id!) : navigateToDetails(rowData.id!);
@@ -387,17 +408,17 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                       const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK] = {
                         'Patient Name': currentPatient.firstName,
                         'Doctor ID': rowData.id,
-                        'Speciality ID': g(rowData, 'specialty', 'id')!,
-                        'Doctor Speciality': g(rowData, 'specialty', 'name')!,
-                        'Doctor Experience': Number(g(rowData, 'experience')!),
-                        'Hospital Name': rowData.doctorHospital[0].facility.name,
-                        'Hospital City': rowData.doctorHospital[0].facility.city,
-                        'Availability Minutes': getTimeDiff(rowData.slot),
+                        'Speciality ID': rowData?.specialty?.id,
+                        'Doctor Speciality': rowData?.specialty?.name,
+                        'Doctor Experience': Number(rowData?.experience),
+                        'Hospital Name': rowData?.doctorHospital?.[0]?.facility?.name,
+                        'Hospital City': rowData?.doctorHospital?.[0]?.facility?.city,
+                        'Availability Minutes': getTimeDiff(rowData?.slot),
                         Source: 'List',
                         'Patient UHID': currentPatient.uhid,
-                        Relation: g(currentPatient, 'relation'),
+                        Relation: currentPatient?.relation,
                         'Patient Age': Math.round(
-                          moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+                          moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)
                         ),
                         'Patient Gender': currentPatient.gender,
                         'Customer ID': currentPatient.id,

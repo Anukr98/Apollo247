@@ -617,6 +617,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const patientJoinedMeetingRoom = '^^#patientJoinedMeetingRoom';
   const patientRejectedCall = '^^#PATIENT_REJECTED_CALL';
   const exotelCall = '^^#exotelCall';
+  const vitalsCompletedByPatient = '^^#vitalsCompletedByPatient'; // ignore msg used by p-web
 
   const patientId = appointmentData.patientId;
   const channel = appointmentData.id;
@@ -803,8 +804,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       'Session ID': sessionId,
     };
     postWebEngageEvent(type, eventAttributes);
-  }
-  
+  };
+
   const postConsultCardEvents = (
     type:
       | WebEngageEventName.CHAT_WITH_DOCTOR
@@ -1156,7 +1157,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         channel: channel,
         message: {
           message: doctorAutoResponse,
-          automatedText: `We have notified the query you have raised to the ${appointmentData.doctorInfo.displayName}. Doctor will get back to you within 24 hours. In case of emergency, please contact the nearby hospital`,
+          automatedText: `We have notified the query you raised to ${appointmentData.doctorInfo.displayName}. Doctor will get back to you within 24 hours. In case of any emergency, it is advisable to contact a nearby hospital!`,
           id: doctorId,
           isTyping: true,
           messageDate: new Date(),
@@ -2091,35 +2092,21 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }
       },
       message: (message) => {
-        // console.log('messageevent', message);]
-        const messageType = g(message, 'message', 'message');
-        console.log(`pubnub.addListener - ${messageType}`, { message });
+        const messageType = message?.message?.message;
 
         if (messageType == followupconsult) {
           // setStatus(STATUS.COMPLETED);  //Uncomment it if you are not getting the automated message
           postAppointmentWEGEvent(WebEngageEventName.PRESCRIPTION_RECEIVED);
-        }
-        if (messageType == stopConsultJr) {
+        } else if (messageType == stopConsultJr) {
           postAppointmentWEGEvent(WebEngageEventName.JD_COMPLETED);
-        }
-        if (messageType == startConsultMsg) {
-          // Disc
+        } else if (messageType == startConsultMsg) {
           postAppointmentWEGEvent(WebEngageEventName.SD_CONSULTATION_STARTED);
-        }
-        if (messageType == videoCallMsg && name == 'DOCTOR') {
+        } else if (messageType == videoCallMsg && name == 'DOCTOR') {
           postAppointmentWEGEvent(WebEngageEventName.SD_VIDEO_CALL_STARTED);
         }
 
-        message &&
-          message.message &&
-          message.message.message &&
-          message.message.message === '^^#startconsult' &&
-          setname('DOCTOR');
-        message &&
-          message.message &&
-          message.message.message &&
-          message.message.message === '^^#startconsultJr' &&
-          setname('JUNIOR');
+        messageType === startConsultMsg && setname('DOCTOR');
+        messageType === startConsultjr && setname('JUNIOR');
         pubNubMessages(message);
       },
       // presence: (presenceEvent) => {    // APP-2803: removed No show logic
@@ -4732,6 +4719,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       rowData.message === stopConsultMsg ||
       rowData.message === cancelConsultInitiated ||
       rowData.message === callAbandonment ||
+      rowData.message === vitalsCompletedByPatient ||
       rowData.message === patientRejectedCall ||
       rowData === patientRejectedCall
     ) {
