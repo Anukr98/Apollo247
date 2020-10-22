@@ -86,6 +86,7 @@ export interface MaterialMenuProps {
   showMenu?: boolean;
   menuHidden?: () => void;
   showProfilePic?: boolean;
+  showItemDifferentColor?: boolean;
 }
 
 export const MaterialMenu: React.FC<MaterialMenuProps> = (props) => {
@@ -212,6 +213,14 @@ export const MaterialMenu: React.FC<MaterialMenuProps> = (props) => {
                   ? props.selectedTextStyle
                   : {},
                 optionsObject.length - 1 === index ? props.lastTextStyle : {},
+                props.showItemDifferentColor && {
+                  ...theme.viewStyles.text('M', 16, '#00B38E', 1, 24),
+                },
+                props.showItemDifferentColor && optionsObject.length - 1 === index
+                  ? {
+                      ...theme.viewStyles.text('M', 16, '#E50000', 1, 24),
+                    }
+                  : {},
               ]}
             >
               {item.value}

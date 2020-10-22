@@ -1059,6 +1059,22 @@ export const DownOrange: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/down_orange.png')} />
 );
 
+export const SelfUploadPhrIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_self_upload_phr.png')} />
+);
+
+export const FollowUpPhrIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_follow_up_phr.png')} />
+);
+
+export const CartPhrIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_cart_phr.png')} />
+);
+
+export const HospitalUploadPhrIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_hospital_upload_phr.png')} />
+);
+
 export const RoundCancelIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/round-cancel.png')} />
 );
