@@ -21,7 +21,7 @@ import { calculateRefund } from 'profiles-service/helpers/refundHelper';
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
 import { ApiConstants } from 'ApiConstants';
 
-import { syncInventory } from 'helpers/inventorySync';
+import { syncInventory } from 'profiles-service/helpers/inventorySync';
 import { SYNC_TYPE } from 'types/inventorySync';
 import { ItemDetails } from 'types/oneApolloTypes';
 import { createOneApolloTransaction } from 'profiles-service/helpers/OneApolloTransactionHelper';
@@ -78,7 +78,7 @@ type OrderStatusInputArgs = {
   updateOrderStatusInput: OrderStatusInput;
 };
 
-const inernal_statuses = ['READY_FOR_VERIFICATION', 'VERIFICATION_DONE'];
+const inernal_statuses = ['READY_FOR_VERIFICATION', 'VERIFICATION_DONE', 'SHIPPED'];
 
 const updateOrderStatus: Resolver<
   null,
@@ -115,17 +115,23 @@ const updateOrderStatus: Resolver<
   );
   // shipments are not created. order level status updates
   if (!updateOrderStatusInput.apOrderNo || !orderDetails.medicineOrderShipments) {
-    await medicineOrdersRepo.updateMedicineOrderDetails(
-      orderDetails.id,
-      orderDetails.orderAutoId,
-      new Date(statusDate),
-      status
-    );
+    let hideStatus = true;
+    if (inernal_statuses.indexOf(status) > -1) {
+      hideStatus = false;
+    } else {
+      await medicineOrdersRepo.updateMedicineOrderDetails(
+        orderDetails.id,
+        orderDetails.orderAutoId,
+        new Date(statusDate),
+        status
+      );
+    }
     const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
       orderStatus: status,
       medicineOrders: orderDetails,
       statusDate: new Date(statusDate),
       statusMessage: updateOrderStatusInput.reasonCode,
+      hideStatus,
     };
     await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
     if (status == MEDICINE_ORDER_STATUS.CANCELLED) {

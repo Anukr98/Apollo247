@@ -19,7 +19,7 @@ import { sendMedicineOrderStatusNotification } from 'notifications-service/handl
 import { calculateRefund } from 'profiles-service/helpers/refundHelper';
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
 import { ApiConstants } from 'ApiConstants';
-import { syncInventory } from 'helpers/inventorySync';
+import { syncInventory } from 'profiles-service/helpers/inventorySync';
 import { SYNC_TYPE } from 'types/inventorySync';
 
 export const saveOrderShipmentInvoiceTypeDefs = gql`
