@@ -669,7 +669,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
 
   getMedicineOrderAddress(medicineOrdersId: string) {
     return MedicineOrderAddress.findOne({
-      where: { medicineOrdersId },
+      where: { medicineOrders: medicineOrdersId },
     });
   }
 
