@@ -35,13 +35,13 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 40,
     },
     silver: {
-      background: 'url(images/silver-oneApollo.svg) no-repeat 0 0',
+      background: 'url(images/silver-oneApollo.png) no-repeat 0 0',
     },
     gold: {
-      background: 'url(images/gold-oneApollo.svg) no-repeat 0 0',
+      background: 'url(images/gold-oneApollo.png) no-repeat 0 0',
     },
     platinum: {
-      background: 'url(images/platinum-oneApollo.svg) no-repeat 0 0',
+      background: 'url(images/platinum-oneApollo.png) no-repeat 0 0',
     },
     mcUser: {
       '& h2': {
