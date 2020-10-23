@@ -1,4 +1,4 @@
-import { PrimaryGeneratedColumn, Entity, BaseEntity, Column, OneToOne, JoinColumn, ManyToOne, BeforeInsert } from "typeorm";
+import { PrimaryGeneratedColumn, Entity, BaseEntity, Column, ManyToOne } from "typeorm";
 import { Doctor } from "doctors-service/entities";
 
 enum PLAN {
@@ -55,6 +55,8 @@ export class DoctorPricing extends BaseEntity {
   @ManyToOne((type) => Doctor, (doctor) => { doctor.doctorPricing })
   doctor: Doctor;
 
+  @Column()
+  doctorId: String;
 
 
 }

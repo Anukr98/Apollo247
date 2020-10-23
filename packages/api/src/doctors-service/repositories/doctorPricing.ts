@@ -14,4 +14,8 @@ export class DoctorPricingRepository extends Repository<DoctorPricing> {
         });
       });
   }
+
+  getDoctorPricing(filter: Partial<DoctorPricing>) {
+    return this.find({ where: { filter } });
+  }
 }
