@@ -2,7 +2,7 @@ import { webPatientsBaseUrl } from '@aph/universal/dist/aphRoutes';
 
 export const clientRoutes = {
   patients: () => '/patients',
-  specialtyDetailsWithCity: (specialty: string, city: string) =>`/doctors/${specialty}-in-${city}-scity`,
+  specialtyDetailsWithCity: (specialty: string, city: string) => `/doctors/${specialty}-in-${city}-scity`,
   welcome: () => '/',
   doctorDetails: (doctorName: string, doctorId: string) => `/doctors/${doctorName}-${doctorId}`,
   specialtyDoctorDetails: (specialty: string, doctorName: string, doctorId: string) =>
@@ -10,7 +10,7 @@ export const clientRoutes = {
   doctorsLanding: () => '/track-symptoms/doctors',
   specialties: (specialty: string) => `/specialties/${specialty}`,
   citySpecialties: (city: string, specialty: string) => `/${city}/specialties/${specialty}`,
- 
+
   appointments: () => '/appointments',
   appointmentSuccess: () => `/appointments/${status}`,
   testsAndMedicine: () => '/tests-medicines',
@@ -78,8 +78,9 @@ export const clientRoutes = {
   prescription: (appointmentId: string) => `/prescription/${appointmentId}`,
   sitemap: (sitemap: string) => `/static/${sitemap}`,
   childSitemap: (sitemap: string, pageNo: string) => `/static/${sitemap}/${pageNo}`,
-	oneApolloMembership: () => '/oneapollo-membership',
-	pageNotFound: () => '/page-not-found',
+  oneApolloMembership: () => '/oneapollo-membership',
+  pageNotFound: () => '/page-not-found',
+  apolloProHealth: () => '/apollo-pro-health',
   // sitemap: (sitemap: string) => `/${sitemap}`,
   // childSitemap: (sitemap: string, pageNo: string) => `/${sitemap}/${pageNo}`,
 };

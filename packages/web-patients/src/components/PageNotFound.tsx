@@ -141,7 +141,7 @@ const useStyles = makeStyles((theme: Theme) => {
 				display: 'none',
 			},
 		},
-		ulContent:{
+		ulContent: {
 			width: '30%',
 			padding: '0 30px',
 			[theme.breakpoints.down('sm')]: {

@@ -1,7 +1,10 @@
 //@ts-check
 'use strict';
 const { default: axios } = require('axios');
+const { default: Decimal } = require('decimal.js');
 const logger = require('../../winston-logger')('Consults-logs');
+const { getCurrentSellingPrice, additionalMercUnqRef } = require('../../commons/paymentCommon.js');
+
 const {
   initPayment,
   generatePaymentOrderId,
@@ -12,13 +15,24 @@ module.exports = async (req, res) => {
   let appointmentIdGlobal;
 
   try {
-    const { appointmentId } = req.query;
+    const {
+      appointmentId,
+      planId,
+      paymentTypeID: paymentTypeId,
+      bankCode, paymentModeOnly,
+      subPlanId,
+      storeCode
+    } = req.query;
     appointmentIdGlobal = appointmentId;
-    //res.send('consult payment');
     let source = 'MOBILE';
     if (req.query.source) {
       source = req.query.source;
     }
+    const mercUnqRefInit = { bookingSource: source, appointmentId };
+    const partnerInfo = paymentTypeId === process.env.PARTNER_SBI ? paymentTypeId : undefined;
+
+    const mercUnqRef = additionalMercUnqRef(mercUnqRefInit, { partnerInfo, planId, storeCode, subPlanId });
+
 
     let addParams = {};
 
@@ -26,41 +40,55 @@ module.exports = async (req, res) => {
      * If paymentModeOnly key == 'YES' then add additional params
      * I.E AUTH_MODE|BANK_CODE|PAYMENT_TYPE_ID
      */
-    if (req.query.paymentModeOnly === 'YES') {
-      addParams = singlePaymentAdditionalParams(req.query.paymentTypeID, req.query.bankCode);
-      addParams['PAYMENT_MODE_ONLY'] = req.query.paymentModeOnly;
-    }
+    if (paymentModeOnly === 'YES') {
 
+      addParams = singlePaymentAdditionalParams(paymentTypeId, bankCode);
+      addParams['PAYMENT_MODE_ONLY'] = paymentModeOnly;
+    }
     const axiosConfig = {
       headers: {
         'authorization': process.env.API_TOKEN
       }
-    }
+    };
 
     const getAptRequestJson = {
       query:
-        'query { getAppointmentData(appointmentId:"' +
+        'query getAppointmentData { getAppointmentData(appointmentId:"' +
         appointmentId +
         '"){ appointmentsHistory { discountedAmount patientId } } }',
     };
-    const aptResp = await axios.post(process.env.API_URL, getAptRequestJson, axiosConfig);
+    const appointmentData = await axios.post(process.env.API_URL, getAptRequestJson, axiosConfig);
 
-    logger.info(`${appointmentId} - getAppointmentData - ${JSON.stringify(aptResp.data)}`);
-
-    if (aptResp.data.errors && aptResp.data.errors.length) {
+    /**
+     * If error occurs at getAppointmentData API, throw error and exit
+     */
+    if (appointmentData.data.errors && appointmentData.data.errors.length) {
       logger.error(
-        `${appointmentId} - consult-payment-request - ${JSON.stringify(aptResp.data.errors)}`
+        `${appointmentId} - consult - payment - request - getAppointmentData - ${JSON.stringify(appointmentData.data.errors)} `
       );
-      throw new Error(`Error Occured in getAppointmentData for appointmentID:${appointmentId}`);
+      throw new Error(`Error Occured in getAppointmentData for appointmentID: ${appointmentId}`);
+    }
+    const paymentOrderId = generatePaymentOrderId();
+
+    /**
+     * If user did not buy subscription along with consult order, then use 0 for the plan price as default
+     */
+    let planPrice = 0;
+
+    /**
+     * If plan id is passed, we need to get the price
+     */
+
+    if (planId) {
+      planPrice = await getCurrentSellingPrice(paymentOrderId, planId, subPlanId);
     }
 
-    const merc_unq_ref = `${source}:${appointmentId}`;
     const {
       discountedAmount,
       patientId: patientIdExisting,
-    } = aptResp.data.data.getAppointmentData.appointmentsHistory[0];
+    } = appointmentData.data.data.getAppointmentData.appointmentsHistory[0];
+    let totalPayAmount = +new Decimal(planPrice).plus(discountedAmount);
 
-    const paymentOrderId = generatePaymentOrderId();
 
     const requestJSON = {
       query:
@@ -77,7 +105,7 @@ module.exports = async (req, res) => {
     logger.info(`${appointmentId} - updatePaymentOrderId - ${JSON.stringify(updateResp.data)}`);
     if (updateResp.data.errors && updateResp.data.errors.length) {
       logger.error(
-        `${appointmentId} - consult-payment-request - ${JSON.stringify(updateResp.data.errors)}`
+        `${appointmentId} - consult - payment - request - ${JSON.stringify(updateResp.data.errors)} `
       );
       throw new Error(`Error Occured in updatePaymentOrderId for appoinment id: ${appointmentId}`);
     }
@@ -85,8 +113,8 @@ module.exports = async (req, res) => {
     const success = await initPayment(
       patientIdExisting,
       paymentOrderId,
-      discountedAmount,
-      merc_unq_ref,
+      totalPayAmount,
+      mercUnqRef,
       addParams,
       req.query.paymentTypeID
     );
@@ -98,10 +126,10 @@ module.exports = async (req, res) => {
   } catch (e) {
     if (e.response && e.response.data) {
       logger.error(
-        `${appointmentIdGlobal} - consult-payment-request - ${JSON.stringify(e.response.data)}`
+        `${appointmentIdGlobal} - consult - payment - request - ${JSON.stringify(e.response.data)}`
       );
     } else {
-      logger.error(`${appointmentIdGlobal} - consult-payment-request -  ${e.stack}`);
+      logger.error(`${appointmentIdGlobal} - consult - payment - request - ${e.stack}`);
     }
     res.status(400).json({
       status: 'failed',

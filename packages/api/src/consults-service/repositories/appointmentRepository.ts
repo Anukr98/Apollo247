@@ -1420,6 +1420,17 @@ export class AppointmentRepository extends Repository<Appointment> {
     );
   }
 
+  async getAppointmentCountByPatientId(patientId: string[]) {
+    const results = await this.createQueryBuilder('appointment')
+      .select('appointment.patientId as patientId')
+      .addSelect('COUNT(*) AS count')
+      .where('appointment.patientId IN (:...patientList)', { patientList: patientId })
+      .andWhere('appointment.status = :completed', { completed: STATUS.COMPLETED })
+      .groupBy('appointment.patientId')
+      .getRawMany();
+    return results;
+  }
+
   getAppointmentsByPatientId(patientId: string, startDate: Date, endDate: Date) {
     const newStartDate = new Date(format(addDays(startDate, -1), 'yyyy-MM-dd') + 'T18:30');
     const newEndDate = new Date(format(endDate, 'yyyy-MM-dd') + 'T18:30');

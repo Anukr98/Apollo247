@@ -366,7 +366,7 @@ export const MyProfile: React.FC = (props) => {
                 </span>
               </Link>
             </div>
-            {/* <div className={classes.sectionGroup}>
+            <div className={classes.sectionGroup}>
               <Link
                 className={`${classes.serviceType} ${classes.textVCenter} ${
                   currentPath === clientRoutes.notificationSettings() ? classes.menuActive : ''
@@ -376,12 +376,12 @@ export const MyProfile: React.FC = (props) => {
                 <span className={classes.serviceImg}>
                   <img src={require('images/ic_notificaiton_accounts.svg')} alt="" />
                 </span>
-                <span className={classes.linkText}>Notification Settings</span>
+                <span className={classes.linkText}>Notification Preferences</span>
                 <span className={classes.rightArrow}>
                   <img src={require('images/ic_arrow_right.svg')} alt="" />
                 </span>
               </Link>
-            </div> */}
+            </div>
             {/* <div className={classes.sectionGroup}>
               <Link className={`${classes.serviceType} ${classes.textVCenter}`} to="#">
                 <span className={classes.serviceImg}>
@@ -593,22 +593,22 @@ export const MyProfile: React.FC = (props) => {
                     </span>
                   </Link>
                 </div>
-                {/* <div className={classes.sectionGroup}>
-              <Link
-                className={`${classes.serviceType} ${classes.textVCenter} ${
-                  currentPath === clientRoutes.notificationSettings() ? classes.menuActive : ''
-                }`}
-                to={clientRoutes.notificationSettings()}
-              >
-                <span className={classes.serviceImg}>
-                  <img src={require('images/ic_notificaiton_accounts.svg')} alt="" />
-                </span>
-                <span className={classes.linkText}>Notification Settings</span>
-                <span className={classes.rightArrow}>
-                  <img src={require('images/ic_arrow_right.svg')} alt="" />
-                </span>
-              </Link>
-            </div> */}
+                <div className={classes.sectionGroup}>
+                  <Link
+                    className={`${classes.serviceType} ${classes.textVCenter} ${
+                      currentPath === clientRoutes.notificationSettings() ? classes.menuActive : ''
+                    }`}
+                    to={clientRoutes.notificationSettings()}
+                  >
+                    <span className={classes.serviceImg}>
+                      <img src={require('images/ic_notificaiton_accounts.svg')} alt="" />
+                    </span>
+                    <span className={classes.linkText}>Notification Preferences</span>
+                    <span className={classes.rightArrow}>
+                      <img src={require('images/ic_arrow_right.svg')} alt="" />
+                    </span>
+                  </Link>
+                </div>
                 {/* <div className={classes.sectionGroup}>
               <Link className={`${classes.serviceType} ${classes.textVCenter}`} to="#">
                 <span className={classes.serviceImg}>
