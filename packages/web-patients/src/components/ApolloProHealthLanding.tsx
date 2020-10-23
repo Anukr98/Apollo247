@@ -413,12 +413,24 @@ const ApolloProHealthLanding: React.FC = (props) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const scrollToRef = useRef<HTMLDivElement>(null);
-  const [iscoronaDialogOpen, setIscoronaDialogOpen] = useState<boolean>(false);
   const isDesktopOnly = useMediaQuery('(min-width:768px)');
 
   const handleChange = (panel: string) => (event: React.ChangeEvent<{}>, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false);
   };
+
+  useEffect(() => {
+    scrollToRef &&
+      scrollToRef.current &&
+      scrollToRef.current.scrollIntoView({ behavior: 'smooth' });
+
+    window.dataLayer.push({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: 'Pro Health Page',
+      pageLOB: 'Others',
+    });
+  });
 
   useEffect(() => {
     if (
@@ -461,6 +473,7 @@ const ApolloProHealthLanding: React.FC = (props) => {
   };
 
   const submitProHealthForm = () => {
+    window.dataLayer.push({ event: 'Details Submitted' });
     setIsLoading(true);
     const userData = {
       fullName: userName,
@@ -490,14 +503,17 @@ const ApolloProHealthLanding: React.FC = (props) => {
   };
 
   return (
-    <div className={classes.aphContainer}>
+    <div className={classes.aphContainer} ref={scrollToRef}>
       <Header />
       <div className={classes.container}>
         <div className={classes.aphContent}>
           <AphButton
             color="primary"
             className={classes.fabButton}
-            onClick={() => window.scrollTo(0, 0)}
+            onClick={() => {
+              window.scrollTo(0, 0);
+              window.dataLayer.push({ event: 'Get in Touch Clicked' });
+            }}
           >
             Get In Touch
           </AphButton>
@@ -572,7 +588,7 @@ const ApolloProHealthLanding: React.FC = (props) => {
                     variant="contained"
                     color="primary"
                   >
-                    Get In Touch
+                    Let's Talk
                   </AphButton>
                 ) : (
                   <div className={classes.loader}>
