@@ -210,10 +210,10 @@ import { setAppointmentReminderIvrTypeDefs, setAppointmentReminderIvrResolvers }
         typeDefs: updateDoctorChatDaysTypeDefs,
         resolvers: updateDoctorChatDaysResolvers,
       },
-      {
-        typeDefs: addDoctorPricingTypeDefs,
-        resolvers: doctorPricingResolvers
-      },
+      // {
+      //   typeDefs: addDoctorPricingTypeDefs,
+      //   resolvers: doctorPricingResolvers
+      // },
       {
         typeDefs: setAppointmentReminderIvrTypeDefs,
         resolvers: setAppointmentReminderIvrResolvers,
