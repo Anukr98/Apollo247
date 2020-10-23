@@ -691,6 +691,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'patient',
         'medicineOrderShipments',
         'medicineOrderShipments.medicineOrdersStatus',
+        'medicineOrderAddress',
       ],
     });
   }
