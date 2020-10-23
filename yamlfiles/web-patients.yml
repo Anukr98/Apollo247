@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-patients-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-patients
+  template:
+    metadata:
+      labels:
+        app: web-patients
+    spec:
+      containers:
+      - name: web-patients
+        image: apollodev.azurecr.io/apollodev-webpatientsimage:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+      restartPolicy: Always
+      imagePullSecrets:
+      - name: regcred
