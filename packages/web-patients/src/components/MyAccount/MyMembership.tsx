@@ -196,7 +196,8 @@ interface MyMembershipProps {
 
 export const MyMembership: React.FC<MyMembershipProps> = (props: any) => {
   const { myMembershipType } = props;
-  const classes = useStyles({});
+	const classes = useStyles({});
+	const oneApolloLink = 'https://www.oneapollo.com';
   return (
     <TabContainer>
       <div className={classes.transactionHeader}>
@@ -248,7 +249,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props: any) => {
           <div className={classes.mUpgradeContainer}>
             <Typography component="h3">Membership Upgrades</Typography>
             <Grid container spacing={3}>
-              {myMembershipType.tier === 'Silver' && (
+              {myMembershipType.tier === 'Gold' && (
                 <Grid item md={6}>
                   <div className={classes.creditContent}>
                     <div className={`${classes.membershipCard} ${classes.gold} ${classes.mCard}`}>
@@ -266,8 +267,8 @@ export const MyMembership: React.FC<MyMembershipProps> = (props: any) => {
                       <li> Buy an annual gym membership from Apollo Life</li>
                     </ul>
                     <AphButton color="primary" className={classes.knowMore}>
-                      Know More
-                    </AphButton>
+										<a target="_blank" href={oneApolloLink}>Know More</a>
+										</AphButton>
                   </div>
                 </Grid>
               )}
