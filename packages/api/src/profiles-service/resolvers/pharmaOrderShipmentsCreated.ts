@@ -274,7 +274,7 @@ const saveOrderShipments: Resolver<
   };
   postEvent(postBody);
   const shipmentDetails = saveOrderShipmentsInput.shipments[0];
-  const orderAddress = orderDetails.medicineOrderAddress;
+  const orderAddress = await medicineOrdersRepo.getMedicineOrderAddress(orderDetails.id);
   if (orderAddress) {
     const shipmentReq = {
       storeCode: shipmentDetails.siteId,

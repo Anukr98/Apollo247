@@ -76,7 +76,7 @@ const updateOrderDsp: Resolver<
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_SHIPMENT_ID, undefined, {});
   }
   const shipmentDetails = orderDetails.medicineOrderShipments[0];
-  const orderAddress = orderDetails.medicineOrderAddress;
+  const orderAddress = await medicineOrdersRepo.getMedicineOrderAddress(orderDetails.id);
   if (orderAddress) {
     const itemDetails = JSON.parse(shipmentDetails.itemDetails);
     const shipmentReq = {
