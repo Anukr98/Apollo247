@@ -6,7 +6,6 @@ import { DoctorPricing } from 'doctors-service/entities/doctorPricing';
 @EntityRepository(DoctorPricing)
 export class DoctorPricingRepository extends Repository<DoctorPricing> {
   saveDoctorPricing(doctorPricing: Partial<DoctorPricing>) {
-    console.log(doctorPricing);
     return this.create(doctorPricing)
       .save()
       .catch((createErrors) => {

@@ -1,4 +1,4 @@
-import { PrimaryGeneratedColumn, Entity, BaseEntity, Column, OneToOne, JoinColumn, ManyToOne, BeforeInsert } from "typeorm";
+import { PrimaryGeneratedColumn, Entity, BaseEntity, Column, ManyToOne } from "typeorm";
 import { Doctor } from "doctors-service/entities";
 
 enum PLAN {
