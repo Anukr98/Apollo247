@@ -10,6 +10,11 @@ enum PLAN_STATUS {
   INACTIVE = 'INACTIVE'
 }
 
+enum CARE_APPOINTMENT_TYPE {
+  ONLINE = 'ONLINE',
+  PHYSICAL = 'PHYSICAL'
+}
+
 @Entity()
 export class DoctorPricing extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -43,6 +48,9 @@ export class DoctorPricing extends BaseEntity {
 
   @Column({ type: 'float8' })
   apollo_share: Number
+
+  @Column()
+  appointment_type: CARE_APPOINTMENT_TYPE
 
   @ManyToOne((type) => Doctor, (doctor) => { doctor.doctorPricing })
   doctor: Doctor;
