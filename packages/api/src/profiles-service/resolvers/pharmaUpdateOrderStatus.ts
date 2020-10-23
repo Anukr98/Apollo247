@@ -142,17 +142,10 @@ const updateOrderStatus: Resolver<
         medicineOrdersRepo,
         updateOrderStatusInput.reasonCode
       );
-      const medicineOrderStatus = orderDetails.medicineOrdersStatus;
-      const isOrderBilled = medicineOrderStatus.find((orderStatusObj) => {
-        return orderStatusObj.orderStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED;
-      });
-      // if billed, inventory release would have happened already at the time of billing
-      if (!isOrderBilled) {
-        orderDetails.medicineOrderLineItems = await medicineOrdersRepo.getMedicineOrderLineItemByOrderId(
-          orderDetails.id
-        );
-        syncInventory(orderDetails, SYNC_TYPE.CANCEL);
-      }
+      orderDetails.medicineOrderLineItems = await medicineOrdersRepo.getMedicineOrderLineItemByOrderId(
+        orderDetails.id
+      );
+      syncInventory(orderDetails, SYNC_TYPE.CANCEL);
     }
   } else {
     const shipmentDetails = orderDetails.medicineOrderShipments.find((shipment) => {
@@ -348,54 +341,34 @@ const updateOrderStatus: Resolver<
           },
         };
         postEvent(postBody);
-      }
-    }
-    if (status === MEDICINE_ORDER_STATUS.CANCELLED) {
-      if (!hasUnresolvedShipments) {
-        totalOrderBilling = invoices.reduce(
-          (acc: number, curValue: Partial<MedicineOrderInvoice>) => {
-            if (
-              curValue.billDetails &&
-              curValue.medicineOrderShipments &&
-              resolvedShipments.includes(curValue.medicineOrderShipments.id)
-            ) {
-              const invoiceValue: number = JSON.parse(curValue.billDetails).invoiceValue;
-              return +new Decimal(acc).plus(invoiceValue);
-            }
-            return acc;
-          },
-          0
-        );
-        calculateRefund(
-          orderDetails,
-          totalOrderBilling,
-          profilesDb,
-          medicineOrdersRepo,
-          updateOrderStatusInput.reasonCode
-        );
-      }
-      // release inventory blocked
-      const medicineOrderStatus = shipmentDetails.medicineOrdersStatus;
-      const isOrderBilled = medicineOrderStatus.find((orderStatusObj) => {
-        return orderStatusObj.orderStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED;
-      });
-      // if billed, inventory release woould have happened already at the time of billing
-      if (!isOrderBilled) {
         orderDetails.medicineOrderLineItems = await medicineOrdersRepo.getMedicineOrderLineItemByOrderId(
           orderDetails.id
         );
-        if (shipmentDetails) {
-          const itemDetails: ItemDetails[] = JSON.parse(shipmentDetails.itemDetails);
-          orderDetails.medicineOrderLineItems = orderDetails.medicineOrderLineItems.filter(
-            (lineItem) => {
-              return itemDetails.find((inputItem) => {
-                return inputItem.itemId == lineItem.medicineSKU;
-              });
-            }
-          );
-        }
         syncInventory(orderDetails, SYNC_TYPE.CANCEL);
       }
+    }
+    if (status === MEDICINE_ORDER_STATUS.CANCELLED && !hasUnresolvedShipments) {
+      totalOrderBilling = invoices.reduce(
+        (acc: number, curValue: Partial<MedicineOrderInvoice>) => {
+          if (
+            curValue.billDetails &&
+            curValue.medicineOrderShipments &&
+            resolvedShipments.includes(curValue.medicineOrderShipments.id)
+          ) {
+            const invoiceValue: number = JSON.parse(curValue.billDetails).invoiceValue;
+            return +new Decimal(acc).plus(invoiceValue);
+          }
+          return acc;
+        },
+        0
+      );
+      calculateRefund(
+        orderDetails,
+        totalOrderBilling,
+        profilesDb,
+        medicineOrdersRepo,
+        updateOrderStatusInput.reasonCode
+      );
     }
   }
 
