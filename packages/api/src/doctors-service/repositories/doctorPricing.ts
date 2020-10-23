@@ -6,6 +6,7 @@ import { DoctorPricing } from 'doctors-service/entities/doctorPricing';
 @EntityRepository(DoctorPricing)
 export class DoctorPricingRepository extends Repository<DoctorPricing> {
   saveDoctorPricing(doctorPricing: Partial<DoctorPricing>) {
+    console.log(doctorPricing);
     return this.create(doctorPricing)
       .save()
       .catch((createErrors) => {
@@ -15,8 +16,7 @@ export class DoctorPricingRepository extends Repository<DoctorPricing> {
       });
   }
 
-  getDoctorPricing(filter: Partial<DoctorPricing>, doctorId: string) {
-    const { status, appointment_type } = filter;
-    return this.find({ where: { status, doctor: doctorId, appointment_type } });
+  getDoctorPricing(filter: Partial<DoctorPricing>) {
+    return this.find({ where: { filter } });
   }
 }

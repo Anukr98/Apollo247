@@ -77,9 +77,8 @@ const addDoctorPricing: Resolver<
     const { appointment_type, doctorId } = doctorPricingInput;
     const doctorPricingRepository = doctorsDb.getCustomRepository(DoctorPricingRepository);
     // check for any active plans with appointment type
-    const getActivePricing = await doctorPricingRepository.getDoctorPricing({ status: PLAN_STATUS.ACTIVE, appointment_type }, doctorId);
-    console.log(getActivePricing);
-    if (getActivePricing) {
+    const getActivePricing = await doctorPricingRepository.getDoctorPricing({ status: PLAN_STATUS.ACTIVE, appointment_type, doctorId });
+    if (getActivePricing && getActivePricing.length > 0) {
       throw new AphError(`${AphErrorMessages.ACIVE_DOCTOR_PRICING_EXIST}_${appointment_type}`);
     }
     await doctorPricingRepository.saveDoctorPricing(doctorPricingInput);

@@ -55,6 +55,8 @@ export class DoctorPricing extends BaseEntity {
   @ManyToOne((type) => Doctor, (doctor) => { doctor.doctorPricing })
   doctor: Doctor;
 
+  @Column()
+  doctorId: String;
 
 
 }
