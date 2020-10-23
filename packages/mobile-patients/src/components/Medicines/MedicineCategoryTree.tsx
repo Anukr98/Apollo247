@@ -1222,6 +1222,7 @@ export const MedicineCategoryTree: React.FC<Props> = ({
         bounces={false}
         data={categoryTree?.[0]?.Child || categories}
         renderItem={renderItem}
+        showsVerticalScrollIndicator={false}
       />
     </View>
   );
