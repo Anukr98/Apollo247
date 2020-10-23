@@ -509,13 +509,13 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
         isJdAllowed === false
           ? ApiConstants.NOT_APPLICABLE
           : ApiConstants.APPOINTMENT_BOOKED_WITHIN_10_MIN.toString().replace(
-              '{0}',
-              ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString()
-            ),
+            '{0}',
+            ApiConstants.AUTO_SUBMIT_CASESHEET_TIME_APPOINMENT.toString()
+          ),
       isJdConsultStarted: true,
     };
     caseSheetRepo.savecaseSheet(casesheetAttrs);
-    apptRepo.updateJdQuestionStatusbyIds([appointmentData.id]);
+    await apptRepo.updateJdQuestionStatusbyIds([appointmentData.id]);
     const historyAttrs: Partial<AppointmentUpdateHistory> = {
       appointment: appointmentData,
       userType: APPOINTMENT_UPDATED_BY.PATIENT,
@@ -608,7 +608,7 @@ const addToConsultQueueWithAutomatedQuestions: Resolver<
     apptRepo.saveAppointmentHistory(historyAttrs);
   }
 
-  apptRepo.updateJdQuestionStatusbyIds([appointmentId]);
+  await apptRepo.updateJdQuestionStatusbyIds([appointmentId]);
 
   //automated questions starts
   const patientRepo = context.patientsDb.getCustomRepository(PatientRepository);

@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-doctors-svc
+spec:
+  selector:
+    app: web-doctors
+  ports:
+    - port: 80
+      targetPort: 80

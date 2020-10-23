@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: profiles-deploy
+spec:
+  selector:
+    matchLabels:
+      app: profiles
+  template:
+    metadata:
+      labels:
+        app: profiles
+    spec:
+      containers:
+      - name: profiles
+        image: apollodev.azurecr.io/apollodev-msimage:latest
+        command: ["node"]
+        args: ["profiles-service.bundle.js"]
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 4003
+        resources:
+          requests:
+            cpu: 250m
+            memory: 1Gi
+          limits:
+            cpu: 250m
+            memory: 1Gi
+        volumeMounts:
+        - name: applogs
+          mountPath: "/apollo-hospitals/packages/api/access-logs/"
+        - name: errorlogs
+          mountPath: "/apollo-hospitals/packages/api/error-logs/"
+      volumes:
+      - name: applogs
+        persistentVolumeClaim:
+          claimName: azurefile-pvc-accesslogs
+      - name: errorlogs
+        persistentVolumeClaim:
+          claimName: azurefile-pvc-errorlogs
+      restartPolicy: Always
+      imagePullSecrets:
+      - name: regcred

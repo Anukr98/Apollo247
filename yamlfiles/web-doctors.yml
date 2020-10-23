@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-doctors-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-doctors
+  template:
+    metadata:
+      labels:
+        app: web-doctors
+    spec:
+      containers:
+      - name: web-doctors
+        image: apollodev.azurecr.io/apollodev-webdoctorsimage:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+      restartPolicy: Always
+      imagePullSecrets:
+      - name: regcred

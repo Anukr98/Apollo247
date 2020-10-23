@@ -1,0 +1,63 @@
+filebeat:
+  prospectors:
+     -
+      paths:
+          - /apollo-hospitals/packages/api/access-logs/consults-service.log
+          - /apollo-hospitals/packages/api/access-logs/api-gateway.log
+          - /apollo-hospitals/packages/api/access-logs/coupons-service.log
+          - /apollo-hospitals/packages/api/access-logs/doctors-service.log
+          - /apollo-hospitals/packages/api/access-logs/notifications-service.log
+          - /apollo-hospitals/packages/api/access-logs/profiles-service.log
+          - /apollo-hospitals/packages/api/paymentlogs/info/*.log
+          - /apollo-hospitals/packages/api/kaleyra-logs/*.log
+          - /apollo-hospitals/packages/api/pharmalogs/*.txt
+      document_type: AKSApp-access-log
+      input_type: log
+      fields:
+         service: AppLogs
+         type: AKS-Access-log
+         beat.name: aksapplog
+
+     -
+      paths:
+          - /apollo-hospitals/packages/api/error-logs/consults-service.log
+          - /apollo-hospitals/packages/api/error-logs/api-gateway.log
+          - /apollo-hospitals/packages/api/error-logs/coupons-service.log
+          - /apollo-hospitals/packages/api/error-logs/doctors-service.log
+          - /apollo-hospitals/packages/api/error-logs/notifications-service.log
+          - /apollo-hospitals/packages/api/error-logs/profiles-service.log
+          - /apollo-hospitals/packages/api/paymentlogs/error/*.log
+          - /apollo-hospitals/packages/api/paymentlogs/debug/*.log
+          - /apollo-hospitals/packages/api/debug-logs/*.log
+      document_type:  AKSApp-error-log
+      input_type: log
+      fields:
+         service: ErrorLogs
+         type: AKSApp-Error-log
+         beat.name: aksapperrorlog
+
+     -
+      paths:
+          - /var/log/nginx/access.log
+      document_type: AKS_nlb_access
+      input_type: log
+      fields:
+         service: AKS-nlb-access
+         type: AKS_nlb_access
+         beat.name: nlbaccesslogs
+
+     -
+      paths:
+          - /var/log/nginx/error.log
+      document_type: AKS_nlb_error
+      input_type: log
+      fields:
+         service: AKS-nlb-error
+         type: AKS_nlb_error
+         beat.name: nlberrorlgs
+
+setup.kibana:
+        host: "104.211.246.75:5601"
+
+output.logstash:
+          hosts: ["104.211.246.75:5044"]

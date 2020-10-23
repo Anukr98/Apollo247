@@ -1,0 +1,6 @@
+filebeat.inputs:
+- type: log
+  paths:
+    - /apollo-hospitals/packages/api/access-logs/*.log
+output.logstash:
+   hosts: ["104.211.246.75:5044"]

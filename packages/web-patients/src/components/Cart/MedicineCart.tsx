@@ -1264,6 +1264,9 @@ export const MedicineCart: React.FC = (props) => {
   };
 
   useEffect(() => {
+    if (couponCode === '') {
+      setCouponDiscount(0);
+    }
     if (!nonCartFlow && cartItems.length > 0 && couponCode.length > 0) {
       validateCoupon();
     }
