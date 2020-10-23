@@ -306,11 +306,6 @@ const saveOrderShipmentInvoice: Resolver<
   orderDetails.medicineOrderLineItems = await medicineOrdersRepo.getMedicineOrderLineItemByOrderId(
     orderDetails.id
   );
-  orderDetails.medicineOrderLineItems = orderDetails.medicineOrderLineItems.filter((lineItem) => {
-    return saveOrderShipmentInvoiceInput.itemDetails.find((inputItem) => {
-      return inputItem.articleCode == lineItem.medicineSKU;
-    });
-  });
   syncInventory(orderDetails, SYNC_TYPE.RELEASE);
 
   return {
