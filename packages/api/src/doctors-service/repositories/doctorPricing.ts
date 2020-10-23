@@ -14,4 +14,9 @@ export class DoctorPricingRepository extends Repository<DoctorPricing> {
         });
       });
   }
+
+  getDoctorPricing(filter: Partial<DoctorPricing>, doctorId: string) {
+    const { status, appointment_type } = filter;
+    return this.find({ where: { status, doctor: doctorId, appointment_type } });
+  }
 }
