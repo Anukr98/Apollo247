@@ -15,6 +15,7 @@ const consultsOrderQuery = (payload) => {
   }
 
   let params = `orderId: "${payload.ORDERID}",
+    mid: "${payload.MID}",
     amountPaid: ${payload.TXNAMOUNT},
     paymentRefId: "${payload.TXNID}", 
     paymentStatus: "${payload.STATUS}", 
@@ -23,8 +24,19 @@ const consultsOrderQuery = (payload) => {
     responseMessage: "${payload.RESPMSG}", 
     bankTxnId: "${payload.BANKTXNID}"`;
 
-  if (partnerInfo) {
-    params += `, partnerInfo: "${partnerInfo}"`;
+  if (payload.partnerInfo) {
+    params += `, partnerInfo: "${payload.partnerInfo}"`;
+  }
+
+  if (payload.planId) {
+    params += `, planId: "${payload.planId}"`;
+  }
+  if (payload.subPlanId) {
+    params += `, subPlanId: "${payload.subPlanId}"`;
+  }
+
+  if (payload.storeCode) {
+    params += `, storeCode: ${payload.storeCode}`;
   }
 
   if (payload.REFUNDAMT) {

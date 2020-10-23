@@ -1,4 +1,4 @@
-import { PrimaryGeneratedColumn, Entity, BaseEntity, Column, OneToOne, JoinColumn, ManyToOne, BeforeInsert } from "typeorm";
+import { PrimaryGeneratedColumn, Entity, BaseEntity, Column, ManyToOne } from "typeorm";
 import { Doctor } from "doctors-service/entities";
 
 enum PLAN {
@@ -8,6 +8,11 @@ enum PLAN {
 enum PLAN_STATUS {
   ACTIVE = 'ACTIVE',
   INACTIVE = 'INACTIVE'
+}
+
+enum CARE_APPOINTMENT_TYPE {
+  ONLINE = 'ONLINE',
+  PHYSICAL = 'PHYSICAL'
 }
 
 @Entity()
@@ -44,9 +49,14 @@ export class DoctorPricing extends BaseEntity {
   @Column({ type: 'float8' })
   apollo_share: Number
 
+  @Column()
+  appointment_type: CARE_APPOINTMENT_TYPE
+
   @ManyToOne((type) => Doctor, (doctor) => { doctor.doctorPricing })
   doctor: Doctor;
 
+  @Column()
+  doctorId: String;
 
 
 }

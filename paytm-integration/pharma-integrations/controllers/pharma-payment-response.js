@@ -9,7 +9,7 @@ module.exports = async (req, res, next) => {
   let orderId;
   let bookingSource = 'MOBILE';
   try {
-    const payload = req.body;
+    let payload = req.body;
     logger.info(`Payload received: - paymed-response - ${JSON.stringify(payload)}`);
     orderId = payload.ORDERID;
 
@@ -26,8 +26,10 @@ module.exports = async (req, res, next) => {
     }
 
     // Source of booking
-    const [bookingSource, healthCredits] = payload.MERC_UNQ_REF.split(':');
-    payload.HEALTH_CREDITS = healthCredits;
+    mercUnqRef = JSON.parse(payload.MERC_UNQ_REF);
+    payload = { ...mercUnqRef, ...payload };
+    bookingSource = payload.bookingSource;
+
     /* make success and failure response */
     switch (payload.STATUS) {
       case 'TXN_FAILURE':
@@ -52,7 +54,7 @@ module.exports = async (req, res, next) => {
         headers: {
           'authorization': process.env.API_TOKEN
         }
-      }
+      };
 
       logger.info(`pharma-response-${medicineOrderQuery(payload)}`);
 

@@ -104,7 +104,11 @@ export const getDoctorDetailsTypeDefs = gql`
     ACTIVE 
     INACTIVE 
   }
-
+  enum CARE_APPOINTMENT_TYPE {
+    ONLINE 
+    PHYSICAL
+  }
+  
   type DoctorPricing {
     slashed_price: Float
     available_to: PLAN
@@ -115,6 +119,7 @@ export const getDoctorDetailsTypeDefs = gql`
     doctor_share: Float
     apollo_share: Float
     mrp: Float
+    appointment_type: CARE_APPOINTMENT_TYPE
   }
   type DoctorDetails @key(fields: "id") {
     awards: String
@@ -162,7 +167,6 @@ export const getDoctorDetailsTypeDefs = gql`
     packages: [Packages]
     specialty: DoctorSpecialties
     starTeam: [StarTeam]
-    availableModes: [ConsultMode],
     doctorPricing : [DoctorPricing]
     availableModes: [ConsultMode]
     doctorNextAvailSlots:DoctorNextAvailSlots

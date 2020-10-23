@@ -80,8 +80,10 @@ const TestsLanding = loadable(() => import('components/Tests/TestsLanding'));
 const AddressBook = loadable(() => import('components/MyAccount/AddressBook'));
 const MyAccount = loadable(() => import('components/MyAccount/MyAccount'));
 const MyPayments = loadable(() => import('components/MyAccount/MyPayments'));
-const Sitemap = loadable(() => import('components/Sitemap'));
 const KnowledgeArticleLanding = loadable(() => import('components/KnowledgeArticleLanding'));
+const PageNotFound = loadable(() => import('components/PageNotFound'));
+const ApolloProHealth = loadable(() => import('components/ApolloProHealthLanding'));
+const Sitemap = loadable(() => import('components/Sitemap'));
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -249,43 +251,39 @@ const App: React.FC = () => {
           path={clientRoutes.knowledgeBaseLanding()}
           component={KnowledgeArticleLanding}
         />
-				<Route exact path={clientRoutes.pageNotFound()} component={PageNotFound} />
-				<Redirect to={clientRoutes.pageNotFound()} />
+        <Route exact path={clientRoutes.apolloProHealth()} component={ApolloProHealth} />
       </Switch>
-    </div>
-  );
-};
 // @ts-ignore
-const theme = createMuiTheme({ ...aphTheme });
+const theme = createMuiTheme({ ...aphTheme});
 
 const AppContainer: React.FC = () => {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <Loader />
-        <AphThemeProvider theme={theme}>
-          <MuiPickersUtilsProvider utils={DateFnsUtils}>
-            <MedicinesCartProvider>
-              <DiagnosticsCartProvider>
-                <LocationProvider>
-                  <React.Suspense fallback={<div>Loading...</div>}>
-                    <App />
-                  </React.Suspense>
-                </LocationProvider>
-              </DiagnosticsCartProvider>
-            </MedicinesCartProvider>
-          </MuiPickersUtilsProvider>
-        </AphThemeProvider>
-      </AuthProvider>
-    </BrowserRouter>
+      <BrowserRouter>
+        <AuthProvider>
+          <Loader />
+          <AphThemeProvider theme={theme}>
+            <MuiPickersUtilsProvider utils={DateFnsUtils}>
+              <MedicinesCartProvider>
+                <DiagnosticsCartProvider>
+                  <LocationProvider>
+                    <React.Suspense fallback={<div>Loading...</div>}>
+                      <App />
+                    </React.Suspense>
+                  </LocationProvider>
+                </DiagnosticsCartProvider>
+              </MedicinesCartProvider>
+            </MuiPickersUtilsProvider>
+          </AphThemeProvider>
+        </AuthProvider>
+      </BrowserRouter>
   );
 };
 
 let HotAppContainer = AppContainer;
 if (process.env.NODE_ENV === 'local') {
   const rhlConfig = ({ hotHooks: true } as any) as Partial<Config>;
-  setConfig(rhlConfig);
-  HotAppContainer = hot(AppContainer);
-}
+      setConfig(rhlConfig);
+      HotAppContainer = hot(AppContainer);
+      }
 
-export { HotAppContainer as AppContainer };
+export {HotAppContainer as AppContainer};

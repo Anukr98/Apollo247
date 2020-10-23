@@ -14,7 +14,8 @@ export class APP50721602522893535 implements MigrationInterface {
       "status" character varying NOT NULL, 
       "doctor_share" integer, 
       "apollo_share" double precision NOT NULL, 
-      "doctorId" uuid, 
+      "doctorId" uuid,
+      "appointment_type" character varying NOT NULL,
       CONSTRAINT "PK_6a33b7f5d4e752fe5288e5540cc" PRIMARY KEY ("id"),
       CONSTRAINT "FK_3329ae85f25512de95da6b2265f" FOREIGN KEY ("doctorId") REFERENCES "doctor"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
       )`);

@@ -460,6 +460,7 @@ export function elasticDoctorSearch(
         'facility.name',
         'facility.city',
         'consultHours.consultMode',
+        'doctorPricing'
       ],
       query: {
         bool: {
