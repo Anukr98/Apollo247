@@ -1278,10 +1278,6 @@ export class DoctorRepository extends Repository<Doctor> {
       .andWhere('doctor.id not in (:...ids)', { ids })
       .getMany();
   }
-
-  async addDoctorPricing(args: DoctorPricing) {
-    const { slashed_price, mrp, start_date, status, end_date, apollo_share, doctor_share, available_to, doctor } = args;
-  }
 }
 
 @EntityRepository(CityPincodeMapper)

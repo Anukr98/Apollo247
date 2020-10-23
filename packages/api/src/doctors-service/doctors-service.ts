@@ -74,10 +74,10 @@ import {
   doctorDataElasticResolvers,
 } from 'doctors-service/resolvers/doctorDataElastic';
 
-// import {
-//   doctorPricingResolvers,
-//   addDoctorPricingTypeDefs
-// } from 'doctors-service/resolvers/doctorPricing';
+import {
+  doctorPricingResolvers,
+  addDoctorPricingTypeDefs
+} from 'doctors-service/resolvers/doctorPricing';
 import { winstonLogger } from 'customWinstonLogger';
 import { deepLinkTypeDefs, deepLinkResolvers } from 'doctors-service/resolvers/deepLink';
 import { sitemapTypeDefs, sitemapResolvers } from 'doctors-service/resolvers/sitemap';
@@ -213,7 +213,7 @@ import { setAppointmentReminderIvrTypeDefs, setAppointmentReminderIvrResolvers }
       // {
       //   typeDefs: addDoctorPricingTypeDefs,
       //   resolvers: doctorPricingResolvers
-      // }
+      // },
       {
         typeDefs: setAppointmentReminderIvrTypeDefs,
         resolvers: setAppointmentReminderIvrResolvers,
