@@ -1547,7 +1547,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               autoFocus
               className={classes.searchInput}
               inputProps={{ type: 'text' }}
-              placeholder="eg. 5’ 8”"
+              placeholder={heightIn === 'cm' ? 'eg. 172 cm' : 'eg. 5’ 8”'}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                 const height = e.target.value;
                 setHeight(e.target.value);
@@ -1570,7 +1570,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <label className={classes.subComponent}>&nbsp;</label>
             <AphSelect
               value={heightIn}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setHeightIn(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                setHeightIn(e.target.value);
+                setHeightError(false);
+              }}
               MenuProps={{
                 anchorOrigin: {
                   vertical: 'top',
