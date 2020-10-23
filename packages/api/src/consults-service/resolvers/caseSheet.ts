@@ -854,6 +854,12 @@ const modifyCaseSheet: Resolver<
         throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_HISTORY_ERROR, undefined, { error });
       })
   );
+  promises.push(
+    appointmentRepo.updateJdQuestionStatusbyIds([getCaseSheetData.appointment.id])
+      .catch((error: any) => {
+        throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, { error });
+      })
+  )
 
   await Promise.all(promises);
   patientRepo.updatePatientDetailsConsultCache(patientData.id);
@@ -1119,7 +1125,7 @@ const submitJDCaseSheet: Resolver<
       isActive: false,
     };
     ConsultQueueRepo.saveConsultQueueItems([consultQueueAttrs]);
-    appointmentRepo.updateJdQuestionStatusbyIds([appointmentData.id]);
+    await appointmentRepo.updateJdQuestionStatusbyIds([appointmentData.id]);
   } else {
     const queueItem = await ConsultQueueRepo.findByAppointmentId(appointmentData.id);
     if (queueItem) ConsultQueueRepo.updateConsultQueueItems([queueItem.id.toString()], virtualJDId);
