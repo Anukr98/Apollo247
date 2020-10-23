@@ -13,7 +13,7 @@ import {
   RadioButtonUnselectedIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { getProductsByCategoryApi } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { getProductsByCategoryApi, formatFilters } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { MultiSliderProps } from '@ptomasroos/react-native-multi-slider';
 import { isEqual } from 'lodash';
@@ -48,7 +48,7 @@ export const MedicineListingFilter: React.FC<Props> = ({
   const [selectedFilters, setSelectedFilters] = useState<SelectedFilters>(_selectedFilters || {});
   const [alertVisible, setAlertVisible] = useState<boolean>(false);
   const [isLoading, setLoading] = useState<boolean>(false);
-  const isFiltersApplied = Object.keys(selectedFilters).find((k) => selectedFilters[k]?.length);
+  const isFiltersApplied = Object.keys(formatFilters(selectedFilters) || {}).length;
   const isFiltersAvailable = !!_filters.find((f) => f.values?.length);
   const categoryFilterProps = ['category', '__categories'];
   const brandFilterProps = ['brand', 'product_brand'];
@@ -181,12 +181,16 @@ export const MedicineListingFilter: React.FC<Props> = ({
   };
 
   const renderHeader = () => {
+    const onPress = () => {
+      setSelectedFilters({});
+      setFilters(_filters);
+    };
     return (
       <Header
         title={'FILTER BY'}
         rightText={{
           title: isFiltersApplied ? 'CLEAR ALL' : '',
-          onPress: () => setSelectedFilters({}),
+          onPress,
           style: styles.headerRightText,
         }}
         leftIcon="close"

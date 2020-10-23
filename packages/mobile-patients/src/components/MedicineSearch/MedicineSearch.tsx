@@ -124,7 +124,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
 
   const renderSearchBar = () => {
     const onSearchSend = () => {
-      navigation.navigate(AppRoutes.MedicineListing, { searchText: searchText });
+      navigation.push(AppRoutes.MedicineListing, { searchText: searchText });
     };
     const errorMessage =
       !isLoading && searchText.length >= 3 && searchResults.length === 0
@@ -182,13 +182,15 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
       });
     };
 
-    return array.map(({ typeId, name, image }) => (
+    return array.map(({ typeId, name, image }, index, array) => (
       <MedSearchSectionProductView
         key={typeId!}
         title={name!}
         image={image ? productsThumbnailUrl(image) : undefined}
         onPress={() => onPress(typeId!)}
-        containerStyle={styles.medSearchSectionProductViewContainer}
+        containerStyle={
+          index + 1 === array.length ? styles.productViewContainer2 : styles.productViewContainer
+        }
       />
     ));
   };
@@ -217,11 +219,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
 
   const renderCategories = (array: MedSearchSectionBadgeViewProps[]) => {
     return array.map((item) => (
-      <MedSearchSectionBadgeView
-        key={`${item.value}`}
-        badgeStyle={styles.medSearchSectionBadgeViewBadge}
-        {...item}
-      />
+      <MedSearchSectionBadgeView key={`${item.value}`} badgeStyle={styles.badge} {...item} />
     ));
   };
 
@@ -327,6 +325,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
   },
-  medSearchSectionBadgeViewBadge: { marginRight: 10, marginBottom: 10 },
-  medSearchSectionProductViewContainer: { marginRight: 20, marginBottom: 10 },
+  badge: { marginRight: 10, marginBottom: 10 },
+  productViewContainer: { marginRight: 20, marginBottom: 10 },
+  productViewContainer2: { marginRight: 0, marginBottom: 10 },
 });

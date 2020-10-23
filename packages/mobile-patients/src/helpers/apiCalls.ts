@@ -497,7 +497,7 @@ export const searchMedicineApi = async (
   });
 };
 
-const formatFilters = (filters: { [key: string]: string[] } | null) =>
+export const formatFilters = (filters: { [key: string]: string[] } | null) =>
   filters &&
   Object.keys(filters).reduce(
     (prevVal, currKey) => ({
