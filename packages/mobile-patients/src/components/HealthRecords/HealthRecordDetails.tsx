@@ -31,6 +31,7 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { ProfileImageComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/ProfileImageComponent';
 import {
   g,
   handleGraphQlError,
@@ -141,6 +142,9 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
   const hospitalization = props.navigation.state.params
     ? props.navigation.state.params.hospitalization
     : false;
+  const prescriptions = props.navigation.state.params
+    ? props.navigation.state.params.prescriptions
+    : false;
   const { currentPatient } = useAllCurrentPatients();
   const { setLoading } = useUIElements();
   const client = useApolloClient();
@@ -187,7 +191,10 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
           <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
             <View>
               <Text style={styles.descriptionStyle}>
-                {data?.additionalNotes || data?.healthCheckSummary || data?.dischargeSummary}
+                {data?.additionalNotes ||
+                  data?.healthCheckSummary ||
+                  data?.dischargeSummary ||
+                  data?.notes}
               </Text>
             </View>
           </View>
@@ -228,6 +235,8 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       ? 'HEALTH SUMMARY'
       : hospitalization
       ? 'DISCHARGE SUMMARY'
+      : prescriptions
+      ? 'PRESCRIPTION'
       : 'TEST REPORT';
     return (
       <View style={{ marginHorizontal: 40, marginBottom: 15, marginTop: 33 }}>
@@ -307,6 +316,8 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       ? g(data, 'healthCheckFiles', '0', 'fileName')
       : g(data, 'hospitalizationFiles', '0', 'fileName')
       ? g(data, 'hospitalizationFiles', '0', 'fileName')
+      : g(data, 'prescriptionFiles', '0', 'fileName')
+      ? g(data, 'prescriptionFiles', '0', 'fileName')
       : '';
     return (
       <View
@@ -372,7 +383,10 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
   const renderData = () => {
     return (
       <View>
-        {(!!data.additionalNotes || !!data.healthCheckSummary || !!data.dischargeSummary) &&
+        {(!!data.additionalNotes ||
+          !!data.healthCheckSummary ||
+          !!data.dischargeSummary ||
+          !!data.notes) &&
           renderTopLineReport()}
         {(data.medicalRecordParameters && data.medicalRecordParameters.length > 0) ||
         (data.labTestResults && data.labTestResults.length > 0)
@@ -389,13 +403,16 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       ? 'Uploaded Date'
       : hospitalization
       ? 'Discharge Date'
-      : 'CheckUp Date';
+      : 'Checkup Date';
     const labSourceSelf = data?.labTestSource === '247self' || data?.labTestSource === 'self';
     return (
       <View style={styles.cardViewStyle}>
-        {data?.labTestName ? (
+        {data?.labTestName || data?.prescriptionName ? (
           <Text style={{ ...viewStyles.text('SB', 23, '#02475B', 1, 30) }}>
-            {data?.labTestName || data?.healthCheckType || data?.healthCheckName}{' '}
+            {data?.labTestName ||
+              data?.healthCheckType ||
+              data?.healthCheckName ||
+              data?.prescriptionName}{' '}
             <RoundGreenTickIcon style={styles.greenTickIconStyle} />
           </Text>
         ) : null}
@@ -404,9 +421,19 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
             {'Dr. ' + data?.labTestRefferedBy || 'Dr. -'}
           </Text>
         ) : null}
+        {prescriptions && data?.prescriptionName !== data?.prescribedBy ? (
+          <Text style={{ ...viewStyles.text('M', 16, '#0087BA', 1, 21), marginTop: 6 }}>
+            {'Dr. ' + data?.prescribedBy || 'Dr. -'}
+          </Text>
+        ) : null}
         {data?.doctorName ? (
           <Text style={{ ...viewStyles.text('M', 16, '#0087BA', 1, 21), marginTop: 6 }}>
             {'Dr. ' + data?.doctorName || 'Dr. -'}
+          </Text>
+        ) : null}
+        {prescriptions ? (
+          <Text style={{ ...viewStyles.text('R', 14, '#67909C', 1, 18.2), marginTop: 6 }}>
+            {'Clinical Document'}
           </Text>
         ) : null}
         {labSourceSelf || data?.siteDisplayName ? (
@@ -425,7 +452,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
           {'On '}
           <Text style={{ ...viewStyles.text('M', 14, '#02475B', 1, 18) }}>{`${moment(
             data?.date
-          ).format('DD MMM YYYY')}`}</Text>
+          ).format('DD MMM, YYYY')}`}</Text>
         </Text>
       </View>
     );
@@ -436,6 +463,8 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       ? 'HealthSummary_'
       : hospitalization
       ? 'DischargeSummary_'
+      : prescriptions
+      ? 'Prescription_'
       : 'TestReport_';
     return labResults
       ? file_name_text +
@@ -455,11 +484,15 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       ? 'Health Check'
       : hospitalization
       ? 'Discharge Summary'
+      : prescriptions
+      ? 'Prescription'
       : 'Lab Test';
     const webEngageEventName: WebEngageEventName = healthCheck
       ? WebEngageEventName.PHR_DOWNLOAD_HEALTH_CHECKS
       : hospitalization
       ? WebEngageEventName.PHR_DOWNLOAD_HOSPITALIZATIONS
+      : prescriptions
+      ? WebEngageEventName.PHR_DOWNLOAD_PRESCRIPTIONS
       : WebEngageEventName.PHR_DOWNLOAD_LAB_TESTS;
     const file_name = g(data, 'testResultFiles', '0', 'fileName')
       ? g(data, 'testResultFiles', '0', 'fileName')
@@ -467,6 +500,8 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       ? g(data, 'healthCheckFiles', '0', 'fileName')
       : g(data, 'hospitalizationFiles', '0', 'fileName')
       ? g(data, 'hospitalizationFiles', '0', 'fileName')
+      : g(data, 'prescriptionFiles', '0', 'fileName')
+      ? g(data, 'prescriptionFiles', '0', 'fileName')
       : '';
     const dirs = RNFetchBlob.fs.dirs;
 
@@ -519,23 +554,39 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
     );
   };
 
+  const renderProfileImage = () => {
+    return (
+      <ProfileImageComponent
+        currentPatient={currentPatient}
+        onPressProfileImage={() => props.navigation.pop(2)}
+      />
+    );
+  };
+
   if (data) {
     const headerTitle = healthCheck
       ? 'HEALTH SUMMARY'
       : hospitalization
       ? 'HOSPITALIZATION'
+      : prescriptions
+      ? 'CONSULT & RX DETAILS'
       : 'TEST RESULTS';
     return (
       <View
         style={{
-          ...theme.viewStyles.container,
+          flex: 1,
         }}
       >
-        <SafeAreaView style={{ flex: 1 }}>
+        <SafeAreaView
+          style={{
+            ...theme.viewStyles.container,
+          }}
+        >
           <Header
             title={headerTitle}
             leftIcon="backArrow"
-            rightComponent={!!data.fileUrl || labResults ? headerRightComponent() : null}
+            rightComponent={renderProfileImage()}
+            container={{ borderBottomWidth: 0 }}
             onPressLeftIcon={() => props.navigation.goBack()}
           />
           <ScrollView bounces={false}>

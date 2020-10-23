@@ -289,6 +289,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const { showAphAlert } = useUIElements();
   const { deliveryAddressId, storeId } = useShoppingCart();
   const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
+  const [callApi, setCallApi] = useState(true);
 
   useEffect(() => {
     currentPatient && setProfile(currentPatient!);
@@ -430,15 +431,17 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
 
   useEffect(() => {
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-      fetchPastData();
-      fetchTestData();
-      setFilterData(FilterData);
-      setDisplayFilter(false);
+      if (callApi) {
+        fetchPastData();
+        fetchTestData();
+        setFilterData(FilterData);
+        setDisplayFilter(false);
+      }
     });
     return () => {
       didFocusSubscription && didFocusSubscription.remove();
     };
-  }, [props.navigation, currentPatient]);
+  }, [props.navigation, currentPatient, callApi]);
 
   useEffect(() => {
     if (consultsData && medicineOrders && prescriptions) {
@@ -1018,6 +1021,10 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     );
   };
 
+  const onBackArrowPressed = () => {
+    setCallApi(false);
+  };
+
   const renderListItemView = (title: string, id: number) => {
     const renderLeftAvatar = () => {
       switch (id) {
@@ -1048,7 +1055,10 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     const onPressListItem = () => {
       switch (id) {
         case 1:
-          props.navigation.navigate(AppRoutes.ConsultRxScreen, { consultRxData: combination });
+          props.navigation.navigate(AppRoutes.ConsultRxScreen, {
+            consultRxData: combination,
+            onPressBack: onBackArrowPressed,
+          });
           break;
         case 2:
           props.navigation.navigate(AppRoutes.TestReportScreen);

@@ -9,18 +9,20 @@ import {
   Alert,
   ScrollView,
   SectionList,
+  Dimensions,
 } from 'react-native';
-import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { AccountCircleDarkIcon, Filter } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Filter, PhrNoDataIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { HealthConsultView } from '@aph/mobile-patients/src/components/HealthRecords/HealthConsultView';
 import { HealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/HealthRecordCard';
+import { ProfileImageComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/ProfileImageComponent';
 import { useApolloClient } from 'react-apollo-hooks';
 import { CHECK_IF_FOLLOWUP_BOOKED } from '@aph/mobile-patients/src/graphql/profiles';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -63,6 +65,8 @@ import {
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import moment from 'moment';
 import _ from 'lodash';
+
+const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   searchFilterViewStyle: {
@@ -129,14 +133,16 @@ const ConsultRxEditDeleteArray: EditDeleteArray[] = [
   { key: EDIT_DELETE_TYPE.DELETE, title: EDIT_DELETE_TYPE.DELETE },
 ];
 
-export interface ConsultRxScreenProps extends NavigationScreenProps {
-  consultRxData: any;
-}
+export interface ConsultRxScreenProps
+  extends NavigationScreenProps<{
+    consultRxData: any;
+    onPressBack: () => void;
+  }> {}
 
 export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
   const consultRxData = props.navigation?.getParam('consultRxData') || [];
   const { currentPatient } = useAllCurrentPatients();
-  const [filterApplied, setFilterApplied] = useState<FILTER_TYPE | null>(null);
+  const [filterApplied, setFilterApplied] = useState<FILTER_TYPE | string>('');
   const [editDeleteOption, setEditDeleteOption] = useState<EDIT_DELETE_TYPE | string>('');
   const client = useApolloClient();
   const [localConsultRxData, setLocalConsultRxData] = useState<Array<{
@@ -181,14 +187,8 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
               return (
                 data.key ===
                 (dataObject.data?.patientId
-                  ? (dataObject.data?.doctorInfo.firstName &&
-                      'Dr. ' +
-                        (dataObject.data?.doctorInfo?.firstName + ' ' || '') +
-                        ' ' +
-                        (dataObject.data?.doctorInfo?.lastName || '')) ||
-                    '-'
-                  : (dataObject.data?.prescribedBy && 'Dr. ' + dataObject.data?.prescribedBy) ||
-                    '-')
+                  ? dataObject.data?.doctorInfo?.displayName || '-'
+                  : dataObject.data?.prescribedBy || '-')
               );
             } else if (filterApplied === FILTER_TYPE.NAME) {
               return (
@@ -213,16 +213,10 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
                 ? filterApplied === FILTER_TYPE.DATE
                   ? moment(new Date(dataObject.data?.appointmentDateTime)).format('DD MMM YYYY')
                   : filterApplied === FILTER_TYPE.DOCTOR_NAME
-                  ? dataObject.data?.doctorInfo && dataObject.data?.doctorInfo?.firstName
-                    ? 'Dr. ' +
-                      (dataObject.data?.doctorInfo?.firstName + ' ' || '') +
-                      (dataObject.data?.doctorInfo?.lastName || '')
-                    : '-'
+                  ? (dataObject.data?.doctorInfo && dataObject.data?.doctorInfo?.displayName) || '-'
                   : dataObject.data?.myPrescriptionName
                 : filterApplied === FILTER_TYPE.DATE
                 ? moment(new Date(dataObject.data[filterAppliedString])).format('DD MMM YYYY')
-                : filterApplied === FILTER_TYPE.DOCTOR_NAME
-                ? 'Dr. ' + dataObject.data[filterAppliedString]
                 : dataObject.data[filterAppliedString],
               data: dataObjectArray,
             };
@@ -242,7 +236,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
     }
   }, [filterApplied, consultRxData]);
 
-  const sortByTypeRecords = (type: FILTER_TYPE | null) => {
+  const sortByTypeRecords = (type: FILTER_TYPE | string) => {
     return (
       consultRxData &&
       consultRxData.sort(({ data: data1 }, { data: data2 }) => {
@@ -325,7 +319,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         : moment(dataObject.data?.date).diff(past7thDay, 'days') > 0;
       if (past7daysData) {
         const dateExistsAt = foundDataIndex('Past 7 days', finalData);
-        finalData = sortByDays('Past 7 days', finalData, dateExistsAt, dataObject?.data);
+        finalData = sortByDays('Past 7 days', finalData, dateExistsAt, dataObject);
         console.log('Past 7 days', finalData);
       } else {
         const past30thDay = past7thDay.subtract(30, 'day');
@@ -344,27 +338,17 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
     return finalData;
   };
 
+  const gotoPHRHomeScreen = () => {
+    props.navigation.state.params?.onPressBack();
+    props.navigation.goBack();
+  };
+
   const renderProfileImage = () => {
     return (
-      <TouchableOpacity activeOpacity={1} onPress={() => props.navigation.goBack()}>
-        {currentPatient?.photoUrl?.match(
-          /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jpeg|JPEG)/
-        ) ? (
-          <Image
-            source={{ uri: currentPatient?.photoUrl }}
-            style={{ height: 30, width: 30, borderRadius: 15, marginTop: 8 }}
-          />
-        ) : (
-          <AccountCircleDarkIcon
-            style={{
-              height: 36,
-              width: 36,
-              borderRadius: 18,
-              marginTop: 5,
-            }}
-          />
-        )}
-      </TouchableOpacity>
+      <ProfileImageComponent
+        onPressProfileImage={gotoPHRHomeScreen}
+        currentPatient={currentPatient}
+      />
     );
   };
 
@@ -375,9 +359,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         leftIcon={'backArrow'}
         rightComponent={renderProfileImage()}
         container={{ borderBottomWidth: 0 }}
-        onPressLeftIcon={() => {
-          props.navigation.goBack();
-        }}
+        onPressLeftIcon={gotoPHRHomeScreen}
       />
     );
   };
@@ -664,7 +646,38 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
       });
   };
 
-  const onHealthCardItemPress = (selectedItem: any) => {};
+  const postConsultCardClickEvent = (consultId: string) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PHR_CONSULT_CARD_CLICK] = {
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+      'Consult ID': consultId,
+    };
+    postWebEngageEvent(WebEngageEventName.PHR_CONSULT_CARD_CLICK, eventAttributes);
+  };
+
+  const onHealthCardItemPress = (selectedItem: any) => {
+    if (selectedItem?.patientId) {
+      postConsultCardClickEvent(selectedItem?.id);
+      props.navigation.navigate(AppRoutes.ConsultDetails, {
+        CaseSheet: selectedItem?.id,
+        DoctorInfo: selectedItem?.doctorInfo,
+        FollowUp: selectedItem?.isFollowUp,
+        appointmentType: selectedItem?.appointmentType,
+        DisplayId: selectedItem?.displayId,
+        BlobName: g(doctorType(selectedItem), 'blobName'),
+      });
+    } else {
+      props.navigation.navigate(AppRoutes.HealthRecordDetails, {
+        data: selectedItem,
+        prescriptions: true,
+      });
+    }
+  };
 
   const renderConsultRxItems = (item: any, index: number) => {
     // For Next Phase
@@ -714,12 +727,38 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
   };
 
   const renderEmptyConsult = () => {
-    return <View />;
+    return (
+      <View style={{ justifyContent: 'center' }}>
+        <View
+          style={{
+            justifyContent: 'center',
+            marginTop: width / 2.5,
+            backgroundColor: 'white',
+            alignSelf: 'center',
+            height: 140,
+            width: 140,
+            borderRadius: 70,
+            alignItems: 'center',
+          }}
+        >
+          <PhrNoDataIcon
+            style={{ width: 140, height: 140, borderRadius: 70, resizeMode: 'contain' }}
+          />
+        </View>
+        <Text
+          style={{
+            ...theme.viewStyles.text('SB', 12, '#02475B', 1, 15.6),
+            textAlign: 'center',
+            marginTop: 14,
+          }}
+        >
+          {'No data available !!!'}
+        </Text>
+      </View>
+    );
   };
 
   const renderSectionHeader = (section: any) => {
-    const sectionTitle =
-      filterApplied === FILTER_TYPE.DATE ? moment(section.key).format('DD MMM YYYY') : section.key;
     return <Text style={styles.sectionHeaderTitleStyle}>{section.key}</Text>;
   };
 
@@ -743,8 +782,15 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         <Button
           style={{ width: '100%' }}
           title={`ADD DATA`}
-          // onPress={onPressChennaiOrderPayButton}
-          // disabled={isPayDisabled}
+          onPress={() => {
+            const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_RECORD] = {
+              Source: 'Consult & RX',
+            };
+            postWebEngageEvent(WebEngageEventName.ADD_RECORD, eventAttributes);
+            props.navigation.navigate(AppRoutes.AddRecord, {
+              navigatedFrom: 'Consult & RX',
+            });
+          }}
         />
       </StickyBottomComponent>
     );
@@ -755,7 +801,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
         <ScrollView style={{ flex: 1 }} bounces={false}>
-          {renderSearchAndFilterView()}
+          {consultRxData.length > 0 ? renderSearchAndFilterView() : null}
           {renderConsults()}
         </ScrollView>
         {renderAddButton()}
