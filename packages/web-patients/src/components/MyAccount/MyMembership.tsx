@@ -249,7 +249,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props: any) => {
           <div className={classes.mUpgradeContainer}>
             <Typography component="h3">Membership Upgrades</Typography>
             <Grid container spacing={3}>
-              {myMembershipType.tier === 'Gold' && (
+              {myMembershipType.tier === 'Silver' && (
                 <Grid item md={6}>
                   <div className={classes.creditContent}>
                     <div className={`${classes.membershipCard} ${classes.gold} ${classes.mCard}`}>
