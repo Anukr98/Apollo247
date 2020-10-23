@@ -8,7 +8,13 @@ import {
   MedicineOrderLineItems,
   MedicineOrderAddress,
 } from 'profiles-service/entities';
-import { InventorySyncRequest, SYNC_TYPE, TatRequest, LHUB_UPDATE_TYPE } from 'types/inventorySync';
+import {
+  InventorySyncRequest,
+  SYNC_TYPE,
+  TatRequest,
+  LHUB_UPDATE_TYPE,
+  DspStatusRespBody,
+} from 'types/inventorySync';
 
 const inventorySyncTimeout = Number(process.env.INVENTORY_SYNC_TIMEOUT);
 
@@ -191,4 +197,40 @@ export async function updateLhub(reqBody: InventorySyncRequest, updateType: LHUB
   }
 
   clearTimeout(timeout);
+}
+
+export async function getDspStatus(orderId: number) {
+  if (!process.env.INVENTORY_SYNC_URL || !process.env.INVENTORY_SYNC_TOKEN)
+    throw new AphError(AphErrorMessages.INVALID_INVENTORY_SYNC_URL);
+
+  const baseUrl = process.env.INVENTORY_SYNC_URL.toString();
+  const apiUrl = `${baseUrl}/getomsstatus?orderId=${orderId}`;
+  const reqStartTime = new Date();
+  const controller = new AbortController();
+
+  const timeout = setTimeout(() => {
+    controller.abort();
+  }, inventorySyncTimeout);
+
+  const resp = await fetch(apiUrl, {
+    headers: {
+      Authorization: process.env.INVENTORY_SYNC_TOKEN,
+      'Content-Type': 'application/json;charset=utf-8',
+    },
+    signal: controller.signal,
+  });
+  if (resp.status != 200) {
+    dLogger(reqStartTime, `LHUB_DSP_STATUS_API_ERROR`, `${apiUrl} --- ${JSON.stringify(resp)}`);
+  }
+
+  const statusResp: DspStatusRespBody = await resp.json();
+  if (statusResp.errorCode != 0) {
+    dLogger(
+      reqStartTime,
+      `LHUB_DSP_STATUS_API_ERROR`,
+      `${apiUrl} --- ${JSON.stringify(statusResp)}`
+    );
+  }
+  clearTimeout(timeout);
+  return statusResp;
 }

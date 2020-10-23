@@ -268,6 +268,11 @@ import {
   updateOrderDspResolvers,
 } from 'profiles-service/resolvers/pharmaOrderUpdateDsp';
 
+import {
+  orderDspStatusTypeDefs,
+  orderDspStatusResolvers,
+} from 'profiles-service/resolvers/pharmaOrderDspStatus';
+
 (async () => {
   await connect();
   const profilesLogger = winstonLogger.loggers.get('profileServiceLogger');
@@ -569,6 +574,10 @@ import {
       {
         typeDefs: updateOrderDspTypeDefs,
         resolvers: updateOrderDspResolvers,
+      },
+      {
+        typeDefs: orderDspStatusTypeDefs,
+        resolvers: orderDspStatusResolvers,
       },
     ]),
     plugins: [

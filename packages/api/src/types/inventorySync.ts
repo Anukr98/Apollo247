@@ -28,3 +28,16 @@ export enum LHUB_UPDATE_TYPE {
   DSP_CHANGE = 'DSP_CHANGE',
   SHIPPED = 'SHIPPED',
 }
+
+export interface DspStatusRespBody {
+  errorCode: number;
+  errorMsg: string;
+  errorType: string;
+  response: DspStatusResp;
+}
+
+export interface DspStatusResp {
+  ALLOCATE_DSP: string;
+  CHANGE_DSP: string;
+  ORDER_UPDATE: string;
+}
