@@ -2,6 +2,7 @@ import gql from 'graphql-tag';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import {
+  MedicineOrders,
   MEDICINE_ORDER_STATUS,
   MedicineOrdersStatus,
   MEDICINE_ORDER_TYPE,
@@ -133,11 +134,27 @@ const saveOrderVerified: Resolver<
     Promise.all(medicineOrderLineItemsPromises);
     try {
       const tatRes = await getTat(medicineOrderLineItems, orderDetails.medicineOrderAddress);
-      tat = tatRes.tat;
-      siteId = tatRes.storeCode;
-      tatType = tatRes.storeType;
-      allocationProfile = tatRes.allocationProfile;
-      clusterId = tatRes.clusterId;
+      if (tatRes) {
+        tat = tatRes.tat;
+        siteId = tatRes.storeCode;
+        tatType = tatRes.storeType;
+        allocationProfile = tatRes.allocationProfileName;
+        clusterId = tatRes.clusterId;
+        // update tat details in 247
+        const orderTatDetails: Partial<MedicineOrders> = {
+          orderTat: tat,
+          shopId: siteId,
+          tatType,
+          allocationProfileName: allocationProfile,
+          clusterId,
+        };
+
+        medicineOrdersRepo.updateMedicineOrder(
+          orderDetails.id,
+          orderDetails.orderAutoId,
+          orderTatDetails
+        );
+      }
     } catch (e) {
       log(
         'profileServiceLogger',
