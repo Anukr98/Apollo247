@@ -45,7 +45,7 @@ type SaveOrderReturnInput = {
 };
 
 type SaveOrderReturnInputArgs = {
-  orderReturnInput: SaveOrderReturnInput;
+  orderReturnedInput: SaveOrderReturnInput;
 };
 
 const orderReturned: Resolver<
@@ -53,10 +53,10 @@ const orderReturned: Resolver<
   SaveOrderReturnInputArgs,
   ProfilesServiceContext,
   SaveOrderReturnResult
-> = async (parent, { orderReturnInput }, { profilesDb }) => {
+> = async (parent, { orderReturnedInput }, { profilesDb }) => {
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const orderDetails = await medicineOrdersRepo.getMedicineOrderWithShipments(
-    orderReturnInput.orderId
+    orderReturnedInput.orderId
   );
   if (!orderDetails) {
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
@@ -68,17 +68,17 @@ const orderReturned: Resolver<
 
   log(
     'profileServiceLogger',
-    `ORDER_STATUS_CHANGE_${orderReturnInput.status}_FOR_ORDER_ID:${orderReturnInput.orderId}`,
+    `ORDER_STATUS_CHANGE_${orderReturnedInput.status}_FOR_ORDER_ID:${orderReturnedInput.orderId}`,
     `orderReturned call from OMS`,
-    JSON.stringify(orderReturnInput),
+    JSON.stringify(orderReturnedInput),
     ''
   );
   const statusDate = format(
-    addMinutes(parseISO(orderReturnInput.updatedDate), -330),
+    addMinutes(parseISO(orderReturnedInput.updatedDate), -330),
     "yyyy-MM-dd'T'HH:mm:ss.SSSX"
   );
   const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
-    orderStatus: orderReturnInput.status,
+    orderStatus: orderReturnedInput.status,
     medicineOrders: orderDetails,
     statusDate: new Date(statusDate),
   };
@@ -88,11 +88,11 @@ const orderReturned: Resolver<
     orderDetails.id,
     orderDetails.orderAutoId,
     new Date(),
-    orderReturnInput.status
+    orderReturnedInput.status
   );
 
   return {
-    status: orderReturnInput.status,
+    status: orderReturnedInput.status,
     errorCode: 0,
     errorMessage: '',
     orderId: orderDetails.orderAutoId,
