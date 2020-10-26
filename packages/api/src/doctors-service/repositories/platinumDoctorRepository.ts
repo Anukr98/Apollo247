@@ -1,12 +1,6 @@
 import { EntityRepository, Repository } from 'typeorm';
-import { PlatinumSlots } from 'doctors-service/entities/PlatinumSlotsEntity';
+import { PlatinumSlots, PLATINUM_SLOTS_STATUS } from 'doctors-service/entities/PlatinumSlotsEntity';
 
-enum DOCTOR_OF_THE_HOUR_STATUS {
-  SCHEDULED,
-  COMPLETED,
-  IN_FORCE,
-  CANCELLED,
-}
 @EntityRepository(PlatinumSlots)
 export class PlatinumDoctorsRepository extends Repository<PlatinumSlots> {
   
@@ -19,6 +13,7 @@ export class PlatinumDoctorsRepository extends Repository<PlatinumSlots> {
       .andWhere('platinum_slots.startTime <= :timeNow', { timeNow: new Date() })
       .andWhere('platinum_slots.endTime >= :timeNow', { timeNow: new Date() })
       .andWhere('doctor.isActive = true')
+      .andWhere('platinum_slots.status != :status', { status: PLATINUM_SLOTS_STATUS.CANCELLED })
       .getOne();
   }
 
@@ -32,6 +27,7 @@ export class PlatinumDoctorsRepository extends Repository<PlatinumSlots> {
     .andWhere('platinum_slots.startTime <= :timeNow', { timeNow: new Date() })
     .andWhere('platinum_slots.endTime >= :timeNow', { timeNow: new Date() })
     .andWhere('doctor.isActive = true')
+    .andWhere('platinum_slots.status != :status', { status: PLATINUM_SLOTS_STATUS.CANCELLED })
     .getOne();
   }
 }

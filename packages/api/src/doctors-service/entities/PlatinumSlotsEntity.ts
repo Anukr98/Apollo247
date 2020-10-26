@@ -16,6 +16,12 @@ import {
 
 import {Doctor, DoctorSpecialty} from './index'
 
+export enum PLATINUM_SLOTS_STATUS {
+  SCHEDULED,
+  COMPLETED,
+  IN_FORCE,
+  CANCELLED,
+}
 @Entity()
 export class PlatinumSlots extends BaseEntity {
 
@@ -25,17 +31,11 @@ createdDate: Date;
 @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
 updatedDate: Date;
 
-// @ManyToOne("Doctor",'PlatinumSlots')
-// doctor: Doctor;
-
 @ManyToOne(
   (type) => Doctor,
   (doctor) => doctor.platinumSlots
 )
 doctor: Doctor;
-
-// @ManyToOne("DoctorSpecialty",'PlatinumSlots')
-// specialty: DoctorSpecialty;
 
 @ManyToOne(
   (type) => DoctorSpecialty,
@@ -53,10 +53,7 @@ startTime: Date;
 endTime: Date;
 
 @Column({nullable:false})
-status: string;
-
-@Column({ nullable: true, default:() => '' })
-cancelledById: string;
+status: PLATINUM_SLOTS_STATUS;
 
 @Column({ nullable: true, default:() => '' })
 cancelledByUserName: string;
@@ -65,13 +62,8 @@ cancelledByUserName: string;
 cancelledReason: string;
 
 @Column({ nullable: true })
-createdById: string;
-
-@Column({ nullable: true })
 createdByUserName: string;
 
-@Column({ nullable: true })
-createdByEmail: string;
 @BeforeInsert()
 @BeforeUpdate()
 async validateInputData() {
