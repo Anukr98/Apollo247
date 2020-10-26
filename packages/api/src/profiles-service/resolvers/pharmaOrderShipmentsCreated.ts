@@ -340,7 +340,7 @@ const assignLhub = async (
     items: shipmentDetails.itemDetails.map((item) => {
       return {
         sku: item.articleCode,
-        qty: item.quantity / item.packSize,
+        qty: +new Decimal(item.quantity).dividedBy(item.packSize).toFixed(4),
       };
     }),
   };
@@ -353,23 +353,22 @@ const getNewTat = async (
   orderAddress: MedicineOrderAddress
 ) => {
   let isInventoryUnAvaible = shipmentDetails.itemDetails.find((item) => !item.posAvailability);
-  console.log('new tat clculation', isInventoryUnAvaible);
   if (isInventoryUnAvaible) {
     const medicineOrderLineItems: Partial<MedicineOrderLineItems>[] = [];
     shipmentDetails.itemDetails.forEach((item) => {
+      const price = +new Decimal(item.packSize).times(item.unitPrice).toFixed(4);
       const orderItemAttrs = {
         medicineOrders: orderDetails,
         medicineSKU: item.articleCode,
         medicineName: item.articleName,
-        price: item.packSize * item.unitPrice,
-        quantity: item.quantity / item.packSize,
-        mrp: item.packSize * item.unitPrice,
+        price: price,
+        quantity: +new Decimal(item.quantity).dividedBy(item.packSize).toFixed(4),
+        mrp: price,
         mou: item.packSize,
       };
       medicineOrderLineItems.push(orderItemAttrs);
     });
     const tatRes = await getTat(medicineOrderLineItems, orderAddress);
-    console.log('new tatRes', tatRes);
     if (
       tatRes &&
       (tatRes.storeCode == orderDetails.siteId ||

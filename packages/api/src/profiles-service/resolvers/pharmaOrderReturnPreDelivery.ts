@@ -84,12 +84,13 @@ const orderReturned: Resolver<
   };
   await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
 
-  await medicineOrdersRepo.updateMedicineOrderDetails(
-    orderDetails.id,
-    orderDetails.orderAutoId,
-    new Date(),
-    orderReturnedInput.status
-  );
+  if (orderReturnedInput.status == MEDICINE_ORDER_STATUS.RETURN_INITIATED)
+    await medicineOrdersRepo.updateMedicineOrderDetails(
+      orderDetails.id,
+      orderDetails.orderAutoId,
+      new Date(),
+      orderReturnedInput.status
+    );
 
   return {
     status: orderReturnedInput.status,
