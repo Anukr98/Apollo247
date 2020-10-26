@@ -12,6 +12,7 @@ import {
   InventorySyncRequest,
   SYNC_TYPE,
   TatRequest,
+  TatResponseBody,
   LHUB_UPDATE_TYPE,
   DspStatusRespBody,
 } from 'types/inventorySync';
@@ -136,7 +137,7 @@ export async function getTat(
     );
     return;
   }
-  const tatResponse = await resp.json();
+  const tatResponse: TatResponseBody = await resp.json();
   if (tatResponse.errorCode) {
     dLogger(
       reqStartTime,
