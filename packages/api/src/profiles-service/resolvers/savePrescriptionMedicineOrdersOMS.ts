@@ -227,6 +227,7 @@ const savePrescriptionMedicineOrderOMS: Resolver<
     shopAddress: JSON.stringify(prescriptionMedicineOMSInput.shopAddress),
     isOmsOrder: true,
     customerComment: customerComments.join(' '),
+    prescriptionOptionSelected: prescriptionMedicineOMSInput.prescriptionOptionSelected,
   };
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const saveOrder = await medicineOrdersRepo.saveMedicineOrder(medicineOrderattrs);
