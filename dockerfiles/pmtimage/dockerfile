@@ -1,0 +1,11 @@
+FROM node:12.6.0
+
+ENV GOOGLE_APPLICATION_CREDENTIALS="/apollo-hospitals/packages/api/firebase-secrets.json"
+
+RUN mkdir -p /apollo-hospitals/packages/api && npm install pm2 -g
+
+WORKDIR /apollo-hospitals/paytm-integration
+
+EXPOSE 7000
+
+ADD aph-ms-aks.tar.gz  /

@@ -24,6 +24,7 @@ import { MyMembership } from 'components/Partners/Hdfc/MyMembership';
 import { MembershipPlanLocked } from 'components/Partners/Hdfc/MembershipPlanLocked';
 import { MembershipPlanDetail } from 'components/Partners/Hdfc/MembershipPlanDetail';
 import PageNotFound from 'components/PageNotFound';
+const ApolloProHealth = loadable(() => import('components/ApolloProHealthLanding'));
 
 const Welcome = loadable(() => import('components/Welcome'));
 
@@ -249,8 +250,9 @@ const App: React.FC = () => {
           path={clientRoutes.knowledgeBaseLanding()}
           component={KnowledgeArticleLanding}
         />
-				<Route exact path={clientRoutes.pageNotFound()} component={PageNotFound} />
-				<Redirect to={clientRoutes.pageNotFound()} />
+        <Route exact path={clientRoutes.apolloProHealth()} component={ApolloProHealth} />
+        <Route exact path={clientRoutes.pageNotFound()} component={PageNotFound} />
+        <Redirect to={clientRoutes.pageNotFound()} />
       </Switch>
     </div>
   );
