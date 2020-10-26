@@ -14,6 +14,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, TouchableOpacityProps, View } from 'react-native';
 import { Divider, Image } from 'react-native-elements';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 export interface Props extends MedicineProduct {
   onPress: () => void;
@@ -46,8 +47,8 @@ export const ProductCard: React.FC<Props> = ({
   const discount = getDiscountPercentage(price, special_price);
 
   const renderPrice = () => {
-    const strikeOffPrice = `(Rs. ${price})`;
-    const finalPrice = `  Rs. ${discount ? special_price : price}`;
+    const strikeOffPrice = `(${string.common.Rs} ${price})`;
+    const finalPrice = `  ${string.common.Rs} ${discount ? special_price : price}`;
     return (
       <View style={styles.priceContainer}>
         {!!discount && <Text style={styles.priceStrikeOff}>{strikeOffPrice}</Text>}

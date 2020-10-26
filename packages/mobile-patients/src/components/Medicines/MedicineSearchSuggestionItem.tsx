@@ -14,6 +14,7 @@ import { g } from '../../helpers/helperFunctions';
 import { AppConfig } from '../../strings/AppConfig';
 import { QuantityButton } from '../ui/QuantityButton';
 import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   containerStyle: {},
@@ -78,7 +79,7 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
                 ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04),
               }}
             >
-              Rs. {specialPrice || data.price}
+              {string.common.Rs} {specialPrice || data.price}
             </Text>
             {specialPrice ? (
               <Text
@@ -87,7 +88,9 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
                 ]}
               >
                 {'('}
-                <Text style={{ textDecorationLine: 'line-through' }}>{`Rs. ${data.price}`}</Text>
+                <Text
+                  style={{ textDecorationLine: 'line-through' }}
+                >{`${string.common.Rs} ${data.price}`}</Text>
                 {')'}
               </Text>
             ) : null}

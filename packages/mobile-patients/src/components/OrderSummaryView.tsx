@@ -351,7 +351,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
           }}
         >
           <Text style={styles.medicineText1}>
-            Rs. {(item.mrp! * item.quantity! || 0).toFixed(2)}
+            {string.common.Rs} {(item.mrp! * item.quantity! || 0).toFixed(2)}
           </Text>
         </View>
       </View>
@@ -395,7 +395,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
           }}
         >
           <Text style={styles.medicineText1}>
-            Rs. {(item.mrp! * item.issuedQty! || 0).toFixed(2)}
+            {string.common.Rs} {(item.mrp! * item.issuedQty! || 0).toFixed(2)}
           </Text>
         </View>
       </View>
@@ -443,7 +443,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             <Text style={styles.totalTextStyle}> {string.OrderSummery.total} </Text>
             <Text style={styles.totalPriceStyle}>
               {' '}
-              Rs.{' '}
+              {string.common.Rs}{' '}
               {orderBilledAndPacked && newOrders && billingDetails
                 ? (billingDetails.invoiceValue || 0).toFixed(2)
                 : (orderDetails.estimatedAmount || 0).toFixed(2)}
@@ -609,7 +609,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Text style={styles.paymentLeftText}>{string.OrderSummery.product_discount}</Text>
                 <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
-                  - Rs. {product_discount.toFixed(2)}
+                  - {string.common.Rs} {product_discount.toFixed(2)}
                 </Text>
               </View>
             ) : null}
@@ -620,7 +620,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Text style={styles.paymentLeftText}>{string.OrderSummaryText.discount_total}</Text>
                 <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
-                  - Rs. {billingDetails.discountValue.toFixed(2)}
+                  - {string.common.Rs} {billingDetails.discountValue.toFixed(2)}
                 </Text>
               </View>
             ) : null}
@@ -628,7 +628,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Text style={styles.paymentLeftText}>{string.OrderSummery.coupon_discount}</Text>
                 <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
-                  - Rs. {coupon_discount.toFixed(2)}
+                  - {string.common.Rs} {coupon_discount.toFixed(2)}
                 </Text>
               </View>
             ) : null}
@@ -636,7 +636,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Text style={styles.paymentLeftText}>{string.OrderSummery.delivery_charges}</Text>
                 <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
-                  + Rs. {(orderDetails.devliveryCharges || 0).toFixed(2)}
+                  + {string.common.Rs} {(orderDetails.devliveryCharges || 0).toFixed(2)}
                 </Text>
               </View>
             ) : null}
@@ -644,7 +644,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Text style={styles.paymentLeftText}>{string.OrderSummery.delivery_charges}</Text>
                 <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
-                  + Rs. {(billingDetails.deliveryCharges || 0).toFixed(2)}
+                  + {string.common.Rs} {(billingDetails.deliveryCharges || 0).toFixed(2)}
                 </Text>
               </View>
             ) : null}
@@ -652,7 +652,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Text style={styles.paymentLeftText}>{string.OrderSummery.packaging_charges}</Text>
                 <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
-                  + Rs. {(packaging_charges || 0).toFixed(2)}
+                  + {string.common.Rs} {(packaging_charges || 0).toFixed(2)}
                 </Text>
               </View>
             )}
@@ -660,7 +660,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Text style={styles.paymentLeftText}>{string.OrderSummaryText.discount_total}</Text>
                 <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
-                  - Rs. {(offlineOrdeDiscount || 0).toFixed(2)}
+                  - {string.common.Rs} {(offlineOrdeDiscount || 0).toFixed(2)}
                 </Text>
               </View>
             )}
@@ -668,7 +668,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Text style={styles.paymentLeftText}>{string.OrderSummery.redeemed_amount}</Text>
                 <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
-                  - Rs. {(offlineOrdeRedeemedAmount || 0).toFixed(2)}
+                  - {string.common.Rs} {(offlineOrdeRedeemedAmount || 0).toFixed(2)}
                 </Text>
               </View>
             )}
@@ -676,7 +676,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
               <Text style={[styles.boldTotal]}>{string.OrderSummery.total.toUpperCase()}</Text>
               <Text style={[styles.boldTotal, { textAlign: 'right' }]}>
-                Rs.{' '}
+                {string.common.Rs}{' '}
                 {orderBilledAndPacked && newOrders && billingDetails
                   ? (billingDetails.invoiceValue || 0).toFixed(2)
                   : (orderDetails.estimatedAmount || 0).toFixed(2)}
@@ -699,7 +699,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
                   </View>
 
                   <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
-                    Rs. {(healthCreditsRedeemed || 0).toFixed(2)}
+                    {string.common.Rs} {(healthCreditsRedeemed || 0).toFixed(2)}
                   </Text>
                 </View>
                 <Text style={styles.redeemText}>(Will be Redeemed after delivery)</Text>
@@ -709,7 +709,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Text style={styles.paymentLeftText}>{PaymentModes[paymentMode]}</Text>
                 <Text style={[styles.paymentLeftText, { textAlign: 'right' }]}>
-                  Rs. {(amountPaid || 0).toFixed(2)}
+                  {string.common.Rs} {(amountPaid || 0).toFixed(2)}
                 </Text>
               </View>
             )}
@@ -732,7 +732,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
                       },
                     ]}
                   >
-                    Rs. {(orderDetails.estimatedAmount || 0).toFixed(2)}
+                    {string.common.Rs} {(orderDetails.estimatedAmount || 0).toFixed(2)}
                   </Text>
                 </View>
                 <View
@@ -753,7 +753,8 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
                       },
                     ]}
                   >
-                    Rs. {billingDetails && (billingDetails.invoiceValue || 0).toFixed(2)}
+                    {string.common.Rs}{' '}
+                    {billingDetails && (billingDetails.invoiceValue || 0).toFixed(2)}
                   </Text>
                 </View>
                 <View style={[styles.horizontalline, { marginTop: 9, marginBottom: 9 }]} />
@@ -792,7 +793,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
                             },
                       ]}
                     >
-                      Rs.{' '}
+                      {string.common.Rs}{' '}
                       {isPrepaid
                         ? (prepaidBilledValue || 0).toFixed(2)
                         : (billingDetails.invoiceValue || 0).toFixed(2)}
@@ -829,7 +830,9 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
                 {'YAY!'}
               </Text>
               <Text style={{ ...theme.viewStyles.text('M', 12, '#00b38e', 1, undefined, 0) }}>
-                {`You got an additional discount of Rs. ${billingDiscount.toFixed(2)}`}
+                {`You got an additional discount of ${string.common.Rs} ${billingDiscount.toFixed(
+                  2
+                )}`}
               </Text>
             </View>
           </View>

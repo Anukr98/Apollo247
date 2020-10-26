@@ -864,7 +864,9 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             </Text>
           </View>
           <View style={styles.total}>
-            <Text style={styles.grandTotalTxt}>Rs. {getFormattedAmount(grandTotal - burnHC)}</Text>
+            <Text style={styles.grandTotalTxt}>
+              {string.common.Rs} {getFormattedAmount(grandTotal - burnHC)}
+            </Text>
           </View>
           {(couponDiscount != 0 || burnHC != 0) && (
             <TouchableOpacity
@@ -887,7 +889,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         <View style={styles.subCont}>
           <Text style={styles.SubtotalTxt}>Subtotal</Text>
           <Text style={styles.SubtotalTxt}>
-            Rs.{' '}
+            {string.common.Rs}{' '}
             {getFormattedAmount(cartTotal + deliveryCharges + packagingCharges - productDiscount)}
           </Text>
         </View>
@@ -897,19 +899,25 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
               <Text style={styles.discountTxt}>Coupon Applied</Text>
               <Text style={styles.discountTxt}>({coupon?.coupon})</Text>
             </View>
-            <Text style={styles.discountTxt}>- Rs. {getFormattedAmount(couponDiscount)}</Text>
+            <Text style={styles.discountTxt}>
+              - {string.common.Rs} {getFormattedAmount(couponDiscount)}
+            </Text>
           </View>
         )}
         {burnHC != 0 && (
           <View style={{ ...styles.subCont, marginTop: couponDiscount != 0 ? 0 : 2 }}>
             <Text style={styles.discountTxt}>OneApollo HC</Text>
-            <Text style={styles.discountTxt}>- Rs. {getFormattedAmount(burnHC)}</Text>
+            <Text style={styles.discountTxt}>
+              - {string.common.Rs} {getFormattedAmount(burnHC)}
+            </Text>
           </View>
         )}
         <View style={styles.toPayBorder}></View>
         <View style={{ ...styles.subCont, marginTop: 0.02 * windowWidth }}>
           <Text style={styles.SubtotalTxt}>To Pay</Text>
-          <Text style={styles.grandTotalTxt}>Rs. {getFormattedAmount(grandTotal - burnHC)}</Text>
+          <Text style={styles.grandTotalTxt}>
+            {string.common.Rs} {getFormattedAmount(grandTotal - burnHC)}
+          </Text>
         </View>
       </View>
     );

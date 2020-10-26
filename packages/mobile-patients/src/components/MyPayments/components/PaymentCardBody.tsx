@@ -20,6 +20,7 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import PaymentStatusConstants from '../constants';
 import { LocalStrings } from '@aph/mobile-patients/src/strings/LocalStrings';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 interface PaymentCardBodyProps {
   item: any;
@@ -107,7 +108,7 @@ const PaymentCardBody: FC<PaymentCardBodyProps> = (props) => {
         </View>
         <View>
           <Text style={{ ...theme.viewStyles.text('M', 14, colors.CARD_HEADER, 1, 20) }}>
-            Rs. {price}
+            {string.common.Rs} {price}
           </Text>
         </View>
       </View>

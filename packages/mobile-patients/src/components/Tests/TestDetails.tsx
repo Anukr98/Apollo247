@@ -472,7 +472,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         </ScrollView>
         <StickyBottomComponent defaultBG style={styles.container}>
           <View style={{ marginBottom: 11, alignItems: 'flex-end' }}>
-            <Text style={styles.priceText}>Rs. {testInfo.Rate}</Text>
+            <Text style={styles.priceText}>
+              {string.common.Rs} {testInfo.Rate}
+            </Text>
           </View>
 
           <View style={styles.SeparatorStyle}></View>

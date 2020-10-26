@@ -30,8 +30,13 @@ import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFu
 import { AvailNowPopup } from './AvailNowPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { WebEngageEvents, WebEngageEventName, HdfcBenefitInfo } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+  HdfcBenefitInfo,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const { width } = Dimensions.get('window');
 
@@ -237,7 +242,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
           icon,
           availableCount,
           value._id,
-          webEngageEvent,
+          webEngageEvent
         );
       })
     );
@@ -320,7 +325,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     icon: string | null,
     availableCount: number,
     id: string,
-    webengageevent: string,
+    webengageevent: string
   ) => {
     return (
       <View style={[styles.cardStyle, { marginVertical: 10 }]}>
@@ -350,7 +355,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
 
   const handleWebengageEvents = (event: string) => {
     const eventAttributes: HdfcBenefitInfo = {
-      'Plan': plan,
+      Plan: plan,
       'User ID': g(currentPatient, 'id'),
     };
     const eventName = Hdfc_values.WEBENGAGE_EVENT_NAMES;
@@ -381,12 +386,12 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     message: string,
     availableCount: number,
     id: string,
-    webengageevent: string,
+    webengageevent: string
   ) => {
     handleWebengageEvents(webengageevent);
     const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_REDEEM_CLICKED] = {
       'User ID': g(currentPatient, 'id'),
-      'Benefit': type == Hdfc_values.WHATSAPP_OPEN_CHAT ? type : action,
+      Benefit: type == Hdfc_values.WHATSAPP_OPEN_CHAT ? type : action,
     };
     postWebEngageEvent(WebEngageEventName.HDFC_REDEEM_CLICKED, eventAttributes);
     if (type == Hdfc_values.REDIRECT) {
@@ -664,7 +669,9 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const renderHowToAvailContent = () => {
     const canUpgradeMembership = upgradePlanName;
     const smallCaseName = canUpgradeMembership ? canUpgradeMembership.toLowerCase() : '';
-    const displayPlanName = !!smallCaseName ? smallCaseName.charAt(0).toUpperCase() + smallCaseName.slice(1) : ''; // capitalize first character
+    const displayPlanName = !!smallCaseName
+      ? smallCaseName.charAt(0).toUpperCase() + smallCaseName.slice(1)
+      : ''; // capitalize first character
     return (
       <View
         style={{
@@ -672,7 +679,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         }}
       >
         <Text style={theme.viewStyles.text('SB', 13, '#007C9D', 1, 20, 0.35)}>
-          {`Complete transactions worth Rs.${upgradeTransactionValue} or more on the Apollo 24|7 app to unlock ${displayPlanName} membership​`}
+          {`Complete transactions worth ${string.common.Rs}${upgradeTransactionValue} or more on the Apollo 24|7 app to unlock ${displayPlanName} membership​`}
         </Text>
       </View>
     );
@@ -725,10 +732,14 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         <Text style={theme.viewStyles.text('M', 14, '#02475B', 1, 17, 0.35)}>
           Complete your first transaction to unlock your benefits
         </Text>
-        <Text style={{
-          ...theme.viewStyles.text('M', 14, '#02475B', 1, 27, 0.35),
-          marginTop: 5,
-        }}>How to Unlock</Text>
+        <Text
+          style={{
+            ...theme.viewStyles.text('M', 14, '#02475B', 1, 27, 0.35),
+            marginTop: 5,
+          }}
+        >
+          How to Unlock
+        </Text>
         <Text
           style={{
             ...theme.viewStyles.text('R', 13, '#007C9D', 1, 17, 0.35),

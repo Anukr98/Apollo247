@@ -460,7 +460,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const renderStatusCard = () => {
     const refNumberText = String(paymentRefId != '' && paymentRefId != null ? paymentRefId : '--');
     const orderIdText = 'Order ID: ' + String(displayId);
-    const priceText = 'Rs. ' + String(price);
+    const priceText = `${string.common.Rs} ` + String(price);
     return (
       <View style={[styles.statusCardStyle, { backgroundColor: statusCardColour() }]}>
         <View style={styles.statusCardSubContainerStyle}>{statusIcon()}</View>

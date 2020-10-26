@@ -37,6 +37,7 @@ import { AppsFlyerEventName } from '../helpers/AppsFlyerEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { getDate } from '@aph/mobile-patients/src/utils/dateUtil';
 import { Snackbar } from 'react-native-paper';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -213,7 +214,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   const renderStatusCard = () => {
     const refNumberText = String(refNo != '' && refNo != null ? refNo : '--');
     const orderIdText = 'Order ID: ' + String(orderAutoId);
-    const priceText = 'Rs. ' + String(totalAmount);
+    const priceText = `${string.common.Rs} ` + String(totalAmount);
     return (
       <View style={[styles.statusCardStyle, { backgroundColor: statusCardColour() }]}>
         <View style={styles.statusCardSubContainerStyle}>{statusIcon()}</View>

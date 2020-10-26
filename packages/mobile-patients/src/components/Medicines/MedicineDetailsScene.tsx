@@ -71,6 +71,7 @@ import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 import { ProductList } from '@aph/mobile-patients/src/components/Medicines/ProductList';
 import { ProductUpSellingCard } from '@aph/mobile-patients/src/components/Medicines/ProductUpSellingCard';
 import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const { width, height } = Dimensions.get('window');
 
@@ -259,7 +260,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
   const overview = medicineDetails?.PharmaOverview?.[0]?.Overview;
   const medicineOverview =
-    (!overview || typeof overview == 'string') ? [] : helpers.getMedicineOverview(overview || []);
+    !overview || typeof overview == 'string' ? [] : helpers.getMedicineOverview(overview || []);
 
   const sku = props.navigation.getParam('sku'); // 'MED0017';
 
@@ -1203,7 +1204,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                       <Text style={styles.textStyle}>{item.name}</Text>
                       {!!item.price && (
                         <Text style={theme.viewStyles.text('M', 12, '#02475b', 1, 20, 0.004)}>
-                          RS. {item.price}
+                          {string.common.Rs} {item.price}
                         </Text>
                       )}
                     </View>

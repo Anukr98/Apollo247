@@ -56,6 +56,7 @@ import {
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { FirebaseEvents, FirebaseEventName } from '../helpers/firebaseEvents';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   headerContainerStyle: {
@@ -578,10 +579,13 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       <StickyBottomComponent style={styles.stickyBottomComponentStyle}>
         <Button
           style={{ width: '66.66%' }}
-          title={`PAY : RS. ${grandTotal.toFixed(2)}`}
+          title={`PAY : ${string.common.Rs} ${grandTotal.toFixed(2)}`}
           onPress={() => {
             try {
-              CommonLogEvent(AppRoutes.TestsCheckoutScene, `PAY RS. ${grandTotal.toFixed(2)}`);
+              CommonLogEvent(
+                AppRoutes.TestsCheckoutScene,
+                `PAY ${string.common.Rs} ${grandTotal.toFixed(2)}`
+              );
             } catch (error) {
               CommonBugFender('TestsCheckoutScene_renderPayButton_try', error);
             }

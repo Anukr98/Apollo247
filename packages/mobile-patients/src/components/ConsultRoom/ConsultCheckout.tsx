@@ -37,6 +37,7 @@ import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents'
 import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEvents';
 import { saveSearchDoctor, saveSearchSpeciality } from '../../helpers/clientCalls';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -383,7 +384,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
           }}
         >
           <Text style={{ ...theme.viewStyles.text('SB', 15, theme.colors.SHERPA_BLUE, 1, 20) }}>
-            Rs. {price}
+            {string.common.Rs} {price}
           </Text>
         </View>
       </View>

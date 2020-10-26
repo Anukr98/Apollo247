@@ -6,6 +6,7 @@ import { getDiscountPercentage } from '@aph/mobile-patients/src/helpers/helperFu
 import { Image } from 'react-native-elements';
 import { AddToCartButtons } from '@aph/mobile-patients/src/components/Medicines/AddToCartButtons';
 import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -202,7 +203,9 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
       <View style={{ flexDirection: 'row' }}>
         <Text style={styles.specialpriceTextStyle}>
           {'('}
-          <Text style={{ textDecorationLine: 'line-through' }}>{`Rs. ${price}`}</Text>
+          <Text
+            style={{ textDecorationLine: 'line-through' }}
+          >{`${string.common.Rs} ${price}`}</Text>
           {')'}
         </Text>
         <Text style={styles.offTextStyle}>{off_text}</Text>
@@ -216,7 +219,9 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
         {'Out Of Stock'}
       </Text>
     ) : (
-      <Text style={styles.priceTextCollapseStyle}>Rs. {specialPrice || price}</Text>
+      <Text style={styles.priceTextCollapseStyle}>
+        {string.common.Rs} {specialPrice || price}
+      </Text>
     );
   };
 

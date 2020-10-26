@@ -109,7 +109,6 @@ const styles = StyleSheet.create({
   mainViewStyle: {
     backgroundColor: '#f7f8f5',
     marginTop: 16,
-    // width: width - 40,
     width: width - 40,
     height: 'auto',
     maxHeight: height - 98,
@@ -120,9 +119,7 @@ const styles = StyleSheet.create({
 });
 
 export interface ConsultOverlayProps extends NavigationScreenProps {
-  // dispalyoverlay: boolean;
   setdisplayoverlay: (arg0: boolean) => void;
-  // setdisplayoverlay: () => void;
   patientId: string;
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
   clinics: getDoctorDetailsById_getDoctorDetailsById_doctorHospital[];
@@ -328,12 +325,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     };
     return eventAttributes;
   };
-  // const getConsultationBookedFirebaseEventAttributes = () => {
-  //   const eventAttributes: FirebaseEvents[FirebaseEventName.IN_APP_PURCHASE] = {
-  //     type: 'Consultation',
-  //   };
-  //   return eventAttributes;
-  // };
 
   const makePayment = (
     id: string,
@@ -373,16 +364,11 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           )
         );
         try {
-          // postFirebaseEvent(
-          //   FirebaseEventName.IN_APP_PURCHASE,
-          //   getConsultationBookedFirebaseEventAttributes()
-          // );
         } catch (error) {}
 
         handleOrderSuccess(`${g(props.doctor, 'firstName')} ${g(props.doctor, 'lastName')}`);
       })
       .catch((e) => {
-        // const error = g(e, 'graphQLErrors', '0', 'message');
         handleGraphQlError(e);
       })
       .finally(() => setshowSpinner(false));
@@ -463,10 +449,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     };
     console.log(appointmentInput, 'input');
     const price = coupon ? doctorDiscountedFees : Number(doctorFees);
-    //   VirtualConsultationFee !== props.doctor!.onlineConsultationFees &&
-    //   Number(VirtualConsultationFee) > 0
-    //     ? VirtualConsultationFee
-    //     : props.doctor!.onlineConsultationFees;
 
     if (price == 0) {
       setshowSpinner(true);
@@ -614,7 +596,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     CommonLogEvent(AppRoutes.DoctorDetails, 'Book Appointment clicked');
     CommonLogEvent(
       AppRoutes.DoctorDetails,
-      `PAY Rs. ${
+      `PAY ${string.common.Rs} ${
         tabs[0].title === selectedTab
           ? props.doctor!.onlineConsultationFees
           : props.doctor!.physicalConsultationFees
@@ -671,7 +653,10 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   };
 
   const renderBottomButton = () => {
-    const buttonText = `PAY Rs. ${(coupon ? doctorDiscountedFees : Number(doctorFees)).toFixed(2)}`;
+    const buttonText = `PAY ${string.common.Rs} ${(coupon
+      ? doctorDiscountedFees
+      : Number(doctorFees)
+    ).toFixed(2)}`;
     return (
       <StickyBottomComponent
         defaultBG
@@ -682,7 +667,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         }}
       >
         <Button
-          title={buttonText}
+          title={string.common.proceedToCheckout}
           disabled={
             disablePay
               ? true
@@ -697,61 +682,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           }
           onPress={onPressPay}
         />
-        {/* <Button
-          title={
-            tabs[0].title === selectedTab ? (
-              <Text>
-                PAY{' '}
-                {Number(VirtualConsultationFee) <= 0 ||
-                VirtualConsultationFee === props.doctor!.onlineConsultationFees ? (
-                  <Text>{`Rs. ${props.doctor!.onlineConsultationFees}`}</Text>
-                ) : (
-                  <>
-                    <Text
-                      style={{
-                        textDecorationLine: 'line-through',
-                        textDecorationStyle: 'solid',
-                      }}
-                    >
-                      {`(Rs. ${props.doctor!.onlineConsultationFees})`}
-                    </Text>
-                    <Text> Rs. {VirtualConsultationFee}</Text>
-                  </>
-                )}
-                ||* {VirtualConsultationFee !== props.doctor!.onlineConsultationFees &&
-                  Number(VirtualConsultationFee) > 0 && (
-                    <>
-                      <Text
-                        style={{
-                          textDecorationLine: 'line-through',
-                          textDecorationStyle: 'solid',
-                        }}
-                      >
-                        {`(Rs. ${props.doctor!.onlineConsultationFees})`}
-                      </Text>
-                      <Text> </Text>
-                    </>
-                  )}
-                Rs. {VirtualConsultationFee} *||
-              </Text>
-            ) : (
-              `PAY Rs. ${props.doctor!.physicalConsultationFees}`
-            )
-          }
-          disabled={
-            disablePay
-              ? true
-              : tabs[0].title === selectedTab &&
-                isConsultOnline &&
-                availableInMin! <= 60 &&
-                0 < availableInMin!
-              ? false
-              : selectedTimeSlot === ''
-              ? true
-              : false
-          }
-          onPress={onPressPay}
-        /> */}
       </StickyBottomComponent>
     );
   };
@@ -1009,11 +939,15 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       <View style={{ ...theme.viewStyles.card(16, 10, 10, theme.colors.CARD_BG) }}>
         <View style={localStyles.rowSpaceBetweenStyle}>
           <Text style={localStyles.blueTextStyle}>Subtotal</Text>
-          <Text style={[localStyles.blueRightTextStyle]}>Rs. {total}</Text>
+          <Text style={[localStyles.blueRightTextStyle]}>
+            {string.common.Rs} {total}
+          </Text>
         </View>
         <View style={localStyles.rowSpaceBetweenStyle}>
           <Text style={localStyles.blueTextStyle}>{`Coupon (${coupon})`}</Text>
-          <Text style={[localStyles.blueRightTextStyle]}>- Rs. {couponDiscount}</Text>
+          <Text style={[localStyles.blueRightTextStyle]}>
+            - {string.common.Rs} {couponDiscount}
+          </Text>
         </View>
         <Spearator style={{ marginTop: 16, marginBottom: 10 }} />
         <View style={localStyles.rowSpaceBetweenStyle}>
@@ -1024,7 +958,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               theme.viewStyles.text('B', 16, '#01475b', 1, 24),
             ]}
           >
-            Rs. {amountToPay}
+            {string.common.Rs} {amountToPay}
           </Text>
         </View>
       </View>
@@ -1182,7 +1116,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                   setselectedClinic={setselectedClinic}
                 />
               )}
-              {renderApplyCoupon()}
+              {/* {renderApplyCoupon()} */}
               {renderPriceAndDiscount()}
               {selectedTab === tabs[0].title && renderDisclamer()}
               {!g(currentPatient, 'whatsAppConsult') ? (
