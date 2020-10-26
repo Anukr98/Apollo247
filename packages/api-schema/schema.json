@@ -4232,6 +4232,51 @@
             "deprecationReason": null
           },
           {
+            "name": "findDiagnosticsByItemIDsAndCityID",
+            "description": null,
+            "args": [
+              {
+                "name": "cityID",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "Int",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null
+              },
+              {
+                "name": "itemIDs",
+                "description": null,
+                "type": {
+                  "kind": "LIST",
+                  "name": null,
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "Int",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "SearchDiagnosticsResult",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "searchDiagnosticsByCityID",
             "description": null,
             "args": [
@@ -4451,6 +4496,37 @@
             "deprecationReason": null
           },
           {
+            "name": "getDiagnosticsHomePageItems",
+            "description": null,
+            "args": [
+              {
+                "name": "cityID",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "Int",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "DiagnosticsData",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "getDiagnosticsHCCharges",
             "description": null,
             "args": [
@@ -4559,6 +4635,43 @@
               "ofType": {
                 "kind": "OBJECT",
                 "name": "DiagnosticOrderResult",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "getDiagnosticOrderItem",
+            "description": null,
+            "args": [
+              {
+                "name": "diagnosticOrderID",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null
+              },
+              {
+                "name": "itemID",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "Int",
+                  "ofType": null
+                },
+                "defaultValue": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "DiagnosticOrderItemResult",
                 "ofType": null
               }
             },
@@ -29908,7 +30021,7 @@
         "interfaces": null,
         "enumValues": [
           {
-            "name": "SAMPLE_RECIEVED_IN_LAB",
+            "name": "SAMPLE_RECEIVED_IN_LAB",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
@@ -30125,7 +30238,7 @@
             "args": [],
             "type": {
               "kind": "SCALAR",
-              "name": "String",
+              "name": "Int",
               "ofType": null
             },
             "isDeprecated": false,
@@ -30149,6 +30262,29 @@
             "type": {
               "kind": "OBJECT",
               "name": "DiagnosticOrders",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "DiagnosticOrderItemResult",
+        "description": null,
+        "fields": [
+          {
+            "name": "diagnostics",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "OBJECT",
+              "name": "Diagnostics",
               "ofType": null
             },
             "isDeprecated": false,
@@ -30307,20 +30443,91 @@
               "name": null,
               "ofType": {
                 "kind": "OBJECT",
-                "name": "DiagnosticOrdersStatus",
+                "name": "getDiagnosticsOrderStatusResponse",
                 "ofType": null
               }
             },
             "isDeprecated": false,
             "deprecationReason": null
-          },
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "getDiagnosticsOrderStatusResponse",
+        "description": null,
+        "fields": [
           {
-            "name": "orderDetails",
+            "name": "orderStatus",
             "description": null,
             "args": [],
             "type": {
-              "kind": "OBJECT",
-              "name": "DiagnosticOrders",
+              "kind": "ENUM",
+              "name": "DIAGNOSTIC_ORDER_STATUS",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "statusDate",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "DateTime",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "itemId",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "Int",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "packageId",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "Int",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "itemName",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "packageName",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
               "ofType": null
             },
             "isDeprecated": false,
