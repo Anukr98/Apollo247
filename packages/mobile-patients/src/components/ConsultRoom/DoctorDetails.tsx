@@ -80,6 +80,7 @@ import {
 } from '../ui/Icons';
 import { CareLogo } from '@aph/mobile-patients/src/components/ui/CareLogo';
 // import { NotificationListener } from '../NotificationListener';
+import { calculateCareDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
 
 const { height, width } = Dimensions.get('window');
 
@@ -260,9 +261,14 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [isFocused, setisFocused] = useState<boolean>(false);
   const callSaveSearch = props.navigation.getParam('callSaveSearch');
   const [secretaryData, setSecretaryData] = useState<any>([]);
-  const isCareDoctor = doctorDetails?.doctorPricing?.[0]?.status === PLAN_STATUS.ACTIVE;
-  const careDoctorMRPPrice = doctorDetails?.doctorPricing?.[0]?.mrp;
-  const careDoctorSlashedPrice = doctorDetails?.doctorPricing?.[0]?.slashed_price;
+  const careDoctorDetails = calculateCareDoctorPricing(doctorDetails);
+  const {
+    isCareDoctor,
+    physicalConsultMRPPrice,
+    onlineConsultMRPPrice,
+    onlineConsultSlashedPrice,
+    physicalConsultSlashedPrice,
+  } = careDoctorDetails;
 
   useEffect(() => {
     if (!currentPatient) {
@@ -377,31 +383,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       });
   };
 
-  // const appointmentData = useQuery<getAppointmentHistory>(GET_APPOINTMENT_HISTORY, {
-  //   fetchPolicy: 'no-cache',
-  //   variables: {
-  //     appointmentHistoryInput: {
-  //       patientId: currentPatient ? currentPatient.id : '',
-  //       doctorId: doctorId ? doctorId : '',
-  //     },
-  //   },
-  // });
-  // if (appointmentData.error) {
-  //   console.log('error', appointmentData.error);
-  // } else {
-  //   // console.log(appointmentData, '00000000000');
-  //   try {
-  //     if (
-  //       appointmentData &&
-  //       appointmentData.data &&
-  //       appointmentData.data.getAppointmentHistory &&
-  //       appointmentHistory !== appointmentData.data.getAppointmentHistory.appointmentsHistory
-  //     ) {
-  //       setAppointmentHistory(appointmentData.data.getAppointmentHistory.appointmentsHistory);
-  //     }
-  //   } catch {}
-  // }
-
   const todayDate = new Date().toISOString().slice(0, 10);
 
   const fetchNextAvailableSlots = (doctorIds: string[]) => {
@@ -509,66 +490,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     );
   };
 
-  // const { data, error } = useQuery<getDoctorDetailsById>(GET_DOCTOR_DETAILS_BY_ID, {
-  //   // variables: { id: 'a6ef960c-fc1f-4a12-878a-12063788d625' },
-  //   fetchPolicy: 'no-cache',
-  //   variables: { id: doctorId },
-  // });
-  // if (error) {
-  //   setshowSpinner(false);
-  //   console.log('error', error);
-  // } else {
-  //   try {
-  //     console.log('getDoctorDetailsById', data);
-  //     if (data && data.getDoctorDetailsById && doctorDetails !== data.getDoctorDetailsById) {
-  //       setDoctorDetails(data.getDoctorDetailsById);
-  //       setDoctorId(data.getDoctorDetailsById.id);
-  //       setshowSpinner(false);
-  //       fetchNextAvailableSlots([data.getDoctorDetailsById.id]);
-  //     }
-  //   } catch {}
-  // }
-
-  // const availability = useQuery<GetDoctorNextAvailableSlot>(NEXT_AVAILABLE_SLOT, {
-  //   fetchPolicy: 'no-cache',
-  //   variables: {
-  //     DoctorNextAvailableSlotInput: {
-  //       doctorIds: doctorDetails ? [doctorDetails.id] : [],
-  //       availableDate: todayDate,
-  //     },
-  //   },
-  // });
-  // if (availability.error) {
-  //   console.log('error', availability.error);
-  // } else {
-  //   try {
-  //     // console.log(availability.data, 'availabilityData', 'availableSlots');
-  //     const doctorAvailalbeSlots = g(
-  //       availability,
-  //       'data',
-  //       'getDoctorNextAvailableSlot',
-  //       'doctorAvailalbeSlots'
-  //     );
-  //     // console.log(doctorAvailalbeSlots, '1234567');
-  //     if (doctorAvailalbeSlots && availableInMin === undefined) {
-  //       const nextSlot = doctorAvailalbeSlots ? g(doctorAvailalbeSlots[0], 'availableSlot') : null;
-  //       const nextPhysicalSlot = doctorAvailalbeSlots
-  //         ? g(doctorAvailalbeSlots[0], 'physicalAvailableSlot')
-  //         : null;
-
-  //       // console.log(nextSlot, 'nextSlot', nextPhysicalSlot);
-  //       if (nextSlot) {
-  //         const timeDiff: Number = timeDiffFromNow(nextSlot);
-  //         setavailableInMin(timeDiff);
-  //       }
-  //       if (nextPhysicalSlot) {
-  //         const timeDiff: Number = timeDiffFromNow(nextPhysicalSlot);
-  //         setavailableInMinPhysical(timeDiff);
-  //       }
-  //     }
-  //   } catch (error) {}
-  // }
-
   const formatTime = (time: string) => {
     const IOSFormat = `${todayDate}T${time}.000Z`;
     return Moment(new Date(IOSFormat), 'HH:mm:ss.SSSz').format('hh:mm A');
@@ -592,7 +513,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         DoctorName={doctorDetails ? doctorDetails.fullName : ''}
         nextAppointemntOnlineTime={availableTime}
         nextAppointemntInPresonTime={physicalAvailableTime}
-        careDoctorPricing={doctorDetails?.doctorPricing}
+        careDoctorDetails={careDoctorDetails}
       />
     );
   };
@@ -614,17 +535,19 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       });
   };
 
-  const renderCareDoctorPricing = () => {
+  const renderCareDoctorPricing = (consultType: ConsultMode) => {
     return (
       <View style={{ paddingBottom: 16 }}>
         <Text style={styles.carePrice}>
           {string.common.Rs}
-          {careDoctorMRPPrice}
+          {consultType === ConsultMode.ONLINE ? onlineConsultMRPPrice : physicalConsultMRPPrice}
         </Text>
         <View style={styles.rowContainer}>
           <Text style={styles.careDiscountedPrice}>
             {string.common.Rs}
-            {careDoctorSlashedPrice}
+            {consultType === ConsultMode.ONLINE
+              ? onlineConsultSlashedPrice
+              : physicalConsultSlashedPrice}
           </Text>
           <CareLogo style={styles.smallCareLogo} textStyle={styles.smallCareLogoText} />
         </View>
@@ -767,7 +690,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     <View>
                       <Text style={styles.onlineConsultLabel}>Consult In-App</Text>
                       {isCareDoctor ? (
-                        renderCareDoctorPricing()
+                        renderCareDoctorPricing(ConsultMode.ONLINE)
                       ) : (
                         <Text style={styles.onlineConsultAmount}>
                           {Number(VirtualConsultationFee) <= 0 ||
@@ -862,7 +785,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                         <>
                           <Text style={styles.onlineConsultLabel}>Meet in Person</Text>
                           {isCareDoctor ? (
-                            renderCareDoctorPricing()
+                            renderCareDoctorPricing(ConsultMode.PHYSICAL)
                           ) : (
                             <Text style={styles.onlineConsultAmount}>
                               {string.common.Rs} {doctorDetails.physicalConsultationFees}
@@ -1306,30 +1229,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           <View style={{ height: 92 }} />
           {/* </ScrollView> */}
         </Animated.ScrollView>
-
-        {/* {showSpinner ? null : (
-          <StickyBottomComponent defaultBG>
-            <Button
-              title={'BOOK APPOINTMENT'}
-              onPress={() => {
-                postBookAppointmentWEGEvent();
-                // callPermissions();
-                getNetStatus()
-                  .then((status) => {
-                    if (status) {
-                      setdisplayoverlay(true);
-                    } else {
-                      setshowOfflinePopup(true);
-                    }
-                  })
-                  .catch((e) => {
-                    CommonBugFender('DoctorDetails_getNetStatus', e);
-                  });
-              }}
-              style={{ marginHorizontal: 60, flex: 1 }}
-            />
-          </StickyBottomComponent>
-        )} */}
       </SafeAreaView>
 
       {displayoverlay && doctorDetails && (
@@ -1362,10 +1261,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           transform: [{ translateY: headMov }],
         }}
       >
-        {/* <Animated.Text>
-          <Text>Hey, Hi</Text>
-        </Animated.Text> */}
-        {/* <Text>hello</Text> */}
         <View
           style={{
             height: 160,
@@ -1392,31 +1287,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   <CareLogo style={styles.careLogo} textStyle={styles.careLogoText} />
                 )}
               </Animated.View>
-              {/* <TouchableOpacity
-                activeOpacity={1}
-                onPress={() => {
-                  setShowVideo(true);
-                }}
-                style={{
-                  position: 'absolute',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  height: 40,
-                  width: 40,
-                }}
-              >
-                <View
-                  style={{
-                    position: 'absolute',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    height: 40,
-                    width: 40,
-                  }}
-                >
-                  <VideoPlayIcon style={{ height: 33, width: 33 }} />
-                </View>
-              </TouchableOpacity> */}
             </>
           ) : (
             !showVideo &&
@@ -1430,32 +1300,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 }}
               >
                 <DoctorPlaceholderImage style={{ top: 0, height: 140, width: 140 }} />
-
-                {/* <TouchableOpacity
-                  activeOpacity={1}
-                  onPress={() => {
-                    setShowVideo(true);
-                  }}
-                  style={{
-                    position: 'absolute',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    height: 40,
-                    width: 40,
-                  }}
-                >
-                  <View
-                    style={{
-                      position: 'absolute',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      height: 40,
-                      width: 40,
-                    }}
-                  >
-                    <VideoPlayIcon style={{ height: 33, width: 33 }} />
-                  </View>
-                </TouchableOpacity> */}
               </View>
             )
           )}
@@ -1473,11 +1317,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           borderBottomWidth: 0,
         }}
         leftIcon="backArrow"
-        // rightComponent={
-        //   <TouchableOpacity activeOpacity={1} onPress={onShare}>
-        //     <ShareGreen />
-        //   </TouchableOpacity>
-        // }
         onPressLeftIcon={() => moveBack()}
       />
       {showSpinner && <Spinner />}
@@ -1489,7 +1328,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           }}
         />
       )}
-      {/* <NotificationListener navigation={props.navigation} /> */}
     </View>
   );
 };

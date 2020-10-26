@@ -56,6 +56,7 @@ import { NavigationScreenProps } from 'react-navigation';
 import { SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors } from '../../graphql/types/SearchDoctorAndSpecialtyByName';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
 import { CareLogo } from '@aph/mobile-patients/src/components/ui/CareLogo';
+import { calculateCareDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
 
 const styles = StyleSheet.create({
   doctorView: {
@@ -163,11 +164,16 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const rowData = props.rowData;
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
-  const isCareDoctor = rowData?.doctorPricing?.[0]?.status === PLAN_STATUS.ACTIVE;
-  const careDoctorDiscountedPrice =
-    rowData?.doctorPricing?.[0]?.mrp - rowData?.doctorPricing?.[0]?.slashed_price;
-  const careDoctorMRPPrice = rowData?.doctorPricing?.[0]?.mrp;
-  const careDoctorSlashedPrice = rowData?.doctorPricing?.[0]?.slashed_price;
+  const careDoctorDetails = calculateCareDoctorPricing(rowData);
+  const {
+    isCareDoctor,
+    physicalConsultMRPPrice,
+    onlineConsultMRPPrice,
+    onlineConsultSlashedPrice,
+    minMrp,
+    minSlashedPrice,
+    minDiscountedPrice,
+  } = careDoctorDetails;
 
   useEffect(() => {
     if (!currentPatient) {
@@ -230,15 +236,35 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
 
   const renderCareDoctorsFee = () => {
     return (
-      <View style={{ flexDirection: 'row', marginTop: 5, alignItems: 'center' }}>
-        <Text style={styles.carePrice}>
-          {string.common.Rs}
-          {careDoctorMRPPrice}
-        </Text>
-        <Text style={styles.careDiscountedPrice}>
-          {string.common.Rs}
-          {careDoctorSlashedPrice}
-        </Text>
+      <View style={{ marginTop: 5 }}>
+        {physicalConsultMRPPrice === onlineConsultMRPPrice ? (
+          <View style={styles.rowContainer}>
+            <Text style={styles.carePrice}>
+              {string.common.Rs}
+              {onlineConsultMRPPrice}
+            </Text>
+            <Text style={styles.careDiscountedPrice}>
+              {string.common.Rs}
+              {onlineConsultSlashedPrice}
+            </Text>
+          </View>
+        ) : (
+          <View style={styles.rowContainer}>
+            <Text
+              style={{ ...theme.viewStyles.text('M', 10, theme.colors.SKY_BLUE), paddingTop: 3 }}
+            >
+              {physicalConsultMRPPrice && onlineConsultMRPPrice && `Starts at  `}
+            </Text>
+            <Text style={styles.carePrice}>
+              {string.common.Rs}
+              {minMrp}
+            </Text>
+            <Text style={styles.careDiscountedPrice}>
+              {string.common.Rs}
+              {minSlashedPrice}
+            </Text>
+          </View>
+        )}
       </View>
     );
   };
@@ -445,9 +471,9 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               <Text style={styles.doctorNameStyles}>{rowData.displayName}</Text>
               {isCareDoctor ? renderSpecialityCareView() : renderSpecialityNonCareView()}
               {isCareDoctor ? renderCareDoctorsFee() : calculatefee(rowData, isBoth, isOnline)}
-              {isCareDoctor && careDoctorDiscountedPrice > -1 && (
+              {isCareDoctor && minDiscountedPrice > -1 && (
                 <Text style={theme.viewStyles.text('M', 10, theme.colors.DEEP_RED)}>
-                  You save ₹ {careDoctorDiscountedPrice} on this consult
+                  You save ₹ {minDiscountedPrice} on this consult
                 </Text>
               )}
               <Text style={styles.educationTextStyles} numberOfLines={props.numberOfLines}>

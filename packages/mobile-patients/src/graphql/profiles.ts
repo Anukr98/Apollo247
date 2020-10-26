@@ -753,6 +753,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
         available_to
         status
         mrp
+        appointment_type
       }
       specialty {
         id

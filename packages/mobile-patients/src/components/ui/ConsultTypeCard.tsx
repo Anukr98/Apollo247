@@ -136,7 +136,7 @@ export interface ConsultTypeCardProps {
   DoctorName: string | null;
   nextAppointemntOnlineTime: string;
   nextAppointemntInPresonTime: string;
-  careDoctorPricing?: (getDoctorDetailsById_getDoctorDetailsById_doctorPricing | null)[] | null;
+  careDoctorDetails?: any;
 }
 
 type stepsObject = {
@@ -155,28 +155,25 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
     DoctorName,
     nextAppointemntOnlineTime,
     nextAppointemntInPresonTime,
-    careDoctorPricing,
+    careDoctorDetails,
   } = props;
 
   const { currentPatient } = useAllCurrentPatients();
 
   const [consultDoctorName, setConsultDocotrName] = useState<string>(DoctorName ? DoctorName : '');
-  const isCareDoctor = careDoctorPricing?.[0]?.status === PLAN_STATUS.ACTIVE;
-  const careDoctorMRPPrice = careDoctorPricing?.[0]?.mrp;
-  const careDoctorSlashedPrice = careDoctorPricing?.[0]?.slashed_price;
-
+  const { isCareDoctor, onlineConsultMRPPrice, onlineConsultSlashedPrice } = careDoctorDetails;
   const renderCareDoctorPricing = () => {
     return (
       <View style={{ justifyContent: 'center' }}>
         <Text style={styles.carePrice}>
           {string.common.Rs}
-          {careDoctorMRPPrice}
+          {onlineConsultMRPPrice}
         </Text>
         <View style={styles.rowContainer}>
           <CareLogo style={styles.careLogo} textStyle={styles.careLogoText} />
           <Text style={styles.careDiscountedPrice}>
             {string.common.Rs}
-            {careDoctorSlashedPrice}
+            {onlineConsultSlashedPrice}
           </Text>
         </View>
       </View>

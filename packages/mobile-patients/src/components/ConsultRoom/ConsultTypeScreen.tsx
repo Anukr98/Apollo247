@@ -47,6 +47,7 @@ import { useAllCurrentPatients } from '../../hooks/authHooks';
 import { CommonBugFender } from '../../FunctionHelpers/DeviceHelper';
 import moment from 'moment';
 import { CareLogo } from '@aph/mobile-patients/src/components/ui/CareLogo';
+import { calculateCareDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
 
 const styles = StyleSheet.create({
   mainContainer: {
@@ -205,37 +206,16 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
   const { currentPatientId, currentPatient } = useAllCurrentPatients();
   const [doctorDetails, setdoctorDetails] = useState<getDoctorDetailsById_getDoctorDetailsById>();
   const callSaveSearch = props.navigation.getParam('callSaveSearch');
-  const isCareDoctor = doctorDetails?.doctorPricing?.[0]?.status === PLAN_STATUS.ACTIVE;
-  const careDoctorMRPPrice = doctorDetails?.doctorPricing?.[0]?.mrp;
-  const careDoctorSlashedPrice = doctorDetails?.doctorPricing?.[0]?.slashed_price;
+  const careDoctorDetails = calculateCareDoctorPricing(doctorDetails);
+  const {
+    isCareDoctor,
+    physicalConsultMRPPrice,
+    onlineConsultMRPPrice,
+    onlineConsultSlashedPrice,
+    physicalConsultSlashedPrice,
+  } = careDoctorDetails;
 
   const client = useApolloClient();
-
-  // useEffect(() => {
-  //   if (DoctorId && currentPatientId) {
-  //     setLoading && setLoading(true);
-  //     client
-  //       .query<getPastAppointmentsCount, getPastAppointmentsCountVariables>({
-  //         query: PAST_APPOINTMENTS_COUNT,
-  //         variables: {
-  //           doctorId: DoctorId,
-  //           patientId: currentPatientId || '',
-  //         },
-  //         fetchPolicy: 'no-cache',
-  //       })
-  //       .then((data) => {
-  //         const count = g(data, 'data', 'getPastAppointmentsCount', 'count');
-  //         console.log('getPastAppointmentsCount', data);
-  //         if (count && count > 0) {
-  //           setHideCheckbox(true);
-  //         }
-  //         setLoading && setLoading(false);
-  //       })
-  //       .catch((e) => {
-  //         CommonBugFender('ConsultTypeScreen_getCount', e);
-  //       });
-  //   }
-  // }, [DoctorId, client, currentPatientId, setLoading]);
 
   useEffect(() => {
     fetchDoctorDetails(DoctorId);
@@ -291,35 +271,23 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
       </View>
     );
   };
-  const renderCheckbox = () => {
-    return (
-      <View style={styles.checkboxContainer}>
-        <TouchableOpacity
-          activeOpacity={1}
-          style={{ marginLeft: 17 }}
-          onPress={() => setConsultedChecked(!consultedChecked)}
-        >
-          {consultedChecked ? <CheckedIcon /> : <CheckUnselectedIcon />}
-        </TouchableOpacity>
-        <Text style={styles.checkboxTextStyle}>
-          {string.consultType.checkBoxText.replace('{0}', DoctorName)}
-        </Text>
-      </View>
-    );
-  };
 
-  const renderCareDoctorPricing = () => {
+  const renderCareDoctorPricing = (heading: string) => {
     return (
       <View style={{ justifyContent: 'center' }}>
         <Text style={styles.carePrice}>
           {string.common.Rs}
-          {careDoctorMRPPrice}
+          {heading === string.consultType.online.heading
+            ? onlineConsultMRPPrice
+            : physicalConsultMRPPrice}
         </Text>
         <View style={styles.rowContainer}>
           <CareLogo style={styles.careLogo} textStyle={styles.careLogoText} />
           <Text style={styles.careDiscountedPrice}>
             {string.common.Rs}
-            {careDoctorSlashedPrice}
+            {heading === string.consultType.online.heading
+              ? onlineConsultSlashedPrice
+              : physicalConsultSlashedPrice}
           </Text>
         </View>
       </View>
@@ -351,9 +319,9 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
             ) : null}
           </View>
           {isCareDoctor ? (
-            renderCareDoctorPricing()
+            renderCareDoctorPricing(heading)
           ) : (
-            <Text style={styles.priceTextStyle}>{`Rs. ${price}`}</Text>
+            <Text style={styles.priceTextStyle}>{`${string.common.Rs} ${price}`}</Text>
           )}
         </View>
         <View style={styles.stepsMainContainer}>
