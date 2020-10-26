@@ -84,7 +84,7 @@ export enum WebEngageEventName {
   CONSULTED_WITH_DOCTOR_BEFORE = 'Chat Window Consulted with doctor before alert',
   DOCTOR_SPECIALITY_SEARCH_NO_RESULT = 'Doctor Speciality Fuzzy Search No Result',
   CONFIRM_LOCATION = 'Confirm Location',
-
+  
   MY_ORDERS_CLICKED = 'My Orders Clicked',
   ORDER_SUMMARY_CLICKED = 'Order Summary Clicked',
   PHARMACY_MY_ORDER_TRACKING_CLICKED = 'Pharmacy My Order Tracking Clicked',
@@ -740,6 +740,8 @@ export interface WebEngageEvents {
     'Items in cart': object[];
   };
   [WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED]: {
+    'Patient UHID': string;
+    'Patient Number': string;
     'OrderID:': string;
     'Sample Collection Date': string; //Date
   };
@@ -1265,7 +1267,7 @@ export interface WebEngageEvents {
     Response_tat: string;
     Response_tatU: number;
   };
-
+ 
   [WebEngageEventName.PHARMACY_CART_SELECT_DELIVERY_ADDRESS_CLICKED]: {
     'Customer ID': string;
   };

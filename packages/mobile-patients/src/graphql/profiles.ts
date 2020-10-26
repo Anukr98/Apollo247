@@ -1449,11 +1449,28 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
             id
             itemId
             itemName
+            itemType	
+            testPreparationData
           }
         }
       }
     }
   }
+`;
+
+export const GET_DIAGNOSTIC_ORDER_STATUS = gql`	
+  query getDiagnosticsOrderStatus($diagnosticOrderId: String) {	
+    getDiagnosticsOrderStatus(diagnosticOrderId: $diagnosticOrderId) {	
+      ordersList{	
+        statusDate	
+        orderStatus	
+        itemId	
+        itemName	
+        packageId	
+        packageName	
+      }	
+    }	
+  }	
 `;
 
 export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
@@ -1497,6 +1514,12 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
             fromAgeInDays
             collectionType
           }
+        }
+        diagnosticOrdersStatus{	
+          orderStatus	
+          itemId	
+          statusDate	
+          packageId	
         }
       }
     }

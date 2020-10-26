@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { Dimensions, StyleSheet, Text, View } from 'react-native';
 import { getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList } from '../graphql/types/getDiagnosticOrderDetails';
 import moment from 'moment';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import {
   g,
   formatTestSlotWithBuffer,
@@ -25,7 +26,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#02475b',
     borderBottomWidth: 2,
     marginVertical: 10,
-    marginTop: height * 0.22,
+    marginTop: height * 0.04, //0.22
   },
   hideText: {
     ...theme.fonts.IBMPlexSansMedium(16),
@@ -100,21 +101,20 @@ export interface TestOrderSummaryViewProps {
 }
 
 export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orderDetails }) => {
+  const { currentPatient } = useAllCurrentPatients();
   const getFormattedDateTime = (time: string) => {
     return moment(time).format('D MMM YYYY | hh:mm A');
   };
 
-  //need to add
-  // useEffect(()=>{
-  //   const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED] = {
-  //     'Patient UHID': orderDetails.uhid, //should come in order details
-  //     'Patient Number': orderDetails.mobileNumber,
-  //     'OrderID:': orderDetails.id,
-  //     'Sample Collection Date': orderDetails.diagnosticDate ;
-  //   };
-  //   postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED, eventAttributes);
-
-  // },[])
+  useEffect(() => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED] = {
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Patient Number': g(currentPatient, 'mobileNumber'),
+      'OrderID:': orderDetails.id,
+      'Sample Collection Date': orderDetails.diagnosticDate,
+    };
+    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED, eventAttributes);
+  }, []);
 
   const formatSlot = (slot: string /*07:00-07:30 */) => {
     /**
@@ -141,6 +141,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
   );
 
   const HomeCollectionCharges = orderDetails?.totalPrice! - totalIndividualDiagonsticsCharges!;
+  const grossCharges = totalIndividualDiagonsticsCharges!;
 
   const orderLineItems = orderDetails!.diagnosticOrderLineItems || [];
   return (
@@ -162,7 +163,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
           <Text style={styles.orderName}>Date/Time</Text>
           <Text style={styles.hideText}>{getFormattedDateTime(orderDetails.createdDate)}</Text>
         </View>
-        {!!orderDetails.slotTimings && (
+        {/* {!!orderDetails.slotTimings && (
           <View style={styles.subView}>
             <Text style={styles.orderName}>Pickup Date</Text>
             <Text style={styles.hideText}>
@@ -177,7 +178,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
               orderDetails.slotTimings
             )}`}</Text>
           </View>
-        )}
+        )} */}
       </View>
       <View style={styles.horizontalline} />
       <View style={styles.headeingView}>
@@ -207,13 +208,43 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
       {/**
        * HOME COLLECTION CHARGES
        */}
+      <View
+        style={{
+          borderBottomColor: '#02475b',
+          borderBottomWidth: 2,
+          marginVertical: 10,
+          marginTop: height * 0.1,
+        }}
+      />
+      <View
+        style={{
+          justifyContent: 'space-between',
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          marginTop: 18,
+        }}
+      >
+        <View style={{ flex: 1 }}>
+          <Text style={styles.commonText}></Text>
+        </View>
+        <View style={{ flex: 1, alignItems: 'flex-end' }}>
+          <Text style={[styles.commonText, { ...theme.fonts.IBMPlexSansMedium(10) }]}>
+            GROSS AMOUNT
+          </Text>
+        </View>
+        <View style={{ flex: 1, alignItems: 'center' }}>
+          <Text style={styles.commonText}>Rs.{totalIndividualDiagonsticsCharges}</Text>
+        </View>
+      </View>
       {!!HomeCollectionCharges && (
         <View style={styles.commonTax}>
           <View style={{ flex: 1 }}>
-            <Text style={styles.commonText}>Home Collection Charges</Text>
+            <Text style={styles.commonText}></Text>
           </View>
           <View style={{ flex: 1, alignItems: 'flex-end' }}>
-            <Text style={styles.commonText}>-</Text>
+            <Text style={[styles.commonText, { ...theme.fonts.IBMPlexSansMedium(10) }]}>
+              HOME COLLECTION CHARGES
+            </Text>
           </View>
           <View style={{ flex: 1, alignItems: 'center' }}>
             <Text style={styles.commonText}>Rs.{HomeCollectionCharges}</Text>
@@ -224,7 +255,10 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
       <View style={styles.horizontalline1} />
       <View style={styles.payment}>
         <Text style={styles.paymentText1}> Total </Text>
-        <Text style={styles.paymentText}> Rs. {orderDetails.totalPrice} </Text>
+        <Text style={[styles.paymentText, { marginHorizontal: 20 }]}>
+          {' '}
+          Rs. {orderDetails.totalPrice}{' '}
+        </Text>
       </View>
       {false && (
         <Text style={[styles.deliveryText, { color: '#01475b', opacity: 0.6 }]}>
