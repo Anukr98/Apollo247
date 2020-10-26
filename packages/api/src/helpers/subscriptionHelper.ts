@@ -147,6 +147,7 @@ export async function activateSubscription(storeCode: ONE_APOLLO_STORE_CODE, pla
     const url = `http://${process.env.SUBSCRIPTION_SERVICE_HOST}${getPortStr(
       process.env.SUBSCRIPTION_SERVICE_PORT ? process.env.SUBSCRIPTION_SERVICE_PORT : '80'
     )}`;
+    //const url = "https://qaapi.apollo247.com";
     const response = await fetch(url, {
       method: 'POST',
       body: JSON.stringify(mutation),

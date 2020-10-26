@@ -22,7 +22,7 @@ const getCurrentSellingPrice = async (orderId, planId, subPlanId) => {
 					}
 				}`,
 	};
-	const planDetails = await axios.post("https://aph.dev.api.popcornapps.com", getPlanDetails, axiosConfig);
+	const planDetails = await axios.post(process.env.SUBSCRIPTION_URL, getPlanDetails, axiosConfig);
 	if (planDetails && planDetails.data.errors && planDetails.data.errors.length) {
 		logger.error(
 			`${orderId} - universal-request-getPlanDetails - ${JSON.stringify(planDetails.data.errors)}`
