@@ -896,9 +896,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         jrDoctorJoined.current = false;
         setDoctorJoined(true);
         setDoctorJoinedChat && setDoctorJoinedChat(true);
+        setTextChange(true);
         setTimeout(() => {
           setDoctorJoined(false);
         }, 10000);
+      } else {
+        setTextChange(false);
       }
     }
   };
@@ -1647,7 +1650,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       CheckDoctorPresentInChat();
 
       // setDoctorJoined(true);
-      setTextChange(true);
+      // setTextChange(true);
 
       setTimeout(() => {
         setApiCalled(true);
@@ -2926,6 +2929,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setDoctorJoinedChat && setDoctorJoinedChat(false);
         setDoctorJoined(false);
       } else if (message.message.message === leaveChatRoom) {
+        setTextChange(false);
         setDoctorJoinedChat && setDoctorJoinedChat(false);
         setDoctorJoined(false);
       } else if (message.message.message === endCallMsg) {
