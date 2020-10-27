@@ -127,6 +127,10 @@ export const FilterOutline: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/ic_filter_outline.png')} />
 );
 
+export const SortOutline: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/ic_sort.png')} />
+);
+
 export const DoctorFilter: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_doctor_filter.png')} />
 );

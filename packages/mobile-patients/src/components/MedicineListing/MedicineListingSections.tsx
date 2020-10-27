@@ -9,7 +9,7 @@ import {
 import { MedicineListingEvents } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListingEvents';
 import { OptionsDisplayView } from '@aph/mobile-patients/src/components/MedicineListing/OptionsDisplayView';
 import { Badge } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import { CartIcon, FilterOutline } from '@aph/mobile-patients/src/components/ui/Icons';
+import { FilterOutline, SortOutline } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListGridSelectionView } from '@aph/mobile-patients/src/components/ui/ListGridSelectionView';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
@@ -94,7 +94,7 @@ export const MedicineListingSections: React.FC<Props> = ({
     <OptionsDisplayView
       options={[
         {
-          icon: <CartIcon />, // TODO: Replace icon
+          icon: <SortOutline style={styles.iconOutline} />,
           title: 'Sort By',
           subtitle: sortBy?.name || 'Apply sorting',
           onPress: () => setSortByVisible(true),
@@ -103,7 +103,7 @@ export const MedicineListingSections: React.FC<Props> = ({
         {
           icon: (
             <View>
-              <FilterOutline style={styles.filterOutline} />
+              <FilterOutline style={styles.iconOutline} />
               {isFiltersApplied && <Badge containerStyle={styles.filterBadgeContainer} />}
             </View>
           ),
@@ -162,5 +162,5 @@ const styles = StyleSheet.create({
     top: -2.5,
     right: -2.5,
   },
-  filterOutline: { width: 16, height: 17 },
+  iconOutline: { width: 16, height: 17 },
 });
