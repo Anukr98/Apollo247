@@ -20,3 +20,7 @@ export const ConfigOneApolloData = {
   ],
   apolloHcsError: 'Error occured while getting Patient OneApollo HCs',
 };
+
+export const genericData = {
+  consultDiffInMinutes: 15
+}

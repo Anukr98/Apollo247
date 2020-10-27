@@ -14,6 +14,7 @@ import { useMutation } from 'react-apollo-hooks';
 import { SaveSearch, SaveSearchVariables } from 'graphql/types/SaveSearch';
 import { SAVE_PATIENT_SEARCH } from 'graphql/pastsearches';
 import { BookConsult } from 'components/BookConsult';
+import { genericData } from 'strings/AppConfig';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -199,15 +200,14 @@ export const PlatinumDocCard: React.FC<PlatinumCardProps> = (props) => {
   const availabilityMarkup = (type: string) => {
     return type === 'markup' ? (
       <div
-        className={`${classes.availability} ${
-          differenceInMinutes < 15 ? classes.availableNow : null
-        }`}
+        className={`${classes.availability} ${differenceInMinutes < genericData.consultDiffInMinutes ? classes.availableNow : null
+          }`}
       >
         {availabilityMarkupString(type)}
       </div>
     ) : (
-      availabilityMarkupString(type)
-    );
+        availabilityMarkupString(type)
+      );
   };
   return (
     <div className={classes.pdContainer}>
@@ -218,9 +218,9 @@ export const PlatinumDocCard: React.FC<PlatinumCardProps> = (props) => {
       </Typography>
 
       <div className={classes.pdocCard}>
-        <a href="javascript: void(0);" className={classes.apolloImg}>
+        <label className={classes.apolloImg}>
           <img src={require('images/ic_apollo.svg')} />
-        </a>
+        </label>
         <div className={classes.availableBox}>
           {' '}
           <Typography> {'available in ' + doctorInfo.earliestSlotInMinutes + ' mins'}</Typography>
@@ -332,8 +332,8 @@ export const PlatinumDocCard: React.FC<PlatinumCardProps> = (props) => {
                 {popupLoading ? (
                   <CircularProgress size={22} color="secondary" />
                 ) : (
-                  availabilityMarkup('doctorInfo')
-                )}
+                    availabilityMarkup('doctorInfo')
+                  )}
               </AphButton>
             )}
           </ProtectedWithLoginPopup>
