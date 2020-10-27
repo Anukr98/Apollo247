@@ -2,7 +2,6 @@ import {
   Filter,
   SelectedFilters,
 } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListing';
-import { MedicineListingFilterSlider } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListingFilterSlider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
@@ -15,7 +14,6 @@ import {
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { getProductsByCategoryApi, formatFilters } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { MultiSliderProps } from '@ptomasroos/react-native-multi-slider';
 import { isEqual } from 'lodash';
 import React, { useState } from 'react';
 import {
@@ -83,28 +81,7 @@ export const MedicineListingFilter: React.FC<Props> = ({
     );
   };
 
-  const renderRange = (filter: Filter) => {
-    const { min, max, attribute } = filter;
-    const onValuesChangeFinish: MultiSliderProps['onValuesChangeFinish'] = (values) => {
-      const range = `${values[0]}-${values[1]}`;
-      setSelectedFilters({ ...selectedFilters, [attribute]: [range] });
-    };
-
-    return (
-      <MedicineListingFilterSlider
-        values={[Number(min), Number(max)]}
-        min={Number(min)}
-        max={Number(max)}
-        sliderLength={width * 0.4}
-        onValuesChangeFinish={onValuesChangeFinish}
-      />
-    );
-  };
-
   const renderFilterSubOptions = (filter: Filter) => {
-    if (filter.select_type == 'single' && filter.min && filter.max) {
-      return renderRange(filter);
-    }
     return filter.values?.map(({ name, id }) => {
       const { select_type, attribute } = filter;
       const isMulti = select_type == 'multi';

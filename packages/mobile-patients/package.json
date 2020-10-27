@@ -63,7 +63,6 @@
     "@aph/universal": "file:../universal",
     "@bugfender/rn-bugfender": "1.1.0",
     "@praktice/navigator-react-native-sdk": "0.0.2",
-    "@ptomasroos/react-native-multi-slider": "^2.2.2",
     "@react-native-community/async-storage": "1.7.1",
     "@react-native-community/datetimepicker": "^2.6.2",
     "@react-native-community/geolocation": "^2.0.2",
