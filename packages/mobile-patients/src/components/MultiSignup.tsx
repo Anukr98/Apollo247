@@ -196,7 +196,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   useEffect(() => {
     async function fetchData() {
       const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
-      const item = JSON.parse(retrievedItem);
+      const item = JSON.parse(retrievedItem || 'null');
 
       const callByPrism: any = await AsyncStorage.getItem('callByPrism');
       let allPatients;

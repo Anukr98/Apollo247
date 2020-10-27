@@ -411,7 +411,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       AsyncStorage.setItem('showSchduledPopup', 'false');
 
       const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
-      const item = JSON.parse(retrievedItem);
+      const item = JSON.parse(retrievedItem || 'null');
 
       const callByPrism: any = await AsyncStorage.getItem('callByPrism');
       let allPatients;
@@ -858,7 +858,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
           setAppConfig('Doctors_Page_Size', 'Doctors_Page_Size', snapshot);
           setAppConfig('top6_specailties', 'TOP_SPECIALITIES', snapshot, (val: any) =>
-            JSON.parse(val)
+            JSON.parse(val || 'null')
           );
 
           try {

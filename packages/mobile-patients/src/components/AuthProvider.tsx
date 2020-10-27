@@ -258,7 +258,7 @@ export const AuthProvider: React.FC = (props) => {
   useEffect(() => {
     async function fetchData() {
       let jwtToken: any = await AsyncStorage.getItem('jwt');
-      jwtToken = JSON.parse(jwtToken);
+      jwtToken = JSON.parse(jwtToken || 'null');
       // console.log('jwtToken', jwtToken);
 
       // setAuthToken(jwtToken);
@@ -354,7 +354,7 @@ export const AuthProvider: React.FC = (props) => {
             .catch(async (error) => {
               CommonBugFender('AuthProvider_getPatientApiCall', error);
               const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
-              const item = JSON.parse(retrievedItem);
+              const item = JSON.parse(retrievedItem || 'null');
               setAllPatients(item);
               setSignInError(false);
               reject(error);

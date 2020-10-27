@@ -1277,7 +1277,7 @@ export const InitiateAppsFlyer = (
 ) => {
   console.log('InitiateAppsFlyer');
   onInstallConversionDataCanceller = appsFlyer.onInstallConversionData((res) => {
-    if (JSON.parse(res.data.is_first_launch) == true) {
+    if (JSON.parse(res.data.is_first_launch || 'null') == true) {
       console.log('res.data', res.data);
       // if (res.data.af_dp !== undefined) {
       try {
@@ -1671,7 +1671,7 @@ export const addPharmaItemToCart = (
 
 export const dataSavedUserID = async (key: string) => {
   let userId: any = await AsyncStorage.getItem(key);
-  userId = JSON.parse(userId);
+  userId = JSON.parse(userId || 'null');
   return userId;
 };
 
