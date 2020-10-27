@@ -32,10 +32,12 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   useEffect(() => {
     setmrp(item.price);
     item.couponPrice || item.couponPrice == 0
-      ? setDiscountedPrice(item.couponPrice)
+      ? item.isFreeCouponProduct && item.quantity > 1 
+        ? setDiscountedPrice(item.specialPrice) 
+        : setDiscountedPrice(item.couponPrice)
       : item.specialPrice || item.specialPrice == 0
-      ? setDiscountedPrice(item.specialPrice)
-      : setDiscountedPrice(undefined);
+        ? setDiscountedPrice(item.specialPrice)
+        : setDiscountedPrice(undefined);
   }, [item]);
 
   function getImageUrl(item: ShoppingCartItem) {
@@ -97,7 +99,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   };
 
   const renderDelete = () => {
-    return !item.unserviceable ? !item?.isFreeCouponProduct && <DeleteIcon /> : <DeleteBoldIcon />;
+    return !item.unserviceable ? (!item?.isFreeCouponProduct || item?.quantity > 1) && <DeleteIcon /> : <DeleteBoldIcon />;
   };
 
   const renderLowerCont = () => {
@@ -105,13 +107,15 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <View>
           {renderQuantity()}
-          {!item.unserviceable && !isProuctFreeCouponApplied && !!coupon && renderCoupon()}
+          {!item.unserviceable && !!coupon && renderCoupon()}
         </View>
         {!item?.isFreeCouponProduct
           ? discountedPrice || discountedPrice == 0
             ? renderPrice(discountedPrice)
             : renderPrice(mrp)
-          : renderFree()}
+          : item?.quantity > 1 
+            ? renderPrice(discountedPrice) 
+            : renderFree()}
       </View>
     );
   };
@@ -134,7 +138,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     }).map((_, i) => {
       return { key: (i + 1).toString(), value: i + 1 };
     });
-    return !item?.isFreeCouponProduct ? (
+    return (!item?.isFreeCouponProduct || item?.quantity > 1) ? (
       <View style={{ ...styles.quantityContainer, opacity: !item.unserviceable ? 1 : 0.3 }}>
         <MaterialMenu
           options={opitons}
@@ -160,7 +164,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   };
 
   const renderCoupon = () => {
-    return item.couponPrice || item.couponPrice == 0 ? (
+    return item.couponPrice || item.couponPrice == 0 || isProuctFreeCouponApplied ? (
       <View style={styles.coupon}>
         <Text style={styles.couponText}>{`${coupon?.coupon} Applied`}</Text>
       </View>
@@ -181,26 +185,33 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   const renderDiscount = () => {
     return (
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <Text style={styles.dicountPercent}>{`${getDiscountPercent()}%off`}</Text>
+        {
+          !item.isFreeCouponProduct && 
+          <Text style={styles.dicountPercent}>{`${getDiscountPercent()}%off`}</Text>
+        }
         <Text style={styles.initialPrice}>{`₹${(mrp * item.quantity).toFixed(2)}`}</Text>
       </View>
     );
   };
   const renderSavings = () => {
+    const savingsAmount = (item.isFreeCouponProduct && item.quantity > 1) 
+      ? discountedPrice
+      : ((mrp - discountedPrice) * item.quantity).toFixed(2);
     return (
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <Text style={styles.Savings}>Savings</Text>
-        <Text style={styles.savingsValue}>{`₹${((mrp - discountedPrice) * item.quantity).toFixed(
-          2
-        )}`}</Text>
+        <Text style={styles.savingsValue}>{`₹${savingsAmount}`}</Text>
       </View>
     );
   };
   const renderPrice = (price: number) => {
+    const finalAmount = (item.isFreeCouponProduct && item.quantity > 1)
+      ? ((price * item.quantity) - discountedPrice).toFixed(2)
+      : (price * item.quantity).toFixed(2);
     return !item.unserviceable ? (
       <View style={{ alignItems: 'flex-end' }}>
         {(discountedPrice || discountedPrice == 0) && renderDiscount()}
-        <Text style={styles.finalPrice}>{`₹${(price * item.quantity).toFixed(2)}`}</Text>
+        <Text style={styles.finalPrice}>{`₹${finalAmount}`}</Text>
         {(discountedPrice || discountedPrice == 0) && renderSavings()}
       </View>
     ) : (
