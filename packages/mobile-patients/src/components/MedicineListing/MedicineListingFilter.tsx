@@ -26,7 +26,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { CheckBox, ListItem, Overlay, OverlayProps } from 'react-native-elements';
+import { Badge, CheckBox, ListItem, Overlay, OverlayProps } from 'react-native-elements';
 
 export interface Props extends Omit<OverlayProps, 'children'> {
   filters: Filter[];
@@ -66,13 +66,26 @@ export const MedicineListingFilter: React.FC<Props> = ({
     const highlightView = (
       <View style={[styles.highlight, { backgroundColor: isSelected ? APP_GREEN : CLEAR }]} />
     );
+    const count = selectedFilters[filter.attribute]?.length;
+    const rightIcon = (
+      <>
+        {!!count && (
+          <Badge
+            badgeStyle={isSelected ? styles.badgeGreenStyle : styles.badgeBlueStyle}
+            textStyle={styles.badgeTextStyle}
+            value={count}
+          />
+        )}
+        {isSelected ? <ArrowRightGreen /> : <ArrowRight />}
+      </>
+    );
 
     return (
       <ListItem
         key={filter.name}
         leftElement={highlightView}
         title={filter.name}
-        rightIcon={isSelected ? <ArrowRightGreen /> : <ArrowRight />}
+        rightIcon={rightIcon}
         onPress={onPress}
         bottomDivider
         containerStyle={styles.optionsContainer}
@@ -331,7 +344,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   alertText: {
-    ...theme.viewStyles.text('M', 14, LIGHT_BLUE, 1, 17),
+    ...text('M', 14, LIGHT_BLUE, 1, 17),
     marginBottom: 24,
   },
   alertButton: {
@@ -353,5 +366,15 @@ const styles = StyleSheet.create({
   },
   alertOutlineButtonTitle: {
     color: BUTTON_BG,
+  },
+  badgeGreenStyle: {
+    backgroundColor: APP_GREEN,
+  },
+  badgeBlueStyle: {
+    backgroundColor: LIGHT_BLUE,
+  },
+  badgeTextStyle: {
+    ...text('M', 12, WHITE),
+    paddingBottom: 1,
   },
 });
