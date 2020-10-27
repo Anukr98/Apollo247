@@ -58,9 +58,7 @@ export const ScrollableFooter: React.FC<ScrollableFooterProps> = (props) => {
       ) : (
         <View style={{ marginHorizontal: 20, marginVertical: 16 }}>
           <Text>
-            <Text style={textMediumStyle}>{'For '}</Text>
-            <Text style={textBoldStyle}>{'Test Orders,'}</Text>
-            <Text style={textMediumStyle}>{' to Reschedule / Cancel, please call \n'}</Text>
+            <Text style={textMediumStyle}>{'To Reschedule / Cancel, please call \n'}</Text>
             <Text onPress={() => ontapNumber('040 44442424')} style={PhoneNumberTextStyle}>
               {'040 44442424'}
             </Text>

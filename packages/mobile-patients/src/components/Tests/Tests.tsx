@@ -33,9 +33,9 @@ import {
   GET_DIAGNOSTIC_DATA,
   GET_DIAGNOSTIC_ORDER_LIST,
   SAVE_SEARCH,
-  SEARCH_DIAGNOSTICS_BY_ID,
   GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
   SEARCH_DIAGNOSTICS_BY_CITY_ID,
+  GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
@@ -99,11 +99,6 @@ import { FlatList, NavigationScreenProps, StackActions, NavigationActions } from
 import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import {
-  searchDiagnosticsById,
-  searchDiagnosticsByIdVariables,
-  searchDiagnosticsById_searchDiagnosticsById_diagnostics,
-} from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsById';
 import { WebEngageEventName, WebEngageEvents } from '../../helpers/webEngageEvents';
 import moment from 'moment';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -113,6 +108,11 @@ import {
   getPincodeServiceability,
   getPincodeServiceabilityVariables,
 } from '../../graphql/types/getPincodeServiceability';
+import {
+  findDiagnosticsByItemIDsAndCityID,
+  findDiagnosticsByItemIDsAndCityIDVariables,
+  findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics,
+} from '../../graphql/types/findDiagnosticsByItemIDsAndCityID';
 
 const { width: winWidth } = Dimensions.get('window');
 const styles = StyleSheet.create({
@@ -1238,22 +1238,28 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const fetchPackageDetails = (
     itemIds: string,
-    func: (product: searchDiagnosticsById_searchDiagnosticsById_diagnostics) => void
+    func: (
+      product: findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics
+    ) => void
   ) => {
+    const removeSpaces = itemIds.replace(/\s/g, '');
+    const arrayOfId = removeSpaces.split(',');
+    const listOfIds = arrayOfId.map((item) => parseInt(item!));
     {
       setLoadingContext!(true);
       client
-        .query<searchDiagnosticsById, searchDiagnosticsByIdVariables>({
-          query: SEARCH_DIAGNOSTICS_BY_ID,
+        .query<findDiagnosticsByItemIDsAndCityID, findDiagnosticsByItemIDsAndCityIDVariables>({
+          query: GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
           variables: {
-            itemIds: itemIds,
+            cityID: parseInt(diagnosticServiceabilityData?.cityId!) || 9,
+            itemIDs: listOfIds,
           },
           fetchPolicy: 'no-cache',
         })
         .then(({ data }) => {
           setLoadingContext!(false);
-          aphConsole.log('searchDiagnostics\n', { data });
-          const product = g(data, 'searchDiagnosticsById', 'diagnostics', '0' as any);
+          aphConsole.log('findDiagnosticsItemsForCityId\n', { data });
+          const product = g(data, 'findDiagnosticsByItemIDsAndCityID', 'diagnostics', '0' as any);
           if (product) {
             func && func(product);
           } else {

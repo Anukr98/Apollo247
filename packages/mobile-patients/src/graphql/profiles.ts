@@ -1544,6 +1544,70 @@ export const GET_DIAGNOSTICS_HC_CHARGES = gql`
   }
 `;
 
+export const GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID = gql`
+  query findDiagnosticsByItemIDsAndCityID($cityID: Int!, $itemIDs:[Int]!) {
+    findDiagnosticsByItemIDsAndCityID(cityID: $cityID, itemIDs: $itemIDs) {
+      diagnostics{
+      id
+      itemId
+      itemName
+      itemType
+      rate
+      gender
+      itemRemarks
+      city
+      state
+      collectionType
+      fromAgeInDays
+      toAgeInDays
+      testPreparationData
+      }
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_ORDER_ITEM = gql`
+  query getDiagnosticOrderItem($diagnosticOrderID: String!, $itemID: Int!) {
+    getDiagnosticOrderItem(diagnosticOrderID: $diagnosticOrderID, itemID: $itemID ) {
+      diagnostics{
+        itemName
+        rate
+        itemType
+        rate
+        gender
+        itemRemarks
+        city
+        state
+        collectionType
+        fromAgeInDays
+        toAgeInDays
+        testPreparationData
+      }
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_HOME_PAGE_ITEMS = gql`
+  query getDiagnosticsHomePageItems($cityID: Int!) {
+    getDiagnosticsHomePageItems(cityID: $cityID){
+        diagnosticOrgans{
+          organName
+          organImage
+          diagnostics{
+            rate
+          }
+        }
+        diagnosticHotSellers{
+          packageImage
+          packageName
+          diagnostics{
+          rate
+        } 
+      }
+    }
+  }
+`;
+
 export const CANCEL_DIAGNOSTIC_ORDER = gql`
   mutation cancelDiagnosticOrder($diagnosticOrderId: Int) {
     cancelDiagnosticOrder(diagnosticOrderId: $diagnosticOrderId) {

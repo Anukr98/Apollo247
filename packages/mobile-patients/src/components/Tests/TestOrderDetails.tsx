@@ -506,12 +506,12 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       <View>
         {!showReportsGenerated && renderPreTestingRequirement(order)}
         {showReportsGenerated ? renderButtons() : null}
-        {!showReportsGenerated ? (
+        {/* {!showReportsGenerated ? (
           <>
             <Spearator />
             {renderNotesSection()}
           </>
-        ) : null}
+        ) : null} */}
       </View>
     );
   };

@@ -703,6 +703,8 @@ export const SequenceForDiagnosticStatus = [
   DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
 ];
 
+export const COVID_NOTIFICATION_ITEMID = ['2411','2410','2539'];
+
 export const TestsNewFeedbackData = {
   options:[
     'Wrong Report recieved',
