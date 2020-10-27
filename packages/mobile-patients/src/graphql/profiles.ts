@@ -1369,53 +1369,6 @@ export const GET_DIAGNOSTIC_SLOTS = gql`
   }
 `;
 
-export const GET_DIAGNOSTIC_DATA = gql`
-  query getDiagnosticsData {
-    getDiagnosticsData {
-      diagnosticOrgans {
-        id
-        organName
-        organImage
-        diagnostics {
-          id
-          itemId
-          itemName
-          gender
-          rate
-          itemRemarks
-          city
-          state
-          itemType
-          fromAgeInDays
-          toAgeInDays
-          testPreparationData
-          collectionType
-        }
-      }
-      diagnosticHotSellers {
-        id
-        packageName
-        price
-        packageImage
-        diagnostics {
-          id
-          itemId
-          itemName
-          gender
-          rate
-          itemRemarks
-          city
-          state
-          itemType
-          fromAgeInDays
-          toAgeInDays
-          testPreparationData
-          collectionType
-        }
-      }
-    }
-  }
-`;
 
 export const GET_DIAGNOSTIC_ORDER_LIST = gql`
   query getDiagnosticOrdersList($patientId: String) {
@@ -1591,17 +1544,44 @@ export const GET_DIAGNOSTIC_HOME_PAGE_ITEMS = gql`
   query getDiagnosticsHomePageItems($cityID: Int!) {
     getDiagnosticsHomePageItems(cityID: $cityID){
         diagnosticOrgans{
+          id
           organName
           organImage
           diagnostics{
+            id
+            itemId
+            itemName
+            gender
             rate
+            itemRemarks
+            city
+            state
+            itemType
+            fromAgeInDays
+            toAgeInDays
+            testPreparationData
+            collectionType
           }
         }
         diagnosticHotSellers{
-          packageImage
+          id
           packageName
+          price
+          packageImage
           diagnostics{
-          rate
+            id
+            itemId
+            itemName
+            gender
+            rate
+            itemRemarks
+            city
+            state
+            itemType
+            fromAgeInDays
+            toAgeInDays
+            testPreparationData
+            collectionType
         } 
       }
     }
