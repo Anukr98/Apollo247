@@ -85,7 +85,7 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('sm')]: {
         fontSize: 10,
         bottom: 0,
-        left: 0,
+        left:0,
         width: '60%',
       },
     },
@@ -283,7 +283,7 @@ const useStyles = makeStyles((theme: Theme) => {
       width: '80%',
       // margin: '0  auto',
       display: 'flex',
-      alignItems: 'center',
+      alignItems: 'center', 
       justifyContent: 'center',
       [theme.breakpoints.down('sm')]: {
         width: '100%',
@@ -307,21 +307,22 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
       '& p': {
+       
         '& span': {
           // color: '#E52936',
         },
       },
     },
-    remark: {
-      fontSize: 14,
+    remark:{
+      fontSize:14,
       fontWeight: 500,
       [theme.breakpoints.down('sm')]: {
-        position: 'absolute',
-        left: 0,
-        bottom: 20,
-        fontSize: 12,
-        margin: '0 0 40px',
-      },
+      position: 'absolute',
+      left: 0,
+      bottom: 20,
+      fontSize: 12,
+      margin: '0 0 40px'
+      }
     },
     description: {
       fontSize: '14px !important',
@@ -414,26 +415,26 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     planName: {
       fontSize: 18,
-      lineHeight: '24px',
-      margin: '0 0 5px',
-      fontWeight: 500,
-      color: '#E52936',
-      [theme.breakpoints.down('sm')]: {
-        fontSize: 14,
-        lineHeight: '12px',
-      },
+        lineHeight: '24px',
+        margin: '0 0 5px',
+        fontWeight: 500,
+        color: '#E52936',
+        [theme.breakpoints.down('sm')]: {
+          fontSize: 14,
+          lineHeight: '12px',
+        },
     },
-
+   
     hdcHeader: {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
       padding: '0 0 10px',
-      '& img': {
+      '& img':{
         [theme.breakpoints.down('sm')]: {
           width: 120,
-        },
-      },
+        }
+      }
     },
   };
 });
@@ -605,7 +606,7 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
           response.data.CreateUserSubscription.response.group_plan.min_transaction_value;
 
         setPlanName(plan);
-        setMinTransactionValue(min_transaction_value);
+        setMinTransactionValue(min_transaction_value)
         setLoading(false);
         setShowOTPValidator(false);
         setShowCongratulations(true);
@@ -715,10 +716,7 @@ export const HdfcRegistration: React.FC<HdfcRegistrationProps> = (props) => {
                   You are now a{' '}
                   <span className={classes.planName}>{planName.split(' ')[0]} Member</span>
                 </Typography>
-                <Typography className={classes.remark}>
-                  As a limited period offer, the minimum spend limit of Rs.{minTransactionValue} has
-                  been waived off, specially for you.{' '}
-                </Typography>
+                <Typography className={classes.remark}>As a limited period offer, the minimum spend limit of Rs.{minTransactionValue} has been waived off, specially for you. </Typography>
               </div>
             </div>
             <AphButton

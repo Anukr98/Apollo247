@@ -339,8 +339,7 @@ const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               'https://prodaphstorage.blob.core.windows.net/patientwebstaticfiles/hospital_image-e202f2.png';
           }
 
-          const docSpecialtySingularTerm =
-            specialty && specialty.specialistSingularTerm ? specialty.specialistSingularTerm : '';
+          const docSpecialtySingularTerm = specialty && specialty.specialistSingularTerm ? specialty.specialistSingularTerm : '';
 
           setStructuredJSON({
             '@context': 'http://schema.org/',

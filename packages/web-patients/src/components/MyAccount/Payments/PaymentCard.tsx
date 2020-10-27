@@ -200,8 +200,8 @@ export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const { cardDetails } = props;
   const [isConfirmedPopoverOpen, setIsConfirmedPopoverOpen] = React.useState<boolean>(false);
-  const [triggerInvoice, setTriggerInvoice] = React.useState<boolean>(false);
-  const [triggerInvoiceOverMail, setTriggerMail] = React.useState<string>(null);
+	const [triggerInvoice, setTriggerInvoice] = React.useState<boolean>(false);
+	const [triggerInvoiceOverMail, setTriggerMail] = React.useState<string>(null);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   let paymentStatus,
     paymentRefId = '';
@@ -238,26 +238,26 @@ export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
 
   useEffect(() => {
     if (triggerInvoice) {
-      if (triggerInvoiceOverMail === null) {
-        setIsLoading(true);
-      }
+			if (triggerInvoiceOverMail === null) {
+				setIsLoading(true);
+			}
       apolloClient
         .query<GetOrderInvoice>({
           query: GET_CONSULT_INVOICE,
           variables: {
             appointmentId: cardDetails.id,
-            patientId: currentPatient && currentPatient.id,
-            emailId: triggerInvoiceOverMail,
+						patientId: currentPatient && currentPatient.id,
+						emailId: triggerInvoiceOverMail
           },
           fetchPolicy: 'cache-first',
         })
         .then(({ data }) => {
           if (data && data.getOrderInvoice && data.getOrderInvoice.length) {
-            if (triggerInvoiceOverMail === null) {
-              window.open(data.getOrderInvoice, '_blank');
-            } else {
-              setTriggerMail(null);
-            }
+						if (triggerInvoiceOverMail === null) {
+							window.open(data.getOrderInvoice, '_blank');
+						} else {
+							setTriggerMail(null)
+						}
           }
         })
         .catch((e) => {
@@ -421,8 +421,8 @@ export const PaymentCard: React.FC<PaymentCardProps> = (props) => {
               onClose={() => handlePaymentModalClose()}
               ctaText={statusActions(paymentStatus).ctaText}
               orderStatusCallback={statusActions(paymentStatus).callbackFunction}
-              fetchConsultInvoice={setTriggerInvoice}
-              fetchUserEmailForInvoice={setTriggerMail}
+							fetchConsultInvoice={setTriggerInvoice}
+							fetchUserEmailForInvoice={setTriggerMail}
             />
           )}
         </Modal>

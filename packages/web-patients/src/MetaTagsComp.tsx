@@ -16,32 +16,19 @@ interface MetaTagProps {
 }
 
 export const MetaTagsComp: React.FC<MetaTagProps> = (props) => {
-  const {
-    title,
-    description,
-    canonicalLink,
-    src,
-    keywords,
-    robotsMeta,
-    deepLink,
-    ogtitle,
-    ogdescription,
-    ogurl,
-    ogimage,
-    ogsite_name,
-  } = props;
+  const { title, description, canonicalLink, src, keywords, robotsMeta, deepLink, ogtitle, ogdescription, ogurl, ogimage, ogsite_name } = props;
   return (
     <Helmet>
       <title>{title}</title>
       <meta name="description" content={description} />
       {keywords && <meta name="keywords" content={keywords} />}
       {robotsMeta && <meta name="robots" content={robotsMeta} />}
-
-      {ogtitle && <meta property="og:title" content={ogtitle} />}
-      {ogdescription && <meta property="og:description" content={ogdescription} />}
-      {ogurl && <meta property="og:url" content={ogurl} />}
-      {ogimage && <meta property="og:image" content={ogimage} />}
-      {ogsite_name && <meta property="og:site_name" content={ogsite_name} />}
+      
+      {ogtitle && <meta property="og:title" content={ogtitle}/>}
+      {ogdescription && <meta property="og:description" content={ogdescription}/>}
+      {ogurl && <meta property="og:url" content={ogurl}/>}
+      {ogimage && <meta property="og:image" content={ogimage}/>}
+      {ogsite_name && <meta property="og:site_name" content={ogsite_name}/>}
 
       <link rel="canonical" href={canonicalLink} />
       {deepLink && <link rel="alternate" href={`android-app://com.apollopatient/${deepLink}`} />}

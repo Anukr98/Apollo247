@@ -22,7 +22,7 @@ const useStyles = makeStyles(() => {
       height: '0px',
       marginTop: 15,
       marginBottom: 10,
-      opacity: 0.1,
+      opacity: '0.1',
       border: '1px solid #000000',
     },
 
@@ -147,7 +147,7 @@ const IVR = (props: any) => {
               <RadioGroup
                 className={classes.ivrRadioGroup}
                 value={props.ivrState.consultationMode}
-                onChange={(e: any) => {
+                onChange={(e) => {
                   props.setIvrState({
                     ...props.ivrState,
                     consultationMode: e.target.value,

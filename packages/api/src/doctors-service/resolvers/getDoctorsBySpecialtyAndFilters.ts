@@ -22,9 +22,7 @@ import {
   elasticDoctorFilters,
   ifKeyExist,
   capitalize,
-  rangeCompare,
-  getDoctorFromElastic,
-  doctorCardDetail
+  rangeCompare
 } from 'doctors-service/entities/doctorElastic';
 import { Client, RequestParams } from '@elastic/elasticsearch';
 import { differenceInMinutes } from 'date-fns';
@@ -32,7 +30,6 @@ import { ApiConstants } from 'ApiConstants';
 import { debugLog } from 'customWinstonLogger';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { PlatinumDoctorsRepository } from 'doctors-service/repositories/platinumDoctorRepository';
 
 export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
   scalar Object
@@ -84,28 +81,6 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
     specialties: [Specialty]
     apolloDoctorCount: Int
     partnerDoctorCount: Int
-  }
-
-  type doctorCardDetail {
-    id: String
-    displayName: String
-    specialtydisplayName: String
-    experience: Int
-    photoUrl: String
-    thumbnailUrl: String
-    qualification: String
-    doctorType: String
-    doctorfacility: String
-    specialistSingularTerm: String
-    specialistPluralTerm: String
-    consultMode: ConsultMode
-    slot: String
-    earliestSlotInMinutes: Int
-    fee: Int
-  }
-
-  type PlatinumDoctorResult {
-    doctors: [doctorCardDetail]
   }
 
   type DoctorsFiltersResult {
@@ -162,7 +137,6 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
   extend type Query {
     getDoctorsBySpecialtyAndFilters(filterInput: FilterDoctorInput): FilterDoctorsResult
     getDoctorList(filterInput: FilterDoctorInput): DoctorListResult
-    getPlatinumDoctor(specialtyId: ID): PlatinumDoctorResult
     getDoctorListFilters: DoctorsFiltersResult
   }
 `;
@@ -1051,24 +1025,6 @@ const getDoctorList: Resolver<
   };
 };
 
-const getPlatinumDoctor: Resolver<
-  null,
-  { specialtyId: string },
-  DoctorsServiceContext,
-  {doctors: doctorCardDetail[]} //boolean//Doctor
-> = async (parent, args, {doctorsDb}) => {
-
-  if (!args.specialtyId) throw new AphError(AphErrorMessages.INVALID_SPECIALTY_ID);
-
-  let doctors: doctorCardDetail[] = [];
-  const platinumDoctorRepository = doctorsDb.getCustomRepository(PlatinumDoctorsRepository);
-  const platinumDoctor = await platinumDoctorRepository.getDoctorsOfTheHourBySpecality(
-    args.specialtyId
-  );console.log(platinumDoctor);
-  if (platinumDoctor) doctors = await getDoctorFromElastic(platinumDoctor.doctor.id);
-  return { doctors };
-};
-
 const getDoctorListFilters: Resolver<
   null,
   {},
@@ -1166,7 +1122,6 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefsResolvers = {
   Query: {
     getDoctorsBySpecialtyAndFilters,
     getDoctorList,
-    getPlatinumDoctor,
     getDoctorListFilters
   },
 };

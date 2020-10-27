@@ -63,6 +63,7 @@ const useStyles = makeStyles((theme: Theme) => {
     bannerContainer: {
       padding: '20px 0',
       borderRadius: 10,
+      
     },
     mainBanner: {
       width: '100%',
@@ -149,10 +150,10 @@ const useStyles = makeStyles((theme: Theme) => {
           fontSize: 16,
         },
       },
-      '& button': {
+      '& button':{
         margin: '20px 20px 0 auto',
-        display: 'block',
-      },
+        display: 'block'
+,      }
     },
     benefitList: {
       padding: 0,
@@ -382,13 +383,13 @@ const useStyles = makeStyles((theme: Theme) => {
       justifyContent: 'space-between',
       padding: '0 30px',
       [theme.breakpoints.down('sm')]: {
-        padding: 0,
+        padding:0
       },
-      '& img': {
+      '& img':{
         [theme.breakpoints.down('sm')]: {
           width: 120,
-        },
-      },
+        }
+      }
     },
     bannerFooter: {
       display: 'flex',
@@ -398,10 +399,11 @@ const useStyles = makeStyles((theme: Theme) => {
       right: 50,
       bottom: 50,
       [theme.breakpoints.down('sm')]: {
-        position: 'static',
+        position: 'static'
       },
       '& button': {
         margin: '0 0 0 20px',
+        
       },
       '& p': {
         fontSize: 14,
@@ -517,12 +519,11 @@ export const HdfcLanding: React.FC = (props) => {
     description:
       'Apollo 24|7 - The Healthy Life offering is the marketing program offered by Apollo 24|7, an online portal and app managed by Apollo Hospitals Enterprise Limited (AHEL) only for HDFC Bank customers.',
     canonicalLink: typeof window !== 'undefined' && window.location && window.location.href,
-    ogtitle: 'Apollo HealthyLife Program for HDFC customers',
-    ogdescription:
-      'The HealthyLife offering is the marketing program offered by Apollo 24|7, an app managed by Apollo Hospitals Enterprise Limited (AHEL) only for HDFC Bank customers.',
-    ogurl: 'https://www.apollo247.com/partners/hdfc',
-    ogimage: 'https://assets.apollo247.com/images/hdfc-og-image.jpg',
-    ogsite_name: 'Apollo 24|7',
+      ogtitle: 'Apollo HealthyLife Program for HDFC customers',
+      ogdescription: 'The HealthyLife offering is the marketing program offered by Apollo 24|7, an app managed by Apollo Hospitals Enterprise Limited (AHEL) only for HDFC Bank customers.',
+      ogurl: 'https://www.apollo247.com/partners/hdfc',
+      ogimage: 'https://assets.apollo247.com/images/hdfc-og-image.jpg',
+      ogsite_name: 'Apollo 24|7',
   };
 
   useEffect(() => {
@@ -594,6 +595,7 @@ export const HdfcLanding: React.FC = (props) => {
                 </div>
               </div>
               <div className={classes.bannerFooter}>
+              
                 {loading ? (
                   <CircularProgress size={30} />
                 ) : (
@@ -702,57 +704,57 @@ export const HdfcLanding: React.FC = (props) => {
                 </div>
               </li>
             </ul>
-
-            {loading ? (
-              <CircularProgress size={30} />
-            ) : (
-              <Route
-                render={({ history }) => (
-                  <AphButton
-                    className={classes.unlockNow}
-                    onClick={() => {
-                      hdfcUnlockNowTracking('HDFC Unlock Now Clicked');
-                      if (!isSignedIn) {
-                        /* GA Tracking */
-                        (window as any).dataLayer.push({
-                          event: 'Unlock Now Clicked',
-                        });
-                        /*******************/
-                        setIsLoginPopupVisible(true);
-                      } else {
-                        /* GA Tracking */
-                        (window as any).dataLayer.push({
-                          event: 'Explore Benefits Clicked',
-                        });
-                        /*******************/
-                        setLoading(true);
-                        updatePatient({
-                          variables: {
-                            patientInput: {
-                              id: currentPatient.id,
-                              partnerId: currentPatient.partnerId
-                                ? currentPatient.partnerId
-                                : 'HDFCBANK',
-                            },
-                          },
-                        })
-                          .then(() => {
-                            setLoading(false);
-                            history.push(clientRoutes.welcome());
-                          })
-                          .catch((error) => {
-                            setLoading(false);
-                            console.error(error);
+                     
+              {loading ? (
+                <CircularProgress size={30} />
+              ) : (
+                <Route
+                  render={({ history }) => (
+                    <AphButton
+                      className={classes.unlockNow}
+                      onClick={() => {
+                        hdfcUnlockNowTracking('HDFC Unlock Now Clicked');
+                        if (!isSignedIn) {
+                          /* GA Tracking */
+                          (window as any).dataLayer.push({
+                            event: 'Unlock Now Clicked',
                           });
-                      }
-                    }}
-                  >
-                    {isSignedIn ? 'Explore Benefits' : 'Unlock Now'}
-                  </AphButton>
-                )}
-              />
-            )}
-          </div>
+                          /*******************/
+                          setIsLoginPopupVisible(true);
+                        } else {
+                          /* GA Tracking */
+                          (window as any).dataLayer.push({
+                            event: 'Explore Benefits Clicked',
+                          });
+                          /*******************/
+                          setLoading(true);
+                          updatePatient({
+                            variables: {
+                              patientInput: {
+                                id: currentPatient.id,
+                                partnerId: currentPatient.partnerId
+                                  ? currentPatient.partnerId
+                                  : 'HDFCBANK',
+                              },
+                            },
+                          })
+                            .then(() => {
+                              setLoading(false);
+                              history.push(clientRoutes.welcome());
+                            })
+                            .catch((error) => {
+                              setLoading(false);
+                              console.error(error);
+                            });
+                        }
+                      }}
+                    >
+                      {isSignedIn ? 'Explore Benefits' : 'Unlock Now'}
+                    </AphButton>
+                  )}
+                />
+              )}
+            </div>
 
           <div className={classes.tncContainer}>
             <div className={classes.tncContent}>
@@ -762,81 +764,81 @@ export const HdfcLanding: React.FC = (props) => {
                   The HealthyLife offering is the marketing program offered by Apollo 24|7, an app
                   managed by Apollo Hospitals Enterprise Limited (AHEL) only for HDFC Bank
                   customers.
-                </li>
-                <li>
-                  The validity of membership is 1 year and the validity of program (“Term”) is till
-                  30th September 2021, unless extended by Apollo 24|7 and HDFC Bank
-                </li>
-                <li>
-                  The discounts/offers applicable as per the HealthyLife program shall be applied at
-                  the time of payment checkout by the customer.
-                </li>
-                <li>
-                  This program is designed for select HDFC current and saving accounts customers and
-                  offerings will vary with the different categories of accounts of HDFC customers.
-                  However, membership schemes can be upgraded / downgraded on the basis of the
-                  spending on the Apollo 24|7 app or web as mentioned in the offer grid.{' '}
-                </li>
-                <li>
-                  The HealthyLife Program is open to all HDFC current and saving accounts customers
-                  with a valid Indian mobile number registered with HDFC bank only.{' '}
-                </li>
-                <li>
-                  The T&amp;C’s of the OneApollo silver, gold and platinum membership offered in the
-                  HealthyLife program shall be governed by the terms &amp; conditions of the website
-                  -{' '}
-                  <a rel="nofollow" href="https://www.oneapollo.com/terms-conditions/">
-                    https://www.oneapollo.com/terms-conditions/
-                  </a>
-                </li>
-                <li>
-                  The HealthyLife offering will be applicable to all Current &amp; Savings Account
-                  holders of HDFC Bank, whether they are existing customers of Apollo 24|7 or not.
-                  However, all the customers shall adhere to the terms and conditions as mentioned
-                  in this marketing program.{' '}
-                </li>
-                <li>The HealthyLife program membership is non-transferable.</li>
-                <li>
-                  HealthyLife Benefits Unlock condition - The activation of the benefits for the
-                  HealthyLife program will be completed 24 hours post the service
-                  delivery/fulfilment of the qualifying transaction. For e.g., to unlock benefits,
-                  the user is needed to make a qualifying transaction of amount subject to change as
-                  per different tiers .
-                </li>
-                <li>
-                  By enrolling for the HealthyLife program, a member consents to allow use and
-                  disclosure by Apollo Health centres,of his/her personal and other information as
-                  provided by the member at the time of enrolment and/or subsequently.
-                </li>
-                <li>
-                  As a prerequisite to becoming a member, a customer will need to provide mandatory
-                  information including full name, valid and active Indian mobile number. He/she
-                  shall adhere to such terms and conditions as may be prescribed for membership from
-                  time to time.
-                </li>
-                <li>
-                  The HealthyLife membership program will be issued solely at the discretion of the
-                  management and the final discretion on all matters relating to the membership
-                  shall rest with Apollo 24|7(AHEL).
-                </li>
-                <li>
-                  Apollo 24|7 reserves the right to add, alter, amend and revise terms and
-                  conditions as well as rules and regulations governing the HealthyLife membership
-                  program without prior notice.
-                </li>
-                <li>
-                  Benefits and offers available through the program may change or be withdrawn
-                  without prior intimation. Apollo 24|7 will not be responsible for any liability
-                  arising from such situations or use of such offers.
-                </li>
-                <li>
-                  Any disputes arising out of the offer shall be subject to arbitration by a sole
-                  arbitrator appointed by Apollo 24|7 for this purpose. The proceedings of the
-                  arbitration shall be conducted as per the provisions of Arbitration and
-                  Conciliation Act, 1996. The place of arbitration shall be at Chennai and language
-                  of arbitration shall be English. The existence of a dispute, if at all, shall not
-                  constitute a claim against Apollo 24|7.
-                </li>
+                  </li>
+                  <li>
+                    The validity of membership is 1 year and the validity of program (“Term”) is
+                    till 30th September 2021, unless extended by Apollo 24|7 and HDFC Bank
+                  </li>
+                  <li>
+                    The discounts/offers applicable as per the HealthyLife program shall be applied
+                    at the time of payment checkout by the customer.
+                  </li>
+                  <li>
+                    This program is designed for select HDFC current and saving accounts customers
+                    and offerings will vary with the different categories of accounts of HDFC
+                    customers. However, membership schemes can be upgraded / downgraded on the basis
+                    of the spending on the Apollo 24|7 app or web as mentioned in the offer grid.{' '}
+                  </li>
+                  <li>
+                    The HealthyLife Program is open to all HDFC current and saving accounts
+                    customers with a valid Indian mobile number registered with HDFC bank only.{' '}
+                  </li>
+                  <li>
+                    The T&amp;C’s of the OneApollo silver, gold and platinum membership offered in
+                    the HealthyLife program shall be governed by the terms &amp; conditions of the
+                    website -{' '}
+                    <a rel="nofollow" href="https://www.oneapollo.com/terms-conditions/">
+                      https://www.oneapollo.com/terms-conditions/
+                    </a>
+                  </li>
+                  <li>
+                    The HealthyLife offering will be applicable to all Current &amp; Savings Account
+                    holders of HDFC Bank, whether they are existing customers of Apollo 24|7 or not.
+                    However, all the customers shall adhere to the terms and conditions as mentioned
+                    in this marketing program.{' '}
+                  </li>
+                  <li>The HealthyLife program membership is non-transferable.</li>
+                  <li>
+                    HealthyLife Benefits Unlock condition - The activation of the benefits for the
+                    HealthyLife program will be completed 24 hours post the service
+                    delivery/fulfilment of the qualifying transaction. For e.g., to unlock benefits,
+                    the user is needed to make a qualifying transaction of amount subject to change
+                    as per different tiers .
+                  </li>
+                  <li>
+                    By enrolling for the HealthyLife program, a member consents to allow use and
+                    disclosure by Apollo Health centres,of his/her personal and other information as
+                    provided by the member at the time of enrolment and/or subsequently.
+                  </li>
+                  <li>
+                    As a prerequisite to becoming a member, a customer will need to provide
+                    mandatory information including full name, valid and active Indian mobile
+                    number. He/she shall adhere to such terms and conditions as may be prescribed
+                    for membership from time to time.
+                  </li>
+                  <li>
+                    The HealthyLife membership program will be issued solely at the discretion of
+                    the management and the final discretion on all matters relating to the
+                    membership shall rest with Apollo 24|7(AHEL).
+                  </li>
+                  <li>
+                    Apollo 24|7 reserves the right to add, alter, amend and revise terms and
+                    conditions as well as rules and regulations governing the HealthyLife membership
+                    program without prior notice.
+                  </li>
+                  <li>
+                    Benefits and offers available through the program may change or be withdrawn
+                    without prior intimation. Apollo 24|7 will not be responsible for any liability
+                    arising from such situations or use of such offers.
+                  </li>
+                  <li>
+                    Any disputes arising out of the offer shall be subject to arbitration by a sole
+                    arbitrator appointed by Apollo 24|7 for this purpose. The proceedings of the
+                    arbitration shall be conducted as per the provisions of Arbitration and
+                    Conciliation Act, 1996. The place of arbitration shall be at Chennai and
+                    language of arbitration shall be English. The existence of a dispute, if at all,
+                    shall not constitute a claim against Apollo 24|7.
+                  </li>              
               </ul>
             </div>
           </div>

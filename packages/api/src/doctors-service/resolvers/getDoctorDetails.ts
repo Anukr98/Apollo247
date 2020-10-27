@@ -9,8 +9,6 @@ import { getConnection } from 'typeorm';
 import { AdminUser } from 'doctors-service/repositories/adminRepository';
 import { DashboardData, getJuniorDoctorsDashboard } from 'doctors-service/resolvers/JDAdmin';
 import { SecretaryRepository } from 'doctors-service/repositories/secretaryRepository';
-import { PlatinumDoctorsRepository } from 'doctors-service/repositories/platinumDoctorRepository';
-import { PlatinumSlots} from 'doctors-service/entities/PlatinumSlotsEntity';
 import { format } from 'date-fns';
 
 export const getDoctorDetailsTypeDefs = gql`
@@ -145,8 +143,7 @@ export const getDoctorDetailsTypeDefs = gql`
     specialty: DoctorSpecialties
     starTeam: [StarTeam]
     availableModes: [ConsultMode]
-    doctorNextAvailSlots: DoctorNextAvailSlots
-    doctorsOfTheHourStatus: Boolean
+    doctorNextAvailSlots:DoctorNextAvailSlots
   }
 
   type DoctorNextAvailSlots {
@@ -349,19 +346,8 @@ const getDoctorDetailsById: Resolver<null, { id: string }, DoctorsServiceContext
 ) => {
   try {
     const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-    const platinumDoctorsRepository = doctorsDb.getCustomRepository(PlatinumDoctorsRepository);
-
-    const promises: object[] = [
-      doctorRepository.getDoctorProfileData(args.id),
-      platinumDoctorsRepository.doctorsOfTheHourStatus(args.id),
-    ];
-    let doctor: any; let platinumDoctor:Partial<PlatinumSlots>;
-    await Promise.all(promises).then((res) => {
-      [doctor, platinumDoctor] = res;
-      doctor['doctorsOfTheHourStatus'] = false;
-      if (platinumDoctor) doctor['doctorsOfTheHourStatus'] = true;
-      doctor['mobileNumber'] = '';
-    });
+    const doctor = await doctorRepository.getDoctorProfileData(args.id);
+    doctor['mobileNumber'] = '';
     return doctor;
   } catch (error) {
     throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, { error });
