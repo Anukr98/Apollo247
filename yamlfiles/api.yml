@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-deploy
+spec:
+  selector:
+    matchLabels:
+      app: apigateway
+  template:
+    metadata:
+      labels:
+        app: apigateway
+    spec:
+      containers:
+      - name: apigateway
+        image: apollodev.azurecr.io/apollodev-msimage:latest
+        command: ["node"]
+        args: ["api-gateway.bundle.js"]
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5000
+        resources:
+          requests:
+            cpu: 250m
+            memory: 1Gi
+          limits:
+            cpu: 250m
+            memory: 1Gi
+        volumeMounts:
+        - name: applogs
+          mountPath: "/apollo-hospitals/packages/api/access-logs/"
+        - name: errorlogs
+          mountPath: "/apollo-hospitals/packages/api/error-logs/"
+      volumes:
+      - name: applogs
+        persistentVolumeClaim:
+          claimName: azurefile-pvc-accesslogs
+      - name: errorlogs
+        persistentVolumeClaim:
+          claimName: azurefile-pvc-errorlogs
+      restartPolicy: Always
+      imagePullSecrets:
+      - name: regcred

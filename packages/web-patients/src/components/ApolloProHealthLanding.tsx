@@ -53,6 +53,7 @@ const useStyles = makeStyles((theme: Theme) => {
         position: 'relative',
       },
       '& img': {
+        width: '100%',
         [theme.breakpoints.down('sm')]: {
           width: 190,
         },
@@ -166,7 +167,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '30px 0',
       display: 'flex',
       alignItems: 'flex-end',
-      justifyContent: 'space-between',
+      justifyContent: 'flex-end',
       [theme.breakpoints.down('sm')]: {
         flexDirection: 'column',
         alignItems: 'center',
@@ -195,7 +196,7 @@ const useStyles = makeStyles((theme: Theme) => {
         '& .orange': {
           color: '#FCB716',
           [theme.breakpoints.down('sm')]: {
-            display: 'block',
+            // display: 'block',
           },
         },
         '& .uppercase': {
@@ -304,6 +305,9 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('sm')]: {
         padding: '0 0 60px',
       },
+      '& img': {
+        width: '100%',
+      },
       '& .web': {
         [theme.breakpoints.down('sm')]: {
           display: 'none',
@@ -379,17 +383,13 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     proHealth2: {
       [theme.breakpoints.down('sm')]: {
-        width: 'auto !important',
+        width: '100% !important',
         opacity: 0.7,
         margin: '0 -20px 0 0',
         position: 'absolute',
         right: -50,
-        top: 0,
+        top: -20,
       },
-    },
-    abc2: {
-      display: 'block !important',
-      height: 500,
     },
   };
 });
@@ -412,12 +412,24 @@ const ApolloProHealthLanding: React.FC = (props) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const scrollToRef = useRef<HTMLDivElement>(null);
-  const [iscoronaDialogOpen, setIscoronaDialogOpen] = useState<boolean>(false);
   const isDesktopOnly = useMediaQuery('(min-width:768px)');
 
   const handleChange = (panel: string) => (event: React.ChangeEvent<{}>, isExpanded: boolean) => {
     setExpanded(isExpanded ? panel : false);
   };
+
+  useEffect(() => {
+    scrollToRef &&
+      scrollToRef.current &&
+      scrollToRef.current.scrollIntoView({ behavior: 'smooth' });
+
+    window.dataLayer.push({
+      event: 'pageviewEvent',
+      pagePath: window.location.href,
+      pageName: 'Pro Health Page',
+      pageLOB: 'Others',
+    });
+  });
 
   useEffect(() => {
     if (
@@ -460,6 +472,7 @@ const ApolloProHealthLanding: React.FC = (props) => {
   };
 
   const submitProHealthForm = () => {
+    window.dataLayer.push({ event: 'Details Submitted' });
     setIsLoading(true);
     const userData = {
       fullName: userName,
@@ -489,25 +502,28 @@ const ApolloProHealthLanding: React.FC = (props) => {
   };
 
   return (
-    <div className={classes.aphContainer}>
+    <div className={classes.aphContainer} ref={scrollToRef}>
       <Header />
       <div className={classes.container}>
         <div className={classes.aphContent}>
           <AphButton
             color="primary"
             className={classes.fabButton}
-            onClick={() => window.scrollTo(0, 0)}
+            onClick={() => {
+              window.scrollTo(0, 0);
+              window.dataLayer.push({ event: 'Get in Touch Clicked' });
+            }}
           >
             Get In Touch
           </AphButton>
           <div className={classes.aphBanner}>
             <img
-              src={require('images/pro-health-banner.svg')}
+              src={require('images/pro-health-banner.jpg')}
               className="web"
               alt="Apollo Pro Health Program"
             />
             <img
-              src={require('images/ph-banner-mobile.svg')}
+              src={require('images/ph-banner-mobile.jpg')}
               className="mobile"
               alt="Apollo Pro Health Program"
             />
@@ -571,7 +587,7 @@ const ApolloProHealthLanding: React.FC = (props) => {
                     variant="contained"
                     color="primary"
                   >
-                    Get In Touch
+                    Let's Talk
                   </AphButton>
                 ) : (
                   <div className={classes.loader}>
@@ -581,235 +597,233 @@ const ApolloProHealthLanding: React.FC = (props) => {
               </form>
             </div>
           </div>
-        </div>
-
-        <div className={classes.aboutContainer}>
-          <img src={require('images/prohealth-1.svg')} alt="Apollo Pro Health Program" />
-          <div className={classes.aboutDetails}>
-            <Typography component="h2" className={classes.textRight}>
-              This unique 3-year program is specially designed to help{' '}
-              <span>Predict, Prevent, Overcome</span> lifestyle diseases where possible
-            </Typography>
-          </div>
-        </div>
-        <div className={classes.aphStepContainer}>
-          <div className={classes.aphStepContent}>
-            <div className={classes.aphStepDetail}>
-              <span className={classes.count}>1</span>
-              <Typography component="h2">Predict</Typography>
-              <ul className={classes.aphStepList}>
-                <li>
-                  <span>Multi-system Body Assessment</span>
-                </li>
-                <li>
-                  <span>
-                    Health Assessment based on age, gender, diet, personal, past and family history
-                  </span>
-                </li>
-                <li>
-                  <span>Health Pulse </span>- Analytics for individuals and corporates
-                </li>
-              </ul>
-            </div>
-            <div className={classes.aphStepDetail}>
-              <span className={classes.count}>2</span>
-              <Typography component="h2">Prevent</Typography>
-              <ul className={classes.aphStepList}>
-                <li>
-                  <span>
-                    Health Mentor for personalised health advice and guidance Pan-India specialist
-                  </span>
-                </li>
-                <li>
-                  <span> consultation:</span> through the Apollo Hospital and Clinic network
-                </li>
-                <li>
-                  <span> Physiotherapy</span> Intervention where needed, for improved functioning
-                </li>
-              </ul>
-            </div>
-            <div className={classes.aphStepDetail}>
-              <span className={classes.count}>3</span>
-              <Typography component="h2">Overcome</Typography>
-              <ul className={classes.aphStepList}>
-                <li>
-                  <span>Condition Management:</span> Advice on managing pre—existing conditions{' '}
-                </li>
-                <li>
-                  <span>Personalised Health and Lifestyle Modification: </span> Specific advice on
-                  Nutrition, Stress, Sleep and Behavioural Changes
-                </li>
-                <li>
-                  <span>Habit Optimisation by digital interventions / nudges</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-        <div className={`${classes.aboutContainer} ${classes.abc2}`}>
-          <div className={classes.aboutDetails}>
-            <div className={classes.aboutContent}>
-              <Typography component="h2">About Us</Typography>
-              <Typography>
-                About Us ProHealth is a three-year program that brings together cutting-edge
-                diagnostics, predictive tools and the most advanced personalized care, designed to
-                make real change to one’s health metrics.{' '}
-                <span className={classes.fontBold}>
-                  A program that's the result of Apollo's pioneering efforts in preventive care for
-                  36 years.
-                </span>{' '}
-                It has been created by a team of medical experts with vast knowledge and deep
-                dedication to creating an NCD free world.
+          <div className={classes.aboutContainer}>
+            <img src={require('images/prohealth-1.jpg')} alt="Apollo Pro Health Program" />
+            <div className={classes.aboutDetails}>
+              <Typography component="h2" className={classes.textRight}>
+                This unique 3-year program is specially designed to help{' '}
+                <span>Predict, Prevent, Overcome</span> lifestyle diseases where possible
               </Typography>
             </div>
           </div>
-          <img
-            src={require('images/prohealth-2.svg')}
-            className={classes.proHealth2}
-            alt="Apollo Pro Health Program"
-          />
-        </div>
-        <div className={classes.gtContainer}>
-          <div className={classes.gtContent}>
-            <AphButton color="primary" onClick={() => window.scrollTo(0, 0)}>
-              Get in Touch
-            </AphButton>
-            <Typography component="h2" className={classes.textRight}>
-              Empowered by <span className="orange">Artificial Intelligence</span>, it can{' '}
-              <span className="uppercase">Predict</span>
-              health risks, and help <span className="uppercase">Prevent</span> the preventable
-              ailments where required and <span className="uppercase">Overcome </span> lifestyle
-              diseases where possible.
-            </Typography>
-            <Typography className={classes.bgText}>Predict Prevent Overcome</Typography>
+          <div className={classes.aphStepContainer}>
+            <div className={classes.aphStepContent}>
+              <div className={classes.aphStepDetail}>
+                <span className={classes.count}>1</span>
+                <Typography component="h2">Predict</Typography>
+                <ul className={classes.aphStepList}>
+                  <li>
+                    <span>Multi-system Body Assessment</span>
+                  </li>
+                  <li>
+                    <span>
+                      Health Assessment based on age, gender, diet, personal, past and family
+                      history
+                    </span>
+                  </li>
+                  <li>
+                    <span>Health Pulse </span>- Analytics for individuals and corporates
+                  </li>
+                </ul>
+              </div>
+              <div className={classes.aphStepDetail}>
+                <span className={classes.count}>2</span>
+                <Typography component="h2">Prevent</Typography>
+                <ul className={classes.aphStepList}>
+                  <li>
+                    <span>Health Mentor for personalised health advice and guidance</span>
+                  </li>
+                  <li>
+                    <span>Pan-India specialist consultation:</span> through the Apollo Hospital and
+                    Clinic network
+                  </li>
+                  <li>
+                    <span> Physiotherapy</span> Intervention where needed, for improved functioning
+                  </li>
+                </ul>
+              </div>
+              <div className={classes.aphStepDetail}>
+                <span className={classes.count}>3</span>
+                <Typography component="h2">Overcome</Typography>
+                <ul className={classes.aphStepList}>
+                  <li>
+                    <span>Condition Management:</span> Advice on managing pre-existing conditions{' '}
+                  </li>
+                  <li>
+                    <span>Personalised Health and Lifestyle Modification: </span> Specific advice on
+                    Nutrition, Stress, Sleep and Behavioural Changes
+                  </li>
+                  <li>
+                    <span>Habit Optimisation by digital interventions / nudges</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
-        </div>
-        <div className={classes.faqContainer}>
-          <div className={classes.faq}>
-            <Typography component="h6">Frequently Asked Questions</Typography>
-            <div className={classes.expansionContainer}>
-              <ExpansionPanel
-                expanded={expanded === 'panel1'}
-                onChange={handleChange('panel1')}
-                className={classes.panelRoot}
-              >
-                <ExpansionPanelSummary
-                  expandIcon={<ExpandMoreIcon />}
-                  classes={{
-                    root: classes.panelHeader,
-                    content: classes.summaryContent,
-                    expandIcon: classes.expandIcon,
-                    expanded: classes.panelExpanded,
-                  }}
+          <div className={classes.aboutContainer}>
+            <div className={classes.aboutDetails}>
+              <div className={classes.aboutContent}>
+                <Typography component="h2">About Us</Typography>
+                <Typography>
+                  ProHealth is a three-year program that brings together cutting-edge diagnostics,
+                  predictive tools and the most advanced personalized care, designed to make real
+                  change to one's health metrics.{' '}
+                  <span className={classes.fontBold}>
+                    A program that's the result of Apollo's pioneering efforts in preventive care
+                    for 36 years.
+                  </span>{' '}
+                  It has been created by a team of medical experts with vast knowledge and deep
+                  dedication to creating an NCD free world.
+                </Typography>
+              </div>
+            </div>
+            <img
+              src={require('images/prohealth-2.jpg')}
+              className={classes.proHealth2}
+              alt="Apollo Pro Health Program"
+            />
+          </div>
+          <div className={classes.gtContainer}>
+            <div className={classes.gtContent}>
+              {/* <AphButton color="primary" onClick={() => window.scrollTo(0, 0)}>
+              Get in Touch
+            </AphButton> */}
+              <Typography component="h2" className={classes.textRight}>
+                Empowered by <span className="orange">Artificial Intelligence</span>, it can{' '}
+                <span className="uppercase">Predict </span> health risks, and help{' '}
+                <span className="uppercase">Prevent</span> the preventable ailments where required
+                and <span className="uppercase">Overcome </span> lifestyle diseases where possible.
+              </Typography>
+              <Typography className={classes.bgText}>Predict Prevent Overcome</Typography>
+            </div>
+          </div>
+          <div className={classes.faqContainer}>
+            <div className={classes.faq}>
+              <Typography component="h6">Frequently Asked Questions</Typography>
+              <div className={classes.expansionContainer}>
+                <ExpansionPanel
+                  expanded={expanded === 'panel1'}
+                  onChange={handleChange('panel1')}
+                  className={classes.panelRoot}
                 >
-                  <Typography className={classes.panelHeading}>
-                    What is Apollo Prohealth programme?
-                  </Typography>
-                </ExpansionPanelSummary>
-                <ExpansionPanelDetails className={classes.panelDetails}>
-                  <div className={classes.detailsContent}>
-                    <Typography>
-                      Apollo ProHealth is a unique three year programme that brings cutting edge
-                      diagnostics, predictive tools and the most advanced personalized care. Powered
-                      by AI and our experts, this program offers a complete clinical assessment
-                      (including physical and mental health) and follow-up by a dedicated health
-                      mentor. Curated rehabilitation plans to address post Covid-19 health issues is
-                      also covered
+                  <ExpansionPanelSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    classes={{
+                      root: classes.panelHeader,
+                      content: classes.summaryContent,
+                      expandIcon: classes.expandIcon,
+                      expanded: classes.panelExpanded,
+                    }}
+                  >
+                    <Typography className={classes.panelHeading}>
+                      What is Apollo Prohealth programme?
                     </Typography>
-                  </div>
-                </ExpansionPanelDetails>
-              </ExpansionPanel>
-              <ExpansionPanel
-                expanded={expanded === 'panel2'}
-                onChange={handleChange('panel2')}
-                className={classes.panelRoot}
-              >
-                <ExpansionPanelSummary
-                  expandIcon={<ExpandMoreIcon />}
-                  classes={{
-                    root: classes.panelHeader,
-                    content: classes.summaryContent,
-                    expandIcon: classes.expandIcon,
-                    expanded: classes.panelExpanded,
-                  }}
+                  </ExpansionPanelSummary>
+                  <ExpansionPanelDetails className={classes.panelDetails}>
+                    <div className={classes.detailsContent}>
+                      <Typography>
+                        Apollo ProHealth is a unique three year programme that brings cutting edge
+                        diagnostics, predictive tools and the most advanced personalized care.
+                        Powered by AI and our experts, this program offers a complete clinical
+                        assessment (including physical and mental health) and follow-up by a
+                        dedicated health mentor. Curated rehabilitation plans to address post
+                        Covid-19 health issues is also covered
+                      </Typography>
+                    </div>
+                  </ExpansionPanelDetails>
+                </ExpansionPanel>
+                <ExpansionPanel
+                  expanded={expanded === 'panel2'}
+                  onChange={handleChange('panel2')}
+                  className={classes.panelRoot}
                 >
-                  <Typography className={classes.panelHeading}>
-                    What do I get by enrolling in ProHealth?
-                  </Typography>
-                </ExpansionPanelSummary>
-                <ExpansionPanelDetails className={classes.panelDetails}>
-                  <div className={classes.detailsContent}>
-                    <Typography>
-                      ProHealth is a combination of Health Risk Assessment, Investigations, Medical
-                      Consults, Lifestyle and Mental Health Assessment & Support. Curated
-                      rehabilitation plans to address post Covid-19 health issues if required. You
-                      will also be followed up by your dedicated health mentor and get access to a
-                      ProHealth App to keep track of your health goals.
+                  <ExpansionPanelSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    classes={{
+                      root: classes.panelHeader,
+                      content: classes.summaryContent,
+                      expandIcon: classes.expandIcon,
+                      expanded: classes.panelExpanded,
+                    }}
+                  >
+                    <Typography className={classes.panelHeading}>
+                      What do I get by enrolling in ProHealth?
                     </Typography>
-                  </div>
-                </ExpansionPanelDetails>
-              </ExpansionPanel>
-              <ExpansionPanel
-                expanded={expanded === 'panel3'}
-                onChange={handleChange('panel3')}
-                className={classes.panelRoot}
-              >
-                <ExpansionPanelSummary
-                  expandIcon={<ExpandMoreIcon />}
-                  classes={{
-                    root: classes.panelHeader,
-                    content: classes.summaryContent,
-                    expandIcon: classes.expandIcon,
-                    expanded: classes.panelExpanded,
-                  }}
+                  </ExpansionPanelSummary>
+                  <ExpansionPanelDetails className={classes.panelDetails}>
+                    <div className={classes.detailsContent}>
+                      <Typography>
+                        ProHealth is a combination of Health Risk Assessment, Investigations,
+                        Medical Consults, Lifestyle and Mental Health Assessment &amp; Support.
+                        Curated rehabilitation plans to address post Covid-19 health issues if
+                        required. You will also be followed up by your dedicated health mentor and
+                        get access to a ProHealth App to keep track of your health goals.
+                      </Typography>
+                    </div>
+                  </ExpansionPanelDetails>
+                </ExpansionPanel>
+                <ExpansionPanel
+                  expanded={expanded === 'panel3'}
+                  onChange={handleChange('panel3')}
+                  className={classes.panelRoot}
                 >
-                  <Typography className={classes.panelHeading}>
-                    What are NCDs and why is ProHealth relevant to me in times of Covid 19?
-                  </Typography>
-                </ExpansionPanelSummary>
-                <ExpansionPanelDetails className={classes.panelDetails}>
-                  <div className={classes.detailsContent}>
-                    <Typography>
-                      NCDs are non communicable diseases like Diabetes, Hypertension, Obesity, Heart
-                      diseases, Cancers and Depression. People with NCDs may show no symptoms until
-                      the disease has progressed substantially and the first symptom may be a heart
-                      attack or stroke. Infact studies show that the Covid 19 complications are
-                      severe in those with NCDs, especially if they are not controlled. With Apollo
-                      ProHealth, you will be screened for NCD risk factors and put on a pathway to
-                      prevent progression of the disease.
+                  <ExpansionPanelSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    classes={{
+                      root: classes.panelHeader,
+                      content: classes.summaryContent,
+                      expandIcon: classes.expandIcon,
+                      expanded: classes.panelExpanded,
+                    }}
+                  >
+                    <Typography className={classes.panelHeading}>
+                      What are NCDs and why is ProHealth relevant to me in times of Covid 19?
                     </Typography>
-                  </div>
-                </ExpansionPanelDetails>
-              </ExpansionPanel>
-              <ExpansionPanel
-                expanded={expanded === 'panel4'}
-                onChange={handleChange('panel4')}
-                className={classes.panelRoot}
-              >
-                <ExpansionPanelSummary
-                  expandIcon={<ExpandMoreIcon />}
-                  classes={{
-                    root: classes.panelHeader,
-                    content: classes.summaryContent,
-                    expandIcon: classes.expandIcon,
-                    expanded: classes.panelExpanded,
-                  }}
+                  </ExpansionPanelSummary>
+                  <ExpansionPanelDetails className={classes.panelDetails}>
+                    <div className={classes.detailsContent}>
+                      <Typography>
+                        NCDs are non communicable diseases like Diabetes, Hypertension, Obesity,
+                        Heart diseases, Cancers and Depression. People with NCDs may show no
+                        symptoms until the disease has progressed substantially and the first
+                        symptom may be a heart attack or stroke. Infact studies show that the Covid
+                        19 complications are severe in those with NCDs, especially if they are not
+                        controlled. With Apollo ProHealth, you will be screened for NCD risk factors
+                        and put on a pathway to prevent progression of the disease.
+                      </Typography>
+                    </div>
+                  </ExpansionPanelDetails>
+                </ExpansionPanel>
+                <ExpansionPanel
+                  expanded={expanded === 'panel4'}
+                  onChange={handleChange('panel4')}
+                  className={classes.panelRoot}
                 >
-                  <Typography className={classes.panelHeading}>
-                    What is the health mentor service in ProHealth?
-                  </Typography>
-                </ExpansionPanelSummary>
-                <ExpansionPanelDetails className={classes.panelDetails}>
-                  <div className={classes.detailsContent}>
-                    <Typography>
-                      Through Apollo ProHealth, you will be assigned a dedicated health mentor, who
-                      will connect with you every month. The follow up will help you in monitoring
-                      your NCD related parameters. For post Covid-19 patients, it will help in
-                      recovery and support with customized rehabilitation plans as needed.
+                  <ExpansionPanelSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    classes={{
+                      root: classes.panelHeader,
+                      content: classes.summaryContent,
+                      expandIcon: classes.expandIcon,
+                      expanded: classes.panelExpanded,
+                    }}
+                  >
+                    <Typography className={classes.panelHeading}>
+                      What is the health mentor service in ProHealth?
                     </Typography>
-                  </div>
-                </ExpansionPanelDetails>
-              </ExpansionPanel>
+                  </ExpansionPanelSummary>
+                  <ExpansionPanelDetails className={classes.panelDetails}>
+                    <div className={classes.detailsContent}>
+                      <Typography>
+                        Through Apollo ProHealth, you will be assigned a dedicated health mentor,
+                        who will connect with you every month. The follow up will help you in
+                        monitoring your NCD related parameters. For post Covid-19 patients, it will
+                        help in recovery and support with customized rehabilitation plans as needed.
+                      </Typography>
+                    </div>
+                  </ExpansionPanelDetails>
+                </ExpansionPanel>
+              </div>
             </div>
           </div>
         </div>

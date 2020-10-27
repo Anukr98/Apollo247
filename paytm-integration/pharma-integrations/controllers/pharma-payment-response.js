@@ -12,9 +12,9 @@ module.exports = async (req, res, next) => {
     const payload = req.body;
     logger.info(`Payload received: - paymed-response - ${JSON.stringify(payload)}`);
     orderId = payload.ORDERID;
+    const originalPayload = { ...payload };
 
     const checksum = payload.CHECKSUMHASH;
-    delete payload.CHECKSUMHASH;
     let merchantKey = process.env.PAYTM_MERCHANT_KEY_PHARMACY;
     if (payload.MID == process.env.SBI_MID_PHARMACY)
       merchantKey = process.env.SBI_PAYTM_MERCHANT_KEY_PHARMACY;
@@ -52,13 +52,13 @@ module.exports = async (req, res, next) => {
         headers: {
           'authorization': process.env.API_TOKEN
         }
-      }
+      };
 
-      logger.info(`pharma-response-${medicineOrderQuery(payload)}`);
+      logger.info(`pharma-response-${medicineOrderQuery(payload, originalPayload)}`);
 
       // this needs to be altered later.
       const requestJSON = {
-        query: medicineOrderQuery(payload),
+        query: medicineOrderQuery(payload, originalPayload),
       };
 
       /// write medicineorder

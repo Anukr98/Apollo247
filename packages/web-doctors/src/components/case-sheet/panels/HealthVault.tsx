@@ -303,6 +303,7 @@ export const HealthVault: React.FC = () => {
   const client = useApolloClient();
   var prismIdList: any = [];
   const [prismImageList, setPrismImageList] = useState<any>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const [modalOpen, setModalOpen] = React.useState(false);
   const [imgPrevUrl, setImgPrevUrl] = React.useState<any>();

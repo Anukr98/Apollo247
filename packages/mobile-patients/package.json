@@ -14,7 +14,8 @@
     "start": "react-native start",
     "test": "jest",
     "typecheck": "tsc --project . --noEmit",
-    "jetify": "jetify"
+    "jetify": "jetify",
+    "postinstall": "cat OTSubscriberViewManager.java > node_modules/opentok-react-native/android/src/main/java/com/opentokreactnative/OTSubscriberViewManager.java"
   },
   "devDependencies": {
     "@aph/api-schema": "file:../api-schema",

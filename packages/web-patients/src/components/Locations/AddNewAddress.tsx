@@ -371,6 +371,20 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 0,
       margin: '10px 0 0',
     },
+    autoDetect: {
+      position: 'absolute',
+      zIndex: 1,
+      right: '6%',
+      bottom: '36%',
+      cursor: 'pointer',
+      backgroundColor: '#fff',
+      height: 40,
+      width: 40,
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderRadius: 20,
+    },
   };
 });
 
@@ -401,7 +415,9 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
   const [address1, setAddress1] = useState<string>('');
   const [address2, setAddress2] = useState<string>('');
   const [landmark, setLandmark] = useState<string>('');
-  const [pincode, setPincode] = useState<string>('');
+  const [pincode, setPincode] = useState<string>(
+    (!currentAddress && localStorage.getItem('pharmaPincode')) || ''
+  );
   const [addressType, setAddressType] = useState<string>('');
   const [otherTextbox, setOtherTextBox] = useState<string>('');
   const [addressId, setAddressId] = useState<string>('');
@@ -673,6 +689,40 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
           });
   };
 
+  const getCurrentLocation = () => {
+    navigator.geolocation.getCurrentPosition(
+      ({ coords: { latitude, longitude } }) => {
+        console.log(latitude, longitude);
+        setLatitude(latitude);
+        setLongitude(longitude);
+      },
+      (err) => {
+        setLatitude(latitude);
+        setLongitude(longitude);
+        console.log(err.message);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0,
+      }
+    );
+  };
+
+  const autoDetectLocation = () => {
+    navigator.permissions &&
+      navigator.permissions.query({ name: 'geolocation' }).then((PermissionStatus) => {
+        if (PermissionStatus.state === 'prompt') {
+          navigator.geolocation.getCurrentPosition(getCurrentLocation);
+        } else if (PermissionStatus.state === 'denied') {
+          setLatitude(latitude);
+          setLongitude(longitude);
+        } else if (PermissionStatus.state === 'granted') {
+          getCurrentLocation();
+        }
+      });
+  };
+
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: process.env.GOOGLE_API_KEY,
   });
@@ -693,6 +743,9 @@ export const AddNewAddress: React.FC<AddNewAddressProps> = (props) => {
         >
           <Marker position={{ lat: latitude, lng: longitude }} />
         </GoogleMap>
+        <div className={classes.autoDetect} onClick={() => autoDetectLocation()}>
+          <img src={require('images/ic_gps_fixed.png')}></img>
+        </div>
       </Fragment>
     );
   };
