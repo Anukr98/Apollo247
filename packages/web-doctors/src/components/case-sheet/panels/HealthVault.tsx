@@ -303,6 +303,7 @@ export const HealthVault: React.FC = () => {
   const client = useApolloClient();
   var prismIdList: any = [];
   const [prismImageList, setPrismImageList] = useState<any>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const [modalOpen, setModalOpen] = React.useState(false);
   const [imgPrevUrl, setImgPrevUrl] = React.useState<any>();
@@ -342,6 +343,7 @@ export const HealthVault: React.FC = () => {
   }, []);
 
   const handleChange = React.useCallback((type) => {
+    setIsLoading(true);
     switch (type) {
       case 'next':
         setCurrentIndex((index: number) => index + 1);
@@ -352,6 +354,9 @@ export const HealthVault: React.FC = () => {
       default:
         setCurrentIndex(null);
     }
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 10);
   }, []);
 
   return (
@@ -365,6 +370,7 @@ export const HealthVault: React.FC = () => {
               onChange={handleChange}
               documents={appointmentDocuments}
               appointmentDate={appointmentInfo.appointmentDateTime}
+              isLoading={isLoading}
             />
           )}
 
