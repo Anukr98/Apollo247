@@ -352,35 +352,27 @@ const getNewTat = async (
   shipmentDetails: Shipment,
   orderAddress: MedicineOrderAddress
 ) => {
-  let isInventoryUnAvaible = shipmentDetails.itemDetails.find((item) => !item.posAvailability);
-  if (isInventoryUnAvaible) {
-    const medicineOrderLineItems: Partial<MedicineOrderLineItems>[] = [];
-    shipmentDetails.itemDetails.forEach((item) => {
-      const price = +new Decimal(item.packSize).times(item.unitPrice).toFixed(4);
-      const orderItemAttrs = {
-        medicineOrders: orderDetails,
-        medicineSKU: item.articleCode,
-        medicineName: item.articleName,
-        price: price,
-        quantity: +new Decimal(item.quantity).dividedBy(item.packSize).toFixed(4),
-        mrp: price,
-        mou: item.packSize,
-      };
-      medicineOrderLineItems.push(orderItemAttrs);
-    });
-    const tatRes = await getTat(medicineOrderLineItems, orderAddress);
-    if (
-      tatRes &&
-      (tatRes.storeCode == orderDetails.siteId ||
-        tatRes.storeType.toLowerCase() == orderDetails.tatType.toLowerCase())
-    ) {
-      const tatDate = new Date(addMinutes(Date.parse(orderDetails.orderTat), -330));
-      const oldTatLeft = differenceInMinutes(tatDate, new Date());
-      const oldTat = differenceInMinutes(tatDate, new Date(orderDetails.createdDate));
-      if ((oldTatLeft / oldTat) * 100 < 75) {
-        return tatRes;
-      }
-    } else {
+  const medicineOrderLineItems: Partial<MedicineOrderLineItems>[] = [];
+  shipmentDetails.itemDetails.forEach((item) => {
+    const price = +new Decimal(item.packSize).times(item.unitPrice).toFixed(4);
+    const orderItemAttrs = {
+      medicineSKU: item.articleCode,
+      medicineName: item.articleName,
+      price: price,
+      quantity: +new Decimal(item.quantity).dividedBy(item.packSize).toFixed(4),
+      mrp: price,
+      mou: item.packSize,
+    };
+    medicineOrderLineItems.push(orderItemAttrs);
+  });
+  const tatRes = await getTat(medicineOrderLineItems, orderAddress);
+  if (tatRes && tatRes.storeType.toLowerCase() == orderDetails.tatType.toLowerCase()) {
+    const currentDate = new Date(addMinutes(new Date(), +330));
+    const oldTatDate = new Date(Date.parse(orderDetails.orderTat));
+    const newTatDate = new Date(Date.parse(tatRes.tat));
+    const oldTatLeft = differenceInMinutes(oldTatDate, currentDate);
+    const newTatLeft = differenceInMinutes(newTatDate, currentDate);
+    if (oldTatLeft < 0.6 * newTatLeft) {
       return tatRes;
     }
   }
