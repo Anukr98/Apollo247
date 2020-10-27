@@ -79,7 +79,8 @@ const addDoctorPricing: Resolver<
     // check for any active plans with appointment type
     const getActivePricing = await doctorPricingRepository.getDoctorPricing({ status: PLAN_STATUS.ACTIVE, appointment_type, doctorId });
     if (getActivePricing && getActivePricing.length > 0) {
-      throw new AphError(`${AphErrorMessages.ACIVE_DOCTOR_PRICING_EXIST}_${appointment_type}`);
+      log('doctorServiceLogger', `ACIVE_DOCTOR_PRICING_EXIST`, `${appointment_type}`, '', '');
+      throw new AphError(AphErrorMessages.ACIVE_DOCTOR_PRICING_EXIST);
     }
     await doctorPricingRepository.saveDoctorPricing(doctorPricingInput);
     return {
