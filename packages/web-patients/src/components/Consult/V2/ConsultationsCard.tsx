@@ -691,6 +691,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
         fullName,
         mobileNumber,
         specialization,
+        doctorsOfTheHourStatus: false,
         languages,
         city,
         awards,

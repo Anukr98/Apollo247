@@ -106,8 +106,8 @@ const useStyles = makeStyles((theme: Theme) => {
     dialogContent: {
       padding: '0 20px',
       height: 360,
-      overflow: 'auto',      
-      '&::-webkit-scrollbar': { 
+      overflow: 'auto',
+      '&::-webkit-scrollbar': {
         width: 6,
       },
       '&::-webkit-scrollbar-track': {

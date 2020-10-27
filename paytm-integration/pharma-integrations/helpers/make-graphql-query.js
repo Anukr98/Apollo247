@@ -1,4 +1,4 @@
-const medicineOrderQuery = (payload) => {
+const medicineOrderQuery = (payload, originalPayload) => {
   let txnDate = new Date(new Date().toUTCString()).toISOString();
 
   if (payload.TXNDATETIME || payload.TXNDATE) {
@@ -9,6 +9,7 @@ const medicineOrderQuery = (payload) => {
   }
 
   let params = `orderAutoId: ${payload.ORDERID}, 
+    payload: "${Buffer.from(JSON.stringify(originalPayload)).toString('base64')}",
     paymentType: CASHLESS, 
     amountPaid: ${payload.TXNAMOUNT},
     healthCredits: ${payload.HEALTH_CREDITS},
