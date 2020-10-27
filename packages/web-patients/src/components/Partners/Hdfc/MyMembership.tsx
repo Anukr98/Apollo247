@@ -389,11 +389,11 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       justifyContent: 'space-between',
       padding: '0 0 10px',
-      '& img':{
+      '& img': {
         [theme.breakpoints.down('sm')]: {
           width: 120,
-        }
-      }
+        },
+      },
     },
   };
 });

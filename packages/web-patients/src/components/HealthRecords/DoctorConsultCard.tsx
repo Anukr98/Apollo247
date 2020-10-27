@@ -254,9 +254,8 @@ export const DoctorConsultCard: React.FC<ConsultCardProps> = (props) => {
               <div className={classes.doctorInfo}>
                 <div className={classes.doctorName}>
                   {consult.doctorInfo
-                    ? `Dr. ${consult.doctorInfo.firstName || ''} ${
-                        consult.doctorInfo.lastName || ''
-                      }`
+                    ? `Dr. ${consult.doctorInfo.firstName || ''} ${consult.doctorInfo.lastName ||
+                        ''}`
                     : ''}
                 </div>
                 <div className={classes.doctorService}>

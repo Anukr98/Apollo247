@@ -3,7 +3,13 @@ import { Theme, Grid, CircularProgress, Popover, Typography } from '@material-ui
 import { makeStyles } from '@material-ui/styles';
 import { Specialties } from 'components/Specialties';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { AphDialogTitle, AphDialog, AphDialogClose, AphButton, AphSelect } from '@aph/web-ui-components';
+import {
+  AphDialogTitle,
+  AphDialog,
+  AphDialogClose,
+  AphButton,
+  AphSelect,
+} from '@aph/web-ui-components';
 import MenuItem from '@material-ui/core/MenuItem';
 import { Link } from 'react-router-dom';
 import { readableParam } from 'helpers/commonHelpers';
@@ -603,9 +609,9 @@ export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
                         selectedCity === ''
                           ? clientRoutes.specialties(readableParam(specialityDetails.slugName))
                           : clientRoutes.citySpecialties(
-                            _lowerCase(selectedCity),
-                            readableParam(specialityDetails.slugName)
-                          )
+                              _lowerCase(selectedCity),
+                              readableParam(specialityDetails.slugName)
+                            )
                       }
                     >
                       <Typography component="h3">{specialityDetails.specialtyName}</Typography>
@@ -634,31 +640,22 @@ export const SpecialtyDivision: React.FC<SpecialtyDivisionProps> = (props) => {
           <Specialties selectedCity={selectedCity} setSpecialtyCount={setSpecialtyCount} />
         </div>
       </div>
-      <AphDialog open={false} maxWidth={false} className={classes.modalDialog} >
+      <AphDialog open={false} maxWidth={false} className={classes.modalDialog}>
         <AphDialogTitle className={classes.memberTitle}>
           Select the member you want to book appointment for
-               </AphDialogTitle>
+        </AphDialogTitle>
         <div className={classes.bannerInfo}>
           <Typography variant="h1">
             <span title={'hi'}>Hi</span>
             <AphSelect
               classes={{ root: classes.selectMenuRoot, selectMenu: classes.selectMenuItem }}
             >
-              return (
-              <MenuItem
-                classes={{ selected: classes.menuSelected }}
-              >
-                Ramarao
-              </MenuItem>
+              return (<MenuItem classes={{ selected: classes.menuSelected }}>Ramarao</MenuItem>
               );
             </AphSelect>
           </Typography>
-          <Typography variant="h2">
-            Who is the patient?
-          </Typography>
-          <Typography variant="h4">
-            Prescription to be generated in the name of?
-          </Typography>
+          <Typography variant="h2">Who is the patient?</Typography>
+          <Typography variant="h4">Prescription to be generated in the name of?</Typography>
           <div className={classes.familyMembers}>
             <button className={classes.memberBtn}>GARIMA</button>
             <button className={classes.memberBtn}>AJAY</button>

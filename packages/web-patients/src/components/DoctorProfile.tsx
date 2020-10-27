@@ -169,7 +169,7 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'absolute',
       bottom: 0,
       left: 0,
-      right: 0
+      right: 0,
     },
     heading1: {
       display: 'flex',
@@ -182,7 +182,7 @@ const useStyles = makeStyles((theme: Theme) => {
       '& img': {
         margin: '0 10px 0 0',
         width: 16,
-      }
+      },
     },
   };
 });
@@ -527,7 +527,18 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
         <div className={classes.doctorProfile}>
           <div className={classes.doctorImage} title={displayName || ''}>
             <img src={profileImage || require('images/no_photo.png')} alt={displayName || ''} />
-            {docOfTheHourStatus ? <div className={classes.docHour}>  <Typography className={classes.heading1}> <img src={require('images/ic_doctor_consult.svg')} alt="" />Doctor of the Hour!</Typography></div> : ''}
+            {docOfTheHourStatus ? (
+              <div className={classes.docHour}>
+                {' '}
+                <Typography className={classes.heading1}>
+                  {' '}
+                  <img src={require('images/ic_doctor_consult.svg')} alt="" />
+                  Doctor of the Hour!
+                </Typography>
+              </div>
+            ) : (
+              ''
+            )}
           </div>
           <div className={classes.doctorInfo}>
             <div className={classes.doctorName} title={'Doctor Name'}>
@@ -555,8 +566,8 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
                     {education && education.includes(';') ? (
                       education.split(';').map((edu, idx) => <div key={idx}>{edu}</div>)
                     ) : (
-                        <div>{education}</div>
-                      )}
+                      <div>{education}</div>
+                    )}
                   </div>
                 </div>
               )}

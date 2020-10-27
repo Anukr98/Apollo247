@@ -113,6 +113,7 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   PICKUP_REQUESTED = "PICKUP_REQUESTED",
   REPORT_GENERATED = "REPORT_GENERATED",
   SAMPLE_COLLECTED = "SAMPLE_COLLECTED",
+  SAMPLE_RECEIVED_IN_LAB = "SAMPLE_RECEIVED_IN_LAB",
 }
 
 export enum DOCTOR_ONLINE_STATUS {
@@ -642,7 +643,6 @@ export interface ConsultQueueInput {
 }
 
 export interface CreateUserSubscriptionInput {
-  _id?: string | null;
   plan_id: string;
   payment_reference_id?: string | null;
   coupon_availed?: string | null;
@@ -943,6 +943,7 @@ export interface PatientAddressInput {
   latitude?: number | null;
   longitude?: number | null;
   stateCode?: string | null;
+  defaultAddress?: boolean | null;
 }
 
 export interface PatientAppointmentsInput {
