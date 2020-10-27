@@ -589,9 +589,13 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   async function fetchProductSuggestions() {
     const categoryId = AppConfig.Configuration.PRODUCT_SUGGESTIONS_CATEGORYID;
     const pageCount = AppConfig.Configuration.PRODUCT_SUGGESTIONS_COUNT;
-    const response = await getProductsByCategoryApi(categoryId, pageCount);
-    const products = response?.data?.products.slice(0, 10) || [];
-    setsuggestedProducts(products);
+    try {
+      const response = await getProductsByCategoryApi(categoryId, pageCount);
+      const products = response?.data?.products.slice(0, 15) || [];
+      setsuggestedProducts(products);
+    } catch (error) {
+      CommonBugFender('YourCart_error_whilefetchingSuggestedProducts', error);
+    }
   }
 
   const multiplePhysicalPrescriptionUpload = (prescriptions = physicalPrescriptions) => {

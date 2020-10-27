@@ -758,7 +758,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     const showExpectedDelivery =
       isDeliveryOrder && tatInfo && !isCancelled && !isDelivered && hours > 0;
 
-    const isNotTatBreach = moment(tatInfo!).isSameOrAfter(moment(), 'day');
+    // const isNotTatBreach = moment(tatInfo!).isSameOrAfter(moment(), 'day');
+    const isNotTatBreach = true;
 
     let statusList = orderStatusList
       .filter(
@@ -999,9 +1000,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     return (
       <View>
         <View style={{ margin: 20 }}>
-          {!isNotTatBreach && order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+          {/* {!isNotTatBreach && order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
             ? renderInconvenienceView()
-            : null}
+            : null} */}
           {statusList.map((order, index, array) => {
             return (
               <OrderProgressCard

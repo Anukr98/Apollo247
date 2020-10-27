@@ -3,6 +3,7 @@ package com.apollopatient;
 
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -88,6 +89,7 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
         String incomingCallStart="call_started";
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         String notifMessageType = sharedPref.getString("NOTIF_MESSAGE_TYPE", "call_started");
+        Integer notifID=intent.getIntExtra("NOTIFICATION_ID", -1);
 
         //ringtoneManager start
         Uri incoming_call_notif = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
@@ -125,7 +127,8 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
                 params.putBoolean("done", true);
                 params.putString("appointment_id",appointment_id);
                 params.putString("call_type",incoming_call_type);
-
+                removeNotification(fallBack,notifID);
+        
                 
                     String deeplinkUri="apollopatients://DoctorCall?"+appointment_id+'+'+incoming_call_type;
                     Uri uri = Uri.parse(deeplinkUri);
@@ -133,8 +136,8 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
                     Intent intent = new Intent(Intent.ACTION_VIEW, uri);
                     finish();
                     startActivity(intent);
-                
          
+
             }
         });
 
@@ -147,6 +150,7 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
                 params.putString("appointment_id",appointment_id);
                 params.putString("call_type",incoming_call_type);
                 onDisconnected(appointment_id);
+                removeNotification(fallBack,notifID);
                 if(isAppRuning){
                     Intent intent = new Intent(UnlockScreenActivity.this, MainActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY );
@@ -199,6 +203,13 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
     @Override
     public void onIncoming(ReadableMap params) {
 
+    }
+
+    private void removeNotification(Boolean fallBack,Integer notifID){
+        if(fallBack) {
+            NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            manager.cancel(notifID);
+        }
     }
 
     private void onDisconnected(String appointmentID) {
