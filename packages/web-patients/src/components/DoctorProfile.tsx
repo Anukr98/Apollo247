@@ -1,4 +1,4 @@
-import { Theme } from '@material-ui/core';
+import { Theme, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React, { useState, useEffect } from 'react';
 import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
@@ -31,6 +31,7 @@ const useStyles = makeStyles((theme: Theme) => {
       overflow: 'hidden',
       display: 'flex',
       alignItems: 'flex-start',
+      position: 'relative',
       [theme.breakpoints.up('sm')]: {
         width: 190,
       },
@@ -161,6 +162,27 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 12,
       lineHeight: '16px',
       paddingTop: 10,
+    },
+    docHour: {
+      background: 'linear-gradient(105.88deg, #2C4C70 0.63%, #5EACB0 102.46%)',
+      padding: 10,
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0
+    },
+    heading1: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: 14,
+      fontWeight: 600,
+      lineHeight: '18px',
+      color: '#fff',
+      '& img': {
+        margin: '0 10px 0 0',
+        width: 16,
+      }
     },
   };
 });
@@ -488,6 +510,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
     }
     const education = doctorDetails.qualification;
     const profileImage = doctorDetails.photoUrl;
+    const docOfTheHourStatus = doctorDetails.doctorsOfTheHourStatus;
 
     const { awards, experience, languages, displayName } = doctorDetails;
 
@@ -504,6 +527,7 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
         <div className={classes.doctorProfile}>
           <div className={classes.doctorImage} title={displayName || ''}>
             <img src={profileImage || require('images/no_photo.png')} alt={displayName || ''} />
+            {docOfTheHourStatus ? <div className={classes.docHour}>  <Typography className={classes.heading1}> <img src={require('images/ic_doctor_consult.svg')} alt="" />Doctor of the Hour!</Typography></div> : ''}
           </div>
           <div className={classes.doctorInfo}>
             <div className={classes.doctorName} title={'Doctor Name'}>
@@ -531,8 +555,8 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
                     {education && education.includes(';') ? (
                       education.split(';').map((edu, idx) => <div key={idx}>{edu}</div>)
                     ) : (
-                      <div>{education}</div>
-                    )}
+                        <div>{education}</div>
+                      )}
                   </div>
                 </div>
               )}

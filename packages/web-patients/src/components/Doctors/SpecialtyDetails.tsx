@@ -16,7 +16,7 @@ import { HowItWorks } from 'components/Doctors/HowItWorks';
 import { AddedFilters } from 'components/Doctors/AddedFilters';
 import { useApolloClient } from 'react-apollo-hooks';
 import { useParams } from 'hooks/routerHooks';
-import { GET_DOCTOR_LIST } from 'graphql/doctors';
+import { GET_DOCTOR_LIST, GET_PLATINUM_DOCTOR } from 'graphql/doctors';
 import {
   readableParam,
   DOCTOR_CATEGORY,
@@ -48,6 +48,8 @@ import { dataLayerTracking } from 'gtmTracking';
 import axios from 'axios';
 import { GetDoctorList } from 'graphql/types/GetDoctorList';
 import _debounce from 'lodash/debounce';
+import { getPlatinumDoctor_getPlatinumDoctor_doctors as PlatinumDocDetails } from 'graphql/types/getPlatinumDoctor';
+import PlatinumDocCard from 'components/PlatinumDocCard';
 
 let currentPage = 1;
 let apolloDoctorCount = 0;
@@ -451,6 +453,7 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const [searchQuery, setSearchQuery] = useState<any>({});
   const scrollRef = useRef<HTMLDivElement>(null);
   const searchParams = window.location.search;
+  const [platinumDocData, setPlatinumDocData] = useState<PlatinumDocDetails | null>(null);
 
   const assigningFilters = (
     filterObject: SearchObject,
@@ -486,8 +489,8 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
           isOnlineSelected && isPhysicalSelected
             ? ConsultMode.BOTH
             : isOnlineSelected
-            ? ConsultMode.ONLINE
-            : ConsultMode.PHYSICAL,
+              ? ConsultMode.ONLINE
+              : ConsultMode.PHYSICAL,
       };
       if (searchParams.length > 0) {
         const search = searchParams.substring(1);
@@ -542,14 +545,14 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                   name: doctorDetails.fullName,
                   url: params.specialty
                     ? `${window.location.origin}${clientRoutes.specialtyDoctorDetails(
-                        params.specialty,
-                        readableParam(doctorDetails.fullName),
-                        doctorDetails.id
-                      )}`
+                      params.specialty,
+                      readableParam(doctorDetails.fullName),
+                      doctorDetails.id
+                    )}`
                     : `${window.location.origin}${clientRoutes.doctorDetails(
-                        readableParam(doctorDetails.fullName),
-                        doctorDetails.id
-                      )}`,
+                      readableParam(doctorDetails.fullName),
+                      doctorDetails.id
+                    )}`,
                 });
             });
 
@@ -816,14 +819,14 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                   name: doctorDetails.displayName,
                   url: params.specialty
                     ? `${window.location.origin}${clientRoutes.specialtyDoctorDetails(
-                        params.specialty,
-                        readableParam(doctorDetails.displayName),
-                        doctorDetails.id
-                      )}`
+                      params.specialty,
+                      readableParam(doctorDetails.displayName),
+                      doctorDetails.id
+                    )}`
                     : `${window.location.origin}${clientRoutes.doctorDetails(
-                        readableParam(doctorDetails.displayName),
-                        doctorDetails.id
-                      )}`,
+                      readableParam(doctorDetails.displayName),
+                      doctorDetails.id
+                    )}`,
                 });
             });
             setDoctorData(doctors || []);
@@ -841,6 +844,25 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
         });
     }
   }, [currentLat, currentLong, filter, specialtyId, specialtyName]);
+
+  useEffect(() => {
+    if (specialtyId) {
+      apolloClient
+        .query({
+          query: GET_PLATINUM_DOCTOR,
+          variables: {
+            specialtyId: specialtyId
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then((response) => {
+          if (response && response.data && response.data.getPlatinumDoctor && response.data.getPlatinumDoctor.doctors && response.data.getPlatinumDoctor.doctors.length > 0) {
+            setPlatinumDocData(response.data.getPlatinumDoctor.doctors[0] || null);
+          }
+        })
+        .catch((e) => console.log(e))
+    }
+  }, [specialtyId]);
 
   const getFilteredDoctorList = (data: DoctorDetails[]) => {
     return _filter(data, (doctor: DoctorDetails) => {
@@ -963,6 +985,11 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                   </div>
                 ) : filteredDoctorData && Object.keys(filteredDoctorData).length > 0 ? (
                   <>
+                    {platinumDocData ? (
+                      <PlatinumDocCard
+                        doctorInfo={platinumDocData}
+                        specialtyId={specialtyId}
+                      ></PlatinumDocCard>) : ''}
                     <Grid container spacing={2}>
                       {filteredDoctorData[doctorType].map((doctor: DoctorDetails) => {
                         if (doctor && doctor.id) {
@@ -976,13 +1003,13 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                                   specialtyId={specialtyId}
                                 />
                               ) : (
-                                <InfoCard
-                                  doctorInfo={doctor}
-                                  doctorType={doctorType}
-                                  specialityType={(faqData && faqData[0].title) || ''}
-                                  specialtyId={specialtyId}
-                                />
-                              )}
+                                  <InfoCard
+                                    doctorInfo={doctor}
+                                    doctorType={doctorType}
+                                    specialityType={(faqData && faqData[0].title) || ''}
+                                    specialtyId={specialtyId}
+                                  />
+                                )}
                             </Grid>
                           );
                         }
@@ -990,8 +1017,8 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                     </Grid>
                   </>
                 ) : (
-                  'no results found'
-                )}
+                      'no results found'
+                    )}
               </div>
               {/* {pageNo < Math.ceil((apolloDoctorCount + partnerDoctorCount) / PAGE_SIZE) && (
                 <div className={classes.paginationContainer}>

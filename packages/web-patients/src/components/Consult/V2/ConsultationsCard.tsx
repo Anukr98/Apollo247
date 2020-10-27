@@ -556,8 +556,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
         return isSeniorConsultStarted
           ? 'CONTINUE CONSULT'
           : isConsultStarted
-          ? 'GO TO CONSULT ROOM'
-          : 'FILL MEDICAL DETAILS';
+            ? 'GO TO CONSULT ROOM'
+            : 'FILL MEDICAL DETAILS';
       case STATUS.NO_SHOW || STATUS.CALL_ABANDON:
         return 'PICK ANOTHER SLOT';
       case STATUS.COMPLETED:
@@ -585,8 +585,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
           return isSeniorConsultStarted
             ? 'CONTINUE CONSULT'
             : isConsultStarted
-            ? 'GO TO CONSULT ROOM'
-            : 'FILL MEDICAL DETAILS';
+              ? 'GO TO CONSULT ROOM'
+              : 'FILL MEDICAL DETAILS';
       }
     }
     // need to add one more condition for view prescription for this have to query casesheet
@@ -691,6 +691,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
         fullName,
         mobileNumber,
         specialization,
+        doctorsOfTheHourStatus: false,
         languages,
         city,
         awards,
@@ -878,8 +879,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                 return day1.diff(day2, 'days') == 0
                   ? 'Today'
                   : day1.diff(day2, 'days') +
-                      ' more ' +
-                      (day1.diff(day2, 'days') == 1 ? 'day' : 'days');
+                  ' more ' +
+                  (day1.diff(day2, 'days') == 1 ? 'day' : 'days');
               };
               const clinicList = doctorHospital || [];
               let facilityName = '',
@@ -894,7 +895,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                 facilityName = clinicList[0].facility.name;
                 streetName =
                   clinicList[0].facility.streetLine1 &&
-                  clinicList[0].facility.streetLine1.length > 0
+                    clinicList[0].facility.streetLine1.length > 0
                     ? clinicList[0].facility.streetLine1
                     : '';
               }
@@ -923,9 +924,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                           </div>
                         )}
                         <div
-                          className={`${classes.availability} ${
-                            difference <= 15 && difference > 0 ? classes.availableNow : ''
-                          }`}
+                          className={`${classes.availability} ${difference <= 15 && difference > 0 ? classes.availableNow : ''
+                            }`}
                         >
                           {appointmentDetails.appointmentType === 'ONLINE'
                             ? difference <= 15 && difference > 0
@@ -954,8 +954,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                             {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE ? (
                               <img src={require('images/ic-video.svg')} alt="" />
                             ) : (
-                              <img src={require('images/fa-solid-hospital.svg')} alt="" />
-                            )}
+                                <img src={require('images/fa-solid-hospital.svg')} alt="" />
+                              )}
                           </span>
                         </div>
                       </div>
@@ -964,7 +964,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                       <div className={classes.consultRow}>
                         {props.pastOrCurrent !== 'past' &&
                           appointmentDetails.appointmentState ===
-                            APPOINTMENT_STATE.AWAITING_RESCHEDULE && (
+                          APPOINTMENT_STATE.AWAITING_RESCHEDULE && (
                             <AphButton className={classes.errorButton}>
                               Sorry, we had to reschedule this appointment. Please pick another
                               slot.
@@ -979,41 +979,41 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                         </AphButton> */}
                           {(appointmentDetails.status === STATUS.COMPLETED ||
                             props.pastOrCurrent === 'past') && (
-                            <div className={classes.bookFollowup}>
-                              <Route
-                                render={({ history }) => (
-                                  <h3
-                                    style={{ cursor: 'pointer' }}
-                                    onClick={() => {
-                                      if (props.pastOrCurrent === 'past') {
-                                        history.push(
-                                          clientRoutes.chatRoom(appointmentId, doctorId)
-                                        );
-                                      } else {
-                                        callSlotScreen(appointmentDetails);
-                                      }
-                                    }}
-                                  >
-                                    {props.pastOrCurrent !== 'past'
-                                      ? 'BOOK FOLLOW UP'
-                                      : 'VIEW CHAT'}
-                                  </h3>
-                                )}
-                              />
-                              {props.pastOrCurrent !== 'past' &&
-                                appointmentDetails &&
-                                appointmentDetails.doctorInfo &&
-                                appointmentDetails.doctorInfo.displayName && (
-                                  <h6>
-                                    With{' '}
-                                    {appointmentDetails.doctorInfo.salutation
-                                      ? `${appointmentDetails.doctorInfo.salutation}.`
-                                      : ''}{' '}
-                                    {appointmentDetails.doctorInfo.displayName}
-                                  </h6>
-                                )}
-                            </div>
-                          )}
+                              <div className={classes.bookFollowup}>
+                                <Route
+                                  render={({ history }) => (
+                                    <h3
+                                      style={{ cursor: 'pointer' }}
+                                      onClick={() => {
+                                        if (props.pastOrCurrent === 'past') {
+                                          history.push(
+                                            clientRoutes.chatRoom(appointmentId, doctorId)
+                                          );
+                                        } else {
+                                          callSlotScreen(appointmentDetails);
+                                        }
+                                      }}
+                                    >
+                                      {props.pastOrCurrent !== 'past'
+                                        ? 'BOOK FOLLOW UP'
+                                        : 'VIEW CHAT'}
+                                    </h3>
+                                  )}
+                                />
+                                {props.pastOrCurrent !== 'past' &&
+                                  appointmentDetails &&
+                                  appointmentDetails.doctorInfo &&
+                                  appointmentDetails.doctorInfo.displayName && (
+                                    <h6>
+                                      With{' '}
+                                      {appointmentDetails.doctorInfo.salutation
+                                        ? `${appointmentDetails.doctorInfo.salutation}.`
+                                        : ''}{' '}
+                                      {appointmentDetails.doctorInfo.displayName}
+                                    </h6>
+                                  )}
+                              </div>
+                            )}
                           <Route
                             render={({ history }) => (
                               <div
@@ -1021,7 +1021,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                                 onClick={() => {
                                   const doctorName =
                                     appointmentDetails.doctorInfo &&
-                                    appointmentDetails.doctorInfo.fullName
+                                      appointmentDetails.doctorInfo.fullName
                                       ? readableParam(appointmentDetails.doctorInfo.fullName)
                                       : '';
                                   if (
@@ -1031,7 +1031,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                                       appointmentDetails.status === STATUS.NO_SHOW ||
                                       appointmentDetails.status === STATUS.CALL_ABANDON ||
                                       appointmentDetails.appointmentState ===
-                                        APPOINTMENT_STATE.AWAITING_RESCHEDULE;
+                                      APPOINTMENT_STATE.AWAITING_RESCHEDULE;
                                     if (
                                       props.pastOrCurrent === 'past' ||
                                       showAppointmentAction(
@@ -1046,17 +1046,17 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                                       getAppointmentNextSlotInitiatedByDoctor(appointmentDetails);
                                     } else {
                                       appointmentDetails.status === STATUS.CANCELLED ||
-                                      (appointmentDetails.status === STATUS.COMPLETED &&
-                                        props.pastOrCurrent === 'past')
+                                        (appointmentDetails.status === STATUS.COMPLETED &&
+                                          props.pastOrCurrent === 'past')
                                         ? history.push(
-                                            clientRoutes.doctorDetails(
-                                              doctorName,
-                                              appointmentDetails.doctorId
-                                            )
+                                          clientRoutes.doctorDetails(
+                                            doctorName,
+                                            appointmentDetails.doctorId
                                           )
+                                        )
                                         : history.push(
-                                            clientRoutes.chatRoom(appointmentId, doctorId)
-                                          );
+                                          clientRoutes.chatRoom(appointmentId, doctorId)
+                                        );
                                     }
                                   } else {
                                     history.push(
@@ -1073,11 +1073,11 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                                     ? props.pastOrCurrent === 'past'
                                       ? 'BOOK FOLLOW UP'
                                       : showAppointmentAction(
-                                          appointmentDetails.appointmentState,
-                                          appointmentDetails.status,
-                                          appointmentDetails.isConsultStarted,
-                                          appointmentDetails.isSeniorConsultStarted
-                                        )
+                                        appointmentDetails.appointmentState,
+                                        appointmentDetails.status,
+                                        appointmentDetails.isConsultStarted,
+                                        appointmentDetails.isSeniorConsultStarted
+                                      )
                                     : 'VIEW DETAILS'}
                                 </h3>
                               </div>
@@ -1086,7 +1086,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                           {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE &&
                             props.pastOrCurrent !== 'past' &&
                             appointmentDetails.appointmentState !==
-                              APPOINTMENT_STATE.AWAITING_RESCHEDULE && (
+                            APPOINTMENT_STATE.AWAITING_RESCHEDULE && (
                               <h6>
                                 {getConsultationUpdateText(
                                   appointmentDetails,
@@ -1132,45 +1132,45 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                   rescheduleAPI={rescheduleAPI}
                 />
               ) : (
-                <div>
-                  <div className={classes.dialogContent}>
-                    Dr.{appointmentData.doctorInfo && appointmentData.doctorInfo.fullName} has
+                  <div>
+                    <div className={classes.dialogContent}>
+                      Dr.{appointmentData.doctorInfo && appointmentData.doctorInfo.fullName} has
                     suggested the below slot for rescheduling this appointment —
                     {moment(doctorSelectedSlot).format(' DD MMMM YYYY, hh:mm A')}
-                  </div>
-                  <div className={classes.dialogActions}>
-                    {doctorSelectedSlotLoading ? (
-                      <div className={classes.dialogActionsProgress}>
-                        <CircularProgress size={22} color="primary" />
-                      </div>
-                    ) : (
-                      <>
-                        <AphButton
-                          className={classes.secondaryBtn}
-                          color="primary"
-                          onClick={() => setIsChangeSlot(true)}
-                        >
-                          {'CHANGE SLOT'}
-                        </AphButton>
+                    </div>
+                    <div className={classes.dialogActions}>
+                      {doctorSelectedSlotLoading ? (
+                        <div className={classes.dialogActionsProgress}>
+                          <CircularProgress size={22} color="primary" />
+                        </div>
+                      ) : (
+                          <>
+                            <AphButton
+                              className={classes.secondaryBtn}
+                              color="primary"
+                              onClick={() => setIsChangeSlot(true)}
+                            >
+                              {'CHANGE SLOT'}
+                            </AphButton>
 
-                        <AphButton
-                          className={classes.primaryBtn}
-                          color="primary"
-                          onClick={() => {
-                            handleAcceptReschedule(appointmentData);
-                          }}
-                        >
-                          {apiLoading ? (
-                            <CircularProgress size={22} color="secondary" />
-                          ) : (
-                            <span>ACCEPT</span>
-                          )}
-                        </AphButton>
-                      </>
-                    )}
+                            <AphButton
+                              className={classes.primaryBtn}
+                              color="primary"
+                              onClick={() => {
+                                handleAcceptReschedule(appointmentData);
+                              }}
+                            >
+                              {apiLoading ? (
+                                <CircularProgress size={22} color="secondary" />
+                              ) : (
+                                  <span>ACCEPT</span>
+                                )}
+                            </AphButton>
+                          </>
+                        )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
             </div>
           </Paper>
         </Modal>

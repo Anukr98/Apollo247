@@ -109,6 +109,7 @@ export interface GetDoctorDetailsById_getDoctorDetailsById {
   city: string | null;
   awards: string | null;
   displayName: string | null;
+  doctorsOfTheHourStatus: boolean | null;
   photoUrl: string | null;
   registrationNumber: string;
   onlineConsultationFees: string;
