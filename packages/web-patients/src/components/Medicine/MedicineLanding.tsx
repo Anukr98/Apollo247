@@ -29,6 +29,7 @@ import {
   uploadPrescriptionTracking,
   pharmacyUploadPresClickTracking,
   uploadPhotoTracking,
+  medicinePageOpenTracking,
 } from '../../webEngageTracking';
 import moment from 'moment';
 import { useShoppingCart } from 'components/MedicinesCartProvider';
@@ -671,6 +672,7 @@ const MedicineLanding: React.FC = (props: any) => {
     imageUrl: process.env.PHARMACY_MED_IMAGES_BASE_URL,
   };
   useEffect(() => {
+    medicinePageOpenTracking();
     deepLinkUtil(`Medicine`);
   }, []);
 

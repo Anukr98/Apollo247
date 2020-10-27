@@ -1,10 +1,10 @@
 import DoctorCardStyles from '@aph/mobile-doctors/src/components/ProfileSetup/DoctorCard.styles';
 import { Button } from '@aph/mobile-doctors/src/components/ui/Button';
+import { DotIcon } from '@aph/mobile-doctors/src/components/ui/Icons';
 import { INVITEDSTATUS } from '@aph/mobile-doctors/src/graphql/types/globalTypes';
 import strings from '@aph/mobile-doctors/src/strings/strings.json';
 import React, { useState } from 'react';
 import {
-  Image,
   ImageStyle,
   StyleProp,
   Text,
@@ -13,6 +13,7 @@ import {
   TouchableOpacityProps,
   View,
 } from 'react-native';
+import FastImage from 'react-native-fast-image';
 
 const styles = DoctorCardStyles;
 
@@ -43,7 +44,10 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           <View style={styles.doctorCardView}>
             <View style={styles.doctorImgView}>
               <View style={styles.imageView}>
-                <Image source={require('../../images/doctor/rahul.png')} />
+                <FastImage
+                  style={styles.imageStyle}
+                  source={require('../../images/doctor/rahul.png')}
+                />
               </View>
               <View style={{ flex: 1 }}>
                 <View style={styles.iconview}>
@@ -54,10 +58,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                     onPress={() => setisMenuHidden(!isMenuHidden)}
                     style={{ flex: 0.2 }}
                   >
-                    <Image
-                      style={styles.imageremovestyles}
-                      source={require('../../images/icons/remove.png')}
-                    />
+                    <DotIcon style={styles.imageremovestyles} />
                   </TouchableOpacity>
                 </View>
 

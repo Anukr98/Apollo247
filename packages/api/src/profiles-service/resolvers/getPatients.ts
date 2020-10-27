@@ -20,6 +20,9 @@ export const getPatientTypeDefs = gql`
   type PatientList {
     patients: [Patient]
   }
+  type LinkedPatientIds {
+    primaryPatientIds: [String]
+  }
   type DeviceCountResponse {
     deviceCount: Int
   }
@@ -66,6 +69,7 @@ export const getPatientTypeDefs = gql`
     getPatientByMobileNumber(mobileNumber: String): PatientList
     getPatients: GetPatientsResult
     getDeviceCodeCount(deviceCode: String): DeviceCountResponse
+    getLinkedPatientIds(patientId: String): LinkedPatientIds
   }
   extend type Mutation {
     deleteProfile(patientId: String): DeleteProfileResult!
@@ -76,7 +80,7 @@ export const getPatientTypeDefs = gql`
       whatsAppConsult: Boolean
       patientId: String
     ): UpdateWhatsAppStatusResult!
-    createNewUHID(patientId: String!): String
+    createNewUHID(patientID: String!): String
   }
 `;
 
@@ -107,6 +111,9 @@ type PatientInfo = {
 };
 type PatientList = {
   patients: Patient[];
+};
+type LinkedPatientIds = {
+  primaryPatientIds: string[];
 };
 
 type DeleteProfileResult = {
@@ -346,6 +353,20 @@ const getPatients = () => {
   return { patients: [] };
 };
 
+const getLinkedPatientIds: Resolver<
+  null,
+  { patientId: string },
+  ProfilesServiceContext,
+  LinkedPatientIds
+> = async (parent, args, { profilesDb }) => {
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  const patientId = args.patientId;
+  const primaryPatientIds = await patientRepo.getLinkedPatientIds({ patientId });
+  if (!primaryPatientIds) throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS);
+
+  return { primaryPatientIds };
+};
+
 export const getPatientResolvers = {
   Query: {
     getPatientById,
@@ -355,6 +376,7 @@ export const getPatientResolvers = {
     getPatients,
     getAthsToken,
     getDeviceCodeCount,
+    getLinkedPatientIds,
   },
   Mutation: {
     deleteProfile,

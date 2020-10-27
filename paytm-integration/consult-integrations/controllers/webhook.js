@@ -24,7 +24,11 @@ module.exports = async (req, res, next) => {
       return next(new Error(`checkSum did not match for order - ${orderId}`));
     }
 
-    axios.defaults.headers.common['authorization'] = process.env.API_TOKEN;
+    const axiosConfig = {
+      headers: {
+        'authorization': process.env.API_TOKEN
+      }
+    }
 
     // this needs to be altered later.
     const requestJSON = {
@@ -32,7 +36,7 @@ module.exports = async (req, res, next) => {
     };
 
     /// write medicineoirder
-    const response = await axios.post(process.env.API_URL, requestJSON);
+    const response = await axios.post(process.env.API_URL, requestJSON, axiosConfig);
     logger.info(`${payload.ORDERID} - makeAppointmentPayment -  ${JSON.stringify(response.data)}`);
 
     if (response.data.errors && response.data.errors.length) {

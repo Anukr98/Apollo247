@@ -26,16 +26,13 @@ import { EmailMessage } from 'types/notificationMessageTypes';
 import { log } from 'customWinstonLogger';
 import { acceptCoupon } from 'helpers/couponServices';
 import { AcceptCouponRequest } from 'types/coupons';
-
-import {
-  BlockOneApolloPointsRequest,
-  BlockUserPointsResponse,
-  ONE_APOLLO_STORE_CODE,
-} from 'types/oneApolloTypes';
+import { BlockOneApolloPointsRequest, BlockUserPointsResponse } from 'types/oneApolloTypes';
 import { OneApollo } from 'helpers/oneApollo';
 import { getStoreCodeFromDevice } from 'profiles-service/helpers/OneApolloTransactionHelper';
 import { calculateRefund } from 'profiles-service/helpers/refundHelper';
 import { transactionSuccessTrigger } from 'helpers/subscriptionHelper';
+import { verifychecksum } from 'lib/paytmLib/checksum';
+import Decimal from 'decimal.js';
 
 export const saveMedicineOrderPaymentMqTypeDefs = gql`
   enum CODCity {
@@ -71,6 +68,7 @@ export const saveMedicineOrderPaymentMqTypeDefs = gql`
     paymentMode: PAYMENT_METHODS
     healthCredits: Float
     partnerInfo: String
+    payload: String
   }
 
   type SaveMedicineOrderPaymentMqResult {
@@ -104,6 +102,7 @@ type MedicinePaymentMqInput = {
   paymentMode: PAYMENT_METHODS_REVERSE;
   healthCredits: number;
   partnerInfo: string;
+  payload: string;
 };
 
 enum CODCity {
@@ -167,6 +166,28 @@ const SaveMedicineOrderPaymentMq: Resolver<
   if (medicinePaymentMqInput.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.COD) {
     medicinePaymentMqInput.paymentDateTime = new Date();
     medicinePaymentMqInput.paymentMode = PAYMENT_METHODS_REVERSE.COD;
+  } else {
+    let checksum = { CHECKSUMHASH: "" };
+    if (medicinePaymentMqInput.payload) {
+      // Create a buffer from the string
+      const bufferObj = Buffer.from(medicinePaymentMqInput.payload, "base64");
+
+      // Encode the Buffer as a utf8 string
+      const decodedString = bufferObj.toString("utf8");
+
+      checksum = JSON.parse(decodedString)
+    }
+
+    if (
+      isFraudRequest(
+        medicinePaymentMqInput.amountPaid,
+        medicinePaymentMqInput.healthCredits,
+        orderDetails.estimatedAmount,
+        checksum,
+      )
+    ) {
+      throw new AphError(AphErrorMessages.MEDICINE_ORDER_FRAUD_REQUEST, "", { orderId: orderDetails.orderAutoId })
+    }
   }
 
   const paymentAttrs: Partial<MedicineOrderPayments> = {
@@ -427,16 +448,16 @@ const SaveMedicineOrderPaymentMq: Resolver<
 
       const toEmailId =
         process.env.NODE_ENV == 'dev' ||
-        process.env.NODE_ENV == 'development' ||
-        process.env.NODE_ENV == 'local'
+          process.env.NODE_ENV == 'development' ||
+          process.env.NODE_ENV == 'local'
           ? ApiConstants.MEDICINE_SUPPORT_EMAILID
           : ApiConstants.MEDICINE_SUPPORT_EMAILID_PRODUCTION;
 
       //medicine support cc email is '' and input is used, hence retaining this
       let ccEmailIds =
         process.env.NODE_ENV == 'dev' ||
-        process.env.NODE_ENV == 'development' ||
-        process.env.NODE_ENV == 'local'
+          process.env.NODE_ENV == 'development' ||
+          process.env.NODE_ENV == 'local'
           ? ''
           : <string>ApiConstants.MEDICINE_SUPPORT_CC_EMAILID_PRODUCTION;
 
@@ -469,15 +490,6 @@ const blockOneApolloUserPoints = async (
   userDetailInput: userDetailInput,
   profilesDb: Connection
 ) => {
-  let storeCode = ONE_APOLLO_STORE_CODE.WEBCUS;
-  switch (userDetailInput.deviceType) {
-    case DEVICE_TYPE.ANDROID:
-      storeCode = ONE_APOLLO_STORE_CODE.ANDCUS;
-      break;
-    case DEVICE_TYPE.IOS:
-      storeCode = ONE_APOLLO_STORE_CODE.IOSCUS;
-      break;
-  }
   const blockUserPointsInput: BlockOneApolloPointsRequest = {
     MobileNumber: +userDetailInput.mobileNumber,
     CreditsRedeemed: userDetailInput.creditsToBlock,
@@ -500,7 +512,7 @@ const handleOneApolloFailure = async (
   medicineOrdersRepo: MedicineOrdersRepository,
   profilesDb: Connection
 ) => {
-  let cancelOrderUpdates: Promise<MedicineOrdersStatus | UpdateResult>[] = [];
+  const cancelOrderUpdates: Promise<MedicineOrdersStatus | UpdateResult>[] = [];
 
   const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
     orderStatus: MEDICINE_ORDER_STATUS.CANCELLED,
@@ -532,6 +544,24 @@ const handleOneApolloFailure = async (
   throw new AphError(AphErrorMessages.ONEAPOLLO_CREDITS_BLOCK_FAILED, undefined, {});
 };
 
+const isFraudRequest = <T extends { CHECKSUMHASH: string }>(
+  amountPaid: MedicineOrderPayments['amountPaid'],
+  healthCredits: MedicineOrderPayments['healthCreditsRedeemed'],
+  estimatedAmount: MedicineOrders['estimatedAmount'],
+  payload: T
+) => {
+  if (amountPaid === 0) {
+    if (+new Decimal(healthCredits).plus(amountPaid) !== estimatedAmount) {
+      return true;
+    }
+  } else {
+    const checksumResponse = verifychecksum(payload, process.env.PAYTM_MERCHANT_KEY_PHARMACY, payload.CHECKSUMHASH);
+    if (!checksumResponse) {
+      return true;
+    }
+    return false;
+  }
+}
 export const saveMedicineOrderPaymentMqResolvers = {
   Mutation: {
     SaveMedicineOrderPaymentMq,

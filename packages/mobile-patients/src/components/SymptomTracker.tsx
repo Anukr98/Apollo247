@@ -26,7 +26,11 @@ import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import AsyncStorage from '@react-native-community/async-storage';
 import {
@@ -86,6 +90,16 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
   const [showInfo, setShowInfo] = useState<boolean>(false);
   const flatlistRef = useRef<any>(null);
 
+  const patientInfoAttributes = {
+    'Patient UHID': g(currentPatient, 'uhid'),
+    'Patient ID': g(currentPatient, 'id'),
+    'Patient Name': g(currentPatient, 'firstName'),
+    'Mobile Number': g(currentPatient, 'mobileNumber'),
+    'Date of Birth': g(currentPatient, 'dateOfBirth'),
+    Email: g(currentPatient, 'emailAddress'),
+    Relation: g(currentPatient, 'relation'),
+  };
+
   useEffect(() => {
     loadData();
     return function cleanup() {
@@ -134,7 +148,17 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
           onPressLeftIcon={() => backDataFunctionality()}
           rightComponent={
             !showHowItWorks ? (
-              <TouchableOpacity style={styles.infoIconView} onPress={() => setShowInfo(true)}>
+              <TouchableOpacity
+                style={styles.infoIconView}
+                onPress={() => {
+                  setShowInfo(true);
+                  const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_INFO_CLICKED] = patientInfoAttributes;
+                  postWebEngageEvent(
+                    WebEngageEventName.SYMPTOM_TRACKER_INFO_CLICKED,
+                    eventAttributes
+                  );
+                }}
+              >
                 <InfoIcon style={styles.infoIcon} />
               </TouchableOpacity>
             ) : (
@@ -423,6 +447,11 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
         <TouchableOpacity
           style={styles.selectMemberBtn}
           onPress={() => {
+            const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_SELECT_ANOTHER_MEMBER_CLICKED] = patientInfoAttributes;
+            postWebEngageEvent(
+              WebEngageEventName.SYMPTOM_TRACKER_SELECT_ANOTHER_MEMBER_CLICKED,
+              eventAttributes
+            );
             setShowProfilePopUp(true);
           }}
         >
@@ -489,6 +518,21 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
               activeOpacity={1}
               style={styles.inputStyle}
               onPress={() => {
+                if (messages.length > 2) {
+                  const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_ADD_OTHER_SYMPTOM_CLICKED] = patientInfoAttributes;
+
+                  postWebEngageEvent(
+                    WebEngageEventName.SYMPTOM_TRACKER_ADD_OTHER_SYMPTOM_CLICKED,
+                    eventAttributes
+                  );
+                } else {
+                  const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_MOST_TROUBLING_SYMPTOM_CLICKED] = patientInfoAttributes;
+
+                  postWebEngageEvent(
+                    WebEngageEventName.SYMPTOM_TRACKER_MOST_TROUBLING_SYMPTOM_CLICKED,
+                    eventAttributes
+                  );
+                }
                 props.navigation.navigate(AppRoutes.SymptomSelection, {
                   chatId: chatId,
                   goBackCallback: goBackCallback,
@@ -508,6 +552,11 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
             <TouchableOpacity
               style={styles.plainBtn}
               onPress={() => {
+                const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_NO_OTHER_SYMPTOM_CLICKED] = patientInfoAttributes;
+                postWebEngageEvent(
+                  WebEngageEventName.SYMPTOM_TRACKER_NO_OTHER_SYMPTOM_CLICKED,
+                  eventAttributes
+                );
                 insertMessage = insertMessage.concat({
                   text: 'No Other Symptom',
                   isSentByPatient: true,
@@ -618,6 +667,12 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
       <View style={styles.bottomView}>
         <TouchableOpacity
           onPress={() => {
+            const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_RESTART_CLICKED] = {
+              ...patientInfoAttributes,
+              symptoms: symptoms,
+              specialities: specialities,
+            };
+            postWebEngageEvent(WebEngageEventName.SYMPTOM_TRACKER_RESTART_CLICKED, eventAttributes);
             setRestartVisible(true);
           }}
         >
@@ -627,6 +682,15 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
           title={string.symptomChecker.consultDoctor}
           style={[styles.proceedBtn, styles.consultDoctorMargin]}
           onPress={() => {
+            const eventAttributes: WebEngageEvents[WebEngageEventName.SYMPTOM_TRACKER_CONSULT_DOCTOR_CLICKED] = {
+              ...patientInfoAttributes,
+              symptoms: symptoms,
+              specialities: specialities,
+            };
+            postWebEngageEvent(
+              WebEngageEventName.SYMPTOM_TRACKER_CONSULT_DOCTOR_CLICKED,
+              eventAttributes
+            );
             const filteredSpecialities: string[] = specialities?.map((item: any) => {
               return item.name;
             }) || [''];

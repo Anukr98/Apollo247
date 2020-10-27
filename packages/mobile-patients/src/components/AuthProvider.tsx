@@ -145,7 +145,6 @@ export const AuthProvider: React.FC = (props) => {
       getFirebaseToken();
     }
   };
-
   const buildApolloClient = (authToken: string, handleUnauthenticated: any) => {
     if (authToken) {
       const jwtDecode = require('jwt-decode');
@@ -368,12 +367,16 @@ export const AuthProvider: React.FC = (props) => {
   const getPatientByPrism = async () => {
     try {
       return new Promise(async (resolve, reject) => {
+        const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
+        const deviceToken2 = deviceToken ? JSON.parse(deviceToken) : '';
         const versionInput = {
           appVersion:
             Platform.OS === 'ios'
               ? AppConfig.Configuration.iOS_Version
               : AppConfig.Configuration.Android_Version,
           deviceType: Platform.OS === 'ios' ? DEVICE_TYPE.IOS : DEVICE_TYPE.ANDROID,
+          deviceToken: deviceToken2,
+          deviceOS: '',
         };
         console.log('getPatientByPrism', versionInput);
 

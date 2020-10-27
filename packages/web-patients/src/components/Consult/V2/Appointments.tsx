@@ -14,7 +14,7 @@ import { useAllCurrentPatients } from 'hooks/authHooks';
 import { AddNewProfile } from 'components/MyAccount/AddNewProfile';
 import { APPOINTMENT_TYPE, APPOINTMENT_STATE, STATUS } from 'graphql/types/globalTypes';
 import { GetOrderInvoice } from 'graphql/types/GetOrderInvoice';
-import { GET_PATIENT_ALL_APPOINTMENTS } from 'graphql/doctors';
+import { GET_PATIENT_ALL_APPOINTMENTS, GET_SECRETARY_DETAILS_BY_DOCTOR_ID } from 'graphql/doctors';
 import {
   GetPatientAllAppointments,
   GetPatientAllAppointmentsVariables,
@@ -39,7 +39,10 @@ import { OrderStatusContent } from 'components/OrderStatusContent';
 import { readableParam, AppointmentFilterObject, isPastAppointment } from 'helpers/commonHelpers';
 import { consultationBookTracking } from 'webEngageTracking';
 import { getDiffInMinutes, getDiffInDays } from 'helpers/commonHelpers';
-import { GetPatientAllAppointments_getPatientAllAppointments_appointments as AppointmentsType } from 'graphql/types/GetPatientAllAppointments';
+import {
+  GetPatientAllAppointments_getPatientAllAppointments_appointments as AppointmentsType,
+  GetPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet as CaseSheetType,
+} from 'graphql/types/GetPatientAllAppointments';
 import { AppointmentsFilter } from './AppointmentsFilter';
 import { GetAppointmentData } from 'graphql/types/GetAppointmentData';
 import { GetAppointmentData_getAppointmentData_appointmentsHistory as appointmentsHistoryType } from 'graphql/types/GetAppointmentData';
@@ -47,6 +50,10 @@ import { PaymentTransactionStatus_paymentTransactionStatus_appointment as paymen
 import _uniq from 'lodash/uniq';
 import FormControl from '@material-ui/core/FormControl';
 import CloseIcon from '@material-ui/icons/Close';
+import {
+  getSecretaryDetailsByDoctorId,
+  getSecretaryDetailsByDoctorId_getSecretaryDetailsByDoctorId as SecretaryData,
+} from 'graphql/types/getSecretaryDetailsByDoctorId';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -179,6 +186,7 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: 'none',
       backgroundColor: 'transparent',
       fontWeight: 700,
+      lineHeight: '12px',
       '&:hover': {
         backgroundColor: 'transparent',
       },
@@ -434,6 +442,9 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     searchInput: {
       padding: '0 0 0 30px',
+      '&:before': {
+        borderBottomStyle: 'solid !important',
+      },
       [theme.breakpoints.down('xs')]: {
         display: 'none',
       },
@@ -567,6 +578,7 @@ const Appointments: React.FC<AppointmentProps> = (props) => {
   const [tabValue, setTabValue] = React.useState<number>(0);
   const [isConfirmedPopoverOpen, setIsConfirmedPopoverOpen] = React.useState<boolean>(true);
   const [triggerInvoice, setTriggerInvoice] = React.useState<boolean>(false);
+  const [triggerInvoiceOverMail, setTriggerMail] = React.useState<string>(null);
   const [filter, setFilter] = React.useState<AppointmentFilterObject>(
     initialAppointmentFilterObject
   );
@@ -592,6 +604,7 @@ const Appointments: React.FC<AppointmentProps> = (props) => {
   const [paymentData, setPaymentData] = React.useState<paymentTransactionAppointmentType | null>(
     null
   );
+  const [secretaryData, setSecretaryData] = React.useState<SecretaryData | null>(null);
   const [filterDoctorsList, setFilterDoctorsList] = React.useState<string[]>([]);
   const [filterSpecialtyList, setFilterSpecialtyList] = React.useState<string[]>([]);
   const doctorName = doctorDetail && doctorDetail.fullName;
@@ -667,28 +680,57 @@ const Appointments: React.FC<AppointmentProps> = (props) => {
     }
   };
 
+  const getSecretaryData = () => {
+    if (appointmentHistory && !secretaryData) {
+      apolloClient
+        .query<getSecretaryDetailsByDoctorId>({
+          query: GET_SECRETARY_DETAILS_BY_DOCTOR_ID,
+          variables: {
+            doctorId: (appointmentHistory && appointmentHistory.doctorId) || '',
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then(({ data }: any) => {
+          if (data && data.getSecretaryDetailsByDoctorId) {
+            setSecretaryData(data.getSecretaryDetailsByDoctorId);
+          }
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    }
+  };
+
   useEffect(() => {
     if (successApptId && successApptId.length) {
       getAppointmentHistory(successApptId);
       getPaymentData(successApptId);
+      getSecretaryData();
     }
   }, [successApptId, appointmentHistory, paymentData]);
 
   useEffect(() => {
     if (triggerInvoice) {
-      setIsLoading(true);
+      if (triggerInvoiceOverMail === null) {
+        setIsLoading(true);
+      }
       apolloClient
         .query<GetOrderInvoice>({
           query: GET_CONSULT_INVOICE,
           variables: {
             appointmentId: successApptId,
             patientId: currentPatient && currentPatient.id,
+            emailId: triggerInvoiceOverMail,
           },
           fetchPolicy: 'cache-first',
         })
         .then(({ data }) => {
           if (data && data.getOrderInvoice && data.getOrderInvoice.length) {
-            window.open(data.getOrderInvoice, '_blank');
+            if (triggerInvoiceOverMail === null) {
+              window.open(data.getOrderInvoice, '_blank');
+            } else {
+              setTriggerMail(null);
+            }
           }
         })
         .catch((e) => {
@@ -705,9 +747,13 @@ const Appointments: React.FC<AppointmentProps> = (props) => {
     if (!successApptId) {
       setIsLoading(false);
     }
-    if (!_isEmpty(appointmentHistory) && !_isEmpty(paymentData)) {
+    if (!_isEmpty(appointmentHistory) && !_isEmpty(paymentData) && !_isEmpty(currentPatient)) {
       const { appointmentDateTime, appointmentType, doctorInfo, doctorId, id } = appointmentHistory;
       const { displayId } = paymentData;
+      const { mobileNumber: secretaryNumber, name: secretaryName } = secretaryData || {
+        mobileNumber: '',
+        name: '',
+      };
       setDoctorDetail(doctorInfo);
       setDoctorId(doctorId);
       setIsLoading(false);
@@ -726,10 +772,16 @@ const Appointments: React.FC<AppointmentProps> = (props) => {
         patientGender: currentPatient && currentPatient.gender,
         specialisation: doctorInfo && doctorInfo.specialty ? doctorInfo.specialty.name : '',
         relation: currentPatient && currentPatient.relation,
+        patientName:
+          (currentPatient && `${currentPatient.firstName} ${currentPatient.lastName}`) || '',
+        secretaryName: secretaryName || '',
+        doctorNumber: doctorInfo ? doctorInfo.mobileNumber : '',
+        patientNumber: (currentPatient && currentPatient.mobileNumber) || '',
+        secretaryNumber: secretaryNumber || '',
       };
       consultationBookTracking(eventData);
     }
-  }, [paymentData, appointmentHistory]);
+  }, [paymentData, appointmentHistory, secretaryData, currentPatient]);
 
   useEffect(() => {
     if (currentPatient && currentPatient.id) {
@@ -846,6 +898,18 @@ const Appointments: React.FC<AppointmentProps> = (props) => {
     setIsConfirmedPopoverOpen(false);
     window.location.href = clientRoutes.appointments();
   };
+  const getFollowUpDays = (caseSheetList: CaseSheetType[]) => {
+    const requiredCaseSheet =
+      caseSheetList &&
+      caseSheetList.length > 0 &&
+      caseSheetList.find(
+        (caseSheet: CaseSheetType | null) => caseSheet && caseSheet.doctorType !== 'JUNIOR'
+      );
+    if (requiredCaseSheet && requiredCaseSheet.followUpAfterInDays) {
+      return Number(requiredCaseSheet.followUpAfterInDays);
+    }
+    return 7;
+  };
 
   const getAppointmentStatusFilteredList = (
     appointmentStatus: string[],
@@ -879,7 +943,10 @@ const Appointments: React.FC<AppointmentProps> = (props) => {
       const filteredList = localFilteredAppointmentsList.filter(
         (appointment) =>
           appointment.status === STATUS.COMPLETED &&
-          !isPastAppointment(appointment.appointmentDateTime)
+          !isPastAppointment(
+            appointment.appointmentDateTime,
+            getFollowUpDays(appointment.caseSheet)
+          )
       );
       finalList = [...finalList, ...filteredList];
     }
@@ -1010,7 +1077,10 @@ const Appointments: React.FC<AppointmentProps> = (props) => {
     updatedAppointmentList.forEach((appointmentDetails) => {
       if (
         appointmentDetails.status !== STATUS.CANCELLED &&
-        !isPastAppointment(appointmentDetails.appointmentDateTime)
+        !isPastAppointment(
+          appointmentDetails.appointmentDateTime,
+          getFollowUpDays(appointmentDetails.caseSheet)
+        )
       ) {
         const tomorrowAvailabilityHourTime = moment('00:00', 'HH:mm');
         const tomorrowAvailabilityTime = moment()
@@ -1529,6 +1599,7 @@ const Appointments: React.FC<AppointmentProps> = (props) => {
                   ctaText={statusActions[paymentData.paymentStatus].ctaText}
                   orderStatusCallback={statusActions[paymentData.paymentStatus].callbackFunction}
                   fetchConsultInvoice={setTriggerInvoice}
+                  fetchUserEmailForInvoice={setTriggerMail}
                 />
               )}
             </>

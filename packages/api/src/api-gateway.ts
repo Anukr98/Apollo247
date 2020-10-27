@@ -8,7 +8,7 @@ import { AphAuthenticationError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { webPatientsBaseUrl, webDoctorsBaseUrl, getPortStr } from '@aph/universal/src/aphRoutes';
 import { winstonLogger } from 'customWinstonLogger';
-import { format, differenceInMilliseconds } from 'date-fns';
+import { format } from 'date-fns';
 
 //import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 // import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
@@ -131,6 +131,10 @@ export type Resolver<Parent, Args, Context, Result> = (
     'https://qathreepatients.apollo247.com',
     'https://qathreedoctors.apollo247.com',
     'https://qathreepmt.apollo247.com',
+    'https://akspatients.apollo247.com',
+    'https://aksdoctors.apollo247.com',
+    'https://akspmt.apollo247.com'
+    
   ];
 
   const logger = winstonLogger.loggers.get('apiGatewayLogger');

@@ -45,6 +45,7 @@ import {
 import { Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps, NavigationActions, StackActions } from 'react-navigation';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { ProductPageViewedEventProps } from '@aph/mobile-patients/src/components/Medicines/MedicineDetailsScene';
 import {
   isValidSearch,
   postWebEngageEvent,
@@ -55,6 +56,7 @@ import {
   getMaxQtyForMedicineItem,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
+  ProductPageViewedSource,
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
@@ -298,7 +300,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
               activeOpacity={1}
               onPress={() => {
                 props.navigation.navigate(
-                  diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.YourCart
+                  diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.MedicineCart
                 );
               }}
             >
@@ -343,7 +345,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         onPress={() => {
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: item.sku,
-            movedFrom: 'search',
+            movedFrom: ProductPageViewedSource.PARTIAL_SEARCH,
           });
           resetSearchState();
         }}
@@ -384,12 +386,6 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           Source: 'Pharmacy Search',
         };
         postWebEngageEvent(WebEngageEventName.PHARMACY_SEARCH_RESULTS, eventAttributes);
-
-        const searchEventAttribute: WebEngageEvents[WebEngageEventName.SEARCH_ENTER_CLICK] = {
-          keyword: searchText,
-          numberofresults: medicineList.length,
-        };
-        postWebEngageEvent(WebEngageEventName.SEARCH_ENTER_CLICK, searchEventAttribute);
         props.navigation.navigate(AppRoutes.SearchMedicineScene, { searchText });
         resetSearchState();
       }
@@ -448,20 +444,6 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     );
   };
 
-  const postwebEngageProductClickedEvent = ({ name, sku }: MedicineProduct) => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_PRODUCT_CLICKED] = {
-      'product name': name,
-      'product id': sku,
-      Brand: '',
-      'Brand ID': '',
-      'category name': '',
-      'category ID': category_id,
-      Source: 'List',
-      'Section Name': 'SEARCH',
-    };
-    postWebEngageEvent(WebEngageEventName.PHARMACY_PRODUCT_CLICKED, eventAttributes);
-  };
-
   const onNotifyMeClick = (name: string) => {
     showAphAlert!({
       title: 'Okay! :)',
@@ -498,11 +480,9 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           savePastSeacrh(medicine.sku, medicine.name).catch((e) => {
             // handleGraphQlError(e);
           });
-          postwebEngageProductClickedEvent(medicine);
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: medicine.sku,
-            title: medicine.name,
-            movedFrom: 'search',
+            movedFrom: ProductPageViewedSource.CATEGORY_OR_LISTING,
           });
         }}
         medicineName={medicine.name}
@@ -570,10 +550,13 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           savePastSeacrh(medicine.sku, medicine.name).catch((e) => {
             // handleGraphQlError(e);
           });
-          postwebEngageProductClickedEvent(medicine);
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: medicine.sku,
-            title: medicine.name,
+            movedFrom: ProductPageViewedSource.CATEGORY_OR_LISTING,
+            productPageViewedEventProps: {
+              'Category ID': category_id,
+              'Category Name': pageTitle,
+            } as ProductPageViewedEventProps,
           });
         }}
         medicineName={medicine.name}

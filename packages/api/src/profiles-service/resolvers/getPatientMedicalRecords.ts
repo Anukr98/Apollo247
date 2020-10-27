@@ -19,7 +19,7 @@ import {
   DischargeSummaryResponse,
   GetLabResultpdfResponse
 } from 'types/phrv1';
-import { format } from 'date-fns';
+import { format, formatISO } from 'date-fns';
 import { prescriptionSource } from 'profiles-service/resolvers/prescriptionUpload';
 
 export const getPatientMedicalRecordsTypeDefs = gql`
@@ -129,6 +129,7 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     labTestResults: [LabTestFileParameters]
     fileUrl: String!
     date: Date!
+    dateTime: DateTime
     testResultFiles: [PrecriptionFileParameters]
   }
 
@@ -153,6 +154,7 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     source: String!
     fileUrl: String!
     date: Date!
+    dateTime: DateTime
     hospital_name: String
     hospitalId: String
     prescriptionFiles: [PrecriptionFileParameters]
@@ -197,6 +199,7 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     id: String!
     fileUrl: String!
     date: Date!
+    dateTime: DateTime
     healthCheckName: String!
     healthCheckDate: Float
     healthCheckSummary: String
@@ -228,6 +231,7 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     id: String,
     fileUrl: String!
     date: Date!
+    dateTime: DateTime
     hospitalizationDate: Date
     dateOfHospitalization: Float,
     hospitalName: String,
@@ -402,6 +406,7 @@ const getPatientPrismMedicalRecords: Resolver<
       labresult.labTestDate = labresult.labTestDate * 1000;
     }
     labresult.date = new Date(format(new Date(labresult.labTestDate), 'yyyy-MM-dd'));
+    labresult.dateTime = new Date(formatISO(new Date(labresult.labTestDate)))
   });
 
   prescriptions.response = prescriptions.response.filter(
@@ -423,6 +428,7 @@ const getPatientPrismMedicalRecords: Resolver<
       prescription.dateOfPrescription = prescription.dateOfPrescription * 1000;
     }
     prescription.date = new Date(format(new Date(prescription.dateOfPrescription), 'yyyy-MM-dd'));
+    prescription.dateTime = new Date(formatISO(new Date(prescription.dateOfPrescription)))
   });
 
   //labtests, healthchecks, hospitalization keys preserved to support backWardCompatability
@@ -537,6 +543,7 @@ const getPatientPrismMedicalRecords: Resolver<
       healthCheckResult.healthCheckDate = healthCheckResult.healthCheckDate * 1000;
     }
     healthCheckResult.date = new Date(format(new Date(healthCheckResult.healthCheckDate), 'yyyy-MM-dd'));
+    healthCheckResult.dateTime = new Date(formatISO(new Date(healthCheckResult.healthCheckDate)))
   });
 
   /* Fetch patient discharge summary from prism */
@@ -562,6 +569,7 @@ const getPatientPrismMedicalRecords: Resolver<
       dischargeSummaryResult.dateOfDischarge = dischargeSummaryResult.dateOfDischarge * 1000;
     }
     dischargeSummaryResult.date = new Date(format(new Date(dischargeSummaryResult.dateOfDischarge), 'yyyy-MM-dd'));
+    dischargeSummaryResult.dateTime = new Date(formatISO(new Date(dischargeSummaryResult.dateOfDischarge)))
 
     /* Add hospitalization date field in ISO if found in prism data */
     if (dischargeSummaryResult.dateOfHospitalization) {

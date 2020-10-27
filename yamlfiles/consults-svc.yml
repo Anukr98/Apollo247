@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ms-consults
+spec:
+  selector:
+    app: consults
+  ports:
+    - port: 4001
+      targetPort: 4001

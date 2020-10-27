@@ -17,4 +17,7 @@ export interface EndCallNotification {
 
 export interface EndCallNotificationVariables {
   appointmentCallId?: string | null;
+  patientId?: string | null;
+  numberOfParticipants?: number | null;
+  endVoipCall?: boolean | null;
 }

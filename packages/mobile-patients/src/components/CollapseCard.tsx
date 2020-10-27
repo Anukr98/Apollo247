@@ -40,6 +40,7 @@ export interface CollapseCardProps {
   heading?: string;
   showUnderline?: boolean;
   headingStyle?: StyleProp<TextStyle>;
+  labelViewStyle?: StyleProp<ViewStyle>;
   containerStyle?: StyleProp<ViewStyle>;
   onPress: (collapse: boolean) => void;
 }
@@ -47,7 +48,7 @@ export interface CollapseCardProps {
 export const CollapseCard: React.FC<CollapseCardProps> = (props) => {
   return (
     <View style={[styles.container, props.containerStyle]}>
-      <View style={styles.labelView}>
+      <View style={[styles.labelView, props.labelViewStyle]}>
         <View>
           <Text style={[styles.headingText, props.headingStyle]}>{props.heading}</Text>
         </View>

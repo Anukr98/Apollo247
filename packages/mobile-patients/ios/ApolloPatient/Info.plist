@@ -84,6 +84,7 @@
 		<string>fb-messenger-share-api</string>
 		<string>fbauth2</string>
 		<string>fbshareextension</string>
+		<string>whatsapp</string>
 	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
@@ -179,7 +180,7 @@
 	<key>WEGEnvironment</key>
 	<string>IN</string>
 	<key>WEGLicenseCode</key>
-	<string>in~~c2ab3533</string>
+	<string>in~~c2ab3529</string>
 	<key>WEGLogLevel</key>
 	<string>VERBOSE</string>
 	<key>WEGManualIntegration</key>

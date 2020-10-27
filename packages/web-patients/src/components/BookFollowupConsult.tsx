@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { GetDoctorDetailsById_getDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
-import { DoctorType, ConsultMode } from 'graphql/types/globalTypes';
+import { ConsultMode, DoctorType } from 'graphql/types/globalTypes';
 import Paper from '@material-ui/core/Paper';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
@@ -75,14 +75,13 @@ const TabContainer: React.FC = (props) => {
 interface DoctorCardProps {
   setIsPopoverOpen: (popover: boolean) => void;
   doctorId: string;
-  setSelectedSlot: (selectedSlot: string) => void;
-  setFollwupAppoitnmentType: (followupAppointmentType: number) => void;
+  appointmentId: string;
 }
 
 export const BookFollowupConsult: React.FC<DoctorCardProps> = (props) => {
   const classes = useStyles({});
 
-  const { doctorId, setIsPopoverOpen, setSelectedSlot, setFollwupAppoitnmentType } = props;
+  const { doctorId, setIsPopoverOpen, appointmentId } = props;
   const [tabValue, setTabValue] = useState<number>(0);
 
   const { data, loading, error } = useQueryWithSkip<
@@ -102,7 +101,7 @@ export const BookFollowupConsult: React.FC<DoctorCardProps> = (props) => {
   const doctorDetails = data && data.getDoctorDetailsById ? data.getDoctorDetailsById : null;
 
   if (doctorDetails) {
-    const isPayrollDoctor = doctorDetails.doctorType === DoctorType.PAYROLL ? true : false;
+    const isPayrollDoctor = doctorDetails.doctorType === DoctorType.PAYROLL;
 
     const doctorId = doctorDetails.id;
 
@@ -145,7 +144,6 @@ export const BookFollowupConsult: React.FC<DoctorCardProps> = (props) => {
           }}
           onChange={(e, newValue) => {
             setTabValue(newValue);
-            setFollwupAppoitnmentType(newValue);
           }}
         >
           {availableForVirtualConsultation && (
@@ -173,7 +171,7 @@ export const BookFollowupConsult: React.FC<DoctorCardProps> = (props) => {
             <OnlineFollwupConsult
               setIsPopoverOpen={setIsPopoverOpen}
               doctorDetails={doctorDetails}
-              setSelectedSlot={props.setSelectedSlot}
+              appointmentId={appointmentId}
             />
           </TabContainer>
         )}
@@ -183,7 +181,7 @@ export const BookFollowupConsult: React.FC<DoctorCardProps> = (props) => {
               <VisitClinicFollowupConsult
                 setIsPopoverOpen={setIsPopoverOpen}
                 doctorDetails={doctorDetails}
-                setSelectedSlot={setSelectedSlot}
+                appointmentId={appointmentId}
               />
             </LocationProvider>
           </TabContainer>

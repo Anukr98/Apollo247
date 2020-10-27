@@ -157,6 +157,7 @@ const dataAdapter = (
     (appointment: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory | null) => {
       const {
         id,
+        displayId,
         appointmentDateTime,
         isJdQuestionsComplete,
         appointmentType: type,
@@ -194,6 +195,7 @@ const dataAdapter = (
       }
       return {
         id,
+        displayId,
         appointmentDateTime,
         patientId,
         startTime,
@@ -206,6 +208,7 @@ const dataAdapter = (
         details: {
           patientName: `${patientInfo!.firstName} ${patientInfo!.lastName}`,
           checkups: symptoms,
+          mobileNumber: patientInfo!.mobileNumber,
           avatar: patientInfo!.photoUrl
             ? patientInfo!.photoUrl
             : require('images/no_photo_icon_round.svg'),

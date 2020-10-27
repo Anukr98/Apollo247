@@ -208,7 +208,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '& a': {
         padding: '9px 13px 9px 13px',
-        fontSize:13,
+        fontSize: 13,
         color: '#FC9916',
         borderRadius: 10,
         margin: '0 0 0 20px',
@@ -237,25 +237,25 @@ const useStyles = makeStyles((theme: Theme) => {
     pt0: {
       paddingTop: 0,
     },
-    covidBtns:{
+    covidBtns: {
       textAlign: 'right',
       [theme.breakpoints.down('sm')]: {
         textAlign: 'left',
-        margin: '20px 0 0'
+        margin: '20px 0 0',
       },
-      '& a':{
+      '& a': {
         width: 270,
         [theme.breakpoints.down(600)]: {
-          width: '100%'
+          width: '100%',
         },
-        '&:first-child':{
+        '&:first-child': {
           marginBottom: 10,
           [theme.breakpoints.down('sm')]: {
-            margin: 0
-          }
-        }
-      }
-    }
+            margin: 0,
+          },
+        },
+      },
+    },
   };
 });
 
@@ -289,15 +289,15 @@ export const WeAreHelpYou: React.FC = (props) => {
           </div> */}
         </div>
         <div className={classes.cardContent}>
-        <div className={`${classes.hcContent} ${classes.pt0}`}>
+          <div className={`${classes.hcContent} ${classes.pt0}`}>
             <Typography component="h3">COVID-19 Vaccine Information</Typography>
             <div className={classes.hcDetails}>
               <Typography>
                 The latest Coronavirus information to keep you safe and healthy.
               </Typography>
               <div className={classes.covidBtns}>
-              <a href='https://www.apollo247.com/covid-vaccine-tracker'>
-              <span  style={{ width: '24px', height: '24px' }}>
+                <a href="https://www.apollo247.com/covid-vaccine-tracker">
+                  <span style={{ width: '24px', height: '24px' }}>
                     <LazyIntersection
                       style={{ width: '24px' }}
                       src={require('images/ic_covid-orange.svg')}
@@ -305,15 +305,15 @@ export const WeAreHelpYou: React.FC = (props) => {
                     />
                   </span>
                   COVID-19 Vaccine Tracker
-              </a>
-              <AphButton href={clientRoutes.covidLanding()}>
-                <img src={'images/covid.svg'} alt="" />
-                Learn About COVID-19 Vaccines
-              </AphButton>
-              </div>             
+                </a>
+                <AphButton href={clientRoutes.covidLanding()}>
+                  <img src={'images/covid.svg'} alt="" />
+                  Learn About COVID-19 Vaccines
+                </AphButton>
+              </div>
             </div>
-            </div>
-            <div className={classes.hcContent}>
+          </div>
+          <div className={classes.hcContent}>
             <Typography component="h3">Health Blog</Typography>
             <div className={classes.hcDetails}>
               <Typography>Explore healthcare content created every day by our experts.</Typography>
@@ -322,11 +322,11 @@ export const WeAreHelpYou: React.FC = (props) => {
               </AphButton>
             </div>
           </div>
-      <div className={classes.helpSection}>
+          <div className={classes.helpSection}>
             <div className={classes.helpSectionHead}>You can also</div>
             <div className={classes.serviceContent}>
               <div className={classes.serviceCard}>
-                <a href={covidScannerUrl} target={'_blank'}>
+                <Link to={clientRoutes.apolloProHealth()}>
                   <span>
                     <LazyIntersection
                       style={{ width: '24px' }}
@@ -334,8 +334,8 @@ export const WeAreHelpYou: React.FC = (props) => {
                       alt=""
                     />
                   </span>
-                  <span>Check your risk level</span>
-                </a>
+                  <span>Apollo Pro Health</span>
+                </Link>
               </div>
 
               <div className={classes.serviceCard}>
@@ -351,7 +351,7 @@ export const WeAreHelpYou: React.FC = (props) => {
                 </a>
               </div>
 
-              <div
+              {/* <div
                 onClick={() => {
                   setIscoronaDialogOpen(true);
                 }}
@@ -365,9 +365,9 @@ export const WeAreHelpYou: React.FC = (props) => {
                   />
                 </span>
                 <span>Call our experts</span>
-              </div>
+              </div> */}
 
-              {/* <Link className={classes.serviceCard} to={clientRoutes.kavachLanding()}>
+              <Link className={classes.serviceCard} to={clientRoutes.kavachLanding()}>
                 <span>
                   <LazyIntersection
                     src={require('images/apollo-kavach.png')}
@@ -376,12 +376,12 @@ export const WeAreHelpYou: React.FC = (props) => {
                   />
                 </span>
                 <span>Explore the Apollo Kavach Program</span>
-              </Link> */}
+              </Link>
             </div>
           </div>
-          </div>
-      </div> 
-     <AphDialog open={iscoronaDialogOpen} maxWidth="sm">
+        </div>
+      </div>
+      <AphDialog open={iscoronaDialogOpen} maxWidth="sm">
         <AphDialogClose onClick={() => setIscoronaDialogOpen(false)} title={'Close'} />
         <AphDialogTitle></AphDialogTitle>
         <div className={classes.expertBox}>

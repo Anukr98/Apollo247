@@ -76,6 +76,14 @@ export const UPDATE_PATIENT = gql`
   }
 `;
 
+export const CREATE_ONE_APOLLO_USER = gql`
+  mutation createOneAPolloUser($patientId: String!) {
+    createOneApolloUser(patientId: $patientId) {
+      success
+    }
+  }
+`;
+
 export const CANCEL_APPOINTMENT = gql`
   mutation cancelAppointment($cancelAppointmentInput: CancelAppointmentInput!) {
     cancelAppointment(cancelAppointmentInput: $cancelAppointmentInput) {
@@ -608,6 +616,32 @@ export const ADD_MEDICAL_RECORD = gql`
   }
 `;
 
+export const ADD_LAB_RESULT_RECORD = gql`
+  mutation addPatientLabTestRecord($AddLabTestRecordInput: AddLabTestRecordInput) {
+    addPatientLabTestRecord(addLabTestRecordInput: $AddLabTestRecordInput) {
+      status
+    }
+  }
+`;
+
+export const ADD_HEALTHCHECK_RECORD = gql`
+  mutation addPatientHealthCheckRecord($AddHealthCheckRecordInput: AddHealthCheckRecordInput) {
+    addPatientHealthCheckRecord(addHealthCheckRecordInput: $AddHealthCheckRecordInput) {
+      status
+    }
+  }
+`;
+
+export const ADD_HOSPITALIZATION_RECORD = gql`
+  mutation addPatientHospitalizationRecord(
+    $AddHospitalizationRecordInput: AddHospitalizationRecordInput
+  ) {
+    addPatientHospitalizationRecord(addHospitalizationRecordInput: $AddHospitalizationRecordInput) {
+      status
+    }
+  }
+`;
+
 export const UPLOAD_DOCUMENT = gql`
   mutation uploadDocument($UploadDocumentInput: UploadDocumentInput) {
     uploadDocument(uploadDocumentInput: $UploadDocumentInput) {
@@ -619,8 +653,12 @@ export const UPLOAD_DOCUMENT = gql`
 `;
 
 export const DELETE_PATIENT_MEDICAL_RECORD = gql`
-  mutation deletePatientMedicalRecord($recordId: ID!) {
-    deletePatientMedicalRecord(recordId: $recordId) {
+  mutation deletePatientPrismMedicalRecord(
+    $DeletePatientPrismMedicalRecordInput: DeletePatientPrismMedicalRecordInput
+  ) {
+    deletePatientPrismMedicalRecord(
+      deletePatientPrismMedicalRecordInput: $DeletePatientPrismMedicalRecordInput
+    ) {
       status
     }
   }
@@ -971,6 +1009,21 @@ export const IDENTIFY_HDFC_CUSTOMER = gql`
     }
   }
 `;
+export const UPDATE_WHATSAPP_STATUS = gql`
+  mutation UpdateWhatsAppStatus(
+    $whatsAppMedicine: Boolean
+    $whatsAppConsult: Boolean
+    $patientId: String!
+  ) {
+    updateWhatsAppStatus(
+      whatsAppMedicine: $whatsAppMedicine
+      whatsAppConsult: $whatsAppConsult
+      patientId: $patientId
+    ) {
+      status
+    }
+  }
+`;
 
 export const VALIDATE_HDFC_OTP = gql`
   query validateHdfcOTP($otp: String!, $token: String!, $dateOfBirth: Date!) {
@@ -1030,6 +1083,19 @@ export const INITIATE_CALL_FOR_PARTNER = gql`
   query initiateCallForPartner($mobileNumber: String!, $benefitId: String!) {
     initiateCallForPartner(mobileNumber: $mobileNumber, benefitId: $benefitId) {
       success
+    }
+  }
+`;
+export const GET_ONEAPOLLO_USERTXNS = gql`
+  query getOneApolloUserTransactions {
+    getOneApolloUserTransactions {
+      earnedHC
+      transactionDate
+      grossAmount
+      netAmount
+      transactionDate
+      businessUnit
+      redeemedHC
     }
   }
 `;

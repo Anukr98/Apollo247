@@ -35,7 +35,6 @@ import {
 import { RenderPdf } from '@aph/mobile-doctors/src/components/ui/RenderPdf';
 import { ShareConsult } from '@aph/mobile-doctors/src/components/ConsultRoom/ShareConsult';
 import { ChatDoctor } from '@aph/mobile-doctors/src/components/ChatDoctor';
-import { Sample } from '@aph/mobile-doctors/src/components/Sample';
 import { PatientDetailsPage } from '@aph/mobile-doctors/src/components/PatientDetailsPage';
 import { CaseSheetDetails } from '@aph/mobile-doctors/src/components/ProfileSetup/ProfileTab/CaseSheetDetails';
 import { SmartPrescription } from '@aph/mobile-doctors/src/components/Account/SmartPrescription';
@@ -77,7 +76,6 @@ export enum AppRoutes {
   ReschduleConsult = 'ReschduleConsult',
   ShareConsult = 'ShareConsult',
   ChatDoctor = 'ChatDoctor',
-  Sample = 'Sample',
   PatientDetailsPage = 'PatientDetailsPage',
   CaseSheetDetails = 'CaseSheetDetails',
   SmartPrescription = 'SmartPrescription',
@@ -189,9 +187,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.ChatDoctor]: {
     screen: ChatDoctor,
-  },
-  [AppRoutes.Sample]: {
-    screen: Sample,
   },
   [AppRoutes.PatientDetailsPage]: {
     screen: PatientDetailsPage,

@@ -14,6 +14,7 @@ import {
   MEDICINE_ORDER_STATUS,
   Relation,
   MEDICINE_UNIT,
+  STATUS,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import Geolocation from '@react-native-community/geolocation';
@@ -35,14 +36,25 @@ import {
   getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails,
   getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems,
 } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetails';
-import { getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
+import {
+  getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet,
+  getPatientAllAppointments_getPatientAllAppointments_appointments,
+} from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
 import { DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import ApolloClient from 'apollo-client';
 import {
   searchDiagnostics,
   searchDiagnosticsVariables,
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
-import { SEARCH_DIAGNOSTICS } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  searchDiagnosticsByCityID,
+  searchDiagnosticsByCityIDVariables,
+  searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics,
+} from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
+import {
+  SEARCH_DIAGNOSTICS,
+  SEARCH_DIAGNOSTICS_BY_CITY_ID,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -68,6 +80,7 @@ import { getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails } fr
 import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetailsWithAddress';
 import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 import { handleUniversalLinks } from './UniversalLinks';
+import { getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots } from '../graphql/types/getDiagnosticSlotsWithAreaID';
 
 const { RNAppSignatureHelper } = NativeModules;
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
@@ -90,6 +103,14 @@ export interface TestSlot {
   diagnosticBranchCode: string;
   date: Date;
   slotInfo: getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo;
+}
+
+export interface TestSlotWithArea {
+  employeeCode: string;
+  employeeName: string;
+  diagnosticBranchCode: string;
+  date: Date;
+  slotInfo: getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots;
 }
 
 const isDebugOn = __DEV__;
@@ -141,16 +162,20 @@ export const formatAddress = (address: savePatientAddress_savePatientAddress_pat
 export const formatAddressWithLandmark = (
   address: savePatientAddress_savePatientAddress_patientAddress
 ) => {
-  const addrLine1 = [address.addressLine1, address.addressLine2].filter((v) => v).join(', ');
+  const addrLine1 = removeConsecutiveComma(
+    [address.addressLine1, address.addressLine2].filter((v) => v).join(', ')
+  );
   const landmark = [address.landmark];
   // to handle state value getting twice
-  const addrLine2 = [address.city, address.state]
-    .filter((v) => v)
-    .join(', ')
-    .split(',')
-    .map((v) => v.trim())
-    .filter((item, idx, array) => array.indexOf(item) === idx)
-    .join(', ');
+  const addrLine2 = removeConsecutiveComma(
+    [address.city, address.state]
+      .filter((v) => v)
+      .join(', ')
+      .split(',')
+      .map((v) => v.trim())
+      .filter((item, idx, array) => array.indexOf(item) === idx)
+      .join(', ')
+  );
   const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
   if (address.landmark != '') {
     return `${addrLine1},\nLandmark: ${landmark}\n${addrLine2}${formattedZipcode}`;
@@ -160,7 +185,34 @@ export const formatAddressWithLandmark = (
 };
 
 export const formatNameNumber = (address: savePatientAddress_savePatientAddress_patientAddress) => {
-  return `${address.name}\n${address.mobileNumber}`;
+  if (address.name!) {
+    return `${address.name}\n${address.mobileNumber}`;
+  } else {
+    return `${address.mobileNumber}`;
+  }
+};
+
+export const isPastAppointment = (
+  caseSheet:
+    | (getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet | null)[]
+    | null,
+  item: getPatientAllAppointments_getPatientAllAppointments_appointments
+) => {
+  const case_sheet = followUpChatDaysCaseSheet(caseSheet);
+  const caseSheetChatDays = g(case_sheet, '0' as any, 'followUpAfterInDays');
+  const followUpAfterInDays =
+    caseSheetChatDays || caseSheetChatDays === '0'
+      ? caseSheetChatDays === '0'
+        ? 0
+        : Number(caseSheetChatDays) - 1
+      : 6;
+  return (
+    item?.status === STATUS.CANCELLED ||
+    !moment(new Date(item?.appointmentDateTime))
+      .add(followUpAfterInDays, 'days')
+      .startOf('day')
+      .isSameOrAfter(moment(new Date()).startOf('day'))
+  );
 };
 
 export const followUpChatDaysCaseSheet = (
@@ -190,6 +242,36 @@ export const formatOrderAddress = (
   const formattedZipcode = address.zipcode ? ` - ${address.zipcode}` : '';
   return `${addrLine}${formattedZipcode}`;
 };
+
+export const formatSelectedAddress = (
+  address: savePatientAddress_savePatientAddress_patientAddress
+) => {
+  const formattedAddress = [
+    address?.addressLine1,
+    address?.addressLine2,
+    address?.city,
+    address?.state,
+    address?.zipcode,
+  ]
+    .filter((item) => item)
+    .join(', ');
+  return formattedAddress;
+};
+
+export const formatAddressToLocation = (
+  address: savePatientAddress_savePatientAddress_patientAddress
+): LocationData => ({
+  displayName: address?.city!,
+  latitude: address?.latitude!,
+  longitude: address?.longitude!,
+  area: '',
+  city: address?.city!,
+  state: address?.state!,
+  stateCode: address?.stateCode!,
+  country: '',
+  pincode: address?.zipcode!,
+  lastUpdated: new Date().getTime(),
+});
 
 export const getUuidV4 = () => {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -436,6 +518,28 @@ export const getNetStatus = async () => {
   return status;
 };
 
+export const getDiffInDays = (nextAvailability: string) => {
+  if (nextAvailability) {
+    const nextAvailabilityTime = moment(new Date(nextAvailability));
+    const currentTime = moment(new Date());
+    const differenceInDays = nextAvailabilityTime.diff(currentTime, 'days');
+    return differenceInDays;
+  } else {
+    return 0;
+  }
+};
+
+export const getDiffInMinutes = (doctorAvailableSlots: string) => {
+  if (doctorAvailableSlots && doctorAvailableSlots.length > 0) {
+    const nextAvailabilityTime = moment(doctorAvailableSlots);
+    const currentTime = moment(new Date());
+    const differenceInMinutes = currentTime.diff(nextAvailabilityTime, 'minutes') * -1;
+    return differenceInMinutes + 1; // for some reason moment is returning 1 second less. so that 1 is added.;
+  } else {
+    return 0;
+  }
+};
+
 export const nextAvailability = (nextSlot: string, type: 'Available' | 'Consult' = 'Available') => {
   const isValidTime = moment(nextSlot).isValid();
   if (isValidTime) {
@@ -452,8 +556,10 @@ export const nextAvailability = (nextSlot: string, type: 'Available' | 'Consult'
           minute: moment('06:00', 'HH:mm').get('minute'),
         })
     );
-    if (differenceMinute < 60) {
+    if (differenceMinute < 60 && differenceMinute > 0) {
       return `${type} in ${differenceMinute} min${differenceMinute !== 1 ? 's' : ''}`;
+    } else if (differenceMinute <= 0) {
+      return 'BOOK APPOINTMENT';
     } else if (differenceMinute >= 60 && !isTomorrow) {
       return `${type} at ${moment(nextSlot).format('hh:mm A')}`;
     } else if (isTomorrow && diffDays < 2) {
@@ -881,7 +987,7 @@ export const getDiscountPercentage = (price: number | string, specialPrice?: num
     : Number(price) == Number(specialPrice)
     ? 0
     : ((Number(price) - Number(specialPrice)) / Number(price)) * 100;
-  return Math.ceil(discountPercent);
+  return discountPercent != 0 ? Number(discountPercent).toFixed(1) : 0;
 };
 
 export const getBuildEnvironment = () => {
@@ -930,6 +1036,16 @@ export const getRelations = (self?: string) => {
 
 export const formatTestSlot = (slotTime: string) => moment(slotTime, 'HH:mm').format('hh:mm A');
 
+export const formatTestSlotWithBuffer = (slotTime: string) => {
+  const startTime = slotTime.split('-')[0];
+  const endTime = moment(startTime, 'HH:mm')
+    .add(30, 'minutes')
+    .format('HH:mm');
+
+  const newSlot = [startTime, endTime];
+  return newSlot.map((item) => moment(item.trim(), 'hh:mm').format('hh:mm A')).join(' - ');
+};
+
 export const isValidTestSlot = (
   slot: getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot_slotInfo,
   date: Date
@@ -950,6 +1066,30 @@ export const isValidTestSlot = (
         )
       : true) &&
     moment(slot.endTime!.trim(), 'HH:mm').isSameOrBefore(
+      moment(AppConfig.Configuration.DIAGNOSTIC_MAX_SLOT_TIME.trim(), 'HH:mm')
+    )
+  );
+};
+
+export const isValidTestSlotWithArea = (
+  slot: getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots,
+  date: Date
+) => {
+  return (
+    (moment(date)
+      .format('DMY')
+      .toString() ===
+    moment()
+      .format('DMY')
+      .toString()
+      ? moment(slot.Timeslot!.trim(), 'HH:mm').isSameOrAfter(
+          moment(new Date()).add(
+            AppConfig.Configuration.DIAGNOSTIC_SLOTS_LEAD_TIME_IN_MINUTES,
+            'minutes'
+          )
+        )
+      : true) &&
+    moment(slot.Timeslot!.trim(), 'HH:mm').isSameOrBefore(
       moment(AppConfig.Configuration.DIAGNOSTIC_MAX_SLOT_TIME.trim(), 'HH:mm')
     )
   );
@@ -984,17 +1124,32 @@ export const getUniqueTestSlots = (slots: TestSlot[]) => {
     });
 };
 
+export const getUniqueTestSlotsWithArea = (slots: TestSlotWithArea[]) => {
+  return slots
+    .filter(
+      (item, idx, array) =>
+        array.findIndex((_item) => _item.slotInfo.Timeslot == item.slotInfo.Timeslot) == idx
+    )
+    .map((val) => ({
+      startTime: val.slotInfo.Timeslot!,
+      endTime: val.slotInfo.Timeslot!,
+    }))
+    .sort((a, b) => {
+      if (moment(a.startTime.trim(), 'HH:mm').isAfter(moment(b.startTime.trim(), 'HH:mm')))
+        return 1;
+      else if (moment(b.startTime.trim(), 'HH:mm').isAfter(moment(a.startTime.trim(), 'HH:mm')))
+        return -1;
+      return 0;
+    });
+};
+
 const webengage = new WebEngage();
 
 export const postWebEngageEvent = (eventName: WebEngageEventName, attributes: Object) => {
   try {
-    console.log('\n********* WebEngageEvent Start *********\n');
-    console.log(`WebEngageEvent ${eventName}`, { eventName, attributes });
-    console.log('\n********* WebEngageEvent End *********\n');
-    // if (getBuildEnvironment() !== 'DEV') {
-    // Don't post events in DEV environment
+    const logContent = `[WebEngage Event] ${eventName}`;
+    console.log(logContent);
     webengage.track(eventName, attributes);
-    // }
   } catch (error) {
     console.log('********* Unable to post WebEngageEvent *********', { error });
   }
@@ -1029,6 +1184,13 @@ export const postwebEngageAddToCartEvent = (
     'Section Name': sectionName || '',
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART, eventAttributes);
+};
+
+export const postWebEngagePHR = (source: string, webEngageEventName: WebEngageEventName) => {
+  const eventAttributes = {
+    Source: source,
+  };
+  postWebEngageEvent(webEngageEventName, eventAttributes);
 };
 
 export const postWEGNeedHelpEvent = (
@@ -1231,11 +1393,8 @@ export const APPStateActive = () => {
 
 export const postAppsFlyerEvent = (eventName: AppsFlyerEventName, attributes: Object) => {
   try {
-    console.log('\n********* AppsFlyerEvent Start *********\n');
-    console.log(`AppsFlyerEvent ${eventName}`, { eventName, attributes });
-    console.log('\n********* AppsFlyerEvent End *********\n');
-    // if (getBuildEnvironment() !== 'DEV') {
-    // Don't post events in DEV environment
+    const logContent = `[AppsFlyer Event] ${eventName}`;
+    console.log(logContent);
     appsFlyer.trackEvent(
       eventName,
       attributes,
@@ -1246,7 +1405,6 @@ export const postAppsFlyerEvent = (eventName: AppsFlyerEventName, attributes: Ob
         console.error('AppsFlyerEventError', err);
       }
     );
-    // }
   } catch (error) {
     console.log('********* Unable to post AppsFlyerEvent *********', { error });
   }
@@ -1287,13 +1445,9 @@ export const postAppsFlyerAddToCartEvent = (
 
 export const postFirebaseEvent = (eventName: FirebaseEventName, attributes: Object) => {
   try {
-    console.log('\n********* FirebaseEvent Start *********\n');
-    console.log(`FirebaseEvent ${eventName}`, { eventName, attributes });
-    console.log('\n********* FirebaseEvent End *********\n');
-    // if (getBuildEnvironment() !== 'DEV') {
-    // Don't post events in DEV environment
+    const logContent = `[Firebase Event] ${eventName}`;
+    console.log(logContent);
     firebase.analytics().logEvent(eventName, attributes);
-    // }
   } catch (error) {
     console.log('********* Unable to post FirebaseEvent *********', { error });
   }
@@ -1391,6 +1545,35 @@ export const getMaxQtyForMedicineItem = (qty?: number | string) => {
   return qty ? Number(qty) : AppConfig.Configuration.CART_ITEM_MAX_QUANTITY;
 };
 
+export const formatToCartItem = ({
+  sku,
+  name,
+  price,
+  special_price,
+  mou,
+  is_prescription_required,
+  MaxOrderQty,
+  type_id,
+  is_in_stock,
+  thumbnail,
+  image,
+}: MedicineProduct): ShoppingCartItem => {
+  return {
+    id: sku,
+    name: name,
+    price: price,
+    specialPrice: Number(special_price) || undefined,
+    mou: mou,
+    quantity: 1,
+    prescriptionRequired: is_prescription_required == '1',
+    isMedicine: (type_id || '').toLowerCase() == 'pharma',
+    thumbnail: thumbnail || image,
+    maxOrderQty: MaxOrderQty,
+    productType: type_id,
+    isInStock: is_in_stock == 1,
+  };
+};
+
 export const addPharmaItemToCart = (
   cartItem: ShoppingCartItem,
   pincode: string,
@@ -1409,7 +1592,7 @@ export const addPharmaItemToCart = (
   const outOfStockMsg = 'Sorry, this item is out of stock in your area.';
 
   const navigate = () => {
-    navigation.navigate(AppRoutes.MedicineDetailsScene, {
+    navigation.push(AppRoutes.MedicineDetailsScene, {
       sku: cartItem.id,
       deliveryError: outOfStockMsg,
     });
@@ -1737,4 +1920,8 @@ export const checkPermissions = (permissions: string[]) => {
       }
     });
   });
+};
+
+export const removeConsecutiveComma = (value: string) => {
+  return value.replace(/^,|,$|,(?=,)/g, '');
 };

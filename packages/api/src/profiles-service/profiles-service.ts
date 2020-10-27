@@ -113,12 +113,16 @@ import {
   updateOrderStatusResolvers,
 } from 'profiles-service/resolvers/pharmaUpdateOrderStatus';
 import {
+  saveOrderShipmentsTypeDefs,
+  saveOrderShipmentsResolvers,
+} from 'profiles-service/resolvers/pharmaOrderShipmentsCreated';
+import {
   saveOrderShipmentInvoiceTypeDefs,
   saveOrderShipmentInvoiceResolvers,
 } from 'profiles-service/resolvers/pharmaOrderBilled';
 import {
-  saveOrderShipmentsTypeDefs,
-  saveOrderShipmentsResolvers,
+  saveOrderVerifiedTypeDefs,
+  saveOrderVerifiedResolvers,
 } from 'profiles-service/resolvers/pharmaOrderVerified';
 import {
   pharmaOrderConfirmationTypeDefs,
@@ -169,6 +173,11 @@ import {
   getMedicineOrderCancelReasonsTypeDefs,
   getMedicineOrderCancelReasonsResolvers,
 } from 'profiles-service/resolvers/getMedicineOrderCancelReasons';
+import {
+  reUploadPrescriptionTypeDefs,
+  reUploadPrescriptionResolvers,
+} from 'profiles-service/resolvers/reUploadPrescription';
+
 import 'reflect-metadata';
 import { getConnection } from 'typeorm';
 import { helpTypeDefs, helpResolvers } from 'profiles-service/resolvers/help';
@@ -213,6 +222,47 @@ import {
   validateHDFCCustomerTypeDefs,
   validateHDFCCustomer,
 } from 'profiles-service/resolvers/hdfcCustomerValidation';
+
+import {
+  addPatientHealthCheckRecordTypeDefs,
+  addPatientHealthCheckRecordsResolvers,
+} from 'profiles-service/resolvers/addHealthCheckRecords';
+
+import {
+  addPatientHospitalizationRecordTypeDefs,
+  addPatientHospitalizationRecordResolvers,
+} from 'profiles-service/resolvers/addHospitalizationRecords';
+
+import {
+  addPatientPrescriptionRecordsTypeDefs,
+  addPatientPrescriptionRecordResolvers,
+} from 'profiles-service/resolvers/addPrescriptionRecords';
+
+import {
+  addPatientLabTestRecordTypeDefs,
+  addPatientLabTestRecordResolvers,
+} from 'profiles-service/resolvers/addLabTestRecords';
+
+import {
+  updateOrderOnHoldTypeDefs,
+  updateOrderOnHoldResolvers,
+} from 'profiles-service/resolvers/pharmaOrderOnHold';
+
+import {
+  orderReturnPostDeliveryTypeDefs,
+  orderReturnPostDeliveryResolvers,
+} from 'profiles-service/resolvers/pharmaOrderReturnPostDelivery';
+
+import {
+  orderReturnedTypeDefs,
+  orderReturnedResolvers,
+} from 'profiles-service/resolvers/pharmaOrderReturnPreDelivery';
+
+import {
+  deletePatientPrismMedicalRecordTypeDefs,
+  deletePatientPrismMedicalRecordResolvers,
+} from 'profiles-service/resolvers/deletePatientPrismMedicalRecord';
+
 (async () => {
   await connect();
   const profilesLogger = winstonLogger.loggers.get('profileServiceLogger');
@@ -230,7 +280,7 @@ import {
         doctorsDb,
         consultsDb,
         currentPatient,
-        headers: headers
+        headers: headers,
       };
       return context;
     },
@@ -470,6 +520,46 @@ import {
       {
         typeDefs: validateHDFCCustomerTypeDefs,
         resolvers: validateHDFCCustomer,
+      },
+      {
+        typeDefs: addPatientHealthCheckRecordTypeDefs,
+        resolvers: addPatientHealthCheckRecordsResolvers,
+      },
+      {
+        typeDefs: addPatientHospitalizationRecordTypeDefs,
+        resolvers: addPatientHospitalizationRecordResolvers,
+      },
+      {
+        typeDefs: addPatientLabTestRecordTypeDefs,
+        resolvers: addPatientLabTestRecordResolvers,
+      },
+      {
+        typeDefs: saveOrderVerifiedTypeDefs,
+        resolvers: saveOrderVerifiedResolvers,
+      },
+      {
+        typeDefs: updateOrderOnHoldTypeDefs,
+        resolvers: updateOrderOnHoldResolvers,
+      },
+      {
+        typeDefs: orderReturnPostDeliveryTypeDefs,
+        resolvers: orderReturnPostDeliveryResolvers,
+      },
+      {
+        typeDefs: orderReturnedTypeDefs,
+        resolvers: orderReturnedResolvers,
+      },
+      {
+        typeDefs: addPatientPrescriptionRecordsTypeDefs,
+        resolvers: addPatientPrescriptionRecordResolvers,
+      },
+      {
+        typeDefs: deletePatientPrismMedicalRecordTypeDefs,
+        resolvers: deletePatientPrismMedicalRecordResolvers,
+      },
+      {
+        typeDefs: reUploadPrescriptionTypeDefs,
+        resolvers: reUploadPrescriptionResolvers,
       },
     ]),
     plugins: [

@@ -20,6 +20,9 @@ import {
   UPDATE_WHATSAPP_STATUS,
   GET_APPOINTMENT_RESCHEDULE_DETAILS,
   SAVE_SEARCH,
+  SAVE_DEVICE_TOKEN,
+  GET_SECRETARY_DETAILS_BY_DOCTOR_ID,
+  GET_PARTICIPANTS_LIVE_STATUS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetDoctorNextAvailableSlot } from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
 import { linkUhidsVariables } from '@aph/mobile-patients/src/graphql/types/linkUhids';
@@ -60,6 +63,11 @@ import {
   REQUEST_ROLES,
   STATUS,
   SEARCH_TYPE,
+  DEVICE_TYPE,
+  USER_TYPE,
+  BOOKINGSOURCE,
+  USER_STATUS,
+  DEVICETYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { insertMessageVariables } from '@aph/mobile-patients/src/graphql/types/insertMessage';
 import {
@@ -76,6 +84,16 @@ import {
   getAppointmentRescheduleDetailsVariables,
 } from '@aph/mobile-patients/src/graphql/types/getAppointmentRescheduleDetails';
 import { saveSearch, saveSearchVariables } from '@aph/mobile-patients/src/graphql/types/saveSearch';
+import { saveDeviceToken, saveDeviceTokenVariables } from '../graphql/types/saveDeviceToken';
+import { Platform } from 'react-native';
+import {
+  getSecretaryDetailsByDoctorId,
+  getSecretaryDetailsByDoctorIdVariables,
+} from '../graphql/types/getSecretaryDetailsByDoctorId';
+import {
+  setAndGetNumberOfParticipants,
+  setAndGetNumberOfParticipantsVariables,
+} from '@aph/mobile-patients/src/graphql/types/setAndGetNumberOfParticipants';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -582,5 +600,69 @@ export const saveSearchSpeciality = (
       saveSearchInput: searchInput,
     },
     fetchPolicy: 'no-cache',
+  });
+};
+
+export const saveTokenDevice = (client: ApolloClient<object>, token: any, patientId: string) => {
+  const input = {
+    deviceType: Platform.OS === 'ios' ? DEVICE_TYPE.IOS : DEVICE_TYPE.ANDROID,
+    deviceToken: token,
+    deviceOS: '',
+    patientId: patientId,
+  };
+  console.log('input', input);
+  return client.mutate<saveDeviceToken, saveDeviceTokenVariables>({
+    mutation: SAVE_DEVICE_TOKEN,
+    variables: {
+      SaveDeviceTokenInput: input,
+    },
+    fetchPolicy: 'no-cache',
+  });
+};
+
+export const getSecretaryDetailsByDoctor = (client: ApolloClient<object>, doctorId: string) => {
+  return new Promise((res, rej) => {
+    client
+      .query<getSecretaryDetailsByDoctorId, getSecretaryDetailsByDoctorIdVariables>({
+        query: GET_SECRETARY_DETAILS_BY_DOCTOR_ID,
+        variables: {
+          doctorId: doctorId,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        res({ data });
+      })
+      .catch((e) => {
+        rej({ error: e });
+      });
+  });
+};
+
+export const getParticipantsLiveStatus = (
+  client: ApolloClient<object>,
+  appointmentId: string,
+  userStatus: USER_STATUS
+) => {
+  const input = {
+    appointmentId: appointmentId,
+    userType: USER_TYPE.PATIENT,
+    sourceType: BOOKINGSOURCE.MOBILE,
+    deviceType: Platform.OS === 'ios' ? DEVICETYPE.IOS : DEVICETYPE.ANDROID,
+    userStatus: userStatus,
+  };
+  return new Promise((res, rej) => {
+    client
+      .query<setAndGetNumberOfParticipants, setAndGetNumberOfParticipantsVariables>({
+        query: GET_PARTICIPANTS_LIVE_STATUS,
+        variables: input,
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        res(data);
+      })
+      .catch((e) => {
+        rej(e);
+      });
   });
 };

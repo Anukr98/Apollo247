@@ -6,7 +6,6 @@ import {
   DOCTOR_ONLINE_STATUS,
   CityPincodeMapper,
   ConsultHours,
-  Secretary,
 } from 'doctors-service/entities';
 import { ES_DOCTOR_SLOT_STATUS } from 'consults-service/entities';
 import {
@@ -90,7 +89,7 @@ export class DoctorRepository extends Repository<Doctor> {
         },
       };
       slotsAdded += doctorId + ' - ' + format(stDate, 'yyyy-MM-dd') + ',';
-      const updateResp = await client.update(doc1);
+      await client.update(doc1);
       stDate = addDays(stDate, 1);
     }
     client.close();
@@ -238,9 +237,9 @@ export class DoctorRepository extends Repository<Doctor> {
               .getUTCHours()
               .toString()
               .padStart(2, '0')}:${appt.appointmentDateTime
-              .getUTCMinutes()
-              .toString()
-              .padStart(2, '0')}:00.000Z`;
+                .getUTCMinutes()
+                .toString()
+                .padStart(2, '0')}:00.000Z`;
             if (availableSlots.indexOf(sl) >= 0) {
               doctorSlots[availableSlots.indexOf(sl)].status = ES_DOCTOR_SLOT_STATUS.BOOKED;
             }
@@ -274,15 +273,12 @@ export class DoctorRepository extends Repository<Doctor> {
     const searchParams: RequestParams.Search = {
       index: process.env.ELASTIC_INDEX_DOCTORS,
       body: {
+        // _source: {
+        //   excludes: ['doctorSlots'],
+        // },
         query: {
-          bool: {
-            must: [
-              {
-                match_phrase: {
-                  doctorId: id,
-                },
-              },
-            ],
+          ids: {
+            values: id,
           },
         },
       },
@@ -290,6 +286,12 @@ export class DoctorRepository extends Repository<Doctor> {
     const getDetails = await client.search(searchParams);
     client.close();
     let doctorData, facilities;
+    let bufferTime = 5;
+    const callStartTime: Date = new Date();
+    const doctorNextAvailSlots:any ={
+      physicalSlot:'',
+      onlineSlot:''
+    };
 
     if (getDetails.body.hits.hits && getDetails.body.hits.hits.length > 0) {
       doctorData = getDetails.body.hits.hits[0]._source;
@@ -302,6 +304,7 @@ export class DoctorRepository extends Repository<Doctor> {
       const availableModes: string[] = [];
       for (const consultHour of doctorData.consultHours) {
         consultHour['id'] = consultHour['consultHoursId'];
+        bufferTime = consultHour['consultBuffer'];
         if (!availableModes.includes(consultHour['consultMode'])) {
           availableModes.push(consultHour['consultMode']);
         }
@@ -314,6 +317,24 @@ export class DoctorRepository extends Repository<Doctor> {
         doctorData.doctorHospital.push({ facility });
       }
       doctorData.availableModes = availableModes;
+
+      for (const slots of doctorData.doctorSlots) {
+        for (const slot of slots['slots']) {
+          if (
+            slot.status == 'OPEN' &&
+            differenceInMinutes(new Date(slot.slot), callStartTime) > bufferTime
+          ) {
+            if (!doctorNextAvailSlots.physicalSlot && slot.slotType != 'ONLINE') {
+              doctorNextAvailSlots.physicalSlot = slot.slot;
+            }
+            if (!doctorNextAvailSlots.onlineSlot && slot.slotType != 'PHYSICAL') {
+              doctorNextAvailSlots.onlineSlot = slot.slot;
+            }
+          }
+        }
+      }
+      doctorData.doctorNextAvailSlots = doctorNextAvailSlots;
+      delete doctorData.doctorSlots;
     }
     return doctorData;
   }
@@ -369,7 +390,7 @@ export class DoctorRepository extends Repository<Doctor> {
     });
   }
 
-  getDoctorDetailswithRelations() {}
+  getDoctorDetailswithRelations() { }
 
   updateFirebaseId(id: string, firebaseToken: string) {
     return this.update(id, { firebaseToken: firebaseToken });
@@ -385,6 +406,10 @@ export class DoctorRepository extends Repository<Doctor> {
 
   updateDoctorChatDays(id: string, chatDays: number) {
     return this.update(id, { chatDays });
+  }
+
+  async updateAppointmentReminderIVR(id: string, IVRSettings: Partial<Doctor>) {
+    return this.update(id, IVRSettings);
   }
 
   findById(id: string) {
@@ -409,7 +434,12 @@ export class DoctorRepository extends Repository<Doctor> {
   getDoctorSecretary(id: string) {
     return this.findOne({
       where: [{ id, isActive: true }],
-      relations: ['doctorSecretary', 'doctorSecretary.secretary'],
+      relations: [
+        'doctorSecretary',
+        'doctorSecretary.secretary',
+        'doctorHospital',
+        'doctorHospital.facility',
+      ],
     });
   }
 
@@ -482,7 +512,7 @@ export class DoctorRepository extends Repository<Doctor> {
   getSearchDoctorsByIds(doctorIds: string[]) {
     return this.createQueryBuilder('doctor')
       .select('doctor.id', 'typeId')
-      .addSelect("doctor.firstName || ' ' || doctor.lastName", 'name')
+      .addSelect("doctor.fullName", 'name')
       .addSelect('doctor.photoUrl', 'image')
       .addSelect('doctor.doctorType', 'doctorType')
       .where('doctor.id IN (:...doctorIds)', { doctorIds })
@@ -840,8 +870,8 @@ export class DoctorRepository extends Repository<Doctor> {
                 fee.maximum === -1
                   ? qb.where('doctor.onlineConsultationFees >= ' + fee.minimum)
                   : qb
-                      .where('doctor.onlineConsultationFees >= ' + fee.minimum)
-                      .andWhere('doctor.onlineConsultationFees <= ' + fee.maximum);
+                    .where('doctor.onlineConsultationFees >= ' + fee.minimum)
+                    .andWhere('doctor.onlineConsultationFees <= ' + fee.maximum);
               })
             );
           });
@@ -858,8 +888,8 @@ export class DoctorRepository extends Repository<Doctor> {
                 exp.maximum === -1
                   ? qb.where('doctor.experience >= ' + exp.minimum)
                   : qb
-                      .where('doctor.experience >= ' + exp.minimum)
-                      .andWhere('doctor.experience <= ' + exp.maximum);
+                    .where('doctor.experience >= ' + exp.minimum)
+                    .andWhere('doctor.experience <= ' + exp.maximum);
               })
             );
           });
@@ -1119,6 +1149,19 @@ export class DoctorRepository extends Repository<Doctor> {
 
   getAllDocsById(ids: string[]) {
     return this.find({ where: { id: In(ids) } });
+  }
+
+  getAllDocAdminsById(ids: string[]) {
+    return this.find({
+      where: { id: In(ids) },
+      relations: [
+        'admindoctormapper',
+        'admindoctormapper.adminuser',
+        'specialty',
+        'doctorHospital',
+        'doctorHospital.facility',
+      ],
+    });
   }
 
   getAllDoctors(doctorId: string, limit: number, offset: number) {

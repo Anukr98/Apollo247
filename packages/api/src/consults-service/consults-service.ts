@@ -4,6 +4,8 @@ import { GatewayHeaders } from 'api-gateway';
 import { ApolloServer } from 'apollo-server';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { connect } from 'consults-service/database/connect';
+import { Email } from 'consults-service/helpers/scalar-types/email';
+
 import {
   createAppointmentSessionResolvers,
   createAppointmentSessionTypeDefs,
@@ -17,6 +19,7 @@ import {
   makeAppointmentPaymentResolvers,
 } from 'consults-service/resolvers/makeAppointmentPayment';
 import { caseSheetResolvers, caseSheetTypeDefs } from 'consults-service/resolvers/caseSheet';
+import { caseSheetV2Resolvers, caseSheetV2TypeDefs } from 'consults-service/resolvers/caseSheetV2';
 import {
   paymentTransactionStatusTypeDefs,
   paymentTransactionStatusResolvers,
@@ -131,6 +134,11 @@ import {
   appointmentCallFeedbackResolvers,
 } from 'consults-service/resolvers/appointmentCallFeedbackResolver';
 
+import {
+  liveStatusTypeDefs,
+  liveStatusResolvers,
+} from 'consults-service/resolvers/ChatRoomLiveStatus';
+
 (async () => {
   connect()
     .then((res) => {
@@ -156,12 +164,14 @@ import {
             typeDefs: gql`
               scalar Date
               scalar Time
-              scalar DateTime
+              scalar DateTime,
+              scalar Email
             `,
             resolvers: {
               Date: GraphQLDate,
               Time: GraphQLTime,
               DateTime: GraphQLDateTime,
+              Email: Email
             },
           },
           {
@@ -207,6 +217,10 @@ import {
           {
             typeDefs: caseSheetTypeDefs,
             resolvers: caseSheetResolvers,
+          },
+          {
+            typeDefs: caseSheetV2TypeDefs,
+            resolvers: caseSheetV2Resolvers,
           },
           {
             typeDefs: transferAppointmentTypeDefs,
@@ -287,6 +301,10 @@ import {
           {
             typeDefs: appointmentCallFeedbackTypeDefs,
             resolvers: appointmentCallFeedbackResolvers,
+          },
+          {
+            typeDefs: liveStatusTypeDefs,
+            resolvers: liveStatusResolvers,
           },
         ]),
         plugins: [

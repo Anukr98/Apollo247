@@ -65,6 +65,9 @@ const appStaticVariables = {
   HOME_SCREEN_KAVACH_TEXT: string.common.KavachText,
   MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK: 'https://bit.ly/apollo247medicines',
   Doctors_Page_Size: 25,
+  CUSTOMER_CARE_HELP_TEXT: string.common.customerCareHelpText,
+  CUSTOMER_CARE_NUMBER: string.common.customerCareNumber,
+  PRODUCT_SUGGESTIONS_COUNT: 15,
 };
 
 const DEV_top6_specailties = [
@@ -217,6 +220,7 @@ const PharmaApiConfig = {
       'http://uatlims.apollohl.in/ApolloLive/CronJob/GetCentreDetail.aspx',
       testApiCredentialsDev,
     ],
+    PRODUCT_SUGGESTIONS_CATEGORYID: '41920',
   },
   prod: {
     TRACK_EVENT: [`${tagalysBaseUrl}/analytics/events/track`],
@@ -254,6 +258,7 @@ const PharmaApiConfig = {
       'https://report.apollodiagnostics.in/Apollo/CronJob/GetCentreDetail.aspx',
       testApiCredentialsProd,
     ],
+    PRODUCT_SUGGESTIONS_CATEGORYID: '2252',
   },
 };
 
@@ -285,7 +290,7 @@ const ConfigurationDev = {
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: DEV_top6_specailties,
-  ...PharmaApiConfig.prod,
+  ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
@@ -329,7 +334,7 @@ const ConfigurationQA = {
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: QA_top6_specailties,
-  ...PharmaApiConfig.prod,
+  ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
@@ -373,7 +378,7 @@ const ConfigurationQA2 = {
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: QA_top6_specailties,
-  ...PharmaApiConfig.prod,
+  ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
@@ -417,7 +422,7 @@ const ConfigurationVAPT = {
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: QA_top6_specailties,
-  ...PharmaApiConfig.prod,
+  ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
   CONDITIONAL_MANAGENET_BASE_URL: 'https://stagingpmt.apollo247.com',
@@ -503,7 +508,7 @@ const ConfigurationPERFORM = {
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: DEV_top6_specailties,
-  ...PharmaApiConfig.prod,
+  ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
@@ -548,7 +553,7 @@ const ConfigurationDevReplica = {
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
   TOP_SPECIALITIES: QA_top6_specailties,
-  ...PharmaApiConfig.prod,
+  ...PharmaApiConfig.dev,
   ...appStaticVariables,
   ...Apollo247Config.dev,
   CONDITIONAL_MANAGENET_BASE_URL: 'https://aph.staging.pmt.popcornapps.com',
@@ -851,6 +856,16 @@ export const NeedHelp = [
     ],
   },
 ];
+
+export const CancelConsultation = {
+  reason: [
+    string.ReasonFor_Cancel_Consultation.doctorDidNotJoin,
+    string.ReasonFor_Cancel_Consultation.bookedForWrongUser,
+    string.ReasonFor_Cancel_Consultation.doctorDeniedMode,
+    string.ReasonFor_Cancel_Consultation.audioVideoIssue,
+    string.ReasonFor_Cancel_Consultation.otherReasons,
+  ],
+};
 
 type SpecialitiesType = {
   [key: string]: string[];

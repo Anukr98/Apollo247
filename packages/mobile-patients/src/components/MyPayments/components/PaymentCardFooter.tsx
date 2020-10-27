@@ -181,7 +181,7 @@ const PaymentCardFooter: FC<PaymentCardFooterProps> = (props) => {
       }
     } else {
       if (status === FAILED) {
-        props.navigationProps.navigate(AppRoutes.YourCart, {});
+        props.navigationProps.navigate(AppRoutes.MedicineCart, {});
       } else if (status === SUCCESS) {
         props.navigationProps.navigate(AppRoutes.OrderDetailsScene, {
           goToHomeOnBack: true,
