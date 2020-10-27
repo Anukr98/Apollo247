@@ -77,6 +77,7 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     clusterId: String
     allocationProfileName: String
     storeDistanceKm: Float
+    prescriptionOptionSelected: String
   }
 
   type MedicineOrderOMSLineItems {
