@@ -6,13 +6,14 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
   ArrowRight,
+  ArrowRightGreen,
   CheckedIcon,
   CheckUnselectedIcon,
   RadioButtonIcon,
   RadioButtonUnselectedIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { getProductsByCategoryApi, formatFilters } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { formatFilters, getProductsByCategoryApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { isEqual } from 'lodash';
 import React, { useState } from 'react';
@@ -71,7 +72,7 @@ export const MedicineListingFilter: React.FC<Props> = ({
         key={filter.name}
         leftElement={highlightView}
         title={filter.name}
-        rightIcon={isSelected ? <ArrowRight /> : <ArrowRight />} // TODO: change icon to arrow green for isSelected
+        rightIcon={isSelected ? <ArrowRightGreen /> : <ArrowRight />}
         onPress={onPress}
         bottomDivider
         containerStyle={styles.optionsContainer}
