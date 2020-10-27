@@ -135,6 +135,7 @@ interface GallerySliderProps {
   onChange: any;
   documents: Array<any>;
   appointmentDate: string;
+  isLoading: boolean;
 }
 
 interface ArrowProps {
@@ -204,6 +205,7 @@ const GallerySlider: React.FC<GallerySliderProps> = ({
   onChange,
   documents,
   appointmentDate,
+  isLoading
 }) => {
   const classes = useStyles({});
 
@@ -229,6 +231,7 @@ const GallerySlider: React.FC<GallerySliderProps> = ({
     <Modal open={open} onClose={onClose}>
       <div className={classes.modalWindowWrap}>
         <div className={classes.tableContent}>
+          {!isLoading ? 
           <div className={classes.modalWindow}>
             <div className={classes.modalHeader}>
               <DocumentTitle
@@ -250,7 +253,7 @@ const GallerySlider: React.FC<GallerySliderProps> = ({
               {isPdf ? <PDFViewer file={docPrevUrl} /> : <ReactPanZoom image={docPrevUrl} alt="" />}
             </div>
             {!isPdf && <div className={classes.modalFooter}></div>}
-          </div>
+          </div> : <div>Loading...</div>}
         </div>
       </div>
     </Modal>
