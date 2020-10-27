@@ -356,7 +356,8 @@ export const HealthVault: React.FC = () => {
     }
     setTimeout(() => {
       setIsLoading(false);
-    }, 5);
+      console.log('10 ms');
+    }, 10);
   }, []);
 
   return (
