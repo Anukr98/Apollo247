@@ -127,7 +127,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       if (selectedMedicineOption === 'search') {
         if (EPrescriptions.length > 0) setEPrescription && setEPrescription([...EPrescriptions]);
         if (PhysicalPrescriptions.length > 0) setPhysicalPrescription && setPhysicalPrescription([...PhysicalPrescriptions]);
-        props.navigation.navigate(AppRoutes.SearchMedicineScene, { showButton: true });
+        props.navigation.navigate(AppRoutes.MedicineSearch);
       } else {
         const days = durationDays ? parseInt(durationDays) : null;
         props.navigation.push(AppRoutes.YourCartUploadPrescriptions, {

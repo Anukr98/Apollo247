@@ -741,7 +741,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                   key: null,
                   actions: [
                     NavigationActions.navigate({
-                      routeName: AppRoutes.SearchByBrand,
+                      routeName: AppRoutes.MedicineListing,
                       params: {
                         category_id: itemId,
                         title: `${name ? name : 'Products'}`.toUpperCase(),

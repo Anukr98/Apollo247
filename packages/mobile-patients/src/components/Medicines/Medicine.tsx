@@ -679,7 +679,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       if (formattedRecommendedProducts.length >= 5) {
         setRecommendedProducts(formattedRecommendedProducts);
         showRecommendedSection &&
-          props.navigation.navigate(AppRoutes.SearchByBrand, {
+          props.navigation.navigate(AppRoutes.MedicineListing, {
             category_id: -1,
             products: formattedRecommendedProducts,
             title: string.medicine.recommendedForYou,
@@ -977,7 +977,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       };
       postWebEngageEvent(WebEngageEventName.PHARMACY_BANNER_CLICK, eventAttributes);
       if (item.category_id) {
-        props.navigation.navigate(AppRoutes.SearchByBrand, {
+        props.navigation.navigate(AppRoutes.MedicineListing, {
           category_id: item.category_id,
           title: item.name || 'Products',
         });
@@ -1370,7 +1370,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                   title,
                   productsThumbnailUrl(item.image_url)
                 );
-                props.navigation.navigate(AppRoutes.SearchByBrand, {
+                props.navigation.navigate(AppRoutes.MedicineListing, {
                   category_id: item.category_id,
                   title: item.title || 'Products',
                 });
@@ -1410,7 +1410,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                     title,
                     productsThumbnailUrl(item.image_url)
                   );
-                  props.navigation.navigate(AppRoutes.SearchByBrand, {
+                  props.navigation.navigate(AppRoutes.MedicineListing, {
                     category_id: item.category_id,
                     title: title,
                   });
@@ -1465,7 +1465,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           onPressRightText={
             categoryId
               ? () =>
-                  props.navigation.navigate(AppRoutes.SearchByBrand, {
+                  props.navigation.navigate(AppRoutes.MedicineListing, {
                     category_id: categoryId == -1 ? undefined : categoryId,
                     products: categoryId == -1 ? products : null,
                     title: title || 'Products',
@@ -1526,7 +1526,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                   title,
                   productsThumbnailUrl(item.image_url)
                 );
-                props.navigation.navigate(AppRoutes.SearchByBrand, {
+                props.navigation.navigate(AppRoutes.MedicineListing, {
                   category_id: item.category_id,
                   title: item.title || 'Products',
                 });
@@ -1588,7 +1588,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             Source: 'Pharmacy Home',
           };
           postWebEngageEvent(WebEngageEventName.PHARMACY_SEARCH_RESULTS, eventAttributes);
-          props.navigation.navigate(AppRoutes.SearchMedicineScene, { searchText });
+          props.navigation.navigate(AppRoutes.MedicineListing, { searchText });
           setSearchText('');
           setMedicineList([]);
         }}
@@ -1612,7 +1612,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 Source: 'Pharmacy Home',
               };
               postWebEngageEvent(WebEngageEventName.PHARMACY_SEARCH_RESULTS, eventAttributes);
-              props.navigation.navigate(AppRoutes.SearchMedicineScene, { searchText });
+              props.navigation.navigate(AppRoutes.MedicineListing, { searchText });
             }
           }}
           value={searchText}

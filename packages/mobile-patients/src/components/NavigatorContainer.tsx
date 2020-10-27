@@ -126,7 +126,6 @@ export enum AppRoutes {
   AssociateDoctorDetails = 'AssociateDoctorDetails',
   AppointmentDetails = 'AppointmentDetails',
   StorPickupScene = 'StorPickupScene',
-  SearchMedicineScene = 'SearchMedicineScene',
   SearchTestScene = 'SearchTestScene',
   MedicineSearch = 'MedicineSearch',
   MedicineListing = 'MedicineListing',
@@ -158,7 +157,6 @@ export enum AppRoutes {
   MedicineConsultDetails = 'MedicineConsultDetails',
   ShopByBrand = 'ShopByBrand',
   ImageSliderScreen = 'ImageSliderScreen',
-  SearchByBrand = 'SearchByBrand',
   TestsByCategory = 'TestsByCategory',
   TestsCart = 'TestsCart',
   TestPayment = 'TestPayment',
@@ -289,9 +287,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.AppointmentDetails]: {
     screen: AppointmentDetails,
   },
-  [AppRoutes.SearchMedicineScene]: {
-    screen: MedicineListing,
-  },
   [AppRoutes.SearchTestScene]: {
     screen: SearchTestScene,
   },
@@ -397,10 +392,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.ImageSliderScreen]: {
     screen: ImageSliderScreen,
-  },
-  [AppRoutes.SearchByBrand]: {
-    screen: MedicineListing,
-    path: 'SearchByBrandPath',
   },
   [AppRoutes.TestsByCategory]: {
     screen: TestsByCategory,
