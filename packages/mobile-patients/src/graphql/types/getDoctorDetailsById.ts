@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 import { DoctorType, ConsultMode, WeekDay } from "./globalTypes";
@@ -129,6 +130,7 @@ export interface getDoctorDetailsById_getDoctorDetailsById {
   displayName: string | null;
   doctorType: DoctorType;
   chatDays: number | null;
+  doctorsOfTheHourStatus: boolean | null;
   qualification: string | null;
   mobileNumber: string;
   experience: string | null;
