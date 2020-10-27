@@ -17,6 +17,8 @@ import {
   getDiagnosticOrdersList,
   getDiagnosticOrdersListVariables,
   getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList,
+  getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems,
+  getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems_diagnostics,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
 
 import {
@@ -51,9 +53,9 @@ import {
 } from 'react-native';
 import { NavigationScreenProps, ScrollView, FlatList } from 'react-navigation';
 import { DIAGNOSTIC_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { ScrollableFooter } from '../ui/ScrollableFooter';
-import { TestOrderCard } from '../ui/TestOrderCard';
-import { ReasonPopUp } from '../ui/ReasonPopUp';
+import { ScrollableFooter } from '@aph/mobile-patients/src/components/ui/ScrollableFooter';
+import { TestOrderCard } from '@aph/mobile-patients/src/components/ui/TestOrderCard';
+import { ReasonPopUp } from '@aph/mobile-patients/src/components/ui/ReasonPopUp';
 import { g, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WhatsAppIcon,
@@ -68,18 +70,24 @@ import {
   TestReschedulingReasons,
 } from '@aph/mobile-patients/src/strings/AppConfig';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { colors } from '../../theme/colors';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
   getDiagnosticsOrderStatus,
   getDiagnosticsOrderStatusVariables,
-} from '../../graphql/types/getDiagnosticsOrderStatus';
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticsOrderStatus';
 import _ from 'lodash';
-import { getPackageData } from '../../helpers/apiCalls';
+import { getPackageData } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   searchDiagnosticsById,
   searchDiagnosticsByIdVariables,
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsById';
+
+export interface DiagnosticsOrderList
+  extends getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList {
+  maxStatus: string;
+  maxTime?: string | undefined | null;
+}
 
 const sequenceOfStatus = SequenceForDiagnosticStatus;
 const styles = StyleSheet.create({
@@ -257,9 +265,12 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     }
   }, [orders]);
 
-  const fetchTestDetails = async (id: string, order: any) => {
+  const fetchTestDetails = async (
+    id: string,
+    order: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList
+  ) => {
     setLoading!(true);
-    order.diagnosticOrderLineItems.map((items: any) => {
+    order?.diagnosticOrderLineItems!.map((items: any) => {
       const itemType = items?.diagnostics?.itemType!;
       const itemId = items?.diagnostics?.itemId!;
       if (itemType == 'PACKAGE') {
@@ -308,12 +319,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         item.diagnostics.partialTestDetails = partialTestDetails;
         item.diagnostics.PackageInclussion = data || [];
       }
-
-      // setTestInfo({
-      //   ...partialTestDetails,
-      //   PackageInClussion: data || [],
-      // } as TestPackageForDetails);
-      // setsearchSate('success');
     } catch (error) {
       // setsearchSate('fail');
       setLoading!(false);
@@ -324,9 +329,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const loadPackageDetails = async (packageId: string, items: any) => {
     getPackageData(packageId)
       .then(({ data }) => {
-        items.diagnostics.PackageInclussion = data.data || [];
+        items.diagnostics.PackageInclussion! = data.data || [];
         setLoading!(false);
-        // setTestInfo({ ...testInfo, PackageInClussion: data.data || [] });
       })
       .catch((e) => {
         CommonBugFender('TestDetails', e);
@@ -335,7 +339,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       });
   };
 
-  const fetchOrderStatusForEachTest = async (id: string, order: any) => {
+  const fetchOrderStatusForEachTest = async (id: string, order: DiagnosticsOrderList) => {
     setLoading!(true);
     client
       .query<getDiagnosticsOrderStatus, getDiagnosticsOrderStatusVariables>({
@@ -376,7 +380,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const calMaxStatus = (testStatus: any, status: string) => {
-    return testStatus.some((item) => item?.orderStatus == status);
+    return testStatus.some((item: any) => item?.orderStatus == status);
   };
 
   const setInitialState = () => {
@@ -573,10 +577,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     return false;
   };
 
-  const renderOrder = (
-    order: getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList,
-    index: number
-  ) => {
+  const renderOrder = (order: DiagnosticsOrderList, index: number) => {
     const isHomeVisit = !!order.slotTimings;
     const dt = moment(order!.diagnosticDate).format(`D MMM YYYY`);
     const tm = getSlotStartTime(order!.slotTimings);
@@ -586,7 +587,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     const patientName = g(currentPatient, 'firstName'); //check for only firstName
     //create an interface with new additions in the object. or copy it and then manipulate
     const isSampleCollected = order.maxStatus!
-      ? sequenceOfStatus.indexOf(order.maxStatus) >=
+      ? sequenceOfStatus.indexOf(order.maxStatus!) >=
         sequenceOfStatus.indexOf(DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED)
       : false;
 

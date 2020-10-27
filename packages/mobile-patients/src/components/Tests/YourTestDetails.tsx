@@ -21,20 +21,35 @@ import _ from 'lodash';
 import { SafeAreaView, StyleSheet, View, Text, TouchableOpacity, Linking } from 'react-native';
 import { NavigationScreenProps, ScrollView, FlatList } from 'react-navigation';
 import { DIAGNOSTIC_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { TestOrderCard } from '../ui/TestOrderCard';
+import { TestOrderCard } from '@aph/mobile-patients/src/components/ui/TestOrderCard';
 import { g, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { WhatsAppIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppConfig, SequenceForDiagnosticStatus } from '@aph/mobile-patients/src/strings/AppConfig';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { colors } from '../../theme/colors';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
   getDiagnosticsOrderStatus,
   getDiagnosticsOrderStatusVariables,
   getDiagnosticsOrderStatus_getDiagnosticsOrderStatus_ordersList,
-} from '../../graphql/types/getDiagnosticsOrderStatus';
-import { getPackageData } from '../../helpers/apiCalls';
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticsOrderStatus';
+import { getPackageData } from '@aph/mobile-patients/src/helpers/apiCalls';
 const sequenceOfStatus = SequenceForDiagnosticStatus;
+
+export interface TestStatusObject {
+  id: string;
+  displayId: string;
+  slotTimings: string;
+  patientName: string;
+  showDateTime: string;
+  currentStatus: string;
+  itemId: string;
+  packageId: string | null;
+  itemName: string;
+  packageName: string;
+  statusDate: string;
+  testPreparationData: string;
+}
 
 const styles = StyleSheet.create({
   noDataCard: {
@@ -119,7 +134,7 @@ export const YourTestDetails: React.FC<YourTestDetailsProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const [date, setDate] = useState<Date>(new Date());
-  const [statusForTest, setStatusForTest] = useState();
+  const [statusForTest, setStatusForTest] = useState({});
 
   const [apiLoading, setApiLoading] = useState(false);
   const orderSelectedId = props.navigation.getParam('orderId');
@@ -177,7 +192,7 @@ export const YourTestDetails: React.FC<YourTestDetailsProps> = (props) => {
   };
 
   const getStatusForAllTests = (
-    data: getDiagnosticsOrderStatus_getDiagnosticsOrderStatus_ordersList
+    data: getDiagnosticsOrderStatus_getDiagnosticsOrderStatus_ordersList | any
   ) => {
     const testStatusData = createObject(data);
 
@@ -190,34 +205,10 @@ export const YourTestDetails: React.FC<YourTestDetailsProps> = (props) => {
     const itemIdObject = _.groupBy(statusData, 'itemId');
     setStatusForTest(itemIdObject);
 
-    const packageId = _.groupBy(statusData, 'packageId');
-    var newArr: {
-      id: string;
-      slotTimings: string;
-      patientName: string;
-      showDateTime: string;
-      currentStatus: string;
-      itemId: string;
-      packageId: string | null;
-      itemName: string;
-      statusDate: string;
-    }[] = [];
+    var newArr: TestStatusObject[] = [];
 
     //create interface
-    let objArray: {
-      id: string;
-      displayId: string;
-      slotTimings: string;
-      patientName: string;
-      showDateTime: string;
-      itemId: string;
-      currentStatus: string;
-      packageId: string | null;
-      packageName: string;
-      itemName: string;
-      statusDate: string;
-      testPreparationData?: string;
-    }[] = [];
+    let objArray: TestStatusObject[] = [];
     const lengthOfItems = Object.keys(itemIdObject).length;
     Object.keys(itemIdObject).forEach((key) => {
       /**

@@ -94,6 +94,18 @@ const styles = StyleSheet.create({
     color: '#01475b',
     ...theme.fonts.IBMPlexSansBold(14),
   },
+  lineSeparator: {
+    borderBottomColor: '#02475b',
+    borderBottomWidth: 2,
+    marginVertical: 10,
+    marginTop: height * 0.1,
+  },
+  grossTotalView: {
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 18,
+  },
 });
 
 export interface TestOrderSummaryViewProps {
@@ -208,22 +220,8 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
       {/**
        * HOME COLLECTION CHARGES
        */}
-      <View
-        style={{
-          borderBottomColor: '#02475b',
-          borderBottomWidth: 2,
-          marginVertical: 10,
-          marginTop: height * 0.1,
-        }}
-      />
-      <View
-        style={{
-          justifyContent: 'space-between',
-          flexDirection: 'row',
-          flexWrap: 'wrap',
-          marginTop: 18,
-        }}
-      >
+      <View style={styles.lineSeparator} />
+      <View style={styles.grossTotalView}>
         <View style={{ flex: 1 }}>
           <Text style={styles.commonText}></Text>
         </View>

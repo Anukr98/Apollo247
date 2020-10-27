@@ -14,7 +14,7 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { FeedbackPopup } from '@aph/mobile-patients/src/components/FeedbackPopup';
 import { AlertPopup } from '@aph/mobile-patients/src/components/ui/AlertPopup';
-import { ReasonPopUp } from '../ui/ReasonPopUp';
+import { ReasonPopUp } from '@aph/mobile-patients/src/components/ui/ReasonPopUp';
 import {
   OrderPlacedIcon,
   OrderTrackerSmallIcon,
@@ -76,15 +76,25 @@ import {
   Dimensions,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { OrderCancelOverlay } from './OrderCancelOverlay';
+import { OrderCancelOverlay } from '@aph/mobile-patients/src/components/Tests/OrderCancelOverlay';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { DIAGNOSTIC_ORDER_STATUS, FEEDBACKTYPE } from '../../graphql/types/globalTypes';
+import {
+  DIAGNOSTIC_ORDER_STATUS,
+  FEEDBACKTYPE,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { RefundDetails } from '@aph/mobile-patients/src/components/RefundDetails';
-import { WebEngageEventName, WebEngageEvents } from '../../helpers/webEngageEvents';
-import { viewStyles } from '../../theme/viewStyles';
-import { fonts } from '../../theme/fonts';
-import { Spearator } from '../ui/BasicComponents';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
+import { fonts } from '@aph/mobile-patients/src/theme/fonts';
+import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
+import {
+  getDiagnosticsOrderStatus_getDiagnosticsOrderStatus,
+  getDiagnosticsOrderStatus_getDiagnosticsOrderStatus_ordersList,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticsOrderStatus';
 
 const screenHeight = Dimensions.get('window').height;
 const reasonForCancellation = TestCancelReasons.reasons;
@@ -149,6 +159,63 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('SB', 13, '#01475b', 1, 21),
   },
   feedbackPop: { flex: 1, width: '95%', marginBottom: 20, alignSelf: 'center' },
+  statusDoneView: {
+    ...theme.viewStyles.cardViewStyle,
+    padding: 16,
+    marginBottom: 8,
+    flex: 1,
+  },
+  statusTextStyle: {
+    ...theme.fonts.IBMPlexSansMedium(16),
+    letterSpacing: 0.0,
+    color: theme.colors.SHERPA_BLUE,
+    flex: 1,
+    textTransform: 'capitalize',
+  },
+  lineSeparator: {
+    height: 1,
+    backgroundColor: theme.colors.LIGHT_BLUE,
+    opacity: 0.1,
+    marginTop: 7,
+    marginBottom: 8,
+  },
+  statusLineSeperator: {
+    paddingHorizontal: 45,
+    marginTop: '8%',
+    paddingBottom: 25.5,
+  },
+  reportsGeneratedText: {
+    textAlign: 'center',
+    marginBottom: 6,
+    ...theme.viewStyles.text('M', 13, '#01475b', 1, 21),
+  },
+  rateDeliveryText: {
+    ...theme.viewStyles.text('B', isIphone5s() ? 11 : 13, theme.colors.BUTTON_TEXT, 1, 24),
+  },
+  preTestingCardView: { ...theme.viewStyles.cardViewStyle, padding: 16, flex: 1, marginTop: 13 },
+  buttonStyle: { width: '40%', marginBottom: 20, alignSelf: 'center' },
+  popUpOverlay: {
+    backgroundColor: 'rgba(0,0,0,0.8)',
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    justifyContent: 'flex-start',
+    flex: 1,
+    left: 0,
+    right: 0,
+    zIndex: 3000,
+  },
+  chatWithUsOuterView: {
+    margin: 30,
+    marginTop: 100,
+    justifyContent: 'flex-end',
+    alignSelf: 'flex-end',
+  },
+  reachUsOutText: {
+    textAlign: 'center',
+    ...theme.fonts.IBMPlexSansRegular(13),
+    color: theme.colors.SHERPA_BLUE,
+  },
 });
 
 const cancelOptions: [string, string][] = [
@@ -251,24 +318,21 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
   const orderDetails = ((!loading && order) ||
     {}) as getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList;
-  const orderStatusList = ((!loading && order && order.diagnosticOrdersStatus) || []).filter(
-    (item: any) => item!.hideStatus
-  );
 
-  var orderStatusList1: any[] = [];
+  var orderStatusList: any[] = [];
   const sizeOfIndividualTestStatus = _.size(individualTestStatus);
-  Object.entries(individualTestStatus).filter((item) => {
+  Object.entries(individualTestStatus).filter((item: any) => {
     if (item[0] == 'null') {
       if (sizeOfIndividualTestStatus == 1) {
-        orderStatusList1.push(item[1]);
+        orderStatusList.push(item[1]);
       } else {
-        orderStatusList1[0].push(item[1][0]);
+        orderStatusList[0].push(item[1][0]);
       }
     } else if (item[0] == selectedTest.itemId) {
-      orderStatusList1.push(item[1]);
+      orderStatusList.push(item[1]);
     }
   });
-  console.log({ orderStatusList1 });
+  console.log({ orderStatusList });
 
   const showReportsGenerated =
     sequenceOfStatus.indexOf(selectedTest.currentStatus) >=
@@ -360,7 +424,9 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     );
   };
 
-  const renderCustomDescriptionOrDateAndTime = (data: any) => {
+  const renderCustomDescriptionOrDateAndTime = (
+    data: getDiagnosticsOrderStatus_getDiagnosticsOrderStatus_ordersList
+  ) => {
     return (
       <View style={styles.viewRowStyle}>
         <Text style={styles.dateTimeStyle}>{getFormattedDate(data!.statusDate)}</Text>
@@ -391,7 +457,11 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     ];
 
     const newList = statusList.map(
-      (obj) => orderStatusList1[0].find((o) => o.orderStatus === obj.orderStatus) || obj
+      (obj) =>
+        orderStatusList[0].find(
+          (o: getDiagnosticsOrderStatus_getDiagnosticsOrderStatus_ordersList) =>
+            o.orderStatus === obj.orderStatus
+        ) || obj
     );
 
     scrollToSlots();
@@ -409,40 +479,11 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
               <View style={{ flexDirection: 'row' }}>
                 {renderGraphicalStatus(order, index)}
                 <View style={{ marginBottom: 8, flex: 1 }}>
-                  <View
-                    style={[
-                      isStatusDone
-                        ? {
-                            ...theme.viewStyles.cardViewStyle,
-                            padding: 16,
-                            marginBottom: 8,
-                            flex: 1,
-                          }
-                        : { padding: 10 },
-                    ]}
-                  >
-                    <Text
-                      style={{
-                        ...theme.fonts.IBMPlexSansMedium(16),
-                        letterSpacing: 0.0,
-                        color: theme.colors.SHERPA_BLUE,
-                        flex: 1,
-                        textTransform: 'capitalize',
-                      }}
-                    >
+                  <View style={[isStatusDone ? styles.statusDoneView : { padding: 10 }]}>
+                    <Text style={styles.statusTextStyle}>
                       {mapStatusWithText(order.orderStatus)}
                     </Text>
-                    {isStatusDone ? (
-                      <View
-                        style={{
-                          height: 1,
-                          backgroundColor: theme.colors.LIGHT_BLUE,
-                          opacity: 0.1,
-                          marginTop: 7,
-                          marginBottom: 8,
-                        }}
-                      />
-                    ) : null}
+                    {isStatusDone ? <View style={styles.lineSeparator} /> : null}
                     {isStatusDone ? renderCustomDescriptionOrDateAndTime(order) : null}
                   </View>
                 </View>
@@ -454,22 +495,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         </View>
         {renderBottomSection(order)}
         {isReportGenerated ? (
-          <View
-            style={{
-              // borderTopColor: 'rgba(2,71,91,0.3)',
-              // borderTopWidth: 0.5,
-              paddingHorizontal: 45,
-              marginTop: '8%',
-              paddingBottom: 25.5,
-            }}
-          >
-            <Text
-              style={{
-                textAlign: 'center',
-                marginBottom: 6,
-                ...theme.viewStyles.text('M', 13, '#01475b', 1, 21),
-              }}
-            >
+          <View style={styles.statusLineSeperator}>
+            <Text style={styles.reportsGeneratedText}>
               {`Your order no. #${
                 selectedTest.displayId
               } is successfully picked up on ${isReportGenerated &&
@@ -481,15 +508,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
               <Button
                 style={styles.feedbackPop}
                 onPress={() => setShowFeedbackPopup(true)}
-                titleTextStyle={{
-                  ...theme.viewStyles.text(
-                    'B',
-                    isIphone5s() ? 11 : 13,
-                    theme.colors.BUTTON_TEXT,
-                    1,
-                    24
-                  ),
-                }}
+                titleTextStyle={styles.rateDeliveryText}
                 title={'RATE YOUR DELIVERY EXPERIENCE'}
               />
             )}
@@ -524,26 +543,24 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
             <Spearator />
             <View style={{ margin: 16, marginBottom: 20 }}>
               <Text
-                style={{
-                  ...theme.fonts.IBMPlexSansMedium(13),
-                  letterSpacing: 0.0,
-                  color: theme.colors.SHERPA_BLUE,
-                  flex: 1,
-                }}
+                style={[
+                  styles.statusTextStyle,
+                  {
+                    ...theme.fonts.IBMPlexSansMedium(13),
+                    textTransform: 'none',
+                  },
+                ]}
               >
                 PRE-TESTING REQUIREMENTS
               </Text>
-              <View
-                style={{ ...theme.viewStyles.cardViewStyle, padding: 16, flex: 1, marginTop: 13 }}
-              >
+              <View style={styles.preTestingCardView}>
                 <Text
-                  style={{
-                    ...theme.fonts.IBMPlexSansMedium(12),
-                    letterSpacing: 0.0,
-                    color: theme.colors.SHERPA_BLUE,
-                    flex: 1,
-                    textTransform: 'capitalize',
-                  }}
+                  style={[
+                    styles.statusTextStyle,
+                    {
+                      ...theme.fonts.IBMPlexSansMedium(12),
+                    },
+                  ]}
                 >
                   {selectedTest.testPreparationData!}
                 </Text>
@@ -560,7 +577,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     return (
       <>
         <Button
-          style={{ width: '40%', marginBottom: 20, alignSelf: 'center' }}
+          style={styles.buttonStyle}
           onPress={() => onPressButton(buttonTitle)}
           titleTextStyle={{
             ...theme.viewStyles.text('B', isIphone5s() ? 11 : 13, theme.colors.BUTTON_TEXT, 1, 24),
@@ -625,19 +642,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const renderRescheduleReasonPopUp = () => {
     //show skip option
     return showRescheduleReasonPopUp ? (
-      <View
-        style={{
-          backgroundColor: 'rgba(0,0,0,0.8)',
-          position: 'absolute',
-          width: '100%',
-          height: '100%',
-          justifyContent: 'flex-start',
-          flex: 1,
-          left: 0,
-          right: 0,
-          zIndex: 3000,
-        }}
-      >
+      <View style={styles.popUpOverlay}>
         <ReasonPopUp
           onPressSubmit={(reason, comment) => onSubmitRescheduleRequest(reason, comment)}
           cancelVisible={showRescheduleReasonPopUp}
@@ -698,19 +703,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
   const renderCancelReasonPopUp = () => {
     return showCancelReasonPopUp ? (
-      <View
-        style={{
-          backgroundColor: 'rgba(0,0,0,0.8)',
-          position: 'absolute',
-          width: '100%',
-          height: '100%',
-          justifyContent: 'flex-start',
-          flex: 1,
-          left: 0,
-          right: 0,
-          zIndex: 3000,
-        }}
-      >
+      <View style={styles.popUpOverlay}>
         <ReasonPopUp
           onPressSubmit={(reason, comment) => {
             onSubmitCancelOrder(reason, comment);
@@ -732,76 +725,66 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     setCancelReasonPopUp(false);
   };
 
-  /**
-   * add a loop over here...
-   */
-  const renderNotesSection = () => {
-    return (
-      <View style={{ margin: 20 }}>
-        <Text style={{ color: theme.colors.SHERPA_BLUE, ...fonts.IBMPlexSansSemiBold(14) }}>
-          Note:
-        </Text>
-        <View style={{ marginTop: 3, flexDirection: 'row' }}>
-          <Text
-            style={{
-              color: theme.colors.SHERPA_BLUE,
-              fontSize: 6,
-              textAlign: 'center',
-              paddingTop: 3,
-            }}
-          >
-            {'\u2B24'}
-          </Text>
-          <Text
-            style={{
-              color: theme.colors.SHERPA_BLUE,
-              ...fonts.IBMPlexSansRegular(11),
-              textAlign: 'left',
-              marginHorizontal: 5,
-            }}
-          >
-            Cancellation and Rescheduling should be done 1 hour before sample collection
-          </Text>
-        </View>
-        <View style={{ marginTop: 3, flexDirection: 'row' }}>
-          <Text
-            style={{
-              color: theme.colors.SHERPA_BLUE,
-              fontSize: 6,
-              textAlign: 'center',
-              paddingTop: 3,
-              lineHeight: 13,
-            }}
-          >
-            {'\u2B24'}
-          </Text>
-          <Text
-            style={{
-              color: theme.colors.SHERPA_BLUE,
-              ...fonts.IBMPlexSansRegular(11),
-              textAlign: 'left',
-              marginHorizontal: 5,
-              lineHeight: 13,
-            }}
-          >
-            Rescheduling can be done upto 3 times only
-          </Text>
-        </View>
-      </View>
-    );
-  };
+  // const renderNotesSection = () => {
+  //   return (
+  //     <View style={{ margin: 20 }}>
+  //       <Text style={{ color: theme.colors.SHERPA_BLUE, ...fonts.IBMPlexSansSemiBold(14) }}>
+  //         Note:
+  //       </Text>
+  //       <View style={{ marginTop: 3, flexDirection: 'row' }}>
+  //         <Text
+  //           style={{
+  //             color: theme.colors.SHERPA_BLUE,
+  //             fontSize: 6,
+  //             textAlign: 'center',
+  //             paddingTop: 3,
+  //           }}
+  //         >
+  //           {'\u2B24'}
+  //         </Text>
+  //         <Text
+  //           style={{
+  //             color: theme.colors.SHERPA_BLUE,
+  //             ...fonts.IBMPlexSansRegular(11),
+  //             textAlign: 'left',
+  //             marginHorizontal: 5,
+  //           }}
+  //         >
+  //           Cancellation and Rescheduling should be done 1 hour before sample collection
+  //         </Text>
+  //       </View>
+  //       <View style={{ marginTop: 3, flexDirection: 'row' }}>
+  //         <Text
+  //           style={{
+  //             color: theme.colors.SHERPA_BLUE,
+  //             fontSize: 6,
+  //             textAlign: 'center',
+  //             paddingTop: 3,
+  //             lineHeight: 13,
+  //           }}
+  //         >
+  //           {'\u2B24'}
+  //         </Text>
+  //         <Text
+  //           style={{
+  //             color: theme.colors.SHERPA_BLUE,
+  //             ...fonts.IBMPlexSansRegular(11),
+  //             textAlign: 'left',
+  //             marginHorizontal: 5,
+  //             lineHeight: 13,
+  //           }}
+  //         >
+  //           Rescheduling can be done upto 3 times only
+  //         </Text>
+  //       </View>
+  //     </View>
+  //   );
+  // };
 
   /**check this on small device */
   const renderChatWithUs = () => {
     return (
-      <View
-        style={{
-          margin: 30,
-          marginTop: 100,
-          justifyContent: 'flex-end',
-          alignSelf: 'flex-end',
-        }}
-      >
+      <View style={styles.chatWithUsOuterView}>
         <View style={styles.chatWithUsView}>
           <TouchableOpacity
             style={styles.chatWithUsTouch}
@@ -816,15 +799,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           </TouchableOpacity>
         </View>
         <View style={{ width: '45%' }}>
-          <Text
-            style={{
-              textAlign: 'center',
-              ...theme.fonts.IBMPlexSansRegular(13),
-              color: theme.colors.SHERPA_BLUE,
-            }}
-          >
-            {string.reachUsOut}
-          </Text>
+          <Text style={styles.reachUsOutText}>{string.reachUsOut}</Text>
         </View>
       </View>
     );
@@ -981,33 +956,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     return !!g(orderDetails, 'totalPrice') && <TestOrderSummaryView orderDetails={orderDetails} />;
   };
 
-  const renderMoreMenu = () => {
-    return (
-      <MaterialMenu
-        options={['Cancel Order', 'Reschedule Order'].map((item) => ({
-          key: item,
-          value: item,
-        }))}
-        menuContainerStyle={{
-          alignItems: 'center',
-          marginTop: 24,
-        }}
-        lastContainerStyle={{ borderBottomWidth: 0 }}
-        bottomPadding={{ paddingBottom: 0 }}
-        itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b') }}
-        onPress={({ value }) => {
-          if (value === 'Cancel Order') {
-            setCancelVisible(true);
-          } else if (value === 'Reschedule Order') {
-            setRescheduleVisible(true);
-          }
-        }}
-      >
-        <More />
-      </MaterialMenu>
-    );
-  };
-
   return (
     <View style={{ flex: 1 }}>
       {/* {showCancelReasonPopUp && renderCancelReasonPopUp()} */}
@@ -1021,7 +969,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
             title={`ORDER #${orderDetails.displayId || ''}`}
             titleStyle={{ marginHorizontal: 10 }}
             container={{ borderBottomWidth: 0 }}
-            // rightComponent={renderMoreMenu()}
             onPressLeftIcon={() => {
               handleBack();
             }}
