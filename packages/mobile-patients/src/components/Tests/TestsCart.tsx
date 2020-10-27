@@ -287,18 +287,18 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [testCentresLoaded, setTestCentresLoaded] = useState<boolean>(false);
 
   const itemsWithHC = cartItems!.filter((item) => item!.collectionMethod == 'HC');
-  const itemWithId = itemsWithHC!.map((item) => parseInt(item.id));
+  const itemWithId = itemsWithHC!.map((item) => parseInt(item.id!));
 
   const isValidPinCode = (text: string): boolean => /^(\s*|[1-9][0-9]*)$/.test(text);
 
-  const cartItemsWithId = cartItems!.map((item) => parseInt(item.id));
+  const cartItemsWithId = cartItems!.map((item) => parseInt(item.id!));
   useEffect(() => {
     fetchAddresses();
   }, [currentPatient]);
 
   useEffect(() => {
     if (cartItemsWithId.length > 0) {
-      fetchPackageDetails(cartItemsWithId, null);
+      fetchPackageDetails(cartItemsWithId, null, 'diagnosticServiceablityChange');
     }
   }, [diagnosticServiceabilityData]);
 
@@ -586,13 +586,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     itemIds: string | number[],
     func: (
       product: findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics
-    ) => void
+    ) => void,
+    comingFrom: string
   ) => {
     const removeSpaces = typeof itemIds == 'string' ? itemIds.replace(/\s/g, '').split(',') : null;
 
     const listOfIds =
       typeof itemIds == 'string' ? removeSpaces?.map((item) => parseInt(item!)) : itemIds;
-
+    console.log({ listOfIds });
     {
       setLoading!(true);
       client
@@ -606,9 +607,22 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         })
         .then(({ data }) => {
           console.log('findDiagnosticsItemsForCityId\n', { data });
-          const product = g(data, 'findDiagnosticsByItemIDsAndCityID', 'diagnostics', '0' as any);
+          const product = g(data, 'findDiagnosticsByItemIDsAndCityID', 'diagnostics');
+          console.log({ product });
           if (product) {
-            func && func(product);
+            func && func(product[0]!);
+            comingFrom == 'diagnosticServiceablityChange'
+              ? product.map((item) => {
+                  updateCartItem!({
+                    id: item?.itemId!.toString() || product[0]?.id!,
+                    name: item?.itemName,
+                    price: item?.rate,
+                    thumbnail: '',
+                    specialPrice: undefined,
+                    collectionMethod: item?.collectionType!,
+                  });
+                })
+              : null;
             //update the ui
           } else {
             errorAlert();
@@ -724,22 +738,26 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               key={test.id}
               onPress={() => {
                 CommonLogEvent(AppRoutes.TestsCart, 'Navigate to medicine details scene');
-                fetchPackageDetails(test.id, (product) => {
-                  props.navigation.navigate(AppRoutes.TestDetails, {
-                    testDetails: {
-                      ItemID: test.id,
-                      ItemName: test.name,
-                      Rate: test!.price,
-                      FromAgeInDays: product.fromAgeInDays!,
-                      ToAgeInDays: product.toAgeInDays!,
-                      Gender: product.gender,
-                      collectionType: test.collectionMethod,
-                      preparation: product.testPreparationData,
-                      source: 'Cart Page',
-                      type: product.itemType,
-                    } as TestPackageForDetails,
-                  });
-                });
+                fetchPackageDetails(
+                  test.id,
+                  (product) => {
+                    props.navigation.navigate(AppRoutes.TestDetails, {
+                      testDetails: {
+                        ItemID: test.id,
+                        ItemName: test.name,
+                        Rate: test!.price,
+                        FromAgeInDays: product.fromAgeInDays!,
+                        ToAgeInDays: product.toAgeInDays!,
+                        Gender: product.gender,
+                        collectionType: test.collectionMethod,
+                        preparation: product.testPreparationData,
+                        source: 'Cart Page',
+                        type: product.itemType,
+                      } as TestPackageForDetails,
+                    });
+                  },
+                  'onPress'
+                );
               }}
               medicineName={test.name!}
               price={test.price!}
