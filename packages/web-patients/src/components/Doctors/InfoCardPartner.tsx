@@ -18,7 +18,6 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { readableParam, getAvailability } from 'helpers/commonHelpers';
 import { consultNowClickTracking } from 'webEngageTracking';
 import { dataLayerTracking } from 'gtmTracking';
-import { genericData } from 'strings/AppConfig';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -179,14 +178,15 @@ export const InfoCardPartner: React.FC<InfoCardProps> = (props) => {
   const availabilityMarkup = (type: string) => {
     return type === 'markup' ? (
       <div
-        className={`${classes.availability} ${differenceInMinutes < genericData.consultDiffInMinutes ? classes.availableNow : null
-          }`}
+        className={`${classes.availability} ${
+          differenceInMinutes < 15 ? classes.availableNow : null
+        }`}
       >
         {availabilityMarkupString(type)}
       </div>
     ) : (
-        availabilityMarkupString(type)
-      );
+      availabilityMarkupString(type)
+    );
   };
 
   const saveSearchMutation = useMutation<SaveSearch, SaveSearchVariables>(SAVE_PATIENT_SEARCH);
@@ -323,8 +323,8 @@ export const InfoCardPartner: React.FC<InfoCardProps> = (props) => {
               {popupLoading ? (
                 <CircularProgress size={22} color="secondary" />
               ) : (
-                  availabilityMarkup('doctorInfo')
-                )}
+                availabilityMarkup('doctorInfo')
+              )}
             </AphButton>
           </div>
         )}

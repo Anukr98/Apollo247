@@ -1134,31 +1134,17 @@ export const medicalDetailsFillTracking = (data: any) => {
 export const trackLoginMobileNumber = () => {
   if (typeof window !== 'undefined') {
     try {
-      window.webengage.track(
-        'Login Mobile Number Entered ' +
-          window.location.href
-            .split('/')
-            .pop()
-            .split('?')[0],
-        {}
-      );
+      window.webengage.track('Login Mobile Number Entered '+ window.location.href.split('/').pop().split('?')[0], {});
     } catch (err) {
       console.log('WebEngage Err: ', err);
     }
-  }
+  } 
 };
 
 export const trackLoginOtpSubmitted = () => {
   if (typeof window !== 'undefined') {
     try {
-      window.webengage.track(
-        'Login OTP Submitted ' +
-          window.location.href
-            .split('/')
-            .pop()
-            .split('?')[0],
-        {}
-      );
+      window.webengage.track('Login OTP Submitted '+ window.location.href.split('/').pop().split('?')[0], {});
     } catch (err) {
       console.log('WebEngage Err: ', err);
     }

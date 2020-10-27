@@ -299,24 +299,24 @@ interface OrderStatusDetail {
   consultMode?: string;
   onClose: () => void;
   ctaText: string;
-  fetchConsultInvoice?: (fetchInvoice: boolean) => void;
-  fetchUserEmailForInvoice?: (fetchEmail: string) => void;
+	fetchConsultInvoice?: (fetchInvoice: boolean) => void;
+	fetchUserEmailForInvoice?: (fetchEmail: string) => void;
   doctorFullName?: string;
 }
 
 export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
-  const classes = useStyles({});
-  const [showEmailTextArea, setEmailTextArea] = useState<boolean>(false);
-  const [invoiceEmail, setInvoiceEmail] = useState<string>(null);
-  const [emailValid, setEmailValid] = useState<boolean>(true);
-  const [isEmailSent, setEmailSent] = useState<boolean>(false);
-  const { currentPatient } = useAllCurrentPatients();
-  if (currentPatient && currentPatient.emailAddress) {
-    if (invoiceEmail === null) {
-      setEmailValid(false);
-      setInvoiceEmail(currentPatient.emailAddress);
-    }
-  }
+	const classes = useStyles({});
+	const [showEmailTextArea, setEmailTextArea] = useState<boolean>(false);
+	const [invoiceEmail, setInvoiceEmail] = useState<string>(null);
+ 	const [emailValid, setEmailValid] = useState<boolean>(true);
+	const [isEmailSent, setEmailSent] = useState<boolean>(false);
+	const { currentPatient } = useAllCurrentPatients();
+	if (currentPatient && currentPatient.emailAddress) {
+		if (invoiceEmail === null) {
+			setEmailValid(false);
+			setInvoiceEmail(currentPatient.emailAddress);
+		}
+	}
   const {
     paymentStatus,
     paymentInfo,
@@ -332,8 +332,8 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
     consultMode,
     onClose,
     ctaText,
-    fetchConsultInvoice,
-    fetchUserEmailForInvoice,
+		fetchConsultInvoice,
+		fetchUserEmailForInvoice,
     doctorFullName,
   } = props;
   interface statusMap {
@@ -344,17 +344,17 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
     failed: 'PAYMENT FAILED',
     pending: 'PAYMENT PENDING',
     aborted: 'PAYMENT ABORTED',
-  };
+	};
+	
+	const emailInvoiceBtnHandler = () => {
+		setEmailTextArea(true);
+		setEmailSent(false);
+		setEmailValid(true);
+		setEmailValid(false);
+	}
 
-  const emailInvoiceBtnHandler = () => {
-    setEmailTextArea(true);
-    setEmailSent(false);
-    setEmailValid(true);
-    setEmailValid(false);
-  };
-
-  const handleEmailValidityCheck = (email: string) => {
-    setInvoiceEmail(email);
+	const handleEmailValidityCheck = (email: string) => {
+		setInvoiceEmail(email);
     if (email.length && !isEmailValid(email)) {
       setEmailValid(true);
     } else {
@@ -362,12 +362,12 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
     }
   };
 
-  const sendInvoiceOnEmailHandler = () => {
-    fetchUserEmailForInvoice(invoiceEmail);
-    fetchConsultInvoice(true);
-    setEmailSent(true);
-    setInvoiceEmail(currentPatient.emailAddress);
-  };
+	const sendInvoiceOnEmailHandler = () => {
+		fetchUserEmailForInvoice(invoiceEmail);
+		fetchConsultInvoice(true);
+		setEmailSent(true);
+		setInvoiceEmail(currentPatient.emailAddress);
+	}
 
   const doctorAddressDetail =
     (doctorDetail &&
@@ -388,15 +388,14 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
       </div>
       <div className={classes.modalBody}>
         <div
-          className={`${classes.statusCard} ${
-            paymentStatus == 'pending'
-              ? classes.pending
-              : paymentStatus == 'failed' || paymentStatus === 'aborted'
+          className={`${classes.statusCard} ${paymentStatus == 'pending'
+            ? classes.pending
+            : paymentStatus == 'failed' || paymentStatus === 'aborted'
               ? classes.failed
               : paymentStatus == 'success'
-              ? classes.success
-              : ''
-          }`}
+                ? classes.success
+                : ''
+            }`}
         >
           {paymentStatus && paymentStatus.length > 0 && (
             <img src={require(`images/${paymentStatus}.svg`)} />
@@ -411,42 +410,47 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
             <>
               <AphButton
                 className={classes.viewInvoice}
-                onClick={() => {
-                  setInvoiceEmail(null);
-                  fetchConsultInvoice(true);
-                }}
+                onClick={() => { 
+									setInvoiceEmail(null);
+									fetchConsultInvoice(true);
+								}}
               >
                 View Invoice
-              </AphButton>
-              <AphButton className={classes.viewInvoice} onClick={emailInvoiceBtnHandler}>
-                Email Invoice
-              </AphButton>
-              {showEmailTextArea && (
-                <div className={classes.chatWindowFooter}>
-                  {!isEmailSent ? (
-                    <>
-                      <AphTextField
-                        autoFocus
-                        className={classes.searchInput}
-                        inputProps={{ type: 'text', value: invoiceEmail }}
-                        placeholder="Enter your email id"
-                        onChange={(event) => handleEmailValidityCheck(event.target.value)}
-                      />
-                      <AphButton
-                        className={classes.chatSend}
-                        disabled={emailValid}
-                        onClick={sendInvoiceOnEmailHandler}
-                      >
-                        <img src={require('images/ic_send.svg')} alt="" />
-                      </AphButton>
-                    </>
-                  ) : (
-                    <div className={classes.successMsg}>
-                      Invoice has been sent to {invoiceEmail}!
-                    </div>
-                  )}
-                </div>
-              )}
+            </AphButton>
+							<AphButton
+								className={classes.viewInvoice}
+								onClick={emailInvoiceBtnHandler}
+							>
+								Email Invoice
+            </AphButton>
+							{showEmailTextArea && (
+								<div
+									className={classes.chatWindowFooter}
+								>
+									{!isEmailSent ? (
+										<>
+										<AphTextField
+										autoFocus
+										className={classes.searchInput}
+										inputProps={{ type: 'text', value: invoiceEmail }}
+										placeholder="Enter your email id"
+										onChange={(event) => handleEmailValidityCheck(event.target.value)}
+									/>
+									<AphButton
+										className={classes.chatSend}
+										disabled={emailValid}
+										onClick={sendInvoiceOnEmailHandler}
+									>
+										<img src={require('images/ic_send.svg')} alt="" />
+									</AphButton>
+										</>
+									) : (
+										<div className={classes.successMsg}>
+												Invoice has been sent to {invoiceEmail}!
+										</div> 
+									)}
+								</div>
+							)}
             </>
           )}
         </div>
@@ -485,30 +489,28 @@ export const OrderStatusContent: React.FC<OrderStatusDetail> = (props) => {
                     <Grid item xs={12} sm={12}>
                       <div className={classes.details}>
                         <Typography component="h6">Clinic Address</Typography>
-                        <Typography component="p">{`${doctorAddressDetail.name}, ${
-                          doctorAddressDetail.streetLine1
-                        },${
-                          doctorAddressDetail.streetLine2
+                        <Typography component="p">{`${doctorAddressDetail.name}, ${doctorAddressDetail.streetLine1
+                          },${doctorAddressDetail.streetLine2
                             ? doctorAddressDetail.streetLine2 + ','
                             : ''
-                        } ${doctorAddressDetail.city} `}</Typography>
+                          } ${doctorAddressDetail.city} `}</Typography>
                       </div>
                     </Grid>
                   )}
               </Grid>
             </Paper>
           ) : (
-            <Paper className={classes.orderDetails}>
-              <div className={classes.details}>
-                <Typography component="h6">Order Date &amp; Time</Typography>
-                <Typography component="p">{paymentDateTime}</Typography>
-              </div>
-              <div className={classes.details}>
-                <Typography component="h6">Mode of Payment</Typography>
-                <Typography component="p">{paymentType}</Typography>
-              </div>
-            </Paper>
-          )}
+              <Paper className={classes.orderDetails}>
+                <div className={classes.details}>
+                  <Typography component="h6">Order Date &amp; Time</Typography>
+                  <Typography component="p">{paymentDateTime}</Typography>
+                </div>
+                <div className={classes.details}>
+                  <Typography component="h6">Mode of Payment</Typography>
+                  <Typography component="p">{paymentType}</Typography>
+                </div>
+              </Paper>
+            )}
         </>
         <div className={classes.note}>
           {paymentInfo && paymentInfo.length > 1 && (

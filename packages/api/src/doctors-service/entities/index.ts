@@ -14,7 +14,6 @@ import {
 } from 'typeorm';
 import { Validate, IsDate } from 'class-validator';
 import { NameValidator, MobileNumberValidator, EmailValidator } from 'validators/entityValidators';
-import { PlatinumSlots} from './PlatinumSlotsEntity';
 
 export enum Apps {
   DASHBOARD = 'DASHBOARD',
@@ -304,12 +303,6 @@ export class Doctor extends BaseEntity {
     (bankAccount) => bankAccount.doctor
   )
   bankAccount: DoctorBankAccounts[];
-
-  @OneToMany(
-    (type) => PlatinumSlots,
-    (platinumSlots) => platinumSlots.doctor
-  )
-  platinumSlots: PlatinumSlots[];
 
   @Column({ default: true })
   isJdAllowed: Boolean;
@@ -683,12 +676,6 @@ export class DoctorSpecialty extends BaseEntity {
   )
   doctor: Doctor[];
 
-  @OneToMany(
-    (type) => PlatinumSlots,
-    (platinumSlots) => platinumSlots.specialty
-  )
-  platinumSlots: PlatinumSlots[];
-  
   @BeforeUpdate()
   updateDateUpdate() {
     this.updatedDate = new Date();

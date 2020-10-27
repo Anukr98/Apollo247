@@ -18,7 +18,10 @@ import { isMobileNumberValid } from '@aph/universal/dist/aphValidators';
 import isNumeric from 'validator/lib/isNumeric';
 import { useAuth } from 'hooks/authHooks';
 import { gtmTracking, dataLayerTracking } from '../gtmTracking';
-import { trackLoginMobileNumber, trackLoginOtpSubmitted } from '../webEngageTracking';
+import {
+  trackLoginMobileNumber,
+  trackLoginOtpSubmitted
+} from '../webEngageTracking';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -318,7 +321,7 @@ const OtpInput: React.FC<{
                   event: 'OTPSubmitted',
                 });
                 /**Gtm code start end */
-                trackLoginOtpSubmitted(); //webEngage
+                trackLoginOtpSubmitted() //webEngage
                 verifyOtp(otp, customLoginId)
                   .then((authToken) => {
                     if (!authToken) {
@@ -407,7 +410,7 @@ export const SignIn: React.FC<signInProps> = (props) => {
           dataLayerTracking({
             event: 'OTPDemanded',
           });
-          trackLoginMobileNumber(); //webEngage
+          trackLoginMobileNumber() //webEngage
           /**Gtm code start end */
 
           const mobileNumberWithPrefix = `${mobileNumberPrefix}${mobileNumber}`;

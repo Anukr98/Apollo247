@@ -73,8 +73,7 @@ const PatientsOverview: React.FC = () => {
   const [userSubscriptions, setUserSubscriptions] = React.useState([]);
   const [showSubscription, setShowSubscription] = useState<boolean>(false);
 
-  const scrollToRef = (ref: any) =>
-    ref.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  const scrollToRef = (ref: any) => ref.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
   const registrationRef = useRef(null);
 
   useEffect(() => {

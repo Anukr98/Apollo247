@@ -196,8 +196,8 @@ interface MyMembershipProps {
 
 export const MyMembership: React.FC<MyMembershipProps> = (props: any) => {
   const { myMembershipType } = props;
-  const classes = useStyles({});
-  const oneApolloLink = 'https://www.oneapollo.com';
+	const classes = useStyles({});
+	const oneApolloLink = 'https://www.oneapollo.com';
   return (
     <TabContainer>
       <div className={classes.transactionHeader}>
@@ -267,10 +267,8 @@ export const MyMembership: React.FC<MyMembershipProps> = (props: any) => {
                       <li> Buy an annual gym membership from Apollo Life</li>
                     </ul>
                     <AphButton color="primary" className={classes.knowMore}>
-                      <a target="_blank" href={oneApolloLink}>
-                        Know More
-                      </a>
-                    </AphButton>
+										<a target="_blank" href={oneApolloLink}>Know More</a>
+										</AphButton>
                   </div>
                 </Grid>
               )}

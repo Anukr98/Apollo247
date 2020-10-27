@@ -16,7 +16,7 @@ import { HowItWorks } from 'components/Doctors/HowItWorks';
 import { AddedFilters } from 'components/Doctors/AddedFilters';
 import { useApolloClient } from 'react-apollo-hooks';
 import { useParams } from 'hooks/routerHooks';
-import { GET_DOCTOR_LIST, GET_PLATINUM_DOCTOR } from 'graphql/doctors';
+import { GET_DOCTOR_LIST } from 'graphql/doctors';
 import {
   readableParam,
   DOCTOR_CATEGORY,
@@ -48,8 +48,6 @@ import { dataLayerTracking } from 'gtmTracking';
 import axios from 'axios';
 import { GetDoctorList } from 'graphql/types/GetDoctorList';
 import _debounce from 'lodash/debounce';
-import { getPlatinumDoctor_getPlatinumDoctor_doctors as PlatinumDocDetails } from 'graphql/types/getPlatinumDoctor';
-import PlatinumDocCard from 'components/PlatinumDocCard';
 
 let currentPage = 1;
 let apolloDoctorCount = 0;
@@ -335,16 +333,12 @@ const convertAvailabilityToDate = (availability: String[], dateSelectedFromFilte
     availableNow = {};
   }
   const availabilityArray: String[] = [];
-  const today = moment(new Date())
-    .utc()
-    .format('YYYY-MM-DD');
+  const today = moment(new Date()).utc().format('YYYY-MM-DD');
   if (availability.length > 0) {
     availability.forEach((value: String) => {
       if (value === 'Now') {
         availableNow = {
-          availableNow: moment(new Date())
-            .utc()
-            .format('YYYY-MM-DD hh:mm'),
+          availableNow: moment(new Date()).utc().format('YYYY-MM-DD hh:mm'),
         };
       } else if (value === 'Today') {
         availabilityArray.push(today);
@@ -457,7 +451,6 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
   const [searchQuery, setSearchQuery] = useState<any>({});
   const scrollRef = useRef<HTMLDivElement>(null);
   const searchParams = window.location.search;
-  const [platinumDocData, setPlatinumDocData] = useState<PlatinumDocDetails | null>(null);
 
   const assigningFilters = (
     filterObject: SearchObject,
@@ -501,7 +494,7 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
 
         const decodedObject = JSON.parse(
           '{"' + search.replace(/&/g, '","').replace(/=/g, '":"') + '"}',
-          function(key, value) {
+          function (key, value) {
             return key === '' ? value : decodeURIComponent(value);
           }
         );
@@ -849,31 +842,6 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
     }
   }, [currentLat, currentLong, filter, specialtyId, specialtyName]);
 
-  useEffect(() => {
-    if (specialtyId) {
-      apolloClient
-        .query({
-          query: GET_PLATINUM_DOCTOR,
-          variables: {
-            specialtyId: specialtyId,
-          },
-          fetchPolicy: 'no-cache',
-        })
-        .then((response) => {
-          if (
-            response &&
-            response.data &&
-            response.data.getPlatinumDoctor &&
-            response.data.getPlatinumDoctor.doctors &&
-            response.data.getPlatinumDoctor.doctors.length > 0
-          ) {
-            setPlatinumDocData(response.data.getPlatinumDoctor.doctors[0] || null);
-          }
-        })
-        .catch((e) => console.log(e));
-    }
-  }, [specialtyId]);
-
   const getFilteredDoctorList = (data: DoctorDetails[]) => {
     return _filter(data, (doctor: DoctorDetails) => {
       if (doctorType === DOCTOR_CATEGORY.APOLLO) {
@@ -995,14 +963,6 @@ const SpecialtyDetails: React.FC<SpecialityProps> = (props) => {
                   </div>
                 ) : filteredDoctorData && Object.keys(filteredDoctorData).length > 0 ? (
                   <>
-                    {platinumDocData ? (
-                      <PlatinumDocCard
-                        doctorInfo={platinumDocData}
-                        specialtyId={specialtyId}
-                      ></PlatinumDocCard>
-                    ) : (
-                      ''
-                    )}
                     <Grid container spacing={2}>
                       {filteredDoctorData[doctorType].map((doctor: DoctorDetails) => {
                         if (doctor && doctor.id) {
