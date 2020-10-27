@@ -47,6 +47,7 @@ import {
   StyleProp,
   StyleSheet,
   Text,
+  TextStyle,
   TouchableOpacity,
   View,
   ViewStyle,
@@ -123,7 +124,9 @@ export interface DoctorCardProps extends NavigationScreenProps {
   onPressConsultNowOrBookAppointment?: (type: 'consult-now' | 'book-appointment') => void;
   displayButton?: boolean;
   style?: StyleProp<ViewStyle>;
-
+  buttonViewStyle?: StyleProp<ViewStyle>;
+  buttonStyle?: StyleProp<ViewStyle>;
+  buttonTextStyle?: StyleProp<TextStyle>;
   saveSearch?: boolean;
   doctorsNextAvailability?:
     | (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability | null)[]
@@ -222,7 +225,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         activeOpacity={1}
         style={[
           styles.doctorView,
-          props.style,
           {
             backgroundColor:
               rowData.doctorType !== 'DOCTOR_CONNECT' ? theme.colors.WHITE : 'transparent',
@@ -238,6 +240,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             shadowRadius: rowData.doctorType !== 'DOCTOR_CONNECT' ? 8 : 0,
             elevation: rowData.doctorType !== 'DOCTOR_CONNECT' ? 4 : 0,
           },
+          props.style,
         ]}
         onPress={() => {
           try {
@@ -374,35 +377,41 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           <View style={{ flex: 1, justifyContent: 'flex-end' }}>
             {props.displayButton && (
               <View
-                style={{
-                  overflow: rowData.doctorType !== 'DOCTOR_CONNECT' ? 'hidden' : 'visible',
-                  borderBottomLeftRadius: 10,
-                  borderBottomRightRadius: 10,
-                }}
+                style={[
+                  {
+                    overflow: rowData.doctorType !== 'DOCTOR_CONNECT' ? 'hidden' : 'visible',
+                    borderBottomLeftRadius: 10,
+                    borderBottomRightRadius: 10,
+                  },
+                  props.buttonViewStyle,
+                ]}
               >
                 <TouchableOpacity
                   activeOpacity={1}
-                  style={{
-                    backgroundColor:
-                      rowData.doctorType !== 'DOCTOR_CONNECT'
-                        ? theme.colors.BUTTON_BG
-                        : theme.colors.WHITE,
-                    shadowColor:
-                      rowData.doctorType === 'DOCTOR_CONNECT'
-                        ? theme.colors.SHADOW_GRAY
-                        : theme.colors.WHITE,
-                    shadowOffset:
-                      rowData.doctorType === 'DOCTOR_CONNECT'
-                        ? { width: 0, height: 2 }
-                        : { width: 0, height: 0 },
-                    shadowOpacity: rowData.doctorType === 'DOCTOR_CONNECT' ? 0.4 : 0,
-                    shadowRadius: rowData.doctorType === 'DOCTOR_CONNECT' ? 8 : 0,
-                    elevation: rowData.doctorType === 'DOCTOR_CONNECT' ? 4 : 0,
-                    height: 44,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: rowData.doctorType === 'DOCTOR_CONNECT' ? 10 : 0,
-                  }}
+                  style={[
+                    {
+                      backgroundColor:
+                        rowData.doctorType !== 'DOCTOR_CONNECT'
+                          ? theme.colors.BUTTON_BG
+                          : theme.colors.WHITE,
+                      shadowColor:
+                        rowData.doctorType === 'DOCTOR_CONNECT'
+                          ? theme.colors.SHADOW_GRAY
+                          : theme.colors.WHITE,
+                      shadowOffset:
+                        rowData.doctorType === 'DOCTOR_CONNECT'
+                          ? { width: 0, height: 2 }
+                          : { width: 0, height: 0 },
+                      shadowOpacity: rowData.doctorType === 'DOCTOR_CONNECT' ? 0.4 : 0,
+                      shadowRadius: rowData.doctorType === 'DOCTOR_CONNECT' ? 8 : 0,
+                      elevation: rowData.doctorType === 'DOCTOR_CONNECT' ? 4 : 0,
+                      height: 44,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRadius: rowData.doctorType === 'DOCTOR_CONNECT' ? 10 : 0,
+                    },
+                    props.buttonStyle,
+                  ]}
                   onPress={() => {
                     try {
                       const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK] = {
@@ -453,6 +462,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                             ? theme.colors.BUTTON_TEXT
                             : theme.colors.BUTTON_BG,
                       },
+                      props.buttonTextStyle,
                     ]}
                   >
                     {rowData.slot && moment(rowData.slot).isValid()
