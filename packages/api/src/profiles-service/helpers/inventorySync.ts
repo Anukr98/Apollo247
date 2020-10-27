@@ -12,6 +12,7 @@ import {
   InventorySyncRequest,
   SYNC_TYPE,
   TatRequest,
+  TatResponseBody,
   LHUB_UPDATE_TYPE,
   DspStatusRespBody,
 } from 'types/inventorySync';
@@ -32,7 +33,7 @@ export async function syncInventory(orderDatails: MedicineOrders, syncType: SYNC
 
   const reqStartTime = new Date();
   const controller = new AbortController();
-  const medicineOrderAddress = orderDatails.medicineOrderAddress;
+  const medicineOrderAddress = orderDatails.medicineOrderAddress || {};
 
   const itemdetails = orderDatails.medicineOrderLineItems.map((item) => {
     return {
@@ -136,7 +137,7 @@ export async function getTat(
     );
     return;
   }
-  const tatResponse = await resp.json();
+  const tatResponse: TatResponseBody = await resp.json();
   if (tatResponse.errorCode) {
     dLogger(
       reqStartTime,

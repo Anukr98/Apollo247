@@ -13,9 +13,34 @@ export interface TatRequest {
   lng: number;
   items: Items[];
 }
+
 export interface Items {
   sku: string;
   qty: number;
+  exist?: boolean;
+}
+
+export interface TatResponseBody {
+  errorCode: number;
+  errorMsg: string;
+  errorType: string;
+  response: TatResponse;
+}
+export interface TatResponse {
+  inventoryExist: true;
+  items: Items[];
+  lat: number;
+  lng: number;
+  orderId: number;
+  ordertime: number;
+  pincode: string;
+  storeCode: string;
+  storeType: string;
+  tat: string;
+  tatU: number;
+  distance: number;
+  allocationProfileName: string;
+  clusterId: string;
 }
 
 export enum SYNC_TYPE {

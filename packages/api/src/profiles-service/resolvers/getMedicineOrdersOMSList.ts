@@ -55,6 +55,7 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     prismPrescriptionFileId: String
     pharmaRequest: String
     orderTat: String
+    oldOrderTat: String
     couponDiscount: Float
     productDiscount: Float
     packagingCharges: Float
@@ -76,6 +77,7 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     clusterId: String
     allocationProfileName: String
     storeDistanceKm: Float
+    prescriptionOptionSelected: String
   }
 
   type MedicineOrderOMSLineItems {
