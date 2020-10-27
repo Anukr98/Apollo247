@@ -1,11 +1,29 @@
 import { ApiResponse, Client, RequestParams } from "@elastic/elasticsearch";
 import { Doctor, ConsultMode } from "doctors-service/entities";
 import { APPOINTMENT_TYPE, ES_DOCTOR_SLOT_STATUS, Appointment } from "consults-service/entities";
-import { format, addMinutes, addDays } from "date-fns";
+import { format, addMinutes, addDays, differenceInMinutes } from "date-fns";
 import { AphError } from "AphError";
 import { AphErrorMessages } from "@aph/universal/dist/AphErrorMessages";
 import { omit } from "lodash";
 import { ApiConstants, elasticConsts } from "ApiConstants";
+
+export type doctorCardDetail = {
+  id: string;
+  displayName: string;
+  specialtydisplayName: string;
+  experience: number;
+  photoUrl: string;
+  thumbnailUrl: string;
+  qualification: string;
+  doctorType: string;
+  doctorfacility: string;
+  specialistSingularTerm: string;
+  specialistPluralTerm: string;
+  consultMode: ConsultMode;
+  slot: string;
+  earliestSlotInMinutes: number;
+  fee: number;
+}
 
 export async function addDoctorElastic(allDocsInfo: Doctor) {
     const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
@@ -524,6 +542,99 @@ export function elasticSpecialtySearch(searchText: string) {
     },
   };
   return specialtiesSearchParams;
+}
+
+export async function getDoctorFromElastic(doctorId: string){
+  const callStartTime = new Date();
+  const doctorDetail: doctorCardDetail[] = [];
+  let doctorObj: doctorCardDetail;
+
+  if (!process.env.ELASTIC_INDEX_DOCTORS)
+      throw new AphError(AphErrorMessages.ELASTIC_INDEX_NAME_MISSING);
+
+    const searchParams: RequestParams.Search = {
+      index: process.env.ELASTIC_INDEX_DOCTORS,
+      body: {
+        query: {
+          ids: {
+            values: doctorId,
+          },
+        },
+      },
+    }; 
+    const client = new Client({ node: process.env.ELASTIC_CONNECTION_URL });
+    const getDetails = await client.search(searchParams);
+    client.close();
+
+    if (getDetails.body.hits.hits.length < 1) {
+      return doctorDetail;
+    }
+
+    for (const doc of getDetails.body.hits.hits) {
+      const doctor = doc._source;
+      let consultMode: ConsultMode[] = [];
+      let fee: number = doctor.onlineConsultationFees;
+      let bufferTime = 5;
+      let slotCount=0;
+
+      doctorObj = {
+        id: doctor.doctorId,
+        displayName: doctor.displayName,
+        specialtydisplayName: doctor.specialty.userFriendlyNomenclature,
+        experience: doctor.experience,
+        photoUrl: doctor.photoUrl,
+        thumbnailUrl: doctor.thumbnailUrl,
+        qualification: doctor.qualification,
+        doctorType: doctor.doctorType,
+        doctorfacility: doctor.facility[0].name + ' ' + doctor.facility[0].city,
+        specialistSingularTerm: doctor.specialty.specialistSingularTerm,
+        specialistPluralTerm: doctor.specialty.specialistPluralTerm,
+        consultMode: ConsultMode.BOTH,
+        slot: '',
+        earliestSlotInMinutes: 0,
+        fee: fee,
+      };
+
+      for (const consultHour of doctor.consultHours) {
+        bufferTime = consultHour['consultBuffer'];
+        if (!consultMode.includes(consultHour.consultMode)) {
+          consultMode.push(consultHour.consultMode);
+        }
+      }
+      if (consultMode.length > 1) {
+        consultMode = [ConsultMode.BOTH];
+      }
+      doctorObj.consultMode = <ConsultMode>consultMode.toString();
+      if (doctorObj.consultMode === ConsultMode.BOTH) {
+        fee =
+          doctor.onlineConsultationFees > doctor.physicalConsultationFees
+            ? doctor.physicalConsultationFees
+            : doctor.onlineConsultationFees;
+      } else if (doctorObj.consultMode === ConsultMode.PHYSICAL) {
+        fee = doctor.physicalConsultationFees;
+      }
+      doctorObj.fee = fee;
+      for (const slots of doctor.doctorSlots) {
+        for (const slot of slots['slots']) {
+          console.log(slot);
+          if (
+            slot.status == 'OPEN' &&
+            differenceInMinutes(new Date(slot.slot), callStartTime) > bufferTime && slotCount === 0
+          ) {
+            doctorObj.slot = slot.slot;
+            doctorObj.earliestSlotInMinutes = differenceInMinutes(
+              new Date(slot.slot),
+              callStartTime
+            );
+            slotCount++;
+          }
+        }
+      }
+      if(slotCount != 0){
+        doctorDetail.push(doctorObj);
+      }
+    }
+  return doctorDetail;
 }
 
 export function elasticDoctorFilters() {

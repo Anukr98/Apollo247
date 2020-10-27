@@ -685,7 +685,8 @@ export const OrdersSummary: React.FC<OrdersSummaryProps> = (props) => {
                       </span>
                       <span className={classes.infoText}>(Will be Redeemed after delivery)</span>
                     </label>
-                    <span>Rs. 
+                    <span>
+                      Rs.
                       {orderPayment.healthCreditsRedeemed != 0
                         ? (orderPayment.healthCreditsRedeemed || 0).toFixed(2)
                         : (orderPayment.healthCreditsRedemptionRequest.RedeemedPoints || 0).toFixed(

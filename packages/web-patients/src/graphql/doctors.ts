@@ -16,6 +16,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       city
       awards
       displayName
+      doctorsOfTheHourStatus
       photoUrl
       registrationNumber
       onlineConsultationFees
@@ -698,6 +699,31 @@ export const GET_PATIENT_ALL_APPOINTMENTS = gql`
             }
           }
         }
+      }
+    }
+  }
+`;
+
+export const GET_PLATINUM_DOCTOR = gql`
+  query getPlatinumDoctor($specialtyId: ID) {
+    getPlatinumDoctor(specialtyId: $specialtyId) {
+      doctors {
+        id
+        displayName
+        doctorType
+        consultMode
+        earliestSlotInMinutes
+        doctorfacility
+        fee
+        specialistSingularTerm
+        specialistPluralTerm
+        specialtydisplayName
+        doctorType
+        qualification
+        experience
+        photoUrl
+        slot
+        thumbnailUrl
       }
     }
   }

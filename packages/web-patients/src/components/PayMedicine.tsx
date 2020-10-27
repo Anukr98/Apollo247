@@ -491,15 +491,17 @@ const PayMedicine: React.FC = (props) => {
   const applyOneApolloHc = (event: React.ChangeEvent<HTMLInputElement>) => {
     oneApolloHcApplied(event.target.checked);
     if (event.target.checked) {
-      if (oneApolloHcs >= (mrpTotal - (productDiscount + couponValue))) {
+      if (oneApolloHcs >= mrpTotal - (productDiscount + couponValue)) {
         setOneAplloHcs(mrpTotal - (productDiscount + couponValue));
       } else {
         setOneAplloHcs(setOneApolloHCsResponse.availableHC);
       }
-			const totalToPay = 
-				mrpTotal + 
-				deliveryCharges - 
-				(productDiscount + couponValue + (oneApolloHcs >= mrpTotal - (productDiscount + couponValue)
+      const totalToPay =
+        mrpTotal +
+        deliveryCharges -
+        (productDiscount +
+          couponValue +
+          (oneApolloHcs >= mrpTotal - (productDiscount + couponValue)
             ? mrpTotal - (productDiscount + couponValue)
             : setOneApolloHCsResponse.availableHC));
       calculateTotalWithHcs(totalToPay);
