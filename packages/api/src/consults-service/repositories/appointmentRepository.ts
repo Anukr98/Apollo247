@@ -619,11 +619,18 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   getTodaysAppointments(startDate: Date) {
-    const newStartDate = new Date(
-      format(addDays(startDate, -1), 'yyyy-MM-dd') + 'T' + format(addDays(startDate, -1), 'HH:mm')
-    );
-    const newEndDate = new Date(format(startDate, 'yyyy-MM-dd') + 'T18:30');
+    console.log('startDate', startDate);
 
+    const newStartDate = new Date(
+      format(startDate, 'yyyy-MM-dd') + 'T' + format(startDate, 'HH:mm')
+    );
+    const subnewStartDate = new Date(
+      format(subDays(startDate, 1), 'yyyy-MM-dd') + 'T' + format(startDate, 'HH:mm')
+    );
+    console.log('subnewStartDate', subnewStartDate);
+    console.log('newStartDate', newStartDate);
+    const newEndDate = new Date(format(startDate, 'yyyy-MM-dd') + 'T18:30');
+    console.log('newEndDate', newEndDate);
     return this.createQueryBuilder('appointment')
       .leftJoinAndSelect('appointment.caseSheet', 'caseSheet')
       .where('(appointment.appointmentDateTime Between :fromDate AND :toDate)', {
@@ -1006,9 +1013,9 @@ export class AppointmentRepository extends Repository<Appointment> {
         .getUTCHours()
         .toString()
         .padStart(2, '0')}:${appointmentDate
-          .getUTCMinutes()
-          .toString()
-          .padStart(2, '0')}:00.000Z`;
+        .getUTCMinutes()
+        .toString()
+        .padStart(2, '0')}:00.000Z`;
       if (availableSlots.indexOf(sl) >= 0) {
         consultFlag = CONSULTFLAG.INCONSULTHOURS;
       }
@@ -1161,9 +1168,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${doctorAppointment.appointmentDateTime
-              .getUTCMinutes()
-              .toString()
-              .padStart(2, '0')}:00.000Z`;
+            .getUTCMinutes()
+            .toString()
+            .padStart(2, '0')}:00.000Z`;
           if (availableSlots.indexOf(aptSlot) >= 0) {
             availableSlots.splice(availableSlots.indexOf(aptSlot), 1);
           }
@@ -1396,10 +1403,9 @@ export class AppointmentRepository extends Repository<Appointment> {
     //   AphErrorMessages.CANCEL_APPOINTMENT_ERROR
     // );
 
-    return this.update(apptDetails.id, apptUpdatePartial)
-      .catch((error) => {
-        throw new AphError(AphErrorMessages.CANCEL_APPOINTMENT_ERROR, undefined, {});
-      });
+    return this.update(apptDetails.id, apptUpdatePartial).catch((error) => {
+      throw new AphError(AphErrorMessages.CANCEL_APPOINTMENT_ERROR, undefined, {});
+    });
   }
 
   systemCancelAppointment(
@@ -1530,9 +1536,9 @@ export class AppointmentRepository extends Repository<Appointment> {
             .getUTCHours()
             .toString()
             .padStart(2, '0')}:${blockedSlot.start
-              .getUTCMinutes()
-              .toString()
-              .padStart(2, '0')}:00.000Z`;
+            .getUTCMinutes()
+            .toString()
+            .padStart(2, '0')}:00.000Z`;
 
           let blockedSlotsCount =
             (Math.abs(differenceInMinutes(blockedSlot.end, blockedSlot.start)) / 60) * duration;
@@ -1589,9 +1595,9 @@ export class AppointmentRepository extends Repository<Appointment> {
               .getUTCHours()
               .toString()
               .padStart(2, '0')}:${slot
-                .getUTCMinutes()
-                .toString()
-                .padStart(2, '0')}:00.000Z`;
+              .getUTCMinutes()
+              .toString()
+              .padStart(2, '0')}:00.000Z`;
           }
 
           Array(blockedSlotsCount)
