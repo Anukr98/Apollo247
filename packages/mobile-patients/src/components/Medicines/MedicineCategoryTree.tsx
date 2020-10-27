@@ -1,6 +1,10 @@
-import { ArrowLeft, ArrowRight, Invoice } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  ArrowLeft,
+  ArrowRight,
+  Down,
+  ShopByCategoryIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { Category } from '@aph/mobile-patients/src/helpers/apiCalls';
-// import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import { FlatList, ListRenderItemInfo, StyleSheet, View, ViewProps } from 'react-native';
@@ -1171,6 +1175,9 @@ export const MedicineCategoryTree: React.FC<Props> = ({
     },
   ];
   const [categoryTree, setCategoryTree] = useState<Category[]>([]);
+  const level1 = categoryTree.length === 1;
+  const categoryLevel1 = categoryTree?.[0];
+
   const renderItem = ({ item }: ListRenderItemInfo<Category>) => {
     const { category_id, title, Child } = item;
     const onPress = () => {
@@ -1180,11 +1187,12 @@ export const MedicineCategoryTree: React.FC<Props> = ({
         onPressCategory(item, [...categoryTree.reverse(), item]);
       }
     };
+    const rightIcon = level1 ? <Down /> : <ArrowRight />;
     return (
       <ListItem
         key={category_id}
         title={title}
-        rightIcon={<ArrowRight />}
+        rightIcon={rightIcon}
         titleStyle={styles.itemTitle}
         containerStyle={styles.listItemContainer}
         onPress={onPress}
@@ -1194,21 +1202,20 @@ export const MedicineCategoryTree: React.FC<Props> = ({
   };
 
   const renderTitle = () => {
-    const title = categoryTree?.[0]?.title?.toUpperCase() || 'Shop by Category';
+    const title = categoryLevel1?.title?.toUpperCase() || string.shopByCategory;
     const onPress = () => {
       if (categoryTree.length) {
         setCategoryTree(categoryTree.slice(1, categoryTree.length));
       }
     };
-    const isCategorySelected = !!categoryTree?.[0];
 
     return (
       <ListItem
         title={title}
-        titleStyle={isCategorySelected ? styles.sectionTitleSelected : styles.sectionTitle}
-        containerStyle={[styles.listItemContainer, { marginLeft: -25 }]}
-        pad={0}
-        leftIcon={isCategorySelected ? <ArrowLeft /> : <Invoice />}
+        titleStyle={categoryLevel1 ? styles.sectionTitleSelected : styles.sectionTitle}
+        containerStyle={[styles.listItemContainer, { marginLeft: -30 }]}
+        pad={5}
+        leftIcon={categoryLevel1 ? <ArrowLeft /> : <ShopByCategoryIcon />}
         onPress={onPress}
       />
     );
@@ -1220,12 +1227,16 @@ export const MedicineCategoryTree: React.FC<Props> = ({
       <FlatList
         keyExtractor={({ category_id }) => `${category_id}`}
         bounces={false}
-        data={categoryTree?.[0]?.Child || categories}
+        data={categoryLevel1?.Child || categories}
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
       />
     </View>
   );
+};
+
+const string = {
+  shopByCategory: 'Shop by Category',
 };
 
 const { LIGHT_BLUE, APP_GREEN, WHITE } = theme.colors;

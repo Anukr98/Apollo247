@@ -219,6 +219,15 @@ export const ShareGreen: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_share_green.png')} />
 );
 
+export const ShopByCategoryIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    resizeMode="contain"
+    {...props}
+    source={require('./icons/ic_shop_by_category.png')}
+  />
+);
+
 export const MedicineIconWhite: React.FC<IconProps> = (props) => (
   <IconBase
     style={{ width: 17, height: 20 }}
