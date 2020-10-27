@@ -1,8 +1,9 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
-import { DIAGNOSTIC_ORDER_STATUS } from "./globalTypes";
+import { DIAGNOSTIC_ORDER_STATUS, DIAGNOSTICS_TYPE } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getDiagnosticOrdersList
@@ -13,6 +14,8 @@ export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diag
   id: string;
   itemId: number;
   itemName: string;
+  itemType: DIAGNOSTICS_TYPE | null;
+  testPreparationData: string;
 }
 
 export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems {

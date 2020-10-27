@@ -28,6 +28,7 @@ const platinumGrey = '#525252';
 const bondi_blue = '#0187ba';
 const lightGray2 = '#cccccc';
 const lightYellow = '#fbe9be';
+const light_grey_blue = '#67919D';
 
 const platinumWhiteGrey = '#E6E6E6';
 const red = '#e50000';
@@ -49,6 +50,7 @@ const Card = {
   CARD_DESCRIPTION: sky_blue,
   CARD_INFO: tangerine_yellow,
   FILTER_CARD_LABEL: app_light_blue,
+  CARD_SUBTEXT: light_grey_blue
 };
 
 const Common = {
