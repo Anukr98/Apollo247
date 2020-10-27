@@ -309,6 +309,7 @@ export const HealthVault: React.FC = () => {
   const { documentArray, setDocumentArray } = useContext(CaseSheetContext);
   const [loading, setLoading] = React.useState(true);
   const [currentIndex, setCurrentIndex] = useState(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
     if (documentArray && documentArray.documentPath) {
@@ -342,6 +343,7 @@ export const HealthVault: React.FC = () => {
   }, []);
 
   const handleChange = React.useCallback((type) => {
+    setIsLoading(true);
     switch (type) {
       case 'next':
         setCurrentIndex((index: number) => index + 1);
@@ -352,6 +354,10 @@ export const HealthVault: React.FC = () => {
       default:
         setCurrentIndex(null);
     }
+    setTimeout(() => {
+      setIsLoading(false);
+      console.log('10 ms');
+    }, 10);
   }, []);
 
   return (
@@ -365,6 +371,7 @@ export const HealthVault: React.FC = () => {
               onChange={handleChange}
               documents={appointmentDocuments}
               appointmentDate={appointmentInfo.appointmentDateTime}
+              isLoading={isLoading}
             />
           )}
 
