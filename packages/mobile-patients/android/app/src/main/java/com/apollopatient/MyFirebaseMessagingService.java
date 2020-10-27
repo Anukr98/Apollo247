@@ -168,8 +168,9 @@ public class MyFirebaseMessagingService
         i.putExtra("CALL_TYPE",remoteMessage.getData().get("callType"));
         i.putExtra("APP_STATE",isAppRunning());
         i.putExtra("FALL_BACK",true);
+        i.putExtra("NOTIFICATION_ID",oneTimeID);
         PendingIntent fullScreenIntent = PendingIntent.getActivity(this, 0 /* Request code */, i,
-                PendingIntent.FLAG_CANCEL_CURRENT);
+                PendingIntent.FLAG_ONE_SHOT);
         //end
 
         //channel info start

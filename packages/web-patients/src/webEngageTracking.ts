@@ -13,12 +13,21 @@ interface UserDetail {
   gender: string | null;
   firstName: string | null;
   lastName: string | null;
+  referralCode: string | null;
 }
 
 window.webengage = window.webengage || {};
 
 export const webengageUserDetailTracking = (userDetailData: UserDetail) => {
-  const { emailAddress, dateOfBirth, mobileNumber, gender, firstName, lastName } = userDetailData;
+  const {
+    emailAddress,
+    dateOfBirth,
+    mobileNumber,
+    gender,
+    firstName,
+    lastName,
+    referralCode,
+  } = userDetailData;
   if (typeof window !== 'undefined') {
     try {
       window.webengage.user.setAttribute('we_email', emailAddress);
@@ -27,6 +36,7 @@ export const webengageUserDetailTracking = (userDetailData: UserDetail) => {
       window.webengage.user.setAttribute('we_gender', gender);
       window.webengage.user.setAttribute('we_first_name', firstName);
       window.webengage.user.setAttribute('we_last_name', lastName);
+      window.webengage.user.setAttribute('we_referral_code', referralCode);
     } catch (err) {
       console.log('Webengage user tracking err: ', err);
     }
@@ -1108,7 +1118,6 @@ export const trackLanding = (location: any) => {
   }
 };
 
-
 export const medicalDetailsFillTracking = (data: any) => {
   if (typeof window !== 'undefined') {
     try {
@@ -1125,18 +1134,17 @@ export const medicalDetailsFillTracking = (data: any) => {
 export const trackLoginMobileNumber = () => {
   if (typeof window !== 'undefined') {
     try {
-      window.webengage.track('Login Mobile Number Entered '+ window.location.href.split('/').pop(), {});
+      window.webengage.track('Login Mobile Number Entered '+ window.location.href.split('/').pop().split('?')[0], {});
     } catch (err) {
       console.log('WebEngage Err: ', err);
     }
-  }
+  } 
 };
-
 
 export const trackLoginOtpSubmitted = () => {
   if (typeof window !== 'undefined') {
     try {
-      window.webengage.track('Login OTP Submitted '+ window.location.href.split('/').pop(), {});
+      window.webengage.track('Login OTP Submitted '+ window.location.href.split('/').pop().split('?')[0], {});
     } catch (err) {
       console.log('WebEngage Err: ', err);
     }
@@ -1167,7 +1175,15 @@ export const callReceiveClickTracking = (data: any) => {
 };
 
 export const HdfcUserSignupDetailTracking = (userDetailData: UserDetail) => {
-  const { emailAddress, dateOfBirth, mobileNumber, gender, firstName, lastName } = userDetailData;
+  const {
+    emailAddress,
+    dateOfBirth,
+    mobileNumber,
+    gender,
+    firstName,
+    lastName,
+    referralCode,
+  } = userDetailData;
   if (typeof window !== 'undefined') {
     try {
       window.webengage.user.setAttribute('we_email', emailAddress);
@@ -1176,6 +1192,7 @@ export const HdfcUserSignupDetailTracking = (userDetailData: UserDetail) => {
       window.webengage.user.setAttribute('we_gender', gender);
       window.webengage.user.setAttribute('we_first_name', firstName);
       window.webengage.user.setAttribute('we_last_name', lastName);
+      window.webengage.user.setAttribute('we_referral_code', referralCode);
     } catch (err) {
       console.log('Webengage user tracking err: ', err);
     }

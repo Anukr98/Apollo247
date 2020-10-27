@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coupons-deploy
+spec:
+  selector:
+    matchLabels:
+      app: coupons
+  template:
+    metadata:
+      labels:
+        app: coupons
+    spec:
+      containers:
+      - name: coupons
+        image: apollodev.azurecr.io/apollodev-msimage:latest
+        command: ["node"]
+        args: ["coupons-service.bundle.js"]
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 4005
+        volumeMounts:
+        - name: applogs
+          mountPath: "/apollo-hospitals/packages/api/access-logs/"
+        - name: errorlogs
+          mountPath: "/apollo-hospitals/packages/api/error-logs/"
+      volumes:
+      - name: applogs
+        persistentVolumeClaim:
+          claimName: azurefile-pvc-accesslogs
+      - name: errorlogs
+        persistentVolumeClaim:
+          claimName: azurefile-pvc-errorlogs
+      restartPolicy: Always
+      imagePullSecrets:
+      - name: regcred

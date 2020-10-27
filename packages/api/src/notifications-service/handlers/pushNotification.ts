@@ -77,6 +77,27 @@ export async function sendCallsNotification(
   const patientDetails = await patientRepo.getPatientDetails(appointment.patientId);
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
+  const currentDate = new Date();
+  if (
+    doctorType !== DOCTOR_CALL_TYPE.JUNIOR &&
+    currentDate < appointment.appointmentDateTime &&
+    callType === APPT_CALL_TYPE.CHAT
+  ) {
+    if (patientDetails && doctorDetails) {
+      const appLink = await getPatientDeeplink(
+        ApiConstants.PATIENT_APPT_DEEPLINK,
+        ApiConstants.PATIENT_DEEPLINK_TEMPLATE_ID_APOLLO
+      );
+      const messageBody = ApiConstants.AUTO_SUBMIT_BY_SD_SMS_TEXT.replace(
+        '{0}',
+        patientDetails.firstName
+      )
+        .replace('{1}', doctorDetails.firstName)
+        .replace('{2}', appLink);
+      sendNotificationSMS(patientDetails.mobileNumber, messageBody);
+    }
+  }
+
   const deviceTokenRepo = patientsDb.getCustomRepository(PatientDeviceTokenRepository);
 
   patientId = patientId || patientDetails.id;
@@ -659,13 +680,16 @@ export async function sendReminderNotification(
   if (
     pushNotificationInput.notificationType == NotificationType.APPOINTMENT_CASESHEET_REMINDER_15 ||
     pushNotificationInput.notificationType ==
-    NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
+      NotificationType.APPOINTMENT_CASESHEET_REMINDER_15_VIRTUAL
   ) {
     if (!(appointment && appointment.id)) {
       throw new AphError(AphErrorMessages.APPOINTMENT_ID_NOT_FOUND);
     }
 
-    const appLink = await getPatientDeeplink(ApiConstants.PATIENT_CHATROOM_DEEPLINK + appointment.id.toString(), ApiConstants.PATIENT_DEEPLINK_TEMPLATE_ID_APOLLO);
+    const appLink = await getPatientDeeplink(
+      ApiConstants.PATIENT_CHATROOM_DEEPLINK + appointment.id.toString(),
+      ApiConstants.PATIENT_DEEPLINK_TEMPLATE_ID_APOLLO
+    );
     if (appLink) {
       //Final deeplink URL
       notificationBody = notificationBody + ApiConstants.CLICK_HERE + appLink;
@@ -1026,20 +1050,22 @@ export async function sendNotification(
         facilityDetsString = `${facilityDets.name} ${facilityDets.streetLine1} ${facilityDets.city} ${facilityDets.state}`;
       }
     }
-    const secretaryTemplateData: string[] = [
-      patientDetails.firstName + ' ' + patientDetails.lastName,
-      patientDetails.uhid,
-      doctorDetails.salutation + ' ' + doctorDetails.firstName,
-      facilityDetsString,
-      format(istDateTime, 'dd/MM/yyyy'),
-      format(istDateTime, 'hh:mm a'),
-      appointment.appointmentType,
-    ];
-    sendDoctorNotificationWhatsapp(
-      ApiConstants.WHATSAPP_DOC_SECRETARY_CANCEL,
-      doctorDetails.doctorSecretary.secretary.mobileNumber,
-      secretaryTemplateData
-    );
+    if (doctorDetails.doctorSecretary.secretary.mobileNumber) {
+      const secretaryTemplateData: string[] = [
+        patientDetails.firstName + ' ' + patientDetails.lastName,
+        patientDetails.uhid,
+        doctorDetails.salutation + ' ' + doctorDetails.firstName,
+        facilityDetsString,
+        format(istDateTime, 'dd/MM/yyyy'),
+        format(istDateTime, 'hh:mm a'),
+        appointment.appointmentType,
+      ];
+      sendDoctorNotificationWhatsapp(
+        ApiConstants.WHATSAPP_DOC_SECRETARY_CANCEL,
+        doctorDetails.doctorSecretary.secretary.mobileNumber,
+        secretaryTemplateData
+      );
+    }
   }
 
   //doctor cancel appointment
@@ -1255,25 +1281,28 @@ export async function sendNotification(
       todaysDate,
       'todays date'
     );
-    const secretaryTemplateData: string[] = [
-      patientDetails.firstName + ' ' + patientDetails.lastName,
-      patientDetails.uhid,
-      doctorDetails.salutation + ' ' + doctorDetails.firstName,
-      facilityDetsString,
-      format(istDateTime, 'dd/MM/yyyy'),
-      format(istDateTime, 'hh:mm a'),
-      appointment.appointmentType,
-    ];
-    console.log(
-      secretaryTemplateData,
-      doctorDetails.doctorSecretary.secretary.mobileNumber,
-      'secretaryTemplateData'
-    );
-    sendDoctorNotificationWhatsapp(
-      ApiConstants.WHATSAPP_DOC_SECRETARY_BOOKING,
-      doctorDetails.doctorSecretary.secretary.mobileNumber,
-      secretaryTemplateData
-    );
+    if (doctorDetails.doctorSecretary.secretary.mobileNumber) {
+      const secretaryTemplateData: string[] = [
+        patientDetails.firstName + ' ' + patientDetails.lastName,
+        patientDetails.uhid,
+        doctorDetails.salutation + ' ' + doctorDetails.firstName,
+        facilityDetsString,
+        format(istDateTime, 'dd/MM/yyyy'),
+        format(istDateTime, 'hh:mm a'),
+        appointment.appointmentType,
+      ];
+      console.log(
+        secretaryTemplateData,
+        doctorDetails.doctorSecretary.secretary.mobileNumber,
+        'secretaryTemplateData'
+      );
+      sendDoctorNotificationWhatsapp(
+        ApiConstants.WHATSAPP_DOC_SECRETARY_BOOKING,
+        doctorDetails.doctorSecretary.secretary.mobileNumber,
+        secretaryTemplateData
+      );
+    }
+
     if (istDateTime <= todaysDate) {
       const finalTime = format(istDateTime, 'hh:mm a');
       const templateData: string[] = [
@@ -1317,7 +1346,10 @@ export async function sendNotification(
     smsLink = smsLink.replace('{2}', doctorDetails.firstName + ' ' + doctorDetails.lastName);
     smsLink = smsLink.replace('{3}', apptDate.toString());
 
-    const appLink = await getPatientDeeplink(ApiConstants.PATIENT_CHATROOM_DEEPLINK + appointment.id.toString(), ApiConstants.PATIENT_DEEPLINK_TEMPLATE_ID_APOLLO);
+    const appLink = await getPatientDeeplink(
+      ApiConstants.PATIENT_CHATROOM_DEEPLINK + appointment.id.toString(),
+      ApiConstants.PATIENT_DEEPLINK_TEMPLATE_ID_APOLLO
+    );
     if (appLink) {
       smsLink = smsLink.replace('{5}', appLink);
     } else {

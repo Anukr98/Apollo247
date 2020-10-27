@@ -164,8 +164,8 @@ export const GET_CONSULT_PAYMENTS = gql`
 `;
 
 export const GET_CONSULT_INVOICE = gql`
-  query GetOrderInvoice($patientId: String!, $appointmentId: String!) {
-    getOrderInvoice(patientId: $patientId, appointmentId: $appointmentId)
+  query GetOrderInvoice($patientId: String!, $appointmentId: String!, $emailId: Email) {
+    getOrderInvoice(patientId: $patientId, appointmentId: $appointmentId, emailId: $emailId)
   }
 `;
 

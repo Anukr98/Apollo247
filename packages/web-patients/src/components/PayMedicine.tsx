@@ -491,17 +491,16 @@ const PayMedicine: React.FC = (props) => {
   const applyOneApolloHc = (event: React.ChangeEvent<HTMLInputElement>) => {
     oneApolloHcApplied(event.target.checked);
     if (event.target.checked) {
-      if (oneApolloHcs >= mrpTotal - productDiscount) {
-        setOneAplloHcs(mrpTotal - productDiscount);
+      if (oneApolloHcs >= (mrpTotal - (productDiscount + couponValue))) {
+        setOneAplloHcs(mrpTotal - (productDiscount + couponValue));
       } else {
         setOneAplloHcs(setOneApolloHCsResponse.availableHC);
       }
-      const totalToPay =
-        mrpTotal +
-        deliveryCharges -
-        (productDiscount +
-          (oneApolloHcs >= mrpTotal - productDiscount
-            ? mrpTotal - productDiscount
+			const totalToPay = 
+				mrpTotal + 
+				deliveryCharges - 
+				(productDiscount + couponValue + (oneApolloHcs >= mrpTotal - (productDiscount + couponValue)
+            ? mrpTotal - (productDiscount + couponValue)
             : setOneApolloHCsResponse.availableHC));
       calculateTotalWithHcs(totalToPay);
     } else {
@@ -575,6 +574,7 @@ const PayMedicine: React.FC = (props) => {
     shopId,
     deliveryAddressId,
     tatType,
+    distance,
   } = cartValues;
   const deliveryCharges = freeDelivery
     ? 0
@@ -761,6 +761,7 @@ const PayMedicine: React.FC = (props) => {
           deviceType: getDeviceType(),
           shopId: shopId,
           tatType,
+          storeDistanceKm: distance,
         },
       },
     }

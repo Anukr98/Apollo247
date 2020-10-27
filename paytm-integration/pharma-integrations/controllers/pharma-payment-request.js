@@ -148,7 +148,7 @@ async function saveMedicineOrder(payload) {
     headers: {
       'authorization': process.env.API_TOKEN
     }
-  }
+  };
   // this needs to be altered later.
   const requestJSON = {
     query:

@@ -24,7 +24,7 @@ export interface CartItemCardProps {
 }
 
 export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
-  const { coupon } = useShoppingCart();
+  const { coupon, isProuctFreeCouponApplied } = useShoppingCart();
   const { item, onUpdateQuantity, onPressDelete, onPressProduct } = props;
   const [discountedPrice, setDiscountedPrice] = useState<any>(undefined);
   const [mrp, setmrp] = useState<number>(0);
@@ -72,12 +72,14 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
 
   const renderProduct = () => {
     return (
-      <TouchableOpacity style={{ flex: 1 }} onPress={onPressProduct}>
+      <View style={{ flex: 1 }}>
         <View style={{ flexDirection: 'row', marginBottom: 5 }}>
           <View style={{ flex: 0.85 }}>
-            <Text style={{ ...styles.itemName, opacity: !item.unserviceable ? 1 : 0.3 }}>
-              {item.name}
-            </Text>
+            <TouchableOpacity onPress={onPressProduct}>
+              <Text style={{ ...styles.itemName, opacity: !item.unserviceable ? 1 : 0.3 }}>
+                {item.name}
+              </Text>
+            </TouchableOpacity>
             {item.mou && (
               <Text
                 style={{ ...styles.info, opacity: !item.unserviceable ? 1 : 0.3 }}
@@ -85,12 +87,17 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
             )}
           </View>
           <TouchableOpacity onPress={onPressDelete} style={styles.delete}>
-            {!item.unserviceable ? <DeleteIcon /> : <DeleteBoldIcon />}
+            {/* {!item?.isFreeCouponProduct ? renderDelete() : null} */}
+            {renderDelete()}
           </TouchableOpacity>
         </View>
         {renderLowerCont()}
-      </TouchableOpacity>
+      </View>
     );
+  };
+
+  const renderDelete = () => {
+    return !item.unserviceable ? !item?.isFreeCouponProduct && <DeleteIcon /> : <DeleteBoldIcon />;
   };
 
   const renderLowerCont = () => {
@@ -98,10 +105,22 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <View>
           {renderQuantity()}
-          {!item.unserviceable && coupon && renderCoupon()}
+          {!item.unserviceable && !isProuctFreeCouponApplied && !!coupon && renderCoupon()}
         </View>
-        {discountedPrice || discountedPrice == 0 ? renderPrice(discountedPrice) : renderPrice(mrp)}
+        {!item?.isFreeCouponProduct
+          ? discountedPrice || discountedPrice == 0
+            ? renderPrice(discountedPrice)
+            : renderPrice(mrp)
+          : renderFree()}
       </View>
+    );
+  };
+
+  const renderFree = () => {
+    return (
+      <Text style={{ ...theme.fonts.IBMPlexSansMedium(14), lineHeight: 20, color: '#00B38E' }}>
+        FREE
+      </Text>
     );
   };
 
@@ -115,25 +134,27 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     }).map((_, i) => {
       return { key: (i + 1).toString(), value: i + 1 };
     });
-    return (
-      <View>
-        <View style={{ ...styles.quantityContainer, opacity: !item.unserviceable ? 1 : 0.3 }}>
-          <MaterialMenu
-            options={opitons}
-            selectedText={item.quantity!.toString()}
-            selectedTextStyle={{ ...theme.viewStyles.text('M', 16, '#00b38e') }}
-            onPress={(selectedQuantity) => {
-              !item.unserviceable && onUpdateQuantity(selectedQuantity.value as number);
-            }}
-          >
-            <View style={{ flexDirection: 'row' }}>
-              <View style={{ justifyContent: 'center' }}>
-                <Text style={styles.quantity}>{`QTY : ${item.quantity}`}</Text>
-              </View>
-              <DropdownGreen />
+    return !item?.isFreeCouponProduct ? (
+      <View style={{ ...styles.quantityContainer, opacity: !item.unserviceable ? 1 : 0.3 }}>
+        <MaterialMenu
+          options={opitons}
+          selectedText={item.quantity!.toString()}
+          selectedTextStyle={{ ...theme.viewStyles.text('M', 16, '#00b38e') }}
+          onPress={(selectedQuantity) => {
+            !item.unserviceable && onUpdateQuantity(selectedQuantity.value as number);
+          }}
+        >
+          <View style={{ flexDirection: 'row' }}>
+            <View style={{ justifyContent: 'center' }}>
+              <Text style={styles.quantity}>{`QTY : ${item.quantity}`}</Text>
             </View>
-          </MaterialMenu>
-        </View>
+            <DropdownGreen />
+          </View>
+        </MaterialMenu>
+      </View>
+    ) : (
+      <View style={styles.quantityContainer}>
+        <Text style={styles.quantity}>{`QTY : ${item.quantity}`}</Text>
       </View>
     );
   };
@@ -145,7 +166,11 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
       </View>
     ) : (
       <View style={{ ...styles.coupon, backgroundColor: 'rgba(137,0,0,0.2)' }}>
-        <Text style={styles.couponText}>{`${coupon?.coupon} Not Applicable`}</Text>
+        <Text style={styles.couponText}>
+          {!item?.applicable
+            ? `${coupon?.coupon} Not Applicable`
+            : 'Item already at higher discount'}
+        </Text>
       </View>
     );
   };

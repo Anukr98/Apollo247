@@ -468,10 +468,10 @@ export async function hitCallKitCurl(
     domain = 'https://api.development.push.apple.com/3/device/';
   }
   try {
-    const curlCommand = `curl -v -d '{"name": "${doctorName}", 
+    const curlCommand = `curl -v -H "apns-expiration : 0" -d '{"name": "${doctorName}", 
       "${connecting ? 'isVideo' : 'disconnectCall'}": 
       ${connecting ? (callType == APPT_CALL_TYPE.VIDEO ? true : false) : true}, 
-      "appointmentId" : "${apptId}", "patientId": "${patientId}", "apns-expiration": ${0} }' --http2 --cert ${CERT_PATH}:${passphrase} ${domain}${token} apns-expiration=0`;
+      "appointmentId" : "${apptId}", "patientId": "${patientId}", "apns-expiration": ${0} }' --http2 --cert ${CERT_PATH}:${passphrase} ${domain}${token}`;
     const resp = child_process.execSync(curlCommand);
     const result = resp.toString('utf-8');
     console.log('voipCallKit result > ', result);

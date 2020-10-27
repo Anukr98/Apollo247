@@ -94,7 +94,8 @@ export enum WebEngageEventName {
   PHARMACY_CART_ADDRESS_SELECTED_FAILURE = 'Pharmacy Cart Address Selected Failure',
   PHARMACY_AVAILABILITY_API_CALLED = 'Pharmacy Availability API Called',
   PHARMACY_TAT_API_CALLED = 'Pharmacy TAT API Called',
-
+  PHARMACY_CART_SELECT_DELIVERY_ADDRESS_CLICKED = 'Pharmacy Cart - Select Delivery Address Clicked',
+  PHARMACY_CART_UPLOAD_PRESCRIPTION_CLICKED = 'Pharmacy Cart - Upload Prescription Clicked',
   // HomePageElements Events
   BUY_MEDICINES = 'Buy Medicines',
   ORDER_TESTS = 'Order Tests',
@@ -1263,6 +1264,14 @@ export interface WebEngageEvents {
     Response_storeType: string;
     Response_tat: string;
     Response_tatU: number;
+  };
+
+  [WebEngageEventName.PHARMACY_CART_SELECT_DELIVERY_ADDRESS_CLICKED]: {
+    'Customer ID': string;
+  };
+
+  [WebEngageEventName.PHARMACY_CART_UPLOAD_PRESCRIPTION_CLICKED]: {
+    'Customer ID': string;
   };
 
   // ********** Health Records ********** \\

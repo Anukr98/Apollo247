@@ -29,6 +29,9 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'flex-start',
       padding: 20,
       background: '#F7F8F5',
+      [theme.breakpoints.down('xs')]: {
+        padding: '20px 0',
+      },
     },
     leftSection: {
       width: '40%',
@@ -37,6 +40,10 @@ const useStyles = makeStyles((theme: Theme) => {
     rightSection: {
       padding: '0 0 0 15px',
       width: '70%',
+      [theme.breakpoints.down('xs')]: {
+        padding: '40px 0 0 0',
+        width: '100%',
+      },
     },
     membershipContainer: {
       background: '#fff',
@@ -61,13 +68,13 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 40,
     },
     silver: {
-      background: 'url(images/silver-oneApollo.svg) no-repeat 0 0',
+      background: 'url(images/silver-oneApollo.png) no-repeat 0 0',
     },
     gold: {
-      background: 'url(images/gold-oneApollo.svg) no-repeat 0 0',
+      background: 'url(images/gold-oneApollo.png) no-repeat 0 0',
     },
     platinum: {
-      background: 'url(images/platinum-oneApollo.svg) no-repeat 0 0',
+      background: 'url(images/platinum-oneApollo.png) no-repeat 0 0',
     },
     membershipContent: {},
     tabsRoot: {
@@ -264,9 +271,10 @@ export const OneApolloMembership: React.FC = () => {
   const [oneApolloHc, setOneApollo] = useState<any>({});
   const [isLoading, setLoading] = useState<boolean>(true);
   const [totalEarned, setTotalEarned] = useState<number>(0);
-	const [totalRedeemed, setTotalRedeemed] = useState<number>(0);
-	const { error, loading, data } = useQuery<getOneApolloUserTransactions>(GET_ONEAPOLLO_USERTXNS);
-	const oneApolloTrxnList = data && data.getOneApolloUserTransactions;
+  const [totalRedeemed, setTotalRedeemed] = useState<number>(0);
+  const { error, loading, data } = useQuery<getOneApolloUserTransactions>(GET_ONEAPOLLO_USERTXNS);
+  const oneApolloTrxnList =
+    data && data.getOneApolloUserTransactions ? data.getOneApolloUserTransactions : [];
   useEffect(() => {
     if (currentPatient && currentPatient.id) {
       client
@@ -287,7 +295,7 @@ export const OneApolloMembership: React.FC = () => {
           }
         })
         .catch((e) => {
-          console.log( ConfigOneApolloData.apolloHcsError, e);
+          console.log(ConfigOneApolloData.apolloHcsError, e);
         });
     }
   }, [currentPatient]);
@@ -364,7 +372,7 @@ export const OneApolloMembership: React.FC = () => {
                           </div>
                         </div>
                         <ul className={classes.transactionList}>
-                          {oneApolloTrxnList.length > 0 &&
+                          {oneApolloTrxnList.length > 0 ? (
                             oneApolloTrxnList.map((transaction, index) => {
                               return (
                                 <li key={index}>
@@ -402,7 +410,10 @@ export const OneApolloMembership: React.FC = () => {
                                   </Typography>
                                 </li>
                               );
-                            })}
+                            })
+                          ) : (
+                            <li>Record not found</li>
+                          )}
                         </ul>
                       </TabContainer>
                     )}

@@ -212,7 +212,8 @@ const makeAppointmentPayment: Resolver<
   let appointmentStatus = STATUS.PENDING;
 
   //update appointment status to PENDING
-
+  let doctorDets;
+  let appointmentReminderFlag = false;
   if (paymentInput.paymentStatus == 'TXN_SUCCESS') {
     const patient = patientsDb.getCustomRepository(PatientRepository);
     const patientDetails = await patient.getPatientDetails(processingAppointment.patientId);
@@ -343,7 +344,7 @@ const makeAppointmentPayment: Resolver<
 
     //submit casesheet if skipAutoQuestions:false, isJdrequired = false
     const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
-    const doctorDets = await doctorRepo.findById(processingAppointment.doctorId);
+    doctorDets = await doctorRepo.findById(processingAppointment.doctorId);
 
     if (!doctorDets) {
       throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
@@ -422,8 +423,8 @@ const makeAppointmentPayment: Resolver<
       apptsRepo.saveAppointmentHistory(historyAttrs);
     }
 
-    if (doctorDets.isIvrSet) {
-      sendMessageToASBQueue(doctorDets, processingAppointment);
+    if (doctorDets.isIvrSet && doctorDets.isIvrSet === true) {
+      appointmentReminderFlag = true;
     }
 
   } else if (paymentInput.paymentStatus == 'TXN_FAILURE') {
@@ -485,6 +486,11 @@ const makeAppointmentPayment: Resolver<
   );
   processingAppointment.status = appointmentStatus;
   paymentInfo.appointment = processingAppointment;
+
+  if (appointmentReminderFlag === true && doctorDets) {
+    sendMessageToASBQueue(doctorDets, processingAppointment);
+  }
+
   return { appointment: paymentInfo, isRefunded: false };
 };
 

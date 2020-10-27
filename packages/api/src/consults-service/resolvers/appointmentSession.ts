@@ -343,36 +343,36 @@ const createAppointmentSession: Resolver<
       );
     }
 
-    // send notification
-    const pushNotificationInput = {
-      appointmentId: createAppointmentSessionInput.appointmentId,
-      notificationType: NotificationType.INITIATE_SENIOR_APPT_SESSION,
-    };
+    // // send notification
+    // const pushNotificationInput = {
+    //   appointmentId: createAppointmentSessionInput.appointmentId,
+    //   notificationType: NotificationType.INITIATE_SENIOR_APPT_SESSION,
+    // };
     if (createAppointmentSessionInput.requestRole == REQUEST_ROLES.JUNIOR) {
       caseSheetRepo.findAndUpdateJdConsultStatus(createAppointmentSessionInput.appointmentId);
-      pushNotificationInput.notificationType = NotificationType.INITIATE_JUNIOR_APPT_SESSION;
+      // pushNotificationInput.notificationType = NotificationType.INITIATE_JUNIOR_APPT_SESSION;
     }
-    const notificationResult = await sendNotification(
-      pushNotificationInput,
-      patientsDb,
-      consultsDb,
-      doctorsDb
-    );
-    if (
-      createAppointmentSessionInput.requestRole != REQUEST_ROLES.JUNIOR &&
-      currentDate < apptDetails.appointmentDateTime
-    ) {
-      if (patientData && doctorData) {
-        const appLink = await getPatientDeeplink(ApiConstants.PATIENT_APPT_DEEPLINK, ApiConstants.PATIENT_DEEPLINK_TEMPLATE_ID_APOLLO);
-        const messageBody = ApiConstants.AUTO_SUBMIT_BY_SD_SMS_TEXT.replace(
-          '{0}',
-          patientData.firstName
-        )
-          .replace('{1}', doctorData.firstName)
-          .replace('{2}', appLink);
-        sendNotificationSMS(patientData.mobileNumber, messageBody);
-      }
-    }
+    // const notificationResult = await sendNotification(
+    //   pushNotificationInput,
+    //   patientsDb,
+    //   consultsDb,
+    //   doctorsDb
+    // );
+    // if (
+    //   createAppointmentSessionInput.requestRole != REQUEST_ROLES.JUNIOR &&
+    //   currentDate < apptDetails.appointmentDateTime
+    // ) {
+    //   if (patientData && doctorData) {
+    //     const appLink = await getPatientDeeplink(ApiConstants.PATIENT_APPT_DEEPLINK, ApiConstants.PATIENT_DEEPLINK_TEMPLATE_ID_APOLLO);
+    //     const messageBody = ApiConstants.AUTO_SUBMIT_BY_SD_SMS_TEXT.replace(
+    //       '{0}',
+    //       patientData.firstName
+    //     )
+    //       .replace('{1}', doctorData.firstName)
+    //       .replace('{2}', appLink);
+    //     sendNotificationSMS(patientData.mobileNumber, messageBody);
+    //   }
+    // }
     return {
       sessionId: apptSessionDets.sessionId,
       appointmentToken: apptSessionDets.doctorToken,
@@ -406,37 +406,37 @@ const createAppointmentSession: Resolver<
     );
   }
 
-  // send notification
-  const pushNotificationInput = {
-    appointmentId: createAppointmentSessionInput.appointmentId,
-    notificationType: NotificationType.INITIATE_SENIOR_APPT_SESSION,
-  };
+  // // send notification
+  // const pushNotificationInput = {
+  //   appointmentId: createAppointmentSessionInput.appointmentId,
+  //   notificationType: NotificationType.INITIATE_SENIOR_APPT_SESSION,
+  // };
   if (createAppointmentSessionInput.requestRole == REQUEST_ROLES.JUNIOR) {
     caseSheetRepo.findAndUpdateJdConsultStatus(createAppointmentSessionInput.appointmentId);
-    pushNotificationInput.notificationType = NotificationType.INITIATE_JUNIOR_APPT_SESSION;
+    // pushNotificationInput.notificationType = NotificationType.INITIATE_JUNIOR_APPT_SESSION;
   }
-  const notificationResult = await sendNotification(
-    pushNotificationInput,
-    patientsDb,
-    consultsDb,
-    doctorsDb
-  );
+  // const notificationResult = await sendNotification(
+  //   pushNotificationInput,
+  //   patientsDb,
+  //   consultsDb,
+  //   doctorsDb
+  // );
 
-  if (
-    createAppointmentSessionInput.requestRole != REQUEST_ROLES.JUNIOR &&
-    currentDate < apptDetails.appointmentDateTime
-  ) {
-    if (patientData && doctorData) {
-      const appLink = await getPatientDeeplink(ApiConstants.PATIENT_APPT_DEEPLINK, ApiConstants.PATIENT_DEEPLINK_TEMPLATE_ID_APOLLO);
-      const messageBody = ApiConstants.AUTO_SUBMIT_BY_SD_SMS_TEXT.replace(
-        '{0}',
-        patientData.firstName
-      )
-        .replace('{1}', doctorData.firstName)
-        .replace('{2}', appLink);
-      sendNotificationSMS(patientData.mobileNumber, messageBody);
-    }
-  }
+  // if (
+  //   createAppointmentSessionInput.requestRole != REQUEST_ROLES.JUNIOR &&
+  //   currentDate < apptDetails.appointmentDateTime
+  // ) {
+  //   if (patientData && doctorData) {
+  //     const appLink = await getPatientDeeplink(ApiConstants.PATIENT_APPT_DEEPLINK, ApiConstants.PATIENT_DEEPLINK_TEMPLATE_ID_APOLLO);
+  //     const messageBody = ApiConstants.AUTO_SUBMIT_BY_SD_SMS_TEXT.replace(
+  //       '{0}',
+  //       patientData.firstName
+  //     )
+  //       .replace('{1}', doctorData.firstName)
+  //       .replace('{2}', appLink);
+  //     sendNotificationSMS(patientData.mobileNumber, messageBody);
+  //   }
+  // }
   const historyAttrs: Partial<AppointmentUpdateHistory> = {
     appointment: apptDetails,
     userType: APPOINTMENT_UPDATED_BY.DOCTOR,

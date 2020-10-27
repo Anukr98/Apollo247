@@ -120,7 +120,7 @@ export class ConsultQueueRepository extends Repository<ConsultQueueItem> {
       .andWhere('appointment.appointmentState NOT IN (:...appointmentStates)', {
         appointmentStates: [APPOINTMENT_STATE.AWAITING_RESCHEDULE],
       })
-      .orderBy('consultQueueItem.id')
+      .orderBy('appointment.appointmentDateTime', 'DESC')
       .limit(limit)
       .getMany();
   }

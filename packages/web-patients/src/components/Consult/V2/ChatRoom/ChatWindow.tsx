@@ -861,6 +861,8 @@ interface ChatWindowProps {
   setIsConsultCompleted: (isConsultCompleted: boolean) => void;
   appointmentDetails: AppointmentHistory;
   secretaryData: getSecretaryDetailsByDoctorId;
+  isConsultCompleted: boolean;
+  srDoctorJoined: boolean;
 }
 
 interface MessagesObjectProps {
@@ -1281,7 +1283,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             if (autoMessage === autoMessageStrings.vitalsCompletedByPatient)
               isVitalsCompleted = true;
           });
-          if (isVitalsCompleted) setAutoQuestionsCompleted(true);
+          if (isVitalsCompleted || appointmentDetails.status === STATUS.COMPLETED)
+            setAutoQuestionsCompleted(true);
           scrollToBottomAction();
         }
       );
@@ -1290,6 +1293,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       };
     }
   }, [appointmentDetails]);
+
+  useEffect(() => {
+    if (props.isConsultCompleted || props.srDoctorJoined) setAutoQuestionsCompleted(true);
+  }, [props.isConsultCompleted, props.srDoctorJoined]);
 
   const { mobileNumber: secretaryNumber, name: secretaryName } = (secretaryData &&
     secretaryData.getSecretaryDetailsByDoctorId) || { mobileNumber: '', name: '' };
@@ -1540,7 +1547,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
               autoFocus
               className={classes.searchInput}
               inputProps={{ type: 'text' }}
-              placeholder="eg. 5’ 8”"
+              placeholder={heightIn === 'cm' ? 'eg. 172 cm' : 'eg. 5’ 8”'}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                 const height = e.target.value;
                 setHeight(e.target.value);
@@ -1563,7 +1570,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             <label className={classes.subComponent}>&nbsp;</label>
             <AphSelect
               value={heightIn}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setHeightIn(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                setHeightIn(e.target.value);
+                setHeightError(false);
+              }}
               MenuProps={{
                 anchorOrigin: {
                   vertical: 'top',

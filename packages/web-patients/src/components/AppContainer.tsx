@@ -13,7 +13,7 @@ import React, { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { Config, setConfig } from 'react-hot-loader';
 import { hot } from 'react-hot-loader/root';
-import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import { BrowserRouter, Route, Switch, Redirect } from 'react-router-dom';
 import { DiagnosticsCartProvider } from './Tests/DiagnosticsCartProvider';
 import { MedicinesCartProvider } from 'components/MedicinesCartProvider';
 import { OneApolloMembership } from 'components/MyAccount/OneApolloMembership';
@@ -23,6 +23,8 @@ import { HdfcMemberShip } from 'components/Partners/Hdfc/HdfcMembership';
 import { MyMembership } from 'components/Partners/Hdfc/MyMembership';
 import { MembershipPlanLocked } from 'components/Partners/Hdfc/MembershipPlanLocked';
 import { MembershipPlanDetail } from 'components/Partners/Hdfc/MembershipPlanDetail';
+import PageNotFound from 'components/PageNotFound';
+const ApolloProHealth = loadable(() => import('components/ApolloProHealthLanding'));
 
 const Welcome = loadable(() => import('components/Welcome'));
 
@@ -248,6 +250,9 @@ const App: React.FC = () => {
           path={clientRoutes.knowledgeBaseLanding()}
           component={KnowledgeArticleLanding}
         />
+        <Route exact path={clientRoutes.apolloProHealth()} component={ApolloProHealth} />
+        <Route exact path={clientRoutes.pageNotFound()} component={PageNotFound} />
+        <Redirect to={clientRoutes.pageNotFound()} />
       </Switch>
     </div>
   );

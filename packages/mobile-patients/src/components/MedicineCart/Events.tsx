@@ -127,3 +127,20 @@ export function applyCouponClickedEvent(id: string) {
   };
   postWebEngageEvent(WebEngageEventName.CART_APPLY_COUPON_CLCIKED, eventAttributes);
 }
+
+export function selectDeliveryAddressClickedEvent(id: string) {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_CART_SELECT_DELIVERY_ADDRESS_CLICKED] = {
+    'Customer ID': id,
+  };
+  postWebEngageEvent(
+    WebEngageEventName.PHARMACY_CART_SELECT_DELIVERY_ADDRESS_CLICKED,
+    eventAttributes
+  );
+}
+
+export function uploadPrescriptionClickedEvent(id: string) {
+  const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_CART_UPLOAD_PRESCRIPTION_CLICKED] = {
+    'Customer ID': id,
+  };
+  postWebEngageEvent(WebEngageEventName.PHARMACY_CART_UPLOAD_PRESCRIPTION_CLICKED, eventAttributes);
+}

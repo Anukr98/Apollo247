@@ -37,7 +37,7 @@
     "consultCompleteMessage": "Please wait while {0} is preparing your prescription. The prescription will be sent here in the consult room itself. However, this might take a while!",
     "customerCareNumber": 4041894343,
     "customerCareHelpText": "I need help with my order",
-    "selectAddress": "Choose from saved address",
+    "selectAddress": "Choose from saved addresses",
     "covidVaccineTrackerText": "Covid Vaccine Tracker",
     "healthcareEcosystemBannerText": "HEALTH ARTICLES &\nRESOURCES",
     "healthcareEcosystemBannerDescription": "Make better health choices with our curated blogs, videos and expert advice.",
@@ -309,7 +309,8 @@
     "removeTheseTestsCTA": "Remove these tests from cart",
     "itemsAddedSuccessfullyCTA": " Item successfully added",
     "proceedToCartCTA": "PROCEED TO CART",
-    "noPreparationRequiredText": "No special preparation required"
+    "noPreparationRequiredText": "No special preparation required",
+    "priceNotificationForCovidText":"Extra charges for Phlebotomist Protection Kit and Home Collection may apply for COVID Test. You will be informed of the charges after booking of the order."
   },
   "orders": {
     "urOrders": "MY ORDERS",

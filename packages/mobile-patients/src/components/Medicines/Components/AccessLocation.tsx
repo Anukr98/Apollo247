@@ -72,7 +72,7 @@ export const AccessLocation: React.FC<AccessLocationProps> = (props) => {
   const renderAddresses = () => {
     return (
       <View>
-        <Text style={styles.addressHeader}>Choose from saved address</Text>
+        <Text style={styles.addressHeader}>Choose from saved addresses</Text>
         <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
           {sortAddresses(addresses).map((item) => {
             return (

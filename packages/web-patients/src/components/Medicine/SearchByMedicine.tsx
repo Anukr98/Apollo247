@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { AphButton, AphDialog, AphDialogClose, AphDialogTitle } from '@aph/web-ui-components';
-import { Theme, Typography } from '@material-ui/core';
+import { Theme, Typography, CircularProgress } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import axios from 'axios';
@@ -36,7 +36,6 @@ import {
 } from 'webEngageTracking';
 import { MedicineProduct } from './../../helpers/MedicineApiCalls';
 
-let tempData: any[] = [];
 let fetching = true;
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -321,6 +320,16 @@ const useStyles = makeStyles((theme: Theme) => {
         lineHeight: '20px',
       },
     },
+    seeMoreTag: {
+      margin: 10,
+      textAlign: 'center',
+      color: '#fc9916',
+      cursor: 'pointer',
+      fontWeight: 500,
+      [theme.breakpoints.down('sm')]: {
+        padding: '12px 10px 24px 10px',
+      },
+    },
   };
 });
 
@@ -337,6 +346,7 @@ type Params = { searchMedicineType: string; searchText: string };
 
 type PriceFilter = { fromPrice: string; toPrice: string };
 type DiscountFilter = { fromDiscount: string; toDiscount: string };
+let tempData: any[] = [];
 let currentPage = 1;
 let totalItems: number;
 const SearchByMedicine: React.FC = (props) => {
@@ -365,30 +375,15 @@ const SearchByMedicine: React.FC = (props) => {
   useEffect(() => {
     deepLinkUtil(`MedicineSearch?${categoryId},${params.searchText}`);
     medicinePageOpenTracking();
+    tempData = [];
+    totalItems = 0;
+    currentPage = 1;
   }, [categoryId]);
 
   const loadItemData = () => {
-    if (currentPage * 20 < totalItems) {
-      getCategoryProducts(currentPage);
-    }
+    setIsLoading(true);
+    getCategoryProducts(currentPage);
   };
-
-  useEffect(() => console.log(888, totalItems), [totalItems]);
-
-  const handleOnScroll = useCallback(() => {
-    if (window.innerHeight + window.scrollY >= document.body.offsetHeight * 0.8) {
-      if (!fetching) {
-        fetching = true;
-        loadItemData();
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    if (scrollToRef && scrollToRef.current) {
-      window.addEventListener('scroll', handleOnScroll);
-    }
-  }, [scrollToRef]);
 
   const getTitle = () => {
     let title = params.searchMedicineType;
@@ -882,13 +877,22 @@ const SearchByMedicine: React.FC = (props) => {
                     <>
                       <div className={classes.noData}>{heading}</div>
                       <MedicineCard medicineList={medicineListFiltered} isLoading={isLoading} />
+                      {currentPage * 20 < totalItems && (
+                        <div className={classes.seeMoreTag} onClick={() => loadItemData()}>
+                          {isLoading ? (
+                            <CircularProgress size={22} color="secondary" />
+                          ) : (
+                            'See More'
+                          )}
+                        </div>
+                      )}
                     </>
                   )}
                 </MedicinesCartContext.Consumer>
               </div>
             </div>
           </div>
-          <div className={classes.contentContainer}>
+          {/* <div className={classes.contentContainer}>
             <div className={classes.mcContainer}>
               <div className={classes.mcContent}>
                 <Typography component="h1">
@@ -1078,6 +1082,7 @@ const SearchByMedicine: React.FC = (props) => {
               </div>
             </div>
           </div>
+        */}
         </div>
       </div>
       <AphDialog open={isUploadPreDialogOpen} maxWidth="sm">

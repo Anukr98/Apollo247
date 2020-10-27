@@ -1,11 +1,17 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { log } from 'customWinstonLogger';
+import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
+import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
+import { MedicineOrders } from 'profiles-service/entities';
+import { AphError } from 'AphError';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 export const reUploadPrescriptionTypeDefs = gql`
   input PrescriptionReUploadInput {
     orderId: Int!
     fileUrl: String!
+    prismPrescriptionFileId: String
   }
 
   type ReUploadPrescriptionResponse {
@@ -20,15 +26,21 @@ export const reUploadPrescriptionTypeDefs = gql`
 type PrescriptionReUploadInput = {
   orderId: number;
   fileUrl: string;
+  prismPrescriptionFileId: string;
 };
 type PrescriptionInputArgs = { prescriptionInput: PrescriptionReUploadInput };
 
 export const reUploadPrescription: Resolver<
   null,
   PrescriptionInputArgs,
-  null,
+  ProfilesServiceContext,
   { success: boolean }
-> = async (parent, { prescriptionInput }) => {
+> = async (parent, { prescriptionInput }, { profilesDb }) => {
+  const medRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
+  const orderDetails = await medRepo.getMedicineOrder(prescriptionInput.orderId);
+  if (!orderDetails) {
+    throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
+  }
   let success = true;
   const uploadPresUrl = process.env.PHARMACY_MED_UPLOAD_PRESCRIPTION || '';
   const authToken = process.env.PHARMACY_OMS_ORDER_TOKEN || '';
@@ -42,9 +54,8 @@ export const reUploadPrescription: Resolver<
         url;
       }),
     }),
-    headers: { 'Content-Type': 'application/json', Authorization: authToken },
+    headers: { 'Content-Type': 'application/json', 'Auth-Token': authToken },
   });
-  console.log('reUploadPrescription', JSON.stringify(resp), authToken);
   if (resp.status != 200) {
     log(
       'profileServiceLogger',
@@ -57,7 +68,6 @@ export const reUploadPrescription: Resolver<
   }
 
   const respBody = await resp.json();
-
   if (!respBody.Status) {
     log(
       'profileServiceLogger',
@@ -68,6 +78,14 @@ export const reUploadPrescription: Resolver<
     );
     success = false;
   }
+  const updateMedOrderAttrs: Partial<MedicineOrders> = {
+    prescriptionImageUrl:
+      (orderDetails.prescriptionImageUrl ? orderDetails.prescriptionImageUrl + ',' : '') +
+      prescriptionInput.fileUrl,
+    prismPrescriptionFileId: prescriptionInput.prismPrescriptionFileId,
+  };
+  medRepo.updateMedicineOrder(orderDetails.id, orderDetails.orderAutoId, updateMedOrderAttrs);
+
   return { success };
 };
 

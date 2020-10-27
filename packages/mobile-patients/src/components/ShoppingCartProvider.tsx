@@ -30,6 +30,7 @@ export interface ShoppingCartItem {
   isMedicine: boolean;
   productType?: 'FMCG' | 'Pharma' | 'PL';
   isFreeCouponProduct?: boolean;
+  applicable?: boolean;
 }
 
 export interface CouponProducts {
@@ -41,7 +42,8 @@ export interface CouponProducts {
   sku: string;
   specialPrice: number;
   subCategoryId: any;
-  couponFree: boolean;
+  couponFree: number;
+  applicable?: boolean;
 }
 
 export interface PhysicalPrescription {
@@ -85,7 +87,8 @@ export interface CartProduct {
   quantity: number;
   discountAmt: number;
   onMrp: boolean;
-  couponFree?: boolean;
+  couponFree?: number;
+  applicable?: boolean;
 }
 export type EPrescriptionDisableOption = 'CAMERA_AND_GALLERY' | 'E-PRESCRIPTION' | 'NONE';
 
@@ -159,6 +162,8 @@ export interface ShoppingCartContextProps {
 
   hdfcPlanName: string;
   setHdfcPlanName: ((id: string) => void) | null;
+
+  isProuctFreeCouponApplied: boolean;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -224,6 +229,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
 
   hdfcPlanName: '',
   setHdfcPlanName: null,
+
+  isProuctFreeCouponApplied: false,
 });
 
 const AsyncStorageKeys = {
@@ -280,6 +287,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     []
   );
 
+  const [isProuctFreeCouponApplied, setisProuctFreeCouponApplied] = useState<boolean>(false);
   const setEPrescriptions: ShoppingCartContextProps['setEPrescriptions'] = (items) => {
     _setEPrescriptions(items);
     AsyncStorage.setItem(AsyncStorageKeys.ePrescriptions, JSON.stringify(items)).catch(() => {
@@ -356,14 +364,14 @@ export const ShoppingCartProvider: React.FC = (props) => {
 
   const removeCartItem: ShoppingCartContextProps['removeCartItem'] = (id) => {
     const newCartItems = cartItems.filter((item) => item.id !== id);
-    const newCartTotal = 
-      newCartItems.reduce(
-        (currTotal, currItem) =>
-          currTotal + currItem.quantity * 
-            (typeof currItem.specialPrice !== 'undefined' ? currItem.specialPrice : currItem.price),
-        0
-      );
-    if (newCartTotal <= 0){
+    const newCartTotal = newCartItems.reduce(
+      (currTotal, currItem) =>
+        currTotal +
+        currItem.quantity *
+          (typeof currItem.specialPrice !== 'undefined' ? currItem.specialPrice : currItem.price),
+      0
+    );
+    if (newCartTotal <= 0) {
       setCartItems([]);
     } else {
       setCartItems(newCartItems);
@@ -377,18 +385,18 @@ export const ShoppingCartProvider: React.FC = (props) => {
         g(currentPatient, 'id')
       );
       cartItems[foundIndex] = { ...cartItems[foundIndex], ...itemUpdates };
-      const newCartTotal = 
-        cartItems.reduce(
-          (currTotal, currItem) =>
-            currTotal + currItem.quantity * 
-              (
-                typeof currItem.specialPrice !== 'undefined' ? 
-                (currItem.isFreeCouponProduct && currItem.quantity === 1) ? 0 : currItem.specialPrice : 
-                currItem.price
-              ),
-          0
-        );
-      if (newCartTotal <= 0){
+      const newCartTotal = cartItems.reduce(
+        (currTotal, currItem) =>
+          currTotal +
+          currItem.quantity *
+            (typeof currItem.specialPrice !== 'undefined'
+              ? currItem.isFreeCouponProduct && currItem.quantity === 1
+                ? 0
+                : currItem.specialPrice
+              : currItem.price),
+        0
+      );
+      if (newCartTotal <= 0) {
         setCartItems([]);
       } else {
         setCartItems([...cartItems]);
@@ -541,9 +549,12 @@ export const ShoppingCartProvider: React.FC = (props) => {
       : undefined;
   };
 
+  const getApplicable = (cartItem: ShoppingCartItem, lineItems: CartProduct[]) => {
+    const foundItem = lineItems.find((item) => item.sku == cartItem.id);
+    return foundItem ? foundItem?.applicable : false;
+  };
   useEffect(() => {
     // updating coupon discount here on update in cart or new coupon code applied
-
     if (cartTotal == 0) {
       setCouponDiscount(0);
       setProductDiscount(0);
@@ -551,7 +562,6 @@ export const ShoppingCartProvider: React.FC = (props) => {
       setCouponProducts([]);
       return;
     }
-
     const productDiscount =
       cartItems.reduce((currTotal, currItem) => currTotal + currItem.quantity * currItem.price, 0) -
       cartItems.reduce(
@@ -561,6 +571,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
       );
 
     if (coupon) {
+      isProductFreeCoupon(coupon.products);
       let couponDiscount: number = coupon?.discount;
       if (
         couponDiscount != 0 &&
@@ -574,6 +585,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
           cartItems.map((item) => ({
             ...item,
             couponPrice: getDiscountPrice(item, coupon.products),
+            applicable: getApplicable(item, coupon.products),
           }))
         );
       } else {
@@ -589,7 +601,13 @@ export const ShoppingCartProvider: React.FC = (props) => {
     } else {
       setCouponDiscount(0);
       setProductDiscount(productDiscount);
-      setCartItems(cartItems.map((item) => ({ ...item, couponPrice: undefined })));
+      setCartItems(
+        cartItems
+          .filter((item) => !item?.isFreeCouponProduct)
+          .map((item) => ({ ...item, couponPrice: undefined }))
+      );
+      setCouponProducts!([]);
+      setisProuctFreeCouponApplied(false);
     }
   }, [cartTotal, coupon]);
 
@@ -618,6 +636,11 @@ export const ShoppingCartProvider: React.FC = (props) => {
       });
     return discount;
   };
+
+  function isProductFreeCoupon(lineItems: CartProduct[]) {
+    const foundItem = lineItems.find((item) => item.couponFree == 1);
+    foundItem ? setisProuctFreeCouponApplied(true) : setisProuctFreeCouponApplied(false);
+  }
   useEffect(() => {
     // updating prescription here on update in cart items
     if (cartTotalOfRxProducts == 0) {
@@ -697,6 +720,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
 
         hdfcPlanName,
         setHdfcPlanName,
+        isProuctFreeCouponApplied,
       }}
     >
       {props.children}

@@ -307,9 +307,15 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                     emailAddress: values.emailAddress,
                     dateOfBirth: values.dateOfBirth,
                     mobileNumber: patient.mobileNumber,
+                    referralCode: referralCode.length > 0 ? referralCode : '',
                   });
                   /* webengage code end */
                   if (props.customSignUp.referral === 'HDFCBANK') {
+                    /* GA Tracking */
+                    (window as any).dataLayer.push({
+                      event: 'RegistrationForm Submitted',
+                    });
+                    /*******************/
                     hdfcSignupDoneTracking();
                     HdfcUserSignupDetailTracking({
                       firstName: values.firstName,
@@ -318,6 +324,7 @@ export const NewProfile: React.FC<NewProfileProps> = (props) => {
                       emailAddress: values.emailAddress,
                       dateOfBirth: values.dateOfBirth,
                       mobileNumber: patient.mobileNumber,
+                      referralCode: referralCode.length > 0 ? referralCode : '',
                     });
                     history.push(clientRoutes.welcome());
                   } else {

@@ -491,10 +491,12 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
   const [specialtyId, setSpecialtyId] = useState<string>('');
   const [specialtyName, setSpecialtyName] = useState<string>('');
   const [specialtyPlural, setSpecialtyPlural] = useState<string>('');
+  const [specialtyImage, setSpecialtyImage] = useState<string>('');
+  const [specialtyInfo, setSpecialtyInfo] = useState<any>({});
   const [locationPopup, setLocationPopup] = useState<boolean>(false);
   const [isAlternateVariant, setIsAlternateVariant] = useState<boolean>(true);
   const [selectedCity, setSelectedCity] = useState<string>(
-    params && params.city ? params.city : ''
+    params && params.city ? params.city.charAt(0).toUpperCase() + params.city.slice(1) : ''
   );
   const [searchKeyword, setSearchKeyword] = useState<string>('');
   const [isFetching, setIsFetching] = useState<boolean>(false);
@@ -710,7 +712,7 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
       window.dataLayer.push({
         event: 'pageviewEvent',
         pagePath: window.location.href,
-        pageName: `${readableParam(specialtyName)} Listing Page`,
+        pageName: `${specialtyName}-${selectedCity} Listing Page`,
         pageLOB: 'Consultation',
         pageType: 'Index',
         productlist: JSON.stringify(doctorData),
@@ -740,6 +742,8 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
                 setSpecialtyName(specialty.name);
                 setSlugName(specialty.slugName);
                 setSpecialtyPlural(specialty.specialistPluralTerm);
+                setSpecialtyImage(specialty.image);
+                setSpecialtyInfo(specialty);
               }
             });
         });
@@ -747,18 +751,23 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
   }, [params.specialty]);
 
   useEffect(() => {
-    if (slugName !== '') {
+    if (slugName !== '' && selectedCity) {
       axios
-        .get(`${process.env.CMS_BASE_URL}/api/specialty-details/${readableParam(specialtyName)}`, {
-          headers: { 'Content-Type': 'application/json', Authorization: process.env.CMS_TOKEN },
-        })
+        .get(
+          `${process.env.CMS_BASE_URL}/api/specialty-details/${readableParam(
+            specialtyName
+          )}?ct=${selectedCity}`,
+          {
+            headers: { 'Content-Type': 'application/json', Authorization: process.env.CMS_TOKEN },
+          }
+        )
         .then((res: any) => {
           if (res && res.data && res.data.success) {
             setFaqData(res && res.data && res.data.data);
           }
         });
     }
-  }, [slugName]);
+  }, [slugName, selectedCity]);
 
   let expRange: Range = [],
     feeRange: Range = [];
@@ -857,13 +866,13 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
               {
                 '@type': 'ListItem',
                 position: 3,
-                name: specialtyName,
+                name: specialtyPlural,
                 item: `https://www.apollo247.com/specialties/${readableParam(specialtyName)}`,
               },
               {
                 '@type': 'ListItem',
                 position: 4,
-                name: `${specialtyPlural} - ${selectedCity}`,
+                name: `${specialtyPlural} in ${selectedCity}`,
                 item: `https://www.apollo247.com/doctors/${readableParam(
                   specialtyPlural
                 )}-in-${selectedCity}-scity`,
@@ -898,16 +907,6 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
             setFilteredDoctorData(filteredObj);
             const specialtiesArray = response.data.getDoctorList.specialties || [];
             setSearchSpecialty(specialtiesArray);
-            /**Gtm code start start */
-            dataLayerTracking({
-              event: 'pageviewEvent',
-              pagePath: window.location.href,
-              pageName: `${specialtyName}-${selectedCity} Listing Page`,
-              pageLOB: 'Consultation',
-              pageType: 'Listing',
-              productlist: JSON.stringify(doctors),
-            });
-            /**Gtm code start end */
           }
           setData(response.data);
         })
@@ -918,14 +917,23 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
           setInitalLoad(false);
         });
     }
-  }, [currentLat, currentLong, filter, specialtyId, specialtyName, selectedCity]);
+  }, [currentLat, currentLong, filter, specialtyId, specialtyName, selectedCity, specialtyPlural]);
 
   const metaTagProps = {
-    title: (faqData && faqData[0].specialtyMetaTitle) || '',
-    description: (faqData && faqData[0].specialtyMetaDescription) || '',
-    canonicalLink:
-      (faqData && faqData[0].canonicalUrl) ||
-      (window && window.location && `${window.location.host}${window.location.pathname}`),
+    title: `Best ${specialtyPlural} in ${selectedCity} - Book Online Consultation Now | Apollo 247`,
+    description: `${specialtyPlural} in ${selectedCity} - Book online doctor consultation and in-person visit with ${apolloDoctorCount +
+      partnerDoctorCount} ${specialtyName} Specialists in ${selectedCity} within 15 min. Get world-class treatment from Best ${specialtyPlural} in ${selectedCity} ${
+      specialtyInfo.shortDescription
+    } such as ${specialtyInfo.symptoms} and more.`,
+    canonicalLink: window && window.location && window.location.href,
+    ogtitle: `Best ${specialtyPlural} in ${selectedCity} - Book Online Consultation Now | Apollo 247`,
+    ogdescription: `${specialtyPlural} in ${selectedCity} - Book online doctor consultation and in-person visit with ${apolloDoctorCount +
+      partnerDoctorCount} ${specialtyName} Specialists in ${selectedCity} within 15 min. Get world-class treatment from Best ${specialtyPlural} in ${selectedCity} ${
+      specialtyInfo.shortDescription
+    } such as ${specialtyInfo.symptoms} and more.`,
+    ogurl: window && window.location && window.location.href,
+    ogimage: specialtyImage,
+    ogsite_name: 'Apollo 24|7',
   };
 
   return (
@@ -952,7 +960,7 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
                   <img src={require('images/triangle.svg')} alt="" />
                   <Link to={clientRoutes.specialityListing()}>Online Doctor Consultation</Link>
                   <img src={require('images/triangle.svg')} alt="" />
-                  <Link to={clientRoutes.specialties(readableParam(params.specialty))}>
+                  <Link to={clientRoutes.specialties(readableParam(specialtyName))}>
                     {faqData && faqData[0].breadCrumbTitle}
                   </Link>
                   <img src={require('images/triangle.svg')} alt="" />
@@ -978,8 +986,7 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
               {faqData && faqData[0].breadCrumbTitle && (
                 <div className={classes.sectionHeader}>
                   <h1>
-                    Best <span>{faqData[0].breadCrumbTitle.toLowerCase()}</span> in{' '}
-                    <span>{selectedCity}</span>
+                    Best <span>{specialtyPlural}</span> in <span>{selectedCity}</span>
                   </h1>
                 </div>
               )}
@@ -999,9 +1006,8 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
               />
               <div className={classes.tabsFilter}>
                 <h2>
-                  {`${filteredDoctorData ? filteredDoctorData[doctorType].length : 0}`}{' '}
-                  <span>{faqData && faqData[0].breadCrumbTitle.toLowerCase()}</span> found in{' '}
-                  <span>{selectedCity}</span>
+                  {`${apolloDoctorCount + partnerDoctorCount}`} <span>{specialtyPlural}</span> found
+                  in <span>{selectedCity}</span>
                 </h2>
               </div>
               <div className={classes.filterButtons}>
@@ -1012,8 +1018,7 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
                   className={doctorType === DOCTOR_CATEGORY.APOLLO ? classes.buttonActive : ''}
                 >
                   <h2>
-                    Apollo {faqData && faqData[0].breadCrumbTitle.toLowerCase()} (
-                    {apolloDoctorCount})
+                    Apollo {specialtyPlural} ({apolloDoctorCount})
                   </h2>
                 </AphButton>
                 <AphButton
@@ -1023,8 +1028,7 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
                   }}
                 >
                   <h2>
-                    Partner {faqData && faqData[0].breadCrumbTitle.toLowerCase()} (
-                    {partnerDoctorCount})
+                    Partner {specialtyPlural} ({partnerDoctorCount})
                   </h2>
                 </AphButton>
               </div>
@@ -1085,12 +1089,12 @@ const SpecialtyDetailsWithCity: React.FC<SpecialityProps> = (props) => {
                   'no results found'
                 )}
               </div>
-              {faqData && faqData.length > 0 && (
+              {/* {faqData && faqData.length > 0 && (
                 <>
                   <BookBest faqData={faqData[0]} specialityName={specialtyName} />
                   <FrequentlyQuestions faqData={faqData[0].specialityFaq} />
                 </>
-              )}
+              )} */}
             </div>
             <div className={classes.rightBar}>
               <div className={classes.stickyBlock}>

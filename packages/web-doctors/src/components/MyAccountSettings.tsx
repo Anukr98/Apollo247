@@ -143,7 +143,7 @@ export const MyAccountSettings: React.FC = () => {
   const items = [
     {
       key: 'IVR',
-      value: <div>{'Set-up an IVR as a reminder for appointment booking'}</div>,
+      value: <div>{'Set Up a call reminder for Appointment Booking'}</div>,
       state: expansionState.ivrExpanded,
       component: (
         <IVR

@@ -771,9 +771,10 @@ export const MyAccount: React.FC = (props) => {
                     >
                       <div 
                         onClick={() => {
-                          webEngageEventTracking(null,
-                            'Front_end - Doctor Clicked on the Settings'
-                          );
+                          webEngageEventTracking({
+                            'Doctor name': (currentPatient && currentPatient.fullName) || '',
+                            'Doctor Mobile number': (currentPatient && currentPatient.mobileNumber) || '',
+                          },'Front_end - Doctor Clicked on the Settings');
                           setselectedNavTab(5);
                         }} 
                         className={classes.leftNav}>
