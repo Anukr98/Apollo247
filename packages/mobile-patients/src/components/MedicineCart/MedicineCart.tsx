@@ -132,6 +132,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>(false);
   const [showStorePickupCard, setshowStorePickupCard] = useState<boolean>(false);
   const [suggestedProducts, setsuggestedProducts] = useState<MedicineProduct[]>([]);
+  const [appState, setappState] = useState<string>('');
   const shoppingCart = useShoppingCart();
   const navigatedFrom = props.navigation.getParam('movedFrom') || '';
   const pharmacyPincode =
@@ -188,9 +189,15 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   }, [isPhysicalUploadComplete]);
 
   const handleAppStateChange = (nextAppState: AppStateStatus) => {
-    nextAppState === 'active' && availabilityTat(true);
-    setCoupon!(null);
+    setappState(nextAppState);
   };
+
+  useEffect(() => {
+    if (appState == 'active') {
+      availabilityTat(true);
+      setCoupon!(null);
+    }
+  }, [appState]);
 
   const handleBack = () => {
     setCoupon!(null);
