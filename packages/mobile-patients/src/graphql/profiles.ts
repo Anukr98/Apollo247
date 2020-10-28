@@ -739,6 +739,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       displayName
       doctorType
       chatDays
+      doctorsOfTheHourStatus
       qualification
       mobileNumber
       experience
@@ -828,6 +829,31 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       doctorNextAvailSlots {
         onlineSlot
         physicalSlot
+      }
+    }
+  }
+`;
+
+export const GET_PLATINUM_DOCTOR = gql`
+  query getPlatinumDoctor($specialtyId: ID) {
+    getPlatinumDoctor(specialtyId: $specialtyId) {
+      doctors {
+        id
+        displayName
+        doctorType
+        consultMode
+        earliestSlotInMinutes
+        doctorfacility
+        fee
+        specialistPluralTerm
+        specialistPluralTerm
+        specialtydisplayName
+        doctorType
+        qualification
+        experience
+        photoUrl
+        slot
+        thumbnailUrl
       }
     }
   }
