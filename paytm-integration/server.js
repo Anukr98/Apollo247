@@ -47,6 +47,7 @@ app.use(
 const PORT = process.env.PORT || 7000;
 
 const cronTabs = require('./cronTabs');
+const { default: Decimal } = require('decimal.js');
 
 app.use(cors());
 
@@ -308,16 +309,16 @@ app.get('/getCmToken', (req, res) => {
   axios
     .get(
       process.env.CM_API_URL +
-        '?appId=apollo_24_7&appUserId=' +
-        req.query.appUserId +
-        '&name=' +
-        req.query.userName +
-        '&gender=' +
-        req.query.gender +
-        '&emailId=' +
-        req.query.emailId +
-        '&phoneNumber=' +
-        req.query.phoneNumber,
+      '?appId=apollo_24_7&appUserId=' +
+      req.query.appUserId +
+      '&name=' +
+      req.query.userName +
+      '&gender=' +
+      req.query.gender +
+      '&emailId=' +
+      req.query.emailId +
+      '&phoneNumber=' +
+      req.query.phoneNumber,
       axiosConfig
     )
     .then((response) => {
@@ -1111,8 +1112,7 @@ app.get('/processOmsOrders', (req, res) => {
                     );
                   } catch (e) {
                     logger.error(
-                      `Error while fetching prescription urls for orderid ${
-                        orderDetails.orderAutoId
+                      `Error while fetching prescription urls for orderid ${orderDetails.orderAutoId
                       } ${JSON.stringify(e)}`
                     );
                     res.send({
@@ -1138,7 +1138,7 @@ app.get('/processOmsOrders', (req, res) => {
                       paymentsource: 'paytm',
                       transactionstatus: 'TRUE',
                       paymenttransactionid: paymentDetails.paymentRefId,
-                      amount: paymentDetails.amountPaid,
+                      amount: +new Decimal(orderDetails.estimatedAmount).minus(paymentDetails.healthCreditsRedeemed),
                     });
                   }
                   if (paymentDetails.healthCreditsRedeemed) {
@@ -1197,8 +1197,8 @@ app.get('/processOmsOrders', (req, res) => {
                       (patientDetails.lastName ? ' ' + patientDetails.lastName : ''),
                     primarycontactno: patientAddressDetails.mobileNumber
                       ? patientAddressDetails.mobileNumber.substr(
-                          patientAddressDetails.mobileNumber.length - 10
-                        )
+                        patientAddressDetails.mobileNumber.length - 10
+                      )
                       : '',
                     secondarycontactno: patientDetails.mobileNumber.substr(3),
                     age: patientAge,
@@ -1427,7 +1427,7 @@ app.get('/processOrderById', (req, res) => {
         ) {
           if (
             response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patientAddressId !=
-              '' &&
+            '' &&
             response.data.data.getMedicineOrderDetails.MedicineOrderDetails.patientAddressId != null
           ) {
             await getAddressDetails(
@@ -1477,9 +1477,9 @@ app.get('/processOrderById', (req, res) => {
         let orderType = 'FMCG';
         if (
           response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl !=
-            '' &&
+          '' &&
           response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl !=
-            null
+          null
         ) {
           prescriptionImages = response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl.split(
             ','
@@ -1509,9 +1509,9 @@ app.get('/processOrderById', (req, res) => {
               .paymentType;
           if (
             response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl !=
-              '' &&
+            '' &&
             response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl !=
-              null
+            null
           ) {
             prescriptionImages = response.data.data.getMedicineOrderDetails.MedicineOrderDetails.prescriptionImageUrl.split(
               ','
