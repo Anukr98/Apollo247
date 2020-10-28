@@ -133,7 +133,7 @@ export const checkDocOnCallAvailable = async function (mobileNumber: string, ben
   const benefits = response?.data?.data?.GetAllUserSubscriptionsWithPlanBenefits?.response[0]?.benefits;
   if (benefits) {
     return benefits.filter((el: any) => {
-      return (el._id == benefitId && el.attribute_type.remaining > 0) ? true : false;
+      return (el._id == benefitId && el.attribute == "Doc on Call") ? true : false;
     }).length > 0;
   }
   return false;

@@ -292,7 +292,7 @@ export class DoctorRepository extends Repository<Doctor> {
       physicalSlot:'',
       onlineSlot:''
     };
-    
+
     if (getDetails.body.hits.hits && getDetails.body.hits.hits.length > 0) {
       doctorData = getDetails.body.hits.hits[0]._source;
       if (doctorData['languages'] instanceof Array) {
@@ -386,7 +386,6 @@ export class DoctorRepository extends Repository<Doctor> {
         'starTeam.associatedDoctor.doctorHospital.facility',
         'doctorSecretary',
         'doctorSecretary.secretary',
-        'doctorPricing'
       ],
     });
   }
@@ -467,7 +466,6 @@ export class DoctorRepository extends Repository<Doctor> {
           'starTeam.associatedDoctor.specialty',
           'starTeam.associatedDoctor.doctorHospital',
           'starTeam.associatedDoctor.doctorHospital.facility',
-          'doctorPricing'
         ],
         take: limit,
         skip: offset,
@@ -487,7 +485,6 @@ export class DoctorRepository extends Repository<Doctor> {
           'starTeam.associatedDoctor.specialty',
           'starTeam.associatedDoctor.doctorHospital',
           'starTeam.associatedDoctor.doctorHospital.facility',
-          'doctorPricing'
         ],
       });
     }

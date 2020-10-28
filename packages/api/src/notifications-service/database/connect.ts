@@ -100,7 +100,6 @@ import { MedicineEntitySubscriber } from 'profiles-service/entities/observers/me
 import { DiagnosticEntitySubscriber } from 'profiles-service/entities/observers/diagnosticPaymentSuccessObserver';
 import { HealthCheckRecords } from 'profiles-service/entities/healthCheckRecordsEntity';
 import { HospitalizationRecords } from 'profiles-service/entities/hospitalizationRecordsEntity';
-import { DoctorPricing } from 'doctors-service/entities/doctorPricing';
 
 export const connect = async () => {
   return await createConnections([
@@ -150,7 +149,6 @@ export const connect = async () => {
         BlockedCalendarItem,
         ConsultHours,
         Deeplink,
-        DoctorPricing,
         Doctor,
         DoctorAndHospital,
         DoctorBankAccounts,

@@ -48,7 +48,7 @@ export const reUploadPrescription: Resolver<
   const resp = await fetch(uploadPresUrl, {
     method: 'POST',
     body: JSON.stringify({
-      orderid: orderDetails.referenceNo,
+      orderid: prescriptionInput.orderId,
       requesttype: 'UPLOAD',
       imageurl: prescriptionInput.fileUrl.split(',').map((url) => {
         url;

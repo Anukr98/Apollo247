@@ -381,12 +381,6 @@ export class MedicineOrders extends BaseEntity {
   orderTat: string;
 
   @Column({ nullable: true })
-  prescriptionOptionSelected: string;
-  
-  @Column({ nullable: true })
-  oldOrderTat: string;
-
-  @Column({ nullable: true })
   patientAddressId: string;
 
   @Column({ nullable: true })

@@ -45,7 +45,7 @@ type SaveOrderReturnInput = {
 };
 
 type SaveOrderReturnInputArgs = {
-  orderReturnedInput: SaveOrderReturnInput;
+  orderReturnInput: SaveOrderReturnInput;
 };
 
 const orderReturned: Resolver<
@@ -53,10 +53,10 @@ const orderReturned: Resolver<
   SaveOrderReturnInputArgs,
   ProfilesServiceContext,
   SaveOrderReturnResult
-> = async (parent, { orderReturnedInput }, { profilesDb }) => {
+> = async (parent, { orderReturnInput }, { profilesDb }) => {
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const orderDetails = await medicineOrdersRepo.getMedicineOrderWithShipments(
-    orderReturnedInput.orderId
+    orderReturnInput.orderId
   );
   if (!orderDetails) {
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
@@ -68,32 +68,31 @@ const orderReturned: Resolver<
 
   log(
     'profileServiceLogger',
-    `ORDER_STATUS_CHANGE_${orderReturnedInput.status}_FOR_ORDER_ID:${orderReturnedInput.orderId}`,
+    `ORDER_STATUS_CHANGE_${orderReturnInput.status}_FOR_ORDER_ID:${orderReturnInput.orderId}`,
     `orderReturned call from OMS`,
-    JSON.stringify(orderReturnedInput),
+    JSON.stringify(orderReturnInput),
     ''
   );
   const statusDate = format(
-    addMinutes(parseISO(orderReturnedInput.updatedDate), -330),
+    addMinutes(parseISO(orderReturnInput.updatedDate), -330),
     "yyyy-MM-dd'T'HH:mm:ss.SSSX"
   );
   const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
-    orderStatus: orderReturnedInput.status,
+    orderStatus: orderReturnInput.status,
     medicineOrders: orderDetails,
     statusDate: new Date(statusDate),
   };
   await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
 
-  if (orderReturnedInput.status == MEDICINE_ORDER_STATUS.RETURN_INITIATED)
-    await medicineOrdersRepo.updateMedicineOrderDetails(
-      orderDetails.id,
-      orderDetails.orderAutoId,
-      new Date(),
-      orderReturnedInput.status
-    );
+  await medicineOrdersRepo.updateMedicineOrderDetails(
+    orderDetails.id,
+    orderDetails.orderAutoId,
+    new Date(),
+    orderReturnInput.status
+  );
 
   return {
-    status: orderReturnedInput.status,
+    status: orderReturnInput.status,
     errorCode: 0,
     errorMessage: '',
     orderId: orderDetails.orderAutoId,

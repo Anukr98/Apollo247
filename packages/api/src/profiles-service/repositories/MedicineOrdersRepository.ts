@@ -667,12 +667,6 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     return MedicineOrderAddress.create(orderAddressAttrs).save();
   }
 
-  getMedicineOrderAddress(medicineOrdersId: string) {
-    return MedicineOrderAddress.findOne({
-      where: { medicineOrders: medicineOrdersId },
-    });
-  }
-
   getMedicineOrder(orderAutoId: number) {
     return this.findOne({ orderAutoId });
   }

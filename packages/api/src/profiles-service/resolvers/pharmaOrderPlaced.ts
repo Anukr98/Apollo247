@@ -15,7 +15,7 @@ import { NotificationType } from 'notifications-service/constants';
 import { ApiConstants } from 'ApiConstants';
 import { postEvent, WebEngageInput } from 'helpers/webEngage';
 import { format, addMinutes, differenceInHours, differenceInCalendarDays } from 'date-fns';
-import { syncInventory } from 'profiles-service/helpers/inventorySync';
+import { syncInventory } from 'helpers/inventorySync';
 
 export const pharmaOrderPlacedTypeDefs = gql`
   input OrderPlacedInput {

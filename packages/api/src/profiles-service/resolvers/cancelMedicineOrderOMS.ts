@@ -19,7 +19,7 @@ import { calculateRefund } from 'profiles-service/helpers/refundHelper';
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
 import { ApiConstants } from 'ApiConstants';
 import { format, addMinutes } from 'date-fns';
-import { syncInventory } from 'profiles-service/helpers/inventorySync';
+import { syncInventory } from 'helpers/inventorySync';
 import { SYNC_TYPE } from 'types/inventorySync';
 
 export const medicineOrderCancelOMSTypeDefs = gql`

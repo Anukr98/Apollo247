@@ -107,7 +107,6 @@ import { MedicineEntitySubscriber } from 'profiles-service/entities/observers/me
 import { AppointmentCallFeedback } from 'consults-service/entities/appointmentCallFeedbackEntity';
 import { HealthCheckRecords } from 'profiles-service/entities/healthCheckRecordsEntity';
 import { HospitalizationRecords } from 'profiles-service/entities/hospitalizationRecordsEntity';
-import { DoctorPricing } from 'doctors-service/entities/doctorPricing';
 
 export const connect = async () => {
   return await createConnections([
@@ -116,7 +115,6 @@ export const connect = async () => {
         AdminDoctorMapper,
         AdminUsers,
         BlockedCalendarItem,
-        DoctorPricing,
         ConsultHours,
         Deeplink,
         Doctor,

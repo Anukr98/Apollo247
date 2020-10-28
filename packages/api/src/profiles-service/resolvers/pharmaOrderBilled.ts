@@ -19,7 +19,7 @@ import { sendMedicineOrderStatusNotification } from 'notifications-service/handl
 import { calculateRefund } from 'profiles-service/helpers/refundHelper';
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
 import { ApiConstants } from 'ApiConstants';
-import { syncInventory } from 'profiles-service/helpers/inventorySync';
+import { syncInventory } from 'helpers/inventorySync';
 import { SYNC_TYPE } from 'types/inventorySync';
 
 export const saveOrderShipmentInvoiceTypeDefs = gql`
@@ -306,6 +306,11 @@ const saveOrderShipmentInvoice: Resolver<
   orderDetails.medicineOrderLineItems = await medicineOrdersRepo.getMedicineOrderLineItemByOrderId(
     orderDetails.id
   );
+  orderDetails.medicineOrderLineItems = orderDetails.medicineOrderLineItems.filter((lineItem) => {
+    return saveOrderShipmentInvoiceInput.itemDetails.find((inputItem) => {
+      return inputItem.articleCode == lineItem.medicineSKU;
+    });
+  });
   syncInventory(orderDetails, SYNC_TYPE.RELEASE);
 
   return {

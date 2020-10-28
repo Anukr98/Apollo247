@@ -123,8 +123,6 @@ export class PatientRepository extends Repository<Patient> {
       if (patient.dateOfBirth) {
         patient.dateOfBirth = new Date(patient.dateOfBirth);
       }
-      patient.createdDate = new Date(patient.createdDate);
-
       return this.create(patient);
     } else {
       return await this.setByIdCache(id);

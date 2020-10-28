@@ -851,11 +851,11 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   async getPatientUpcomingAppointmentsCount(ids: string[]) {
-    // const weekPastDate = format(addDays(new Date(), -7), 'yyyy-MM-dd');
-    // const weekPastDateUTC = new Date(weekPastDate + 'T18:30');
+    const weekPastDate = format(addDays(new Date(), -7), 'yyyy-MM-dd');
+    const weekPastDateUTC = new Date(weekPastDate + 'T18:30');
     return this.createQueryBuilder('appointment')
-      // .where('appointment.appointmentDateTime > :weekPastDateUTC', { weekPastDateUTC })
-      .where('appointment.patientId IN (:...ids)', { ids })
+      .where('appointment.appointmentDateTime > :weekPastDateUTC', { weekPastDateUTC })
+      .andWhere('appointment.patientId IN (:...ids)', { ids })
       .andWhere(
         'appointment.status not in(:status1,:status2,:status3,:status4,:status5,:status6)',
         {
@@ -1424,17 +1424,6 @@ export class AppointmentRepository extends Repository<Appointment> {
       },
       AphErrorMessages.CANCEL_APPOINTMENT_ERROR
     );
-  }
-
-  async getAppointmentCountByPatientId(patientId: string[]) {
-    const results = await this.createQueryBuilder('appointment')
-      .select('appointment.patientId as patientId')
-      .addSelect('COUNT(*) AS count')
-      .where('appointment.patientId IN (:...patientList)', { patientList: patientId })
-      .andWhere('appointment.status = :completed', { completed: STATUS.COMPLETED })
-      .groupBy('appointment.patientId')
-      .getRawMany();
-    return results;
   }
 
   getAppointmentsByPatientId(patientId: string, startDate: Date, endDate: Date) {

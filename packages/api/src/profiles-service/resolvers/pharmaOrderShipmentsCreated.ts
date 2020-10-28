@@ -6,9 +6,6 @@ import {
   MedicineOrdersStatus,
   MedicineOrderShipments,
   MEDICINE_DELIVERY_TYPE,
-  MedicineOrderLineItems,
-  MedicineOrders,
-  MedicineOrderAddress,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
@@ -18,14 +15,11 @@ import {
   sendCartNotification,
 } from 'notifications-service/handlers';
 import { NotificationType } from 'notifications-service/constants';
-import { format, addMinutes, parseISO, differenceInMinutes } from 'date-fns';
+import { format, addMinutes, parseISO } from 'date-fns';
 import { log } from 'customWinstonLogger';
 import { WebEngageInput, postEvent } from 'helpers/webEngage';
 import { ApiConstants } from 'ApiConstants';
 import Decimal from 'decimal.js';
-import { updateLhub } from 'profiles-service/helpers/inventorySync';
-import { LHUB_UPDATE_TYPE } from 'types/inventorySync';
-import { getTat } from 'profiles-service/helpers/inventorySync';
 
 export const saveOrderShipmentsTypeDefs = gql`
   input SaveOrderShipmentsInput {
@@ -51,7 +45,6 @@ export const saveOrderShipmentsTypeDefs = gql`
     batch: String
     unitPrice: Float
     packSize: Int
-    posAvailability: Boolean
   }
 
   type SaveOrderShipmentsResult {
@@ -59,11 +52,6 @@ export const saveOrderShipmentsTypeDefs = gql`
     errorCode: Int
     errorMessage: String
     orderId: Int
-    tat: String
-    siteId: String
-    tatType: String
-    allocationProfile: String
-    clusterId: String
   }
 
   extend type Mutation {
@@ -76,11 +64,6 @@ type SaveOrderShipmentsResult = {
   errorCode: number;
   errorMessage: string;
   orderId: number;
-  tat: string;
-  siteId: string;
-  tatType: string;
-  allocationProfile: string;
-  clusterId: string;
 };
 
 type SaveOrderShipmentsInput = {
@@ -106,7 +89,6 @@ type ItemArticleDetails = {
   batch: string;
   unitPrice: number;
   packSize: number;
-  posAvailability: boolean;
 };
 
 type SaveOrderShipmentsInputArgs = {
@@ -138,6 +120,7 @@ const saveOrderShipments: Resolver<
     JSON.stringify(saveOrderShipmentsInput),
     ''
   );
+
   let shipmentsInput = saveOrderShipmentsInput.shipments;
   const existingShipments: Shipment[] = [];
   if (orderDetails.medicineOrderShipments && orderDetails.medicineOrderShipments.length > 0) {
@@ -175,101 +158,87 @@ const saveOrderShipments: Resolver<
       throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_SHIPMENT_ERROR, undefined, e);
     }
   }
-  if (shipmentsInput.length != 0) {
-    let shipmentsResults;
-    try {
-      const shipmentsPromise = shipmentsInput.map(async (shipment, index) => {
-        const itemDetails = shipment.itemDetails.map((item) => {
-          return {
-            ...item,
-            quantity: +new Decimal(item.quantity).dividedBy(item.packSize).toFixed(4),
-            mrp: +new Decimal(item.unitPrice).times(item.packSize).toFixed(4),
-          };
-        });
-        const orderShipmentsAttrs: Partial<MedicineOrderShipments> = {
-          currentStatus: MEDICINE_ORDER_STATUS[shipment.status],
-          medicineOrders: orderDetails,
-          apOrderNo: shipment.apOrderNo,
-          siteId: shipment.siteId,
-          siteName: shipment.siteName,
-          itemDetails: JSON.stringify(itemDetails),
+  if (shipmentsInput.length == 0) {
+    return {
+      status: MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
+      errorCode: 0,
+      errorMessage: '',
+      orderId: orderDetails.orderAutoId,
+    };
+  }
+  let shipmentsResults;
+  try {
+    const shipmentsPromise = shipmentsInput.map(async (shipment, index) => {
+      const itemDetails = shipment.itemDetails.map((item) => {
+        return {
+          ...item,
+          quantity: +new Decimal(item.quantity).dividedBy(item.packSize).toFixed(4),
+          mrp: +new Decimal(item.unitPrice).times(item.packSize).toFixed(4),
         };
-        return await medicineOrdersRepo.saveMedicineOrderShipment(orderShipmentsAttrs);
       });
-      shipmentsResults = await Promise.all(shipmentsPromise);
-    } catch (e) {
-      throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_SHIPMENT_ERROR, undefined, e);
-    }
-    shipmentsResults.forEach(async (shipmentsResult, index) => {
-      const statusDate = format(
-        addMinutes(parseISO(shipmentsInput[index].updatedDate), -330),
-        "yyyy-MM-dd'T'HH:mm:ss.SSSX"
-      );
-      medicineOrdersRepo.saveMedicineOrderStatus(
-        {
-          orderStatus: MEDICINE_ORDER_STATUS.ORDER_PLACED,
-          medicineOrderShipments: shipmentsResult,
-          statusDate: new Date(orderDetails.orderDateTime),
-        },
-        orderDetails.orderAutoId
-      );
-      const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
-        orderStatus: MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
-        medicineOrderShipments: shipmentsResult,
-        statusDate: new Date(statusDate),
+      const orderShipmentsAttrs: Partial<MedicineOrderShipments> = {
+        currentStatus: MEDICINE_ORDER_STATUS[shipment.status],
+        medicineOrders: orderDetails,
+        apOrderNo: shipment.apOrderNo,
+        siteId: shipment.siteId,
+        siteName: shipment.siteName,
+        itemDetails: JSON.stringify(itemDetails),
       };
-      medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
+      return await medicineOrdersRepo.saveMedicineOrderShipment(orderShipmentsAttrs);
     });
+    shipmentsResults = await Promise.all(shipmentsPromise);
+  } catch (e) {
+    throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_SHIPMENT_ERROR, undefined, e);
+  }
+  shipmentsResults.forEach(async (shipmentsResult, index) => {
     const statusDate = format(
-      addMinutes(parseISO(shipmentsInput[0].updatedDate), -330),
+      addMinutes(parseISO(shipmentsInput[index].updatedDate), -330),
       "yyyy-MM-dd'T'HH:mm:ss.SSSX"
+    );
+    medicineOrdersRepo.saveMedicineOrderStatus(
+      {
+        orderStatus: MEDICINE_ORDER_STATUS.ORDER_PLACED,
+        medicineOrderShipments: shipmentsResult,
+        statusDate: new Date(orderDetails.orderDateTime),
+      },
+      orderDetails.orderAutoId
     );
     const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
       orderStatus: MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
-      medicineOrders: orderDetails,
+      medicineOrderShipments: shipmentsResult,
       statusDate: new Date(statusDate),
     };
-    await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
+    medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
+  });
+  const statusDate = format(
+    addMinutes(parseISO(shipmentsInput[0].updatedDate), -330),
+    "yyyy-MM-dd'T'HH:mm:ss.SSSX"
+  );
+  const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
+    orderStatus: MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
+    medicineOrders: orderDetails,
+    statusDate: new Date(statusDate),
+  };
+  await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
 
-    await medicineOrdersRepo.updateMedicineOrderDetails(
-      orderDetails.id,
-      orderDetails.orderAutoId,
-      new Date(),
-      MEDICINE_ORDER_STATUS.ORDER_VERIFIED
+  await medicineOrdersRepo.updateMedicineOrderDetails(
+    orderDetails.id,
+    orderDetails.orderAutoId,
+    new Date(),
+    MEDICINE_ORDER_STATUS.ORDER_VERIFIED
+  );
+
+  if (orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP) {
+    sendMedicineOrderStatusNotification(
+      NotificationType.MEDICINE_ORDER_READY_AT_STORE,
+      orderDetails,
+      profilesDb
     );
 
-    if (orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP) {
-      sendMedicineOrderStatusNotification(
-        NotificationType.MEDICINE_ORDER_READY_AT_STORE,
-        orderDetails,
-        profilesDb
-      );
-
-      //post order ready at store event to webEngage
-      const postBody: Partial<WebEngageInput> = {
-        userId: orderDetails.patient.mobileNumber,
-        eventName: ApiConstants.MEDICINE_ORDER_KERB_STORE_READY_EVENT_NAME.toString(),
-        eventData: {
-          orderId: orderDetails.orderAutoId,
-          statusDateTime: format(
-            parseISO(shipmentsInput[0].updatedDate),
-            "yyyy-MM-dd'T'HH:mm:ss'+0530'"
-          ),
-        },
-      };
-      postEvent(postBody);
-    } else {
-      const pushNotificationInput = {
-        orderAutoId: orderDetails.orderAutoId,
-        notificationType: NotificationType.MEDICINE_ORDER_CONFIRMED,
-      };
-      sendCartNotification(pushNotificationInput, profilesDb);
-    }
-
-    //post order verified event to webEngage
+    //post order ready at store event to webEngage
     const postBody: Partial<WebEngageInput> = {
       userId: orderDetails.patient.mobileNumber,
-      eventName: ApiConstants.MEDICINE_ORDER_VERIFIED_EVENT_NAME.toString(),
+      eventName: ApiConstants.MEDICINE_ORDER_KERB_STORE_READY_EVENT_NAME.toString(),
       eventData: {
         orderId: orderDetails.orderAutoId,
         statusDateTime: format(
@@ -279,103 +248,34 @@ const saveOrderShipments: Resolver<
       },
     };
     postEvent(postBody);
+  } else {
+    const pushNotificationInput = {
+      orderAutoId: orderDetails.orderAutoId,
+      notificationType: NotificationType.MEDICINE_ORDER_CONFIRMED,
+    };
+    sendCartNotification(pushNotificationInput, profilesDb);
   }
 
-  let siteId = '',
-    tatType = '',
-    allocationProfile = '',
-    clusterId = '',
-    tat = '';
-  const orderAddress = await medicineOrdersRepo.getMedicineOrderAddress(orderDetails.id);
-  const shipmentDetails = saveOrderShipmentsInput.shipments[0];
-  if (orderAddress) {
-    assignLhub(orderDetails, shipmentDetails, orderAddress);
-    const newTat = await getNewTat(orderDetails, shipmentDetails, orderAddress);
-    if (newTat) {
-      siteId = newTat.storeCode;
-      tatType = newTat.storeType;
-      tat = newTat.tat;
-      allocationProfile = newTat.allocationProfileName;
-      clusterId = newTat.clusterId;
-      const orderTatDetails: Partial<MedicineOrders> = {
-        orderTat: tat,
-        shopId: siteId,
-        oldOrderTat: orderDetails.orderTat,
-        tatType,
-        allocationProfileName: allocationProfile,
-        clusterId,
-      };
-      medicineOrdersRepo.updateMedicineOrder(
-        orderDetails.id,
-        orderDetails.orderAutoId,
-        orderTatDetails
-      );
-    }
-  }
+  //post order verified event to webEngage
+  const postBody: Partial<WebEngageInput> = {
+    userId: orderDetails.patient.mobileNumber,
+    eventName: ApiConstants.MEDICINE_ORDER_VERIFIED_EVENT_NAME.toString(),
+    eventData: {
+      orderId: orderDetails.orderAutoId,
+      statusDateTime: format(
+        parseISO(shipmentsInput[0].updatedDate),
+        "yyyy-MM-dd'T'HH:mm:ss'+0530'"
+      ),
+    },
+  };
+  postEvent(postBody);
 
   return {
     status: MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
     errorCode: 0,
     errorMessage: '',
     orderId: orderDetails.orderAutoId,
-    tat,
-    siteId,
-    tatType,
-    allocationProfile,
-    clusterId,
   };
-};
-
-const assignLhub = async (
-  orderDetails: MedicineOrders,
-  shipmentDetails: Shipment,
-  orderAddress: MedicineOrderAddress
-) => {
-  const shipmentReq = {
-    storeCode: shipmentDetails.siteId,
-    orderId: orderDetails.orderAutoId.toString(),
-    pincode: orderAddress.zipcode,
-    lat: orderAddress?.latitude,
-    lng: orderAddress?.longitude,
-    items: shipmentDetails.itemDetails.map((item) => {
-      return {
-        sku: item.articleCode,
-        qty: +new Decimal(item.quantity).dividedBy(item.packSize).toFixed(4),
-      };
-    }),
-  };
-  updateLhub(shipmentReq, LHUB_UPDATE_TYPE.SHIPPED);
-};
-
-const getNewTat = async (
-  orderDetails: MedicineOrders,
-  shipmentDetails: Shipment,
-  orderAddress: MedicineOrderAddress
-) => {
-  const medicineOrderLineItems: Partial<MedicineOrderLineItems>[] = [];
-  shipmentDetails.itemDetails.forEach((item) => {
-    const price = +new Decimal(item.packSize).times(item.unitPrice).toFixed(4);
-    const orderItemAttrs = {
-      medicineSKU: item.articleCode,
-      medicineName: item.articleName,
-      price: price,
-      quantity: +new Decimal(item.quantity).dividedBy(item.packSize).toFixed(4),
-      mrp: price,
-      mou: item.packSize,
-    };
-    medicineOrderLineItems.push(orderItemAttrs);
-  });
-  const tatRes = await getTat(medicineOrderLineItems, orderAddress);
-  if (tatRes && tatRes.storeType.toLowerCase() == orderDetails.tatType.toLowerCase()) {
-    const currentDate = new Date(addMinutes(new Date(), +330));
-    const oldTatDate = new Date(Date.parse(orderDetails.orderTat));
-    const newTatDate = new Date(Date.parse(tatRes.tat));
-    const oldTatLeft = differenceInMinutes(oldTatDate, currentDate);
-    const newTatLeft = differenceInMinutes(newTatDate, currentDate);
-    if (oldTatLeft < 0.6 * newTatLeft) {
-      return tatRes;
-    }
-  }
 };
 
 export const saveOrderShipmentsResolvers = {

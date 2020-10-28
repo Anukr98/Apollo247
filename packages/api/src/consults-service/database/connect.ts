@@ -107,7 +107,6 @@ import { DiagnosticEntitySubscriber } from 'profiles-service/entities/observers/
 import { MedicineEntitySubscriber } from 'profiles-service/entities/observers/medicinePaymentSuccessObserver';
 import { HealthCheckRecords } from 'profiles-service/entities/healthCheckRecordsEntity';
 import { HospitalizationRecords } from 'profiles-service/entities/hospitalizationRecordsEntity';
-import { DoctorPricing } from 'doctors-service/entities/doctorPricing';
 
 export const connect = async () => {
   return await createConnections([
@@ -184,7 +183,6 @@ export const connect = async () => {
         DoctorPatientExternalConnect,
         AdminAuditLogs,
         DoctorProfileHistory,
-        DoctorPricing
       ],
       type: 'postgres',
       host: process.env.DOCTORS_DB_HOST,

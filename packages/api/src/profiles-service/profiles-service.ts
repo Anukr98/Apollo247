@@ -263,16 +263,6 @@ import {
   deletePatientPrismMedicalRecordResolvers,
 } from 'profiles-service/resolvers/deletePatientPrismMedicalRecord';
 
-import {
-  updateOrderDspTypeDefs,
-  updateOrderDspResolvers,
-} from 'profiles-service/resolvers/pharmaOrderUpdateDsp';
-
-import {
-  orderDspStatusTypeDefs,
-  orderDspStatusResolvers,
-} from 'profiles-service/resolvers/pharmaOrderDspStatus';
-
 (async () => {
   await connect();
   const profilesLogger = winstonLogger.loggers.get('profileServiceLogger');
@@ -570,14 +560,6 @@ import {
       {
         typeDefs: reUploadPrescriptionTypeDefs,
         resolvers: reUploadPrescriptionResolvers,
-      },
-      {
-        typeDefs: updateOrderDspTypeDefs,
-        resolvers: updateOrderDspResolvers,
-      },
-      {
-        typeDefs: orderDspStatusTypeDefs,
-        resolvers: orderDspStatusResolvers,
       },
     ]),
     plugins: [

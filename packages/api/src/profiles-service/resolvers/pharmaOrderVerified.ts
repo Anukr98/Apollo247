@@ -2,18 +2,15 @@ import gql from 'graphql-tag';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import {
-  MedicineOrders,
   MEDICINE_ORDER_STATUS,
   MedicineOrdersStatus,
   MEDICINE_ORDER_TYPE,
-  MedicineOrderLineItems,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format, addMinutes, parseISO } from 'date-fns';
 import { log } from 'customWinstonLogger';
-import { getTat } from 'profiles-service/helpers/inventorySync';
 
 export const saveOrderVerifiedTypeDefs = gql`
   input OrderVerifiedInput {
@@ -66,6 +63,7 @@ type ItemArticleDetails = {
   batch: string;
   unitPrice: number;
   packSize: number;
+  posAvailability: boolean;
 };
 
 type SaveOrderVerifiedInputArgs = {
@@ -79,7 +77,7 @@ const saveOrderVerified: Resolver<
   SaveOrderVerifiedResult
 > = async (parent, { orderVerifiedInput }, { profilesDb }) => {
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const orderDetails = await medicineOrdersRepo.getMedicineOrderPlacedDetails(
+  const orderDetails = await medicineOrdersRepo.getMedicineOrderWithShipments(
     orderVerifiedInput.orderId
   );
   if (!orderDetails) {
@@ -116,54 +114,11 @@ const saveOrderVerified: Resolver<
     allocationProfile = '',
     clusterId = '';
   if (orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION) {
-    const medicineOrderLineItems = orderVerifiedInput.items.map((item) => {
-      const orderItemAttrs: Partial<MedicineOrderLineItems> = {
-        medicineOrders: orderDetails,
-        medicineSKU: item.articleCode,
-        medicineName: item.articleName,
-        price: item.packSize * item.unitPrice,
-        quantity: item.quantity / item.packSize,
-        mrp: item.packSize * item.unitPrice,
-        mou: item.packSize,
-      };
-      return orderItemAttrs;
-    });
-    const medicineOrderLineItemsPromises = medicineOrderLineItems.map((item) =>
-      medicineOrdersRepo.saveMedicineOrderLineItem(item)
-    );
-    Promise.all(medicineOrderLineItemsPromises);
-    try {
-      const tatRes = await getTat(medicineOrderLineItems, orderDetails.medicineOrderAddress);
-      if (tatRes) {
-        tat = tatRes.tat;
-        siteId = tatRes.storeCode;
-        tatType = tatRes.storeType;
-        allocationProfile = tatRes.allocationProfileName;
-        clusterId = tatRes.clusterId;
-        // update tat details in 247
-        const orderTatDetails: Partial<MedicineOrders> = {
-          orderTat: tat,
-          shopId: siteId,
-          tatType,
-          allocationProfileName: allocationProfile,
-          clusterId,
-        };
-
-        medicineOrdersRepo.updateMedicineOrder(
-          orderDetails.id,
-          orderDetails.orderAutoId,
-          orderTatDetails
-        );
-      }
-    } catch (e) {
-      log(
-        'profileServiceLogger',
-        `TAT_CALCULATION_FAILED_FOR:${orderVerifiedInput.orderId}`,
-        `saveOrderVerified call from OMS`,
-        JSON.stringify(e),
-        ''
-      );
-    }
+    tat = '16-Oct-2020 14:30';
+    siteId = '15732';
+    tatType = 'Hub';
+    allocationProfile = 'DEFAULT';
+    clusterId = 'DEFAULT';
   }
   return {
     status: MEDICINE_ORDER_STATUS.VERIFICATION_DONE,
