@@ -466,6 +466,22 @@ export const PhrGeneralAdviceIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_general_advice_phr.png')} />
 );
 
+export const PhrCloseIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_close_phr.png')} />
+);
+
+export const PhrCameraIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_phr_camera.png')} />
+);
+
+export const PhrGalleryIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_phr_gallery.png')} />
+);
+
+export const PhrFileIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_phr_file.png')} />
+);
+
 export const PHRFollowUpDarkIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_follow_up_dark_phr.png')} />
 );

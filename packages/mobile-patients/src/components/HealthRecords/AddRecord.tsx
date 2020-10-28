@@ -1076,6 +1076,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       {displayOrderPopup && (
         <UploadPrescriprionPopup
           isVisible={displayOrderPopup}
+          phrUpload={true}
           disabledOption="NONE"
           //type=""
           heading={'Upload File'}
