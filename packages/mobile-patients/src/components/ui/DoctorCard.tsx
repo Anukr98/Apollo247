@@ -222,7 +222,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   async function fetchNextAvailableSlot() {
     const todayDate = new Date().toISOString().slice(0, 10);
     const response = await getNextAvailableSlots(client, [rowData?.id] || [], todayDate);
-    setfetchedSlot(response?.data[0]?.availableSlot);
+    setfetchedSlot(response?.data?.[0]?.availableSlot);
   }
 
   if (rowData) {
