@@ -955,6 +955,7 @@ export interface WebEngageEvents {
     'Doctor Category': DoctorType;
     Fee: number;
     'Doctor Speciality': string;
+    Rank: number;
   };
   [WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK]: {
     'Patient Name': string;

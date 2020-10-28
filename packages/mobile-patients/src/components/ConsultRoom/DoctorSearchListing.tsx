@@ -970,6 +970,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       'Doctor Category': doctorDetails.doctorType,
       Fee: Number(doctorDetails?.fee),
       'Doctor Speciality': doctorDetails?.specialistSingularTerm,
+      Rank: doctorDetails?.rowId,
     };
 
     const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.DOCTOR_CLICKED] = {
@@ -1044,14 +1045,14 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             availableModes={rowData.consultMode}
             callSaveSearch={callSaveSearch}
             onPress={() => {
-              postDoctorClickWEGEvent(rowData, 'List');
+              postDoctorClickWEGEvent({ ...rowData, rowId: index + 1 }, 'List');
               props.navigation.navigate(AppRoutes.DoctorDetails, {
                 doctorId: rowData.id,
                 callSaveSearch: callSaveSearch,
               });
             }}
             onPressConsultNowOrBookAppointment={(type) => {
-              postDoctorClickWEGEvent(rowData, 'List', type);
+              postDoctorClickWEGEvent({ ...rowData, rowId: index + 1 }, 'List', type);
             }}
           />
         </>
@@ -1066,14 +1067,14 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           availableModes={rowData.consultMode}
           callSaveSearch={callSaveSearch}
           onPress={() => {
-            postDoctorClickWEGEvent(rowData, 'List');
+            postDoctorClickWEGEvent({ ...rowData, rowId: index + 1 }, 'List');
             props.navigation.navigate(AppRoutes.DoctorDetails, {
               doctorId: rowData.id,
               callSaveSearch: callSaveSearch,
             });
           }}
           onPressConsultNowOrBookAppointment={(type) => {
-            postDoctorClickWEGEvent(rowData, 'List', type);
+            postDoctorClickWEGEvent({ ...rowData, rowId: index + 1 }, 'List', type);
           }}
         />
       );
