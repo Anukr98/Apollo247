@@ -1,12 +1,11 @@
-import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { TatCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/TatCard';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { formatSelectedAddress } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { WhiteArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
-import { TatCard } from '@aph/mobile-patients/src/components/MedicineCart/Components/TatCard';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 
 export interface ProceedBarProps {
   onPressAddDeliveryAddress?: () => void;
@@ -17,6 +16,7 @@ export interface ProceedBarProps {
   onPressChangeAddress?: () => void;
   screen?: string;
   onPressTatCard?: () => void;
+  onPressRemoveItems?: () => void;
 }
 
 export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
@@ -37,19 +37,26 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
     deliveryTime,
     onPressChangeAddress,
     onPressTatCard,
+    onPressRemoveItems,
     screen,
   } = props;
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
   const unServiceable = cartItems.find((item) => item.unserviceable);
+  const itemsUnAvailable = !!cartItems.find(
+    ({ unavailableOnline, isInStock, unserviceable }) =>
+      !isInStock || unavailableOnline || unserviceable
+  );
 
   function getTitle() {
-    return !deliveryAddressId
+    return itemsUnAvailable
+      ? string.removeUnavailableItems
+      : !deliveryAddressId
       ? addresses?.length
-        ? 'SELECT DELIVERY ADDRESS'
-        : 'ADD DELIVERY ADDRESS'
+        ? string.selectDeliveryAddress
+        : string.addDeliveryAddress
       : isPrescriptionRequired()
-      ? 'UPLOAD PRESCRIPTION'
-      : 'PROCEED TO PAY';
+      ? string.uploadPrescription
+      : string.proceedToPay;
   }
 
   function isPrescriptionRequired() {
@@ -60,7 +67,9 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
     }
   }
   function onPressButton() {
-    return !deliveryAddressId
+    return itemsUnAvailable
+      ? onPressRemoveItems?.()
+      : !deliveryAddressId
       ? addresses?.length
         ? onPressSelectDeliveryAddress?.()
         : onPressAddDeliveryAddress?.()
@@ -107,7 +116,7 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
   };
 
   const renderTatCard = () => {
-    if (selectedAddress && deliveryTime != undefined) {
+    if (selectedAddress && deliveryTime != undefined && !itemsUnAvailable) {
       return (
         <TatCard
           deliveryTime={deliveryTime}

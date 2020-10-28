@@ -575,6 +575,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             isFreeCouponProduct: !!couponProducts[index]!.couponFree,
             couponPrice: 0,
             unserviceable: false,
+            unavailableOnline: medicineDetails.sell_online == 0,
           } as ShoppingCartItem;
         });
         addMultipleCartItems!(medicinesAll as ShoppingCartItem[]);
@@ -858,6 +859,13 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   };
 
   const renderProceedBar = () => {
+    const onPressRemoveItems = () => {
+      const availableItems = cartItems.filter(
+        ({ unavailableOnline, isInStock, unserviceable }) =>
+          isInStock && !unavailableOnline && !unserviceable
+      );
+      setCartItems!(availableItems);
+    };
     return (
       <ProceedBar
         onPressAddDeliveryAddress={() => {
@@ -888,6 +896,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             shopId: shopId,
           })
         }
+        onPressRemoveItems={onPressRemoveItems}
       />
     );
   };
