@@ -63,7 +63,7 @@ import {
   Platform,
 } from 'react-native';
 import { FlatList, NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
-import LinearGradient from 'react-native-linear-gradient';
+import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
 import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEvents';
 import { useAppCommonData } from '../AppCommonDataProvider';
 import { ConsultTypeCard } from '../ui/ConsultTypeCard';
@@ -180,6 +180,7 @@ const styles = StyleSheet.create({
     height: 63,
     width: '100%',
     justifyContent: 'center',
+    flex: undefined,
   },
   doctorOfTheHourTextStyle: {
     ...theme.viewStyles.text('SB', 13, '#FFFFFF', 1, 16.9, 0.3),
@@ -588,17 +589,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
   const renderPlatinumDoctorView = () => {
     return (
-      <LinearGradient
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        colors={['#2C4C70', '#5EACB0']}
-        style={styles.linearGradient}
-      >
+      <LinearGradientComponent style={styles.linearGradient}>
         <View style={{ flexDirection: 'row', alignSelf: 'center' }}>
           <FamilyDoctorIcon style={{ width: 16.58, height: 24 }} />
           <Text style={styles.doctorOfTheHourTextStyle}>{'Doctor of the Hour!'}</Text>
         </View>
-      </LinearGradient>
+      </LinearGradientComponent>
     );
   };
 

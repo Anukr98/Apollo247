@@ -8,6 +8,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { DoctorCard } from '@aph/mobile-patients/src/components/ui/DoctorCard';
+import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
   CheckedIcon,
@@ -40,7 +41,6 @@ import {
   GET_PLATINUM_DOCTOR,
   GET_DOCTORLIST_FILTERS,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import LinearGradient from 'react-native-linear-gradient';
 import {
   getDoctorsBySpecialtyAndFilters,
   getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors,
@@ -1406,10 +1406,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       color: theme.colors.BUTTON_TEXT,
     };
     return (
-      <LinearGradient
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        colors={['#2C4C70', '#5EACB0']}
+      <LinearGradientComponent
         style={[styles.linearGradient, setHeight && { minHeight: 310, flex: undefined }]}
       >
         <View style={{ flexDirection: 'row', alignSelf: 'center', marginBottom: 15 }}>
@@ -1437,7 +1434,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             postDoctorClickWEGEvent(platinumDoctor, 'List', type);
           }}
         />
-      </LinearGradient>
+      </LinearGradientComponent>
     );
   };
 
