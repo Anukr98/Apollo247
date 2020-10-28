@@ -32,8 +32,8 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   useEffect(() => {
     setmrp(item.price);
     item.couponPrice || item.couponPrice == 0
-      ? item.isFreeCouponProduct && item.quantity > 1 
-        ? setDiscountedPrice(item.specialPrice) 
+      ? item.isFreeCouponProduct && item.quantity > 1
+        ? setDiscountedPrice(item.specialPrice)
         : setDiscountedPrice(item.couponPrice)
       : item.specialPrice || item.specialPrice == 0
         ? setDiscountedPrice(item.specialPrice)
@@ -99,7 +99,11 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   };
 
   const renderDelete = () => {
-    return !item.unserviceable ? (!item?.isFreeCouponProduct || item?.quantity > 1) && <DeleteIcon /> : <DeleteBoldIcon />;
+    return !item.unserviceable ? (
+      (!item?.isFreeCouponProduct || item?.quantity > 1) && <DeleteIcon />
+    ) : (
+      <DeleteBoldIcon />
+    );
   };
 
   const renderLowerCont = () => {
@@ -107,14 +111,14 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <View>
           {renderQuantity()}
-          {!item.unserviceable && !!coupon && renderCoupon()}
+          {!item.unserviceable && !isProuctFreeCouponApplied && !!coupon && renderCoupon()}
         </View>
         {!item?.isFreeCouponProduct
           ? discountedPrice || discountedPrice == 0
             ? renderPrice(discountedPrice)
             : renderPrice(mrp)
-          : item?.quantity > 1 
-            ? renderPrice(discountedPrice) 
+          : item?.quantity > 1
+            ? renderPrice(discountedPrice)
             : renderFree()}
       </View>
     );
@@ -194,9 +198,10 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     );
   };
   const renderSavings = () => {
-    const savingsAmount = (item.isFreeCouponProduct && item.quantity > 1) 
-      ? discountedPrice
-      : ((mrp - discountedPrice) * item.quantity).toFixed(2);
+    const savingsAmount =
+      item.isFreeCouponProduct && item.quantity > 1
+        ? discountedPrice
+        : ((mrp - discountedPrice) * item.quantity).toFixed(2);
     return (
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <Text style={styles.Savings}>Savings</Text>
@@ -205,9 +210,10 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     );
   };
   const renderPrice = (price: number) => {
-    const finalAmount = (item.isFreeCouponProduct && item.quantity > 1)
-      ? ((price * item.quantity) - discountedPrice).toFixed(2)
-      : (price * item.quantity).toFixed(2);
+    const finalAmount =
+      item.isFreeCouponProduct && item.quantity > 1
+        ? (price * item.quantity - discountedPrice).toFixed(2)
+        : (price * item.quantity).toFixed(2);
     return !item.unserviceable ? (
       <View style={{ alignItems: 'flex-end' }}>
         {(discountedPrice || discountedPrice == 0) && renderDiscount()}
