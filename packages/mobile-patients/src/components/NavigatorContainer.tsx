@@ -102,6 +102,7 @@ import { PickUpCartSummary } from '@aph/mobile-patients/src/components/MedicineC
 
 import { SymptomTracker } from '@aph/mobile-patients/src/components/SymptomTracker';
 import { SymptomSelection } from '@aph/mobile-patients/src/components/SymptomSelection';
+import { PaymentCheckout } from '@aph/mobile-patients/src/components/Consult/PaymentCheckout';
 
 import { Maps } from '@aph/mobile-patients/src/components/ui/Maps';
 export enum AppRoutes {
@@ -196,6 +197,7 @@ export enum AppRoutes {
   Maps = 'Maps',
   SearchAppointmentScreen = 'SearchAppointmentScreen',
   AppointmentFilterScene = 'AppointmentFilterScene',
+  PaymentCheckout = 'PaymentCheckout',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -510,6 +512,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.AppointmentFilterScene]: {
     screen: AppointmentFilterScene,
+  },
+  [AppRoutes.PaymentCheckout]: {
+    screen: PaymentCheckout,
   },
 };
 

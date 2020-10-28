@@ -667,7 +667,10 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         }}
       >
         <Button
-          title={string.common.proceedToCheckout}
+          title={`${string.common.proceedToCheckout} - ${string.common.Rs} ${(coupon
+            ? doctorDiscountedFees
+            : Number(doctorFees)
+          ).toFixed(2)}`}
           disabled={
             disablePay
               ? true
@@ -680,7 +683,9 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               ? true
               : false
           }
-          onPress={onPressPay}
+          onPress={() => {
+            props.navigation.navigate(AppRoutes.PaymentCheckout);
+          }}
         />
       </StickyBottomComponent>
     );
