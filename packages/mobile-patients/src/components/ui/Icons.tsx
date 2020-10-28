@@ -462,6 +462,14 @@ export const OrangeCallIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_orange_phone.png')} />
 );
 
+export const FamilyDoctorIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="md"
+    {...props}
+    source={require('@aph/mobile-patients/src/images/home/ic_family_doctor.png')}
+  />
+);
+
 export const SmallOrangeCallIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_small_orange_phone.png')} />
 );
