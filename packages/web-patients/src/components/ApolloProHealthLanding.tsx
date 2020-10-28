@@ -82,7 +82,6 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     aboutContent: {
       width: '80%',
-
       [theme.breakpoints.down('sm')]: {
         position: 'relative',
         zIndex: 4,

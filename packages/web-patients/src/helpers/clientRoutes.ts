@@ -80,8 +80,13 @@ export const clientRoutes = {
   sitemap: (sitemap: string) => `/static/${sitemap}`,
   childSitemap: (sitemap: string, pageNo: string) => `/static/${sitemap}/${pageNo}`,
   oneApolloMembership: () => '/oneapollo-membership',
+<<<<<<< HEAD
+  pageNotFound: () => '/page-not-found',
+  apolloProHealth: () => '/apollo-pro-health',
+=======
   apolloProHealth: () => '/apollo-pro-health',
   pageNotFound: () => '/page-not-found',
+>>>>>>> 9bbc9ba85afd01b0128fd14f50e46bcaa061873a
   // sitemap: (sitemap: string) => `/${sitemap}`,
   // childSitemap: (sitemap: string, pageNo: string) => `/${sitemap}/${pageNo}`,
 };

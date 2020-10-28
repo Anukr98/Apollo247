@@ -55,6 +55,7 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     prismPrescriptionFileId: String
     pharmaRequest: String
     orderTat: String
+    oldOrderTat: String
     couponDiscount: Float
     productDiscount: Float
     packagingCharges: Float
@@ -76,6 +77,7 @@ export const getMedicineOrdersOMSListTypeDefs = gql`
     clusterId: String
     allocationProfileName: String
     storeDistanceKm: Float
+    prescriptionOptionSelected: String
   }
 
   type MedicineOrderOMSLineItems {
@@ -957,8 +959,6 @@ const getMedicineOrderOMSDetailsWithAddress: Resolver<
             medicineOrderDetails.currentStatus = MEDICINE_ORDER_STATUS.ORDER_PLACED;
           }
           reasonCode.statusMessage = JSON.stringify(onHoldReasonObj);
-        } else {
-          reasonCode.statusMessage = '';
         }
       }
     }

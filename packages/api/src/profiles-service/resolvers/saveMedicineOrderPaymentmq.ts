@@ -168,7 +168,7 @@ const SaveMedicineOrderPaymentMq: Resolver<
     medicinePaymentMqInput.paymentMode = PAYMENT_METHODS_REVERSE.COD;
   } else {
     let checksum = { CHECKSUMHASH: "" };
-    if (medicinePaymentMqInput.payload) {
+    if (medicinePaymentMqInput.amountPaid) {
       // Create a buffer from the string
       const bufferObj = Buffer.from(medicinePaymentMqInput.payload, "base64");
 

@@ -411,7 +411,7 @@ export const HowItWorks: React.FC<HowItWorksInterface> = (props) => {
           }}
         >
           <Tab
-            label="Chat/Audio/Video"
+            label="Text/Audio/Video"
             {...a11yProps(0)}
             classes={{
               root: classes.tabRoot,
@@ -435,7 +435,7 @@ export const HowItWorks: React.FC<HowItWorksInterface> = (props) => {
             <div className={classes.chatContainer}>
               <div className={classes.tabHead}>
                 <img src={require('images/video-calling.svg')} />
-                <Typography component="h6">How to consult ON WEB via audio/video?</Typography>
+                <Typography component="h6">How to consult ON WEB via text/audio/video?</Typography>
               </div>
               <div className={classes.tabBody}>
                 <ul className={classes.tabList}>
@@ -525,7 +525,7 @@ export const HowItWorks: React.FC<HowItWorksInterface> = (props) => {
         <AphDialogTitle>
           <div className={classes.tabHead}>
             <img src={require('images/video-calling.svg')} />
-            <span>How to consult ON WEB via audio/video?</span>
+            <span>How to consult ON WEB via text/audio/video?</span>
           </div>
         </AphDialogTitle>
         <div className={classes.consultContainer}>

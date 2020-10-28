@@ -81,8 +81,10 @@ const TestsLanding = loadable(() => import('components/Tests/TestsLanding'));
 const AddressBook = loadable(() => import('components/MyAccount/AddressBook'));
 const MyAccount = loadable(() => import('components/MyAccount/MyAccount'));
 const MyPayments = loadable(() => import('components/MyAccount/MyPayments'));
-const Sitemap = loadable(() => import('components/Sitemap'));
 const KnowledgeArticleLanding = loadable(() => import('components/KnowledgeArticleLanding'));
+const PageNotFound = loadable(() => import('components/PageNotFound'));
+const ApolloProHealth = loadable(() => import('components/ApolloProHealthLanding'));
+const Sitemap = loadable(() => import('components/Sitemap'));
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
