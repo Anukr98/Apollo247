@@ -41,6 +41,7 @@ import {
   HdfcBankLogo,
   CovidOrange,
   DashedLine,
+  ApolloHealthProIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
@@ -2365,6 +2366,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           {string.common.covidYouCanText}
         </Text>
         {renderCovidBlueButtons(
+          onPressHealthPro,
+          <ApolloHealthProIcon style={{ width: 24, height: 24 }} />,
+          'Apollo Pro Health'
+        )}
+        {renderCovidBlueButtons(
           onPressRiskLevel,
           <CovidRiskLevel style={{ width: 24, height: 24 }} />,
           'Check your risk level'
@@ -2488,6 +2494,28 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     props.navigation.navigate(AppRoutes.CovidScan, {
       covidUrl: covidUrlWithPrm,
     });
+  };
+
+  const onPressHealthPro = () => {
+    postHomeWEGEvent(WebEngageEventName.APOLLO_PRO_HEALTH);
+    const urlToOpen = AppConfig.Configuration.APOLLO_PRO_HEALTH_URL;
+    try {
+      if (Platform.OS != 'ios') {
+        Linking.canOpenURL(urlToOpen).then((supported) => {
+          if (supported) {
+            Linking.openURL(urlToOpen);
+          } else {
+            setBugFenderLog('CONSULT_ROOM_FAILED_OPEN_URL_HEALTH_PRO', urlToOpen);
+          }
+        });
+      } else {
+        props.navigation.navigate(AppRoutes.CovidScan, {
+          covidUrl: urlToOpen,
+        });
+      }
+    } catch (e) {
+      setBugFenderLog('CONSULT_ROOM_FAILED_OPEN_URL_HEALTH_PRO', urlToOpen);
+    }
   };
 
   const onPressRiskLevel = () => {

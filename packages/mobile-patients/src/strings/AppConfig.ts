@@ -305,6 +305,7 @@ const ConfigurationDev = {
   COVID_VACCINE_TRACKER_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
+  APOLLO_PRO_HEALTH_URL : "https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content"
 };
 
 // QA
@@ -349,6 +350,7 @@ const ConfigurationQA = {
   COVID_VACCINE_TRACKER_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
+  APOLLO_PRO_HEALTH_URL : "https://aph.staging.web-patients.popcornapps.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content"
 };
 
 // QA2
@@ -393,6 +395,7 @@ const ConfigurationQA2 = {
   COVID_VACCINE_TRACKER_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
+  APOLLO_PRO_HEALTH_URL :  "https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content"
 };
 
 // VAPT
@@ -437,6 +440,7 @@ const ConfigurationVAPT = {
   COVID_VACCINE_TRACKER_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
+  APOLLO_PRO_HEALTH_URL :  "https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content"
 };
 //Production
 const ConfigurationProd = {
@@ -479,6 +483,7 @@ const ConfigurationProd = {
   SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
   COVID_VACCINE_TRACKER_URL: 'https://www.apollo247.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
+  APOLLO_PRO_HEALTH_URL :  "https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content"
 };
 
 //PERFORMANCE
@@ -524,6 +529,7 @@ const ConfigurationPERFORM = {
   COVID_VACCINE_TRACKER_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
+  APOLLO_PRO_HEALTH_URL :  "https://aph.staging.web-patients.popcornapps.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content"
 };
 
 //DevelopmentReplica
@@ -569,6 +575,7 @@ const ConfigurationDevReplica = {
   COVID_VACCINE_TRACKER_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
+  APOLLO_PRO_HEALTH_URL :  "https://aph.staging.web-patients.popcornapps.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content"
 };
 
 const Configuration =
