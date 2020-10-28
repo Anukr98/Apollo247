@@ -63,6 +63,7 @@ import {
   Platform,
 } from 'react-native';
 import { FlatList, NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
 import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEvents';
 import { useAppCommonData } from '../AppCommonDataProvider';
 import { ConsultTypeCard } from '../ui/ConsultTypeCard';
@@ -72,6 +73,7 @@ import {
   DoctorPlaceholderImage,
   RectangularIcon,
   VideoPlayIcon,
+  FamilyDoctorIcon,
   CTGrayChat,
 } from '../ui/Icons';
 // import { NotificationListener } from '../NotificationListener';
@@ -173,6 +175,17 @@ const styles = StyleSheet.create({
     padding: 12,
     ...theme.viewStyles.shadowStyle,
     height: Platform.OS == 'android' ? 115 : 110,
+  },
+  linearGradient: {
+    height: 63,
+    width: '100%',
+    justifyContent: 'center',
+  },
+  doctorOfTheHourTextStyle: {
+    ...theme.viewStyles.text('SB', 13, '#FFFFFF', 1, 16.9, 0.3),
+    textAlign: 'center',
+    paddingTop: 4,
+    paddingLeft: 20,
   },
 });
 type Appointments = {
@@ -573,6 +586,17 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       });
   };
 
+  const renderPlatinumDoctorView = () => {
+    return (
+      <LinearGradientComponent style={styles.linearGradient}>
+        <View style={{ flexDirection: 'row', alignSelf: 'center' }}>
+          <FamilyDoctorIcon style={{ width: 16.58, height: 24 }} />
+          <Text style={styles.doctorOfTheHourTextStyle}>{'Doctor of the Hour!'}</Text>
+        </View>
+      </LinearGradientComponent>
+    );
+  };
+
   const renderDoctorDetails = () => {
     if (doctorDetails && doctorDetails.doctorHospital && doctorDetails.doctorHospital.length > 0) {
       const doctorClinics = doctorDetails.doctorHospital.filter((item) => {
@@ -597,6 +621,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
       return (
         <View style={styles.topView}>
+          {doctorDetails?.doctorsOfTheHourStatus ? renderPlatinumDoctorView() : null}
           {doctorDetails && (
             <View style={styles.detailsViewStyle}>
               <Text style={styles.doctorNameStyles}>{doctorDetails.fullName}</Text>
