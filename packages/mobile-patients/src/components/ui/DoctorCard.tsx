@@ -54,7 +54,7 @@ import {
 import { NavigationScreenProps } from 'react-navigation';
 import { SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors } from '../../graphql/types/SearchDoctorAndSpecialtyByName';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
-
+import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
 const styles = StyleSheet.create({
   doctorView: {
     flex: 1,
@@ -137,6 +137,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const rowData = props.rowData;
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
+  const [fetchedSlot, setfetchedSlot] = useState<string>('');
 
   useEffect(() => {
     if (!currentPatient) {
@@ -205,6 +206,23 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       timeDiff = Math.round(((date2 as any) - (today as any)) / 60000);
     }
     return timeDiff;
+  }
+
+  function getButtonTitle(slot: string) {
+    const title =
+      slot && moment(slot).isValid()
+        ? nextAvailability(slot, 'Consult')
+        : string.common.book_apointment;
+    if (title == 'BOOK APPOINTMENT') {
+      fetchNextAvailableSlot();
+    }
+    return title;
+  }
+  //Only triggered past the next available slot of a doctor
+  async function fetchNextAvailableSlot() {
+    const todayDate = new Date().toISOString().slice(0, 10);
+    const response = await getNextAvailableSlots(client, rowData ? [rowData?.id] : [], todayDate);
+    setfetchedSlot(response?.data[0]?.availableSlot);
   }
 
   if (rowData) {
@@ -455,9 +473,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                       },
                     ]}
                   >
-                    {rowData.slot && moment(rowData.slot).isValid()
-                      ? nextAvailability(rowData.slot, 'Consult')
-                      : string.common.book_apointment}
+                    {!!fetchedSlot ? getButtonTitle(fetchedSlot) : getButtonTitle(rowData?.slot)}
                   </Text>
                 </TouchableOpacity>
               </View>
