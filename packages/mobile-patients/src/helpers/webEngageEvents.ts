@@ -104,6 +104,7 @@ export enum WebEngageEventName {
   VIEW_HELATH_RECORDS = 'View Helath Records',
   LEARN_MORE_ABOUT_CORONAVIRUS = 'Learn more about coronavirus',
   CHECK_YOUR_RISK_LEVEL = 'Check your risk level',
+  APOLLO_PRO_HEALTH = "Apollo pro health",
   NOTIFICATION_ICON = 'Notification Icon clicked',
   ACTIVE_APPOINTMENTS = 'Active Appointments',
   NEED_HELP = 'Need Help?',

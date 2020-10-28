@@ -1034,6 +1034,14 @@ export const KavachIcon: React.FC<IconProps> = (props) => (
     resizeMode="contain"
   />
 );
+export const ApolloHealthProIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 24, height: 24 }}
+    {...props}
+    source={require('./icons/ic_healthpro.png')}
+    resizeMode="contain"
+  />
+);
 
 export const RetryButtonIcon: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/retryButton.png')} resizeMode="contain" />
