@@ -221,7 +221,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   //Only triggered past the next available slot of a doctor
   async function fetchNextAvailableSlot() {
     const todayDate = new Date().toISOString().slice(0, 10);
-    const response = await getNextAvailableSlots(client, rowData ? [rowData?.id] : [], todayDate);
+    const response = await getNextAvailableSlots(client, [rowData?.id] || [], todayDate);
     setfetchedSlot(response?.data[0]?.availableSlot);
   }
 
