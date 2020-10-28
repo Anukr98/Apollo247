@@ -180,7 +180,6 @@ const styles = StyleSheet.create({
     height: 63,
     width: '100%',
     justifyContent: 'center',
-    flex: undefined,
   },
   doctorOfTheHourTextStyle: {
     ...theme.viewStyles.text('SB', 13, '#FFFFFF', 1, 16.9, 0.3),
