@@ -15,6 +15,7 @@ export enum ProductPageViewedSource {
   CART = 'cart',
   PARTIAL_SEARCH = 'partial search',
   FULL_SEARCH = 'full search',
+  RECENT_SEARCH = 'recent search',
   HOME_PAGE = 'home page',
   CATEGORY_OR_LISTING = 'category or listing',
   SUBSTITUTES = 'substitutes',
@@ -1688,7 +1689,7 @@ export interface WebEngageEvents {
     'Section Name'?: string;
   };
   [WebEngageEventName.CATEGORY_PAGE_VIEWED]: {
-    source: 'home' | 'deeplink';
+    source: 'home' | 'deeplink' | 'registration';
     CategoryId: string;
     CategoryName: string;
   };

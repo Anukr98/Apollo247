@@ -203,7 +203,7 @@ const pushTheView = (
       if (id) {
         const [itemId, name] = id.split(',');
 
-        navigation.navigate(AppRoutes.SearchByBrand, {
+        navigation.navigate(AppRoutes.MedicineListing, {
           category_id: itemId,
           title: `${name ? name : 'Products'}`.toUpperCase(),
           movedFrom: 'deeplink',
