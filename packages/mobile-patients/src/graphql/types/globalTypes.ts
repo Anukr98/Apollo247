@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 //==============================================================
@@ -491,6 +492,7 @@ export enum notificationType {
 }
 
 export interface AddHealthCheckRecordInput {
+  id?: string | null;
   patientId: string;
   recordType: MedicalRecordType;
   healthCheckName: string;
@@ -499,15 +501,18 @@ export interface AddHealthCheckRecordInput {
 }
 
 export interface AddHospitalizationRecordInput {
+  id?: string | null;
   patientId: string;
   recordType: MedicalRecordType;
   dischargeDate: any;
   hospitalName: string;
   doctorName: string;
+  diagnosisNotes?: string | null;
   hospitalizationFiles?: (HospitalizationFileProperties | null)[] | null;
 }
 
 export interface AddLabTestRecordInput {
+  id?: string | null;
   patientId: string;
   recordType: MedicalRecordType;
   labTestName: string;
@@ -542,6 +547,18 @@ export interface AddMedicalRecordParametersInput {
   parameterName?: string | null;
   result?: number | null;
   unit?: MedicalTestUnit | null;
+}
+
+export interface AddPrescriptionRecordInput {
+  id?: string | null;
+  patientId: string;
+  recordType: MedicalRecordType;
+  prescriptionName?: string | null;
+  additionalNotes?: string | null;
+  issuingDoctor?: string | null;
+  location?: string | null;
+  dateOfPrescription?: any | null;
+  prescriptionFiles?: (prescriptionPrismFileProperties | null)[] | null;
 }
 
 export interface AlertMedicineOrderPickupInput {
@@ -1075,6 +1092,12 @@ export interface UploadDocumentInput {
   base64FileInput: string;
   patientId: string;
   category: PRISM_DOCUMENT_CATEGORY;
+}
+
+export interface prescriptionPrismFileProperties {
+  fileName?: string | null;
+  mimeType?: string | null;
+  content?: string | null;
 }
 
 export interface voipPushTokenInput {

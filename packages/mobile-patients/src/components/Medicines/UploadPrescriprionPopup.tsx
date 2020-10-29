@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     padding: 0,
     margin: 0,
     width: '100%',
-    height: 'auto',
+    height: '100%',
     borderRadius: 10,
     borderBottomLeftRadius: 10,
     borderBottomRightRadius: 10,
@@ -124,8 +124,10 @@ const styles = StyleSheet.create({
     paddingVertical: 34,
   },
   overlayViewStyle: {
-    flexGrow: 1,
+    width: '100%',
     backgroundColor: 'transparent',
+    bottom: 0,
+    position: 'absolute',
   },
   overlaySafeAreaViewStyle: {
     flex: 1,
@@ -674,12 +676,15 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
       transparent
       overlayStyle={styles.phrOverlayStyle}
     >
-      <View style={styles.overlayViewStyle}>
-        <SafeAreaView style={styles.overlaySafeAreaViewStyle}>
-          {renderCloseIcon()}
-          {renderPhrUploadOptions()}
-        </SafeAreaView>
-      </View>
+      <>
+        <View style={styles.overlayViewStyle}>
+          <SafeAreaView style={styles.overlaySafeAreaViewStyle}>
+            {renderCloseIcon()}
+            {renderPhrUploadOptions()}
+          </SafeAreaView>
+        </View>
+        {showSpinner && <Spinner />}
+      </>
     </Overlay>
   ) : (
     <Overlay

@@ -474,6 +474,14 @@ export const PhrCameraIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_phr_camera.png')} />
 );
 
+export const PhrEditIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_phr_edit.png')} />
+);
+
+export const PhrAddPrescriptionRecordIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_phr_prescription_record.png')} />
+);
+
 export const PhrGalleryIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_phr_gallery.png')} />
 );

@@ -728,6 +728,14 @@ export const GET_ALL_SPECIALTIES = gql`
   }
 `;
 
+export const ADD_PRESCRIPTION_RECORD = gql`
+  mutation addPatientPrescriptionRecord($AddPrescriptionRecordInput: AddPrescriptionRecordInput) {
+    addPatientPrescriptionRecord(addPrescriptionRecordInput: $AddPrescriptionRecordInput) {
+      status
+    }
+  }
+`;
+
 export const GET_DOCTOR_DETAILS_BY_ID = gql`
   query getDoctorDetailsById($id: String!) {
     getDoctorDetailsById(id: $id) {
