@@ -92,6 +92,7 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   );
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
   const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>(false);
+  const [appState, setappState] = useState<string>('');
   const shoppingCart = useShoppingCart();
 
   useEffect(() => {
@@ -107,8 +108,14 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   }, [isPhysicalUploadComplete]);
 
   const handleAppStateChange = (nextAppState: AppStateStatus) => {
-    nextAppState === 'active' && availabilityTat(deliveryAddressId);
+    setappState(nextAppState);
   };
+
+  useEffect(() => {
+    if (appState == 'active') {
+      availabilityTat(deliveryAddressId);
+    }
+  }, [appState]);
 
   function hasUnserviceableproduct() {
     const unserviceableItems = cartItems.filter((item) => item.unserviceable) || [];
