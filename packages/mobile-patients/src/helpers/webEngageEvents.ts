@@ -84,6 +84,7 @@ export enum WebEngageEventName {
   CONSULTED_WITH_DOCTOR_BEFORE = 'Chat Window Consulted with doctor before alert',
   DOCTOR_SPECIALITY_SEARCH_NO_RESULT = 'Doctor Speciality Fuzzy Search No Result',
   CONFIRM_LOCATION = 'Confirm Location',
+  DOCTOR_LISTING_FILTER_APPLIED = 'Doctor Listing Filter Apply',
 
   MY_ORDERS_CLICKED = 'My Orders Clicked',
   ORDER_SUMMARY_CLICKED = 'Order Summary Clicked',
@@ -415,6 +416,15 @@ export interface ItemClickedOnLanding extends DiagnosticUserInfo {
 export interface DiagnosticPinCode extends DiagnosticUserInfo {
   Method: string;
   Pincode: number | string;
+}
+
+export interface DoctorFilterClick {
+  'Patient Name': string;
+  'Patient UHID': string;
+  'Mobile Number': string;
+  'pincode': number | string;
+  'Filter Applied': string;
+  'Filter Value': string;
 }
 
 export interface WebEngageEvents {
@@ -913,6 +923,7 @@ export interface WebEngageEvents {
     'Mobile Number': string;
     'Customer ID': string;
   };
+  [WebEngageEventName.DOCTOR_LISTING_FILTER_APPLIED]: DoctorFilterClick;
   [WebEngageEventName.SPECIALITY_CLICKED]: SpecialityClickedEvent;
   [WebEngageEventName.BOOK_APPOINTMENT]: {
     'Doctor Name': string;
