@@ -1,46 +1,118 @@
 import React from 'react';
-import { View, Text, Dimensions, StyleSheet } from 'react-native';
+import { View, Text, Dimensions, StyleSheet, Image } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { DoctorPlaceholderImage } from '@aph/mobile-patients/src/components/ui/Icons';
+import { DoctorPlaceholderImage, Location } from '@aph/mobile-patients/src/components/ui/Icons';
 import { CareLogo } from '@aph/mobile-patients/src/components/ui/CareLogo';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 const { width } = Dimensions.get('window');
+import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
+import { BookAppointmentInput } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { dateFormatter } from '@aph/mobile-patients/src/utils/dateUtil';
+import { calculateCareDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
-interface DoctorCheckoutProps {}
+interface DoctorCheckoutProps {
+  doctor: getDoctorDetailsById_getDoctorDetailsById | null;
+  appointmentInput: BookAppointmentInput;
+  doctorFees: number;
+  selectedTab: string;
+}
 
 export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
+  const { doctor, appointmentInput, doctorFees, selectedTab } = props;
+  const isOnlineConsult = selectedTab === 'Consult Online';
+  const careDoctorDetails = calculateCareDoctorPricing(doctor);
+  const {
+    isCareDoctor,
+    physicalConsultMRPPrice,
+    onlineConsultMRPPrice,
+    onlineConsultSlashedPrice,
+    physicalConsultSlashedPrice,
+    minDiscountedPrice,
+  } = careDoctorDetails;
+
+  const renderCareDoctorPricing = () => {
+    return (
+      <View>
+        <View style={styles.normalRowContainer}>
+          <Text style={styles.carePrice}>
+            {string.common.Rs}
+            {isOnlineConsult ? onlineConsultMRPPrice : physicalConsultMRPPrice}
+          </Text>
+          <Text style={styles.careDiscountedPrice}>
+            {string.common.Rs}
+            {isOnlineConsult ? onlineConsultSlashedPrice : physicalConsultSlashedPrice}
+          </Text>
+        </View>
+        <Text style={styles.amountSavedTextStyle}>
+          {string.common.amountSavedByCare.replace('{amount}', `${minDiscountedPrice}`)}
+        </Text>
+      </View>
+    );
+  };
+
+  const renderNonCareDoctorPricing = () => {
+    return (
+      <Text style={styles.doctorFees}>{`${string.common.Rs} ${Number(doctorFees).toFixed(
+        2
+      )}`}</Text>
+    );
+  };
   return (
     <View style={styles.doctorCard}>
       <View style={styles.rowContainer}>
         <View style={{ width: width - 140 }}>
-          <Text style={styles.doctorNameStyle}>Dr. Simran Rai</Text>
-          <Text style={styles.specializationStyle}>GENERAL PHYSICIAN | 7 YRS Exp.</Text>
-          <Text style={styles.regularText}>{string.common.optedForOnlineConsultation}</Text>
-          <Text style={styles.appointmentTimeStyle}>Today, 6:30 pm</Text>
+          <Text style={styles.doctorNameStyle}>{doctor?.displayName}</Text>
+          <Text style={styles.specializationStyle}>
+            {doctor?.specialty?.name || ''} | {doctor?.experience} YR
+            {Number(doctor?.experience) != 1 ? 'S Exp.' : ' Exp.'}
+          </Text>
+          <Text style={styles.regularText}>
+            {isOnlineConsult
+              ? string.common.optedForOnlineConsultation
+              : string.common.optedForClinicConsultation}
+          </Text>
+          {!isOnlineConsult && (
+            <View>
+              <View style={styles.row}>
+                <Location />
+                <Text style={[styles.regularText, { marginTop: 0 }]}>{`${
+                  doctor?.doctorHospital?.[0].facility?.streetLine1
+                }, ${
+                  doctor?.doctorHospital?.[0].facility?.streetLine2
+                    ? `${doctor?.doctorHospital?.[0].facility?.streetLine2}, `
+                    : ''
+                }${doctor?.doctorHospital?.[0].facility?.city}`}</Text>
+              </View>
+            </View>
+          )}
+          <Text style={styles.appointmentTimeStyle}>
+            {dateFormatter(appointmentInput?.appointmentDateTime)}
+          </Text>
         </View>
         <View>
-          <DoctorPlaceholderImage />
-          <CareLogo style={styles.careLogo} textStyle={styles.careLogoText} />
+          {!!g(doctor, 'photoUrl') ? (
+            <Image
+              style={{
+                height: 80,
+                borderRadius: 40,
+                width: 80,
+              }}
+              source={{
+                uri: doctor?.photoUrl!,
+              }}
+              resizeMode={'contain'}
+            />
+          ) : (
+            <DoctorPlaceholderImage />
+          )}
+          {isCareDoctor && <CareLogo style={styles.careLogo} textStyle={styles.careLogoText} />}
         </View>
       </View>
       <View style={styles.seperatorLine} />
       <View style={[styles.rowContainer, { marginTop: 9 }]}>
         <Text style={[styles.regularText, { marginTop: 0 }]}>{string.common.amountToPay}</Text>
-        <View>
-          <View style={styles.normalRowContainer}>
-            <Text style={styles.carePrice}>
-              {string.common.Rs}
-              500
-            </Text>
-            <Text style={styles.careDiscountedPrice}>
-              {string.common.Rs}
-              400
-            </Text>
-          </View>
-          <Text style={styles.amountSavedTextStyle}>
-            {string.common.amountSavedByCare.replace('{amount}', '100')}
-          </Text>
-        </View>
+        {isCareDoctor ? renderCareDoctorPricing() : renderNonCareDoctorPricing()}
       </View>
     </View>
   );
@@ -93,7 +165,7 @@ const styles = StyleSheet.create({
   },
   seperatorLine: {
     marginTop: 14,
-    height: 1,
+    height: 0.5,
     backgroundColor: theme.colors.LIGHT_BLUE,
     opacity: 0.2,
   },
@@ -114,5 +186,13 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(10),
     color: theme.colors.DEEP_RED,
     marginTop: 2,
+  },
+  doctorFees: {
+    ...theme.viewStyles.text('M', 15, theme.colors.LIGHT_BLUE),
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 7,
   },
 });

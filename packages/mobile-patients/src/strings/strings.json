@@ -51,10 +51,17 @@
     "knowMore": "KNOW MORE",
     "covid19VaccineInfo": "COVID-19 AND VACCINE INFORMATION",
     "proceedToCheckout": "Proceed to Checkout",
-    "optedForOnlineConsultation": "You have opted for an\nOnline Consultaion on -",
+    "optedForOnlineConsultation": "You have opted for an Online Consultation on -",
+    "optedForClinicConsultation": "You have opted for a Clinic Visit at -",
     "amountToPay": "Amount to Pay",
     "amountSavedByCare": "You save ₹ {amount} by using CARE",
-    "amountSavedOnConsultByCare": "You SAVE ₹ {amount} on this Consult"
+    "amountSavedOnConsultByCare": "You SAVE ₹ {amount} on this Consult",
+    "totalCharges": "TOTAL CHARGES",
+    "subtotal": "Subtotal",
+    "toPay": "To Pay",
+    "membershipDiscount": "Membership Discount",
+    "savingsOnBill": "Savings of ₹ {amount} on the bill",
+    "couponApplied": "Coupon Applied"
   },
   "components": {
     "medicineDetails": {

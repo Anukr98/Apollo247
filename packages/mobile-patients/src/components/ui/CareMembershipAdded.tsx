@@ -3,10 +3,18 @@ import { View, Text, StyleSheet } from 'react-native';
 import { CareLogo } from '@aph/mobile-patients/src/components/ui/CareLogo';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
+import { calculateCareDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
 
-interface CareMembershipProps {}
+interface CareMembershipProps {
+  doctor: getDoctorDetailsById_getDoctorDetailsById | null;
+}
 
 export const CareMembershipAdded: React.FC<CareMembershipProps> = (props) => {
+  const { doctor } = props;
+  const careDoctorDetails = calculateCareDoctorPricing(doctor);
+  const { minDiscountedPrice } = careDoctorDetails;
+
   return (
     <View style={styles.container}>
       <View style={styles.rowContainer}>
@@ -17,7 +25,7 @@ export const CareMembershipAdded: React.FC<CareMembershipProps> = (props) => {
       </View>
       <View style={styles.amountSavedView}>
         <Text style={styles.amountSavedText}>
-          {string.common.amountSavedOnConsultByCare.replace('{amount}', '100')}
+          {string.common.amountSavedOnConsultByCare.replace('{amount}', `${minDiscountedPrice}`)}
         </Text>
       </View>
     </View>
