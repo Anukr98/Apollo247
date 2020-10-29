@@ -1055,7 +1055,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             }}
           />
         </>
-      ) : (
+      ) : platinumDoctor?.id !== rowData?.id ? (
         <DoctorCard
           key={index}
           rowId={index + 1}
@@ -1076,7 +1076,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             postDoctorClickWEGEvent(rowData, 'List', type);
           }}
         />
-      );
+      ) : null;
     }
     return null;
   };
