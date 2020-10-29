@@ -109,7 +109,7 @@ export enum WebEngageEventName {
   NEED_HELP = 'Need Help?',
   TICKET_RAISED = 'Ticket raised',
   MY_ACCOUNT = 'My Account',
-  FIND_A_DOCTOR = 'Find a Doctor',
+  BOOK_DOCTOR_APPOINTMENT = 'Book Doctor Appointment clicked on homescreen',
   TABBAR_APPOINTMENTS_CLICKED = 'Appointments Clicked on tab bar',
   APOLLO_KAVACH_PROGRAM = 'Apollo Kavach Program',
   COVID_VACCINE_TRACKER = 'Covid Vaccine Tracker',
@@ -453,7 +453,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.NEED_HELP]: PatientInfoWithNeedHelp; // source values may change later
   [WebEngageEventName.TICKET_RAISED]: { Category: string; Query: string };
   [WebEngageEventName.MY_ACCOUNT]: PatientInfo;
-  [WebEngageEventName.FIND_A_DOCTOR]: PatientInfo;
+  [WebEngageEventName.BOOK_DOCTOR_APPOINTMENT]: PatientInfo;
   [WebEngageEventName.TABBAR_APPOINTMENTS_CLICKED]: PatientInfoWithSource;
   [WebEngageEventName.PAST_DOCTOR_SEARCH]: {
     'Patient UHID': string;
