@@ -150,7 +150,6 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
     data: any[];
   }> | null>(null);
   const { setLoading: setGlobalLoading } = useUIElements();
-  console.log('consultRxData', consultRxData);
   const [displayOrderPopup, setdisplayOrderPopup] = useState<boolean>(false);
   const { addMultipleCartItems, setEPrescriptions, ePrescriptions } = useShoppingCart();
   const { locationDetails, setLocationDetails } = useAppCommonData();
@@ -170,7 +169,6 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
 
   useEffect(() => {
     const filteredData = sortByTypeRecords(filterApplied);
-    console.log('filteredData', filteredData);
     if (filteredData) {
       let finalData: { key: string; data: any[] }[] = [];
       if (filterApplied) {
@@ -232,7 +230,6 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         finalData = initialSortByDays(filteredData, finalData);
       }
       setLocalConsultRxData(finalData);
-      console.log('finalData', finalData);
     }
   }, [filterApplied, consultRxData]);
 
@@ -281,7 +278,6 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
   };
 
   const foundDataIndex = (key: string, finalData: { key: string; data: any[] }[]) => {
-    console.log('foundDataIndex', key, finalData);
     return finalData.findIndex((data: { key: string; data: any[] }) => data.key === key);
   };
 
@@ -312,7 +308,6 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         hour: 23,
         minute: 59,
       });
-      console.log('dataObject', dataObject);
       const past7thDay = startDate.subtract(7, 'day');
       const past7daysData = dataObject.data?.patientId
         ? moment(dataObject.data?.appointmentDateTime).diff(past7thDay, 'days') > 0
@@ -320,7 +315,6 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
       if (past7daysData) {
         const dateExistsAt = foundDataIndex('Past 7 days', finalData);
         finalData = sortByDays('Past 7 days', finalData, dateExistsAt, dataObject);
-        console.log('Past 7 days', finalData);
       } else {
         const past30thDay = past7thDay.subtract(30, 'day');
         const past30daysData = dataObject.data?.patientId
@@ -478,10 +472,6 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
             ? 7
             : 1;
         };
-
-        console.log('diagnosticPrescription', {
-          a: item.diagnosticPrescription,
-        });
 
         const testPrescription = (item.diagnosticPrescription ||
           []) as getSDLatestCompletedCaseSheet_getSDLatestCompletedCaseSheet_caseSheetDetails_diagnosticPrescription[];

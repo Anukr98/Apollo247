@@ -2,7 +2,12 @@ import { CollapseCard } from '@aph/mobile-patients/src/components/CollapseCard';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { DatePicker } from '@aph/mobile-patients/src/components/ui/DatePicker';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { CrossYellow, DropdownGreen, FileBig } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  CrossYellow,
+  DropdownGreen,
+  FileBig,
+  Remove,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -47,6 +52,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  ScrollView,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
@@ -58,6 +64,7 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { Overlay, ListItem } from 'react-native-elements';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -102,6 +109,68 @@ const styles = StyleSheet.create({
   gotItTextStyles: {
     paddingTop: 16,
     ...theme.viewStyles.yellowTextStyle,
+  },
+  phrOverlayStyle: {
+    padding: 0,
+    margin: 0,
+    width: '100%',
+    height: '100%',
+    borderRadius: 10,
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
+    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+    overflow: 'hidden',
+    elevation: 0,
+  },
+  phrUploadOptionsViewStyle: {
+    backgroundColor: '#F7F8F5',
+    paddingHorizontal: 29,
+    borderRadius: 10,
+    paddingVertical: 34,
+  },
+  overlayViewStyle: {
+    flexGrow: 1,
+    backgroundColor: 'transparent',
+  },
+  overlaySafeAreaViewStyle: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
+  bottonButtonContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 0,
+    paddingTop: 24,
+    paddingBottom: 20,
+  },
+  bottomButtonStyle: {
+    flex: 1,
+  },
+  bottomWhiteButtonStyle: {
+    flex: 1,
+    backgroundColor: 'transparent',
+    borderColor: theme.colors.APP_YELLOW,
+    borderWidth: 1,
+  },
+  bottomWhiteButtonTextStyle: {
+    color: theme.colors.APP_YELLOW,
+  },
+  buttonSeperatorStyle: {
+    width: 16,
+  },
+  buttonViewStyle: {
+    width: '30%',
+    marginRight: 16,
+    backgroundColor: 'white',
+  },
+  reviewPhotoDetailsViewStyle: {
+    borderRadius: 10,
+    backgroundColor: theme.colors.WHITE,
+    justifyContent: 'center',
+    marginTop: 23,
+    paddingVertical: 20,
+    paddingHorizontal: 20,
   },
 });
 
@@ -154,6 +223,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const [showRecordDetails, setshowRecordDetails] = useState<boolean>(true);
   const [showReportDetails, setshowReportDetails] = useState<boolean>(false);
   const [displayOrderPopup, setdisplayOrderPopup] = useState<boolean>(false);
+  const [displayReviewPhotoPopup, setDisplayReviewPhotoPopup] = useState<boolean>(false);
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [testName, settestName] = useState<string>('');
   const [docName, setDocName] = useState<string>('');
@@ -533,6 +603,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   };
 
   const renderImagesRow = (data: PickerImage, i: number) => {
+    console.log('fileType', data);
     const base64Icon = 'data:image/png;base64,';
     fin = base64Icon.concat(data.base64);
     const fileType = data.fileType;
@@ -1051,6 +1122,57 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     );
   };
 
+  const renderReviewPhotoDetails = () => {
+    const base64Icon = 'data:image/png;base64,';
+    fin = base64Icon.concat(Images && Images.length > 0 ? Images[0].base64 : '');
+    return (
+      <ScrollView bounces={false} style={{ flex: 1 }}>
+        <View style={{ marginTop: 28, paddingHorizontal: 16, marginBottom: 30 }}>
+          <Text
+            style={{
+              ...theme.viewStyles.text('R', 12, '#02475B', 1, 15.6),
+              textAlign: 'center',
+            }}
+          >
+            {'Ensure your document is clearly visible'}
+          </Text>
+          <View style={styles.reviewPhotoDetailsViewStyle}>
+            <Image
+              style={{
+                height: 350,
+                width: '100%',
+              }}
+              resizeMode={'contain'}
+              source={{ uri: fin }}
+            />
+          </View>
+          <View style={styles.bottonButtonContainer}>
+            <Button
+              onPress={() => {
+                setDisplayReviewPhotoPopup(false);
+                setdisplayOrderPopup(false);
+              }}
+              title={'SAVE'}
+              style={styles.bottomWhiteButtonStyle}
+              titleTextStyle={styles.bottomWhiteButtonTextStyle}
+            />
+            <View style={styles.buttonSeperatorStyle} />
+            <View style={styles.bottomButtonStyle}>
+              <Button
+                onPress={() => {
+                  setDisplayReviewPhotoPopup(false);
+                  setdisplayOrderPopup(true);
+                }}
+                title={'CLICK MORE PHOTO'}
+                style={styles.bottomButtonStyle}
+              />
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+    );
+  };
+
   return (
     <View
       style={{
@@ -1073,6 +1195,46 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         </KeyboardAwareScrollView>
       </SafeAreaView>
       {renderBottomButton()}
+      {displayReviewPhotoPopup && (
+        <Overlay
+          onRequestClose={() => setDisplayReviewPhotoPopup(false)}
+          isVisible={displayReviewPhotoPopup}
+          containerStyle={{ marginBottom: 0 }}
+          fullScreen
+          overlayStyle={styles.phrOverlayStyle}
+        >
+          <View style={styles.overlayViewStyle}>
+            <SafeAreaView style={styles.overlaySafeAreaViewStyle}>
+              <Header
+                container={{
+                  ...theme.viewStyles.cardViewStyle,
+                  borderRadius: 0,
+                }}
+                title="REVIEW YOUR PHOTO"
+                leftIcon="backArrow"
+                onPressLeftIcon={() => {
+                  setImages([]);
+                  setDisplayReviewPhotoPopup(false);
+                  setdisplayOrderPopup(true);
+                }}
+                rightComponent={
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={() => {
+                      setImages([]);
+                      setDisplayReviewPhotoPopup(false);
+                      setdisplayOrderPopup(false);
+                    }}
+                  >
+                    <Remove />
+                  </TouchableOpacity>
+                }
+              />
+              {renderReviewPhotoDetails()}
+            </SafeAreaView>
+          </View>
+        </Overlay>
+      )}
       {displayOrderPopup && (
         <UploadPrescriprionPopup
           isVisible={displayOrderPopup}
@@ -1091,12 +1253,14 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             gallery: 'CHOOSE\nFROM GALLERY',
           }}
           onClickClose={() => setdisplayOrderPopup(false)}
-          onResponse={(selectedType: any, response: any) => {
+          onResponse={(selectedType: any, response: any, type) => {
             setdisplayOrderPopup(false);
             if (selectedType == 'CAMERA_AND_GALLERY') {
+              console.log('response', response, type);
               if (response.length == 0) return;
               setImages(response);
               setdisplayOrderPopup(false);
+              type === 'Gallery' && setDisplayReviewPhotoPopup(true);
             }
           }}
         />

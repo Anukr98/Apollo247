@@ -340,7 +340,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             ...c,
           };
         });
-        console.log('_data', _data);
         medOrders.forEach((c) => {
           consultsAndMedOrders[c!.quoteDateTime] = {
             ...consultsAndMedOrders[c!.quoteDateTime],
@@ -887,7 +886,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   };
 
   const renderHeader = () => {
-    console.log('currentPatient', currentPatient);
     return (
       <Header
         title={'HEALTH RECORDS'}
