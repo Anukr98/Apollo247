@@ -849,11 +849,7 @@ export const reOrderMedicines = async (
   const cartItemsToAdd = lineItemsDetails.map(
     (item, index) =>
       ({
-        id: item.sku,
-        mou: item.mou,
-        name: item.name,
-        price: parseNumber(item.price),
-        specialPrice: item.special_price ? parseNumber(item.special_price) : undefined,
+        ...formatToCartItem(item),
         quantity: Math.ceil(
           (billedLineItems
             ? billedLineItems[index].issuedQty
@@ -863,12 +859,6 @@ export const reOrderMedicines = async (
               )
             : lineItems[index].quantity) || 1
         ),
-        prescriptionRequired: item.is_prescription_required == '1',
-        isMedicine: (item.type_id || '').toLowerCase() == 'pharma',
-        thumbnail: item.thumbnail || item.image,
-        isInStock: item.is_in_stock == 1,
-        maxOrderQty: item.MaxOrderQty,
-        productType: item.type_id,
       } as ShoppingCartItem)
   );
   const unavailableItems = billedLineItems
@@ -1557,6 +1547,7 @@ export const formatToCartItem = ({
   is_in_stock,
   thumbnail,
   image,
+  sell_online,
 }: MedicineProduct): ShoppingCartItem => {
   return {
     id: sku,
@@ -1571,6 +1562,7 @@ export const formatToCartItem = ({
     maxOrderQty: MaxOrderQty,
     productType: type_id,
     isInStock: is_in_stock == 1,
+    unavailableOnline: sell_online == 0,
   };
 };
 
