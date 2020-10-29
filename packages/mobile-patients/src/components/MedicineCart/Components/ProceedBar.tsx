@@ -16,7 +16,6 @@ export interface ProceedBarProps {
   onPressChangeAddress?: () => void;
   screen?: string;
   onPressTatCard?: () => void;
-  onPressRemoveItems?: () => void;
 }
 
 export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
@@ -37,20 +36,15 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
     deliveryTime,
     onPressChangeAddress,
     onPressTatCard,
-    onPressRemoveItems,
     screen,
   } = props;
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
-  const unServiceable = cartItems.find((item) => item.unserviceable);
-  const itemsUnAvailable = !!cartItems.find(
-    ({ unavailableOnline, isInStock, unserviceable }) =>
-      !isInStock || unavailableOnline || unserviceable
+  const unServiceable = !!cartItems.find(
+    ({ unavailableOnline, unserviceable }) => unavailableOnline || unserviceable
   );
 
   function getTitle() {
-    return itemsUnAvailable
-      ? string.removeUnavailableItems
-      : !deliveryAddressId
+    return !deliveryAddressId
       ? addresses?.length
         ? string.selectDeliveryAddress
         : string.addDeliveryAddress
@@ -67,9 +61,7 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
     }
   }
   function onPressButton() {
-    return itemsUnAvailable
-      ? onPressRemoveItems?.()
-      : !deliveryAddressId
+    return !deliveryAddressId
       ? addresses?.length
         ? onPressSelectDeliveryAddress?.()
         : onPressAddDeliveryAddress?.()
@@ -116,7 +108,7 @@ export const ProceedBar: React.FC<ProceedBarProps> = (props) => {
   };
 
   const renderTatCard = () => {
-    if (selectedAddress && deliveryTime != undefined && !itemsUnAvailable) {
+    if (selectedAddress && deliveryTime != undefined) {
       return (
         <TatCard
           deliveryTime={deliveryTime}

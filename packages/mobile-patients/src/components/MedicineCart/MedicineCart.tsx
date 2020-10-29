@@ -430,8 +430,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     await validatePharmaCoupon();
   }
   function hasUnserviceableproduct() {
-    const unserviceableItems = cartItems.filter((item) => item.unserviceable) || [];
-    return unserviceableItems?.length ? true : false;
+    return !!cartItems.find(
+      ({ unavailableOnline, unserviceable }) => unavailableOnline || unserviceable
+    );
   }
   function NavigateToCartSummary(
     deliveryTime: string,
@@ -859,13 +860,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   };
 
   const renderProceedBar = () => {
-    const onPressRemoveItems = () => {
-      const availableItems = cartItems.filter(
-        ({ unavailableOnline, isInStock, unserviceable }) =>
-          isInStock && !unavailableOnline && !unserviceable
-      );
-      setCartItems!(availableItems);
-    };
     return (
       <ProceedBar
         onPressAddDeliveryAddress={() => {
@@ -896,7 +890,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             shopId: shopId,
           })
         }
-        onPressRemoveItems={onPressRemoveItems}
       />
     );
   };

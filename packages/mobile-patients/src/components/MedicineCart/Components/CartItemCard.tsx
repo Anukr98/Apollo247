@@ -4,7 +4,6 @@ import { Image } from 'react-native-elements';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { ShoppingCartItem } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
   MedicineIcon,
   MedicineRxIcon,
@@ -13,7 +12,10 @@ import {
   DeleteBoldIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
-import { getMaxQtyForMedicineItem } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  getMaxQtyForMedicineItem,
+  productsThumbnailUrl,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 export interface CartItemCardProps {
@@ -29,7 +31,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   const { item, onUpdateQuantity, onPressDelete, onPressProduct } = props;
   const [discountedPrice, setDiscountedPrice] = useState<any>(undefined);
   const [mrp, setmrp] = useState<number>(0);
-  const itemAvailable = !item.unserviceable && !item.unavailableOnline && item.isInStock;
+  const itemAvailable = !item.unserviceable && !item.unavailableOnline;
 
   useEffect(() => {
     setmrp(item.price);
@@ -40,34 +42,17 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
       : setDiscountedPrice(undefined);
   }, [item]);
 
-  function getImageUrl(item: ShoppingCartItem) {
-    let imageUrl = item.prescriptionRequired
-      ? ''
-      : item.thumbnail && !item.thumbnail.includes('/default/placeholder')
-      ? item.thumbnail.startsWith('http')
-        ? item.thumbnail
-        : `${AppConfig.Configuration.IMAGES_BASE_URL}${item.thumbnail}`
-      : '';
-    return imageUrl;
-  }
-
   const renderImage = () => {
-    const imageUrl = getImageUrl(item);
+    const imageUrl = productsThumbnailUrl(item.thumbnail!);
     return (
       <View style={{ width: 50, justifyContent: 'center', opacity: itemAvailable ? 1 : 0.3 }}>
-        {imageUrl ? (
-          <Image
-            PlaceholderContent={item.prescriptionRequired ? <MedicineRxIcon /> : <MedicineIcon />}
-            placeholderStyle={{ backgroundColor: 'transparent' }}
-            source={{ uri: imageUrl }}
-            style={{ height: 40, width: 40 }}
-            resizeMode="contain"
-          />
-        ) : item.prescriptionRequired ? (
-          <MedicineRxIcon style={{ marginLeft: 10 }} />
-        ) : (
-          <MedicineIcon style={{ marginLeft: 10 }} />
-        )}
+        <Image
+          PlaceholderContent={item.prescriptionRequired ? <MedicineRxIcon /> : <MedicineIcon />}
+          placeholderStyle={{ backgroundColor: 'transparent' }}
+          source={{ uri: imageUrl }}
+          style={{ height: 40, width: 40 }}
+          resizeMode="contain"
+        />
       </View>
     );
   };
@@ -214,11 +199,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     return (
       <View style={styles.noStockCont}>
         <Text style={styles.noStockTxt}>
-          {item.unavailableOnline
-            ? string.notForSale
-            : !item.isInStock
-            ? string.outOfStock
-            : string.notInStockInYourArea}
+          {item.unavailableOnline ? string.notForSale : string.notInStockInYourArea}
         </Text>
       </View>
     );
