@@ -194,6 +194,10 @@ export enum WebEngageEventName {
   UPLOAD_PHR_CLICK_CHATROOM = 'Upload from PHR in consult room clicked',
   PATIENT_JOINED_CONSULT = 'Patient Joined the consult with doctor',
   PATIENT_ENDED_CONSULT = 'Patient ended the consult',
+  PAST_APPOINTMENT_BOOK_FOLLOW_UP_CLICKED = 'Book follow up clicked from Past appointment',
+  BOOK_AGAIN_CANCELLED_APPOINTMENT = 'Book again clicked from cancelled appointment',
+  VIEW_DETAILS_PAST_APPOINTMENT = 'View details clicked on past appointment',
+  BOOK_APPOINTMENT_CHAT_ROOM = 'Book appointment clicked inside consult room',
   // Medicine Events
   PHARMACY_AUTO_SELECT_LOCATION_CLICKED = 'Pharmacy Auto Select Location Clicked',
   PHARMACY_ENTER_DELIVERY_PINCODE_CLICKED = 'Pharmacy Enter Delivery Pincode Clicked',
@@ -426,6 +430,24 @@ export interface DoctorFilterClick {
   'Filter Applied': string;
   'Filter Value': string;
 }
+
+export interface FollowUpAppointment {
+  'Customer ID': string;
+  'Patient Name': string;
+  'Patient UHID': string;
+  'Patient Age': number;
+  'Doctor ID': string;
+  'Doctor Name': string;
+  'Speciality Name': string;
+  'Speciality ID': string;
+  'Doctor Category': DoctorType;
+  'Consult Date Time': Date;
+  'Consult Mode': 'Online' | 'Physical';
+  'Doctor City': string;
+  'Consult ID': string;
+  'isConsultStarted': boolean;
+  'Prescription': string;
+};
 
 export interface WebEngageEvents {
   // ********** AppEvents ********** \\
@@ -1578,6 +1600,10 @@ export interface WebEngageEvents {
     'Patient Gender': string;
     'Customer ID': string;
   };
+  [WebEngageEventName.PAST_APPOINTMENT_BOOK_FOLLOW_UP_CLICKED]: FollowUpAppointment;
+  [WebEngageEventName.BOOK_AGAIN_CANCELLED_APPOINTMENT]: FollowUpAppointment;
+  [WebEngageEventName.VIEW_DETAILS_PAST_APPOINTMENT]: FollowUpAppointment;
+  [WebEngageEventName.BOOK_APPOINTMENT_CHAT_ROOM]: FollowUpAppointment;
   [WebEngageEventName.DOWNLOAD_PRESCRIPTION]: {
     'Doctor Name': string;
     'Speciality Name': string;
