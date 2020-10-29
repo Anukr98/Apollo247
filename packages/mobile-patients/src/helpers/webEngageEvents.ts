@@ -84,6 +84,7 @@ export enum WebEngageEventName {
   CONSULTED_WITH_DOCTOR_BEFORE = 'Chat Window Consulted with doctor before alert',
   DOCTOR_SPECIALITY_SEARCH_NO_RESULT = 'Doctor Speciality Fuzzy Search No Result',
   CONFIRM_LOCATION = 'Confirm Location',
+  DOCTOR_LISTING_FILTER_APPLIED = 'Doctor Listing Filter Apply',
 
   MY_ORDERS_CLICKED = 'My Orders Clicked',
   ORDER_SUMMARY_CLICKED = 'Order Summary Clicked',
@@ -109,7 +110,7 @@ export enum WebEngageEventName {
   NEED_HELP = 'Need Help?',
   TICKET_RAISED = 'Ticket raised',
   MY_ACCOUNT = 'My Account',
-  FIND_A_DOCTOR = 'Find a Doctor',
+  BOOK_DOCTOR_APPOINTMENT = 'Book Doctor Appointment clicked on homescreen',
   TABBAR_APPOINTMENTS_CLICKED = 'Appointments Clicked on tab bar',
   APOLLO_KAVACH_PROGRAM = 'Apollo Kavach Program',
   COVID_VACCINE_TRACKER = 'Covid Vaccine Tracker',
@@ -417,6 +418,15 @@ export interface DiagnosticPinCode extends DiagnosticUserInfo {
   Pincode: number | string;
 }
 
+export interface DoctorFilterClick {
+  'Patient Name': string;
+  'Patient UHID': string;
+  'Mobile Number': string;
+  'pincode': number | string;
+  'Filter Applied': string;
+  'Filter Value': string;
+}
+
 export interface WebEngageEvents {
   // ********** AppEvents ********** \\
 
@@ -453,7 +463,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.NEED_HELP]: PatientInfoWithNeedHelp; // source values may change later
   [WebEngageEventName.TICKET_RAISED]: { Category: string; Query: string };
   [WebEngageEventName.MY_ACCOUNT]: PatientInfo;
-  [WebEngageEventName.FIND_A_DOCTOR]: PatientInfo;
+  [WebEngageEventName.BOOK_DOCTOR_APPOINTMENT]: PatientInfo;
   [WebEngageEventName.TABBAR_APPOINTMENTS_CLICKED]: PatientInfoWithSource;
   [WebEngageEventName.PAST_DOCTOR_SEARCH]: {
     'Patient UHID': string;
@@ -913,6 +923,7 @@ export interface WebEngageEvents {
     'Mobile Number': string;
     'Customer ID': string;
   };
+  [WebEngageEventName.DOCTOR_LISTING_FILTER_APPLIED]: DoctorFilterClick;
   [WebEngageEventName.SPECIALITY_CLICKED]: SpecialityClickedEvent;
   [WebEngageEventName.BOOK_APPOINTMENT]: {
     'Doctor Name': string;
@@ -955,6 +966,7 @@ export interface WebEngageEvents {
     'Doctor Category': DoctorType;
     Fee: number;
     'Doctor Speciality': string;
+    Rank: number;
   };
   [WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK]: {
     'Patient Name': string;
