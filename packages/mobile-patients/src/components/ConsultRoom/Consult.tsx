@@ -716,7 +716,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
 
   const fetchAppointments = async () => {
     let userId: any = await AsyncStorage.getItem('selectedProfileId');
-    userId = JSON.parse(userId);
+    userId = JSON.parse(userId || 'null');
     console.log('userId', userId);
 
     setLoading && setLoading(true);

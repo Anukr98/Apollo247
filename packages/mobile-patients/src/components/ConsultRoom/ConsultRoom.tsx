@@ -1112,7 +1112,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       let allPatients: any;
 
       const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
-      const item = JSON.parse(retrievedItem);
+      const item = JSON.parse(retrievedItem || 'null');
 
       const callByPrism: any = await AsyncStorage.getItem('callByPrism');
 
@@ -1133,7 +1133,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         : null;
 
       const array: any = await AsyncStorage.getItem('allNotification');
-      const arraySelected = JSON.parse(array);
+      const arraySelected = JSON.parse(array || 'null');
       const selectedCount = arraySelected.filter((item: any) => {
         return item.isActive === true;
       });
@@ -1190,7 +1190,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           const tempArray: any[] = [];
           const filteredNotifications = arrayNotification.filter((el: any) => {
             // If it is not a duplicate and accepts these conditions, return true
-            const val = JSON.parse(el.notificatio_details.push_notification_content);
+            const val = JSON.parse(el.notificatio_details.push_notification_content || 'null');
             const event = val.cta;
             if (event) {
               const actionLink = decodeURIComponent(event.actionLink);
@@ -1354,7 +1354,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const getTokenforCM = async () => {
     const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
-    const item = JSON.parse(retrievedItem);
+    const item = JSON.parse(retrievedItem || 'null');
 
     const callByPrism: any = await AsyncStorage.getItem('callByPrism');
 
