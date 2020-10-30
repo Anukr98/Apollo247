@@ -9,6 +9,7 @@ import {
   RadioButtonIcon,
   RadioButtonUnselectedIcon,
   SearchSendIcon,
+  PendingIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -101,6 +102,22 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     letterSpacing: 0.04,
   },
+  careMessageContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    marginHorizontal: 20,
+    marginTop: 20,
+    padding: 10,
+    flexDirection: 'row',
+  },
+  pendingIconStyle: {
+    marginRight: 10,
+    marginTop: 5,
+  },
+  careMessage: {
+    ...theme.viewStyles.text('M', 13, '#01475B', 1, 20),
+    width: '90%'
+  },
 });
 export interface pharma_coupon {
   coupon: string;
@@ -125,6 +142,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
     pinCode,
     addresses,
     deliveryAddressId,
+    isCareSubscribed,
   } = useShoppingCart();
   const { showAphAlert } = useUIElements();
   const [loading, setLoading] = useState<boolean>(true);
@@ -332,6 +350,14 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
     );
   };
 
+  const renderCareDiscountBanner = () => 
+    <View style={styles.careMessageContainer}>
+      <PendingIcon style={styles.pendingIconStyle} />
+      <Text style={styles.careMessage}>
+        You can either use CARE discount or apply a Coupon code
+      </Text>
+    </View>
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
@@ -342,6 +368,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
           onPressLeftIcon={() => props.navigation.goBack()}
         />
         <ScrollView style={{ marginBottom: 80 }} bounces={false}>
+          {isCareSubscribed && renderCareDiscountBanner()}
           {renderCouponCard()}
         </ScrollView>
         {renderBottomButtons()}

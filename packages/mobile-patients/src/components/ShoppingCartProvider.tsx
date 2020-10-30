@@ -164,6 +164,7 @@ export interface ShoppingCartContextProps {
   setHdfcPlanName: ((id: string) => void) | null;
 
   isProuctFreeCouponApplied: boolean;
+  isCareSubscribed: boolean;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -231,6 +232,7 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setHdfcPlanName: null,
 
   isProuctFreeCouponApplied: false,
+  isCareSubscribed: false,
 });
 
 const AsyncStorageKeys = {
@@ -424,8 +426,10 @@ export const ShoppingCartProvider: React.FC = (props) => {
       .toFixed(2)
   );
 
+  const isCareSubscribed = false;
+
   const deliveryCharges =
-    isFreeDelivery || deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+    isFreeDelivery || deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP || isCareSubscribed
       ? 0
       : cartTotal > 0 &&
         cartTotal - productDiscount - couponDiscount <
@@ -721,6 +725,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         hdfcPlanName,
         setHdfcPlanName,
         isProuctFreeCouponApplied,
+
+        isCareSubscribed,
       }}
     >
       {props.children}

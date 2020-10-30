@@ -14,6 +14,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, TouchableOpacityProps, View } from 'react-native';
 import { Divider, Image } from 'react-native-elements';
+import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
 
 export interface Props extends MedicineProduct {
   onPress: () => void;
@@ -98,6 +99,11 @@ export const ProductCard: React.FC<Props> = ({
 
   const renderDivider = () => <Divider style={styles.divider} />;
 
+  const renderCareCashback = () => 
+    <CareCashbackBanner
+      bannerText={'Extra Care ₹65 Cashback'}
+    />
+
   const renderProductActions = () =>
     sell_online ? renderAddToCartButton() : renderNotForSaleTag();
 
@@ -107,6 +113,7 @@ export const ProductCard: React.FC<Props> = ({
       {renderImage()}
       {renderTitle()}
       {renderDivider()}
+      {renderCareCashback()}
       {renderPrice()}
       {renderProductActions()}
     </TouchableOpacity>
@@ -119,7 +126,7 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.card(12, 0),
     alignItems: 'center',
     width: 168,
-    height: 232,
+    maxHeight: 245,
   },
   image: {
     resizeMode: 'contain',
@@ -139,7 +146,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   priceContainer: {
-    paddingVertical: 10,
+    // paddingVertical: 10,
     flexDirection: 'row',
   },
   finalPrice: {
@@ -150,7 +157,7 @@ const styles = StyleSheet.create({
     textDecorationLine: 'line-through',
   },
   addToCart: {
-    ...text('B', 12, '#FC9916', 1, 24),
+    ...text('B', 12, '#FC9916', 1, 18),
   },
   imagePlaceHolder: { backgroundColor: 'transparent' },
   discountTagView: {

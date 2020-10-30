@@ -6,6 +6,7 @@ import { getDiscountPercentage } from '@aph/mobile-patients/src/helpers/helperFu
 import { Image } from 'react-native-elements';
 import { AddToCartButtons } from '@aph/mobile-patients/src/components/Medicines/AddToCartButtons';
 import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
+import { CareCashbackBanner } from './CareCashbackBanner';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -14,7 +15,7 @@ const styles = StyleSheet.create({
     padding: 10,
     paddingTop: 14,
     flex: 0.5,
-    minHeight: 122,
+    minHeight: 150,
   },
   rowSpaceBetweenView: {
     flex: 1,
@@ -220,6 +221,14 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
     );
   };
 
+  const renderCareCashback = () => 
+    <CareCashbackBanner
+      bannerStyle={{
+        left: -10
+      }}
+      bannerText={'Extra Care ₹65 Cashback'}
+    />
+
   return (
     <TouchableOpacity
       activeOpacity={1}
@@ -230,6 +239,7 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
         {renderMedicineIcon()}
         {renderTitleAndIcon()}
       </View>
+      {renderCareCashback()}
       {renderSpecialPrice()}
       <View style={styles.priceAndAddToCartViewStyle}>
         {renderOutOfStock()}

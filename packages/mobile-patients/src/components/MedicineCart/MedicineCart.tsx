@@ -11,6 +11,7 @@ import {
   AppStateStatus,
   BackHandler,
 } from 'react-native';
+import { WebView } from 'react-native-webview';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
@@ -94,6 +95,7 @@ import {
   makeAdressAsDefaultVariables,
   makeAdressAsDefault,
 } from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
+import { CareSelectPlans } from '@aph/mobile-patients/src/components/ui/CareSelectPlans';
 
 export interface MedicineCartProps extends NavigationScreenProps {}
 
@@ -115,6 +117,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     ePrescriptions,
     setPhysicalPrescriptions,
     pinCode,
+    isCareSubscribed,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -136,6 +139,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   const navigatedFrom = props.navigation.getParam('movedFrom') || '';
   const pharmacyPincode =
     selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
+  const [showCareWebview, setShowCareWebview] = useState(false);
 
   useEffect(() => {
     fetchAddress();
@@ -798,6 +802,47 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     );
   };
 
+  const renderCareSubscriptionOptions = () => <CareSelectPlans onPressKnowMore={() => setShowCareWebview(true)} />
+
+  const renderWebView = () => {
+    return (
+      <View
+        style={{
+          flex: 1,
+          position: 'absolute',
+          top: 0,
+          bottom: 0,
+          left: 0,
+          right: 0,
+        }}
+      >
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: 'black',
+            opacity: 0.6,
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+          }}
+        />
+        <WebView
+          style={{
+            // flex: 1,
+            //resizeMode: 'stretch',
+            marginTop: 20,
+            marginHorizontal: 20,
+            marginBottom: 20,
+            borderRadius: 10,
+          }}
+          source={{ uri: 'https://twitter.com/home' }}
+        />
+      </View>
+    );
+  };
+
   const renderSavings = () => {
     return <Savings />;
   };
@@ -893,6 +938,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           {renderUnServiceable()}
           {renderCartItems()}
           {renderAvailFreeDelivery()}
+          {renderCareSubscriptionOptions()}
           {renderAmountSection()}
           {renderSavings()}
           {renderSuggestProducts()}
@@ -902,6 +948,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         {renderuploadPrescriptionPopup()}
         {renderProceedBar()}
         {loading && <Spinner />}
+        {showCareWebview && renderWebView()}
       </SafeAreaView>
     );
   };
