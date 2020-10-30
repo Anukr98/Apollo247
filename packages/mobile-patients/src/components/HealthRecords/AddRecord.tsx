@@ -257,7 +257,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const { showAphAlert } = useUIElements();
 
   const [Images, setImages] = useState<PickerImage>(props.navigation.state.params ? [] : []);
-
+  const [currentImage, setCurrentImage] = useState<PickerImage>(null);
+  const [openCamera, setOpenCamera] = useState<boolean>(false);
   const navigatedFrom = props.navigation.state.params!.navigatedFrom
     ? props.navigation.state.params!.navigatedFrom
     : '';
@@ -388,35 +389,61 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     return number || 0;
   };
 
+  const isValidPrescription = () => {
+    if (Images.length === 0) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Please add document',
+      });
+      return false;
+    } else if (_.isEmpty(dateOfTest)) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Enter Record date',
+      });
+      return false;
+    } else if (_.isEmpty(testName)) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Enter Record name',
+      });
+      return false;
+    } else if (_.isEmpty(docName)) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Enter Record prescribed by',
+      });
+      return false;
+    } else {
+      return true;
+    }
+  };
+
+  const getAddedImages = () => {
+    let imagesArray = [] as any;
+    Images?.forEach((item: any) => {
+      let imageObj = {} as any;
+      imageObj.fileName = item?.title + '.' + item?.fileType;
+      imageObj.mimeType = mimeType(item?.title + '.' + item?.fileType);
+      imageObj.content = item?.base64;
+      imagesArray.push(imageObj);
+    });
+    return imagesArray;
+  };
+
   const addMedicalRecord = () => {
-    const inputData: AddPrescriptionRecordInput =
-      Images.length > 0
-        ? {
-            patientId: currentPatient ? currentPatient.id : '',
-            prescriptionName: testName,
-            issuingDoctor: docName,
-            location: locationName,
-            dateOfPrescription:
-              dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
-            recordType: MedicalRecordType.PRESCRIPTION,
-            prescriptionFiles: [
-              {
-                fileName: Images[0].title + '.' + Images[0].fileType,
-                mimeType: mimeType(Images[0].title + '.' + Images[0].fileType),
-                content: Images[0].base64,
-              },
-            ],
-          }
-        : {
-            patientId: currentPatient ? currentPatient.id : '',
-            prescriptionName: testName,
-            issuingDoctor: docName,
-            location: locationName,
-            dateOfPrescription:
-              dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
-            recordType: MedicalRecordType.PRESCRIPTION,
-            additionalNotes: additionalNotes,
-          };
+    setshowSpinner(true);
+    const inputData: AddPrescriptionRecordInput = {
+      patientId: currentPatient ? currentPatient.id : '',
+      prescriptionName: testName,
+      issuingDoctor: docName,
+      location: locationName,
+      additionalNotes: additionalNotes,
+      dateOfPrescription:
+        dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+      recordType: MedicalRecordType.PRESCRIPTION,
+      prescriptionFiles: getAddedImages(),
+    };
     client
       .mutate<addPatientPrescriptionRecord>({
         mutation: ADD_PRESCRIPTION_RECORD,
@@ -429,7 +456,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         const status = g(data, 'addPatientPrescriptionRecord', 'status');
         if (status) {
           postWebEngagePHR('Prescription', WebEngageEventName.PHR_ADD_PRESCRIPTIONS);
-          props.navigation.goBack();
+          props.navigation.pop(2);
         }
       })
       .catch((e) => {
@@ -594,24 +621,25 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   };
 
   const onSavePress = () => {
-    const valid = isValid();
-    if (valid.isvalid && !valid.isValidParameter) {
-      setshowSpinner(true);
-      if (typeofRecord === MedicRecordType.PRESCRIPTION) {
-        addMedicalRecord();
-      } else if (typeofRecord === MedicRecordType.TEST_REPORT) {
-        addPatientLabTestRecords();
-      } else if (typeofRecord === MedicRecordType.HEALTHCHECK) {
-        addPatientHealthCheckRecords();
-      } else {
-        addPatientHospitalizationRecords();
-      }
-    } else {
-      showAphAlert!({
-        title: 'Alert!',
-        description: valid.message,
-      });
+    // const valid = isValid();
+    // if (valid.isvalid && !valid.isValidParameter) {
+    //   setshowSpinner(true);
+    if (isValidPrescription() && typeofRecord === MedicRecordType.PRESCRIPTION) {
+      addMedicalRecord();
     }
+    // else if (typeofRecord === MedicRecordType.TEST_REPORT) {
+    //   addPatientLabTestRecords();
+    // } else if (typeofRecord === MedicRecordType.HEALTHCHECK) {
+    //   addPatientHealthCheckRecords();
+    // } else {
+    //   addPatientHospitalizationRecords();
+    // }
+    // } else {
+    //   showAphAlert!({
+    //     title: 'Alert!',
+    //     description: valid.message,
+    //   });
+    // }
   };
 
   const renderImagesRow1 = (data: PickerImage, i: number) => {
@@ -1391,7 +1419,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
 
   const renderReviewPhotoDetails = () => {
     const base64Icon = 'data:image/png;base64,';
-    fin = base64Icon.concat(Images && Images.length > 0 ? Images[0].base64 : '');
+    fin = base64Icon.concat(currentImage?.base64 || '');
     return (
       <ScrollView bounces={false} style={{ flex: 1 }}>
         <View style={{ marginTop: 28, paddingHorizontal: 16, marginBottom: 30 }}>
@@ -1427,6 +1455,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             <View style={styles.bottomButtonStyle}>
               <Button
                 onPress={() => {
+                  setOpenCamera(true);
                   setDisplayReviewPhotoPopup(false);
                   setdisplayOrderPopup(true);
                 }}
@@ -1438,6 +1467,15 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         </View>
       </ScrollView>
     );
+  };
+
+  const onPressCloseReview = () => {
+    const imageCOPY = [...Images];
+    const index = imageCOPY.findIndex((item) => item.title === currentImage?.title);
+    imageCOPY.splice(index, 1);
+    setImages(imageCOPY);
+    setDisplayReviewPhotoPopup(false);
+    setdisplayOrderPopup(false);
   };
 
   return (
@@ -1462,7 +1500,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         </KeyboardAwareScrollView>
       </SafeAreaView>
       {renderBottomButton()}
-      {displayReviewPhotoPopup && (
+      {displayReviewPhotoPopup && currentImage && (
         <Overlay
           onRequestClose={() => setDisplayReviewPhotoPopup(false)}
           isVisible={displayReviewPhotoPopup}
@@ -1479,20 +1517,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 }}
                 title="REVIEW YOUR PHOTO"
                 leftIcon="backArrow"
-                onPressLeftIcon={() => {
-                  setImages([]);
-                  setDisplayReviewPhotoPopup(false);
-                  setdisplayOrderPopup(true);
-                }}
+                onPressLeftIcon={onPressCloseReview}
                 rightComponent={
-                  <TouchableOpacity
-                    activeOpacity={1}
-                    onPress={() => {
-                      setImages([]);
-                      setDisplayReviewPhotoPopup(false);
-                      setdisplayOrderPopup(false);
-                    }}
-                  >
+                  <TouchableOpacity activeOpacity={1} onPress={onPressCloseReview}>
                     <Remove />
                   </TouchableOpacity>
                 }
@@ -1505,6 +1532,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       {displayOrderPopup && (
         <UploadPrescriprionPopup
           isVisible={displayOrderPopup}
+          openCamera={openCamera}
           phrUpload={true}
           disabledOption="NONE"
           //type=""
@@ -1525,8 +1553,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             if (selectedType == 'CAMERA_AND_GALLERY') {
               console.log('response', response, type);
               if (response.length == 0) return;
-              type === 'Camera' && setDisplayReviewPhotoPopup(true);
-              setImages(response);
+              if (type === 'Camera') {
+                setDisplayReviewPhotoPopup(true);
+                setCurrentImage(response[0]);
+              }
+              setImages([...Images, ...response]);
               setdisplayOrderPopup(false);
             }
           }}

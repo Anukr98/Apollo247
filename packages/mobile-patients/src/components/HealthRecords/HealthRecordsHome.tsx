@@ -467,88 +467,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
 
   const [scrollOffset, setScrollOffset] = useState<number>(0);
 
-  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const offset = event.nativeEvent.contentOffset.y;
-    if (!(offset > 1 && scrollOffset > 1)) {
-      setScrollOffset(event.nativeEvent.contentOffset.y);
-    }
-  };
-
-  const renderTopView = () => {
-    const containerStyle: ViewStyle =
-      scrollOffset > 1
-        ? {
-            shadowColor: '#808080',
-            shadowOffset: { width: 0, height: 0 },
-            zIndex: 1,
-            shadowOpacity: 0.4,
-            shadowRadius: 5,
-            elevation: 5,
-          }
-        : {};
-    return <TabHeader containerStyle={containerStyle} navigation={props.navigation} />;
-  };
-
-  const renderProfileChangeView = () => {
-    return (
-      <View style={{ backgroundColor: theme.colors.WHITE }}>
-        <ProfileList
-          navigation={props.navigation}
-          saveUserChange={true}
-          childView={
-            <View
-              style={{
-                flexDirection: 'row',
-                paddingRight: 8,
-                borderRightWidth: 0,
-                borderRightColor: 'rgba(2, 71, 91, 0.2)',
-                backgroundColor: theme.colors.WHITE,
-                paddingBottom: 8,
-              }}
-            >
-              <Text style={styles.hiTextStyle}>{'hi'}</Text>
-              <View style={styles.nameTextContainerStyle}>
-                <View style={{ flexDirection: 'row', flex: 1 }}>
-                  <Text
-                    style={[
-                      styles.nameTextStyle,
-                      { maxWidth: Platform.OS === 'ios' ? '85%' : '75%' },
-                    ]}
-                    numberOfLines={1}
-                  >
-                    {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
-                  </Text>
-                  {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
-                    <LinkedUhidIcon
-                      style={{
-                        width: 22,
-                        height: 20,
-                        marginLeft: 5,
-                        marginTop: Platform.OS === 'ios' ? 16 : 20,
-                      }}
-                      resizeMode={'contain'}
-                    />
-                  ) : null}
-                  <View style={{ paddingTop: 15, marginLeft: 6 }}>
-                    <DropdownGreen />
-                  </View>
-                </View>
-                {currentPatient && <View style={styles.seperatorStyle} />}
-              </View>
-            </View>
-          }
-          selectedProfile={profile}
-          setDisplayAddProfile={() => {}}
-          unsetloaderDisplay={true}
-        ></ProfileList>
-        <Text style={styles.descriptionTextStyle}>{strings.health_records_home.description}</Text>
-        <Text style={styles.notifyUsersTextStyle}>
-          {strings.health_records_home.add_note_to_notify_users}
-        </Text>
-      </View>
-    );
-  };
-
   const tabsClickedWebEngageEvent = (webEngageEventName: WebEngageEventName) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.MEDICAL_RECORDS] = {
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
@@ -1105,7 +1023,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           {'Health Categories'}
         </Text>
         <View style={styles.listItemCardStyle}>
-          {renderListItemView('Consult & Rx', 1)}
+          {renderListItemView('Doctor Consultations', 1)}
           {renderListItemView('Test Reports', 2)}
           {renderListItemView('Hospitalization', 3)}
           {renderListItemView('Health Conditions', 4)}

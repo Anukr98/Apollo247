@@ -130,8 +130,8 @@ const styles = StyleSheet.create({
 export interface HealthRecordDetailsProps extends NavigationScreenProps {}
 
 export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) => {
-  const [showtopLine, setshowtopLine] = useState<boolean>(true);
   const [showPrescription, setshowPrescription] = useState<boolean>(true);
+  const [showAdditionalNotes, setShowAdditionalNotes] = useState<boolean>(false);
   const data = props.navigation.state.params ? props.navigation.state.params.data : {};
   const labResults = props.navigation.state.params
     ? props.navigation.state.params.labResults
@@ -178,17 +178,21 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
 
   const renderTopLineReport = () => {
     return (
-      <View
-        style={{
-          marginTop: 24,
-        }}
-      >
+      <View>
         <CollapseCard
-          heading="TOPLINE REPORT"
-          collapse={showtopLine}
-          onPress={() => setshowtopLine(!showtopLine)}
+          heading="ADDITIONAL NOTES"
+          collapse={showAdditionalNotes}
+          containerStyle={
+            !showAdditionalNotes && {
+              ...theme.viewStyles.cardViewStyle,
+              marginHorizontal: 8,
+            }
+          }
+          headingStyle={{ ...viewStyles.text('SB', 18, '#02475B', 1, 23) }}
+          labelViewStyle={styles.collapseCardLabelViewStyle}
+          onPress={() => setShowAdditionalNotes(!showAdditionalNotes)}
         >
-          <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
+          <View style={[styles.cardViewStyle, { paddingBottom: 12, paddingTop: 12 }]}>
             <View>
               <Text style={styles.descriptionStyle}>
                 {data?.additionalNotes ||
