@@ -19,6 +19,7 @@ import {
   RadioButtonUnselectedIcon,
   SearchIcon,
   RetryButtonIcon,
+  TickIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
@@ -199,6 +200,17 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE),
     marginLeft: 10,
   },
+  carePlanAddedView: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: theme.colors.SEARCH_UNDERLINE_COLOR,
+    marginBottom: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 13,
+    marginHorizontal: 20,
+    flexDirection: 'row',
+  },
 });
 
 let latlng: locationType | null = null;
@@ -222,6 +234,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [displayFilter, setDisplayFilter] = useState<boolean>(false);
   const [currentLocation, setcurrentLocation] = useState<string>('');
   const [locationSearchText, setLocationSearchText] = useState<string>('');
+  const [showCarePlanNotification, setShowCarePlanNotification] = useState<boolean>(true);
 
   const [doctorsList, setDoctorsList] = useState<
     (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null)[]
@@ -340,6 +353,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       );
     }
   }, [careDoctorsSwitch]);
+
+  useEffect(() => {
+    setTimeout(() => {
+      setShowCarePlanNotification(false);
+    }, 10 * 1000);
+  }, []);
 
   const vaueChange = (sort: any) => {
     if (sort === 'distance') {
@@ -1127,9 +1146,38 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         </View>
       );
     }
+
+    const renderCarePlanAddedToCartView = () => {
+      return (
+        <View style={styles.carePlanAddedView}>
+          <TickIcon />
+          <View style={{ marginLeft: 10, flex: 1 }}>
+            <Text
+              style={{
+                ...theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE),
+                flexWrap: 'wrap',
+              }}
+            >
+              {string.careDoctors.carePlanAddedToCart}
+            </Text>
+            <Text
+              style={{
+                ...theme.viewStyles.text('R', 10, theme.colors.LIGHT_BLUE),
+                flexWrap: 'wrap',
+                marginTop: 2,
+              }}
+            >
+              {string.careDoctors.discountInfoReflectsOnCheckout}
+            </Text>
+          </View>
+        </View>
+      );
+    };
+
     return (
       <View style={{ flex: 1 }}>
         {doctorsType === 'APOLLO' && renderViewCareSwitch()}
+        {doctorsType === 'APOLLO' && showCarePlanNotification && renderCarePlanAddedToCartView()}
         {doctors.length > 0 && (
           <FlatList
             ref={(ref) => {
