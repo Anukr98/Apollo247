@@ -77,10 +77,12 @@ import {
   RectangularIcon,
   VideoPlayIcon,
   CTGrayChat,
+  InfoRed,
 } from '../ui/Icons';
 import { CareLogo } from '@aph/mobile-patients/src/components/ui/CareLogo';
 // import { NotificationListener } from '../NotificationListener';
 import { calculateCareDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 const { height, width } = Dimensions.get('window');
 
@@ -212,6 +214,19 @@ const styles = StyleSheet.create({
   smallCareLogoText: {
     ...theme.viewStyles.text('M', 4, 'white'),
   },
+  smallRightAlignText: {
+    ...theme.viewStyles.text('M', 10, theme.colors.DEEP_RED),
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  infoIcon: {
+    width: 10,
+    height: 10,
+    marginLeft: 3,
+  },
 });
 type Appointments = {
   date: string;
@@ -269,6 +284,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     onlineConsultSlashedPrice,
     physicalConsultSlashedPrice,
   } = careDoctorDetails;
+  const { isCareSubscribed } = useShoppingCart();
 
   useEffect(() => {
     if (!currentPatient) {
@@ -537,8 +553,20 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
   const renderCareDoctorPricing = (consultType: ConsultMode) => {
     return (
-      <View style={{ paddingBottom: 16 }}>
-        <Text style={styles.carePrice}>
+      <View style={{ paddingBottom: isCareSubscribed ? 16 : 3 }}>
+        <Text
+          style={[
+            styles.carePrice,
+            {
+              textDecorationLine: isCareSubscribed ? 'line-through' : 'none',
+              ...theme.viewStyles.text(
+                'M',
+                15,
+                isCareSubscribed ? theme.colors.BORDER_BOTTOM_COLOR : theme.colors.LIGHT_BLUE
+              ),
+            },
+          ]}
+        >
           {string.common.Rs}
           {consultType === ConsultMode.ONLINE ? onlineConsultMRPPrice : physicalConsultMRPPrice}
         </Text>
@@ -649,8 +677,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                         width: (width - 42) / 2,
                         height: isCareDoctor
                           ? Platform.OS == 'android'
-                            ? 154
-                            : 149
+                            ? isCareSubscribed
+                              ? 154
+                              : 164
+                            : isCareSubscribed
+                            ? 149
+                            : 159
                           : Platform.OS == 'android'
                           ? 134
                           : 129,
@@ -714,6 +746,14 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                           )}
                         </Text>
                       )}
+                      {!isCareSubscribed && (
+                        <View style={styles.row}>
+                          <Text style={styles.smallRightAlignText}>
+                            {string.careDoctors.forCareMembers}
+                          </Text>
+                          <InfoRed style={styles.infoIcon} />
+                        </View>
+                      )}
                       <AvailabilityCapsule
                         titleTextStyle={{ paddingHorizontal: 7 }}
                         styles={{ marginTop: -5 }}
@@ -730,8 +770,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                       marginLeft: 6,
                       height: isCareDoctor
                         ? Platform.OS == 'android'
-                          ? 135
-                          : 130
+                          ? isCareSubscribed
+                            ? 135
+                            : 145
+                          : isCareSubscribed
+                          ? 130
+                          : 140
                         : Platform.OS == 'android'
                         ? 115
                         : 110,

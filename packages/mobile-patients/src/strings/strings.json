@@ -564,6 +564,7 @@
     "viewCareDoctors": "View CARE Doctors",
     "upgradeToCareToPay": "Upgrade to CIRCLE to PAY ",
     "carePlanAddedToCart": "CARE plan successfully added to cart.",
-    "discountInfoReflectsOnCheckout": "Discount and other information will be reflected on checkout page"
+    "discountInfoReflectsOnCheckout": "Discount and other information will be reflected on checkout page",
+    "forCareMembers": "for CARE members"
   }
 }

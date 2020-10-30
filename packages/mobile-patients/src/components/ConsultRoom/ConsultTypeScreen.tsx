@@ -16,6 +16,7 @@ import {
   CTChat,
   OnlineHeader,
   CTPhone,
+  InfoRed,
 } from '../ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import {
@@ -29,25 +30,21 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { ConsultMode, PLAN_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { ConsultMode } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppRoutes } from '../NavigatorContainer';
 import { useApolloClient } from 'react-apollo-hooks';
 import { useUIElements } from '../UIElementsProvider';
-import { PAST_APPOINTMENTS_COUNT, GET_DOCTOR_DETAILS_BY_ID } from '../../graphql/profiles';
+import { GET_DOCTOR_DETAILS_BY_ID } from '../../graphql/profiles';
 import {
-  getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor,
   getDoctorDetailsById,
   getDoctorDetailsById_getDoctorDetailsById,
 } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
-import {
-  getPastAppointmentsCount,
-  getPastAppointmentsCountVariables,
-} from '../../graphql/types/getPastAppointmentsCount';
 import { useAllCurrentPatients } from '../../hooks/authHooks';
 import { CommonBugFender } from '../../FunctionHelpers/DeviceHelper';
 import moment from 'moment';
 import { CareLogo } from '@aph/mobile-patients/src/components/ui/CareLogo';
 import { calculateCareDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 const styles = StyleSheet.create({
   mainContainer: {
@@ -94,11 +91,13 @@ const styles = StyleSheet.create({
   cardHeaderStyle: {
     flexDirection: 'row',
     marginTop: 13,
-    marginHorizontal: 16,
     paddingBottom: 9,
     justifyContent: 'space-between',
+  },
+  cardBorderStyle: {
     borderBottomWidth: 0.5,
     borderBottomColor: theme.colors.SEPARATOR_LINE,
+    marginHorizontal: 16,
   },
   headingTextContainer: {
     flex: 1,
@@ -173,6 +172,21 @@ const styles = StyleSheet.create({
   careLogoText: {
     ...theme.viewStyles.text('M', 4, 'white'),
   },
+  smallRightAlignText: {
+    ...theme.viewStyles.text('M', 10, theme.colors.DEEP_RED),
+    marginLeft: 'auto',
+  },
+  row: {
+    flexDirection: 'row',
+    paddingBottom: 9,
+    alignItems: 'center',
+    marginTop: -10,
+  },
+  infoIcon: {
+    width: 10,
+    height: 10,
+    marginLeft: 3,
+  },
 });
 
 export interface ConsultTypeScreenProps extends NavigationScreenProps {
@@ -191,12 +205,9 @@ type stepsObject = {
   textColor?: string;
 };
 export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
-  const [consultedChecked, setConsultedChecked] = useState<boolean>(false);
   const DoctorName = props.navigation.getParam('DoctorName');
   const DoctorId = props.navigation.getParam('DoctorId');
   // const chatDays = props.navigation.getParam('chatDays');
-  const [hideCheckbox, setHideCheckbox] = useState<boolean>(false);
-  const nextAppointemntOnlineTime = props.navigation.getParam('nextSlot');
   const nextAppointemntInPresonTime = props.navigation.getParam('nextSlot');
   // const onlinePrice = props.navigation.getParam('onlinePrice');
   // const InpersonPrice = props.navigation.getParam('InpersonPrice');
@@ -214,6 +225,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
     onlineConsultSlashedPrice,
     physicalConsultSlashedPrice,
   } = careDoctorDetails;
+  const { isCareSubscribed } = useShoppingCart();
 
   const client = useApolloClient();
 
@@ -275,7 +287,19 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
   const renderCareDoctorPricing = (heading: string) => {
     return (
       <View style={{ justifyContent: 'center' }}>
-        <Text style={styles.carePrice}>
+        <Text
+          style={[
+            styles.carePrice,
+            {
+              textDecorationLine: isCareSubscribed ? 'line-through' : 'none',
+              ...theme.viewStyles.text(
+                'M',
+                15,
+                isCareSubscribed ? theme.colors.BORDER_BOTTOM_COLOR : theme.colors.LIGHT_BLUE
+              ),
+            },
+          ]}
+        >
           {string.common.Rs}
           {heading === string.consultType.online.heading
             ? onlineConsultMRPPrice
@@ -306,22 +330,32 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
     const timeDiff: Number = timeDiffFromNow(time || '');
     return (
       <View style={styles.cardContainer}>
-        <View style={styles.cardHeaderStyle}>
-          {headingImage}
-          <View style={styles.headingTextContainer}>
-            <Text style={theme.viewStyles.text('M', 14, theme.colors.SKY_BLUE, 1, undefined, 0.02)}>
-              {heading}
-            </Text>
-            {time && moment(time).isValid() ? (
-              <Text style={timeDiff <= 15 ? styles.timeText2Style : styles.timeTextStyle}>
-                {nextAvailability(time)}
+        <View style={styles.cardBorderStyle}>
+          <View style={styles.cardHeaderStyle}>
+            {headingImage}
+            <View style={styles.headingTextContainer}>
+              <Text
+                style={theme.viewStyles.text('M', 14, theme.colors.SKY_BLUE, 1, undefined, 0.02)}
+              >
+                {heading}
               </Text>
-            ) : null}
+              {time && moment(time).isValid() ? (
+                <Text style={timeDiff <= 15 ? styles.timeText2Style : styles.timeTextStyle}>
+                  {nextAvailability(time)}
+                </Text>
+              ) : null}
+            </View>
+            {isCareDoctor ? (
+              renderCareDoctorPricing(heading)
+            ) : (
+              <Text style={styles.priceTextStyle}>{`${string.common.Rs} ${price}`}</Text>
+            )}
           </View>
-          {isCareDoctor ? (
-            renderCareDoctorPricing(heading)
-          ) : (
-            <Text style={styles.priceTextStyle}>{`${string.common.Rs} ${price}`}</Text>
+          {!isCareSubscribed && (
+            <View style={styles.row}>
+              <Text style={styles.smallRightAlignText}>{string.careDoctors.forCareMembers}</Text>
+              <InfoRed style={styles.infoIcon} />
+            </View>
           )}
         </View>
         <View style={styles.stepsMainContainer}>
