@@ -234,7 +234,6 @@ export interface AddRecordProps extends NavigationScreenProps {}
 export const AddRecord: React.FC<AddRecordProps> = (props) => {
   var fin = '';
   const { width } = Dimensions.get('window');
-  const [showImages, setshowImages] = useState<boolean>(true);
   const [showRecordDetails, setshowRecordDetails] = useState<boolean>(true);
   const [showReportDetails, setshowReportDetails] = useState<boolean>(false);
   const [displayOrderPopup, setdisplayOrderPopup] = useState<boolean>(false);
@@ -621,134 +620,24 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   };
 
   const onSavePress = () => {
-    // const valid = isValid();
-    // if (valid.isvalid && !valid.isValidParameter) {
-    //   setshowSpinner(true);
-    if (isValidPrescription() && typeofRecord === MedicRecordType.PRESCRIPTION) {
-      addMedicalRecord();
+    const valid = isValid();
+    if (valid.isvalid && !valid.isValidParameter) {
+      setshowSpinner(true);
+      if (isValidPrescription() && typeofRecord === MedicRecordType.PRESCRIPTION) {
+        addMedicalRecord();
+      } else if (typeofRecord === MedicRecordType.TEST_REPORT) {
+        addPatientLabTestRecords();
+      } else if (typeofRecord === MedicRecordType.HEALTHCHECK) {
+        addPatientHealthCheckRecords();
+      } else {
+        addPatientHospitalizationRecords();
+      }
+    } else {
+      showAphAlert!({
+        title: 'Alert!',
+        description: valid.message,
+      });
     }
-    // else if (typeofRecord === MedicRecordType.TEST_REPORT) {
-    //   addPatientLabTestRecords();
-    // } else if (typeofRecord === MedicRecordType.HEALTHCHECK) {
-    //   addPatientHealthCheckRecords();
-    // } else {
-    //   addPatientHospitalizationRecords();
-    // }
-    // } else {
-    //   showAphAlert!({
-    //     title: 'Alert!',
-    //     description: valid.message,
-    //   });
-    // }
-  };
-
-  const renderImagesRow1 = (data: PickerImage, i: number) => {
-    console.log('fileType', data);
-    const base64Icon = 'data:image/png;base64,';
-    fin = base64Icon.concat(data.base64);
-    const fileType = data.fileType;
-
-    return (
-      <TouchableOpacity activeOpacity={1} key={i} onPress={() => {}}>
-        <View
-          style={{
-            ...theme.viewStyles.cardViewStyle,
-            shadowRadius: 4,
-            height: 56,
-            marginHorizontal: 20,
-            backgroundColor: theme.colors.WHITE,
-            flexDirection: 'row',
-            alignItems: 'center',
-            marginTop: i === 0 ? 16 : 4,
-            marginBottom: Images.length === i + 1 ? 16 : 4,
-          }}
-          key={i}
-        >
-          <View
-            style={{
-              paddingLeft: 8,
-              paddingRight: 16,
-              width: 54,
-            }}
-          >
-            {fileType === 'pdf' || fileType === 'application/pdf' ? (
-              <FileBig
-                style={{
-                  height: 45,
-                  width: 30,
-                }}
-              />
-            ) : (
-              <Image
-                style={{
-                  height: 40,
-                  width: 30,
-                }}
-                source={{ uri: fin }}
-              />
-            )}
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text>{data.title}</Text>
-          </View>
-          <TouchableOpacity
-            activeOpacity={1}
-            style={{
-              width: 40,
-              paddingHorizontal: 8,
-            }}
-            onPress={() => {
-              const imageCOPY = [...Images];
-              imageCOPY.splice(i, 1);
-
-              setImages(imageCOPY);
-              CommonLogEvent('ADD_RECORD', 'Set Images');
-            }}
-          >
-            <CrossYellow />
-          </TouchableOpacity>
-        </View>
-      </TouchableOpacity>
-    );
-  };
-
-  const renderUploadedImages1 = () => {
-    return (
-      <View>
-        <CollapseCard
-          heading="IMAGES UPLOADED"
-          collapse={showImages}
-          onPress={() => {
-            CommonLogEvent('ADD_RECORD', 'Show Images');
-            setshowImages(!showImages);
-          }}
-        >
-          <View style={[styles.cardViewStyle, { paddingHorizontal: 8 }]}>
-            <FlatList
-              bounces={false}
-              data={Images}
-              onEndReachedThreshold={0.5}
-              renderItem={({ item, index }) => renderImagesRow(item, index)}
-              keyExtractor={(_, index) => index.toString()}
-            />
-            {Images.length === 0 && (
-              <Text
-                style={[
-                  theme.viewStyles.yellowTextStyle,
-                  { textAlign: 'right', paddingBottom: 16 },
-                ]}
-                onPress={() => {
-                  CommonLogEvent('ADD_RECORD', 'Display order popup');
-                  setdisplayOrderPopup(true);
-                }}
-              >
-                ADD DOCUMENT
-              </Text>
-            )}
-          </View>
-        </CollapseCard>
-      </View>
-    );
   };
 
   const renderDateInpt = () => {
@@ -1308,7 +1197,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               Keyboard.dismiss();
             }}
           />
-          {/* {renderDateInpt()} */}
         </View>
         <View
           style={{
@@ -1386,6 +1274,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             }}
           />
         </View>
+        {renderBottomButton()}
       </View>
     );
   };
@@ -1407,13 +1296,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
 
   const renderBottomButton = () => {
     return (
-      <StickyBottomComponent defaultBG>
-        <Button
-          title="UPLOAD DATA"
-          style={{ flex: 1, marginHorizontal: 60 }}
-          onPress={onSavePress}
-        />
-      </StickyBottomComponent>
+      <Button
+        title="UPLOAD DATA"
+        style={{ width: '70%', alignSelf: 'center', marginBottom: 20 }}
+        onPress={onSavePress}
+      />
     );
   };
 
@@ -1490,16 +1377,15 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             ...theme.viewStyles.cardViewStyle,
             borderRadius: 0,
           }}
-          title="ADD A RECORD"
+          title="ADD DATA"
           leftIcon="backArrow"
           onPressLeftIcon={() => props.navigation.goBack()}
         />
         <KeyboardAwareScrollView bounces={false}>
           {renderData()}
-          <View style={{ height: 100 }} />
+          <View style={{ height: 60 }} />
         </KeyboardAwareScrollView>
       </SafeAreaView>
-      {renderBottomButton()}
       {displayReviewPhotoPopup && currentImage && (
         <Overlay
           onRequestClose={() => setDisplayReviewPhotoPopup(false)}

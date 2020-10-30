@@ -387,15 +387,15 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
   const renderData = () => {
     return (
       <View>
+        {(data.medicalRecordParameters && data.medicalRecordParameters.length > 0) ||
+        (data.labTestResults && data.labTestResults.length > 0)
+          ? renderDetailsFinding()
+          : null}
         {(!!data.additionalNotes ||
           !!data.healthCheckSummary ||
           !!data.dischargeSummary ||
           !!data.notes) &&
           renderTopLineReport()}
-        {(data.medicalRecordParameters && data.medicalRecordParameters.length > 0) ||
-        (data.labTestResults && data.labTestResults.length > 0)
-          ? renderDetailsFinding()
-          : null}
         {!!data.fileUrl ? renderImage() : null}
         {!!data.fileUrl || labResults ? renderDownloadButton() : null}
       </View>
