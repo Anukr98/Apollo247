@@ -24,7 +24,7 @@ export interface CartItemCardProps {
 }
 
 export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
-  const { coupon, isProuctFreeCouponApplied } = useShoppingCart();
+  const { coupon, isProuctFreeCouponApplied, isCareSubscribed } = useShoppingCart();
   const { item, onUpdateQuantity, onPressDelete, onPressProduct } = props;
   const [discountedPrice, setDiscountedPrice] = useState<any>(undefined);
   const [mrp, setmrp] = useState<number>(0);
@@ -92,8 +92,25 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
           </TouchableOpacity>
         </View>
         {renderLowerCont()}
+        {isCareSubscribed && renderCareCashback()}
       </View>
     );
+  };
+
+  const renderCareCashback = () => {
+    return (
+      <View style={{
+        backgroundColor: '#F0533B',
+        marginTop: 5,
+        paddingHorizontal: 5,
+        borderRadius: 4,
+        alignSelf: 'flex-start',
+      }}>
+        <Text style={{
+          ...theme.viewStyles.text('M', 11, '#FFFFFF', 1, 20)
+        }}>20% CARE Cashabck</Text>
+      </View>
+    )
   };
 
   const renderDelete = () => {
