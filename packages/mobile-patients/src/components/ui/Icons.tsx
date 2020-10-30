@@ -1038,7 +1038,7 @@ export const ApolloHealthProIcon: React.FC<IconProps> = (props) => (
   <IconBase
     style={{ width: 24, height: 24 }}
     {...props}
-    source={require('./icons/ic_healthpro.png')}
+    source={require('./icons/prohealth.jpg')}
     resizeMode="contain"
   />
 );
