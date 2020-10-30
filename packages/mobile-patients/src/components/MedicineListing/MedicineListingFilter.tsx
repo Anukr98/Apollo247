@@ -297,19 +297,20 @@ const styles = StyleSheet.create({
     backgroundColor: CLEAR,
     paddingLeft: 0,
     paddingRight: 15,
-    paddingVertical: 15,
+    paddingVertical: 0,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(1,48,91,0.2)',
-    borderStartColor: 'red',
   },
   optionText: {
     ...text('SB', 14, LIGHT_BLUE),
+    paddingVertical: 15,
   },
   selectedOptionText: {
     ...text('SB', 14, APP_GREEN),
+    paddingVertical: 15,
   },
   highlight: {
-    height: '220%',
+    height: '100%',
     width: 5,
   },
   button: { borderRadius: 0, height: 45, shadowOpacity: 0 },
