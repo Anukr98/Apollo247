@@ -76,6 +76,8 @@
   "addDeliveryAddress": "ADD DELIVERY ADDRESS",
   "uploadPrescription": "UPLOAD PRESCRIPTION",
   "proceedToPay": "PROCEED TO PAY",
+  "microphone": "microphone",
+  "enableMicrophoneToRecordCough": "Enable microphone from settings to record your cough.",
   "consultType": {
     "mainHeading": "How would you like to consult with",
     "checkBoxText": "I have consulted with {0} before",
