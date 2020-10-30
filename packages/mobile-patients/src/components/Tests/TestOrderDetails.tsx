@@ -259,7 +259,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const [apiLoading, setApiLoading] = useState(false);
   const [isCancelVisible, setCancelVisible] = useState(false);
   const [isRescheduleVisible, setRescheduleVisible] = useState(false);
-  const [showRateDiagnosticBtn, setShowRateDiagnosticBtn] = useState(true);
+  const [showRateDiagnosticBtn, setShowRateDiagnosticBtn] = useState(false);
   const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
   const [showCancelPopUp, setCancelPopUp] = useState<boolean>(false);
   const [showReschedulePopUp, setReschedulePopUp] = useState<boolean>(false);
@@ -305,6 +305,12 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       getPatientApiCall();
     }
   }, [currentPatient]);
+
+  useEffect(() => {
+    if (currentPatient) {
+      updateRateDeliveryBtnVisibility();
+    }
+  }, []);
 
   const { data, loading, refetch } = useQuery<
     getDiagnosticOrderDetails,
@@ -355,22 +361,26 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const updateRateDeliveryBtnVisibility = async () => {
+    setLoading!(true);
     try {
       if (!showRateDiagnosticBtn) {
         const response = await client.query<GetPatientFeedback, GetPatientFeedbackVariables>({
           query: GET_PATIENT_FEEDBACK,
           variables: {
-            patientId: g(currentPatientId, 'id') || '',
-            transactionId: `${orderDetails.id}`,
+            patientId: g(currentPatient, 'id') || '',
+            transactionId: `${selectedTest.id}`,
           },
           fetchPolicy: 'no-cache',
         });
         const feedback = g(response, 'data', 'getPatientFeedback', 'feedback', 'length');
+        console.log({ feedback });
         if (!feedback) {
           setShowRateDiagnosticBtn(true);
         }
       }
+      setLoading!(false);
     } catch (error) {
+      setLoading!(false);
       CommonBugFender(`${AppRoutes.OrderDetailsScene}_updateRateDeliveryBtnVisibility`, error);
     }
   };
@@ -838,6 +848,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
               description: 'Your feedback has been submitted. Thanks for your time.',
             });
             setShowRateDiagnosticBtn(false);
+            // updateRateDeliveryBtnVisibility();
           }}
         />
       </>
