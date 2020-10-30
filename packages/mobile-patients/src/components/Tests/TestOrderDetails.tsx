@@ -306,6 +306,12 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     }
   }, [currentPatient]);
 
+  useEffect(() => {
+    if (currentPatient) {
+      updateRateDeliveryBtnVisibility();
+    }
+  }, []);
+
   const { data, loading, refetch } = useQuery<
     getDiagnosticOrderDetails,
     getDiagnosticOrderDetailsVariables
@@ -837,7 +843,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
               title: 'Thanks :)',
               description: 'Your feedback has been submitted. Thanks for your time.',
             });
-            setShowRateDiagnosticBtn(false);
+            updateRateDeliveryBtnVisibility();
           }}
         />
       </>
