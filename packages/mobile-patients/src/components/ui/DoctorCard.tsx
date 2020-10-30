@@ -7,6 +7,7 @@ import {
   VideoPlayIcon,
   ApolloDoctorIcon,
   ApolloPartnerIcon,
+  InfoRed,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   CommonBugFender,
@@ -57,7 +58,7 @@ import { SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleM
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
 import { CareLogo } from '@aph/mobile-patients/src/components/ui/CareLogo';
 import { calculateCareDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
-
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 const styles = StyleSheet.create({
   doctorView: {
     flex: 1,
@@ -136,6 +137,17 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('M', 12, theme.colors.DEEP_RED),
     marginLeft: 6,
   },
+  seperatorLine: {
+    width: 0.5,
+    height: 20,
+    backgroundColor: theme.colors.BORDER_BOTTOM_COLOR,
+    marginHorizontal: 12,
+  },
+  infoIcon: {
+    marginLeft: 9,
+    width: 10,
+    height: 10,
+  },
 });
 
 export interface DoctorCardProps extends NavigationScreenProps {
@@ -174,6 +186,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     minSlashedPrice,
     minDiscountedPrice,
   } = careDoctorDetails;
+
+  const { isCareSubscribed } = useShoppingCart();
 
   useEffect(() => {
     if (!currentPatient) {
@@ -235,36 +249,78 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   };
 
   const renderCareDoctorsFee = () => {
+    if (isCareSubscribed) {
+      return (
+        <View style={{ marginTop: 5 }}>
+          {physicalConsultMRPPrice === onlineConsultMRPPrice ? (
+            <View style={styles.rowContainer}>
+              <Text style={styles.carePrice}>
+                {string.common.Rs}
+                {onlineConsultMRPPrice}
+              </Text>
+              <Text style={styles.careDiscountedPrice}>
+                {string.common.Rs}
+                {onlineConsultSlashedPrice}
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.rowContainer}>
+              <Text
+                style={{ ...theme.viewStyles.text('M', 10, theme.colors.SKY_BLUE), paddingTop: 3 }}
+              >
+                {physicalConsultMRPPrice && onlineConsultMRPPrice && `Starts at  `}
+              </Text>
+              <Text style={styles.carePrice}>
+                {string.common.Rs}
+                {minMrp}
+              </Text>
+              <Text style={styles.careDiscountedPrice}>
+                {string.common.Rs}
+                {minSlashedPrice}
+              </Text>
+            </View>
+          )}
+        </View>
+      );
+    }
     return (
       <View style={{ marginTop: 5 }}>
-        {physicalConsultMRPPrice === onlineConsultMRPPrice ? (
-          <View style={styles.rowContainer}>
-            <Text style={styles.carePrice}>
-              {string.common.Rs}
-              {onlineConsultMRPPrice}
-            </Text>
-            <Text style={styles.careDiscountedPrice}>
-              {string.common.Rs}
-              {onlineConsultSlashedPrice}
-            </Text>
-          </View>
-        ) : (
-          <View style={styles.rowContainer}>
+        <View style={styles.rowContainer}>
+          <View>
             <Text
-              style={{ ...theme.viewStyles.text('M', 10, theme.colors.SKY_BLUE), paddingTop: 3 }}
+              style={{
+                ...theme.viewStyles.text('M', 10, theme.colors.SEARCH_EDUCATION_COLOR),
+                paddingTop: 3,
+              }}
             >
-              {physicalConsultMRPPrice && onlineConsultMRPPrice && `Starts at  `}
+              You pay
             </Text>
-            <Text style={styles.carePrice}>
+            <Text style={{ ...theme.viewStyles.text('M', 15, theme.colors.SKY_BLUE) }}>
               {string.common.Rs}
-              {minMrp}
-            </Text>
-            <Text style={styles.careDiscountedPrice}>
-              {string.common.Rs}
-              {minSlashedPrice}
+              {physicalConsultMRPPrice === onlineConsultMRPPrice ? onlineConsultMRPPrice : minMrp}
             </Text>
           </View>
-        )}
+          <View style={styles.seperatorLine} />
+          <View style={{ flex: 1 }}>
+            <Text
+              style={{
+                ...theme.viewStyles.text('M', 10, theme.colors.DEEP_RED),
+                flexWrap: 'wrap',
+              }}
+            >
+              {string.careDoctors.upgradeToCareToPay}
+            </Text>
+            <View style={styles.rowContainer}>
+              <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.DEEP_RED) }}>
+                {string.common.Rs}
+                {physicalConsultMRPPrice === onlineConsultMRPPrice
+                  ? onlineConsultSlashedPrice
+                  : minSlashedPrice}
+              </Text>
+              <InfoRed style={styles.infoIcon} />
+            </View>
+          </View>
+        </View>
       </View>
     );
   };
@@ -283,34 +339,10 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     return timeDiff;
   }
 
-  const renderSpecialityNonCareView = () => {
-    return (
-      <Text style={styles.doctorSpecializationStyles}>
-        {rowData?.specialtydisplayName || ''}
-        {'   '}|{'  '} {rowData?.experience} YR
-        {Number(rowData?.experience) != 1 ? 'S Exp.' : ' Exp.'}
-      </Text>
-    );
-  };
-
-  const renderSpecialityCareView = () => {
+  const renderSpecialities = () => {
     return (
       <View>
-        <View style={styles.rowContainer}>
-          <Text
-            style={[
-              styles.doctorSpecializationStyles,
-              {
-                width: '80%',
-              },
-            ]}
-          >
-            {rowData?.specialtydisplayName || ''}
-          </Text>
-          <TouchableOpacity>
-            <Text style={styles.seeMoreText}>{string.careDoctors.seeMore}</Text>
-          </TouchableOpacity>
-        </View>
+        <Text style={styles.doctorSpecializationStyles}>{rowData?.specialtydisplayName || ''}</Text>
         <Text style={styles.doctorSpecializationStyles}>
           {rowData?.experience} YR
           {Number(rowData?.experience) != 1 ? 'S Exp.' : ' Exp.'}
@@ -469,9 +501,9 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
 
             <View style={{ flex: 1, paddingRight: 16, marginBottom: 16 }}>
               <Text style={styles.doctorNameStyles}>{rowData.displayName}</Text>
-              {isCareDoctor ? renderSpecialityCareView() : renderSpecialityNonCareView()}
+              {renderSpecialities()}
               {isCareDoctor ? renderCareDoctorsFee() : calculatefee(rowData, isBoth, isOnline)}
-              {isCareDoctor && minDiscountedPrice > -1 && (
+              {isCareDoctor && minDiscountedPrice > -1 && isCareSubscribed && (
                 <Text style={theme.viewStyles.text('M', 10, theme.colors.DEEP_RED)}>
                   You save ₹ {minDiscountedPrice} on this consult
                 </Text>

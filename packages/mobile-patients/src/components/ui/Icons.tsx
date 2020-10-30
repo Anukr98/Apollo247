@@ -1194,3 +1194,7 @@ export const CovidOrange: React.FC<IconProps> = (props) => (
 export const DashedLine: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/dashedLine.png')} />
 );
+
+export const InfoRed: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/info_red.png')} />
+);
