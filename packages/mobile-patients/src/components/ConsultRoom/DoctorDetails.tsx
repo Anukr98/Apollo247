@@ -746,7 +746,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                           )}
                         </Text>
                       )}
-                      {!isCareSubscribed && (
+                      {!isCareSubscribed && isCareDoctor && (
                         <View style={styles.row}>
                           <Text style={styles.smallRightAlignText}>
                             {string.careDoctors.forCareMembers}
@@ -834,6 +834,14 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                             <Text style={styles.onlineConsultAmount}>
                               {string.common.Rs} {doctorDetails.physicalConsultationFees}
                             </Text>
+                          )}
+                          {!isCareSubscribed && isCareDoctor && (
+                            <View style={styles.row}>
+                              <Text style={styles.smallRightAlignText}>
+                                {string.careDoctors.forCareMembers}
+                              </Text>
+                              <InfoRed style={styles.infoIcon} />
+                            </View>
                           )}
                           <AvailabilityCapsule
                             titleTextStyle={{ paddingHorizontal: 7 }}

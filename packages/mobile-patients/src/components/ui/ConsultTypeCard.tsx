@@ -240,7 +240,7 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
             </View>
             {isCareDoctor && renderCareDoctorPricing()}
           </View>
-          {!isCareSubscribed && (
+          {!isCareSubscribed && isCareDoctor && (
             <View style={styles.row}>
               <Text style={styles.smallRightAlignText}>{string.careDoctors.forCareMembers}</Text>
               <InfoRed style={styles.infoIcon} />

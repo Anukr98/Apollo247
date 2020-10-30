@@ -351,7 +351,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
               <Text style={styles.priceTextStyle}>{`${string.common.Rs} ${price}`}</Text>
             )}
           </View>
-          {!isCareSubscribed && (
+          {!isCareSubscribed && isCareDoctor && (
             <View style={styles.row}>
               <Text style={styles.smallRightAlignText}>{string.careDoctors.forCareMembers}</Text>
               <InfoRed style={styles.infoIcon} />
