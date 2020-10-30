@@ -28,7 +28,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Alert,
   Platform,
@@ -158,6 +158,7 @@ export interface UploadPrescriprionPopupProps {
   ) => void;
   isProfileImage?: boolean;
   phrUpload?: boolean;
+  openCamera?: boolean;
 }
 
 export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (props) => {
@@ -179,6 +180,12 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
     if (!!uploadSource) eventAttributes['Upload Source'] = uploadSource;
     postWebEngageEvent(WebEngageEventName.UPLOAD_PRESCRIPTION_IMAGE_UPLOADED, eventAttributes);
   };
+
+  useEffect(() => {
+    if (props.openCamera) {
+      onClickTakePhoto();
+    }
+  }, [props.openCamera]);
 
   const formatResponse = (response: ImageCropPickerResponse[]) => {
     console.log('response Img', response);

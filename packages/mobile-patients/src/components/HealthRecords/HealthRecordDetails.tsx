@@ -46,7 +46,7 @@ import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEv
 
 const styles = StyleSheet.create({
   labelStyle: {
-    color: theme.colors.SHERPA_BLUE,
+    color: '#00B38E',
     lineHeight: 21,
     ...theme.fonts.IBMPlexSansMedium(16),
   },
@@ -124,6 +124,15 @@ const styles = StyleSheet.create({
     height: 0.5,
     marginBottom: 23,
     marginTop: 16,
+  },
+  resultTextStyle: {
+    textAlign: 'left',
+    marginLeft: 18,
+    marginTop: 10,
+    color: theme.colors.SKY_BLUE,
+    lineHeight: 15,
+    flex: 1,
+    ...theme.fonts.IBMPlexSansRegular(13),
   },
 });
 
@@ -265,7 +274,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       );
     };
     return (
-      <View>
+      <View style={{ marginBottom: showPrescription ? 0 : 15 }}>
         <CollapseCard
           heading="DETAILED FINDINGS"
           collapse={showPrescription}
@@ -303,7 +312,8 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
                     item.range ? item.range : `${item.minimum || ''} - ${item.maximum || 'N/A'}`
                   )}
                   {detailRowView('Units', unit || 'N/A')}
-                  {detailRowView('Result', item.result || 'N/A')}
+                  {detailRowView('Result', '')}
+                  <Text style={styles.resultTextStyle}>{item.result || 'N/A'}</Text>
                 </View>
               );
             })}
@@ -408,15 +418,29 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       : hospitalization
       ? 'Discharge Date'
       : 'Checkup Date';
+    const getSourceName = (
+      labTestSource: string,
+      siteDisplayName: string,
+      healthCheckSource: string
+    ) => {
+      if (
+        labTestSource === 'self' ||
+        labTestSource === '247self' ||
+        siteDisplayName === 'self' ||
+        siteDisplayName === '247self' ||
+        healthCheckSource === 'self' ||
+        healthCheckSource === '247self'
+      ) {
+        return 'Clinic Document';
+      }
+      return siteDisplayName || labTestSource || healthCheckSource;
+    };
     const labSourceSelf = data?.labTestSource === '247self' || data?.labTestSource === 'self';
     return (
       <View style={styles.cardViewStyle}>
-        {data?.labTestName || data?.prescriptionName ? (
+        {data?.labTestName || data?.prescriptionName || data?.healthCheckName ? (
           <Text style={{ ...viewStyles.text('SB', 23, '#02475B', 1, 30) }}>
-            {data?.labTestName ||
-              data?.healthCheckType ||
-              data?.healthCheckName ||
-              data?.prescriptionName}{' '}
+            {data?.labTestName || data?.healthCheckName || data?.prescriptionName}{' '}
             <RoundGreenTickIcon style={styles.greenTickIconStyle} />
           </Text>
         ) : null}
@@ -439,17 +463,15 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
           <Text style={{ ...viewStyles.text('R', 14, '#67909C', 1, 18.2), marginTop: 6 }}>
             {'Clinical Document'}
           </Text>
-        ) : null}
-        {labSourceSelf || data?.siteDisplayName ? (
-          <Text style={{ ...viewStyles.text('M', 14, '#67909C', 1, 18), marginTop: 3 }}>
-            {labSourceSelf ? 'Self upload' : data?.siteDisplayName}
+        ) : (
+          <Text style={{ ...viewStyles.text('R', 14, '#67909C', 1, 18.2), marginTop: 3 }}>
+            {getSourceName(
+              data?.labTestSource || '-',
+              data?.siteDisplayName || '-',
+              data?.source || '-'
+            )}
           </Text>
-        ) : null}
-        {data?.healthCheckType || data?.healthCheckName ? (
-          <Text style={{ ...viewStyles.text('M', 16, '#01475B', 1, 21), marginTop: 0 }}>
-            {data?.healthCheckType || data?.healthCheckName}
-          </Text>
-        ) : null}
+        )}
         <View style={styles.separatorLineStyle} />
         <Text style={{ ...viewStyles.text('M', 16, '#02475B', 1, 21) }}>{date_text}</Text>
         <Text style={{ ...viewStyles.text('R', 14, '#0087BA', 1, 18), marginTop: 3 }}>
@@ -574,7 +596,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       ? 'HOSPITALIZATION'
       : prescriptions
       ? 'CONSULT & RX DETAILS'
-      : 'TEST RESULTS';
+      : 'TEST REPORTS DETAIL';
     return (
       <View
         style={{
