@@ -99,6 +99,7 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
     padding: 10,
     backgroundColor: 'white',
+    marginBottom: 20,
   },
   rowContainer: {
     flexDirection: 'row',

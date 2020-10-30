@@ -75,7 +75,7 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
       <View style={styles.seperatorLine} />
       <View style={styles.rowContainer}>
         <Text style={styles.regularText}>{string.common.toPay}</Text>
-        <Text style={styles.regularText}>
+        <Text style={{ ...theme.viewStyles.text('B', 16, theme.colors.SHERPA_BLUE) }}>
           {string.common.Rs} {amountToPay}
         </Text>
       </View>
