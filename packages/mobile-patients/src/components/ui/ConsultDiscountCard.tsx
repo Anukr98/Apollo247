@@ -13,10 +13,11 @@ interface ConsultDiscountProps {
   selectedTab: string;
   coupon: string;
   couponDiscountFees: number;
+  isCareSubscribed?: boolean;
 }
 
 export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
-  const { onPressCard, doctor, selectedTab, coupon, couponDiscountFees } = props;
+  const { onPressCard, doctor, selectedTab, coupon, couponDiscountFees, isCareSubscribed } = props;
   const careDoctorDetails = calculateCareDoctorPricing(doctor);
   const {
     isCareDoctor,
@@ -24,11 +25,12 @@ export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
     onlineConsultDiscountedPrice,
   } = careDoctorDetails;
   const isOnlineConsult = selectedTab === 'Consult Online';
-  const totalSavings = isCareDoctor
-    ? isOnlineConsult
-      ? onlineConsultDiscountedPrice + couponDiscountFees
-      : physicalConsultDiscountedPrice + couponDiscountFees
-    : couponDiscountFees;
+  const totalSavings =
+    isCareDoctor && isCareSubscribed
+      ? isOnlineConsult
+        ? onlineConsultDiscountedPrice + couponDiscountFees
+        : physicalConsultDiscountedPrice + couponDiscountFees
+      : couponDiscountFees;
   const [showPriceBreakup, setShowPriceBreakup] = useState<boolean>(false);
 
   if (totalSavings > 0) {
@@ -54,7 +56,7 @@ export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
         {showPriceBreakup ? (
           <View>
             <View style={styles.seperatorLine} />
-            {isCareDoctor ? (
+            {isCareDoctor && isCareSubscribed ? (
               <View style={[styles.rowContainer, { marginTop: 10 }]}>
                 <View style={styles.row}>
                   <CareLogo style={styles.careLogo} textStyle={styles.careLogoText} />

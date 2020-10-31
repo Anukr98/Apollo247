@@ -16,10 +16,11 @@ interface DoctorCheckoutProps {
   appointmentInput: BookAppointmentInput;
   doctorFees: number;
   selectedTab: string;
+  isCareSubscribed?: boolean;
 }
 
 export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
-  const { doctor, appointmentInput, doctorFees, selectedTab } = props;
+  const { doctor, appointmentInput, doctorFees, selectedTab, isCareSubscribed } = props;
   const isOnlineConsult = selectedTab === 'Consult Online';
   const careDoctorDetails = calculateCareDoctorPricing(doctor);
   const {
@@ -35,18 +36,34 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
     return (
       <View>
         <View style={styles.normalRowContainer}>
-          <Text style={styles.carePrice}>
+          <Text
+            style={[
+              styles.carePrice,
+              {
+                textDecorationLine: isCareSubscribed ? 'line-through' : 'none',
+                ...theme.viewStyles.text(
+                  'M',
+                  15,
+                  isCareSubscribed ? theme.colors.BORDER_BOTTOM_COLOR : theme.colors.LIGHT_BLUE
+                ),
+              },
+            ]}
+          >
             {string.common.Rs}
             {isOnlineConsult ? onlineConsultMRPPrice : physicalConsultMRPPrice}
           </Text>
-          <Text style={styles.careDiscountedPrice}>
-            {string.common.Rs}
-            {isOnlineConsult ? onlineConsultSlashedPrice : physicalConsultSlashedPrice}
-          </Text>
+          {isCareSubscribed && (
+            <Text style={styles.careDiscountedPrice}>
+              {string.common.Rs}
+              {isOnlineConsult ? onlineConsultSlashedPrice : physicalConsultSlashedPrice}
+            </Text>
+          )}
         </View>
-        <Text style={styles.amountSavedTextStyle}>
-          {string.common.amountSavedByCare.replace('{amount}', `${minDiscountedPrice}`)}
-        </Text>
+        {isCareSubscribed && (
+          <Text style={styles.amountSavedTextStyle}>
+            {string.common.amountSavedByCare.replace('{amount}', `${minDiscountedPrice}`)}
+          </Text>
+        )}
       </View>
     );
   };

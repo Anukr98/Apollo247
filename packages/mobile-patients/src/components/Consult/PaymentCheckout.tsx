@@ -76,6 +76,7 @@ import {
   AppsFlyerEventName,
   AppsFlyerEvents,
 } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 interface PaymentCheckoutProps extends NavigationScreenProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
@@ -118,6 +119,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
 
   const careDoctorDetails = calculateCareDoctorPricing(doctor);
   const { isCareDoctor } = careDoctorDetails;
+  const { isCareSubscribed } = useShoppingCart();
 
   const amountToPay = Number(price) - couponDiscountFees;
   const client = useApolloClient();
@@ -143,6 +145,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         appointmentInput={appointmentInput}
         doctorFees={price}
         selectedTab={selectedTab}
+        isCareSubscribed={isCareSubscribed}
       />
     );
   };
@@ -162,6 +165,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           selectedTab={selectedTab}
           coupon={coupon}
           couponDiscountFees={couponDiscountFees}
+          isCareSubscribed={isCareSubscribed}
         />
       </View>
     );
@@ -174,6 +178,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         couponDiscountFees={couponDiscountFees}
         doctor={doctor}
         selectedTab={selectedTab}
+        isCareSubscribed={isCareSubscribed}
         onPressCard={() =>
           setTimeout(() => {
             scrollviewRef.current.scrollToEnd({ animated: true });
@@ -186,7 +191,10 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const renderApplyCoupon = () => {
     return (
       <ListCard
-        container={[styles.couponContainer, { marginTop: isCareDoctor ? 0 : 20, height: 'auto' }]}
+        container={[
+          styles.couponContainer,
+          { marginTop: isCareDoctor && isCareSubscribed ? 0 : 20, height: 'auto' },
+        ]}
         titleStyle={styles.couponStyle}
         leftTitleStyle={[styles.couponStyle, { color: theme.colors.SEARCH_UNDERLINE_COLOR }]}
         leftIcon={<CouponIcon />}
@@ -699,7 +707,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
 
         <ScrollView ref={scrollviewRef}>
           {renderDoctorCard()}
-          {isCareDoctor && renderCareMembershipAddedCard()}
+          {isCareDoctor && isCareSubscribed && renderCareMembershipAddedCard()}
           {renderApplyCoupon()}
           {renderPriceBreakup()}
           {renderDiscountView()}

@@ -58,6 +58,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
 import { WhatsAppStatus } from '../ui/WhatsAppStatus';
 import { calculateCareDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 const { width, height } = Dimensions.get('window');
 
@@ -93,6 +94,7 @@ export interface ConsultOverlayProps extends NavigationScreenProps {
 }
 export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const client = useApolloClient();
+  const { isCareSubscribed } = useShoppingCart();
   const tabs =
     props.doctor!.doctorType !== DoctorType.PAYROLL
       ? props.availableMode === ConsultMode.BOTH
@@ -136,6 +138,8 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const {
     isCareDoctor,
     onlineConsultSlashedPrice,
+    onlineConsultMRPPrice,
+    physicalConsultMRPPrice,
     physicalConsultSlashedPrice,
   } = careDoctorDetails;
 
@@ -259,15 +263,18 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       selectedTab: selectedTab,
       price: isCareDoctor
         ? selectedTab === 'Consult Online'
-          ? onlineConsultSlashedPrice
-          : physicalConsultSlashedPrice
+          ? isCareSubscribed
+            ? onlineConsultSlashedPrice
+            : onlineConsultMRPPrice
+          : isCareSubscribed
+          ? physicalConsultSlashedPrice
+          : physicalConsultMRPPrice
         : Number(doctorFees),
       appointmentInput: appointmentInput,
       couponApplied: coupon == '' ? false : true,
       consultedWithDoctorBefore: props.consultedWithDoctorBefore,
       patientId: props.patientId,
       callSaveSearch: props.callSaveSearch,
-
       availableInMin: availableInMin,
       nextAvailableSlot: nextAvailableSlot,
       selectedTimeSlot: selectedTimeSlot,
@@ -289,8 +296,12 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         <Button
           title={`${string.common.proceedToCheckout} - ${string.common.Rs} ${(isCareDoctor
             ? selectedTab === 'Consult Online'
-              ? onlineConsultSlashedPrice
-              : physicalConsultSlashedPrice
+              ? isCareSubscribed
+                ? onlineConsultSlashedPrice
+                : onlineConsultMRPPrice
+              : isCareSubscribed
+              ? physicalConsultSlashedPrice
+              : physicalConsultMRPPrice
             : Number(doctorFees)
           ).toFixed(2)}`}
           disabled={
