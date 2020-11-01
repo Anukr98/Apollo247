@@ -77,6 +77,8 @@ import {
   AppsFlyerEvents,
 } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { CareSelectPlans } from '@aph/mobile-patients/src/components/ui/CareSelectPlans';
+import { CareLogo } from '@aph/mobile-patients/src/components/ui/CareLogo';
 
 interface PaymentCheckoutProps extends NavigationScreenProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
@@ -116,15 +118,26 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const scrollviewRef = useRef<any>(null);
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
+  const [planSelected, setPlanSelected] = useState<any>();
 
   const careDoctorDetails = calculateCareDoctorPricing(doctor);
-  const { isCareDoctor } = careDoctorDetails;
+  const {
+    isCareDoctor,
+    minDiscountedPrice,
+    onlineConsultSlashedPrice,
+    physicalConsultSlashedPrice,
+  } = careDoctorDetails;
   const { isCareSubscribed } = useShoppingCart();
 
-  const amountToPay = Number(price) - couponDiscountFees;
+  const amount = Number(price) - couponDiscountFees;
+  const amountToPay = planSelected
+    ? isOnlineConsult
+      ? onlineConsultSlashedPrice - couponDiscountFees + Number(planSelected?.limitedPriceAmount)
+      : physicalConsultSlashedPrice - couponDiscountFees + Number(planSelected?.limitedPriceAmount)
+    : amount;
+
   const client = useApolloClient();
   const { getPatientApiCall } = useAuth();
-
   const renderHeader = () => {
     return (
       <Header
@@ -146,6 +159,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         doctorFees={price}
         selectedTab={selectedTab}
         isCareSubscribed={isCareSubscribed}
+        planSelected={planSelected}
       />
     );
   };
@@ -166,6 +180,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           coupon={coupon}
           couponDiscountFees={couponDiscountFees}
           isCareSubscribed={isCareSubscribed}
+          planSelected={planSelected}
         />
       </View>
     );
@@ -179,11 +194,27 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         doctor={doctor}
         selectedTab={selectedTab}
         isCareSubscribed={isCareSubscribed}
+        planSelected={planSelected}
         onPressCard={() =>
           setTimeout(() => {
             scrollviewRef.current.scrollToEnd({ animated: true });
           }, 300)
         }
+      />
+    );
+  };
+
+  const renderCareSubscriptionPlans = () => {
+    return (
+      <CareSelectPlans
+        style={{ marginTop: 20 }}
+        onPressKnowMore={() => {}}
+        onSelectMembershipPlan={(plan) => {
+          setPlanSelected(plan);
+          setTimeout(() => {
+            scrollviewRef.current.scrollToEnd({ animated: true });
+          }, 300);
+        }}
       />
     );
   };
@@ -232,6 +263,12 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
 
   const validateCoupon = (coupon: string, fireEvent?: boolean) => {
     let packageId = '';
+    const billAmount = planSelected
+      ? isOnlineConsult
+        ? onlineConsultSlashedPrice
+        : physicalConsultSlashedPrice
+      : Number(price);
+
     if (!!g(hdfcUserSubscriptions, '_id') && !!g(hdfcUserSubscriptions, 'isActive')) {
       packageId =
         g(hdfcUserSubscriptions, 'group', 'name') + ':' + g(hdfcUserSubscriptions, 'planId');
@@ -247,7 +284,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     let ts = new Date(timeSlot).getTime();
     const data = {
       mobile: g(currentPatient, 'mobileNumber'),
-      billAmount: Number(price),
+      billAmount: billAmount,
       coupon: coupon,
       // paymentType: 'CASH', //CASH,NetBanking, CARD, COD
       pinCode: locationDetails?.pincode,
@@ -258,7 +295,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           specialityId: g(doctor, 'specialty', 'id'),
           consultationTime: ts, //Unix timestamp“
           consultationType: selectedTab === 'Consult Online' ? 1 : 0, //Physical 0, Virtual 1,  All -1
-          cost: Number(price),
+          cost: billAmount,
           rescheduling: false,
         },
       ],
@@ -274,8 +311,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           }, 300);
           if (resp?.data?.errorCode == 0) {
             if (resp?.data?.response?.valid) {
-              const revisedAmount =
-                Number(price) - Number(g(resp, 'data', 'response', 'discount')!);
+              const revisedAmount = billAmount - Number(g(resp, 'data', 'response', 'discount')!);
               setCoupon(coupon);
               setCouponDiscountFees(Number(g(resp, 'data', 'response', 'discount')!));
               setDoctorDiscountedFees(revisedAmount);
@@ -360,14 +396,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     postWebEngagePayButtonClickedEvent();
     whatsappAPICalled();
     CommonLogEvent(AppRoutes.PaymentCheckout, 'Book Appointment clicked');
-    CommonLogEvent(
-      AppRoutes.PaymentCheckout,
-      `PAY ${string.common.Rs} ${
-        tabs[0].title === selectedTab
-          ? doctor?.onlineConsultationFees
-          : doctor?.physicalConsultationFees
-      }`
-    );
+    CommonLogEvent(AppRoutes.PaymentCheckout, `PAY ${string.common.Rs} ${amountToPay}`);
     getNetStatus()
       .then((status) => {
         if (status) {
@@ -403,10 +432,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         return;
       }
     }
-
-    const amount = coupon ? doctorDiscountedFees : Number(price);
-
-    if (amount == 0) {
+    if (amountToPay == 0) {
       setshowSpinner(true);
       client
         .mutate<bookAppointment>({
@@ -433,7 +459,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           setshowSpinner(false);
           makePayment(
             g(apptmt, 'id')!,
-            Number(amount),
+            Number(amountToPay),
             g(apptmt, 'appointmentDateTime'),
             g(apptmt, 'displayId')!
           );
@@ -473,7 +499,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         tabs: tabs,
         selectedTab: selectedTab,
         doctorName: `${g(doctor, 'fullName')}`,
-        price: price,
+        price: amountToPay,
         appointmentInput: appointmentInput,
         couponApplied: coupon == '' ? false : true,
         consultedWithDoctorBefore: consultedWithDoctorBefore,
@@ -689,6 +715,21 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     postFirebaseEvent(FirebaseEventName.PAY_BUTTON_CLICKED, eventAttributes);
   };
 
+  const renderSaveWithCarePlanView = () => {
+    return (
+      <View style={styles.saveWithCareView}>
+        <Text style={styles.smallText}>
+          You could have{' '}
+          <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.SEARCH_UNDERLINE_COLOR) }}>
+            saved ₹{minDiscountedPrice}
+          </Text>{' '}
+          on this purchase with
+        </Text>
+        <CareLogo style={styles.careLogo} textStyle={styles.careLogoText} />
+      </View>
+    );
+  };
+
   return (
     <View style={theme.viewStyles.container}>
       <SafeAreaView style={theme.viewStyles.container}>
@@ -708,8 +749,10 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         <ScrollView ref={scrollviewRef}>
           {renderDoctorCard()}
           {isCareDoctor && isCareSubscribed && renderCareMembershipAddedCard()}
+          {isCareDoctor && !isCareSubscribed && renderCareSubscriptionPlans()}
           {renderApplyCoupon()}
           {renderPriceBreakup()}
+          {isCareDoctor && !isCareSubscribed && !planSelected && renderSaveWithCarePlanView()}
           {renderDiscountView()}
         </ScrollView>
         {renderBottomButton()}
@@ -768,5 +811,27 @@ const styles = StyleSheet.create({
   bottomBtn: {
     marginLeft: 35,
     width: width - 70,
+  },
+  saveWithCareView: {
+    ...theme.viewStyles.card(10),
+    marginHorizontal: 20,
+    borderRadius: 5,
+    backgroundColor: theme.colors.CARD_BG,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 0,
+  },
+  smallText: {
+    ...theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE),
+    maxWidth: width - 84,
+  },
+  careLogo: {
+    width: 24,
+    height: 13,
+    borderRadius: 2,
+    marginLeft: 7,
+  },
+  careLogoText: {
+    ...theme.viewStyles.text('SB', 7, theme.colors.WHITE),
   },
 });

@@ -61,7 +61,8 @@
     "toPay": "To Pay",
     "membershipDiscount": "Membership Discount",
     "savingsOnBill": "Savings of ₹ {amount} on the bill",
-    "couponApplied": "Coupon Applied"
+    "couponApplied": "Coupon Applied",
+    "careMembership": "CARE Membership"
   },
   "components": {
     "medicineDetails": {

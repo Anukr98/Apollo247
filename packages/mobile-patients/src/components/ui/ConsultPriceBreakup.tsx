@@ -12,9 +12,19 @@ interface ConsultPriceProps {
   coupon: string;
   couponDiscountFees: number;
   isCareSubscribed?: boolean;
+  planSelected?: any;
 }
+
 export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
-  const { doctor, doctorFees, selectedTab, coupon, couponDiscountFees, isCareSubscribed } = props;
+  const {
+    doctor,
+    doctorFees,
+    selectedTab,
+    coupon,
+    couponDiscountFees,
+    isCareSubscribed,
+    planSelected,
+  } = props;
   const isOnlineConsult = selectedTab === 'Consult Online';
   const careDoctorDetails = calculateCareDoctorPricing(doctor);
   const {
@@ -42,11 +52,13 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
           style={[
             styles.carePrice,
             {
-              textDecorationLine: isCareSubscribed ? 'line-through' : 'none',
+              textDecorationLine: isCareSubscribed || planSelected ? 'line-through' : 'none',
               ...theme.viewStyles.text(
                 'M',
                 16,
-                isCareSubscribed ? theme.colors.BORDER_BOTTOM_COLOR : theme.colors.LIGHT_BLUE
+                isCareSubscribed || planSelected
+                  ? theme.colors.BORDER_BOTTOM_COLOR
+                  : theme.colors.LIGHT_BLUE
               ),
             },
           ]}
@@ -54,12 +66,12 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
           {string.common.Rs}
           {isOnlineConsult ? onlineConsultMRPPrice : physicalConsultMRPPrice}
         </Text>
-        {isCareSubscribed && (
+        {isCareSubscribed || planSelected ? (
           <Text style={styles.regularText}>
             {string.common.Rs}
             {isOnlineConsult ? onlineConsultSlashedPrice : physicalConsultSlashedPrice}
           </Text>
-        )}
+        ) : null}
       </View>
     );
   };
@@ -76,10 +88,20 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
     <View style={styles.container}>
       <View style={styles.rowContainer}>
         <Text style={styles.regularText}>
-          {string.common.subtotal} {`${isCareDoctor && isCareSubscribed ? '(Care Price)' : ''}`}
+          {string.common.subtotal}{' '}
+          {`${isCareDoctor && (isCareSubscribed || planSelected) ? '(Care Price)' : ''}`}
         </Text>
         {isCareDoctor ? renderCareDoctorPricing() : renderNonCareDoctorPricing()}
       </View>
+      {planSelected ? (
+        <View style={[styles.rowContainer, { marginTop: 4 }]}>
+          <Text style={styles.regularText}>{string.common.careMembership}</Text>
+          <Text style={styles.regularText}>
+            {string.common.Rs} {planSelected?.limitedPriceAmount}
+          </Text>
+        </View>
+      ) : null}
+
       {coupon ? (
         <View style={[styles.rowContainer, { marginTop: 4 }]}>
           <View>
@@ -95,7 +117,16 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
       <View style={styles.rowContainer}>
         <Text style={styles.regularText}>{string.common.toPay}</Text>
         <Text style={{ ...theme.viewStyles.text('B', 16, theme.colors.SHERPA_BLUE) }}>
-          {string.common.Rs} {amountToPay}
+          {string.common.Rs}{' '}
+          {planSelected
+            ? isOnlineConsult
+              ? onlineConsultSlashedPrice -
+                couponDiscountFees +
+                Number(planSelected?.limitedPriceAmount)
+              : physicalConsultSlashedPrice -
+                couponDiscountFees +
+                Number(planSelected?.limitedPriceAmount)
+            : amountToPay}
         </Text>
       </View>
     </View>

@@ -14,10 +14,19 @@ interface ConsultDiscountProps {
   coupon: string;
   couponDiscountFees: number;
   isCareSubscribed?: boolean;
+  planSelected?: any;
 }
 
 export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
-  const { onPressCard, doctor, selectedTab, coupon, couponDiscountFees, isCareSubscribed } = props;
+  const {
+    onPressCard,
+    doctor,
+    selectedTab,
+    coupon,
+    couponDiscountFees,
+    isCareSubscribed,
+    planSelected,
+  } = props;
   const careDoctorDetails = calculateCareDoctorPricing(doctor);
   const {
     isCareDoctor,
@@ -26,7 +35,7 @@ export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
   } = careDoctorDetails;
   const isOnlineConsult = selectedTab === 'Consult Online';
   const totalSavings =
-    isCareDoctor && isCareSubscribed
+    isCareDoctor && (isCareSubscribed || planSelected)
       ? isOnlineConsult
         ? onlineConsultDiscountedPrice + couponDiscountFees
         : physicalConsultDiscountedPrice + couponDiscountFees
@@ -56,7 +65,7 @@ export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
         {showPriceBreakup ? (
           <View>
             <View style={styles.seperatorLine} />
-            {isCareDoctor && isCareSubscribed ? (
+            {isCareDoctor && (isCareSubscribed || planSelected) ? (
               <View style={[styles.rowContainer, { marginTop: 10 }]}>
                 <View style={styles.row}>
                   <CareLogo style={styles.careLogo} textStyle={styles.careLogoText} />
