@@ -482,6 +482,18 @@ export const PhrAddPrescriptionRecordIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_phr_prescription_record.png')} />
 );
 
+export const PhrAddTestRecordIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_phr_test_record.png')} />
+);
+
+export const PhrAddHospitalizationRecordIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_phr_hospitalization_record.png')} />
+);
+
+export const PhrAddTestDetailsIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_phr_add_test_details.png')} />
+);
+
 export const PhrGalleryIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_phr_gallery.png')} />
 );

@@ -28,6 +28,7 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { checkIfFollowUpBooked } from '@aph/mobile-patients/src/graphql/types/checkIfFollowUpBooked';
 import { getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_medicinePrescription } from '@aph/mobile-patients/src/graphql/types/getPatientPastConsultsAndPrescriptions';
 import {
@@ -720,6 +721,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
             postWebEngageEvent(WebEngageEventName.ADD_RECORD, eventAttributes);
             props.navigation.navigate(AppRoutes.AddRecord, {
               navigatedFrom: 'Consult & RX',
+              recordType: MedicalRecordType.PRESCRIPTION,
             });
           }}
         />

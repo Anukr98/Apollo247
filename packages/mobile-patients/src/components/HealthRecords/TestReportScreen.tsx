@@ -16,6 +16,7 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import moment from 'moment';
 import _ from 'lodash';
@@ -352,7 +353,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
   const onHealthCardItemPress = (selectedItem: any) => {
     props.navigation.navigate(AppRoutes.HealthRecordDetails, {
       data: selectedItem,
-      testReports: true,
+      labResults: true,
     });
   };
 
@@ -386,7 +387,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
         healthCheckSource === 'self' ||
         healthCheckSource === '247self'
       ) {
-        return 'Clinic Document';
+        return 'Clinical Document';
       }
       return siteDisplayName || labTestSource || healthCheckSource;
     };
@@ -459,6 +460,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
             postWebEngageEvent(WebEngageEventName.ADD_RECORD, eventAttributes);
             props.navigation.navigate(AppRoutes.AddRecord, {
               navigatedFrom: 'Test Reports',
+              recordType: MedicalRecordType.TEST_REPORT,
             });
           }}
         />

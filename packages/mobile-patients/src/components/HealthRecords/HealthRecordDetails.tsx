@@ -431,7 +431,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         healthCheckSource === 'self' ||
         healthCheckSource === '247self'
       ) {
-        return 'Clinic Document';
+        return 'Clinical Document';
       }
       return siteDisplayName || labTestSource || healthCheckSource;
     };
