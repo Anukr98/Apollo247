@@ -548,7 +548,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       if (filteredProduct.length) {
         item.quantity = filteredProduct[0].quantity;
       }
-      console.log('filteredProduct: ', filteredProduct);
     })
     setCouponProducts!(freeProducts);
   };
