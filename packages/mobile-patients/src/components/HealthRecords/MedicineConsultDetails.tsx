@@ -1,36 +1,21 @@
-import { CollapseCard } from '@aph/mobile-patients/src/components/CollapseCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import {
-  Download,
-  FileBig,
-  MedicineRxIcon,
-  PrescriptionThumbnail,
-  ShareGreen,
-  MedicalIcon,
-} from '@aph/mobile-patients/src/components/ui/Icons';
+import { Download, MedicineRxIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
 import {
   SafeAreaView,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
   Platform,
   Alert,
-  Linking,
-  CameraRoll,
   PermissionsAndroid,
-  Dimensions,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import RNFetchBlob from 'rn-fetch-blob';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import {
-  useShoppingCart,
-  ShoppingCartItem,
-} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import moment from 'moment';
@@ -40,7 +25,6 @@ import {
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useApolloClient } from 'react-apollo-hooks';
-import { DownloadDocumentsInput } from '../../graphql/types/globalTypes';
 import { DOWNLOAD_DOCUMENT } from '../../graphql/profiles';
 import { downloadDocuments } from '../../graphql/types/downloadDocuments';
 import { useUIElements } from '../UIElementsProvider';
@@ -48,74 +32,7 @@ import { RenderPdf } from '../ui/RenderPdf';
 import { mimeType } from '../../helpers/mimeType';
 import { Image } from 'react-native-elements';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
-import { postWebEngageEvent, g } from '../../helpers/helperFunctions';
-
-const { width, height } = Dimensions.get('window');
-const styles = StyleSheet.create({
-  imageView: {
-    ...theme.viewStyles.cardViewStyle,
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: 20,
-    backgroundColor: theme.colors.WHITE,
-  },
-  doctorNameStyle: {
-    paddingBottom: 2,
-    ...theme.fonts.IBMPlexSansSemiBold(23),
-    color: theme.colors.LIGHT_BLUE,
-  },
-  timeStyle: {
-    paddingBottom: 16,
-    ...theme.fonts.IBMPlexSansMedium(12),
-    color: theme.colors.SKY_BLUE,
-    letterSpacing: 0.04,
-    lineHeight: 20,
-  },
-  doctorDetailsStyle: {
-    ...theme.viewStyles.cardContainer,
-    backgroundColor: theme.colors.CARD_BG,
-    paddingTop: 20,
-    paddingHorizontal: 20,
-  },
-  labelStyle: {
-    color: theme.colors.SHERPA_BLUE,
-    lineHeight: 24,
-    ...theme.fonts.IBMPlexSansMedium(14),
-  },
-  descriptionStyle: {
-    color: theme.colors.SKY_BLUE,
-    lineHeight: 24,
-    ...theme.fonts.IBMPlexSansMedium(14),
-  },
-  labelViewStyle: {
-    borderBottomWidth: 0.5,
-    borderBottomColor: theme.colors.SEPARATOR_LINE,
-  },
-  cardViewStyle: {
-    ...theme.viewStyles.cardViewStyle,
-    marginTop: 16,
-    marginBottom: 24,
-    marginHorizontal: 20,
-    paddingHorizontal: 16,
-    paddingTop: 16,
-  },
-  labelTextStyle: {
-    color: theme.colors.SHERPA_BLUE,
-    lineHeight: 20,
-    ...theme.fonts.IBMPlexSansMedium(12),
-    paddingTop: 8,
-    paddingBottom: 3,
-  },
-  valuesTextStyle: {
-    color: theme.colors.SKY_BLUE,
-    lineHeight: 20,
-    ...theme.fonts.IBMPlexSansMedium(14),
-    paddingBottom: 16,
-  },
-});
+import { postWebEngageEvent, g, formatToCartItem } from '../../helpers/helperFunctions';
 
 export interface RecordDetailsProps
   extends NavigationScreenProps<{
@@ -198,19 +115,8 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
           Alert.alert('Alert', 'This item is out of stock.');
           return;
         }
-        addCartItem!({
-          id: medicineDetails.sku,
-          mou: medicineDetails.mou,
-          price: medicineDetails.price,
-          specialPrice: medicineDetails.special_price && Number(medicineDetails.special_price),
-          quantity: data.quantity,
-          name: data.medicineName,
-          prescriptionRequired: medicineDetails.is_prescription_required == '1',
-          isMedicine: (medicineDetails.type_id || '').toLowerCase() == 'pharma',
-          isInStock: true,
-          maxOrderQty: medicineDetails.MaxOrderQty,
-          productType: medicineDetails.type_id,
-        } as ShoppingCartItem);
+        const cartItem = formatToCartItem({ ...medicineDetails, image: '' });
+        addCartItem!({ ...cartItem, quantity: Number(data.quantity) || 1 });
         if (medicineDetails.is_prescription_required == '1') {
           addEPrescription!({
             id: data!.id,
@@ -421,29 +327,10 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
                       'Open File' +
                       (item.indexOf('fileName=') > -1 ? ': ' + item.split('fileName=').pop() : '')
                     }
-                    onPress={
-                      () => {
-                        setPDFUri(item);
-                        setPDFView(true);
-                      }
-                      // (
-                      //   <RenderPdf
-                      //     uri={item}
-                      //     title={
-                      //       item.indexOf('fileName=') > -1
-                      //         ? item.split('fileName=').pop() || 'Document'
-                      //         : 'Document'
-                      //     }
-                      //     isPopup={true}
-                      //     navigation={props.navigation}
-                      //   ></RenderPdf>
-                      // )
-                      // props.navigation.navigate(AppRoutes.RenderPdf, {
-                      //   uri: item,
-                      //   title: item.indexOf('fileName=') > -1 ? item.split('fileName=').pop() : '',
-                      //   isPopup: true,
-                      // })
-                    }
+                    onPress={() => {
+                      setPDFUri(item);
+                      setPDFView(true);
+                    }}
                   ></Button>
                 </View>
               );

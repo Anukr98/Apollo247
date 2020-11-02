@@ -748,7 +748,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       image: <DoctorIcon style={styles.menuOptionIconStyle} />,
       onPress: () => {
         postHomeFireBaseEvent(FirebaseEventName.FIND_A_DOCTOR, 'Home Screen');
-        postHomeWEGEvent(WebEngageEventName.FIND_A_DOCTOR);
+        postHomeWEGEvent(WebEngageEventName.BOOK_DOCTOR_APPOINTMENT);
         props.navigation.navigate(AppRoutes.DoctorSearch);
         // showProfileSelectionAlert();
       },
@@ -2505,6 +2505,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       } else {
         props.navigation.navigate(AppRoutes.CovidScan, {
           covidUrl: urlToOpen,
+          requestMicroPhonePermission: true,
         });
       }
     } catch (e) {

@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Image } from 'react-native-elements';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import { ShoppingCartItem } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
   MedicineIcon,
   MedicineRxIcon,
@@ -12,7 +12,10 @@ import {
   DeleteBoldIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
-import { getMaxQtyForMedicineItem } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  getMaxQtyForMedicineItem,
+  productsThumbnailUrl,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 export interface CartItemCardProps {
@@ -28,6 +31,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   const { item, onUpdateQuantity, onPressDelete, onPressProduct } = props;
   const [discountedPrice, setDiscountedPrice] = useState<any>(undefined);
   const [mrp, setmrp] = useState<number>(0);
+  const itemAvailable = !item.unserviceable && !item.unavailableOnline;
 
   useEffect(() => {
     setmrp(item.price);
@@ -40,34 +44,17 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
         : setDiscountedPrice(undefined);
   }, [item]);
 
-  function getImageUrl(item: ShoppingCartItem) {
-    let imageUrl = item.prescriptionRequired
-      ? ''
-      : item.thumbnail && !item.thumbnail.includes('/default/placeholder')
-      ? item.thumbnail.startsWith('http')
-        ? item.thumbnail
-        : `${AppConfig.Configuration.IMAGES_BASE_URL}${item.thumbnail}`
-      : '';
-    return imageUrl;
-  }
-
   const renderImage = () => {
-    const imageUrl = getImageUrl(item);
+    const imageUrl = productsThumbnailUrl(item.thumbnail!);
     return (
-      <View style={{ width: 50, justifyContent: 'center', opacity: !item.unserviceable ? 1 : 0.3 }}>
-        {imageUrl ? (
-          <Image
-            PlaceholderContent={item.prescriptionRequired ? <MedicineRxIcon /> : <MedicineIcon />}
-            placeholderStyle={{ backgroundColor: 'transparent' }}
-            source={{ uri: imageUrl }}
-            style={{ height: 40, width: 40 }}
-            resizeMode="contain"
-          />
-        ) : item.prescriptionRequired ? (
-          <MedicineRxIcon style={{ marginLeft: 10 }} />
-        ) : (
-          <MedicineIcon style={{ marginLeft: 10 }} />
-        )}
+      <View style={{ width: 50, justifyContent: 'center', opacity: itemAvailable ? 1 : 0.3 }}>
+        <Image
+          PlaceholderContent={item.prescriptionRequired ? <MedicineRxIcon /> : <MedicineIcon />}
+          placeholderStyle={{ backgroundColor: 'transparent' }}
+          source={{ uri: imageUrl }}
+          style={{ height: 40, width: 40 }}
+          resizeMode="contain"
+        />
       </View>
     );
   };
@@ -78,13 +65,13 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
         <View style={{ flexDirection: 'row', marginBottom: 5 }}>
           <View style={{ flex: 0.85 }}>
             <TouchableOpacity onPress={onPressProduct}>
-              <Text style={{ ...styles.itemName, opacity: !item.unserviceable ? 1 : 0.3 }}>
+              <Text style={{ ...styles.itemName, opacity: itemAvailable ? 1 : 0.3 }}>
                 {item.name}
               </Text>
             </TouchableOpacity>
             {item.mou && (
               <Text
-                style={{ ...styles.info, opacity: !item.unserviceable ? 1 : 0.3 }}
+                style={{ ...styles.info, opacity: itemAvailable ? 1 : 0.3 }}
               >{`(Pack of ${item.mou})`}</Text>
             )}
           </View>
@@ -99,11 +86,10 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   };
 
   const renderDelete = () => {
-    return !item.unserviceable ? (
-      (!item?.isFreeCouponProduct || item?.quantity > 1) && <DeleteIcon />
-    ) : (
-      <DeleteBoldIcon />
-    );
+    return itemAvailable ? 
+      (!item?.isFreeCouponProduct || item?.quantity > 1) && 
+        <DeleteIcon /> : 
+      <DeleteBoldIcon />;
   };
 
   const renderLowerCont = () => {
@@ -111,7 +97,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <View>
           {renderQuantity()}
-          {!item.unserviceable && !isProuctFreeCouponApplied && !!coupon && renderCoupon()}
+          {itemAvailable && !isProuctFreeCouponApplied && !!coupon && renderCoupon()}
         </View>
         {!item?.isFreeCouponProduct
           ? discountedPrice || discountedPrice == 0
@@ -143,13 +129,13 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
       return { key: (i + 1).toString(), value: i + 1 };
     });
     return (!item?.isFreeCouponProduct || item?.quantity > 1) ? (
-      <View style={{ ...styles.quantityContainer, opacity: !item.unserviceable ? 1 : 0.3 }}>
+      <View style={{ ...styles.quantityContainer, opacity: itemAvailable ? 1 : 0.3 }}>
         <MaterialMenu
           options={opitons}
           selectedText={item.quantity!.toString()}
           selectedTextStyle={{ ...theme.viewStyles.text('M', 16, '#00b38e') }}
           onPress={(selectedQuantity) => {
-            !item.unserviceable && onUpdateQuantity(selectedQuantity.value as number);
+            itemAvailable && onUpdateQuantity(selectedQuantity.value as number);
           }}
         >
           <View style={{ flexDirection: 'row' }}>
@@ -214,7 +200,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
       item.isFreeCouponProduct && item.quantity > 1
         ? (price * item.quantity - discountedPrice).toFixed(2)
         : (price * item.quantity).toFixed(2);
-    return !item.unserviceable ? (
+    return itemAvailable ? (
       <View style={{ alignItems: 'flex-end' }}>
         {(discountedPrice || discountedPrice == 0) && renderDiscount()}
         <Text style={styles.finalPrice}>{`₹${finalAmount}`}</Text>
@@ -228,13 +214,15 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   const renderNoStock = () => {
     return (
       <View style={styles.noStockCont}>
-        <Text style={styles.noStockTxt}>Not in stock in your area</Text>
+        <Text style={styles.noStockTxt}>
+          {item.unavailableOnline ? string.notForSale : string.notInStockInYourArea}
+        </Text>
       </View>
     );
   };
 
   return (
-    <View style={{ ...styles.card, backgroundColor: !item.unserviceable ? '#fff' : '#F0F1EC' }}>
+    <View style={{ ...styles.card, backgroundColor: itemAvailable ? '#fff' : '#F0F1EC' }}>
       {renderImage()}
       {renderProduct()}
     </View>

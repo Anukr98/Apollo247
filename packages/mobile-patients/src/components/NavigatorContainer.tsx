@@ -16,8 +16,9 @@ import { Login } from '@aph/mobile-patients/src/components/Login';
 import { AddAddress } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
 import { ApplyCouponScene } from '@aph/mobile-patients/src/components/Medicines/ApplyCouponScene';
 import { Medicine } from '@aph/mobile-patients/src/components/Medicines/Medicine';
+import { MedicineSearch } from '@aph/mobile-patients/src/components/MedicineSearch/MedicineSearch';
+import { MedicineListing } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListing';
 import { MedicineDetailsScene } from '@aph/mobile-patients/src/components/Medicines/MedicineDetailsScene';
-import { SearchMedicineScene } from '@aph/mobile-patients/src/components/Medicines/SearchMedicineScene';
 import { SelectDeliveryAddress } from '@aph/mobile-patients/src/components/Medicines/SelectDeliveryAddress';
 import { StorePickupScene } from '@aph/mobile-patients/src/components/Medicines/StorePickupScene';
 import { UploadPrescription } from '@aph/mobile-patients/src/components/Medicines/UploadPrescription';
@@ -53,7 +54,6 @@ import { MedicineConsultDetails } from '@aph/mobile-patients/src/components/Heal
 import { MobileHelp } from '@aph/mobile-patients/src/components/ui/MobileHelp';
 import { ShopByBrand } from '@aph/mobile-patients/src/components/Medicines/ShopByBrand';
 import { ImageSliderScreen } from '@aph/mobile-patients/src/components/ui/ImageSiderScreen';
-import { SearchByBrand } from '@aph/mobile-patients/src/components/Medicines/SearchByBrand';
 import AsyncStorage from '@react-native-community/async-storage';
 import { TestsCart } from '@aph/mobile-patients/src/components/Tests/TestsCart';
 import { MedAndTestCart } from '@aph/mobile-patients/src/components/Tests/MedAndTestCart';
@@ -126,8 +126,9 @@ export enum AppRoutes {
   AssociateDoctorDetails = 'AssociateDoctorDetails',
   AppointmentDetails = 'AppointmentDetails',
   StorPickupScene = 'StorPickupScene',
-  SearchMedicineScene = 'SearchMedicineScene',
   SearchTestScene = 'SearchTestScene',
+  MedicineSearch = 'MedicineSearch',
+  MedicineListing = 'MedicineListing',
   MedicineDetailsScene = 'MedicineDetailsScene',
   ApplyCouponScene = 'ApplyCouponScene',
   ChatRoom = 'ChatRoom',
@@ -156,7 +157,6 @@ export enum AppRoutes {
   MedicineConsultDetails = 'MedicineConsultDetails',
   ShopByBrand = 'ShopByBrand',
   ImageSliderScreen = 'ImageSliderScreen',
-  SearchByBrand = 'SearchByBrand',
   TestsByCategory = 'TestsByCategory',
   TestsCart = 'TestsCart',
   TestPayment = 'TestPayment',
@@ -287,11 +287,14 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.AppointmentDetails]: {
     screen: AppointmentDetails,
   },
-  [AppRoutes.SearchMedicineScene]: {
-    screen: SearchMedicineScene,
-  },
   [AppRoutes.SearchTestScene]: {
     screen: SearchTestScene,
+  },
+  [AppRoutes.MedicineSearch]: {
+    screen: MedicineSearch,
+  },
+  [AppRoutes.MedicineListing]: {
+    screen: MedicineListing,
   },
   [AppRoutes.MedicineDetailsScene]: {
     screen: MedicineDetailsScene,
@@ -389,10 +392,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.ImageSliderScreen]: {
     screen: ImageSliderScreen,
-  },
-  [AppRoutes.SearchByBrand]: {
-    screen: SearchByBrand,
-    path: 'SearchByBrandPath',
   },
   [AppRoutes.TestsByCategory]: {
     screen: TestsByCategory,

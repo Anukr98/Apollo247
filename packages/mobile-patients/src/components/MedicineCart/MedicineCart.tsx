@@ -430,8 +430,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     await validatePharmaCoupon();
   }
   function hasUnserviceableproduct() {
-    const unserviceableItems = cartItems.filter((item) => item.unserviceable) || [];
-    return unserviceableItems?.length ? true : false;
+    return !!cartItems.find(
+      ({ unavailableOnline, unserviceable }) => unavailableOnline || unserviceable
+    );
   }
   function NavigateToCartSummary(
     deliveryTime: string,
@@ -575,6 +576,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             isFreeCouponProduct: !!couponProducts[index]!.couponFree,
             couponPrice: 0,
             unserviceable: false,
+            unavailableOnline: medicineDetails.sell_online == 0,
           } as ShoppingCartItem;
         });
         addMultipleCartItems!(medicinesAll as ShoppingCartItem[]);

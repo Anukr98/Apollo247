@@ -1,15 +1,33 @@
-import React, { useState } from 'react';
-import { SafeAreaView, View, ActivityIndicator, NavState, Alert } from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
-import { WebView } from 'react-native-webview';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import { permissionHandler } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, NavState, Platform, SafeAreaView, View } from 'react-native';
+import { WebView } from 'react-native-webview';
+import { NavigationScreenProps } from 'react-navigation';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
-export interface CovidScanProps extends NavigationScreenProps {}
+export interface CovidScanProps
+  extends NavigationScreenProps<{
+    requestMicroPhonePermission: boolean;
+  }> {}
 
 export const CovidScan: React.FC<CovidScanProps> = (props) => {
+  const microPhonePermission = props.navigation.getParam('requestMicroPhonePermission');
   const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    requestMicrophonePermission();
+  }, []);
+
+  const requestMicrophonePermission = () => {
+    if (microPhonePermission) {
+      setTimeout(() => {
+        permissionHandler(string.microphone, string.enableMicrophoneToRecordCough, () => {});
+      }, 500);
+    }
+  };
 
   const handleResponse = (data: NavState, WebViewRef: any) => {
     const homeURL = 'http://www.apollo247.com/';
@@ -40,14 +58,10 @@ export const CovidScan: React.FC<CovidScanProps> = (props) => {
     props.navigation.goBack();
   };
 
-  const renderError = (WebViewRef:any) => {
+  const renderError = (WebViewRef: any) => {
     WebViewRef && WebViewRef.reload();
-    return(
-      <View style={{flex:1}}>
-
-      </View>
-    )
-  }
+    return <View style={{ flex: 1 }}></View>;
+  };
   const renderSpinner = () => {
     return (
       <View

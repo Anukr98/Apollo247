@@ -8,6 +8,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { DoctorCard } from '@aph/mobile-patients/src/components/ui/DoctorCard';
+import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
   CheckedIcon,
@@ -18,6 +19,7 @@ import {
   RadioButtonIcon,
   RadioButtonUnselectedIcon,
   SearchIcon,
+  FamilyDoctorIcon,
   RetryButtonIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -30,8 +32,13 @@ import {
   setBugFenderLog,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
+  getPlatinumDoctor_getPlatinumDoctor_doctors,
+  getPlatinumDoctor,
+} from '@aph/mobile-patients/src/graphql/types/getPlatinumDoctor';
+import {
   DOCTOR_SPECIALITY_BY_FILTERS,
   GET_DOCTOR_LIST,
+  GET_PLATINUM_DOCTOR,
   GET_DOCTORLIST_FILTERS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
@@ -180,6 +187,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderBottomWidth: 4,
   },
+  linearGradient: {
+    flex: 1,
+    paddingTop: 16,
+    marginBottom: 20,
+  },
+  doctorOfTheHourTextStyle: {
+    ...theme.viewStyles.text('SB', 13, '#FFFFFF', 1, 16.9, 0.3),
+    textAlign: 'center',
+    paddingTop: 4,
+    paddingLeft: 20,
+  },
 });
 
 let latlng: locationType | null = null;
@@ -203,7 +221,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [displayFilter, setDisplayFilter] = useState<boolean>(false);
   const [currentLocation, setcurrentLocation] = useState<string>('');
   const [locationSearchText, setLocationSearchText] = useState<string>('');
-
+  const [
+    platinumDoctor,
+    setPlatinumDoctor,
+  ] = useState<getPlatinumDoctor_getPlatinumDoctor_doctors | null>(null);
   const [doctorsList, setDoctorsList] = useState<
     (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null)[]
   >([]);
@@ -304,6 +325,27 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       getPatientApiCall();
     }
   }, [currentPatient]);
+
+  useEffect(() => {
+    client
+      .query<getPlatinumDoctor>({
+        query: GET_PLATINUM_DOCTOR,
+        fetchPolicy: 'no-cache',
+        variables: {
+          specialtyId: props.navigation.getParam('specialityId') || '',
+        },
+      })
+      .then(({ data }) => {
+        const platinum_doctor = g(data, 'getPlatinumDoctor', 'doctors', '0' as any);
+        console.log('data', data);
+        if (platinum_doctor) {
+          setPlatinumDoctor(platinum_doctor);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('GET_PLATINUM_DOCTOR', e);
+      });
+  }, []);
 
   const vaueChange = (sort: any) => {
     if (sort === 'distance') {
@@ -928,6 +970,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       'Doctor Category': doctorDetails.doctorType,
       Fee: Number(doctorDetails?.fee),
       'Doctor Speciality': doctorDetails?.specialistSingularTerm,
+      Rank: doctorDetails?.rowId,
     };
 
     const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.DOCTOR_CLICKED] = {
@@ -989,7 +1032,31 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     filter?: ConsultMode
   ) => {
     if (rowData) {
-      return (
+      return index === 0 && platinumDoctor ? (
+        <>
+          {renderPlatinumDoctorView()}
+          <DoctorCard
+            key={index}
+            rowId={index + 1}
+            rowData={rowData}
+            navigation={props.navigation}
+            style={styles}
+            numberOfLines={numberOfLines}
+            availableModes={rowData.consultMode}
+            callSaveSearch={callSaveSearch}
+            onPress={() => {
+              postDoctorClickWEGEvent({ ...rowData, rowId: index + 1 }, 'List');
+              props.navigation.navigate(AppRoutes.DoctorDetails, {
+                doctorId: rowData.id,
+                callSaveSearch: callSaveSearch,
+              });
+            }}
+            onPressConsultNowOrBookAppointment={(type) => {
+              postDoctorClickWEGEvent({ ...rowData, rowId: index + 1 }, 'List', type);
+            }}
+          />
+        </>
+      ) : (
         <DoctorCard
           key={index}
           rowId={index + 1}
@@ -1000,14 +1067,14 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           availableModes={rowData.consultMode}
           callSaveSearch={callSaveSearch}
           onPress={() => {
-            postDoctorClickWEGEvent(rowData, 'List');
+            postDoctorClickWEGEvent({ ...rowData, rowId: index + 1 }, 'List');
             props.navigation.navigate(AppRoutes.DoctorDetails, {
               doctorId: rowData.id,
               callSaveSearch: callSaveSearch,
             });
           }}
           onPressConsultNowOrBookAppointment={(type) => {
-            postDoctorClickWEGEvent(rowData, 'List', type);
+            postDoctorClickWEGEvent({ ...rowData, rowId: index + 1 }, 'List', type);
           }}
         />
       );
@@ -1022,7 +1089,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             return obj?.consultMode == ConsultMode.BOTH || obj?.consultMode == filter;
           })
         : filteredDoctorsList;
-    if (doctors.length === 0 && !showSpinner) {
+    if (doctors.length === 0 && !showSpinner && !platinumDoctor) {
       const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_SPECIALITY_SEARCH_NO_RESULT] = {
         'Text Searched': doctorSearch,
         'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
@@ -1115,6 +1182,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             ListFooterComponent={renderListFooter()}
           />
         )}
+        {doctors.length === 0 && platinumDoctor ? renderPlatinumDoctorView(true) : null}
       </View>
     );
   };
@@ -1316,6 +1384,61 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     }
   }, [doctorSearch]);
 
+  const renderPlatinumDoctorView = (setHeight: boolean = false) => {
+    const doctorCardStyle = {
+      backgroundColor: theme.colors.WHITE,
+      shadowColor: theme.colors.SHADOW_GRAY,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.4,
+      shadowRadius: 8,
+      elevation: 4,
+    };
+    const buttonStyle = {
+      backgroundColor: theme.colors.BUTTON_BG,
+      shadowColor: theme.colors.WHITE,
+      shadowOffset: { width: 0, height: 0 },
+      shadowOpacity: 0,
+      shadowRadius: 0,
+      elevation: 0,
+      height: 44,
+      borderRadius: 0,
+    };
+    const buttonTextStyle = {
+      color: theme.colors.BUTTON_TEXT,
+    };
+    return (
+      <LinearGradientComponent
+        style={[styles.linearGradient, setHeight && { minHeight: 310, flex: undefined }]}
+      >
+        <View style={{ flexDirection: 'row', alignSelf: 'center', marginBottom: 15 }}>
+          <FamilyDoctorIcon style={{ width: 16.58, height: 24 }} />
+          <Text style={styles.doctorOfTheHourTextStyle}>{'Doctor of the Hour!'}</Text>
+        </View>
+        <DoctorCard
+          rowData={platinumDoctor}
+          navigation={props.navigation}
+          availableModes={platinumDoctor?.consultMode}
+          callSaveSearch={callSaveSearch}
+          style={doctorCardStyle}
+          buttonViewStyle={{ overflow: 'hidden' }}
+          buttonStyle={buttonStyle}
+          buttonTextStyle={buttonTextStyle}
+          onPress={() => {
+            postDoctorClickWEGEvent(platinumDoctor, 'List');
+            props.navigation.navigate(AppRoutes.DoctorDetails, {
+              doctorId: platinumDoctor?.id,
+              callSaveSearch: callSaveSearch,
+              platinumDoctor: true,
+            });
+          }}
+          onPressConsultNowOrBookAppointment={(type) => {
+            postDoctorClickWEGEvent(platinumDoctor, 'List', type);
+          }}
+        />
+      </LinearGradientComponent>
+    );
+  };
+
   const renderDoctorSearchBar = () => {
     return (
       <View style={[styles.searchContainer, styles.shadowStyle]}>
@@ -1416,6 +1539,18 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     }
   };
 
+  const fireFilterWebengageEvent = (filterApplied: string, filterValue: string) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_LISTING_FILTER_APPLIED] = {
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'pincode': g(locationDetails, 'pincode') || '',
+      'Filter Applied': filterApplied,
+      'Filter Value': filterValue,
+    };
+    postWebEngageEvent(WebEngageEventName.DOCTOR_LISTING_FILTER_APPLIED, eventAttributes);
+  };
+
   const renderBottomOptions = () => {
     const doctors_partners = doctorsType === 'PARTNERS' ? true : false;
     return (
@@ -1425,7 +1560,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           <View style={styles.bottomItemContainer}>
             <TouchableOpacity
               activeOpacity={1}
-              onPress={() => onPressNearByRadioButton(doctors_partners)}
+              onPress={() => {
+                fireFilterWebengageEvent(string.doctor_search_listing.near, nearyByFlag ? 'True' : 'False');
+                onPressNearByRadioButton(doctors_partners);
+              }}
             >
               <View
                 style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}
@@ -1450,7 +1588,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             <TouchableOpacity
               activeOpacity={1}
               style={{ marginLeft: 8 }}
-              onPress={() => onPressAvailabiltyRadioButton(doctors_partners)}
+              onPress={() => {
+                fireFilterWebengageEvent(string.doctor_search_listing.avaliablity, availabilityFlag ? 'True' : 'False');
+                onPressAvailabiltyRadioButton(doctors_partners);
+              }}
             >
               <View
                 style={{
@@ -1482,6 +1623,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               <TouchableOpacity
                 activeOpacity={1}
                 onPress={() => {
+                  fireFilterWebengageEvent(string.doctor_search_listing.online, onlineCheckBox ? 'True' : 'False');
                   setOnlineCheckbox(!onlineCheckBox);
                   if (!physicalCheckBox) {
                     setPhysicalCheckbox(!physicalCheckBox);
@@ -1516,6 +1658,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               <TouchableOpacity
                 activeOpacity={1}
                 onPress={() => {
+                  fireFilterWebengageEvent(string.doctor_search_listing.inperson, physicalCheckBox ? 'True' : 'False');
                   setPhysicalCheckbox(!physicalCheckBox);
                   if (!onlineCheckBox) {
                     setOnlineCheckbox(!onlineCheckBox);
@@ -1670,6 +1813,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             setDisplayFilter(false);
           }}
           setData={(selecteddata) => {
+            selecteddata.forEach(value => {
+              const {label, selectedOptions} = value;
+              if (selectedOptions.length) {
+                fireFilterWebengageEvent(label, selectedOptions.join());
+              }
+            });
             setshowSpinner(true);
             setFilterData(selecteddata);
             getNetStatus()

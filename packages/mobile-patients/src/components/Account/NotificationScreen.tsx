@@ -623,7 +623,7 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
           const [itemId, name] = id.split(',');
           console.log(itemId, name);
 
-          props.navigation.navigate(AppRoutes.SearchByBrand, {
+          props.navigation.navigate(AppRoutes.MedicineListing, {
             category_id: itemId,
             title: `${name ? name : 'Products'}`.toUpperCase(),
           });

@@ -1089,7 +1089,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   //             item.title,
   //             `${config.IMAGES_BASE_URL[0]}${item.image_url}`,
   //             () =>
-  //               props.navigation.navigate(AppRoutes.SearchByBrand, {
+  //               props.navigation.navigate(AppRoutes.MedicineListing, {
   //                 category_id: item.category_id,
   //                 title: `${item.title || 'Products'}`.toUpperCase(),
   //                 isTest: true,
