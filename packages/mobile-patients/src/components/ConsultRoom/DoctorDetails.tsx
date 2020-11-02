@@ -1290,6 +1290,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           externalConnect={null}
           availableMode={ConsultMode.BOTH}
           callSaveSearch={callSaveSearch}
+          isDoctorsOfTheHourStatus={doctorDetails?.doctorsOfTheHourStatus}
         />
       )}
       <Animated.View
