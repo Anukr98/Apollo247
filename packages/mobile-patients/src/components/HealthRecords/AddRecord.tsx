@@ -188,6 +188,15 @@ const styles = StyleSheet.create({
     paddingBottom: 0,
     marginBottom: 30,
   },
+  additionalTextInputStyle: {
+    height: 110,
+    borderColor: '#AFC3C9',
+    borderWidth: 1,
+    marginLeft: 14,
+    paddingLeft: 5,
+    marginRight: 20,
+    marginTop: 11,
+  },
   listItemViewStyle: {
     marginTop: 32,
     borderBottomColor: 'rgba(2,71,91,0.2)',
@@ -309,14 +318,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
 
   const isValid = () => {
     const validRecordDetails1 = recordType && dateOfTest && testName && docName ? true : false;
-    const validRecordDetails2 = typeofRecord && locationName && dateOfTest ? true : false;
-    const validRecordDetails3 =
-      typeofRecord && typeofRecord === MedicRecordType.PRESCRIPTION && docName && dateOfTest
-        ? true
-        : false;
-    const validRecordDetails4 =
-      typeofRecord && testName && dateOfTest && locationName ? true : false;
-
     const valid = isTestRecordParameterFilled().map((item) => {
       return {
         maxmin: (item.maximum || item.minimum) && item.maximum! > item.minimum!,
@@ -457,14 +458,14 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
 
   const addPatientLabTestRecords = () => {
     const inputData: AddLabTestRecordInput = {
-      patientId: currentPatient ? currentPatient.id : '',
+      patientId: currentPatient?.id,
       labTestName: testName,
       labTestDate: dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
       recordType: recordType,
-      referringDoctor: referringDoctor,
+      referringDoctor: docName,
       observations: observations,
       additionalNotes: additionalNotes,
-      labTestResults: showReportDetails ? isTestRecordParameterFilled() : [],
+      labTestResults: isTestRecordParameterFilled(),
       testResultFiles: getAddedImages(),
     };
     client
@@ -612,7 +613,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     } else if (typeofRecord === MedicRecordType.HEALTHCHECK) {
       addPatientHealthCheckRecords();
     } else {
-      // addPatientHospitalizationRecords();
+      addPatientHospitalizationRecords();
     }
   };
 
@@ -1190,6 +1191,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             style={styles.textInputStyle}
             selectionColor={'#0087BA'}
             numberOfLines={1}
+            value={testName}
             placeholderTextColor={theme.colors.placeholderTextColor}
             underlineColorAndroid={'transparent'}
             onChangeText={(testName) => {
@@ -1216,34 +1218,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             }}
           />
         </View>
-        <View style={{ marginTop: 32 }}>
-          {renderListItem('Additional Notes', false)}
-          <TextInput
-            placeholder={'Enter Additional Notes'}
-            style={[
-              styles.textInputStyle,
-              {
-                height: 110,
-                borderColor: '#AFC3C9',
-                borderWidth: 1,
-                marginLeft: 14,
-                paddingLeft: 5,
-                marginRight: 20,
-                marginTop: 11,
-              },
-            ]}
-            multiline
-            selectionColor={'#0087BA'}
-            numberOfLines={1}
-            placeholderTextColor={theme.colors.placeholderTextColor}
-            underlineColorAndroid={'transparent'}
-            onChangeText={(additionalNotes) => {
-              if (isValidText(additionalNotes)) {
-                setadditionalNotes(additionalNotes);
-              }
-            }}
-          />
-        </View>
+        {renderAdditionalTextInputView()}
       </>
     );
   };
@@ -1258,6 +1233,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             style={styles.textInputStyle}
             selectionColor={'#0087BA'}
             numberOfLines={1}
+            value={testName}
             placeholderTextColor={theme.colors.placeholderTextColor}
             underlineColorAndroid={'transparent'}
             onChangeText={(testName) => {
@@ -1411,35 +1387,31 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             </View>
           </View>
         ))}
-        <View style={{ marginTop: 32 }}>
-          {renderListItem('Additional Notes', false)}
-          <TextInput
-            placeholder={'Enter Additional Notes'}
-            style={[
-              styles.textInputStyle,
-              {
-                height: 110,
-                borderColor: '#AFC3C9',
-                borderWidth: 1,
-                marginLeft: 14,
-                paddingLeft: 5,
-                marginRight: 20,
-                marginTop: 11,
-              },
-            ]}
-            multiline
-            selectionColor={'#0087BA'}
-            numberOfLines={1}
-            placeholderTextColor={theme.colors.placeholderTextColor}
-            underlineColorAndroid={'transparent'}
-            onChangeText={(additionalNotes) => {
-              if (isValidText(additionalNotes)) {
-                setadditionalNotes(additionalNotes);
-              }
-            }}
-          />
-        </View>
+        {renderAdditionalTextInputView()}
       </>
+    );
+  };
+
+  const renderAdditionalTextInputView = () => {
+    return (
+      <View style={{ marginTop: 32 }}>
+        {renderListItem('Additional Notes', false)}
+        <TextInput
+          placeholder={'Enter Additional Notes'}
+          style={[styles.textInputStyle, styles.additionalTextInputStyle]}
+          multiline
+          selectionColor={'#0087BA'}
+          numberOfLines={1}
+          value={additionalNotes}
+          placeholderTextColor={theme.colors.placeholderTextColor}
+          underlineColorAndroid={'transparent'}
+          onChangeText={(additionalNotes) => {
+            if (isValidText(additionalNotes)) {
+              setadditionalNotes(additionalNotes);
+            }
+          }}
+        />
+      </View>
     );
   };
 

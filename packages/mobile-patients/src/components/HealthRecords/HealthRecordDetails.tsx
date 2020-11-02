@@ -59,6 +59,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0,
     borderBottomColor: theme.colors.SEPARATOR_LINE,
     marginTop: 26,
+    marginLeft: 18,
   },
   collapseCardLabelViewStyle: {
     marginTop: 20,
@@ -228,8 +229,8 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
           },
         })
         .then(({ data }: any) => {
-          if (data && data.getLabResultpdf && data.getLabResultpdf.url) {
-            downloadDocument(data.getLabResultpdf.url);
+          if (data?.getLabResultpdf?.url) {
+            downloadDocument(data?.getLabResultpdf?.url);
           }
         })
         .catch((e: any) => {
@@ -289,34 +290,31 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
           onPress={() => setshowPrescription(!showPrescription)}
         >
           <View style={{ marginTop: 11, marginBottom: 20 }}>
-            {(
-              (data.medicalRecordParameters && data.medicalRecordParameters) ||
-              (data.labTestResults && data.labTestResults)
-            ).map((item: any) => {
-              const unit = item?.unit;
-              return (
-                <View
-                  style={[styles.cardViewStyle, { marginTop: 4, marginBottom: 4, paddingTop: 16 }]}
-                >
-                  <View style={{ flexDirection: 'row' }}>
-                    <LabTestIcon style={{ height: 20, width: 19, marginRight: 14 }} />
-                    <Text style={{ ...viewStyles.text('SB', 16, '#02475B', 1, 21) }}>
-                      {'Impressions'}
-                    </Text>
-                  </View>
-                  <View style={styles.labelViewStyle}>
-                    <Text style={styles.labelStyle}>{item.parameterName}</Text>
-                  </View>
-                  {detailRowView(
-                    'Normal Range',
-                    item.range ? item.range : `${item.minimum || ''} - ${item.maximum || 'N/A'}`
-                  )}
-                  {detailRowView('Units', unit || 'N/A')}
-                  {detailRowView('Result', '')}
-                  <Text style={styles.resultTextStyle}>{item.result || 'N/A'}</Text>
-                </View>
-              );
-            })}
+            <View style={[styles.cardViewStyle, { marginTop: 4, marginBottom: 4, paddingTop: 16 }]}>
+              <View style={{ flexDirection: 'row' }}>
+                <LabTestIcon style={{ height: 20, width: 19, marginRight: 14 }} />
+                <Text style={{ ...viewStyles.text('SB', 16, '#02475B', 1, 21) }}>
+                  {'Impressions'}
+                </Text>
+              </View>
+              {data?.labTestResults?.map((item: any) => {
+                const unit = item?.unit;
+                return (
+                  <>
+                    <View style={styles.labelViewStyle}>
+                      <Text style={styles.labelStyle}>{item.parameterName}</Text>
+                    </View>
+                    {detailRowView(
+                      'Normal Range',
+                      item.range ? item.range : `${item.minimum || ''} - ${item.maximum || 'N/A'}`
+                    )}
+                    {detailRowView('Units', unit || 'N/A')}
+                    {detailRowView('Result', '')}
+                    <Text style={styles.resultTextStyle}>{item.result || 'N/A'}</Text>
+                  </>
+                );
+              })}
+            </View>
           </View>
         </CollapseCard>
       </View>
@@ -397,10 +395,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
   const renderData = () => {
     return (
       <View>
-        {(data.medicalRecordParameters && data.medicalRecordParameters.length > 0) ||
-        (data.labTestResults && data.labTestResults.length > 0)
-          ? renderDetailsFinding()
-          : null}
+        {data?.labTestResults?.length > 0 ? renderDetailsFinding() : null}
         {(!!data.additionalNotes ||
           !!data.healthCheckSummary ||
           !!data.dischargeSummary ||
@@ -435,7 +430,6 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       }
       return siteDisplayName || labTestSource || healthCheckSource;
     };
-    const labSourceSelf = data?.labTestSource === '247self' || data?.labTestSource === 'self';
     return (
       <View style={styles.cardViewStyle}>
         {data?.labTestName || data?.prescriptionName || data?.healthCheckName ? (
