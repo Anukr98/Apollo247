@@ -1,7 +1,7 @@
 const axios = require('axios');
 const { Decimal } = require('decimal.js');
 const logger = require('../../winston-logger')('Pharmacy-logs');
-const { initPayment, singlePaymentAdditionalParams, addAdditionalMERC } = require('../helpers/common');
+const { initPayment, singlePaymentAdditionalParams } = require('../helpers/common');
 const { getCurrentSellingPrice, additionalMercUnqRef } = require('../../commons/paymentCommon.js');
 const {
   PAYMENT_MODE_ONLY_TRUE,
@@ -92,7 +92,7 @@ module.exports = async (req, res) => {
     /**
      * Health credits can be used for products only and not for delivery|packaging charges
      */
-    const maxApplicableHC = new Decimal(effectiveAmount).minus(+deliveryCharges).minus(+packagingCharges).minus(+planPrice);
+    const maxApplicableHC = +new Decimal(effectiveAmount).minus(+deliveryCharges).minus(+packagingCharges).minus(+planPrice);
     if (+new Decimal(responseAmount).plus(planPrice) != effectiveAmount || maxApplicableHC < healthCredits) {
       return res.status(400).json({
         status: 'failed',

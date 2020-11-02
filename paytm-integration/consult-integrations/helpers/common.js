@@ -47,12 +47,6 @@ const initPayment = function (
   });
 };
 
-const addAdditionalMERC = (paymentTypeId, planId) => {
-  let merc = ":" + (paymentTypeId === process.env.PARTNER_SBI ? paymentTypeId : 0);
-  merc += ":" + (planId ? planId : 0);
-  return merc;
-};
-
 const generatePaymentOrderId = () => {
   const dateObj = new Date();
   let minutes =
@@ -102,4 +96,4 @@ const singlePaymentAdditionalParams = (paymentTypeID, bankCode) => {
   return paymentTypeParams;
 };
 
-module.exports = { initPayment, generatePaymentOrderId, singlePaymentAdditionalParams, addAdditionalMERC };
+module.exports = { initPayment, generatePaymentOrderId, singlePaymentAdditionalParams };

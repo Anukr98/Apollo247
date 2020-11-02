@@ -79,5 +79,4 @@ const singlePaymentAdditionalParams = (paymentTypeID, bankCode) => {
 module.exports = {
   initPayment,
   singlePaymentAdditionalParams,
-  addAdditionalMERC
 };
