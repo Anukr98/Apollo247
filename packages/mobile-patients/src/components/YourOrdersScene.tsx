@@ -172,7 +172,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
             style={{ marginTop: 20 }}
             title={'ORDER NOW'}
             onPress={() => {
-              props.navigation.navigate(AppRoutes.SearchMedicineScene);
+              props.navigation.navigate(AppRoutes.MedicineSearch);
             }}
           />
         </Card>

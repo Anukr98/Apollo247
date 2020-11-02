@@ -27,6 +27,7 @@ export interface ShoppingCartItem {
   couponPrice?: number;
   isInStock: boolean;
   unserviceable?: boolean;
+  unavailableOnline?: boolean; // sell_online
   isMedicine: boolean;
   productType?: 'FMCG' | 'Pharma' | 'PL';
   isFreeCouponProduct?: boolean;

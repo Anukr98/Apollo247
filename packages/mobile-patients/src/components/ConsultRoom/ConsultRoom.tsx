@@ -2505,6 +2505,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       } else {
         props.navigation.navigate(AppRoutes.CovidScan, {
           covidUrl: urlToOpen,
+          requestMicroPhonePermission: true,
         });
       }
     } catch (e) {
