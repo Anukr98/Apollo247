@@ -194,7 +194,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
 
   useEffect(() => {
     if (appState == 'active') {
-      availabilityTat(true);
+      couponProducts?.length == 0 && availabilityTat(true);
       setCoupon!(null);
     }
   }, [appState]);
@@ -440,6 +440,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     shopId?: string
   ) {
     !hasUnserviceableproduct() &&
+      isfocused &&
       props.navigation.navigate(AppRoutes.CartSummary, {
         deliveryTime: deliveryTime,
         storeDistance: storeDistance,
