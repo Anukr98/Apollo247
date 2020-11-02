@@ -78,6 +78,9 @@ target 'ApolloPatient' do
   pod 'react-native-geolocation', :path => '../node_modules/@react-native-community/geolocation'
   pod 'react-native-netinfo', :path => '../node_modules/@react-native-community/netinfo'
   pod 'RNFirebase', :path => '../node_modules/react-native-firebase/ios'
+  pod 'Firebase/Crashlytics'
+  # Recommended: Add the Firebase pod for Google Analytics
+  pod 'Firebase/Analytics'
   pod 'opentok-react-native', :path => '../node_modules/opentok-react-native'
   pod 'ReactNativeExceptionHandler', :path => '../node_modules/react-native-exception-handler'
   pod 'react-native-webengage', :path => '../node_modules/react-native-webengage'
