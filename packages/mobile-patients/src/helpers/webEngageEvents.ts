@@ -990,6 +990,7 @@ export interface WebEngageEvents {
     Fee: number;
     'Doctor Speciality': string;
     Rank: number;
+    Is_TopDoc?: YesOrNo;
   };
   [WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK]: {
     'Patient Name': string;
