@@ -2732,6 +2732,17 @@ export const SAVE_DIAGNOSTIC_ORDER = gql`
   }
 `;
 
+export const SAVE_DIAGNOSTIC_HOME_COLLECTION_ORDER = gql`
+  mutation DiagnosticBookHomeCollection($diagnosticOrderInput: DiagnosticBookHomeCollectionInput) {
+    DiagnosticBookHomeCollection(diagnosticOrderInput: $diagnosticOrderInput) {
+      errorCode
+      errorMessage
+      orderId
+      displayId
+    }
+  }
+`;
+
 export const UPLOAD_DOCUMENT = gql`
   mutation uploadDocument($UploadDocumentInput: UploadDocumentInput) {
     uploadDocument(uploadDocumentInput: $UploadDocumentInput) {
