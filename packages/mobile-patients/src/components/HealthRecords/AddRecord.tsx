@@ -606,14 +606,15 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           description: valid.message,
         });
       }
-    } else if (isValidPrescription()) {
+    } else if (recordType === MedicalRecordType.PRESCRIPTION && isValidPrescription()) {
+      setshowSpinner(true);
       addMedicalRecord();
     } else if (typeofRecord === MedicRecordType.TEST_REPORT) {
       addPatientLabTestRecords();
     } else if (typeofRecord === MedicRecordType.HEALTHCHECK) {
       addPatientHealthCheckRecords();
     } else {
-      addPatientHospitalizationRecords();
+      // addPatientHospitalizationRecords();
     }
   };
 
