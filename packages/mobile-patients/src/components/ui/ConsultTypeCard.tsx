@@ -28,7 +28,6 @@ import {
 import moment from 'moment';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
 import { useAllCurrentPatients } from '../../hooks/authHooks';
-import { CareLogo } from '@aph/mobile-patients/src/components/ui/CareLogo';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 const styles = StyleSheet.create({
@@ -134,7 +133,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingBottom: 9,
     alignItems: 'center',
-    marginTop: -15,
+    marginTop: -16,
   },
   infoIcon: {
     width: 10,
