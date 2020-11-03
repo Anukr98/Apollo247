@@ -257,11 +257,11 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         <View style={{ marginTop: 5 }}>
           <View style={styles.rowContainer}>
             <Text style={styles.carePrice}>
-              {string.common.Rs}
+              {string.common.Rs}{' '}
               {physicalConsultMRPPrice === onlineConsultMRPPrice ? onlineConsultMRPPrice : minMrp}
             </Text>
             <Text style={styles.careDiscountedPrice}>
-              {string.common.Rs}
+              {string.common.Rs}{' '}
               {physicalConsultMRPPrice === onlineConsultMRPPrice
                 ? onlineConsultSlashedPrice
                 : minSlashedPrice}
@@ -283,7 +283,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               You pay
             </Text>
             <Text style={{ ...theme.viewStyles.text('M', 15, theme.colors.SKY_BLUE) }}>
-              {string.common.Rs}
+              {string.common.Rs}{' '}
               {physicalConsultMRPPrice === onlineConsultMRPPrice ? onlineConsultMRPPrice : minMrp}
             </Text>
           </View>
@@ -299,7 +299,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             </Text>
             <View style={styles.rowContainer}>
               <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.APP_YELLOW) }}>
-                {string.common.Rs}
+                {string.common.Rs}{' '}
                 {physicalConsultMRPPrice === onlineConsultMRPPrice
                   ? onlineConsultSlashedPrice
                   : minSlashedPrice}

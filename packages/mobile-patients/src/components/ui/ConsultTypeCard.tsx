@@ -13,7 +13,8 @@ import {
   CTLightGrayChat,
   CTLightGrayVideo,
   CTPhone,
-  InfoRed,
+  InfoYellow,
+  CircleLogo,
 } from './Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '../../theme/theme';
@@ -28,8 +29,6 @@ import moment from 'moment';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
 import { useAllCurrentPatients } from '../../hooks/authHooks';
 import { CareLogo } from '@aph/mobile-patients/src/components/ui/CareLogo';
-import { getDoctorDetailsById_getDoctorDetailsById_doctorPricing } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
-import { PLAN_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 const styles = StyleSheet.create({
@@ -107,10 +106,8 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   careLogo: {
-    width: 27,
-    height: 11,
-    borderRadius: 5,
-    marginRight: 4,
+    width: 40,
+    height: 21,
   },
   careLogoText: {
     ...theme.viewStyles.text('M', 4, 'white'),
@@ -122,7 +119,7 @@ const styles = StyleSheet.create({
     marginLeft: 'auto',
   },
   careDiscountedPrice: {
-    ...theme.viewStyles.text('M', 12, theme.colors.DEEP_RED),
+    ...theme.viewStyles.text('M', 12, theme.colors.APP_YELLOW),
     marginLeft: 'auto',
   },
   rowContainer: {
@@ -130,14 +127,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   smallRightAlignText: {
-    ...theme.viewStyles.text('M', 10, theme.colors.DEEP_RED),
+    ...theme.viewStyles.text('M', 10, theme.colors.APP_YELLOW),
     marginLeft: 'auto',
   },
   row: {
     flexDirection: 'row',
     paddingBottom: 9,
     alignItems: 'center',
-    marginTop: -10,
+    marginTop: -15,
   },
   infoIcon: {
     width: 10,
@@ -182,6 +179,7 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
 
   const [consultDoctorName, setConsultDocotrName] = useState<string>(DoctorName ? DoctorName : '');
   const { isCareDoctor, onlineConsultMRPPrice, onlineConsultSlashedPrice } = careDoctorDetails;
+
   const renderCareDoctorPricing = () => {
     return (
       <View style={{ justifyContent: 'center' }}>
@@ -198,14 +196,14 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
             },
           ]}
         >
-          {string.common.Rs}
-          {onlineConsultMRPPrice}
+          {string.common.Rs} {onlineConsultMRPPrice}
+          500
         </Text>
         <View style={styles.rowContainer}>
-          <CareLogo style={styles.careLogo} textStyle={styles.careLogoText} />
+          {isCareSubscribed && <CircleLogo style={styles.careLogo} />}
           <Text style={styles.careDiscountedPrice}>
-            {string.common.Rs}
-            {onlineConsultSlashedPrice}
+            {string.common.Rs} {onlineConsultSlashedPrice}
+            400
           </Text>
         </View>
       </View>
@@ -242,8 +240,10 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
           </View>
           {!isCareSubscribed && isCareDoctor && (
             <View style={styles.row}>
-              <Text style={styles.smallRightAlignText}>{string.careDoctors.forCareMembers}</Text>
-              <InfoRed style={styles.infoIcon} />
+              <Text style={styles.smallRightAlignText}>for</Text>
+              <CircleLogo style={styles.careLogo} />
+              <Text style={[styles.smallRightAlignText, { marginLeft: -4 }]}>members</Text>
+              <InfoYellow style={styles.infoIcon} />
             </View>
           )}
         </View>
