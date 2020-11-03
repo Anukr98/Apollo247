@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 //==============================================================
@@ -114,6 +115,7 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   PICKUP_REQUESTED = "PICKUP_REQUESTED",
   REPORT_GENERATED = "REPORT_GENERATED",
   SAMPLE_COLLECTED = "SAMPLE_COLLECTED",
+  SAMPLE_RECEIVED_IN_LAB = "SAMPLE_RECEIVED_IN_LAB",
 }
 
 export enum DOCTOR_ONLINE_STATUS {
@@ -688,6 +690,22 @@ export interface CreateUserSubscriptionInput {
   Gender?: string | null;
   DOB?: any | null;
   storeCode: string;
+}
+
+export interface DiagnosticBookHomeCollectionInput {
+  patientId: string;
+  patientAddressId: string;
+  slotTimings: string;
+  totalPrice: number;
+  prescriptionUrl: string;
+  diagnosticDate: any;
+  bookingSource?: BOOKINGSOURCE | null;
+  deviceType?: DEVICETYPE | null;
+  paymentType?: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
+  items?: (DiagnosticLineItem | null)[] | null;
+  slotId: string;
+  areaId: number;
+  homeCollectionCharges: number;
 }
 
 export interface DiagnosticLineItem {
