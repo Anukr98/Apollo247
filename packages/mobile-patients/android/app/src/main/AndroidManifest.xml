@@ -104,7 +104,15 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>
-        
+        <receiver android:name=".ReferrerReceiver"  android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="www.apollo247.com"/>
+                <data android:scheme="apollopatients" />
+            </intent-filter>
+        </receiver>
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="40001b65375e3b0193fe0fb56ac6706df22e3eed" />

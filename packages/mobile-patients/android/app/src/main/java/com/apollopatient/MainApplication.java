@@ -44,6 +44,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.InstanceIdResult;
 import com.webengage.sdk.android.WebEngage;
+import com.apollopatient.GetReferrerPackage;
 
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
@@ -66,7 +67,7 @@ import com.webengage.sdk.android.Analytics;
 // import io.github.elyx0.reactnativedocumentpicker.DocumentPickerPackage;
 // import com.opentokreactnative.OTPackage;
 // import org.devio.rn.splashscreen.SplashScreenReactPackage;
-import io.invertase.firebase.RNFirebasePackage;
+// import io.invertase.firebase.RNFirebasePackage;
 // import com.oblador.vectoricons.VectorIconsPackage;
 import io.invertase.firebase.analytics.RNFirebaseAnalyticsPackage; // <-- Add this line
 import io.invertase.firebase.auth.RNFirebaseAuthPackage;
@@ -113,7 +114,7 @@ public class MainApplication extends Application implements ReactApplication {
                     // packages.add(new DocumentPickerPackage());
                     // packages.add(new OTPackage());
                     // packages.add(new SplashScreenReactPackage());
-                    packages.add(new RNFirebasePackage());
+                    // packages.add(new RNFirebasePackage());
                     // packages.add(new VectorIconsPackage());
                     // packages.add(new RNGestureHandlerPackage());
                     packages.add(new RNFirebaseAnalyticsPackage());
@@ -125,6 +126,7 @@ public class MainApplication extends Application implements ReactApplication {
                     packages.add(new RNFirebaseDatabasePackage());
                     packages.add(new RNAppSignatureHelperPackage());
                     packages.add(new LinearGradientPackage());
+                    packages.add(new GetReferrerPackage());
                     // packages.add(new ReactNativeExceptionHandlerPackage());
                     return packages;
                 }
@@ -157,7 +159,7 @@ public class MainApplication extends Application implements ReactApplication {
         initializeFlipper(this); // Remove this line if you don't want Flipper enabled
 
         WebEngageConfig webEngageConfig = new WebEngageConfig.Builder()
-                .setWebEngageKey("in~~c2ab3529")
+                .setWebEngageKey("in~~c2ab3533")
                 .setDebugMode(false) // only in development mode
                 .build();
         registerActivityLifecycleCallbacks(new WebEngageActivityLifeCycleCallbacks(this, webEngageConfig));

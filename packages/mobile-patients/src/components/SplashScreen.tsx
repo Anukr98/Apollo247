@@ -8,6 +8,7 @@ import {
   AppStateStatus,
   AppState,
   DeviceEventEmitter,
+  NativeModules,
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
@@ -233,6 +234,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             try {
               handleOpenURL(url);
               console.log('linking', url);
+              NativeModules.GetReferrer.referrer().then((value: any) => {
+                console.log('referrer >>>', value);
+              });
             } catch (e) {}
           }
         })

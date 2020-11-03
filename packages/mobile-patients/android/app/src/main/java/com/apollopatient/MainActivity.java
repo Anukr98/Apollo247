@@ -23,6 +23,7 @@ public class MainActivity extends ReactActivity {
      * This is used to schedule rendering of the component.
      */
     public static final String NOTIFICATION_ID = "NOTIFICATION_ID";
+    private static final String TAG = "intentlogs";
     private Ringtone ringtone;
 
     @Override
@@ -37,6 +38,16 @@ public class MainActivity extends ReactActivity {
         Intent intent = getIntent();
         String action = intent.getAction();
         Uri data = intent.getData();
+        Log.d("intent recieved now", intent.toString());
+//        Log.d("intent referrer", intent.getStringExtra(Intent.EXTRA_REFERRER).toString());
+//        String referrerString = intent.getStringExtra(Intent.EXTRA_REFERRER);
+//        Log.d("referrerString", referrerString);
+        Bundle bundle = intent.getExtras();
+        if (bundle != null) {
+            for (String key : bundle.keySet()) {
+                Log.e(TAG, key + " : " + (bundle.get(key) != null ? bundle.get(key) : "NULL"));
+            }
+        }
 
         //start
         if (!Settings.canDrawOverlays(this)) {
