@@ -68,7 +68,7 @@ import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-pati
 import appsFlyer from 'react-native-appsflyer';
 import { AppsFlyerEventName, AppsFlyerEvents } from './AppsFlyerEvents';
 import { FirebaseEventName, FirebaseEvents } from './firebaseEvents';
-import firebase from '@react-native-firebase/app';
+import analytics from '@react-native-firebase/analytics';
 import _ from 'lodash';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import {
@@ -1440,7 +1440,7 @@ export const postFirebaseEvent = (eventName: FirebaseEventName, attributes: Obje
   try {
     const logContent = `[Firebase Event] ${eventName}`;
     console.log(logContent);
-    firebase.analytics().logEvent(eventName, attributes);
+    analytics().logEvent(eventName, attributes);
   } catch (error) {
     console.log('********* Unable to post FirebaseEvent *********', { error });
   }

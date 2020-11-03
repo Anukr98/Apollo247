@@ -5,7 +5,7 @@
 'use strict';
 
 import { Dimensions, Platform } from 'react-native';
-import firebase from '@react-native-firebase/app';
+import analytics from '@react-native-firebase/analytics';
 import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppConfig, AppEnv } from '@aph/mobile-patients/src/strings/AppConfig';
 import { Client } from 'bugsnag-react-native';
@@ -36,24 +36,13 @@ export const CommonLogEvent = async (stringName: string, parameterName: string) 
   if (isReleaseOn) {
     try {
       const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
-      firebase.analytics().logEvent(stringName, {
+      analytics().logEvent(stringName, {
         Button_Action: parameterName,
         phoneNumber: storedPhoneNumber as string,
       });
     } catch (error) {
       CommonBugFender('DeviceHelper_CommonLogEvent_try', error);
       aphConsole.log('CommonLogEvent error', error);
-    }
-  }
-};
-
-export const CommonScreenLog = (stringName: string, parameterName: string) => {
-  if (isReleaseOn) {
-    try {
-      firebase.analytics().setCurrentScreen(stringName, parameterName);
-    } catch (error) {
-      CommonBugFender('DeviceHelper_CommonScreenLog_try', error);
-      aphConsole.log('CommonScreenLog error', error);
     }
   }
 };

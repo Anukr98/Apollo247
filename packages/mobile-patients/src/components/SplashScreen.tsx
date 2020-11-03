@@ -403,7 +403,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   const getData = (routeName: String, id?: String, timeout?: boolean, isCall?: boolean) => {
     async function fetchData() {
-      firebase.analytics().setAnalyticsCollectionEnabled(true);
       // const onboarding = await AsyncStorage.getItem('onboarding');
       const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
       const signUp = await AsyncStorage.getItem('signUp');
