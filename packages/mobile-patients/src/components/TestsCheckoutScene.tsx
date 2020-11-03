@@ -448,6 +448,7 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       Amount: grandTotal,
       'Service Area': 'Diagnostic',
     };
+
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED, eventAttributes);
     saveHomeCollectionBookingOrder(bookingOrderInfo)
       .then(({ data }) => {
