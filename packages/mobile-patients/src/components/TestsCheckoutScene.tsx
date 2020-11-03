@@ -365,7 +365,6 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     console.log('orderInfo\n', { diagnosticOrderInput: orderInfo });
     saveOrder(orderInfo)
       .then(({ data }) => {
-        console.log('SaveDiagnosticOrder API\n', { data });
         const { orderId, displayId, errorCode, errorMessage } =
           g(data, 'SaveDiagnosticOrder')! || {};
         if (errorCode || errorMessage) {
@@ -450,12 +449,8 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       'Service Area': 'Diagnostic',
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED, eventAttributes);
-
-    console.log(JSON.stringify({ DiagnosticBookHomeCollectionInput: bookingOrderInfo }));
-    console.log('orderInfo\n', { DiagnosticBookHomeCollectionInput: bookingOrderInfo });
     saveHomeCollectionBookingOrder(bookingOrderInfo)
       .then(({ data }) => {
-        console.log('DiagnosticBookHomeCollection API\n', { data });
         const { orderId, displayId, errorCode, errorMessage } =
           g(data, 'DiagnosticBookHomeCollection')! || {};
         if (errorCode || errorMessage) {
