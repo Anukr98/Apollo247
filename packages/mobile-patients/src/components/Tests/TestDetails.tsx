@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingTop: 10,
     backgroundColor: theme.colors.WHITE,
-    // height: height === 812 || height === 896 ? 1r20 : 110,
+    // height: height === 812 || height === 896 ? 120 : 110,
     height: 'auto',
     paddingHorizontal: 20,
     shadowColor: theme.colors.WHITE,
