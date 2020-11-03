@@ -208,7 +208,8 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
                 {data?.additionalNotes ||
                   data?.healthCheckSummary ||
                   data?.dischargeSummary ||
-                  data?.notes}
+                  data?.notes ||
+                  data?.diagnosisNotes}
               </Text>
             </View>
           </View>
@@ -396,11 +397,13 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
     return (
       <View>
         {data?.labTestResults?.length > 0 ? renderDetailsFinding() : null}
-        {(!!data.additionalNotes ||
-          !!data.healthCheckSummary ||
-          !!data.dischargeSummary ||
-          !!data.notes) &&
-          renderTopLineReport()}
+        {data?.additionalNotes ||
+        data?.healthCheckSummary ||
+        data?.dischargeSummary ||
+        data?.notes ||
+        data?.diagnosisNotes
+          ? renderTopLineReport()
+          : null}
         {!!data.fileUrl ? renderImage() : null}
         {!!data.fileUrl || labResults ? renderDownloadButton() : null}
       </View>
@@ -430,11 +433,39 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       }
       return siteDisplayName || labTestSource || healthCheckSource;
     };
+    const renderDateView = () => {
+      return hospitalization && data.dateOfHospitalization !== 0 ? (
+        <Text style={{ ...viewStyles.text('R', 14, '#0087BA', 1, 18), marginTop: 3 }}>
+          {'From '}
+          <Text style={{ ...viewStyles.text('M', 14, '#02475B', 1, 18) }}>{`${moment(
+            data?.dateOfHospitalization
+          ).format('DD MMM, YYYY')}`}</Text>
+          {' to '}
+          <Text style={{ ...viewStyles.text('M', 14, '#02475B', 1, 18) }}>{`${moment(
+            data?.date
+          ).format('DD MMM, YYYY')}`}</Text>
+        </Text>
+      ) : (
+        <Text style={{ ...viewStyles.text('R', 14, '#0087BA', 1, 18), marginTop: 3 }}>
+          {'On '}
+          <Text style={{ ...viewStyles.text('M', 14, '#02475B', 1, 18) }}>{`${moment(
+            data?.date
+          ).format('DD MMM, YYYY')}`}</Text>
+        </Text>
+      );
+    };
     return (
       <View style={styles.cardViewStyle}>
-        {data?.labTestName || data?.prescriptionName || data?.healthCheckName ? (
+        {data?.labTestName ||
+        data?.prescriptionName ||
+        data?.healthCheckName ||
+        (hospitalization && (data?.doctorName || data?.doctorName === '')) ? (
           <Text style={{ ...viewStyles.text('SB', 23, '#02475B', 1, 30) }}>
-            {data?.labTestName || data?.healthCheckName || data?.prescriptionName}{' '}
+            {data?.labTestName ||
+              data?.healthCheckName ||
+              data?.prescriptionName ||
+              'Dr. ' + data?.doctorName ||
+              'Dr. '}{' '}
             <RoundGreenTickIcon style={styles.greenTickIconStyle} />
           </Text>
         ) : null}
@@ -448,7 +479,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
             {'Dr. ' + data?.prescribedBy || 'Dr. -'}
           </Text>
         ) : null}
-        {data?.doctorName ? (
+        {hospitalization ? null : data?.doctorName ? (
           <Text style={{ ...viewStyles.text('M', 16, '#0087BA', 1, 21), marginTop: 6 }}>
             {'Dr. ' + data?.doctorName || 'Dr. -'}
           </Text>
@@ -468,12 +499,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         )}
         <View style={styles.separatorLineStyle} />
         <Text style={{ ...viewStyles.text('M', 16, '#02475B', 1, 21) }}>{date_text}</Text>
-        <Text style={{ ...viewStyles.text('R', 14, '#0087BA', 1, 18), marginTop: 3 }}>
-          {'On '}
-          <Text style={{ ...viewStyles.text('M', 14, '#02475B', 1, 18) }}>{`${moment(
-            data?.date
-          ).format('DD MMM, YYYY')}`}</Text>
-        </Text>
+        {renderDateView()}
       </View>
     );
   };
