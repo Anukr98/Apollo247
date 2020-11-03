@@ -14,7 +14,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 import { Platform, Alert } from 'react-native';
-import firebase, { RNFirebase } from 'react-native-firebase';
+import firebase, { RNFirebase } from '@react-native-firebase/app';
 import {
   getNetStatus,
   postWebEngageEvent,

@@ -6,7 +6,6 @@ import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 import { NavigationScreenProp } from 'react-navigation';
 import { NavigationRoute } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import firebase from 'react-native-firebase';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({

@@ -32,7 +32,7 @@ import moment from 'moment';
 import React, { useEffect } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { StyleSheet, Platform, View, TouchableOpacity, Text } from 'react-native';
-import firebase from 'react-native-firebase';
+import firebase from '@react-native-firebase/app';
 import { Notification, NotificationOpen } from 'react-native-firebase/notifications';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import { DoctorType } from '../graphql/types/globalTypes';

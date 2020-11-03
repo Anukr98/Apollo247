@@ -5,7 +5,7 @@
 'use strict';
 
 import { Dimensions, Platform } from 'react-native';
-import firebase from 'react-native-firebase';
+import firebase from '@react-native-firebase/app';
 import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppConfig, AppEnv } from '@aph/mobile-patients/src/strings/AppConfig';
 import { Client } from 'bugsnag-react-native';

@@ -96,7 +96,7 @@ import {
   StyleProp,
   ViewStyle,
 } from 'react-native';
-import firebase from 'react-native-firebase';
+import firebase from '@react-native-firebase/app';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEvents';

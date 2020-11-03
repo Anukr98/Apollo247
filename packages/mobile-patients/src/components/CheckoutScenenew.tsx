@@ -56,7 +56,7 @@ import {
   Platform,
   ScrollView,
 } from 'react-native';
-import firebase from 'react-native-firebase';
+import firebase from '@react-native-firebase/app';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import {
   SaveMedicineOrderPaymentMq,

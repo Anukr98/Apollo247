@@ -42,7 +42,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import firebase from 'react-native-firebase';
+import firebase from '@react-native-firebase/app';
 import { ScrollView } from 'react-native-gesture-handler';
 import HyperLink from 'react-native-hyperlink';
 import WebEngage from 'react-native-webengage';

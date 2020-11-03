@@ -48,7 +48,7 @@ import {
   TextInput,
 } from 'react-native';
 // import { WebView } from 'react-native-webview';
-import firebase from 'react-native-firebase';
+import firebase from '@react-native-firebase/app';
 import Hyperlink from 'react-native-hyperlink';
 // import SmsListener from 'react-native-android-sms-listener';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';

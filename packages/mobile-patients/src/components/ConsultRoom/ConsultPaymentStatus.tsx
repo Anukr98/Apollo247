@@ -48,7 +48,7 @@ import {
 } from '../../graphql/types/getAppointmentData';
 import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
 import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents';
-import firebase from 'react-native-firebase';
+import firebase from '@react-native-firebase/app';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { NotificationPermissionAlert } from '@aph/mobile-patients/src/components/ui/NotificationPermissionAlert';
 import { Snackbar } from 'react-native-paper';

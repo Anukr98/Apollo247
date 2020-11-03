@@ -68,7 +68,7 @@ import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-pati
 import appsFlyer from 'react-native-appsflyer';
 import { AppsFlyerEventName, AppsFlyerEvents } from './AppsFlyerEvents';
 import { FirebaseEventName, FirebaseEvents } from './firebaseEvents';
-import firebase from 'react-native-firebase';
+import firebase from '@react-native-firebase/app';
 import _ from 'lodash';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import {

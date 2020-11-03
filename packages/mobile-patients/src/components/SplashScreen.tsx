@@ -13,7 +13,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import { SplashLogo } from '@aph/mobile-patients/src/components/SplashLogo';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import firebase from 'react-native-firebase';
+import firebase from '@react-native-firebase/app';
 import SplashScreenView from 'react-native-splash-screen';
 import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAuth } from '../hooks/authHooks';
