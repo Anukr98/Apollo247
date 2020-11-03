@@ -7,7 +7,7 @@ import {
   VideoPlayIcon,
   ApolloDoctorIcon,
   ApolloPartnerIcon,
-  InfoRed,
+  InfoYellow,
   CircleLogo,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
   },
   infoIcon: {
-    marginLeft: 9,
+    marginLeft: 7,
     width: 10,
     height: 10,
   },
@@ -240,9 +240,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const calculatefee = (rowData: any, consultTypeBoth: boolean, consultTypeOnline: boolean) => {
     return (
       <View style={{ flexDirection: 'row', marginTop: 5 }}>
-        <Text style={{ ...theme.viewStyles.text('M', 10, theme.colors.SKY_BLUE), paddingTop: 3 }}>
-          {consultTypeBoth && `Starts at  `}
-        </Text>
         <Text style={{ ...theme.viewStyles.text('M', 15, theme.colors.SKY_BLUE) }}>
           {string.common.Rs}
           {'  '}
@@ -294,20 +291,20 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           <View style={{ flex: 1 }}>
             <Text
               style={{
-                ...theme.viewStyles.text('M', 10, theme.colors.DEEP_RED),
+                ...theme.viewStyles.text('M', 10, theme.colors.APP_YELLOW),
                 flexWrap: 'wrap',
               }}
             >
-              {string.careDoctors.upgradeToCareToPay}
+              {string.careDoctors.circleMemberPays}
             </Text>
             <View style={styles.rowContainer}>
-              <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.DEEP_RED) }}>
+              <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.APP_YELLOW) }}>
                 {string.common.Rs}
                 {physicalConsultMRPPrice === onlineConsultMRPPrice
                   ? onlineConsultSlashedPrice
                   : minSlashedPrice}
               </Text>
-              <InfoRed style={styles.infoIcon} />
+              <InfoYellow style={styles.infoIcon} />
             </View>
           </View>
         </View>
@@ -518,7 +515,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               <Text style={styles.doctorNameStyles}>{rowData.displayName}</Text>
               {renderSpecialities()}
               {isCareDoctor ? renderCareDoctorsFee() : calculatefee(rowData, isBoth, isOnline)}
-              {!isCareDoctor && minDiscountedPrice > -1 && isCareSubscribed && (
+              {isCareDoctor && minDiscountedPrice > -1 && isCareSubscribed && (
                 <Text style={theme.viewStyles.text('M', 10, theme.colors.APP_YELLOW)}>
                   {string.careDoctors.circleSavings.replace('{amount}', `${minDiscountedPrice}`)}
                 </Text>
