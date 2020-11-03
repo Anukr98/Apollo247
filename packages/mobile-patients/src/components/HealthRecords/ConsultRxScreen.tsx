@@ -656,23 +656,20 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         (item?.data?.doctorInfo?.lastName || '')
       : '';
     const dateText = item?.data?.prescriptionName
-      ? getPresctionDate(item.data?.date)
-      : getPresctionDate(item.data?.appointmentDateTime);
+      ? getPresctionDate(item?.data?.date)
+      : getPresctionDate(item?.data?.appointmentDateTime);
     const soureName = item?.data?.prescriptionName
       ? 'Clinical Document'
       : g(item?.data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name');
     const selfUpload = item?.data?.prescriptionName ? true : false;
     const caseSheetDetails =
-      item.data?.caseSheet &&
-      item.data?.caseSheet?.length > 0 &&
-      item.data?.caseSheet?.find(
-        (caseSheet: any) => caseSheet && caseSheet.doctorType !== 'JUNIOR'
-      );
+      item?.data?.caseSheet?.length > 0 &&
+      item?.data?.caseSheet?.find((caseSheet: any) => caseSheet?.doctorType !== 'JUNIOR');
     const caseSheetFollowUp =
       caseSheetDetails && caseSheetDetails.followUp ? caseSheetDetails.followUp : false;
     return (
       <HealthRecordCard
-        item={item.data}
+        item={item?.data}
         index={index}
         onHealthCardPress={(selectedItem) => onHealthCardItemPress(selectedItem)}
         prescriptionName={prescriptionName}

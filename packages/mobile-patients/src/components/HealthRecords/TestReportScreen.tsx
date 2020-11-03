@@ -128,23 +128,23 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
             : 'labTestSource';
         filteredData.forEach((dataObject: any) => {
           const dataObjectArray: any[] = [];
-          if (dataObject.data?.labTestName && filterApplied === FILTER_TYPE.PARAMETER_NAME) {
-            const labParametersLength = dataObject.data?.labTestResults.length;
+          if (dataObject?.data?.labTestName && filterApplied === FILTER_TYPE.PARAMETER_NAME) {
+            const labParametersLength = dataObject?.data?.labTestResults?.length;
             for (let i = 0; i < labParametersLength; i++) {
               const dateExistsAt = finalData.findIndex((data: { key: string; data: any[] }) => {
-                const foundObjectIndex = dataObject.data?.labTestResults.findIndex(
-                  (parameterObject: any) => parameterObject.parameterName === data.key
+                const foundObjectIndex = dataObject?.data?.labTestResults?.findIndex(
+                  (parameterObject: any) => parameterObject?.parameterName === data.key
                 );
                 return (
                   foundObjectIndex > -1 &&
-                  data.key === dataObject.data?.labTestResults[foundObjectIndex].parameterName
+                  data.key === dataObject?.data?.labTestResults[foundObjectIndex]?.parameterName
                 );
               });
-              const keyValue = dataObject.data?.labTestResults[i].parameterName;
+              const keyValue = dataObject?.data?.labTestResults[i]?.parameterName;
               if (keyValue) {
                 const modifiedData = {
                   ...dataObject,
-                  paramObject: dataObject.data?.labTestResults[i],
+                  paramObject: dataObject?.data?.labTestResults[i],
                 };
                 if (dateExistsAt === -1 || finalData.length === 0) {
                   dataObjectArray.push(modifiedData);
@@ -162,9 +162,9 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
             }
           } else {
             const dateExistsAt = finalData.findIndex((data: { key: string; data: any[] }) => {
-              return data.key === getObjectParameter(dataObject.data, filterAppliedString);
+              return data.key === getObjectParameter(dataObject?.data, filterAppliedString);
             });
-            const keyValue = getObjectParameter(dataObject.data, filterAppliedString);
+            const keyValue = getObjectParameter(dataObject?.data, filterAppliedString);
             if (keyValue) {
               if (dateExistsAt === -1 || finalData.length === 0) {
                 dataObjectArray.push(dataObject);
@@ -237,13 +237,13 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
         minute: 59,
       });
       const past7thDay = startDate.subtract(7, 'day');
-      const past7daysData = moment(dataObject.data?.date).diff(past7thDay, 'hours') > 0;
+      const past7daysData = moment(dataObject?.data?.date).diff(past7thDay, 'hours') > 0;
       if (past7daysData) {
         const dateExistsAt = foundDataIndex('Past 7 days', finalData);
         finalData = sortByDays('Past 7 days', finalData, dateExistsAt, dataObject);
       } else {
         const past30thDay = past7thDay.subtract(30, 'day');
-        const past30daysData = moment(dataObject.data?.date).diff(past30thDay, 'hours') > 0;
+        const past30daysData = moment(dataObject?.data?.date).diff(past30thDay, 'hours') > 0;
         if (past30daysData) {
           const dateExistsAt = foundDataIndex('Past 30 days', finalData);
           finalData = sortByDays('Past 30 days', finalData, dateExistsAt, dataObject);
@@ -394,8 +394,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
     const prescriptionName =
       filterApplied &&
       filterApplied === FILTER_TYPE.PACKAGE &&
-      item?.data?.packageName &&
-      item?.data?.packageName.length > 0 &&
+      item?.data?.packageName?.length > 0 &&
       item?.data?.packageName !== '-'
         ? item?.data?.packageName
         : filterApplied === FILTER_TYPE.PARAMETER_NAME && item?.data?.labTestName
@@ -411,7 +410,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
         : item?.data?.labTestRefferedBy
         ? 'with Dr. ' + item?.data?.labTestRefferedBy
         : '';
-    const dateText = getPresctionDate(item.data?.date);
+    const dateText = getPresctionDate(item?.data?.date);
     const soureName = getSourceName(
       item?.data?.labTestSource || '-',
       item?.data?.siteDisplayName || '-',
@@ -428,7 +427,6 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
         dateText={dateText}
         selfUpload={selfUpload}
         sourceName={soureName || ''}
-        filterApplied={filterApplied}
       />
     );
   };
