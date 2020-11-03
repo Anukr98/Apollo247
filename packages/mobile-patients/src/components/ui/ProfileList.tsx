@@ -32,6 +32,22 @@ const styles = StyleSheet.create({
     color: '#01475b',
     ...theme.fonts.IBMPlexSansMedium(18),
   },
+  lastContainerStyle: {
+    height: 38,
+    borderBottomWidth: 0,
+    alignItems: 'flex-end',
+    justifyContent: 'flex-end',
+  },
+  lastTextStyle: {
+    alignSelf: 'flex-start',
+    paddingBottom: 5,
+    textTransform: 'uppercase',
+    ...theme.viewStyles.text('M', 12, '#fc9916'),
+  },
+  selectedTextStyle: {
+    ...theme.viewStyles.text('M', 13, '#00b38e'),
+    alignSelf: 'flex-start',
+  },
 });
 
 export interface ProfileListProps {
@@ -53,6 +69,7 @@ export interface ProfileListProps {
   onProfileChange?: (profile: GetCurrentPatients_getCurrentPatients_patients) => void;
   screenName?: string;
   editProfileCallback?: (patient: any) => void;
+  showProfilePic?: boolean;
 }
 
 export const ProfileList: React.FC<ProfileListProps> = (props) => {
@@ -64,6 +81,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
     selectedProfile,
     setDisplayAddProfile,
     listContainerStyle,
+    showProfilePic,
     // unsetloaderDisplay,
   } = props;
   const addString = '+ADD MEMBER';
@@ -107,6 +125,8 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
           value: titleCase(i.firstName || i.lastName || ''),
           isPrimary: i.isUhidPrimary,
           uhid: i.uhid,
+          photoUrl: i.photoUrl,
+          relation: titleCase(i.relation || ''),
         };
       })) ||
     [];
@@ -244,6 +264,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
     const usersList = moveSelectedToTop();
     return (
       <MaterialMenu
+        showProfilePic={showProfilePic}
         showMenu={props.showList}
         menuHidden={() => {
           props.menuHidden && props.menuHidden();
@@ -259,25 +280,16 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
           },
           listContainerStyle,
         ]}
-        itemContainer={{ height: 44.8, marginHorizontal: 12, width: width / 2 }}
+        itemContainer={{
+          height: showProfilePic ? 70.8 : 44.8,
+          marginHorizontal: 12,
+          width: width / 2,
+        }}
         itemTextStyle={{ ...theme.viewStyles.text('M', 13, '#01475b'), paddingHorizontal: 0 }}
-        selectedTextStyle={{
-          ...theme.viewStyles.text('M', 13, '#00b38e'),
-          alignSelf: 'flex-start',
-        }}
-        lastTextStyle={{
-          alignSelf: 'flex-start',
-          paddingBottom: 5,
-          textTransform: 'uppercase',
-          ...theme.viewStyles.text('M', 12, '#fc9916'),
-        }}
-        bottomPadding={{ paddingBottom: 20 }}
-        lastContainerStyle={{
-          height: 38,
-          borderBottomWidth: 0,
-          alignItems: 'flex-end',
-          justifyContent: 'flex-end',
-        }}
+        selectedTextStyle={styles.selectedTextStyle}
+        lastTextStyle={!showProfilePic && styles.lastTextStyle}
+        bottomPadding={{ paddingBottom: props.showProfilePic ? 0 : 20 }}
+        lastContainerStyle={showProfilePic ? { borderBottomWidth: 0 } : styles.lastContainerStyle}
         onPress={(selectedUser) => {
           if (selectedUser.key === addString) {
             const pfl = profileArray!.find((i) => selectedUser.key === i.id);

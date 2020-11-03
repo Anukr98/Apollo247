@@ -1,4 +1,9 @@
-import { BackArrow, BackArrowWhite, Remove } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  BackArrow,
+  BackArrowWhite,
+  Remove,
+  HomeIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import React from 'react';
 import {
   StyleProp,
@@ -62,7 +67,7 @@ export interface HeaderProps {
   title?: string;
   titleStyle?: StyleProp<TextStyle>;
   titleComponent?: React.ReactNode;
-  leftIcon?: 'backArrow' | 'close' | 'backArrowWhite' | 'logo';
+  leftIcon?: 'backArrow' | 'close' | 'backArrowWhite' | 'logo' | 'homeIcon';
   rightIcon?: string;
   rightComponent?: React.ReactNode;
   container?: StyleProp<ViewStyle>;
@@ -106,6 +111,7 @@ export const Header: React.FC<HeaderProps> = (props) => {
             {leftIcon === 'backArrow' && <BackArrow />}
             {leftIcon === 'close' && <Remove />}
             {leftIcon === 'backArrowWhite' && <BackArrowWhite />}
+            {leftIcon === 'homeIcon' && <HomeIcon />}
             {leftIcon === 'logo' && (
               <ApolloLogo style={{ width: 57, height: 37 }} resizeMode="contain" />
             )}

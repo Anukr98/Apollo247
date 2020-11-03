@@ -2,7 +2,14 @@ import { CollapseCard } from '@aph/mobile-patients/src/components/CollapseCard';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { DatePicker } from '@aph/mobile-patients/src/components/ui/DatePicker';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { CrossYellow, DropdownGreen, FileBig } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  CrossYellow,
+  DropdownGreen,
+  FileBig,
+  Remove,
+  PhrEditIcon,
+  PhrAddPrescriptionRecordIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -16,14 +23,18 @@ import {
   ADD_PATIENT_HEALTH_CHECK_RECORD,
   ADD_PATIENT_HOSPITALIZATION_RECORD,
   ADD_PATIENT_LAB_TEST_RECORD,
+  ADD_PRESCRIPTION_RECORD,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { addPatientMedicalRecord } from '@aph/mobile-patients/src/graphql/types/addPatientMedicalRecord';
 import { addPatientLabTestRecord } from '@aph/mobile-patients/src/graphql/types/addPatientLabTestRecord';
 import { addPatientHealthCheckRecord } from '@aph/mobile-patients/src/graphql/types/addPatientHealthCheckRecord';
 import { addPatientHospitalizationRecord } from '@aph/mobile-patients/src/graphql/types/addPatientHospitalizationRecord';
+import { addPatientPrescriptionRecord } from '@aph/mobile-patients/src/graphql/types/addPatientPrescriptionRecord';
 import {
   LabTestParameters,
   mediaPrescriptionSource,
+  AddPrescriptionRecordInput,
+  MedicalRecordType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   g,
@@ -34,7 +45,7 @@ import {
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import Moment from 'moment';
+import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -47,6 +58,8 @@ import {
   Text,
   TouchableOpacity,
   View,
+  ScrollView,
+  TextInput,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
@@ -58,6 +71,8 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { Overlay, ListItem } from 'react-native-elements';
+import _ from 'lodash';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -103,6 +118,84 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     ...theme.viewStyles.yellowTextStyle,
   },
+  phrOverlayStyle: {
+    padding: 0,
+    margin: 0,
+    width: '100%',
+    height: '100%',
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
+    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+    overflow: 'hidden',
+    elevation: 0,
+  },
+  phrUploadOptionsViewStyle: {
+    backgroundColor: '#F7F8F5',
+    paddingHorizontal: 29,
+    borderRadius: 10,
+    paddingVertical: 34,
+  },
+  overlayViewStyle: {
+    flexGrow: 1,
+    backgroundColor: 'transparent',
+  },
+  overlaySafeAreaViewStyle: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
+  bottonButtonContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 0,
+    paddingTop: 24,
+    paddingBottom: 20,
+  },
+  bottomButtonStyle: {
+    flex: 1,
+  },
+  bottomWhiteButtonStyle: {
+    flex: 1,
+    backgroundColor: 'transparent',
+    borderColor: theme.colors.APP_YELLOW,
+    borderWidth: 1,
+  },
+  bottomWhiteButtonTextStyle: {
+    color: theme.colors.APP_YELLOW,
+  },
+  buttonSeperatorStyle: {
+    width: 16,
+  },
+  buttonViewStyle: {
+    width: '30%',
+    marginRight: 16,
+    backgroundColor: 'white',
+  },
+  reviewPhotoDetailsViewStyle: {
+    borderRadius: 10,
+    backgroundColor: theme.colors.WHITE,
+    justifyContent: 'center',
+    marginTop: 23,
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+  },
+  textInputStyle: {
+    ...theme.viewStyles.text('M', 16, '#0087BA', 1, 20.8),
+    paddingHorizontal: 14,
+    flex: 1,
+    paddingTop: 0,
+    paddingBottom: 0,
+    marginBottom: 30,
+  },
+  imageViewStyle: {
+    height: 72,
+    width: 72,
+    marginRight: 9,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    paddingHorizontal: 6,
+  },
+  imageStyle: { height: 72, width: 60 },
 });
 
 type RecordTypeType = {
@@ -150,15 +243,15 @@ export interface AddRecordProps extends NavigationScreenProps {}
 export const AddRecord: React.FC<AddRecordProps> = (props) => {
   var fin = '';
   const { width } = Dimensions.get('window');
-  const [showImages, setshowImages] = useState<boolean>(true);
   const [showRecordDetails, setshowRecordDetails] = useState<boolean>(true);
   const [showReportDetails, setshowReportDetails] = useState<boolean>(false);
   const [displayOrderPopup, setdisplayOrderPopup] = useState<boolean>(false);
+  const [displayReviewPhotoPopup, setDisplayReviewPhotoPopup] = useState<boolean>(false);
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [testName, settestName] = useState<string>('');
   const [docName, setDocName] = useState<string>('');
   const [locationName, setLocationName] = useState<string>('');
-  const [typeofRecord, settypeofRecord] = useState<MedicRecordType>();
+  const [typeofRecord, settypeofRecord] = useState<MedicRecordType>(MedicRecordType.PRESCRIPTION);
   const [dateOfTest, setdateOfTest] = useState<string>('');
   const [referringDoctor, setreferringDoctor] = useState<string>('');
   const [observations, setobservations] = useState<string>('');
@@ -172,7 +265,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const { showAphAlert } = useUIElements();
 
   const [Images, setImages] = useState<PickerImage>(props.navigation.state.params ? [] : []);
-
+  const [currentImage, setCurrentImage] = useState<PickerImage>(null);
+  const [openCamera, setOpenCamera] = useState<boolean>(false);
   const navigatedFrom = props.navigation.state.params!.navigatedFrom
     ? props.navigation.state.params!.navigatedFrom
     : '';
@@ -303,55 +397,78 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     return number || 0;
   };
 
+  const isValidPrescription = () => {
+    if (Images.length === 0) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Please add document',
+      });
+      return false;
+    } else if (_.isEmpty(dateOfTest)) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Enter Record date',
+      });
+      return false;
+    } else if (_.isEmpty(testName)) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Enter Record name',
+      });
+      return false;
+    } else if (_.isEmpty(docName)) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Enter Record prescribed by',
+      });
+      return false;
+    } else {
+      return true;
+    }
+  };
+
+  const getAddedImages = () => {
+    let imagesArray = [] as any;
+    Images?.forEach((item: any) => {
+      let imageObj = {} as any;
+      imageObj.fileName = item?.title + '.' + item?.fileType;
+      imageObj.mimeType = mimeType(item?.title + '.' + item?.fileType);
+      imageObj.content = item?.base64;
+      imagesArray.push(imageObj);
+    });
+    return imagesArray;
+  };
+
   const addMedicalRecord = () => {
-    const inputData =
-      Images.length > 0
-        ? {
-            patientId: currentPatient ? currentPatient.id : '',
-            testName: testName,
-            issuingDoctor: docName,
-            location: locationName,
-            testDate:
-              dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
-            recordType: typeofRecord,
-            sourceName: mediaPrescriptionSource.SELF,
-            documentURLs: '',
-            prismFileIds: '',
-            testResultFiles: {
-              fileName: Images[0].title + '.' + Images[0].fileType,
-              mimeType: mimeType(Images[0].title + '.' + Images[0].fileType),
-              content: Images[0].base64,
-            },
-          }
-        : {
-            patientId: currentPatient ? currentPatient.id : '',
-            testName: testName,
-            issuingDoctor: docName,
-            location: locationName,
-            testDate:
-              dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
-            recordType: typeofRecord,
-            sourceName: mediaPrescriptionSource.SELF,
-            documentURLs: '',
-            prismFileIds: '',
-          };
+    setshowSpinner(true);
+    const inputData: AddPrescriptionRecordInput = {
+      patientId: currentPatient?.id || '',
+      prescriptionName: testName,
+      issuingDoctor: docName,
+      location: locationName,
+      additionalNotes: additionalNotes,
+      dateOfPrescription:
+        dateOfTest !== '' ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+      recordType: MedicalRecordType.PRESCRIPTION,
+      prescriptionFiles: getAddedImages(),
+    };
     client
-      .mutate<addPatientMedicalRecord>({
-        mutation: ADD_MEDICAL_RECORD,
+      .mutate<addPatientPrescriptionRecord>({
+        mutation: ADD_PRESCRIPTION_RECORD,
         variables: {
-          AddMedicalRecordInput: inputData,
+          AddPrescriptionRecordInput: inputData,
         },
       })
       .then(({ data }) => {
         setshowSpinner(false);
-        const status = g(data, 'addPatientMedicalRecord', 'status');
+        const status = g(data, 'addPatientPrescriptionRecord', 'status');
         if (status) {
           postWebEngagePHR('Prescription', WebEngageEventName.PHR_ADD_PRESCRIPTIONS);
-          props.navigation.goBack();
+          props.navigation.pop(2);
         }
       })
       .catch((e) => {
-        CommonBugFender('AddRecord_ADD_MEDICAL_RECORD', e);
+        CommonBugFender('AddRecord_ADD_PRESCRIPTION_RECORD', e);
         setshowSpinner(false);
         console.log(JSON.stringify(e), 'eeeee');
         Alert.alert('Alert', 'Please fill all the details', [
@@ -367,7 +484,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             patientId: currentPatient ? currentPatient.id : '',
             labTestName: testName,
             labTestDate:
-              dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+              dateOfTest !== '' ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
             recordType: typeofRecord,
             referringDoctor: referringDoctor,
             observations: observations,
@@ -383,7 +500,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             patientId: currentPatient ? currentPatient.id : '',
             labTestName: testName,
             labTestDate:
-              dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+              dateOfTest !== '' ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
             recordType: typeofRecord,
             referringDoctor: referringDoctor,
             observations: observations,
@@ -422,7 +539,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             patientId: currentPatient ? currentPatient.id : '',
             healthCheckName: testName,
             healthCheckDate:
-              dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+              dateOfTest !== '' ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
             recordType: typeofRecord,
             healthCheckFiles: {
               fileName: Images[0].title + '.' + Images[0].fileType,
@@ -434,7 +551,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             patientId: currentPatient ? currentPatient.id : '',
             healthCheckName: testName,
             healthCheckDate:
-              dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+              dateOfTest !== '' ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
             recordType: typeofRecord,
           };
     client
@@ -469,7 +586,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             patientId: currentPatient ? currentPatient.id : '',
             doctorName: docName,
             dischargeDate:
-              dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+              dateOfTest !== '' ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
             recordType: typeofRecord,
             hospitalName: locationName,
             hospitalizationFiles: {
@@ -482,7 +599,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             patientId: currentPatient ? currentPatient.id : '',
             doctorName: docName,
             dischargeDate:
-              dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+              dateOfTest !== '' ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
             recordType: typeofRecord,
             hospitalName: locationName,
           };
@@ -515,7 +632,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     const valid = isValid();
     if (valid.isvalid && !valid.isValidParameter) {
       setshowSpinner(true);
-      if (typeofRecord === MedicRecordType.PRESCRIPTION) {
+      if (isValidPrescription() && typeofRecord === MedicRecordType.PRESCRIPTION) {
         addMedicalRecord();
       } else if (typeofRecord === MedicRecordType.TEST_REPORT) {
         addPatientLabTestRecords();
@@ -530,114 +647,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         description: valid.message,
       });
     }
-  };
-
-  const renderImagesRow = (data: PickerImage, i: number) => {
-    const base64Icon = 'data:image/png;base64,';
-    fin = base64Icon.concat(data.base64);
-    const fileType = data.fileType;
-
-    return (
-      <TouchableOpacity activeOpacity={1} key={i} onPress={() => {}}>
-        <View
-          style={{
-            ...theme.viewStyles.cardViewStyle,
-            shadowRadius: 4,
-            height: 56,
-            marginHorizontal: 20,
-            backgroundColor: theme.colors.WHITE,
-            flexDirection: 'row',
-            alignItems: 'center',
-            marginTop: i === 0 ? 16 : 4,
-            marginBottom: Images.length === i + 1 ? 16 : 4,
-          }}
-          key={i}
-        >
-          <View
-            style={{
-              paddingLeft: 8,
-              paddingRight: 16,
-              width: 54,
-            }}
-          >
-            {fileType === 'pdf' || fileType === 'application/pdf' ? (
-              <FileBig
-                style={{
-                  height: 45,
-                  width: 30,
-                }}
-              />
-            ) : (
-              <Image
-                style={{
-                  height: 40,
-                  width: 30,
-                }}
-                source={{ uri: fin }}
-              />
-            )}
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text>{data.title}</Text>
-          </View>
-          <TouchableOpacity
-            activeOpacity={1}
-            style={{
-              width: 40,
-              paddingHorizontal: 8,
-            }}
-            onPress={() => {
-              const imageCOPY = [...Images];
-              imageCOPY.splice(i, 1);
-
-              setImages(imageCOPY);
-              CommonLogEvent('ADD_RECORD', 'Set Images');
-            }}
-          >
-            <CrossYellow />
-          </TouchableOpacity>
-        </View>
-      </TouchableOpacity>
-    );
-  };
-
-  const renderUploadedImages = () => {
-    return (
-      <View>
-        <CollapseCard
-          heading="IMAGES UPLOADED"
-          collapse={showImages}
-          onPress={() => {
-            CommonLogEvent('ADD_RECORD', 'Show Images');
-            setshowImages(!showImages);
-          }}
-        >
-          <View style={[styles.cardViewStyle, { paddingHorizontal: 8 }]}>
-            <FlatList
-              bounces={false}
-              data={Images}
-              onEndReachedThreshold={0.5}
-              renderItem={({ item, index }) => renderImagesRow(item, index)}
-              keyExtractor={(_, index) => index.toString()}
-            />
-            {Images.length === 0 && (
-              <Text
-                style={[
-                  theme.viewStyles.yellowTextStyle,
-                  { textAlign: 'right', paddingBottom: 16 },
-                ]}
-                onPress={() => {
-                  CommonLogEvent('ADD_RECORD', 'Display order popup');
-                  setdisplayOrderPopup(true);
-                }}
-              >
-                ADD DOCUMENT
-              </Text>
-            )}
-          </View>
-        </CollapseCard>
-      </View>
-    );
   };
 
   const renderDateInpt = () => {
@@ -667,7 +676,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           isDateTimePickerVisible={isDateTimePickerVisible}
           handleDatePicked={(date) => {
             setIsDateTimePickerVisible(false);
-            const formatDate = Moment(date).format('DD/MM/YYYY');
+            const formatDate = moment(date).format('DD/MM/YYYY');
             setdateOfTest(formatDate);
             Keyboard.dismiss();
           }}
@@ -1025,6 +1034,240 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     );
   };
 
+  const renderImagesRow = (data: PickerImage, i: number) => {
+    const base64Icon = 'data:image/png;base64,';
+    fin = base64Icon.concat(data?.base64);
+    const fileType = data?.fileType;
+    return (
+      <View style={styles.imageViewStyle}>
+        {fileType === 'pdf' || fileType === 'application/pdf' ? (
+          <FileBig style={styles.imageStyle} />
+        ) : (
+          <Image style={styles.imageStyle} source={{ uri: fin }} />
+        )}
+      </View>
+    );
+  };
+
+  const renderUploadedImages = () => {
+    const renderAddMorePagesCard = () => {
+      return (
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => setdisplayOrderPopup(true)}
+          style={{ height: 72, width: 72, backgroundColor: '#FFFFFF' }}
+        >
+          <Text
+            style={{
+              ...theme.viewStyles.text('R', 24, '#02475B', 1, 31.2),
+              textAlign: 'center',
+              paddingTop: 5,
+            }}
+          >
+            {'+'}
+          </Text>
+          <Text
+            style={{
+              ...theme.viewStyles.text('R', 10, '#02475B', 1, 13),
+              textAlign: 'center',
+              flex: 1,
+            }}
+          >
+            {'ADD MORE PAGES'}
+          </Text>
+        </TouchableOpacity>
+      );
+    };
+    return (
+      <View style={{ marginTop: 6, marginHorizontal: 21, marginBottom: 100, flexDirection: 'row' }}>
+        <FlatList
+          bounces={false}
+          data={Images}
+          collapsable
+          onEndReachedThreshold={0.5}
+          horizontal
+          renderItem={({ item, index }) => renderImagesRow(item, index)}
+          keyExtractor={(_, index) => index.toString()}
+          ListFooterComponent={() => (Images?.length > 3 ? null : renderAddMorePagesCard())}
+        />
+        {Images?.length > 3 ? renderAddMorePagesCard() : null}
+      </View>
+    );
+  };
+
+  const renderListItem = (
+    title: string,
+    rightIcon: boolean = true,
+    mandatoryField: boolean = false
+  ) => {
+    return (
+      <ListItem
+        title={
+          <Text style={{ ...theme.viewStyles.text('R', 14, '#02475B', 1, 18.2) }}>
+            {title}
+            {mandatoryField ? <Text style={{ color: '#E50000' }}>{' *'}</Text> : null}
+          </Text>
+        }
+        pad={14}
+        containerStyle={{ paddingTop: 0, paddingBottom: 0, paddingRight: 20 }}
+        rightElement={rightIcon ? <PhrEditIcon style={{ width: 16, height: 16 }} /> : undefined}
+      />
+    );
+  };
+
+  const renderRecordDetailsPres = () => {
+    return (
+      <View style={{ ...theme.viewStyles.cardViewStyle, marginHorizontal: 7, marginBottom: 30 }}>
+        <View
+          style={{
+            marginTop: 32,
+            borderBottomColor: 'rgba(2,71,91,0.2)',
+            borderBottomWidth: 0.5,
+          }}
+        >
+          {renderListItem('Record for')}
+          <Text style={styles.textInputStyle} numberOfLines={1}>
+            {_.capitalize(currentPatient?.firstName) || ''}
+          </Text>
+        </View>
+        <View
+          style={{
+            marginTop: 32,
+            borderBottomColor: 'rgba(2,71,91,0.2)',
+            borderBottomWidth: 0.5,
+          }}
+        >
+          {renderListItem('Type of Record', false)}
+          <View style={{ marginTop: 14, marginHorizontal: 14 }}>
+            <PhrAddPrescriptionRecordIcon style={{ width: 35, height: 35, marginLeft: 28 }} />
+            <Text
+              style={{
+                ...theme.viewStyles.text('R', 14, '#0087BA', 1, 18.2),
+                marginTop: 8,
+                marginLeft: 10,
+                marginBottom: 30,
+              }}
+              numberOfLines={1}
+            >
+              {'Prescription'}
+            </Text>
+          </View>
+        </View>
+        <View
+          style={{
+            marginTop: 32,
+            borderBottomColor: 'rgba(2,71,91,0.2)',
+            borderBottomWidth: 0.5,
+          }}
+        >
+          {renderListItem('Record date', true, true)}
+          <View style={{ paddingTop: 0, paddingBottom: 10 }}>
+            <Text
+              style={[styles.textInputStyle, dateOfTest !== '' ? null : styles.placeholderStyle]}
+              onPress={() => {
+                Keyboard.dismiss();
+                setIsDateTimePickerVisible(true);
+                CommonLogEvent('ADD_RECORD', 'Date picker visible');
+              }}
+            >
+              {dateOfTest !== '' ? dateOfTest : 'dd/mm/yyyy'}
+            </Text>
+          </View>
+          <DatePicker
+            isDateTimePickerVisible={isDateTimePickerVisible}
+            handleDatePicked={(date) => {
+              setIsDateTimePickerVisible(false);
+              const formatDate = moment(date).format('DD/MM/YYYY');
+              setdateOfTest(formatDate);
+              Keyboard.dismiss();
+            }}
+            hideDateTimePicker={() => {
+              setIsDateTimePickerVisible(false);
+              Keyboard.dismiss();
+            }}
+          />
+        </View>
+        <View
+          style={{
+            marginTop: 32,
+            borderBottomColor: 'rgba(2,71,91,0.2)',
+            borderBottomWidth: 0.5,
+          }}
+        >
+          {renderListItem('Record name', true, true)}
+          <TextInput
+            placeholder={'Enter Record name'}
+            style={styles.textInputStyle}
+            selectionColor={'#0087BA'}
+            numberOfLines={1}
+            placeholderTextColor={theme.colors.placeholderTextColor}
+            underlineColorAndroid={'transparent'}
+            onChangeText={(testName) => {
+              if (isValidText(testName)) {
+                settestName(testName);
+              }
+            }}
+          />
+        </View>
+        <View
+          style={{
+            marginTop: 32,
+            borderBottomColor: 'rgba(2,71,91,0.2)',
+            borderBottomWidth: 0.5,
+          }}
+        >
+          {renderListItem('Record prescribed by', true, true)}
+          <TextInput
+            placeholder={'Enter Record prescribed by'}
+            style={styles.textInputStyle}
+            selectionColor={'#0087BA'}
+            numberOfLines={1}
+            placeholderTextColor={theme.colors.placeholderTextColor}
+            underlineColorAndroid={'transparent'}
+            onChangeText={(docName) => {
+              if (isValidText(docName)) {
+                setDocName(docName);
+              }
+            }}
+          />
+        </View>
+        <View
+          style={{
+            marginTop: 32,
+          }}
+        >
+          {renderListItem('Additional Notes', false)}
+          <TextInput
+            placeholder={'Enter Additional Notes'}
+            style={[
+              styles.textInputStyle,
+              {
+                height: 110,
+                borderColor: '#AFC3C9',
+                borderWidth: 1,
+                marginLeft: 14,
+                paddingLeft: 5,
+                marginRight: 20,
+                marginTop: 11,
+              },
+            ]}
+            multiline
+            selectionColor={'#0087BA'}
+            numberOfLines={1}
+            placeholderTextColor={theme.colors.placeholderTextColor}
+            underlineColorAndroid={'transparent'}
+            onChangeText={(additionalNotes) => {
+              if (isValidText(additionalNotes)) {
+                setadditionalNotes(additionalNotes);
+              }
+            }}
+          />
+        </View>
+        {renderBottomButton()}
+      </View>
+    );
+  };
+
   const renderData = () => {
     return (
       <View
@@ -1033,7 +1276,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         }}
       >
         {renderUploadedImages()}
-        {renderRecordDetails()}
+        {renderRecordDetailsPres()}
+        {/* {renderRecordDetails()} */}
         {typeofRecord === MedicRecordType.TEST_REPORT ? renderTestReportDetails() : null}
       </View>
     );
@@ -1041,14 +1285,73 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
 
   const renderBottomButton = () => {
     return (
-      <StickyBottomComponent defaultBG>
-        <Button
-          title="SAVE RECORD"
-          style={{ flex: 1, marginHorizontal: 60 }}
-          onPress={onSavePress}
-        />
-      </StickyBottomComponent>
+      <Button
+        title="UPLOAD DATA"
+        style={{ width: '70%', alignSelf: 'center', marginBottom: 20 }}
+        onPress={onSavePress}
+      />
     );
+  };
+
+  const renderReviewPhotoDetails = () => {
+    const base64Icon = 'data:image/png;base64,';
+    fin = base64Icon.concat(currentImage?.base64 || '');
+    return (
+      <ScrollView bounces={false} style={{ flex: 1 }}>
+        <View style={{ marginTop: 28, paddingHorizontal: 16, marginBottom: 30 }}>
+          <Text
+            style={{
+              ...theme.viewStyles.text('R', 12, '#02475B', 1, 15.6),
+              textAlign: 'center',
+            }}
+          >
+            {'Ensure your document is clearly visible'}
+          </Text>
+          <View style={styles.reviewPhotoDetailsViewStyle}>
+            <Image
+              style={{
+                height: 350,
+                width: '100%',
+              }}
+              resizeMode={'contain'}
+              source={{ uri: fin }}
+            />
+          </View>
+          <View style={styles.bottonButtonContainer}>
+            <Button
+              onPress={() => {
+                setDisplayReviewPhotoPopup(false);
+                setdisplayOrderPopup(false);
+              }}
+              title={'SAVE'}
+              style={styles.bottomWhiteButtonStyle}
+              titleTextStyle={styles.bottomWhiteButtonTextStyle}
+            />
+            <View style={styles.buttonSeperatorStyle} />
+            <View style={styles.bottomButtonStyle}>
+              <Button
+                onPress={() => {
+                  setOpenCamera(true);
+                  setDisplayReviewPhotoPopup(false);
+                  setdisplayOrderPopup(true);
+                }}
+                title={'CLICK MORE PHOTO'}
+                style={styles.bottomButtonStyle}
+              />
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+    );
+  };
+
+  const onPressCloseReview = () => {
+    const imageCOPY = [...Images];
+    const index = imageCOPY.findIndex((item) => item.title === currentImage?.title);
+    imageCOPY.splice(index, 1);
+    setImages(imageCOPY);
+    setDisplayReviewPhotoPopup(false);
+    setdisplayOrderPopup(false);
   };
 
   return (
@@ -1063,19 +1366,49 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             ...theme.viewStyles.cardViewStyle,
             borderRadius: 0,
           }}
-          title="ADD A RECORD"
+          title="ADD DATA"
           leftIcon="backArrow"
           onPressLeftIcon={() => props.navigation.goBack()}
         />
         <KeyboardAwareScrollView bounces={false}>
           {renderData()}
-          <View style={{ height: 80 }} />
+          <View style={{ height: 60 }} />
         </KeyboardAwareScrollView>
       </SafeAreaView>
-      {renderBottomButton()}
+      {displayReviewPhotoPopup && currentImage && (
+        <Overlay
+          onRequestClose={() => setDisplayReviewPhotoPopup(false)}
+          isVisible={displayReviewPhotoPopup}
+          containerStyle={{ marginBottom: 0 }}
+          fullScreen
+          overlayStyle={styles.phrOverlayStyle}
+        >
+          <View style={styles.overlayViewStyle}>
+            <SafeAreaView style={styles.overlaySafeAreaViewStyle}>
+              <Header
+                container={{
+                  ...theme.viewStyles.cardViewStyle,
+                  borderRadius: 0,
+                }}
+                title="REVIEW YOUR PHOTO"
+                leftIcon="backArrow"
+                onPressLeftIcon={onPressCloseReview}
+                rightComponent={
+                  <TouchableOpacity activeOpacity={1} onPress={onPressCloseReview}>
+                    <Remove />
+                  </TouchableOpacity>
+                }
+              />
+              {renderReviewPhotoDetails()}
+            </SafeAreaView>
+          </View>
+        </Overlay>
+      )}
       {displayOrderPopup && (
         <UploadPrescriprionPopup
           isVisible={displayOrderPopup}
+          openCamera={openCamera}
+          phrUpload={true}
           disabledOption="NONE"
           //type=""
           heading={'Upload File'}
@@ -1090,11 +1423,16 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             gallery: 'CHOOSE\nFROM GALLERY',
           }}
           onClickClose={() => setdisplayOrderPopup(false)}
-          onResponse={(selectedType: any, response: any) => {
+          onResponse={(selectedType: any, response: any, type) => {
             setdisplayOrderPopup(false);
             if (selectedType == 'CAMERA_AND_GALLERY') {
+              console.log('response', response, type);
               if (response.length == 0) return;
-              setImages(response);
+              if (type === 'Camera') {
+                setDisplayReviewPhotoPopup(true);
+                setCurrentImage(response[0]);
+              }
+              setImages([...Images, ...response]);
               setdisplayOrderPopup(false);
             }
           }}
