@@ -8,17 +8,14 @@ import {
   ApolloDoctorIcon,
   ApolloPartnerIcon,
   InfoRed,
+  CircleLogo,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   CommonBugFender,
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { SAVE_SEARCH, GET_DOCTOR_DETAILS_BY_ID } from '@aph/mobile-patients/src/graphql/profiles';
-import {
-  getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor,
-  getDoctorDetailsById,
-  getDoctorDetailsById_getDoctorDetailsById,
-} from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
+import { SAVE_SEARCH } from '@aph/mobile-patients/src/graphql/profiles';
+import { getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import {
   getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors,
   getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability,
@@ -27,7 +24,6 @@ import {
   ConsultMode,
   DoctorType,
   SEARCH_TYPE,
-  PLAN_STATUS,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { saveSearch } from '@aph/mobile-patients/src/graphql/types/saveSearch';
 import {
@@ -52,11 +48,11 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
+  ImageBackground,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors } from '../../graphql/types/SearchDoctorAndSpecialtyByName';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
-import { CareLogo } from '@aph/mobile-patients/src/components/ui/CareLogo';
 import { calculateCareDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 const styles = StyleSheet.create({
@@ -79,13 +75,20 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   imageView: {
-    marginHorizontal: 16,
-    marginTop: 40,
     width: 80,
     height: 80,
     borderRadius: 40,
     overflow: 'hidden',
-    marginBottom: 12,
+    alignSelf: 'center',
+  },
+  drImageBackground: {
+    height: 95,
+    width: 95,
+    justifyContent: 'center',
+  },
+  drImageMargins: {
+    marginHorizontal: 12,
+    marginTop: 40,
   },
   doctorNameStyles: {
     paddingTop: 32,
@@ -116,6 +119,8 @@ const styles = StyleSheet.create({
   careLogo: {
     alignSelf: 'center',
     marginBottom: 10,
+    width: 40,
+    height: 21,
   },
   rowContainer: {
     flexDirection: 'row',
@@ -134,7 +139,7 @@ const styles = StyleSheet.create({
     textDecorationStyle: 'solid',
   },
   careDiscountedPrice: {
-    ...theme.viewStyles.text('M', 12, theme.colors.DEEP_RED),
+    ...theme.viewStyles.text('M', 12, theme.colors.APP_YELLOW),
     marginLeft: 6,
   },
   seperatorLine: {
@@ -148,6 +153,7 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
   },
+  circleStyle: {},
 });
 
 export interface DoctorCardProps extends NavigationScreenProps {
@@ -252,34 +258,18 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     if (isCareSubscribed) {
       return (
         <View style={{ marginTop: 5 }}>
-          {physicalConsultMRPPrice === onlineConsultMRPPrice ? (
-            <View style={styles.rowContainer}>
-              <Text style={styles.carePrice}>
-                {string.common.Rs}
-                {onlineConsultMRPPrice}
-              </Text>
-              <Text style={styles.careDiscountedPrice}>
-                {string.common.Rs}
-                {onlineConsultSlashedPrice}
-              </Text>
-            </View>
-          ) : (
-            <View style={styles.rowContainer}>
-              <Text
-                style={{ ...theme.viewStyles.text('M', 10, theme.colors.SKY_BLUE), paddingTop: 3 }}
-              >
-                {physicalConsultMRPPrice && onlineConsultMRPPrice && `Starts at  `}
-              </Text>
-              <Text style={styles.carePrice}>
-                {string.common.Rs}
-                {minMrp}
-              </Text>
-              <Text style={styles.careDiscountedPrice}>
-                {string.common.Rs}
-                {minSlashedPrice}
-              </Text>
-            </View>
-          )}
+          <View style={styles.rowContainer}>
+            <Text style={styles.carePrice}>
+              {string.common.Rs}
+              {physicalConsultMRPPrice === onlineConsultMRPPrice ? onlineConsultMRPPrice : minMrp}
+            </Text>
+            <Text style={styles.careDiscountedPrice}>
+              {string.common.Rs}
+              {physicalConsultMRPPrice === onlineConsultMRPPrice
+                ? onlineConsultSlashedPrice
+                : minSlashedPrice}
+            </Text>
+          </View>
         </View>
       );
     }
@@ -326,7 +316,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   };
 
   const renderCareLogo = () => {
-    return <CareLogo style={styles.careLogo} />;
+    return <CircleLogo style={styles.careLogo} />;
   };
 
   function getTimeDiff(nextSlot: any) {
@@ -347,6 +337,30 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           {rowData?.experience} YR
           {Number(rowData?.experience) != 1 ? 'S Exp.' : ' Exp.'}
         </Text>
+      </View>
+    );
+  };
+
+  const renderDoctorProfile = () => {
+    return (
+      <View>
+        {!!g(rowData, 'thumbnailUrl') ? (
+          <Image
+            style={{
+              height: 80,
+              borderRadius: 40,
+              width: 80,
+              alignSelf: 'center',
+              marginLeft: isCareDoctor ? 2.5 : 0,
+            }}
+            source={{
+              uri: rowData.thumbnailUrl!,
+            }}
+            resizeMode={'contain'}
+          />
+        ) : (
+          <DoctorPlaceholderImage />
+        )}
       </View>
     );
   };
@@ -437,23 +451,24 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               )}
             </View>
             <View>
-              <View style={styles.imageView}>
-                {!!g(rowData, 'thumbnailUrl') ? (
-                  <Image
-                    style={{
-                      height: 80,
-                      borderRadius: 40,
-                      width: 80,
-                    }}
-                    source={{
-                      uri: rowData.thumbnailUrl!,
-                    }}
-                    resizeMode={'contain'}
-                  />
-                ) : (
-                  <DoctorPlaceholderImage />
-                )}
-              </View>
+              {isCareDoctor ? (
+                <ImageBackground
+                  source={require('../ui/icons/doctor_ring.png')}
+                  style={[
+                    styles.drImageBackground,
+                    styles.drImageMargins,
+                    { marginBottom: isCareDoctor ? 0 : 12 },
+                  ]}
+                  resizeMode="contain"
+                >
+                  {renderDoctorProfile()}
+                </ImageBackground>
+              ) : (
+                <View style={[styles.drImageMargins, { marginBottom: isCareDoctor ? 0 : 12 }]}>
+                  {renderDoctorProfile()}
+                </View>
+              )}
+
               {/* </TouchableOpacity> */}
               {isCareDoctor && renderCareLogo()}
               <View
@@ -470,7 +485,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                     <Text
                       style={{
                         ...theme.viewStyles.text('M', 7, theme.colors.light_label),
-                        marginBottom: 5,
+                        marginBottom: 3.5,
                       }}
                     >
                       Online
@@ -503,12 +518,15 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               <Text style={styles.doctorNameStyles}>{rowData.displayName}</Text>
               {renderSpecialities()}
               {isCareDoctor ? renderCareDoctorsFee() : calculatefee(rowData, isBoth, isOnline)}
-              {isCareDoctor && minDiscountedPrice > -1 && isCareSubscribed && (
-                <Text style={theme.viewStyles.text('M', 10, theme.colors.DEEP_RED)}>
-                  You save ₹ {minDiscountedPrice} on this consult
+              {!isCareDoctor && minDiscountedPrice > -1 && isCareSubscribed && (
+                <Text style={theme.viewStyles.text('M', 10, theme.colors.APP_YELLOW)}>
+                  {string.careDoctors.circleSavings.replace('{amount}', `${minDiscountedPrice}`)}
                 </Text>
               )}
-              <Text style={styles.educationTextStyles} numberOfLines={props.numberOfLines}>
+              <Text
+                style={[styles.educationTextStyles, { marginTop: isCareDoctor ? 20 : 0 }]}
+                numberOfLines={props.numberOfLines}
+              >
                 {rowData.qualification}
               </Text>
               {!!clinicAddress && (

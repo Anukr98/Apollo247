@@ -1202,3 +1202,15 @@ export const InfoRed: React.FC<IconProps> = (props) => (
 export const TickIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_tick.png')} />
 );
+
+export const CircleLogo: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/circleLogo.png')} />
+);
+
+export const OffToggle: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/off_toggle.png')} />
+);
+
+export const OnToggle: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/on_toggle.png')} />
+);

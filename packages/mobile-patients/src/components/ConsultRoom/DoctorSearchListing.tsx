@@ -20,6 +20,7 @@ import {
   SearchIcon,
   RetryButtonIcon,
   TickIcon,
+  CircleLogo,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
@@ -101,7 +102,6 @@ import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEven
 import { getValuesArray } from '@aph/mobile-patients/src/utils/commonUtils';
 import _ from 'lodash';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { CareLogo } from '@aph/mobile-patients/src/components/ui/CareLogo';
 import { Switch } from '@aph/mobile-patients/src/components/ui/Switch';
 
 const searchFilters = require('@aph/mobile-patients/src/strings/filters');
@@ -190,11 +190,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   careLogo: {
-    width: 32,
-    height: 15,
-  },
-  careLogoText: {
-    fontSize: 5,
+    width: 54,
+    height: 29,
   },
   careHeadingText: {
     ...theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE),
@@ -661,7 +658,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       pageNo: pageNo ? pageNo + 1 : 1,
       pageSize: pageSize,
       searchText: searchText,
-      isCare: careDoctorsSwitch,
+      // isCare: careDoctorsSwitch,
     };
     setBugFenderLog('DOCTOR_FILTER_INPUT', JSON.stringify(FilterInput));
     !pageNo && setshowSpinner(true);
@@ -1722,21 +1719,15 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const renderViewCareSwitch = () => {
     return (
       <View style={styles.rowContainer}>
-        <CareLogo style={styles.careLogo} textStyle={styles.careLogoText} />
-        <Text style={styles.careHeadingText}>{string.careDoctors.viewCareDoctors}</Text>
+        <Text style={styles.careHeadingText}>View</Text>
+        <CircleLogo style={styles.careLogo} resizeMode="contain" />
+        <Text style={[styles.careHeadingText, { marginLeft: -5 }]}>Doctors</Text>
         <Switch
-          value={careDoctorsSwitch}
-          containerStyle={{ marginLeft: 14 }}
           onChange={(value) => {
             setCareDoctorsSwitch(value);
             setFilterActionTaken(true);
           }}
-          pathColor={{ left: 'rgba(0, 179, 142, 0.3)', right: 'rgba(0, 179, 142, 0.3)' }}
-          dotColor={{ left: 'white', right: theme.colors.SEARCH_UNDERLINE_COLOR }}
-          dotBorderColor={{
-            left: theme.colors.SEARCH_UNDERLINE_COLOR,
-            right: theme.colors.SEARCH_UNDERLINE_COLOR,
-          }}
+          value={careDoctorsSwitch}
         />
       </View>
     );
