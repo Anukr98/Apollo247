@@ -285,9 +285,9 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
      */
 
     if (CentreCode == '' && CentreName == '') {
-      saveClinicOrder();
-    } else {
       saveHomeCollectionOrder();
+    } else {
+      saveClinicOrder();
     }
   };
 
@@ -432,7 +432,8 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
             itemId: typeof item.id == 'string' ? parseInt(item.id) : item.id,
             price: (item.specialPrice as number) || item.price,
             quantity: 1,
-          } as DiagnosticLineItem)
+            groupPlan: 'ALL',
+          } as any) //DiagnosticLineItem
       ),
       slotId: employeeSlotId?.toString() || '0',
       areaId: (areaSelected || {}).key!,
