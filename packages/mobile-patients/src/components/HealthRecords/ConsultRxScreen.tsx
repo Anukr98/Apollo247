@@ -159,12 +159,9 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
   } = useDiagnosticsCart();
 
   const doctorType = (item: any) => {
-    return (
-      item.caseSheet &&
-      item.caseSheet.find((obj: any) => {
-        return obj.doctorType !== 'JUNIOR';
-      })
-    );
+    return item?.caseSheet?.find((obj: any) => {
+      return obj.doctorType !== 'JUNIOR';
+    });
   };
 
   useEffect(() => {
@@ -462,9 +459,9 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
 
         const medPrescription = ((item.medicinePrescription ||
           []) as getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_medicinePrescription[]).filter(
-          (item) => item!.id
+          (item) => item?.id
         );
-        const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(item!.blobName!);
+        const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(item?.blobName!);
         const getDaysCount = (type: MEDICINE_CONSUMPTION_DURATION) => {
           return type == MEDICINE_CONSUMPTION_DURATION.MONTHS
             ? 30
@@ -480,12 +477,12 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
           id: item.id,
           date: moment(g(selectedItem, 'appointmentDateTime')).format('DD MMM YYYY'),
           doctorName: g(selectedItem, 'doctorInfo', 'displayName') || '',
-          forPatient: (currentPatient && currentPatient.firstName) || '',
-          medicines: [].map((item: any) => item!.name).join(', '),
+          forPatient: currentPatient?.firstName || '',
+          medicines: [].map((item: any) => item?.name).join(', '),
           uploadedUrl: docUrl,
         } as EPrescription;
 
-        Promise.all(medPrescription.map((item: any) => getMedicineDetailsApi(item!.id!)))
+        Promise.all(medPrescription.map((item: any) => getMedicineDetailsApi(item?.id!)))
           .then(async (result) => {
             const medicineAll = result.map(({ data: { productdp } }, index) => {
               const medicineDetails = (productdp && productdp[0]) || {};
@@ -494,30 +491,30 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
               }
 
               const _qty =
-                medPrescription[index]!.medicineUnit == MEDICINE_UNIT.CAPSULE ||
-                medPrescription[index]!.medicineUnit == MEDICINE_UNIT.TABLET
-                  ? ((medPrescription[index]!.medicineTimings || []).length || 1) *
-                    getDaysCount(medPrescription[index]!.medicineConsumptionDurationUnit!) *
-                    parseInt(medPrescription[index]!.medicineConsumptionDurationInDays || '1', 10)
+                medPrescription[index]?.medicineUnit == MEDICINE_UNIT.CAPSULE ||
+                medPrescription[index]?.medicineUnit == MEDICINE_UNIT.TABLET
+                  ? ((medPrescription[index]?.medicineTimings || []).length || 1) *
+                    getDaysCount(medPrescription[index]?.medicineConsumptionDurationUnit!) *
+                    parseInt(medPrescription[index]?.medicineConsumptionDurationInDays || '1', 10)
                   : 1;
               const qty = Math.ceil(_qty / parseInt(medicineDetails.mou || '1'));
 
               return {
-                id: medicineDetails!.sku!,
-                mou: medicineDetails.mou,
-                name: medicineDetails!.name,
-                price: medicineDetails!.price,
-                specialPrice: medicineDetails.special_price
-                  ? typeof medicineDetails.special_price == 'string'
-                    ? parseInt(medicineDetails.special_price)
-                    : medicineDetails.special_price
+                id: medicineDetails?.sku,
+                mou: medicineDetails?.mou,
+                name: medicineDetails?.name,
+                price: medicineDetails?.price,
+                specialPrice: medicineDetails?.special_price
+                  ? typeof medicineDetails?.special_price == 'string'
+                    ? parseInt(medicineDetails?.special_price)
+                    : medicineDetails?.special_price
                   : undefined,
                 quantity: qty,
-                prescriptionRequired: medicineDetails.is_prescription_required == '1',
-                isMedicine: (medicineDetails.type_id || '').toLowerCase() == 'pharma',
-                thumbnail: medicineDetails.thumbnail || medicineDetails.image,
-                isInStock: !!medicineDetails.is_in_stock,
-                productType: medicineDetails.type_id,
+                prescriptionRequired: medicineDetails?.is_prescription_required == '1',
+                isMedicine: (medicineDetails?.type_id || '').toLowerCase() == 'pharma',
+                thumbnail: medicineDetails?.thumbnail || medicineDetails?.image,
+                isInStock: !!medicineDetails?.is_in_stock,
+                productType: medicineDetails?.type_id,
               } as ShoppingCartItem;
             });
             const medicines = medicineAll.filter((item: any) => !!item);
@@ -525,10 +522,10 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
             addMultipleCartItems!(medicines as ShoppingCartItem[]);
 
             const totalItems = (item.medicinePrescription || []).length;
-            const outOfStockItems = medicines.filter((item) => !item!.isInStock).length;
+            const outOfStockItems = medicines.filter((item) => !item?.isInStock).length;
             const outOfStockMeds = medicines
-              .filter((item) => !item!.isInStock)
-              .map((item) => `${item!.name}`)
+              .filter((item) => !item?.isInStock)
+              .map((item) => `${item?.name}`)
               .join(', ');
 
             if (outOfStockItems > 0) {
@@ -541,14 +538,14 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
             const rxMedicinesCount =
               medicines.length == 0
                 ? 0
-                : medicines.filter((item: any) => item!.prescriptionRequired).length;
+                : medicines.filter((item: any) => item?.prescriptionRequired).length;
 
             if (rxMedicinesCount) {
               setEPrescriptions!([
-                ...ePrescriptions.filter((item) => !(item.id == presToAdd.id)),
+                ...ePrescriptions.filter((item) => item?.id != presToAdd.id),
                 {
                   ...presToAdd,
-                  medicines: medicines.map((item: any) => item!.name).join(', '),
+                  medicines: medicines.map((item: any) => item?.name).join(', '),
                 },
               ]);
             }
@@ -586,7 +583,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
                   {
                     ...presToAdd,
                     medicines: (tests as DiagnosticsCartItem[])
-                      .map((item) => item!.name)
+                      .map((item) => item?.name)
                       .join(', '),
                   },
                 ]);

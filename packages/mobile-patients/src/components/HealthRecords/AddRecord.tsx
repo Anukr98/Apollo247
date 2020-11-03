@@ -45,7 +45,7 @@ import {
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import Moment from 'moment';
+import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -187,6 +187,15 @@ const styles = StyleSheet.create({
     paddingBottom: 0,
     marginBottom: 30,
   },
+  imageViewStyle: {
+    height: 72,
+    width: 72,
+    marginRight: 9,
+    backgroundColor: '#FFFFFF',
+    justifyContent: 'center',
+    paddingHorizontal: 6,
+  },
+  imageStyle: { height: 72, width: 60 },
 });
 
 type RecordTypeType = {
@@ -433,13 +442,13 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const addMedicalRecord = () => {
     setshowSpinner(true);
     const inputData: AddPrescriptionRecordInput = {
-      patientId: currentPatient ? currentPatient.id : '',
+      patientId: currentPatient?.id || '',
       prescriptionName: testName,
       issuingDoctor: docName,
       location: locationName,
       additionalNotes: additionalNotes,
       dateOfPrescription:
-        dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+        dateOfTest !== '' ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
       recordType: MedicalRecordType.PRESCRIPTION,
       prescriptionFiles: getAddedImages(),
     };
@@ -475,7 +484,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             patientId: currentPatient ? currentPatient.id : '',
             labTestName: testName,
             labTestDate:
-              dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+              dateOfTest !== '' ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
             recordType: typeofRecord,
             referringDoctor: referringDoctor,
             observations: observations,
@@ -491,7 +500,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             patientId: currentPatient ? currentPatient.id : '',
             labTestName: testName,
             labTestDate:
-              dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+              dateOfTest !== '' ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
             recordType: typeofRecord,
             referringDoctor: referringDoctor,
             observations: observations,
@@ -530,7 +539,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             patientId: currentPatient ? currentPatient.id : '',
             healthCheckName: testName,
             healthCheckDate:
-              dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+              dateOfTest !== '' ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
             recordType: typeofRecord,
             healthCheckFiles: {
               fileName: Images[0].title + '.' + Images[0].fileType,
@@ -542,7 +551,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             patientId: currentPatient ? currentPatient.id : '',
             healthCheckName: testName,
             healthCheckDate:
-              dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+              dateOfTest !== '' ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
             recordType: typeofRecord,
           };
     client
@@ -577,7 +586,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             patientId: currentPatient ? currentPatient.id : '',
             doctorName: docName,
             dischargeDate:
-              dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+              dateOfTest !== '' ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
             recordType: typeofRecord,
             hospitalName: locationName,
             hospitalizationFiles: {
@@ -590,7 +599,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             patientId: currentPatient ? currentPatient.id : '',
             doctorName: docName,
             dischargeDate:
-              dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+              dateOfTest !== '' ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
             recordType: typeofRecord,
             hospitalName: locationName,
           };
@@ -667,7 +676,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           isDateTimePickerVisible={isDateTimePickerVisible}
           handleDatePicked={(date) => {
             setIsDateTimePickerVisible(false);
-            const formatDate = Moment(date).format('DD/MM/YYYY');
+            const formatDate = moment(date).format('DD/MM/YYYY');
             setdateOfTest(formatDate);
             Keyboard.dismiss();
           }}
@@ -1027,34 +1036,14 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
 
   const renderImagesRow = (data: PickerImage, i: number) => {
     const base64Icon = 'data:image/png;base64,';
-    fin = base64Icon.concat(data.base64);
-    const fileType = data.fileType;
+    fin = base64Icon.concat(data?.base64);
+    const fileType = data?.fileType;
     return (
-      <View
-        style={{
-          height: 72,
-          width: 72,
-          marginRight: 9,
-          backgroundColor: '#FFFFFF',
-          justifyContent: 'center',
-          paddingHorizontal: 6,
-        }}
-      >
+      <View style={styles.imageViewStyle}>
         {fileType === 'pdf' || fileType === 'application/pdf' ? (
-          <FileBig
-            style={{
-              height: 72,
-              width: 60,
-            }}
-          />
+          <FileBig style={styles.imageStyle} />
         ) : (
-          <Image
-            style={{
-              height: 72,
-              width: 60,
-            }}
-            source={{ uri: fin }}
-          />
+          <Image style={styles.imageStyle} source={{ uri: fin }} />
         )}
       </View>
     );
@@ -1188,7 +1177,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             isDateTimePickerVisible={isDateTimePickerVisible}
             handleDatePicked={(date) => {
               setIsDateTimePickerVisible(false);
-              const formatDate = Moment(date).format('DD/MM/YYYY');
+              const formatDate = moment(date).format('DD/MM/YYYY');
               setdateOfTest(formatDate);
               Keyboard.dismiss();
             }}
