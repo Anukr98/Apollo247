@@ -1,8 +1,9 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
-import { DEVICE_TYPE, Gender, Relation } from "./globalTypes";
+import { DEVICE_TYPE, Gender, Relation, BloodGroups } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetCurrentPatients
@@ -30,6 +31,7 @@ export interface GetCurrentPatients_getCurrentPatients_patients_patientMedicalHi
   pastMedicalHistory: string | null;
   pastSurgicalHistory: string | null;
   temperature: string | null;
+  bloodGroup: BloodGroups | null;
   weight: string | null;
 }
 

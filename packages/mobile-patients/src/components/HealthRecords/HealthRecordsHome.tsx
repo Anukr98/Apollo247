@@ -13,13 +13,17 @@ import {
   BillPhrIcon,
   InsurancePhrIcon,
   HospitalPhrIcon,
+  CrossPopup,
+  DropdownGreen,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   GET_MEDICAL_PRISM_RECORD,
   GET_PAST_CONSULTS_PRESCRIPTIONS,
+  UPDATE_PATIENT_MEDICAL_PARAMETERS,
 } from '@aph/mobile-patients/src/graphql/profiles';
+import { BloodGroups } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
   getPatientPastConsultsAndPrescriptions,
@@ -40,7 +44,18 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { SafeAreaView, StyleSheet, Text, View, ScrollView, TextInput, Image } from 'react-native';
+import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
+import {
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  Image,
+  TouchableOpacity,
+} from 'react-native';
+import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import {
   getPatientPrismMedicalRecords,
@@ -52,7 +67,8 @@ import {
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import _ from 'lodash';
-import { ListItem } from 'react-native-elements';
+import { ListItem, Overlay } from 'react-native-elements';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -177,7 +193,93 @@ const styles = StyleSheet.create({
     marginBottom: 50,
     marginHorizontal: 20,
   },
+  phrOverlayStyle: {
+    padding: 0,
+    margin: 0,
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'transparent',
+    justifyContent: 'center',
+  },
+  phrUploadOptionsViewStyle: {
+    backgroundColor: '#F7F8F5',
+    paddingHorizontal: 29,
+    borderRadius: 10,
+    paddingVertical: 34,
+  },
+  overlayViewStyle: {
+    width: '100%',
+    backgroundColor: 'transparent',
+    position: 'absolute',
+  },
+  overlaySafeAreaViewStyle: {
+    flex: 1,
+    backgroundColor: 'transparent',
+    marginHorizontal: 20,
+  },
+  updateTitleTextStyle: {
+    ...theme.viewStyles.text('R', 12, '#00B38E', 1, 16),
+    textAlign: 'center',
+  },
+  menuContainerStyle: {
+    alignItems: 'flex-end',
+    marginTop: 60,
+  },
+  itemTextStyle: {
+    ...theme.viewStyles.text('M', 16, '#01475b'),
+    paddingHorizontal: 0,
+  },
+  selectedTextStyle: {
+    ...theme.viewStyles.text('M', 16, '#00b38e'),
+    alignSelf: 'flex-start',
+  },
+  placeholderViewStyle: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderBottomWidth: 2,
+    paddingTop: 0,
+    paddingBottom: 3,
+    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
+  },
+  placeholderStyle: {
+    color: theme.colors.placeholderTextColor,
+  },
+  placeholderTextStyle: {
+    textAlign: 'center',
+    alignSelf: 'center',
+    ...theme.viewStyles.text('SB', 36, '#01475b', 1, 46.8),
+  },
+  overlayMainViewStyle: {
+    width: 160,
+    marginBottom: 37,
+    alignSelf: 'center',
+    alignItems: 'center',
+    marginTop: 26,
+    backgroundColor: '#FFFFFF',
+  },
+  closeIconViewStyle: {
+    alignSelf: 'flex-end',
+    backgroundColor: 'transparent',
+    marginBottom: 16,
+  },
 });
+
+type BloodGroupArray = {
+  key: BloodGroups;
+  title: string;
+};
+
+const bloodGroupArray: BloodGroupArray[] = [
+  { key: BloodGroups.APositive, title: 'A+' },
+  { key: BloodGroups.ANegative, title: 'A-' },
+  { key: BloodGroups.BPositive, title: 'B+' },
+  { key: BloodGroups.BNegative, title: 'B-' },
+  { key: BloodGroups.ABPositive, title: 'AB+' },
+  { key: BloodGroups.ABNegative, title: 'AB-' },
+  { key: BloodGroups.OPositive, title: 'O+' },
+  { key: BloodGroups.ONegative, title: 'O-' },
+];
 
 export interface HealthRecordsHomeProps extends NavigationScreenProps {}
 
@@ -217,6 +319,15 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
   const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
   const [callApi, setCallApi] = useState(true);
+  const [showUpdateProfilePopup, setShowUpdateProfilePopup] = useState(false);
+  const [currentUpdatePopupId, setCurrentUpdatePopupId] = useState(0);
+  const [weight, setWeight] = useState('');
+  const [height, setHeight] = useState('');
+  const [selectedBloodGroupArray, setSelectedBloodGroupArray] = useState<BloodGroupArray[]>(
+    bloodGroupArray
+  );
+  const [bloodGroup, setBloodGroup] = useState<BloodGroupArray>();
+  const [overlaySpinner, setOverlaySpinner] = useState(false);
 
   useEffect(() => {
     currentPatient && setProfile(currentPatient!);
@@ -303,6 +414,27 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       let date2 = new Date(data2.date || data2.bookingDate || data2.quoteDateTime);
       return date1 > date2 ? -1 : date1 < date2 ? 1 : data2.id - data1.id;
     });
+  };
+
+  const getBloodGroupValue = (bloodGroup: BloodGroups) => {
+    switch (bloodGroup) {
+      case BloodGroups.APositive:
+        return 'A+';
+      case BloodGroups.ANegative:
+        return 'A-';
+      case BloodGroups.BPositive:
+        return 'B+';
+      case BloodGroups.BNegative:
+        return 'B-';
+      case BloodGroups.ABPositive:
+        return 'AB+';
+      case BloodGroups.ABNegative:
+        return 'AB-';
+      case BloodGroups.OPositive:
+        return 'O+';
+      case BloodGroups.ONegative:
+        return 'O-';
+    }
   };
 
   const fetchTestData = useCallback(() => {
@@ -414,6 +546,38 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     postWebEngageEvent(webEngageEventName, eventAttributes);
   };
 
+  const updateMedicalParameters = (height: string, weight: string, bloodGroup: string) => {
+    if (currentPatient?.id) {
+      setOverlaySpinner(true);
+      client
+        .query({
+          query: UPDATE_PATIENT_MEDICAL_PARAMETERS,
+          variables: {
+            patientMedicalParameters: {
+              patientId: currentPatient?.id || '',
+              height: height,
+              weight: weight,
+              bloodGroup: bloodGroup,
+            },
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then(({ data }) => {
+          setBloodGroup(undefined);
+          setHeight('');
+          setWeight('');
+          setShowUpdateProfilePopup(false);
+          getPatientApiCall();
+        })
+        .catch((e) => {
+          console.log(e);
+        })
+        .finally(() => {
+          setOverlaySpinner(false);
+        });
+    }
+  };
+
   const renderProfileImage = () => {
     return currentPatient?.photoUrl?.match(
       /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG|jpeg|JPEG)/
@@ -472,7 +636,10 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
 
     const patientTextView = (text: string) => {
       return (
-        <Text numberOfLines={1} style={styles.userHeightTextStyle}>
+        <Text
+          numberOfLines={1}
+          style={[styles.userHeightTextStyle, text === '-' && { paddingRight: 50 }]}
+        >
           {text}
         </Text>
       );
@@ -511,12 +678,15 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
                 currentPatient?.patientMedicalHistory?.height !== 'Not Recorded' ? (
                   patientTextView(currentPatient?.patientMedicalHistory?.height || '')
                 ) : (
-                  <TextInput
-                    placeholder={'-'}
-                    style={styles.userHeightTextStyle}
-                    numberOfLines={1}
-                    underlineColorAndroid={'transparent'}
-                  />
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={() => {
+                      setCurrentUpdatePopupId(1);
+                      setShowUpdateProfilePopup(true);
+                    }}
+                  >
+                    {patientTextView('-')}
+                  </TouchableOpacity>
                 )}
               </View>
             </View>
@@ -536,11 +706,15 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
                       : ''
                   )
                 ) : (
-                  <TextInput
-                    placeholder={'-'}
-                    style={styles.userHeightTextStyle}
-                    underlineColorAndroid={'transparent'}
-                  />
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={() => {
+                      setCurrentUpdatePopupId(2);
+                      setShowUpdateProfilePopup(true);
+                    }}
+                  >
+                    {patientTextView('-')}
+                  </TouchableOpacity>
                 )}
               </View>
             </View>
@@ -551,14 +725,20 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               </View>
               <View style={styles.heightWeightViewStyle}>
                 <BloodIcon style={{ width: 14, height: 15.58 }} />
-                {false ? (
-                  <TextInput
-                    placeholder={'-'}
-                    style={styles.userHeightTextStyle}
-                    underlineColorAndroid={'transparent'}
-                  />
+                {currentPatient?.patientMedicalHistory?.bloodGroup ? (
+                  patientTextView(
+                    getBloodGroupValue(currentPatient?.patientMedicalHistory?.bloodGroup)
+                  )
                 ) : (
-                  patientTextView('B+')
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={() => {
+                      setCurrentUpdatePopupId(3);
+                      setShowUpdateProfilePopup(true);
+                    }}
+                  >
+                    {patientTextView('-')}
+                  </TouchableOpacity>
                 )}
               </View>
             </View>
@@ -688,9 +868,150 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     );
   };
 
+  const renderBloodGroup = () => {
+    const bloodGroupData = selectedBloodGroupArray.map((i) => {
+      return { key: i.key, value: i.title };
+    });
+
+    return (
+      <MaterialMenu
+        options={bloodGroupData}
+        selectedText={bloodGroup?.key?.toString() || ''}
+        menuContainerStyle={styles.menuContainerStyle}
+        itemContainer={{ height: 44.8, marginHorizontal: 12, width: 150 / 2 }}
+        itemTextStyle={styles.itemTextStyle}
+        selectedTextStyle={styles.selectedTextStyle}
+        lastContainerStyle={{ borderBottomWidth: 0 }}
+        bottomPadding={{ paddingBottom: 10 }}
+        onPress={(selected) => {
+          setBloodGroup({
+            key: selected.key as BloodGroups,
+            title: selected.value.toString(),
+          });
+        }}
+      >
+        <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+          <View style={styles.placeholderViewStyle}>
+            <Text
+              style={[
+                styles.placeholderTextStyle,
+                bloodGroup !== undefined ? null : styles.placeholderStyle,
+              ]}
+            >
+              {bloodGroup !== undefined ? bloodGroup.title : '-'}
+            </Text>
+            <View style={[{ flex: 1, alignItems: 'flex-end', marginLeft: 22 }]}>
+              <DropdownGreen />
+            </View>
+          </View>
+        </View>
+      </MaterialMenu>
+    );
+  };
+
+  const renderCloseIcon = () => {
+    return (
+      <View style={styles.closeIconViewStyle}>
+        <TouchableOpacity
+          onPress={() => {
+            setHeight('');
+            setWeight('');
+            setBloodGroup(undefined);
+            setShowUpdateProfilePopup(false);
+          }}
+        >
+          <CrossPopup style={{ marginRight: 1, width: 28, height: 28 }} />
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const renderUpdateProfileDetailsPopup = () => {
+    const title =
+      currentUpdatePopupId === 1
+        ? 'Update Height'
+        : currentUpdatePopupId === 2
+        ? 'Update Weight'
+        : 'Update Blood Group';
+    const placeholder_text =
+      currentUpdatePopupId === 1
+        ? 'Enter Height'
+        : currentUpdatePopupId === 2
+        ? 'Enter Weight'
+        : 'Update Blood Group';
+
+    const onPressUpdate = () => {
+      if (currentUpdatePopupId === 1) {
+        updateMedicalParameters(
+          height,
+          currentPatient?.patientMedicalHistory?.weight,
+          currentPatient?.patientMedicalHistory?.bloodGroup
+        );
+      } else if (currentUpdatePopupId === 2) {
+        updateMedicalParameters(
+          currentPatient?.patientMedicalHistory?.height,
+          weight,
+          currentPatient?.patientMedicalHistory?.bloodGroup
+        );
+      } else {
+        updateMedicalParameters(
+          currentPatient?.patientMedicalHistory?.height,
+          currentPatient?.patientMedicalHistory?.weight,
+          bloodGroup?.key?.toString() || ''
+        );
+      }
+    };
+
+    return (
+      <Overlay
+        onRequestClose={() => setShowUpdateProfilePopup(false)}
+        isVisible={showUpdateProfilePopup}
+        windowBackgroundColor={'rgba(0, 0, 0, 0.2)'}
+        containerStyle={{ marginBottom: 0 }}
+        fullScreen
+        overlayStyle={styles.phrOverlayStyle}
+      >
+        <>
+          {overlaySpinner ? <Spinner /> : null}
+          <View style={styles.overlayViewStyle}>
+            <View style={styles.overlaySafeAreaViewStyle}>
+              {renderCloseIcon()}
+              <View style={{ ...theme.viewStyles.cardViewStyle, paddingTop: 20 }}>
+                <Text style={styles.updateTitleTextStyle}>{title}</Text>
+                <View style={styles.overlayMainViewStyle}>
+                  {currentUpdatePopupId === 3 ? (
+                    renderBloodGroup()
+                  ) : (
+                    <TextInputComponent
+                      placeholder={placeholder_text}
+                      value={currentUpdatePopupId === 1 ? height : weight}
+                      onChangeText={(text) => {
+                        if (currentUpdatePopupId === 1) {
+                          setHeight(text);
+                        } else {
+                          setWeight(text);
+                        }
+                      }}
+                    />
+                  )}
+                  <Button
+                    title={'UPDATE'}
+                    onPress={onPressUpdate}
+                    style={{ width: '100%', marginTop: 40 }}
+                  />
+                </View>
+              </View>
+            </View>
+          </View>
+        </>
+      </Overlay>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
+        {renderUpdateProfileDetailsPopup()}
         {renderHeader()}
         <ScrollView style={{ flex: 1 }} bounces={false}>
           {renderProfileDetailsView()}

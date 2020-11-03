@@ -129,6 +129,10 @@ const styles = StyleSheet.create({
     bottom: 0,
     position: 'absolute',
   },
+  overlayViewStyle1: {
+    flexGrow: 1,
+    backgroundColor: 'transparent',
+  },
   overlaySafeAreaViewStyle: {
     flex: 1,
     backgroundColor: 'transparent',
@@ -716,7 +720,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
         elevation: 0,
       }}
     >
-      <View style={styles.overlayViewStyle}>
+      <View style={styles.overlayViewStyle1}>
         <SafeAreaView style={styles.overlaySafeAreaViewStyle}>
           {renderCloseIcon()}
           {renderHeader()}

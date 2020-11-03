@@ -51,6 +51,17 @@ export enum BOOKING_SOURCE {
   WEB = "WEB",
 }
 
+export enum BloodGroups {
+  ABNegative = "ABNegative",
+  ABPositive = "ABPositive",
+  ANegative = "ANegative",
+  APositive = "APositive",
+  BNegative = "BNegative",
+  BPositive = "BPositive",
+  ONegative = "ONegative",
+  OPositive = "OPositive",
+}
+
 export enum CODCity {
   CHENNAI = "CHENNAI",
 }
@@ -278,10 +289,16 @@ export enum MEDICINE_UNIT {
 }
 
 export enum MedicalRecordType {
+  ALLERGY = "ALLERGY",
   CONSULTATION = "CONSULTATION",
   EHR = "EHR",
   HEALTHCHECK = "HEALTHCHECK",
+  HEALTHRESTRICTION = "HEALTHRESTRICTION",
   HOSPITALIZATION = "HOSPITALIZATION",
+  MEDICALBILL = "MEDICALBILL",
+  MEDICALCONDITION = "MEDICALCONDITION",
+  MEDICALINSURANCE = "MEDICALINSURANCE",
+  MEDICATION = "MEDICATION",
   OPERATIVE_REPORT = "OPERATIVE_REPORT",
   PATHOLOGY_REPORT = "PATHOLOGY_REPORT",
   PHYSICAL_EXAMINATION = "PHYSICAL_EXAMINATION",
@@ -943,6 +960,13 @@ export interface PatientFeedbackInput {
   reason?: string | null;
   feedbackType?: FEEDBACKTYPE | null;
   transactionId: string;
+}
+
+export interface PatientMedicalParameters {
+  patientId: string;
+  height?: string | null;
+  weight?: string | null;
+  bloodGroup?: BloodGroups | null;
 }
 
 export interface PatientProfileInput {
