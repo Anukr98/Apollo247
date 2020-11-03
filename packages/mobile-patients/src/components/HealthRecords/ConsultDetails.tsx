@@ -333,10 +333,10 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           'Symptoms',
           <PhrSymptomIcon style={{ width: 19.98, height: 20, marginRight: 12 }} />
         )}
-        {caseSheetDetails!.symptoms && caseSheetDetails!.symptoms !== null ? (
+        {caseSheetDetails?.symptoms !== null ? (
           <View>
-            {caseSheetDetails!.symptoms!.map((item) => {
-              if (item && item.symptom)
+            {caseSheetDetails?.symptoms?.map((item) => {
+              if (item?.symptom)
                 return (
                   <View style={{ marginTop: 28 }}>
                     <Text
@@ -682,12 +682,11 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           'Medicines',
           <MedicineRxIcon style={{ width: 20, height: 20, marginRight: 12 }} />
         )}
-        {caseSheetDetails!.medicinePrescription &&
-        caseSheetDetails!.medicinePrescription.length !== 0 &&
-        caseSheetDetails!.doctorType !== 'JUNIOR' ? (
+        {caseSheetDetails?.medicinePrescription?.length !== 0 &&
+        caseSheetDetails?.doctorType !== 'JUNIOR' ? (
           <View style={{ marginTop: 28 }}>
             <View>
-              {caseSheetDetails!.medicinePrescription.map((item) => {
+              {caseSheetDetails?.medicinePrescription?.map((item) => {
                 if (item)
                   return (
                     <>
@@ -735,7 +734,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           'Diagnosis',
           <PhrDiagnosisIcon style={{ width: 20, height: 20, marginRight: 12 }} />
         )}
-        {caseSheetDetails?.diagnosis && caseSheetDetails?.diagnosis! !== null ? (
+        {caseSheetDetails?.diagnosis !== null ? (
           <View style={{ marginTop: 28 }}>
             {caseSheetDetails?.diagnosis?.map((item) => {
               return renderListItem(item?.name!, '');
@@ -797,13 +796,13 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           'Genaral Advice',
           <PhrGeneralAdviceIcon style={{ width: 20, height: 24.84, marginRight: 12 }} />
         )}
-        {caseSheetDetails!.otherInstructions && caseSheetDetails!.otherInstructions !== null ? (
+        {caseSheetDetails?.otherInstructions !== null ? (
           <View style={{ marginTop: 28 }}>
             {renderListItem(
               caseSheetDetails?.otherInstructions
                 ?.map((item, i) => {
-                  if (item && item.instruction !== '') {
-                    return `${item.instruction}`;
+                  if (item?.instruction !== '') {
+                    return `${item?.instruction}`;
                   }
                 })
                 .join('\n') || '',
@@ -824,7 +823,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           'Follow up',
           <PHRFollowUpDarkIcon style={{ width: 20, height: 17.5, marginRight: 12 }} />
         )}
-        {caseSheetDetails && caseSheetDetails?.doctorType !== 'JUNIOR' ? (
+        {caseSheetDetails?.doctorType !== 'JUNIOR' ? (
           <View>
             {caseSheetDetails?.followUpAfterInDays
               ? renderListItem(
@@ -848,14 +847,13 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           'Tests',
           <LabTestIcon style={{ width: 20, height: 21.13, marginRight: 12 }} />
         )}
-        {caseSheetDetails!.diagnosticPrescription &&
-        caseSheetDetails!.diagnosticPrescription !== null ? (
+        {caseSheetDetails?.diagnosticPrescription !== null ? (
           <View style={{ marginTop: 28 }}>
-            {caseSheetDetails!.diagnosticPrescription.map((item, index, array) => {
+            {caseSheetDetails?.diagnosticPrescription?.map((item, index, array) => {
               return (
                 <>
                   {renderListItem(item?.itemname!, '')}
-                  {item!.testInstruction ? (
+                  {item?.testInstruction ? (
                     <Text
                       style={{
                         ...theme.viewStyles.text('R', 13, '#0087BA', 1, 15),
