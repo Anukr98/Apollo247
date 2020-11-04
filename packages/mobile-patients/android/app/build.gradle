@@ -201,6 +201,7 @@ android {
 }
 
 dependencies {
+    implementation 'com.google.firebase:firebase-messaging:17.3.2'
     implementation project(':@react-native-community_progress-bar-android')
     implementation project(':@react-native-community_progress-view')
     implementation project(':@react-native-community_datetimepicker')
@@ -376,3 +377,4 @@ apply from: file("../../node_modules/@react-native-community/cli-platform-androi
 apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
 apply from: "../../node_modules/react-native-code-push/android/codepush.gradle"
+googleServices { disableVersionCheck = true }

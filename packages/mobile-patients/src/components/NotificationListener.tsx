@@ -32,13 +32,12 @@ import moment from 'moment';
 import React, { useEffect } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { StyleSheet, Platform, View, TouchableOpacity, Text } from 'react-native';
-import firebase from '@react-native-firebase/app';
+import messaging from '@react-native-firebase/messaging';
 import { Notification, NotificationOpen } from 'react-native-firebase/notifications';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import { DoctorType } from '../graphql/types/globalTypes';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import AsyncStorage from '@react-native-community/async-storage';
-import { RemoteMessage } from 'react-native-firebase/messaging';
 import KotlinBridge from '@aph/mobile-patients/src/KotlinBridge';
 import { NotificationIconWhite } from './ui/Icons';
 import { WebEngageEvents, WebEngageEventName } from '../helpers/webEngageEvents';
@@ -850,8 +849,9 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
     /*
      * Triggered when a particular notification has been received in foreground
      * */
-    const notificationListener = firebase.notifications().onNotification((notification) => {
+    const notificationListener = messaging().onMessage((notification) => {
       aphConsole.log('notificationListener');
+      /*
       const localNotification = new firebase.notifications.Notification()
         // .setSound('incallmanager_ringtone.mp3')
         .setNotificationId(notification.notificationId)
@@ -868,7 +868,8 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         .notifications()
         .displayNotification(localNotification)
         .catch((err) => console.error(err));
-      if (notification.data.type !== 'chat_room' && notification.data.type !== 'call_started') {
+      */
+      if (notification.data?.type !== 'chat_room' && notification.data?.type !== 'call_started') {
         processNotification(notification);
       }
     });
@@ -876,8 +877,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
     /*
      * If your app is closed, you can check if it was opened by a notification being clicked / tapped / opened as follows:
      * */
-    firebase
-      .notifications()
+    messaging()
       .getInitialNotification()
       .then(async (_notificationOpen: NotificationOpen) => {
         if (_notificationOpen) {
@@ -893,9 +893,11 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
             try {
               aphConsole.log('notificationOpen', _notificationOpen.notification.notificationId);
 
+              /*
               firebase
                 .notifications()
                 .removeDeliveredNotification(_notificationOpen.notification.notificationId);
+              */
             } catch (error) {
               CommonBugFender('NotificationListener_firebase_try', error);
               aphConsole.log('notificationOpen error', error);
@@ -907,6 +909,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         CommonBugFender('NotificationListener_firebase', e);
       });
 
+    /*
     try {
       const channel = new firebase.notifications.Android.Channel(
         'fcm_FirebaseNotifiction_default_channel',
@@ -935,22 +938,19 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       CommonBugFender('NotificationListener_channel_try', error);
       aphConsole.log('error in notification channel', error);
     }
+    */
 
     /*
      * If your app is in background, you can listen for when a notification is clicked / tapped / opened as follows:
      * */
-    const onNotificationListener = firebase
-      .notifications()
-      .onNotificationOpened((notificationOpen: NotificationOpen) => {
-        if (notificationOpen) {
-          aphConsole.log('notificationOpen');
+    const onNotificationListener = messaging().onNotificationOpenedApp((notificationOpen) => {
+      if (notificationOpen) {
+        const notification: Notification = notificationOpen.notification;
+        processNotification(notification);
+      }
+    });
 
-          const notification: Notification = notificationOpen.notification;
-          processNotification(notification);
-        }
-      });
-
-    const messageListener = firebase.messaging().onMessage((message: RemoteMessage) => {
+    const messageListener = messaging().onMessage((message) => {
       // Process your message as required
       if (Platform.OS === 'android') {
         try {
