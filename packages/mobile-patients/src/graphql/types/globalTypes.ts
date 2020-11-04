@@ -566,6 +566,27 @@ export interface AddMedicalRecordParametersInput {
   unit?: MedicalTestUnit | null;
 }
 
+export interface AddPatientMedicalBillRecordInput {
+  patientId: string;
+  recordType: MedicalRecordType;
+  hospitalName?: string | null;
+  bill_no?: string | null;
+  billDate: any;
+  notes?: string | null;
+  billFiles?: (MedicalBillFileProperties | null)[] | null;
+}
+
+export interface AddPatientMedicalInsuranceRecordInput {
+  patientId: string;
+  recordType: MedicalRecordType;
+  insuranceCompany: string;
+  policyNumber?: string | null;
+  startDate: any;
+  endDate?: any | null;
+  sumInsured?: string | null;
+  insuranceFiles?: (MedicalInsuranceFileProperties | null)[] | null;
+}
+
 export interface AddPrescriptionRecordInput {
   id?: string | null;
   patientId: string;
@@ -831,6 +852,18 @@ export interface MediaPrescriptionUploadRequest {
   notes?: string | null;
   prescriptionSource: mediaPrescriptionSource;
   prescriptionFiles?: (MediaPrescriptionFileProperties | null)[] | null;
+}
+
+export interface MedicalBillFileProperties {
+  fileName?: string | null;
+  mimeType?: string | null;
+  content?: string | null;
+}
+
+export interface MedicalInsuranceFileProperties {
+  fileName?: string | null;
+  mimeType?: string | null;
+  content?: string | null;
 }
 
 export interface MedicineCartOMSInput {

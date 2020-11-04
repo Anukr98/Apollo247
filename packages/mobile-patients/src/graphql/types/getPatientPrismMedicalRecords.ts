@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 // ====================================================
@@ -204,6 +205,69 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hos
   response: (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizationsNew_response | null)[] | null;
 }
 
+export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalBills_response_billFiles {
+  __typename: "MedicalBillFileParameters";
+  id: string | null;
+  fileName: string | null;
+  mimeType: string | null;
+  byteContent: string | null;
+  dateCreated: number | null;
+}
+
+export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalBills_response {
+  __typename: "MedicalBillsBaseResult";
+  id: string | null;
+  bill_no: string | null;
+  hospitalName: string | null;
+  billDate: number | null;
+  source: string | null;
+  notes: string | null;
+  fileUrl: string | null;
+  billDateTime: any | null;
+  billFiles: (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalBills_response_billFiles | null)[] | null;
+}
+
+export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalBills {
+  __typename: "MedicalBillsResult";
+  errorCode: number | null;
+  errorMsg: string | null;
+  errorType: string | null;
+  response: (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalBills_response | null)[] | null;
+}
+
+export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalInsurances_response_insuranceFiles {
+  __typename: "MedicalInsuranceFileParameters";
+  id: string | null;
+  fileName: string | null;
+  mimeType: string | null;
+  content: string | null;
+  byteContent: string | null;
+  dateCreated: number | null;
+}
+
+export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalInsurances_response {
+  __typename: "MedicalInsurancesBaseResult";
+  id: string | null;
+  insuranceCompany: string | null;
+  policyNumber: string | null;
+  startDate: number | null;
+  endDate: number | null;
+  startDateTime: any | null;
+  endDateTime: any | null;
+  source: string | null;
+  fileUrl: string | null;
+  sumInsured: string | null;
+  insuranceFiles: (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalInsurances_response_insuranceFiles | null)[] | null;
+}
+
+export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalInsurances {
+  __typename: "MedicalInsurancesResult";
+  errorCode: number | null;
+  errorMsg: string | null;
+  errorType: string | null;
+  response: (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalInsurances_response | null)[] | null;
+}
+
 export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords {
   __typename: "PrismMedicalRecordsResult";
   labTests: (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labTests | null)[] | null;
@@ -213,6 +277,8 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords {
   prescriptions: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions | null;
   healthChecksNew: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecksNew | null;
   hospitalizationsNew: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizationsNew | null;
+  medicalBills: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalBills | null;
+  medicalInsurances: getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalInsurances | null;
 }
 
 export interface getPatientPrismMedicalRecords {

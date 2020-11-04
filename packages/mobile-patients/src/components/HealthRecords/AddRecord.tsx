@@ -12,6 +12,8 @@ import {
   PhrAddTestRecordIcon,
   PhrAddHospitalizationRecordIcon,
   PhrAddTestDetailsIcon,
+  PhrAddBillRecordIcon,
+  PhrAddInsuranceRecordIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -25,11 +27,15 @@ import {
   ADD_PATIENT_HEALTH_CHECK_RECORD,
   ADD_PATIENT_HOSPITALIZATION_RECORD,
   ADD_PATIENT_LAB_TEST_RECORD,
+  ADD_PATIENT_MEDICAL_BILL_RECORD,
   ADD_PRESCRIPTION_RECORD,
+  ADD_PATIENT_MEDICAL_INSURANCE_RECORD,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { addPatientLabTestRecord } from '@aph/mobile-patients/src/graphql/types/addPatientLabTestRecord';
 import { addPatientHealthCheckRecord } from '@aph/mobile-patients/src/graphql/types/addPatientHealthCheckRecord';
 import { addPatientHospitalizationRecord } from '@aph/mobile-patients/src/graphql/types/addPatientHospitalizationRecord';
+import { addPatientMedicalBillRecord } from '@aph/mobile-patients/src/graphql/types/addPatientMedicalBillRecord';
+import { addPatientMedicalInsuranceRecord } from '@aph/mobile-patients/src/graphql/types/addPatientMedicalInsuranceRecord';
 import { addPatientPrescriptionRecord } from '@aph/mobile-patients/src/graphql/types/addPatientPrescriptionRecord';
 import {
   LabTestParameters,
@@ -37,6 +43,8 @@ import {
   MedicalRecordType,
   AddLabTestRecordInput,
   AddHospitalizationRecordInput,
+  AddPatientMedicalBillRecordInput,
+  AddPatientMedicalInsuranceRecordInput,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   g,
@@ -301,11 +309,13 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const [locationName, setLocationName] = useState<string>('');
   const [typeofRecord, settypeofRecord] = useState<MedicRecordType>(MedicRecordType.PRESCRIPTION);
   const [dateOfTest, setdateOfTest] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
   const [referringDoctor, setreferringDoctor] = useState<string>('');
   const [observations, setobservations] = useState<string>('');
   const [additionalNotes, setadditionalNotes] = useState<string>('');
   const [testRecordParameters, setTestRecordParameters] = useState<LabTestParameters[]>([]);
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState<boolean>(false);
+  const [endDateTimePickerVisible, setEndDateTimePickerVisible] = useState<boolean>(false);
 
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const { showAphAlert } = useUIElements();
@@ -475,6 +485,74 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     }
   };
 
+  const isValidBillRecord = () => {
+    setshowSpinner(false);
+    if (Images.length === 0) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Please add document',
+      });
+      return false;
+    } else if (!dateOfTest) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Enter Record date',
+      });
+      return false;
+    } else if (!docName) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Enter Record hospital name',
+      });
+      return false;
+    } else if (!testName) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Enter Record bill number',
+      });
+      return false;
+    } else {
+      return true;
+    }
+  };
+
+  const isValidInsuranceRecord = () => {
+    setshowSpinner(false);
+    if (Images.length === 0) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Please add document',
+      });
+      return false;
+    } else if (!dateOfTest) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Enter Record issue date',
+      });
+      return false;
+    } else if (!endDate) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Enter Record end date',
+      });
+      return false;
+    } else if (moment(endDate).isSameOrBefore(dateOfTest)) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Please Select correct end date',
+      });
+      return false;
+    } else if (!testName) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Enter Record name',
+      });
+      return false;
+    } else {
+      return true;
+    }
+  };
+
   const getAddedImages = () => {
     let imagesArray = [] as any;
     Images?.forEach((item: any) => {
@@ -496,7 +574,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       location: locationName,
       additionalNotes: additionalNotes,
       dateOfPrescription:
-        dateOfTest !== '' ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+        dateOfTest !== '' ? moment(dateOfTest, 'DD MMM, YYYY').format('YYYY-MM-DD') : '',
       recordType: MedicalRecordType.PRESCRIPTION,
       prescriptionFiles: getAddedImages(),
     };
@@ -530,7 +608,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     const inputData: AddLabTestRecordInput = {
       patientId: currentPatient?.id || '',
       labTestName: testName,
-      labTestDate: dateOfTest !== '' ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+      labTestDate: dateOfTest !== '' ? moment(dateOfTest, 'DD MMM, YYYY').format('YYYY-MM-DD') : '',
       recordType: recordType,
       referringDoctor: docName,
       observations: observations,
@@ -570,7 +648,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             patientId: currentPatient ? currentPatient.id : '',
             healthCheckName: testName,
             healthCheckDate:
-              dateOfTest !== '' ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+              dateOfTest !== '' ? moment(dateOfTest, 'DD MMM, YYYY').format('YYYY-MM-DD') : '',
             recordType: typeofRecord,
             healthCheckFiles: {
               fileName: Images[0].title + '.' + Images[0].fileType,
@@ -582,7 +660,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             patientId: currentPatient ? currentPatient.id : '',
             healthCheckName: testName,
             healthCheckDate:
-              dateOfTest !== '' ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+              dateOfTest !== '' ? moment(dateOfTest, 'DD MMM, YYYY').format('YYYY-MM-DD') : '',
             recordType: typeofRecord,
           };
     client
@@ -615,7 +693,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     const inputData: AddHospitalizationRecordInput = {
       patientId: currentPatient?.id || '',
       doctorName: docName,
-      dischargeDate: dateOfTest !== '' ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+      dischargeDate:
+        dateOfTest !== '' ? moment(dateOfTest, 'DD MMM, YYYY').format('YYYY-MM-DD') : '',
       recordType: recordType,
       hospitalName: testName,
       hospitalizationFiles: getAddedImages(),
@@ -647,6 +726,78 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       });
   };
 
+  const addPatientBillRecords = () => {
+    setshowSpinner(true);
+    const inputData: AddPatientMedicalBillRecordInput = {
+      patientId: currentPatient?.id || '',
+      hospitalName: docName,
+      billDate: dateOfTest !== '' ? moment(dateOfTest, 'DD MMM, YYYY').format('YYYY-MM-DD') : '',
+      recordType: recordType,
+      bill_no: testName,
+      billFiles: getAddedImages(),
+    };
+
+    client
+      .mutate<addPatientMedicalBillRecord>({
+        mutation: ADD_PATIENT_MEDICAL_BILL_RECORD,
+        variables: {
+          addPatientMedicalBillRecordInput: inputData,
+        },
+      })
+      .then(({ data }) => {
+        setshowSpinner(false);
+        const status = g(data, 'addPatientMedicalBillRecord', 'status');
+        if (status) {
+          props.navigation.pop(2);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('AddRecord_ADD_PATIENT_MEDICAL_BILL_RECORD', e);
+        setshowSpinner(false);
+        console.log(JSON.stringify(e), 'eeeee');
+        Alert.alert('Alert', 'Please fill all the details', [
+          { text: 'OK', onPress: () => console.log('OK Pressed') },
+        ]);
+      });
+  };
+
+  const addPatientInsuranceRecords = () => {
+    setshowSpinner(true);
+    const inputData: AddPatientMedicalInsuranceRecordInput = {
+      patientId: currentPatient?.id || '',
+      insuranceCompany: testName,
+      startDate: dateOfTest !== '' ? moment(dateOfTest, 'DD MMM, YYYY').format('YYYY-MM-DD') : '',
+      endDate: endDate !== '' ? moment(endDate, 'DD MMM, YYYY').format('YYYY-MM-DD') : '',
+      recordType: recordType,
+      policyNumber: docName,
+      sumInsured: locationName,
+      insuranceFiles: getAddedImages(),
+    };
+
+    client
+      .mutate<addPatientMedicalInsuranceRecord>({
+        mutation: ADD_PATIENT_MEDICAL_INSURANCE_RECORD,
+        variables: {
+          addPatientMedicalInsuranceRecordInput: inputData,
+        },
+      })
+      .then(({ data }) => {
+        setshowSpinner(false);
+        const status = g(data, 'addPatientMedicalInsuranceRecord', 'status');
+        if (status) {
+          props.navigation.pop(2);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('AddRecord_ADD_PATIENT_MEDICAL_INSURANCE_RECORD', e);
+        setshowSpinner(false);
+        console.log(JSON.stringify(e), 'eeeee');
+        Alert.alert('Alert', 'Please fill all the details', [
+          { text: 'OK', onPress: () => console.log('OK Pressed') },
+        ]);
+      });
+  };
+
   const onSavePress = () => {
     setshowSpinner(true);
     const valid = isValid();
@@ -670,6 +821,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       addMedicalRecord();
     } else if (recordType === MedicRecordType.HOSPITALIZATION && isValidHospitalizationRecord()) {
       addPatientHospitalizationRecords();
+    } else if (recordType === MedicalRecordType.MEDICALBILL && isValidBillRecord()) {
+      addPatientBillRecords();
+    } else if (recordType === MedicalRecordType.MEDICALINSURANCE && isValidInsuranceRecord()) {
+      addPatientInsuranceRecords();
     }
   };
 
@@ -692,7 +847,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 dateOfTest !== '' ? null : styles.placeholderStyle,
               ]}
             >
-              {dateOfTest !== '' ? dateOfTest : 'dd/mm/yyyy'}
+              {dateOfTest !== '' ? dateOfTest : 'DD MMM, YYYY'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -700,7 +855,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           isDateTimePickerVisible={isDateTimePickerVisible}
           handleDatePicked={(date) => {
             setIsDateTimePickerVisible(false);
-            const formatDate = moment(date).format('DD/MM/YYYY');
+            const formatDate = moment(date).format('DD MMM, YYYY');
             setdateOfTest(formatDate);
             Keyboard.dismiss();
           }}
@@ -1149,6 +1304,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         <PhrAddTestRecordIcon style={{ width: 35, height: 35, marginLeft: 28 }} />
       ) : recordType === MedicalRecordType.HOSPITALIZATION ? (
         <PhrAddHospitalizationRecordIcon style={{ width: 35, height: 35, marginLeft: 28 }} />
+      ) : recordType === MedicalRecordType.MEDICALBILL ? (
+        <PhrAddBillRecordIcon style={{ width: 35, height: 35, marginLeft: 28 }} />
+      ) : recordType === MedicalRecordType.MEDICALINSURANCE ? (
+        <PhrAddInsuranceRecordIcon style={{ width: 35, height: 35, marginLeft: 28 }} />
       ) : (
         <PhrAddPrescriptionRecordIcon style={{ width: 35, height: 35, marginLeft: 28 }} />
       );
@@ -1158,6 +1317,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         ? 'Report'
         : recordType === MedicalRecordType.HOSPITALIZATION
         ? 'Discharge Summary'
+        : recordType === MedicalRecordType.MEDICALBILL
+        ? 'Bill'
+        : recordType === MedicalRecordType.MEDICALINSURANCE
+        ? 'Insurance'
         : 'Prescription';
     return (
       <>
@@ -1180,6 +1343,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                       ? 23
                       : recordType === MedicalRecordType.HOSPITALIZATION
                       ? 0
+                      : recordType === MedicalRecordType.MEDICALBILL
+                      ? 34
+                      : recordType === MedicalRecordType.MEDICALINSURANCE
+                      ? 18
                       : 10,
                 },
               ]}
@@ -1190,7 +1357,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           </View>
         </View>
         <View style={styles.listItemViewStyle}>
-          {renderListItem('Record date', true, true)}
+          {renderListItem(
+            recordType === MedicalRecordType.MEDICALINSURANCE ? 'Record issue date' : 'Record date',
+            true,
+            true
+          )}
           <View style={{ paddingTop: 0, paddingBottom: 10 }}>
             <Text
               style={[styles.textInputStyle, dateOfTest !== '' ? null : styles.placeholderStyle]}
@@ -1200,14 +1371,14 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 CommonLogEvent('ADD_RECORD', 'Date picker visible');
               }}
             >
-              {dateOfTest !== '' ? dateOfTest : 'dd/mm/yyyy'}
+              {dateOfTest !== '' ? dateOfTest : 'DD MMM, YYYY'}
             </Text>
           </View>
           <DatePicker
             isDateTimePickerVisible={isDateTimePickerVisible}
             handleDatePicked={(date) => {
               setIsDateTimePickerVisible(false);
-              const formatDate = moment(date).format('DD/MM/YYYY');
+              const formatDate = moment(date).format('DD MMM, YYYY');
               setdateOfTest(formatDate);
               Keyboard.dismiss();
             }}
@@ -1503,6 +1674,137 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     );
   };
 
+  const renderRecordDetailsBill = () => {
+    return (
+      <>
+        <View style={styles.listItemViewStyle}>
+          {renderListItem('Record hospital name', true, true)}
+          <TextInput
+            placeholder={'Enter Record hospital name'}
+            style={styles.textInputStyle}
+            selectionColor={'#0087BA'}
+            numberOfLines={1}
+            value={docName}
+            placeholderTextColor={theme.colors.placeholderTextColor}
+            underlineColorAndroid={'transparent'}
+            onChangeText={(docName) => {
+              if (isValidText(docName)) {
+                setDocName(docName);
+              }
+            }}
+          />
+        </View>
+        <View style={[styles.listItemViewStyle, { marginBottom: 33 }]}>
+          {renderListItem('Record bill number', true, true)}
+          <TextInput
+            placeholder={'Enter Record bill number'}
+            style={styles.textInputStyle}
+            selectionColor={'#0087BA'}
+            numberOfLines={1}
+            value={testName}
+            placeholderTextColor={theme.colors.placeholderTextColor}
+            underlineColorAndroid={'transparent'}
+            onChangeText={(testName) => {
+              if (isValidText(testName)) {
+                settestName(testName);
+              }
+            }}
+          />
+        </View>
+      </>
+    );
+  };
+
+  const renderRecordDetailsInsurance = () => {
+    return (
+      <>
+        <View style={styles.listItemViewStyle}>
+          {renderListItem('Record end date', true, true)}
+          <View style={{ paddingTop: 0, paddingBottom: 10 }}>
+            <Text
+              style={[styles.textInputStyle, endDate !== '' ? null : styles.placeholderStyle]}
+              onPress={() => {
+                Keyboard.dismiss();
+                setEndDateTimePickerVisible(true);
+                CommonLogEvent('ADD_RECORD', 'Date picker visible');
+              }}
+            >
+              {endDate !== '' ? endDate : 'DD MMM, YYYY'}
+            </Text>
+          </View>
+          <DatePicker
+            isDateTimePickerVisible={endDateTimePickerVisible}
+            handleDatePicked={(date) => {
+              setEndDateTimePickerVisible(false);
+              const formatDate = moment(date).format('DD MMM, YYYY');
+              setEndDate(formatDate);
+              Keyboard.dismiss();
+            }}
+            hideDateTimePicker={() => {
+              setEndDateTimePickerVisible(false);
+              Keyboard.dismiss();
+            }}
+            maximumDate={false}
+            minimumDate={new Date()}
+          />
+        </View>
+        <View style={styles.listItemViewStyle}>
+          {renderListItem('Record name', true, true)}
+          <TextInput
+            placeholder={'Enter Record name'}
+            style={styles.textInputStyle}
+            selectionColor={'#0087BA'}
+            numberOfLines={1}
+            value={testName}
+            placeholderTextColor={theme.colors.placeholderTextColor}
+            underlineColorAndroid={'transparent'}
+            onChangeText={(testName) => {
+              if (isValidText(testName)) {
+                settestName(testName);
+              }
+            }}
+          />
+        </View>
+        <View style={styles.listItemViewStyle}>
+          {renderListItem('Record ID number', true)}
+          <TextInput
+            placeholder={'Enter Record ID number'}
+            style={styles.textInputStyle}
+            selectionColor={'#0087BA'}
+            numberOfLines={1}
+            value={docName}
+            placeholderTextColor={theme.colors.placeholderTextColor}
+            underlineColorAndroid={'transparent'}
+            onChangeText={(docName) => {
+              if (isValidText(docName)) {
+                setDocName(docName);
+              }
+            }}
+          />
+        </View>
+        <View style={styles.listItemViewStyle}>
+          {renderListItem('Record insurance amount ', true)}
+          <TextInput
+            placeholder={'Enter Record insurance amount '}
+            style={styles.textInputStyle}
+            selectionColor={'#0087BA'}
+            numberOfLines={1}
+            value={locationName}
+            keyboardType={'numbers-and-punctuation'}
+            placeholderTextColor={theme.colors.placeholderTextColor}
+            underlineColorAndroid={'transparent'}
+            onChangeText={(locName) => {
+              if (isValidText(locName)) {
+                setLocationName(locName);
+              }
+            }}
+          />
+        </View>
+        {renderAdditionalTextInputView()}
+      </>
+    );
+  };
+
   const renderRecordDetailsCard = () => {
     return (
       <View style={{ ...theme.viewStyles.cardViewStyle, marginHorizontal: 7, marginBottom: 30 }}>
@@ -1511,6 +1813,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           ? renderRecordDetailsTestReports()
           : recordType === MedicalRecordType.HOSPITALIZATION
           ? renderRecordDetailsHospitalization()
+          : recordType === MedicalRecordType.MEDICALBILL
+          ? renderRecordDetailsBill()
+          : recordType === MedicalRecordType.MEDICALINSURANCE
+          ? renderRecordDetailsInsurance()
           : renderRecordDetailsPrescription()}
         {renderBottomButton()}
       </View>

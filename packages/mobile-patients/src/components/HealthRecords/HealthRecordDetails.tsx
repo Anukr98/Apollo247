@@ -1,10 +1,6 @@
 import { CollapseCard } from '@aph/mobile-patients/src/components/CollapseCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import {
-  Download,
-  LabTestIcon,
-  RoundGreenTickIcon,
-} from '@aph/mobile-patients/src/components/ui/Icons';
+import { LabTestIcon, RoundGreenTickIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -135,6 +131,10 @@ const styles = StyleSheet.create({
     flex: 1,
     ...theme.fonts.IBMPlexSansRegular(13),
   },
+  insuranceAmountTextStyle: {
+    ...theme.viewStyles.text('SB', 18, '#0087BA', 1, 23.4),
+    marginTop: 11,
+  },
 });
 
 export interface HealthRecordDetailsProps extends NavigationScreenProps {}
@@ -154,6 +154,12 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
     : false;
   const prescriptions = props.navigation.state.params
     ? props.navigation.state.params.prescriptions
+    : false;
+  const medicalBill = props.navigation.state.params
+    ? props.navigation.state.params.medicalBill
+    : false;
+  const medicalInsurance = props.navigation.state.params
+    ? props.navigation.state.params.medicalInsurance
     : false;
   const { currentPatient } = useAllCurrentPatients();
   const { setLoading } = useUIElements();
@@ -252,6 +258,10 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       ? 'DISCHARGE SUMMARY'
       : prescriptions
       ? 'PRESCRIPTION'
+      : medicalBill
+      ? 'BILLS'
+      : medicalInsurance
+      ? 'INSURANCE REPORT'
       : 'TEST REPORT';
     return (
       <View style={{ marginHorizontal: 40, marginBottom: 15, marginTop: 33 }}>
@@ -292,29 +302,42 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         >
           <View style={{ marginTop: 11, marginBottom: 20 }}>
             <View style={[styles.cardViewStyle, { marginTop: 4, marginBottom: 4, paddingTop: 16 }]}>
-              <View style={{ flexDirection: 'row' }}>
-                <LabTestIcon style={{ height: 20, width: 19, marginRight: 14 }} />
-                <Text style={{ ...viewStyles.text('SB', 16, '#02475B', 1, 21) }}>
-                  {'Impressions'}
-                </Text>
-              </View>
-              {data?.labTestResults?.map((item: any) => {
-                const unit = item?.unit;
-                return (
-                  <>
-                    <View style={styles.labelViewStyle}>
-                      <Text style={styles.labelStyle}>{item.parameterName}</Text>
-                    </View>
-                    {detailRowView(
-                      'Normal Range',
-                      item.range ? item.range : `${item.minimum || ''} - ${item.maximum || 'N/A'}`
-                    )}
-                    {detailRowView('Units', unit || 'N/A')}
-                    {detailRowView('Result', '')}
-                    <Text style={styles.resultTextStyle}>{item.result || 'N/A'}</Text>
-                  </>
-                );
-              })}
+              {data?.sumInsured ? (
+                <View>
+                  <Text style={{ ...viewStyles.text('SB', 16, '#02475B', 1, 21) }}>
+                    {'Insurance Amount'}
+                  </Text>
+                  <Text style={styles.insuranceAmountTextStyle}>{'Rs ' + data?.sumInsured}</Text>
+                </View>
+              ) : (
+                <>
+                  <View style={{ flexDirection: 'row' }}>
+                    <LabTestIcon style={{ height: 20, width: 19, marginRight: 14 }} />
+                    <Text style={{ ...viewStyles.text('SB', 16, '#02475B', 1, 21) }}>
+                      {'Impressions'}
+                    </Text>
+                  </View>
+                  {data?.labTestResults?.map((item: any) => {
+                    const unit = item?.unit;
+                    return (
+                      <>
+                        <View style={styles.labelViewStyle}>
+                          <Text style={styles.labelStyle}>{item.parameterName}</Text>
+                        </View>
+                        {detailRowView(
+                          'Normal Range',
+                          item.range
+                            ? item.range
+                            : `${item.minimum || ''} - ${item.maximum || 'N/A'}`
+                        )}
+                        {detailRowView('Units', unit || 'N/A')}
+                        {detailRowView('Result', '')}
+                        <Text style={styles.resultTextStyle}>{item.result || 'N/A'}</Text>
+                      </>
+                    );
+                  })}
+                </>
+              )}
             </View>
           </View>
         </CollapseCard>
@@ -396,7 +419,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
   const renderData = () => {
     return (
       <View>
-        {data?.labTestResults?.length > 0 ? renderDetailsFinding() : null}
+        {data?.labTestResults?.length > 0 || data?.sumInsured ? renderDetailsFinding() : null}
         {data?.additionalNotes ||
         data?.healthCheckSummary ||
         data?.dischargeSummary ||
@@ -415,6 +438,8 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       ? 'Uploaded Date'
       : hospitalization
       ? 'Discharge Date'
+      : medicalInsurance
+      ? 'Insurance Date'
       : 'Checkup Date';
     const getSourceName = (
       labTestSource: string,
@@ -445,11 +470,22 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
             data?.date
           ).format('DD MMM, YYYY')}`}</Text>
         </Text>
+      ) : medicalInsurance && data.endDateTime !== 0 ? (
+        <Text style={{ ...viewStyles.text('R', 14, '#0087BA', 1, 18), marginTop: 3 }}>
+          {'From '}
+          <Text style={{ ...viewStyles.text('M', 14, '#02475B', 1, 18) }}>{`${moment(
+            data?.startDate
+          ).format('DD MMM, YYYY')}`}</Text>
+          {' to '}
+          <Text style={{ ...viewStyles.text('M', 14, '#02475B', 1, 18) }}>{`${moment(
+            data?.endDateTime
+          ).format('DD MMM, YYYY')}`}</Text>
+        </Text>
       ) : (
         <Text style={{ ...viewStyles.text('R', 14, '#0087BA', 1, 18), marginTop: 3 }}>
           {'On '}
           <Text style={{ ...viewStyles.text('M', 14, '#02475B', 1, 18) }}>{`${moment(
-            data?.date
+            data?.date || data?.startDate
           ).format('DD MMM, YYYY')}`}</Text>
         </Text>
       );
@@ -459,11 +495,15 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         {data?.labTestName ||
         data?.prescriptionName ||
         data?.healthCheckName ||
-        (hospitalization && (data?.doctorName || data?.doctorName === '')) ? (
+        (hospitalization && (data?.doctorName || data?.doctorName === '')) ||
+        data?.hospitalName ||
+        data?.insuranceCompany ? (
           <Text style={{ ...viewStyles.text('SB', 23, '#02475B', 1, 30) }}>
             {data?.labTestName ||
               data?.healthCheckName ||
               data?.prescriptionName ||
+              data?.hospitalName ||
+              data?.insuranceCompany ||
               'Dr. ' + data?.doctorName ||
               'Dr. '}{' '}
             <RoundGreenTickIcon style={styles.greenTickIconStyle} />
@@ -472,6 +512,16 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         {data?.labTestRefferedBy ? (
           <Text style={{ ...viewStyles.text('M', 16, '#0087BA', 1, 21), marginTop: 6 }}>
             {'Dr. ' + data?.labTestRefferedBy || 'Dr. -'}
+          </Text>
+        ) : null}
+        {medicalBill && data?.bill_no ? (
+          <Text style={{ ...viewStyles.text('M', 16, '#0087BA', 1, 21), marginTop: 6 }}>
+            {data?.bill_no}
+          </Text>
+        ) : null}
+        {medicalInsurance && data?.policyNumber ? (
+          <Text style={{ ...viewStyles.text('M', 16, '#0087BA', 1, 21), marginTop: 6 }}>
+            {data?.policyNumber}
           </Text>
         ) : null}
         {prescriptions && data?.prescriptionName !== data?.prescribedBy ? (
@@ -511,6 +561,10 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       ? 'DischargeSummary_'
       : prescriptions
       ? 'Prescription_'
+      : medicalBill
+      ? 'Bill_'
+      : medicalInsurance
+      ? 'InsuranceReport_'
       : 'TestReport_';
     return labResults
       ? file_name_text +
@@ -574,7 +628,8 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       })
       .then((res) => {
         setLoading && setLoading(false);
-        postWebEngagePHR(webEngageSource, webEngageEventName);
+        (!medicalBill || !medicalInsurance) &&
+          postWebEngagePHR(webEngageSource, webEngageEventName);
         Platform.OS === 'ios'
           ? RNFetchBlob.ios.previewDocument(res.path())
           : RNFetchBlob.android.actionViewIntent(res.path(), mimeType(res.path()));
@@ -587,17 +642,6 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       .finally(() => {
         setLoading && setLoading(false);
       });
-  };
-
-  const headerRightComponent = () => {
-    return (
-      <TouchableOpacity
-        activeOpacity={1}
-        onPress={() => (labResults ? downloadPDFTestReport() : downloadDocument())}
-      >
-        <Download />
-      </TouchableOpacity>
-    );
   };
 
   const renderProfileImage = () => {
@@ -615,7 +659,11 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       : hospitalization
       ? 'HOSPITALIZATION'
       : prescriptions
-      ? 'CONSULT & RX DETAILS'
+      ? 'DOCTOR CONSULTATIONS DETAILS'
+      : medicalBill
+      ? 'BILL'
+      : medicalInsurance
+      ? 'INSURANCE'
       : 'TEST REPORTS DETAIL';
     return (
       <View
