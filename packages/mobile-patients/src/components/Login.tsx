@@ -153,12 +153,7 @@ export const Login: React.FC<LoginProps> = (props) => {
   useEffect(() => {
     try {
       fireBaseFCM();
-      // if (firebase.auth().currentUser) {
-      //   console.log('login auth', firebase.auth().currentUser);
-      //   signOut();
-      // }
       setLoading && setLoading(false);
-      firebase.auth().appVerificationDisabledForTesting = true;
       if (Platform.OS === 'android') {
         AppSignature.getAppSignature().then((sign: string[]) => {
           setAppSign(sign[0] || '');

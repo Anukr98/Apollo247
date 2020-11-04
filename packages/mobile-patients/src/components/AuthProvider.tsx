@@ -14,7 +14,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 import { Platform, Alert } from 'react-native';
-import firebase from '@react-native-firebase/app';
+import firebaseAuth from '@react-native-firebase/auth';
 import {
   getNetStatus,
   postWebEngageEvent,
@@ -109,7 +109,7 @@ export const AuthProvider: React.FC = (props) => {
     if (userLoggedIn == 'true') {
       // no need to refresh jwt token on login
       try {
-        firebase.auth().onAuthStateChanged(async (user) => {
+        firebaseAuth().onAuthStateChanged(async (user) => {
           // console.log('authprovider', user);
           if (user) {
             // console.log('authprovider login');
@@ -202,7 +202,7 @@ export const AuthProvider: React.FC = (props) => {
   const [signInError, setSignInError] = useState<AuthContextProps['signInError']>(false);
   const [mobileAPICalled, setMobileAPICalled] = useState<AuthContextProps['signInError']>(false);
 
-  const auth = firebase.auth();
+  const auth = firebaseAuth();
 
   const [allPatients, setAllPatients] = useState<AuthContextProps['allPatients']>(null);
 

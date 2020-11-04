@@ -56,7 +56,7 @@ import {
   Platform,
   ScrollView,
 } from 'react-native';
-import firebase from '@react-native-firebase/app';
+import firebaseAuth from '@react-native-firebase/auth';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import {
   SaveMedicineOrderPaymentMq,
@@ -419,7 +419,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       };
       postWebEngageEvent(WebEngageEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
     } catch (error) {}
-    const token = await firebase.auth().currentUser!.getIdToken();
+    const token = await firebaseAuth().currentUser!.getIdToken();
     console.log({ token });
     const checkoutEventAttributes = {
       ...getPrepaidCheckoutCompletedEventAttributes(`${orderAutoId}`, false),
