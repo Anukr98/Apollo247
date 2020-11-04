@@ -1192,6 +1192,7 @@ export interface WebEngageEvents {
     'Net Amount': number;
     af_revenue: number;
     af_currency: string;
+    'Dr of hour appointment'?: YesOrNo;
   };
   [WebEngageEventName.CONSULT_FEEDBACK_GIVEN]: {
     'Doctor Name': string;
