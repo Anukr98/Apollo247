@@ -6,8 +6,6 @@ import { getDiscountPercentage } from '@aph/mobile-patients/src/helpers/helperFu
 import { Image } from 'react-native-elements';
 import { AddToCartButtons } from '@aph/mobile-patients/src/components/Medicines/AddToCartButtons';
 import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
-import string from '@aph/mobile-patients/src/strings/strings.json';
-import { CareCashbackBanner } from './CareCashbackBanner';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -16,7 +14,7 @@ const styles = StyleSheet.create({
     padding: 10,
     paddingTop: 14,
     flex: 0.5,
-    minHeight: 150,
+    minHeight: 122,
   },
   rowSpaceBetweenView: {
     flex: 1,
@@ -204,9 +202,7 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
       <View style={{ flexDirection: 'row' }}>
         <Text style={styles.specialpriceTextStyle}>
           {'('}
-          <Text
-            style={{ textDecorationLine: 'line-through' }}
-          >{`${string.common.Rs} ${price}`}</Text>
+          <Text style={{ textDecorationLine: 'line-through' }}>{`Rs. ${price}`}</Text>
           {')'}
         </Text>
         <Text style={styles.offTextStyle}>{off_text}</Text>
@@ -220,20 +216,9 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
         {'Out Of Stock'}
       </Text>
     ) : (
-      <Text style={styles.priceTextCollapseStyle}>
-        {string.common.Rs} {specialPrice || price}
-      </Text>
+      <Text style={styles.priceTextCollapseStyle}>Rs. {specialPrice || price}</Text>
     );
   };
-
-  const renderCareCashback = () => (
-    <CareCashbackBanner
-      bannerStyle={{
-        left: -10,
-      }}
-      bannerText={'Extra Care ₹65 Cashback'}
-    />
-  );
 
   return (
     <TouchableOpacity
@@ -245,7 +230,6 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
         {renderMedicineIcon()}
         {renderTitleAndIcon()}
       </View>
-      {renderCareCashback()}
       {renderSpecialPrice()}
       <View style={styles.priceAndAddToCartViewStyle}>
         {renderOutOfStock()}

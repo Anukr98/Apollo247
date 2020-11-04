@@ -10,7 +10,6 @@ import {
   DropdownGreen,
   MedicineIcon,
   MedicineRxIcon,
-  CheckBoxFilled,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -72,7 +71,6 @@ import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 import { ProductList } from '@aph/mobile-patients/src/components/Medicines/ProductList';
 import { ProductUpSellingCard } from '@aph/mobile-patients/src/components/Medicines/ProductUpSellingCard';
 import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
-import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const { width, height } = Dimensions.get('window');
 
@@ -214,42 +212,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
   },
   stickyBottomComponent: { height: 'auto', flexDirection: 'column' },
-  careCardContainer: {
-    ...theme.viewStyles.cardViewStyle,
-    marginHorizontal: 20,
-    padding: 15,
-    marginBottom: 20,
-    borderColor: '#00B38E',
-    borderWidth: 3,
-    borderStyle: 'dashed',
-  },
-  checkBoxIconStyle: {
-    borderRadius: 35,
-    width: 35,
-    height: 35,
-    resizeMode: 'contain',
-    marginRight: 10,
-  },
-  careTextContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  careRedBox: {
-    width: 30,
-    height: 30,
-    backgroundColor: '#F0533B',
-    borderRadius: 5,
-    marginRight: 15,
-  },
-  getCareText: {
-    ...theme.viewStyles.text('R', 14, '#02475B', 1, 20),
-    flexWrap: 'wrap',
-  },
-  careSubscribeButton: {
-    ...theme.viewStyles.text('SB', 16, '#FC9916', 1, 18),
-    textAlign: 'right',
-    marginTop: 15,
-  },
 });
 
 type PharmacyTatApiCalled = WebEngageEvents[WebEngageEventName.PHARMACY_TAT_API_CALLED];
@@ -650,29 +612,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     />
   );
 
-  const renderCareCashback = () => (
-    <View style={{paddingVertical: 5}}>
-      <View style={{
-        flexDirection: 'row',
-        paddingBottom: 5,
-      }}>
-        <View style={{
-          backgroundColor: '#F0533B',
-          width: 15,
-          height: 15,
-          borderRadius: 15,
-          marginRight: 6,
-        }} />
-        <Text style={theme.viewStyles.text('M', 12, '#F0533B', 1, 15)}>
-          ₹270.00 extra cashback 
-        </Text>
-      </View>
-      <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 15)}>
-        Effective price for you ₹1530
-      </Text>
-    </View>
-  );
-
   const renderBottomButtons = () => {
     const itemQty = getItemQuantity(sku);
     const addToCart = () => updateQuantityCartItem(medicineDetails, itemQty + 1);
@@ -757,7 +696,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                     </Text>
                   </View>
                 )}
-                {renderCareCashback()}
               </View>
               {!medicineDetails.sell_online ? (
                 renderNotForSaleTag()
@@ -896,47 +834,9 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         </View>
         {renderNote()}
         {medicineOverview.length === 0 ? renderInfo() : null}
-        {renderCareSubscribeCard()}
       </View>
     );
   };
-
-  const renderCareSubscribeCard = () => 
-    <View style={styles.careCardContainer}>
-      {
-        !!true ? 
-        <View style={{
-          flexDirection: 'row',
-        }}>
-          <CheckBoxFilled style={styles.checkBoxIconStyle} />
-          <View>
-            <Text style={theme.viewStyles.text('B', 15, '#02475B', 1, 20)}>
-              CARE benefits applied!
-            </Text>
-            <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>
-              Will be visible at checkout
-            </Text>
-          </View>
-        </View> :
-        <>
-          <View style={styles.careTextContainer}>
-            <View style={styles.careRedBox} />
-            <Text style={styles.getCareText}>
-              Get{' '}
-              <Text style={theme.viewStyles.text('B', 14, '#02475B', 1, 20)}>₹5.40 Cashback</Text>{' '}
-              and{' '}
-              <Text style={theme.viewStyles.text('B', 14, '#02475B', 1, 20)}>Free delivery</Text>{' '}
-              on your CURRENT order with CARE and more.....
-            </Text>
-          </View>
-          <TouchableOpacity activeOpacity={1} onPress={() => {}}>
-            <Text style={styles.careSubscribeButton}>
-              SUBSCRIBE
-            </Text>
-          </TouchableOpacity>
-        </>
-      }
-    </View>;
 
   const filterHtmlContent = (content: string = '') => {
     return content
@@ -1303,7 +1203,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                       <Text style={styles.textStyle}>{item.name}</Text>
                       {!!item.price && (
                         <Text style={theme.viewStyles.text('M', 12, '#02475b', 1, 20, 0.004)}>
-                          {string.common.Rs} {item.price}
+                          RS. {item.price}
                         </Text>
                       )}
                     </View>

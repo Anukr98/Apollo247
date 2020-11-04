@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { ArrowRight, CouponIcon, Cross, PendingIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { ArrowRight, CouponIcon, Cross } from '@aph/mobile-patients/src/components/ui/Icons';
 
 export interface CouponProps {
   onPressApplyCoupon: () => void;
@@ -10,36 +10,20 @@ export interface CouponProps {
 }
 
 export const Coupon: React.FC<CouponProps> = (props) => {
-  const { coupon, couponDiscount, isProuctFreeCouponApplied, isCareSubscribed } = useShoppingCart();
+  const { coupon, couponDiscount, isProuctFreeCouponApplied } = useShoppingCart();
   const { onPressApplyCoupon, onPressRemove } = props;
 
   const renderApplyCoupon = () => {
     return (
-      <View>
-        <TouchableOpacity style={styles.applyCoupon} onPress={onPressApplyCoupon}>
-          <View style={styles.rowStyle}>
-            <CouponIcon />
-            <Text style={styles.applyCouponText}>Apply Coupon</Text>
-          </View>
-          <ArrowRight />
-        </TouchableOpacity>
-        {!!isCareSubscribed && renderCareMessage()}
-      </View>
+      <TouchableOpacity style={styles.applyCoupon} onPress={onPressApplyCoupon}>
+        <View style={styles.rowStyle}>
+          <CouponIcon />
+          <Text style={styles.applyCouponText}>Apply Coupon</Text>
+        </View>
+        <ArrowRight />
+      </TouchableOpacity>
     );
   };
-
-  const renderCareMessage = () => 
-    <View style={styles.careMessageContainer}>
-      <PendingIcon style={styles.pendingIconStyle} />
-      <View style={styles.careMessage}>
-        <Text style={theme.viewStyles.text('B', 13, '#979797', 1, 20)}>
-          Remove CARE membership to apply coupon.{' '}
-        </Text>
-        <Text style={{...theme.viewStyles.text('R', 13, '#979797', 1, 20), flexWrap: 'wrap'}}>
-          You can either use CARE benefits or apply coupon. Remove CARE membership from CART to avail coupon discount.
-        </Text>
-      </View>
-    </View>
 
   const renderCouponMsg = () => {
     return !isProuctFreeCouponApplied ? (
@@ -124,19 +108,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
   },
-  careMessageContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    borderTopWidth: 0.5,
-    borderTopColor: '#979797',
-    justifyContent: 'flex-start',
-  },
-  pendingIconStyle: {
-    marginRight: 10,
-    marginTop: 5,
-  },
-  careMessage: {
-    width: '80%',
-  }
 });

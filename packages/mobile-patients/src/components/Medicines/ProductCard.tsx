@@ -14,8 +14,6 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, TouchableOpacityProps, View } from 'react-native';
 import { Divider, Image } from 'react-native-elements';
-import string from '@aph/mobile-patients/src/strings/strings.json';
-import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
 
 export interface Props extends MedicineProduct {
   onPress: () => void;
@@ -48,8 +46,8 @@ export const ProductCard: React.FC<Props> = ({
   const discount = getDiscountPercentage(price, special_price);
 
   const renderPrice = () => {
-    const strikeOffPrice = `(${string.common.Rs} ${price})`;
-    const finalPrice = `  ${string.common.Rs} ${discount ? special_price : price}`;
+    const strikeOffPrice = `(Rs. ${price})`;
+    const finalPrice = `  Rs. ${discount ? special_price : price}`;
     return (
       <View style={styles.priceContainer}>
         {!!discount && <Text style={styles.priceStrikeOff}>{strikeOffPrice}</Text>}
@@ -100,8 +98,6 @@ export const ProductCard: React.FC<Props> = ({
 
   const renderDivider = () => <Divider style={styles.divider} />;
 
-  const renderCareCashback = () => <CareCashbackBanner bannerText={'Extra Care ₹65 Cashback'} />;
-
   const renderProductActions = () =>
     sell_online ? renderAddToCartButton() : renderNotForSaleTag();
 
@@ -111,7 +107,6 @@ export const ProductCard: React.FC<Props> = ({
       {renderImage()}
       {renderTitle()}
       {renderDivider()}
-      {renderCareCashback()}
       {renderPrice()}
       {renderProductActions()}
     </TouchableOpacity>
@@ -124,7 +119,7 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.card(12, 0),
     alignItems: 'center',
     width: 168,
-    maxHeight: 245,
+    height: 232,
   },
   image: {
     resizeMode: 'contain',
@@ -144,7 +139,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   priceContainer: {
-    // paddingVertical: 10,
+    paddingVertical: 10,
     flexDirection: 'row',
   },
   finalPrice: {
@@ -155,7 +150,7 @@ const styles = StyleSheet.create({
     textDecorationLine: 'line-through',
   },
   addToCart: {
-    ...text('B', 12, '#FC9916', 1, 18),
+    ...text('B', 12, '#FC9916', 1, 24),
   },
   imagePlaceHolder: { backgroundColor: 'transparent' },
   discountTagView: {
