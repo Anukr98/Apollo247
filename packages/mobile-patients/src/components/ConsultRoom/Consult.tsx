@@ -485,7 +485,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     //   }
     // }
     currentPatient && setProfile(currentPatient!);
-  }, [currentPatient, analytics, props.navigation.state.params]);
+  }, [currentPatient, props.navigation.state.params]);
 
   useEffect(() => {
     async function fetchData() {
