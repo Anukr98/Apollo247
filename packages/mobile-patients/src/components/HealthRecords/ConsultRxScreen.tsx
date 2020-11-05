@@ -344,7 +344,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
   const renderHeader = () => {
     return (
       <Header
-        title={'CONSULT & RX'}
+        title={'DOCTOR CONSULTATIONS'}
         leftIcon={'backArrow'}
         rightComponent={renderProfileImage()}
         container={{ borderBottomWidth: 0 }}
@@ -360,7 +360,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
     return (
       <View style={styles.searchFilterViewStyle}>
         <Text style={{ ...theme.viewStyles.text('SB', 23, '#02475B', 1, 30) }}>
-          {'Consult & Rx'}
+          {'Doctor Consultations'}
         </Text>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <MaterialMenu

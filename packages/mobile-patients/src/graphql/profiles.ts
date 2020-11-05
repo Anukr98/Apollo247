@@ -2241,6 +2241,53 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
           source
         }
       }
+      medicalBills {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          bill_no
+          hospitalName
+          billDate
+          source
+          notes
+          fileUrl
+          billDateTime
+          billFiles {
+            id
+            fileName
+            mimeType
+            byteContent
+            dateCreated
+          }
+        }
+      }
+      medicalInsurances {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          insuranceCompany
+          policyNumber
+          startDate
+          endDate
+          startDateTime
+          endDateTime
+          source
+          fileUrl
+          sumInsured
+          insuranceFiles {
+            id
+            fileName
+            mimeType
+            content
+            byteContent
+            dateCreated
+          }
+        }
+      }
     }
   }
 `;
@@ -2249,6 +2296,30 @@ export const GET_LAB_RESULT_PDF = gql`
   query getLabResultpdf($patientId: ID!, $recordId: String!) {
     getLabResultpdf(patientId: $patientId, recordId: $recordId) {
       url
+    }
+  }
+`;
+
+export const ADD_PATIENT_MEDICAL_INSURANCE_RECORD = gql`
+  mutation addPatientMedicalInsuranceRecord(
+    $addPatientMedicalInsuranceRecordInput: AddPatientMedicalInsuranceRecordInput
+  ) {
+    addPatientMedicalInsuranceRecord(
+      addPatientMedicalInsuranceRecordInput: $addPatientMedicalInsuranceRecordInput
+    ) {
+      status
+    }
+  }
+`;
+
+export const ADD_PATIENT_MEDICAL_BILL_RECORD = gql`
+  mutation addPatientMedicalBillRecord(
+    $addPatientMedicalBillRecordInput: AddPatientMedicalBillRecordInput
+  ) {
+    addPatientMedicalBillRecord(
+      addPatientMedicalBillRecordInput: $addPatientMedicalBillRecordInput
+    ) {
+      status
     }
   }
 `;

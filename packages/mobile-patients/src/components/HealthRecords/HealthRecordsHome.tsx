@@ -63,6 +63,8 @@ import {
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecksNew_response,
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response,
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalBills_response,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalInsurances_response,
 } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -304,6 +306,16 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     | null
     | undefined
   >([]);
+  const [medicalBills, setMedicalBills] = useState<
+    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalBills_response | null)[]
+    | null
+    | undefined
+  >([]);
+  const [medicalInsurance, setInsuranceBills] = useState<
+    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalInsurances_response | null)[]
+    | null
+    | undefined
+  >([]);
 
   const [consultsData, setConsultsData] = useState<(ConsultsType | null)[] | null>(null);
   const [medicineOrders, setMedicineOrders] = useState<(medicineOrders | null)[] | null>(null);
@@ -416,6 +428,18 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     });
   };
 
+  const sortWithDate = (array: any) => {
+    return array?.sort(
+      (a: any, b: any) =>
+        moment(b.date)
+          .toDate()
+          .getTime() -
+        moment(a.date)
+          .toDate()
+          .getTime()
+    );
+  };
+
   const getBloodGroupValue = (bloodGroup: BloodGroups) => {
     switch (bloodGroup) {
       case BloodGroups.APositive:
@@ -466,20 +490,25 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           'hospitalizationsNew',
           'response'
         );
+        const medicalBillsData = g(
+          data,
+          'getPatientPrismMedicalRecords',
+          'medicalBills',
+          'response'
+        );
+        const medicalInsuranceData = g(
+          data,
+          'getPatientPrismMedicalRecords',
+          'medicalInsurances',
+          'response'
+        );
+        console.log('data', data);
         setLabResults(labResultsData);
         setPrescriptions(prescriptionsData);
         setHealthChecksNew(healthChecksNewData);
-        setHospitalizationsNew(
-          hospitalizationsNewData?.sort(
-            (a: any, b: any) =>
-              moment(b.date)
-                .toDate()
-                .getTime() -
-              moment(a.date)
-                .toDate()
-                .getTime()
-          )
-        );
+        setHospitalizationsNew(sortWithDate(hospitalizationsNewData));
+        setMedicalBills(sortWithDate(medicalBillsData));
+        setInsuranceBills(sortWithDate(medicalInsuranceData));
       })
       .catch((error) => {
         CommonBugFender('HealthRecordsHome_fetchTestData', error);
@@ -800,10 +829,16 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           props.navigation.navigate(AppRoutes.HealthConditionScreen);
           break;
         case 5:
-          props.navigation.navigate(AppRoutes.BillScreen);
+          props.navigation.navigate(AppRoutes.BillScreen, {
+            medicalBillsData: medicalBills,
+            onPressBack: onBackArrowPressed,
+          });
           break;
         case 6:
-          props.navigation.navigate(AppRoutes.InsuranceScreen);
+          props.navigation.navigate(AppRoutes.InsuranceScreen, {
+            medicalInsuranceData: medicalInsurance,
+            onPressBack: onBackArrowPressed,
+          });
           break;
         case 7:
           props.navigation.navigate(AppRoutes.ClinicalDocumentScreen);

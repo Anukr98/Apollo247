@@ -1144,13 +1144,9 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     );
   } else {
     return (
-      <SafeAreaView
-        style={{
-          ...theme.viewStyles.container,
-        }}
-      >
+      <SafeAreaView style={{ ...theme.viewStyles.container }}>
         <Header
-          title={'CONSULT & RX DETAILS'}
+          title={'DOCTOR CONSULTATIONS DETAILS'}
           leftIcon="backArrow"
           onPressLeftIcon={() => props.navigation.goBack()}
           rightComponent={

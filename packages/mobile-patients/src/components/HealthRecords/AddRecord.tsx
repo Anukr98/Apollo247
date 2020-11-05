@@ -1,10 +1,8 @@
-import { CollapseCard } from '@aph/mobile-patients/src/components/CollapseCard';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { DatePicker } from '@aph/mobile-patients/src/components/ui/DatePicker';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
   PhrRemoveBlueIcon,
-  DropdownGreen,
   FileBig,
   Remove,
   PhrEditIcon,
@@ -12,10 +10,11 @@ import {
   PhrAddTestRecordIcon,
   PhrAddHospitalizationRecordIcon,
   PhrAddTestDetailsIcon,
+  PhrAddBillRecordIcon,
+  PhrAddInsuranceRecordIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import {
   CommonBugFender,
   CommonLogEvent,
@@ -25,11 +24,15 @@ import {
   ADD_PATIENT_HEALTH_CHECK_RECORD,
   ADD_PATIENT_HOSPITALIZATION_RECORD,
   ADD_PATIENT_LAB_TEST_RECORD,
+  ADD_PATIENT_MEDICAL_BILL_RECORD,
   ADD_PRESCRIPTION_RECORD,
+  ADD_PATIENT_MEDICAL_INSURANCE_RECORD,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { addPatientLabTestRecord } from '@aph/mobile-patients/src/graphql/types/addPatientLabTestRecord';
 import { addPatientHealthCheckRecord } from '@aph/mobile-patients/src/graphql/types/addPatientHealthCheckRecord';
 import { addPatientHospitalizationRecord } from '@aph/mobile-patients/src/graphql/types/addPatientHospitalizationRecord';
+import { addPatientMedicalBillRecord } from '@aph/mobile-patients/src/graphql/types/addPatientMedicalBillRecord';
+import { addPatientMedicalInsuranceRecord } from '@aph/mobile-patients/src/graphql/types/addPatientMedicalInsuranceRecord';
 import { addPatientPrescriptionRecord } from '@aph/mobile-patients/src/graphql/types/addPatientPrescriptionRecord';
 import {
   LabTestParameters,
@@ -37,13 +40,10 @@ import {
   MedicalRecordType,
   AddLabTestRecordInput,
   AddHospitalizationRecordInput,
+  AddPatientMedicalBillRecordInput,
+  AddPatientMedicalInsuranceRecordInput,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import {
-  g,
-  isValidText,
-  postWebEngageEvent,
-  postWebEngagePHR,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { g, isValidText, postWebEngagePHR } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -65,7 +65,7 @@ import {
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
-import { string } from '@aph/mobile-patients/src/strings/string';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -301,11 +301,13 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const [locationName, setLocationName] = useState<string>('');
   const [typeofRecord, settypeofRecord] = useState<MedicRecordType>(MedicRecordType.PRESCRIPTION);
   const [dateOfTest, setdateOfTest] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
   const [referringDoctor, setreferringDoctor] = useState<string>('');
   const [observations, setobservations] = useState<string>('');
   const [additionalNotes, setadditionalNotes] = useState<string>('');
   const [testRecordParameters, setTestRecordParameters] = useState<LabTestParameters[]>([]);
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState<boolean>(false);
+  const [endDateTimePickerVisible, setEndDateTimePickerVisible] = useState<boolean>(false);
 
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const { showAphAlert } = useUIElements();
@@ -474,6 +476,74 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     }
   };
 
+  const isValidBillRecord = () => {
+    setshowSpinner(false);
+    if (Images.length === 0) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Please add document',
+      });
+      return false;
+    } else if (!dateOfTest) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Enter Record date',
+      });
+      return false;
+    } else if (!docName) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Enter Record hospital name',
+      });
+      return false;
+    } else if (!testName) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Enter Record bill number',
+      });
+      return false;
+    } else {
+      return true;
+    }
+  };
+
+  const isValidInsuranceRecord = () => {
+    setshowSpinner(false);
+    if (Images.length === 0) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Please add document',
+      });
+      return false;
+    } else if (!dateOfTest) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Enter Record issue date',
+      });
+      return false;
+    } else if (!endDate) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Enter Record end date',
+      });
+      return false;
+    } else if (moment(endDate).isSameOrBefore(dateOfTest)) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Please Select correct end date',
+      });
+      return false;
+    } else if (!testName) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Enter Record name',
+      });
+      return false;
+    } else {
+      return true;
+    }
+  };
+
   const getAddedImages = () => {
     let imagesArray = [] as any;
     Images?.forEach((item: any) => {
@@ -495,7 +565,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       location: locationName,
       additionalNotes: additionalNotes,
       dateOfPrescription:
-        dateOfTest !== '' ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+        dateOfTest !== ''
+          ? moment(dateOfTest, string.common.date_placeholder_text).format('YYYY-MM-DD')
+          : '',
       recordType: MedicalRecordType.PRESCRIPTION,
       prescriptionFiles: getAddedImages(),
     };
@@ -529,7 +601,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     const inputData: AddLabTestRecordInput = {
       patientId: currentPatient?.id || '',
       labTestName: testName,
-      labTestDate: dateOfTest !== '' ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+      labTestDate:
+        dateOfTest !== ''
+          ? moment(dateOfTest, string.common.date_placeholder_text).format('YYYY-MM-DD')
+          : '',
       recordType: recordType,
       referringDoctor: docName,
       observations: observations,
@@ -569,7 +644,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             patientId: currentPatient ? currentPatient.id : '',
             healthCheckName: testName,
             healthCheckDate:
-              dateOfTest !== '' ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+              dateOfTest !== ''
+                ? moment(dateOfTest, string.common.date_placeholder_text).format('YYYY-MM-DD')
+                : '',
             recordType: typeofRecord,
             healthCheckFiles: {
               fileName: Images[0].title + '.' + Images[0].fileType,
@@ -581,7 +658,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             patientId: currentPatient ? currentPatient.id : '',
             healthCheckName: testName,
             healthCheckDate:
-              dateOfTest !== '' ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+              dateOfTest !== ''
+                ? moment(dateOfTest, string.common.date_placeholder_text).format('YYYY-MM-DD')
+                : '',
             recordType: typeofRecord,
           };
     client
@@ -614,7 +693,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     const inputData: AddHospitalizationRecordInput = {
       patientId: currentPatient?.id || '',
       doctorName: docName,
-      dischargeDate: dateOfTest !== '' ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+      dischargeDate:
+        dateOfTest !== ''
+          ? moment(dateOfTest, string.common.date_placeholder_text).format('YYYY-MM-DD')
+          : '',
       recordType: recordType,
       hospitalName: testName,
       hospitalizationFiles: getAddedImages(),
@@ -646,6 +728,87 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       });
   };
 
+  const addPatientBillRecords = () => {
+    setshowSpinner(true);
+    const inputData: AddPatientMedicalBillRecordInput = {
+      patientId: currentPatient?.id || '',
+      hospitalName: docName,
+      billDate:
+        dateOfTest !== ''
+          ? moment(dateOfTest, string.common.date_placeholder_text).format('YYYY-MM-DD')
+          : '',
+      recordType: recordType,
+      bill_no: testName,
+      billFiles: getAddedImages(),
+    };
+
+    client
+      .mutate<addPatientMedicalBillRecord>({
+        mutation: ADD_PATIENT_MEDICAL_BILL_RECORD,
+        variables: {
+          addPatientMedicalBillRecordInput: inputData,
+        },
+      })
+      .then(({ data }) => {
+        setshowSpinner(false);
+        const status = g(data, 'addPatientMedicalBillRecord', 'status');
+        if (status) {
+          props.navigation.pop(2);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('AddRecord_ADD_PATIENT_MEDICAL_BILL_RECORD', e);
+        setshowSpinner(false);
+        console.log(JSON.stringify(e), 'eeeee');
+        Alert.alert('Alert', 'Please fill all the details', [
+          { text: 'OK', onPress: () => console.log('OK Pressed') },
+        ]);
+      });
+  };
+
+  const addPatientInsuranceRecords = () => {
+    setshowSpinner(true);
+    const inputData: AddPatientMedicalInsuranceRecordInput = {
+      patientId: currentPatient?.id || '',
+      insuranceCompany: testName,
+      startDate:
+        dateOfTest !== ''
+          ? moment(dateOfTest, string.common.date_placeholder_text).format('YYYY-MM-DD')
+          : '',
+      endDate:
+        endDate !== ''
+          ? moment(endDate, string.common.date_placeholder_text).format('YYYY-MM-DD')
+          : '',
+      recordType: recordType,
+      policyNumber: docName,
+      sumInsured: locationName,
+      insuranceFiles: getAddedImages(),
+    };
+
+    client
+      .mutate<addPatientMedicalInsuranceRecord>({
+        mutation: ADD_PATIENT_MEDICAL_INSURANCE_RECORD,
+        variables: {
+          addPatientMedicalInsuranceRecordInput: inputData,
+        },
+      })
+      .then(({ data }) => {
+        setshowSpinner(false);
+        const status = g(data, 'addPatientMedicalInsuranceRecord', 'status');
+        if (status) {
+          props.navigation.pop(2);
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('AddRecord_ADD_PATIENT_MEDICAL_INSURANCE_RECORD', e);
+        setshowSpinner(false);
+        console.log(JSON.stringify(e), 'eeeee');
+        Alert.alert('Alert', 'Please fill all the details', [
+          { text: 'OK', onPress: () => console.log('OK Pressed') },
+        ]);
+      });
+  };
+
   const onSavePress = () => {
     setshowSpinner(true);
     const valid = isValid();
@@ -669,392 +832,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       addMedicalRecord();
     } else if (recordType === MedicRecordType.HOSPITALIZATION && isValidHospitalizationRecord()) {
       addPatientHospitalizationRecords();
+    } else if (recordType === MedicalRecordType.MEDICALBILL && isValidBillRecord()) {
+      addPatientBillRecords();
+    } else if (recordType === MedicalRecordType.MEDICALINSURANCE && isValidInsuranceRecord()) {
+      addPatientInsuranceRecords();
     }
-  };
-
-  const renderDateInpt = () => {
-    return (
-      <View>
-        <View style={{ paddingTop: 0, paddingBottom: 10 }}>
-          <TouchableOpacity
-            activeOpacity={1}
-            style={styles.placeholderViewStyle}
-            onPress={() => {
-              Keyboard.dismiss();
-              setIsDateTimePickerVisible(true);
-              CommonLogEvent('ADD_RECORD', 'Date picker visible');
-            }}
-          >
-            <Text
-              style={[
-                styles.placeholderTextStyle,
-                dateOfTest !== '' ? null : styles.placeholderStyle,
-              ]}
-            >
-              {dateOfTest !== '' ? dateOfTest : 'dd/mm/yyyy'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-        <DatePicker
-          isDateTimePickerVisible={isDateTimePickerVisible}
-          handleDatePicked={(date) => {
-            setIsDateTimePickerVisible(false);
-            const formatDate = moment(date).format('DD/MM/YYYY');
-            setdateOfTest(formatDate);
-            Keyboard.dismiss();
-          }}
-          hideDateTimePicker={() => {
-            setIsDateTimePickerVisible(false);
-            Keyboard.dismiss();
-          }}
-        />
-      </View>
-    );
-  };
-
-  const inputRecordType = () => {
-    switch (typeofRecord) {
-      case MedicRecordType.TEST_REPORT:
-        return (
-          <View>
-            <TextInputComponent
-              label={'Name of Test'}
-              value={testName}
-              placeholder={'Enter name of test'}
-              onChangeText={(testName) => {
-                if (isValidText(testName)) {
-                  settestName(testName);
-                }
-              }}
-            />
-            <TextInputComponent label={'Date of Test'} noInput={true} />
-            {renderDateInpt()}
-          </View>
-        );
-      case MedicRecordType.HEALTHCHECK:
-        return (
-          <View>
-            <TextInputComponent
-              label={'Name of Health Check'}
-              value={testName}
-              placeholder={'Enter name of health check'}
-              onChangeText={(testName) => {
-                if (isValidText(testName)) {
-                  settestName(testName);
-                }
-              }}
-            />
-            <TextInputComponent label={'Date of Test'} noInput={true} />
-            {renderDateInpt()}
-          </View>
-        );
-      case MedicRecordType.PRESCRIPTION:
-        return (
-          <View>
-            <TextInputComponent
-              label={'Doctor who issued prescription'}
-              value={docName}
-              showDrPrefix={true}
-              inputStyle={{ flex: 1 }}
-              placeholder={'Enter doctor name'}
-              onChangeText={(docName) => {
-                if (isValidText(docName)) {
-                  setDocName(docName);
-                }
-              }}
-            />
-            <TextInputComponent label={'Date of Prescription'} noInput={true} />
-            {renderDateInpt()}
-            <TextInputComponent
-              label={'Location (optional)'}
-              value={locationName}
-              placeholder={'Enter Location '}
-              onChangeText={(name) => {
-                setLocationName(name);
-              }}
-            />
-          </View>
-        );
-      case MedicRecordType.HOSPITALIZATION:
-        return (
-          <View>
-            <TextInputComponent
-              label={'Name of Doctor'}
-              value={docName}
-              showDrPrefix={true}
-              inputStyle={{ flex: 1 }}
-              placeholder={'Enter doctor name'}
-              onChangeText={(docName) => {
-                if (isValidText(docName)) {
-                  setDocName(docName);
-                }
-              }}
-            />
-            <TextInputComponent label={'Date of Discharge'} noInput={true} />
-            {renderDateInpt()}
-            <TextInputComponent
-              label={'Name of Hospital'}
-              value={locationName}
-              placeholder={'Enter hospital name'}
-              onChangeText={(name) => {
-                setLocationName(name);
-              }}
-            />
-          </View>
-        );
-      case MedicRecordType.CONSULTATION:
-        return (
-          <View>
-            <TextInputComponent
-              label={'Location of Consultation'}
-              value={locationName}
-              placeholder={'Enter location of consultation'}
-              onChangeText={(text) => {
-                setLocationName(text);
-              }}
-            />
-            <TextInputComponent label={'Date of Test'} noInput={true} />
-            {renderDateInpt()}
-          </View>
-        );
-    }
-  };
-  const renderRecordDetails = () => {
-    return (
-      <View>
-        <CollapseCard
-          heading="RECORD DETAILS"
-          collapse={showRecordDetails}
-          onPress={() => {
-            CommonLogEvent('ADD_RECORD', 'RECORD DETAILS');
-            setshowRecordDetails(!showRecordDetails);
-          }}
-        >
-          <View style={[styles.cardViewStyle, { paddingTop: 6, paddingBottom: 5 }]}>
-            <MaterialMenu
-              menuContainerStyle={[
-                {
-                  alignItems: 'flex-end',
-                  marginTop: 16,
-                  marginLeft: width / 2 - 95,
-                },
-              ]}
-              itemTextStyle={{ textTransform: 'capitalize' }}
-              options={RecordType}
-              selectedText={typeofRecord}
-              onPress={(data) => {
-                // setshowRecordTypePopup(false);
-                if (data.key !== typeofRecord) {
-                  setDocName('');
-                  setLocationName('');
-                  settestName('');
-                  setdateOfTest('');
-                }
-                settypeofRecord(data.key as MedicRecordType);
-
-                if (data.key === 'TEST_REPORT') {
-                  const eventAttributes: WebEngageEvents[WebEngageEventName.ITEMS_CLICKED] = {
-                    Source: navigatedFrom,
-                    Type: 'Test Result',
-                  };
-                  postWebEngageEvent(WebEngageEventName.ITEMS_CLICKED, eventAttributes);
-                } else {
-                  const eventAttributes: WebEngageEvents[WebEngageEventName.ITEMS_CLICKED] = {
-                    Source: navigatedFrom,
-                    Type: 'Prescription',
-                  };
-                  postWebEngageEvent(WebEngageEventName.ITEMS_CLICKED, eventAttributes);
-                }
-              }}
-              selectedTextStyle={{ color: theme.colors.APP_GREEN }}
-            >
-              <TextInputComponent
-                label={'Type of Record'}
-                noInput={true}
-                conatinerstyles={{
-                  paddingBottom: 0,
-                }}
-              />
-              <View style={{ flexDirection: 'row', marginBottom: 8 }}>
-                <View style={[styles.placeholderViewStyle]}>
-                  <Text
-                    style={[
-                      styles.placeholderTextStyle,
-                      typeofRecord !== undefined
-                        ? { textTransform: 'capitalize' }
-                        : styles.placeholderStyle,
-                    ]}
-                  >
-                    {typeofRecord !== undefined
-                      ? RecordType.find((item) => item.key === typeofRecord)!.value
-                      : 'Select type of record'}
-                  </Text>
-                  <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
-                    <DropdownGreen />
-                  </View>
-                </View>
-              </View>
-            </MaterialMenu>
-            {inputRecordType()}
-          </View>
-        </CollapseCard>
-      </View>
-    );
-  };
-
-  const renderTestReportDetails = () => {
-    return (
-      <View>
-        <CollapseCard
-          heading="REPORT DETAILS (Optional)"
-          collapse={showReportDetails}
-          onPress={() => setshowReportDetails(!showReportDetails)}
-        >
-          <View
-            style={[
-              {
-                ...theme.viewStyles.cardContainer,
-                marginTop: 15,
-                paddingHorizontal: 20,
-                paddingTop: 16,
-                paddingBottom: 20,
-              },
-            ]}
-          >
-            <View>
-              <View style={styles.labelViewStyle}>
-                <Text style={styles.labelStyle}>Parameters</Text>
-              </View>
-              {testRecordParameters.map((item, i) => (
-                <View
-                  key={i}
-                  style={{
-                    marginTop: 16,
-                    ...theme.viewStyles.cardViewStyle,
-                    shadowRadius: 4,
-                    paddingHorizontal: 16,
-                    paddingTop: 6,
-                    paddingBottom: 5,
-                  }}
-                >
-                  <TextInputComponent
-                    label={'Name of Parameter'}
-                    placeholder={'Enter name'}
-                    value={item.parameterName || ''}
-                    onChangeText={(value) => {
-                      if (isValidText(value)) {
-                        setTestParametersData('parameterName', value, i);
-                      }
-                    }}
-                  />
-                  <View style={{ flexDirection: 'row' }}>
-                    <View style={{ flex: 1, marginRight: 8 }}>
-                      <TextInputComponent
-                        label={'Result'}
-                        placeholder={'Enter value'}
-                        value={(item.result || '').toString()}
-                        onChangeText={(value) => setTestParametersData('result', value, i, true)}
-                        keyboardType={'numbers-and-punctuation'}
-                      />
-                    </View>
-                    <View style={{ flex: 1, marginLeft: 8 }}>
-                      <TextInputComponent
-                        label={'Unit'}
-                        placeholder={'Enter unit'}
-                        value={(item.unit || '').toString()}
-                        onChangeText={(value) => {
-                          if (/^([a-zA-Z0-9 %]+[ ]{0,1}[a-zA-Z0-9\-.\\/%?,&]*)*$/.test(value)) {
-                            setTestParametersData('unit', value, i);
-                          }
-                        }}
-                      />
-                    </View>
-                  </View>
-                  <View style={{ flexDirection: 'row' }}>
-                    <View style={{ flex: 1, marginRight: 8 }}>
-                      <TextInputComponent
-                        label={'Min'}
-                        placeholder={'Enter value'}
-                        value={(item.minimum || '').toString()}
-                        onChangeText={(value) => setTestParametersData('minimum', value, i, true)}
-                        keyboardType={'numbers-and-punctuation'}
-                      />
-                    </View>
-                    <View style={{ flex: 1, marginLeft: 8 }}>
-                      <TextInputComponent
-                        label={'Max'}
-                        placeholder={'Enter value'}
-                        value={(item.maximum || '').toString()}
-                        onChangeText={(value) => setTestParametersData('maximum', value, i, true)}
-                        keyboardType={'numbers-and-punctuation'}
-                      />
-                    </View>
-                  </View>
-                </View>
-              ))}
-            </View>
-            <Text
-              style={{ ...theme.viewStyles.yellowTextStyle, textAlign: 'right', paddingTop: 16 }}
-              onPress={() => {
-                const dataCopy = [...testRecordParameters];
-                dataCopy.push(TestRecordInitialValues);
-                setTestRecordParameters(dataCopy);
-              }}
-            >
-              ADD PARAMETER
-            </Text>
-            <View>
-              <View style={styles.labelViewStyle}>
-                <Text style={[styles.labelStyle, { paddingTop: 20 }]}>Observation Details</Text>
-              </View>
-              <View
-                style={{
-                  marginTop: 16,
-                  ...theme.viewStyles.cardViewStyle,
-                  shadowRadius: 4,
-                  paddingHorizontal: 16,
-                  paddingTop: 6,
-                  paddingBottom: 5,
-                }}
-              >
-                <TextInputComponent
-                  label={'Referring Doctor'}
-                  placeholder={'Enter name'}
-                  value={referringDoctor}
-                  showDrPrefix={true}
-                  inputStyle={{ flex: 1 }}
-                  onChangeText={(referringDoctor) => {
-                    if (isValidText(referringDoctor)) {
-                      setreferringDoctor(referringDoctor);
-                    }
-                  }}
-                />
-                <TextInputComponent
-                  label={'Observations / Impressions'}
-                  placeholder={'Enter observations'}
-                  value={observations}
-                  onChangeText={(observations) => {
-                    if (isValidText(observations)) {
-                      setobservations(observations);
-                    }
-                  }}
-                />
-                <TextInputComponent
-                  label={'Additional Notes'}
-                  placeholder={'Enter notes'}
-                  value={additionalNotes}
-                  onChangeText={(additionalNotes) => {
-                    if (isValidText(additionalNotes)) {
-                      setadditionalNotes(additionalNotes);
-                    }
-                  }}
-                />
-              </View>
-            </View>
-          </View>
-        </CollapseCard>
-      </View>
-    );
   };
 
   const renderImagesRow = (data: PickerImage, i: number) => {
@@ -1148,6 +930,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         <PhrAddTestRecordIcon style={{ width: 35, height: 35, marginLeft: 28 }} />
       ) : recordType === MedicalRecordType.HOSPITALIZATION ? (
         <PhrAddHospitalizationRecordIcon style={{ width: 35, height: 35, marginLeft: 28 }} />
+      ) : recordType === MedicalRecordType.MEDICALBILL ? (
+        <PhrAddBillRecordIcon style={{ width: 35, height: 35, marginLeft: 28 }} />
+      ) : recordType === MedicalRecordType.MEDICALINSURANCE ? (
+        <PhrAddInsuranceRecordIcon style={{ width: 35, height: 35, marginLeft: 28 }} />
       ) : (
         <PhrAddPrescriptionRecordIcon style={{ width: 35, height: 35, marginLeft: 28 }} />
       );
@@ -1157,6 +943,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         ? 'Report'
         : recordType === MedicalRecordType.HOSPITALIZATION
         ? 'Discharge Summary'
+        : recordType === MedicalRecordType.MEDICALBILL
+        ? 'Bill'
+        : recordType === MedicalRecordType.MEDICALINSURANCE
+        ? 'Insurance'
         : 'Prescription';
     return (
       <>
@@ -1179,6 +969,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                       ? 23
                       : recordType === MedicalRecordType.HOSPITALIZATION
                       ? 0
+                      : recordType === MedicalRecordType.MEDICALBILL
+                      ? 34
+                      : recordType === MedicalRecordType.MEDICALINSURANCE
+                      ? 18
                       : 10,
                 },
               ]}
@@ -1189,7 +983,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           </View>
         </View>
         <View style={styles.listItemViewStyle}>
-          {renderListItem('Record date', true, true)}
+          {renderListItem(
+            recordType === MedicalRecordType.MEDICALINSURANCE ? 'Record issue date' : 'Record date',
+            true,
+            true
+          )}
           <View style={{ paddingTop: 0, paddingBottom: 10 }}>
             <Text
               style={[styles.textInputStyle, dateOfTest !== '' ? null : styles.placeholderStyle]}
@@ -1199,14 +997,14 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 CommonLogEvent('ADD_RECORD', 'Date picker visible');
               }}
             >
-              {dateOfTest !== '' ? dateOfTest : 'dd/mm/yyyy'}
+              {dateOfTest !== '' ? dateOfTest : string.common.date_placeholder_text}
             </Text>
           </View>
           <DatePicker
             isDateTimePickerVisible={isDateTimePickerVisible}
             handleDatePicked={(date) => {
               setIsDateTimePickerVisible(false);
-              const formatDate = moment(date).format('DD/MM/YYYY');
+              const formatDate = moment(date).format(string.common.date_placeholder_text);
               setdateOfTest(formatDate);
               Keyboard.dismiss();
             }}
@@ -1502,6 +1300,137 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     );
   };
 
+  const renderRecordDetailsBill = () => {
+    return (
+      <>
+        <View style={styles.listItemViewStyle}>
+          {renderListItem('Record hospital name', true, true)}
+          <TextInput
+            placeholder={'Enter Record hospital name'}
+            style={styles.textInputStyle}
+            selectionColor={'#0087BA'}
+            numberOfLines={1}
+            value={docName}
+            placeholderTextColor={theme.colors.placeholderTextColor}
+            underlineColorAndroid={'transparent'}
+            onChangeText={(docName) => {
+              if (isValidText(docName)) {
+                setDocName(docName);
+              }
+            }}
+          />
+        </View>
+        <View style={[styles.listItemViewStyle, { marginBottom: 33 }]}>
+          {renderListItem('Record bill number', true, true)}
+          <TextInput
+            placeholder={'Enter Record bill number'}
+            style={styles.textInputStyle}
+            selectionColor={'#0087BA'}
+            numberOfLines={1}
+            value={testName}
+            placeholderTextColor={theme.colors.placeholderTextColor}
+            underlineColorAndroid={'transparent'}
+            onChangeText={(testName) => {
+              if (isValidText(testName)) {
+                settestName(testName);
+              }
+            }}
+          />
+        </View>
+      </>
+    );
+  };
+
+  const renderRecordDetailsInsurance = () => {
+    return (
+      <>
+        <View style={styles.listItemViewStyle}>
+          {renderListItem('Record end date', true, true)}
+          <View style={{ paddingTop: 0, paddingBottom: 10 }}>
+            <Text
+              style={[styles.textInputStyle, endDate !== '' ? null : styles.placeholderStyle]}
+              onPress={() => {
+                Keyboard.dismiss();
+                setEndDateTimePickerVisible(true);
+                CommonLogEvent('ADD_RECORD', 'Date picker visible');
+              }}
+            >
+              {endDate !== '' ? endDate : string.common.date_placeholder_text}
+            </Text>
+          </View>
+          <DatePicker
+            isDateTimePickerVisible={endDateTimePickerVisible}
+            handleDatePicked={(date) => {
+              setEndDateTimePickerVisible(false);
+              const formatDate = moment(date).format(string.common.date_placeholder_text);
+              setEndDate(formatDate);
+              Keyboard.dismiss();
+            }}
+            hideDateTimePicker={() => {
+              setEndDateTimePickerVisible(false);
+              Keyboard.dismiss();
+            }}
+            maximumDate={false}
+            minimumDate={new Date()}
+          />
+        </View>
+        <View style={styles.listItemViewStyle}>
+          {renderListItem('Record name', true, true)}
+          <TextInput
+            placeholder={'Enter Record name'}
+            style={styles.textInputStyle}
+            selectionColor={'#0087BA'}
+            numberOfLines={1}
+            value={testName}
+            placeholderTextColor={theme.colors.placeholderTextColor}
+            underlineColorAndroid={'transparent'}
+            onChangeText={(testName) => {
+              if (isValidText(testName)) {
+                settestName(testName);
+              }
+            }}
+          />
+        </View>
+        <View style={styles.listItemViewStyle}>
+          {renderListItem('Record ID number', true)}
+          <TextInput
+            placeholder={'Enter Record ID number'}
+            style={styles.textInputStyle}
+            selectionColor={'#0087BA'}
+            numberOfLines={1}
+            value={docName}
+            placeholderTextColor={theme.colors.placeholderTextColor}
+            underlineColorAndroid={'transparent'}
+            onChangeText={(docName) => {
+              if (isValidText(docName)) {
+                setDocName(docName);
+              }
+            }}
+          />
+        </View>
+        <View style={styles.listItemViewStyle}>
+          {renderListItem('Record insurance amount ', true)}
+          <TextInput
+            placeholder={'Enter Record insurance amount '}
+            style={styles.textInputStyle}
+            selectionColor={'#0087BA'}
+            numberOfLines={1}
+            value={locationName}
+            keyboardType={'numbers-and-punctuation'}
+            placeholderTextColor={theme.colors.placeholderTextColor}
+            underlineColorAndroid={'transparent'}
+            onChangeText={(locName) => {
+              if (isValidText(locName)) {
+                setLocationName(locName);
+              }
+            }}
+          />
+        </View>
+        {renderAdditionalTextInputView()}
+      </>
+    );
+  };
+
   const renderRecordDetailsCard = () => {
     return (
       <View style={{ ...theme.viewStyles.cardViewStyle, marginHorizontal: 7, marginBottom: 30 }}>
@@ -1510,6 +1439,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           ? renderRecordDetailsTestReports()
           : recordType === MedicalRecordType.HOSPITALIZATION
           ? renderRecordDetailsHospitalization()
+          : recordType === MedicalRecordType.MEDICALBILL
+          ? renderRecordDetailsBill()
+          : recordType === MedicalRecordType.MEDICALINSURANCE
+          ? renderRecordDetailsInsurance()
           : renderRecordDetailsPrescription()}
         {renderBottomButton()}
       </View>
@@ -1684,7 +1617,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 setshowPopUp(false);
               }}
             >
-              <Text style={styles.gotItTextStyles}>{string.LocalStrings.ok}</Text>
+              <Text style={styles.gotItTextStyles}>{string.home.welcome_popup.cta_label}</Text>
             </TouchableOpacity>
           </View>
         </BottomPopUp>
