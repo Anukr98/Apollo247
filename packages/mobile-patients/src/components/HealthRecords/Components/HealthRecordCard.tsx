@@ -47,7 +47,7 @@ export interface HealthRecordCardProps {
   selfUpload: boolean;
   sourceName: string;
   index: number;
-  showFollowUp: boolean;
+  showFollowUp?: boolean;
 }
 
 export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {

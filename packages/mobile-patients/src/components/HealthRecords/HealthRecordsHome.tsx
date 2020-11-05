@@ -206,6 +206,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [consultsData, setConsultsData] = useState<(ConsultsType | null)[] | null>(null);
   const [medicineOrders, setMedicineOrders] = useState<(medicineOrders | null)[] | null>(null);
   const [combination, setCombination] = useState<{ type: string; data: any }[]>();
+  const [testAndHealthCheck, setTestAndHealthCheck] = useState<{ type: string; data: any }[]>();
   const { loading, setLoading } = useUIElements();
   const [prismdataLoader, setPrismdataLoader] = useState<boolean>(false);
   const [pastDataLoader, setPastDataLoader] = useState<boolean>(false);
@@ -378,6 +379,17 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       setCombination(sortByDate(mergeArray));
     }
   }, [arrayValues, prescriptions]);
+
+  useEffect(() => {
+    let mergeArray: { type: string; data: any }[] = [];
+    labResults?.forEach((c) => {
+      mergeArray.push({ type: 'testReports', data: c });
+    });
+    healthChecksNew?.forEach((c) => {
+      mergeArray.push({ type: 'healthCheck', data: c });
+    });
+    setTestAndHealthCheck(sortByDate(mergeArray));
+  }, [labResults, healthChecksNew]);
 
   const tabsClickedWebEngageEvent = (webEngageEventName: WebEngageEventName) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.MEDICAL_RECORDS] = {
@@ -582,7 +594,10 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         case 2:
           tabsClickedWebEngageEvent(WebEngageEventName.PHR_VIEW_LAB_TESTS);
           tabsClickedWebEngageEvent(WebEngageEventName.PHR_VIEW_HEALTH_CHECKS);
-          props.navigation.navigate(AppRoutes.TestReportScreen);
+          props.navigation.navigate(AppRoutes.TestReportScreen, {
+            testReportsData: testAndHealthCheck,
+            onPressBack: onBackArrowPressed,
+          });
           break;
         case 3:
           tabsClickedWebEngageEvent(WebEngageEventName.PHR_VIEW_HOSPITALIZATIONS);

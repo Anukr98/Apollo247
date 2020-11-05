@@ -3,8 +3,6 @@ import {
   SafeAreaView,
   View,
   Text,
-  Image,
-  TouchableOpacity,
   StyleSheet,
   Alert,
   ScrollView,
@@ -16,11 +14,11 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { Filter, PhrNoDataIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Filter } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
-import { HealthConsultView } from '@aph/mobile-patients/src/components/HealthRecords/HealthConsultView';
+import { PhrNoDataComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/PhrNoDataComponent';
 import { HealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/HealthRecordCard';
 import { ProfileImageComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/ProfileImageComponent';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -30,6 +28,7 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { checkIfFollowUpBooked } from '@aph/mobile-patients/src/graphql/types/checkIfFollowUpBooked';
 import { getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_medicinePrescription } from '@aph/mobile-patients/src/graphql/types/getPatientPastConsultsAndPrescriptions';
 import {
@@ -150,7 +149,6 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
     data: any[];
   }> | null>(null);
   const { setLoading: setGlobalLoading } = useUIElements();
-  const [displayOrderPopup, setdisplayOrderPopup] = useState<boolean>(false);
   const { addMultipleCartItems, setEPrescriptions, ePrescriptions } = useShoppingCart();
   const { locationDetails, setLocationDetails } = useAppCommonData();
   const {
@@ -385,42 +383,6 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
           </MaterialMenu>
         </View>
       </View>
-    );
-  };
-
-  const renderConsult = (item: any, index: number) => {
-    return (
-      <HealthConsultView
-        key={index}
-        onPressOrder={() => {
-          CommonLogEvent('HEALTH_RECORD_HOME', 'Display order popup');
-          setdisplayOrderPopup(true);
-        }}
-        onClickCard={() => {
-          if (item.data.doctorInfo) {
-            // postConsultCardClickEvent(item.data.id);
-            props.navigation.navigate(AppRoutes.ConsultDetails, {
-              CaseSheet: item.data.id,
-              DoctorInfo: item.data.doctorInfo,
-              FollowUp: item.data.isFollowUp,
-              appointmentType: item.data.appointmentType,
-              DisplayId: item.data.displayId,
-              BlobName: g(doctorType(item.data), 'blobName'),
-            });
-          } else if (item.data.date) {
-            props.navigation.navigate(AppRoutes.RecordDetails, {
-              data: item.data,
-            });
-          }
-        }}
-        PastData={item.data}
-        navigation={props.navigation}
-        onFollowUpClick={() => {
-          if (item.data.doctorInfo) {
-            // onFollowUpClick(item.data);
-          }
-        }}
-      />
     );
   };
 
@@ -671,6 +633,18 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
     // const editDeleteData = ConsultRxEditDeleteArray.map((i) => {
     //   return { key: i.key, value: i.title };
     // });
+    const getPresctionDate = (date: string) => {
+      let prev_date = new Date();
+      prev_date.setDate(prev_date.getDate() - 1);
+      if (moment(new Date()).format('DD/MM/YYYY') === moment(new Date(date)).format('DD/MM/YYYY')) {
+        return 'Today';
+      } else if (
+        moment(prev_date).format('DD/MM/YYYY') === moment(new Date(date)).format('DD/MM/YYYY')
+      ) {
+        return 'Yesterday';
+      }
+      return moment(new Date(date)).format('DD MMM');
+    };
     const prescriptionName = item?.data?.prescriptionName || 'Prescription';
     const doctorName = item?.data?.prescriptionName
       ? item?.data?.prescribedBy && item?.data?.prescribedBy !== item?.data?.prescriptionName
@@ -682,23 +656,20 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         (item?.data?.doctorInfo?.lastName || '')
       : '';
     const dateText = item?.data?.prescriptionName
-      ? moment(item.data?.date).format('DD MMM')
-      : moment(item.data?.appointmentDateTime).format('DD MMM');
+      ? getPresctionDate(item?.data?.date)
+      : getPresctionDate(item?.data?.appointmentDateTime);
     const soureName = item?.data?.prescriptionName
       ? 'Clinical Document'
       : g(item?.data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name');
     const selfUpload = item?.data?.prescriptionName ? true : false;
     const caseSheetDetails =
-      item.data?.caseSheet &&
-      item.data?.caseSheet?.length > 0 &&
-      item.data?.caseSheet?.find(
-        (caseSheet: any) => caseSheet && caseSheet.doctorType !== 'JUNIOR'
-      );
+      item?.data?.caseSheet?.length > 0 &&
+      item?.data?.caseSheet?.find((caseSheet: any) => caseSheet?.doctorType !== 'JUNIOR');
     const caseSheetFollowUp =
       caseSheetDetails && caseSheetDetails.followUp ? caseSheetDetails.followUp : false;
     return (
       <HealthRecordCard
-        item={item.data}
+        item={item?.data}
         index={index}
         onHealthCardPress={(selectedItem) => onHealthCardItemPress(selectedItem)}
         prescriptionName={prescriptionName}
@@ -710,38 +681,6 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         onFollowUpPress={(selectedItem) => onFollowUpButtonPress(selectedItem)}
         onOrderTestAndMedicinePress={(selectedItem) => onOrderTestMedPress(selectedItem)}
       />
-    );
-  };
-
-  const renderEmptyConsult = () => {
-    return (
-      <View style={{ justifyContent: 'center' }}>
-        <View
-          style={{
-            justifyContent: 'center',
-            marginTop: width / 2.5,
-            backgroundColor: 'white',
-            alignSelf: 'center',
-            height: 140,
-            width: 140,
-            borderRadius: 70,
-            alignItems: 'center',
-          }}
-        >
-          <PhrNoDataIcon
-            style={{ width: 140, height: 140, borderRadius: 70, resizeMode: 'contain' }}
-          />
-        </View>
-        <Text
-          style={{
-            ...theme.viewStyles.text('SB', 12, '#02475B', 1, 15.6),
-            textAlign: 'center',
-            marginTop: 14,
-          }}
-        >
-          {'No data available !!!'}
-        </Text>
-      </View>
     );
   };
 
@@ -757,7 +696,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         contentContainerStyle={{ paddingBottom: 60, paddingTop: 12, paddingHorizontal: 20 }}
         sections={localConsultRxData || []}
         renderItem={({ item, index }) => renderConsultRxItems(item, index)}
-        ListEmptyComponent={renderEmptyConsult()}
+        ListEmptyComponent={<PhrNoDataComponent />}
         renderSectionHeader={({ section }) => renderSectionHeader(section)}
       />
     );
@@ -776,6 +715,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
             postWebEngageEvent(WebEngageEventName.ADD_RECORD, eventAttributes);
             props.navigation.navigate(AppRoutes.AddRecord, {
               navigatedFrom: 'Consult & RX',
+              recordType: MedicalRecordType.PRESCRIPTION,
             });
           }}
         />
