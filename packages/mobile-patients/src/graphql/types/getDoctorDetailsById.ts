@@ -1,8 +1,9 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
-import { DoctorType, ConsultMode, PLAN, PLAN_STATUS, WeekDay } from "./globalTypes";
+import { DoctorType, ConsultMode, PLAN, PLAN_STATUS, CARE_APPOINTMENT_TYPE, WeekDay } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getDoctorDetailsById
@@ -14,6 +15,7 @@ export interface getDoctorDetailsById_getDoctorDetailsById_doctorPricing {
   available_to: PLAN | null;
   status: PLAN_STATUS | null;
   mrp: number | null;
+  appointment_type: CARE_APPOINTMENT_TYPE | null;
 }
 
 export interface getDoctorDetailsById_getDoctorDetailsById_specialty {

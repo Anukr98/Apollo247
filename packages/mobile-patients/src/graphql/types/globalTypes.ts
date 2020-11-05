@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 //==============================================================
@@ -48,6 +49,11 @@ export enum BOOKING_SOURCE {
   MOBILE = "MOBILE",
   ORDER_PUNCHING_TOOL = "ORDER_PUNCHING_TOOL",
   WEB = "WEB",
+}
+
+export enum CARE_APPOINTMENT_TYPE {
+  ONLINE = "ONLINE",
+  PHYSICAL = "PHYSICAL",
 }
 
 export enum CODCity {
@@ -114,6 +120,7 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   PICKUP_REQUESTED = "PICKUP_REQUESTED",
   REPORT_GENERATED = "REPORT_GENERATED",
   SAMPLE_COLLECTED = "SAMPLE_COLLECTED",
+  SAMPLE_RECEIVED_IN_LAB = "SAMPLE_RECEIVED_IN_LAB",
 }
 
 export enum DOCTOR_ONLINE_STATUS {
@@ -318,6 +325,12 @@ export enum NonCartOrderOMSCity {
   CHENNAI = "CHENNAI",
 }
 
+export enum ONE_APOLLO_STORE_CODE {
+  ANDCUS = "ANDCUS",
+  IOSCUS = "IOSCUS",
+  WEBCUS = "WEBCUS",
+}
+
 export enum OTP_STATUS {
   BLOCKED = "BLOCKED",
   EXPIRED = "EXPIRED",
@@ -463,6 +476,8 @@ export enum SubscriptionStatus {
   CANCELLED = "CANCELLED",
   DEFERRED_INACTIVE = "DEFERRED_INACTIVE",
   DISABLED = "DISABLED",
+  PAYMENT_FAILED = "PAYMENT_FAILED",
+  PAYMENT_PENDING = "PAYMENT_PENDING",
   UPGRADED = "UPGRADED",
 }
 
@@ -525,6 +540,12 @@ export enum notificationStatus {
 
 export enum notificationType {
   CHAT = "CHAT",
+}
+
+export enum one_apollo_store_code {
+  ANDCUS = "ANDCUS",
+  IOSCUS = "IOSCUS",
+  WEBCUS = "WEBCUS",
 }
 
 export interface AddHealthCheckRecordInput {
@@ -596,6 +617,7 @@ export interface AppointmentHistoryInput {
 }
 
 export interface AppointmentPaymentInput {
+  mid?: string | null;
   amountPaid: number;
   paymentRefId?: string | null;
   paymentStatus: string;
@@ -608,6 +630,9 @@ export interface AppointmentPaymentInput {
   refundAmount?: number | null;
   paymentMode?: PAYMENT_METHODS | null;
   partnerInfo?: string | null;
+  planId?: string | null;
+  subPlanId?: string | null;
+  storeCode?: ONE_APOLLO_STORE_CODE | null;
 }
 
 export interface BookAppointmentInput {
@@ -682,7 +707,7 @@ export interface ConsultQueueInput {
 export interface CreateUserSubscriptionInput {
   _id?: string | null;
   plan_id: string;
-  payment_reference_id?: string | null;
+  payment_reference?: any | null;
   coupon_availed?: string | null;
   mobile_number: string;
   order_id?: string | null;
@@ -695,15 +720,17 @@ export interface CreateUserSubscriptionInput {
   FirstName?: string | null;
   LastName?: string | null;
   Email?: string | null;
-  Gender?: string | null;
+  Gender?: Gender | null;
   DOB?: any | null;
-  storeCode: string;
+  storeCode: one_apollo_store_code;
+  sub_plan_id?: string | null;
 }
 
 export interface DiagnosticLineItem {
   itemId?: number | null;
   price?: number | null;
   quantity?: number | null;
+  groupPlan?: string | null;
 }
 
 export interface DiagnosticOrderInput {
@@ -908,6 +935,7 @@ export interface MedicineOrderCancelOMSInput {
 }
 
 export interface MedicinePaymentMqInput {
+  mid?: string | null;
   orderAutoId: number;
   paymentType: MEDICINE_ORDER_PAYMENT_TYPE;
   amountPaid: number;
@@ -925,6 +953,9 @@ export interface MedicinePaymentMqInput {
   paymentMode?: PAYMENT_METHODS | null;
   healthCredits?: number | null;
   partnerInfo?: string | null;
+  planId?: string | null;
+  storeCode?: ONE_APOLLO_STORE_CODE | null;
+  subPlanId?: string | null;
 }
 
 export interface MessageInput {
@@ -968,6 +999,7 @@ export interface PatientAddressInput {
   latitude?: number | null;
   longitude?: number | null;
   stateCode?: string | null;
+  defaultAddress?: boolean | null;
 }
 
 export interface PatientAppointmentsInput {

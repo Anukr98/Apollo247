@@ -196,13 +196,11 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
           ]}
         >
           {string.common.Rs} {onlineConsultMRPPrice}
-          500
         </Text>
         <View style={styles.rowContainer}>
           {isCareSubscribed && <CircleLogo style={styles.careLogo} />}
           <Text style={styles.careDiscountedPrice}>
             {string.common.Rs} {onlineConsultSlashedPrice}
-            400
           </Text>
         </View>
       </View>

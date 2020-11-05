@@ -1,106 +1,140 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, StyleProp, ViewStyle } from 'react-native';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  StyleProp,
+  ViewStyle,
+  ImageBackground,
+} from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { ScrollView } from 'react-native-gesture-handler';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { CareLogo } from '@aph/mobile-patients/src/components/ui/CareLogo';
+import { useApolloClient } from 'react-apollo-hooks';
+import { GET_PLAN_DETAILS_BY_PLAN_ID } from '@aph/mobile-patients/src/graphql/profiles';
+import { GetPlanDetailsByPlanId } from '@aph/mobile-patients/src/graphql/types/GetPlanDetailsByPlanId';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import ContentLoader from 'react-native-easy-content-loader';
+import { CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
+const planDimension = 120;
 
 interface CareSelectPlansProps {
   onPressKnowMore: () => void;
   style?: StyleProp<ViewStyle>;
   onSelectMembershipPlan: (plan: any) => void;
+  isConsultJourney?: boolean;
+  careDiscountPrice?: number;
 }
 
-const subscriptionData = [
-  {
-    amount: '299',
-    save: '10%',
-    isLimitedPrice: true,
-    limitedPriceAmount: '89',
-    duration: '1 months',
-    isSelected: false,
-  },
-  {
-    amount: '999',
-    save: '20%',
-    isLimitedPrice: true,
-    limitedPriceAmount: '399',
-    duration: '6 months',
-    isSelected: false,
-  },
-  {
-    amount: '1999',
-    save: '30%',
-    isLimitedPrice: true,
-    limitedPriceAmount: '699',
-    duration: '12 months',
-    isSelected: false,
-  },
-];
-
 export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
-  const [membershipPlans, setMembershipPlans] = useState<any>(subscriptionData);
+  const [membershipPlans, setMembershipPlans] = useState<any>([]);
   const [planSelected, setPlanSelected] = useState<any>();
-  const { isCareSubscribed } = useShoppingCart();
-  const { onPressKnowMore } = props;
+  const [loading, setLoading] = useState<boolean>(true);
+  const { onPressKnowMore, isConsultJourney, careDiscountPrice } = props;
+  const client = useApolloClient();
+  const planId = AppConfig.Configuration.CARE_PLAN_ID;
+
+  useEffect(() => {
+    fetchCarePlans();
+  }, []);
+
+  const fetchCarePlans = async () => {
+    try {
+      const res = await client.query<GetPlanDetailsByPlanId>({
+        query: GET_PLAN_DETAILS_BY_PLAN_ID,
+        fetchPolicy: 'no-cache',
+        variables: {
+          plan_id: planId,
+        },
+      });
+      if (res?.data?.GetPlanDetailsByPlanId?.response?.plan_summary) {
+        setMembershipPlans(res?.data?.GetPlanDetailsByPlanId?.response?.plan_summary);
+      }
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      CommonBugFender('CareSelectPlans_GetPlanDetailsByPlanId', error);
+    }
+  };
 
   const onPressMembershipPlans = (index: number) => {
     setPlanSelected(membershipPlans?.[index]);
     props.onSelectMembershipPlan(membershipPlans?.[index]);
   };
 
-  const renderCareSubscribeCard = (value: any, index: number) => (
-    <TouchableOpacity onPress={() => onPressMembershipPlans(index)} style={styles.subscriptionCard}>
-      <View
-        style={[
-          styles.optionButton,
-          {
-            backgroundColor: value.isSelected
-              ? theme.colors.SEARCH_UNDERLINE_COLOR
-              : theme.colors.WHITE,
-          },
-        ]}
-      />
-      <View style={styles.banner}>
-        <Text style={styles.bannerText}>Save {value.save} extra</Text>
+  const renderCareSubscribeCard = (value: any, index: number) => {
+    // const x = value?.valid_duration / 30;
+    const x = index === 0 ? 1 : 12;
+    return (
+      <View style={{ paddingBottom: 30 }}>
+        <TouchableOpacity
+          key={index}
+          onPress={() => onPressMembershipPlans(index)}
+          style={[styles.subscriptionCard, { marginLeft: index === 0 ? 10 : 0 }]}
+        >
+          <ImageBackground
+            // source={`${x}`.length === 1 ? starterPackMonth : starterPackMonths}
+            source={
+              index === 0
+                ? require('@aph/mobile-patients/src/components/ui/icons/LimitedPriceOneDigitMonths.png')
+                : require('@aph/mobile-patients/src/components/ui/icons/LimitedPriceTwoDigitsMonths.png')
+            }
+            style={styles.planContainer}
+          >
+            <Text
+              style={[
+                styles.duration,
+                {
+                  left: `${x}`.length === 1 ? 7 : 3,
+                  top: `${x}`.length === 1 ? planDimension / 2 - 4 : planDimension / 2 + 2,
+                  transform: `${x}`.length === 1 ? [{ rotate: '-80deg' }] : [{ rotate: '-100deg' }],
+                },
+              ]}
+            >
+              {x}
+            </Text>
+            <Text style={styles.price}>
+              {string.common.Rs}
+              {value?.price}
+            </Text>
+          </ImageBackground>
+        </TouchableOpacity>
+        {value?.saved_extra_on_lower_plan && (
+          <Text style={styles.savingsText}>Save {value?.saved_extra_on_lower_plan}% extra</Text>
+        )}
+        <View style={styles.radioBtn} />
       </View>
-      <View style={styles.rowContainer}>
-        <View>
-          <Text style={styles.price}>
-            {string.common.Rs}
-            {value.limitedPriceAmount}
-          </Text>
-          <Text style={styles.oldPrice}>
-            {string.common.Rs}
-            {value.amount}
-          </Text>
-        </View>
-        <View style={styles.limitedPriceBanner}>
-          <Text style={theme.viewStyles.text('M', 8, '#FFFFFF')}>Limited Price</Text>
-        </View>
-      </View>
-      <Text style={theme.viewStyles.text('M', 12, theme.colors.SHERPA_BLUE)}>
-        for {value.duration}
-      </Text>
-    </TouchableOpacity>
-  );
+    );
+  };
 
   const renderSubscribeCareContainer = () => (
-    <View>
+    <ContentLoader loading={loading} active containerStyles={{ marginTop: 5 }}>
       <View style={styles.careTextContainer}>
-        <View style={styles.careRedBox} />
-        <Text style={styles.getCareText}>
-          Get{' '}
-          <Text style={theme.viewStyles.text('SB', 13, theme.colors.LIGHT_BLUE)}>
-            {string.common.Rs}5.40 Cashback
-          </Text>{' '}
-          and{' '}
-          <Text style={theme.viewStyles.text('SB', 13, theme.colors.LIGHT_BLUE)}>
-            Free delivery
-          </Text>{' '}
-          on your CURRENT order with CARE
-        </Text>
+        <CircleLogo style={styles.circleLogo} />
+        {isConsultJourney ? (
+          <Text style={styles.getCareText}>
+            Get{' '}
+            <Text style={theme.viewStyles.text('SB', 13, theme.colors.LIGHT_BLUE)}>
+              {string.common.Rs}
+              {careDiscountPrice} off{' '}
+            </Text>
+            on this Consult with CARE membership and a lot more benefits....
+          </Text>
+        ) : (
+          <Text style={styles.getCareText}>
+            Get{' '}
+            <Text style={theme.viewStyles.text('SB', 13, theme.colors.LIGHT_BLUE)}>
+              {string.common.Rs}5.40 Cashback
+            </Text>{' '}
+            and{' '}
+            <Text style={theme.viewStyles.text('SB', 13, theme.colors.LIGHT_BLUE)}>
+              Free delivery
+            </Text>{' '}
+            on your CURRENT order with CARE
+          </Text>
+        )}
       </View>
       <ScrollView
         style={{ marginTop: 4 }}
@@ -110,11 +144,7 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
       >
         {membershipPlans?.map((value: any, index: number) => renderCareSubscribeCard(value, index))}
       </ScrollView>
-      <TouchableOpacity
-        style={{ marginTop: 8 }}
-        // activeOpacity={1}
-        onPress={onPressKnowMore}
-      >
+      <TouchableOpacity style={{ marginTop: 15 }} onPress={onPressKnowMore}>
         <Text
           style={{
             ...theme.viewStyles.text('SB', 13, theme.colors.APP_YELLOW),
@@ -124,31 +154,22 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
           KNOW MORE
         </Text>
       </TouchableOpacity>
-    </View>
+    </ContentLoader>
   );
 
   const renderCarePlanAdded = () => (
     <View>
       <View style={styles.spaceRow}>
         <View style={styles.rowCenter}>
-          <CareLogo style={styles.careLogo} textStyle={styles.careLogoTextStyle} />
+          <CircleLogo style={styles.careLogo} />
           <Text style={{ ...theme.viewStyles.text('SB', 13, theme.colors.LIGHT_BLUE) }}>
-            CARE Plan added to cart!
+            Plan added to cart!
           </Text>
         </View>
         <View style={styles.rowCenter}>
-          <Text
-            style={{
-              ...theme.viewStyles.text('SB', 17, theme.colors.SEARCH_UNDERLINE_COLOR),
-              marginRight: 7,
-            }}
-          >
+          <Text style={{ ...theme.viewStyles.text('SB', 17, theme.colors.SEARCH_UNDERLINE_COLOR) }}>
             {string.common.Rs}
-            {planSelected?.limitedPriceAmount}
-          </Text>
-          <Text style={styles.slashedPrice}>
-            {string.common.Rs}
-            {planSelected?.amount}
+            {planSelected?.currentSellingPrice}
           </Text>
         </View>
       </View>
@@ -167,6 +188,13 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
   return (
     <View style={[styles.careBannerView, props.style]}>
       {planSelected ? renderCarePlanAdded() : renderSubscribeCareContainer()}
+      {/* {membershipPlans?.length > 0 ? (
+        <ContentLoader active loading={true} />
+      ) : planSelected ? (
+        renderCarePlanAdded()
+      ) : (
+        renderSubscribeCareContainer()
+      )} */}
     </View>
   );
 };
@@ -187,26 +215,17 @@ const styles = StyleSheet.create({
   careTextContainer: {
     flexDirection: 'row',
   },
-  careRedBox: {
-    width: 23,
-    height: 23,
-    marginTop: 4,
-    backgroundColor: theme.colors.DEEP_RED,
-    borderRadius: 2,
-    marginRight: 10,
-  },
   getCareText: {
     ...theme.viewStyles.text('R', 13, theme.colors.LIGHT_BLUE),
     flexWrap: 'wrap',
+    marginRight: 60,
   },
   subscriptionCard: {
     ...theme.viewStyles.cardViewStyle,
-    padding: 7,
-    marginRight: 10,
-    marginLeft: 5,
-    marginVertical: 10,
-    minWidth: 129,
-    minHeight: 135,
+    borderRadius: 80,
+    justifyContent: 'center',
+    marginRight: 12,
+    marginTop: 12,
   },
   optionButton: {
     width: 15,
@@ -230,7 +249,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   price: {
-    ...theme.viewStyles.text('M', 23, theme.colors.SEARCH_UNDERLINE_COLOR),
+    ...theme.viewStyles.text('SB', 20, theme.colors.SEARCH_UNDERLINE_COLOR),
+    marginTop: planDimension / 2 - 10,
+    alignSelf: 'center',
   },
   oldPrice: {
     ...theme.viewStyles.text('R', 14, theme.colors.BORDER_BOTTOM_COLOR),
@@ -238,7 +259,6 @@ const styles = StyleSheet.create({
   },
   limitedPriceBanner: {
     backgroundColor: theme.colors.BUTTON_BG,
-    alignSelf: 'baseline',
     paddingHorizontal: 5,
     marginLeft: 8,
     borderRadius: 1,
@@ -249,17 +269,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginTop: 17,
     justifyContent: 'space-between',
-    paddingBottom: 4,
+    alignItems: 'center',
   },
   spaceRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
   careLogo: {
-    width: 27,
-    height: 27,
-    borderRadius: 13.5,
-    marginRight: 9,
+    width: 60,
+    height: 32,
+    marginHorizontal: -5,
   },
   careLogoTextStyle: {
     textTransform: 'lowercase',
@@ -276,5 +295,45 @@ const styles = StyleSheet.create({
   removeTxt: {
     ...theme.viewStyles.text('SB', 13, theme.colors.BORDER_BOTTOM_COLOR),
     textAlign: 'right',
+  },
+  circleLogo: {
+    width: 60,
+    height: 32,
+  },
+  box: {
+    height: 100,
+    width: 100,
+    borderRadius: 5,
+    marginVertical: 40,
+    backgroundColor: '#61dafb',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  duration: {
+    position: 'absolute',
+    top: planDimension / 2 - 2,
+    transform: [{ rotate: '-90deg' }],
+    ...theme.viewStyles.text('M', 16, theme.colors.APP_YELLOW),
+  },
+  planContainer: {
+    width: planDimension,
+    height: planDimension,
+    alignSelf: 'center',
+  },
+  radioBtn: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    borderWidth: 1,
+    borderColor: theme.colors.SEARCH_UNDERLINE_COLOR,
+    alignSelf: 'center',
+    marginTop: 4,
+    position: 'absolute',
+    top: planDimension + 38,
+  },
+  savingsText: {
+    ...theme.viewStyles.text('M', 8, theme.colors.SHERPA_BLUE),
+    alignSelf: 'center',
+    marginTop: 12,
   },
 });

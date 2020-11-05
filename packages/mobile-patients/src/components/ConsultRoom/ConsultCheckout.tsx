@@ -62,6 +62,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
   const couponApplied = props.navigation.getParam('couponApplied');
   const callSaveSearch = props.navigation.getParam('callSaveSearch');
   const patientId = props.navigation.getParam('patientId');
+  const planSelected = props.navigation.getParam('planSelected');
 
   type bankOptions = {
     name: string;
@@ -291,6 +292,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
                 g(apptmt, 'appointmentDateTime'),
                 g(data, 'data', 'bookAppointment', 'appointment', 'id')!
               ),
+              planSelected: planSelected,
             })
           : props.navigation.navigate(AppRoutes.ConsultPaymentnew, {
               consultedWithDoctorBefore: consultedWithDoctorBefore,
@@ -313,6 +315,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
                 g(apptmt, 'appointmentDateTime'),
                 g(data, 'data', 'bookAppointment', 'appointment', 'id')!
               ),
+              planSelected: planSelected,
             });
         setLoading && setLoading(false);
       })

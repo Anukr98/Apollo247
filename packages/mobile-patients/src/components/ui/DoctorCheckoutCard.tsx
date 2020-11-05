@@ -1,8 +1,11 @@
 import React from 'react';
-import { View, Text, Dimensions, StyleSheet, Image } from 'react-native';
+import { View, Text, Dimensions, StyleSheet, Image, ImageBackground } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { DoctorPlaceholderImage, Location } from '@aph/mobile-patients/src/components/ui/Icons';
-import { CareLogo } from '@aph/mobile-patients/src/components/ui/CareLogo';
+import {
+  DoctorPlaceholderImage,
+  Location,
+  CircleLogo,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 const { width } = Dimensions.get('window');
 import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
@@ -71,7 +74,7 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
         </View>
         {isCareSubscribed || planSelected ? (
           <Text style={styles.amountSavedTextStyle}>
-            {string.common.amountSavedByCare.replace('{amount}', `${minDiscountedPrice}`)}
+            {string.careDoctors.circleSavings.replace('{amount}', `${minDiscountedPrice}`)}
           </Text>
         ) : null}
       </View>
@@ -79,12 +82,27 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
   };
 
   const renderNonCareDoctorPricing = () => {
+    return <Text style={styles.doctorFees}>{`${string.common.Rs} ${Number(doctorFees)}`}</Text>;
+  };
+
+  const renderDoctorProfile = () => {
     return (
-      <Text style={styles.doctorFees}>{`${string.common.Rs} ${Number(doctorFees).toFixed(
-        2
-      )}`}</Text>
+      <View style={{ marginLeft: isCareDoctor ? 3.5 : 0 }}>
+        {!!g(doctor, 'photoUrl') ? (
+          <Image
+            style={styles.doctorProfile}
+            source={{
+              uri: doctor?.photoUrl!,
+            }}
+            resizeMode={'contain'}
+          />
+        ) : (
+          <DoctorPlaceholderImage />
+        )}
+      </View>
     );
   };
+
   return (
     <View style={styles.doctorCard}>
       <View style={styles.rowContainer}>
@@ -99,43 +117,41 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
               ? string.common.optedForOnlineConsultation
               : string.common.optedForClinicConsultation}
           </Text>
-          {!isOnlineConsult && (
-            <View>
-              <View style={styles.row}>
-                <Location />
-                <Text style={[styles.regularText, { marginTop: 0 }]}>{`${
-                  doctor?.doctorHospital?.[0].facility?.streetLine1
-                }, ${
+        </View>
+        <View>
+          {isCareDoctor ? (
+            <ImageBackground
+              source={require('@aph/mobile-patients/src/components/ui/icons/doctor_ring.png')}
+              style={styles.drImageBackground}
+              resizeMode="contain"
+            >
+              {renderDoctorProfile()}
+            </ImageBackground>
+          ) : (
+            <View>{renderDoctorProfile()}</View>
+          )}
+          {isCareDoctor && <CircleLogo style={styles.careLogo} />}
+        </View>
+      </View>
+      {!isOnlineConsult && (
+        <View style={{ width: isCareDoctor ? width - 140 : width - 40 }}>
+          <View style={styles.row}>
+            <Location />
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.regularText, { marginTop: 0, flexWrap: 'wrap' }]}>
+                {`${doctor?.doctorHospital?.[0].facility?.streetLine1}, ${
                   doctor?.doctorHospital?.[0].facility?.streetLine2
                     ? `${doctor?.doctorHospital?.[0].facility?.streetLine2}, `
                     : ''
-                }${doctor?.doctorHospital?.[0].facility?.city}`}</Text>
-              </View>
+                }${doctor?.doctorHospital?.[0].facility?.city}`}
+              </Text>
             </View>
-          )}
-          <Text style={styles.appointmentTimeStyle}>
-            {dateFormatter(appointmentInput?.appointmentDateTime)}
-          </Text>
+          </View>
         </View>
-        <View>
-          {!!g(doctor, 'photoUrl') ? (
-            <Image
-              style={{
-                height: 80,
-                borderRadius: 40,
-                width: 80,
-              }}
-              source={{
-                uri: doctor?.photoUrl!,
-              }}
-              resizeMode={'contain'}
-            />
-          ) : (
-            <DoctorPlaceholderImage />
-          )}
-          {isCareDoctor && <CareLogo style={styles.careLogo} textStyle={styles.careLogoText} />}
-        </View>
-      </View>
+      )}
+      <Text style={styles.appointmentTimeStyle}>
+        {dateFormatter(appointmentInput?.appointmentDateTime)}
+      </Text>
       <View style={styles.seperatorLine} />
       <View style={[styles.rowContainer, { marginTop: 9 }]}>
         <Text style={[styles.regularText, { marginTop: 0 }]}>{string.common.amountToPay}</Text>
@@ -171,10 +187,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   careLogo: {
-    marginTop: 10,
-    width: 73,
-    height: 29,
-    borderRadius: 14,
+    width: 52,
+    height: 27,
     alignSelf: 'center',
   },
   careLogoText: {
@@ -202,7 +216,7 @@ const styles = StyleSheet.create({
     textDecorationStyle: 'solid',
   },
   careDiscountedPrice: {
-    ...theme.viewStyles.text('M', 12, theme.colors.DEEP_RED),
+    ...theme.viewStyles.text('M', 12, theme.colors.APP_YELLOW),
     marginLeft: 6,
   },
   normalRowContainer: {
@@ -211,7 +225,7 @@ const styles = StyleSheet.create({
   },
   amountSavedTextStyle: {
     ...theme.fonts.IBMPlexSansMedium(10),
-    color: theme.colors.DEEP_RED,
+    color: theme.colors.APP_YELLOW,
     marginTop: 2,
   },
   doctorFees: {
@@ -219,7 +233,17 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
-    alignItems: 'center',
     marginTop: 7,
+  },
+  doctorProfile: {
+    height: 80,
+    borderRadius: 40,
+    width: 80,
+    alignSelf: 'center',
+  },
+  drImageBackground: {
+    height: 95,
+    width: 95,
+    justifyContent: 'center',
   },
 });

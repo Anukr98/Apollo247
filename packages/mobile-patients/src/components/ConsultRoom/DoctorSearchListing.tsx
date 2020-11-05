@@ -658,7 +658,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       pageNo: pageNo ? pageNo + 1 : 1,
       pageSize: pageSize,
       searchText: searchText,
-      // isCare: careDoctorsSwitch,
+      isCare: careDoctorsSwitch,
     };
     setBugFenderLog('DOCTOR_FILTER_INPUT', JSON.stringify(FilterInput));
     !pageNo && setshowSpinner(true);

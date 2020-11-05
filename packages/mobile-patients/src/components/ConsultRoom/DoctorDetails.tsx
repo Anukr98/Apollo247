@@ -23,11 +23,7 @@ import {
   getDoctorDetailsById_getDoctorDetailsById,
 } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import {
-  ConsultMode,
-  DoctorType,
-  PLAN_STATUS,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { ConsultMode, DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   getNextAvailableSlots,
   getSecretaryDetailsByDoctor,
@@ -77,9 +73,9 @@ import {
   RectangularIcon,
   VideoPlayIcon,
   CTGrayChat,
-  InfoRed,
+  InfoYellow,
+  CircleLogo,
 } from '../ui/Icons';
-import { CareLogo } from '@aph/mobile-patients/src/components/ui/CareLogo';
 // import { NotificationListener } from '../NotificationListener';
 import { calculateCareDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
@@ -183,12 +179,18 @@ const styles = StyleSheet.create({
     height: Platform.OS == 'android' ? 115 : 110,
   },
   careLogo: {
+    width: 49,
+    height: 26,
+    alignSelf: 'center',
+  },
+  circleView: {
+    backgroundColor: theme.colors.APP_YELLOW,
+    paddingHorizontal: 12,
+    paddingVertical: 2,
     marginLeft: 'auto',
     marginRight: 20,
     marginTop: -40,
-    width: 72,
-    height: 30,
-    borderRadius: 14,
+    borderRadius: 2,
   },
   careLogoText: {
     ...theme.viewStyles.text('M', 11, 'white'),
@@ -199,17 +201,23 @@ const styles = StyleSheet.create({
     textDecorationStyle: 'solid',
   },
   careDiscountedPrice: {
-    ...theme.viewStyles.text('M', 12, theme.colors.DEEP_RED),
+    ...theme.viewStyles.text('M', 12, theme.colors.APP_YELLOW),
+  },
+  smallText: {
+    ...theme.viewStyles.text('M', 10, theme.colors.APP_YELLOW),
   },
   rowContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   smallCareLogo: {
-    marginLeft: 5,
-    height: 11,
-    width: 27,
-    borderRadius: 5,
+    height: 21,
+    width: 40,
+  },
+  smallInfo: {
+    width: 10,
+    height: 10,
+    marginLeft: 3,
   },
   smallCareLogoText: {
     ...theme.viewStyles.text('M', 4, 'white'),
@@ -220,7 +228,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   infoIcon: {
     width: 10,
@@ -567,18 +575,26 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             },
           ]}
         >
-          {string.common.Rs}
+          {string.common.Rs}{' '}
           {consultType === ConsultMode.ONLINE ? onlineConsultMRPPrice : physicalConsultMRPPrice}
         </Text>
         <View style={styles.rowContainer}>
           <Text style={styles.careDiscountedPrice}>
-            {string.common.Rs}
+            {string.common.Rs}{' '}
             {consultType === ConsultMode.ONLINE
               ? onlineConsultSlashedPrice
               : physicalConsultSlashedPrice}
           </Text>
-          <CareLogo style={styles.smallCareLogo} textStyle={styles.smallCareLogoText} />
+          {isCareSubscribed && <CircleLogo style={[styles.smallCareLogo, { height: 17 }]} />}
         </View>
+        {!isCareSubscribed && (
+          <View style={styles.row}>
+            <Text style={styles.smallText}>for</Text>
+            <CircleLogo style={styles.smallCareLogo} />
+            <Text style={[styles.smallText, { marginLeft: -4 }]}>members</Text>
+            <InfoYellow style={styles.smallInfo} />
+          </View>
+        )}
       </View>
     );
   };
@@ -746,14 +762,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                           )}
                         </Text>
                       )}
-                      {!isCareSubscribed && isCareDoctor && (
-                        <View style={styles.row}>
-                          <Text style={styles.smallRightAlignText}>
-                            {string.careDoctors.forCareMembers}
-                          </Text>
-                          <InfoRed style={styles.infoIcon} />
-                        </View>
-                      )}
                       <AvailabilityCapsule
                         titleTextStyle={{ paddingHorizontal: 7 }}
                         styles={{ marginTop: -5 }}
@@ -834,14 +842,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                             <Text style={styles.onlineConsultAmount}>
                               {string.common.Rs} {doctorDetails.physicalConsultationFees}
                             </Text>
-                          )}
-                          {!isCareSubscribed && isCareDoctor && (
-                            <View style={styles.row}>
-                              <Text style={styles.smallRightAlignText}>
-                                {string.careDoctors.forCareMembers}
-                              </Text>
-                              <InfoRed style={styles.infoIcon} />
-                            </View>
                           )}
                           <AvailabilityCapsule
                             titleTextStyle={{ paddingHorizontal: 7 }}
@@ -1336,7 +1336,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   style={{ top: 0, height: 140, width: 140, opacity: imgOp, alignSelf: 'center' }}
                 />
                 {isCareDoctor && (
-                  <CareLogo style={styles.careLogo} textStyle={styles.careLogoText} />
+                  <View style={styles.circleView}>
+                    <CircleLogo style={styles.careLogo} />
+                  </View>
                 )}
               </Animated.View>
             </>

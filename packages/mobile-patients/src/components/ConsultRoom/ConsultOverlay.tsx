@@ -143,6 +143,16 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     physicalConsultSlashedPrice,
   } = careDoctorDetails;
 
+  const actualPrice = isCareDoctor
+    ? selectedTab === 'Consult Online'
+      ? isCareSubscribed
+        ? onlineConsultSlashedPrice
+        : onlineConsultMRPPrice
+      : isCareSubscribed
+      ? physicalConsultSlashedPrice
+      : physicalConsultMRPPrice
+    : Number(doctorFees);
+
   const renderErrorPopup = (desc: string) =>
     showAphAlert!({
       title: 'Uh oh.. :(',
@@ -248,12 +258,10 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       appointmentType:
         selectedTab === tabs[0].title ? APPOINTMENT_TYPE.ONLINE : APPOINTMENT_TYPE.PHYSICAL,
       hospitalId,
-      couponCode: coupon ? coupon : null,
       bookingSource: BOOKINGSOURCE.MOBILE,
       deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,
       ...externalConnectParam,
-      actualAmount: Number(doctorFees),
-      discountedAmount: doctorDiscountedFees,
+      actualAmount: actualPrice,
       pinCode: locationDetails && locationDetails.pincode,
     };
 
@@ -261,15 +269,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       doctor: props.doctor,
       tabs: tabs,
       selectedTab: selectedTab,
-      price: isCareDoctor
-        ? selectedTab === 'Consult Online'
-          ? isCareSubscribed
-            ? onlineConsultSlashedPrice
-            : onlineConsultMRPPrice
-          : isCareSubscribed
-          ? physicalConsultSlashedPrice
-          : physicalConsultMRPPrice
-        : Number(doctorFees),
+      price: actualPrice,
       appointmentInput: appointmentInput,
       couponApplied: coupon == '' ? false : true,
       consultedWithDoctorBefore: props.consultedWithDoctorBefore,

@@ -1,8 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TouchableOpacityProps } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  TouchableOpacityProps,
+  StyleProp,
+  ViewStyle,
+} from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { Down, Up } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Down, Up, CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
 import { CareLogo } from '@aph/mobile-patients/src/components/ui/CareLogo';
 import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import { calculateCareDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
@@ -15,6 +23,7 @@ interface ConsultDiscountProps {
   couponDiscountFees: number;
   isCareSubscribed?: boolean;
   planSelected?: any;
+  style?: StyleProp<ViewStyle>;
 }
 
 export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
@@ -44,7 +53,7 @@ export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
 
   if (totalSavings > 0) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, props.style]}>
         <TouchableOpacity
           activeOpacity={1}
           style={styles.rowContainer}
@@ -68,7 +77,7 @@ export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
             {isCareDoctor && (isCareSubscribed || planSelected) ? (
               <View style={[styles.rowContainer, { marginTop: 10 }]}>
                 <View style={styles.row}>
-                  <CareLogo style={styles.careLogo} textStyle={styles.careLogoText} />
+                  <CircleLogo style={styles.careLogo} />
                   <Text style={styles.membershipDiscountStyle}>
                     {string.common.membershipDiscount}
                   </Text>
@@ -84,7 +93,7 @@ export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
                 <Text style={styles.couponTextStyle}>
                   {string.common.couponApplied} ({`${coupon}`})
                 </Text>
-                <Text style={styles.membershipDiscountStyle}>
+                <Text style={[styles.membershipDiscountStyle, { color: theme.colors.LIGHT_BLUE }]}>
                   {string.common.Rs} {couponDiscountFees}
                 </Text>
               </View>
@@ -110,7 +119,8 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
     padding: 10,
     backgroundColor: 'white',
-    marginBottom: 20,
+    ...theme.viewStyles.cardViewStyle,
+    zIndex: 1,
   },
   rowContainer: {
     flexDirection: 'row',
@@ -131,10 +141,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   careLogo: {
-    width: 23,
-    height: 12,
-    borderRadius: 2,
-    marginRight: 4,
+    width: 39,
+    height: 21,
   },
   careLogoText: {
     ...theme.viewStyles.text('M', 7, 'white'),

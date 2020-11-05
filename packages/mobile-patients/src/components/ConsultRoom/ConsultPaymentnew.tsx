@@ -18,6 +18,7 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import AsyncStorage from '@react-native-community/async-storage';
+import { ONE_APOLLO_STORE_CODE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 export interface ConsultPaymentnewProps extends NavigationScreenProps {}
 
@@ -36,12 +37,16 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
   const webEngageEventAttributes = props.navigation.getParam('webEngageEventAttributes');
   const appsflyerEventAttributes = props.navigation.getParam('appsflyerEventAttributes');
   const fireBaseEventAttributes = props.navigation.getParam('fireBaseEventAttributes');
+  const planSelected = props.navigation.getParam('planSelected');
   const { currentPatient } = useAllCurrentPatients();
   const currentPatiendId = currentPatient && currentPatient.id;
   const mobileNumber = currentPatient && currentPatient.mobileNumber;
   const [loading, setLoading] = useState(true);
   const displayID = props.navigation.getParam('displayID');
   let WebViewRef: any;
+  const planId = AppConfig.Configuration.CARE_PLAN_ID;
+  const storeCode =
+    Platform.OS === 'ios' ? ONE_APOLLO_STORE_CODE.IOSCUS : ONE_APOLLO_STORE_CODE.ANDCUS;
 
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -101,9 +106,12 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
   const renderwebView = () => {
     console.log(JSON.stringify(paymentTypeID));
     const baseUrl = AppConfig.Configuration.CONSULT_PG_BASE_URL;
-    const url = `${baseUrl}/consultpayment?appointmentId=${appointmentId}&patientId=${currentPatiendId}&price=${price}&paymentTypeID=${paymentTypeID}&paymentModeOnly=YES${
+    let url = `${baseUrl}/consultpayment?appointmentId=${appointmentId}&patientId=${currentPatiendId}&price=${price}&paymentTypeID=${paymentTypeID}&paymentModeOnly=YES${
       bankCode ? '&bankCode=' + bankCode : ''
     }`;
+    if (planSelected) {
+      url = `${url}&planId=${planId}&subPlanId=${planSelected?.subPlanId}&storeCode=${storeCode}`;
+    }
     console.log(url);
     return (
       <WebView

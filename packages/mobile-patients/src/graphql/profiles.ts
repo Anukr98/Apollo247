@@ -3353,3 +3353,16 @@ export const GET_DIAGNOSTIC_SLOTS_WITH_AREA_ID = gql`
     }
   }
 `;
+
+export const GET_PLAN_DETAILS_BY_PLAN_ID = gql`
+  query GetPlanDetailsByPlanId($plan_id: String!) {
+    GetPlanDetailsByPlanId(plan_id: $plan_id) {
+      response {
+        _id
+        name
+        plan_id
+        plan_summary
+      }
+    }
+  }
+`;

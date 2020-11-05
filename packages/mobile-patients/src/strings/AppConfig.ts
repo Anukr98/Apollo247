@@ -69,6 +69,7 @@ const appStaticVariables = {
   CUSTOMER_CARE_NUMBER: string.common.customerCareNumber,
   PRODUCT_SUGGESTIONS_CATEGORYID: '41920',
   PRODUCT_SUGGESTIONS_COUNT: 10,
+  CARE_PLAN_ID: 'CAREPlan',
 };
 
 const DEV_top6_specailties = [

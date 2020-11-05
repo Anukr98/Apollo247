@@ -97,7 +97,7 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
         <View style={[styles.rowContainer, { marginTop: 4 }]}>
           <Text style={styles.regularText}>{string.common.careMembership}</Text>
           <Text style={styles.regularText}>
-            {string.common.Rs} {planSelected?.limitedPriceAmount}
+            {string.common.Rs} {planSelected?.currentSellingPrice}
           </Text>
         </View>
       ) : null}
@@ -122,10 +122,10 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
             ? isOnlineConsult
               ? onlineConsultSlashedPrice -
                 couponDiscountFees +
-                Number(planSelected?.limitedPriceAmount)
+                Number(planSelected?.currentSellingPrice)
               : physicalConsultSlashedPrice -
                 couponDiscountFees +
-                Number(planSelected?.limitedPriceAmount)
+                Number(planSelected?.currentSellingPrice)
             : amountToPay}
         </Text>
       </View>

@@ -562,10 +562,10 @@
   },
   "careDoctors": {
     "care": "CARE",
-    "viewCareDoctors": "View CARE Doctors",
-    "upgradeToCareToPay": "Upgrade to CIRCLE to PAY ",
+    "circleMemberPays": "CIRCLE MEMBER PAYS",
     "carePlanAddedToCart": "CARE plan successfully added to cart.",
     "discountInfoReflectsOnCheckout": "Discount and other information will be reflected on checkout page",
-    "forCareMembers": "for CARE members"
+    "forCareMembers": "for CARE members",
+    "circleSavings": "CIRCLE savings of ₹{amount}"
   }
 }

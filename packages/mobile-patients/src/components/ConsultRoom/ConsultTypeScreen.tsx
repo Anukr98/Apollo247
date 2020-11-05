@@ -298,20 +298,18 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
             },
           ]}
         >
-          {string.common.Rs}
+          {string.common.Rs}{' '}
           {heading === string.consultType.online.heading
             ? onlineConsultMRPPrice
             : physicalConsultMRPPrice}
-          500
         </Text>
         <View style={styles.rowContainer}>
           {isCareSubscribed && <CircleLogo style={styles.careLogo} />}
           <Text style={styles.careDiscountedPrice}>
-            {string.common.Rs}
+            {string.common.Rs}{' '}
             {heading === string.consultType.online.heading
               ? onlineConsultSlashedPrice
               : physicalConsultSlashedPrice}
-            400
           </Text>
         </View>
       </View>

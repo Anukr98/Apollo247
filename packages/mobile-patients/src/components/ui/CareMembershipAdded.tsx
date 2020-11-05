@@ -1,10 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { CareLogo } from '@aph/mobile-patients/src/components/ui/CareLogo';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import { calculateCareDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
+import { CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
 
 interface CareMembershipProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
@@ -18,9 +18,9 @@ export const CareMembershipAdded: React.FC<CareMembershipProps> = (props) => {
   return (
     <View style={styles.container}>
       <View style={styles.rowContainer}>
-        <CareLogo style={styles.careLogo} textStyle={styles.careLogoTextStyle} />
+        <CircleLogo style={styles.careLogo} />
         <Text style={styles.mediumFontText}>
-          CARE membership<Text style={{ color: theme.colors.SHERPA_BLUE }}> applied</Text>
+          membership<Text style={{ color: theme.colors.SHERPA_BLUE }}> applied</Text>
         </Text>
       </View>
       <View style={styles.amountSavedView}>
@@ -41,10 +41,9 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.card(),
   },
   careLogo: {
-    width: 27,
-    height: 27,
-    borderRadius: 13.5,
-    marginRight: 11,
+    width: 68,
+    height: 36,
+    marginHorizontal: -6,
   },
   careLogoTextStyle: {
     textTransform: 'lowercase',

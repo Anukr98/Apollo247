@@ -88,10 +88,10 @@ const styles = StyleSheet.create({
   },
   drImageMargins: {
     marginHorizontal: 12,
-    marginTop: 40,
+    marginTop: 32,
   },
   doctorNameStyles: {
-    paddingTop: 32,
+    paddingTop: 35,
     paddingLeft: 0,
     textTransform: 'capitalize',
     ...theme.fonts.IBMPlexSansMedium(18),
@@ -153,7 +153,12 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
   },
-  circleStyle: {},
+  doctorProfile: {
+    height: 80,
+    borderRadius: 40,
+    width: 80,
+    alignSelf: 'center',
+  },
 });
 
 export interface DoctorCardProps extends NavigationScreenProps {
@@ -242,7 +247,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       <View style={{ flexDirection: 'row', marginTop: 5 }}>
         <Text style={{ ...theme.viewStyles.text('M', 15, theme.colors.SKY_BLUE) }}>
           {string.common.Rs}
-          {'  '}
         </Text>
         <Text style={{ ...theme.viewStyles.text('M', 13, theme.colors.SKY_BLUE), paddingTop: 1 }}>
           {rowData.fee}
@@ -257,11 +261,11 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         <View style={{ marginTop: 5 }}>
           <View style={styles.rowContainer}>
             <Text style={styles.carePrice}>
-              {string.common.Rs}{' '}
+              {string.common.Rs}
               {physicalConsultMRPPrice === onlineConsultMRPPrice ? onlineConsultMRPPrice : minMrp}
             </Text>
             <Text style={styles.careDiscountedPrice}>
-              {string.common.Rs}{' '}
+              {string.common.Rs}
               {physicalConsultMRPPrice === onlineConsultMRPPrice
                 ? onlineConsultSlashedPrice
                 : minSlashedPrice}
@@ -283,7 +287,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               You pay
             </Text>
             <Text style={{ ...theme.viewStyles.text('M', 15, theme.colors.SKY_BLUE) }}>
-              {string.common.Rs}{' '}
+              {string.common.Rs}
               {physicalConsultMRPPrice === onlineConsultMRPPrice ? onlineConsultMRPPrice : minMrp}
             </Text>
           </View>
@@ -299,7 +303,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             </Text>
             <View style={styles.rowContainer}>
               <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.APP_YELLOW) }}>
-                {string.common.Rs}{' '}
+                {string.common.Rs}
                 {physicalConsultMRPPrice === onlineConsultMRPPrice
                   ? onlineConsultSlashedPrice
                   : minSlashedPrice}
@@ -340,16 +344,10 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
 
   const renderDoctorProfile = () => {
     return (
-      <View>
+      <View style={{ marginLeft: isCareDoctor ? 3.3 : 0 }}>
         {!!g(rowData, 'thumbnailUrl') ? (
           <Image
-            style={{
-              height: 80,
-              borderRadius: 40,
-              width: 80,
-              alignSelf: 'center',
-              marginLeft: isCareDoctor ? 2.5 : 0,
-            }}
+            style={styles.doctorProfile}
             source={{
               uri: rowData.thumbnailUrl!,
             }}
@@ -450,18 +448,18 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             <View>
               {isCareDoctor ? (
                 <ImageBackground
-                  source={require('../ui/icons/doctor_ring.png')}
+                  source={require('@aph/mobile-patients/src/components/ui/icons/doctor_ring.png')}
                   style={[
                     styles.drImageBackground,
                     styles.drImageMargins,
-                    { marginBottom: isCareDoctor ? 0 : 12 },
+                    { marginBottom: isCareDoctor ? 0 : 22 },
                   ]}
                   resizeMode="contain"
                 >
                   {renderDoctorProfile()}
                 </ImageBackground>
               ) : (
-                <View style={[styles.drImageMargins, { marginBottom: isCareDoctor ? 0 : 12 }]}>
+                <View style={[styles.drImageMargins, { marginBottom: isCareDoctor ? 0 : 22 }]}>
                   {renderDoctorProfile()}
                 </View>
               )}
@@ -474,6 +472,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                   justifyContent: 'center',
                   alignItems: 'center',
                   marginHorizontal: 20,
+                  marginTop: isCareDoctor ? 3 : 0,
                 }}
               >
                 {isOnline && (
@@ -516,12 +515,17 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               {renderSpecialities()}
               {isCareDoctor ? renderCareDoctorsFee() : calculatefee(rowData, isBoth, isOnline)}
               {isCareDoctor && minDiscountedPrice > -1 && isCareSubscribed && (
-                <Text style={theme.viewStyles.text('M', 10, theme.colors.APP_YELLOW)}>
+                <Text
+                  style={{
+                    ...theme.viewStyles.text('M', 10, theme.colors.APP_YELLOW),
+                    marginTop: 2,
+                  }}
+                >
                   {string.careDoctors.circleSavings.replace('{amount}', `${minDiscountedPrice}`)}
                 </Text>
               )}
               <Text
-                style={[styles.educationTextStyles, { marginTop: isCareDoctor ? 20 : 0 }]}
+                style={[styles.educationTextStyles, { marginTop: isCareDoctor ? 10 : 0 }]}
                 numberOfLines={props.numberOfLines}
               >
                 {rowData.qualification}
