@@ -258,6 +258,19 @@ export const formatSelectedAddress = (
   return formattedAddress;
 };
 
+export const getPrescriptionDate = (date: string) => {
+  let prev_date = new Date();
+  prev_date.setDate(prev_date.getDate() - 1);
+  if (moment(new Date()).format('DD/MM/YYYY') === moment(new Date(date)).format('DD/MM/YYYY')) {
+    return 'Today';
+  } else if (
+    moment(prev_date).format('DD/MM/YYYY') === moment(new Date(date)).format('DD/MM/YYYY')
+  ) {
+    return 'Yesterday';
+  }
+  return moment(new Date(date)).format('DD MMM');
+};
+
 export const getUuidV4 = () => {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;

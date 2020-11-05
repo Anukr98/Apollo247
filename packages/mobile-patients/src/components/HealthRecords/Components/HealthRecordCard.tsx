@@ -5,6 +5,7 @@ import {
   SelfUploadPhrIcon,
   CartPhrIcon,
   FollowUpPhrIcon,
+  More,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import moment from 'moment';
@@ -48,6 +49,8 @@ export interface HealthRecordCardProps {
   sourceName: string;
   index: number;
   showFollowUp?: boolean;
+  healthConditionCard?: boolean;
+  healthCondtionCardTopView?: React.ReactElement;
 }
 
 export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
@@ -65,6 +68,8 @@ export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
     onOrderTestAndMedicinePress,
     onFollowUpPress,
     showFollowUp,
+    healthConditionCard,
+    healthCondtionCardTopView,
   } = props;
   return (
     <TouchableOpacity
@@ -73,43 +78,54 @@ export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
       onPress={() => onHealthCardPress(item)}
     >
       <View style={{ marginVertical: 12, marginLeft: 13, marginRight: 11 }}>
+        <View style={{ flexDirection: 'row', position: 'absolute', top: 0, right: 0 }}>
+          <Text style={{ ...theme.viewStyles.text('R', 10, '#67909C', 1, 13) }}>{dateText}</Text>
+          {/* For Next Phase */}
+          {/* <MaterialMenu
+            options={editDeleteData}
+            menuContainerStyle={[styles.menuContainerStyle, { marginTop: 25 }]}
+            itemContainer={{ height: 44.8, marginHorizontal: 12, width: 260 / 2 }}
+            itemTextStyle={styles.itemTextStyle}
+            showItemDifferentColor={true}
+            lastContainerStyle={{ borderBottomWidth: 0 }}
+            bottomPadding={{ paddingBottom: 0 }}
+            onPress={(selectedOption) => {
+              onEditDeletePress && onEditDeletePress(selectedOption.key);
+            }}
+          >
+            <More />
+          </MaterialMenu> */}
+        </View>
+        {healthConditionCard ? healthCondtionCardTopView : null}
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <View>
+          <View style={{ marginRight: 55 }}>
             <Text
               numberOfLines={1}
               style={{ ...theme.viewStyles.text('M', 16, '#02475B', 1, 20.8) }}
             >
               {prescriptionName}
             </Text>
-            <Text numberOfLines={1} style={{ ...theme.viewStyles.text('R', 10, '#67909C', 1, 13) }}>
-              {doctorName}
+            {doctorName ? (
+              <Text
+                numberOfLines={1}
+                style={{ ...theme.viewStyles.text('R', 10, '#67909C', 1, 13) }}
+              >
+                {doctorName}
+              </Text>
+            ) : null}
+          </View>
+        </View>
+        {healthConditionCard && !sourceName ? null : (
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 9 }}>
+            <SelfUploadPhrIcon style={{ width: 16, height: 10.14, marginRight: 8 }} />
+            <Text
+              numberOfLines={1}
+              style={{ ...theme.viewStyles.text('R', 12, '#67909C', 1, 15.8) }}
+            >
+              {sourceName}
             </Text>
           </View>
-          <View style={{ flexDirection: 'row' }}>
-            <Text style={{ ...theme.viewStyles.text('R', 10, '#67909C', 1, 13) }}>{dateText}</Text>
-            {/* For Next Phase */}
-            {/* <MaterialMenu
-              options={editDeleteData}
-              menuContainerStyle={[styles.menuContainerStyle, { marginTop: 25 }]}
-              itemContainer={{ height: 44.8, marginHorizontal: 12, width: 260 / 2 }}
-              itemTextStyle={styles.itemTextStyle}
-              showItemDifferentColor={true}
-              lastContainerStyle={{ borderBottomWidth: 0 }}
-              bottomPadding={{ paddingBottom: 0 }}
-              onPress={(selectedOption) => {
-                onEditDeletePress && onEditDeletePress(selectedOption.key);
-              }}
-            >
-              <More />
-            </MaterialMenu> */}
-          </View>
-        </View>
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 9 }}>
-          <SelfUploadPhrIcon style={{ width: 16, height: 10.14, marginRight: 8 }} />
-          <Text numberOfLines={1} style={{ ...theme.viewStyles.text('R', 12, '#67909C', 1, 15.8) }}>
-            {sourceName}
-          </Text>
-        </View>
+        )}
         {selfUpload ? null : (
           <View style={styles.followupAndCartViewStyle}>
             {showFollowUp ? (

@@ -65,6 +65,10 @@ import {
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response,
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalBills_response,
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalInsurances_response,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalConditions_response,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medications_response,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthRestrictions_response,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_allergies_response,
 } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -316,6 +320,27 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     | null
     | undefined
   >([]);
+  const [medicalConditions, setMedicalConditions] = useState<
+    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalConditions_response | null)[]
+    | null
+    | undefined
+  >([]);
+  const [medicalHealthRestrictions, setMedicalHealthRestrictions] = useState<
+    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthRestrictions_response | null)[]
+    | null
+    | undefined
+  >([]);
+  const [medicalMedications, setMedicalMedications] = useState<
+    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medications_response | null)[]
+    | null
+    | undefined
+  >([]);
+  const [medicalAllergies, setMedicalAllergies] = useState<
+    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_allergies_response | null)[]
+    | null
+    | undefined
+  >([]);
+  const [healthConditions, setHealthConditions] = useState<any[] | null>(null);
 
   const [consultsData, setConsultsData] = useState<(ConsultsType | null)[] | null>(null);
   const [medicineOrders, setMedicineOrders] = useState<(medicineOrders | null)[] | null>(null);
@@ -431,10 +456,10 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const sortWithDate = (array: any) => {
     return array?.sort(
       (a: any, b: any) =>
-        moment(b.date)
+        moment(b.date || b.billDateTime || b.startDateTime)
           .toDate()
           .getTime() -
-        moment(a.date)
+        moment(a.date || a.billDateTime || a.startDateTime)
           .toDate()
           .getTime()
     );
@@ -502,6 +527,30 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           'medicalInsurances',
           'response'
         );
+        const medicalConditionsData = g(
+          data,
+          'getPatientPrismMedicalRecords',
+          'medicalConditions',
+          'response'
+        );
+        const medicalHealthRestrictionsData = g(
+          data,
+          'getPatientPrismMedicalRecords',
+          'healthRestrictions',
+          'response'
+        );
+        const medicalMedicationsData = g(
+          data,
+          'getPatientPrismMedicalRecords',
+          'medications',
+          'response'
+        );
+        const medicalAllergiesData = g(
+          data,
+          'getPatientPrismMedicalRecords',
+          'allergies',
+          'response'
+        );
         console.log('data', data);
         setLabResults(labResultsData);
         setPrescriptions(prescriptionsData);
@@ -509,6 +558,10 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         setHospitalizationsNew(sortWithDate(hospitalizationsNewData));
         setMedicalBills(sortWithDate(medicalBillsData));
         setInsuranceBills(sortWithDate(medicalInsuranceData));
+        setMedicalConditions(medicalConditionsData);
+        setMedicalHealthRestrictions(medicalHealthRestrictionsData);
+        setMedicalMedications(medicalMedicationsData);
+        setMedicalAllergies(medicalAllergiesData);
       })
       .catch((error) => {
         CommonBugFender('HealthRecordsHome_fetchTestData', error);
@@ -561,6 +614,24 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     });
     setTestAndHealthCheck(sortByDate(mergeArray));
   }, [labResults, healthChecksNew]);
+
+  useEffect(() => {
+    const healthConditionsArray: any[] = [];
+    medicalMedications?.forEach((medicationRecord: any) => {
+      medicationRecord && healthConditionsArray.push(medicationRecord);
+    });
+    medicalConditions?.forEach((medicalConditionsRecord: any) => {
+      medicalConditionsRecord && healthConditionsArray.push(medicalConditionsRecord);
+    });
+    medicalHealthRestrictions?.forEach((healthRestrictionRecord: any) => {
+      healthRestrictionRecord && healthConditionsArray.push(healthRestrictionRecord);
+    });
+    medicalAllergies?.forEach((allergyRecord: any) => {
+      allergyRecord && healthConditionsArray.push(allergyRecord);
+    });
+    const sortedData = sortWithDate(healthConditionsArray);
+    setHealthConditions(sortedData);
+  }, [medicalConditions, medicalHealthRestrictions, medicalMedications, medicalAllergies]);
 
   const tabsClickedWebEngageEvent = (webEngageEventName: WebEngageEventName) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.MEDICAL_RECORDS] = {
@@ -826,7 +897,10 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           });
           break;
         case 4:
-          props.navigation.navigate(AppRoutes.HealthConditionScreen);
+          props.navigation.navigate(AppRoutes.HealthConditionScreen, {
+            healthConditionData: healthConditions,
+            onPressBack: onBackArrowPressed,
+          });
           break;
         case 5:
           props.navigation.navigate(AppRoutes.BillScreen, {

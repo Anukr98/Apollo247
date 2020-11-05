@@ -2288,6 +2288,94 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
           }
         }
       }
+      medicalConditions {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          medicalConditionName
+          doctorTreated
+          startDate
+          source
+          endDate
+          notes
+          illnessType
+          fileUrl
+          startDateTime
+          endDateTime
+          medicationFiles {
+            id
+            fileName
+            mimeType
+            content
+            byteContent
+            dateCreated
+          }
+        }
+      }
+      medications {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          medicineName
+          medicalCondition
+          doctorName
+          startDate
+          endDate
+          startDateTime
+          endDateTime
+          morning
+          noon
+          evening
+          notes
+          source
+        }
+      }
+      healthRestrictions {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          startDate
+          endDate
+          startDateTime
+          endDateTime
+          restrictionName
+          suggestedByDoctor
+          nature
+        }
+      }
+      allergies {
+        errorCode
+        errorMsg
+        errorType
+        response {
+          id
+          startDate
+          endDate
+          fileUrl
+          startDateTime
+          endDateTime
+          allergyName
+          severity
+          reactionToAllergy
+          doctorTreated
+          notes
+          source
+          attachmentList {
+            id
+            fileName
+            mimeType
+            content
+            byteContent
+            dateCreated
+          }
+        }
+      }
     }
   }
 `;
@@ -2318,6 +2406,48 @@ export const ADD_PATIENT_MEDICAL_BILL_RECORD = gql`
   ) {
     addPatientMedicalBillRecord(
       addPatientMedicalBillRecordInput: $addPatientMedicalBillRecordInput
+    ) {
+      status
+    }
+  }
+`;
+
+export const ADD_PATIENT_ALLERGY_RECORD = gql`
+  mutation addPatientAllergyRecord($addAllergyRecordInput: AddAllergyRecordInput) {
+    addPatientAllergyRecord(addAllergyRecordInput: $addAllergyRecordInput) {
+      status
+    }
+  }
+`;
+
+export const ADD_PATIENT_HEALTH_RESTRICTION_RECORD = gql`
+  mutation addPatientHealthRestrictionRecord(
+    $addPatientHealthRestrictionRecordInput: AddPatientHealthRestrictionRecordInput
+  ) {
+    addPatientHealthRestrictionRecord(
+      addPatientHealthRestrictionRecordInput: $addPatientHealthRestrictionRecordInput
+    ) {
+      status
+    }
+  }
+`;
+
+export const ADD_PATIENT_MEDICATION_RECORD = gql`
+  mutation addPatientMedicationRecord(
+    $addPatientMedicationRecordInput: AddPatientMedicationRecordInput
+  ) {
+    addPatientMedicationRecord(addPatientMedicationRecordInput: $addPatientMedicationRecordInput) {
+      status
+    }
+  }
+`;
+
+export const ADD_PATIENT_MEDICAL_CONDITION_RECORD = gql`
+  mutation addPatientMedicalConditionRecord(
+    $addMedicalConditionRecordInput: AddMedicalConditionRecordInput
+  ) {
+    addPatientMedicalConditionRecord(
+      addMedicalConditionRecordInput: $addMedicalConditionRecordInput
     ) {
       status
     }
