@@ -79,7 +79,8 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
   const renderNonCareDoctorPricing = () => {
     return (
       <Text style={styles.regularText}>
-        {string.common.Rs} {Number(doctorFees)}
+        {string.common.Rs}
+        {Number(doctorFees)}
       </Text>
     );
   };
@@ -97,7 +98,8 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
         <View style={[styles.rowContainer, { marginTop: 4 }]}>
           <Text style={styles.regularText}>{string.common.careMembership}</Text>
           <Text style={styles.regularText}>
-            {string.common.Rs} {planSelected?.currentSellingPrice}
+            {string.common.Rs}
+            {planSelected?.currentSellingPrice}
           </Text>
         </View>
       ) : null}
@@ -109,7 +111,8 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
             <Text style={styles.couponText}>({`${coupon}`})</Text>
           </View>
           <Text style={styles.couponText}>
-            - {string.common.Rs} {couponDiscountFees}
+            - {string.common.Rs}
+            {couponDiscountFees}
           </Text>
         </View>
       ) : null}
@@ -117,7 +120,7 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
       <View style={styles.rowContainer}>
         <Text style={styles.regularText}>{string.common.toPay}</Text>
         <Text style={{ ...theme.viewStyles.text('B', 16, theme.colors.SHERPA_BLUE) }}>
-          {string.common.Rs}{' '}
+          {string.common.Rs}
           {planSelected
             ? isOnlineConsult
               ? onlineConsultSlashedPrice -

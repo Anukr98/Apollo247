@@ -294,16 +294,17 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         }}
       >
         <Button
-          title={`${string.common.proceedToCheckout} - ${string.common.Rs} ${(isCareDoctor
-            ? selectedTab === 'Consult Online'
-              ? isCareSubscribed
-                ? onlineConsultSlashedPrice
-                : onlineConsultMRPPrice
-              : isCareSubscribed
-              ? physicalConsultSlashedPrice
-              : physicalConsultMRPPrice
-            : Number(doctorFees)
-          ).toFixed(2)}`}
+          title={`${string.common.proceedToCheckout} - ${string.common.Rs}${
+            isCareDoctor
+              ? selectedTab === 'Consult Online'
+                ? isCareSubscribed
+                  ? onlineConsultSlashedPrice
+                  : onlineConsultMRPPrice
+                : isCareSubscribed
+                ? physicalConsultSlashedPrice
+                : physicalConsultMRPPrice
+              : Number(doctorFees)
+          }`}
           disabled={
             disablePay
               ? true
@@ -484,13 +485,15 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         <View style={localStyles.rowSpaceBetweenStyle}>
           <Text style={localStyles.blueTextStyle}>Subtotal</Text>
           <Text style={[localStyles.blueRightTextStyle]}>
-            {string.common.Rs} {total}
+            {string.common.Rs}
+            {total}
           </Text>
         </View>
         <View style={localStyles.rowSpaceBetweenStyle}>
           <Text style={localStyles.blueTextStyle}>{`Coupon (${coupon})`}</Text>
           <Text style={[localStyles.blueRightTextStyle]}>
-            - {string.common.Rs} {couponDiscount}
+            - {string.common.Rs}
+            {couponDiscount}
           </Text>
         </View>
         <Spearator style={{ marginTop: 16, marginBottom: 10 }} />
@@ -502,7 +505,8 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               theme.viewStyles.text('B', 16, '#01475b', 1, 24),
             ]}
           >
-            {string.common.Rs} {amountToPay}
+            {string.common.Rs}
+            {amountToPay}
           </Text>
         </View>
       </View>

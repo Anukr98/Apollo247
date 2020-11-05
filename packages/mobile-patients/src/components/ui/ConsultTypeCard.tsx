@@ -195,12 +195,14 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
             },
           ]}
         >
-          {string.common.Rs} {onlineConsultMRPPrice}
+          {string.common.Rs}
+          {onlineConsultMRPPrice}
         </Text>
         <View style={styles.rowContainer}>
           {isCareSubscribed && <CircleLogo style={styles.careLogo} />}
           <Text style={styles.careDiscountedPrice}>
-            {string.common.Rs} {onlineConsultSlashedPrice}
+            {string.common.Rs}
+            {onlineConsultSlashedPrice}
           </Text>
         </View>
       </View>

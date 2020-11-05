@@ -83,7 +83,7 @@ export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
                   </Text>
                 </View>
                 <Text style={styles.membershipDiscountStyle}>
-                  {string.common.Rs}{' '}
+                  {string.common.Rs}
                   {isOnlineConsult ? onlineConsultDiscountedPrice : physicalConsultDiscountedPrice}
                 </Text>
               </View>
@@ -94,13 +94,15 @@ export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
                   {string.common.couponApplied} ({`${coupon}`})
                 </Text>
                 <Text style={[styles.membershipDiscountStyle, { color: theme.colors.LIGHT_BLUE }]}>
-                  {string.common.Rs} {couponDiscountFees}
+                  {string.common.Rs}
+                  {couponDiscountFees}
                 </Text>
               </View>
             ) : null}
             <View style={styles.seperatorLine} />
             <Text style={styles.totalPayStyle}>
-              {string.common.Rs} {totalSavings}
+              {string.common.Rs}
+              {totalSavings}
             </Text>
           </View>
         ) : null}

@@ -575,12 +575,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             },
           ]}
         >
-          {string.common.Rs}{' '}
+          {string.common.Rs}
           {consultType === ConsultMode.ONLINE ? onlineConsultMRPPrice : physicalConsultMRPPrice}
         </Text>
         <View style={styles.rowContainer}>
           <Text style={styles.careDiscountedPrice}>
-            {string.common.Rs}{' '}
+            {string.common.Rs}
             {consultType === ConsultMode.ONLINE
               ? onlineConsultSlashedPrice
               : physicalConsultSlashedPrice}
@@ -743,7 +743,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                         <Text style={styles.onlineConsultAmount}>
                           {Number(VirtualConsultationFee) <= 0 ||
                           VirtualConsultationFee === doctorDetails.onlineConsultationFees ? (
-                            <Text>{`${string.common.Rs} ${doctorDetails.onlineConsultationFees}`}</Text>
+                            <Text>{`${string.common.Rs}${doctorDetails.onlineConsultationFees}`}</Text>
                           ) : (
                             <>
                               <Text
@@ -752,11 +752,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                                   textDecorationStyle: 'solid',
                                 }}
                               >
-                                {`(${string.common.Rs} ${doctorDetails.onlineConsultationFees})`}
+                                {`(${string.common.Rs}${doctorDetails.onlineConsultationFees})`}
                               </Text>
                               <Text>
                                 {' '}
-                                {string.common.Rs} {VirtualConsultationFee}
+                                {string.common.Rs}
+                                {VirtualConsultationFee}
                               </Text>
                             </>
                           )}
@@ -840,7 +841,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                             renderCareDoctorPricing(ConsultMode.PHYSICAL)
                           ) : (
                             <Text style={styles.onlineConsultAmount}>
-                              {string.common.Rs} {doctorDetails.physicalConsultationFees}
+                              {string.common.Rs}
+                              {doctorDetails.physicalConsultationFees}
                             </Text>
                           )}
                           <AvailabilityCapsule

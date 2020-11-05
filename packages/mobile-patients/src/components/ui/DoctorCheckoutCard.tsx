@@ -82,7 +82,7 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
   };
 
   const renderNonCareDoctorPricing = () => {
-    return <Text style={styles.doctorFees}>{`${string.common.Rs} ${Number(doctorFees)}`}</Text>;
+    return <Text style={styles.doctorFees}>{`${string.common.Rs}${Number(doctorFees)}`}</Text>;
   };
 
   const renderDoctorProfile = () => {

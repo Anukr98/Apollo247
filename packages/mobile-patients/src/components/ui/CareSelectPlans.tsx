@@ -188,13 +188,6 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
   return (
     <View style={[styles.careBannerView, props.style]}>
       {planSelected ? renderCarePlanAdded() : renderSubscribeCareContainer()}
-      {/* {membershipPlans?.length > 0 ? (
-        <ContentLoader active loading={true} />
-      ) : planSelected ? (
-        renderCarePlanAdded()
-      ) : (
-        renderSubscribeCareContainer()
-      )} */}
     </View>
   );
 };

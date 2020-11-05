@@ -400,7 +400,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     return (
       <View style={styles.bottomButtonView}>
         <Button
-          title={`PAY ${string.common.Rs} ${amountToPay} `}
+          title={`PAY ${string.common.Rs}${amountToPay} `}
           style={styles.bottomBtn}
           onPress={() => onPressPay()}
         />
@@ -744,7 +744,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         <Text style={styles.smallText}>
           You could have{' '}
           <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.SEARCH_UNDERLINE_COLOR) }}>
-            saved ₹{minDiscountedPrice}
+            saved {string.common.Rs}
+            {minDiscountedPrice}
           </Text>{' '}
           on this purchase with
         </Text>

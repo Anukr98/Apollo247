@@ -298,7 +298,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
             },
           ]}
         >
-          {string.common.Rs}{' '}
+          {string.common.Rs}
           {heading === string.consultType.online.heading
             ? onlineConsultMRPPrice
             : physicalConsultMRPPrice}
@@ -306,7 +306,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
         <View style={styles.rowContainer}>
           {isCareSubscribed && <CircleLogo style={styles.careLogo} />}
           <Text style={styles.careDiscountedPrice}>
-            {string.common.Rs}{' '}
+            {string.common.Rs}
             {heading === string.consultType.online.heading
               ? onlineConsultSlashedPrice
               : physicalConsultSlashedPrice}
@@ -346,7 +346,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
             {isCareDoctor ? (
               renderCareDoctorPricing(heading)
             ) : (
-              <Text style={styles.priceTextStyle}>{`${string.common.Rs} ${price}`}</Text>
+              <Text style={styles.priceTextStyle}>{`${string.common.Rs}${price}`}</Text>
             )}
           </View>
           {!isCareSubscribed && isCareDoctor && (
