@@ -17,6 +17,7 @@ import {
   View,
 } from 'react-native';
 import { GET_LAB_RESULT_PDF } from '@aph/mobile-patients/src/graphql/profiles';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import Pdf from 'react-native-pdf';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Image } from 'react-native-elements';
@@ -464,29 +465,29 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
           {'From '}
           <Text style={{ ...viewStyles.text('M', 14, '#02475B', 1, 18) }}>{`${moment(
             data?.dateOfHospitalization
-          ).format('DD MMM, YYYY')}`}</Text>
+          ).format(string.common.date_placeholder_text)}`}</Text>
           {' to '}
           <Text style={{ ...viewStyles.text('M', 14, '#02475B', 1, 18) }}>{`${moment(
             data?.date
-          ).format('DD MMM, YYYY')}`}</Text>
+          ).format(string.common.date_placeholder_text)}`}</Text>
         </Text>
       ) : medicalInsurance && data.endDateTime !== 0 ? (
         <Text style={{ ...viewStyles.text('R', 14, '#0087BA', 1, 18), marginTop: 3 }}>
           {'From '}
           <Text style={{ ...viewStyles.text('M', 14, '#02475B', 1, 18) }}>{`${moment(
             data?.startDate
-          ).format('DD MMM, YYYY')}`}</Text>
+          ).format(string.common.date_placeholder_text)}`}</Text>
           {' to '}
           <Text style={{ ...viewStyles.text('M', 14, '#02475B', 1, 18) }}>{`${moment(
             data?.endDateTime
-          ).format('DD MMM, YYYY')}`}</Text>
+          ).format(string.common.date_placeholder_text)}`}</Text>
         </Text>
       ) : (
         <Text style={{ ...viewStyles.text('R', 14, '#0087BA', 1, 18), marginTop: 3 }}>
           {'On '}
           <Text style={{ ...viewStyles.text('M', 14, '#02475B', 1, 18) }}>{`${moment(
             data?.date || data?.startDate
-          ).format('DD MMM, YYYY')}`}</Text>
+          ).format(string.common.date_placeholder_text)}`}</Text>
         </Text>
       );
     };
