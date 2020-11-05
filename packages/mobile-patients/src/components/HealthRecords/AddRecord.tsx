@@ -1,10 +1,8 @@
-import { CollapseCard } from '@aph/mobile-patients/src/components/CollapseCard';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { DatePicker } from '@aph/mobile-patients/src/components/ui/DatePicker';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
   PhrRemoveBlueIcon,
-  DropdownGreen,
   FileBig,
   Remove,
   PhrEditIcon,
@@ -17,7 +15,6 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import {
   CommonBugFender,
   CommonLogEvent,
@@ -46,12 +43,7 @@ import {
   AddPatientMedicalBillRecordInput,
   AddPatientMedicalInsuranceRecordInput,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import {
-  g,
-  isValidText,
-  postWebEngageEvent,
-  postWebEngagePHR,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { g, isValidText, postWebEngagePHR } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -73,7 +65,7 @@ import {
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
-import { string } from '@aph/mobile-patients/src/strings/string';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
@@ -573,7 +565,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       location: locationName,
       additionalNotes: additionalNotes,
       dateOfPrescription:
-        dateOfTest !== '' ? moment(dateOfTest, 'DD MMM, YYYY').format('YYYY-MM-DD') : '',
+        dateOfTest !== ''
+          ? moment(dateOfTest, string.common.date_placeholder_text).format('YYYY-MM-DD')
+          : '',
       recordType: MedicalRecordType.PRESCRIPTION,
       prescriptionFiles: getAddedImages(),
     };
@@ -607,7 +601,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     const inputData: AddLabTestRecordInput = {
       patientId: currentPatient?.id || '',
       labTestName: testName,
-      labTestDate: dateOfTest !== '' ? moment(dateOfTest, 'DD MMM, YYYY').format('YYYY-MM-DD') : '',
+      labTestDate:
+        dateOfTest !== ''
+          ? moment(dateOfTest, string.common.date_placeholder_text).format('YYYY-MM-DD')
+          : '',
       recordType: recordType,
       referringDoctor: docName,
       observations: observations,
@@ -647,7 +644,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             patientId: currentPatient ? currentPatient.id : '',
             healthCheckName: testName,
             healthCheckDate:
-              dateOfTest !== '' ? moment(dateOfTest, 'DD MMM, YYYY').format('YYYY-MM-DD') : '',
+              dateOfTest !== ''
+                ? moment(dateOfTest, string.common.date_placeholder_text).format('YYYY-MM-DD')
+                : '',
             recordType: typeofRecord,
             healthCheckFiles: {
               fileName: Images[0].title + '.' + Images[0].fileType,
@@ -659,7 +658,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             patientId: currentPatient ? currentPatient.id : '',
             healthCheckName: testName,
             healthCheckDate:
-              dateOfTest !== '' ? moment(dateOfTest, 'DD MMM, YYYY').format('YYYY-MM-DD') : '',
+              dateOfTest !== ''
+                ? moment(dateOfTest, string.common.date_placeholder_text).format('YYYY-MM-DD')
+                : '',
             recordType: typeofRecord,
           };
     client
@@ -693,7 +694,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       patientId: currentPatient?.id || '',
       doctorName: docName,
       dischargeDate:
-        dateOfTest !== '' ? moment(dateOfTest, 'DD MMM, YYYY').format('YYYY-MM-DD') : '',
+        dateOfTest !== ''
+          ? moment(dateOfTest, string.common.date_placeholder_text).format('YYYY-MM-DD')
+          : '',
       recordType: recordType,
       hospitalName: testName,
       hospitalizationFiles: getAddedImages(),
@@ -730,7 +733,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     const inputData: AddPatientMedicalBillRecordInput = {
       patientId: currentPatient?.id || '',
       hospitalName: docName,
-      billDate: dateOfTest !== '' ? moment(dateOfTest, 'DD MMM, YYYY').format('YYYY-MM-DD') : '',
+      billDate:
+        dateOfTest !== ''
+          ? moment(dateOfTest, string.common.date_placeholder_text).format('YYYY-MM-DD')
+          : '',
       recordType: recordType,
       bill_no: testName,
       billFiles: getAddedImages(),
@@ -765,8 +771,14 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     const inputData: AddPatientMedicalInsuranceRecordInput = {
       patientId: currentPatient?.id || '',
       insuranceCompany: testName,
-      startDate: dateOfTest !== '' ? moment(dateOfTest, 'DD MMM, YYYY').format('YYYY-MM-DD') : '',
-      endDate: endDate !== '' ? moment(endDate, 'DD MMM, YYYY').format('YYYY-MM-DD') : '',
+      startDate:
+        dateOfTest !== ''
+          ? moment(dateOfTest, string.common.date_placeholder_text).format('YYYY-MM-DD')
+          : '',
+      endDate:
+        endDate !== ''
+          ? moment(endDate, string.common.date_placeholder_text).format('YYYY-MM-DD')
+          : '',
       recordType: recordType,
       policyNumber: docName,
       sumInsured: locationName,
@@ -825,391 +837,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     } else if (recordType === MedicalRecordType.MEDICALINSURANCE && isValidInsuranceRecord()) {
       addPatientInsuranceRecords();
     }
-  };
-
-  const renderDateInpt = () => {
-    return (
-      <View>
-        <View style={{ paddingTop: 0, paddingBottom: 10 }}>
-          <TouchableOpacity
-            activeOpacity={1}
-            style={styles.placeholderViewStyle}
-            onPress={() => {
-              Keyboard.dismiss();
-              setIsDateTimePickerVisible(true);
-              CommonLogEvent('ADD_RECORD', 'Date picker visible');
-            }}
-          >
-            <Text
-              style={[
-                styles.placeholderTextStyle,
-                dateOfTest !== '' ? null : styles.placeholderStyle,
-              ]}
-            >
-              {dateOfTest !== '' ? dateOfTest : 'DD MMM, YYYY'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-        <DatePicker
-          isDateTimePickerVisible={isDateTimePickerVisible}
-          handleDatePicked={(date) => {
-            setIsDateTimePickerVisible(false);
-            const formatDate = moment(date).format('DD MMM, YYYY');
-            setdateOfTest(formatDate);
-            Keyboard.dismiss();
-          }}
-          hideDateTimePicker={() => {
-            setIsDateTimePickerVisible(false);
-            Keyboard.dismiss();
-          }}
-        />
-      </View>
-    );
-  };
-
-  const inputRecordType = () => {
-    switch (typeofRecord) {
-      case MedicRecordType.TEST_REPORT:
-        return (
-          <View>
-            <TextInputComponent
-              label={'Name of Test'}
-              value={testName}
-              placeholder={'Enter name of test'}
-              onChangeText={(testName) => {
-                if (isValidText(testName)) {
-                  settestName(testName);
-                }
-              }}
-            />
-            <TextInputComponent label={'Date of Test'} noInput={true} />
-            {renderDateInpt()}
-          </View>
-        );
-      case MedicRecordType.HEALTHCHECK:
-        return (
-          <View>
-            <TextInputComponent
-              label={'Name of Health Check'}
-              value={testName}
-              placeholder={'Enter name of health check'}
-              onChangeText={(testName) => {
-                if (isValidText(testName)) {
-                  settestName(testName);
-                }
-              }}
-            />
-            <TextInputComponent label={'Date of Test'} noInput={true} />
-            {renderDateInpt()}
-          </View>
-        );
-      case MedicRecordType.PRESCRIPTION:
-        return (
-          <View>
-            <TextInputComponent
-              label={'Doctor who issued prescription'}
-              value={docName}
-              showDrPrefix={true}
-              inputStyle={{ flex: 1 }}
-              placeholder={'Enter doctor name'}
-              onChangeText={(docName) => {
-                if (isValidText(docName)) {
-                  setDocName(docName);
-                }
-              }}
-            />
-            <TextInputComponent label={'Date of Prescription'} noInput={true} />
-            {renderDateInpt()}
-            <TextInputComponent
-              label={'Location (optional)'}
-              value={locationName}
-              placeholder={'Enter Location '}
-              onChangeText={(name) => {
-                setLocationName(name);
-              }}
-            />
-          </View>
-        );
-      case MedicRecordType.HOSPITALIZATION:
-        return (
-          <View>
-            <TextInputComponent
-              label={'Name of Doctor'}
-              value={docName}
-              showDrPrefix={true}
-              inputStyle={{ flex: 1 }}
-              placeholder={'Enter doctor name'}
-              onChangeText={(docName) => {
-                if (isValidText(docName)) {
-                  setDocName(docName);
-                }
-              }}
-            />
-            <TextInputComponent label={'Date of Discharge'} noInput={true} />
-            {renderDateInpt()}
-            <TextInputComponent
-              label={'Name of Hospital'}
-              value={locationName}
-              placeholder={'Enter hospital name'}
-              onChangeText={(name) => {
-                setLocationName(name);
-              }}
-            />
-          </View>
-        );
-      case MedicRecordType.CONSULTATION:
-        return (
-          <View>
-            <TextInputComponent
-              label={'Location of Consultation'}
-              value={locationName}
-              placeholder={'Enter location of consultation'}
-              onChangeText={(text) => {
-                setLocationName(text);
-              }}
-            />
-            <TextInputComponent label={'Date of Test'} noInput={true} />
-            {renderDateInpt()}
-          </View>
-        );
-    }
-  };
-  const renderRecordDetails = () => {
-    return (
-      <View>
-        <CollapseCard
-          heading="RECORD DETAILS"
-          collapse={showRecordDetails}
-          onPress={() => {
-            CommonLogEvent('ADD_RECORD', 'RECORD DETAILS');
-            setshowRecordDetails(!showRecordDetails);
-          }}
-        >
-          <View style={[styles.cardViewStyle, { paddingTop: 6, paddingBottom: 5 }]}>
-            <MaterialMenu
-              menuContainerStyle={[
-                {
-                  alignItems: 'flex-end',
-                  marginTop: 16,
-                  marginLeft: width / 2 - 95,
-                },
-              ]}
-              itemTextStyle={{ textTransform: 'capitalize' }}
-              options={RecordType}
-              selectedText={typeofRecord}
-              onPress={(data) => {
-                // setshowRecordTypePopup(false);
-                if (data.key !== typeofRecord) {
-                  setDocName('');
-                  setLocationName('');
-                  settestName('');
-                  setdateOfTest('');
-                }
-                settypeofRecord(data.key as MedicRecordType);
-
-                if (data.key === 'TEST_REPORT') {
-                  const eventAttributes: WebEngageEvents[WebEngageEventName.ITEMS_CLICKED] = {
-                    Source: navigatedFrom,
-                    Type: 'Test Result',
-                  };
-                  postWebEngageEvent(WebEngageEventName.ITEMS_CLICKED, eventAttributes);
-                } else {
-                  const eventAttributes: WebEngageEvents[WebEngageEventName.ITEMS_CLICKED] = {
-                    Source: navigatedFrom,
-                    Type: 'Prescription',
-                  };
-                  postWebEngageEvent(WebEngageEventName.ITEMS_CLICKED, eventAttributes);
-                }
-              }}
-              selectedTextStyle={{ color: theme.colors.APP_GREEN }}
-            >
-              <TextInputComponent
-                label={'Type of Record'}
-                noInput={true}
-                conatinerstyles={{
-                  paddingBottom: 0,
-                }}
-              />
-              <View style={{ flexDirection: 'row', marginBottom: 8 }}>
-                <View style={[styles.placeholderViewStyle]}>
-                  <Text
-                    style={[
-                      styles.placeholderTextStyle,
-                      typeofRecord !== undefined
-                        ? { textTransform: 'capitalize' }
-                        : styles.placeholderStyle,
-                    ]}
-                  >
-                    {typeofRecord !== undefined
-                      ? RecordType.find((item) => item.key === typeofRecord)!.value
-                      : 'Select type of record'}
-                  </Text>
-                  <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
-                    <DropdownGreen />
-                  </View>
-                </View>
-              </View>
-            </MaterialMenu>
-            {inputRecordType()}
-          </View>
-        </CollapseCard>
-      </View>
-    );
-  };
-
-  const renderTestReportDetails = () => {
-    return (
-      <View>
-        <CollapseCard
-          heading="REPORT DETAILS (Optional)"
-          collapse={showReportDetails}
-          onPress={() => setshowReportDetails(!showReportDetails)}
-        >
-          <View
-            style={[
-              {
-                ...theme.viewStyles.cardContainer,
-                marginTop: 15,
-                paddingHorizontal: 20,
-                paddingTop: 16,
-                paddingBottom: 20,
-              },
-            ]}
-          >
-            <View>
-              <View style={styles.labelViewStyle}>
-                <Text style={styles.labelStyle}>Parameters</Text>
-              </View>
-              {testRecordParameters.map((item, i) => (
-                <View
-                  key={i}
-                  style={{
-                    marginTop: 16,
-                    ...theme.viewStyles.cardViewStyle,
-                    shadowRadius: 4,
-                    paddingHorizontal: 16,
-                    paddingTop: 6,
-                    paddingBottom: 5,
-                  }}
-                >
-                  <TextInputComponent
-                    label={'Name of Parameter'}
-                    placeholder={'Enter name'}
-                    value={item.parameterName || ''}
-                    onChangeText={(value) => {
-                      if (isValidText(value)) {
-                        setTestParametersData('parameterName', value, i);
-                      }
-                    }}
-                  />
-                  <View style={{ flexDirection: 'row' }}>
-                    <View style={{ flex: 1, marginRight: 8 }}>
-                      <TextInputComponent
-                        label={'Result'}
-                        placeholder={'Enter value'}
-                        value={(item.result || '').toString()}
-                        onChangeText={(value) => setTestParametersData('result', value, i, true)}
-                        keyboardType={'numbers-and-punctuation'}
-                      />
-                    </View>
-                    <View style={{ flex: 1, marginLeft: 8 }}>
-                      <TextInputComponent
-                        label={'Unit'}
-                        placeholder={'Enter unit'}
-                        value={(item.unit || '').toString()}
-                        onChangeText={(value) => {
-                          if (/^([a-zA-Z0-9 %]+[ ]{0,1}[a-zA-Z0-9\-.\\/%?,&]*)*$/.test(value)) {
-                            setTestParametersData('unit', value, i);
-                          }
-                        }}
-                      />
-                    </View>
-                  </View>
-                  <View style={{ flexDirection: 'row' }}>
-                    <View style={{ flex: 1, marginRight: 8 }}>
-                      <TextInputComponent
-                        label={'Min'}
-                        placeholder={'Enter value'}
-                        value={(item.minimum || '').toString()}
-                        onChangeText={(value) => setTestParametersData('minimum', value, i, true)}
-                        keyboardType={'numbers-and-punctuation'}
-                      />
-                    </View>
-                    <View style={{ flex: 1, marginLeft: 8 }}>
-                      <TextInputComponent
-                        label={'Max'}
-                        placeholder={'Enter value'}
-                        value={(item.maximum || '').toString()}
-                        onChangeText={(value) => setTestParametersData('maximum', value, i, true)}
-                        keyboardType={'numbers-and-punctuation'}
-                      />
-                    </View>
-                  </View>
-                </View>
-              ))}
-            </View>
-            <Text
-              style={{ ...theme.viewStyles.yellowTextStyle, textAlign: 'right', paddingTop: 16 }}
-              onPress={() => {
-                const dataCopy = [...testRecordParameters];
-                dataCopy.push(TestRecordInitialValues);
-                setTestRecordParameters(dataCopy);
-              }}
-            >
-              ADD PARAMETER
-            </Text>
-            <View>
-              <View style={styles.labelViewStyle}>
-                <Text style={[styles.labelStyle, { paddingTop: 20 }]}>Observation Details</Text>
-              </View>
-              <View
-                style={{
-                  marginTop: 16,
-                  ...theme.viewStyles.cardViewStyle,
-                  shadowRadius: 4,
-                  paddingHorizontal: 16,
-                  paddingTop: 6,
-                  paddingBottom: 5,
-                }}
-              >
-                <TextInputComponent
-                  label={'Referring Doctor'}
-                  placeholder={'Enter name'}
-                  value={referringDoctor}
-                  showDrPrefix={true}
-                  inputStyle={{ flex: 1 }}
-                  onChangeText={(referringDoctor) => {
-                    if (isValidText(referringDoctor)) {
-                      setreferringDoctor(referringDoctor);
-                    }
-                  }}
-                />
-                <TextInputComponent
-                  label={'Observations / Impressions'}
-                  placeholder={'Enter observations'}
-                  value={observations}
-                  onChangeText={(observations) => {
-                    if (isValidText(observations)) {
-                      setobservations(observations);
-                    }
-                  }}
-                />
-                <TextInputComponent
-                  label={'Additional Notes'}
-                  placeholder={'Enter notes'}
-                  value={additionalNotes}
-                  onChangeText={(additionalNotes) => {
-                    if (isValidText(additionalNotes)) {
-                      setadditionalNotes(additionalNotes);
-                    }
-                  }}
-                />
-              </View>
-            </View>
-          </View>
-        </CollapseCard>
-      </View>
-    );
   };
 
   const renderImagesRow = (data: PickerImage, i: number) => {
@@ -1370,14 +997,14 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 CommonLogEvent('ADD_RECORD', 'Date picker visible');
               }}
             >
-              {dateOfTest !== '' ? dateOfTest : 'DD MMM, YYYY'}
+              {dateOfTest !== '' ? dateOfTest : string.common.date_placeholder_text}
             </Text>
           </View>
           <DatePicker
             isDateTimePickerVisible={isDateTimePickerVisible}
             handleDatePicked={(date) => {
               setIsDateTimePickerVisible(false);
-              const formatDate = moment(date).format('DD MMM, YYYY');
+              const formatDate = moment(date).format(string.common.date_placeholder_text);
               setdateOfTest(formatDate);
               Keyboard.dismiss();
             }}
@@ -1728,14 +1355,14 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 CommonLogEvent('ADD_RECORD', 'Date picker visible');
               }}
             >
-              {endDate !== '' ? endDate : 'DD MMM, YYYY'}
+              {endDate !== '' ? endDate : string.common.date_placeholder_text}
             </Text>
           </View>
           <DatePicker
             isDateTimePickerVisible={endDateTimePickerVisible}
             handleDatePicked={(date) => {
               setEndDateTimePickerVisible(false);
-              const formatDate = moment(date).format('DD MMM, YYYY');
+              const formatDate = moment(date).format(string.common.date_placeholder_text);
               setEndDate(formatDate);
               Keyboard.dismiss();
             }}
@@ -1990,7 +1617,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 setshowPopUp(false);
               }}
             >
-              <Text style={styles.gotItTextStyles}>{string.LocalStrings.ok}</Text>
+              <Text style={styles.gotItTextStyles}>{string.home.welcome_popup.cta_label}</Text>
             </TouchableOpacity>
           </View>
         </BottomPopUp>

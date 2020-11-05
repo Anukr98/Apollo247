@@ -7,6 +7,7 @@
     "edit_profile_imp_text": "You cannot edit Name, Age, Date of Birth \nand Gender!",
     "new_profile_confirmation_text": "You cannot edit these details once you \nhave saved them. They will appear on all \nyour medical documents. Do you wish to \nconfirm?",
     "uhOh": "Uh oh.. :(",
+    "date_placeholder_text":"DD MMM, YYYY",
     "best_doctor_text": "Here are our best ",
     "all_consults": "All Consults",
     "distance": "Distance",
