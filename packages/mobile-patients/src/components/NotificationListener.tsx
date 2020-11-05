@@ -32,8 +32,7 @@ import moment from 'moment';
 import React, { useEffect } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { StyleSheet, Platform, View, TouchableOpacity, Text } from 'react-native';
-import messaging from '@react-native-firebase/messaging';
-import { Notification, NotificationOpen } from 'react-native-firebase/notifications';
+import messaging, { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import { DoctorType } from '../graphql/types/globalTypes';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -314,42 +313,11 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
     });
   };
 
-  const processNotification = async (notification: Notification) => {
-    const { title, body, data } = notification;
+  const processNotification = async (notification: FirebaseMessagingTypes.RemoteMessage) => {
+    const data = notification.data || {};
     const notificationType = data.type as CustomNotificationType;
-    aphConsole.log({ notificationType, title, body, data });
-    aphConsole.log('processNotification', notification);
-
     const currentScreenName = await AsyncStorage.getItem('setCurrentName');
-    aphConsole.log('setCurrentName', currentScreenName);
 
-    // const notificationArray = [];
-    // let array: any = await AsyncStorage.getItem('allNotification');
-    // // console.log('array', array);
-
-    // const obj: any = {};
-    // obj['data'] = notification.data;
-    // obj['date'] = new Date();
-
-    // if (array !== null) {
-    //   array = JSON.parse(array);
-    //   array.date = new Date();
-    //   array.isRead = 'false';
-    //   array.push(obj);
-
-    //   if (array.length <= 10) {
-    //     notificationArray.push(...array);
-    //   } else {
-    //     notificationArray.push(...array.slice(1));
-    //   }
-    // } else {
-    //   notificationArray.push(obj);
-    // }
-
-    // console.log('notificationArray', notificationArray, notificationArray.length);
-
-    // AsyncStorage.setItem('allNotification', JSON.stringify(notificationArray));
-    // AsyncStorage.removeItem('allNotification');
     if (
       notificationType === 'chat_room' ||
       notificationType === 'call_started' ||
@@ -552,7 +520,6 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       case 'Patient_Cancel_Appointment':
         {
           const userId = await dataSavedUserID('selectedProfileId');
-          const { data } = notification;
           const { appointmentId } = data;
           {
             showAphAlert!({
@@ -594,7 +561,6 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       case 'Appointment_Canceled_Refund':
         {
           const userId = await dataSavedUserID('selectedProfileId');
-          const { data } = notification;
           const { appointmentId } = data;
           showAphAlert!({
             title: ' ',
@@ -639,7 +605,6 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         break;
       case 'Appointment_Payment_Pending_Failure':
         {
-          const { data } = notification;
           const { doctorId, content } = data;
           showAphAlert!({
             title: ' ',
@@ -879,29 +844,21 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
      * */
     messaging()
       .getInitialNotification()
-      .then(async (_notificationOpen: NotificationOpen) => {
-        if (_notificationOpen) {
-          aphConsole.log('_notificationOpen');
-          const notification = _notificationOpen.notification;
+      .then(async (notification) => {
+        if (notification) {
           const lastNotification = await AsyncStorage.getItem('lastNotification');
-          if (lastNotification !== notification.notificationId) {
-            await AsyncStorage.setItem('lastNotification', notification.notificationId);
-            // App was opened by a notification
-            // Get the action triggered by the notification being opened
-            // const action = _notificationOpen.action;
-            processNotification(_notificationOpen.notification);
+          if (lastNotification !== notification.messageId) {
+            await AsyncStorage.setItem('lastNotification', notification.messageId || '');
+            processNotification(notification);
+            /*
             try {
-              aphConsole.log('notificationOpen', _notificationOpen.notification.notificationId);
-
-              /*
               firebase
                 .notifications()
                 .removeDeliveredNotification(_notificationOpen.notification.notificationId);
-              */
-            } catch (error) {
-              CommonBugFender('NotificationListener_firebase_try', error);
-              aphConsole.log('notificationOpen error', error);
-            }
+              } catch (error) {
+                CommonBugFender('NotificationListener_firebase_try', error);
+              }
+            */
           }
         }
       })
@@ -943,22 +900,16 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
     /*
      * If your app is in background, you can listen for when a notification is clicked / tapped / opened as follows:
      * */
-    const onNotificationListener = messaging().onNotificationOpenedApp((notificationOpen) => {
-      if (notificationOpen) {
-        const notification: Notification = notificationOpen.notification;
+    const onNotificationListener = messaging().onNotificationOpenedApp((notification) => {
+      if (notification) {
         processNotification(notification);
       }
     });
 
     const messageListener = messaging().onMessage((message) => {
-      // Process your message as required
       if (Platform.OS === 'android') {
         try {
-          // console.log('RemoteMessage', message, message._data);
-          // if((message._data.af-uinstall-tracking === true) return;
-          // if (message._data.source !== 'webengage') {
           KotlinBridge.cmNotification(JSON.stringify(message.data));
-          // }
         } catch (error) {}
       }
     });
