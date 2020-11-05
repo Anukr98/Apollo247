@@ -3,7 +3,7 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { DatePicker } from '@aph/mobile-patients/src/components/ui/DatePicker';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
-  CrossYellow,
+  PhrRemoveBlueIcon,
   DropdownGreen,
   FileBig,
   Remove,
@@ -36,6 +36,7 @@ import {
   AddPrescriptionRecordInput,
   MedicalRecordType,
   AddLabTestRecordInput,
+  AddHospitalizationRecordInput,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   g,
@@ -210,12 +211,39 @@ const styles = StyleSheet.create({
   imageViewStyle: {
     height: 72,
     width: 72,
-    marginRight: 9,
     backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
     paddingHorizontal: 6,
   },
   imageStyle: { height: 72, width: 60 },
+  plusTextStyle: {
+    ...theme.viewStyles.text('R', 24, '#02475B', 1, 31.2),
+    textAlign: 'center',
+    paddingTop: 5,
+  },
+  addMoreTextStyle: {
+    ...theme.viewStyles.text('R', 10, '#02475B', 1, 13),
+    textAlign: 'center',
+    flex: 1,
+  },
+  ensureTextStyle: {
+    ...theme.viewStyles.text('R', 12, '#02475B', 1, 15.6),
+    textAlign: 'center',
+  },
+  reviewPhotoImageStyle: {
+    height: 350,
+    width: '100%',
+  },
+  headerContainerStyle: {
+    ...theme.viewStyles.cardViewStyle,
+    borderRadius: 0,
+  },
+  imageListViewStyle: {
+    marginTop: 6,
+    marginHorizontal: 21,
+    marginBottom: 100,
+    flexDirection: 'row',
+  },
+  addMoreImageViewStyle: { width: 82, height: 82, paddingTop: 10 },
 });
 
 type RecordTypeType = {
@@ -385,6 +413,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   };
 
   const isValidPrescription = () => {
+    setshowSpinner(false);
     if (Images.length === 0) {
       showAphAlert!({
         title: 'Alert!',
@@ -407,6 +436,37 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       showAphAlert!({
         title: 'Alert!',
         description: 'Enter Record prescribed by',
+      });
+      return false;
+    } else {
+      return true;
+    }
+  };
+
+  const isValidHospitalizationRecord = () => {
+    setshowSpinner(false);
+    if (Images.length === 0) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Please add document',
+      });
+      return false;
+    } else if (!dateOfTest) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Enter Record date',
+      });
+      return false;
+    } else if (!docName) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Enter Record doctor’s name',
+      });
+      return false;
+    } else if (!testName) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Enter Record from',
       });
       return false;
     } else {
@@ -465,8 +525,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   };
 
   const addPatientLabTestRecords = () => {
+    setshowSpinner(true);
     const inputData: AddLabTestRecordInput = {
-      patientId: currentPatient?.id,
+      patientId: currentPatient?.id || '',
       labTestName: testName,
       labTestDate: dateOfTest !== '' ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
       recordType: recordType,
@@ -549,29 +610,17 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   };
 
   const addPatientHospitalizationRecords = () => {
-    const inputData =
-      Images.length > 0
-        ? {
-            patientId: currentPatient ? currentPatient.id : '',
-            doctorName: docName,
-            dischargeDate:
-              dateOfTest !== '' ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
-            recordType: typeofRecord,
-            hospitalName: locationName,
-            hospitalizationFiles: {
-              fileName: Images[0].title + '.' + Images[0].fileType,
-              mimeType: mimeType(Images[0].title + '.' + Images[0].fileType),
-              content: Images[0].base64,
-            },
-          }
-        : {
-            patientId: currentPatient ? currentPatient.id : '',
-            doctorName: docName,
-            dischargeDate:
-              dateOfTest !== '' ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
-            recordType: typeofRecord,
-            hospitalName: locationName,
-          };
+    setshowSpinner(true);
+    const inputData: AddHospitalizationRecordInput = {
+      patientId: currentPatient?.id || '',
+      doctorName: docName,
+      dischargeDate: dateOfTest !== '' ? moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+      recordType: recordType,
+      hospitalName: testName,
+      hospitalizationFiles: getAddedImages(),
+      diagnosisNotes: additionalNotes,
+    };
+
     client
       .mutate<addPatientHospitalizationRecord>({
         mutation: ADD_PATIENT_HOSPITALIZATION_RECORD,
@@ -584,7 +633,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         const status = g(data, 'addPatientHospitalizationRecord', 'status');
         if (status) {
           postWebEngagePHR('Discharge Summary Record', WebEngageEventName.PHR_ADD_HOSPITALIZATIONS);
-          props.navigation.goBack();
+          props.navigation.pop(2);
         }
       })
       .catch((e) => {
@@ -598,31 +647,28 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   };
 
   const onSavePress = () => {
+    setshowSpinner(true);
     const valid = isValid();
     if (recordType === MedicalRecordType.TEST_REPORT) {
       if (Images.length === 0) {
+        setshowSpinner(false);
         showAphAlert!({
           title: 'Alert!',
           description: 'Please add document',
         });
       } else if (valid.isvalid && !valid.isValidParameter) {
-        setshowSpinner(true);
         addPatientLabTestRecords();
       } else {
+        setshowSpinner(false);
         showAphAlert!({
           title: 'Alert!',
           description: valid.message,
         });
       }
     } else if (recordType === MedicalRecordType.PRESCRIPTION && isValidPrescription()) {
-      setshowSpinner(true);
       addMedicalRecord();
-    } else if (typeofRecord === MedicRecordType.TEST_REPORT) {
-      addPatientLabTestRecords();
-    } else if (typeofRecord === MedicRecordType.HEALTHCHECK) {
-      addPatientHealthCheckRecords();
-    } else {
-      // addPatientHospitalizationRecords();
+    } else if (recordType === MedicRecordType.HOSPITALIZATION && isValidHospitalizationRecord()) {
+      addPatientHospitalizationRecords();
     }
   };
 
@@ -1015,13 +1061,28 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     const base64Icon = 'data:image/png;base64,';
     fin = base64Icon.concat(data?.base64);
     const fileType = data?.fileType;
+    const onPressRemoveIcon = () => {
+      const imageCOPY = [...Images];
+      imageCOPY.splice(i, 1);
+      setImages(imageCOPY);
+      CommonLogEvent('ADD_RECORD', 'Set Images');
+    };
     return (
-      <View style={styles.imageViewStyle}>
-        {fileType === 'pdf' || fileType === 'application/pdf' ? (
-          <FileBig style={styles.imageStyle} />
-        ) : (
-          <Image style={styles.imageStyle} source={{ uri: fin }} />
-        )}
+      <View style={[styles.addMoreImageViewStyle, { marginRight: 5 }]}>
+        <View style={styles.imageViewStyle}>
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={onPressRemoveIcon}
+            style={{ position: 'absolute', right: -8, zIndex: 99, top: -8 }}
+          >
+            <PhrRemoveBlueIcon style={{ width: 16, height: 16 }} />
+          </TouchableOpacity>
+          {fileType === 'pdf' || fileType === 'application/pdf' ? (
+            <FileBig style={styles.imageStyle} />
+          ) : (
+            <Image style={styles.imageStyle} source={{ uri: fin }} />
+          )}
+        </View>
       </View>
     );
   };
@@ -1029,34 +1090,20 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const renderUploadedImages = () => {
     const renderAddMorePagesCard = () => {
       return (
-        <TouchableOpacity
-          activeOpacity={1}
-          onPress={() => setdisplayOrderPopup(true)}
-          style={{ height: 72, width: 72, backgroundColor: '#FFFFFF' }}
-        >
-          <Text
-            style={{
-              ...theme.viewStyles.text('R', 24, '#02475B', 1, 31.2),
-              textAlign: 'center',
-              paddingTop: 5,
-            }}
+        <View style={styles.addMoreImageViewStyle}>
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() => setdisplayOrderPopup(true)}
+            style={{ height: 72, width: 72, backgroundColor: '#FFFFFF' }}
           >
-            {'+'}
-          </Text>
-          <Text
-            style={{
-              ...theme.viewStyles.text('R', 10, '#02475B', 1, 13),
-              textAlign: 'center',
-              flex: 1,
-            }}
-          >
-            {'ADD MORE PAGES'}
-          </Text>
-        </TouchableOpacity>
+            <Text style={styles.plusTextStyle}>{'+'}</Text>
+            <Text style={styles.addMoreTextStyle}>{'ADD MORE PAGES'}</Text>
+          </TouchableOpacity>
+        </View>
       );
     };
     return (
-      <View style={{ marginTop: 6, marginHorizontal: 21, marginBottom: 100, flexDirection: 'row' }}>
+      <View style={styles.imageListViewStyle}>
         <FlatList
           bounces={false}
           data={Images}
@@ -1077,14 +1124,17 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     rightIcon: boolean = true,
     mandatoryField: boolean = false
   ) => {
+    const renderTitle = () => {
+      return (
+        <Text style={{ ...theme.viewStyles.text('R', 14, '#02475B', 1, 18.2) }}>
+          {title}
+          {mandatoryField ? <Text style={{ color: '#E50000' }}>{' *'}</Text> : null}
+        </Text>
+      );
+    };
     return (
       <ListItem
-        title={
-          <Text style={{ ...theme.viewStyles.text('R', 14, '#02475B', 1, 18.2) }}>
-            {title}
-            {mandatoryField ? <Text style={{ color: '#E50000' }}>{' *'}</Text> : null}
-          </Text>
-        }
+        title={renderTitle()}
         pad={14}
         containerStyle={{ paddingTop: 0, paddingBottom: 0, paddingRight: 20 }}
         rightElement={rightIcon ? <PhrEditIcon style={{ width: 16, height: 16 }} /> : undefined}
@@ -1213,6 +1263,27 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   };
 
   const renderRecordDetailsTestReports = () => {
+    const onPressAddRecordParameter = () => {
+      const dataCopy = [...testRecordParameters];
+      dataCopy.push(TestRecordInitialValues);
+      setTestRecordParameters(dataCopy);
+    };
+
+    const rightElement = () => {
+      return (
+        <TouchableOpacity activeOpacity={1} onPress={onPressAddRecordParameter}>
+          <PhrAddTestDetailsIcon style={{ width: 24, height: 24 }} />
+        </TouchableOpacity>
+      );
+    };
+
+    const renderTitle = () => {
+      return (
+        <Text style={{ ...theme.viewStyles.text('R', 14, '#02475B', 1, 18.2) }}>
+          {'Record details'}
+        </Text>
+      );
+    };
     return (
       <>
         <View style={styles.listItemViewStyle}>
@@ -1250,25 +1321,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           />
         </View>
         <ListItem
-          title={
-            <Text style={{ ...theme.viewStyles.text('R', 14, '#02475B', 1, 18.2) }}>
-              {'Record details'}
-            </Text>
-          }
+          title={renderTitle()}
           pad={14}
           containerStyle={{ paddingTop: 0, paddingBottom: 0, paddingRight: 18, marginTop: 30 }}
-          rightElement={
-            <TouchableOpacity
-              activeOpacity={1}
-              onPress={() => {
-                const dataCopy = [...testRecordParameters];
-                dataCopy.push(TestRecordInitialValues);
-                setTestRecordParameters(dataCopy);
-              }}
-            >
-              <PhrAddTestDetailsIcon style={{ width: 24, height: 24 }} />
-            </TouchableOpacity>
-          }
+          rightElement={rightElement()}
         />
         {testRecordParameters.map((item, i) => (
           <View>
@@ -1404,12 +1460,56 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     );
   };
 
+  const renderRecordDetailsHospitalization = () => {
+    return (
+      <>
+        <View style={styles.listItemViewStyle}>
+          {renderListItem('Record doctor’s name', true, true)}
+          <TextInput
+            placeholder={'Enter Record doctor’s name'}
+            style={styles.textInputStyle}
+            selectionColor={'#0087BA'}
+            numberOfLines={1}
+            value={docName}
+            placeholderTextColor={theme.colors.placeholderTextColor}
+            underlineColorAndroid={'transparent'}
+            onChangeText={(docName) => {
+              if (isValidText(docName)) {
+                setDocName(docName);
+              }
+            }}
+          />
+        </View>
+        <View style={styles.listItemViewStyle}>
+          {renderListItem('Record from', true, true)}
+          <TextInput
+            placeholder={'Enter Record from'}
+            style={styles.textInputStyle}
+            selectionColor={'#0087BA'}
+            numberOfLines={1}
+            value={testName}
+            placeholderTextColor={theme.colors.placeholderTextColor}
+            underlineColorAndroid={'transparent'}
+            onChangeText={(testName) => {
+              if (isValidText(testName)) {
+                settestName(testName);
+              }
+            }}
+          />
+        </View>
+        {renderAdditionalTextInputView()}
+      </>
+    );
+  };
+
   const renderRecordDetailsCard = () => {
     return (
       <View style={{ ...theme.viewStyles.cardViewStyle, marginHorizontal: 7, marginBottom: 30 }}>
         {renderRecordDetailsTopView()}
         {recordType === MedicalRecordType.TEST_REPORT
           ? renderRecordDetailsTestReports()
+          : recordType === MedicalRecordType.HOSPITALIZATION
+          ? renderRecordDetailsHospitalization()
           : renderRecordDetailsPrescription()}
         {renderBottomButton()}
       </View>
@@ -1438,33 +1538,32 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const renderReviewPhotoDetails = () => {
     const base64Icon = 'data:image/png;base64,';
     fin = base64Icon.concat(currentImage?.base64 || '');
+
+    const onPressReviewPhotoSave = () => {
+      setDisplayReviewPhotoPopup(false);
+      setdisplayOrderPopup(false);
+    };
+
+    const onPressClickMorePhoto = () => {
+      setOpenCamera(true);
+      setDisplayReviewPhotoPopup(false);
+      setdisplayOrderPopup(true);
+    };
+
     return (
       <ScrollView bounces={false} style={{ flex: 1 }}>
         <View style={{ marginTop: 28, paddingHorizontal: 16, marginBottom: 30 }}>
-          <Text
-            style={{
-              ...theme.viewStyles.text('R', 12, '#02475B', 1, 15.6),
-              textAlign: 'center',
-            }}
-          >
-            {'Ensure your document is clearly visible'}
-          </Text>
+          <Text style={styles.ensureTextStyle}>{'Ensure your document is clearly visible'}</Text>
           <View style={styles.reviewPhotoDetailsViewStyle}>
             <Image
-              style={{
-                height: 350,
-                width: '100%',
-              }}
+              style={styles.reviewPhotoImageStyle}
               resizeMode={'contain'}
               source={{ uri: fin }}
             />
           </View>
           <View style={styles.bottonButtonContainer}>
             <Button
-              onPress={() => {
-                setDisplayReviewPhotoPopup(false);
-                setdisplayOrderPopup(false);
-              }}
+              onPress={onPressReviewPhotoSave}
               title={'SAVE'}
               style={styles.bottomWhiteButtonStyle}
               titleTextStyle={styles.bottomWhiteButtonTextStyle}
@@ -1472,11 +1571,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             <View style={styles.buttonSeperatorStyle} />
             <View style={styles.bottomButtonStyle}>
               <Button
-                onPress={() => {
-                  setOpenCamera(true);
-                  setDisplayReviewPhotoPopup(false);
-                  setdisplayOrderPopup(true);
-                }}
+                onPress={onPressClickMorePhoto}
                 title={'CLICK MORE PHOTO'}
                 style={styles.bottomButtonStyle}
               />
@@ -1496,18 +1591,19 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     setdisplayOrderPopup(false);
   };
 
+  const headerRightComponent = () => {
+    return (
+      <TouchableOpacity activeOpacity={1} onPress={onPressCloseReview}>
+        <Remove />
+      </TouchableOpacity>
+    );
+  };
+
   return (
-    <View
-      style={{
-        ...theme.viewStyles.container,
-      }}
-    >
+    <View style={{ ...theme.viewStyles.container }}>
       <SafeAreaView style={{ flex: 1 }}>
         <Header
-          container={{
-            ...theme.viewStyles.cardViewStyle,
-            borderRadius: 0,
-          }}
+          container={styles.headerContainerStyle}
           title="ADD DATA"
           leftIcon="backArrow"
           onPressLeftIcon={() => props.navigation.goBack()}
@@ -1528,18 +1624,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           <View style={styles.overlayViewStyle}>
             <SafeAreaView style={styles.overlaySafeAreaViewStyle}>
               <Header
-                container={{
-                  ...theme.viewStyles.cardViewStyle,
-                  borderRadius: 0,
-                }}
+                container={styles.headerContainerStyle}
                 title="REVIEW YOUR PHOTO"
                 leftIcon="backArrow"
                 onPressLeftIcon={onPressCloseReview}
-                rightComponent={
-                  <TouchableOpacity activeOpacity={1} onPress={onPressCloseReview}>
-                    <Remove />
-                  </TouchableOpacity>
-                }
+                rightComponent={headerRightComponent}
               />
               {renderReviewPhotoDetails()}
             </SafeAreaView>

@@ -337,7 +337,17 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         setLabResults(labResultsData);
         setPrescriptions(prescriptionsData);
         setHealthChecksNew(healthChecksNewData);
-        setHospitalizationsNew(hospitalizationsNewData);
+        setHospitalizationsNew(
+          hospitalizationsNewData?.sort(
+            (a: any, b: any) =>
+              moment(b.date)
+                .toDate()
+                .getTime() -
+              moment(a.date)
+                .toDate()
+                .getTime()
+          )
+        );
       })
       .catch((error) => {
         CommonBugFender('HealthRecordsHome_fetchTestData', error);
@@ -601,7 +611,10 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           break;
         case 3:
           tabsClickedWebEngageEvent(WebEngageEventName.PHR_VIEW_HOSPITALIZATIONS);
-          props.navigation.navigate(AppRoutes.HospitalizationScreen);
+          props.navigation.navigate(AppRoutes.HospitalizationScreen, {
+            hospitalizationData: hospitalizationsNew,
+            onPressBack: onBackArrowPressed,
+          });
           break;
         case 4:
           props.navigation.navigate(AppRoutes.HealthConditionScreen);

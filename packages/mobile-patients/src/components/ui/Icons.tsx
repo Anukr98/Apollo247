@@ -490,6 +490,10 @@ export const PhrAddHospitalizationRecordIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_phr_hospitalization_record.png')} />
 );
 
+export const PhrRemoveBlueIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_phr_remove_icon.png')} />
+);
+
 export const PhrAddTestDetailsIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_phr_add_test_details.png')} />
 );
