@@ -1,3 +1,5 @@
+$RNFirebaseAsStaticFramework = true
+
 # Uncomment the next line to define a global platform for your project
  platform :ios, '9.0'
 
@@ -70,6 +72,12 @@ target 'ApolloPatient' do
   pod 'RNVectorIcons', :path => '../node_modules/react-native-vector-icons'
   pod 'react-native-webview', :path => '../node_modules/react-native-webview'
   pod 'react-native-geolocation', :path => '../node_modules/@react-native-community/geolocation'
+  pod 'RNFBApp', :path => '../node_modules/@react-native-firebase/app'
+  pod 'RNFBAuth', :path => '../node_modules/@react-native-firebase/auth'
+  pod 'RNFBMessaging', :path => '../node_modules/@react-native-firebase/messaging'
+  pod 'RNFBRemoteConfig', :path => '../node_modules/@react-native-firebase/remote-config'
+  pod 'RNFBCrashlytics', :path => '../node_modules/@react-native-firebase/crashlytics'
+  pod 'RNFBAnalytics', :path => '../node_modules/@react-native-firebase/analytics'
   pod 'react-native-netinfo', :path => '../node_modules/@react-native-community/netinfo'
   pod 'opentok-react-native', :path => '../node_modules/opentok-react-native'
   pod 'ReactNativeExceptionHandler', :path => '../node_modules/react-native-exception-handler'
