@@ -49,6 +49,22 @@ export const GET_CURRENT_PATIENTS = gql`
           pastMedicalHistory
           pastSurgicalHistory
           temperature
+          bloodGroup
+          weight
+        }
+      }
+    }
+  }
+`;
+
+export const UPDATE_PATIENT_MEDICAL_PARAMETERS = gql`
+  mutation updatePatientMedicalParameters($patientMedicalParameters: PatientMedicalParameters) {
+    updatePatientMedicalParameters(patientMedicalParameters: $patientMedicalParameters) {
+      patient {
+        id
+        patientMedicalHistory {
+          bloodGroup
+          height
           weight
         }
       }
@@ -2864,6 +2880,7 @@ export const GET_PATIENTS_MOBILE = gql`
           pastMedicalHistory
           pastSurgicalHistory
           temperature
+          bloodGroup
           weight
         }
         isLinked
