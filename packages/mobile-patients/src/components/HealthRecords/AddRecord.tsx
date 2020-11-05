@@ -364,7 +364,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   };
 
   const isValid = () => {
-    const validRecordDetails1 = recordType && dateOfTest && testName && docName ? true : false;
+    const validRecordDetails1 = recordType && dateOfTest && testName && docName;
     const valid = isTestRecordParameterFilled().map((item) => {
       return {
         maxmin: (item.maximum || item.minimum) && item.maximum! > item.minimum!,
@@ -377,14 +377,13 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       };
     });
 
-    let message =
-      dateOfTest === ''
-        ? 'Enter Record date'
-        : testName === ''
-        ? 'Enter Record name'
-        : docName === ''
-        ? 'Enter Record doctor’s name'
-        : '';
+    let message = !dateOfTest
+      ? 'Enter Record date'
+      : !testName
+      ? 'Enter Record name'
+      : !docName
+      ? 'Enter Record doctor’s name'
+      : '';
 
     message === '' &&
       valid.forEach((item) => {
@@ -393,7 +392,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         }
       });
 
-    const finval = validRecordDetails1 ? true : false;
+    const finval = validRecordDetails1;
 
     return {
       isvalid: finval,
@@ -431,19 +430,19 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         description: 'Please add document',
       });
       return false;
-    } else if (_.isEmpty(dateOfTest)) {
+    } else if (!dateOfTest) {
       showAphAlert!({
         title: 'Alert!',
         description: 'Enter Record date',
       });
       return false;
-    } else if (_.isEmpty(testName)) {
+    } else if (!testName) {
       showAphAlert!({
         title: 'Alert!',
         description: 'Enter Record name',
       });
       return false;
-    } else if (_.isEmpty(docName)) {
+    } else if (!docName) {
       showAphAlert!({
         title: 'Alert!',
         description: 'Enter Record prescribed by',
@@ -462,19 +461,19 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         description: 'Please add document',
       });
       return false;
-    } else if (_.isEmpty(dateOfTest)) {
+    } else if (!dateOfTest) {
       showAphAlert!({
         title: 'Alert!',
         description: 'Enter Record date',
       });
       return false;
-    } else if (_.isEmpty(docName)) {
+    } else if (!docName) {
       showAphAlert!({
         title: 'Alert!',
         description: 'Enter Record doctor’s name',
       });
       return false;
-    } else if (_.isEmpty(testName)) {
+    } else if (!testName) {
       showAphAlert!({
         title: 'Alert!',
         description: 'Enter Record from',

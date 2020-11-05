@@ -5,11 +5,11 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { Filter } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { HealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/HealthRecordCard';
+import { getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizationsNew_response as HospitalizationType } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords';
 import { PhrNoDataComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/PhrNoDataComponent';
 import { ProfileImageComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/ProfileImageComponent';
 import {
@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
 
 export interface HospitalizationScreenProps
   extends NavigationScreenProps<{
-    hospitalizationData: any;
+    hospitalizationData: HospitalizationType[];
     onPressBack: () => void;
   }> {}
 
@@ -62,32 +62,32 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
   const hospitalizationData = props.navigation?.getParam('hospitalizationData') || [];
   const [localHospitalizationData, setLocalHospitalizationData] = useState<Array<{
     key: string;
-    data: any[];
+    data: HospitalizationType[];
   }> | null>(null);
   const { currentPatient } = useAllCurrentPatients();
 
   useEffect(() => {
     if (hospitalizationData) {
-      let finalData: { key: string; data: any[] }[] = [];
+      let finalData: { key: string; data: HospitalizationType[] }[] = [];
       finalData = initialSortByDays(hospitalizationData, finalData);
       setLocalHospitalizationData(finalData);
     }
   }, [hospitalizationData]);
 
   const initialSortByDays = (
-    filteredData: any[],
-    toBeFinalData: { key: string; data: any[] }[]
+    filteredData: HospitalizationType[],
+    toBeFinalData: { key: string; data: HospitalizationType[] }[]
   ) => {
     let finalData = toBeFinalData;
-    filteredData.forEach((dataObject: any) => {
+    filteredData.forEach((dataObject: HospitalizationType) => {
       const past1yrData = moment().subtract(12, 'months');
-      const isPast1yrData = moment(dataObject?.data?.date).diff(past1yrData, 'hours') > 0;
+      const isPast1yrData = moment(dataObject?.date).diff(past1yrData, 'hours') > 0;
       if (isPast1yrData) {
         const dateExistsAt = foundDataIndex('Past 12 months', finalData);
         finalData = sortByDays('Past 12 months', finalData, dateExistsAt, dataObject);
       } else {
         const past5yrsDay = past1yrData.subtract(5, 'years');
-        const isPast5yrsData = moment(dataObject?.data?.date).diff(past5yrsDay, 'hours') > 0;
+        const isPast5yrsData = moment(dataObject?.date).diff(past5yrsDay, 'hours') > 0;
         if (isPast5yrsData) {
           const dateExistsAt = foundDataIndex('Past 5 years', finalData);
           finalData = sortByDays('Past 5 years', finalData, dateExistsAt, dataObject);
@@ -100,15 +100,20 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
     return finalData;
   };
 
-  const foundDataIndex = (key: string, finalData: { key: string; data: any[] }[]) => {
-    return finalData.findIndex((data: { key: string; data: any[] }) => data?.key === key);
+  const foundDataIndex = (
+    key: string,
+    finalData: { key: string; data: HospitalizationType[] }[]
+  ) => {
+    return finalData.findIndex(
+      (data: { key: string; data: HospitalizationType[] }) => data?.key === key
+    );
   };
 
   const sortByDays = (
     key: string,
-    finalData: { key: string; data: any[] }[],
+    finalData: { key: string; data: HospitalizationType[] }[],
     dateExistsAt: number,
-    dataObject: any
+    dataObject: HospitalizationType
   ) => {
     const dataArray = finalData;
     if (dataArray.length === 0 || dateExistsAt === -1) {
@@ -162,14 +167,14 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
     return <Text style={styles.sectionHeaderTitleStyle}>{sectionTitle}</Text>;
   };
 
-  const onHealthCardItemPress = (selectedItem: any) => {
+  const onHealthCardItemPress = (selectedItem: HospitalizationType) => {
     props.navigation.navigate(AppRoutes.HealthRecordDetails, {
       data: selectedItem,
       hospitalization: true,
     });
   };
 
-  const renderHospitalizationItems = (item: any, index: number) => {
+  const renderHospitalizationItems = (item: HospitalizationType, index: number) => {
     // For Next Phase
     // const editDeleteData = ConsultRxEditDeleteArray.map((i) => {
     //   return { key: i.key, value: i.title };
