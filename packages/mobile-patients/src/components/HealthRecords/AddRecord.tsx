@@ -451,19 +451,19 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         description: 'Please add document',
       });
       return false;
-    } else if (_.isEmpty(dateOfTest)) {
+    } else if (!dateOfTest) {
       showAphAlert!({
         title: 'Alert!',
         description: 'Enter Record date',
       });
       return false;
-    } else if (_.isEmpty(docName)) {
+    } else if (!docName) {
       showAphAlert!({
         title: 'Alert!',
         description: 'Enter Record doctor’s name',
       });
       return false;
-    } else if (_.isEmpty(testName)) {
+    } else if (!testName) {
       showAphAlert!({
         title: 'Alert!',
         description: 'Enter Record from',
