@@ -137,6 +137,7 @@ export interface ConsultOverlayProps extends NavigationScreenProps {
   callSaveSearch: string;
   mainContainerStyle?: StyleProp<ViewStyle>;
   scrollToSlot?: boolean;
+  isDoctorsOfTheHourStatus?: boolean;
 }
 export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const client = useApolloClient();
@@ -311,6 +312,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       'Net Amount': coupon ? doctorDiscountedFees : Number(doctorFees),
       af_revenue: coupon ? doctorDiscountedFees : Number(doctorFees),
       af_currency: 'INR',
+      'Dr of hour appointment': !!props.isDoctorsOfTheHourStatus ? 'Yes' : 'No',
     };
     return eventAttributes;
   };
@@ -545,6 +547,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         consultedWithDoctorBefore: props.consultedWithDoctorBefore,
         patientId: props.patientId,
         callSaveSearch: props.callSaveSearch,
+        isDoctorsOfTheHourStatus: props.isDoctorsOfTheHourStatus,
       });
     }
   };

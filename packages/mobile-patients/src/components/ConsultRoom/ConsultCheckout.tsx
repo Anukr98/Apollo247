@@ -61,6 +61,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
   const couponApplied = props.navigation.getParam('couponApplied');
   const callSaveSearch = props.navigation.getParam('callSaveSearch');
   const patientId = props.navigation.getParam('patientId');
+  const isDoctorsOfTheHourStatus = props.navigation.getParam('isDoctorsOfTheHourStatus');
 
   type bankOptions = {
     name: string;
@@ -173,6 +174,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
       'Net Amount': price,
       af_revenue: price,
       af_currency: 'INR',
+      'Dr of hour appointment': !!isDoctorsOfTheHourStatus ? 'Yes' : 'No',
     };
     return eventAttributes;
   };
@@ -290,6 +292,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
                 g(apptmt, 'appointmentDateTime'),
                 g(data, 'data', 'bookAppointment', 'appointment', 'id')!
               ),
+              isDoctorsOfTheHourStatus,
             })
           : props.navigation.navigate(AppRoutes.ConsultPaymentnew, {
               consultedWithDoctorBefore: consultedWithDoctorBefore,
@@ -312,6 +315,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
                 g(apptmt, 'appointmentDateTime'),
                 g(data, 'data', 'bookAppointment', 'appointment', 'id')!
               ),
+              isDoctorsOfTheHourStatus,
             });
         setLoading && setLoading(false);
       })
