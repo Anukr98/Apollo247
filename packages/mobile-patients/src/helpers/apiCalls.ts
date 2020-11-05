@@ -502,7 +502,9 @@ export const formatFilters = (filters: { [key: string]: string[] } | null) =>
   Object.keys(filters).reduce(
     (prevVal, currKey) => ({
       ...prevVal,
-      ...(filters[currKey]?.length ? { [currKey]: filters[currKey] } : {}),
+      ...(filters[currKey]?.length
+        ? { [currKey]: filters[currKey]?.length === 1 ? filters[currKey][0] : filters[currKey] } // to convert to string if array of length 1
+        : {}),
     }),
     {}
   );
