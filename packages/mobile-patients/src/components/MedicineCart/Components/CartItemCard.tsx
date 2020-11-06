@@ -40,8 +40,8 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
         ? setDiscountedPrice(item.specialPrice)
         : setDiscountedPrice(item.couponPrice)
       : item.specialPrice || item.specialPrice == 0
-        ? setDiscountedPrice(item.specialPrice)
-        : setDiscountedPrice(undefined);
+      ? setDiscountedPrice(item.specialPrice)
+      : setDiscountedPrice(undefined);
   }, [item]);
 
   const renderImage = () => {
@@ -86,10 +86,11 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   };
 
   const renderDelete = () => {
-    return itemAvailable ? 
-      (!item?.isFreeCouponProduct || item?.quantity > 1) && 
-        <DeleteIcon /> : 
-      <DeleteBoldIcon />;
+    return itemAvailable ? (
+      (!item?.isFreeCouponProduct || item?.quantity > 1) && <DeleteIcon />
+    ) : (
+      <DeleteBoldIcon />
+    );
   };
 
   const renderLowerCont = () => {
@@ -104,8 +105,8 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
             ? renderPrice(discountedPrice)
             : renderPrice(mrp)
           : item?.quantity > 1
-            ? renderPrice(discountedPrice)
-            : renderFree()}
+          ? renderPrice(discountedPrice)
+          : renderFree()}
       </View>
     );
   };
@@ -128,7 +129,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     }).map((_, i) => {
       return { key: (i + 1).toString(), value: i + 1 };
     });
-    return (!item?.isFreeCouponProduct || item?.quantity > 1) ? (
+    return !item?.isFreeCouponProduct || item?.quantity > 1 ? (
       <View style={{ ...styles.quantityContainer, opacity: itemAvailable ? 1 : 0.3 }}>
         <MaterialMenu
           options={opitons}
@@ -175,10 +176,9 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   const renderDiscount = () => {
     return (
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        {
-          !item.isFreeCouponProduct && 
+        {!item.isFreeCouponProduct && (
           <Text style={styles.dicountPercent}>{`${getDiscountPercent()}%off`}</Text>
-        }
+        )}
         <Text style={styles.initialPrice}>{`₹${(mrp * item.quantity).toFixed(2)}`}</Text>
       </View>
     );

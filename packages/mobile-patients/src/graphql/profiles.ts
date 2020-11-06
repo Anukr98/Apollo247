@@ -1398,53 +1398,6 @@ export const GET_DIAGNOSTIC_SLOTS = gql`
   }
 `;
 
-export const GET_DIAGNOSTIC_DATA = gql`
-  query getDiagnosticsData {
-    getDiagnosticsData {
-      diagnosticOrgans {
-        id
-        organName
-        organImage
-        diagnostics {
-          id
-          itemId
-          itemName
-          gender
-          rate
-          itemRemarks
-          city
-          state
-          itemType
-          fromAgeInDays
-          toAgeInDays
-          testPreparationData
-          collectionType
-        }
-      }
-      diagnosticHotSellers {
-        id
-        packageName
-        price
-        packageImage
-        diagnostics {
-          id
-          itemId
-          itemName
-          gender
-          rate
-          itemRemarks
-          city
-          state
-          itemType
-          fromAgeInDays
-          toAgeInDays
-          testPreparationData
-          collectionType
-        }
-      }
-    }
-  }
-`;
 
 export const GET_DIAGNOSTIC_ORDER_LIST = gql`
   query getDiagnosticOrdersList($patientId: String) {
@@ -1478,11 +1431,28 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
             id
             itemId
             itemName
+            itemType	
+            testPreparationData
           }
         }
       }
     }
   }
+`;
+
+export const GET_DIAGNOSTIC_ORDER_STATUS = gql`	
+  query getDiagnosticsOrderStatus($diagnosticOrderId: String) {	
+    getDiagnosticsOrderStatus(diagnosticOrderId: $diagnosticOrderId) {	
+      ordersList{	
+        statusDate	
+        orderStatus	
+        itemId	
+        itemName	
+        packageId	
+        packageName	
+      }	
+    }	
+  }	
 `;
 
 export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
@@ -1527,6 +1497,12 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
             collectionType
           }
         }
+        diagnosticOrdersStatus{	
+          orderStatus	
+          itemId	
+          statusDate	
+          packageId	
+        }
       }
     }
   }
@@ -1546,6 +1522,97 @@ export const GET_DIAGNOSTICS_HC_CHARGES = gql`
       pincode: $pincode
     ) {
       charges
+    }
+  }
+`;
+
+export const GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID = gql`
+  query findDiagnosticsByItemIDsAndCityID($cityID: Int!, $itemIDs:[Int]!) {
+    findDiagnosticsByItemIDsAndCityID(cityID: $cityID, itemIDs: $itemIDs) {
+      diagnostics{
+      id
+      itemId
+      itemName
+      itemType
+      rate
+      gender
+      itemRemarks
+      city
+      state
+      collectionType
+      fromAgeInDays
+      toAgeInDays
+      testPreparationData
+      }
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_ORDER_ITEM = gql`
+  query getDiagnosticOrderItem($diagnosticOrderID: String!, $itemID: Int!) {
+    getDiagnosticOrderItem(diagnosticOrderID: $diagnosticOrderID, itemID: $itemID ) {
+      diagnostics{
+        itemName
+        rate
+        itemType
+        rate
+        gender
+        itemRemarks
+        city
+        state
+        collectionType
+        fromAgeInDays
+        toAgeInDays
+        testPreparationData
+      }
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_HOME_PAGE_ITEMS = gql`
+  query getDiagnosticsHomePageItems($cityID: Int!) {
+    getDiagnosticsHomePageItems(cityID: $cityID){
+        diagnosticOrgans{
+          id
+          organName
+          organImage
+          diagnostics{
+            id
+            itemId
+            itemName
+            gender
+            rate
+            itemRemarks
+            city
+            state
+            itemType
+            fromAgeInDays
+            toAgeInDays
+            testPreparationData
+            collectionType
+          }
+        }
+        diagnosticHotSellers{
+          id
+          packageName
+          price
+          packageImage
+          diagnostics{
+            id
+            itemId
+            itemName
+            gender
+            rate
+            itemRemarks
+            city
+            state
+            itemType
+            fromAgeInDays
+            toAgeInDays
+            testPreparationData
+            collectionType
+        } 
+      }
     }
   }
 `;

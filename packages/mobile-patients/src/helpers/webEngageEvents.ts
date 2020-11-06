@@ -106,6 +106,7 @@ export enum WebEngageEventName {
   VIEW_HELATH_RECORDS = 'View Helath Records',
   LEARN_MORE_ABOUT_CORONAVIRUS = 'Learn more about coronavirus',
   CHECK_YOUR_RISK_LEVEL = 'Check your risk level',
+  APOLLO_PRO_HEALTH = 'Apollo pro health',
   NOTIFICATION_ICON = 'Notification Icon clicked',
   ACTIVE_APPOINTMENTS = 'Active Appointments',
   NEED_HELP = 'Need Help?',
@@ -428,7 +429,7 @@ export interface DoctorFilterClick {
   'Patient Name': string;
   'Patient UHID': string;
   'Mobile Number': string;
-  'pincode': number | string;
+  pincode: number | string;
   'Filter Applied': string;
   'Filter Value': string;
 }
@@ -447,9 +448,9 @@ export interface FollowUpAppointment {
   'Consult Mode': 'Online' | 'Physical';
   'Doctor City': string;
   'Consult ID': string;
-  'isConsultStarted': boolean;
-  'Prescription': string;
-};
+  isConsultStarted: boolean;
+  Prescription: string;
+}
 
 export interface WebEngageEvents {
   // ********** AppEvents ********** \\
@@ -774,6 +775,8 @@ export interface WebEngageEvents {
     'Items in cart': object[];
   };
   [WebEngageEventName.DIAGNOSTIC_ORDER_SUMMARY_VIEWED]: {
+    'Patient UHID': string;
+    'Patient Number': string;
     'OrderID:': string;
     'Sample Collection Date': string; //Date
   };
