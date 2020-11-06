@@ -69,6 +69,7 @@ import {
   TouchableOpacity,
   View,
   Linking,
+  Dimensions,
 } from 'react-native';
 import { Overlay } from 'react-native-elements';
 import {
@@ -116,6 +117,7 @@ import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Me
 import { ChatWithUs } from '@aph/mobile-patients/src/components/ui/ChatWithUs';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 const whatsappScheme = `whatsapp://send?text=${AppConfig.Configuration.CUSTOMER_CARE_HELP_TEXT}&phone=91${AppConfig.Configuration.CUSTOMER_CARE_NUMBER}`;
+const screenWidth = Dimensions.get('window').width;
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -733,7 +735,13 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                       ? 'To be Updated'
                       : 'Awaited' //do it bold
                     : tatInfo
-                    ? getFormattedDateTimeWithBefore(tatInfo)
+                    ? orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER &&
+                      orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED &&
+                      orderDetails?.medicineOrdersStatus!.find(
+                        (item) => item?.orderStatus == MEDICINE_ORDER_STATUS.ON_HOLD
+                      )
+                      ? 'To be Updated'
+                      : getFormattedDateTimeWithBefore(tatInfo)
                     : 'Awaited'}
                 </Text>
               </View>
@@ -748,6 +756,12 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                       : 'Delivery extended by few hours.'
                     : orderDetails.orderTat!
                     ? orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ON_HOLD
+                      ? string.medicine_cart.orderDetailsExpectedDeliverySubTextNonCartOrder
+                      : orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER &&
+                        orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED &&
+                        orderDetails?.medicineOrdersStatus!.find(
+                          (item) => item?.orderStatus == MEDICINE_ORDER_STATUS.ON_HOLD
+                        )
                       ? string.medicine_cart.orderDetailsExpectedDeliverySubTextNonCartOrder
                       : ''
                     : string.medicine_cart.orderDetailsExpectedDeliverySubTextNonCartOrder}
@@ -801,7 +815,15 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             style={{
               position: 'absolute',
               right: '5%',
-              top: isExpectedDateChanged || (orderDetails.orderTat && isSKUPopulated) ? 40 : 20,
+              top:
+                isExpectedDateChanged || (orderDetails.orderTat && isSKUPopulated)
+                  ? screenWidth > 400 &&
+                    orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER &&
+                    orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ON_HOLD
+                    ? 30
+                    : 40
+                  : 20,
+
               backgroundColor: colorOfBadge,
             }}
           >
