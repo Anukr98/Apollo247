@@ -132,6 +132,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>(false);
   const [showStorePickupCard, setshowStorePickupCard] = useState<boolean>(false);
   const [suggestedProducts, setsuggestedProducts] = useState<MedicineProduct[]>([]);
+  const [appState, setappState] = useState<string>('');
   const shoppingCart = useShoppingCart();
   const navigatedFrom = props.navigation.getParam('movedFrom') || '';
   const pharmacyPincode =
@@ -188,9 +189,15 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   }, [isPhysicalUploadComplete]);
 
   const handleAppStateChange = (nextAppState: AppStateStatus) => {
-    nextAppState === 'active' && availabilityTat(true);
-    setCoupon!(null);
+    setappState(nextAppState);
   };
+
+  useEffect(() => {
+    if (appState == 'active') {
+      couponProducts?.length == 0 && availabilityTat(true);
+      setCoupon!(null);
+    }
+  }, [appState]);
 
   const handleBack = () => {
     setCoupon!(null);
@@ -433,6 +440,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     shopId?: string
   ) {
     !hasUnserviceableproduct() &&
+      isfocused &&
       props.navigation.navigate(AppRoutes.CartSummary, {
         deliveryTime: deliveryTime,
         storeDistance: storeDistance,
@@ -510,6 +518,12 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             !autoApply && removeCouponWithAlert(g(response.data, 'response', 'reason'));
             rej(response.data.response.reason);
           }
+
+          // set coupon free products again (in case when price of sku is changed)
+          const products = g(response.data, 'response', 'products');
+          if (products && products.length) {
+            setCouponFreeProducts(products);
+          }
         } else {
           CommonBugFender('validatingPharmaCoupon', response.data.errorMsg);
           !autoApply && removeCouponWithAlert(g(response.data, 'errorMsg'));
@@ -522,6 +536,21 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         rej('Sorry, unable to validate coupon right now.');
       }
     });
+  };
+
+  const setCouponFreeProducts = (products: any) => {
+    const freeProducts = products.filter((product) => {
+      return product.couponFree === 1;
+    });
+    freeProducts.forEach((item, index) => {
+      const filteredProduct = cartItems.filter((product) => {
+        return product.id === item.sku
+      });
+      if (filteredProduct.length) {
+        item.quantity = filteredProduct[0].quantity;
+      }
+    })
+    setCouponProducts!(freeProducts);
   };
 
   async function fetchPickupStores(pincode: string) {

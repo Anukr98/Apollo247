@@ -39,6 +39,7 @@ import {
   View,
   Clipboard,
   TextInput,
+  SafeAreaView,
 } from 'react-native';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';
@@ -674,28 +675,30 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#01475b" />
-      <Header leftIcon="backArrow" title="PAYMENT STATUS" onPressLeftIcon={() => handleBack()} />
-      {!loading ? (
-        <ScrollView style={styles.container}>
-          {renderStatusCard()}
-          {appointmentHeader()}
-          {appointmentCard()}
-          {renderNote()}
-          {renderButton()}
-        </ScrollView>
-      ) : (
-        <Spinner />
-      )}
-      {showSpinner && <Spinner />}
-      {notificationAlert && (
-        <NotificationPermissionAlert
-          onPressOutside={() => setNotificationAlert(false)}
-          onButtonPress={() => {
-            setNotificationAlert(false);
-            Linking.openSettings();
-          }}
-        />
-      )}
+      <SafeAreaView style={styles.container}>
+        <Header leftIcon="backArrow" title="PAYMENT STATUS" onPressLeftIcon={() => handleBack()} />
+        {!loading ? (
+          <ScrollView style={styles.container}>
+            {renderStatusCard()}
+            {appointmentHeader()}
+            {appointmentCard()}
+            {renderNote()}
+            {renderButton()}
+          </ScrollView>
+        ) : (
+          <Spinner />
+        )}
+        {showSpinner && <Spinner />}
+        {notificationAlert && (
+          <NotificationPermissionAlert
+            onPressOutside={() => setNotificationAlert(false)}
+            onButtonPress={() => {
+              setNotificationAlert(false);
+              Linking.openSettings();
+            }}
+          />
+        )}
+      </SafeAreaView>
     </View>
   );
 };

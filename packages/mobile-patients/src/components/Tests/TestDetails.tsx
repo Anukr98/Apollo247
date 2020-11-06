@@ -37,12 +37,16 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
-  searchDiagnosticsById,
-  searchDiagnosticsByIdVariables,
-} from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsById';
-import { SEARCH_DIAGNOSTICS_BY_ID } from '@aph/mobile-patients/src/graphql/profiles';
+  GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
+  SEARCH_DIAGNOSTICS_BY_ID,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  findDiagnosticsByItemIDsAndCityIDVariables,
+  findDiagnosticsByItemIDsAndCityID,
+} from '../../graphql/types/findDiagnosticsByItemIDsAndCityID';
+import { AppConfig, COVID_NOTIFICATION_ITEMID } from '../../strings/AppConfig';
 
 const styles = StyleSheet.create({
   testNameStyles: {
@@ -178,7 +182,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
   const [testInfo, setTestInfo] = useState<TestPackageForDetails>(testDetails);
   const TestDetailsDiscription = testInfo.PackageInClussion;
-  const { locationDetails, diagnosticLocation } = useAppCommonData();
+  const { locationDetails, diagnosticLocation, diagnosticServiceabilityData } = useAppCommonData();
   const { cartItems, addCartItem } = useDiagnosticsCart();
   const { cartItems: shopCartItems } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
@@ -222,13 +226,20 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   }, []);
 
   const loadTestDetails = async (itemId: string) => {
+    const removeSpaces = itemId.replace(/\s/g, '');
+    const arrayOfId = removeSpaces.split(',');
+    const listOfIds = arrayOfId.map((item) => parseInt(item!));
     try {
       const {
-        data: { searchDiagnosticsById },
-      } = await client.query<searchDiagnosticsById, searchDiagnosticsByIdVariables>({
-        query: SEARCH_DIAGNOSTICS_BY_ID,
+        data: { findDiagnosticsByItemIDsAndCityID },
+      } = await client.query<
+        findDiagnosticsByItemIDsAndCityID,
+        findDiagnosticsByItemIDsAndCityIDVariables
+      >({
+        query: GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
         variables: {
-          itemIds: itemId,
+          cityID: parseInt(diagnosticServiceabilityData?.cityId!) || 9,
+          itemIDs: listOfIds,
         },
         fetchPolicy: 'no-cache',
       });
@@ -240,7 +251,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
         fromAgeInDays,
         toAgeInDays,
         testPreparationData,
-      } = g(searchDiagnosticsById, 'diagnostics', '0' as any)!;
+      } = g(findDiagnosticsByItemIDsAndCityID, 'diagnostics', '0' as any)!;
       const partialTestDetails = {
         Rate: rate,
         Gender: gender,
@@ -316,7 +327,10 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               <Text style={styles.personDetailLabelStyles}>Age Group</Text>
               <Text style={styles.personDetailStyles}>
                 {(testInfo.FromAgeInDays / 365).toFixed(0)} TO{' '}
-                {(testInfo.ToAgeInDays / 365).toFixed(0)} YEARS
+                {COVID_NOTIFICATION_ITEMID.includes(testInfo.ItemID)
+                  ? 100
+                  : (testInfo.ToAgeInDays / 365).toFixed(0)}{' '}
+                YEARS
               </Text>
             </View>
           )}
@@ -397,7 +411,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   };
 
   const renderNotification = () => {
-    if (testInfo.ItemID != '2411') {
+    if (!COVID_NOTIFICATION_ITEMID.includes(testInfo.ItemID)) {
       return null;
     }
     return (

@@ -545,6 +545,8 @@
     "bookedForWrongUser": "Booked with wrong user details",
     "doctorDeniedMode": "Doctor denied your preferable mode of consult",
     "audioVideoIssue": "Audio Video Issues",
-    "otherReasons": "Others (Please specifiy)"
-  }
+    "otherReasons":"Others (Please specifiy)"
+  },
+  "reachUsOut":"If you have any queries please reach out to us",
+  "Diagnostics_Feedback_Others": "Others (Please specify)"
 }

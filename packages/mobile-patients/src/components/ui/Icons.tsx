@@ -462,6 +462,14 @@ export const OrangeCallIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_orange_phone.png')} />
 );
 
+export const FamilyDoctorIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="md"
+    {...props}
+    source={require('@aph/mobile-patients/src/images/home/ic_family_doctor.png')}
+  />
+);
+
 export const SmallOrangeCallIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_small_orange_phone.png')} />
 );
@@ -1023,6 +1031,14 @@ export const KavachIcon: React.FC<IconProps> = (props) => (
     style={{ width: 24, height: 24 }}
     {...props}
     source={require('./icons/bitmap.png')}
+    resizeMode="contain"
+  />
+);
+export const ApolloHealthProIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 24, height: 24 }}
+    {...props}
+    source={require('./icons/prohealth.jpg')}
     resizeMode="contain"
   />
 );

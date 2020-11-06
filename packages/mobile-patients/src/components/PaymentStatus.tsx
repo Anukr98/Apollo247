@@ -8,6 +8,7 @@ import {
   StatusBar,
   Dimensions,
   Clipboard,
+  SafeAreaView,
 } from 'react-native';
 import { Copy } from '@aph/mobile-patients/src/components/ui/Icons';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
@@ -376,19 +377,20 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#01475b" />
-      <Header leftIcon="backArrow" title="PAYMENT STATUS" onPressLeftIcon={() => handleBack()} />
-
-      {!loading ? (
-        <ScrollView style={styles.container}>
-          {renderStatusCard()}
-          {appointmentHeader()}
-          {orderCard()}
-          {renderNote()}
-          {renderButton()}
-        </ScrollView>
-      ) : (
-        <Spinner />
-      )}
+      <SafeAreaView style={styles.container}>
+        <Header leftIcon="backArrow" title="PAYMENT STATUS" onPressLeftIcon={() => handleBack()} />
+        {!loading ? (
+          <ScrollView style={styles.container}>
+            {renderStatusCard()}
+            {appointmentHeader()}
+            {orderCard()}
+            {renderNote()}
+            {renderButton()}
+          </ScrollView>
+        ) : (
+          <Spinner />
+        )}
+      </SafeAreaView>
     </View>
   );
 };
