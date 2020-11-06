@@ -195,6 +195,7 @@ export enum WebEngageEventName {
   UPLOAD_PHR_CLICK_CHATROOM = 'Upload from PHR in consult room clicked',
   PATIENT_JOINED_CONSULT = 'Patient Joined the consult with doctor',
   PATIENT_ENDED_CONSULT = 'Patient ended the consult',
+  CALL_ENDED = 'Call Ended',
   PAST_APPOINTMENT_BOOK_FOLLOW_UP_CLICKED = 'Book follow up clicked from Past appointment',
   BOOK_AGAIN_CANCELLED_APPOINTMENT = 'Book again clicked from cancelled appointment',
   VIEW_DETAILS_PAST_APPOINTMENT = 'View details clicked on past appointment',
@@ -1602,6 +1603,18 @@ export interface WebEngageEvents {
     'Patient Age': number;
     'Patient Gender': string;
     'Customer ID': string;
+  };
+  [WebEngageEventName.CALL_ENDED]: {
+    'Doctor Name': string;
+    'Speciality Name': string;
+    'Speciality ID': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    'Consult ID': string;
+    'Consult Date Time': Date;
+    'Display ID': number | null;
+    'Ended by': 'Patient' | 'Senior Doctor' | 'Junior Doctor' | 'Network';
+    'Call Duration': number;
   };
   [WebEngageEventName.PAST_APPOINTMENT_BOOK_FOLLOW_UP_CLICKED]: FollowUpAppointment;
   [WebEngageEventName.BOOK_AGAIN_CANCELLED_APPOINTMENT]: FollowUpAppointment;

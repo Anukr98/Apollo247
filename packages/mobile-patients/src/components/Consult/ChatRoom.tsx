@@ -575,6 +575,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const patientJoinedCall = useRef<boolean>(false); // using ref to get the current values on listener events
   const subscriberConnected = useRef<boolean>(false);
   const [secretaryData, setSecretaryData] = useState<any>([]);
+  const [callDuration, setCallDuration] = useState<number>(0);
 
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
@@ -1716,6 +1717,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       timer = timer + 1;
       stoppedTimer = timer;
       setCallTimer(timer);
+      setCallDuration(timer);
 
       if (timer == 0) {
         console.log('uptimer', timer);
@@ -1830,6 +1832,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       stopSound();
     },
     disconnected: (event: string) => {
+      callEndWebengageEvent('Network');
       // setSnackbarState(true);
       // setHandlerMessage('Falling back to audio due to bad network!!');
       openTokWebEngageEvents(
@@ -1902,6 +1905,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           WebEngageEventName.PATIENT_SESSION_ERROR,
           JSON.stringify(error)
         );
+        callEndWebengageEvent('Network');
         eventsAfterConnectionDestroyed();
         setTimeout(() => {
           setSnackbarState(true);
@@ -1929,6 +1933,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         AsyncStorage.getItem('callDisconnected').then((data) => {
           if (!JSON.parse(data || 'false')) {
             setSnackbarState(true);
+            callEndWebengageEvent('Network');
             setHandlerMessage('Call disconnected due to Network issues at the Doctor side');
           }
         });
@@ -1976,6 +1981,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       console.log('session streamCreated created!', event);
     },
     streamDestroyed: (event: string) => {
+      callEndWebengageEvent(g(appointmentData, 'doctorInfo', 'doctorType') === 'JUNIOR' ? 'Junior Doctor' : 'Senior Doctor');
       openTokWebEngageEvents(
         WebEngageEventName.PATIENT_SESSION_STREAM_DESTROYED,
         JSON.stringify(event)
@@ -1984,6 +1990,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       eventsAfterConnectionDestroyed();
     },
     streamPropertyChanged: (event: OptntokChangeProp) => {
+      callEndWebengageEvent('Network');
       openTokWebEngageEvents(
         WebEngageEventName.PATIENT_SESSION_STREAM_PROPERTY_CHANGED,
         JSON.stringify(event)
@@ -2009,6 +2016,27 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         `There was an error with the otrnError sessionEventHandlers: ${JSON.stringify(error)}`
       );
     },
+  };
+
+  const callEndWebengageEvent = (
+    source: WebEngageEvents[WebEngageEventName.CALL_ENDED]['Ended by'],
+    data:
+      | getAppointmentData_getAppointmentData_appointmentsHistory
+      | getPatinetAppointments_getPatinetAppointments_patinetAppointments = appointmentData
+  ) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.CALL_ENDED] = {
+      'Doctor Name': g(data, 'doctorInfo', 'fullName')!,
+      'Speciality ID': g(data, 'doctorInfo', 'specialty', 'id')!,
+      'Speciality Name': g(data, 'doctorInfo', 'specialty', 'name')!,
+      'Consult Date Time': moment(g(data, 'appointmentDateTime')).toDate(),
+      'Consult ID': g(data, 'id')!,
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Display ID': g(data, 'displayId')!,
+      'Ended by': source,
+      'Call Duration': callDuration,
+    };
+    console.log('event attributes: ', eventAttributes);
   };
 
   const eventsAfterConnectionDestroyed = () => {
@@ -5649,6 +5677,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               setShowVideo(true);
               setCameraPosition('front');
               postAppointmentWEGEvent(WebEngageEventName.PATIENT_ENDED_CONSULT);
+              callEndWebengageEvent('Patient');
               pubnub.publish(
                 {
                   message: {
@@ -5726,6 +5755,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             stopTimer();
             setHideStatusBar(false);
             postAppointmentWEGEvent(WebEngageEventName.PATIENT_ENDED_CONSULT);
+            callEndWebengageEvent('Patient');
             pubnub.publish(
               {
                 message: {
@@ -5946,6 +5976,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     setHideStatusBar(false);
     setChatReceived(false);
     postAppointmentWEGEvent(WebEngageEventName.PATIENT_ENDED_CONSULT);
+    callEndWebengageEvent('Patient');
     pubnub.publish(
       {
         message: {
