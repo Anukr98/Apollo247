@@ -7,7 +7,14 @@ import {
 import { Category } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
-import { FlatList, ListRenderItemInfo, StyleSheet, View, ViewProps } from 'react-native';
+import {
+  FlatList,
+  ListRenderItemInfo,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  ViewProps,
+} from 'react-native';
 import { ListItem } from 'react-native-elements';
 
 export interface Props {
@@ -34,7 +41,12 @@ export const MedicineCategoryTree: React.FC<Props> = ({
         onPressCategory(item, [...categoryTree.reverse(), item]);
       }
     };
-    const rightIcon = level1 ? <Down /> : <ArrowRight />;
+    const onPressListItem = () => {
+      onPressCategory(item, [...categoryTree.reverse(), item]);
+    };
+    const rightIcon = (
+      <TouchableOpacity onPress={onPress}>{level1 ? <Down /> : <ArrowRight />}</TouchableOpacity>
+    );
     return (
       <ListItem
         key={category_id}
@@ -42,7 +54,7 @@ export const MedicineCategoryTree: React.FC<Props> = ({
         rightIcon={rightIcon}
         titleStyle={styles.itemTitle}
         containerStyle={styles.listItemContainer}
-        onPress={onPress}
+        onPress={onPressListItem}
         topDivider
       />
     );

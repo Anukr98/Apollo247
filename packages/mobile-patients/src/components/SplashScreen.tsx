@@ -14,7 +14,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import { SplashLogo } from '@aph/mobile-patients/src/components/SplashLogo';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import firebase from 'react-native-firebase';
+import remoteConfig from '@react-native-firebase/remote-config';
 import SplashScreenView from 'react-native-splash-screen';
 import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAuth } from '../hooks/authHooks';
@@ -453,7 +453,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   }
   const getData = (routeName: String, id?: String, timeout?: boolean, isCall?: boolean) => {
     async function fetchData() {
-      firebase.analytics().setAnalyticsCollectionEnabled(true);
       // const onboarding = await AsyncStorage.getItem('onboarding');
       const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
       const signUp = await AsyncStorage.getItem('signUp');
@@ -825,7 +824,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     },
   };
 
-  const getConfigStringBasedOnEnv = (
+  const getKeyBasedOnEnv = (
     currentEnv: AppEnv,
     config: typeof RemoteConfigKeys,
     _key: keyof typeof RemoteConfigKeys
@@ -838,109 +837,84 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       : valueBasedOnEnv.DEV || valueBasedOnEnv.QA || valueBasedOnEnv.PROD;
   };
 
-  const getRemoteConfigKeys = (): string[] => {
-    return (Object.keys(RemoteConfigKeys) as (keyof typeof RemoteConfigKeys)[]).map((configKey) =>
-      getConfigStringBasedOnEnv(APP_ENV, RemoteConfigKeys, configKey)
-    );
-  };
-
   const getRemoteConfigValue = (
     remoteConfigKey: keyof typeof RemoteConfigKeys,
-    snapshot: {
-      [key: string]: { val(): any };
-    }
-  ) => snapshot[getConfigStringBasedOnEnv(APP_ENV, RemoteConfigKeys, remoteConfigKey)].val();
+    processValue: (key: string) => any
+  ) => {
+    const key = getKeyBasedOnEnv(APP_ENV, RemoteConfigKeys, remoteConfigKey);
+    return processValue(key);
+  };
 
   const setAppConfig = (
     remoteConfigKey: keyof typeof RemoteConfigKeys,
     appConfigKey: keyof typeof AppConfig.Configuration,
-    snapshot: {
-      [key: string]: { val(): any };
-    },
-    processValue?: (val: string | number) => any
+    processValue: (key: string) => any
   ) => {
-    const _val = snapshot[
-      getConfigStringBasedOnEnv(APP_ENV, RemoteConfigKeys, remoteConfigKey)
-    ].val();
-    const finalValue = processValue ? processValue(_val) : _val;
-    updateAppConfig(appConfigKey, finalValue);
+    const key = getKeyBasedOnEnv(APP_ENV, RemoteConfigKeys, remoteConfigKey);
+    const value = processValue(key);
+    updateAppConfig(appConfigKey, value);
   };
 
-  const checkForVersionUpdate = () => {
-    console.log('checkForVersionUpdate');
-
+  const checkForVersionUpdate = async () => {
     try {
-      if (__DEV__) {
-        firebase.config().enableDeveloperMode();
+      // Note: remote config values will be cached for the specified duration in development mode, update below value if necessary.
+      const minimumFetchIntervalMillis = __DEV__ ? 43200000 : 0;
+      await remoteConfig().setConfigSettings({ minimumFetchIntervalMillis });
+      await remoteConfig().fetchAndActivate();
+      const config = remoteConfig();
+
+      const needHelpToContactInMessage = getRemoteConfigValue('Need_Help_To_Contact_In', (key) =>
+        config.getString(key)
+      );
+      needHelpToContactInMessage && setNeedHelpToContactInMessage!(needHelpToContactInMessage);
+
+      setAppConfig(
+        'Min_Value_For_Pharmacy_Free_Delivery',
+        'MIN_CART_VALUE_FOR_FREE_DELIVERY',
+        (key) => config.getNumber(key)
+      );
+
+      setAppConfig(
+        'min_value_to_nudge_users_to_avail_free_delivery',
+        'MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY',
+        (key) => config.getNumber(key)
+      );
+
+      setAppConfig('Pharmacy_Delivery_Charges', 'DELIVERY_CHARGES', (key) => config.getNumber(key));
+
+      setAppConfig('Doctor_Partner_Text', 'DOCTOR_PARTNER_TEXT', (key) => config.getString(key));
+
+      setAppConfig('Doctors_Page_Size', 'Doctors_Page_Size', (key) => config.getNumber(key));
+
+      setAppConfig('top6_specailties', 'TOP_SPECIALITIES', (key) =>
+        JSON.parse(config.getString(key) || 'null')
+      );
+
+      try {
+        const enableCM = getRemoteConfigValue('Enable_Conditional_Management', (key) =>
+          JSON.stringify(config.getBoolean(key))
+        );
+        AsyncStorage.setItem('CMEnable', enableCM);
+      } catch (error) {}
+
+      const { iOS_Version, Android_Version } = AppConfig.Configuration;
+      const isIOS = Platform.OS === 'ios';
+      const appVersion = coerce(isIOS ? iOS_Version : Android_Version)?.version;
+      const appLatestVersionFromConfig = getRemoteConfigValue(
+        isIOS ? 'ios_Latest_version' : 'android_latest_version',
+        (key) => config.getString(key)
+      );
+      const appLatestVersion = coerce(appLatestVersionFromConfig)?.version;
+      const isMandatory: boolean = getRemoteConfigValue(
+        isIOS ? 'ios_mandatory' : 'Android_mandatory',
+        (key) => config.getBoolean(key)
+      );
+
+      if (appVersion && appLatestVersion && isLessThan(appVersion, appLatestVersion)) {
+        showUpdateAlert(isMandatory);
       }
-
-      firebase
-        .config()
-        .fetch(30 * 0) // 30 min
-        .then(() => {
-          return firebase.config().activateFetched();
-        })
-        .then(() => {
-          return firebase.config().getValues(getRemoteConfigKeys());
-        })
-        .then((snapshot) => {
-          const needHelpToContactInMessage = getRemoteConfigValue(
-            'Need_Help_To_Contact_In',
-            snapshot
-          );
-          needHelpToContactInMessage && setNeedHelpToContactInMessage!(needHelpToContactInMessage);
-
-          setAppConfig(
-            'Min_Value_For_Pharmacy_Free_Delivery',
-            'MIN_CART_VALUE_FOR_FREE_DELIVERY',
-            snapshot
-          );
-
-          setAppConfig(
-            'min_value_to_nudge_users_to_avail_free_delivery',
-            'MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY',
-            snapshot
-          );
-
-          setAppConfig('Pharmacy_Delivery_Charges', 'DELIVERY_CHARGES', snapshot);
-
-          setAppConfig('Doctor_Partner_Text', 'DOCTOR_PARTNER_TEXT', snapshot);
-
-          setAppConfig('Doctors_Page_Size', 'Doctors_Page_Size', snapshot);
-          setAppConfig('top6_specailties', 'TOP_SPECIALITIES', snapshot, (val: any) =>
-            JSON.parse(val || 'null')
-          );
-
-          try {
-            AsyncStorage.setItem(
-              'CMEnable',
-              JSON.stringify(getRemoteConfigValue('Enable_Conditional_Management', snapshot))
-            );
-          } catch (error) {}
-
-          const { iOS_Version, Android_Version } = AppConfig.Configuration;
-          const isIOS = Platform.OS === 'ios';
-          const appVersion = coerce(isIOS ? iOS_Version : Android_Version)?.version;
-          const appLatestVersionFromConfig = getRemoteConfigValue(
-            isIOS ? 'ios_Latest_version' : 'android_latest_version',
-            snapshot
-          );
-          const appLatestVersion = coerce(appLatestVersionFromConfig)?.version;
-          const isMandatory: boolean = getRemoteConfigValue(
-            isIOS ? 'ios_mandatory' : 'Android_mandatory',
-            snapshot
-          );
-
-          if (appVersion && appLatestVersion && isLessThan(appVersion, appLatestVersion)) {
-            showUpdateAlert(isMandatory);
-          }
-        })
-        .catch((error) => {
-          CommonBugFender('SplashScreen_checkForVersionUpdate', error);
-          console.log(`Error processing config: ${error}`);
-        });
     } catch (error) {
-      CommonBugFender('SplashScreen_checkForVersionUpdate_try', error);
+      CommonBugFender('SplashScreen - Error processing remote config', error);
     }
   };
 

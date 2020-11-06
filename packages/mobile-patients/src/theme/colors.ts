@@ -28,6 +28,7 @@ const platinumGrey = '#525252';
 const bondi_blue = '#0187ba';
 const lightGray2 = '#cccccc';
 const lightYellow = '#fbe9be';
+const careRed = '#F0533B'
 
 const platinumWhiteGrey = '#E6E6E6';
 const red = '#e50000';
@@ -89,6 +90,7 @@ const Common = {
   OFF_WHITE: '#F7F7F7',
   LIGHT_YELLOW: lightYellow,
   GREEN: '#07AE8B',
+  CARE_RED : careRed,
 };
 
 const Header = {

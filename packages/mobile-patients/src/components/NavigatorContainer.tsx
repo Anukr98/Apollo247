@@ -65,7 +65,6 @@ import { YourOrdersTest } from '@aph/mobile-patients/src/components/Tests/YourOr
 import { TestOrderDetails } from '@aph/mobile-patients/src/components/Tests/TestOrderDetails';
 import { ClinicSelection } from '@aph/mobile-patients/src/components/Tests/ClinicSelection';
 import {
-  CommonScreenLog,
   CommonLogEvent,
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -544,7 +543,6 @@ const stackConfig: StackNavigatorConfig = {
       const prevRoute = prevSceneProps?.scene?.route?.routeName;
       if (prevRoute && prevRoute !== currentRoute) {
         AsyncStorage.setItem('setCurrentName', currentRoute);
-        CommonScreenLog(currentRoute, currentRoute);
         logTabEvents(sceneProps.scene.route);
       }
     } catch (error) {
