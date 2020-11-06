@@ -100,12 +100,13 @@ const styles = StyleSheet.create({
   },
   badgeOuterView: {
     alignSelf: 'center',
-    height: '80%',
+    // height: '80%',
   },
   badgeText: {
     textAlign: 'center',
-    padding: 5,
-    paddingTop: 2,
+    padding: 1,
+    paddingLeft: 3,
+    paddingRight: 3,
   },
 });
 
