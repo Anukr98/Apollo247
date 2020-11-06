@@ -1318,11 +1318,14 @@ export const GET_MEDICINE_ORDERS_OMS__LIST = gql`
         shopAddress
         deliveryType
         currentStatus
+        oldOrderTat
+        orderTat
         medicineOrdersStatus {
           id
           # statusDate
           orderStatus
           hideStatus
+          statusMessage
         }
         medicineOrderLineItems {
           medicineName
@@ -1395,53 +1398,6 @@ export const GET_DIAGNOSTIC_SLOTS = gql`
   }
 `;
 
-export const GET_DIAGNOSTIC_DATA = gql`
-  query getDiagnosticsData {
-    getDiagnosticsData {
-      diagnosticOrgans {
-        id
-        organName
-        organImage
-        diagnostics {
-          id
-          itemId
-          itemName
-          gender
-          rate
-          itemRemarks
-          city
-          state
-          itemType
-          fromAgeInDays
-          toAgeInDays
-          testPreparationData
-          collectionType
-        }
-      }
-      diagnosticHotSellers {
-        id
-        packageName
-        price
-        packageImage
-        diagnostics {
-          id
-          itemId
-          itemName
-          gender
-          rate
-          itemRemarks
-          city
-          state
-          itemType
-          fromAgeInDays
-          toAgeInDays
-          testPreparationData
-          collectionType
-        }
-      }
-    }
-  }
-`;
 
 export const GET_DIAGNOSTIC_ORDER_LIST = gql`
   query getDiagnosticOrdersList($patientId: String) {
@@ -1475,11 +1431,28 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
             id
             itemId
             itemName
+            itemType	
+            testPreparationData
           }
         }
       }
     }
   }
+`;
+
+export const GET_DIAGNOSTIC_ORDER_STATUS = gql`	
+  query getDiagnosticsOrderStatus($diagnosticOrderId: String) {	
+    getDiagnosticsOrderStatus(diagnosticOrderId: $diagnosticOrderId) {	
+      ordersList{	
+        statusDate	
+        orderStatus	
+        itemId	
+        itemName	
+        packageId	
+        packageName	
+      }	
+    }	
+  }	
 `;
 
 export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
@@ -1524,6 +1497,12 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
             collectionType
           }
         }
+        diagnosticOrdersStatus{	
+          orderStatus	
+          itemId	
+          statusDate	
+          packageId	
+        }
       }
     }
   }
@@ -1543,6 +1522,97 @@ export const GET_DIAGNOSTICS_HC_CHARGES = gql`
       pincode: $pincode
     ) {
       charges
+    }
+  }
+`;
+
+export const GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID = gql`
+  query findDiagnosticsByItemIDsAndCityID($cityID: Int!, $itemIDs:[Int]!) {
+    findDiagnosticsByItemIDsAndCityID(cityID: $cityID, itemIDs: $itemIDs) {
+      diagnostics{
+      id
+      itemId
+      itemName
+      itemType
+      rate
+      gender
+      itemRemarks
+      city
+      state
+      collectionType
+      fromAgeInDays
+      toAgeInDays
+      testPreparationData
+      }
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_ORDER_ITEM = gql`
+  query getDiagnosticOrderItem($diagnosticOrderID: String!, $itemID: Int!) {
+    getDiagnosticOrderItem(diagnosticOrderID: $diagnosticOrderID, itemID: $itemID ) {
+      diagnostics{
+        itemName
+        rate
+        itemType
+        rate
+        gender
+        itemRemarks
+        city
+        state
+        collectionType
+        fromAgeInDays
+        toAgeInDays
+        testPreparationData
+      }
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_HOME_PAGE_ITEMS = gql`
+  query getDiagnosticsHomePageItems($cityID: Int!) {
+    getDiagnosticsHomePageItems(cityID: $cityID){
+        diagnosticOrgans{
+          id
+          organName
+          organImage
+          diagnostics{
+            id
+            itemId
+            itemName
+            gender
+            rate
+            itemRemarks
+            city
+            state
+            itemType
+            fromAgeInDays
+            toAgeInDays
+            testPreparationData
+            collectionType
+          }
+        }
+        diagnosticHotSellers{
+          id
+          packageName
+          price
+          packageImage
+          diagnostics{
+            id
+            itemId
+            itemName
+            gender
+            rate
+            itemRemarks
+            city
+            state
+            itemType
+            fromAgeInDays
+            toAgeInDays
+            testPreparationData
+            collectionType
+        } 
+      }
     }
   }
 `;
@@ -1588,6 +1658,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
         estimatedAmount
         prescriptionImageUrl
         orderTat
+        oldOrderTat
         orderType
         shopAddress
         packagingCharges
@@ -1595,6 +1666,9 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
         currentStatus
         patientAddressId
         alertStore
+        prescriptionOptionSelected
+        tatType
+        shopId
         medicineOrderLineItems {
           medicineSKU
           medicineName
@@ -1711,6 +1785,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
         redeemedAmount
         estimatedAmount
         prescriptionImageUrl
+        oldOrderTat
         orderTat
         orderType
         shopAddress
@@ -1719,6 +1794,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
         currentStatus
         patientAddressId
         alertStore
+        prescriptionOptionSelected
         medicineOrdersStatus {
           id
           orderStatus
@@ -1793,6 +1869,15 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
           }
         }
       }
+    }
+  }
+`;
+
+
+export const RE_UPLOAD_PRESCRIPTION = gql`
+  mutation ReUploadPrescription($prescriptionInput: PrescriptionReUploadInput) {
+    reUploadPrescription(prescriptionInput: $prescriptionInput) {
+      success
     }
   }
 `;

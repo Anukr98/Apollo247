@@ -62,10 +62,11 @@ import { TestDetails } from '@aph/mobile-patients/src/components/Tests/TestDetai
 import { SearchTestScene } from '@aph/mobile-patients/src/components/Medicines/SearchTestScene';
 import { TestsCheckoutScene } from '@aph/mobile-patients/src/components/TestsCheckoutScene';
 import { YourOrdersTest } from '@aph/mobile-patients/src/components/Tests/YourOrdersTests';
+import { YourTestDetails } from '@aph/mobile-patients/src/components/Tests/YourTestDetails';
 import { TestOrderDetails } from '@aph/mobile-patients/src/components/Tests/TestOrderDetails';
+import { TestOrderDetailsSummary } from '@aph/mobile-patients/src/components/Tests/TestOrderDetailsSummary';
 import { ClinicSelection } from '@aph/mobile-patients/src/components/Tests/ClinicSelection';
 import {
-  CommonScreenLog,
   CommonLogEvent,
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -169,7 +170,9 @@ export enum AppRoutes {
   MyMembership = 'MyMembership',
   MembershipDetails = 'MembershipDetails',
   YourOrdersTest = 'YourOrdersTest',
+  YourTestDetails = 'YourTestDetails',
   TestOrderDetails = 'TestOrderDetails',
+  TestOrderDetailsSummary = 'TestOrderDetailsSummary',
   ClinicSelection = 'ClinicSelection',
   RenderPdf = 'RenderPdf',
   Tests = 'Tests',
@@ -431,8 +434,14 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.YourOrdersTest]: {
     screen: YourOrdersTest,
   },
+  [AppRoutes.YourTestDetails]: {
+    screen: YourTestDetails,
+  },
   [AppRoutes.TestOrderDetails]: {
     screen: TestOrderDetails,
+  },
+  [AppRoutes.TestOrderDetailsSummary]: {
+    screen: TestOrderDetailsSummary,
   },
   [AppRoutes.ClinicSelection]: {
     screen: ClinicSelection,
@@ -544,7 +553,6 @@ const stackConfig: StackNavigatorConfig = {
       const prevRoute = prevSceneProps?.scene?.route?.routeName;
       if (prevRoute && prevRoute !== currentRoute) {
         AsyncStorage.setItem('setCurrentName', currentRoute);
-        CommonScreenLog(currentRoute, currentRoute);
         logTabEvents(sceneProps.scene.route);
       }
     } catch (error) {

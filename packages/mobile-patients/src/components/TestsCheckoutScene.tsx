@@ -531,7 +531,6 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       <OneApollo />
     </View>
   );
-
   const renderAvailableHealthCredits = (
     <View style={[styles.healthCreditsRowStyle, styles.availableHealthCreditsView]}>
       <View style={styles.verticalSeparator} />
@@ -548,7 +547,6 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         {renderAvailableHealthCredits}
       </View>
     );
-
     const balanceAmountToPay = (
       <View style={[styles.balanceAmountViewStyle, { marginHorizontal: 16 }]}>
         <Text style={styles.balanceAmountPayTextStyle}>{'Balance amount to pay'}</Text>
@@ -559,7 +557,6 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         </Text>
       </View>
     );
-
     const slider = (
       <Slider
         value={oneApolloCredits}
@@ -572,7 +569,6 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         maximumTrackTintColor={'rgba(0, 135, 186, 0.1)'}
       />
     );
-
     const sliderValues = (
       <View style={styles.sliderValuesViewStyle}>
         <Text style={[styles.sliderValueStyle, oneApolloCredits == 0 ? { opacity: 1 } : {}]}>
@@ -593,14 +589,12 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         </Text>
       </View>
     );
-
     const healthCreditsSliderAndValues = (
       <View style={styles.sliderStyle}>
         {slider}
         {sliderValues}
       </View>
     );
-
     const content = (
       <View>
         {oneApolloCheckBoxAndCredits}
@@ -613,7 +607,6 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         ) : null}
       </View>
     );
-
     return renderHeadingAndCard(
       'Would you like to use Apollo Health Credits for this payment?',
       content,
@@ -705,10 +698,11 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
 
   const navigateToOrderDetails = (showOrderSummaryTab: boolean, orderId: string) => {
     hideAphAlert!();
-    props.navigation.navigate(AppRoutes.TestOrderDetails, {
+    props.navigation.navigate(AppRoutes.TestOrderDetailsSummary, {
       goToHomeOnBack: true,
       showOrderSummaryTab,
       orderId: orderId,
+      comingFrom: AppRoutes.TestsCheckoutScene,
     });
   };
 

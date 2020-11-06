@@ -59,6 +59,7 @@ import {
   GET_DIAGNOSTIC_AREAS,
   GET_DIAGNOSTIC_SLOTS_WITH_AREA_ID,
   GET_DIAGNOSTICS_HC_CHARGES,
+  GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
@@ -101,21 +102,24 @@ import {
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import Geolocation from '@react-native-community/geolocation';
-import {
-  searchDiagnosticsById_searchDiagnosticsById_diagnostics,
-  searchDiagnosticsById,
-  searchDiagnosticsByIdVariables,
-} from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsById';
 import { TestSlotSelectionOverlay } from '@aph/mobile-patients/src/components/Tests/TestSlotSelectionOverlay';
-import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { postPharmacyAddNewAddressClick } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
-import { getAreas, getAreasVariables } from '../../graphql/types/getAreas';
+import { getAreas, getAreasVariables } from '@aph/mobile-patients/src/graphql/types/getAreas';
 import {
   getDiagnosticSlotsWithAreaID,
   getDiagnosticSlotsWithAreaIDVariables,
-} from '../../graphql/types/getDiagnosticSlotsWithAreaID';
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsWithAreaID';
+import {
+  findDiagnosticsByItemIDsAndCityID,
+  findDiagnosticsByItemIDsAndCityIDVariables,
+  findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics,
+} from '@aph/mobile-patients/src/graphql/types/findDiagnosticsByItemIDsAndCityID';
 const { width: winWidth } = Dimensions.get('window');
 const styles = StyleSheet.create({
   labelView: {
@@ -202,6 +206,7 @@ export interface TestsCartProps extends NavigationScreenProps {}
 export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const {
     removeCartItem,
+    updateCartItem,
     cartItems,
     setCartItems,
     setAddresses,
@@ -261,7 +266,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const currentPatientId = currentPatient && currentPatient!.id;
   const client = useApolloClient();
-  const { locationForDiagnostics, locationDetails } = useAppCommonData();
+  const {
+    locationForDiagnostics,
+    locationDetails,
+    diagnosticServiceabilityData,
+  } = useAppCommonData();
 
   const { setLoading, showAphAlert, hideAphAlert } = useUIElements();
   const [clinicDetails, setClinicDetails] = useState<Clinic[] | undefined>([]);
@@ -278,14 +287,20 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [testCentresLoaded, setTestCentresLoaded] = useState<boolean>(false);
 
   const itemsWithHC = cartItems!.filter((item) => item!.collectionMethod == 'HC');
-  const itemWithId = itemsWithHC!.map((item) => parseInt(item.id));
+  const itemWithId = itemsWithHC!.map((item) => parseInt(item.id!));
 
   const isValidPinCode = (text: string): boolean => /^(\s*|[1-9][0-9]*)$/.test(text);
 
-  const cartItemsWithId = cartItems!.map((item) => parseInt(item.id));
+  const cartItemsWithId = cartItems!.map((item) => parseInt(item.id!));
   useEffect(() => {
     fetchAddresses();
   }, [currentPatient]);
+
+  useEffect(() => {
+    if (cartItemsWithId.length > 0) {
+      fetchPackageDetails(cartItemsWithId, null, 'diagnosticServiceablityChange');
+    }
+  }, [diagnosticServiceabilityData]);
 
   useEffect(() => {
     if (selectedTab == tabs[0].title) {
@@ -568,24 +583,47 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const fetchPackageDetails = (
-    itemIds: string,
-    func: (product: searchDiagnosticsById_searchDiagnosticsById_diagnostics) => void
+    itemIds: string | number[],
+    func: (
+      product: findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics
+    ) => void,
+    comingFrom: string
   ) => {
+    const removeSpaces = typeof itemIds == 'string' ? itemIds.replace(/\s/g, '').split(',') : null;
+
+    const listOfIds =
+      typeof itemIds == 'string' ? removeSpaces?.map((item) => parseInt(item!)) : itemIds;
+    console.log({ listOfIds });
     {
       setLoading!(true);
       client
-        .query<searchDiagnosticsById, searchDiagnosticsByIdVariables>({
-          query: SEARCH_DIAGNOSTICS_BY_ID,
+        .query<findDiagnosticsByItemIDsAndCityID, findDiagnosticsByItemIDsAndCityIDVariables>({
+          query: GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
           variables: {
-            itemIds: itemIds,
+            cityID: parseInt(diagnosticServiceabilityData?.cityId!) || 9,
+            itemIDs: listOfIds,
           },
           fetchPolicy: 'no-cache',
         })
         .then(({ data }) => {
-          console.log('searchDiagnostics\n', { data });
-          const product = g(data, 'searchDiagnosticsById', 'diagnostics', '0' as any);
+          console.log('findDiagnosticsItemsForCityId\n', { data });
+          const product = g(data, 'findDiagnosticsByItemIDsAndCityID', 'diagnostics');
+          console.log({ product });
           if (product) {
-            func && func(product);
+            func && func(product[0]!);
+            comingFrom == 'diagnosticServiceablityChange'
+              ? product.map((item) => {
+                  updateCartItem!({
+                    id: item?.itemId!.toString() || product[0]?.id!,
+                    name: item?.itemName,
+                    price: item?.rate,
+                    thumbnail: '',
+                    specialPrice: undefined,
+                    collectionMethod: item?.collectionType!,
+                  });
+                })
+              : null;
+            //update the ui
           } else {
             errorAlert();
           }
@@ -700,22 +738,26 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               key={test.id}
               onPress={() => {
                 CommonLogEvent(AppRoutes.TestsCart, 'Navigate to medicine details scene');
-                fetchPackageDetails(test.id, (product) => {
-                  props.navigation.navigate(AppRoutes.TestDetails, {
-                    testDetails: {
-                      ItemID: test.id,
-                      ItemName: test.name,
-                      Rate: test!.price,
-                      FromAgeInDays: product.fromAgeInDays!,
-                      ToAgeInDays: product.toAgeInDays!,
-                      Gender: product.gender,
-                      collectionType: test.collectionMethod,
-                      preparation: product.testPreparationData,
-                      source: 'Cart Page',
-                      type: product.itemType,
-                    } as TestPackageForDetails,
-                  });
-                });
+                fetchPackageDetails(
+                  test.id,
+                  (product) => {
+                    props.navigation.navigate(AppRoutes.TestDetails, {
+                      testDetails: {
+                        ItemID: test.id,
+                        ItemName: test.name,
+                        Rate: test!.price,
+                        FromAgeInDays: product.fromAgeInDays!,
+                        ToAgeInDays: product.toAgeInDays!,
+                        Gender: product.gender,
+                        collectionType: test.collectionMethod,
+                        preparation: product.testPreparationData,
+                        source: 'Cart Page',
+                        type: product.itemType,
+                      } as TestPackageForDetails,
+                    });
+                  },
+                  'onPress'
+                );
               }}
               medicineName={test.name!}
               price={test.price!}
@@ -1645,10 +1687,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const getDiagnosticsAvailability = (cartItems: DiagnosticsCartItem[]) => {
-    const itemIds = cartItems.map((item) => item.id).toString();
-    return client.query<searchDiagnosticsById, searchDiagnosticsByIdVariables>({
-      query: SEARCH_DIAGNOSTICS_BY_ID,
-      variables: { itemIds },
+    const itemIds = cartItems.map((item) => parseInt(item.id));
+    return client.query<
+      findDiagnosticsByItemIDsAndCityID,
+      findDiagnosticsByItemIDsAndCityIDVariables
+    >({
+      query: GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
+      variables: { cityID: parseInt(diagnosticServiceabilityData?.cityId!) || 9, itemIDs: itemIds },
       fetchPolicy: 'no-cache',
     });
   };
@@ -1681,7 +1726,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       setLoading!(true);
       getDiagnosticsAvailability(cartItems)
         .then(({ data }) => {
-          const diagnosticItems = g(data, 'searchDiagnosticsById', 'diagnostics') || [];
+          const diagnosticItems = g(data, 'findDiagnosticsByItemIDsAndCityID', 'diagnostics') || [];
           const disabledCartItems = cartItems.filter(
             (cartItem) => !diagnosticItems.find((d) => `${d!.itemId}` == cartItem.id)
           );

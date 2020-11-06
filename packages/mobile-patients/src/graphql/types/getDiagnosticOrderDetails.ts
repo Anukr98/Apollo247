@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 import { DIAGNOSTIC_ORDER_STATUS, DIAGNOSTICS_TYPE, TEST_COLLECTION_TYPE } from "./globalTypes";
@@ -32,6 +33,14 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_
   diagnostics: getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems_diagnostics | null;
 }
 
+export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrdersStatus {
+  __typename: "DiagnosticOrdersStatus";
+  orderStatus: DIAGNOSTIC_ORDER_STATUS | null;
+  itemId: number | null;
+  statusDate: any | null;
+  packageId: number | null;
+}
+
 export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList {
   __typename: "DiagnosticOrders";
   id: string;
@@ -54,6 +63,7 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList 
   displayId: number;
   createdDate: any;
   diagnosticOrderLineItems: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems | null)[] | null;
+  diagnosticOrdersStatus: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrdersStatus | null)[] | null;
 }
 
 export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails {

@@ -42,7 +42,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import firebase from 'react-native-firebase';
+import messaging from '@react-native-firebase/messaging';
 import { ScrollView } from 'react-native-gesture-handler';
 import HyperLink from 'react-native-hyperlink';
 import WebEngage from 'react-native-webengage';
@@ -153,12 +153,7 @@ export const Login: React.FC<LoginProps> = (props) => {
   useEffect(() => {
     try {
       fireBaseFCM();
-      // if (firebase.auth().currentUser) {
-      //   console.log('login auth', firebase.auth().currentUser);
-      //   signOut();
-      // }
       setLoading && setLoading(false);
-      firebase.auth().appVerificationDisabledForTesting = true;
       if (Platform.OS === 'android') {
         AppSignature.getAppSignature().then((sign: string[]) => {
           setAppSign(sign[0] || '');
@@ -170,23 +165,16 @@ export const Login: React.FC<LoginProps> = (props) => {
   }, []);
 
   const fireBaseFCM = async () => {
-    const enabled = await firebase.messaging().hasPermission();
-    if (enabled) {
-      // user has permissions
-      console.log('enabled', enabled);
-    } else {
-      // user doesn't have permission
-      console.log('not enabled');
-      try {
-        await firebase.messaging().requestPermission();
-        console.log('authorized');
-
-        // User has authorised
-      } catch (error) {
-        // User has rejected permissions
-        CommonBugFender('Login_fireBaseFCM_try', error);
-        console.log('not enabled error', error);
+    try {
+      const authStatus = await messaging().hasPermission();
+      const enabled =
+        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+      if (!enabled) {
+        await messaging().requestPermission();
       }
+    } catch (error) {
+      CommonBugFender('Login_FireBaseFCM_Error', error);
     }
   };
 

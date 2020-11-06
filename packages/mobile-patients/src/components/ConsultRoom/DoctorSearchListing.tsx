@@ -960,6 +960,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const postDoctorClickWEGEvent = (
     doctorDetails: any,
     source: WebEngageEvents[WebEngageEventName.DOCTOR_CLICKED]['Source'],
+    isTopDoc: boolean,
     type?: 'consult-now' | 'book-appointment'
   ) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CLICKED] = {
@@ -971,6 +972,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       Fee: Number(doctorDetails?.fee),
       'Doctor Speciality': doctorDetails?.specialistSingularTerm,
       Rank: doctorDetails?.rowId,
+      Is_TopDoc: !!isTopDoc ? 'Yes' : 'No',
     };
 
     const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.DOCTOR_CLICKED] = {
@@ -1024,6 +1026,37 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     }
   };
 
+  const renderDoctorCard = (
+    rowData: any,
+    index: number,
+    styles: StyleProp<ViewStyle> = {},
+    numberOfLines?: number,
+    filter?: ConsultMode
+  ) => {
+    return platinumDoctor?.id !== rowData?.id ? (
+      <DoctorCard
+        key={index}
+        rowId={index + 1}
+        rowData={rowData}
+        navigation={props.navigation}
+        style={styles}
+        numberOfLines={numberOfLines}
+        availableModes={rowData.consultMode}
+        callSaveSearch={callSaveSearch}
+        onPress={() => {
+          postDoctorClickWEGEvent(rowData, 'List');
+          props.navigation.navigate(AppRoutes.DoctorDetails, {
+            doctorId: rowData.id,
+            callSaveSearch: callSaveSearch,
+          });
+        }}
+        onPressConsultNowOrBookAppointment={(type) => {
+          postDoctorClickWEGEvent(rowData, 'List', type);
+        }}
+      />
+    ) : null;
+  };
+
   const renderSearchDoctorResultsRow = (
     rowData: any,
     index: number,
@@ -1035,48 +1068,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       return index === 0 && platinumDoctor ? (
         <>
           {renderPlatinumDoctorView()}
-          <DoctorCard
-            key={index}
-            rowId={index + 1}
-            rowData={rowData}
-            navigation={props.navigation}
-            style={styles}
-            numberOfLines={numberOfLines}
-            availableModes={rowData.consultMode}
-            callSaveSearch={callSaveSearch}
-            onPress={() => {
-              postDoctorClickWEGEvent({ ...rowData, rowId: index + 1 }, 'List');
-              props.navigation.navigate(AppRoutes.DoctorDetails, {
-                doctorId: rowData.id,
-                callSaveSearch: callSaveSearch,
-              });
-            }}
-            onPressConsultNowOrBookAppointment={(type) => {
-              postDoctorClickWEGEvent({ ...rowData, rowId: index + 1 }, 'List', type);
-            }}
-          />
+          {renderDoctorCard(rowData, index, styles, numberOfLines, filter)}
         </>
       ) : (
-        <DoctorCard
-          key={index}
-          rowId={index + 1}
-          rowData={rowData}
-          navigation={props.navigation}
-          style={styles}
-          numberOfLines={numberOfLines}
-          availableModes={rowData.consultMode}
-          callSaveSearch={callSaveSearch}
-          onPress={() => {
-            postDoctorClickWEGEvent({ ...rowData, rowId: index + 1 }, 'List');
-            props.navigation.navigate(AppRoutes.DoctorDetails, {
-              doctorId: rowData.id,
-              callSaveSearch: callSaveSearch,
-            });
-          }}
-          onPressConsultNowOrBookAppointment={(type) => {
-            postDoctorClickWEGEvent({ ...rowData, rowId: index + 1 }, 'List', type);
-          }}
-        />
+        renderDoctorCard(rowData, index, styles, numberOfLines, filter)
       );
     }
     return null;
@@ -1424,7 +1419,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           buttonStyle={buttonStyle}
           buttonTextStyle={buttonTextStyle}
           onPress={() => {
-            postDoctorClickWEGEvent(platinumDoctor, 'List');
+            postDoctorClickWEGEvent(platinumDoctor, 'List', true);
             props.navigation.navigate(AppRoutes.DoctorDetails, {
               doctorId: platinumDoctor?.id,
               callSaveSearch: callSaveSearch,
@@ -1432,7 +1427,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             });
           }}
           onPressConsultNowOrBookAppointment={(type) => {
-            postDoctorClickWEGEvent(platinumDoctor, 'List', type);
+            postDoctorClickWEGEvent(platinumDoctor, 'List', true, type);
           }}
         />
       </LinearGradientComponent>

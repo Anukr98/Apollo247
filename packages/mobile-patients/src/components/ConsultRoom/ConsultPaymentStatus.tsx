@@ -39,6 +39,7 @@ import {
   View,
   Clipboard,
   TextInput,
+  SafeAreaView,
 } from 'react-native';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import RNFetchBlob from 'rn-fetch-blob';
@@ -48,7 +49,7 @@ import {
 } from '../../graphql/types/getAppointmentData';
 import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
 import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents';
-import firebase from 'react-native-firebase';
+import messaging from '@react-native-firebase/messaging';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { NotificationPermissionAlert } from '@aph/mobile-patients/src/components/ui/NotificationPermissionAlert';
 import { Snackbar } from 'react-native-paper';
@@ -76,6 +77,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const webEngageEventAttributes = props.navigation.getParam('webEngageEventAttributes');
   const appsflyerEventAttributes = props.navigation.getParam('appsflyerEventAttributes');
   const fireBaseEventAttributes = props.navigation.getParam('fireBaseEventAttributes');
+  const isDoctorsOfTheHourStatus = props.navigation.getParam('isDoctorsOfTheHourStatus');
   const coupon = props.navigation.getParam('coupon');
   const client = useApolloClient();
   const { success, failure, pending, aborted } = Payment;
@@ -129,10 +131,11 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
           try {
             let eventAttributes = webEngageEventAttributes;
             eventAttributes['Display ID'] = res.data.paymentTransactionStatus.appointment.displayId;
-            postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
             postAppsFlyerEvent(AppsFlyerEventName.CONSULTATION_BOOKED, appsflyerEventAttributes);
             postFirebaseEvent(FirebaseEventName.CONSULTATION_BOOKED, fireBaseEventAttributes);
             firePurchaseEvent();
+            eventAttributes['Dr of hour appointment'] = !!isDoctorsOfTheHourStatus ? 'Yes' : 'No';
+            postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
           } catch (error) {}
         }
         setrefNo(res.data.paymentTransactionStatus.appointment.bankTxnId);
@@ -154,24 +157,17 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   }, []);
 
   const fireBaseFCM = async () => {
-    const enabled = await firebase.messaging().hasPermission();
-    if (enabled) {
-      // user has permissions
-      console.log('enabled', enabled);
-    } else {
-      // user doesn't have permission
-      console.log('not enabled');
-      setNotificationAlert(true);
-      try {
-        const authorized = await firebase.messaging().requestPermission();
-        console.log('authorized', authorized);
-
-        // User has authorised
-      } catch (error) {
-        // User has rejected permissions
-        CommonBugFender('Login_fireBaseFCM_try', error);
-        console.log('not enabled error', error);
+    try {
+      const authStatus = await messaging().hasPermission();
+      const enabled =
+        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+      if (!enabled) {
+        setNotificationAlert(true);
+        await messaging().requestPermission();
       }
+    } catch (error) {
+      CommonBugFender('ConsultOverlay_FireBaseFCM_Error', error);
     }
   };
 
@@ -674,28 +670,30 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#01475b" />
-      <Header leftIcon="backArrow" title="PAYMENT STATUS" onPressLeftIcon={() => handleBack()} />
-      {!loading ? (
-        <ScrollView style={styles.container}>
-          {renderStatusCard()}
-          {appointmentHeader()}
-          {appointmentCard()}
-          {renderNote()}
-          {renderButton()}
-        </ScrollView>
-      ) : (
-        <Spinner />
-      )}
-      {showSpinner && <Spinner />}
-      {notificationAlert && (
-        <NotificationPermissionAlert
-          onPressOutside={() => setNotificationAlert(false)}
-          onButtonPress={() => {
-            setNotificationAlert(false);
-            Linking.openSettings();
-          }}
-        />
-      )}
+      <SafeAreaView style={styles.container}>
+        <Header leftIcon="backArrow" title="PAYMENT STATUS" onPressLeftIcon={() => handleBack()} />
+        {!loading ? (
+          <ScrollView style={styles.container}>
+            {renderStatusCard()}
+            {appointmentHeader()}
+            {appointmentCard()}
+            {renderNote()}
+            {renderButton()}
+          </ScrollView>
+        ) : (
+          <Spinner />
+        )}
+        {showSpinner && <Spinner />}
+        {notificationAlert && (
+          <NotificationPermissionAlert
+            onPressOutside={() => setNotificationAlert(false)}
+            onButtonPress={() => {
+              setNotificationAlert(false);
+              Linking.openSettings();
+            }}
+          />
+        )}
+      </SafeAreaView>
     </View>
   );
 };

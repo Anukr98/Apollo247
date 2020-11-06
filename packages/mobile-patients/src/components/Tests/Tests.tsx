@@ -30,12 +30,12 @@ import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList'
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
-  GET_DIAGNOSTIC_DATA,
   GET_DIAGNOSTIC_ORDER_LIST,
   SAVE_SEARCH,
-  SEARCH_DIAGNOSTICS_BY_ID,
   GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
   SEARCH_DIAGNOSTICS_BY_CITY_ID,
+  GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
+  GET_DIAGNOSTIC_HOME_PAGE_ITEMS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
@@ -43,11 +43,6 @@ import {
   getDiagnosticOrdersListVariables,
   getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
-import {
-  getDiagnosticsData,
-  getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers,
-  getDiagnosticsData_getDiagnosticsData_diagnosticOrgans,
-} from '@aph/mobile-patients/src/graphql/types/getDiagnosticsData';
 import {
   searchDiagnosticsByCityID,
   searchDiagnosticsByCityIDVariables,
@@ -99,11 +94,6 @@ import { FlatList, NavigationScreenProps, StackActions, NavigationActions } from
 import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import {
-  searchDiagnosticsById,
-  searchDiagnosticsByIdVariables,
-  searchDiagnosticsById_searchDiagnosticsById_diagnostics,
-} from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsById';
 import { WebEngageEventName, WebEngageEvents } from '../../helpers/webEngageEvents';
 import moment from 'moment';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -112,7 +102,18 @@ import _ from 'lodash';
 import {
   getPincodeServiceability,
   getPincodeServiceabilityVariables,
-} from '../../graphql/types/getPincodeServiceability';
+} from '@aph/mobile-patients/src/graphql/types/getPincodeServiceability';
+import {
+  findDiagnosticsByItemIDsAndCityID,
+  findDiagnosticsByItemIDsAndCityIDVariables,
+  findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics,
+} from '@aph/mobile-patients/src/graphql/types/findDiagnosticsByItemIDsAndCityID';
+import {
+  getDiagnosticsHomePageItems,
+  getDiagnosticsHomePageItemsVariables,
+  getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnosticHotSellers,
+  getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnosticOrgans,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticsHomePageItems';
 
 const { width: winWidth } = Dimensions.get('window');
 const styles = StyleSheet.create({
@@ -247,18 +248,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
     currentPatient!
   );
 
-  const [ordersFetched, setOrdersFetched] = useState<
-    (getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList | null)[]
-  >([]);
-
-  const { data: diagnosticsData, error: hError, loading: hLoading, refetch: hRefetch } = useQuery<
-    getDiagnosticsData
-  >(GET_DIAGNOSTIC_DATA, {
-    variables: {},
-    fetchPolicy: 'cache-first',
-  });
-
-  const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
   const {
     locationDetails,
     setLocationDetails,
@@ -272,6 +261,20 @@ export const Tests: React.FC<TestsProps> = (props) => {
     isDiagnosticLocationServiceable,
     setDiagnosticLocationServiceable,
   } = useAppCommonData();
+
+  const [ordersFetched, setOrdersFetched] = useState<
+    (getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList | null)[]
+  >([]);
+
+  const { data: diagnosticsData, error: hError, loading: hLoading, refetch: hRefetch } = useQuery<
+    getDiagnosticsHomePageItems,
+    getDiagnosticsHomePageItemsVariables
+  >(GET_DIAGNOSTIC_HOME_PAGE_ITEMS, {
+    variables: { cityID: parseInt(diagnosticServiceabilityData?.cityId!) || 9 },
+    fetchPolicy: 'cache-first',
+  });
+
+  const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
 
   const [testPackages, setTestPackages] = useState<TestPackage[]>([]);
   const [locationError, setLocationError] = useState(false);
@@ -972,7 +975,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const renderHotSellerItem = (
-    data: ListRenderItemInfo<getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers>
+    data: ListRenderItemInfo<
+      getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnosticHotSellers
+    >
   ) => {
     const { packageImage, packageName, diagnostics } = data.item;
     const foundMedicineInCart = !!cartItems.find((item) => item.id == `${diagnostics!.itemId}`);
@@ -1053,8 +1058,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const renderHotSellers = () => {
-    const hotSellers = (g(diagnosticsData, 'getDiagnosticsData', 'diagnosticHotSellers') ||
-      []) as getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers[];
+    const hotSellers = (g(diagnosticsData, 'getDiagnosticsHomePageItems', 'diagnosticHotSellers') ||
+      []) as getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnosticHotSellers[];
 
     if (!hLoading && hotSellers.length == 0) return null;
     return (
@@ -1240,22 +1245,28 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const fetchPackageDetails = (
     itemIds: string,
-    func: (product: searchDiagnosticsById_searchDiagnosticsById_diagnostics) => void
+    func: (
+      product: findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics
+    ) => void
   ) => {
+    const removeSpaces = itemIds.replace(/\s/g, '');
+    const arrayOfId = removeSpaces.split(',');
+    const listOfIds = arrayOfId.map((item) => parseInt(item!));
     {
       setLoadingContext!(true);
       client
-        .query<searchDiagnosticsById, searchDiagnosticsByIdVariables>({
-          query: SEARCH_DIAGNOSTICS_BY_ID,
+        .query<findDiagnosticsByItemIDsAndCityID, findDiagnosticsByItemIDsAndCityIDVariables>({
+          query: GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
           variables: {
-            itemIds: itemIds,
+            cityID: parseInt(diagnosticServiceabilityData?.cityId!) || 9,
+            itemIDs: listOfIds,
           },
           fetchPolicy: 'no-cache',
         })
         .then(({ data }) => {
           setLoadingContext!(false);
-          aphConsole.log('searchDiagnostics\n', { data });
-          const product = g(data, 'searchDiagnosticsById', 'diagnostics', '0' as any);
+          aphConsole.log('findDiagnosticsItemsForCityId\n', { data });
+          const product = g(data, 'findDiagnosticsByItemIDsAndCityID', 'diagnostics', '0' as any);
           if (product) {
             func && func(product);
           } else {
@@ -1426,8 +1437,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const renderTestsByOrgan = () => {
-    const shopByOrgans = (g(diagnosticsData, 'getDiagnosticsData', 'diagnosticOrgans') ||
-      []) as getDiagnosticsData_getDiagnosticsData_diagnosticOrgans[];
+    const shopByOrgans = (g(diagnosticsData, 'getDiagnosticsHomePageItems', 'diagnosticOrgans') ||
+      []) as getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnosticOrgans[];
 
     if (!hLoading && shopByOrgans.length == 0) return null;
     return (

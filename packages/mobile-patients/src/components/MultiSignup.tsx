@@ -153,7 +153,7 @@ export interface MultiSignupProps extends NavigationScreenProps {}
 export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   const [relationIndex, setRelationIndex] = useState<number>(0);
   const [showPopup, setShowPopup] = useState<boolean>(false);
-  const { analytics, signOut, getPatientApiCall } = useAuth();
+  const { signOut, getPatientApiCall } = useAuth();
   const [profiles, setProfiles] = useState<GetCurrentPatients_getCurrentPatients_patients[] | null>(
     []
   );

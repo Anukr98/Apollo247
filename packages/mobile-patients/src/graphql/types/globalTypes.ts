@@ -113,9 +113,10 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   PAYMENT_PENDING = "PAYMENT_PENDING",
   PICKUP_CONFIRMED = "PICKUP_CONFIRMED",
   PICKUP_REQUESTED = "PICKUP_REQUESTED",
-  REPORT_GENERATED = "REPORT_GENERATED",
   SAMPLE_COLLECTED = "SAMPLE_COLLECTED",
   SAMPLE_RECEIVED_IN_LAB = "SAMPLE_RECEIVED_IN_LAB",
+  SAMPLE_RECIEVED_IN_LAB = "SAMPLE_RECIEVED_IN_LAB",
+  REPORT_GENERATED = "REPORT_GENERATED",
 }
 
 export enum DOCTOR_ONLINE_STATUS {
@@ -712,6 +713,7 @@ export interface DiagnosticLineItem {
   itemId?: number | null;
   price?: number | null;
   quantity?: number | null;
+  groupPlan?: string | null;
 }
 
 export interface DiagnosticOrderInput {
@@ -783,6 +785,7 @@ export interface EndAppointmentSessionInput {
   callSource?: BOOKINGSOURCE | null;
   callType?: APPT_CALL_TYPE | null;
   appVersion?: string | null;
+  isReferred?: boolean | null;
 }
 
 export interface FilterDoctorInput {
@@ -932,6 +935,7 @@ export interface MedicinePaymentMqInput {
   paymentMode?: PAYMENT_METHODS | null;
   healthCredits?: number | null;
   partnerInfo?: string | null;
+  payload?: string | null;
 }
 
 export interface MessageInput {
@@ -975,6 +979,7 @@ export interface PatientAddressInput {
   latitude?: number | null;
   longitude?: number | null;
   stateCode?: string | null;
+  defaultAddress?: boolean | null;
 }
 
 export interface PatientAppointmentsInput {
@@ -1043,6 +1048,12 @@ export interface PrescriptionMedicinePaymentOMSDetails {
   paymentRefId?: string | null;
   paymentStatus?: string | null;
   paymentDateTime?: any | null;
+}
+
+export interface PrescriptionReUploadInput {
+  orderId: number;
+  fileUrl: string;
+  prismPrescriptionFileId?: string | null;
 }
 
 export interface Range {

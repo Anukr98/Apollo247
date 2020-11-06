@@ -2,6 +2,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { ChennaiDeliveryPinCodes } from '@aph/mobile-patients/src/strings/ChennaiDeliveryPinCodes';
 import { PharmaStateCodeMapping } from '@aph/mobile-patients/src/strings/PharmaStateCodeMapping';
 import DeviceInfo from 'react-native-device-info';
+import { DIAGNOSTIC_ORDER_STATUS } from '../graphql/types/globalTypes';
 
 export enum AppEnv {
   DEV = 'DEV',
@@ -304,6 +305,8 @@ const ConfigurationDev = {
   COVID_VACCINE_TRACKER_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
+  APOLLO_PRO_HEALTH_URL:
+    'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
 };
 
 // QA
@@ -348,6 +351,8 @@ const ConfigurationQA = {
   COVID_VACCINE_TRACKER_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
+  APOLLO_PRO_HEALTH_URL:
+    'https://aph.staging.web-patients.popcornapps.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
 };
 
 // QA2
@@ -392,6 +397,8 @@ const ConfigurationQA2 = {
   COVID_VACCINE_TRACKER_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
+  APOLLO_PRO_HEALTH_URL:
+    'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
 };
 
 // VAPT
@@ -436,6 +443,8 @@ const ConfigurationVAPT = {
   COVID_VACCINE_TRACKER_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
+  APOLLO_PRO_HEALTH_URL:
+    'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
 };
 //Production
 const ConfigurationProd = {
@@ -478,6 +487,8 @@ const ConfigurationProd = {
   SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
   COVID_VACCINE_TRACKER_URL: 'https://www.apollo247.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
+  APOLLO_PRO_HEALTH_URL:
+    'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
 };
 
 //PERFORMANCE
@@ -523,6 +534,8 @@ const ConfigurationPERFORM = {
   COVID_VACCINE_TRACKER_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
+  APOLLO_PRO_HEALTH_URL:
+    'https://aph.staging.web-patients.popcornapps.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
 };
 
 //DevelopmentReplica
@@ -568,6 +581,8 @@ const ConfigurationDevReplica = {
   COVID_VACCINE_TRACKER_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
+  APOLLO_PRO_HEALTH_URL:
+    'https://aph.staging.web-patients.popcornapps.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
 };
 
 const Configuration =
@@ -691,20 +706,41 @@ export const ConsultFeedBackData = {
   },
 };
 
+export const SequenceForDiagnosticStatus = [
+  DIAGNOSTIC_ORDER_STATUS.ORDER_PLACED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
+  DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
+  DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECIEVED_IN_LAB,
+  DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
+];
+
+export const COVID_NOTIFICATION_ITEMID = ['2411', '2410', '2539'];
+
+export const TestsNewFeedbackData = {
+  options: [
+    'Wrong Report recieved',
+    'Delayed Report generation',
+    'Did not get the required time slot',
+    'Inappropriate behaviour of diagnostics staff',
+    'Insufficient communication to customer',
+    'Difficulty in finding the test while booking order',
+    'Others (Please specify)',
+  ],
+};
+
 export const TestsFeedBackData = {
   POOR: {
     question: 'What went wrong?',
     options: [
-      'The pick-up person was impolite',
-      'The pick-up person was ill-trained/ ill-equipped',
-      'Pick-up person was late',
-      'Delay in report generation',
-      'Difficulty in using the App',
-      'I could not find the tests I was looking for',
-      'I found better offers on other portals',
-      'Payment-related issues on App',
-      'Unavailability of preferred slots',
-      'Unavailability of some tests',
+      'Wrong Report received',
+      'Delayed Report generation',
+      'Did not get the required time slot',
+      'Inappropriate behaviour of pick up person',
+      'Insufficient communication to customer',
+      'Difficulty in finding the test while booking order',
       'Others',
     ],
   },
@@ -712,12 +748,11 @@ export const TestsFeedBackData = {
     question: 'What could have been improved?',
     options: [
       'Report generation time',
-      'Options of tests to choose from',
-      'Ordering experience',
-      'Offers',
-      'The pick-up person’s training',
-      'Pick-up person’s punctuality',
-      'Number of slots for pick-up time to choose from',
+      "Sample Pick up person's training and punctuality",
+      'Number of time slots to choose from',
+      'Options of Tests to choose from',
+      'Communication to customer',
+      'Order Booking Process',
       'Others',
     ],
   },
@@ -725,8 +760,7 @@ export const TestsFeedBackData = {
     question: 'Thanks! What could make this a Great experience for you?',
     options: [
       'More tests to choose from',
-      'Simpler booking',
-      'Better offers',
+      'Simpler booking process',
       'Quicker report generation time',
       'Better trained pick-up person',
       'More punctual pick-up person',
@@ -734,16 +768,37 @@ export const TestsFeedBackData = {
     ],
   },
   GREAT: {
-    question: 'What went well?',
+    question: 'Thanks! What went well?',
     options: [
       'Booking experience',
       'Variety and options to choose from',
-      'Timely pick-up',
-      'Offers and prices',
+      'Timely sample pick-up',
       'Friendly and polite delivery person',
-      'Others',
     ],
   },
+};
+
+export const TestCancelReasons = {
+  reasons: [
+    'Home Collection Charges are too high',
+    'Need to change the payment mode',
+    'Need to modify the order details',
+    'I am getting lesser price elsewhere',
+    'Home Collection not occuring at desired time slot',
+    'No need for diagnosis now',
+    'Order created by mistake',
+    'Others (Please specify)s',
+  ],
+};
+
+export const TestReschedulingReasons = {
+  reasons: [
+    'Not present at home',
+    'Did not follow preparation guidelines (Fasting etc.)',
+    'Not in a condition to provide sample',
+    'Slot picked by mistake',
+    'Others (please specify)',
+  ],
 };
 
 export const NeedHelp = [
@@ -766,7 +821,7 @@ export const NeedHelp = [
     category: 'Virtual/Online Consult',
     options: [
       'I am unable to book an appointment (slot not available/ Doctor not listed)',
-      'The doctor did not start the consultation on time',
+      'The doctor did not start the consultation call on time',
       'My money got deducted but no confirmation on the doctor appointment',
       'I faced technical issues during/after booking an appointment',
       'I want to reschedule/cancel my appointment ',
@@ -774,7 +829,7 @@ export const NeedHelp = [
       'Improper behaviour/attitude of doctor or staff',
       'I need to know my refund status',
       'I did not recieve invoice/ receipt of my appointment',
-      'Doctor did not respond to follow-up chats',
+      'Consultation ended, Doctor has not replied to my query over 24 hours',
     ],
   },
   {
