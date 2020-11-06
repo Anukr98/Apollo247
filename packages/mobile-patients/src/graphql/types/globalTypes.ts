@@ -1029,6 +1029,12 @@ export interface PrescriptionMedicinePaymentOMSDetails {
   paymentDateTime?: any | null;
 }
 
+export interface PrescriptionReUploadInput {
+  orderId: number;
+  fileUrl: string;
+  prismPrescriptionFileId?: string | null;
+}
+
 export interface Range {
   minimum?: number | null;
   maximum?: number | null;

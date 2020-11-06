@@ -13,6 +13,7 @@ export interface getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrder
   id: string;
   orderStatus: MEDICINE_ORDER_STATUS | null;
   hideStatus: boolean | null;
+  statusMessage: string | null;
 }
 
 export interface getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList_medicineOrderLineItems {
@@ -39,6 +40,8 @@ export interface getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrder
   shopAddress: string | null;
   deliveryType: MEDICINE_DELIVERY_TYPE;
   currentStatus: MEDICINE_ORDER_STATUS | null;
+  oldOrderTat: string | null;
+  orderTat: string | null;
   medicineOrdersStatus: (getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList_medicineOrdersStatus | null)[] | null;
   medicineOrderLineItems: (getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList_medicineOrderLineItems | null)[] | null;
   medicineOrderShipments: (getMedicineOrdersOMSList_getMedicineOrdersOMSList_medicineOrdersList_medicineOrderShipments | null)[] | null;
