@@ -37,6 +37,7 @@ export enum FirebaseEventName {
   PAY_BUTTON_CLICKED = 'PAY_BUTTON_CLICKED',
   CONSULTATION_BOOKED = 'CONSULTATION_BOOKED',
   RATING_GIVEN = 'Rating Given',
+  APP_OPENED = 'AppOpened',
 
   // HomePageElements Events
   FIND_A_DOCTOR = 'FIND_A_DOCTOR',
@@ -142,6 +143,14 @@ export interface FirebaseEvents {
     Referral_Code?: string;
   };
   [FirebaseEventName.NUMBER_OF_PROFILES_FETCHED]: { count: number };
+  [FirebaseEventName.APP_OPENED]: {
+    utm_source?: string;
+    utm_medium?: string;
+    utm_campaign?: string;
+    utm_term?: string;
+    utm_content?: string;
+    referrer?: string;
+  };
 
   // ********** Home Screen Events ********** \\
 

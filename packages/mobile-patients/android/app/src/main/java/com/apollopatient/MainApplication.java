@@ -16,6 +16,8 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.InstanceIdResult;
 import com.masteratul.exceptionhandler.NativeExceptionHandlerIfc;
 import com.masteratul.exceptionhandler.ReactNativeExceptionHandlerModule;
+import com.apollopatient.GetReferrerPackage;
+
 import com.microsoft.codepush.react.CodePush;
 import com.webengage.sdk.android.WebEngage;
 import com.webengage.sdk.android.WebEngageActivityLifeCycleCallbacks;
@@ -47,6 +49,7 @@ public class MainApplication extends Application implements ReactApplication {
                     packages.add(new StreamPackage());
                     packages.add(new RNAppSignatureHelperPackage());
                     packages.add(new LinearGradientPackage());
+                    packages.add(new GetReferrerPackage());
                     return packages;
                 }
 
