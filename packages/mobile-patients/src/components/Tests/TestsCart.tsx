@@ -1459,25 +1459,31 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         >
           <View style={styles.rowSpaceBetweenStyle}>
             <Text style={styles.blueTextStyle}>Subtotal</Text>
-            <Text style={styles.blueTextStyle}>Rs. {cartTotal.toFixed(2)}</Text>
+            <Text style={styles.blueTextStyle}>
+              {string.common.Rs} {cartTotal.toFixed(2)}
+            </Text>
           </View>
           {couponDiscount > 0 && (
             <View style={styles.rowSpaceBetweenStyle}>
               <Text style={styles.blueTextStyle}>Coupon Discount</Text>
-              <Text style={styles.blueTextStyle}>- Rs. {couponDiscount.toFixed(2)}</Text>
+              <Text style={styles.blueTextStyle}>
+                - {string.common.Rs} {couponDiscount.toFixed(2)}
+              </Text>
             </View>
           )}
           {selectedTab == tabs[0].title && (
             <View style={styles.rowSpaceBetweenStyle}>
               <Text style={styles.blueTextStyle}>Home Collection Charges</Text>
-              <Text style={styles.blueTextStyle}>Rs. {hcCharges.toFixed(2)}</Text>
+              <Text style={styles.blueTextStyle}>
+                {string.common.Rs} {hcCharges.toFixed(2)}
+              </Text>
             </View>
           )}
           <View style={[styles.separatorStyle, { marginTop: 16, marginBottom: 7 }]} />
           <View style={styles.rowSpaceBetweenStyle}>
             <Text style={styles.blueTextStyle}>To Pay </Text>
             <Text style={[styles.blueTextStyle, { ...theme.fonts.IBMPlexSansBold }]}>
-              Rs. {grandTotal.toFixed(2)}
+              {string.common.Rs} {grandTotal.toFixed(2)}
             </Text>
           </View>
         </View>
@@ -2044,7 +2050,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         <StickyBottomComponent defaultBG>
           <Button
             disabled={disableProceedToPay}
-            title={`PROCEED TO PAY RS. ${grandTotal.toFixed(2)}`}
+            title={`PROCEED TO PAY ${string.common.Rs} ${grandTotal.toFixed(2)}`}
             onPress={() => onPressProceedToPay()}
             style={{ flex: 1, marginHorizontal: 40 }}
           />
