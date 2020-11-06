@@ -960,6 +960,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const postDoctorClickWEGEvent = (
     doctorDetails: any,
     source: WebEngageEvents[WebEngageEventName.DOCTOR_CLICKED]['Source'],
+    isTopDoc: boolean,
     type?: 'consult-now' | 'book-appointment'
   ) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CLICKED] = {
@@ -970,6 +971,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       'Doctor Category': doctorDetails.doctorType,
       Fee: Number(doctorDetails?.fee),
       'Doctor Speciality': doctorDetails?.specialistSingularTerm,
+      Rank: doctorDetails?.rowId,
+      Is_TopDoc: !!isTopDoc ? 'Yes' : 'No',
     };
 
     const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.DOCTOR_CLICKED] = {
@@ -1416,7 +1419,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           buttonStyle={buttonStyle}
           buttonTextStyle={buttonTextStyle}
           onPress={() => {
-            postDoctorClickWEGEvent(platinumDoctor, 'List');
+            postDoctorClickWEGEvent(platinumDoctor, 'List', true);
             props.navigation.navigate(AppRoutes.DoctorDetails, {
               doctorId: platinumDoctor?.id,
               callSaveSearch: callSaveSearch,
@@ -1424,7 +1427,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             });
           }}
           onPressConsultNowOrBookAppointment={(type) => {
-            postDoctorClickWEGEvent(platinumDoctor, 'List', type);
+            postDoctorClickWEGEvent(platinumDoctor, 'List', true, type);
           }}
         />
       </LinearGradientComponent>
@@ -1531,6 +1534,18 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     }
   };
 
+  const fireFilterWebengageEvent = (filterApplied: string, filterValue: string) => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_LISTING_FILTER_APPLIED] = {
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'pincode': g(locationDetails, 'pincode') || '',
+      'Filter Applied': filterApplied,
+      'Filter Value': filterValue,
+    };
+    postWebEngageEvent(WebEngageEventName.DOCTOR_LISTING_FILTER_APPLIED, eventAttributes);
+  };
+
   const renderBottomOptions = () => {
     const doctors_partners = doctorsType === 'PARTNERS' ? true : false;
     return (
@@ -1540,7 +1555,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           <View style={styles.bottomItemContainer}>
             <TouchableOpacity
               activeOpacity={1}
-              onPress={() => onPressNearByRadioButton(doctors_partners)}
+              onPress={() => {
+                fireFilterWebengageEvent(string.doctor_search_listing.near, nearyByFlag ? 'True' : 'False');
+                onPressNearByRadioButton(doctors_partners);
+              }}
             >
               <View
                 style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}
@@ -1565,7 +1583,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             <TouchableOpacity
               activeOpacity={1}
               style={{ marginLeft: 8 }}
-              onPress={() => onPressAvailabiltyRadioButton(doctors_partners)}
+              onPress={() => {
+                fireFilterWebengageEvent(string.doctor_search_listing.avaliablity, availabilityFlag ? 'True' : 'False');
+                onPressAvailabiltyRadioButton(doctors_partners);
+              }}
             >
               <View
                 style={{
@@ -1597,6 +1618,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               <TouchableOpacity
                 activeOpacity={1}
                 onPress={() => {
+                  fireFilterWebengageEvent(string.doctor_search_listing.online, onlineCheckBox ? 'True' : 'False');
                   setOnlineCheckbox(!onlineCheckBox);
                   if (!physicalCheckBox) {
                     setPhysicalCheckbox(!physicalCheckBox);
@@ -1631,6 +1653,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               <TouchableOpacity
                 activeOpacity={1}
                 onPress={() => {
+                  fireFilterWebengageEvent(string.doctor_search_listing.inperson, physicalCheckBox ? 'True' : 'False');
                   setPhysicalCheckbox(!physicalCheckBox);
                   if (!onlineCheckBox) {
                     setOnlineCheckbox(!onlineCheckBox);
@@ -1785,6 +1808,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             setDisplayFilter(false);
           }}
           setData={(selecteddata) => {
+            selecteddata.forEach(value => {
+              const {label, selectedOptions} = value;
+              if (selectedOptions.length) {
+                fireFilterWebengageEvent(label, selectedOptions.join());
+              }
+            });
             setshowSpinner(true);
             setFilterData(selecteddata);
             getNetStatus()

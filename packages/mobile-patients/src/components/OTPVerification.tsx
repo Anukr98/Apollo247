@@ -48,7 +48,8 @@ import {
   TextInput,
 } from 'react-native';
 // import { WebView } from 'react-native-webview';
-import firebase from 'react-native-firebase';
+import firebaseAuth from '@react-native-firebase/auth';
+import messaging from '@react-native-firebase/messaging';
 import Hyperlink from 'react-native-hyperlink';
 // import SmsListener from 'react-native-android-sms-listener';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
@@ -373,7 +374,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   }, [signInError, props.navigation, otp.length]);
 
   useEffect(() => {
-    const authListener = firebase.auth().onAuthStateChanged((user) => {
+    const authListener = firebaseAuth().onAuthStateChanged((user) => {
       const phoneNumberFromParams = `+91${props.navigation.getParam('phoneNumber')}`;
       const phoneNumberLoggedIn = user && user.phoneNumber;
       if (phoneNumberFromParams == phoneNumberLoggedIn) {
@@ -662,8 +663,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   }, [subscriptionId]);
 
   const getDeviceToken = () => {
-    firebase
-      .messaging()
+    messaging()
       .getToken()
       .then((token) => {
         console.log('token', token);

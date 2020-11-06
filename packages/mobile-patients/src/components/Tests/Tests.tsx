@@ -897,7 +897,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
             },
           ]}
         >
-          <Text style={[styles.priceText, { marginRight: 4 }]}>Rs. {specialPrice || price}</Text>
+          <Text style={[styles.priceText, { marginRight: 4 }]}>
+            {string.common.Rs} {specialPrice || price}
+          </Text>
           {!!specialPrice && (
             <Text style={styles.discountedPriceText}>
               (
@@ -908,7 +910,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                   },
                 ]}
               >
-                Rs. {price}
+                {string.common.Rs} {price}
               </Text>
               )
             </Text>
@@ -1094,7 +1096,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   //             item.title,
   //             `${config.IMAGES_BASE_URL[0]}${item.image_url}`,
   //             () =>
-  //               props.navigation.navigate(AppRoutes.SearchByBrand, {
+  //               props.navigation.navigate(AppRoutes.MedicineListing, {
   //                 category_id: item.category_id,
   //                 title: `${item.title || 'Products'}`.toUpperCase(),
   //                 isTest: true,
@@ -1196,7 +1198,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 ...theme.viewStyles.text('SB', 14, '#02475b', 1, 24),
               }}
             >
-              Rs. {specialPrice || price}
+              {string.common.Rs} {specialPrice || price}
             </Text>
             {!!specialPrice && (
               <Text
@@ -1213,7 +1215,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                     },
                   ]}
                 >
-                  Rs. {price}
+                  {string.common.Rs} {price}
                 </Text>
                 )
               </Text>
@@ -1397,7 +1399,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
       >
         <Text style={theme.viewStyles.text('M', 14, '#01475b', 1, 22)}>{name}</Text>
         <Spearator style={{ marginVertical: 7.5 }} />
-        <Text style={theme.viewStyles.text('B', 14, '#01475b', 1, 20)}>Rs. {price}</Text>
+        <Text style={theme.viewStyles.text('B', 14, '#01475b', 1, 20)}>
+          {string.common.Rs} {price}
+        </Text>
       </TouchableOpacity>
     );
   };
@@ -1438,7 +1442,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
     if (!hLoading && shopByOrgans.length == 0) return null;
     return (
-      <View>
+      <View style={{ marginTop: 10 }}>
         <SectionHeader leftText={'BROWSE PACKAGES'} />
         {hLoading ? (
           renderSectionLoader()
@@ -1586,7 +1590,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04),
             }}
           >
-            Rs. {data.price}
+            {string.common.Rs} {data.price}
           </Text>
         </View>
       );

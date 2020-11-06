@@ -27,6 +27,7 @@ export interface ShoppingCartItem {
   couponPrice?: number;
   isInStock: boolean;
   unserviceable?: boolean;
+  unavailableOnline?: boolean; // sell_online
   isMedicine: boolean;
   productType?: 'FMCG' | 'Pharma' | 'PL';
   isFreeCouponProduct?: boolean;
@@ -90,6 +91,12 @@ export interface CartProduct {
   couponFree?: number;
   applicable?: boolean;
 }
+
+export interface onHold {
+  id: string;
+  itemName?: string;
+}
+
 export type EPrescriptionDisableOption = 'CAMERA_AND_GALLERY' | 'E-PRESCRIPTION' | 'NONE';
 
 export interface ShoppingCartContextProps {
@@ -164,6 +171,9 @@ export interface ShoppingCartContextProps {
   setHdfcPlanName: ((id: string) => void) | null;
 
   isProuctFreeCouponApplied: boolean;
+
+  onHoldOptionOrder: onHold[];
+  setOnHoldOptionOrder: ((items: onHold[]) => void) | null;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -231,12 +241,16 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setHdfcPlanName: null,
 
   isProuctFreeCouponApplied: false,
+
+  onHoldOptionOrder: [],
+  setOnHoldOptionOrder: null,
 });
 
 const AsyncStorageKeys = {
   cartItems: 'cartItems',
   ePrescriptions: 'ePrescriptions',
   physicalPrescriptions: 'physicalPrescriptions',
+  onHoldOptionOrder: 'onHoldItems',
 };
 
 const showGenericAlert = (message: string) => {
@@ -278,6 +292,10 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [couponProducts, _setCouponProducts] = useState<ShoppingCartContextProps['couponProducts']>(
     []
   );
+
+  const [onHoldOptionOrder, _setOnHoldOptionOrder] = useState<
+    ShoppingCartContextProps['onHoldOptionOrder']
+  >([]);
 
   const [physicalPrescriptions, _setPhysicalPrescriptions] = useState<
     ShoppingCartContextProps['physicalPrescriptions']
@@ -411,6 +429,16 @@ export const ShoppingCartProvider: React.FC = (props) => {
     _setCouponProducts(items);
   };
 
+  const setOnHoldOptionOrder: ShoppingCartContextProps['setOnHoldOptionOrder'] = (items) => {
+    const addOnHoldItems = [...onHoldOptionOrder, ...items];
+    _setOnHoldOptionOrder(addOnHoldItems);
+    AsyncStorage.setItem(AsyncStorageKeys.onHoldOptionOrder, JSON.stringify(addOnHoldItems)).catch(
+      () => {
+        console.log('Failed to save on hold options in local storage.');
+      }
+    );
+  };
+
   const cartTotal: ShoppingCartContextProps['cartTotal'] = parseFloat(
     cartItems
       .reduce((currTotal, currItem) => currTotal + currItem.quantity * currItem.price, 0)
@@ -517,14 +545,17 @@ export const ShoppingCartProvider: React.FC = (props) => {
           AsyncStorageKeys.cartItems,
           AsyncStorageKeys.physicalPrescriptions,
           AsyncStorageKeys.ePrescriptions,
+          AsyncStorageKeys.onHoldOptionOrder,
         ]);
         const cartItems = cartItemsFromStorage[0][1];
         const physicalPrescriptions = cartItemsFromStorage[1][1];
         const ePrescriptions = cartItemsFromStorage[2][1];
+        const showOnHoldOptions = cartItemsFromStorage[3][1];
 
         _setCartItems(JSON.parse(cartItems || 'null') || []);
         _setPhysicalPrescriptions(JSON.parse(physicalPrescriptions || 'null') || []);
         _setEPrescriptions(JSON.parse(ePrescriptions || 'null') || []);
+        _setOnHoldOptionOrder(JSON.parse(showOnHoldOptions || 'null') || []);
       } catch (error) {
         CommonBugFender('ShoppingCartProvider_updateCartItemsFromStorage_try', error);
         showGenericAlert('Failed to get cart items from local storage.');
@@ -721,6 +752,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         hdfcPlanName,
         setHdfcPlanName,
         isProuctFreeCouponApplied,
+        onHoldOptionOrder,
+        setOnHoldOptionOrder,
       }}
     >
       {props.children}

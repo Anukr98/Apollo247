@@ -14,7 +14,7 @@ export enum AppEnv {
   DEVReplica = 'DEVReplica',
 }
 
-const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.QA as AppEnv; // For respective API environments in the app.
 
 const pharmaToken201 = 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d';
 const pharmaTokenYXV = 'YXV0aF91c2VyOnN1cGVyc2VjcmV0X3Rhd';
@@ -206,7 +206,7 @@ const PharmaApiConfig = {
       pharmaTokenYXV,
     ],
     GET_SUBSTITUTES: [`${apolloUatBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
-    PRODUCTS_BY_CATEGORY: [`${apolloUatBaseUrl}/categoryproducts_api.php`, pharmaToken201],
+    PRODUCTS_BY_CATEGORY: [`${apolloUatBaseUrl}/categoriesScript.php`, pharmaToken201],
     MEDICINE_PAGE: [`${apolloUatBaseUrl}/apollo_24x7_api.php?version=v2`, pharmaToken201],
     ALL_BRANDS: [`${apolloUatBaseUrl}/allbrands_api.php`, pharmaToken201],
     GET_TEST_PACKAGES: [

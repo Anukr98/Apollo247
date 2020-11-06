@@ -14,6 +14,7 @@ import {
   MEDICINE_ORDER_STATUS,
   Relation,
   MEDICINE_UNIT,
+  SaveSearchInput,
   STATUS,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -46,12 +47,14 @@ import {
   searchDiagnostics,
   searchDiagnosticsVariables,
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
+import { saveSearch, saveSearchVariables } from '@aph/mobile-patients/src/graphql/types/saveSearch';
 import {
   searchDiagnosticsByCityID,
   searchDiagnosticsByCityIDVariables,
   searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics,
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
 import {
+  SAVE_SEARCH,
   SEARCH_DIAGNOSTICS,
   SEARCH_DIAGNOSTICS_BY_CITY_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
@@ -65,7 +68,7 @@ import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-pati
 import appsFlyer from 'react-native-appsflyer';
 import { AppsFlyerEventName, AppsFlyerEvents } from './AppsFlyerEvents';
 import { FirebaseEventName, FirebaseEvents } from './firebaseEvents';
-import firebase from 'react-native-firebase';
+import analytics from '@react-native-firebase/analytics';
 import _ from 'lodash';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import {
@@ -849,11 +852,7 @@ export const reOrderMedicines = async (
   const cartItemsToAdd = lineItemsDetails.map(
     (item, index) =>
       ({
-        id: item.sku,
-        mou: item.mou,
-        name: item.name,
-        price: parseNumber(item.price),
-        specialPrice: item.special_price ? parseNumber(item.special_price) : undefined,
+        ...formatToCartItem(item),
         quantity: Math.ceil(
           (billedLineItems
             ? billedLineItems[index].issuedQty
@@ -863,12 +862,6 @@ export const reOrderMedicines = async (
               )
             : lineItems[index].quantity) || 1
         ),
-        prescriptionRequired: item.is_prescription_required == '1',
-        isMedicine: (item.type_id || '').toLowerCase() == 'pharma',
-        thumbnail: item.thumbnail || item.image,
-        isInStock: item.is_in_stock == 1,
-        maxOrderQty: item.MaxOrderQty,
-        productType: item.type_id,
       } as ShoppingCartItem)
   );
   const unavailableItems = billedLineItems
@@ -1447,7 +1440,7 @@ export const postFirebaseEvent = (eventName: FirebaseEventName, attributes: Obje
   try {
     const logContent = `[Firebase Event] ${eventName}`;
     console.log(logContent);
-    firebase.analytics().logEvent(eventName, attributes);
+    analytics().logEvent(eventName, attributes);
   } catch (error) {
     console.log('********* Unable to post FirebaseEvent *********', { error });
   }
@@ -1557,6 +1550,7 @@ export const formatToCartItem = ({
   is_in_stock,
   thumbnail,
   image,
+  sell_online,
 }: MedicineProduct): ShoppingCartItem => {
   return {
     id: sku,
@@ -1571,7 +1565,17 @@ export const formatToCartItem = ({
     maxOrderQty: MaxOrderQty,
     productType: type_id,
     isInStock: is_in_stock == 1,
+    unavailableOnline: sell_online == 0,
   };
+};
+
+export const savePastSearch = (client: ApolloClient<object>, input: SaveSearchInput) => {
+  try {
+    client.mutate<saveSearch, saveSearchVariables>({
+      mutation: SAVE_SEARCH,
+      variables: { saveSearchInput: input },
+    });
+  } catch (error) {}
 };
 
 export const addPharmaItemToCart = (

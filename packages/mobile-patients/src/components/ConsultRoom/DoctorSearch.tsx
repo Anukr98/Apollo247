@@ -1024,6 +1024,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       'Doctor Category': doctorDetails.doctorType,
       Fee: Number(doctorDetails?.fee),
       'Doctor Speciality': g(doctorDetails, 'specialty', 'name')!,
+      Rank: doctorDetails?.rowId,
     };
 
     const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.DOCTOR_CLICKED] = {
@@ -1211,7 +1212,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               rowData={rowData}
               navigation={props.navigation}
               onPress={() => {
-                postDoctorClickWEGEvent(rowData, 'Search');
+                postDoctorClickWEGEvent({ ...rowData, rowId }, 'Search');
                 CommonLogEvent(AppRoutes.DoctorSearch, 'renderSearchDoctorResultsRow clicked');
                 const searchInput = {
                   type: SEARCH_TYPE.DOCTOR,
@@ -1233,7 +1234,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                 });
               }}
               onPressConsultNowOrBookAppointment={(type) => {
-                postDoctorClickWEGEvent(rowData, 'Search', type);
+                postDoctorClickWEGEvent({ ...rowData, rowId }, 'Search', type);
               }}
             ></DoctorCard>
           )}

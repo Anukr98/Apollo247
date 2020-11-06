@@ -82,32 +82,7 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT"/>
             </intent-filter>
         </service>
-
-        <service android:name="io.invertase.firebase.messaging.RNFirebaseMessagingService">
-            <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT" />
-            </intent-filter>
-        </service>
-
-        <service android:name="io.invertase.firebase.messaging.RNFirebaseBackgroundMessagingService" />
-
-        <receiver android:name="io.invertase.firebase.notifications.RNFirebaseNotificationReceiver" />
-        <receiver
-            android:name="io.invertase.firebase.notifications.RNFirebaseNotificationsRebootReceiver"
-            android:enabled="true"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
-                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </receiver>
         
-        <meta-data
-            android:name="io.fabric.ApiKey"
-            android:value="40001b65375e3b0193fe0fb56ac6706df22e3eed" />
         <meta-data android:name="com.bugsnag.android.API_KEY" android:value="53a0b9fd23719632a22d2c262a06bb4e"/>
 
         <meta-data
@@ -116,12 +91,12 @@
 
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_color"
-            android:resource="@color/notificationColor" />
-
+            android:resource="@color/notificationColor" 
+            tools:replace="android:resource" />
         <meta-data android:name=
             "com.google.firebase.messaging.default_notification_channel_id"
             android:value="@string/default_notification_channel_id"
-            />
+            tools:replace="android:value" />
         <meta-data android:name="com.webengage.sdk.android.environment" android:value="in" />
         <!-- if data center is in India -->
 
