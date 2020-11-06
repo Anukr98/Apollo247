@@ -173,6 +173,7 @@ const styles = StyleSheet.create({
   smallRightAlignText: {
     ...theme.viewStyles.text('M', 10, theme.colors.APP_YELLOW),
     marginLeft: 'auto',
+    lineHeight: 12,
   },
   row: {
     flexDirection: 'row',

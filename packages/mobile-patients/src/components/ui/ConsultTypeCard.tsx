@@ -128,6 +128,7 @@ const styles = StyleSheet.create({
   smallRightAlignText: {
     ...theme.viewStyles.text('M', 10, theme.colors.APP_YELLOW),
     marginLeft: 'auto',
+    lineHeight: 12,
   },
   row: {
     flexDirection: 'row',
@@ -177,11 +178,17 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
   const { isCareSubscribed } = useShoppingCart();
 
   const [consultDoctorName, setConsultDocotrName] = useState<string>(DoctorName ? DoctorName : '');
-  const { isCareDoctor, onlineConsultMRPPrice, onlineConsultSlashedPrice } = careDoctorDetails;
+  const {
+    isCareDoctor,
+    onlineConsultMRPPrice,
+    onlineConsultSlashedPrice,
+    physicalConsultMRPPrice,
+    physicalConsultSlashedPrice,
+  } = careDoctorDetails;
 
   const renderCareDoctorPricing = () => {
     return (
-      <View style={{ justifyContent: 'center' }}>
+      <View>
         <Text
           style={[
             styles.carePrice,
@@ -196,13 +203,13 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
           ]}
         >
           {string.common.Rs}
-          {onlineConsultMRPPrice}
+          {isOnlineSelected ? onlineConsultMRPPrice : physicalConsultMRPPrice}
         </Text>
         <View style={styles.rowContainer}>
           {isCareSubscribed && <CircleLogo style={styles.careLogo} />}
           <Text style={styles.careDiscountedPrice}>
             {string.common.Rs}
-            {onlineConsultSlashedPrice}
+            {isOnlineSelected ? onlineConsultSlashedPrice : physicalConsultSlashedPrice}
           </Text>
         </View>
       </View>
@@ -238,7 +245,14 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
             {isCareDoctor && renderCareDoctorPricing()}
           </View>
           {!isCareSubscribed && isCareDoctor && (
-            <View style={styles.row}>
+            <View
+              style={[
+                styles.row,
+                {
+                  marginTop: heading === string.consultType.online.heading ? -22 : -29,
+                },
+              ]}
+            >
               <Text style={styles.smallRightAlignText}>for</Text>
               <CircleLogo style={styles.careLogo} />
               <Text style={[styles.smallRightAlignText, { marginLeft: -4 }]}>members</Text>

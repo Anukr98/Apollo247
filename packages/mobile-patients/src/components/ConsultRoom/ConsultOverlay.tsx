@@ -2,7 +2,6 @@ import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonD
 import { ConsultOnline } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultOnline';
 import { ConsultPhysical } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultPhysical';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { CrossPopup } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
@@ -10,7 +9,6 @@ import { NotificationPermissionAlert } from '@aph/mobile-patients/src/components
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
   CommonBugFender,
   CommonLogEvent,
@@ -27,17 +25,13 @@ import {
   BOOKINGSOURCE,
   DEVICETYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import {
-  validateConsultCoupon,
-  userSpecificCoupon,
-} from '@aph/mobile-patients/src/helpers/apiCalls';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
@@ -53,7 +47,6 @@ import {
   StyleProp,
   ViewStyle,
 } from 'react-native';
-import firebase from 'react-native-firebase';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
 import { WhatsAppStatus } from '../ui/WhatsAppStatus';
@@ -130,10 +123,8 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   ] = useState<getDoctorDetailsById_getDoctorDetailsById_doctorHospital | null>(
     props.clinics && props.clinics.length > 0 ? props.clinics[0] : null
   );
-  const { showAphAlert, hideAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
   const { locationDetails, hdfcUserSubscriptions } = useAppCommonData();
-  const { getPatientApiCall } = useAuth();
   const careDoctorDetails = calculateCareDoctorPricing(props.doctor);
   const {
     isCareDoctor,
@@ -152,12 +143,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       ? physicalConsultSlashedPrice
       : physicalConsultMRPPrice
     : Number(doctorFees);
-
-  const renderErrorPopup = (desc: string) =>
-    showAphAlert!({
-      title: 'Uh oh.. :(',
-      description: `${desc || ''}`.trim(),
-    });
 
   const todayDate = new Date().toDateString().split('T')[0];
   const scrollToSlots = (top: number = 400) => {
@@ -193,39 +178,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         console.log('error', e);
       });
   }, []);
-
-  useEffect(() => {
-    if (selectedTimeSlot != '') {
-      fetchUserSpecificCoupon();
-    }
-  }, [selectedTimeSlot]);
-
-  const fetchUserSpecificCoupon = () => {
-    userSpecificCoupon(g(currentPatient, 'mobileNumber'))
-      .then((resp: any) => {
-        if (resp.data.errorCode == 0) {
-          let couponList = resp.data.response;
-          if (typeof couponList != null && couponList.length) {
-            const coupon = couponList[0].coupon;
-            validateUserSpecificCoupon(coupon);
-          }
-        }
-      })
-      .catch((error) => {
-        CommonBugFender('fetchingUserSpecificCoupon', error);
-      });
-  };
-
-  async function validateUserSpecificCoupon(coupon: string) {
-    try {
-      await validateCoupon(coupon, true);
-    } catch (error) {
-      setCoupon('');
-      setDoctorDiscountedFees(0);
-      setshowSpinner(false);
-      return;
-    }
-  }
 
   const onPressCheckout = async () => {
     CommonLogEvent(AppRoutes.DoctorDetails, 'ConsultOverlay onSubmitBookAppointment clicked');
@@ -346,171 +298,11 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     );
   };
 
-  const fireBaseFCM = async () => {
-    const enabled = await firebase.messaging().hasPermission();
-    if (enabled) {
-      // user has permissions
-      console.log('enabled', enabled);
-    } else {
-      // user doesn't have permission
-      console.log('not enabled');
-      setNotificationAlert(true);
-      try {
-        const authorized = await firebase.messaging().requestPermission();
-        console.log('authorized', authorized);
-
-        // User has authorised
-      } catch (error) {
-        // User has rejected permissions
-        CommonBugFender('Login_fireBaseFCM_try', error);
-        console.log('not enabled error', error);
-      }
-    }
-  };
-
   const updateCouponDiscountOnChangeTab = (isOnlineConsult: boolean) => {
     console.log('updateCouponDiscountOnChangeTab isOnlineConsult', isOnlineConsult);
     // this function will reset coupon discount on change in consultation type
     setCoupon('');
     setDoctorDiscountedFees(0);
-  };
-
-  const validateCoupon = (coupon: string, fireEvent?: boolean) => {
-    let packageId = '';
-    if (!!g(hdfcUserSubscriptions, '_id') && !!g(hdfcUserSubscriptions, 'isActive')) {
-      packageId =
-        g(hdfcUserSubscriptions, 'group', 'name') + ':' + g(hdfcUserSubscriptions, 'planId');
-    }
-    const timeSlot =
-      tabs[0].title === selectedTab &&
-      isConsultOnline &&
-      availableInMin! <= 60 &&
-      0 < availableInMin!
-        ? nextAvailableSlot
-        : selectedTimeSlot;
-
-    let ts = new Date(timeSlot).getTime();
-    console.log(ts);
-    const data = {
-      mobile: g(currentPatient, 'mobileNumber'),
-      billAmount: Number(doctorFees),
-      coupon: coupon,
-      // paymentType: 'CASH', //CASH,NetBanking, CARD, COD
-      pinCode: locationDetails && locationDetails.pincode,
-      consultations: [
-        {
-          hospitalId: g(props.doctor, 'doctorHospital')![0].facility.id,
-          doctorId: g(props.doctor, 'id'),
-          specialityId: g(props.doctor, 'specialty', 'id'),
-          consultationTime: ts, //Unix timestamp“
-          consultationType: selectedTab === 'Consult Online' ? 1 : 0, //Physical 0, Virtual 1,  All -1
-          cost: Number(doctorFees),
-          rescheduling: false,
-        },
-      ],
-      packageId: packageId,
-      email: g(currentPatient, 'emailAddress'),
-    };
-
-    return new Promise((res, rej) => {
-      validateConsultCoupon(data)
-        .then((resp: any) => {
-          if (resp.data.errorCode == 0) {
-            if (resp.data.response.valid) {
-              const revisedAmount =
-                Number(doctorFees) - Number(g(resp, 'data', 'response', 'discount')!);
-              setCoupon(coupon);
-              setDoctorDiscountedFees(revisedAmount);
-              res();
-              if (fireEvent) {
-                const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULT_COUPON_APPLIED] = {
-                  CouponCode: coupon,
-                  'Discount Amount': Number(g(resp, 'data', 'response', 'discount')!),
-                  'Net Amount': Number(revisedAmount),
-                  'Coupon Applied': true,
-                };
-                postWebEngageEvent(WebEngageEventName.CONSULT_COUPON_APPLIED, eventAttributes);
-              }
-              if (Number(revisedAmount) == 0) {
-                fireBaseFCM();
-              }
-            } else {
-              rej(resp.data.response.reason);
-              if (fireEvent) {
-                const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULT_COUPON_APPLIED] = {
-                  CouponCode: coupon,
-                  'Coupon Applied': false,
-                };
-                postWebEngageEvent(WebEngageEventName.CONSULT_COUPON_APPLIED, eventAttributes);
-              }
-            }
-          } else {
-            rej(resp.data.errorMsg);
-          }
-        })
-        .catch((error) => {
-          CommonBugFender('validatingConsultCoupon', error);
-          console.log(error);
-          rej();
-          renderErrorPopup(`Something went wrong, plaease try again after sometime`);
-        });
-    });
-  };
-
-  const renderPriceAndDiscount = () => {
-    if (!coupon) return null;
-
-    const localStyles = StyleSheet.create({
-      rowSpaceBetweenStyle: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-      },
-      blueTextStyle: {
-        ...theme.viewStyles.text('M', 16, '#01475b', 1, 24),
-        flex: 1,
-      },
-      blueRightTextStyle: {
-        ...theme.viewStyles.text('M', 16, '#01475b', 1, 24),
-        flex: 0.6,
-        textAlign: 'right',
-      },
-    });
-
-    const total = Number(doctorFees).toFixed(2);
-    const amountToPay = doctorDiscountedFees.toFixed(2);
-    const couponDiscount = (Number(total) - Number(amountToPay)).toFixed(2);
-
-    return (
-      <View style={{ ...theme.viewStyles.card(16, 10, 10, theme.colors.CARD_BG) }}>
-        <View style={localStyles.rowSpaceBetweenStyle}>
-          <Text style={localStyles.blueTextStyle}>Subtotal</Text>
-          <Text style={[localStyles.blueRightTextStyle]}>
-            {string.common.Rs}
-            {total}
-          </Text>
-        </View>
-        <View style={localStyles.rowSpaceBetweenStyle}>
-          <Text style={localStyles.blueTextStyle}>{`Coupon (${coupon})`}</Text>
-          <Text style={[localStyles.blueRightTextStyle]}>
-            - {string.common.Rs}
-            {couponDiscount}
-          </Text>
-        </View>
-        <Spearator style={{ marginTop: 16, marginBottom: 10 }} />
-        <View style={localStyles.rowSpaceBetweenStyle}>
-          <Text style={localStyles.blueTextStyle}>To Pay</Text>
-          <Text
-            style={[
-              localStyles.blueRightTextStyle,
-              theme.viewStyles.text('B', 16, '#01475b', 1, 24),
-            ]}
-          >
-            {string.common.Rs}
-            {amountToPay}
-          </Text>
-        </View>
-      </View>
-    );
   };
 
   const [slotsSelected, setSlotsSelected] = useState<string[]>([]);
@@ -650,7 +442,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                   setselectedClinic={setselectedClinic}
                 />
               )}
-              {renderPriceAndDiscount()}
               {selectedTab === tabs[0].title && renderDisclamer()}
               {!g(currentPatient, 'whatsAppConsult') ? (
                 <WhatsAppStatus

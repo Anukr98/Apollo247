@@ -38,7 +38,10 @@ import {
 import { calculateCareDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
-import { validateConsultCoupon } from '@aph/mobile-patients/src/helpers/apiCalls';
+import {
+  validateConsultCoupon,
+  userSpecificCoupon,
+} from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   WebEngageEventName,
   WebEngageEvents,
@@ -54,7 +57,6 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 const { width } = Dimensions.get('window');
 import { useApolloClient } from 'react-apollo-hooks';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import moment from 'moment';
 import { FirebaseEventName } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import {
@@ -112,11 +114,10 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [doctorDiscountedFees, setDoctorDiscountedFees] = useState<number>(0);
   const [couponDiscountFees, setCouponDiscountFees] = useState<number>(0);
-  const { showAphAlert } = useUIElements();
+  const { showAphAlert, setLoading } = useUIElements();
   const [notificationAlert, setNotificationAlert] = useState(false);
   const scrollviewRef = useRef<any>(null);
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
-  const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [planSelected, setPlanSelected] = useState<any>();
 
   const careDoctorDetails = calculateCareDoctorPricing(doctor);
@@ -125,6 +126,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     minDiscountedPrice,
     onlineConsultSlashedPrice,
     physicalConsultSlashedPrice,
+    onlineConsultDiscountedPrice,
+    physicalConsultDiscountedPrice,
   } = careDoctorDetails;
   const { isCareSubscribed } = useShoppingCart();
 
@@ -144,6 +147,12 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       ? onlineConsultSlashedPrice
       : physicalConsultSlashedPrice
     : Number(price);
+  const totalSavings =
+    isCareDoctor && (isCareSubscribed || planSelected)
+      ? isOnlineConsult
+        ? onlineConsultDiscountedPrice + couponDiscountFees
+        : physicalConsultDiscountedPrice + couponDiscountFees
+      : couponDiscountFees;
 
   const client = useApolloClient();
   const { getPatientApiCall } = useAuth();
@@ -151,6 +160,40 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   useEffect(() => {
     verifyCoupon();
   }, [planSelected]);
+
+  useEffect(() => {
+    fetchUserSpecificCoupon();
+  }, []);
+
+  const fetchUserSpecificCoupon = () => {
+    setLoading!(true);
+    userSpecificCoupon(g(currentPatient, 'mobileNumber'))
+      .then((resp: any) => {
+        if (resp?.data?.errorCode == 0) {
+          let couponList = resp?.data?.response;
+          if (typeof couponList != null && couponList?.length) {
+            const coupon = couponList?.[0]?.coupon;
+            validateUserSpecificCoupon(coupon);
+          }
+        }
+        setLoading!(false);
+      })
+      .catch((error) => {
+        setLoading!(false);
+        CommonBugFender('fetchingUserSpecificCoupon', error);
+      });
+  };
+
+  async function validateUserSpecificCoupon(coupon: string) {
+    try {
+      await validateCoupon(coupon, true);
+    } catch (error) {
+      setCoupon('');
+      setDoctorDiscountedFees(0);
+      setLoading!(false);
+      return;
+    }
+  }
 
   const renderHeader = () => {
     return (
@@ -223,7 +266,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     return (
       <CareSelectPlans
         isConsultJourney={true}
-        style={{ marginTop: 20 }}
+        style={styles.careSelectContainer}
         onPressKnowMore={() => {}}
         careDiscountPrice={minDiscountedPrice}
         onSelectMembershipPlan={(plan) => {
@@ -241,7 +284,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       <ListCard
         container={[
           styles.couponContainer,
-          { marginTop: isCareDoctor && isCareSubscribed ? 0 : 20, height: 'auto' },
+          { marginTop: isCareDoctor && isCareSubscribed ? 0 : 20 },
         ]}
         titleStyle={styles.couponStyle}
         leftTitleStyle={[styles.couponStyle, { color: theme.colors.SEARCH_UNDERLINE_COLOR }]}
@@ -427,17 +470,17 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       });
   };
 
-  const verifyCoupon = async () => {
+  const verifyCoupon = async (fromPayment: boolean) => {
     if (coupon) {
       try {
         // await validateAndApplyCoupon(coupon, isOnlineConsult, true);
-        setshowSpinner(true);
+        setLoading!(true);
         await validateCoupon(coupon, true);
-        setshowSpinner(false);
+        !fromPayment && setLoading!(false);
       } catch (error) {
         setCoupon('');
         setDoctorDiscountedFees(0);
-        setshowSpinner(false);
+        setLoading!(false);
         Alert.alert(
           'Uh oh.. :(',
           typeof error == 'string' && error
@@ -452,10 +495,10 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const onSubmitBookAppointment = async () => {
     CommonLogEvent(AppRoutes.PaymentCheckout, 'ConsultOverlay onSubmitBookAppointment clicked');
     // again check coupon is valid or not
-    verifyCoupon();
+    verifyCoupon(true);
     console.log('finalAppointmentInput', finalAppointmentInput);
     if (amountToPay == 0) {
-      setshowSpinner(true);
+      setLoading!(true);
       client
         .mutate<bookAppointment>({
           mutation: BOOK_APPOINTMENT,
@@ -487,7 +530,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         })
         .catch((error) => {
           CommonBugFender('ConsultOverlay_onSubmitBookAppointment', error);
-          setshowSpinner(false);
+          setLoading!(false);
           let message = '';
           try {
             message = error?.message?.split(':')?.[1]?.trim();
@@ -568,16 +611,13 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
             g(data, 'makeAppointmentPayment', 'appointment', 'id')!
           )
         );
-        try {
-        } catch (error) {}
-        setshowSpinner(false);
+        setLoading!(false);
         handleOrderSuccess(`${g(doctor, 'firstName')} ${g(doctor, 'lastName')}`);
       })
       .catch((e) => {
-        setshowSpinner(false);
+        setLoading!(false);
         handleGraphQlError(e);
-      })
-      .finally(() => setshowSpinner(false));
+      });
   };
 
   const handleOrderSuccess = (doctorName: string) => {
@@ -740,7 +780,14 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
 
   const renderSaveWithCarePlanView = () => {
     return (
-      <View style={styles.saveWithCareView}>
+      <View
+        style={[
+          styles.saveWithCareView,
+          {
+            elevation: totalSavings > 0 ? 2 : 4,
+          },
+        ]}
+      >
         <Text style={styles.smallText}>
           You could have{' '}
           <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.SEARCH_UNDERLINE_COLOR) }}>
@@ -768,8 +815,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           />
         )}
         {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
-        {showSpinner && <Spinner />}
-
         <ScrollView ref={scrollviewRef}>
           {renderDoctorCard()}
           {isCareDoctor && isCareSubscribed && renderCareMembershipAddedCard()}
@@ -795,6 +840,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     margin: 20,
     backgroundColor: 'white',
+    height: 'auto',
+    paddingHorizontal: 10,
+    paddingVertical: 16,
   },
   priceBreakupTitle: {
     ...theme.viewStyles.text('SB', 13, theme.colors.SHERPA_BLUE),
@@ -858,5 +906,9 @@ const styles = StyleSheet.create({
   },
   careLogoText: {
     ...theme.viewStyles.text('SB', 7, theme.colors.WHITE),
+  },
+  careSelectContainer: {
+    marginTop: 20,
+    marginHorizontal: 20,
   },
 });

@@ -65,8 +65,7 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
   };
 
   const renderCareSubscribeCard = (value: any, index: number) => {
-    // const x = value?.valid_duration / 30;
-    const x = index === 0 ? 1 : 12;
+    const duration = value?.durationInMonth;
     return (
       <View style={{ paddingBottom: 30 }}>
         <TouchableOpacity
@@ -74,26 +73,19 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
           onPress={() => onPressMembershipPlans(index)}
           style={[styles.subscriptionCard, { marginLeft: index === 0 ? 10 : 0 }]}
         >
-          <ImageBackground
-            // source={`${x}`.length === 1 ? starterPackMonth : starterPackMonths}
-            source={
-              index === 0
-                ? require('@aph/mobile-patients/src/components/ui/icons/LimitedPriceOneDigitMonths.png')
-                : require('@aph/mobile-patients/src/components/ui/icons/LimitedPriceTwoDigitsMonths.png')
-            }
-            style={styles.planContainer}
-          >
+          <ImageBackground source={{ uri: value?.icon }} style={styles.planContainer}>
             <Text
               style={[
                 styles.duration,
                 {
-                  left: `${x}`.length === 1 ? 7 : 3,
-                  top: `${x}`.length === 1 ? planDimension / 2 - 4 : planDimension / 2 + 2,
-                  transform: `${x}`.length === 1 ? [{ rotate: '-80deg' }] : [{ rotate: '-100deg' }],
+                  left: `${duration}`.length === 1 ? 7 : 3,
+                  top: `${duration}`.length === 1 ? planDimension / 2 - 4 : planDimension / 2 + 2,
+                  transform:
+                    `${duration}`.length === 1 ? [{ rotate: '-80deg' }] : [{ rotate: '-100deg' }],
                 },
               ]}
             >
-              {x}
+              {duration}
             </Text>
             <Text style={styles.price}>
               {string.common.Rs}
@@ -104,7 +96,7 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
         {value?.saved_extra_on_lower_plan && (
           <Text style={styles.savingsText}>Save {value?.saved_extra_on_lower_plan}% extra</Text>
         )}
-        <View style={styles.radioBtn} />
+        <TouchableOpacity onPress={() => onPressMembershipPlans(index)} style={styles.radioBtn} />
       </View>
     );
   };
@@ -144,7 +136,7 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
       >
         {membershipPlans?.map((value: any, index: number) => renderCareSubscribeCard(value, index))}
       </ScrollView>
-      <TouchableOpacity style={{ marginTop: 15 }} onPress={onPressKnowMore}>
+      <TouchableOpacity style={styles.knowMoreBtn} onPress={onPressKnowMore}>
         <Text
           style={{
             ...theme.viewStyles.text('SB', 13, theme.colors.APP_YELLOW),
@@ -158,7 +150,7 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
   );
 
   const renderCarePlanAdded = () => (
-    <View>
+    <View style={styles.planAddedContainer}>
       <View style={styles.spaceRow}>
         <View style={styles.rowCenter}>
           <CircleLogo style={styles.careLogo} />
@@ -199,14 +191,15 @@ const styles = StyleSheet.create({
     marginHorizontal: 13,
     borderRadius: 5,
     marginBottom: 0,
-    paddingHorizontal: 11,
-    paddingVertical: 9,
     borderColor: theme.colors.SEARCH_UNDERLINE_COLOR,
     borderWidth: 2,
     borderStyle: 'dashed',
   },
   careTextContainer: {
     flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 9,
   },
   getCareText: {
     ...theme.viewStyles.text('R', 13, theme.colors.LIGHT_BLUE),
@@ -269,9 +262,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   careLogo: {
-    width: 60,
+    width: 50,
     height: 32,
-    marginHorizontal: -5,
   },
   careLogoTextStyle: {
     textTransform: 'lowercase',
@@ -290,8 +282,9 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   circleLogo: {
-    width: 60,
+    width: 50,
     height: 32,
+    marginRight: 4,
   },
   box: {
     height: 100,
@@ -328,5 +321,14 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('M', 8, theme.colors.SHERPA_BLUE),
     alignSelf: 'center',
     marginTop: 12,
+  },
+  knowMoreBtn: {
+    marginTop: 15,
+    paddingHorizontal: 10,
+    paddingVertical: 9,
+  },
+  planAddedContainer: {
+    paddingHorizontal: 10,
+    paddingVertical: 9,
   },
 });

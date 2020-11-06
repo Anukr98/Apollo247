@@ -139,10 +139,10 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
 const styles = StyleSheet.create({
   container: {
     margin: 20,
-    padding: 20,
-    backgroundColor: 'white',
+    backgroundColor: 'red',
     borderRadius: 10,
-    ...theme.viewStyles.card(),
+    ...theme.viewStyles.card(10),
+    paddingVertical: 16,
   },
   rowContainer: {
     flexDirection: 'row',

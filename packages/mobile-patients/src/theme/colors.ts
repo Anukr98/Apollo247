@@ -89,7 +89,6 @@ const Common = {
   OFF_WHITE: '#F7F7F7',
   LIGHT_YELLOW: lightYellow,
   GREEN: '#07AE8B',
-  DEEP_RED: '#F0533B',
 };
 
 const Header = {

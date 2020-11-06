@@ -224,9 +224,6 @@ const styles = StyleSheet.create({
   smallCareLogoText: {
     ...theme.viewStyles.text('M', 4, 'white'),
   },
-  smallRightAlignText: {
-    ...theme.viewStyles.text('M', 10, theme.colors.DEEP_RED),
-  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -295,6 +292,30 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     physicalConsultSlashedPrice,
   } = careDoctorDetails;
   const { isCareSubscribed } = useShoppingCart();
+
+  const rectangularIconHeight = isCareDoctor
+    ? Platform.OS == 'android'
+      ? isCareSubscribed
+        ? 154
+        : 164
+      : isCareSubscribed
+      ? 149
+      : 159
+    : Platform.OS == 'android'
+    ? 134
+    : 129;
+
+  const consultViewHeight = isCareDoctor
+    ? Platform.OS == 'android'
+      ? isCareSubscribed
+        ? 133
+        : 143
+      : isCareSubscribed
+      ? 128
+      : 138
+    : Platform.OS == 'android'
+    ? 115
+    : 110;
 
   useEffect(() => {
     if (!currentPatient) {
@@ -684,6 +705,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     styles.consultViewStyles,
                     {
                       marginRight: 6,
+                      height: consultViewHeight,
                     },
                   ]}
                 >
@@ -693,17 +715,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                       style={{
                         position: 'absolute',
                         width: (width - 42) / 2,
-                        height: isCareDoctor
-                          ? Platform.OS == 'android'
-                            ? isCareSubscribed
-                              ? 154
-                              : 164
-                            : isCareSubscribed
-                            ? 149
-                            : 159
-                          : Platform.OS == 'android'
-                          ? 134
-                          : 129,
+                        height: rectangularIconHeight,
                         flex: 2,
                         left: -3,
                         top: -2,
@@ -712,6 +724,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   )}
                   <TouchableOpacity
                     activeOpacity={1}
+                    style={{ height: consultViewHeight }}
                     onPress={() => {
                       setOnlineSelected(true);
                       const eventAttributes: WebEngageEvents[WebEngageEventName.TYPE_OF_CONSULT_SELECTED] = {
@@ -779,17 +792,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     styles.consultViewStyles,
                     {
                       marginLeft: 6,
-                      height: isCareDoctor
-                        ? Platform.OS == 'android'
-                          ? isCareSubscribed
-                            ? 135
-                            : 145
-                          : isCareSubscribed
-                          ? 130
-                          : 140
-                        : Platform.OS == 'android'
-                        ? 115
-                        : 110,
+                      height: consultViewHeight,
                     },
                   ]}
                 >
@@ -799,7 +802,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                       style={{
                         position: 'absolute',
                         width: (width - 42) / 2,
-                        height: Platform.OS == 'android' ? 134 : 129,
+                        height: rectangularIconHeight,
                         flex: 2,
                         left: -3,
                         top: -2,
@@ -808,6 +811,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   )}
                   <TouchableOpacity
                     activeOpacity={1}
+                    style={{ height: consultViewHeight }}
                     onPress={() => {
                       {
                         const eventAttributes: WebEngageEvents[WebEngageEventName.TYPE_OF_CONSULT_SELECTED] = {
