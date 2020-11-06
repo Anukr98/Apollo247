@@ -25,6 +25,6 @@ public class GetReferrerModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void referrer(Promise promise) {
         Context context = getReactApplicationContext();
-        promise.resolve(ReferrerReceiver.getReferrer());
+        promise.resolve(MainActivity.getIntentReferrer());
     }
 }

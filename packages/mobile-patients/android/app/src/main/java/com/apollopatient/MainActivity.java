@@ -24,11 +24,20 @@ public class MainActivity extends ReactActivity {
      */
     public static final String NOTIFICATION_ID = "NOTIFICATION_ID";
     private static final String TAG = "intentlogs";
+    private static String referrer = "";
     private Ringtone ringtone;
 
     @Override
     protected String getMainComponentName() {
         return "ApolloPatient";
+    }
+
+    public static String getIntentReferrer() {
+        return referrer;
+    }
+
+    private static void setReferrer(String value) {
+        referrer = value;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -39,14 +48,14 @@ public class MainActivity extends ReactActivity {
         String action = intent.getAction();
         Uri data = intent.getData();
         Log.d("intent recieved now", intent.toString());
-//        Log.d("intent referrer", intent.getStringExtra(Intent.EXTRA_REFERRER).toString());
-//        String referrerString = intent.getStringExtra(Intent.EXTRA_REFERRER);
-//        Log.d("referrerString", referrerString);
         Bundle bundle = intent.getExtras();
         if (bundle != null) {
             for (String key : bundle.keySet()) {
-                Log.e(TAG, key + " : " + (bundle.get(key) != null ? bundle.get(key) : "NULL"));
+                Log.d(TAG, key + " : " + (bundle.get(key) != null ? bundle.get(key) : "NULL"));
             }
+            String referrerString = bundle.get(Intent.EXTRA_REFERRER) != null ? bundle.get(Intent.EXTRA_REFERRER).toString() : "";
+            Log.d(TAG, referrerString);
+            setReferrer( referrerString);
         }
 
         //start

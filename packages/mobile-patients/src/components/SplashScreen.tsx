@@ -37,6 +37,7 @@ import {
   APPStateActive,
   postWebEngageEvent,
   callPermissions,
+  postFirebaseEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -56,6 +57,7 @@ import VoipPushNotification from 'react-native-voip-push-notification';
 import { string } from '../strings/string';
 import { isUpperCase } from '@aph/mobile-patients/src/utils/commonUtils';
 import Pubnub from 'pubnub';
+import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
 // finally not working on all promises.
@@ -233,11 +235,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           if (url) {
             try {
               handleOpenURL(url);
+              fireAppOpenedEvent(url);
               console.log('linking', url);
-              NativeModules.GetReferrer.referrer().then((value: any) => {
-                console.log('referrer >>>', value);
-              });
             } catch (e) {}
+          } else {
+            fireAppOpenedEvent('');
           }
         })
         .catch((e) => {
@@ -249,6 +251,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           console.log('event', event);
           setBugFenderLog('DEEP_LINK_EVENT', JSON.stringify(event));
           handleOpenURL(event.url);
+          fireAppOpenedEvent(event.url);
         } catch (e) {}
       });
       AsyncStorage.removeItem('location');
@@ -405,6 +408,49 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     } catch (error) {}
   };
 
+  async function fireAppOpenedEvent(event: any) {
+    const a = event.indexOf('apollopatients://');
+    const b = event.indexOf('https://www.apollo247.com');
+    let attributes: FirebaseEvents[FirebaseEventName.APP_OPENED] = {
+      utm_source: 'not set',
+      utm_medium: 'not set',
+      utm_campaign: 'not set',
+      utm_term: 'not set',
+      utm_content: 'not set',
+      referrer: 'not set',
+    };
+    if (a != -1) {
+      const route = event.replace('apollopatients://', '');
+      const data = route.split('?');
+      if (data.length >= 2) {
+        const params = data[1].split('&');
+        const utmParams = params.map((item: any) => item.split('='));
+        utmParams.forEach((item: any) => item?.length == 2 && (attributes[item[0]] = item[1]));
+        console.log('attributes >>>', attributes);
+        postFirebaseEvent(FirebaseEventName.APP_OPENED, attributes);
+      }
+    }
+    if (b != -1) {
+      const route = event.replace('https://www.apollo247.com/', '');
+      const data = route.split('?');
+      if (data.length >= 2) {
+        const params = data[1].split('&');
+        const utmParams = params.map((item: any) => item.split('='));
+        utmParams.forEach((item: any) => item?.length == 2 && (attributes[item[0]] = item[1]));
+        console.log('attributes >>>', attributes);
+        postFirebaseEvent(FirebaseEventName.APP_OPENED, attributes);
+      } else {
+        const referrer = await NativeModules.GetReferrer.referrer();
+        attributes['referrer'] = referrer;
+        console.log('attributes >>>', attributes);
+        postFirebaseEvent(FirebaseEventName.APP_OPENED, attributes);
+      }
+    }
+    if (!event) {
+      console.log('attributes >>>', attributes);
+      postFirebaseEvent(FirebaseEventName.APP_OPENED, attributes);
+    }
+  }
   const getData = (routeName: String, id?: String, timeout?: boolean, isCall?: boolean) => {
     async function fetchData() {
       firebase.analytics().setAnalyticsCollectionEnabled(true);
