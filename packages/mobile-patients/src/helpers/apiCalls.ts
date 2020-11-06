@@ -83,6 +83,10 @@ export interface PopcSrchPrdApiResponse {
 interface Value {
   id: string;
   name: string;
+  child?: {
+    category_id: string;
+    title: string;
+  }[];
 }
 export interface MedFilter {
   name: string;
@@ -649,6 +653,7 @@ export const getProductsByCategoryApi = (
           const modifiedValues = f?.values?.map((item: any) => ({
             id: item.value,
             name: item.label,
+            child: item.child,
           }));
           return { ...f, values: modifiedValues };
         });
