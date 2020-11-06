@@ -113,8 +113,8 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
       setProductsTotal(data.product_count);
       updateLoading(pageId, false);
       setPageId(pageId + 1);
-      setSortByOptions(data?.sort_by || []);
-      setFilterOptions(data?.filters || []);
+      setSortByOptions(Array.isArray(data?.sort_by) ? data?.sort_by : []);
+      setFilterOptions(Array.isArray(data?.filters) ? data?.filters : []);
       setPageTitle(data.search_heading || '');
       if (pageId == 1) {
         MedicineListingEvents.searchEnterClick({
@@ -148,8 +148,8 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
       setProductsTotal(data.count);
       updateLoading(pageId, false);
       setPageId(pageId + 1);
-      setSortByOptions(data?.sort_by || []);
-      setFilterOptions(data.filters);
+      setSortByOptions(Array.isArray(data?.sort_by) ? data?.sort_by : []);
+      setFilterOptions(Array.isArray(data?.filters) ? data?.filters : []);
     } catch (error) {
       updateLoading(pageId, false);
       renderAlert();
@@ -269,11 +269,13 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
       onClose();
       setFilterBy(appliedFilters);
     };
+    const filters = filterOptions.filter(({ values }) => values?.length);
+
     return (
       filterVisible && (
         <MedicineListingFilter
           isVisible={true}
-          filters={filterOptions}
+          filters={filters}
           selectedFilters={filterBy}
           onClose={onClose}
           onApplyFilters={onApplyFilters}

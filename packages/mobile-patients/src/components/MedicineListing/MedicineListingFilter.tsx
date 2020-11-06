@@ -1,3 +1,4 @@
+import { Accordion } from '@aph/mobile-patients/src/components/MedicineListing/Accordion';
 import {
   Filter,
   SelectedFilters,
@@ -60,13 +61,23 @@ export const MedicineListingFilter: React.FC<Props> = ({
     }
   };
 
+  const stripSymbols = (filters: SelectedFilters) => {
+    return Object.keys(filters).reduce(
+      (prevVal, currKey) => ({
+        ...prevVal,
+        ...{ [currKey]: filters[currKey].filter((key) => !key.startsWith('>')) }, // to strip > symbols from ids
+      }),
+      {}
+    );
+  };
+
   const renderFilterOption = (filter: Filter) => {
     const isSelected = filter.attribute === selectedOption?.attribute;
     const onPress = () => setSelectedOption(filter);
     const highlightView = (
       <View style={[styles.highlight, { backgroundColor: isSelected ? APP_GREEN : CLEAR }]} />
     );
-    const count = selectedFilters[filter.attribute]?.length;
+    const count = selectedFilters[filter.attribute]?.filter((attr) => !attr.startsWith('>')).length;
     const rightIcon = (
       <>
         {!!count && (
@@ -95,8 +106,28 @@ export const MedicineListingFilter: React.FC<Props> = ({
     );
   };
 
+  const updateAssociatedBrandFilter = async (categoryId: string) => {
+    // update associated brand filter on selection of category
+    try {
+      setLoading(true);
+      const { data } = await getProductsByCategoryApi(categoryId, 1, null, null);
+      const brandFilter = data.filters.find(({ attribute }) =>
+        brandFilterProps.includes(attribute)
+      );
+      if (brandFilter) {
+        const updatedFilter = filters.map((filter) =>
+          brandFilterProps.includes(filter.attribute) ? brandFilter : filter
+        );
+        setFilters([...updatedFilter]);
+      }
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+    }
+  };
+
   const renderFilterSubOptions = (filter: Filter) => {
-    return filter.values?.map(({ name, id }) => {
+    return filter.values?.map(({ name, id, child }) => {
       const { select_type, attribute } = filter;
       const isMulti = select_type == 'multi';
       const checkedIcon = isMulti ? <CheckedIcon /> : <RadioButtonIcon />;
@@ -113,25 +144,62 @@ export const MedicineListingFilter: React.FC<Props> = ({
         setSelectedFilters({ ...selectedFilters, [attribute]: updatedFilter });
 
         if (!isSelected && categoryFilterProps.includes(attribute)) {
-          // update associated brand filter on selection of category
-          try {
-            setLoading(true);
-            const { data } = await getProductsByCategoryApi(id, 1, null, null);
-            const brandFilter = data.filters.find(({ attribute }) =>
-              brandFilterProps.includes(attribute)
-            );
-            if (brandFilter) {
-              const updatedFilter = filters.map((filter) =>
-                brandFilterProps.includes(filter.attribute) ? brandFilter : filter
-              );
-              setFilters([...updatedFilter]);
-            }
-            setLoading(false);
-          } catch (error) {
-            setLoading(false);
-          }
+          updateAssociatedBrandFilter(id);
         }
       };
+
+      if (Array.isArray(child) && child.length) {
+        const isAccordionSelected = !!subOptions?.find(
+          (subOption) =>
+            subOption === `>${id}` || child.find(({ category_id }) => category_id === subOption)
+        );
+        const onPressAccordion = async (id: string) => {
+          const updatedFilter = isAccordionSelected
+            ? subOptions?.filter((subOption) => subOption != id)
+            : isMulti
+            ? [...(subOptions || []), id]
+            : [id];
+          setSelectedFilters({ ...selectedFilters, [attribute]: updatedFilter });
+        };
+
+        return (
+          <Accordion
+            title={name}
+            isOpen={isAccordionSelected}
+            onPress={() => onPressAccordion(`>${id}`)}
+          >
+            {child.map(({ title, category_id }) => {
+              const isCheckBoxSelected = !!subOptions?.find(
+                (subOption) => subOption == category_id
+              );
+              const onPress = () => {
+                const updatedFilter = isCheckBoxSelected
+                  ? subOptions?.filter((subOption) => subOption != category_id)
+                  : isMulti
+                  ? [...(subOptions || []), category_id]
+                  : [category_id];
+                setSelectedFilters({ ...selectedFilters, [attribute]: updatedFilter });
+                if (!isCheckBoxSelected && categoryFilterProps.includes(attribute)) {
+                  updateAssociatedBrandFilter(id);
+                }
+              };
+
+              return (
+                <CheckBox
+                  key={category_id}
+                  title={title}
+                  checked={isCheckBoxSelected}
+                  onPress={onPress}
+                  checkedIcon={checkedIcon}
+                  uncheckedIcon={uncheckedIcon}
+                  containerStyle={styles.checkBoxContainer}
+                  textStyle={isCheckBoxSelected ? styles.selectedCheckBoxText : styles.checkBoxText}
+                />
+              );
+            })}
+          </Accordion>
+        );
+      }
 
       return (
         <CheckBox
@@ -158,7 +226,7 @@ export const MedicineListingFilter: React.FC<Props> = ({
 
   const renderButton = () => {
     const onPress = () => {
-      onApplyFilters(selectedFilters);
+      onApplyFilters(stripSymbols(selectedFilters));
     };
     return (
       <Button
@@ -198,7 +266,7 @@ export const MedicineListingFilter: React.FC<Props> = ({
     };
     const onApply = () => {
       setAlertVisible(false);
-      onApplyFilters(selectedFilters);
+      onApplyFilters(stripSymbols(selectedFilters));
     };
     return (
       <View style={styles.alertButtonsContainer}>

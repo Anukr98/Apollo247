@@ -83,6 +83,10 @@ export interface PopcSrchPrdApiResponse {
 interface Value {
   id: string;
   name: string;
+  child?: {
+    category_id: string;
+    title: string;
+  }[];
 }
 export interface MedFilter {
   name: string;
@@ -502,7 +506,9 @@ export const formatFilters = (filters: { [key: string]: string[] } | null) =>
   Object.keys(filters).reduce(
     (prevVal, currKey) => ({
       ...prevVal,
-      ...(filters[currKey]?.length ? { [currKey]: filters[currKey] } : {}),
+      ...(filters[currKey]?.length
+        ? { [currKey]: filters[currKey]?.length === 1 ? filters[currKey][0] : filters[currKey] } // to convert to string if array of length 1
+        : {}),
     }),
     {}
   );
@@ -647,6 +653,7 @@ export const getProductsByCategoryApi = (
           const modifiedValues = f?.values?.map((item: any) => ({
             id: item.value,
             name: item.label,
+            child: item.child,
           }));
           return { ...f, values: modifiedValues };
         });

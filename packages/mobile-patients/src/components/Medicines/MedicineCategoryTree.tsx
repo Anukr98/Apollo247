@@ -1,7 +1,6 @@
 import {
   ArrowLeft,
   ArrowRight,
-  Down,
   ShopByCategoryIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Category } from '@aph/mobile-patients/src/helpers/apiCalls';
@@ -29,7 +28,6 @@ export const MedicineCategoryTree: React.FC<Props> = ({
   containerStyle,
 }) => {
   const [categoryTree, setCategoryTree] = useState<Category[]>([]);
-  const level1 = categoryTree.length === 1;
   const categoryLevel1 = categoryTree?.[0];
 
   const renderItem = ({ item }: ListRenderItemInfo<Category>) => {
@@ -45,7 +43,7 @@ export const MedicineCategoryTree: React.FC<Props> = ({
       onPressCategory(item, [...categoryTree.reverse(), item]);
     };
     const rightIcon = (
-      <TouchableOpacity onPress={onPress}>{level1 ? <Down /> : <ArrowRight />}</TouchableOpacity>
+      <TouchableOpacity onPress={onPress}>{Child?.length ? <ArrowRight /> : null}</TouchableOpacity>
     );
     return (
       <ListItem
@@ -72,10 +70,14 @@ export const MedicineCategoryTree: React.FC<Props> = ({
       <ListItem
         title={title}
         titleStyle={categoryLevel1 ? styles.sectionTitleSelected : styles.sectionTitle}
+        titleProps={{ onPress }}
         containerStyle={[styles.listItemContainer, { marginLeft: -30 }]}
         pad={5}
-        leftIcon={categoryLevel1 ? <ArrowLeft /> : <ShopByCategoryIcon />}
-        onPress={onPress}
+        leftIcon={
+          <TouchableOpacity onPress={onPress}>
+            {categoryLevel1 ? <ArrowLeft /> : <ShopByCategoryIcon />}
+          </TouchableOpacity>
+        }
       />
     );
   };
