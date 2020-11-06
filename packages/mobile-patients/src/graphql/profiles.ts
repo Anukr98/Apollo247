@@ -1319,7 +1319,7 @@ export const GET_MEDICINE_ORDERS_OMS__LIST = gql`
         deliveryType
         currentStatus
         oldOrderTat
-+       orderTat
+        orderTat
         medicineOrdersStatus {
           id
           # statusDate
