@@ -310,6 +310,15 @@ export const ArrowRightGreen: React.FC<IconProps> = (props) => (
   />
 );
 
+export const ArrowUpGreen: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 12, width: 12, margin: 6 }}
+    resizeMode="contain"
+    {...props}
+    source={require('./icons/ic_arrow_up_green.png')}
+  />
+);
+
 export const DropdownBlueDown: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_dropdown_blue_down.png')} />
 );
