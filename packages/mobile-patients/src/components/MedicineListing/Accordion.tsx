@@ -1,4 +1,4 @@
-import { ArrowRight, ArrowRightGreen } from '@aph/mobile-patients/src/components/ui/Icons';
+import { ArrowUpGreen, Down } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleSheet, TouchableOpacity, TouchableOpacityProps, View } from 'react-native';
@@ -19,7 +19,7 @@ export const Accordion: React.FC<Props> = ({
   children,
 }) => {
   const renderToggleView = () => {
-    const rightIcon = isOpen ? <ArrowRightGreen /> : <ArrowRight />;
+    const rightIcon = isOpen ? <ArrowUpGreen /> : <Down />;
     return (
       <ListItem
         key={title}
