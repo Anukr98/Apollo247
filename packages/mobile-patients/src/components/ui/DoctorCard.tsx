@@ -138,6 +138,7 @@ export interface DoctorCardProps extends NavigationScreenProps {
 
 export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const rowData = props.rowData;
+  const ctaBannerText = rowData.doctorOfHour;
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
   const [fetchedSlot, setfetchedSlot] = useState<string>('');
@@ -181,6 +182,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       ConsultType: props.availableModes,
       callSaveSearch: props.callSaveSearch,
       params: params,
+      availNowText: ctaBannerText?.AVAILABLE_NOW || '',
+      consultNowText: ctaBannerText?.CONSULT_NOW || '',
     });
   };
 
@@ -304,7 +307,11 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         <View style={{ borderRadius: 10, flex: 1, zIndex: 1 }}>
           <View style={{ flexDirection: 'row' }}>
             {rowData.slot ? (
-              <AvailabilityCapsule availableTime={rowData.slot} styles={styles.availableView} />
+              <AvailabilityCapsule 
+                availableTime={rowData.slot} 
+                styles={styles.availableView} 
+                availNowText={!!ctaBannerText ? ctaBannerText.AVAILABLE_NOW : ''} 
+              />
             ) : null}
             <View style={{ position: 'absolute', top: -6, right: -6 }}>
               {rowData.doctorType !== 'DOCTOR_CONNECT' ? (
@@ -483,7 +490,13 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                       props.buttonTextStyle,
                     ]}
                   >
-                    {!!fetchedSlot ? getButtonTitle(fetchedSlot) : getButtonTitle(rowData?.slot)}
+                    {
+                      !!ctaBannerText 
+                      ? ctaBannerText.CONSULT_NOW 
+                      : !!fetchedSlot 
+                      ? getButtonTitle(fetchedSlot) 
+                      : getButtonTitle(rowData?.slot)
+                    }
                   </Text>
                 </TouchableOpacity>
               </View>

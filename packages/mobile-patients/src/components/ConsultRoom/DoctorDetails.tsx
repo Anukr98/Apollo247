@@ -21,6 +21,7 @@ import {
 import {
   getDoctorDetailsById,
   getDoctorDetailsById_getDoctorDetailsById,
+  getDoctorDetailsById_getDoctorDetailsById_doctorOfHour,
 } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { ConsultMode, DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -214,6 +215,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [consultMode, setConsultMode] = useState<ConsultMode>(ConsultMode.ONLINE);
   const [onlineSelected, setOnlineSelected] = useState<boolean>(true);
   const [doctorDetails, setDoctorDetails] = useState<getDoctorDetailsById_getDoctorDetailsById>();
+  const [ctaBannerText, setCtaBannerText] = useState<getDoctorDetailsById_getDoctorDetailsById_doctorOfHour | null>(null);
   const [appointmentHistory, setAppointmentHistory] = useState<
     getAppointmentHistory_getAppointmentHistory_appointmentsHistory[] | null
   >([]);
@@ -411,8 +413,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     const input = {
       id: doctorId,
     };
-    console.log('input ', input);
-
     client
       .query<getDoctorDetailsById>({
         query: GET_DOCTOR_DETAILS_BY_ID,
@@ -420,12 +420,11 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then(({ data }) => {
-        console.log(data, 'data');
-
         try {
           if (data && data.getDoctorDetailsById && doctorDetails !== data.getDoctorDetailsById) {
             setDoctorDetails(data.getDoctorDetailsById);
             setDoctorId(data.getDoctorDetailsById.id);
+            setCtaBannerText(data.getDoctorDetailsById.doctorOfHour);
             setshowSpinner(false);
             fetchNextAvailableSlots([data.getDoctorDetailsById.id]);
             setAvailableModes(data.getDoctorDetailsById);
@@ -482,66 +481,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     );
   };
 
-  // const { data, error } = useQuery<getDoctorDetailsById>(GET_DOCTOR_DETAILS_BY_ID, {
-  //   // variables: { id: 'a6ef960c-fc1f-4a12-878a-12063788d625' },
-  //   fetchPolicy: 'no-cache',
-  //   variables: { id: doctorId },
-  // });
-  // if (error) {
-  //   setshowSpinner(false);
-  //   console.log('error', error);
-  // } else {
-  //   try {
-  //     console.log('getDoctorDetailsById', data);
-  //     if (data && data.getDoctorDetailsById && doctorDetails !== data.getDoctorDetailsById) {
-  //       setDoctorDetails(data.getDoctorDetailsById);
-  //       setDoctorId(data.getDoctorDetailsById.id);
-  //       setshowSpinner(false);
-  //       fetchNextAvailableSlots([data.getDoctorDetailsById.id]);
-  //     }
-  //   } catch {}
-  // }
-
-  // const availability = useQuery<GetDoctorNextAvailableSlot>(NEXT_AVAILABLE_SLOT, {
-  //   fetchPolicy: 'no-cache',
-  //   variables: {
-  //     DoctorNextAvailableSlotInput: {
-  //       doctorIds: doctorDetails ? [doctorDetails.id] : [],
-  //       availableDate: todayDate,
-  //     },
-  //   },
-  // });
-  // if (availability.error) {
-  //   console.log('error', availability.error);
-  // } else {
-  //   try {
-  //     // console.log(availability.data, 'availabilityData', 'availableSlots');
-  //     const doctorAvailalbeSlots = g(
-  //       availability,
-  //       'data',
-  //       'getDoctorNextAvailableSlot',
-  //       'doctorAvailalbeSlots'
-  //     );
-  //     // console.log(doctorAvailalbeSlots, '1234567');
-  //     if (doctorAvailalbeSlots && availableInMin === undefined) {
-  //       const nextSlot = doctorAvailalbeSlots ? g(doctorAvailalbeSlots[0], 'availableSlot') : null;
-  //       const nextPhysicalSlot = doctorAvailalbeSlots
-  //         ? g(doctorAvailalbeSlots[0], 'physicalAvailableSlot')
-  //         : null;
-
-  //       // console.log(nextSlot, 'nextSlot', nextPhysicalSlot);
-  //       if (nextSlot) {
-  //         const timeDiff: Number = timeDiffFromNow(nextSlot);
-  //         setavailableInMin(timeDiff);
-  //       }
-  //       if (nextPhysicalSlot) {
-  //         const timeDiff: Number = timeDiffFromNow(nextPhysicalSlot);
-  //         setavailableInMinPhysical(timeDiff);
-  //       }
-  //     }
-  //   } catch (error) {}
-  // }
-
   const formatTime = (time: string) => {
     const IOSFormat = `${todayDate}T${time}.000Z`;
     return Moment(new Date(IOSFormat), 'HH:mm:ss.SSSz').format('hh:mm A');
@@ -565,6 +504,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         DoctorName={doctorDetails ? doctorDetails.fullName : ''}
         nextAppointemntOnlineTime={availableTime}
         nextAppointemntInPresonTime={physicalAvailableTime}
+        availNowText={ctaBannerText?.AVAILABLE_NOW || ''}
+        consultNowText={ctaBannerText?.CONSULT_NOW || ''}
       />
     );
   };
@@ -591,7 +532,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       <LinearGradientComponent style={styles.linearGradient}>
         <View style={{ flexDirection: 'row', alignSelf: 'center' }}>
           <FamilyDoctorIcon style={{ width: 16.58, height: 24 }} />
-          <Text style={styles.doctorOfTheHourTextStyle}>{'Doctor of the Hour!'}</Text>
+          <Text style={styles.doctorOfTheHourTextStyle}>
+            {ctaBannerText?.DOCTOR_OF_HOUR || 'Doctor of the Hour!'}
+          </Text>
         </View>
       </LinearGradientComponent>
     );
@@ -748,6 +691,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                         titleTextStyle={{ paddingHorizontal: 7 }}
                         styles={{ marginTop: -5 }}
                         availableTime={availableTime}
+                        availNowText={ctaBannerText?.AVAILABLE_NOW || ''}
                       />
                     </View>
                   </TouchableOpacity>
@@ -814,6 +758,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                             titleTextStyle={{ paddingHorizontal: 7 }}
                             styles={{ marginTop: -5 }}
                             availableTime={physicalAvailableTime}
+                            availNowText={ctaBannerText?.AVAILABLE_NOW || ''}
                           />
                         </>
                       )}

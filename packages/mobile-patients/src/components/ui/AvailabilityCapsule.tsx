@@ -11,6 +11,7 @@ export interface AvailabilityCapsuleProps {
   availableTime: string;
   styles?: StyleProp<ViewStyle>;
   titleTextStyle?: StyleProp<TextStyle>;
+  availNowText?: string;
 }
 
 export const AvailabilityCapsule: React.FC<AvailabilityCapsuleProps> = (props) => {
@@ -19,7 +20,7 @@ export const AvailabilityCapsule: React.FC<AvailabilityCapsuleProps> = (props) =
     return (
       <CapsuleView
         upperCase
-        title={nextAvailability(props.availableTime)}
+        title={props.availNowText || nextAvailability(props.availableTime)}
         style={props.styles}
         titleTextStyle={props.titleTextStyle}
         isActive={!(Number(timeDiff) > 15 || timeDiff < 0)}
