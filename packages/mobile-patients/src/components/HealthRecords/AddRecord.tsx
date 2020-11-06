@@ -149,6 +149,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: 'transparent',
     marginHorizontal: 0,
     paddingTop: 24,
     paddingBottom: 20,
@@ -161,6 +162,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     borderColor: theme.colors.APP_YELLOW,
     borderWidth: 1,
+    elevation: 0,
   },
   bottomWhiteButtonTextStyle: {
     color: theme.colors.APP_YELLOW,
@@ -853,7 +855,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       <View style={[styles.addMoreImageViewStyle, { marginRight: 5 }]}>
         <View style={styles.imageViewStyle}>
           <TouchableOpacity
-            activeOpacity={1}
             onPress={onPressRemoveIcon}
             style={{ position: 'absolute', right: -8, zIndex: 99, top: -8 }}
           >
