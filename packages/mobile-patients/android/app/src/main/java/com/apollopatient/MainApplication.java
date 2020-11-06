@@ -75,8 +75,6 @@ import io.invertase.firebase.notifications.RNFirebaseNotificationsPackage;
 import io.invertase.firebase.messaging.RNFirebaseMessagingPackage;
 import io.invertase.firebase.config.RNFirebaseRemoteConfigPackage; // <-- Add this line
 import io.invertase.firebase.database.RNFirebaseDatabasePackage; // <-- Add this line
-import com.crashlytics.android.Crashlytics;
-import io.fabric.sdk.android.Fabric;
 
 import java.util.Arrays;
 import java.util.List;
@@ -152,7 +150,6 @@ public class MainApplication extends Application implements ReactApplication {
             }
         });
 
-        Fabric.with(this, new Crashlytics());
         SoLoader.init(this, /* native exopackage */ false);
         initializeFlipper(this); // Remove this line if you don't want Flipper enabled
 
