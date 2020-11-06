@@ -64,7 +64,7 @@ export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
         >
           <Text style={styles.regularText}>
             You{' '}
-            <Text style={{ color: theme.colors.SEARCH_UNDERLINE_COLOR }}>
+            <Text style={{ ...styles.regularText, color: theme.colors.SEARCH_UNDERLINE_COLOR }}>
               saved ₹ {totalSavings}
             </Text>{' '}
             on your purchase.
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   careLogo: {
-    width: 39,
+    width: 33,
     height: 21,
   },
   careLogoText: {

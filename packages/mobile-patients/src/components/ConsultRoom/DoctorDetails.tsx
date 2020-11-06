@@ -204,7 +204,9 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('M', 12, theme.colors.APP_YELLOW),
   },
   smallText: {
-    ...theme.viewStyles.text('M', 10, theme.colors.APP_YELLOW),
+    ...theme.fonts.IBMPlexSansMedium(10),
+    color: theme.colors.APP_YELLOW,
+    lineHeight: 12,
   },
   rowContainer: {
     flexDirection: 'row',

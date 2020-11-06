@@ -846,6 +846,7 @@ const styles = StyleSheet.create({
     marginTop: 0,
     padding: 10,
     marginBottom: 20,
+    elevation: 2,
   },
   smallText: {
     ...theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE),
