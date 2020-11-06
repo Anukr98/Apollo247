@@ -6,8 +6,6 @@ import AsyncStorage from '@react-native-community/async-storage';
 
 const useAuthContext = () => useContext(AuthContext);
 
-export const useAnalytics = () => useContext(AuthContext).analytics!;
-
 export const useAuth = () => {
   const sendOtp = useAuthContext().sendOtp!;
   const sendOtpError = useAuthContext().sendOtpError;
@@ -17,7 +15,6 @@ export const useAuth = () => {
   const isSigningIn = useAuthContext().isSigningIn;
   const signOut = useAuthContext().signOut!;
 
-  const analytics = useAnalytics();
   const allPatients = useAuthContext().allPatients!;
   const setAllPatients = useAuthContext().setAllPatients!;
 
@@ -38,7 +35,6 @@ export const useAuth = () => {
     isSigningIn,
     signOut,
 
-    analytics,
     allPatients,
     setAllPatients,
 

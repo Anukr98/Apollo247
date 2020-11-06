@@ -42,7 +42,7 @@ import {
   overlyCallPermissions,
   isPastAppointment,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import AsyncStorage from '@react-native-community/async-storage';
@@ -414,7 +414,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const articles = string.consult_room.articles.data;
   const tabs = [{ title: 'Today' }, { title: 'Upcoming' }, { title: 'Past' }];
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
-  const { analytics } = useAuth();
 
   const [consultations, setconsultations] = useState<
     getPatientAllAppointments_getPatientAllAppointments_appointments[]
@@ -486,7 +485,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     //   }
     // }
     currentPatient && setProfile(currentPatient!);
-  }, [currentPatient, analytics, props.navigation.state.params]);
+  }, [currentPatient, props.navigation.state.params]);
 
   useEffect(() => {
     async function fetchData() {

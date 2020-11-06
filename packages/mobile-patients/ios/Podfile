@@ -1,3 +1,5 @@
+$RNFirebaseAsStaticFramework = true
+
 # Uncomment the next line to define a global platform for your project
  platform :ios, '9.0'
 
@@ -40,14 +42,8 @@ target 'ApolloPatient' do
   pod 'glog', :podspec => '../node_modules/react-native/third-party-podspecs/glog.podspec'
   pod 'Folly', :podspec => '../node_modules/react-native/third-party-podspecs/Folly.podspec'
 
-  pod 'Firebase/Core', '~> 6.2.0'
-  pod 'Firebase/Analytics'
-  pod 'Firebase/Auth'
   pod 'GoogleAppMeasurement'
-  pod 'Firebase/Messaging', '~> 6.2.0'
   pod 'GoogleIDFASupport', '~> 3.14.0'
-  pod 'Firebase/RemoteConfig', '~> 6.2.0'
-  pod 'Firebase/Database', '~> 6.2.0'
  
   pod 'ReverseExtension'
   pod 'SDWebImage', '~> 5.0'
@@ -76,8 +72,13 @@ target 'ApolloPatient' do
   pod 'RNVectorIcons', :path => '../node_modules/react-native-vector-icons'
   pod 'react-native-webview', :path => '../node_modules/react-native-webview'
   pod 'react-native-geolocation', :path => '../node_modules/@react-native-community/geolocation'
+  pod 'RNFBApp', :path => '../node_modules/@react-native-firebase/app'
+  pod 'RNFBAuth', :path => '../node_modules/@react-native-firebase/auth'
+  pod 'RNFBMessaging', :path => '../node_modules/@react-native-firebase/messaging'
+  pod 'RNFBRemoteConfig', :path => '../node_modules/@react-native-firebase/remote-config'
+  pod 'RNFBCrashlytics', :path => '../node_modules/@react-native-firebase/crashlytics'
+  pod 'RNFBAnalytics', :path => '../node_modules/@react-native-firebase/analytics'
   pod 'react-native-netinfo', :path => '../node_modules/@react-native-community/netinfo'
-  pod 'RNFirebase', :path => '../node_modules/react-native-firebase/ios'
   pod 'opentok-react-native', :path => '../node_modules/opentok-react-native'
   pod 'ReactNativeExceptionHandler', :path => '../node_modules/react-native-exception-handler'
   pod 'react-native-webengage', :path => '../node_modules/react-native-webengage'
@@ -128,10 +129,3 @@ end
 pre_install do |installer|
   Pod::Installer::Xcode::TargetValidator.send(:define_method, :verify_no_static_framework_transitive_dependencies) {}
 end
-
-post_install do |installer|
-  rnfirebase = installer.pods_project.targets.find { |target| target.name == 'RNFirebase' }
-  rnfirebase.build_configurations.each do |config|
-    config.build_settings['HEADER_SEARCH_PATHS'] = '$(inherited) ${PODS_ROOT}/Headers/Public/**'
-  end
-end  
