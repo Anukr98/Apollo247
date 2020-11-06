@@ -114,6 +114,7 @@ export interface getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineO
   redeemedAmount: number | null;
   estimatedAmount: number | null;
   prescriptionImageUrl: string | null;
+  oldOrderTat: string | null;
   orderTat: string | null;
   orderType: MEDICINE_ORDER_TYPE | null;
   shopAddress: string | null;
@@ -122,6 +123,7 @@ export interface getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineO
   currentStatus: MEDICINE_ORDER_STATUS | null;
   patientAddressId: string | null;
   alertStore: boolean | null;
+  prescriptionOptionSelected: string | null;
   medicineOrdersStatus: (getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrdersStatus | null)[] | null;
   medicineOrderLineItems: (getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderLineItems | null)[] | null;
   medicineOrderPayments: (getMedicineOrderOMSDetails_getMedicineOrderOMSDetails_medicineOrderDetails_medicineOrderPayments | null)[] | null;

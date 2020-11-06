@@ -1318,11 +1318,14 @@ export const GET_MEDICINE_ORDERS_OMS__LIST = gql`
         shopAddress
         deliveryType
         currentStatus
+        oldOrderTat
++       orderTat
         medicineOrdersStatus {
           id
           # statusDate
           orderStatus
           hideStatus
+          statusMessage
         }
         medicineOrderLineItems {
           medicineName
@@ -1655,6 +1658,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
         estimatedAmount
         prescriptionImageUrl
         orderTat
+        oldOrderTat
         orderType
         shopAddress
         packagingCharges
@@ -1662,6 +1666,9 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
         currentStatus
         patientAddressId
         alertStore
+        prescriptionOptionSelected
+        tatType
+        shopId
         medicineOrderLineItems {
           medicineSKU
           medicineName
@@ -1779,6 +1786,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
         estimatedAmount
         prescriptionImageUrl
         orderTat
+        oldOrderTat
         orderType
         shopAddress
         packagingCharges
@@ -1786,6 +1794,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
         currentStatus
         patientAddressId
         alertStore
+        prescriptionOptionSelected
         medicineOrdersStatus {
           id
           orderStatus
@@ -1860,6 +1869,15 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
           }
         }
       }
+    }
+  }
+`;
+
+
+export const RE_UPLOAD_PRESCRIPTION = gql`
+  mutation ReUploadPrescription($prescriptionInput: PrescriptionReUploadInput) {
+    reUploadPrescription(prescriptionInput: $prescriptionInput) {
+      success
     }
   }
 `;
