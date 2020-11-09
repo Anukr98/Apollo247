@@ -37,7 +37,7 @@ export const MedicineListingHeader: React.FC<Props> = ({ navigation, movedFrom }
     const cartItemsCount = cartItems.length + diagnosticCartItems.length;
     const onPressCartIcon = () => {
       navigation.navigate(
-        diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.YourCart
+        diagnosticCartItems.length ? AppRoutes.MedAndTestCart : AppRoutes.MedicineCart
       );
     };
     const onPressSearchIcon = () => {
