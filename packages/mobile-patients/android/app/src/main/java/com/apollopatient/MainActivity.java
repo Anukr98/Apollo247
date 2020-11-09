@@ -38,14 +38,19 @@ public class MainActivity extends ReactActivity {
         String action = intent.getAction();
         Uri data = intent.getData();
 
-        //start
-        if (!Settings.canDrawOverlays(this)) {
-            Uri incoming_call_notif = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
-            ringtone = RingtoneManager.getRingtone(getApplicationContext(), incoming_call_notif);
-            Log.e("notificationActivity", String.valueOf(getIntent().getIntExtra(NOTIFICATION_ID, -1)));
-            NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-            manager.cancel(getIntent().getIntExtra(NOTIFICATION_ID, -1));
-            ringtone.stop();
+        try {
+            //start
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
+                Uri incoming_call_notif = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
+                ringtone = RingtoneManager.getRingtone(getApplicationContext(), incoming_call_notif);
+                Log.e("notificationActivity", String.valueOf(getIntent().getIntExtra(NOTIFICATION_ID, -1)));
+                NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                manager.cancel(getIntent().getIntExtra(NOTIFICATION_ID, -1));
+                ringtone.stop();
+            }
+        }
+        catch(Exception e){
+            Log.e("overlay permission err", e.getMessage() + "\n" + e.toString());
         }
         //end
     }
