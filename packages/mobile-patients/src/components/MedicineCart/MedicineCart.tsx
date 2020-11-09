@@ -194,8 +194,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
 
   useEffect(() => {
     if (appState == 'active') {
-      couponProducts?.length == 0 && availabilityTat(true);
-      setCoupon!(null);
+      availabilityTat(true);
     }
   }, [appState]);
 
@@ -544,12 +543,12 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     });
     freeProducts.forEach((item, index) => {
       const filteredProduct = cartItems.filter((product) => {
-        return product.id === item.sku
+        return product.id === item.sku;
       });
       if (filteredProduct.length) {
         item.quantity = filteredProduct[0].quantity;
       }
-    })
+    });
     setCouponProducts!(freeProducts);
   };
 
