@@ -7,7 +7,7 @@ import {
   VideoPlayIcon,
   ApolloDoctorIcon,
   ApolloPartnerIcon,
-  InfoYellow,
+  InfoBlue,
   CircleLogo,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
@@ -308,7 +308,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                   ? onlineConsultSlashedPrice
                   : minSlashedPrice}
               </Text>
-              <InfoYellow style={styles.infoIcon} />
+              <InfoBlue style={styles.infoIcon} />
             </View>
           </View>
         </View>

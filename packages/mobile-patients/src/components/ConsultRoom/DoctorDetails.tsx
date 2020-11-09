@@ -73,7 +73,7 @@ import {
   RectangularIcon,
   VideoPlayIcon,
   CTGrayChat,
-  InfoYellow,
+  InfoBlue,
   CircleLogo,
 } from '../ui/Icons';
 // import { NotificationListener } from '../NotificationListener';
@@ -615,7 +615,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             <Text style={styles.smallText}>for</Text>
             <CircleLogo style={styles.smallCareLogo} />
             <Text style={[styles.smallText, { marginLeft: -4 }]}>members</Text>
-            <InfoYellow style={styles.smallInfo} />
+            <InfoBlue style={styles.smallInfo} />
           </View>
         )}
       </View>

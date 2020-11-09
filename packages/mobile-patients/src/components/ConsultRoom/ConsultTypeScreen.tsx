@@ -16,7 +16,7 @@ import {
   CTChat,
   OnlineHeader,
   CTPhone,
-  InfoYellow,
+  InfoBlue,
   CircleLogo,
 } from '../ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -362,7 +362,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
               <Text style={styles.smallRightAlignText}>for</Text>
               <CircleLogo style={styles.careLogo} />
               <Text style={[styles.smallRightAlignText, { marginLeft: -4 }]}>members</Text>
-              <InfoYellow style={styles.infoIcon} />
+              <InfoBlue style={styles.infoIcon} />
             </View>
           )}
         </View>

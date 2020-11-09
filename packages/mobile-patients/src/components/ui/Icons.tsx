@@ -1195,8 +1195,8 @@ export const DashedLine: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/dashedLine.png')} />
 );
 
-export const InfoYellow: React.FC<IconProps> = (props) => (
-  <IconBase size="sm" {...props} source={require('./icons/info_yellow.png')} />
+export const InfoBlue: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/info_light_blue.png')} />
 );
 
 export const TickIcon: React.FC<IconProps> = (props) => (
