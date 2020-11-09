@@ -211,7 +211,6 @@ dependencies {
     implementation project(':react-native-callkeep')
     implementation project(':react-native-background-timer')
     implementation project(':react-native-linear-gradient')
-    implementation project(':react-native-video')
     implementation project(':react-native-sound')
     implementation project(':react-native-system-setting')
     implementation project(':react-native-incall-manager')

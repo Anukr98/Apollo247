@@ -15,7 +15,7 @@
     "test": "jest",
     "typecheck": "tsc --project . --noEmit",
     "jetify": "jetify",
-    "postinstall": "cat OTSubscriberViewManager.java > node_modules/opentok-react-native/android/src/main/java/com/opentokreactnative/OTSubscriberViewManager.java"
+    "postinstall": "cat OTSubscriberViewManager.java > node_modules/opentok-react-native/android/src/main/java/com/opentokreactnative/OTSubscriberViewManager.java && cat opentok-react-native.podspec > node_modules/opentok-react-native/opentok-react-native.podspec"
   },
   "devDependencies": {
     "@aph/api-schema": "file:../api-schema",
@@ -142,8 +142,6 @@
     "react-native-swipe-gestures": "1.0.3",
     "react-native-system-setting": "^1.7.4",
     "react-native-vector-icons": "^6.5.0",
-    "react-native-video": "^4.4.5",
-    "react-native-video-controls": "^2.6.0",
     "react-native-voip-push-notification": "^2.1.0",
     "react-native-webengage": "^1.1.1",
     "react-native-webview": "^8.0.3",

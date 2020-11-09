@@ -1774,14 +1774,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       <View style={styles.hdfcConnectContainer}>
         {renderHdfcLogo()}
         {hdfcLoading ? (
-          <View>
-            <Spinner
-              style={{
-                marginVertical: 30,
-                backgroundColor: theme.colors.WHITE,
-              }}
-            />
-          </View>
+          <View />
         ) : showCongratulations ? (
           renderCongratulationsWidget()
         ) : (
