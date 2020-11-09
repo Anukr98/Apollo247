@@ -233,7 +233,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
       <MedicineListingProducts
         data={isLoading ? [] : products}
         onEndReached={onEndReached}
-        onEndReachedThreshold={1}
+        onEndReachedThreshold={0.1}
         ListHeaderComponent={renderSections()}
         ListFooterComponent={renderLoading()}
         navigation={navigation}
