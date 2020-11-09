@@ -1364,6 +1364,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                 }
                 onPressViewSummary={() => _navigateToViewSummary()}
                 orderType={orderDetails.orderType}
+                isPrescriptionUploaded={orderDetails.prescriptionImageUrl}
               />
             );
           })}
