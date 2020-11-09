@@ -1301,8 +1301,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           AsyncStorage.setItem('gotIt', 'true');
         }, 5000);
       }
-      const CMEnabled = await AsyncStorage.getItem('CMEnable');
-      const eneabled = CMEnabled ? JSON.parse(CMEnabled) : false;
+      const eneabled = AppConfig.Configuration.ENABLE_CONDITIONAL_MANAGEMENT;
       setEnableCM(eneabled);
     }
     fetchData();

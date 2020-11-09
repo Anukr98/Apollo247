@@ -890,12 +890,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         JSON.parse(config.getString(key) || 'null')
       );
 
-      try {
-        const enableCM = getRemoteConfigValue('Enable_Conditional_Management', (key) =>
-          JSON.stringify(config.getBoolean(key))
-        );
-        AsyncStorage.setItem('CMEnable', enableCM);
-      } catch (error) {}
+      setAppConfig('Enable_Conditional_Management', 'ENABLE_CONDITIONAL_MANAGEMENT', (key) =>
+        config.getBoolean(key)
+      );
 
       const { iOS_Version, Android_Version } = AppConfig.Configuration;
       const isIOS = Platform.OS === 'ios';
