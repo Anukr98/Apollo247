@@ -514,6 +514,18 @@ export const PhrAllergyBlackIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_phr_allergies_black.png')} />
 );
 
+export const PhrMinusCircleIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_phr_minus_circle_icon.png')} />
+);
+
+export const PhrCheckboxIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_phr_checkbox_icon.png')} />
+);
+
+export const PhrUncheckboxIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_phr_uncheckbox_icon.png')} />
+);
+
 export const PhrMedicationBlackIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_phr_medication_black.png')} />
 );

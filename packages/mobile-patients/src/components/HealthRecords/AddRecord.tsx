@@ -12,7 +12,12 @@ import {
   PhrAddTestDetailsIcon,
   PhrAddBillRecordIcon,
   PhrAddInsuranceRecordIcon,
+  PhrMinusCircleIcon,
+  PhrCheckboxIcon,
+  PhrUncheckboxIcon,
+  DropdownGreen,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
@@ -42,8 +47,17 @@ import {
   AddHospitalizationRecordInput,
   AddPatientMedicalBillRecordInput,
   AddPatientMedicalInsuranceRecordInput,
+  AllergySeverity,
+  AllergyFileProperties,
+  HealthRestrictionNature,
+  MedicalConditionIllnessTypes,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { g, isValidText, postWebEngagePHR } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  isValidText,
+  postWebEngagePHR,
+  handleGraphQlError,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -74,7 +88,7 @@ import {
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { Overlay, ListItem } from 'react-native-elements';
-import _ from 'lodash';
+const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -246,6 +260,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   addMoreImageViewStyle: { width: 82, height: 82, paddingTop: 10 },
+  menuContainerStyle: {
+    alignItems: 'flex-end',
+    marginTop: 0,
+    marginLeft: width / 2 - 95,
+  },
+  itemTextStyle: {
+    ...theme.viewStyles.text('M', 16, '#01475b'),
+    paddingHorizontal: 0,
+  },
+  selectedTextStyle: {
+    ...theme.viewStyles.text('M', 16, '#00b38e'),
+    alignSelf: 'flex-start',
+  },
 });
 
 type RecordTypeType = {
@@ -280,6 +307,64 @@ const RecordType: RecordTypeType[] = [
   },
 ];
 
+interface SeverityType {
+  key: string;
+  value: string;
+}
+
+const severityType: SeverityType[] = [
+  {
+    value: _.startCase(_.toLower(AllergySeverity.MILD)),
+    key: AllergySeverity.MILD,
+  },
+  {
+    value: _.startCase(_.toLower(AllergySeverity.SEVERE)),
+    key: AllergySeverity.SEVERE,
+  },
+  {
+    value: _.startCase(_.toLower(AllergySeverity.LIFE_THREATENING)),
+    key: AllergySeverity.LIFE_THREATENING,
+  },
+  {
+    value: _.startCase(_.toLower(AllergySeverity.NOT_KNOWN)),
+    key: AllergySeverity.NOT_KNOWN,
+  },
+];
+
+const natureType: SeverityType[] = [
+  {
+    value: _.startCase(_.toLower(HealthRestrictionNature.Physical)),
+    key: HealthRestrictionNature.Physical,
+  },
+  {
+    value: _.startCase(_.toLower(HealthRestrictionNature.Dietary)),
+    key: HealthRestrictionNature.Dietary,
+  },
+  {
+    value: _.startCase(_.toLower(HealthRestrictionNature.OTHER)),
+    key: HealthRestrictionNature.OTHER,
+  },
+];
+
+const illnessTypeArray: SeverityType[] = [
+  {
+    value: _.startCase(_.toLower(MedicalConditionIllnessTypes.Acute)),
+    key: MedicalConditionIllnessTypes.Acute,
+  },
+  {
+    value: _.startCase(_.toLower(MedicalConditionIllnessTypes.Chronic)),
+    key: MedicalConditionIllnessTypes.Chronic,
+  },
+  {
+    value: _.startCase(_.toLower(MedicalConditionIllnessTypes.Intermittent)),
+    key: MedicalConditionIllnessTypes.Intermittent,
+  },
+  {
+    value: _.startCase(_.toLower(MedicalConditionIllnessTypes.Recurring)),
+    key: MedicalConditionIllnessTypes.Recurring,
+  },
+];
+
 const TestRecordInitialValues: LabTestParameters = {
   parameterName: '',
   unit: '',
@@ -292,16 +377,21 @@ export interface AddRecordProps extends NavigationScreenProps {}
 
 export const AddRecord: React.FC<AddRecordProps> = (props) => {
   var fin = '';
-  const { width } = Dimensions.get('window');
   const [showRecordDetails, setshowRecordDetails] = useState<boolean>(true);
   const [showReportDetails, setshowReportDetails] = useState<boolean>(false);
   const [displayOrderPopup, setdisplayOrderPopup] = useState<boolean>(false);
+  const [displayAllergyPopup, setdisplayAllergyPopup] = useState<boolean>(false);
+  const [displayMedicalConditionPopup, setdisplayMedicalConditionPopup] = useState<boolean>(false);
   const [displayReviewPhotoPopup, setDisplayReviewPhotoPopup] = useState<boolean>(false);
+  const [reviewPopupID, setReviewPopupID] = useState<number>(1);
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [testName, settestName] = useState<string>('');
   const [docName, setDocName] = useState<string>('');
   const [locationName, setLocationName] = useState<string>('');
   const [typeofRecord, settypeofRecord] = useState<MedicRecordType>(MedicRecordType.PRESCRIPTION);
+  const [selectedRestrictionType, setSelectedRestrictionType] = useState('');
+  const [selectedIllnessType, setSelectedIllnessType] = useState('');
+  const [selectedSeverityType, setSelectedSeverityType] = useState('');
   const [dateOfTest, setdateOfTest] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
   const [referringDoctor, setreferringDoctor] = useState<string>('');
@@ -310,6 +400,49 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const [testRecordParameters, setTestRecordParameters] = useState<LabTestParameters[]>([]);
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState<boolean>(false);
   const [endDateTimePickerVisible, setEndDateTimePickerVisible] = useState<boolean>(false);
+  const [allergyCheckbox, setAllergyCheckbox] = useState(false);
+  const [showAllergyDetails, setShowAllergyDetails] = useState<boolean>(false);
+  const [allergyName, setAllergyName] = useState<string>('');
+  const [allergyDocName, setAllergyDocName] = useState<string>('');
+  const [allergyEndDate, setAllergyEndDate] = useState<string>('');
+  const [isAllergyDateTimePicker, setIsAllergyDateTimePicker] = useState<boolean>(false);
+  const [allergyReaction, setAllergyReaction] = useState<string>('');
+  const [allergyAdditionalNotes, setAllergyAdditionalNotes] = useState<string>('');
+  const [allergyImage, setAllergyImage] = useState<PickerImage>([]);
+
+  const [medicationCheckbox, setMedicationCheckbox] = useState(false);
+  const [showMedicationDetails, setShowMedicationDetails] = useState<boolean>(false);
+  const [medicationMedicineName, setMedicationMedicineName] = useState<string>('');
+  const [medicationCondition, setMedicationCondition] = useState<string>('');
+  const [medicationDocName, setMedicationDocName] = useState<string>('');
+  const [medicationEndDate, setMedicationEndDate] = useState<string>('');
+  const [isMorningChecked, setIsMorningChecked] = useState<boolean>(false);
+  const [isNoonChecked, setIsNoonChecked] = useState<boolean>(false);
+  const [isEveningChecked, setIsEveningChecked] = useState<boolean>(false);
+  const [isMedicationDateTimePicker, setIsMedicationDateTimePicker] = useState<boolean>(false);
+  const [medicationAdditionalNotes, setMedicationAdditionalNotes] = useState<string>('');
+
+  const [healthRestrictionCheckbox, setHealthRestrictionCheckbox] = useState(false);
+  const [showHealthRestrictionDetails, setShowHealthRestrictionDetails] = useState<boolean>(false);
+  const [healthRestrictionName, setHealthRestrictionName] = useState<string>('');
+  const [healthRestrictionDocName, setHealthRestrictionDocName] = useState<string>('');
+  const [healthRestrictionEndDate, setHealthRestrictionEndDate] = useState<string>('');
+  const [isHealthRestrictionDateTimePicker, setIsHealthRestrictionDateTimePicker] = useState<
+    boolean
+  >(false);
+
+  const [medicalConditionCheckbox, setMedicalConditionCheckbox] = useState(false);
+  const [showMedicalConditionDetails, setShowMedicalConditionDetails] = useState<boolean>(false);
+  const [medicalConditionName, setMedicalConditionName] = useState<string>('');
+  const [medicalConditionDocName, setMedicalConditionDocName] = useState<string>('');
+  const [medicalConditionEndDate, setMedicalConditionEndDate] = useState<string>('');
+  const [isMedicalConditionDateTimePicker, setIsMedicalConditionDateTimePicker] = useState<boolean>(
+    false
+  );
+  const [medicalConditionAdditionalNotes, setMedicalConditionAdditionalNotes] = useState<string>(
+    ''
+  );
+  const [medicalConditionImage, setMedicalConditionImage] = useState<PickerImage>([]);
 
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const { showAphAlert } = useUIElements();
@@ -592,9 +725,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         CommonBugFender('AddRecord_ADD_PRESCRIPTION_RECORD', e);
         setshowSpinner(false);
         console.log(JSON.stringify(e), 'eeeee');
-        Alert.alert('Alert', 'Please fill all the details', [
-          { text: 'OK', onPress: () => console.log('OK Pressed') },
-        ]);
+        currentPatient && handleGraphQlError(e);
       });
   };
 
@@ -633,9 +764,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         CommonBugFender('AddRecord_ADD_PATIENT_LAB_TEST_RECORD', e);
         setshowSpinner(false);
         console.log(JSON.stringify(e), 'eeeee');
-        Alert.alert('Alert', 'Please fill all the details', [
-          { text: 'OK', onPress: () => console.log('OK Pressed') },
-        ]);
+        currentPatient && handleGraphQlError(e);
       });
   };
 
@@ -724,9 +853,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         CommonBugFender('AddRecord_ADD_PATIENT_HOSPITALIZATION_RECORD', e);
         setshowSpinner(false);
         console.log(JSON.stringify(e), 'eeeee');
-        Alert.alert('Alert', 'Please fill all the details', [
-          { text: 'OK', onPress: () => console.log('OK Pressed') },
-        ]);
+        currentPatient && handleGraphQlError(e);
       });
   };
 
@@ -762,9 +889,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         CommonBugFender('AddRecord_ADD_PATIENT_MEDICAL_BILL_RECORD', e);
         setshowSpinner(false);
         console.log(JSON.stringify(e), 'eeeee');
-        Alert.alert('Alert', 'Please fill all the details', [
-          { text: 'OK', onPress: () => console.log('OK Pressed') },
-        ]);
+        currentPatient && handleGraphQlError(e);
       });
   };
 
@@ -805,9 +930,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         CommonBugFender('AddRecord_ADD_PATIENT_MEDICAL_INSURANCE_RECORD', e);
         setshowSpinner(false);
         console.log(JSON.stringify(e), 'eeeee');
-        Alert.alert('Alert', 'Please fill all the details', [
-          { text: 'OK', onPress: () => console.log('OK Pressed') },
-        ]);
+        currentPatient && handleGraphQlError(e);
       });
   };
 
@@ -841,14 +964,20 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     }
   };
 
-  const renderImagesRow = (data: PickerImage, i: number) => {
+  const renderImagesRow = (data: PickerImage, i: number, id: number) => {
     const base64Icon = 'data:image/png;base64,';
     fin = base64Icon.concat(data?.base64);
     const fileType = data?.fileType;
     const onPressRemoveIcon = () => {
-      const imageCOPY = [...Images];
+      const imageCOPY = [
+        id === 1 ? { ...Images } : id === 2 ? { ...allergyImage } : { ...medicalConditionImage },
+      ];
       imageCOPY.splice(i, 1);
-      setImages(imageCOPY);
+      id === 1
+        ? setImages(imageCOPY)
+        : id === 2
+        ? setAllergyImage(imageCOPY)
+        : setMedicalConditionImage(imageCOPY);
       CommonLogEvent('ADD_RECORD', 'Set Images');
     };
     return (
@@ -870,34 +999,54 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     );
   };
 
-  const renderUploadedImages = () => {
+  const renderUploadedImages = (id: number) => {
+    const imagesArray = id === 1 ? Images : id === 2 ? allergyImage : medicalConditionImage;
+    const onPressAddPage = () => {
+      id === 1
+        ? setdisplayOrderPopup(true)
+        : id === 2
+        ? setdisplayAllergyPopup(true)
+        : setdisplayMedicalConditionPopup(true);
+    };
     const renderAddMorePagesCard = () => {
       return (
         <View style={styles.addMoreImageViewStyle}>
           <TouchableOpacity
             activeOpacity={1}
-            onPress={() => setdisplayOrderPopup(true)}
-            style={{ height: 72, width: 72, backgroundColor: '#FFFFFF' }}
+            onPress={onPressAddPage}
+            style={{ height: 72, width: 72, backgroundColor: id === 1 ? '#FFFFFF' : '#979797' }}
           >
-            <Text style={styles.plusTextStyle}>{'+'}</Text>
-            <Text style={styles.addMoreTextStyle}>{'ADD MORE PAGES'}</Text>
+            <Text style={[styles.plusTextStyle, id !== 1 && { color: '#FFFFFF' }]}>{'+'}</Text>
+            <Text style={[styles.addMoreTextStyle, id !== 1 && { color: '#FFFFFF' }]}>
+              {id !== 1 ? 'ADD PAGE' : 'ADD MORE PAGES'}
+            </Text>
           </TouchableOpacity>
         </View>
       );
     };
     return (
-      <View style={styles.imageListViewStyle}>
+      <View
+        style={[
+          styles.imageListViewStyle,
+          id !== 1 && {
+            marginHorizontal: 14,
+            marginBottom: 0,
+            marginTop: 0,
+          },
+        ]}
+      >
         <FlatList
           bounces={false}
-          data={Images}
+          data={imagesArray}
           collapsable
           onEndReachedThreshold={0.5}
           horizontal
-          renderItem={({ item, index }) => renderImagesRow(item, index)}
+          renderItem={({ item, index }) => renderImagesRow(item, index, id)}
           keyExtractor={(_, index) => index.toString()}
-          ListFooterComponent={() => (Images?.length > 3 ? null : renderAddMorePagesCard())}
+          ListFooterComponent={() => (imagesArray?.length > 0 ? null : renderAddMorePagesCard())}
         />
-        {Images?.length > 3 ? renderAddMorePagesCard() : null}
+        {/* UI for multiple images */}
+        {/* {Images?.length > 3 ? renderAddMorePagesCard() : null} */}
       </View>
     );
   };
@@ -957,32 +1106,34 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             {_.capitalize(currentPatient?.firstName) || ''}
           </Text>
         </View>
-        <View style={styles.listItemViewStyle}>
-          {renderListItem('Type of Record', false)}
-          <View style={{ marginTop: 14, marginHorizontal: 14 }}>
-            {renderRecordTypeIcon()}
-            <Text
-              style={[
-                styles.recordTypeTextStyle,
-                {
-                  marginLeft:
-                    recordType === MedicalRecordType.TEST_REPORT
-                      ? 23
-                      : recordType === MedicalRecordType.HOSPITALIZATION
-                      ? 0
-                      : recordType === MedicalRecordType.MEDICALBILL
-                      ? 34
-                      : recordType === MedicalRecordType.MEDICALINSURANCE
-                      ? 18
-                      : 10,
-                },
-              ]}
-              numberOfLines={1}
-            >
-              {recordTypeTitle}
-            </Text>
+        {recordType === MedicalRecordType.MEDICALCONDITION ? null : (
+          <View style={styles.listItemViewStyle}>
+            {renderListItem('Type of Record', false)}
+            <View style={{ marginTop: 14, marginHorizontal: 14 }}>
+              {renderRecordTypeIcon()}
+              <Text
+                style={[
+                  styles.recordTypeTextStyle,
+                  {
+                    marginLeft:
+                      recordType === MedicalRecordType.TEST_REPORT
+                        ? 23
+                        : recordType === MedicalRecordType.HOSPITALIZATION
+                        ? 0
+                        : recordType === MedicalRecordType.MEDICALBILL
+                        ? 34
+                        : recordType === MedicalRecordType.MEDICALINSURANCE
+                        ? 18
+                        : 10,
+                  },
+                ]}
+                numberOfLines={1}
+              >
+                {recordTypeTitle}
+              </Text>
+            </View>
           </View>
-        </View>
+        )}
         <View style={styles.listItemViewStyle}>
           {renderListItem(
             recordType === MedicalRecordType.MEDICALINSURANCE ? 'Record issue date' : 'Record date',
@@ -1432,6 +1583,832 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     );
   };
 
+  const renderAllergyDetails = () => {
+    const rightElement = () => {
+      return (
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => setShowAllergyDetails(!showAllergyDetails)}
+        >
+          {showAllergyDetails ? (
+            <PhrMinusCircleIcon style={{ width: 24, height: 24 }} />
+          ) : (
+            <PhrAddTestDetailsIcon style={{ width: 24, height: 24 }} />
+          )}
+        </TouchableOpacity>
+      );
+    };
+    return (
+      <>
+        <View style={{ marginBottom: 20 }}>
+          <ListItem
+            title={
+              <TextInput
+                placeholder={'Enter name of allergy'}
+                style={[styles.textInputStyle, { paddingHorizontal: 0, marginBottom: 0 }]}
+                selectionColor={'#0087BA'}
+                numberOfLines={1}
+                value={allergyName}
+                keyboardType={'numbers-and-punctuation'}
+                placeholderTextColor={theme.colors.placeholderTextColor}
+                underlineColorAndroid={'transparent'}
+                onChangeText={(locName) => {
+                  if (isValidText(locName)) {
+                    setAllergyName(locName);
+                  }
+                }}
+              />
+            }
+            pad={14}
+            containerStyle={{ paddingTop: 0, paddingBottom: 0, paddingRight: 18 }}
+            rightElement={rightElement()}
+          />
+        </View>
+        <View style={{ marginBottom: 20 }}>
+          {renderListItem('Allergy Severity', false, false)}
+          <View style={{ marginLeft: 14, marginRight: 18 }}>
+            <MaterialMenu
+              menuContainerStyle={styles.menuContainerStyle}
+              itemContainer={{ height: 44.8, width: 150 / 2 }}
+              itemTextStyle={styles.itemTextStyle}
+              selectedTextStyle={styles.selectedTextStyle}
+              lastContainerStyle={{ borderBottomWidth: 0 }}
+              bottomPadding={{ paddingBottom: 0 }}
+              options={severityType}
+              selectedText={selectedSeverityType}
+              onPress={(data) => {
+                setSelectedSeverityType(data.key as AllergySeverity);
+              }}
+            >
+              <TextInputComponent noInput={true} conatinerstyles={{ paddingBottom: 0 }} />
+              <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+                <View style={[styles.placeholderViewStyle]}>
+                  <Text
+                    style={[
+                      styles.placeholderTextStyle,
+                      !selectedSeverityType && styles.placeholderStyle,
+                    ]}
+                  >
+                    {selectedSeverityType
+                      ? severityType?.find((item) => item.key === selectedSeverityType)?.value
+                      : 'Select allergy severity'}
+                  </Text>
+                  <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
+                    <DropdownGreen />
+                  </View>
+                </View>
+              </View>
+            </MaterialMenu>
+          </View>
+        </View>
+        {showAllergyDetails ? (
+          <>
+            <TextInput
+              placeholder={'Enter name of doctor'}
+              style={[styles.textInputStyle, { marginBottom: 20 }]}
+              selectionColor={'#0087BA'}
+              numberOfLines={1}
+              value={allergyDocName}
+              keyboardType={'numbers-and-punctuation'}
+              placeholderTextColor={theme.colors.placeholderTextColor}
+              underlineColorAndroid={'transparent'}
+              onChangeText={(locName) => {
+                if (isValidText(locName)) {
+                  setAllergyDocName(locName);
+                }
+              }}
+            />
+            <View style={{ paddingTop: 0, paddingBottom: 10 }}>
+              <Text
+                style={[
+                  styles.textInputStyle,
+                  allergyEndDate !== '' ? null : styles.placeholderStyle,
+                  { marginBottom: 10 },
+                ]}
+                onPress={() => {
+                  Keyboard.dismiss();
+                  setIsAllergyDateTimePicker(true);
+                  CommonLogEvent('ADD_RECORD', 'Date picker visible');
+                }}
+              >
+                {allergyEndDate !== '' ? allergyEndDate : 'Enter record end date'}
+              </Text>
+            </View>
+            <DatePicker
+              isDateTimePickerVisible={isAllergyDateTimePicker}
+              handleDatePicked={(date) => {
+                setIsAllergyDateTimePicker(false);
+                const formatDate = moment(date).format(string.common.date_placeholder_text);
+                setAllergyEndDate(formatDate);
+                Keyboard.dismiss();
+              }}
+              hideDateTimePicker={() => {
+                setIsAllergyDateTimePicker(false);
+                Keyboard.dismiss();
+              }}
+              maximumDate={false}
+              minimumDate={new Date()}
+            />
+            <TextInput
+              placeholder={'Enter allergy reaction'}
+              style={[styles.textInputStyle, { marginBottom: 14 }]}
+              selectionColor={'#0087BA'}
+              numberOfLines={1}
+              value={allergyReaction}
+              keyboardType={'numbers-and-punctuation'}
+              placeholderTextColor={theme.colors.placeholderTextColor}
+              underlineColorAndroid={'transparent'}
+              onChangeText={(locName) => {
+                if (isValidText(locName)) {
+                  setAllergyReaction(locName);
+                }
+              }}
+            />
+
+            {renderUploadedImages(2)}
+            <View style={{ marginTop: 32 }}>
+              {renderListItem('Additional Notes', false)}
+              <TextInput
+                placeholder={'Enter additional notes'}
+                style={[styles.textInputStyle, styles.additionalTextInputStyle]}
+                multiline
+                selectionColor={'#0087BA'}
+                numberOfLines={1}
+                value={allergyAdditionalNotes}
+                placeholderTextColor={theme.colors.placeholderTextColor}
+                underlineColorAndroid={'transparent'}
+                onChangeText={(additionalNotes) => {
+                  if (isValidText(additionalNotes)) {
+                    setAllergyAdditionalNotes(additionalNotes);
+                  }
+                }}
+              />
+            </View>
+          </>
+        ) : null}
+      </>
+    );
+  };
+
+  const renderHealthRestrictionDetails = () => {
+    const rightElement = () => {
+      return (
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => setShowHealthRestrictionDetails(!showHealthRestrictionDetails)}
+        >
+          {showHealthRestrictionDetails ? (
+            <PhrMinusCircleIcon style={{ width: 24, height: 24 }} />
+          ) : (
+            <PhrAddTestDetailsIcon style={{ width: 24, height: 24 }} />
+          )}
+        </TouchableOpacity>
+      );
+    };
+    return (
+      <>
+        <View style={{ marginBottom: 20 }}>
+          <ListItem
+            title={
+              <TextInput
+                placeholder={'Enter name of health restriction'}
+                style={[styles.textInputStyle, { paddingHorizontal: 0, marginBottom: 0 }]}
+                selectionColor={'#0087BA'}
+                numberOfLines={1}
+                value={healthRestrictionName}
+                keyboardType={'numbers-and-punctuation'}
+                placeholderTextColor={theme.colors.placeholderTextColor}
+                underlineColorAndroid={'transparent'}
+                onChangeText={(locName) => {
+                  if (isValidText(locName)) {
+                    setHealthRestrictionName(locName);
+                  }
+                }}
+              />
+            }
+            pad={14}
+            containerStyle={{ paddingTop: 0, paddingBottom: 0, paddingRight: 18 }}
+            rightElement={rightElement()}
+          />
+        </View>
+        <View style={{ marginBottom: 20 }}>
+          {renderListItem('Restriction Nature', false, false)}
+          <View style={{ marginLeft: 14, marginRight: 18 }}>
+            <MaterialMenu
+              menuContainerStyle={styles.menuContainerStyle}
+              itemContainer={{ height: 44.8, width: 150 / 2 }}
+              itemTextStyle={styles.itemTextStyle}
+              selectedTextStyle={styles.selectedTextStyle}
+              lastContainerStyle={{ borderBottomWidth: 0 }}
+              bottomPadding={{ paddingBottom: 0 }}
+              options={natureType}
+              selectedText={selectedRestrictionType}
+              onPress={(data) => {
+                setSelectedRestrictionType(data.key as HealthRestrictionNature);
+              }}
+            >
+              <TextInputComponent noInput={true} conatinerstyles={{ paddingBottom: 0 }} />
+              <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+                <View style={[styles.placeholderViewStyle]}>
+                  <Text
+                    style={[
+                      styles.placeholderTextStyle,
+                      !selectedRestrictionType && styles.placeholderStyle,
+                    ]}
+                  >
+                    {selectedRestrictionType
+                      ? natureType?.find((item) => item.key === selectedRestrictionType)?.value
+                      : 'Select restriction nature'}
+                  </Text>
+                  <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
+                    <DropdownGreen />
+                  </View>
+                </View>
+              </View>
+            </MaterialMenu>
+          </View>
+        </View>
+        {showHealthRestrictionDetails ? (
+          <>
+            <TextInput
+              placeholder={'Enter suggested doctor name'}
+              style={[styles.textInputStyle, { marginBottom: 20 }]}
+              selectionColor={'#0087BA'}
+              numberOfLines={1}
+              value={healthRestrictionDocName}
+              keyboardType={'numbers-and-punctuation'}
+              placeholderTextColor={theme.colors.placeholderTextColor}
+              underlineColorAndroid={'transparent'}
+              onChangeText={(locName) => {
+                if (isValidText(locName)) {
+                  setHealthRestrictionDocName(locName);
+                }
+              }}
+            />
+            <View style={{ paddingTop: 0, paddingBottom: 10 }}>
+              <Text
+                style={[
+                  styles.textInputStyle,
+                  healthRestrictionEndDate !== '' ? null : styles.placeholderStyle,
+                  { marginBottom: 10 },
+                ]}
+                onPress={() => {
+                  Keyboard.dismiss();
+                  setIsHealthRestrictionDateTimePicker(true);
+                  CommonLogEvent('ADD_RECORD', 'Date picker visible');
+                }}
+              >
+                {healthRestrictionEndDate !== ''
+                  ? healthRestrictionEndDate
+                  : 'Enter health restriction end date'}
+              </Text>
+            </View>
+            <DatePicker
+              isDateTimePickerVisible={isHealthRestrictionDateTimePicker}
+              handleDatePicked={(date) => {
+                setIsHealthRestrictionDateTimePicker(false);
+                const formatDate = moment(date).format(string.common.date_placeholder_text);
+                setHealthRestrictionEndDate(formatDate);
+                Keyboard.dismiss();
+              }}
+              hideDateTimePicker={() => {
+                setIsHealthRestrictionDateTimePicker(false);
+                Keyboard.dismiss();
+              }}
+              maximumDate={false}
+              minimumDate={new Date()}
+            />
+          </>
+        ) : null}
+      </>
+    );
+  };
+
+  const renderMedicalConditionDetails = () => {
+    const rightElement = () => {
+      return (
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => setShowMedicalConditionDetails(!showMedicalConditionDetails)}
+        >
+          {showMedicalConditionDetails ? (
+            <PhrMinusCircleIcon style={{ width: 24, height: 24 }} />
+          ) : (
+            <PhrAddTestDetailsIcon style={{ width: 24, height: 24 }} />
+          )}
+        </TouchableOpacity>
+      );
+    };
+    return (
+      <>
+        <View style={{ marginBottom: 20 }}>
+          <ListItem
+            title={
+              <TextInput
+                placeholder={'Enter medical condition name'}
+                style={[styles.textInputStyle, { paddingHorizontal: 0, marginBottom: 0 }]}
+                selectionColor={'#0087BA'}
+                numberOfLines={1}
+                value={medicalConditionName}
+                keyboardType={'numbers-and-punctuation'}
+                placeholderTextColor={theme.colors.placeholderTextColor}
+                underlineColorAndroid={'transparent'}
+                onChangeText={(locName) => {
+                  if (isValidText(locName)) {
+                    setMedicalConditionName(locName);
+                  }
+                }}
+              />
+            }
+            pad={14}
+            containerStyle={{ paddingTop: 0, paddingBottom: 0, paddingRight: 18 }}
+            rightElement={rightElement()}
+          />
+        </View>
+        <TextInput
+          placeholder={'Enter name of doctor'}
+          style={[styles.textInputStyle, { marginBottom: 20 }]}
+          selectionColor={'#0087BA'}
+          numberOfLines={1}
+          value={medicalConditionDocName}
+          keyboardType={'numbers-and-punctuation'}
+          placeholderTextColor={theme.colors.placeholderTextColor}
+          underlineColorAndroid={'transparent'}
+          onChangeText={(locName) => {
+            if (isValidText(locName)) {
+              setMedicalConditionDocName(locName);
+            }
+          }}
+        />
+        <View style={{ marginBottom: 20 }}>
+          {renderListItem('Illness Type', false, false)}
+          <View style={{ marginLeft: 14, marginRight: 18 }}>
+            <MaterialMenu
+              menuContainerStyle={styles.menuContainerStyle}
+              itemContainer={{ height: 44.8, width: 150 / 2 }}
+              itemTextStyle={styles.itemTextStyle}
+              selectedTextStyle={styles.selectedTextStyle}
+              lastContainerStyle={{ borderBottomWidth: 0 }}
+              bottomPadding={{ paddingBottom: 0 }}
+              options={illnessTypeArray}
+              selectedText={selectedIllnessType}
+              onPress={(data) => {
+                setSelectedIllnessType(data.key as MedicalConditionIllnessTypes);
+              }}
+            >
+              <TextInputComponent noInput={true} conatinerstyles={{ paddingBottom: 0 }} />
+              <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+                <View style={[styles.placeholderViewStyle]}>
+                  <Text
+                    style={[
+                      styles.placeholderTextStyle,
+                      !selectedIllnessType && styles.placeholderStyle,
+                    ]}
+                  >
+                    {selectedIllnessType
+                      ? illnessTypeArray?.find((item) => item.key === selectedIllnessType)?.value
+                      : 'Select illness type'}
+                  </Text>
+                  <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
+                    <DropdownGreen />
+                  </View>
+                </View>
+              </View>
+            </MaterialMenu>
+          </View>
+        </View>
+        {showMedicalConditionDetails ? (
+          <>
+            <View style={{ paddingTop: 0, paddingBottom: 10 }}>
+              <Text
+                style={[
+                  styles.textInputStyle,
+                  medicalConditionEndDate !== '' ? null : styles.placeholderStyle,
+                  { marginBottom: 10 },
+                ]}
+                onPress={() => {
+                  Keyboard.dismiss();
+                  setIsMedicalConditionDateTimePicker(true);
+                  CommonLogEvent('ADD_RECORD', 'Date picker visible');
+                }}
+              >
+                {medicalConditionEndDate !== ''
+                  ? medicalConditionEndDate
+                  : 'Enter medical condition end date'}
+              </Text>
+            </View>
+            <DatePicker
+              isDateTimePickerVisible={isMedicalConditionDateTimePicker}
+              handleDatePicked={(date) => {
+                setIsMedicalConditionDateTimePicker(false);
+                const formatDate = moment(date).format(string.common.date_placeholder_text);
+                setMedicalConditionEndDate(formatDate);
+                Keyboard.dismiss();
+              }}
+              hideDateTimePicker={() => {
+                setIsMedicalConditionDateTimePicker(false);
+                Keyboard.dismiss();
+              }}
+              maximumDate={false}
+              minimumDate={new Date()}
+            />
+            {renderUploadedImages(3)}
+            <View style={{ marginTop: 32 }}>
+              {renderListItem('Additional Notes', false)}
+              <TextInput
+                placeholder={'Enter additional notes'}
+                style={[styles.textInputStyle, styles.additionalTextInputStyle]}
+                multiline
+                selectionColor={'#0087BA'}
+                numberOfLines={1}
+                value={medicalConditionAdditionalNotes}
+                placeholderTextColor={theme.colors.placeholderTextColor}
+                underlineColorAndroid={'transparent'}
+                onChangeText={(additionalNotes) => {
+                  if (isValidText(additionalNotes)) {
+                    setMedicalConditionAdditionalNotes(additionalNotes);
+                  }
+                }}
+              />
+            </View>
+          </>
+        ) : null}
+      </>
+    );
+  };
+
+  const renderMedicationDetails = () => {
+    const rightElement = () => {
+      return (
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => setShowMedicationDetails(!showMedicationDetails)}
+        >
+          {showMedicationDetails ? (
+            <PhrMinusCircleIcon style={{ width: 24, height: 24 }} />
+          ) : (
+            <PhrAddTestDetailsIcon style={{ width: 24, height: 24 }} />
+          )}
+        </TouchableOpacity>
+      );
+    };
+    return (
+      <>
+        <View style={{ marginBottom: 20 }}>
+          <ListItem
+            title={
+              <TextInput
+                placeholder={'Enter name of medicine'}
+                style={[styles.textInputStyle, { paddingHorizontal: 0, marginBottom: 0 }]}
+                selectionColor={'#0087BA'}
+                numberOfLines={1}
+                value={medicationMedicineName}
+                keyboardType={'numbers-and-punctuation'}
+                placeholderTextColor={theme.colors.placeholderTextColor}
+                underlineColorAndroid={'transparent'}
+                onChangeText={(locName) => {
+                  if (isValidText(locName)) {
+                    setMedicationMedicineName(locName);
+                  }
+                }}
+              />
+            }
+            pad={14}
+            containerStyle={{ paddingTop: 0, paddingBottom: 0, paddingRight: 18 }}
+            rightElement={rightElement()}
+          />
+        </View>
+        {showMedicationDetails ? (
+          <>
+            <TextInput
+              placeholder={'Enter medical condition'}
+              style={[styles.textInputStyle, { marginBottom: 20 }]}
+              selectionColor={'#0087BA'}
+              numberOfLines={1}
+              value={medicationCondition}
+              keyboardType={'numbers-and-punctuation'}
+              placeholderTextColor={theme.colors.placeholderTextColor}
+              underlineColorAndroid={'transparent'}
+              onChangeText={(locName) => {
+                if (isValidText(locName)) {
+                  setMedicationCondition(locName);
+                }
+              }}
+            />
+            <TextInput
+              placeholder={'Enter medication doctor name'}
+              style={[styles.textInputStyle, { marginBottom: 20 }]}
+              selectionColor={'#0087BA'}
+              numberOfLines={1}
+              value={medicationDocName}
+              keyboardType={'numbers-and-punctuation'}
+              placeholderTextColor={theme.colors.placeholderTextColor}
+              underlineColorAndroid={'transparent'}
+              onChangeText={(locName) => {
+                if (isValidText(locName)) {
+                  setMedicationDocName(locName);
+                }
+              }}
+            />
+            <View style={{ paddingTop: 0, paddingBottom: 10 }}>
+              <Text
+                style={[
+                  styles.textInputStyle,
+                  medicationEndDate !== '' ? null : styles.placeholderStyle,
+                  { marginBottom: 10 },
+                ]}
+                onPress={() => {
+                  Keyboard.dismiss();
+                  setIsMedicationDateTimePicker(true);
+                  CommonLogEvent('ADD_RECORD', 'Date picker visible');
+                }}
+              >
+                {medicationEndDate !== '' ? medicationEndDate : 'Enter medicine end date'}
+              </Text>
+            </View>
+            <DatePicker
+              isDateTimePickerVisible={isMedicationDateTimePicker}
+              handleDatePicked={(date) => {
+                setIsMedicationDateTimePicker(false);
+                const formatDate = moment(date).format(string.common.date_placeholder_text);
+                setMedicationEndDate(formatDate);
+                Keyboard.dismiss();
+              }}
+              hideDateTimePicker={() => {
+                setIsMedicationDateTimePicker(false);
+                Keyboard.dismiss();
+              }}
+              maximumDate={false}
+              minimumDate={new Date()}
+            />
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                marginHorizontal: 14,
+              }}
+            >
+              <TouchableOpacity
+                onPress={() => setIsMorningChecked(!isMorningChecked)}
+                style={{ flexDirection: 'row', flex: 1 }}
+              >
+                {isMorningChecked ? (
+                  <PhrCheckboxIcon style={{ height: 18, width: 18 }} />
+                ) : (
+                  <PhrUncheckboxIcon style={{ width: 18, height: 18 }} />
+                )}
+                <Text
+                  style={{ ...theme.viewStyles.text('R', 14, '#02475B', 1, 18.2), marginLeft: 11 }}
+                >
+                  {'Morning'}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setIsNoonChecked(!isNoonChecked)}
+                style={{ flexDirection: 'row', flex: 1 }}
+              >
+                {isNoonChecked ? (
+                  <PhrCheckboxIcon style={{ height: 18, width: 18 }} />
+                ) : (
+                  <PhrUncheckboxIcon style={{ width: 18, height: 18 }} />
+                )}
+                <Text
+                  style={{ ...theme.viewStyles.text('R', 14, '#02475B', 1, 18.2), marginLeft: 11 }}
+                >
+                  {'Noon'}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setIsEveningChecked(!isEveningChecked)}
+                style={{ flexDirection: 'row', flex: 1 }}
+              >
+                {isEveningChecked ? (
+                  <PhrCheckboxIcon style={{ height: 18, width: 18 }} />
+                ) : (
+                  <PhrUncheckboxIcon style={{ width: 18, height: 18 }} />
+                )}
+                <Text
+                  style={{ ...theme.viewStyles.text('R', 14, '#02475B', 1, 18.2), marginLeft: 11 }}
+                >
+                  {'Evening'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <View style={{ marginTop: 32 }}>
+              {renderListItem('Additional Notes', false)}
+              <TextInput
+                placeholder={'Enter additional notes'}
+                style={[styles.textInputStyle, styles.additionalTextInputStyle]}
+                multiline
+                selectionColor={'#0087BA'}
+                numberOfLines={1}
+                value={medicationAdditionalNotes}
+                placeholderTextColor={theme.colors.placeholderTextColor}
+                underlineColorAndroid={'transparent'}
+                onChangeText={(additionalNotes) => {
+                  if (isValidText(additionalNotes)) {
+                    setMedicationAdditionalNotes(additionalNotes);
+                  }
+                }}
+              />
+            </View>
+          </>
+        ) : null}
+      </>
+    );
+  };
+
+  const renderAllergyTopView = () => {
+    return (
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          marginTop: 16,
+          marginHorizontal: 14,
+          marginBottom: 20,
+        }}
+      >
+        <TouchableOpacity
+          onPress={() => setAllergyCheckbox(!allergyCheckbox)}
+          style={{ flexDirection: 'row', flex: 1 }}
+        >
+          {allergyCheckbox ? (
+            <PhrCheckboxIcon style={{ height: 18, width: 18 }} />
+          ) : (
+            <PhrUncheckboxIcon style={{ width: 18, height: 18 }} />
+          )}
+          <Text style={{ ...theme.viewStyles.text('R', 14, '#02475B', 1, 18.2), marginLeft: 11 }}>
+            {'Yes'}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => setAllergyCheckbox(!allergyCheckbox)}
+          style={{ flexDirection: 'row', flex: 1 }}
+        >
+          {!allergyCheckbox ? (
+            <PhrCheckboxIcon style={{ height: 18, width: 18 }} />
+          ) : (
+            <PhrUncheckboxIcon style={{ width: 18, height: 18 }} />
+          )}
+          <Text style={{ ...theme.viewStyles.text('R', 14, '#02475B', 1, 18.2), marginLeft: 11 }}>
+            {'No'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const renderMedicationTopView = () => {
+    return (
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          marginTop: 16,
+          marginHorizontal: 14,
+          marginBottom: 20,
+        }}
+      >
+        <TouchableOpacity
+          onPress={() => setMedicationCheckbox(!medicationCheckbox)}
+          style={{ flexDirection: 'row', flex: 1 }}
+        >
+          {medicationCheckbox ? (
+            <PhrCheckboxIcon style={{ height: 18, width: 18 }} />
+          ) : (
+            <PhrUncheckboxIcon style={{ width: 18, height: 18 }} />
+          )}
+          <Text style={{ ...theme.viewStyles.text('R', 14, '#02475B', 1, 18.2), marginLeft: 11 }}>
+            {'Yes'}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => setMedicationCheckbox(!medicationCheckbox)}
+          style={{ flexDirection: 'row', flex: 1 }}
+        >
+          {!medicationCheckbox ? (
+            <PhrCheckboxIcon style={{ height: 18, width: 18 }} />
+          ) : (
+            <PhrUncheckboxIcon style={{ width: 18, height: 18 }} />
+          )}
+          <Text style={{ ...theme.viewStyles.text('R', 14, '#02475B', 1, 18.2), marginLeft: 11 }}>
+            {'No'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const renderHealthRestrictionTopView = () => {
+    return (
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          marginTop: 16,
+          marginHorizontal: 14,
+          marginBottom: 20,
+        }}
+      >
+        <TouchableOpacity
+          onPress={() => setHealthRestrictionCheckbox(!healthRestrictionCheckbox)}
+          style={{ flexDirection: 'row', flex: 1 }}
+        >
+          {healthRestrictionCheckbox ? (
+            <PhrCheckboxIcon style={{ height: 18, width: 18 }} />
+          ) : (
+            <PhrUncheckboxIcon style={{ width: 18, height: 18 }} />
+          )}
+          <Text style={{ ...theme.viewStyles.text('R', 14, '#02475B', 1, 18.2), marginLeft: 11 }}>
+            {'Yes'}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => setHealthRestrictionCheckbox(!healthRestrictionCheckbox)}
+          style={{ flexDirection: 'row', flex: 1 }}
+        >
+          {!healthRestrictionCheckbox ? (
+            <PhrCheckboxIcon style={{ height: 18, width: 18 }} />
+          ) : (
+            <PhrUncheckboxIcon style={{ width: 18, height: 18 }} />
+          )}
+          <Text style={{ ...theme.viewStyles.text('R', 14, '#02475B', 1, 18.2), marginLeft: 11 }}>
+            {'No'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const renderMedicalConditionTopView = () => {
+    return (
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          marginTop: 16,
+          marginHorizontal: 14,
+          marginBottom: 20,
+        }}
+      >
+        <TouchableOpacity
+          onPress={() => setMedicalConditionCheckbox(!medicalConditionCheckbox)}
+          style={{ flexDirection: 'row', flex: 1 }}
+        >
+          {medicalConditionCheckbox ? (
+            <PhrCheckboxIcon style={{ height: 18, width: 18 }} />
+          ) : (
+            <PhrUncheckboxIcon style={{ width: 18, height: 18 }} />
+          )}
+          <Text style={{ ...theme.viewStyles.text('R', 14, '#02475B', 1, 18.2), marginLeft: 11 }}>
+            {'Yes'}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => setMedicalConditionCheckbox(!healthRestrictionCheckbox)}
+          style={{ flexDirection: 'row', flex: 1 }}
+        >
+          {!medicalConditionCheckbox ? (
+            <PhrCheckboxIcon style={{ height: 18, width: 18 }} />
+          ) : (
+            <PhrUncheckboxIcon style={{ width: 18, height: 18 }} />
+          )}
+          <Text style={{ ...theme.viewStyles.text('R', 14, '#02475B', 1, 18.2), marginLeft: 11 }}>
+            {'No'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const renderRecordDetailsHealthCondition = () => {
+    return (
+      <View style={{ marginBottom: 30 }}>
+        <View style={styles.listItemViewStyle}>
+          {renderListItem('Do you have any allergy?', false)}
+          {renderAllergyTopView()}
+          {allergyCheckbox ? renderAllergyDetails() : null}
+        </View>
+        <View style={styles.listItemViewStyle}>
+          {renderListItem('Are you taking any medication?', false)}
+          {renderMedicationTopView()}
+          {medicationCheckbox ? renderMedicationDetails() : null}
+        </View>
+        <View style={styles.listItemViewStyle}>
+          {renderListItem('Do you have any health restrictions?', false)}
+          {renderHealthRestrictionTopView()}
+          {healthRestrictionCheckbox ? renderHealthRestrictionDetails() : null}
+        </View>
+        <View style={styles.listItemViewStyle}>
+          {renderListItem('Are you suffering from any medical condition?', false)}
+          {renderMedicalConditionTopView()}
+          {medicalConditionCheckbox ? renderMedicalConditionDetails() : null}
+        </View>
+      </View>
+    );
+  };
+
   const renderRecordDetailsCard = () => {
     return (
       <View style={{ ...theme.viewStyles.cardViewStyle, marginHorizontal: 7, marginBottom: 30 }}>
@@ -1444,6 +2421,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           ? renderRecordDetailsBill()
           : recordType === MedicalRecordType.MEDICALINSURANCE
           ? renderRecordDetailsInsurance()
+          : recordType === MedicalRecordType.MEDICALCONDITION
+          ? renderRecordDetailsHealthCondition()
           : renderRecordDetailsPrescription()}
         {renderBottomButton()}
       </View>
@@ -1453,7 +2432,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const renderData = () => {
     return (
       <View style={{ marginTop: 28 }}>
-        {renderUploadedImages()}
+        {recordType === MedicalRecordType.MEDICALCONDITION ? null : renderUploadedImages(1)}
         {renderRecordDetailsCard()}
       </View>
     );
@@ -1476,6 +2455,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     const onPressReviewPhotoSave = () => {
       setDisplayReviewPhotoPopup(false);
       setdisplayOrderPopup(false);
+      setdisplayMedicalConditionPopup(false);
+      setdisplayAllergyPopup(false);
     };
 
     const onPressClickMorePhoto = () => {
@@ -1502,14 +2483,15 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               style={styles.bottomWhiteButtonStyle}
               titleTextStyle={styles.bottomWhiteButtonTextStyle}
             />
-            <View style={styles.buttonSeperatorStyle} />
+            {/* UI for multiple images */}
+            {/* <View style={styles.buttonSeperatorStyle} />
             <View style={styles.bottomButtonStyle}>
               <Button
                 onPress={onPressClickMorePhoto}
                 title={'CLICK MORE PHOTO'}
                 style={styles.bottomButtonStyle}
               />
-            </View>
+            </View> */}
           </View>
         </View>
       </ScrollView>
@@ -1517,12 +2499,135 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   };
 
   const onPressCloseReview = () => {
-    const imageCOPY = [...Images];
+    const imageCOPY = [
+      reviewPopupID === 1
+        ? { ...Images }
+        : reviewPopupID === 2
+        ? { ...allergyImage }
+        : { ...medicalConditionImage },
+    ];
     const index = imageCOPY.findIndex((item) => item.title === currentImage?.title);
     imageCOPY.splice(index, 1);
-    setImages(imageCOPY);
+    reviewPopupID === 1
+      ? setImages(imageCOPY)
+      : reviewPopupID === 2
+      ? setAllergyImage(imageCOPY)
+      : setMedicalConditionImage(imageCOPY);
     setDisplayReviewPhotoPopup(false);
     setdisplayOrderPopup(false);
+    setdisplayMedicalConditionPopup(false);
+    setdisplayAllergyPopup(false);
+  };
+
+  const renderUploadPrescriptionPopup = (id: number) => {
+    const displayPopup =
+      id === 1 ? displayOrderPopup : id === 2 ? displayAllergyPopup : displayMedicalConditionPopup;
+
+    const onResponseCall = (selectedType: any, response: any, type) => {
+      if (id === 1) {
+        setdisplayOrderPopup(false);
+        if (selectedType == 'CAMERA_AND_GALLERY') {
+          console.log('response', response, type);
+          if (response.length == 0) return;
+          if (type === 'Camera') {
+            setDisplayReviewPhotoPopup(true);
+            setCurrentImage(response[0]);
+          }
+          // Logic for multiple images
+          // setImages([...Images, ...response]);
+          setImages(response);
+          setdisplayOrderPopup(false);
+        }
+      } else if (id === 2) {
+        setdisplayAllergyPopup(false);
+        if (selectedType == 'CAMERA_AND_GALLERY') {
+          console.log('response', response, type);
+          if (response.length == 0) return;
+          if (type === 'Camera') {
+            setDisplayReviewPhotoPopup(true);
+            setReviewPopupID(2);
+            setCurrentImage(response[0]);
+          }
+          // Logic for multiple images
+          // setImages([...Images, ...response]);
+          setAllergyImage(response);
+          setdisplayAllergyPopup(false);
+        }
+      } else {
+        setdisplayMedicalConditionPopup(false);
+        if (selectedType == 'CAMERA_AND_GALLERY') {
+          console.log('response', response, type);
+          if (response.length == 0) return;
+          if (type === 'Camera') {
+            setDisplayReviewPhotoPopup(true);
+            setReviewPopupID(3);
+            setCurrentImage(response[0]);
+          }
+          // Logic for multiple images
+          // setImages([...Images, ...response]);
+          setMedicalConditionImage(response);
+          setdisplayMedicalConditionPopup(false);
+        }
+      }
+    };
+
+    const onClickClose = () => {
+      id === 1
+        ? setdisplayOrderPopup(false)
+        : id === 2
+        ? setdisplayAllergyPopup(false)
+        : setdisplayMedicalConditionPopup(false);
+    };
+
+    return (
+      <UploadPrescriprionPopup
+        isVisible={displayPopup}
+        openCamera={openCamera}
+        phrUpload={true}
+        disabledOption="NONE"
+        //type=""
+        heading={'Upload File'}
+        instructionHeading={'Instructions For Uploading Prescriptions'}
+        instructions={[
+          'Take clear picture of your entire prescription.',
+          'Doctor details & date of the prescription should be clearly visible.',
+          'Medicines will be dispensed as per prescription.',
+        ]}
+        optionTexts={{
+          camera: 'TAKE A PHOTO',
+          gallery: 'CHOOSE\nFROM GALLERY',
+        }}
+        onClickClose={onClickClose}
+        onResponse={(selectedType: any, response: any, type) => {
+          onResponseCall(selectedType, response, type);
+        }}
+      />
+    );
+  };
+
+  const renderReviewPhotoPopup = () => {
+    return (
+      <Overlay
+        onRequestClose={() => setDisplayReviewPhotoPopup(false)}
+        isVisible={displayReviewPhotoPopup}
+        containerStyle={{ marginBottom: 0 }}
+        fullScreen
+        overlayStyle={styles.phrOverlayStyle}
+      >
+        <View style={styles.overlayViewStyle}>
+          <SafeAreaView style={styles.overlaySafeAreaViewStyle}>
+            <Header
+              container={styles.headerContainerStyle}
+              title="REVIEW YOUR PHOTO"
+              leftIcon="backArrow"
+              onPressLeftIcon={onPressCloseReview}
+              rightComponent={headerRightComponent()}
+            />
+            {renderReviewPhotoDetails()}
+          </SafeAreaView>
+        </View>
+      </Overlay>
+    );
   };
 
   const headerRightComponent = () => {
@@ -1547,63 +2652,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           <View style={{ height: 60 }} />
         </KeyboardAwareScrollView>
       </SafeAreaView>
-      {displayReviewPhotoPopup && currentImage && (
-        <Overlay
-          onRequestClose={() => setDisplayReviewPhotoPopup(false)}
-          isVisible={displayReviewPhotoPopup}
-          containerStyle={{ marginBottom: 0 }}
-          fullScreen
-          overlayStyle={styles.phrOverlayStyle}
-        >
-          <View style={styles.overlayViewStyle}>
-            <SafeAreaView style={styles.overlaySafeAreaViewStyle}>
-              <Header
-                container={styles.headerContainerStyle}
-                title="REVIEW YOUR PHOTO"
-                leftIcon="backArrow"
-                onPressLeftIcon={onPressCloseReview}
-                rightComponent={headerRightComponent}
-              />
-              {renderReviewPhotoDetails()}
-            </SafeAreaView>
-          </View>
-        </Overlay>
-      )}
-      {displayOrderPopup && (
-        <UploadPrescriprionPopup
-          isVisible={displayOrderPopup}
-          openCamera={openCamera}
-          phrUpload={true}
-          disabledOption="NONE"
-          //type=""
-          heading={'Upload File'}
-          instructionHeading={'Instructions For Uploading Prescriptions'}
-          instructions={[
-            'Take clear picture of your entire prescription.',
-            'Doctor details & date of the prescription should be clearly visible.',
-            'Medicines will be dispensed as per prescription.',
-          ]}
-          optionTexts={{
-            camera: 'TAKE A PHOTO',
-            gallery: 'CHOOSE\nFROM GALLERY',
-          }}
-          onClickClose={() => setdisplayOrderPopup(false)}
-          onResponse={(selectedType: any, response: any, type) => {
-            setdisplayOrderPopup(false);
-            if (selectedType == 'CAMERA_AND_GALLERY') {
-              console.log('response', response, type);
-              if (response.length == 0) return;
-              if (type === 'Camera') {
-                setDisplayReviewPhotoPopup(true);
-                setCurrentImage(response[0]);
-              }
-              setImages([...Images, ...response]);
-              setdisplayOrderPopup(false);
-            }
-          }}
-        />
-      )}
-
+      {displayReviewPhotoPopup && currentImage && renderReviewPhotoPopup()}
+      {displayOrderPopup && renderUploadPrescriptionPopup(1)}
+      {displayAllergyPopup && renderUploadPrescriptionPopup(2)}
+      {displayMedicalConditionPopup && renderUploadPrescriptionPopup(3)}
       {showSpinner && <Spinner />}
       {showPopUp && (
         <BottomPopUp
