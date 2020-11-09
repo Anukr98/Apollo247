@@ -6,10 +6,20 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-const whatsappScheme = `whatsapp://send?text=${AppConfig.Configuration.CUSTOMER_CARE_HELP_TEXT}&phone=91${AppConfig.Configuration.CUSTOMER_CARE_NUMBER}`;
-interface ChatWithUsProps {}
+
+export interface ChatWithUsProps {
+  phoneNumber?: string | null;
+  text?: string | null;
+  url?: string | null;
+}
 
 export const ChatWithUs: React.FC<ChatWithUsProps> = (props) => {
+  const whatsappScheme = `whatsapp://send?text=${
+    props.text! ? props.text : AppConfig.Configuration.CUSTOMER_CARE_HELP_TEXT
+  }&phone=91${
+    props.phoneNumber ? props.phoneNumber : AppConfig.Configuration.CUSTOMER_CARE_NUMBER
+  }`;
+
   return (
     <View style={styles.chatWithUsView}>
       <TouchableOpacity
@@ -20,6 +30,8 @@ export const ChatWithUs: React.FC<ChatWithUsProps> = (props) => {
               Linking.openURL(
                 supported
                   ? whatsappScheme
+                  : props.url
+                  ? props.url
                   : AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK
               )
             )
