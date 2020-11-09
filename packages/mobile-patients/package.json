@@ -15,7 +15,7 @@
     "test": "jest",
     "typecheck": "tsc --project . --noEmit",
     "jetify": "jetify",
-    "postinstall": "cat OTSubscriberViewManager.java > node_modules/opentok-react-native/android/src/main/java/com/opentokreactnative/OTSubscriberViewManager.java"
+    "postinstall": "cat OTSubscriberViewManager.java > node_modules/opentok-react-native/android/src/main/java/com/opentokreactnative/OTSubscriberViewManager.java && cat opentok-react-native.podspec > node_modules/opentok-react-native/opentok-react-native.podspec"
   },
   "devDependencies": {
     "@aph/api-schema": "file:../api-schema",
