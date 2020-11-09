@@ -524,7 +524,7 @@ export const Maps: React.FC<MapProps> = (props) => {
       latitude,
       longitude
     );
-    if (diffInKm > 5) {
+    if (diffInKm > 2) {
       showAphAlert!({
         unDismissable: true,
         title: 'Uh oh.. :(',
@@ -639,7 +639,7 @@ export const Maps: React.FC<MapProps> = (props) => {
     return (
       <Circle
         center={{ latitude: initialAddressLatitude, longitude: initialAddressLongitude }}
-        radius={Platform.OS == 'android' ? 5100 : 5050}
+        radius={Platform.OS == 'android' ? 2100 : 2050}
         strokeWidth={2}
         strokeColor={'#1a66ff'}
         lineJoin={'round'}
@@ -657,7 +657,7 @@ export const Maps: React.FC<MapProps> = (props) => {
         region={region}
         ref={_map}
         zoomEnabled={true}
-        minZoomLevel={9}
+        minZoomLevel={10}
         onMapReady={() => console.log('ready')}
         onRegionChangeComplete={(region) => _onRegionChangeComplete(region)}
         onDoublePress={_setMapDragging}
