@@ -83,6 +83,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  imageStyle: {
+    height: 40,
+    width: 40,
+  },
 });
 
 export interface Props extends MedicineProduct {
@@ -165,7 +169,7 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
             PlaceholderContent={isPrescriptionRequired ? <MedicineRxIcon /> : <MedicineIcon />}
             placeholderStyle={{ backgroundColor: 'transparent' }}
             source={{ uri: productsThumbnailUrl(thumbnail) }}
-            style={{ height: 40, width: 36 }}
+            style={styles.imageStyle}
             resizeMode="contain"
           />
         ) : isPrescriptionRequired ? (

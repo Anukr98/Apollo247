@@ -26,7 +26,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, SafeAreaView, StyleSheet, Text } from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 
 export type SortByOption = {
   id: string;
@@ -79,14 +79,10 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   const { showAphAlert } = useUIElements();
 
   useEffect(() => {
-    if (searchText.length >= 3) {
-      searchProducts(searchText, 1, sortBy?.id || null, filterBy);
-    }
-  }, [sortBy, filterBy]);
-
-  useEffect(() => {
     if (categoryId && !searchText) {
-      searchProductsByCategory(categoryId, 1, sortBy?.id || null, filterBy);
+      searchProductsByCategory(categoryId, 1, sortBy?.id || null, filterBy, products);
+    } else if (searchText.length >= 3) {
+      searchProducts(searchText, 1, sortBy?.id || null, filterBy);
     }
   }, [sortBy, filterBy]);
 
@@ -139,12 +135,13 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     categoryId: string,
     pageId: number,
     sortBy: string | null,
-    filters: SelectedFilters
+    filters: SelectedFilters,
+    existingProducts: MedicineProduct[]
   ) => {
     try {
       updateLoading(pageId, true);
       const { data } = await getProductsByCategoryApi(categoryId, pageId, sortBy, filters);
-      updateProducts(pageId, products, data);
+      updateProducts(pageId, existingProducts, data);
       setProductsTotal(data.count);
       updateLoading(pageId, false);
       setPageId(pageId + 1);
@@ -185,7 +182,16 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   };
 
   const renderSections = () => {
-    const homeBreadCrumb: MedicineListingSectionsProps['breadCrumb'][0] = { title: 'Home' };
+    const homeBreadCrumb: MedicineListingSectionsProps['breadCrumb'][0] = {
+      title: 'Home',
+      onPress: () => {
+        const resetAction = StackActions.reset({
+          index: 0,
+          actions: [NavigationActions.navigate({ routeName: AppRoutes.Medicine })],
+        });
+        navigation.dispatch(resetAction);
+      },
+    };
 
     const breadCrumbInfo: MedicineListingSectionsProps['breadCrumb'] =
       !breadCrumb.length && !searchText
@@ -218,7 +224,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
         if (searchText) {
           searchProducts(searchText, pageId, sortBy?.id || null, filterBy);
         } else {
-          searchProductsByCategory(categoryId, pageId, sortBy?.id || null, filterBy);
+          searchProductsByCategory(categoryId, pageId, sortBy?.id || null, filterBy, products);
         }
       }
     };
@@ -227,7 +233,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
       <MedicineListingProducts
         data={isLoading ? [] : products}
         onEndReached={onEndReached}
-        onEndReachedThreshold={1}
+        onEndReachedThreshold={0.1}
         ListHeaderComponent={renderSections()}
         ListFooterComponent={renderLoading()}
         navigation={navigation}
