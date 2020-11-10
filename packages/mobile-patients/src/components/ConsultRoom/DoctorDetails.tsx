@@ -424,7 +424,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           if (data && data.getDoctorDetailsById && doctorDetails !== data.getDoctorDetailsById) {
             setDoctorDetails(data.getDoctorDetailsById);
             setDoctorId(data.getDoctorDetailsById.id);
-            setCtaBannerText(data.getDoctorDetailsById.doctorOfHour);
+            setCtaBannerText(data?.getDoctorDetailsById?.doctorOfHour);
             setshowSpinner(false);
             fetchNextAvailableSlots([data.getDoctorDetailsById.id]);
             setAvailableModes(data.getDoctorDetailsById);
