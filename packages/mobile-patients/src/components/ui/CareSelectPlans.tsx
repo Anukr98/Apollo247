@@ -89,7 +89,7 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
             </Text>
             <Text style={styles.price}>
               {string.common.Rs}
-              {value?.price}
+              {value?.currentSellingPrice}
             </Text>
           </ImageBackground>
         </TouchableOpacity>
