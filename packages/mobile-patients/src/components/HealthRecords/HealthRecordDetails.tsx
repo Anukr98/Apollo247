@@ -402,7 +402,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
           <>
             {detailRowView('Medical Condition Name', data?.medicalCondition || 'N/A')}
             {renderDurationView()}
-            {detailRowView('Dosage Level', dosagText)}
+            {detailRowView('Dosage Level', dosagText || 'N/A')}
             {detailRowView('Frequency', '')}
             <Text style={styles.resultTextStyle}>{data?.notes || 'N/A'}</Text>
           </>
@@ -600,7 +600,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       return siteDisplayName || labTestSource || healthCheckSource;
     };
     const renderDateView = () => {
-      return hospitalization && data.dateOfHospitalization !== 0 ? (
+      return hospitalization && data?.dateOfHospitalization !== 0 ? (
         <Text style={{ ...viewStyles.text('R', 14, '#0087BA', 1, 18), marginTop: 3 }}>
           {'From '}
           <Text style={{ ...viewStyles.text('M', 14, '#02475B', 1, 18) }}>{`${moment(
@@ -611,11 +611,11 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
             data?.date
           ).format(string.common.date_placeholder_text)}`}</Text>
         </Text>
-      ) : medicalInsurance && data.endDateTime !== 0 ? (
+      ) : medicalInsurance && data?.endDateTime !== 0 ? (
         <Text style={{ ...viewStyles.text('R', 14, '#0087BA', 1, 18), marginTop: 3 }}>
           {'From '}
           <Text style={{ ...viewStyles.text('M', 14, '#02475B', 1, 18) }}>{`${moment(
-            data?.startDate
+            data?.startDateTime
           ).format(string.common.date_placeholder_text)}`}</Text>
           {' to '}
           <Text style={{ ...viewStyles.text('M', 14, '#02475B', 1, 18) }}>{`${moment(
@@ -626,7 +626,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         <Text style={{ ...viewStyles.text('R', 14, '#0087BA', 1, 18), marginTop: 3 }}>
           {'On '}
           <Text style={{ ...viewStyles.text('M', 14, '#02475B', 1, 18) }}>{`${moment(
-            data?.date || data?.startDate
+            data?.date || data?.startDateTime
           ).format(string.common.date_placeholder_text)}`}</Text>
         </Text>
       );
@@ -826,7 +826,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       : medicalInsurance
       ? 'INSURANCE'
       : healthCondition
-      ? healthHeaderTitle
+      ? healthHeaderTitle || 'Health Condition'
       : 'TEST REPORTS DETAIL';
     return (
       <View

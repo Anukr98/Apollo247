@@ -1126,7 +1126,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           {renderProfileDetailsView()}
           {renderHealthCategoriesView()}
           {renderBillsInsuranceView()}
-          {renderClinicalDocumentsView()}
+          {/* PHR Phase 2 UI */}
+          {/* {renderClinicalDocumentsView()} */}
         </ScrollView>
       </SafeAreaView>
     </View>
