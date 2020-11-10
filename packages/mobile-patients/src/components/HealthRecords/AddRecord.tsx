@@ -287,6 +287,23 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('M', 16, '#00b38e'),
     alignSelf: 'flex-start',
   },
+  doctorPrefixContainerStyle: {
+    paddingTop: 0,
+    paddingBottom: 0,
+    paddingRight: 18,
+    marginTop: 0,
+    marginBottom: 30,
+  },
+  doctorPrefixTextInputStyle: {
+    ...theme.viewStyles.text('M', 16, '#0087BA', 1, 20.8),
+    flex: 1,
+    paddingTop: 0,
+    paddingBottom: 0,
+    marginBottom: 0,
+    paddingHorizontal: 0,
+    paddingRight: 14,
+    paddingLeft: 2,
+  },
 });
 
 type RecordTypeType = {
@@ -1410,6 +1427,19 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     );
   };
 
+  const renderDoctorPrefixListItem = (titleComponent: React.ReactElement, style: any = {}) => {
+    return (
+      <ListItem
+        title={titleComponent}
+        pad={0}
+        containerStyle={[styles.doctorPrefixContainerStyle, style]}
+        leftElement={
+          <Text style={{ ...theme.viewStyles.text('M', 16, '#0087BA', 1, 20.8) }}>{'Dr.'}</Text>
+        }
+      />
+    );
+  };
+
   const renderRecordDetailsTopView = () => {
     const renderRecordTypeIcon = () => {
       return recordType === MedicalRecordType.TEST_REPORT ? (
@@ -1528,20 +1558,22 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         </View>
         <View style={styles.listItemViewStyle}>
           {renderListItem('Record prescribed by', true, true)}
-          <TextInput
-            placeholder={'Enter Record prescribed by'}
-            style={styles.textInputStyle}
-            selectionColor={'#0087BA'}
-            numberOfLines={1}
-            value={docName}
-            placeholderTextColor={theme.colors.placeholderTextColor}
-            underlineColorAndroid={'transparent'}
-            onChangeText={(docName) => {
-              if (isValidText(docName)) {
-                setDocName(docName);
-              }
-            }}
-          />
+          {renderDoctorPrefixListItem(
+            <TextInput
+              placeholder={'Enter Record prescribed by'}
+              style={styles.doctorPrefixTextInputStyle}
+              selectionColor={'#0087BA'}
+              numberOfLines={1}
+              value={docName}
+              placeholderTextColor={theme.colors.placeholderTextColor}
+              underlineColorAndroid={'transparent'}
+              onChangeText={(docName) => {
+                if (isValidText(docName)) {
+                  setDocName(docName);
+                }
+              }}
+            />
+          )}
         </View>
         {renderAdditionalTextInputView()}
       </>
@@ -1591,20 +1623,22 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         </View>
         <View style={styles.listItemViewStyle}>
           {renderListItem('Record doctor’s name', true, true)}
-          <TextInput
-            placeholder={'Enter Record doctor’s name'}
-            style={styles.textInputStyle}
-            selectionColor={'#0087BA'}
-            numberOfLines={1}
-            value={docName}
-            placeholderTextColor={theme.colors.placeholderTextColor}
-            underlineColorAndroid={'transparent'}
-            onChangeText={(docName) => {
-              if (isValidText(docName)) {
-                setDocName(docName);
-              }
-            }}
-          />
+          {renderDoctorPrefixListItem(
+            <TextInput
+              placeholder={'Enter Record doctor’s name'}
+              style={styles.doctorPrefixTextInputStyle}
+              selectionColor={'#0087BA'}
+              numberOfLines={1}
+              value={docName}
+              placeholderTextColor={theme.colors.placeholderTextColor}
+              underlineColorAndroid={'transparent'}
+              onChangeText={(docName) => {
+                if (isValidText(docName)) {
+                  setDocName(docName);
+                }
+              }}
+            />
+          )}
         </View>
         <ListItem
           title={renderTitle()}
@@ -1751,20 +1785,22 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       <>
         <View style={styles.listItemViewStyle}>
           {renderListItem('Record doctor’s name', true, true)}
-          <TextInput
-            placeholder={'Enter Record doctor’s name'}
-            style={styles.textInputStyle}
-            selectionColor={'#0087BA'}
-            numberOfLines={1}
-            value={docName}
-            placeholderTextColor={theme.colors.placeholderTextColor}
-            underlineColorAndroid={'transparent'}
-            onChangeText={(docName) => {
-              if (isValidText(docName)) {
-                setDocName(docName);
-              }
-            }}
-          />
+          {renderDoctorPrefixListItem(
+            <TextInput
+              placeholder={'Enter Record doctor’s name'}
+              style={styles.doctorPrefixTextInputStyle}
+              selectionColor={'#0087BA'}
+              numberOfLines={1}
+              value={docName}
+              placeholderTextColor={theme.colors.placeholderTextColor}
+              underlineColorAndroid={'transparent'}
+              onChangeText={(docName) => {
+                if (isValidText(docName)) {
+                  setDocName(docName);
+                }
+              }}
+            />
+          )}
         </View>
         <View style={styles.listItemViewStyle}>
           {renderListItem('Record from', true, true)}
@@ -1999,21 +2035,24 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         </View>
         {showAllergyDetails ? (
           <>
-            <TextInput
-              placeholder={'Enter name of doctor'}
-              style={[styles.textInputStyle, { marginBottom: 20 }]}
-              selectionColor={'#0087BA'}
-              numberOfLines={1}
-              value={allergyDocName}
-              keyboardType={'numbers-and-punctuation'}
-              placeholderTextColor={theme.colors.placeholderTextColor}
-              underlineColorAndroid={'transparent'}
-              onChangeText={(locName) => {
-                if (isValidText(locName)) {
-                  setAllergyDocName(locName);
-                }
-              }}
-            />
+            {renderDoctorPrefixListItem(
+              <TextInput
+                placeholder={'Enter name of doctor'}
+                style={styles.doctorPrefixTextInputStyle}
+                selectionColor={'#0087BA'}
+                numberOfLines={1}
+                value={allergyDocName}
+                keyboardType={'numbers-and-punctuation'}
+                placeholderTextColor={theme.colors.placeholderTextColor}
+                underlineColorAndroid={'transparent'}
+                onChangeText={(locName) => {
+                  if (isValidText(locName)) {
+                    setAllergyDocName(locName);
+                  }
+                }}
+              />,
+              { marginBottom: 20 }
+            )}
             <View style={{ paddingTop: 0, paddingBottom: 10 }}>
               <Text
                 style={[
@@ -2166,21 +2205,25 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         </View>
         {showHealthRestrictionDetails ? (
           <>
-            <TextInput
-              placeholder={'Enter suggested doctor name'}
-              style={[styles.textInputStyle, { marginBottom: 20 }]}
-              selectionColor={'#0087BA'}
-              numberOfLines={1}
-              value={healthRestrictionDocName}
-              keyboardType={'numbers-and-punctuation'}
-              placeholderTextColor={theme.colors.placeholderTextColor}
-              underlineColorAndroid={'transparent'}
-              onChangeText={(locName) => {
-                if (isValidText(locName)) {
-                  setHealthRestrictionDocName(locName);
-                }
-              }}
-            />
+            {renderDoctorPrefixListItem(
+              <TextInput
+                placeholder={'Enter suggested doctor name'}
+                style={styles.doctorPrefixTextInputStyle}
+                selectionColor={'#0087BA'}
+                numberOfLines={1}
+                value={healthRestrictionDocName}
+                keyboardType={'numbers-and-punctuation'}
+                placeholderTextColor={theme.colors.placeholderTextColor}
+                underlineColorAndroid={'transparent'}
+                onChangeText={(locName) => {
+                  if (isValidText(locName)) {
+                    setHealthRestrictionDocName(locName);
+                  }
+                }}
+              />,
+              { marginBottom: 20 }
+            )}
+
             <View style={{ paddingTop: 0, paddingBottom: 10 }}>
               <Text
                 style={[
@@ -2261,21 +2304,24 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             rightElement={rightElement()}
           />
         </View>
-        <TextInput
-          placeholder={'Enter name of doctor'}
-          style={[styles.textInputStyle, { marginBottom: 20 }]}
-          selectionColor={'#0087BA'}
-          numberOfLines={1}
-          value={medicalConditionDocName}
-          keyboardType={'numbers-and-punctuation'}
-          placeholderTextColor={theme.colors.placeholderTextColor}
-          underlineColorAndroid={'transparent'}
-          onChangeText={(locName) => {
-            if (isValidText(locName)) {
-              setMedicalConditionDocName(locName);
-            }
-          }}
-        />
+        {renderDoctorPrefixListItem(
+          <TextInput
+            placeholder={'Enter name of doctor'}
+            style={styles.doctorPrefixTextInputStyle}
+            selectionColor={'#0087BA'}
+            numberOfLines={1}
+            value={medicalConditionDocName}
+            keyboardType={'numbers-and-punctuation'}
+            placeholderTextColor={theme.colors.placeholderTextColor}
+            underlineColorAndroid={'transparent'}
+            onChangeText={(locName) => {
+              if (isValidText(locName)) {
+                setMedicalConditionDocName(locName);
+              }
+            }}
+          />,
+          { marginBottom: 20 }
+        )}
         <View style={{ marginBottom: 20 }}>
           {renderListItem('Illness Type', false, false)}
           <View style={{ marginLeft: 14, marginRight: 18 }}>
@@ -2431,21 +2477,24 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 }
               }}
             />
-            <TextInput
-              placeholder={'Enter medication doctor name'}
-              style={[styles.textInputStyle, { marginBottom: 20 }]}
-              selectionColor={'#0087BA'}
-              numberOfLines={1}
-              value={medicationDocName}
-              keyboardType={'numbers-and-punctuation'}
-              placeholderTextColor={theme.colors.placeholderTextColor}
-              underlineColorAndroid={'transparent'}
-              onChangeText={(locName) => {
-                if (isValidText(locName)) {
-                  setMedicationDocName(locName);
-                }
-              }}
-            />
+            {renderDoctorPrefixListItem(
+              <TextInput
+                placeholder={'Enter medication doctor name'}
+                style={styles.doctorPrefixTextInputStyle}
+                selectionColor={'#0087BA'}
+                numberOfLines={1}
+                value={medicationDocName}
+                keyboardType={'numbers-and-punctuation'}
+                placeholderTextColor={theme.colors.placeholderTextColor}
+                underlineColorAndroid={'transparent'}
+                onChangeText={(locName) => {
+                  if (isValidText(locName)) {
+                    setMedicationDocName(locName);
+                  }
+                }}
+              />,
+              { marginBottom: 20 }
+            )}
             <View style={{ paddingTop: 0, paddingBottom: 10 }}>
               <Text
                 style={[
