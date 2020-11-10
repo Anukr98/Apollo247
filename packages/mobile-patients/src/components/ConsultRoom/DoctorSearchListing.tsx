@@ -1401,13 +1401,16 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     const buttonTextStyle = {
       color: theme.colors.BUTTON_TEXT,
     };
+    const doctorOfHourText = !!platinumDoctor?.doctorOfHour?.DOCTOR_OF_HOUR 
+      ? platinumDoctor?.doctorOfHour?.DOCTOR_OF_HOUR 
+      : 'Doctor of the Hour!';
     return (
       <LinearGradientComponent
         style={[styles.linearGradient, setHeight && { minHeight: 310, flex: undefined }]}
       >
         <View style={{ flexDirection: 'row', alignSelf: 'center', marginBottom: 15 }}>
           <FamilyDoctorIcon style={{ width: 16.58, height: 24 }} />
-          <Text style={styles.doctorOfTheHourTextStyle}>{'Doctor of the Hour!'}</Text>
+          <Text style={styles.doctorOfTheHourTextStyle}>{doctorOfHourText}</Text>
         </View>
         <DoctorCard
           rowData={platinumDoctor}
