@@ -17,7 +17,11 @@ import {
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  postWebEngageEvent,
+  initialSortByDays,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import moment from 'moment';
 import _ from 'lodash';
 
@@ -162,7 +166,10 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
             }
           } else {
             const dateExistsAt = finalData.findIndex((data: { key: string; data: any[] }) => {
-              return data.key === getObjectParameter(dataObject?.data, filterAppliedString);
+              return (
+                (data.key === '247self' ? 'self' : data.key) ===
+                getObjectParameter(dataObject?.data, filterAppliedString)
+              );
             });
             const keyValue = getObjectParameter(dataObject?.data, filterAppliedString);
             if (keyValue) {
@@ -183,15 +190,11 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
         });
       } else {
         // render when no filter is applied
-        finalData = initialSortByDays(filteredData, finalData);
+        finalData = initialSortByDays('lab-results', filteredData, finalData);
       }
       setLocalTestReportsData(finalData);
     }
   }, [filterApplied, testReportsData]);
-
-  const foundDataIndex = (key: string, finalData: { key: string; data: any[] }[]) => {
-    return finalData.findIndex((data: { key: string; data: any[] }) => data.key === key);
-  };
 
   const getObjectParameter = (obj: any, filterAppliedString: string) => {
     if (obj.healthCheckName) {
@@ -205,55 +208,11 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
     } else {
       return filterApplied === FILTER_TYPE.PACKAGE && (!obj.packageName || obj.packageName === '-')
         ? obj.labTestName
+        : filterAppliedString === 'labTestSource' &&
+          (obj[filterAppliedString] === '247self' || obj[filterAppliedString] === 'self')
+        ? 'self'
         : obj[filterAppliedString];
     }
-  };
-
-  const sortByDays = (
-    key: string,
-    finalData: { key: string; data: any[] }[],
-    dateExistsAt: number,
-    dataObject: any[]
-  ) => {
-    const dataArray = finalData;
-    if (dataArray.length === 0 || dateExistsAt === -1) {
-      dataArray.push({ key, data: [dataObject] });
-    } else {
-      const array = dataArray[dateExistsAt].data;
-      array.push(dataObject);
-      dataArray[dateExistsAt].data = array;
-    }
-    return dataArray;
-  };
-
-  const initialSortByDays = (
-    filteredData: any[],
-    toBeFinalData: { key: string; data: any[] }[]
-  ) => {
-    let finalData = toBeFinalData;
-    filteredData.forEach((dataObject: any) => {
-      const startDate = moment().set({
-        hour: 23,
-        minute: 59,
-      });
-      const past7thDay = startDate.subtract(7, 'day');
-      const past7daysData = moment(dataObject?.data?.date).diff(past7thDay, 'hours') > 0;
-      if (past7daysData) {
-        const dateExistsAt = foundDataIndex('Past 7 days', finalData);
-        finalData = sortByDays('Past 7 days', finalData, dateExistsAt, dataObject);
-      } else {
-        const past30thDay = past7thDay.subtract(30, 'day');
-        const past30daysData = moment(dataObject?.data?.date).diff(past30thDay, 'hours') > 0;
-        if (past30daysData) {
-          const dateExistsAt = foundDataIndex('Past 30 days', finalData);
-          finalData = sortByDays('Past 30 days', finalData, dateExistsAt, dataObject);
-        } else {
-          const dateExistsAt = foundDataIndex('Other Days', finalData);
-          finalData = sortByDays('Other Days', finalData, dateExistsAt, dataObject);
-        }
-      }
-    });
-    return finalData;
   };
 
   const sortByTypeRecords = (type: FILTER_TYPE | string) => {
@@ -262,19 +221,23 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
       testReportsData.sort(({ data: data1 }, { data: data2 }) => {
         const filteredData1 =
           type === FILTER_TYPE.DATE
-            ? moment(data1.date)
+            ? moment(data1?.date)
                 .toDate()
                 .getTime()
             : type === FILTER_TYPE.TEST_NAME
-            ? _.lowerCase(data1.labTestName)
-            : _.lowerCase(data1.packageName);
+            ? _.lowerCase(data1?.labTestName || data1?.healthCheckName)
+            : type === FILTER_TYPE.SOURCE
+            ? _.lowerCase(data1?.labTestSource || data1?.source)
+            : _.lowerCase(data1?.packageName);
         const filteredData2 =
           type === FILTER_TYPE.DATE
             ? moment(data2.date)
                 .toDate()
                 .getTime()
             : type === FILTER_TYPE.TEST_NAME
-            ? _.lowerCase(data2.labTestName)
+            ? _.lowerCase(data2.labTestName || data2.healthCheckName)
+            : type === FILTER_TYPE.SOURCE
+            ? _.lowerCase(data2?.labTestSource || data2?.source)
             : _.lowerCase(data2.packageName);
         if (type === FILTER_TYPE.DATE || !type) {
           return filteredData1 > filteredData2 ? -1 : filteredData1 < filteredData2 ? 1 : 0;
@@ -343,7 +306,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
       filterApplied === FILTER_TYPE.DATE
         ? section.key && moment(new Date(section.key)).format('DD MMM YYYY')
         : section.key === '247self' || section.key === 'self'
-        ? 'Clinic Document'
+        ? 'Clinical Document'
         : section.key === 'APP247'
         ? 'Apollo 24/7'
         : section.key;

@@ -228,6 +228,95 @@ export const followUpChatDaysCaseSheet = (
   return case_sheet;
 };
 
+const foundDataIndex = (key: string, finalData: { key: string; data: any[] }[]) => {
+  return finalData?.findIndex((data: { key: string; data: any[] }) => data?.key === key);
+};
+
+const sortByDays = (
+  key: string,
+  finalData: { key: string; data: any[] }[],
+  dataExistsAt: number,
+  dataObject: any[]
+) => {
+  const dataArray = finalData;
+  if (dataArray.length === 0 || dataExistsAt === -1) {
+    dataArray.push({ key, data: [dataObject] });
+  } else {
+    const array = dataArray[dataExistsAt].data;
+    array.push(dataObject);
+    dataArray[dataExistsAt].data = array;
+  }
+  return dataArray;
+};
+
+const getConsiderDate = (type: string, dataObject: any) => {
+  switch (type) {
+    case 'consults':
+      return dataObject?.data?.patientId
+        ? dataObject?.data?.appointmentDateTime
+        : dataObject?.data?.date;
+    case 'lab-results':
+      return dataObject?.data?.date;
+    case 'hospitalizations':
+      return dataObject?.date;
+    case 'insurance':
+      return dataObject?.startDateTime;
+    case 'bills':
+      return dataObject?.billDateTime;
+    case 'health-conditions':
+      return dataObject?.startDateTime;
+  }
+};
+
+const getFinalSortData = (key: string, finalData: any[], dataObject: any) => {
+  const dataExistsAt = foundDataIndex(key, finalData);
+  return sortByDays(key, finalData, dataExistsAt, dataObject);
+};
+
+export const initialSortByDays = (
+  type: string,
+  filteredData: any[],
+  toBeFinalData: { key: string; data: any[] }[]
+) => {
+  let finalData = toBeFinalData;
+  filteredData.forEach((dataObject: any) => {
+    const startDate = moment().set({
+      hour: 23,
+      minute: 59,
+    });
+    const dateToConsider = getConsiderDate(type, dataObject);
+    const dateDifferenceInDays = moment(startDate).diff(dateToConsider, 'days');
+    const dateDifferenceInMonths = moment(startDate).diff(dateToConsider, 'months');
+    const dateDifferenceInYears = moment(startDate).diff(dateToConsider, 'years');
+    if (dateDifferenceInYears !== 0) {
+      if (dateDifferenceInYears >= 5) {
+        finalData = getFinalSortData('More than 5 years', finalData, dataObject);
+      } else if (dateDifferenceInYears >= 2) {
+        finalData = getFinalSortData('Past 5 years', finalData, dataObject);
+      } else if (dateDifferenceInYears >= 1) {
+        finalData = getFinalSortData('Past 2 years', finalData, dataObject);
+      } else {
+        finalData = getFinalSortData('Past 12 months', finalData, dataObject);
+      }
+    } else if (dateDifferenceInMonths > 1) {
+      if (dateDifferenceInMonths >= 6) {
+        finalData = getFinalSortData('Past 12 months', finalData, dataObject);
+      } else if (dateDifferenceInMonths >= 2) {
+        finalData = getFinalSortData('Past 6 months', finalData, dataObject);
+      } else {
+        finalData = getFinalSortData('Past 2 months', finalData, dataObject);
+      }
+    } else {
+      if (dateDifferenceInDays > 30) {
+        finalData = getFinalSortData('Past 2 months', finalData, dataObject);
+      } else {
+        finalData = getFinalSortData('Past 30 days', finalData, dataObject);
+      }
+    }
+  });
+  return finalData;
+};
+
 export const formatOrderAddress = (
   address: savePatientAddress_savePatientAddress_patientAddress
 ) => {

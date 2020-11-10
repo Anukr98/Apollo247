@@ -11,7 +11,10 @@ import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMen
 import { HealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/HealthRecordCard';
 import { PhrNoDataComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/PhrNoDataComponent';
 import { ProfileImageComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/ProfileImageComponent';
-import { getPrescriptionDate } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  getPrescriptionDate,
+  initialSortByDays,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalInsurances_response as MedicalInsuranceType } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords';
 import moment from 'moment';
@@ -65,62 +68,10 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
   useEffect(() => {
     if (medicalInsuranceData) {
       let finalData: { key: string; data: MedicalInsuranceType[] }[] = [];
-      finalData = initialSortByDays(medicalInsuranceData, finalData);
+      finalData = initialSortByDays('insurance', medicalInsuranceData, finalData);
       setLocalInsuranceBillsData(finalData);
     }
   }, [medicalInsuranceData]);
-
-  const initialSortByDays = (
-    filteredData: MedicalInsuranceType[],
-    toBeFinalData: { key: string; data: MedicalInsuranceType[] }[]
-  ) => {
-    let finalData = toBeFinalData;
-    filteredData.forEach((dataObject: MedicalInsuranceType) => {
-      const past1yrData = moment().subtract(12, 'months');
-      const isPast1yrData = moment(dataObject?.startDateTime).diff(past1yrData, 'hours') > 0;
-      if (isPast1yrData) {
-        const dateExistsAt = foundDataIndex('Past 12 months', finalData);
-        finalData = sortByDays('Past 12 months', finalData, dateExistsAt, dataObject);
-      } else {
-        const past5yrsDay = past1yrData.subtract(5, 'years');
-        const isPast5yrsData = moment(dataObject?.startDateTime).diff(past5yrsDay, 'hours') > 0;
-        if (isPast5yrsData) {
-          const dateExistsAt = foundDataIndex('Past 5 years', finalData);
-          finalData = sortByDays('Past 5 years', finalData, dateExistsAt, dataObject);
-        } else {
-          const dateExistsAt = foundDataIndex('Other Days', finalData);
-          finalData = sortByDays('Other Days', finalData, dateExistsAt, dataObject);
-        }
-      }
-    });
-    return finalData;
-  };
-
-  const foundDataIndex = (
-    key: string,
-    finalData: { key: string; data: MedicalInsuranceType[] }[]
-  ) => {
-    return finalData.findIndex(
-      (data: { key: string; data: MedicalInsuranceType[] }) => data?.key === key
-    );
-  };
-
-  const sortByDays = (
-    key: string,
-    finalData: { key: string; data: MedicalInsuranceType[] }[],
-    dateExistsAt: number,
-    dataObject: MedicalInsuranceType
-  ) => {
-    const dataArray = finalData;
-    if (dataArray.length === 0 || dateExistsAt === -1) {
-      dataArray.push({ key, data: [dataObject] });
-    } else {
-      const array = dataArray[dateExistsAt].data;
-      array.push(dataObject);
-      dataArray[dateExistsAt].data = array;
-    }
-    return dataArray;
-  };
 
   const gotoPHRHomeScreen = () => {
     props.navigation.state.params?.onPressBack();

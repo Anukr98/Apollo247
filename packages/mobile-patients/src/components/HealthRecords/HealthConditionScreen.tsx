@@ -17,7 +17,10 @@ import {
 import { HealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/HealthRecordCard';
 import { PhrNoDataComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/PhrNoDataComponent';
 import { ProfileImageComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/ProfileImageComponent';
-import { getPrescriptionDate } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  getPrescriptionDate,
+  initialSortByDays,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import moment from 'moment';
 import _ from 'lodash';
@@ -70,59 +73,10 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
   useEffect(() => {
     if (healthConditionData) {
       let finalData: { key: string; data: any[] }[] = [];
-      finalData = initialSortByDays(healthConditionData, finalData);
+      finalData = initialSortByDays('health-conditions', healthConditionData, finalData);
       setLocalHealthRecordData(finalData);
     }
   }, [healthConditionData]);
-
-  console.log('healthConditionData', healthConditionData);
-
-  const sortByDays = (
-    key: string,
-    finalData: { key: string; data: any[] }[],
-    dateExistsAt: number,
-    dataObject: any
-  ) => {
-    const dataArray = finalData;
-    if (dataArray.length === 0 || dateExistsAt === -1) {
-      dataArray.push({ key, data: [dataObject] });
-    } else {
-      const array = dataArray[dateExistsAt].data;
-      array.push(dataObject);
-      dataArray[dateExistsAt].data = array;
-    }
-    return dataArray;
-  };
-
-  const foundDataIndex = (key: string, finalData: { key: string; data: any[] }[]) => {
-    return finalData.findIndex((data: { key: string; data: any[] }) => data.key === key);
-  };
-
-  const initialSortByDays = (
-    filteredData: any[],
-    toBeFinalData: { key: string; data: any[] }[]
-  ) => {
-    let finalData = toBeFinalData;
-    filteredData.forEach((dataObject: any) => {
-      const past1yrData = moment().subtract(12, 'months');
-      const isPast1yrData = moment(dataObject?.startDateTime).diff(past1yrData, 'hours') > 0;
-      if (isPast1yrData) {
-        const dateExistsAt = foundDataIndex('Past 12 months', finalData);
-        finalData = sortByDays('Past 12 months', finalData, dateExistsAt, dataObject);
-      } else {
-        const past5yrsDay = past1yrData.subtract(5, 'years');
-        const isPast5yrsData = moment(dataObject?.startDateTime).diff(past5yrsDay, 'hours') > 0;
-        if (isPast5yrsData) {
-          const dateExistsAt = foundDataIndex('Past 5 years', finalData);
-          finalData = sortByDays('Past 5 years', finalData, dateExistsAt, dataObject);
-        } else {
-          const dateExistsAt = foundDataIndex('Other Days', finalData);
-          finalData = sortByDays('Other Days', finalData, dateExistsAt, dataObject);
-        }
-      }
-    });
-    return finalData;
-  };
 
   const gotoPHRHomeScreen = () => {
     props.navigation.state.params?.onPressBack();

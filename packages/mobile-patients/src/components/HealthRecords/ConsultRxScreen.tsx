@@ -37,6 +37,7 @@ import {
   postWebEngageEvent,
   addTestsToCart,
   doRequestAndAccessLocation,
+  initialSortByDays,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   EPrescription,
@@ -222,7 +223,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         });
       } else {
         // render when no filter is applied
-        finalData = initialSortByDays(filteredData, finalData);
+        finalData = initialSortByDays('consults', filteredData, finalData);
       }
       setLocalConsultRxData(finalData);
     }
@@ -270,61 +271,6 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         return filteredData2 > filteredData1 ? -1 : filteredData2 < filteredData1 ? 1 : 0;
       })
     );
-  };
-
-  const foundDataIndex = (key: string, finalData: { key: string; data: any[] }[]) => {
-    return finalData.findIndex((data: { key: string; data: any[] }) => data.key === key);
-  };
-
-  const sortByDays = (
-    key: string,
-    finalData: { key: string; data: any[] }[],
-    dateExistsAt: number,
-    dataObject: any[]
-  ) => {
-    const dataArray = finalData;
-    if (dataArray.length === 0 || dateExistsAt === -1) {
-      dataArray.push({ key, data: [dataObject] });
-    } else {
-      const array = dataArray[dateExistsAt].data;
-      array.push(dataObject);
-      dataArray[dateExistsAt].data = array;
-    }
-    return dataArray;
-  };
-
-  const initialSortByDays = (
-    filteredData: any[],
-    toBeFinalData: { key: string; data: any[] }[]
-  ) => {
-    let finalData = toBeFinalData;
-    filteredData.forEach((dataObject: any) => {
-      const startDate = moment().set({
-        hour: 23,
-        minute: 59,
-      });
-      const past7thDay = startDate.subtract(7, 'day');
-      const past7daysData = dataObject.data?.patientId
-        ? moment(dataObject.data?.appointmentDateTime).diff(past7thDay, 'days') > 0
-        : moment(dataObject.data?.date).diff(past7thDay, 'days') > 0;
-      if (past7daysData) {
-        const dateExistsAt = foundDataIndex('Past 7 days', finalData);
-        finalData = sortByDays('Past 7 days', finalData, dateExistsAt, dataObject);
-      } else {
-        const past30thDay = past7thDay.subtract(30, 'day');
-        const past30daysData = dataObject.data?.patientId
-          ? moment(dataObject.data?.appointmentDateTime).diff(past30thDay, 'days') > 0
-          : moment(dataObject.data?.date).diff(past30thDay, 'days') > 0;
-        if (past30daysData) {
-          const dateExistsAt = foundDataIndex('Past 30 days', finalData);
-          finalData = sortByDays('Past 30 days', finalData, dateExistsAt, dataObject);
-        } else {
-          const dateExistsAt = foundDataIndex('Other Days', finalData);
-          finalData = sortByDays('Other Days', finalData, dateExistsAt, dataObject);
-        }
-      }
-    });
-    return finalData;
   };
 
   const gotoPHRHomeScreen = () => {

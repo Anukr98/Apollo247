@@ -11,7 +11,10 @@ import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMen
 import { HealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/HealthRecordCard';
 import { PhrNoDataComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/PhrNoDataComponent';
 import { ProfileImageComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/ProfileImageComponent';
-import { getPrescriptionDate } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  getPrescriptionDate,
+  initialSortByDays,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalBills_response as MedicalBillsType } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords';
 import moment from 'moment';
@@ -65,63 +68,10 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
   useEffect(() => {
     if (medicalBillsData) {
       let finalData: { key: string; data: MedicalBillsType[] }[] = [];
-      finalData = initialSortByDays(medicalBillsData, finalData);
+      finalData = initialSortByDays('bills', medicalBillsData, finalData);
       setLocalMedicalBillsData(finalData);
     }
   }, [medicalBillsData]);
-
-  const initialSortByDays = (
-    filteredData: MedicalBillsType[],
-    toBeFinalData: { key: string; data: MedicalBillsType[] }[]
-  ) => {
-    let finalData = toBeFinalData;
-    filteredData.forEach((dataObject: MedicalBillsType) => {
-      const startDate = moment().set({
-        hour: 23,
-        minute: 59,
-      });
-      const past7thDay = startDate.subtract(7, 'day');
-      const past7daysData = moment(dataObject?.billDateTime).diff(past7thDay, 'days') > 0;
-      if (past7daysData) {
-        const dateExistsAt = foundDataIndex('Past 7 days', finalData);
-        finalData = sortByDays('Past 7 days', finalData, dateExistsAt, dataObject);
-      } else {
-        const past6thmonthDay = past7thDay.subtract(6, 'months');
-        const past6monthsData = moment(dataObject?.billDateTime).diff(past6thmonthDay, 'days') > 0;
-        if (past6monthsData) {
-          const dateExistsAt = foundDataIndex('Past 6 months', finalData);
-          finalData = sortByDays('Past 6 months', finalData, dateExistsAt, dataObject);
-        } else {
-          const dateExistsAt = foundDataIndex('Other Days', finalData);
-          finalData = sortByDays('Other Days', finalData, dateExistsAt, dataObject);
-        }
-      }
-    });
-    return finalData;
-  };
-
-  const foundDataIndex = (key: string, finalData: { key: string; data: MedicalBillsType[] }[]) => {
-    return finalData.findIndex(
-      (data: { key: string; data: MedicalBillsType[] }) => data?.key === key
-    );
-  };
-
-  const sortByDays = (
-    key: string,
-    finalData: { key: string; data: MedicalBillsType[] }[],
-    dateExistsAt: number,
-    dataObject: MedicalBillsType
-  ) => {
-    const dataArray = finalData;
-    if (dataArray.length === 0 || dateExistsAt === -1) {
-      dataArray.push({ key, data: [dataObject] });
-    } else {
-      const array = dataArray[dateExistsAt].data;
-      array.push(dataObject);
-      dataArray[dateExistsAt].data = array;
-    }
-    return dataArray;
-  };
 
   const gotoPHRHomeScreen = () => {
     props.navigation.state.params?.onPressBack();

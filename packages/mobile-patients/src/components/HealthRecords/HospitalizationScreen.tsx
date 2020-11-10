@@ -17,7 +17,11 @@ import {
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  postWebEngageEvent,
+  initialSortByDays,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import moment from 'moment';
 import _ from 'lodash';
 
@@ -69,62 +73,10 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
   useEffect(() => {
     if (hospitalizationData) {
       let finalData: { key: string; data: HospitalizationType[] }[] = [];
-      finalData = initialSortByDays(hospitalizationData, finalData);
+      finalData = initialSortByDays('hospitalizations', hospitalizationData, finalData);
       setLocalHospitalizationData(finalData);
     }
   }, [hospitalizationData]);
-
-  const initialSortByDays = (
-    filteredData: HospitalizationType[],
-    toBeFinalData: { key: string; data: HospitalizationType[] }[]
-  ) => {
-    let finalData = toBeFinalData;
-    filteredData.forEach((dataObject: HospitalizationType) => {
-      const past1yrData = moment().subtract(12, 'months');
-      const isPast1yrData = moment(dataObject?.date).diff(past1yrData, 'hours') > 0;
-      if (isPast1yrData) {
-        const dateExistsAt = foundDataIndex('Past 12 months', finalData);
-        finalData = sortByDays('Past 12 months', finalData, dateExistsAt, dataObject);
-      } else {
-        const past5yrsDay = past1yrData.subtract(5, 'years');
-        const isPast5yrsData = moment(dataObject?.date).diff(past5yrsDay, 'hours') > 0;
-        if (isPast5yrsData) {
-          const dateExistsAt = foundDataIndex('Past 5 years', finalData);
-          finalData = sortByDays('Past 5 years', finalData, dateExistsAt, dataObject);
-        } else {
-          const dateExistsAt = foundDataIndex('Other Days', finalData);
-          finalData = sortByDays('Other Days', finalData, dateExistsAt, dataObject);
-        }
-      }
-    });
-    return finalData;
-  };
-
-  const foundDataIndex = (
-    key: string,
-    finalData: { key: string; data: HospitalizationType[] }[]
-  ) => {
-    return finalData.findIndex(
-      (data: { key: string; data: HospitalizationType[] }) => data?.key === key
-    );
-  };
-
-  const sortByDays = (
-    key: string,
-    finalData: { key: string; data: HospitalizationType[] }[],
-    dateExistsAt: number,
-    dataObject: HospitalizationType
-  ) => {
-    const dataArray = finalData;
-    if (dataArray.length === 0 || dateExistsAt === -1) {
-      dataArray.push({ key, data: [dataObject] });
-    } else {
-      const array = dataArray[dateExistsAt].data;
-      array.push(dataObject);
-      dataArray[dateExistsAt].data = array;
-    }
-    return dataArray;
-  };
 
   const gotoPHRHomeScreen = () => {
     props.navigation.state.params?.onPressBack();
