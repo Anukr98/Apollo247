@@ -53,6 +53,7 @@ import {
   ScrollView,
   Image,
   TouchableOpacity,
+  TextInput,
 } from 'react-native';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -256,6 +257,20 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     ...theme.viewStyles.text('SB', 36, '#01475b', 1, 46.8),
   },
+  textInputTextStyle: {
+    borderBottomWidth: 2,
+    paddingTop: 0,
+    paddingBottom: 0,
+    width: '70%',
+    ...theme.fonts.IBMPlexSansMedium(18),
+    color: theme.colors.SHERPA_BLUE,
+    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
+  },
+  kgsTextStyle: {
+    ...theme.fonts.IBMPlexSansMedium(18),
+    color: theme.colors.SHERPA_BLUE,
+    marginLeft: 10,
+  },
   overlayMainViewStyle: {
     width: 160,
     marginBottom: 37,
@@ -276,6 +291,11 @@ type BloodGroupArray = {
   title: string;
 };
 
+type HeightArray = {
+  key: string;
+  title: string;
+};
+
 const bloodGroupArray: BloodGroupArray[] = [
   { key: BloodGroups.APositive, title: 'A+' },
   { key: BloodGroups.ANegative, title: 'A-' },
@@ -285,6 +305,16 @@ const bloodGroupArray: BloodGroupArray[] = [
   { key: BloodGroups.ABNegative, title: 'AB-' },
   { key: BloodGroups.OPositive, title: 'O+' },
   { key: BloodGroups.ONegative, title: 'O-' },
+];
+
+enum HEIGHT_ARRAY {
+  CM = 'cm',
+  FT = 'ft',
+}
+
+const heightArray: HeightArray[] = [
+  { key: HEIGHT_ARRAY.CM, title: HEIGHT_ARRAY.CM },
+  { key: HEIGHT_ARRAY.FT, title: HEIGHT_ARRAY.FT },
 ];
 
 export interface HealthRecordsHomeProps extends NavigationScreenProps {}
@@ -363,6 +393,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [selectedBloodGroupArray, setSelectedBloodGroupArray] = useState<BloodGroupArray[]>(
     bloodGroupArray
   );
+  const [heightArrayValue, setHeightArrayValue] = useState<HEIGHT_ARRAY | string>(HEIGHT_ARRAY.CM);
   const [bloodGroup, setBloodGroup] = useState<BloodGroupArray>();
   const [overlaySpinner, setOverlaySpinner] = useState(false);
 
@@ -802,7 +833,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
                 currentPatient?.patientMedicalHistory?.weight !== 'Not Recorded' ? (
                   patientTextView(
                     currentPatient?.patientMedicalHistory?.weight
-                      ? currentPatient?.patientMedicalHistory?.weight + ' kg'
+                      ? currentPatient?.patientMedicalHistory?.weight
                       : ''
                   )
                 ) : (
@@ -1007,7 +1038,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
                 bloodGroup !== undefined ? null : styles.placeholderStyle,
               ]}
             >
-              {bloodGroup !== undefined ? bloodGroup.title : '-'}
+              {bloodGroup !== undefined ? bloodGroup.title : 'Select'}
             </Text>
             <View style={[{ flex: 1, alignItems: 'flex-end', marginLeft: 22 }]}>
               <DropdownGreen />
@@ -1015,6 +1046,61 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           </View>
         </View>
       </MaterialMenu>
+    );
+  };
+
+  const renderHeightView = () => {
+    const heightArrayData = heightArray?.map((i) => {
+      return { key: i.key, value: i.title };
+    });
+    return (
+      <MaterialMenu
+        options={heightArrayData}
+        selectedText={heightArrayValue}
+        menuContainerStyle={styles.menuContainerStyle}
+        itemContainer={{ height: 44.8, marginHorizontal: 12, width: 150 / 2 }}
+        itemTextStyle={styles.itemTextStyle}
+        selectedTextStyle={styles.selectedTextStyle}
+        lastContainerStyle={{ borderBottomWidth: 0 }}
+        bottomPadding={{ paddingBottom: 0 }}
+        onPress={(selected) => {
+          setHeightArrayValue(selected?.key);
+        }}
+      >
+        <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+          <TextInput
+            placeholder={'Enter Height'}
+            style={styles.textInputTextStyle}
+            selectionColor={theme.colors.INPUT_CURSOR_COLOR}
+            placeholderTextColor={theme.colors.placeholderTextColor}
+            value={height}
+            onChangeText={(text) => {
+              setHeight(text);
+            }}
+          />
+          <View style={[styles.placeholderViewStyle, { marginLeft: 10 }]}>
+            <Text style={[styles.placeholderTextStyle]}>{heightArrayValue}</Text>
+            <View style={[{ flex: 1, alignItems: 'flex-end', marginLeft: 22 }]}>
+              <DropdownGreen />
+            </View>
+          </View>
+        </View>
+      </MaterialMenu>
+    );
+  };
+
+  const renderWeightView = () => {
+    return (
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <TextInputComponent
+          placeholder={'Enter Weight'}
+          value={weight}
+          onChangeText={(text) => {
+            setWeight(text);
+          }}
+        />
+        <Text style={styles.kgsTextStyle}>{'Kgs'}</Text>
+      </View>
     );
   };
 
@@ -1042,24 +1128,18 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         : currentUpdatePopupId === 2
         ? 'Update Weight'
         : 'Update Blood Group';
-    const placeholder_text =
-      currentUpdatePopupId === 1
-        ? 'Enter Height'
-        : currentUpdatePopupId === 2
-        ? 'Enter Weight'
-        : 'Update Blood Group';
 
     const onPressUpdate = () => {
       if (currentUpdatePopupId === 1) {
         updateMedicalParameters(
-          height,
+          height + ' ' + heightArrayValue,
           currentPatient?.patientMedicalHistory?.weight,
           currentPatient?.patientMedicalHistory?.bloodGroup
         );
       } else if (currentUpdatePopupId === 2) {
         updateMedicalParameters(
           currentPatient?.patientMedicalHistory?.height,
-          weight,
+          weight + ' Kgs',
           currentPatient?.patientMedicalHistory?.bloodGroup
         );
       } else {
@@ -1088,21 +1168,11 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               <View style={{ ...theme.viewStyles.cardViewStyle, paddingTop: 20 }}>
                 <Text style={styles.updateTitleTextStyle}>{title}</Text>
                 <View style={styles.overlayMainViewStyle}>
-                  {currentUpdatePopupId === 3 ? (
-                    renderBloodGroup()
-                  ) : (
-                    <TextInputComponent
-                      placeholder={placeholder_text}
-                      value={currentUpdatePopupId === 1 ? height : weight}
-                      onChangeText={(text) => {
-                        if (currentUpdatePopupId === 1) {
-                          setHeight(text);
-                        } else {
-                          setWeight(text);
-                        }
-                      }}
-                    />
-                  )}
+                  {currentUpdatePopupId === 3
+                    ? renderBloodGroup()
+                    : currentUpdatePopupId === 1
+                    ? renderHeightView()
+                    : renderWeightView()}
                   <Button
                     title={'UPDATE'}
                     onPress={onPressUpdate}
