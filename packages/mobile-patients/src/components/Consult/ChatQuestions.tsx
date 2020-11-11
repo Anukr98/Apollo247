@@ -644,6 +644,7 @@ export const ChatQuestions: React.FC<ChatQuestionsProps> = (props) => {
                       ? theme.colors.APP_GREEN
                       : theme.colors.WHITE,
                   marginBottom: 16,
+                  paddingHorizontal: 3,
                 }}
                 disabledStyle={{
                   backgroundColor:
