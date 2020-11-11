@@ -169,9 +169,7 @@ import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonD
 import RNCallKeep from 'react-native-callkeep';
 import VoipPushNotification from 'react-native-voip-push-notification';
 import { convertMinsToHrsMins } from '@aph/mobile-patients/src/utils/dateUtil';
-import { 
-  getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet_medicinePrescription,
-} from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
+import { getPatientAllAppointments_getPatientAllAppointments_appointments_caseSheet_medicinePrescription } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
 
 interface OpentokStreamObject {
   connection: {
@@ -617,7 +615,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   let minuteTimer: any;
 
   const { getPatientApiCall } = useAuth();
-  const { currentPatient } = useAllCurrentPatients();
+  const { currentPatient, currentPatientWithHistory } = useAllCurrentPatients();
 
   const [patientImageshow, setPatientImageshow] = useState<boolean>(false);
   const [showweb, setShowWeb] = useState<boolean>(false);
@@ -851,6 +849,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
+    if (!currentPatientWithHistory) {
+      getPatientApiCallWithHistory();
+    }
+  }, [currentPatientWithHistory]);
+
+  useEffect(() => {
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
       BackHandler.addEventListener('hardwareBackPress', backDataFunctionality);
     });
@@ -873,6 +877,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
     updateNumberOfParticipants();
   }, []);
+
+  const getPatientApiCallWithHistory = async () => {
+    if (!disableChat && status !== STATUS.COMPLETED) {
+      getPatientApiCall(true);
+    }
+  };
 
   const updateNumberOfParticipants = async (status: USER_STATUS = USER_STATUS.ENTERING) => {
     /**
@@ -1429,7 +1439,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       addToConsultQueueWithAutomatedQuestions(client, userAnswers)
         .then(({ data }: any) => {
           getPatientApiCall();
-
+          getPatientApiCallWithHistory();
           postAppointmentWEGEvent(WebEngageEventName.COMPLETED_AUTOMATED_QUESTIONS);
           console.log(data, 'data res, adding');
           jdCount = parseInt(
@@ -1981,7 +1991,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       console.log('session streamCreated created!', event);
     },
     streamDestroyed: (event: string) => {
-      callEndWebengageEvent(g(appointmentData, 'doctorInfo', 'doctorType') === 'JUNIOR' ? 'Junior Doctor' : 'Senior Doctor');
+      callEndWebengageEvent(
+        g(appointmentData, 'doctorInfo', 'doctorType') === 'JUNIOR'
+          ? 'Junior Doctor'
+          : 'Senior Doctor'
+      );
       openTokWebEngageEvents(
         WebEngageEventName.PATIENT_SESSION_STREAM_DESTROYED,
         JSON.stringify(event)
@@ -2575,7 +2589,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const thirtySecondCall = () => {
     if (jrDoctorJoined.current == false) {
-
       const result = insertText.filter((obj: any) => {
         return obj.message === firstMessage;
       });
@@ -2639,7 +2652,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const minuteCaller = () => {
     if (jrDoctorJoined.current == false) {
-
       const result = insertText.filter((obj: any) => {
         return obj.message === secondMessage;
       });
@@ -5071,7 +5083,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const fireWebengageEvent = (
-    item: getPatinetAppointments_getPatinetAppointments_patinetAppointments,
+    item: getPatinetAppointments_getPatinetAppointments_patinetAppointments
   ) => {
     const medicinePrescription = g(item, 'caseSheet', '0' as any, 'medicinePrescription');
     const getMedicines = (
@@ -5084,7 +5096,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             .join(', ')
         : null;
     const followUpMedicineNameText = getMedicines(medicinePrescription!);
-    const eventAttributesFollowUp: 
+    const eventAttributesFollowUp:
       | WebEngageEvents[WebEngageEventName.BOOK_AGAIN_CANCELLED_APPOINTMENT]
       | WebEngageEvents[WebEngageEventName.PAST_APPOINTMENT_BOOK_FOLLOW_UP_CLICKED] = {
       'Customer ID': g(currentPatient, 'id'),
@@ -5102,8 +5114,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       'Consult ID': g(item, 'id') || '',
       'Consult Date Time': moment(g(item, 'appointmentDateTime')).toDate(),
       'Consult Mode': g(item, 'appointmentType') == APPOINTMENT_TYPE.ONLINE ? 'Online' : 'Physical',
-      'isConsultStarted': !!g(item, 'isConsultStarted'),
-      'Prescription': followUpMedicineNameText || '',
+      isConsultStarted: !!g(item, 'isConsultStarted'),
+      Prescription: followUpMedicineNameText || '',
     };
 
     postWebEngageEvent(WebEngageEventName.BOOK_APPOINTMENT_CHAT_ROOM, eventAttributesFollowUp);
