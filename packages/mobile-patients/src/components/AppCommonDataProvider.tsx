@@ -143,6 +143,8 @@ export interface AppCommonDataContextProps {
     | null;
   savePatientDetails: any;
   setSavePatientDetails: ((items: any) => void) | null;
+  savePatientDetailsWithHistory: any;
+  setSavePatientDetailsWithHistory: ((items: any) => void) | null;
   doctorJoinedChat: boolean;
   setDoctorJoinedChat: ((isJoined: boolean) => void) | null;
 }
@@ -195,6 +197,8 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setisUHID: null,
   savePatientDetails: [],
   setSavePatientDetails: null,
+  savePatientDetailsWithHistory: [],
+  setSavePatientDetailsWithHistory: null,
   doctorJoinedChat: false,
   setDoctorJoinedChat: null,
 });
@@ -212,9 +216,7 @@ export const AppCommonDataProvider: React.FC = (props) => {
     AppCommonDataContextProps['hdfcUserSubscriptions']
   >(null);
 
-  const [bannerData, _setBannerData] = useState<
-    AppCommonDataContextProps['bannerData']
-  >(null);
+  const [bannerData, _setBannerData] = useState<AppCommonDataContextProps['bannerData']>(null);
 
   const [pharmacyLocation, _setPharmacyLocation] = useState<
     AppCommonDataContextProps['pharmacyLocation']
@@ -250,6 +252,9 @@ export const AppCommonDataProvider: React.FC = (props) => {
 
   const [savePatientDetails, setSavePatientDetails] = useState<
     AppCommonDataContextProps['savePatientDetails']
+  >([]);
+  const [savePatientDetailsWithHistory, setSavePatientDetailsWithHistory] = useState<
+    AppCommonDataContextProps['savePatientDetailsWithHistory']
   >([]);
 
   const [VirtualConsultationFee, setVirtualConsultationFee] = useState<string>('');
@@ -289,9 +294,7 @@ export const AppCommonDataProvider: React.FC = (props) => {
     _setHdfcUserSubscriptions(hdfcUserSubscriptions);
   };
 
-  const setBannerData: AppCommonDataContextProps['setBannerData'] = (
-    bannerData
-  ) => {
+  const setBannerData: AppCommonDataContextProps['setBannerData'] = (bannerData) => {
     _setBannerData(bannerData);
   };
 
@@ -400,6 +403,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setSavePatientDetails,
         doctorJoinedChat,
         setDoctorJoinedChat,
+        savePatientDetailsWithHistory,
+        setSavePatientDetailsWithHistory,
       }}
     >
       {props.children}
