@@ -460,7 +460,7 @@ export interface consultCallEndData {
   'Patient User ID': string;
   'Patient name': string;
   'Patient mobile number': string;
-  'Appointment Date time': Date;
+  'Appointment Date time': Date | null;
   'Appointment display ID': number | null;
   'Appointment ID': string;
   'Doctor Name': string;

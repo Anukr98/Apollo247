@@ -858,7 +858,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
         'Patient mobile number': g(currentPatient, 'mobileNumber'),
         'Appointment Date time': moment(g(appointmentData, 'appointmentDateTime')).toDate(),
-        'Appointment display ID': null,
+        'Appointment display ID': g(appointmentData, 'displayId')!,
         'Appointment ID': g(appointmentData, 'id')!,
         'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName')!,
         'Speciality Name': g(appointmentData, 'doctorInfo', 'specialty', 'name')!,
@@ -1938,6 +1938,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           WebEngageEventName.PATIENT_SESSION_ERROR,
           JSON.stringify(error)
         );
+        fireWebengageEventForCallAnswer(WebEngageEventName.CALL_DROPPED_UNKNOWN_REASON);
         callEndWebengageEvent('Network');
         eventsAfterConnectionDestroyed();
         setTimeout(() => {
@@ -2466,7 +2467,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   let insertText: object[] = [];
-  const newmessage: { message: string }[] = [];
+  const newmessage: { 
+    message: string,
+    duration: string,
+  }[] = [];
 
   const getHistory = (timetoken: number) => {
     setLoading(true);
@@ -2501,15 +2505,23 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           setLoading(false);
 
           if (messages.length !== newmessage.length) {
-            if (newmessage[newmessage.length - 1].message === startConsultMsg) {
+            const lastMessage = newmessage[newmessage.length - 1];
+            if (lastMessage.message === startConsultMsg) {
               jrDoctorJoined.current = false;
               updateSessionAPI();
               checkingAppointmentDates();
             }
-            if (newmessage[newmessage.length - 1].message === startConsultjr) {
+            if (lastMessage.message === startConsultjr) {
               jrDoctorJoined.current = true;
               updateSessionAPI();
               checkingAppointmentDates();
+            }
+
+            if ((lastMessage.message === 'Audio call ended' 
+              || lastMessage.message === 'Video call ended')
+              && lastMessage.duration === '00 : 00') 
+              {
+                fireWebengageEventForCallAnswer(WebEngageEventName.PATIENT_MISSED_CALL);
             }
 
             if (msgs.length == 100) {
@@ -2822,11 +2834,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const pubNubMessages = (message: Pubnub.MessageEvent) => {
     console.log('pubNubMessages', message.message.sentBy);
     if (message.message.isTyping) {
-      const pubnubMessage = message.message;
-      if ((pubnubMessage.message === 'Audio call ended' || pubnubMessage.message === 'Video call ended') 
-        && pubnubMessage.duration === '00 : 00') {
-          fireWebengageEventForCallAnswer(WebEngageEventName.PATIENT_MISSED_CALL);
-      }
       if (message.message.message === audioCallMsg && !patientJoinedCall.current) {
         // if patient has not joined meeting room
         isAudio.current = true;
