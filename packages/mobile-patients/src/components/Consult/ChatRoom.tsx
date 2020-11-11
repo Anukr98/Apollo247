@@ -2878,15 +2878,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         message.message.message === 'Audio call ended' ||
         message.message.message === 'Video call ended'
       ) {
-        // if (message.message.duration === '00 : 00') {
-        //   if (message.message.sentBy === 'DOCTOR' && message.publisher === 'DOCTOR') {
-        //     console.log('WebEngageEventName.PATIENT_DECLINED_CALL----------------------------');
-        //     fireWebengageEventForCallAnswer(WebEngageEventName.PATIENT_DECLINED_CALL);
-        //   } else {
-        //     console.log('WebEngageEventName.PATIENT_MISSED_CALL----------------------------');
-        //     fireWebengageEventForCallAnswer(WebEngageEventName.PATIENT_MISSED_CALL);
-        //   }
-        // }
         AsyncStorage.setItem('callDisconnected', 'true');
         setOnSubscribe(false);
         callhandelBack = true;
