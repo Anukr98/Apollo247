@@ -749,7 +749,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       awards
       photoUrl
       availableModes
-      doctorOfHour {
+      availabilityTitle {
         AVAILABLE_NOW
         CONSULT_NOW
         DOCTOR_OF_HOUR
@@ -859,7 +859,7 @@ export const GET_PLATINUM_DOCTOR = gql`
         photoUrl
         slot
         thumbnailUrl
-        doctorOfHour {
+        availabilityTitle {
           AVAILABLE_NOW
           CONSULT_NOW
           DOCTOR_OF_HOUR
