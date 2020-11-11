@@ -852,7 +852,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (!currentPatientWithHistory) {
       getPatientApiCallWithHistory();
     }
-  }, [currentPatientWithHistory]);
+  }, [currentPatientWithHistory, displayChatQuestions]);
 
   useEffect(() => {
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
@@ -879,7 +879,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, []);
 
   const getPatientApiCallWithHistory = async () => {
-    if (!disableChat && status !== STATUS.COMPLETED) {
+    if (!disableChat && status !== STATUS.COMPLETED && displayChatQuestions) {
       getPatientApiCall(true);
     }
   };
