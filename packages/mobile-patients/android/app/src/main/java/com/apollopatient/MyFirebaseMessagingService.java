@@ -7,6 +7,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.AudioAttributes;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -56,14 +57,12 @@ public class MyFirebaseMessagingService
             String disconnectCallType = "call_disconnect";
 
             if (startCallType.equals(notifDataType) || disconnectCallType.equals(notifDataType)) {
-                if (!Settings.canDrawOverlays(this) && startCallType.equals(notifDataType)) {
+                if ((!Settings.canDrawOverlays(this) || !MainActivity.isAppInForeground()) && startCallType.equals(notifDataType)) {
                     sendNotifications(remoteMessage);
-                    return;
                 } else {
                     showUnlockScreen(remoteMessage, !isAppRunning());
-                    return;
                 }
-
+                return;
             }
 
             Map<String, String> data = remoteMessage.getData();
@@ -105,6 +104,12 @@ public class MyFirebaseMessagingService
                     .getInstance(MyFirebaseMessagingService.this);
             localBroadcastManager.sendBroadcast(new Intent(
                     "com.unlockscreenactivity.action.close"));
+            if (!MainActivity.isAppInForeground()) {
+                SharedPreferences sharedPref = this.getSharedPreferences("com.apollopatient", Context.MODE_PRIVATE);
+                Integer notificationId = sharedPref.getInt("com.apollopatient.call_start", -1);
+                NotificationManager notificationManager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
+                notificationManager.cancel(notificationId);
+            }
         }
     }
 
@@ -200,6 +205,10 @@ public class MyFirebaseMessagingService
         //end
 
         notificationManager.notify(oneTimeID, notificationBuilder.build());
+        SharedPreferences sharedPref = this.getSharedPreferences("com.apollopatient", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putInt("com.apollopatient.call_start", oneTimeID);
+        editor.apply();
     }
 
 

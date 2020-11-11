@@ -1,5 +1,6 @@
 package com.apollopatient;
 
+import android.app.ActivityManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -58,8 +59,8 @@ public class MainActivity extends ReactActivity {
             setReferrer( referrerString);
         }
 
-        //start
-        if (!Settings.canDrawOverlays(this)) {
+        // to dismiss call notification as soon as user comes to app 
+        if (!Settings.canDrawOverlays(this) || isAppInForeground()) {
             Uri incoming_call_notif = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
             ringtone = RingtoneManager.getRingtone(getApplicationContext(), incoming_call_notif);
             Log.e("notificationActivity", String.valueOf(getIntent().getIntExtra(NOTIFICATION_ID, -1)));
@@ -68,6 +69,12 @@ public class MainActivity extends ReactActivity {
             ringtone.stop();
         }
         //end
+    }
+
+    public static boolean isAppInForeground() {
+        ActivityManager.RunningAppProcessInfo appProcessInfo = new ActivityManager.RunningAppProcessInfo();
+        ActivityManager.getMyMemoryState(appProcessInfo);
+        return (appProcessInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND || appProcessInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_VISIBLE);
     }
 
     public static PendingIntent getActionIntent(int notificationId, Uri uri, Context context) {
