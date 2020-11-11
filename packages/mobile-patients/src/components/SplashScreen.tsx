@@ -117,6 +117,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const voipAppointmentId = useRef<string>('');
   const voipPatientId = useRef<string>('');
   const voipCallType = useRef<string>('');
+  const voipDoctorName = useRef<string>('');
 
   const config: Pubnub.PubnubConfig = {
     subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
@@ -203,6 +204,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         voipAppointmentId.current = notification.getData().appointmentId;
         voipPatientId.current = notification.getData().patientId;
         voipCallType.current = notification.getData().isVideo ? 'Video' : 'Audio';
+        voipDoctorName.current = notification.getData().name;
       }
     });
   };
@@ -212,6 +214,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   };
 
   const onDisconnetCallAction = () => {
+    fireWebengageEventForCallDecline();
     RNCallKeep.endAllCalls();
     pubnub.publish(
       {
@@ -225,6 +228,24 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         voipCallType.current = '';
       }
     );
+  };
+
+  const fireWebengageEventForCallDecline = () => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PATIENT_DECLINED_CALL] = {
+        'Patient User ID': voipPatientId.current,
+        'Patient name': '',
+        'Patient mobile number': '',
+        'Appointment Date time': null,
+        'Appointment display ID': null,
+        'Appointment ID': voipAppointmentId.current,
+        'Doctor Name': voipDoctorName.current,
+        'Speciality Name': '',
+        'Speciality ID': '',
+        'Doctor Type': '',
+        'Mode of Call': voipCallType.current === 'Video' ? 'Video' : 'Audio',
+        'Platform': 'App',
+    };
+    postWebEngageEvent(WebEngageEventName.PATIENT_DECLINED_CALL, eventAttributes);
   };
 
   const handleDeepLink = () => {

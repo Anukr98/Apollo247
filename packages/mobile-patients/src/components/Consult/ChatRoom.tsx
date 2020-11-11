@@ -841,6 +841,33 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     } catch (error) {}
   };
 
+  const fireWebengageEventForCallAnswer = (
+    eventName: 
+      | WebEngageEventName.PATIENT_ANSWERED_CALL
+      | WebEngageEventName.PATIENT_DECLINED_CALL
+      | WebEngageEventName.PATIENT_MISSED_CALL
+      | WebEngageEventName.CALL_DROPPED_UNKNOWN_REASON) => {
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.PATIENT_ANSWERED_CALL]
+      | WebEngageEvents[WebEngageEventName.PATIENT_DECLINED_CALL]
+      | WebEngageEvents[WebEngageEventName.PATIENT_MISSED_CALL]
+      | WebEngageEvents[WebEngageEventName.CALL_DROPPED_UNKNOWN_REASON] = {
+        'Patient User ID': g(currentPatient, 'id'),
+        'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+        'Patient mobile number': g(currentPatient, 'mobileNumber'),
+        'Appointment Date time': moment(g(appointmentData, 'appointmentDateTime')).toDate(),
+        'Appointment display ID': g(appointmentData, 'displayId')!,
+        'Appointment ID': g(appointmentData, 'id')!,
+        'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName')!,
+        'Speciality Name': g(appointmentData, 'doctorInfo', 'specialty', 'name')!,
+        'Speciality ID': g(appointmentData, 'doctorInfo', 'specialty', 'id')!,
+        'Doctor Type': g(appointmentData, 'doctorInfo', 'doctorType')!,
+        'Mode of Call': isAudioCall ? 'Audio' : 'Video',
+        'Platform': 'App',
+    };
+    postWebEngageEvent(eventName, eventAttributes);
+  };
+
   useEffect(() => {
     if (!currentPatient) {
       console.log('No current patients available');
@@ -874,6 +901,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   useEffect(() => {
     if (isVoipCall || fromIncomingCall) {
       joinCallHandler();
+    }
+
+    if (fromIncomingCall === false) { // not undefined
+      fireWebengageEventForCallAnswer(WebEngageEventName.PATIENT_DECLINED_CALL);
+    } else if (fromIncomingCall === true) {
+      fireWebengageEventForCallAnswer(WebEngageEventName.PATIENT_ANSWERED_CALL);
     }
     updateNumberOfParticipants();
   }, []);
@@ -1915,6 +1948,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           WebEngageEventName.PATIENT_SESSION_ERROR,
           JSON.stringify(error)
         );
+        fireWebengageEventForCallAnswer(WebEngageEventName.CALL_DROPPED_UNKNOWN_REASON);
         callEndWebengageEvent('Network');
         eventsAfterConnectionDestroyed();
         setTimeout(() => {
@@ -2447,7 +2481,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   let insertText: object[] = [];
-  const newmessage: { message: string }[] = [];
+  const newmessage: { 
+    message: string,
+    duration: string,
+  }[] = [];
 
   const getHistory = (timetoken: number) => {
     setLoading(true);
@@ -2482,15 +2519,23 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           setLoading(false);
 
           if (messages.length !== newmessage.length) {
-            if (newmessage[newmessage.length - 1].message === startConsultMsg) {
+            const lastMessage = newmessage[newmessage.length - 1];
+            if (lastMessage.message === startConsultMsg) {
               jrDoctorJoined.current = false;
               updateSessionAPI();
               checkingAppointmentDates();
             }
-            if (newmessage[newmessage.length - 1].message === startConsultjr) {
+            if (lastMessage.message === startConsultjr) {
               jrDoctorJoined.current = true;
               updateSessionAPI();
               checkingAppointmentDates();
+            }
+
+            if ((lastMessage.message === 'Audio call ended' 
+              || lastMessage.message === 'Video call ended')
+              && lastMessage.duration === '00 : 00') 
+              {
+                fireWebengageEventForCallAnswer(WebEngageEventName.PATIENT_MISSED_CALL);
             }
 
             if (msgs.length == 100) {
@@ -6110,6 +6155,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               }
             });
             postAppointmentWEGEvent(WebEngageEventName.PATIENT_JOINED_CONSULT);
+            fireWebengageEventForCallAnswer(WebEngageEventName.PATIENT_ANSWERED_CALL);
           }}
         >
           <PickCallIcon

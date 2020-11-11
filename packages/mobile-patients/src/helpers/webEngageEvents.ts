@@ -201,6 +201,10 @@ export enum WebEngageEventName {
   BOOK_AGAIN_CANCELLED_APPOINTMENT = 'Book again clicked from cancelled appointment',
   VIEW_DETAILS_PAST_APPOINTMENT = 'View details clicked on past appointment',
   BOOK_APPOINTMENT_CHAT_ROOM = 'Book appointment clicked inside consult room',
+  PATIENT_ANSWERED_CALL = 'Patient Answered the call',
+  PATIENT_DECLINED_CALL = 'Patient Declined the call',
+  PATIENT_MISSED_CALL = 'Patient Missed the call',
+  CALL_DROPPED_UNKNOWN_REASON = 'Call Dropped Due to Unknown Reason',
   // Medicine Events
   PHARMACY_AUTO_SELECT_LOCATION_CLICKED = 'Pharmacy Auto Select Location Clicked',
   PHARMACY_ENTER_DELIVERY_PINCODE_CLICKED = 'Pharmacy Enter Delivery Pincode Clicked',
@@ -451,6 +455,21 @@ export interface FollowUpAppointment {
   isConsultStarted: boolean;
   Prescription: string;
 }
+
+export interface consultCallEndData {
+  'Patient User ID': string;
+  'Patient name': string;
+  'Patient mobile number': string;
+  'Appointment Date time': Date | null;
+  'Appointment display ID': number | null;
+  'Appointment ID': string;
+  'Doctor Name': string;
+  'Speciality Name': string;
+  'Speciality ID': string;
+  'Doctor Type': string;
+  'Mode of Call': 'Audio' | 'Video';
+  'Platform': 'App';
+};
 
 export interface WebEngageEvents {
   // ********** AppEvents ********** \\
@@ -1619,6 +1638,10 @@ export interface WebEngageEvents {
     'Ended by': 'Patient' | 'Senior Doctor' | 'Junior Doctor' | 'Network';
     'Call Duration': number;
   };
+  [WebEngageEventName.PATIENT_ANSWERED_CALL]: consultCallEndData;
+  [WebEngageEventName.PATIENT_DECLINED_CALL]: consultCallEndData;
+  [WebEngageEventName.PATIENT_MISSED_CALL]: consultCallEndData;
+  [WebEngageEventName.CALL_DROPPED_UNKNOWN_REASON]: consultCallEndData;
   [WebEngageEventName.PAST_APPOINTMENT_BOOK_FOLLOW_UP_CLICKED]: FollowUpAppointment;
   [WebEngageEventName.BOOK_AGAIN_CANCELLED_APPOINTMENT]: FollowUpAppointment;
   [WebEngageEventName.VIEW_DETAILS_PAST_APPOINTMENT]: FollowUpAppointment;
