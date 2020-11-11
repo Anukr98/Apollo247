@@ -72,14 +72,16 @@ export const useAllCurrentPatients = () => {
   // let allCurrentPatients: any;
   let currentPatient;
   let profileAllPatients;
+  let currentPatientWithHistory;
 
-  const { savePatientDetails } = useAppCommonData();
+  const { savePatientDetails, savePatientDetailsWithHistory } = useAppCommonData();
 
   // useEffect(() => {
   //   console.log('savePatientDetails', savePatientDetails);
   // }, [savePatientDetails]);
 
   const allCurrentPatients = savePatientDetails;
+  const allCurrentPatientsWithHistory = savePatientDetailsWithHistory;
 
   // if (mobileAPICalled) {
   //   allCurrentPatients =
@@ -103,6 +105,11 @@ export const useAllCurrentPatients = () => {
     currentPatient = allCurrentPatients
       ? allCurrentPatients.find((patient: any) => patient.id === currentPatientId) ||
         allCurrentPatients.find((patient: any) => patient.isUhidPrimary === true)
+      : null;
+
+    currentPatientWithHistory = allCurrentPatientsWithHistory
+      ? allCurrentPatientsWithHistory.find((patient: any) => patient.id === currentPatientId) ||
+        allCurrentPatientsWithHistory.find((patient: any) => patient.isUhidPrimary === true)
       : null;
   }
 
@@ -129,5 +136,6 @@ export const useAllCurrentPatients = () => {
     setCurrentPatientId,
     currentPatientId,
     profileAllPatients,
+    currentPatientWithHistory,
   };
 };

@@ -1,6 +1,7 @@
 import {
   GET_CURRENT_PATIENTS,
   GET_PATIENTS_MOBILE,
+  GET_PATIENTS_MOBILE_WITH_HISTORY,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
@@ -61,7 +62,7 @@ export interface AuthContextProps {
   signOut: (() => void) | null;
 
   hasAuthToken: boolean;
-  getPatientApiCall: (() => Promise<unknown>) | null;
+  getPatientApiCall: ((containsHistory?: boolean) => Promise<unknown>) | null;
   getPatientByPrism: (() => Promise<unknown>) | null;
 
   mobileAPICalled: boolean;
@@ -206,7 +207,7 @@ export const AuthProvider: React.FC = (props) => {
 
   const [allPatients, setAllPatients] = useState<AuthContextProps['allPatients']>(null);
 
-  const { setSavePatientDetails } = useAppCommonData();
+  const { setSavePatientDetails, setSavePatientDetailsWithHistory } = useAppCommonData();
 
   const sendOtp = (customToken: string) => {
     return new Promise(async (resolve, reject) => {
@@ -306,7 +307,7 @@ export const AuthProvider: React.FC = (props) => {
     } catch (error) {}
   };
 
-  const getPatientApiCall = async () => {
+  const getPatientApiCall = async (containsHistory: boolean) => {
     return new Promise(async (resolve, reject) => {
       try {
         const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
@@ -317,7 +318,7 @@ export const AuthProvider: React.FC = (props) => {
         storedPhoneNumber &&
           apolloClient
             .query<getPatientByMobileNumber, getPatientByMobileNumberVariables>({
-              query: GET_PATIENTS_MOBILE,
+              query: containsHistory ? GET_PATIENTS_MOBILE_WITH_HISTORY : GET_PATIENTS_MOBILE,
               variables: input,
               fetchPolicy: 'no-cache',
             })
@@ -332,15 +333,18 @@ export const AuthProvider: React.FC = (props) => {
               }
 
               const allPatients = g(data, 'data', 'getPatientByMobileNumber', 'patients');
-              setSavePatientDetails && setSavePatientDetails(allPatients);
-
-              setSignInError(false);
-              console.log('getPatientApiCall', data);
-              AsyncStorage.setItem('currentPatient', JSON.stringify(data));
-              AsyncStorage.setItem('callByPrism', 'false');
-              setAllPatients(data);
+              if (!containsHistory) {
+                AsyncStorage.setItem('currentPatient', JSON.stringify(data));
+                setSavePatientDetails && setSavePatientDetails(allPatients);
+                setSignInError(false);
+                console.log('getPatientApiCall', data);
+                AsyncStorage.setItem('callByPrism', 'false');
+                setAllPatients(data);
+                setMobileAPICalled(false);
+              } else {
+                setSavePatientDetailsWithHistory && setSavePatientDetailsWithHistory(allPatients);
+              }
               resolve(data);
-              setMobileAPICalled(false);
             })
             .catch(async (error) => {
               CommonBugFender('AuthProvider_getPatientApiCall', error);
