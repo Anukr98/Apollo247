@@ -433,8 +433,8 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
+        {testReportsData.length > 0 ? renderSearchAndFilterView() : null}
         <ScrollView style={{ flex: 1 }} bounces={false}>
-          {testReportsData.length > 0 ? renderSearchAndFilterView() : null}
           {renderTestReports()}
         </ScrollView>
         {renderAddButton()}

@@ -198,8 +198,8 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
+        {hospitalizationData?.length > 0 ? renderSearchAndFilterView() : null}
         <ScrollView style={{ flex: 1 }} bounces={false}>
-          {hospitalizationData?.length > 0 ? renderSearchAndFilterView() : null}
           {renderHospitalizationData()}
         </ScrollView>
         {renderAddButton()}

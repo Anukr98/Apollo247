@@ -182,8 +182,8 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
+        {medicalBillsData?.length > 0 ? renderSearchAndFilterView() : null}
         <ScrollView style={{ flex: 1 }} bounces={false}>
-          {medicalBillsData?.length > 0 ? renderSearchAndFilterView() : null}
           {renderMedicalBillsData()}
         </ScrollView>
         {renderAddButton()}

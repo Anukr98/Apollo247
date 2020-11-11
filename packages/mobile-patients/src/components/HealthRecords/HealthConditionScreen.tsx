@@ -236,8 +236,8 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
+        {healthConditionData?.length > 0 ? renderSearchAndFilterView() : null}
         <ScrollView style={{ flex: 1 }} bounces={false}>
-          {healthConditionData?.length > 0 ? renderSearchAndFilterView() : null}
           {renderHealthCondtionsData()}
         </ScrollView>
         {renderAddButton()}

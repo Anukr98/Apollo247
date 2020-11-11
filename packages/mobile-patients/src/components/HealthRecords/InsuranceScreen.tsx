@@ -178,8 +178,8 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
+        {medicalInsuranceData?.length > 0 ? renderSearchAndFilterView() : null}
         <ScrollView style={{ flex: 1 }} bounces={false}>
-          {medicalInsuranceData?.length > 0 ? renderSearchAndFilterView() : null}
           {renderMedicalInsuranceData()}
         </ScrollView>
         {renderAddButton()}

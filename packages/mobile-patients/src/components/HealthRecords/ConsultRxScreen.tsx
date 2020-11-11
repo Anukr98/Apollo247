@@ -675,8 +675,8 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
+        {consultRxData.length > 0 ? renderSearchAndFilterView() : null}
         <ScrollView style={{ flex: 1 }} bounces={false}>
-          {consultRxData.length > 0 ? renderSearchAndFilterView() : null}
           {renderConsults()}
         </ScrollView>
         {renderAddButton()}
