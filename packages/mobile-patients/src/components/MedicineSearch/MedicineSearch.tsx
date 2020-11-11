@@ -62,6 +62,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
       patientId: currentPatient?.id,
       type: SEARCH_TYPE.MEDICINE,
     },
+    fetchPolicy: 'no-cache',
   });
 
   const recentSearches = (data?.getPatientPastMedicineSearches as RecentSearch[]) || [];
@@ -156,7 +157,7 @@ export const MedicineSearch: React.FC<Props> = ({ navigation }) => {
     if (!recentSearches.length) return null;
     return (
       <MedSearchSection
-        title={'Recent Searches'}
+        title={'Recent Searched Products'}
         children={renderProducts(recentSearches.slice(0, 5))}
         childrenContainerStyle={styles.childrenContainer}
       />

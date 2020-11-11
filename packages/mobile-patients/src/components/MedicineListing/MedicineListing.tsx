@@ -234,8 +234,8 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
         data={isLoading ? [] : products}
         onEndReached={onEndReached}
         onEndReachedThreshold={0.1}
-        ListHeaderComponent={renderSections()}
         ListFooterComponent={renderLoading()}
+        ListEmptyComponent={renderProductsNotFound()}
         navigation={navigation}
         addToCartSource={searchText ? 'Pharmacy Full Search' : 'Pharmacy List'}
         movedFrom={
@@ -294,6 +294,14 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     return isLoading ? <ActivityIndicator color="green" size="large" /> : null;
   };
 
+  const renderProductsNotFound = () => {
+    const isFiltersApplied = Object.keys(filterBy).filter((k) => filterBy[k].length).length;
+    const text = `No results found for ‘${pageTitle}’. ${
+      isFiltersApplied ? 'Please try removing filters.' : ''
+    }`;
+    return !isLoading ? <Text style={styles.loadingMoreProducts}>{text}</Text> : null;
+  };
+
   const renderLoadingMore = () => {
     return isLoadingMore
       ? [
@@ -306,6 +314,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
   return (
     <SafeAreaView style={container}>
       {renderHeader()}
+      {renderSections()}
       {renderProducts()}
       {renderLoadingMore()}
       {renderSortByOverlay()}
