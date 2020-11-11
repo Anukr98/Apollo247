@@ -329,10 +329,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
                 <View style={styles.labelViewStyle}>
                   <Text style={styles.labelStyle}>{item.parameterName}</Text>
                 </View>
-                {detailRowView(
-                  'Normal Range',
-                  item.range ? item.range : `${item.minimum || ''} - ${item.maximum || 'N/A'}`
-                )}
+                {detailRowView('Normal Range', item.range ? item.range : 'N/A')}
                 {detailRowView('Units', unit || 'N/A')}
                 {detailRowView('Result', '')}
                 <Text style={styles.resultTextStyle}>{item.result || 'N/A'}</Text>

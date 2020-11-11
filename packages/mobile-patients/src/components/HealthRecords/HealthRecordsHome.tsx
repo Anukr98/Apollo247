@@ -231,6 +231,7 @@ const styles = StyleSheet.create({
   menuContainerStyle: {
     alignItems: 'flex-end',
     marginTop: 60,
+    marginLeft: -40,
   },
   itemTextStyle: {
     ...theme.viewStyles.text('M', 16, '#01475b'),
@@ -261,6 +262,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     paddingTop: 0,
     paddingBottom: 0,
+    marginBottom: 8,
     width: '70%',
     ...theme.fonts.IBMPlexSansMedium(18),
     color: theme.colors.SHERPA_BLUE,
@@ -397,13 +399,24 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [heightArrayValue, setHeightArrayValue] = useState<HEIGHT_ARRAY | string>(HEIGHT_ARRAY.CM);
   const [bloodGroup, setBloodGroup] = useState<BloodGroupArray>();
   const [overlaySpinner, setOverlaySpinner] = useState(false);
+  const isHeightAvailable =
+    currentPatient?.patientMedicalHistory?.height &&
+    currentPatient?.patientMedicalHistory?.height !== 'No Idea' &&
+    currentPatient?.patientMedicalHistory?.height !== 'Not Recorded';
+  const isWeightAvailable =
+    currentPatient?.patientMedicalHistory?.weight &&
+    currentPatient?.patientMedicalHistory?.weight !== 'No Idea' &&
+    currentPatient?.patientMedicalHistory?.weight !== 'Not Recorded';
 
   useEffect(() => {
     currentPatient && setProfile(currentPatient!);
     if (!currentPatient) {
       getPatientApiCall();
     }
+    console.log('currentPatient?.patientMedicalHistory?', currentPatient?.patientMedicalHistory);
+    setPatientHistoryValues();
   }, [currentPatient]);
+
   useEffect(() => {
     if (prismdataLoader || pastDataLoader) {
       !loading && setLoading!(true);
@@ -411,6 +424,23 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       loading && setLoading!(false);
     }
   }, [prismdataLoader, pastDataLoader]);
+
+  const setPatientHistoryValues = () => {
+    setHeight(isHeightAvailable ? currentPatient?.patientMedicalHistory?.height : '');
+    setWeight(isWeightAvailable ? currentPatient?.patientMedicalHistory?.weight : '');
+    setBloodGroup(
+      currentPatient?.patientMedicalHistory?.bloodGroup
+        ? {
+            key: getBloodGroupValue(
+              currentPatient?.patientMedicalHistory?.bloodGroup
+            ) as BloodGroups,
+            title: getBloodGroupValue(
+              currentPatient?.patientMedicalHistory?.bloodGroup?.toString()
+            ),
+          }
+        : undefined
+    );
+  };
 
   const fetchPastData = (filters: filterDataType[] = []) => {
     const filterArray = [];
@@ -695,9 +725,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           fetchPolicy: 'no-cache',
         })
         .then(({ data }) => {
-          setBloodGroup(undefined);
-          setHeight('');
-          setWeight('');
           setShowUpdateProfilePopup(false);
           getPatientApiCall();
         })
@@ -802,10 +829,20 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               </View>
               <View style={styles.heightWeightViewStyle}>
                 <HeightIcon style={{ width: 14, height: 22.14 }} />
-                {currentPatient?.patientMedicalHistory?.height &&
-                currentPatient?.patientMedicalHistory?.height !== 'No Idea' &&
-                currentPatient?.patientMedicalHistory?.height !== 'Not Recorded' ? (
-                  patientTextView(currentPatient?.patientMedicalHistory?.height || '')
+                {isHeightAvailable ? (
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={() => {
+                      setCurrentUpdatePopupId(1);
+                      setShowUpdateProfilePopup(true);
+                    }}
+                  >
+                    {patientTextView(
+                      currentPatient?.patientMedicalHistory?.height?.includes('’')
+                        ? currentPatient?.patientMedicalHistory?.height
+                        : currentPatient?.patientMedicalHistory?.height + ' cm'
+                    )}
+                  </TouchableOpacity>
                 ) : (
                   <TouchableOpacity
                     activeOpacity={1}
@@ -826,14 +863,20 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               </View>
               <View style={styles.heightWeightViewStyle}>
                 <WeightIcon style={{ width: 14, height: 14, paddingBottom: 8 }} />
-                {currentPatient?.patientMedicalHistory?.weight &&
-                currentPatient?.patientMedicalHistory?.weight !== 'No Idea' &&
-                currentPatient?.patientMedicalHistory?.weight !== 'Not Recorded' ? (
-                  patientTextView(
-                    currentPatient?.patientMedicalHistory?.weight
-                      ? currentPatient?.patientMedicalHistory?.weight
-                      : ''
-                  )
+                {isWeightAvailable ? (
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={() => {
+                      setCurrentUpdatePopupId(2);
+                      setShowUpdateProfilePopup(true);
+                    }}
+                  >
+                    {patientTextView(
+                      currentPatient?.patientMedicalHistory?.weight
+                        ? currentPatient?.patientMedicalHistory?.weight + ' Kgs'
+                        : '-'
+                    )}
+                  </TouchableOpacity>
                 ) : (
                   <TouchableOpacity
                     activeOpacity={1}
@@ -855,9 +898,17 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               <View style={styles.heightWeightViewStyle}>
                 <BloodIcon style={{ width: 14, height: 15.58 }} />
                 {currentPatient?.patientMedicalHistory?.bloodGroup ? (
-                  patientTextView(
-                    getBloodGroupValue(currentPatient?.patientMedicalHistory?.bloodGroup)
-                  )
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={() => {
+                      setCurrentUpdatePopupId(3);
+                      setShowUpdateProfilePopup(true);
+                    }}
+                  >
+                    {patientTextView(
+                      getBloodGroupValue(currentPatient?.patientMedicalHistory?.bloodGroup)
+                    )}
+                  </TouchableOpacity>
                 ) : (
                   <TouchableOpacity
                     activeOpacity={1}
@@ -1052,38 +1103,40 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       return { key: i.key, value: i.title };
     });
     return (
-      <MaterialMenu
-        options={heightArrayData}
-        selectedText={heightArrayValue}
-        menuContainerStyle={styles.menuContainerStyle}
-        itemContainer={{ height: 44.8, marginHorizontal: 12, width: 150 / 2 }}
-        itemTextStyle={styles.itemTextStyle}
-        selectedTextStyle={styles.selectedTextStyle}
-        lastContainerStyle={{ borderBottomWidth: 0 }}
-        bottomPadding={{ paddingBottom: 0 }}
-        onPress={(selected) => {
-          setHeightArrayValue(selected?.key);
-        }}
-      >
-        <View style={{ flexDirection: 'row', marginBottom: 8 }}>
-          <TextInput
-            placeholder={'Enter Height'}
-            style={styles.textInputTextStyle}
-            selectionColor={theme.colors.INPUT_CURSOR_COLOR}
-            placeholderTextColor={theme.colors.placeholderTextColor}
-            value={height}
-            onChangeText={(text) => {
-              setHeight(text);
-            }}
-          />
-          <View style={[styles.placeholderViewStyle, { marginLeft: 10 }]}>
-            <Text style={[styles.placeholderTextStyle]}>{heightArrayValue}</Text>
-            <View style={[{ flex: 1, alignItems: 'flex-end', marginLeft: 22 }]}>
-              <DropdownGreen />
+      <View style={{ flexDirection: 'row' }}>
+        <TextInput
+          placeholder={'Enter Height'}
+          style={styles.textInputTextStyle}
+          selectionColor={theme.colors.INPUT_CURSOR_COLOR}
+          placeholderTextColor={theme.colors.placeholderTextColor}
+          value={height}
+          onChangeText={(text) => {
+            setHeight(text);
+          }}
+        />
+        <MaterialMenu
+          options={heightArrayData}
+          selectedText={heightArrayValue}
+          menuContainerStyle={styles.menuContainerStyle}
+          itemContainer={{ height: 44.8, marginHorizontal: 12, width: 150 / 2 }}
+          itemTextStyle={styles.itemTextStyle}
+          selectedTextStyle={styles.selectedTextStyle}
+          lastContainerStyle={{ borderBottomWidth: 0 }}
+          bottomPadding={{ paddingBottom: 0 }}
+          onPress={(selected) => {
+            setHeightArrayValue(selected?.key);
+          }}
+        >
+          <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+            <View style={[styles.placeholderViewStyle, { marginLeft: 10 }]}>
+              <Text style={[styles.placeholderTextStyle]}>{heightArrayValue}</Text>
+              <View style={[{ flex: 1, alignItems: 'flex-end', marginLeft: 22 }]}>
+                <DropdownGreen />
+              </View>
             </View>
           </View>
-        </View>
-      </MaterialMenu>
+        </MaterialMenu>
+      </View>
     );
   };
 
@@ -1107,9 +1160,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       <View style={styles.closeIconViewStyle}>
         <TouchableOpacity
           onPress={() => {
-            setHeight('');
-            setWeight('');
-            setBloodGroup(undefined);
+            setPatientHistoryValues();
             setShowUpdateProfilePopup(false);
           }}
         >
@@ -1130,14 +1181,14 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     const onPressUpdate = () => {
       if (currentUpdatePopupId === 1) {
         updateMedicalParameters(
-          height + ' ' + heightArrayValue,
+          height,
           currentPatient?.patientMedicalHistory?.weight,
           currentPatient?.patientMedicalHistory?.bloodGroup
         );
       } else if (currentUpdatePopupId === 2) {
         updateMedicalParameters(
           currentPatient?.patientMedicalHistory?.height,
-          weight + ' Kgs',
+          weight,
           currentPatient?.patientMedicalHistory?.bloodGroup
         );
       } else {
