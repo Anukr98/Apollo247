@@ -843,6 +843,33 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     } catch (error) {}
   };
 
+  const fireWebengageEventForCallAnswer = (
+    eventName: 
+      | WebEngageEventName.PATIENT_ANSWERED_CALL
+      | WebEngageEventName.PATIENT_DECLINED_CALL
+      | WebEngageEventName.PATIENT_MISSED_CALL
+      | WebEngageEventName.CALL_DROPPED_UNKNOWN_REASON) => {
+    const eventAttributes:
+      | WebEngageEvents[WebEngageEventName.PATIENT_ANSWERED_CALL]
+      | WebEngageEvents[WebEngageEventName.PATIENT_DECLINED_CALL]
+      | WebEngageEvents[WebEngageEventName.PATIENT_MISSED_CALL]
+      | WebEngageEvents[WebEngageEventName.CALL_DROPPED_UNKNOWN_REASON] = {
+        'Patient User ID': g(currentPatient, 'id'),
+        'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+        'Patient mobile number': g(currentPatient, 'mobileNumber'),
+        'Appointment Date time': moment(g(appointmentData, 'appointmentDateTime')).toDate(),
+        'Appointment display ID': null,
+        'Appointment ID': g(appointmentData, 'id')!,
+        'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName')!,
+        'Speciality Name': g(appointmentData, 'doctorInfo', 'specialty', 'name')!,
+        'Speciality ID': g(appointmentData, 'doctorInfo', 'specialty', 'id')!,
+        'Doctor Type': g(appointmentData, 'doctorInfo', 'doctorType')!,
+        'Mode of Call': isAudioCall ? 'Audio' : 'Video',
+        'Platform': 'App',
+    };
+    postWebEngageEvent(eventName, eventAttributes);
+  };
+
   useEffect(() => {
     if (!currentPatient) {
       console.log('No current patients available');
@@ -870,6 +897,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   useEffect(() => {
     if (isVoipCall || fromIncomingCall) {
       joinCallHandler();
+    }
+
+    if (fromIncomingCall === false) { // not undefined
+      fireWebengageEventForCallAnswer(WebEngageEventName.PATIENT_DECLINED_CALL);
+    } else if (fromIncomingCall === true) {
+      fireWebengageEventForCallAnswer(WebEngageEventName.PATIENT_ANSWERED_CALL);
     }
     updateNumberOfParticipants();
   }, []);
@@ -2789,6 +2822,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const pubNubMessages = (message: Pubnub.MessageEvent) => {
     console.log('pubNubMessages', message.message.sentBy);
     if (message.message.isTyping) {
+      const pubnubMessage = message.message;
+      if ((pubnubMessage.message === 'Audio call ended' || pubnubMessage.message === 'Video call ended') 
+        && pubnubMessage.duration === '00 : 00') {
+          fireWebengageEventForCallAnswer(WebEngageEventName.PATIENT_MISSED_CALL);
+      }
       if (message.message.message === audioCallMsg && !patientJoinedCall.current) {
         // if patient has not joined meeting room
         isAudio.current = true;
@@ -2840,6 +2878,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         message.message.message === 'Audio call ended' ||
         message.message.message === 'Video call ended'
       ) {
+        // if (message.message.duration === '00 : 00') {
+        //   if (message.message.sentBy === 'DOCTOR' && message.publisher === 'DOCTOR') {
+        //     console.log('WebEngageEventName.PATIENT_DECLINED_CALL----------------------------');
+        //     fireWebengageEventForCallAnswer(WebEngageEventName.PATIENT_DECLINED_CALL);
+        //   } else {
+        //     console.log('WebEngageEventName.PATIENT_MISSED_CALL----------------------------');
+        //     fireWebengageEventForCallAnswer(WebEngageEventName.PATIENT_MISSED_CALL);
+        //   }
+        // }
         AsyncStorage.setItem('callDisconnected', 'true');
         setOnSubscribe(false);
         callhandelBack = true;
@@ -6098,6 +6145,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               }
             });
             postAppointmentWEGEvent(WebEngageEventName.PATIENT_JOINED_CONSULT);
+            fireWebengageEventForCallAnswer(WebEngageEventName.PATIENT_ANSWERED_CALL);
           }}
         >
           <PickCallIcon
