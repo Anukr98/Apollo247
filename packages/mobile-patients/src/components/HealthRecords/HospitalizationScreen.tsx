@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 30,
   },
   sectionHeaderTitleStyle: {
-    ...theme.viewStyles.text('SB', 18, '#02475B', 1, 23.4),
+    ...theme.viewStyles.text('SB', 18, theme.colors.LIGHT_BLUE, 1, 23.4),
     marginBottom: 3,
   },
 });
@@ -107,7 +107,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
   const renderSearchAndFilterView = () => {
     return (
       <View style={styles.searchFilterViewStyle}>
-        <Text style={{ ...theme.viewStyles.text('SB', 23, '#02475B', 1, 30) }}>
+        <Text style={{ ...theme.viewStyles.text('SB', 23, theme.colors.LIGHT_BLUE, 1, 30) }}>
           {'Hospitalization'}
         </Text>
       </View>

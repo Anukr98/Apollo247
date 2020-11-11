@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     width: '100%',
     borderBottomWidth: 2,
     paddingTop: 0,
-    borderColor: '#0087BA',
+    borderColor: theme.colors.SKY_BLUE,
   },
   placeholderStyle: {
     color: theme.colors.placeholderTextColor,
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   textInputStyle: {
-    ...theme.viewStyles.text('M', 16, '#0087BA', 1, 20.8),
+    ...theme.viewStyles.text('M', 16, theme.colors.SKY_BLUE, 1, 20.8),
     paddingHorizontal: 14,
     flex: 1,
     paddingTop: 0,
@@ -227,6 +227,7 @@ const styles = StyleSheet.create({
     paddingLeft: 5,
     marginRight: 20,
     marginTop: 11,
+    textAlignVertical: 'top',
   },
   listItemViewStyle: {
     marginTop: 32,
@@ -234,7 +235,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.5,
   },
   recordTypeTextStyle: {
-    ...theme.viewStyles.text('R', 14, '#0087BA', 1, 18.2),
+    ...theme.viewStyles.text('R', 14, theme.colors.SKY_BLUE, 1, 18.2),
     marginTop: 8,
     marginBottom: 30,
   },
@@ -246,17 +247,17 @@ const styles = StyleSheet.create({
   },
   imageStyle: { height: 72, width: 60 },
   plusTextStyle: {
-    ...theme.viewStyles.text('R', 24, '#02475B', 1, 31.2),
+    ...theme.viewStyles.text('R', 24, theme.colors.LIGHT_BLUE, 1, 31.2),
     textAlign: 'center',
     paddingTop: 5,
   },
   addMoreTextStyle: {
-    ...theme.viewStyles.text('R', 10, '#02475B', 1, 13),
+    ...theme.viewStyles.text('R', 10, theme.colors.LIGHT_BLUE, 1, 13),
     textAlign: 'center',
     flex: 1,
   },
   ensureTextStyle: {
-    ...theme.viewStyles.text('R', 12, '#02475B', 1, 15.6),
+    ...theme.viewStyles.text('R', 12, theme.colors.LIGHT_BLUE, 1, 15.6),
     textAlign: 'center',
   },
   reviewPhotoImageStyle: {
@@ -295,7 +296,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   doctorPrefixTextInputStyle: {
-    ...theme.viewStyles.text('M', 16, '#0087BA', 1, 20.8),
+    ...theme.viewStyles.text('M', 16, theme.colors.SKY_BLUE, 1, 20.8),
     flex: 1,
     paddingTop: 0,
     paddingBottom: 0,
@@ -303,6 +304,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 0,
     paddingRight: 14,
     paddingLeft: 2,
+  },
+  morningViewStyle: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginHorizontal: 14,
+  },
+  morningTextStyle: {
+    ...theme.viewStyles.text('R', 14, theme.colors.LIGHT_BLUE, 1, 18.2),
+    marginLeft: 11,
+  },
+  allergyViewStyle: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 16,
+    marginHorizontal: 14,
+    marginBottom: 20,
   },
 });
 
@@ -1411,7 +1428,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   ) => {
     const renderTitle = () => {
       return (
-        <Text style={{ ...theme.viewStyles.text('R', 14, '#02475B', 1, 18.2) }}>
+        <Text style={{ ...theme.viewStyles.text('R', 14, theme.colors.LIGHT_BLUE, 1, 18.2) }}>
           {title}
           {mandatoryField ? <Text style={{ color: '#E50000' }}>{' *'}</Text> : null}
         </Text>
@@ -1434,7 +1451,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         pad={0}
         containerStyle={[styles.doctorPrefixContainerStyle, style]}
         leftElement={
-          <Text style={{ ...theme.viewStyles.text('M', 16, '#0087BA', 1, 20.8) }}>{'Dr.'}</Text>
+          <Text style={{ ...theme.viewStyles.text('M', 16, theme.colors.SKY_BLUE, 1, 20.8) }}>
+            {'Dr.'}
+          </Text>
         }
       />
     );
@@ -1544,7 +1563,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           <TextInput
             placeholder={'Enter Record name'}
             style={styles.textInputStyle}
-            selectionColor={'#0087BA'}
+            selectionColor={theme.colors.SKY_BLUE}
             numberOfLines={1}
             value={testName}
             placeholderTextColor={theme.colors.placeholderTextColor}
@@ -1562,7 +1581,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             <TextInput
               placeholder={'Enter Record prescribed by'}
               style={styles.doctorPrefixTextInputStyle}
-              selectionColor={'#0087BA'}
+              selectionColor={theme.colors.SKY_BLUE}
               numberOfLines={1}
               value={docName}
               placeholderTextColor={theme.colors.placeholderTextColor}
@@ -1597,7 +1616,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
 
     const renderTitle = () => {
       return (
-        <Text style={{ ...theme.viewStyles.text('R', 14, '#02475B', 1, 18.2) }}>
+        <Text style={{ ...theme.viewStyles.text('R', 14, theme.colors.LIGHT_BLUE, 1, 18.2) }}>
           {'Record details'}
         </Text>
       );
@@ -1609,7 +1628,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           <TextInput
             placeholder={'Enter Record name'}
             style={styles.textInputStyle}
-            selectionColor={'#0087BA'}
+            selectionColor={theme.colors.SKY_BLUE}
             numberOfLines={1}
             value={testName}
             placeholderTextColor={theme.colors.placeholderTextColor}
@@ -1627,7 +1646,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             <TextInput
               placeholder={'Enter Record doctor’s name'}
               style={styles.doctorPrefixTextInputStyle}
-              selectionColor={'#0087BA'}
+              selectionColor={theme.colors.SKY_BLUE}
               numberOfLines={1}
               value={docName}
               placeholderTextColor={theme.colors.placeholderTextColor}
@@ -1653,7 +1672,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               <TextInput
                 placeholder={'Enter name'}
                 style={styles.textInputStyle}
-                selectionColor={'#0087BA'}
+                selectionColor={theme.colors.SKY_BLUE}
                 numberOfLines={1}
                 placeholderTextColor={theme.colors.placeholderTextColor}
                 underlineColorAndroid={'transparent'}
@@ -1671,7 +1690,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 <TextInput
                   placeholder={'0'}
                   style={styles.textInputStyle}
-                  selectionColor={'#0087BA'}
+                  selectionColor={theme.colors.SKY_BLUE}
                   numberOfLines={1}
                   placeholderTextColor={theme.colors.placeholderTextColor}
                   underlineColorAndroid={'transparent'}
@@ -1682,7 +1701,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 <TextInput
                   placeholder={'unit'}
                   style={styles.textInputStyle}
-                  selectionColor={'#0087BA'}
+                  selectionColor={theme.colors.SKY_BLUE}
                   numberOfLines={1}
                   placeholderTextColor={theme.colors.placeholderTextColor}
                   underlineColorAndroid={'transparent'}
@@ -1701,7 +1720,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 <TextInput
                   placeholder={'min'}
                   style={styles.textInputStyle}
-                  selectionColor={'#0087BA'}
+                  selectionColor={theme.colors.SKY_BLUE}
                   numberOfLines={1}
                   placeholderTextColor={theme.colors.placeholderTextColor}
                   underlineColorAndroid={'transparent'}
@@ -1712,7 +1731,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 <TextInput
                   placeholder={'unit'}
                   style={styles.textInputStyle}
-                  selectionColor={'#0087BA'}
+                  selectionColor={theme.colors.SKY_BLUE}
                   numberOfLines={1}
                   placeholderTextColor={theme.colors.placeholderTextColor}
                   underlineColorAndroid={'transparent'}
@@ -1726,7 +1745,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 <TextInput
                   placeholder={'max'}
                   style={styles.textInputStyle}
-                  selectionColor={'#0087BA'}
+                  selectionColor={theme.colors.SKY_BLUE}
                   numberOfLines={1}
                   placeholderTextColor={theme.colors.placeholderTextColor}
                   underlineColorAndroid={'transparent'}
@@ -1737,7 +1756,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 <TextInput
                   placeholder={'unit'}
                   style={styles.textInputStyle}
-                  selectionColor={'#0087BA'}
+                  selectionColor={theme.colors.SKY_BLUE}
                   numberOfLines={1}
                   placeholderTextColor={theme.colors.placeholderTextColor}
                   underlineColorAndroid={'transparent'}
@@ -1765,8 +1784,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           placeholder={'Enter Additional Notes'}
           style={[styles.textInputStyle, styles.additionalTextInputStyle]}
           multiline
-          selectionColor={'#0087BA'}
-          numberOfLines={1}
+          selectionColor={theme.colors.SKY_BLUE}
           value={additionalNotes}
           placeholderTextColor={theme.colors.placeholderTextColor}
           underlineColorAndroid={'transparent'}
@@ -1789,7 +1807,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             <TextInput
               placeholder={'Enter Record doctor’s name'}
               style={styles.doctorPrefixTextInputStyle}
-              selectionColor={'#0087BA'}
+              selectionColor={theme.colors.SKY_BLUE}
               numberOfLines={1}
               value={docName}
               placeholderTextColor={theme.colors.placeholderTextColor}
@@ -1807,7 +1825,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           <TextInput
             placeholder={'Enter Record from'}
             style={styles.textInputStyle}
-            selectionColor={'#0087BA'}
+            selectionColor={theme.colors.SKY_BLUE}
             numberOfLines={1}
             value={testName}
             placeholderTextColor={theme.colors.placeholderTextColor}
@@ -1832,7 +1850,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           <TextInput
             placeholder={'Enter Record hospital name'}
             style={styles.textInputStyle}
-            selectionColor={'#0087BA'}
+            selectionColor={theme.colors.SKY_BLUE}
             numberOfLines={1}
             value={docName}
             placeholderTextColor={theme.colors.placeholderTextColor}
@@ -1849,7 +1867,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           <TextInput
             placeholder={'Enter Record bill number'}
             style={styles.textInputStyle}
-            selectionColor={'#0087BA'}
+            selectionColor={theme.colors.SKY_BLUE}
             numberOfLines={1}
             value={testName}
             placeholderTextColor={theme.colors.placeholderTextColor}
@@ -1903,7 +1921,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           <TextInput
             placeholder={'Enter Record name'}
             style={styles.textInputStyle}
-            selectionColor={'#0087BA'}
+            selectionColor={theme.colors.SKY_BLUE}
             numberOfLines={1}
             value={testName}
             placeholderTextColor={theme.colors.placeholderTextColor}
@@ -1920,7 +1938,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           <TextInput
             placeholder={'Enter Record ID number'}
             style={styles.textInputStyle}
-            selectionColor={'#0087BA'}
+            selectionColor={theme.colors.SKY_BLUE}
             numberOfLines={1}
             value={docName}
             placeholderTextColor={theme.colors.placeholderTextColor}
@@ -1937,7 +1955,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           <TextInput
             placeholder={'Enter Record insurance amount '}
             style={styles.textInputStyle}
-            selectionColor={'#0087BA'}
+            selectionColor={theme.colors.SKY_BLUE}
             numberOfLines={1}
             value={locationName}
             keyboardType={'numbers-and-punctuation'}
@@ -1978,7 +1996,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               <TextInput
                 placeholder={'Enter name of allergy'}
                 style={[styles.textInputStyle, { paddingHorizontal: 0, marginBottom: 0 }]}
-                selectionColor={'#0087BA'}
+                selectionColor={theme.colors.SKY_BLUE}
                 numberOfLines={1}
                 value={allergyName}
                 keyboardType={'numbers-and-punctuation'}
@@ -2039,7 +2057,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               <TextInput
                 placeholder={'Enter name of doctor'}
                 style={styles.doctorPrefixTextInputStyle}
-                selectionColor={'#0087BA'}
+                selectionColor={theme.colors.SKY_BLUE}
                 numberOfLines={1}
                 value={allergyDocName}
                 keyboardType={'numbers-and-punctuation'}
@@ -2087,7 +2105,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             <TextInput
               placeholder={'Enter allergy reaction'}
               style={[styles.textInputStyle, { marginBottom: 14 }]}
-              selectionColor={'#0087BA'}
+              selectionColor={theme.colors.SKY_BLUE}
               numberOfLines={1}
               value={allergyReaction}
               keyboardType={'numbers-and-punctuation'}
@@ -2107,7 +2125,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 placeholder={'Enter additional notes'}
                 style={[styles.textInputStyle, styles.additionalTextInputStyle]}
                 multiline
-                selectionColor={'#0087BA'}
+                selectionColor={theme.colors.SKY_BLUE}
                 numberOfLines={1}
                 value={allergyAdditionalNotes}
                 placeholderTextColor={theme.colors.placeholderTextColor}
@@ -2148,7 +2166,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               <TextInput
                 placeholder={'Enter name of health restriction'}
                 style={[styles.textInputStyle, { paddingHorizontal: 0, marginBottom: 0 }]}
-                selectionColor={'#0087BA'}
+                selectionColor={theme.colors.SKY_BLUE}
                 numberOfLines={1}
                 value={healthRestrictionName}
                 keyboardType={'numbers-and-punctuation'}
@@ -2209,7 +2227,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               <TextInput
                 placeholder={'Enter suggested doctor name'}
                 style={styles.doctorPrefixTextInputStyle}
-                selectionColor={'#0087BA'}
+                selectionColor={theme.colors.SKY_BLUE}
                 numberOfLines={1}
                 value={healthRestrictionDocName}
                 keyboardType={'numbers-and-punctuation'}
@@ -2286,7 +2304,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               <TextInput
                 placeholder={'Enter medical condition name'}
                 style={[styles.textInputStyle, { paddingHorizontal: 0, marginBottom: 0 }]}
-                selectionColor={'#0087BA'}
+                selectionColor={theme.colors.SKY_BLUE}
                 numberOfLines={1}
                 value={medicalConditionName}
                 keyboardType={'numbers-and-punctuation'}
@@ -2308,7 +2326,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           <TextInput
             placeholder={'Enter name of doctor'}
             style={styles.doctorPrefixTextInputStyle}
-            selectionColor={'#0087BA'}
+            selectionColor={theme.colors.SKY_BLUE}
             numberOfLines={1}
             value={medicalConditionDocName}
             keyboardType={'numbers-and-punctuation'}
@@ -2401,7 +2419,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 placeholder={'Enter additional notes'}
                 style={[styles.textInputStyle, styles.additionalTextInputStyle]}
                 multiline
-                selectionColor={'#0087BA'}
+                selectionColor={theme.colors.SKY_BLUE}
                 numberOfLines={1}
                 value={medicalConditionAdditionalNotes}
                 placeholderTextColor={theme.colors.placeholderTextColor}
@@ -2442,7 +2460,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               <TextInput
                 placeholder={'Enter name of medicine'}
                 style={[styles.textInputStyle, { paddingHorizontal: 0, marginBottom: 0 }]}
-                selectionColor={'#0087BA'}
+                selectionColor={theme.colors.SKY_BLUE}
                 numberOfLines={1}
                 value={medicationMedicineName}
                 keyboardType={'numbers-and-punctuation'}
@@ -2465,7 +2483,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             <TextInput
               placeholder={'Enter medical condition'}
               style={[styles.textInputStyle, { marginBottom: 20 }]}
-              selectionColor={'#0087BA'}
+              selectionColor={theme.colors.SKY_BLUE}
               numberOfLines={1}
               value={medicationCondition}
               keyboardType={'numbers-and-punctuation'}
@@ -2481,7 +2499,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               <TextInput
                 placeholder={'Enter medication doctor name'}
                 style={styles.doctorPrefixTextInputStyle}
-                selectionColor={'#0087BA'}
+                selectionColor={theme.colors.SKY_BLUE}
                 numberOfLines={1}
                 value={medicationDocName}
                 keyboardType={'numbers-and-punctuation'}
@@ -2526,13 +2544,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               maximumDate={false}
               minimumDate={new Date()}
             />
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                marginHorizontal: 14,
-              }}
-            >
+            <View style={styles.morningViewStyle}>
               <TouchableOpacity
                 onPress={() => setIsMorningChecked(!isMorningChecked)}
                 style={{ flexDirection: 'row', flex: 1 }}
@@ -2542,11 +2554,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 ) : (
                   <PhrUncheckboxIcon style={{ width: 18, height: 18 }} />
                 )}
-                <Text
-                  style={{ ...theme.viewStyles.text('R', 14, '#02475B', 1, 18.2), marginLeft: 11 }}
-                >
-                  {'Morning'}
-                </Text>
+                <Text style={styles.morningTextStyle}>{'Morning'}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => setIsNoonChecked(!isNoonChecked)}
@@ -2557,11 +2565,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 ) : (
                   <PhrUncheckboxIcon style={{ width: 18, height: 18 }} />
                 )}
-                <Text
-                  style={{ ...theme.viewStyles.text('R', 14, '#02475B', 1, 18.2), marginLeft: 11 }}
-                >
-                  {'Noon'}
-                </Text>
+                <Text style={styles.morningTextStyle}>{'Noon'}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => setIsEveningChecked(!isEveningChecked)}
@@ -2572,11 +2576,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 ) : (
                   <PhrUncheckboxIcon style={{ width: 18, height: 18 }} />
                 )}
-                <Text
-                  style={{ ...theme.viewStyles.text('R', 14, '#02475B', 1, 18.2), marginLeft: 11 }}
-                >
-                  {'Evening'}
-                </Text>
+                <Text style={styles.morningTextStyle}>{'Evening'}</Text>
               </TouchableOpacity>
             </View>
             <View style={{ marginTop: 32 }}>
@@ -2585,7 +2585,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 placeholder={'Enter additional notes'}
                 style={[styles.textInputStyle, styles.additionalTextInputStyle]}
                 multiline
-                selectionColor={'#0087BA'}
+                selectionColor={theme.colors.SKY_BLUE}
                 numberOfLines={1}
                 value={medicationAdditionalNotes}
                 placeholderTextColor={theme.colors.placeholderTextColor}
@@ -2605,15 +2605,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
 
   const renderAllergyTopView = () => {
     return (
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          marginTop: 16,
-          marginHorizontal: 14,
-          marginBottom: 20,
-        }}
-      >
+      <View style={styles.allergyViewStyle}>
         <TouchableOpacity
           onPress={() => setAllergyCheckbox(!allergyCheckbox)}
           style={{ flexDirection: 'row', flex: 1 }}
@@ -2623,9 +2615,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           ) : (
             <PhrUncheckboxIcon style={{ width: 18, height: 18 }} />
           )}
-          <Text style={{ ...theme.viewStyles.text('R', 14, '#02475B', 1, 18.2), marginLeft: 11 }}>
-            {'Yes'}
-          </Text>
+          <Text style={styles.morningTextStyle}>{'Yes'}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => setAllergyCheckbox(!allergyCheckbox)}
@@ -2636,9 +2626,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           ) : (
             <PhrUncheckboxIcon style={{ width: 18, height: 18 }} />
           )}
-          <Text style={{ ...theme.viewStyles.text('R', 14, '#02475B', 1, 18.2), marginLeft: 11 }}>
-            {'No'}
-          </Text>
+          <Text style={styles.morningTextStyle}>{'No'}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -2646,15 +2634,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
 
   const renderMedicationTopView = () => {
     return (
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          marginTop: 16,
-          marginHorizontal: 14,
-          marginBottom: 20,
-        }}
-      >
+      <View style={styles.allergyViewStyle}>
         <TouchableOpacity
           onPress={() => setMedicationCheckbox(!medicationCheckbox)}
           style={{ flexDirection: 'row', flex: 1 }}
@@ -2664,9 +2644,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           ) : (
             <PhrUncheckboxIcon style={{ width: 18, height: 18 }} />
           )}
-          <Text style={{ ...theme.viewStyles.text('R', 14, '#02475B', 1, 18.2), marginLeft: 11 }}>
-            {'Yes'}
-          </Text>
+          <Text style={styles.morningTextStyle}>{'Yes'}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => setMedicationCheckbox(!medicationCheckbox)}
@@ -2677,9 +2655,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           ) : (
             <PhrUncheckboxIcon style={{ width: 18, height: 18 }} />
           )}
-          <Text style={{ ...theme.viewStyles.text('R', 14, '#02475B', 1, 18.2), marginLeft: 11 }}>
-            {'No'}
-          </Text>
+          <Text style={styles.morningTextStyle}>{'No'}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -2687,15 +2663,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
 
   const renderHealthRestrictionTopView = () => {
     return (
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          marginTop: 16,
-          marginHorizontal: 14,
-          marginBottom: 20,
-        }}
-      >
+      <View style={styles.allergyViewStyle}>
         <TouchableOpacity
           onPress={() => setHealthRestrictionCheckbox(!healthRestrictionCheckbox)}
           style={{ flexDirection: 'row', flex: 1 }}
@@ -2705,9 +2673,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           ) : (
             <PhrUncheckboxIcon style={{ width: 18, height: 18 }} />
           )}
-          <Text style={{ ...theme.viewStyles.text('R', 14, '#02475B', 1, 18.2), marginLeft: 11 }}>
-            {'Yes'}
-          </Text>
+          <Text style={styles.morningTextStyle}>{'Yes'}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => setHealthRestrictionCheckbox(!healthRestrictionCheckbox)}
@@ -2718,9 +2684,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           ) : (
             <PhrUncheckboxIcon style={{ width: 18, height: 18 }} />
           )}
-          <Text style={{ ...theme.viewStyles.text('R', 14, '#02475B', 1, 18.2), marginLeft: 11 }}>
-            {'No'}
-          </Text>
+          <Text style={styles.morningTextStyle}>{'No'}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -2728,15 +2692,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
 
   const renderMedicalConditionTopView = () => {
     return (
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          marginTop: 16,
-          marginHorizontal: 14,
-          marginBottom: 20,
-        }}
-      >
+      <View style={styles.allergyViewStyle}>
         <TouchableOpacity
           onPress={() => setMedicalConditionCheckbox(!medicalConditionCheckbox)}
           style={{ flexDirection: 'row', flex: 1 }}
@@ -2746,9 +2702,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           ) : (
             <PhrUncheckboxIcon style={{ width: 18, height: 18 }} />
           )}
-          <Text style={{ ...theme.viewStyles.text('R', 14, '#02475B', 1, 18.2), marginLeft: 11 }}>
-            {'Yes'}
-          </Text>
+          <Text style={styles.morningTextStyle}>{'Yes'}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => setMedicalConditionCheckbox(!healthRestrictionCheckbox)}
@@ -2759,9 +2713,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           ) : (
             <PhrUncheckboxIcon style={{ width: 18, height: 18 }} />
           )}
-          <Text style={{ ...theme.viewStyles.text('R', 14, '#02475B', 1, 18.2), marginLeft: 11 }}>
-            {'No'}
-          </Text>
+          <Text style={styles.morningTextStyle}>{'No'}</Text>
         </TouchableOpacity>
       </View>
     );

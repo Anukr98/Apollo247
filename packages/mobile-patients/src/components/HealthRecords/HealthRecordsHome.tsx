@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
   },
   hiTextStyle: {
     marginLeft: 20,
-    color: '#02475b',
+    color: theme.colors.LIGHT_BLUE,
     ...theme.fonts.IBMPlexSansSemiBold(36),
   },
   nameTextContainerStyle: {
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
   },
   nameTextStyle: {
     marginLeft: 5,
-    color: '#02475b',
+    color: theme.colors.LIGHT_BLUE,
     ...theme.fonts.IBMPlexSansSemiBold(36),
   },
   seperatorStyle: {
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
   },
   notifyUsersTextStyle: {
     ...theme.fonts.IBMPlexSansSemiBold(12),
-    color: '#0087BA',
+    color: theme.colors.SKY_BLUE,
     fontWeight: '500',
     paddingHorizontal: 20,
     marginBottom: 16,
@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   userHeightTextStyle: {
-    ...theme.viewStyles.text('SB', 16, '#02475B', 1, 20.8),
+    ...theme.viewStyles.text('SB', 16, theme.colors.LIGHT_BLUE, 1, 20.8),
     paddingLeft: 10,
     flex: 1,
     paddingTop: 0,
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   listItemTitleStyle: {
-    ...theme.viewStyles.text('M', 16, '#02475B', 1, 21),
+    ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 21),
     paddingHorizontal: 6,
     paddingLeft: 14,
   },
@@ -284,6 +284,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     marginBottom: 16,
   },
+  profileNameTextStyle: { ...theme.viewStyles.text('SB', 36, theme.colors.LIGHT_BLUE, 1, 47) },
 });
 
 type BloodGroupArray = {
@@ -781,11 +782,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         <View style={{ flexDirection: 'row' }}>
           {renderProfileImage()}
           <View style={{ marginLeft: 8 }}>
-            <Text
-              style={{ ...theme.viewStyles.text('SB', 36, '#02475B', 1, 47) }}
-              numberOfLines={1}
-            >
-              {'hi ' + (currentPatient && currentPatient!.firstName!.toLowerCase() + '!') || ''}
+            <Text style={styles.profileNameTextStyle} numberOfLines={1}>
+              {'hi ' + (currentPatient?.firstName?.toLowerCase() + '!') || ''}
             </Text>
             <View>
               <Text style={{ ...theme.viewStyles.text('R', 18, '#67919D', 1, 21) }}>
@@ -973,7 +971,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const renderHealthCategoriesView = () => {
     return (
       <View style={{ marginTop: 54, marginHorizontal: 20, marginBottom: 25 }}>
-        <Text style={{ ...theme.viewStyles.text('B', 18, '#02475B', 1, 21) }}>
+        <Text style={{ ...theme.viewStyles.text('B', 18, theme.colors.LIGHT_BLUE, 1, 21) }}>
           {'Health Categories'}
         </Text>
         <View style={styles.listItemCardStyle}>
@@ -989,7 +987,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const renderBillsInsuranceView = () => {
     return (
       <View style={{ marginHorizontal: 20, marginBottom: 14 }}>
-        <Text style={{ ...theme.viewStyles.text('B', 18, '#02475B', 1, 21) }}>
+        <Text style={{ ...theme.viewStyles.text('B', 18, theme.colors.LIGHT_BLUE, 1, 21) }}>
           {'More From Health'}
         </Text>
         <View style={styles.listItemCardStyle}>

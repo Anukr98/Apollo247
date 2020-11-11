@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 30,
   },
   sectionHeaderTitleStyle: {
-    ...theme.viewStyles.text('SB', 18, '#02475B', 1, 23.4),
+    ...theme.viewStyles.text('SB', 18, theme.colors.LIGHT_BLUE, 1, 23.4),
     marginBottom: 3,
   },
 });
@@ -102,7 +102,9 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
   const renderSearchAndFilterView = () => {
     return (
       <View style={styles.searchFilterViewStyle}>
-        <Text style={{ ...theme.viewStyles.text('SB', 23, '#02475B', 1, 30) }}>{'Insurance'}</Text>
+        <Text style={{ ...theme.viewStyles.text('SB', 23, theme.colors.LIGHT_BLUE, 1, 30) }}>
+          {'Insurance'}
+        </Text>
       </View>
     );
   };

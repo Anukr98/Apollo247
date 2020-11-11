@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(2, 71, 91, 0.2)',
   },
   blueCirleViewStyle: {
-    backgroundColor: '#02475B',
+    backgroundColor: theme.colors.LIGHT_BLUE,
     opacity: 0.6,
     width: 5,
     height: 5,
@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.yellowTextStyle,
   },
   separatorLineStyle: {
-    backgroundColor: '#02475B',
+    backgroundColor: theme.colors.LIGHT_BLUE,
     opacity: 0.2,
     height: 0.5,
     marginBottom: 23,
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansRegular(13),
   },
   insuranceAmountTextStyle: {
-    ...theme.viewStyles.text('SB', 18, '#0087BA', 1, 23.4),
+    ...theme.viewStyles.text('SB', 18, theme.colors.SKY_BLUE, 1, 23.4),
     marginTop: 11,
   },
 });
@@ -218,7 +218,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
               marginHorizontal: 8,
             }
           }
-          headingStyle={{ ...viewStyles.text('SB', 18, '#02475B', 1, 23) }}
+          headingStyle={{ ...viewStyles.text('SB', 18, theme.colors.LIGHT_BLUE, 1, 23) }}
           labelViewStyle={styles.collapseCardLabelViewStyle}
           onPress={() => setShowAdditionalNotes(!showAdditionalNotes)}
         >
@@ -305,7 +305,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
     const renderInsuranceAmount = () => {
       return (
         <View>
-          <Text style={{ ...viewStyles.text('SB', 16, '#02475B', 1, 21) }}>
+          <Text style={{ ...viewStyles.text('SB', 16, theme.colors.LIGHT_BLUE, 1, 21) }}>
             {'Insurance Amount'}
           </Text>
           <Text style={styles.insuranceAmountTextStyle}>{'Rs ' + data?.sumInsured}</Text>
@@ -318,7 +318,9 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         <>
           <View style={{ flexDirection: 'row' }}>
             <LabTestIcon style={{ height: 20, width: 19, marginRight: 14 }} />
-            <Text style={{ ...viewStyles.text('SB', 16, '#02475B', 1, 21) }}>{'Impressions'}</Text>
+            <Text style={{ ...viewStyles.text('SB', 16, theme.colors.LIGHT_BLUE, 1, 21) }}>
+              {'Impressions'}
+            </Text>
           </View>
           {data?.labTestResults?.map((item: any) => {
             const unit = item?.unit;
@@ -364,7 +366,9 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         <>
           <View style={{ flexDirection: 'row' }}>
             <PhrAllergyBlackIcon style={{ height: 21.27, width: 18, marginRight: 10 }} />
-            <Text style={{ ...viewStyles.text('SB', 16, '#02475B', 1, 21) }}>{'Impressions'}</Text>
+            <Text style={{ ...viewStyles.text('SB', 16, theme.colors.LIGHT_BLUE, 1, 21) }}>
+              {'Impressions'}
+            </Text>
           </View>
           <>
             {detailRowView('Severity', data?.severity || 'N/A')}
@@ -397,7 +401,9 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         <>
           <View style={{ flexDirection: 'row' }}>
             <PhrMedicationBlackIcon style={{ height: 19.65, width: 18, marginRight: 9 }} />
-            <Text style={{ ...viewStyles.text('SB', 16, '#02475B', 1, 21) }}>{'Impressions'}</Text>
+            <Text style={{ ...viewStyles.text('SB', 16, theme.colors.LIGHT_BLUE, 1, 21) }}>
+              {'Impressions'}
+            </Text>
           </View>
           <>
             {detailRowView('Medical Condition Name', data?.medicalCondition || 'N/A')}
@@ -415,7 +421,9 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         <>
           <View style={{ flexDirection: 'row' }}>
             <PhrSymptomIcon style={{ height: 20, width: 19.96, marginRight: 11.04 }} />
-            <Text style={{ ...viewStyles.text('SB', 16, '#02475B', 1, 21) }}>{'Impressions'}</Text>
+            <Text style={{ ...viewStyles.text('SB', 16, theme.colors.LIGHT_BLUE, 1, 21) }}>
+              {'Impressions'}
+            </Text>
           </View>
           <>
             {renderDurationView()}
@@ -432,7 +440,9 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         <>
           <View style={{ flexDirection: 'row' }}>
             <PhrRestrictionBlackIcon style={{ height: 18, width: 18, marginRight: 14 }} />
-            <Text style={{ ...viewStyles.text('SB', 16, '#02475B', 1, 21) }}>{'Impressions'}</Text>
+            <Text style={{ ...viewStyles.text('SB', 16, theme.colors.LIGHT_BLUE, 1, 21) }}>
+              {'Impressions'}
+            </Text>
           </View>
           <>
             {renderDurationView()}
@@ -453,7 +463,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
               marginHorizontal: 8,
             }
           }
-          headingStyle={{ ...viewStyles.text('SB', 18, '#02475B', 1, 23) }}
+          headingStyle={{ ...viewStyles.text('SB', 18, theme.colors.LIGHT_BLUE, 1, 23) }}
           labelViewStyle={styles.collapseCardLabelViewStyle}
           onPress={() => setshowPrescription(!showPrescription)}
         >
@@ -601,31 +611,31 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
     };
     const renderDateView = () => {
       return hospitalization && data?.dateOfHospitalization !== 0 ? (
-        <Text style={{ ...viewStyles.text('R', 14, '#0087BA', 1, 18), marginTop: 3 }}>
+        <Text style={{ ...viewStyles.text('R', 14, theme.colors.SKY_BLUE, 1, 18), marginTop: 3 }}>
           {'From '}
-          <Text style={{ ...viewStyles.text('M', 14, '#02475B', 1, 18) }}>{`${moment(
+          <Text style={{ ...viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 18) }}>{`${moment(
             data?.dateOfHospitalization
           ).format(string.common.date_placeholder_text)}`}</Text>
           {' to '}
-          <Text style={{ ...viewStyles.text('M', 14, '#02475B', 1, 18) }}>{`${moment(
+          <Text style={{ ...viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 18) }}>{`${moment(
             data?.date
           ).format(string.common.date_placeholder_text)}`}</Text>
         </Text>
       ) : medicalInsurance && data?.endDateTime !== 0 ? (
-        <Text style={{ ...viewStyles.text('R', 14, '#0087BA', 1, 18), marginTop: 3 }}>
+        <Text style={{ ...viewStyles.text('R', 14, theme.colors.SKY_BLUE, 1, 18), marginTop: 3 }}>
           {'From '}
-          <Text style={{ ...viewStyles.text('M', 14, '#02475B', 1, 18) }}>{`${moment(
+          <Text style={{ ...viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 18) }}>{`${moment(
             data?.startDateTime
           ).format(string.common.date_placeholder_text)}`}</Text>
           {' to '}
-          <Text style={{ ...viewStyles.text('M', 14, '#02475B', 1, 18) }}>{`${moment(
+          <Text style={{ ...viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 18) }}>{`${moment(
             data?.endDateTime
           ).format(string.common.date_placeholder_text)}`}</Text>
         </Text>
       ) : (
-        <Text style={{ ...viewStyles.text('R', 14, '#0087BA', 1, 18), marginTop: 3 }}>
+        <Text style={{ ...viewStyles.text('R', 14, theme.colors.SKY_BLUE, 1, 18), marginTop: 3 }}>
           {'On '}
-          <Text style={{ ...viewStyles.text('M', 14, '#02475B', 1, 18) }}>{`${moment(
+          <Text style={{ ...viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 18) }}>{`${moment(
             data?.date || data?.startDateTime
           ).format(string.common.date_placeholder_text)}`}</Text>
         </Text>
@@ -643,7 +653,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         data?.medicineName ||
         data?.restrictionName ||
         data?.medicalConditionName ? (
-          <Text style={{ ...viewStyles.text('SB', 23, '#02475B', 1, 30) }}>
+          <Text style={{ ...viewStyles.text('SB', 23, theme.colors.LIGHT_BLUE, 1, 30) }}>
             {data?.labTestName ||
               data?.healthCheckName ||
               data?.prescriptionName ||
@@ -659,37 +669,37 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
           </Text>
         ) : null}
         {data?.labTestRefferedBy ? (
-          <Text style={{ ...viewStyles.text('M', 16, '#0087BA', 1, 21), marginTop: 6 }}>
+          <Text style={{ ...viewStyles.text('M', 16, theme.colors.SKY_BLUE, 1, 21), marginTop: 6 }}>
             {'Dr. ' + data?.labTestRefferedBy || 'Dr. -'}
           </Text>
         ) : null}
         {medicalBill && data?.bill_no ? (
-          <Text style={{ ...viewStyles.text('M', 16, '#0087BA', 1, 21), marginTop: 6 }}>
+          <Text style={{ ...viewStyles.text('M', 16, theme.colors.SKY_BLUE, 1, 21), marginTop: 6 }}>
             {data?.bill_no}
           </Text>
         ) : null}
         {medicalInsurance && data?.policyNumber ? (
-          <Text style={{ ...viewStyles.text('M', 16, '#0087BA', 1, 21), marginTop: 6 }}>
+          <Text style={{ ...viewStyles.text('M', 16, theme.colors.SKY_BLUE, 1, 21), marginTop: 6 }}>
             {data?.policyNumber}
           </Text>
         ) : null}
         {prescriptions && data?.prescriptionName !== data?.prescribedBy ? (
-          <Text style={{ ...viewStyles.text('M', 16, '#0087BA', 1, 21), marginTop: 6 }}>
+          <Text style={{ ...viewStyles.text('M', 16, theme.colors.SKY_BLUE, 1, 21), marginTop: 6 }}>
             {'Dr. ' + data?.prescribedBy || 'Dr. -'}
           </Text>
         ) : null}
         {data?.suggestedByDoctor ? (
-          <Text style={{ ...viewStyles.text('M', 16, '#0087BA', 1, 21), marginTop: 6 }}>
+          <Text style={{ ...viewStyles.text('M', 16, theme.colors.SKY_BLUE, 1, 21), marginTop: 6 }}>
             {'Dr. ' + data?.suggestedByDoctor || 'Dr. -'}
           </Text>
         ) : null}
         {data?.doctorTreated ? (
-          <Text style={{ ...viewStyles.text('M', 16, '#0087BA', 1, 21), marginTop: 6 }}>
+          <Text style={{ ...viewStyles.text('M', 16, theme.colors.SKY_BLUE, 1, 21), marginTop: 6 }}>
             {'Dr. ' + data?.doctorTreated || 'Dr. -'}
           </Text>
         ) : null}
         {hospitalization ? null : data?.doctorName ? (
-          <Text style={{ ...viewStyles.text('M', 16, '#0087BA', 1, 21), marginTop: 6 }}>
+          <Text style={{ ...viewStyles.text('M', 16, theme.colors.SKY_BLUE, 1, 21), marginTop: 6 }}>
             {'Dr. ' + data?.doctorName || 'Dr. -'}
           </Text>
         ) : null}
@@ -707,7 +717,9 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
           </Text>
         )}
         <View style={styles.separatorLineStyle} />
-        <Text style={{ ...viewStyles.text('M', 16, '#02475B', 1, 21) }}>{date_text}</Text>
+        <Text style={{ ...viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 21) }}>
+          {date_text}
+        </Text>
         {renderDateView()}
       </View>
     );

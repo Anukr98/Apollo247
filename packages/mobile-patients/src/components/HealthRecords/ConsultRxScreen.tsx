@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 30,
   },
   sectionHeaderTitleStyle: {
-    ...theme.viewStyles.text('SB', 18, '#02475B', 1, 23.4),
+    ...theme.viewStyles.text('SB', 18, theme.colors.LIGHT_BLUE, 1, 23.4),
     marginBottom: 3,
   },
 });
@@ -305,7 +305,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
     });
     return (
       <View style={styles.searchFilterViewStyle}>
-        <Text style={{ ...theme.viewStyles.text('SB', 23, '#02475B', 1, 30) }}>
+        <Text style={{ ...theme.viewStyles.text('SB', 23, theme.colors.LIGHT_BLUE, 1, 30) }}>
           {'Doctor Consultations'}
         </Text>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -325,7 +325,9 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
               }
             }}
           >
-            <Filter style={{ width: 24, height: 24 }} />
+            <View style={{ paddingLeft: 16 }}>
+              <Filter style={{ width: 24, height: 24 }} />
+            </View>
           </MaterialMenu>
         </View>
       </View>

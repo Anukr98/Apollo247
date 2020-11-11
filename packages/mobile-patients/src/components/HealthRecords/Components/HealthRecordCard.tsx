@@ -27,12 +27,17 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingTop: 7,
   },
-  followUpTextStyle: { ...theme.viewStyles.text('R', 12, '#0087BA', 1, 15.8) },
+  followUpTextStyle: { ...theme.viewStyles.text('R', 12, theme.colors.SKY_BLUE, 1, 15.8) },
   cardMainContainerStyle: {
     ...theme.viewStyles.cardViewStyle,
     marginHorizontal: 0,
     marginBottom: 16,
   },
+  prescriptionNameTextStyle: {
+    ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 20.8),
+  },
+  doctorTextStyle: { ...theme.viewStyles.text('R', 10, '#67909C', 1, 13) },
+  sourceNameTextStyle: { ...theme.viewStyles.text('R', 12, '#67909C', 1, 15.8) },
 });
 
 export interface HealthRecordCardProps {
@@ -99,17 +104,11 @@ export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
         {healthConditionCard ? healthCondtionCardTopView : null}
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
           <View style={{ marginRight: 55 }}>
-            <Text
-              numberOfLines={1}
-              style={{ ...theme.viewStyles.text('M', 16, '#02475B', 1, 20.8) }}
-            >
+            <Text numberOfLines={1} style={styles.prescriptionNameTextStyle}>
               {prescriptionName}
             </Text>
             {doctorName ? (
-              <Text
-                numberOfLines={1}
-                style={{ ...theme.viewStyles.text('R', 10, '#67909C', 1, 13) }}
-              >
+              <Text numberOfLines={1} style={styles.doctorTextStyle}>
                 {doctorName}
               </Text>
             ) : null}
@@ -118,10 +117,7 @@ export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
         {healthConditionCard && !sourceName ? null : (
           <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 9 }}>
             <SelfUploadPhrIcon style={{ width: 16, height: 10.14, marginRight: 8 }} />
-            <Text
-              numberOfLines={1}
-              style={{ ...theme.viewStyles.text('R', 12, '#67909C', 1, 15.8) }}
-            >
+            <Text numberOfLines={1} style={styles.sourceNameTextStyle}>
               {sourceName}
             </Text>
           </View>
