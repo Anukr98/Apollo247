@@ -413,7 +413,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     if (!currentPatient) {
       getPatientApiCall();
     }
-    console.log('currentPatient?.patientMedicalHistory?', currentPatient?.patientMedicalHistory);
     setPatientHistoryValues();
   }, [currentPatient]);
 
@@ -838,7 +837,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
                     }}
                   >
                     {patientTextView(
-                      currentPatient?.patientMedicalHistory?.height?.includes('’')
+                      currentPatient?.patientMedicalHistory?.height?.includes('’') ||
+                        currentPatient?.patientMedicalHistory?.height?.includes("'")
                         ? currentPatient?.patientMedicalHistory?.height
                         : currentPatient?.patientMedicalHistory?.height + ' cm'
                     )}
