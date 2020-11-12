@@ -1017,13 +1017,12 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   ) => {
     const doctorDetails = _doctorDetails;
     const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CLICKED] = {
-      'Doctor Name': doctorDetails.fullName!,
+      'Doctor Name': doctorDetails.displayName!,
       Source: source,
       'Doctor ID': doctorDetails.id,
-      'Speciality ID': g(doctorDetails, 'specialty', 'id')!,
       'Doctor Category': doctorDetails.doctorType,
       Fee: Number(doctorDetails?.fee),
-      'Doctor Speciality': g(doctorDetails, 'specialty', 'name')!,
+      'Doctor Speciality': doctorDetails?.specialtydisplayName,
       Rank: doctorDetails?.rowId,
     };
 

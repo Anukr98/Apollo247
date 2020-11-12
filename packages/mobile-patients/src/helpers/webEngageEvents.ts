@@ -66,7 +66,7 @@ export enum WebEngageEventName {
   PHARMACY_DETAIL_IMAGE_CLICK = 'Product Detail page Image clicked',
   DOCTOR_SEARCH = 'Doctor Search',
   SPECIALITY_CLICKED = 'Speciality Clicked',
-  DOCTOR_CLICKED = 'Doctor Clicked',
+  DOCTOR_CLICKED = 'Doctor card on doctor listing screen clicked',
   BOOK_APPOINTMENT = 'Book Appointment',
   TYPE_OF_CONSULT_SELECTED = 'Type of consultation seleted',
   CONSULT_SORT = 'Consult Sort',
@@ -1002,7 +1002,7 @@ export interface WebEngageEvents {
     'Doctor Name': string;
     Source: 'List' | 'Search';
     'Doctor ID': string;
-    'Speciality ID': string;
+    'Speciality ID'?: string;
     'Doctor Category': DoctorType;
     Fee: number;
     'Doctor Speciality': string;
