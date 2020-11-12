@@ -7,6 +7,9 @@ import {
   PlanBenefits,
   BenefitCtaAction,
   bannerType,
+  CirclePlanSummary,
+  CircleGroup,
+  CicleSubscriptionData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -352,6 +355,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     hdfcUserSubscriptions,
     bannerData,
     setBannerData,
+    setCircleSubscription,
+    setIsCircleSubscription,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
@@ -1024,26 +1029,83 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         .then((data) => {
           setHdfcLoading(false);
           const groupPlans = g(data, 'data', 'GetAllUserSubscriptionsWithPlanBenefits', 'response');
-          if (groupPlans && groupPlans.length) {
-            const plan = groupPlans[0];
-            const subscription = setSubscriptionData(plan);
-            setHdfcUserSubscriptions && setHdfcUserSubscriptions(subscription);
-            const subscriptionName = g(subscription, 'name') ? g(subscription, 'name') : '';
-            if (g(subscription, 'isActive')) {
-              setHdfcPlanName && setHdfcPlanName(subscriptionName);
+          if (groupPlans) {
+            const hdfcPlan = groupPlans?.HDFC;
+            const circlePlan = groupPlans?.APOLLO;
+
+            if (hdfcPlan) {
+              const hdfcSubscription = setSubscriptionData(hdfcPlan[0]);
+              setHdfcUserSubscriptions && setHdfcUserSubscriptions(hdfcSubscription);
+
+              const subscriptionName = g(hdfcSubscription, 'name') ? g(hdfcSubscription, 'name') : '';
+              if (g(hdfcSubscription, 'isActive')) {
+                setHdfcPlanName && setHdfcPlanName(subscriptionName);
+              }
+              if (subscriptionName === hdfc_values.PLATINUM_PLAN && !!g(hdfcSubscription, 'isActive')) {
+                setIsFreeDelivery && setIsFreeDelivery(true);
+              }
+              getUserBanners();
+              setShowHdfcWidget(false);
+              setShowHdfcConnectWidget(true);
             }
-            if (subscriptionName === hdfc_values.PLATINUM_PLAN && !!g(subscription, 'isActive')) {
-              setIsFreeDelivery && setIsFreeDelivery(true);
+            
+            if (circlePlan) {
+              const circleSubscription = setCircleSubscriptionData(circlePlan[0]);
+              if (!!circlePlan[0]?._id) {
+                setIsCircleSubscription && setIsCircleSubscription(true);
+              }
+              setCircleSubscription && setCircleSubscription(circleSubscription);
+              console.log('circleSubscription-------- ', circleSubscription);
             }
-            getUserBanners();
-            setShowHdfcWidget(false);
-            setShowHdfcConnectWidget(true);
           }
         })
         .catch((e) => {
           setHdfcLoading(false);
           CommonBugFender('ConsultRoom_getSubscriptionsOfUserByStatus', e);
         });
+  };
+
+  const setCircleSubscriptionData = (plan: any) => {
+    const planSummary: CirclePlanSummary[] = [];
+    const summary = plan?.plan_summary;
+    if (summary && summary.length) {
+      summary.forEach(value => {
+        const plan_summary: CirclePlanSummary = {
+          price: value?.price,
+          renewMode: value?.renew_mode,
+          starterPack: !!value?.starter_pack,
+          benefitsWorth: value?.benefits_worth,
+          availableForTrial: !!value?.available_for_trial,
+          specialPriceEnabled: value?.special_price_enabled,
+          subPlanId: value?.subPlanId,
+          durationInMonth: value?.durationInMonth,
+          currentSellingPrice: value?.currentSellingPrice,
+          icon: value?.icon,
+        };
+        planSummary.push(plan_summary);
+      });
+    }
+
+    const group = plan?.group;
+    const groupDetailsData: CircleGroup = {
+      _id: group?._id,
+      name: group?.name,
+      isActive: group?.is_active,
+    };
+
+    const circleSubscptionData: CicleSubscriptionData = {
+      _id: plan?._id,
+      name: plan?.name,
+      planId: plan?.plan_id,
+      activationModes: plan?.activation_modes,
+      status: plan?.status,
+      subscriptionStatus: plan?.subscriptionStatus,
+      subPlanIds: plan?.sub_plan_ids,
+      planSummary: planSummary,
+      groupDetails: groupDetailsData,
+    };
+
+    return circleSubscptionData;
   };
 
   const setSubscriptionData = (plan) => {

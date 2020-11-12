@@ -28,7 +28,7 @@ export const Savings: React.FC<SavingsProps> = (props) => {
         activeOpacity={1}
         onPress={() => {
           console.log('isCareSubscribed: ', isCareSubscribed);
-          if (isCareSubscribed) setShowCareDetails(!showCareDetails);
+          setShowCareDetails(!showCareDetails);
         }}
       >
         <View style={{
@@ -42,13 +42,10 @@ export const Savings: React.FC<SavingsProps> = (props) => {
             </Text>{' '}
             on your purchase
           </Text>
-          {
-            isCareSubscribed &&
             <Down style={{
               height: 15,
               transform: [{ rotate: showCareDetails ? '180deg' : '0deg'}],
             }} />
-          }
         </View>
       </TouchableOpacity>
     );
@@ -60,7 +57,7 @@ export const Savings: React.FC<SavingsProps> = (props) => {
         <Text style={{ ...theme.fonts.IBMPlexSansRegular(13), lineHeight: 17, color: '#02475B' }}>
           You could{' '}
           <Text style={{ ...theme.fonts.IBMPlexSansSemiBold(13), lineHeight: 17, color: '#00B38E' }}>
-            saved ₹{getSavings()}
+            save ₹{getSavings()}
           </Text>{' '}
           on your purchase with CARE
         </Text>
@@ -119,11 +116,13 @@ export const Savings: React.FC<SavingsProps> = (props) => {
   }
 
   return getSavings() && getSavings() != 0 ? (
-    <View style={styles.savingsCard}>
-      {saveMessage()}
-      { showCareDetails && careSavings() }
-      { !isCareSubscribed && careSubscribeMessage() }
-    </View>
+    <>
+      <View style={styles.savingsCard}>
+        {saveMessage()}
+        { isCareSubscribed && showCareDetails && careSavings() }
+      </View>
+      { !isCareSubscribed && showCareDetails && careSubscribeMessage() }
+    </>
   ) : null;
 };
 

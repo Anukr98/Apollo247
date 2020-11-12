@@ -94,7 +94,7 @@ export const SearchMedicineCard: React.FC<SearchMedicineCardProps> = (props) => 
           <Text style={styles.medicineTitle}>{medicineName}</Text>
           <CareCashbackBanner
             bannerStyle={{
-              marginLeft: 15,
+              left: -5,
               width: '80%',
               marginTop: 5,
             }}

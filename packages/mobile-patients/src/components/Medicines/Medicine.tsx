@@ -26,6 +26,7 @@ import {
   ArrowRight,
   ShoppingBasketIcon,
   LocationOff,
+  CircleBannerNonMember,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { SearchInput } from '@aph/mobile-patients/src/components/ui/SearchInput';
@@ -136,6 +137,7 @@ import {
   makeAdressAsDefaultVariables,
   makeAdressAsDefault,
 } from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
+import { CirclePopup } from '@aph/mobile-patients/src/components/Medicines/Components/CirclePopup';
 
 const styles = StyleSheet.create({
   sliderDotStyle: {
@@ -199,6 +201,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     medicinePageAPiResponse,
     setMedicinePageAPiResponse,
     setLocationDetails,
+    isCircleSubscription,
   } = useAppCommonData();
   const [ShowPopop, setShowPopop] = useState<boolean>(!!showUploadPrescriptionPopup);
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
@@ -1378,10 +1381,30 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
+  const renderCircleBanner = () => {
+    return (
+      <TouchableOpacity 
+        activeOpacity={1}
+        onPress={() => {}} 
+        style={{
+        // paddingHorizontal: 20,
+        // marginBottom: 10,
+      }}>
+        <CircleBannerNonMember style={{
+          resizeMode: 'contain',
+          width: '100%',
+          height: 200,
+        }} />
+      </TouchableOpacity>
+    );
+  };
+
   const renderDealsOfTheDay = (title: string, dealsOfTheDay: DealsOfTheDaySection[]) => {
     if (dealsOfTheDay.length == 0) return null;
     return (
       <View>
+      {/* {renderCircleBanner()} */}
+      {/* <CirclePopup /> */}
         <SectionHeader leftText={title} />
         <FlatList
           bounces={false}

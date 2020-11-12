@@ -1194,3 +1194,11 @@ export const CovidOrange: React.FC<IconProps> = (props) => (
 export const DashedLine: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/dashedLine.png')} />
 );
+
+export const CircleLogo: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/circle_logo.png')} />
+);
+
+export const CircleBannerNonMember: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('./icons/circle_banner_non_member.png')} />
+);

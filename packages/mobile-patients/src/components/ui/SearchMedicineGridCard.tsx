@@ -223,9 +223,6 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
 
   const renderCareCashback = () => 
     <CareCashbackBanner
-      bannerStyle={{
-        left: -10
-      }}
       bannerText={'Extra Care ₹65 Cashback'}
     />
 
