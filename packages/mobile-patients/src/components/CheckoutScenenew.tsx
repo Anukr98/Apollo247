@@ -416,8 +416,11 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         Type: 'Pharmacy',
         order_Id: orderId,
         order_AutoId: orderAutoId,
+        LOB: 'Pharmacy',
       };
       postWebEngageEvent(WebEngageEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
+      postFirebaseEvent(FirebaseEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
+      postAppsFlyerEvent(AppsFlyerEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
     } catch (error) {}
     const token = await firebaseAuth().currentUser!.getIdToken();
     console.log({ token });

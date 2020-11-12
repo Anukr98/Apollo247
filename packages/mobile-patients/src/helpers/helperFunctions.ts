@@ -1436,6 +1436,12 @@ export const postAppsFlyerAddToCartEvent = (
   postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_ADD_TO_CART, eventAttributes);
 };
 
+export const setFirebaseUserId = (userId: string) => {
+  try {
+    analytics().setUserId(userId);
+  } catch (error) {}
+};
+
 export const postFirebaseEvent = (eventName: FirebaseEventName, attributes: Object) => {
   try {
     const logContent = `[Firebase Event] ${eventName}`;
@@ -1447,8 +1453,16 @@ export const postFirebaseEvent = (eventName: FirebaseEventName, attributes: Obje
 };
 
 export const postFirebaseAddToCartEvent = (
-  { sku, name, category_id, price, special_price }: MedicineProduct,
-  source: FirebaseEvents[FirebaseEventName.PHARMACY_ADD_TO_CART]['Source']
+  {
+    sku,
+    name,
+    price,
+    special_price,
+    category_id,
+  }: Pick<MedicineProduct, 'sku' | 'name' | 'price' | 'special_price' | 'category_id'>,
+  source: FirebaseEvents[FirebaseEventName.PHARMACY_ADD_TO_CART]['Source'],
+  section?: FirebaseEvents[FirebaseEventName.PHARMACY_ADD_TO_CART]['Section'],
+  sectionName?: string
 ) => {
   try {
     const eventAttributes: FirebaseEvents[FirebaseEventName.PHARMACY_ADD_TO_CART] = {
@@ -1462,6 +1476,10 @@ export const postFirebaseAddToCartEvent = (
       DiscountedPrice: typeof special_price == 'string' ? Number(special_price) : special_price,
       Quantity: 1,
       Source: source,
+      af_revenue: Number(special_price) || price,
+      af_currency: 'INR',
+      Section: section ? section : '',
+      SectionName: sectionName || '',
     };
     postFirebaseEvent(FirebaseEventName.PHARMACY_ADD_TO_CART, eventAttributes);
   } catch (error) {}
@@ -1605,6 +1623,17 @@ export const addPharmaItemToCart = (
   const addToCart = () => {
     addCartItem!(cartItem);
     postwebEngageAddToCartEvent(
+      {
+        sku: cartItem.id,
+        name: cartItem.name,
+        price: cartItem.price,
+        special_price: cartItem.specialPrice,
+        category_id: g(otherInfo, 'categoryId'),
+      },
+      g(otherInfo, 'source')!,
+      g(otherInfo, 'section')
+    );
+    postFirebaseAddToCartEvent(
       {
         sku: cartItem.id,
         name: cartItem.name,

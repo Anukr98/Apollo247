@@ -1,10 +1,17 @@
 import { trackTagalysEvent } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  postAppsFlyerEvent,
+  postFirebaseEvent,
+  postWebEngageEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { at } from 'lodash';
+import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
+import { FirebaseEventName } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 
 type CategoryListGridView = WebEngageEvents[WebEngageEventName.CATEGORY_LIST_GRID_VIEW];
 type SearchEnterClick = WebEngageEvents[WebEngageEventName.SEARCH_ENTER_CLICK];
@@ -31,6 +38,8 @@ export const MedicineListingEvents = {
 
   categoryPageViewed: (attributes: CategoryPageViewed) => {
     postWebEngageEvent(WebEngageEventName.CATEGORY_PAGE_VIEWED, attributes);
+    postAppsFlyerEvent(AppsFlyerEventName.CATEGORY_PAGE_VIEWED, attributes);
+    postFirebaseEvent(FirebaseEventName.CATEGORY_PAGE_VIEWED, attributes);
   },
 
   tagalysSearch: (patientId: string, attributes: Tagalys.ProductList) => {

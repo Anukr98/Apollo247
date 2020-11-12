@@ -34,7 +34,10 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import { fetchPaymentOptions } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents';
-import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  postWebEngageEvent,
+  postAppsFlyerEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEvents';
 import { saveSearchDoctor, saveSearchSpeciality } from '../../helpers/clientCalls';
 
@@ -254,13 +257,13 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
           }
           const paymentEventAttributes = {
             Payment_Mode: item.paymentMode,
-            Type: 'Consultation',
+            LOB: 'Consultation',
             Appointment_Id: g(data, 'data', 'bookAppointment', 'appointment', 'id'),
             Mobile_Number: g(currentPatient, 'mobileNumber'),
           };
           postWebEngageEvent(WebEngageEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
           postFirebaseEvent(FirebaseEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
-
+          postAppsFlyerEvent(AppsFlyerEventName.PAYMENT_INSTRUMENT, paymentEventAttributes);
           const paymentModeEventAttribute: WebEngageEvents[WebEngageEventName.CONSULT_PAYMENT_MODE_SELECTED] = {
             'Payment Mode': item.paymentMode,
           };

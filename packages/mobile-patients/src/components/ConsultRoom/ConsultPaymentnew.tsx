@@ -82,6 +82,7 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
       webEngageEventAttributes: webEngageEventAttributes,
       fireBaseEventAttributes: fireBaseEventAttributes,
       appsflyerEventAttributes: appsflyerEventAttributes,
+      paymentTypeID: paymentTypeID,
       isDoctorsOfTheHourStatus,
     });
   };
