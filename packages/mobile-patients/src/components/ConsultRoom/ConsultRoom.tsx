@@ -372,6 +372,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setHdfcPlanName,
     setIsFreeDelivery,
     setCircleSubscriptionId,
+    setCirclePlanSelected,
   } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
 
@@ -854,7 +855,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     callAPIForNotificationResult();
     setWebEngageScreenNames('Home Screen');
     getUserSubscriptionsByStatus();
+    checkCircleSelectedPlan();
   }, []);
+
+  const checkCircleSelectedPlan = async () => {
+    const plan = await AsyncStorage.getItem('circlePlanSelected');
+    if (plan) {
+      setCirclePlanSelected && setCirclePlanSelected(JSON.parse(plan));
+    } else {
+      setCirclePlanSelected && setCirclePlanSelected(null);
+    }
+  };
 
   const getUserSubscriptionsByStatus = async () => {
     try {

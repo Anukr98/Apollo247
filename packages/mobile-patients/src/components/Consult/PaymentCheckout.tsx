@@ -34,6 +34,7 @@ import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/
 import {
   BookAppointmentInput,
   DoctorType,
+  PLAN,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { calculateCareDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -118,37 +119,47 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const [notificationAlert, setNotificationAlert] = useState(false);
   const scrollviewRef = useRef<any>(null);
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
-  const [planSelected, setPlanSelected] = useState<any>();
 
-  const careDoctorDetails = calculateCareDoctorPricing(doctor);
+  const circleDoctorDetails = calculateCareDoctorPricing(doctor);
   const {
-    isCareDoctor,
+    isCircleDoctor,
     minDiscountedPrice,
     onlineConsultSlashedPrice,
     physicalConsultSlashedPrice,
     onlineConsultDiscountedPrice,
     physicalConsultDiscountedPrice,
-  } = careDoctorDetails;
-  const { isCareSubscribed } = useShoppingCart();
+  } = circleDoctorDetails;
+  const { circleSubscriptionId, circlePlanSelected } = useShoppingCart();
 
   const amount = Number(price) - couponDiscountFees;
-  const amountToPay = planSelected
+  const amountToPay = circlePlanSelected
     ? isOnlineConsult
-      ? onlineConsultSlashedPrice - couponDiscountFees + Number(planSelected?.currentSellingPrice)
-      : physicalConsultSlashedPrice - couponDiscountFees + Number(planSelected?.currentSellingPrice)
+      ? onlineConsultSlashedPrice -
+        couponDiscountFees +
+        Number(circlePlanSelected?.currentSellingPrice)
+      : physicalConsultSlashedPrice -
+        couponDiscountFees +
+        Number(circlePlanSelected?.currentSellingPrice)
     : amount;
-  const notSubscriberUserForCareDoctor = isCareDoctor && !isCareSubscribed && !planSelected;
+  const notSubscriberUserForCareDoctor =
+    isCircleDoctor && !circleSubscriptionId && !circlePlanSelected;
 
   let finalAppointmentInput = appointmentInput;
   finalAppointmentInput['couponCode'] = coupon ? coupon : null;
   finalAppointmentInput['discountedAmount'] = doctorDiscountedFees;
-  finalAppointmentInput['actualAmount'] = planSelected
+  finalAppointmentInput['actualAmount'] = circlePlanSelected
     ? isOnlineConsult
       ? onlineConsultSlashedPrice
       : physicalConsultSlashedPrice
     : Number(price);
+  const planPurchaseDetails = {
+    TYPE: PLAN.CARE_PLAN,
+    PlanAmount: circlePlanSelected?.currentSellingPrice,
+  };
+  finalAppointmentInput['planPurchaseDetails'] = circlePlanSelected ? planPurchaseDetails : null;
+
   const totalSavings =
-    isCareDoctor && (isCareSubscribed || planSelected)
+    isCircleDoctor && (circleSubscriptionId || circlePlanSelected)
       ? isOnlineConsult
         ? onlineConsultDiscountedPrice + couponDiscountFees
         : physicalConsultDiscountedPrice + couponDiscountFees
@@ -159,7 +170,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
 
   useEffect(() => {
     verifyCoupon();
-  }, [planSelected]);
+  }, [circlePlanSelected]);
 
   useEffect(() => {
     fetchUserSpecificCoupon();
@@ -215,8 +226,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         appointmentInput={finalAppointmentInput}
         doctorFees={price}
         selectedTab={selectedTab}
-        isCareSubscribed={isCareSubscribed}
-        planSelected={planSelected}
+        circleSubscriptionId={circleSubscriptionId}
+        planSelected={circlePlanSelected}
       />
     );
   };
@@ -236,8 +247,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           selectedTab={selectedTab}
           coupon={coupon}
           couponDiscountFees={couponDiscountFees}
-          isCareSubscribed={isCareSubscribed}
-          planSelected={planSelected}
+          circleSubscriptionId={circleSubscriptionId}
+          planSelected={circlePlanSelected}
         />
       </View>
     );
@@ -246,13 +257,16 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const renderDiscountView = () => {
     return (
       <ConsultDiscountCard
-        style={{ marginBottom: notSubscriberUserForCareDoctor ? 0 : 20 }}
+        style={{
+          marginBottom:
+            notSubscriberUserForCareDoctor && amountToPay >= minDiscountedPrice ? 0 : 20,
+        }}
         coupon={coupon}
         couponDiscountFees={couponDiscountFees}
         doctor={doctor}
         selectedTab={selectedTab}
-        isCareSubscribed={isCareSubscribed}
-        planSelected={planSelected}
+        circleSubscriptionId={circleSubscriptionId}
+        planSelected={circlePlanSelected}
         onPressCard={() =>
           setTimeout(() => {
             scrollviewRef.current.scrollToEnd({ animated: true });
@@ -269,8 +283,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         style={styles.careSelectContainer}
         onPressKnowMore={() => {}}
         careDiscountPrice={minDiscountedPrice}
-        onSelectMembershipPlan={(plan) => {
-          setPlanSelected(plan);
+        onSelectMembershipPlan={() => {
           setTimeout(() => {
             scrollviewRef.current.scrollToEnd({ animated: true });
           }, 300);
@@ -284,7 +297,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       <ListCard
         container={[
           styles.couponContainer,
-          { marginTop: isCareDoctor && isCareSubscribed ? 0 : 20 },
+          { marginTop: isCircleDoctor && circleSubscriptionId ? 0 : 20 },
         ]}
         titleStyle={styles.couponStyle}
         leftTitleStyle={[styles.couponStyle, { color: theme.colors.SEARCH_UNDERLINE_COLOR }]}
@@ -323,7 +336,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
 
   const validateCoupon = (coupon: string, fireEvent?: boolean) => {
     let packageId = '';
-    const billAmount = planSelected
+    const billAmount = circlePlanSelected
       ? isOnlineConsult
         ? onlineConsultSlashedPrice
         : physicalConsultSlashedPrice
@@ -470,7 +483,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       });
   };
 
-  const verifyCoupon = async (fromPayment: boolean) => {
+  const verifyCoupon = async (fromPayment?: boolean) => {
     if (coupon) {
       try {
         // await validateAndApplyCoupon(coupon, isOnlineConsult, true);
@@ -558,6 +571,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           }
         });
     } else {
+      setLoading!(false);
       props.navigation.navigate(AppRoutes.ConsultCheckout, {
         doctor: doctor,
         tabs: tabs,
@@ -569,7 +583,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         consultedWithDoctorBefore: consultedWithDoctorBefore,
         patientId: patientId,
         callSaveSearch: callSaveSearch,
-        planSelected: planSelected,
+        planSelected: circlePlanSelected,
       });
     }
   };
@@ -817,12 +831,14 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
         <ScrollView ref={scrollviewRef}>
           {renderDoctorCard()}
-          {isCareDoctor && isCareSubscribed && renderCareMembershipAddedCard()}
-          {isCareDoctor && !isCareSubscribed && renderCareSubscriptionPlans()}
+          {isCircleDoctor && circleSubscriptionId ? renderCareMembershipAddedCard() : null}
+          {isCircleDoctor && !circleSubscriptionId ? renderCareSubscriptionPlans() : null}
           {renderApplyCoupon()}
           {renderPriceBreakup()}
           {renderDiscountView()}
-          {notSubscriberUserForCareDoctor && renderSaveWithCarePlanView()}
+          {notSubscriberUserForCareDoctor &&
+            amountToPay >= minDiscountedPrice &&
+            renderSaveWithCarePlanView()}
         </ScrollView>
         {renderBottomButton()}
       </SafeAreaView>

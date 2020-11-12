@@ -18,23 +18,26 @@ import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/Device
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import ContentLoader from 'react-native-easy-content-loader';
 import { CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import AsyncStorage from '@react-native-community/async-storage';
+
 const planDimension = 120;
 
 interface CareSelectPlansProps {
   onPressKnowMore: () => void;
   style?: StyleProp<ViewStyle>;
-  onSelectMembershipPlan: (plan: any) => void;
+  onSelectMembershipPlan?: () => void | null;
   isConsultJourney?: boolean;
   careDiscountPrice?: number;
 }
 
 export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
   const [membershipPlans, setMembershipPlans] = useState<any>([]);
-  const [planSelected, setPlanSelected] = useState<any>();
   const [loading, setLoading] = useState<boolean>(true);
-  const { onPressKnowMore, isConsultJourney, careDiscountPrice } = props;
+  const { onPressKnowMore, isConsultJourney, careDiscountPrice, onSelectMembershipPlan } = props;
   const client = useApolloClient();
   const planId = AppConfig.Configuration.CARE_PLAN_ID;
+  const { circlePlanSelected, setCirclePlanSelected } = useShoppingCart();
 
   useEffect(() => {
     fetchCarePlans();
@@ -60,8 +63,9 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
   };
 
   const onPressMembershipPlans = (index: number) => {
-    setPlanSelected(membershipPlans?.[index]);
-    props.onSelectMembershipPlan(membershipPlans?.[index]);
+    setCirclePlanSelected && setCirclePlanSelected(membershipPlans?.[index]);
+    AsyncStorage.setItem('circlePlanSelected', JSON.stringify(membershipPlans?.[index]));
+    onSelectMembershipPlan && onSelectMembershipPlan();
   };
 
   const renderCareSubscribeCard = (value: any, index: number) => {
@@ -161,15 +165,15 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
         <View style={styles.rowCenter}>
           <Text style={{ ...theme.viewStyles.text('SB', 17, theme.colors.SEARCH_UNDERLINE_COLOR) }}>
             {string.common.Rs}
-            {planSelected?.currentSellingPrice}
+            {circlePlanSelected?.currentSellingPrice}
           </Text>
         </View>
       </View>
       <TouchableOpacity
         style={{ marginTop: 7 }}
         onPress={() => {
-          setPlanSelected('');
-          props.onSelectMembershipPlan('');
+          setCirclePlanSelected && setCirclePlanSelected(null);
+          onSelectMembershipPlan && onSelectMembershipPlan();
         }}
       >
         <Text style={styles.removeTxt}>REMOVE</Text>
@@ -179,7 +183,7 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
 
   return (
     <View style={[styles.careBannerView, props.style]}>
-      {planSelected ? renderCarePlanAdded() : renderSubscribeCareContainer()}
+      {circlePlanSelected ? renderCarePlanAdded() : renderSubscribeCareContainer()}
     </View>
   );
 };

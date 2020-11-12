@@ -288,6 +288,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       signOut();
       setTagalysConfig(null);
       setCircleSubscriptionId && setCircleSubscriptionId('');
+      AsyncStorage.removeItem('circlePlanSelected');
 
       props.navigation.dispatch(
         StackActions.reset({

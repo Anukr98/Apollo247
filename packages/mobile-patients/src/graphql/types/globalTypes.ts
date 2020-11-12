@@ -51,11 +51,6 @@ export enum BOOKING_SOURCE {
   WEB = "WEB",
 }
 
-export enum CARE_APPOINTMENT_TYPE {
-  ONLINE = "ONLINE",
-  PHYSICAL = "PHYSICAL",
-}
-
 export enum CODCity {
   CHENNAI = "CHENNAI",
 }
@@ -649,6 +644,8 @@ export interface BookAppointmentInput {
   pinCode?: string | null;
   actualAmount?: number | null;
   discountedAmount?: number | null;
+  subscriptionDetails?: SUBSCRIPTION_DETAILS | null;
+  planPurchaseDetails?: PLAN_PURCHASE_DETAILS | null;
 }
 
 export interface BookFollowUpAppointmentInput {
@@ -956,6 +953,7 @@ export interface MedicinePaymentMqInput {
   planId?: string | null;
   storeCode?: ONE_APOLLO_STORE_CODE | null;
   subPlanId?: string | null;
+  payload?: string | null;
 }
 
 export interface MessageInput {
@@ -982,6 +980,11 @@ export interface OtpVerificationInput {
   id: string;
   otp: string;
   loginType: LOGIN_TYPE;
+}
+
+export interface PLAN_PURCHASE_DETAILS {
+  TYPE?: PLAN | null;
+  PlanAmount?: number | null;
 }
 
 export interface PatientAddressInput {
@@ -1073,6 +1076,11 @@ export interface PrescriptionMedicinePaymentOMSDetails {
 export interface Range {
   minimum?: number | null;
   maximum?: number | null;
+}
+
+export interface SUBSCRIPTION_DETAILS {
+  userSubscriptionId?: string | null;
+  plan?: PLAN | null;
 }
 
 export interface SaveDeviceTokenInput {

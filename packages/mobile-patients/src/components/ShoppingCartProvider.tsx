@@ -166,6 +166,8 @@ export interface ShoppingCartContextProps {
   isProuctFreeCouponApplied: boolean;
   circleSubscriptionId: string;
   setCircleSubscriptionId: ((id: string) => void) | null;
+  circlePlanSelected: any;
+  setCirclePlanSelected: ((plan: any) => void) | null;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -235,6 +237,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   isProuctFreeCouponApplied: false,
   circleSubscriptionId: '',
   setCircleSubscriptionId: null,
+  circlePlanSelected: null,
+  setCirclePlanSelected: null,
 });
 
 const AsyncStorageKeys = {
@@ -275,6 +279,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [circleSubscriptionId, setCircleSubscriptionId] = useState<
     ShoppingCartContextProps['circleSubscriptionId']
   >('');
+  const [circlePlanSelected, setCirclePlanSelected] = useState<
+    ShoppingCartContextProps['circlePlanSelected']
+  >(null);
   const [isFreeDelivery, setIsFreeDelivery] = useState<ShoppingCartContextProps['isFreeDelivery']>(
     false
   );
@@ -731,6 +738,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
 
         circleSubscriptionId,
         setCircleSubscriptionId,
+        circlePlanSelected,
+        setCirclePlanSelected,
       }}
     >
       {props.children}

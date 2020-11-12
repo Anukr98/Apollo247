@@ -21,7 +21,7 @@ interface ConsultDiscountProps {
   selectedTab: string;
   coupon: string;
   couponDiscountFees: number;
-  isCareSubscribed?: boolean;
+  circleSubscriptionId?: string;
   planSelected?: any;
   style?: StyleProp<ViewStyle>;
 }
@@ -33,18 +33,18 @@ export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
     selectedTab,
     coupon,
     couponDiscountFees,
-    isCareSubscribed,
+    circleSubscriptionId,
     planSelected,
   } = props;
-  const careDoctorDetails = calculateCareDoctorPricing(doctor);
+  const circleDoctorDetails = calculateCareDoctorPricing(doctor);
   const {
-    isCareDoctor,
+    isCircleDoctor,
     physicalConsultDiscountedPrice,
     onlineConsultDiscountedPrice,
-  } = careDoctorDetails;
+  } = circleDoctorDetails;
   const isOnlineConsult = selectedTab === 'Consult Online';
   const totalSavings =
-    isCareDoctor && (isCareSubscribed || planSelected)
+    isCircleDoctor && (circleSubscriptionId || planSelected)
       ? isOnlineConsult
         ? onlineConsultDiscountedPrice + couponDiscountFees
         : physicalConsultDiscountedPrice + couponDiscountFees
@@ -74,7 +74,7 @@ export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
         {showPriceBreakup ? (
           <View>
             <View style={styles.seperatorLine} />
-            {isCareDoctor && (isCareSubscribed || planSelected) ? (
+            {isCircleDoctor && (circleSubscriptionId || planSelected) ? (
               <View style={[styles.rowContainer, { marginTop: 10 }]}>
                 <View style={styles.row}>
                   <CircleLogo style={styles.careLogo} />

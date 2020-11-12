@@ -53,6 +53,8 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { NotificationPermissionAlert } from '@aph/mobile-patients/src/components/ui/NotificationPermissionAlert';
 import { Snackbar } from 'react-native-paper';
 import { SearchSendIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import AsyncStorage from '@react-native-community/async-storage';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -87,6 +89,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const [showEmailInput, setshowEmailInput] = useState<boolean>(false);
   const [email, setEmail] = useState<string>(currentPatient?.emailAddress || '');
   const [emailSent, setEmailSent] = useState<boolean>(false);
+  const { setCircleSubscriptionId } = useShoppingCart();
 
   const copyToClipboard = (refId: string) => {
     Clipboard.setString(refId);
@@ -100,6 +103,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
 
   useEffect(() => {
     overlyCallPermissions(currentPatient.firstName, doctorName, showAphAlert, hideAphAlert, true);
+    clearCircleSubscriptionData();
   }, []);
 
   useEffect(() => {
@@ -152,6 +156,11 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     };
   }, []);
+
+  const clearCircleSubscriptionData = () => {
+    setCircleSubscriptionId && setCircleSubscriptionId('');
+    AsyncStorage.removeItem('circlePlanSelected');
+  };
 
   const fireBaseFCM = async () => {
     const enabled = await firebase.messaging().hasPermission();

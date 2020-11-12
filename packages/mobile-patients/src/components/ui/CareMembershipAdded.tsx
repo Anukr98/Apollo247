@@ -12,8 +12,8 @@ interface CareMembershipProps {
 
 export const CareMembershipAdded: React.FC<CareMembershipProps> = (props) => {
   const { doctor } = props;
-  const careDoctorDetails = calculateCareDoctorPricing(doctor);
-  const { minDiscountedPrice } = careDoctorDetails;
+  const circleDoctorDetails = calculateCareDoctorPricing(doctor);
+  const { minDiscountedPrice } = circleDoctorDetails;
 
   return (
     <View style={styles.container}>

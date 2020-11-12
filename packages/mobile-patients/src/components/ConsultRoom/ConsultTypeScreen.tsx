@@ -216,15 +216,15 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
   const { currentPatientId, currentPatient } = useAllCurrentPatients();
   const [doctorDetails, setdoctorDetails] = useState<getDoctorDetailsById_getDoctorDetailsById>();
   const callSaveSearch = props.navigation.getParam('callSaveSearch');
-  const careDoctorDetails = calculateCareDoctorPricing(doctorDetails);
+  const circleDoctorDetails = calculateCareDoctorPricing(doctorDetails);
   const {
-    isCareDoctor,
+    isCircleDoctor,
     physicalConsultMRPPrice,
     onlineConsultMRPPrice,
     onlineConsultSlashedPrice,
     physicalConsultSlashedPrice,
-  } = careDoctorDetails;
-  const { isCareSubscribed } = useShoppingCart();
+  } = circleDoctorDetails;
+  const { circleSubscriptionId } = useShoppingCart();
 
   const client = useApolloClient();
 
@@ -290,11 +290,11 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
           style={[
             styles.carePrice,
             {
-              textDecorationLine: isCareSubscribed ? 'line-through' : 'none',
+              textDecorationLine: circleSubscriptionId ? 'line-through' : 'none',
               ...theme.viewStyles.text(
                 'M',
                 15,
-                isCareSubscribed ? theme.colors.BORDER_BOTTOM_COLOR : theme.colors.LIGHT_BLUE
+                circleSubscriptionId ? theme.colors.BORDER_BOTTOM_COLOR : theme.colors.LIGHT_BLUE
               ),
             },
           ]}
@@ -305,7 +305,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
             : physicalConsultMRPPrice}
         </Text>
         <View style={styles.rowContainer}>
-          {isCareSubscribed && <CircleLogo style={styles.careLogo} />}
+          {circleSubscriptionId ? <CircleLogo style={styles.careLogo} /> : null}
           <Text style={styles.careDiscountedPrice}>
             {string.common.Rs}
             {heading === string.consultType.online.heading
@@ -344,13 +344,13 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
                 </Text>
               ) : null}
             </View>
-            {isCareDoctor ? (
+            {isCircleDoctor ? (
               renderCareDoctorPricing(heading)
             ) : (
               <Text style={styles.priceTextStyle}>{`${string.common.Rs}${price}`}</Text>
             )}
           </View>
-          {!isCareSubscribed && isCareDoctor && (
+          {!circleSubscriptionId && isCircleDoctor ? (
             <View
               style={[
                 styles.row,
@@ -364,7 +364,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
               <Text style={[styles.smallRightAlignText, { marginLeft: -4 }]}>members</Text>
               <InfoBlue style={styles.infoIcon} />
             </View>
-          )}
+          ) : null}
         </View>
         <View style={styles.stepsMainContainer}>
           <Text style={theme.viewStyles.text('M', 12, theme.colors.SHERPA_BLUE, 1, 18)}>

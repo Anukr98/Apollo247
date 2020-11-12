@@ -11,7 +11,7 @@ interface ConsultPriceProps {
   selectedTab: string;
   coupon: string;
   couponDiscountFees: number;
-  isCareSubscribed?: boolean;
+  circleSubscriptionId?: string;
   planSelected?: any;
 }
 
@@ -22,25 +22,25 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
     selectedTab,
     coupon,
     couponDiscountFees,
-    isCareSubscribed,
+    circleSubscriptionId,
     planSelected,
   } = props;
   const isOnlineConsult = selectedTab === 'Consult Online';
-  const careDoctorDetails = calculateCareDoctorPricing(doctor);
+  const circleDoctorDetails = calculateCareDoctorPricing(doctor);
   const {
-    isCareDoctor,
+    isCircleDoctor,
     physicalConsultMRPPrice,
     onlineConsultMRPPrice,
     onlineConsultSlashedPrice,
     physicalConsultSlashedPrice,
-  } = careDoctorDetails;
+  } = circleDoctorDetails;
 
-  const amountToPay = isCareDoctor
+  const amountToPay = isCircleDoctor
     ? isOnlineConsult
-      ? isCareSubscribed
+      ? circleSubscriptionId
         ? onlineConsultSlashedPrice - couponDiscountFees
         : onlineConsultMRPPrice - couponDiscountFees
-      : isCareSubscribed
+      : circleSubscriptionId
       ? physicalConsultSlashedPrice - couponDiscountFees
       : physicalConsultMRPPrice - couponDiscountFees
     : Number(doctorFees) - couponDiscountFees;
@@ -52,11 +52,11 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
           style={[
             styles.carePrice,
             {
-              textDecorationLine: isCareSubscribed || planSelected ? 'line-through' : 'none',
+              textDecorationLine: circleSubscriptionId || planSelected ? 'line-through' : 'none',
               ...theme.viewStyles.text(
                 'M',
                 16,
-                isCareSubscribed || planSelected
+                circleSubscriptionId || planSelected
                   ? theme.colors.BORDER_BOTTOM_COLOR
                   : theme.colors.LIGHT_BLUE
               ),
@@ -66,7 +66,7 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
           {string.common.Rs}
           {isOnlineConsult ? onlineConsultMRPPrice : physicalConsultMRPPrice}
         </Text>
-        {isCareSubscribed || planSelected ? (
+        {circleSubscriptionId || planSelected ? (
           <Text style={styles.regularText}>
             {string.common.Rs}
             {isOnlineConsult ? onlineConsultSlashedPrice : physicalConsultSlashedPrice}
@@ -90,9 +90,9 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
       <View style={styles.rowContainer}>
         <Text style={styles.regularText}>
           {string.common.subtotal}{' '}
-          {`${isCareDoctor && (isCareSubscribed || planSelected) ? '(Care Price)' : ''}`}
+          {`${isCircleDoctor && (circleSubscriptionId || planSelected) ? '(Care Price)' : ''}`}
         </Text>
-        {isCareDoctor ? renderCareDoctorPricing() : renderNonCareDoctorPricing()}
+        {isCircleDoctor ? renderCareDoctorPricing() : renderNonCareDoctorPricing()}
       </View>
       {planSelected ? (
         <View style={[styles.rowContainer, { marginTop: 4 }]}>

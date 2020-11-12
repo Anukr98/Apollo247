@@ -19,7 +19,7 @@ interface DoctorCheckoutProps {
   appointmentInput: BookAppointmentInput;
   doctorFees: number;
   selectedTab: string;
-  isCareSubscribed?: boolean;
+  circleSubscriptionId?: string;
   planSelected?: any;
 }
 
@@ -29,19 +29,19 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
     appointmentInput,
     doctorFees,
     selectedTab,
-    isCareSubscribed,
+    circleSubscriptionId,
     planSelected,
   } = props;
   const isOnlineConsult = selectedTab === 'Consult Online';
-  const careDoctorDetails = calculateCareDoctorPricing(doctor);
+  const circleDoctorDetails = calculateCareDoctorPricing(doctor);
   const {
-    isCareDoctor,
+    isCircleDoctor,
     physicalConsultMRPPrice,
     onlineConsultMRPPrice,
     onlineConsultSlashedPrice,
     physicalConsultSlashedPrice,
     minDiscountedPrice,
-  } = careDoctorDetails;
+  } = circleDoctorDetails;
 
   const renderCareDoctorPricing = () => {
     return (
@@ -51,11 +51,11 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
             style={[
               styles.carePrice,
               {
-                textDecorationLine: isCareSubscribed || planSelected ? 'line-through' : 'none',
+                textDecorationLine: circleSubscriptionId || planSelected ? 'line-through' : 'none',
                 ...theme.viewStyles.text(
                   'M',
                   15,
-                  isCareSubscribed || planSelected
+                  circleSubscriptionId || planSelected
                     ? theme.colors.BORDER_BOTTOM_COLOR
                     : theme.colors.SKY_BLUE
                 ),
@@ -65,14 +65,14 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
             {string.common.Rs}
             {isOnlineConsult ? onlineConsultMRPPrice : physicalConsultMRPPrice}
           </Text>
-          {isCareSubscribed || planSelected ? (
+          {circleSubscriptionId || planSelected ? (
             <Text style={styles.careDiscountedPrice}>
               {string.common.Rs}
               {isOnlineConsult ? onlineConsultSlashedPrice : physicalConsultSlashedPrice}
             </Text>
           ) : null}
         </View>
-        {isCareSubscribed || planSelected ? (
+        {circleSubscriptionId || planSelected ? (
           <Text style={styles.amountSavedTextStyle}>
             {string.careDoctors.circleSavings.replace('{amount}', `${minDiscountedPrice}`)}
           </Text>
@@ -87,7 +87,7 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
 
   const renderDoctorProfile = () => {
     return (
-      <View style={{ marginLeft: isCareDoctor ? 3.5 : 0 }}>
+      <View style={{ marginLeft: isCircleDoctor ? 3.5 : 0 }}>
         {!!g(doctor, 'photoUrl') ? (
           <Image
             style={styles.doctorProfile}
@@ -119,7 +119,7 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
           </Text>
         </View>
         <View>
-          {isCareDoctor ? (
+          {isCircleDoctor ? (
             <ImageBackground
               source={require('@aph/mobile-patients/src/components/ui/icons/doctor_ring.png')}
               style={styles.drImageBackground}
@@ -130,11 +130,11 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
           ) : (
             <View>{renderDoctorProfile()}</View>
           )}
-          {isCareDoctor && <CircleLogo style={styles.careLogo} />}
+          {isCircleDoctor && <CircleLogo style={styles.careLogo} />}
         </View>
       </View>
       {!isOnlineConsult && (
-        <View style={{ width: isCareDoctor ? width - 140 : width - 40 }}>
+        <View style={{ width: isCircleDoctor ? width - 140 : width - 40 }}>
           <View style={styles.row}>
             <Location />
             <View style={{ flex: 1 }}>
@@ -155,7 +155,7 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
       <View style={styles.seperatorLine} />
       <View style={[styles.rowContainer, { marginTop: 9 }]}>
         <Text style={[styles.regularText, { marginTop: 0 }]}>{string.common.amountToPay}</Text>
-        {isCareDoctor ? renderCareDoctorPricing() : renderNonCareDoctorPricing()}
+        {isCircleDoctor ? renderCareDoctorPricing() : renderNonCareDoctorPricing()}
       </View>
     </View>
   );

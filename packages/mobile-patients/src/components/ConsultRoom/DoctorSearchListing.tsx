@@ -231,7 +231,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [displayFilter, setDisplayFilter] = useState<boolean>(false);
   const [currentLocation, setcurrentLocation] = useState<string>('');
   const [locationSearchText, setLocationSearchText] = useState<string>('');
-  const [showCarePlanNotification, setShowCarePlanNotification] = useState<boolean>(true);
+  const [showCarePlanNotification, setShowCarePlanNotification] = useState<boolean>(false);
 
   const [doctorsList, setDoctorsList] = useState<
     (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null)[]

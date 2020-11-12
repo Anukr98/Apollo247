@@ -24,6 +24,7 @@ import {
   APPOINTMENT_TYPE,
   BOOKINGSOURCE,
   DEVICETYPE,
+  PLAN,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -87,7 +88,7 @@ export interface ConsultOverlayProps extends NavigationScreenProps {
 }
 export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const client = useApolloClient();
-  const { isCareSubscribed } = useShoppingCart();
+  const { circleSubscriptionId } = useShoppingCart();
   const tabs =
     props.doctor!.doctorType !== DoctorType.PAYROLL
       ? props.availableMode === ConsultMode.BOTH
@@ -125,21 +126,21 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   );
   const { currentPatient } = useAllCurrentPatients();
   const { locationDetails, hdfcUserSubscriptions } = useAppCommonData();
-  const careDoctorDetails = calculateCareDoctorPricing(props.doctor);
+  const circleDoctorDetails = calculateCareDoctorPricing(props.doctor);
   const {
-    isCareDoctor,
+    isCircleDoctor,
     onlineConsultSlashedPrice,
     onlineConsultMRPPrice,
     physicalConsultMRPPrice,
     physicalConsultSlashedPrice,
-  } = careDoctorDetails;
+  } = circleDoctorDetails;
 
-  const actualPrice = isCareDoctor
+  const actualPrice = isCircleDoctor
     ? selectedTab === 'Consult Online'
-      ? isCareSubscribed
+      ? circleSubscriptionId
         ? onlineConsultSlashedPrice
         : onlineConsultMRPPrice
-      : isCareSubscribed
+      : circleSubscriptionId
       ? physicalConsultSlashedPrice
       : physicalConsultMRPPrice
     : Number(doctorFees);
@@ -215,6 +216,12 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       ...externalConnectParam,
       actualAmount: actualPrice,
       pinCode: locationDetails && locationDetails.pincode,
+      subscriptionDetails: circleSubscriptionId
+        ? {
+            userSubscriptionId: circleSubscriptionId,
+            plan: PLAN.CARE_PLAN,
+          }
+        : null,
     };
 
     props.navigation.navigate(AppRoutes.PaymentCheckout, {
@@ -247,12 +254,12 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       >
         <Button
           title={`${string.common.proceedToCheckout} - ${string.common.Rs}${
-            isCareDoctor
+            isCircleDoctor
               ? selectedTab === 'Consult Online'
-                ? isCareSubscribed
+                ? circleSubscriptionId
                   ? onlineConsultSlashedPrice
                   : onlineConsultMRPPrice
-                : isCareSubscribed
+                : circleSubscriptionId
                 ? physicalConsultSlashedPrice
                 : physicalConsultMRPPrice
               : Number(doctorFees)

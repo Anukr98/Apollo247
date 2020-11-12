@@ -283,34 +283,34 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [isFocused, setisFocused] = useState<boolean>(false);
   const callSaveSearch = props.navigation.getParam('callSaveSearch');
   const [secretaryData, setSecretaryData] = useState<any>([]);
-  const careDoctorDetails = calculateCareDoctorPricing(doctorDetails);
+  const circleDoctorDetails = calculateCareDoctorPricing(doctorDetails);
   const {
-    isCareDoctor,
+    isCircleDoctor,
     physicalConsultMRPPrice,
     onlineConsultMRPPrice,
     onlineConsultSlashedPrice,
     physicalConsultSlashedPrice,
-  } = careDoctorDetails;
-  const { isCareSubscribed } = useShoppingCart();
+  } = circleDoctorDetails;
+  const { circleSubscriptionId } = useShoppingCart();
 
-  const rectangularIconHeight = isCareDoctor
+  const rectangularIconHeight = isCircleDoctor
     ? Platform.OS == 'android'
-      ? isCareSubscribed
+      ? circleSubscriptionId
         ? 154
         : 164
-      : isCareSubscribed
+      : circleSubscriptionId
       ? 149
       : 159
     : Platform.OS == 'android'
     ? 134
     : 129;
 
-  const consultViewHeight = isCareDoctor
+  const consultViewHeight = isCircleDoctor
     ? Platform.OS == 'android'
-      ? isCareSubscribed
+      ? circleSubscriptionId
         ? 133
         : 143
-      : isCareSubscribed
+      : circleSubscriptionId
       ? 128
       : 138
     : Platform.OS == 'android'
@@ -560,7 +560,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         DoctorName={doctorDetails ? doctorDetails.fullName : ''}
         nextAppointemntOnlineTime={availableTime}
         nextAppointemntInPresonTime={physicalAvailableTime}
-        careDoctorDetails={careDoctorDetails}
+        circleDoctorDetails={circleDoctorDetails}
       />
     );
   };
@@ -584,16 +584,16 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
   const renderCareDoctorPricing = (consultType: ConsultMode) => {
     return (
-      <View style={{ paddingBottom: isCareSubscribed ? 16 : 3 }}>
+      <View style={{ paddingBottom: circleSubscriptionId ? 16 : 3 }}>
         <Text
           style={[
             styles.carePrice,
             {
-              textDecorationLine: isCareSubscribed ? 'line-through' : 'none',
+              textDecorationLine: circleSubscriptionId ? 'line-through' : 'none',
               ...theme.viewStyles.text(
                 'M',
                 15,
-                isCareSubscribed ? theme.colors.BORDER_BOTTOM_COLOR : theme.colors.LIGHT_BLUE
+                circleSubscriptionId ? theme.colors.BORDER_BOTTOM_COLOR : theme.colors.LIGHT_BLUE
               ),
             },
           ]}
@@ -608,16 +608,18 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               ? onlineConsultSlashedPrice
               : physicalConsultSlashedPrice}
           </Text>
-          {isCareSubscribed && <CircleLogo style={[styles.smallCareLogo, { height: 17 }]} />}
+          {circleSubscriptionId ? (
+            <CircleLogo style={[styles.smallCareLogo, { height: 17 }]} />
+          ) : null}
         </View>
-        {!isCareSubscribed && (
+        {!circleSubscriptionId ? (
           <View style={styles.row}>
             <Text style={styles.smallText}>for</Text>
             <CircleLogo style={styles.smallCareLogo} />
             <Text style={[styles.smallText, { marginLeft: -4 }]}>members</Text>
             <InfoBlue style={styles.smallInfo} />
           </View>
-        )}
+        ) : null}
       </View>
     );
   };
@@ -752,7 +754,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   >
                     <View>
                       <Text style={styles.onlineConsultLabel}>Consult In-App</Text>
-                      {isCareDoctor ? (
+                      {isCircleDoctor ? (
                         renderCareDoctorPricing(ConsultMode.ONLINE)
                       ) : (
                         <Text style={styles.onlineConsultAmount}>
@@ -843,7 +845,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                       {doctorDetails.doctorType !== DoctorType.PAYROLL && (
                         <>
                           <Text style={styles.onlineConsultLabel}>Meet in Person</Text>
-                          {isCareDoctor ? (
+                          {isCircleDoctor ? (
                             renderCareDoctorPricing(ConsultMode.PHYSICAL)
                           ) : (
                             <Text style={styles.onlineConsultAmount}>
@@ -1343,7 +1345,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   source={{ uri: doctorDetails!.photoUrl }}
                   style={{ top: 0, height: 140, width: 140, opacity: imgOp, alignSelf: 'center' }}
                 />
-                {isCareDoctor && (
+                {isCircleDoctor && (
                   <View style={styles.circleView}>
                     <CircleLogo style={styles.careLogo} />
                   </View>

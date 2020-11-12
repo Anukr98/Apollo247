@@ -187,18 +187,18 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const rowData = props.rowData;
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
-  const careDoctorDetails = calculateCareDoctorPricing(rowData);
+  const circleDoctorDetails = calculateCareDoctorPricing(rowData);
   const {
-    isCareDoctor,
+    isCircleDoctor,
     physicalConsultMRPPrice,
     onlineConsultMRPPrice,
     onlineConsultSlashedPrice,
     minMrp,
     minSlashedPrice,
     minDiscountedPrice,
-  } = careDoctorDetails;
+  } = circleDoctorDetails;
 
-  const { isCareSubscribed } = useShoppingCart();
+  const { circleSubscriptionId } = useShoppingCart();
 
   useEffect(() => {
     if (!currentPatient) {
@@ -256,7 +256,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   };
 
   const renderCareDoctorsFee = () => {
-    if (isCareSubscribed) {
+    if (circleSubscriptionId) {
       return (
         <View style={{ marginTop: 5 }}>
           <View style={styles.rowContainer}>
@@ -344,7 +344,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
 
   const renderDoctorProfile = () => {
     return (
-      <View style={{ marginLeft: isCareDoctor ? 3.3 : 0 }}>
+      <View style={{ marginLeft: isCircleDoctor ? 3.3 : 0 }}>
         {!!g(rowData, 'thumbnailUrl') ? (
           <Image
             style={styles.doctorProfile}
@@ -446,33 +446,33 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               )}
             </View>
             <View>
-              {isCareDoctor ? (
+              {isCircleDoctor ? (
                 <ImageBackground
                   source={require('@aph/mobile-patients/src/components/ui/icons/doctor_ring.png')}
                   style={[
                     styles.drImageBackground,
                     styles.drImageMargins,
-                    { marginBottom: isCareDoctor ? 0 : 22 },
+                    { marginBottom: isCircleDoctor ? 0 : 22 },
                   ]}
                   resizeMode="contain"
                 >
                   {renderDoctorProfile()}
                 </ImageBackground>
               ) : (
-                <View style={[styles.drImageMargins, { marginBottom: isCareDoctor ? 0 : 22 }]}>
+                <View style={[styles.drImageMargins, { marginBottom: isCircleDoctor ? 0 : 22 }]}>
                   {renderDoctorProfile()}
                 </View>
               )}
 
               {/* </TouchableOpacity> */}
-              {isCareDoctor && renderCareLogo()}
+              {isCircleDoctor && renderCareLogo()}
               <View
                 style={{
                   flexDirection: 'row',
                   justifyContent: 'center',
                   alignItems: 'center',
                   marginHorizontal: 20,
-                  marginTop: isCareDoctor ? 3 : 0,
+                  marginTop: isCircleDoctor ? 3 : 0,
                 }}
               >
                 {isOnline && (
@@ -513,8 +513,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             <View style={{ flex: 1, paddingRight: 16, marginBottom: 16 }}>
               <Text style={styles.doctorNameStyles}>{rowData.displayName}</Text>
               {renderSpecialities()}
-              {isCareDoctor ? renderCareDoctorsFee() : calculatefee(rowData, isBoth, isOnline)}
-              {isCareDoctor && minDiscountedPrice > -1 && isCareSubscribed && (
+              {isCircleDoctor ? renderCareDoctorsFee() : calculatefee(rowData, isBoth, isOnline)}
+              {isCircleDoctor && minDiscountedPrice > -1 && circleSubscriptionId ? (
                 <Text
                   style={{
                     ...theme.viewStyles.text('M', 10, theme.colors.APP_YELLOW),
@@ -523,9 +523,9 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                 >
                   {string.careDoctors.circleSavings.replace('{amount}', `${minDiscountedPrice}`)}
                 </Text>
-              )}
+              ) : null}
               <Text
-                style={[styles.educationTextStyles, { marginTop: isCareDoctor ? 10 : 0 }]}
+                style={[styles.educationTextStyles, { marginTop: isCircleDoctor ? 10 : 0 }]}
                 numberOfLines={props.numberOfLines}
               >
                 {rowData.qualification}

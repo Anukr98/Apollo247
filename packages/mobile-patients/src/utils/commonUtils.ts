@@ -174,7 +174,7 @@ export const isUpperCase = (str: string) => {
 };
 
 export const calculateCareDoctorPricing = (data: any) => {
-  const isCareDoctor = data?.doctorPricing?.length > 0;
+  const isCircleDoctor = data?.doctorPricing?.length > 0;
   const physicalConsult = data?.doctorPricing?.filter(
     (item: any) => item.appointment_type === ConsultMode.PHYSICAL
   );
@@ -207,7 +207,7 @@ export const calculateCareDoctorPricing = (data: any) => {
 
   const minDiscountedPrice = minMrp - minSlashedPrice;
   return {
-    isCareDoctor,
+    isCircleDoctor,
     physicalConsultMRPPrice,
     physicalConsultSlashedPrice,
     physicalConsultDiscountedPrice,

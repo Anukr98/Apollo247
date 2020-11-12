@@ -152,7 +152,7 @@ export interface ConsultTypeCardProps {
   DoctorName: string | null;
   nextAppointemntOnlineTime: string;
   nextAppointemntInPresonTime: string;
-  careDoctorDetails?: any;
+  circleDoctorDetails?: any;
 }
 
 type stepsObject = {
@@ -171,20 +171,20 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
     DoctorName,
     nextAppointemntOnlineTime,
     nextAppointemntInPresonTime,
-    careDoctorDetails,
+    circleDoctorDetails,
   } = props;
 
   const { currentPatient } = useAllCurrentPatients();
-  const { isCareSubscribed } = useShoppingCart();
+  const { circleSubscriptionId } = useShoppingCart();
 
   const [consultDoctorName, setConsultDocotrName] = useState<string>(DoctorName ? DoctorName : '');
   const {
-    isCareDoctor,
+    isCircleDoctor,
     onlineConsultMRPPrice,
     onlineConsultSlashedPrice,
     physicalConsultMRPPrice,
     physicalConsultSlashedPrice,
-  } = careDoctorDetails;
+  } = circleDoctorDetails;
 
   const renderCareDoctorPricing = () => {
     return (
@@ -193,11 +193,11 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
           style={[
             styles.carePrice,
             {
-              textDecorationLine: isCareSubscribed ? 'line-through' : 'none',
+              textDecorationLine: circleSubscriptionId ? 'line-through' : 'none',
               ...theme.viewStyles.text(
                 'M',
                 15,
-                isCareSubscribed ? theme.colors.BORDER_BOTTOM_COLOR : theme.colors.LIGHT_BLUE
+                circleSubscriptionId ? theme.colors.BORDER_BOTTOM_COLOR : theme.colors.LIGHT_BLUE
               ),
             },
           ]}
@@ -206,7 +206,7 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
           {isOnlineSelected ? onlineConsultMRPPrice : physicalConsultMRPPrice}
         </Text>
         <View style={styles.rowContainer}>
-          {isCareSubscribed && <CircleLogo style={styles.careLogo} />}
+          {circleSubscriptionId ? <CircleLogo style={styles.careLogo} /> : null}
           <Text style={styles.careDiscountedPrice}>
             {string.common.Rs}
             {isOnlineSelected ? onlineConsultSlashedPrice : physicalConsultSlashedPrice}
@@ -242,9 +242,9 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
                 </Text>
               ) : null}
             </View>
-            {isCareDoctor && renderCareDoctorPricing()}
+            {isCircleDoctor && renderCareDoctorPricing()}
           </View>
-          {!isCareSubscribed && isCareDoctor && (
+          {!circleSubscriptionId && isCircleDoctor ? (
             <View
               style={[
                 styles.row,
@@ -258,7 +258,7 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
               <Text style={[styles.smallRightAlignText, { marginLeft: -4 }]}>members</Text>
               <InfoBlue style={styles.infoIcon} />
             </View>
-          )}
+          ) : null}
         </View>
 
         <View style={styles.stepsMainContainer}>
