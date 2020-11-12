@@ -3366,3 +3366,14 @@ export const GET_PLAN_DETAILS_BY_PLAN_ID = gql`
     }
   }
 `;
+
+export const GET_SUBSCRIPTIONS_OF_USER_BY_STATUS = gql`
+  query GetSubscriptionsOfUserByStatus($mobile_number: String!, $status: [String!]!) {
+    GetSubscriptionsOfUserByStatus(mobile_number: $mobile_number, status: $status) {
+      code
+      success
+      message
+      response
+    }
+  }
+`;
