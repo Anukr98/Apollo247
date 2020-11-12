@@ -36,6 +36,7 @@ import {
   APPStateActive,
   postWebEngageEvent,
   callPermissions,
+  UnInstallAppsFlyer,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -164,6 +165,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   useEffect(() => {
     handleDeepLink();
+    getDeviceToken();
   }, []);
 
   useEffect(() => {
@@ -172,6 +174,28 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       handleVoipEventListeners();
     }
   }, []);
+
+  const getDeviceToken = async () => {
+    const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
+    const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
+    if (
+      !currentDeviceToken ||
+      typeof currentDeviceToken != 'string' ||
+      typeof currentDeviceToken == 'object'
+    ) {
+      firebase
+        .messaging()
+        .getToken()
+        .then((token) => {
+          console.log('token', token);
+          AsyncStorage.setItem('deviceToken', JSON.stringify(token));
+          UnInstallAppsFlyer(token);
+        })
+        .catch((e) => {
+          CommonBugFender('SplashScreen_getDeviceToken', e);
+        });
+    }
+  };
 
   const initializeCallkit = () => {
     const callkeepOptions = {

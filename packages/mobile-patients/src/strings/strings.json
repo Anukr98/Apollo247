@@ -297,7 +297,8 @@
     "addItemsForStoresAlert": "Please add items to your cart to view the list of stores available.",
     "storeItemsAvailabilityApiFailMsg": "Sorry! We’re unable to check availability of cart items for the selected store. Please try later or opt for Home Delivery.",
     "cartItemsNotAvailableInStore": "The item(s) you have selected are not available in the nearby stores. Kindly opt for Home Delivery and we will deliver them to you directly at your doorstep.",
-    "PickupStoreUnavailable": "Sorry! We’re working hard to get to this area! In the meantime, you can try next nearest pincode."
+    "PickupStoreUnavailable": "Sorry! We’re working hard to get to this area! In the meantime, you can try next nearest pincode.",
+    "orderDetailsExpectedDeliverySubTextNonCartOrder": "Delivery date will be updated after successful verification"
   },
   "diagnostics": {
     "nonServiceableMsg": "Diagnostic services are not available in {{city_name}} for now.",
@@ -310,7 +311,7 @@
     "itemsAddedSuccessfullyCTA": " Item successfully added",
     "proceedToCartCTA": "PROCEED TO CART",
     "noPreparationRequiredText": "No special preparation required",
-    "priceNotificationForCovidText":"Extra charges for Phlebotomist Protection Kit and Home Collection may apply for COVID Test. You will be informed of the charges after booking of the order."
+    "priceNotificationForCovidText": "Extra charges for Phlebotomist Protection Kit and Home Collection may apply for COVID Test. You will be informed of the charges after booking of the order."
   },
   "orders": {
     "urOrders": "MY ORDERS",
@@ -355,6 +356,7 @@
     "description": "Find all your health record(s) & prescription(s) in one place.",
     "view_consult": "VIEW CONSULT",
     "order_medicine": "ORDER MEDICINES",
+    "order_medicine_msg": "Try our Express Delivery in 2-4 hours",
     "order_test": "ORDER TESTS",
     "book_follow_up": "BOOK FOLLOW-UP",
     "add_note_to_notify_users": "Please note that you can share these health records with the doctor during a consult by uploading them in the consult chat room!",
@@ -545,8 +547,8 @@
     "bookedForWrongUser": "Booked with wrong user details",
     "doctorDeniedMode": "Doctor denied your preferable mode of consult",
     "audioVideoIssue": "Audio Video Issues",
-    "otherReasons":"Others (Please specifiy)"
+    "otherReasons": "Others (Please specifiy)"
   },
-  "reachUsOut":"If you have any queries please reach out to us",
+  "reachUsOut": "If you have any queries please reach out to us",
   "Diagnostics_Feedback_Others": "Others (Please specify)"
 }

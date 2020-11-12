@@ -179,6 +179,11 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
   const [showDriveWayPopup, setShowDriveWayPopup] = useState<boolean>(false);
   const scrollViewRef = useRef<ScrollView | null>();
   const [whatsAppUpdate, setWhatsAppUpdate] = useState<boolean>(true);
+  const orderId = props.navigation.getParam('orderAutoId');
+  const prescriptionSelectionOptions = [
+    'Need all medicine and for duration as per prescription',
+    'Call me for details',
+  ];
 
   const prescriptionOption = props.navigation.getParam('prescriptionOptionSelected');
   const durationDay = props.navigation.getParam('durationDays');
@@ -425,7 +430,7 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
           renderErrorAlert(`Something went wrong, unable to place order.`);
           return;
         }
-        renderSuccessPopup();
+        renderSuccessPopup(orderAutoId);
       })
       .catch((e) => {
         CommonBugFender('UploadPrescription_submitPrescriptionMedicineOrder', e);
@@ -444,7 +449,8 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
       unDismissable: true,
     });
 
-  const renderSuccessPopup = () => {
+  const renderSuccessPopup = (orderAutoId: string) => {
+    const isNonCart = prescriptionSelectionOptions.includes(prescriptionOption);
     showAphAlert!({
       title: 'Hi :)',
       ctaContainerStyle: {
@@ -461,13 +467,19 @@ export const YourCartUploadPrescriptions: React.FC<YourCartUploadPrescriptionPro
           type: 'orange-link',
           onPress: () => {
             hideAphAlert!();
-            props.navigation.dispatch(
-              StackActions.reset({
-                index: 0,
-                key: null,
-                actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-              })
-            );
+            isNonCart
+              ? props.navigation.navigate(AppRoutes.OrderDetailsScene, {
+                  goToHomeOnBack: true,
+                  showOrderSummaryTab: false,
+                  orderAutoId: orderAutoId,
+                })
+              : props.navigation.dispatch(
+                  StackActions.reset({
+                    index: 0,
+                    key: null,
+                    actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+                  })
+                );
           },
         },
       ],
