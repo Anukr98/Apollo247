@@ -964,13 +964,13 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     type?: 'consult-now' | 'book-appointment'
   ) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DOCTOR_CLICKED] = {
-      'Doctor Name': doctorDetails.fullName!,
+      'Doctor Name': doctorDetails.displayName!,
       Source: source,
       'Doctor ID': doctorDetails.id,
       'Speciality ID': props.navigation.getParam('specialityId') || '',
       'Doctor Category': doctorDetails.doctorType,
       Fee: Number(doctorDetails?.fee),
-      'Doctor Speciality': doctorDetails?.specialistSingularTerm,
+      'Doctor Speciality': doctorDetails?.specialtydisplayName,
       Rank: doctorDetails?.rowId,
       Is_TopDoc: !!isTopDoc ? 'Yes' : 'No',
     };
@@ -1044,7 +1044,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         availableModes={rowData.consultMode}
         callSaveSearch={callSaveSearch}
         onPress={() => {
-          postDoctorClickWEGEvent(rowData, 'List');
+          postDoctorClickWEGEvent({ ...rowData, rowId: index + 1 }, 'List');
           props.navigation.navigate(AppRoutes.DoctorDetails, {
             doctorId: rowData.id,
             callSaveSearch: callSaveSearch,
