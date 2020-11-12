@@ -21,7 +21,7 @@ import {
 import {
   getDoctorDetailsById,
   getDoctorDetailsById_getDoctorDetailsById,
-  getDoctorDetailsById_getDoctorDetailsById_doctorOfHour,
+  getDoctorDetailsById_getDoctorDetailsById_availabilityTitle,
 } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { ConsultMode, DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -215,7 +215,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [consultMode, setConsultMode] = useState<ConsultMode>(ConsultMode.ONLINE);
   const [onlineSelected, setOnlineSelected] = useState<boolean>(true);
   const [doctorDetails, setDoctorDetails] = useState<getDoctorDetailsById_getDoctorDetailsById>();
-  const [ctaBannerText, setCtaBannerText] = useState<getDoctorDetailsById_getDoctorDetailsById_doctorOfHour | null>(null);
+  const [
+    ctaBannerText,
+    setCtaBannerText,
+  ] = useState<getDoctorDetailsById_getDoctorDetailsById_availabilityTitle | null>(null);
   const [appointmentHistory, setAppointmentHistory] = useState<
     getAppointmentHistory_getAppointmentHistory_appointmentsHistory[] | null
   >([]);
@@ -424,7 +427,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           if (data && data.getDoctorDetailsById && doctorDetails !== data.getDoctorDetailsById) {
             setDoctorDetails(data.getDoctorDetailsById);
             setDoctorId(data.getDoctorDetailsById.id);
-            setCtaBannerText(data?.getDoctorDetailsById?.doctorOfHour);
+            setCtaBannerText(data?.getDoctorDetailsById?.availabilityTitle);
             setshowSpinner(false);
             fetchNextAvailableSlots([data.getDoctorDetailsById.id]);
             setAvailableModes(data.getDoctorDetailsById);

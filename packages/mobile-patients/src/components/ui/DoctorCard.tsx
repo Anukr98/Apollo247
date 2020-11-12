@@ -138,7 +138,7 @@ export interface DoctorCardProps extends NavigationScreenProps {
 
 export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const rowData = props.rowData;
-  const ctaBannerText = rowData?.doctorOfHour;
+  const ctaBannerText = rowData?.availabilityTitle;
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
   const [fetchedSlot, setfetchedSlot] = useState<string>('');

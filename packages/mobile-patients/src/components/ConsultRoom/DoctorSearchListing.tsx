@@ -1401,7 +1401,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     const buttonTextStyle = {
       color: theme.colors.BUTTON_TEXT,
     };
-    const doctorOfHourText = !!platinumDoctor?.doctorOfHour?.DOCTOR_OF_HOUR || 'Doctor of the Hour!';
+    const doctorOfHourText =
+      !!platinumDoctor?.availabilityTitle?.DOCTOR_OF_HOUR || 'Doctor of the Hour!';
     return (
       <LinearGradientComponent
         style={[styles.linearGradient, setHeight && { minHeight: 310, flex: undefined }]}
