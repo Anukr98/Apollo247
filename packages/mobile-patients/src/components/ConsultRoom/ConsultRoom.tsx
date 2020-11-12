@@ -64,6 +64,7 @@ import {
   VALIDATE_HDFC_OTP,
   CREATE_USER_SUBSCRIPTION,
   GET_ALL_GROUP_BANNERS_OF_USER,
+  GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { getPatientFutureAppointmentCount } from '@aph/mobile-patients/src/graphql/types/getPatientFutureAppointmentCount';
 import {
@@ -160,6 +161,10 @@ import { addVoipPushToken, addVoipPushTokenVariables } from '../../graphql/types
 import Carousel from 'react-native-snap-carousel';
 import { HdfcConnectPopup } from '../HdfcSubscription/HdfcConnectPopup';
 import { getPatientAllAppointments_getPatientAllAppointments_appointments } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
+import {
+  GetSubscriptionsOfUserByStatus,
+  GetSubscriptionsOfUserByStatusVariables,
+} from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
 
 const { Vitals } = NativeModules;
 
@@ -362,7 +367,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [isFindDoctorCustomProfile, setFindDoctorCustomProfile] = useState<boolean>(false);
 
   const { cartItems } = useDiagnosticsCart();
-  const { cartItems: shopCartItems, setHdfcPlanName, setIsFreeDelivery } = useShoppingCart();
+  const {
+    cartItems: shopCartItems,
+    setHdfcPlanName,
+    setIsFreeDelivery,
+    setCircleSubscriptionId,
+  } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
 
   const { analytics } = useAuth();
@@ -843,7 +853,37 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     storePatientDetailsTOBugsnag();
     callAPIForNotificationResult();
     setWebEngageScreenNames('Home Screen');
+    getUserSubscriptionsByStatus();
   }, []);
+
+  const getUserSubscriptionsByStatus = async () => {
+    try {
+      const query: GetSubscriptionsOfUserByStatusVariables = {
+        mobile_number: g(currentPatient, 'mobileNumber'),
+        status: ['active', 'deferred_inactive'],
+      };
+      const res = await client.query<GetSubscriptionsOfUserByStatus>({
+        query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+        fetchPolicy: 'no-cache',
+        variables: query,
+      });
+      const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
+      if (data) {
+        /**
+         * for circle and hdfc
+         * data?.HDFC ------> HDFC data
+         * data?.APOLLO ----> Circle data
+         */
+        if (data?.APOLLO?.[0]._id) {
+          setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
+        } else {
+          setCircleSubscriptionId && setCircleSubscriptionId('');
+        }
+      }
+    } catch (error) {
+      CommonBugFender('ConsultRoom_getUserSubscriptionsByStatus', error);
+    }
+  };
 
   const identifyHdfcCustomer = () => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_OTP_GENERATE_CLICKED] = {

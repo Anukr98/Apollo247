@@ -55,6 +55,7 @@ import { TabHeader } from '@aph/mobile-patients/src/components/ui/TabHeader';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import codePush from 'react-native-code-push';
 import { setTagalysConfig } from '@aph/mobile-patients/src/helpers/Tagalys';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 const { width } = Dimensions.get('window');
 
@@ -160,6 +161,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     setHdfcUserSubscriptions,
     setBannerData,
   } = useAppCommonData();
+  const { setCircleSubscriptionId } = useShoppingCart();
 
   useEffect(() => {
     updateCodePushVersioninUi();
@@ -285,6 +287,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       setAppointmentsPersonalized && setAppointmentsPersonalized([]);
       signOut();
       setTagalysConfig(null);
+      setCircleSubscriptionId && setCircleSubscriptionId('');
 
       props.navigation.dispatch(
         StackActions.reset({
