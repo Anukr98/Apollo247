@@ -292,6 +292,10 @@ export const DropdownBlueUp: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_dropdown_blue_up.png')} />
 );
 
+export const PhrDropdownBlueUpIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_phr_blue_dropdown.png')} />
+);
+
 export const FrontCameraIcon: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/frontCamera.png')} />
 );
@@ -492,6 +496,46 @@ export const PhrAddHospitalizationRecordIcon: React.FC<IconProps> = (props) => (
 
 export const PhrAddBillRecordIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_phr_bill_record.png')} />
+);
+
+export const PhrAllergyIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_phr_allergy_icon.png')} />
+);
+
+export const PhrMedicationIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_phr_medication_icon.png')} />
+);
+
+export const PhrMedicalIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_phr_medical_icon.png')} />
+);
+
+export const PhrRestrictionIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_phr_restriction_icon.png')} />
+);
+
+export const PhrAllergyBlackIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_phr_allergies_black.png')} />
+);
+
+export const PhrMinusCircleIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_phr_minus_circle_icon.png')} />
+);
+
+export const PhrCheckboxIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_phr_checkbox_icon.png')} />
+);
+
+export const PhrUncheckboxIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_phr_uncheckbox_icon.png')} />
+);
+
+export const PhrMedicationBlackIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_phr_medication_black.png')} />
+);
+
+export const PhrRestrictionBlackIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_phr_restriction_black.png')} />
 );
 
 export const PhrAddInsuranceRecordIcon: React.FC<IconProps> = (props) => (

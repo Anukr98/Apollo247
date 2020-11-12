@@ -53,6 +53,7 @@ import {
   ScrollView,
   Image,
   TouchableOpacity,
+  TextInput,
 } from 'react-native';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -65,6 +66,10 @@ import {
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response,
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalBills_response,
   getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalInsurances_response,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalConditions_response,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medications_response,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthRestrictions_response,
+  getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_allergies_response,
 } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -88,7 +93,7 @@ const styles = StyleSheet.create({
   },
   hiTextStyle: {
     marginLeft: 20,
-    color: '#02475b',
+    color: theme.colors.LIGHT_BLUE,
     ...theme.fonts.IBMPlexSansSemiBold(36),
   },
   nameTextContainerStyle: {
@@ -96,7 +101,7 @@ const styles = StyleSheet.create({
   },
   nameTextStyle: {
     marginLeft: 5,
-    color: '#02475b',
+    color: theme.colors.LIGHT_BLUE,
     ...theme.fonts.IBMPlexSansSemiBold(36),
   },
   seperatorStyle: {
@@ -116,7 +121,7 @@ const styles = StyleSheet.create({
   },
   notifyUsersTextStyle: {
     ...theme.fonts.IBMPlexSansSemiBold(12),
-    color: '#0087BA',
+    color: theme.colors.SKY_BLUE,
     fontWeight: '500',
     paddingHorizontal: 20,
     marginBottom: 16,
@@ -126,7 +131,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   userHeightTextStyle: {
-    ...theme.viewStyles.text('SB', 16, '#02475B', 1, 20.8),
+    ...theme.viewStyles.text('SB', 16, theme.colors.LIGHT_BLUE, 1, 20.8),
     paddingLeft: 10,
     flex: 1,
     paddingTop: 0,
@@ -170,7 +175,7 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   listItemTitleStyle: {
-    ...theme.viewStyles.text('M', 16, '#02475B', 1, 21),
+    ...theme.viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 21),
     paddingHorizontal: 6,
     paddingLeft: 14,
   },
@@ -226,6 +231,7 @@ const styles = StyleSheet.create({
   menuContainerStyle: {
     alignItems: 'flex-end',
     marginTop: 60,
+    marginLeft: -40,
   },
   itemTextStyle: {
     ...theme.viewStyles.text('M', 16, '#01475b'),
@@ -252,6 +258,21 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     ...theme.viewStyles.text('SB', 36, '#01475b', 1, 46.8),
   },
+  textInputTextStyle: {
+    borderBottomWidth: 2,
+    paddingTop: 0,
+    paddingBottom: 0,
+    marginBottom: 8,
+    width: '70%',
+    ...theme.fonts.IBMPlexSansMedium(18),
+    color: theme.colors.SHERPA_BLUE,
+    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
+  },
+  kgsTextStyle: {
+    ...theme.fonts.IBMPlexSansMedium(18),
+    color: theme.colors.SHERPA_BLUE,
+    marginLeft: 10,
+  },
   overlayMainViewStyle: {
     width: 160,
     marginBottom: 37,
@@ -265,10 +286,16 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     marginBottom: 16,
   },
+  profileNameTextStyle: { ...theme.viewStyles.text('SB', 36, theme.colors.LIGHT_BLUE, 1, 47) },
 });
 
 type BloodGroupArray = {
   key: BloodGroups;
+  title: string;
+};
+
+type HeightArray = {
+  key: string;
   title: string;
 };
 
@@ -281,6 +308,16 @@ const bloodGroupArray: BloodGroupArray[] = [
   { key: BloodGroups.ABNegative, title: 'AB-' },
   { key: BloodGroups.OPositive, title: 'O+' },
   { key: BloodGroups.ONegative, title: 'O-' },
+];
+
+enum HEIGHT_ARRAY {
+  CM = 'cm',
+  FT = 'ft',
+}
+
+const heightArray: HeightArray[] = [
+  { key: HEIGHT_ARRAY.CM, title: HEIGHT_ARRAY.CM },
+  { key: HEIGHT_ARRAY.FT, title: HEIGHT_ARRAY.FT },
 ];
 
 export interface HealthRecordsHomeProps extends NavigationScreenProps {}
@@ -316,6 +353,27 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     | null
     | undefined
   >([]);
+  const [medicalConditions, setMedicalConditions] = useState<
+    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalConditions_response | null)[]
+    | null
+    | undefined
+  >([]);
+  const [medicalHealthRestrictions, setMedicalHealthRestrictions] = useState<
+    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthRestrictions_response | null)[]
+    | null
+    | undefined
+  >([]);
+  const [medicalMedications, setMedicalMedications] = useState<
+    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medications_response | null)[]
+    | null
+    | undefined
+  >([]);
+  const [medicalAllergies, setMedicalAllergies] = useState<
+    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_allergies_response | null)[]
+    | null
+    | undefined
+  >([]);
+  const [healthConditions, setHealthConditions] = useState<any[] | null>(null);
 
   const [consultsData, setConsultsData] = useState<(ConsultsType | null)[] | null>(null);
   const [medicineOrders, setMedicineOrders] = useState<(medicineOrders | null)[] | null>(null);
@@ -338,15 +396,26 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [selectedBloodGroupArray, setSelectedBloodGroupArray] = useState<BloodGroupArray[]>(
     bloodGroupArray
   );
+  const [heightArrayValue, setHeightArrayValue] = useState<HEIGHT_ARRAY | string>(HEIGHT_ARRAY.CM);
   const [bloodGroup, setBloodGroup] = useState<BloodGroupArray>();
   const [overlaySpinner, setOverlaySpinner] = useState(false);
+  const isHeightAvailable =
+    currentPatient?.patientMedicalHistory?.height &&
+    currentPatient?.patientMedicalHistory?.height !== 'No Idea' &&
+    currentPatient?.patientMedicalHistory?.height !== 'Not Recorded';
+  const isWeightAvailable =
+    currentPatient?.patientMedicalHistory?.weight &&
+    currentPatient?.patientMedicalHistory?.weight !== 'No Idea' &&
+    currentPatient?.patientMedicalHistory?.weight !== 'Not Recorded';
 
   useEffect(() => {
     currentPatient && setProfile(currentPatient!);
     if (!currentPatient) {
       getPatientApiCall();
     }
+    setPatientHistoryValues();
   }, [currentPatient]);
+
   useEffect(() => {
     if (prismdataLoader || pastDataLoader) {
       !loading && setLoading!(true);
@@ -354,6 +423,23 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       loading && setLoading!(false);
     }
   }, [prismdataLoader, pastDataLoader]);
+
+  const setPatientHistoryValues = () => {
+    setHeight(isHeightAvailable ? currentPatient?.patientMedicalHistory?.height : '');
+    setWeight(isWeightAvailable ? currentPatient?.patientMedicalHistory?.weight : '');
+    setBloodGroup(
+      currentPatient?.patientMedicalHistory?.bloodGroup
+        ? {
+            key: getBloodGroupValue(
+              currentPatient?.patientMedicalHistory?.bloodGroup
+            ) as BloodGroups,
+            title: getBloodGroupValue(
+              currentPatient?.patientMedicalHistory?.bloodGroup?.toString()
+            ),
+          }
+        : undefined
+    );
+  };
 
   const fetchPastData = (filters: filterDataType[] = []) => {
     const filterArray = [];
@@ -431,10 +517,10 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const sortWithDate = (array: any) => {
     return array?.sort(
       (a: any, b: any) =>
-        moment(b.date)
+        moment(b.date || b.billDateTime || b.startDateTime)
           .toDate()
           .getTime() -
-        moment(a.date)
+        moment(a.date || a.billDateTime || a.startDateTime)
           .toDate()
           .getTime()
     );
@@ -502,6 +588,30 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           'medicalInsurances',
           'response'
         );
+        const medicalConditionsData = g(
+          data,
+          'getPatientPrismMedicalRecords',
+          'medicalConditions',
+          'response'
+        );
+        const medicalHealthRestrictionsData = g(
+          data,
+          'getPatientPrismMedicalRecords',
+          'healthRestrictions',
+          'response'
+        );
+        const medicalMedicationsData = g(
+          data,
+          'getPatientPrismMedicalRecords',
+          'medications',
+          'response'
+        );
+        const medicalAllergiesData = g(
+          data,
+          'getPatientPrismMedicalRecords',
+          'allergies',
+          'response'
+        );
         console.log('data', data);
         setLabResults(labResultsData);
         setPrescriptions(prescriptionsData);
@@ -509,6 +619,10 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         setHospitalizationsNew(sortWithDate(hospitalizationsNewData));
         setMedicalBills(sortWithDate(medicalBillsData));
         setInsuranceBills(sortWithDate(medicalInsuranceData));
+        setMedicalConditions(medicalConditionsData);
+        setMedicalHealthRestrictions(medicalHealthRestrictionsData);
+        setMedicalMedications(medicalMedicationsData);
+        setMedicalAllergies(medicalAllergiesData);
       })
       .catch((error) => {
         CommonBugFender('HealthRecordsHome_fetchTestData', error);
@@ -562,6 +676,24 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     setTestAndHealthCheck(sortByDate(mergeArray));
   }, [labResults, healthChecksNew]);
 
+  useEffect(() => {
+    const healthConditionsArray: any[] = [];
+    medicalMedications?.forEach((medicationRecord: any) => {
+      medicationRecord && healthConditionsArray.push(medicationRecord);
+    });
+    medicalConditions?.forEach((medicalConditionsRecord: any) => {
+      medicalConditionsRecord && healthConditionsArray.push(medicalConditionsRecord);
+    });
+    medicalHealthRestrictions?.forEach((healthRestrictionRecord: any) => {
+      healthRestrictionRecord && healthConditionsArray.push(healthRestrictionRecord);
+    });
+    medicalAllergies?.forEach((allergyRecord: any) => {
+      allergyRecord && healthConditionsArray.push(allergyRecord);
+    });
+    const sortedData = sortWithDate(healthConditionsArray);
+    setHealthConditions(sortedData);
+  }, [medicalConditions, medicalHealthRestrictions, medicalMedications, medicalAllergies]);
+
   const tabsClickedWebEngageEvent = (webEngageEventName: WebEngageEventName) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.MEDICAL_RECORDS] = {
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
@@ -592,9 +724,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           fetchPolicy: 'no-cache',
         })
         .then(({ data }) => {
-          setBloodGroup(undefined);
-          setHeight('');
-          setWeight('');
           setShowUpdateProfilePopup(false);
           getPatientApiCall();
         })
@@ -679,11 +808,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         <View style={{ flexDirection: 'row' }}>
           {renderProfileImage()}
           <View style={{ marginLeft: 8 }}>
-            <Text
-              style={{ ...theme.viewStyles.text('SB', 36, '#02475B', 1, 47) }}
-              numberOfLines={1}
-            >
-              {'hi ' + (currentPatient && currentPatient!.firstName!.toLowerCase() + '!') || ''}
+            <Text style={styles.profileNameTextStyle} numberOfLines={1}>
+              {'hi ' + (currentPatient?.firstName?.toLowerCase() + '!') || ''}
             </Text>
             <View>
               <Text style={{ ...theme.viewStyles.text('R', 18, '#67919D', 1, 21) }}>
@@ -702,10 +828,21 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               </View>
               <View style={styles.heightWeightViewStyle}>
                 <HeightIcon style={{ width: 14, height: 22.14 }} />
-                {currentPatient?.patientMedicalHistory?.height &&
-                currentPatient?.patientMedicalHistory?.height !== 'No Idea' &&
-                currentPatient?.patientMedicalHistory?.height !== 'Not Recorded' ? (
-                  patientTextView(currentPatient?.patientMedicalHistory?.height || '')
+                {isHeightAvailable ? (
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={() => {
+                      setCurrentUpdatePopupId(1);
+                      setShowUpdateProfilePopup(true);
+                    }}
+                  >
+                    {patientTextView(
+                      currentPatient?.patientMedicalHistory?.height?.includes('’') ||
+                        currentPatient?.patientMedicalHistory?.height?.includes("'")
+                        ? currentPatient?.patientMedicalHistory?.height
+                        : currentPatient?.patientMedicalHistory?.height + ' cm'
+                    )}
+                  </TouchableOpacity>
                 ) : (
                   <TouchableOpacity
                     activeOpacity={1}
@@ -726,14 +863,20 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               </View>
               <View style={styles.heightWeightViewStyle}>
                 <WeightIcon style={{ width: 14, height: 14, paddingBottom: 8 }} />
-                {currentPatient?.patientMedicalHistory?.weight &&
-                currentPatient?.patientMedicalHistory?.weight !== 'No Idea' &&
-                currentPatient?.patientMedicalHistory?.weight !== 'Not Recorded' ? (
-                  patientTextView(
-                    currentPatient?.patientMedicalHistory?.weight
-                      ? currentPatient?.patientMedicalHistory?.weight + ' kg'
-                      : ''
-                  )
+                {isWeightAvailable ? (
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={() => {
+                      setCurrentUpdatePopupId(2);
+                      setShowUpdateProfilePopup(true);
+                    }}
+                  >
+                    {patientTextView(
+                      currentPatient?.patientMedicalHistory?.weight
+                        ? currentPatient?.patientMedicalHistory?.weight + ' Kgs'
+                        : '-'
+                    )}
+                  </TouchableOpacity>
                 ) : (
                   <TouchableOpacity
                     activeOpacity={1}
@@ -755,9 +898,17 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               <View style={styles.heightWeightViewStyle}>
                 <BloodIcon style={{ width: 14, height: 15.58 }} />
                 {currentPatient?.patientMedicalHistory?.bloodGroup ? (
-                  patientTextView(
-                    getBloodGroupValue(currentPatient?.patientMedicalHistory?.bloodGroup)
-                  )
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={() => {
+                      setCurrentUpdatePopupId(3);
+                      setShowUpdateProfilePopup(true);
+                    }}
+                  >
+                    {patientTextView(
+                      getBloodGroupValue(currentPatient?.patientMedicalHistory?.bloodGroup)
+                    )}
+                  </TouchableOpacity>
                 ) : (
                   <TouchableOpacity
                     activeOpacity={1}
@@ -826,7 +977,10 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           });
           break;
         case 4:
-          props.navigation.navigate(AppRoutes.HealthConditionScreen);
+          props.navigation.navigate(AppRoutes.HealthConditionScreen, {
+            healthConditionData: healthConditions,
+            onPressBack: onBackArrowPressed,
+          });
           break;
         case 5:
           props.navigation.navigate(AppRoutes.BillScreen, {
@@ -868,7 +1022,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const renderHealthCategoriesView = () => {
     return (
       <View style={{ marginTop: 54, marginHorizontal: 20, marginBottom: 25 }}>
-        <Text style={{ ...theme.viewStyles.text('B', 18, '#02475B', 1, 21) }}>
+        <Text style={{ ...theme.viewStyles.text('B', 18, theme.colors.LIGHT_BLUE, 1, 21) }}>
           {'Health Categories'}
         </Text>
         <View style={styles.listItemCardStyle}>
@@ -884,7 +1038,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const renderBillsInsuranceView = () => {
     return (
       <View style={{ marginHorizontal: 20, marginBottom: 14 }}>
-        <Text style={{ ...theme.viewStyles.text('B', 18, '#02475B', 1, 21) }}>
+        <Text style={{ ...theme.viewStyles.text('B', 18, theme.colors.LIGHT_BLUE, 1, 21) }}>
           {'More From Health'}
         </Text>
         <View style={styles.listItemCardStyle}>
@@ -933,7 +1087,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
                 bloodGroup !== undefined ? null : styles.placeholderStyle,
               ]}
             >
-              {bloodGroup !== undefined ? bloodGroup.title : '-'}
+              {bloodGroup !== undefined ? bloodGroup.title : 'Select'}
             </Text>
             <View style={[{ flex: 1, alignItems: 'flex-end', marginLeft: 22 }]}>
               <DropdownGreen />
@@ -944,14 +1098,69 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     );
   };
 
+  const renderHeightView = () => {
+    const heightArrayData = heightArray?.map((i) => {
+      return { key: i.key, value: i.title };
+    });
+    return (
+      <View style={{ flexDirection: 'row' }}>
+        <TextInput
+          placeholder={'Enter Height'}
+          style={styles.textInputTextStyle}
+          selectionColor={theme.colors.INPUT_CURSOR_COLOR}
+          placeholderTextColor={theme.colors.placeholderTextColor}
+          value={height}
+          onChangeText={(text) => {
+            setHeight(text);
+          }}
+        />
+        <MaterialMenu
+          options={heightArrayData}
+          selectedText={heightArrayValue}
+          menuContainerStyle={styles.menuContainerStyle}
+          itemContainer={{ height: 44.8, marginHorizontal: 12, width: 150 / 2 }}
+          itemTextStyle={styles.itemTextStyle}
+          selectedTextStyle={styles.selectedTextStyle}
+          lastContainerStyle={{ borderBottomWidth: 0 }}
+          bottomPadding={{ paddingBottom: 0 }}
+          onPress={(selected) => {
+            setHeightArrayValue(selected?.key);
+          }}
+        >
+          <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+            <View style={[styles.placeholderViewStyle, { marginLeft: 10 }]}>
+              <Text style={[styles.placeholderTextStyle]}>{heightArrayValue}</Text>
+              <View style={[{ flex: 1, alignItems: 'flex-end', marginLeft: 22 }]}>
+                <DropdownGreen />
+              </View>
+            </View>
+          </View>
+        </MaterialMenu>
+      </View>
+    );
+  };
+
+  const renderWeightView = () => {
+    return (
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <TextInputComponent
+          placeholder={'Enter Weight'}
+          value={weight}
+          onChangeText={(text) => {
+            setWeight(text);
+          }}
+        />
+        <Text style={styles.kgsTextStyle}>{'Kgs'}</Text>
+      </View>
+    );
+  };
+
   const renderCloseIcon = () => {
     return (
       <View style={styles.closeIconViewStyle}>
         <TouchableOpacity
           onPress={() => {
-            setHeight('');
-            setWeight('');
-            setBloodGroup(undefined);
+            setPatientHistoryValues();
             setShowUpdateProfilePopup(false);
           }}
         >
@@ -967,12 +1176,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         ? 'Update Height'
         : currentUpdatePopupId === 2
         ? 'Update Weight'
-        : 'Update Blood Group';
-    const placeholder_text =
-      currentUpdatePopupId === 1
-        ? 'Enter Height'
-        : currentUpdatePopupId === 2
-        ? 'Enter Weight'
         : 'Update Blood Group';
 
     const onPressUpdate = () => {
@@ -1014,21 +1217,11 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               <View style={{ ...theme.viewStyles.cardViewStyle, paddingTop: 20 }}>
                 <Text style={styles.updateTitleTextStyle}>{title}</Text>
                 <View style={styles.overlayMainViewStyle}>
-                  {currentUpdatePopupId === 3 ? (
-                    renderBloodGroup()
-                  ) : (
-                    <TextInputComponent
-                      placeholder={placeholder_text}
-                      value={currentUpdatePopupId === 1 ? height : weight}
-                      onChangeText={(text) => {
-                        if (currentUpdatePopupId === 1) {
-                          setHeight(text);
-                        } else {
-                          setWeight(text);
-                        }
-                      }}
-                    />
-                  )}
+                  {currentUpdatePopupId === 3
+                    ? renderBloodGroup()
+                    : currentUpdatePopupId === 1
+                    ? renderHeightView()
+                    : renderWeightView()}
                   <Button
                     title={'UPDATE'}
                     onPress={onPressUpdate}
@@ -1052,7 +1245,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           {renderProfileDetailsView()}
           {renderHealthCategoriesView()}
           {renderBillsInsuranceView()}
-          {renderClinicalDocumentsView()}
+          {/* PHR Phase 2 UI */}
+          {/* {renderClinicalDocumentsView()} */}
         </ScrollView>
       </SafeAreaView>
     </View>

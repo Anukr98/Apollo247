@@ -33,6 +33,13 @@ export enum AccountType {
   SAVINGS = "SAVINGS",
 }
 
+export enum AllergySeverity {
+  LIFE_THREATENING = "LIFE_THREATENING",
+  MILD = "MILD",
+  NOT_KNOWN = "NOT_KNOWN",
+  SEVERE = "SEVERE",
+}
+
 export enum AppointmentType {
   BOTH = "BOTH",
   ONLINE = "ONLINE",
@@ -164,6 +171,12 @@ export enum Gender {
   OTHER = "OTHER",
 }
 
+export enum HealthRestrictionNature {
+  Dietary = "Dietary",
+  OTHER = "OTHER",
+  Physical = "Physical",
+}
+
 export enum LOGIN_TYPE {
   DOCTOR = "DOCTOR",
   PATIENT = "PATIENT",
@@ -286,6 +299,13 @@ export enum MEDICINE_UNIT {
   TABLET = "TABLET",
   TEASPOON = "TEASPOON",
   UNIT = "UNIT",
+}
+
+export enum MedicalConditionIllnessTypes {
+  Acute = "Acute",
+  Chronic = "Chronic",
+  Intermittent = "Intermittent",
+  Recurring = "Recurring",
 }
 
 export enum MedicalRecordType {
@@ -508,6 +528,20 @@ export enum notificationType {
   CHAT = "CHAT",
 }
 
+export interface AddAllergyRecordInput {
+  id?: string | null;
+  patientId: string;
+  recordType: MedicalRecordType;
+  allergyName: string;
+  severity?: AllergySeverity | null;
+  startDate: any;
+  endDate?: any | null;
+  doctorTreated?: string | null;
+  reactionToAllergy?: string | null;
+  notes?: string | null;
+  attachmentList?: (AllergyFileProperties | null)[] | null;
+}
+
 export interface AddHealthCheckRecordInput {
   id?: string | null;
   patientId: string;
@@ -541,6 +575,19 @@ export interface AddLabTestRecordInput {
   testResultFiles?: (LabTestFileProperties | null)[] | null;
 }
 
+export interface AddMedicalConditionRecordInput {
+  id?: string | null;
+  patientId: string;
+  recordType: MedicalRecordType;
+  medicalConditionName: string;
+  doctorTreated: string;
+  startDate: any;
+  endDate?: any | null;
+  notes?: string | null;
+  illnessType?: MedicalConditionIllnessTypes | null;
+  medicationFiles?: (MedicalConditionFileProperties | null)[] | null;
+}
+
 export interface AddMedicalRecordInput {
   additionalNotes?: string | null;
   documentURLs?: string | null;
@@ -566,6 +613,16 @@ export interface AddMedicalRecordParametersInput {
   unit?: MedicalTestUnit | null;
 }
 
+export interface AddPatientHealthRestrictionRecordInput {
+  patientId: string;
+  recordType: MedicalRecordType;
+  restrictionName: string;
+  startDate: any;
+  endDate?: any | null;
+  suggestedByDoctor?: string | null;
+  nature?: HealthRestrictionNature | null;
+}
+
 export interface AddPatientMedicalBillRecordInput {
   patientId: string;
   recordType: MedicalRecordType;
@@ -587,6 +644,20 @@ export interface AddPatientMedicalInsuranceRecordInput {
   insuranceFiles?: (MedicalInsuranceFileProperties | null)[] | null;
 }
 
+export interface AddPatientMedicationRecordInput {
+  patientId: string;
+  recordType: MedicalRecordType;
+  medicineName: string;
+  medicalCondition?: string | null;
+  doctorName?: string | null;
+  startDate: any;
+  endDate?: any | null;
+  morning?: boolean | null;
+  noon?: boolean | null;
+  evening?: boolean | null;
+  notes?: string | null;
+}
+
 export interface AddPrescriptionRecordInput {
   id?: string | null;
   patientId: string;
@@ -603,6 +674,12 @@ export interface AlertMedicineOrderPickupInput {
   orderId: number;
   patientId: string;
   remarks?: string | null;
+}
+
+export interface AllergyFileProperties {
+  fileName?: string | null;
+  mimeType?: string | null;
+  content?: string | null;
 }
 
 export interface AppointmentHistoryInput {
@@ -855,6 +932,12 @@ export interface MediaPrescriptionUploadRequest {
 }
 
 export interface MedicalBillFileProperties {
+  fileName?: string | null;
+  mimeType?: string | null;
+  content?: string | null;
+}
+
+export interface MedicalConditionFileProperties {
   fileName?: string | null;
   mimeType?: string | null;
   content?: string | null;

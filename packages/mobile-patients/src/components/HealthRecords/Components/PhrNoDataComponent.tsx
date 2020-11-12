@@ -17,7 +17,7 @@ const style = StyleSheet.create({
     alignItems: 'center',
   },
   noDataTextStyle: {
-    ...theme.viewStyles.text('SB', 12, '#02475B', 1, 15.6),
+    ...theme.viewStyles.text('SB', 12, theme.colors.LIGHT_BLUE, 1, 15.6),
     textAlign: 'center',
     marginTop: 14,
   },

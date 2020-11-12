@@ -37,6 +37,7 @@ import {
   postWebEngageEvent,
   addTestsToCart,
   doRequestAndAccessLocation,
+  initialSortByDays,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   EPrescription,
@@ -93,7 +94,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 30,
   },
   sectionHeaderTitleStyle: {
-    ...theme.viewStyles.text('SB', 18, '#02475B', 1, 23.4),
+    ...theme.viewStyles.text('SB', 18, theme.colors.LIGHT_BLUE, 1, 23.4),
     marginBottom: 3,
   },
 });
@@ -222,7 +223,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         });
       } else {
         // render when no filter is applied
-        finalData = initialSortByDays(filteredData, finalData);
+        finalData = initialSortByDays('consults', filteredData, finalData);
       }
       setLocalConsultRxData(finalData);
     }
@@ -272,61 +273,6 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
     );
   };
 
-  const foundDataIndex = (key: string, finalData: { key: string; data: any[] }[]) => {
-    return finalData.findIndex((data: { key: string; data: any[] }) => data.key === key);
-  };
-
-  const sortByDays = (
-    key: string,
-    finalData: { key: string; data: any[] }[],
-    dateExistsAt: number,
-    dataObject: any[]
-  ) => {
-    const dataArray = finalData;
-    if (dataArray.length === 0 || dateExistsAt === -1) {
-      dataArray.push({ key, data: [dataObject] });
-    } else {
-      const array = dataArray[dateExistsAt].data;
-      array.push(dataObject);
-      dataArray[dateExistsAt].data = array;
-    }
-    return dataArray;
-  };
-
-  const initialSortByDays = (
-    filteredData: any[],
-    toBeFinalData: { key: string; data: any[] }[]
-  ) => {
-    let finalData = toBeFinalData;
-    filteredData.forEach((dataObject: any) => {
-      const startDate = moment().set({
-        hour: 23,
-        minute: 59,
-      });
-      const past7thDay = startDate.subtract(7, 'day');
-      const past7daysData = dataObject.data?.patientId
-        ? moment(dataObject.data?.appointmentDateTime).diff(past7thDay, 'days') > 0
-        : moment(dataObject.data?.date).diff(past7thDay, 'days') > 0;
-      if (past7daysData) {
-        const dateExistsAt = foundDataIndex('Past 7 days', finalData);
-        finalData = sortByDays('Past 7 days', finalData, dateExistsAt, dataObject);
-      } else {
-        const past30thDay = past7thDay.subtract(30, 'day');
-        const past30daysData = dataObject.data?.patientId
-          ? moment(dataObject.data?.appointmentDateTime).diff(past30thDay, 'days') > 0
-          : moment(dataObject.data?.date).diff(past30thDay, 'days') > 0;
-        if (past30daysData) {
-          const dateExistsAt = foundDataIndex('Past 30 days', finalData);
-          finalData = sortByDays('Past 30 days', finalData, dateExistsAt, dataObject);
-        } else {
-          const dateExistsAt = foundDataIndex('Other Days', finalData);
-          finalData = sortByDays('Other Days', finalData, dateExistsAt, dataObject);
-        }
-      }
-    });
-    return finalData;
-  };
-
   const gotoPHRHomeScreen = () => {
     props.navigation.state.params?.onPressBack();
     props.navigation.goBack();
@@ -359,7 +305,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
     });
     return (
       <View style={styles.searchFilterViewStyle}>
-        <Text style={{ ...theme.viewStyles.text('SB', 23, '#02475B', 1, 30) }}>
+        <Text style={{ ...theme.viewStyles.text('SB', 23, theme.colors.LIGHT_BLUE, 1, 30) }}>
           {'Doctor Consultations'}
         </Text>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -379,7 +325,9 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
               }
             }}
           >
-            <Filter style={{ width: 24, height: 24 }} />
+            <View style={{ paddingLeft: 16 }}>
+              <Filter style={{ width: 24, height: 24 }} />
+            </View>
           </MaterialMenu>
         </View>
       </View>
@@ -655,13 +603,15 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         (item?.data?.doctorInfo?.firstName + ' ' || '') +
         (item?.data?.doctorInfo?.lastName || '')
       : '';
-    const dateText = item?.data?.prescriptionName
-      ? getPresctionDate(item?.data?.date)
-      : getPresctionDate(item?.data?.appointmentDateTime);
-    const soureName = item?.data?.prescriptionName
-      ? 'Clinical Document'
-      : g(item?.data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name');
-    const selfUpload = item?.data?.prescriptionName ? true : false;
+    const dateText =
+      item?.data?.prescriptionName || item?.data?.date
+        ? getPresctionDate(item?.data?.date)
+        : getPresctionDate(item?.data?.appointmentDateTime);
+    const soureName =
+      item?.data?.prescriptionName || item?.data?.date
+        ? 'Clinical Document'
+        : g(item?.data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name');
+    const selfUpload = item?.data?.prescriptionName || item?.data?.date ? true : false;
     const caseSheetDetails =
       item?.data?.caseSheet?.length > 0 &&
       item?.data?.caseSheet?.find((caseSheet: any) => caseSheet?.doctorType !== 'JUNIOR');
@@ -727,8 +677,8 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
+        {consultRxData.length > 0 ? renderSearchAndFilterView() : null}
         <ScrollView style={{ flex: 1 }} bounces={false}>
-          {consultRxData.length > 0 ? renderSearchAndFilterView() : null}
           {renderConsults()}
         </ScrollView>
         {renderAddButton()}
