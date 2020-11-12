@@ -28,17 +28,12 @@ module.exports = async (req, res, next) => {
       headers: {
         'authorization': process.env.API_TOKEN
       }
-    }
+    };
 
-    payload.partnerInfo = '';
-    if (payload.MERC_UNQ_REF) {
-      const info = payload.MERC_UNQ_REF.split(':');
-      if (info.length == 3) {
-        payload.partnerInfo = info[2];
-      }
-      payload.HEALTH_CREDITS = info[1];
-    }
-    //const [bookingSource, healthCredits] = payload.MERC_UNQ_REF.split(':');
+    // Source of booking
+    mercUnqRef = JSON.parse(payload.MERC_UNQ_REF);
+    payload = { ...mercUnqRef, ...payload };
+
     // this needs to be altered later.
     const requestJSON = {
       query: medicineOrderQuery(payload),

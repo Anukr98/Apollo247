@@ -26,11 +26,11 @@ import { EmailMessage } from 'types/notificationMessageTypes';
 import { log } from 'customWinstonLogger';
 import { acceptCoupon } from 'helpers/couponServices';
 import { AcceptCouponRequest } from 'types/coupons';
-import { BlockOneApolloPointsRequest, BlockUserPointsResponse } from 'types/oneApolloTypes';
+import { BlockOneApolloPointsRequest, BlockUserPointsResponse, ONE_APOLLO_STORE_CODE } from 'types/oneApolloTypes';
 import { OneApollo } from 'helpers/oneApollo';
 import { getStoreCodeFromDevice } from 'profiles-service/helpers/OneApolloTransactionHelper';
 import { calculateRefund } from 'profiles-service/helpers/refundHelper';
-import { transactionSuccessTrigger } from 'helpers/subscriptionHelper';
+import { activateSubscription, transactionSuccessTrigger } from 'helpers/subscriptionHelper';
 
 export const saveMedicineOrderPaymentMqTypeDefs = gql`
   enum CODCity {
@@ -49,6 +49,7 @@ export const saveMedicineOrderPaymentMqTypeDefs = gql`
   }
 
   input MedicinePaymentMqInput {
+    mid: String
     orderAutoId: Int!
     paymentType: MEDICINE_ORDER_PAYMENT_TYPE!
     amountPaid: Float!
@@ -66,6 +67,9 @@ export const saveMedicineOrderPaymentMqTypeDefs = gql`
     paymentMode: PAYMENT_METHODS
     healthCredits: Float
     partnerInfo: String
+    planId: String
+    storeCode: ONE_APOLLO_STORE_CODE
+    subPlanId: String
   }
 
   type SaveMedicineOrderPaymentMqResult {
@@ -83,6 +87,7 @@ export const saveMedicineOrderPaymentMqTypeDefs = gql`
 `;
 
 type MedicinePaymentMqInput = {
+  mid: string;
   orderAutoId: number;
   paymentType: MEDICINE_ORDER_PAYMENT_TYPE;
   amountPaid: number;
@@ -99,6 +104,9 @@ type MedicinePaymentMqInput = {
   paymentMode: PAYMENT_METHODS_REVERSE;
   healthCredits: number;
   partnerInfo: string;
+  planId: string;
+  subPlanId: string;
+  storeCode: ONE_APOLLO_STORE_CODE;
 };
 
 enum CODCity {
@@ -317,10 +325,20 @@ const SaveMedicineOrderPaymentMq: Resolver<
       medicinePaymentMqInput.paymentStatus != 'TXN_FAILURE' &&
       medicinePaymentMqInput.paymentStatus != 'PENDING'
     ) {
+
+      if (medicinePaymentMqInput.planId) {
+        activateSubscription(
+          medicinePaymentMqInput.storeCode,
+          medicinePaymentMqInput.planId,
+          medicinePaymentMqInput.subPlanId || '',
+          orderDetails.patient.mobileNumber
+        )
+      }
       if (
         medicinePaymentMqInput.healthCredits &&
         !Object.keys(savePaymentDetails.healthCreditsRedemptionRequest).length
       ) {
+
         try {
           const oneApolloresponse = await blockOneApolloUserPoints(
             {
@@ -422,16 +440,16 @@ const SaveMedicineOrderPaymentMq: Resolver<
 
       const toEmailId =
         process.env.NODE_ENV == 'dev' ||
-        process.env.NODE_ENV == 'development' ||
-        process.env.NODE_ENV == 'local'
+          process.env.NODE_ENV == 'development' ||
+          process.env.NODE_ENV == 'local'
           ? ApiConstants.MEDICINE_SUPPORT_EMAILID
           : ApiConstants.MEDICINE_SUPPORT_EMAILID_PRODUCTION;
 
       //medicine support cc email is '' and input is used, hence retaining this
       let ccEmailIds =
         process.env.NODE_ENV == 'dev' ||
-        process.env.NODE_ENV == 'development' ||
-        process.env.NODE_ENV == 'local'
+          process.env.NODE_ENV == 'development' ||
+          process.env.NODE_ENV == 'local'
           ? ''
           : <string>ApiConstants.MEDICINE_SUPPORT_CC_EMAILID_PRODUCTION;
 
@@ -447,7 +465,6 @@ const SaveMedicineOrderPaymentMq: Resolver<
         toEmail: <string>toEmailId,
         ccEmail: <string>ccEmailIds,
       };
-
       sendMail(emailContent);
     }
   }

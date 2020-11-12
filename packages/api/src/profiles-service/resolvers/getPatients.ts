@@ -12,6 +12,8 @@ import {
 } from 'notifications-service/handlers';
 import { ApiConstants, PATIENT_REPO_RELATIONS } from 'ApiConstants';
 import { createPrismUser } from 'helpers/phrV1Services';
+import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import _ from 'lodash';
 
 export const getPatientTypeDefs = gql`
   type PatientInfo {
@@ -61,6 +63,11 @@ export const getPatientTypeDefs = gql`
     ids: [String]
   }
 
+  type appointmentCountResult {
+    patientid: String
+    count: Int
+  }
+
   extend type Query {
     getPatientById(patientId: String): PatientInfo
     getPatient(patientId: String): PatientInfo
@@ -70,6 +77,7 @@ export const getPatientTypeDefs = gql`
     getPatients: GetPatientsResult
     getDeviceCodeCount(deviceCode: String): DeviceCountResponse
     getLinkedPatientIds(patientId: String): LinkedPatientIds
+    getProfileConsultCount: [appointmentCountResult]
   }
   extend type Mutation {
     deleteProfile(patientId: String): DeleteProfileResult!
@@ -237,6 +245,30 @@ const addNewProfile: Resolver<
   return { patient };
 };
 
+type appointmentCountResult = {
+  patientid: string;
+  count: number;
+};
+
+const getProfileConsultCount: Resolver<
+  null,
+  {},
+  ProfilesServiceContext,
+  appointmentCountResult[]
+> = async (parent, args, { profilesDb, consultsDb, mobileNumber }) => {
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patientRepo.findByMobileNumber(mobileNumber);
+  if (patientDetails == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const patientIds = patientDetails.map((data) => {
+    return data.id;
+  });
+
+  const appointmentDetails = await appointmentRepo.getAppointmentCountByPatientId(patientIds);
+  return appointmentDetails;
+};
+
 const editProfile: Resolver<
   null,
   EditProfileInputArgs,
@@ -377,6 +409,7 @@ export const getPatientResolvers = {
     getAthsToken,
     getDeviceCodeCount,
     getLinkedPatientIds,
+    getProfileConsultCount,
   },
   Mutation: {
     deleteProfile,

@@ -7,7 +7,7 @@ const logger = require('../../winston-logger')('Consults-logs');
  * @param {*} amount
  * @param {*} bookingSource
  */
-const initPayment = function(
+const initPayment = function (
   patientId,
   orderAutoId,
   amount,
@@ -19,7 +19,6 @@ const initPayment = function(
     let merchantId = process.env.MID_CONSULTS;
     if (paymentTypeID == process.env.PARTNER_SBI) {
       merchantId = process.env.SBI_MID_CONSULTS;
-      merc_unq_ref += ':' + process.env.PARTNER_SBI;
     }
     let paymentObj = {
       ORDER_ID: orderAutoId,

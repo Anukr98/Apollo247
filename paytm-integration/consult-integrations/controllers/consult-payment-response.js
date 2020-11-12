@@ -9,7 +9,7 @@ module.exports = async (req, res, next) => {
   let transactionStatus = '';
   let bookingSource = 'MOBILE';
   try {
-    const payload = req.body;
+    let payload = req.body;
     orderId = payload.ORDERID;
     logger.info(`${orderId} - Payload received - ${JSON.stringify(payload)}`);
     const checksum = payload.CHECKSUMHASH;
@@ -33,11 +33,10 @@ module.exports = async (req, res, next) => {
       default:
         transactionStatus = 'success';
     }
-    const merc_unq_ref = payload.MERC_UNQ_REF.split(':');
-
-    // Source of booking
-    bookingSource = merc_unq_ref[0];
-    const appointmentId = merc_unq_ref[1];
+    const mercUnqRef = JSON.parse(payload.MERC_UNQ_REF);
+    payload = { ...payload, ...mercUnqRef };
+    const appointmentId = payload.appointmentId;
+    bookingSource = payload.bookingSource;
 
     if (
       process.env.NODE_ENV == 'dev' ||
@@ -49,7 +48,7 @@ module.exports = async (req, res, next) => {
         headers: {
           'authorization': process.env.API_TOKEN
         }
-      }
+      };
 
       logger.info(`consults query - ${consultsOrderQuery(payload)}`);
 

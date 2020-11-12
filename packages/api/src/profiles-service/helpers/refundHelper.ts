@@ -10,7 +10,6 @@ import {
   PAYTM_STATUS,
   REFUND_STATUS,
   MEDICINE_ORDER_PAYMENT_TYPE,
-  DEVICE_TYPE,
 } from 'profiles-service/entities';
 import { OneApollo } from 'helpers/oneApollo';
 import {
@@ -188,12 +187,11 @@ export const calculateRefund = async (
     throw new AphError(AphErrorMessages.PAYMENT_INFO_NOT_FOUND, undefined, {});
   }
   const {
-    amountPaid,
     healthCreditsRedeemed,
     paymentRefId: txnId,
     healthCreditsRedemptionRequest,
   } = paymentInfo as MedicineOrderPayments;
-
+  const amountPaid = +new Decimal(orderDetails.estimatedAmount).minus(healthCreditsRedeemed);
   /**
    * Multiple refunds are possible so we need to see how much refund is initiated till now.
    */
@@ -249,8 +247,7 @@ export const calculateRefund = async (
 
   log(
     'profileServiceLogger',
-    `HEALTH_CREDITS_TO_REFUND_FOR_ORDER - ${orderDetails.orderAutoId} -- ${
-      healthCreditsToRefund > 0 ? healthCreditsToRefund : 0
+    `HEALTH_CREDITS_TO_REFUND_FOR_ORDER - ${orderDetails.orderAutoId} -- ${healthCreditsToRefund > 0 ? healthCreditsToRefund : 0
     }`,
     `AMOUNT_TO_BE_REFUNDED_FOR_ORDER - ${orderDetails.orderAutoId} -- ${refundAmount}`,
     JSON.stringify(paymentInfo),

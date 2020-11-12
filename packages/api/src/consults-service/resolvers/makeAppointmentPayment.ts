@@ -39,13 +39,19 @@ import { ConsultQueueRepository } from 'consults-service/repositories/consultQue
 import { acceptCoupon } from 'helpers/couponServices';
 import { AcceptCouponRequest } from 'types/coupons';
 import { updateDoctorSlotStatusES } from 'doctors-service/entities/doctorElastic';
-import { transactionSuccessTrigger } from 'helpers/subscriptionHelper';
+import { activateSubscription, transactionSuccessTrigger } from 'helpers/subscriptionHelper';
 import { ApiConstants, TransactionType } from 'ApiConstants';
+import { ONE_APOLLO_STORE_CODE } from 'types/oneApolloTypes';
 import { sendMessageToASBQueue } from 'consults-service/resolvers/appointmentReminderIVRForDoctors';
 
 export const makeAppointmentPaymentTypeDefs = gql`
   enum APPOINTMENT_PAYMENT_TYPE {
     ONLINE
+  }
+  enum ONE_APOLLO_STORE_CODE {
+    ANDCUS 
+    IOSCUS
+    WEBCUS
   }
 
   enum PAYMENT_METHODS {
@@ -60,6 +66,7 @@ export const makeAppointmentPaymentTypeDefs = gql`
   }
 
   input AppointmentPaymentInput {
+    mid: String
     amountPaid: Float!
     paymentRefId: String
     paymentStatus: String!
@@ -72,6 +79,9 @@ export const makeAppointmentPaymentTypeDefs = gql`
     refundAmount: Float
     paymentMode: PAYMENT_METHODS
     partnerInfo: String
+    planId: String
+    subPlanId: String
+    storeCode: ONE_APOLLO_STORE_CODE
   }
 
   type AppointmentPayment {
@@ -116,6 +126,7 @@ type AppointmentPayment = {
 };
 
 type AppointmentPaymentInput = {
+  mid: string;
   amountPaid: number;
   paymentRefId: string;
   paymentStatus: string;
@@ -128,6 +139,9 @@ type AppointmentPaymentInput = {
   refundAmount: number;
   paymentMode: PAYMENT_METHODS_REVERSE;
   partnerInfo: string;
+  planId: string;
+  storeCode: ONE_APOLLO_STORE_CODE;
+  subPlanId: string;
 };
 
 type AppointmentInputArgs = { paymentInput: AppointmentPaymentInput };
@@ -217,6 +231,9 @@ const makeAppointmentPayment: Resolver<
     const patient = patientsDb.getCustomRepository(PatientRepository);
     const patientDetails = await patient.getPatientDetails(processingAppointment.patientId);
     if (!patientDetails) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+    if (paymentInput.planId) {
+      activateSubscription(paymentInput.storeCode, paymentInput.planId, paymentInput.subPlanId, patientDetails.mobileNumber)
+    }
     transactionSuccessTrigger({
       amount: `${paymentInput.amountPaid}`,
       transactionType: TransactionType.CONSULT,
@@ -276,7 +293,7 @@ const makeAppointmentPayment: Resolver<
           {
             appointment: processingAppointment,
             appointmentPayments: paymentInfo,
-            refundAmount: paymentInfo.amountPaid,
+            refundAmount: processingAppointment.discountedAmount,
             txnId: paymentInfo.paymentRefId,
             orderId: processingAppointment.paymentOrderId,
           },
@@ -514,7 +531,7 @@ const sendPatientAcknowledgements = async (
     appointmentId: appointmentData.id,
     notificationType: NotificationType.BOOK_APPOINTMENT,
   };
-  const notificationResult = sendNotification(
+  sendNotification(
     pushNotificationInput,
     patientsDb,
     consultsDb,

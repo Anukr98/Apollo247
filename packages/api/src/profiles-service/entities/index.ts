@@ -1287,7 +1287,7 @@ export class Patient extends BaseEntity {
         JSON.stringify(this),
         ApiConstants.CACHE_EXPIRATION_3600
       );
-    } catch (ex) {}
+    } catch (ex) { }
   }
 }
 //patient Ends

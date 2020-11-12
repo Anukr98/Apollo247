@@ -28,7 +28,9 @@ module.exports = async (req, res, next) => {
       headers: {
         'authorization': process.env.API_TOKEN
       }
-    }
+    };
+    const mercUnqRef = JSON.parse(payload.MERC_UNQ_REF);
+    payload = { ...payload, ...mercUnqRef };
 
     // this needs to be altered later.
     const requestJSON = {

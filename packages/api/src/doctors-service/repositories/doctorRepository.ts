@@ -26,6 +26,7 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 import { ApiConstants } from 'ApiConstants';
 import { Client, RequestParams } from '@elastic/elasticsearch';
+import { DoctorPricing } from 'doctors-service/entities/doctorPricing';
 
 //import { DoctorNextAvaialbleSlotsRepository } from 'consults-service/repositories/DoctorNextAvaialbleSlotsRepository';
 
