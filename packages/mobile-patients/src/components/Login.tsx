@@ -17,6 +17,7 @@ import { AppSignature } from '@aph/mobile-patients/src/helpers/AppSignature';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import {
   getNetStatus,
+  postAppsFlyerEvent,
   postFirebaseEvent,
   postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -48,6 +49,7 @@ import HyperLink from 'react-native-hyperlink';
 import WebEngage from 'react-native-webengage';
 import { WebView } from 'react-native-webview';
 import { NavigationEventSubscription, NavigationScreenProps } from 'react-navigation';
+import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 
 const { height, width } = Dimensions.get('window');
 
@@ -148,6 +150,8 @@ export const Login: React.FC<LoginProps> = (props) => {
   useEffect(() => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.MOBILE_ENTRY] = {};
     postWebEngageEvent(WebEngageEventName.MOBILE_ENTRY, eventAttributes);
+    postFirebaseEvent(FirebaseEventName.MOBILE_ENTRY, eventAttributes);
+    postAppsFlyerEvent(AppsFlyerEventName.MOBILE_ENTRY, eventAttributes);
   }, []);
 
   useEffect(() => {
@@ -239,6 +243,11 @@ export const Login: React.FC<LoginProps> = (props) => {
     try {
       webengage.user.login(`+91${phoneNumber}`);
       CommonLogEvent(AppRoutes.Login, 'Login clicked');
+      const eventAttributes: FirebaseEvents[FirebaseEventName.OTP_DEMANDED] = {
+        mobilenumber: phoneNumber,
+      };
+      postFirebaseEvent(FirebaseEventName.OTP_DEMANDED, eventAttributes);
+      postAppsFlyerEvent(AppsFlyerEventName.OTP_DEMANDED, eventAttributes);
       setTimeout(() => {
         const eventAttributes: WebEngageEvents[WebEngageEventName.MOBILE_NUMBER_ENTERED] = {
           mobilenumber: phoneNumber,

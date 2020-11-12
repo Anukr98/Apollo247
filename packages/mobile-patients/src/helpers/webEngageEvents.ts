@@ -593,13 +593,6 @@ export interface WebEngageEvents {
     'Section Name'?: string;
     af_revenue: number;
     af_currency: string;
-    // 'Patient Name': string;
-    // 'Patient UHID': string;
-    // Relation: string;
-    // 'Patient Age': number;
-    // 'Patient Gender': string;
-    // 'Mobile Number': string;
-    // 'Customer ID': string;
   };
   [WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE]: {
     'product name': string;
@@ -925,9 +918,10 @@ export interface WebEngageEvents {
     'Service Area': 'Pharmacy' | 'Diagnostic';
   };
   [WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED]: {
-    'Payment mode': 'Online' | 'COD';
+    Paymentmode: 'Online' | 'COD';
     Amount: number;
-    'Service Area': 'Pharmacy' | 'Diagnostic';
+    ServiceArea: 'Pharmacy' | 'Diagnostic';
+    LOB: string;
   };
 
   // ********** ConsultEvents ********** \\
@@ -1721,16 +1715,16 @@ export interface WebEngageEvents {
     source: ProductPageViewedSource;
     ProductId: string;
     ProductName: string;
-    'Stock availability': YesOrNo;
+    Stockavailability: YesOrNo;
     /**
      * Category ID & Category Name is applicable if customers clicks on products from any category (all categories of shop by category or health areas)
      */
-    'Category ID'?: string;
-    'Category Name'?: string;
+    CategoryID?: string;
+    CategoryName?: string;
     /**
      * Section Name is applicable if customer clicked on the product from the homepage product widgets like Hot sellers, Recommended products
      */
-    'Section Name'?: string;
+    SectionName?: string;
   };
   [WebEngageEventName.CATEGORY_PAGE_VIEWED]: {
     source: 'home' | 'deeplink' | 'registration';

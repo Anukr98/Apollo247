@@ -995,7 +995,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       'Speciality ID': specialityId,
     };
     postWebEngageEvent(WebEngageEventName.SPECIALITY_CLICKED, eventAttributes);
-
+    postAppsFlyerEvent(AppsFlyerEventName.SPECIALITY_CLICKED, eventAttributes);
     const eventAttributesFirebase: FirebaseEvents[FirebaseEventName.SPECIALITY_CLICKED] = {
       PatientName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
       PatientUHID: g(currentPatient, 'uhid'),

@@ -79,6 +79,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const fireBaseEventAttributes = props.navigation.getParam('fireBaseEventAttributes');
   const isDoctorsOfTheHourStatus = props.navigation.getParam('isDoctorsOfTheHourStatus');
   const coupon = props.navigation.getParam('coupon');
+  const paymentTypeID = props.navigation.getParam('paymentTypeID');
   const client = useApolloClient();
   const { success, failure, pending, aborted } = Payment;
   const { showAphAlert, hideAphAlert } = useUIElements();
@@ -119,11 +120,12 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         try {
           const paymentEventAttributes = {
             Payment_Status: res.data.paymentTransactionStatus.appointment.paymentStatus,
-            Type: 'Consultation',
+            LOB: 'Consultation',
             Appointment_Id: orderId,
           };
           postWebEngageEvent(WebEngageEventName.PAYMENT_STATUS, paymentEventAttributes);
           postFirebaseEvent(FirebaseEventName.PAYMENT_STATUS, paymentEventAttributes);
+          postAppsFlyerEvent(AppsFlyerEventName.PAYMENT_STATUS, paymentEventAttributes);
         } catch (error) {}
         console.log(res.data);
         if (res.data.paymentTransactionStatus.appointment.paymentStatus == success) {
@@ -137,6 +139,8 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
             eventAttributes['Dr of hour appointment'] = !!isDoctorsOfTheHourStatus ? 'Yes' : 'No';
             postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
           } catch (error) {}
+        } else {
+          fireOrderFailedEvent();
         }
         setrefNo(res.data.paymentTransactionStatus.appointment.bankTxnId);
         setStatus(res.data.paymentTransactionStatus.appointment.paymentStatus);
@@ -155,6 +159,18 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     };
   }, []);
+
+  const fireOrderFailedEvent = () => {
+    const eventAttributes: FirebaseEvents[FirebaseEventName.ORDER_FAILED] = {
+      Price: price,
+      CouponCode: coupon,
+      PaymentType: paymentTypeID,
+      LOB: 'Consultation',
+      Appointment_Id: orderId,
+    };
+    postAppsFlyerEvent(AppsFlyerEventName.ORDER_FAILED, eventAttributes);
+    postFirebaseEvent(FirebaseEventName.ORDER_FAILED, eventAttributes);
+  };
 
   const fireBaseFCM = async () => {
     try {

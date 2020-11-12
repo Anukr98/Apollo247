@@ -13,6 +13,8 @@ import {
   aphConsole,
   postWebEngageEvent,
   g,
+  postAppsFlyerEvent,
+  postFirebaseEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
@@ -47,6 +49,8 @@ import {
   findDiagnosticsByItemIDsAndCityID,
 } from '../../graphql/types/findDiagnosticsByItemIDsAndCityID';
 import { AppConfig, COVID_NOTIFICATION_ITEMID } from '../../strings/AppConfig';
+import { FirebaseEventName, FirebaseEvents } from '../../helpers/firebaseEvents';
+import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
 
 const styles = StyleSheet.create({
   testNameStyles: {
@@ -223,6 +227,19 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       'Item Price': testInfo.Rate,
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION, eventAttributes);
+
+    const firebaseEventAttributes: FirebaseEvents[FirebaseEventName.PRODUCT_PAGE_VIEWED] = {
+      PatientUHID: g(currentPatient, 'uhid'),
+      PatientName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      source: testInfo.source,
+      ItemName: testInfo.ItemName,
+      ItemType: testInfo.type,
+      ItemCode: testInfo.ItemID,
+      ItemPrice: testInfo.Rate,
+      LOB: 'Diagnostics',
+    };
+    postFirebaseEvent(FirebaseEventName.PRODUCT_PAGE_VIEWED, firebaseEventAttributes);
+    postAppsFlyerEvent(AppsFlyerEventName.PRODUCT_PAGE_VIEWED, firebaseEventAttributes);
   }, []);
 
   const loadTestDetails = async (itemId: string) => {
@@ -443,6 +460,16 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       Quantity: 1,
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ADD_TO_CART, eventAttributes);
+    const firebaseAttributes: FirebaseEvents[FirebaseEventName.DIAGNOSTIC_ADD_TO_CART] = {
+      productname: name,
+      productid: id,
+      Source: 'Diagnostic',
+      Price: price,
+      DiscountedPrice: discountedPrice,
+      Quantity: 1,
+    };
+    postFirebaseEvent(FirebaseEventName.DIAGNOSTIC_ADD_TO_CART, firebaseAttributes);
+    postAppsFlyerEvent(AppsFlyerEventName.DIAGNOSTIC_ADD_TO_CART, firebaseAttributes);
   };
 
   const isAddedToCart = !!cartItems.find((item) => item.id == testInfo.ItemID);

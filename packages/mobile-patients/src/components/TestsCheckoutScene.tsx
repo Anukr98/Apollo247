@@ -36,6 +36,7 @@ import {
   postWebEngageEvent,
   formatAddress,
   postFirebaseEvent,
+  postAppsFlyerEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -59,12 +60,13 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { FirebaseEvents, FirebaseEventName } from '../helpers/firebaseEvents';
+import { FirebaseEvents, FirebaseEventName } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import {
   DiagnosticBookHomeCollection,
   DiagnosticBookHomeCollectionVariables,
 } from '../graphql/types/DiagnosticBookHomeCollection';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 
 const styles = StyleSheet.create({
   headerContainerStyle: {
@@ -356,11 +358,14 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     };
 
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED] = {
-      'Payment mode': isCashOnDelivery ? 'COD' : 'Online',
+      Paymentmode: isCashOnDelivery ? 'COD' : 'Online',
       Amount: grandTotal,
-      'Service Area': 'Diagnostic',
+      ServiceArea: 'Diagnostic',
+      LOB: 'Diagnostics',
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED, eventAttributes);
+    postAppsFlyerEvent(AppsFlyerEventName.PAYMENT_INSTRUMENT, eventAttributes);
+    postFirebaseEvent(FirebaseEventName.PAYMENT_INSTRUMENT, eventAttributes);
 
     console.log(JSON.stringify({ diagnosticOrderInput: orderInfo }));
     console.log('orderInfo\n', { diagnosticOrderInput: orderInfo });
@@ -376,6 +381,7 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
             description: `We're sorry :(  There's been a problem with your booking. Please book again.`,
             // description: `Order failed, ${errorMessage}.`,
           });
+          fireOrderFailedEvent(orderId);
         } else {
           // Order-Success
           if (!isCashOnDelivery) {
@@ -401,6 +407,18 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       .finally(() => {
         setShowSpinner(false);
       });
+  };
+
+  const fireOrderFailedEvent = (orderId: any) => {
+    const eventAttributes: FirebaseEvents[FirebaseEventName.ORDER_FAILED] = {
+      OrderID: orderId,
+      Price: Number(grandTotal),
+      CouponCode: coupon ? coupon.code : '',
+      PaymentType: isCashOnDelivery ? 'COD' : 'Prepaid',
+      LOB: 'Diagnostics',
+    };
+    postAppsFlyerEvent(AppsFlyerEventName.ORDER_FAILED, eventAttributes);
+    postFirebaseEvent(FirebaseEventName.ORDER_FAILED, eventAttributes);
   };
 
   const saveHomeCollectionOrder = () => {
@@ -730,6 +748,7 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       value: Number(grandTotal),
     };
     postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
+    postAppsFlyerEvent(AppsFlyerEventName.PURCHASE, eventAttributes);
   };
 
   const handleOrderSuccess = (orderId: string, displayId: string) => {

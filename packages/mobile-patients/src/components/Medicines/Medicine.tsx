@@ -66,6 +66,8 @@ import {
   reOrderMedicines,
   getMaxQtyForMedicineItem,
   setWebEngageScreenNames,
+  postAppsFlyerEvent,
+  postFirebaseEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
@@ -137,6 +139,8 @@ import {
   makeAdressAsDefaultVariables,
   makeAdressAsDefault,
 } from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
+import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
+import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 
 const { width: winWidth } = Dimensions.get('window');
 
@@ -258,6 +262,16 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       imageUrl: imageUrl,
     };
     postWebEngageEvent(WebEngageEventName.CATEGORY_CLICKED, eventAttributes);
+    postAppsFlyerEvent(AppsFlyerEventName.CATEGORY_CLICKED, eventAttributes);
+
+    const firebaseEventAttributes: FirebaseEvents[FirebaseEventName.CATEGORY_CLICKED] = {
+      categoryname: categoryName,
+      categoryID: categoryId,
+      Source: 'Home', // Home
+      SectionName: sectionName,
+      imageUrl: imageUrl,
+    };
+    postFirebaseEvent(FirebaseEventName.CATEGORY_CLICKED, firebaseEventAttributes);
   };
 
   const WebEngageEventAutoDetectLocation = (pincode: string, serviceable: boolean) => {
