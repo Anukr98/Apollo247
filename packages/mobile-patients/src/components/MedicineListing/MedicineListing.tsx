@@ -80,9 +80,16 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
 
   useEffect(() => {
     if (categoryId && !searchText) {
-      searchProductsByCategory(categoryId, 1, sortBy?.id || null, filterBy, products);
+      searchProductsByCategory(
+        categoryId,
+        1,
+        sortBy?.id || null,
+        filterBy,
+        filterOptions,
+        products
+      );
     } else if (searchText.length >= 3) {
-      searchProducts(searchText, 1, sortBy?.id || null, filterBy);
+      searchProducts(searchText, 1, sortBy?.id || null, filterBy, filterOptions);
     }
   }, [sortBy, filterBy]);
 
@@ -100,16 +107,18 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     searchText: string,
     pageId: number,
     sortBy: string | null,
-    filters: SelectedFilters
+    selectedFilters: SelectedFilters,
+    filters: MedFilter[]
   ) => {
     try {
       updateLoading(pageId, true);
-      const { data } = await searchMedicineApi(searchText, pageId, sortBy, filters);
+      const _selectedFilters = formatFilters(selectedFilters, filters);
+      const { data } = await searchMedicineApi(searchText, pageId, sortBy, _selectedFilters);
       updateProducts(pageId, products, data);
       setProductsTotal(data.product_count);
       updateLoading(pageId, false);
       setPageId(pageId + 1);
-      if(data.product_count){
+      if (data.product_count) {
         setSortByOptions(Array.isArray(data?.sort_by) ? data?.sort_by : []);
         setFilterOptions(Array.isArray(data?.filters) ? data?.filters : []);
       }
@@ -137,12 +146,14 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     categoryId: string,
     pageId: number,
     sortBy: string | null,
-    filters: SelectedFilters,
+    selectedFilters: SelectedFilters,
+    filters: MedFilter[],
     existingProducts: MedicineProduct[]
   ) => {
     try {
       updateLoading(pageId, true);
-      const { data } = await getProductsByCategoryApi(categoryId, pageId, sortBy, filters);
+      const _selectedFilters = formatFilters(selectedFilters, filters);
+      const { data } = await getProductsByCategoryApi(categoryId, pageId, sortBy, _selectedFilters);
       updateProducts(pageId, existingProducts, data);
       setProductsTotal(data.count);
       updateLoading(pageId, false);
@@ -177,6 +188,25 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
       title: title || string.common.uhOh,
       description: message || 'Oops! seems like we are having an issue. Please try again.',
     });
+  };
+
+  const formatFilters = (appliedFilters: SelectedFilters, filters: MedFilter[]) => {
+    const isMultiSelection = (key: string) =>
+      filters.find(({ attribute }) => attribute === key)?.select_type === 'multi';
+
+    return Object.keys(appliedFilters).reduce(
+      (prevVal, currKey) => ({
+        ...prevVal,
+        ...(appliedFilters[currKey] !== undefined
+          ? {
+              [currKey]: isMultiSelection(currKey)
+                ? appliedFilters[currKey]
+                : appliedFilters[currKey][0],
+            } // convert to string based on filters attribute value (single/multi)
+          : {}),
+      }),
+      {}
+    );
   };
 
   const renderHeader = () => {
@@ -224,9 +254,16 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
     const onEndReached = () => {
       if (!isLoadingMore && products.length < productsTotal) {
         if (searchText) {
-          searchProducts(searchText, pageId, sortBy?.id || null, filterBy);
+          searchProducts(searchText, pageId, sortBy?.id || null, filterBy, filterOptions);
         } else {
-          searchProductsByCategory(categoryId, pageId, sortBy?.id || null, filterBy, products);
+          searchProductsByCategory(
+            categoryId,
+            pageId,
+            sortBy?.id || null,
+            filterBy,
+            filterOptions,
+            products
+          );
         }
       }
     };
@@ -298,10 +335,10 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
 
   const renderProductsNotFound = () => {
     const isFiltersApplied = Object.keys(filterBy).filter((k) => filterBy[k].length).length;
-    const searchPageText= `No results found.`
-    const categoryPageText= `No results found for ‘${pageTitle}’.`
-    const filterText = isFiltersApplied ? 'Please try removing filters.' : ''
-    const text = `${searchText? searchPageText: categoryPageText} ${filterText}`
+    const searchPageText = `No results found.`;
+    const categoryPageText = `No results found for ‘${pageTitle}’.`;
+    const filterText = isFiltersApplied ? 'Please try removing filters.' : '';
+    const text = `${searchText ? searchPageText : categoryPageText} ${filterText}`;
 
     return !isLoading ? <Text style={styles.loadingMoreProducts}>{text}</Text> : null;
   };

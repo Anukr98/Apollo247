@@ -493,7 +493,7 @@ export const searchMedicineApi = async (
       params: searchText,
       page_id: pageId,
       sort_by: sortBy,
-      filters: formatFilters(filters),
+      filters,
     },
     headers: {
       Authorization: config.MED_SEARCH[1],
@@ -640,7 +640,7 @@ export const getProductsByCategoryApi = (
       category_id: categoryId,
       page_id: pageId,
       sort_by: sortBy,
-      filters: formatFilters(filters),
+      filters,
     },
     {
       headers: {
