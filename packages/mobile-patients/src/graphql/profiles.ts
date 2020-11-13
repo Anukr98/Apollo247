@@ -2347,6 +2347,7 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
           restrictionName
           suggestedByDoctor
           nature
+          source
         }
       }
       allergies {
@@ -2448,6 +2449,18 @@ export const ADD_PATIENT_MEDICAL_CONDITION_RECORD = gql`
   ) {
     addPatientMedicalConditionRecord(
       addMedicalConditionRecordInput: $addMedicalConditionRecordInput
+    ) {
+      status
+    }
+  }
+`;
+
+export const DELETE_PATIENT_PRISM_MEDICAL_RECORD = gql`
+  mutation deletePatientPrismMedicalRecord(
+    $deletePatientPrismMedicalRecordInput: DeletePatientPrismMedicalRecordInput
+  ) {
+    deletePatientPrismMedicalRecord(
+      deletePatientPrismMedicalRecordInput: $deletePatientPrismMedicalRecordInput
     ) {
       status
     }

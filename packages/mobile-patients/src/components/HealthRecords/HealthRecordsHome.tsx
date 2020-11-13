@@ -955,6 +955,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     const onPressListItem = () => {
       switch (id) {
         case 1:
+          setCallApi(true);
           tabsClickedWebEngageEvent(WebEngageEventName.PHR_VIEW_PRESCRIPTIONS);
           props.navigation.navigate(AppRoutes.ConsultRxScreen, {
             consultRxData: combination,
@@ -962,6 +963,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           });
           break;
         case 2:
+          setCallApi(true);
           tabsClickedWebEngageEvent(WebEngageEventName.PHR_VIEW_LAB_TESTS);
           tabsClickedWebEngageEvent(WebEngageEventName.PHR_VIEW_HEALTH_CHECKS);
           props.navigation.navigate(AppRoutes.TestReportScreen, {
@@ -970,6 +972,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           });
           break;
         case 3:
+          setCallApi(true);
           tabsClickedWebEngageEvent(WebEngageEventName.PHR_VIEW_HOSPITALIZATIONS);
           props.navigation.navigate(AppRoutes.HospitalizationScreen, {
             hospitalizationData: hospitalizationsNew,
@@ -977,24 +980,28 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           });
           break;
         case 4:
+          setCallApi(true);
           props.navigation.navigate(AppRoutes.HealthConditionScreen, {
             healthConditionData: healthConditions,
             onPressBack: onBackArrowPressed,
           });
           break;
         case 5:
+          setCallApi(true);
           props.navigation.navigate(AppRoutes.BillScreen, {
             medicalBillsData: medicalBills,
             onPressBack: onBackArrowPressed,
           });
           break;
         case 6:
+          setCallApi(true);
           props.navigation.navigate(AppRoutes.InsuranceScreen, {
             medicalInsuranceData: medicalInsurance,
             onPressBack: onBackArrowPressed,
           });
           break;
         case 7:
+          setCallApi(true);
           props.navigation.navigate(AppRoutes.ClinicalDocumentScreen);
           break;
       }

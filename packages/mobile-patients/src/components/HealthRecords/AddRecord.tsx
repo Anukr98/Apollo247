@@ -767,6 +767,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     return imagesArray;
   };
 
+  const gotoHealthRecordsHomeScreen = () => {
+    props.navigation.pop(2);
+  };
+
   const addMedicalRecord = () => {
     setshowSpinner(true);
     const inputData: AddPrescriptionRecordInput = {
@@ -794,7 +798,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         const status = g(data, 'addPatientPrescriptionRecord', 'status');
         if (status) {
           postWebEngagePHR('Prescription', WebEngageEventName.PHR_ADD_PRESCRIPTIONS);
-          props.navigation.pop(2);
+          gotoHealthRecordsHomeScreen();
         }
       })
       .catch((e) => {
@@ -813,7 +817,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       doctorTreated: showAllergyDetails ? allergyDocName : '',
       reactionToAllergy: showAllergyDetails ? allergyReaction : '',
       notes: showAllergyDetails ? allergyAdditionalNotes : '',
-      severity: selectedSeverityType,
+      severity: selectedSeverityType!,
       startDate:
         dateOfTest !== ''
           ? moment(dateOfTest, string.common.date_placeholder_text).format('YYYY-MM-DD')
@@ -841,7 +845,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           addMedicalConditionRecord();
         } else {
           setshowSpinner(false);
-          props.navigation.pop(2);
+          gotoHealthRecordsHomeScreen();
         }
       })
       .catch((e) => {
@@ -887,7 +891,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           addMedicalConditionRecord();
         } else {
           setshowSpinner(false);
-          props.navigation.pop(2);
+          gotoHealthRecordsHomeScreen();
         }
       })
       .catch((e) => {
@@ -929,7 +933,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           addMedicalConditionRecord();
         } else {
           setshowSpinner(false);
-          props.navigation.pop(2);
+          gotoHealthRecordsHomeScreen();
         }
       })
       .catch((e) => {
@@ -970,7 +974,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       })
       .then(({ data }) => {
         setshowSpinner(false);
-        props.navigation.pop(2);
+        gotoHealthRecordsHomeScreen();
       })
       .catch((e) => {
         CommonBugFender('AddRecord_ADD_PRESCRIPTION_RECORD', e);
@@ -1008,7 +1012,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         const status = g(data, 'addPatientLabTestRecord', 'status');
         if (status) {
           postWebEngagePHR('Lab Test', WebEngageEventName.PHR_ADD_LAB_TESTS);
-          props.navigation.pop(2);
+          gotoHealthRecordsHomeScreen();
         }
       })
       .catch((e) => {
@@ -1097,7 +1101,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         const status = g(data, 'addPatientHospitalizationRecord', 'status');
         if (status) {
           postWebEngagePHR('Discharge Summary Record', WebEngageEventName.PHR_ADD_HOSPITALIZATIONS);
-          props.navigation.pop(2);
+          gotoHealthRecordsHomeScreen();
         }
       })
       .catch((e) => {
@@ -1133,7 +1137,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         setshowSpinner(false);
         const status = g(data, 'addPatientMedicalBillRecord', 'status');
         if (status) {
-          props.navigation.pop(2);
+          gotoHealthRecordsHomeScreen();
         }
       })
       .catch((e) => {
@@ -1174,7 +1178,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         setshowSpinner(false);
         const status = g(data, 'addPatientMedicalInsuranceRecord', 'status');
         if (status) {
-          props.navigation.pop(2);
+          gotoHealthRecordsHomeScreen();
         }
       })
       .catch((e) => {

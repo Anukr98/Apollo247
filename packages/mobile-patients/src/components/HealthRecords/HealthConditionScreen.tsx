@@ -7,7 +7,6 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import {
   PhrAllergyIcon,
   PhrMedicalIcon,
@@ -22,8 +21,11 @@ import {
   initialSortByDays,
   editDeleteData,
   getSourceName,
-  EDIT_DELETE_TYPE,
+  handleGraphQlError,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { deletePatientPrismMedicalRecords } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { useApolloClient } from 'react-apollo-hooks';
 import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import moment from 'moment';
 import _ from 'lodash';
@@ -69,6 +71,8 @@ export interface HealthConditionScreenProps
 export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (props) => {
   const healthConditionData = props.navigation?.getParam('healthConditionData') || [];
   const { currentPatient } = useAllCurrentPatients();
+  const client = useApolloClient();
+  const [showSpinner, setShowSpinner] = useState<boolean>(false);
   const [localHealthRecordData, setLocalHealthRecordData] = useState<Array<{
     key: string;
     data: any[];
@@ -135,6 +139,28 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
     });
   };
 
+  const onPressDeletePrismMedicalRecords = (selectedItem: any) => {
+    const recordType: MedicalRecordType = selectedItem?.allergyName
+      ? MedicalRecordType.ALLERGY
+      : selectedItem?.medicineName
+      ? MedicalRecordType.MEDICATION
+      : selectedItem?.restrictionName
+      ? MedicalRecordType.HEALTHRESTRICTION
+      : MedicalRecordType.MEDICALCONDITION;
+    setShowSpinner(true);
+    deletePatientPrismMedicalRecords(client, selectedItem?.id, currentPatient?.id || '', recordType)
+      .then((status) => {
+        if (status) {
+          setShowSpinner(false);
+          props.navigation.goBack();
+        }
+      })
+      .catch((error) => {
+        setShowSpinner(false);
+        currentPatient && handleGraphQlError(error);
+      });
+  };
+
   const renderHealthConditionItems = (item: any, index: number) => {
     const renderHealthConditionTopView = () => {
       const getHealthConditionTypeIcon = () => {
@@ -184,6 +210,7 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
         editDeleteData={editDeleteData()}
         showUpdateDeleteOption={showEditDeleteOption}
         onHealthCardPress={(selectedItem) => onHealthCardItemPress(selectedItem)}
+        onDeletePress={(selectedItem) => onPressDeletePrismMedicalRecords(selectedItem)}
         prescriptionName={prescriptionName}
         dateText={dateText}
         selfUpload={selfUpload}
@@ -232,6 +259,7 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
 
   return (
     <View style={{ flex: 1 }}>
+      {showSpinner && <Spinner />}
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
         {healthConditionData?.length > 0 ? renderSearchAndFilterView() : null}

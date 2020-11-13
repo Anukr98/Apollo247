@@ -23,6 +23,7 @@ import {
   SAVE_DEVICE_TOKEN,
   GET_SECRETARY_DETAILS_BY_DOCTOR_ID,
   GET_PARTICIPANTS_LIVE_STATUS,
+  DELETE_PATIENT_PRISM_MEDICAL_RECORD,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetDoctorNextAvailableSlot } from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
 import { linkUhidsVariables } from '@aph/mobile-patients/src/graphql/types/linkUhids';
@@ -32,6 +33,7 @@ import { addToConsultQueueVariables } from '@aph/mobile-patients/src/graphql/typ
 import { addToConsultQueueWithAutomatedQuestionsVariables } from '@aph/mobile-patients/src/graphql/types/addToConsultQueueWithAutomatedQuestions';
 import { checkIfRescheduleVariables } from '@aph/mobile-patients/src/graphql/types/checkIfReschedule';
 import { downloadDocuments } from '@aph/mobile-patients/src/graphql/types/downloadDocuments';
+import { deletePatientPrismMedicalRecord } from '@aph/mobile-patients/src/graphql/types/deletePatientPrismMedicalRecord';
 import {
   EndAppointmentSession,
   EndAppointmentSessionVariables,
@@ -68,6 +70,7 @@ import {
   BOOKINGSOURCE,
   USER_STATUS,
   DEVICETYPE,
+  MedicalRecordType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { insertMessageVariables } from '@aph/mobile-patients/src/graphql/types/insertMessage';
 import {
@@ -270,6 +273,36 @@ export const getPrismUrls = (
       })
       .then(({ data }) => {
         res({ urls: data.downloadDocuments.downloadPaths });
+      })
+      .catch((e: any) => {
+        CommonBugFender('clientCalls_getPrismUrls', e);
+        const error = JSON.parse(JSON.stringify(e));
+        rej({ error: e });
+      });
+  });
+};
+
+export const deletePatientPrismMedicalRecords = (
+  client: ApolloClient<object>,
+  id: string,
+  patientId: string,
+  recordType: MedicalRecordType
+) => {
+  return new Promise((res, rej) => {
+    client
+      .query<deletePatientPrismMedicalRecord>({
+        query: DELETE_PATIENT_PRISM_MEDICAL_RECORD,
+        fetchPolicy: 'no-cache',
+        variables: {
+          deletePatientPrismMedicalRecordInput: {
+            id: id,
+            patientId: patientId,
+            recordType: recordType,
+          },
+        },
+      })
+      .then(({ data }) => {
+        res({ status: data?.deletePatientPrismMedicalRecord?.status });
       })
       .catch((e: any) => {
         CommonBugFender('clientCalls_getPrismUrls', e);

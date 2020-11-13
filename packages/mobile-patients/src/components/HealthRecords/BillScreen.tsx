@@ -7,7 +7,6 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { HealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/HealthRecordCard';
 import { PhrNoDataComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/PhrNoDataComponent';
 import { ProfileImageComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/ProfileImageComponent';
@@ -16,11 +15,13 @@ import {
   initialSortByDays,
   editDeleteData,
   getSourceName,
-  EDIT_DELETE_TYPE,
+  handleGraphQlError,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { deletePatientPrismMedicalRecords } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { useApolloClient } from 'react-apollo-hooks';
 import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalBills_response as MedicalBillsType } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords';
-import moment from 'moment';
 import _ from 'lodash';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 
@@ -64,6 +65,8 @@ export interface BillScreenProps
 export const BillScreen: React.FC<BillScreenProps> = (props) => {
   const medicalBillsData = props.navigation?.getParam('medicalBillsData') || [];
   const { currentPatient } = useAllCurrentPatients();
+  const client = useApolloClient();
+  const [showSpinner, setShowSpinner] = useState<boolean>(false);
   const [localMedicalBillsData, setLocalMedicalBillsData] = useState<Array<{
     key: string;
     data: MedicalBillsType[];
@@ -118,6 +121,26 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
     });
   };
 
+  const onPressDeletePrismMedicalRecords = (selectedItem: any) => {
+    setShowSpinner(true);
+    deletePatientPrismMedicalRecords(
+      client,
+      selectedItem?.id,
+      currentPatient?.id || '',
+      MedicalRecordType.MEDICALBILL
+    )
+      .then((status) => {
+        if (status) {
+          setShowSpinner(false);
+          props.navigation.goBack();
+        }
+      })
+      .catch((error) => {
+        setShowSpinner(false);
+        currentPatient && handleGraphQlError(error);
+      });
+  };
+
   const renderMedicalBillItems = (item: MedicalBillsType, index: number) => {
     const prescriptionName = item?.hospitalName || '';
     const dateText = getPrescriptionDate(item?.billDateTime);
@@ -132,6 +155,7 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
         editDeleteData={editDeleteData()}
         showUpdateDeleteOption={showEditDeleteOption}
         onHealthCardPress={(selectedItem) => onHealthCardItemPress(selectedItem)}
+        onDeletePress={(selectedItem) => onPressDeletePrismMedicalRecords(selectedItem)}
         prescriptionName={prescriptionName}
         dateText={dateText}
         selfUpload={selfUpload}
@@ -178,6 +202,7 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
 
   return (
     <View style={{ flex: 1 }}>
+      {showSpinner && <Spinner />}
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
         {medicalBillsData?.length > 0 ? renderSearchAndFilterView() : null}

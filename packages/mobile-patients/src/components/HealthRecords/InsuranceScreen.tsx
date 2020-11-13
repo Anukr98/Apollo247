@@ -7,7 +7,6 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { HealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/HealthRecordCard';
 import { PhrNoDataComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/PhrNoDataComponent';
 import { ProfileImageComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/ProfileImageComponent';
@@ -16,8 +15,11 @@ import {
   initialSortByDays,
   editDeleteData,
   getSourceName,
-  EDIT_DELETE_TYPE,
+  handleGraphQlError,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { deletePatientPrismMedicalRecords } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { useApolloClient } from 'react-apollo-hooks';
 import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalInsurances_response as MedicalInsuranceType } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords';
 import moment from 'moment';
@@ -64,6 +66,8 @@ export interface InsuranceScreenProps
 export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
   const medicalInsuranceData = props.navigation.getParam('medicalInsuranceData') || [];
   const { currentPatient } = useAllCurrentPatients();
+  const client = useApolloClient();
+  const [showSpinner, setShowSpinner] = useState<boolean>(false);
   const [localMedicalInsuranceData, setLocalInsuranceBillsData] = useState<Array<{
     key: string;
     data: MedicalInsuranceType[];
@@ -125,6 +129,26 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
     });
   };
 
+  const onPressDeletePrismMedicalRecords = (selectedItem: any) => {
+    setShowSpinner(true);
+    deletePatientPrismMedicalRecords(
+      client,
+      selectedItem?.id,
+      currentPatient?.id || '',
+      MedicalRecordType.MEDICALINSURANCE
+    )
+      .then((status) => {
+        if (status) {
+          setShowSpinner(false);
+          props.navigation.goBack();
+        }
+      })
+      .catch((error) => {
+        setShowSpinner(false);
+        currentPatient && handleGraphQlError(error);
+      });
+  };
+
   const renderMedicalInsuranceItems = (item: MedicalInsuranceType, index: number) => {
     const prescriptionName = item?.insuranceCompany || '';
     const dateText = getPrescriptionDate(item?.startDateTime);
@@ -139,6 +163,7 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
         editDeleteData={editDeleteData()}
         showUpdateDeleteOption={showEditDeleteOption}
         onHealthCardPress={(selectedItem) => onHealthCardItemPress(selectedItem)}
+        onDeletePress={(selectedItem) => onPressDeletePrismMedicalRecords(selectedItem)}
         prescriptionName={prescriptionName}
         dateText={dateText}
         selfUpload={selfUpload}
@@ -180,6 +205,7 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
 
   return (
     <View style={{ flex: 1 }}>
+      {showSpinner && <Spinner />}
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
         {medicalInsuranceData?.length > 0 ? renderSearchAndFilterView() : null}

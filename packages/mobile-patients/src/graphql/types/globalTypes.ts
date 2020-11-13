@@ -533,7 +533,7 @@ export interface AddAllergyRecordInput {
   patientId: string;
   recordType: MedicalRecordType;
   allergyName: string;
-  severity?: AllergySeverity | null;
+  severity: AllergySeverity;
   startDate: any;
   endDate?: any | null;
   doctorTreated?: string | null;
@@ -559,7 +559,7 @@ export interface AddHospitalizationRecordInput {
   hospitalName: string;
   doctorName: string;
   diagnosisNotes?: string | null;
-  hospitalizationFiles?: (HospitalizationFileProperties | null)[] | null;
+  hospitalizationFiles: (HospitalizationFileProperties | null)[];
 }
 
 export interface AddLabTestRecordInput {
@@ -572,7 +572,7 @@ export interface AddLabTestRecordInput {
   observations?: string | null;
   additionalNotes?: string | null;
   labTestResults?: (LabTestParameters | null)[] | null;
-  testResultFiles?: (LabTestFileProperties | null)[] | null;
+  testResultFiles: (LabTestFileProperties | null)[];
 }
 
 export interface AddMedicalConditionRecordInput {
@@ -584,7 +584,7 @@ export interface AddMedicalConditionRecordInput {
   startDate: any;
   endDate?: any | null;
   notes?: string | null;
-  illnessType?: MedicalConditionIllnessTypes | null;
+  illnessType: MedicalConditionIllnessTypes;
   medicationFiles?: (MedicalConditionFileProperties | null)[] | null;
 }
 
@@ -614,16 +614,18 @@ export interface AddMedicalRecordParametersInput {
 }
 
 export interface AddPatientHealthRestrictionRecordInput {
+  id?: string | null;
   patientId: string;
   recordType: MedicalRecordType;
   restrictionName: string;
   startDate: any;
   endDate?: any | null;
   suggestedByDoctor?: string | null;
-  nature?: HealthRestrictionNature | null;
+  nature: HealthRestrictionNature;
 }
 
 export interface AddPatientMedicalBillRecordInput {
+  id?: string | null;
   patientId: string;
   recordType: MedicalRecordType;
   hospitalName?: string | null;
@@ -634,6 +636,7 @@ export interface AddPatientMedicalBillRecordInput {
 }
 
 export interface AddPatientMedicalInsuranceRecordInput {
+  id?: string | null;
   patientId: string;
   recordType: MedicalRecordType;
   insuranceCompany: string;
@@ -645,6 +648,7 @@ export interface AddPatientMedicalInsuranceRecordInput {
 }
 
 export interface AddPatientMedicationRecordInput {
+  id?: string | null;
   patientId: string;
   recordType: MedicalRecordType;
   medicineName: string;
@@ -667,7 +671,7 @@ export interface AddPrescriptionRecordInput {
   issuingDoctor?: string | null;
   location?: string | null;
   dateOfPrescription?: any | null;
-  prescriptionFiles?: (prescriptionPrismFileProperties | null)[] | null;
+  prescriptionFiles: (prescriptionPrismFileProperties | null)[];
 }
 
 export interface AlertMedicineOrderPickupInput {
@@ -769,6 +773,12 @@ export interface ConsultQueueInput {
   drugAllergies?: string | null;
   age?: number | null;
   gender?: Gender | null;
+}
+
+export interface DeletePatientPrismMedicalRecordInput {
+  id?: string | null;
+  patientId: string;
+  recordType: MedicalRecordType;
 }
 
 export interface DiagnosticLineItem {
