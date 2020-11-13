@@ -21,9 +21,12 @@ import {
   g,
   postWebEngageEvent,
   initialSortByDays,
+  editDeleteData,
+  EDIT_DELETE_TYPE,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import moment from 'moment';
 import _ from 'lodash';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   searchFilterViewStyle: {
@@ -127,15 +130,10 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
   };
 
   const renderHospitalizationItems = (item: HospitalizationType, index: number) => {
-    // For Next Phase
-    // const editDeleteData = ConsultRxEditDeleteArray.map((i) => {
-    //   return { key: i.key, value: i.title };
-    // });
     const getSourceName = (source: string) => {
-      if (source === 'self' || source === '247self') {
-        return 'Clinical Document';
-      }
-      return source;
+      return source === 'self' || source === '247self'
+        ? string.common.clicnical_document_text
+        : source;
     };
     const prescriptionName = 'Dr. ' + item?.doctorName;
     const dateText =
@@ -146,10 +144,14 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
         : moment(item?.date).format('DD MMM YYYY');
     const soureName = getSourceName(item?.source || '-');
     const selfUpload = true;
+    const showEditDeleteOption =
+      soureName === string.common.clicnical_document_text || soureName === '-' ? true : false;
     return (
       <HealthRecordCard
         item={item}
         index={index}
+        editDeleteData={editDeleteData()}
+        showUpdateDeleteOption={showEditDeleteOption}
         onHealthCardPress={(selectedItem) => onHealthCardItemPress(selectedItem)}
         prescriptionName={prescriptionName}
         dateText={dateText}

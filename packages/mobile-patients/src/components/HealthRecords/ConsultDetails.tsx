@@ -936,7 +936,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const renderDetailsFinding = () => {
     if (caseSheetDetails)
       return (
-        <View>
+        <View style={{ marginBottom: 20 }}>
           <CollapseCard
             heading="DETAILED FINDINGS"
             collapse={showPrescription}

@@ -14,11 +14,15 @@ import { ProfileImageComponent } from '@aph/mobile-patients/src/components/Healt
 import {
   getPrescriptionDate,
   initialSortByDays,
+  editDeleteData,
+  getSourceName,
+  EDIT_DELETE_TYPE,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalBills_response as MedicalBillsType } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords';
 import moment from 'moment';
 import _ from 'lodash';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   searchFilterViewStyle: {
@@ -115,24 +119,18 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
   };
 
   const renderMedicalBillItems = (item: MedicalBillsType, index: number) => {
-    // For Next Phase
-    // const editDeleteData = ConsultRxEditDeleteArray.map((i) => {
-    //   return { key: i.key, value: i.title };
-    // });
-    const getSourceName = (source: string) => {
-      if (source === 'self' || source === '247self') {
-        return 'Clinical Document';
-      }
-      return source;
-    };
     const prescriptionName = item?.hospitalName || '';
     const dateText = getPrescriptionDate(item?.billDateTime);
     const soureName = getSourceName(item?.source || '-');
     const selfUpload = true;
+    const showEditDeleteOption =
+      soureName === string.common.clicnical_document_text || soureName === '-' ? true : false;
     return (
       <HealthRecordCard
         item={item}
         index={index}
+        editDeleteData={editDeleteData()}
+        showUpdateDeleteOption={showEditDeleteOption}
         onHealthCardPress={(selectedItem) => onHealthCardItemPress(selectedItem)}
         prescriptionName={prescriptionName}
         dateText={dateText}

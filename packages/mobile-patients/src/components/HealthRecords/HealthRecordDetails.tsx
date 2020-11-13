@@ -40,6 +40,7 @@ import {
   g,
   handleGraphQlError,
   postWebEngagePHR,
+  getSourceName,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import {
@@ -589,23 +590,6 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       : medicalInsurance
       ? 'Insurance Date'
       : 'Checkup Date';
-    const getSourceName = (
-      labTestSource: string,
-      siteDisplayName: string,
-      healthCheckSource: string
-    ) => {
-      if (
-        labTestSource === 'self' ||
-        labTestSource === '247self' ||
-        siteDisplayName === 'self' ||
-        siteDisplayName === '247self' ||
-        healthCheckSource === 'self' ||
-        healthCheckSource === '247self'
-      ) {
-        return 'Clinical Document';
-      }
-      return siteDisplayName || labTestSource || healthCheckSource;
-    };
     const renderDateView = () => {
       return hospitalization && data?.dateOfHospitalization !== 0 ? (
         <Text style={{ ...viewStyles.text('R', 14, theme.colors.SKY_BLUE, 1, 18), marginTop: 3 }}>
@@ -702,7 +686,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         ) : null}
         {prescriptions ? (
           <Text style={{ ...viewStyles.text('R', 14, '#67909C', 1, 18.2), marginTop: 6 }}>
-            {'Clinical Document'}
+            {string.common.clicnical_document_text}
           </Text>
         ) : (
           <Text style={{ ...viewStyles.text('R', 14, '#67909C', 1, 18.2), marginTop: 3 }}>

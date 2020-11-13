@@ -21,9 +21,13 @@ import {
   g,
   postWebEngageEvent,
   initialSortByDays,
+  editDeleteData,
+  getSourceName,
+  EDIT_DELETE_TYPE,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import moment from 'moment';
 import _ from 'lodash';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   searchFilterViewStyle: {
@@ -65,18 +69,8 @@ export enum FILTER_TYPE {
   SOURCE = 'Source',
 }
 
-export enum EDIT_DELETE_TYPE {
-  EDIT = 'Edit Details',
-  DELETE = 'Delete Data',
-}
-
 type FilterArray = {
   key: FILTER_TYPE;
-  title: string;
-};
-
-type EditDeleteArray = {
-  key: EDIT_DELETE_TYPE;
   title: string;
 };
 
@@ -89,11 +83,6 @@ const ConsultRxFilterArray: FilterArray[] = [
   { key: FILTER_TYPE.SOURCE, title: FILTER_TYPE.SOURCE },
 ];
 
-const ConsultRxEditDeleteArray: EditDeleteArray[] = [
-  { key: EDIT_DELETE_TYPE.EDIT, title: EDIT_DELETE_TYPE.EDIT },
-  { key: EDIT_DELETE_TYPE.DELETE, title: EDIT_DELETE_TYPE.DELETE },
-];
-
 export interface TestReportScreenProps
   extends NavigationScreenProps<{
     testReportsData: any;
@@ -104,7 +93,6 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
   const testReportsData = props.navigation?.getParam('testReportsData') || [];
   const { currentPatient } = useAllCurrentPatients();
   const [filterApplied, setFilterApplied] = useState<FILTER_TYPE | string>('');
-  const [editDeleteOption, setEditDeleteOption] = useState<EDIT_DELETE_TYPE | string>('');
   const [localTestReportsData, setLocalTestReportsData] = useState<Array<{
     key: string;
     data: any[];
@@ -231,14 +219,14 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
             : _.lowerCase(data1?.packageName);
         const filteredData2 =
           type === FILTER_TYPE.DATE
-            ? moment(data2.date)
+            ? moment(data2?.date)
                 .toDate()
                 .getTime()
             : type === FILTER_TYPE.TEST_NAME
-            ? _.lowerCase(data2.labTestName || data2.healthCheckName)
+            ? _.lowerCase(data2?.labTestName || data2?.healthCheckName)
             : type === FILTER_TYPE.SOURCE
             ? _.lowerCase(data2?.labTestSource || data2?.source)
-            : _.lowerCase(data2.packageName);
+            : _.lowerCase(data2?.packageName);
         if (type === FILTER_TYPE.DATE || !type) {
           return filteredData1 > filteredData2 ? -1 : filteredData1 < filteredData2 ? 1 : 0;
         }
@@ -308,7 +296,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
       filterApplied === FILTER_TYPE.DATE
         ? section.key && moment(new Date(section.key)).format('DD MMM YYYY')
         : section.key === '247self' || section.key === 'self'
-        ? 'Clinical Document'
+        ? string.common.clicnical_document_text
         : section.key === 'APP247'
         ? 'Apollo 24/7'
         : section.key;
@@ -323,10 +311,6 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
   };
 
   const renderTestReportsItems = (item: any, index: number) => {
-    // For Next Phase
-    // const editDeleteData = ConsultRxEditDeleteArray.map((i) => {
-    //   return { key: i.key, value: i.title };
-    // });
     const getPresctionDate = (date: string) => {
       let prev_date = new Date();
       prev_date.setDate(prev_date.getDate() - 1);
@@ -338,23 +322,6 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
         return 'Yesterday';
       }
       return moment(new Date(date)).format('DD MMM');
-    };
-    const getSourceName = (
-      labTestSource: string,
-      siteDisplayName: string,
-      healthCheckSource: string
-    ) => {
-      if (
-        labTestSource === 'self' ||
-        labTestSource === '247self' ||
-        siteDisplayName === 'self' ||
-        siteDisplayName === '247self' ||
-        healthCheckSource === 'self' ||
-        healthCheckSource === '247self'
-      ) {
-        return 'Clinical Document';
-      }
-      return siteDisplayName || labTestSource || healthCheckSource;
     };
     const prescriptionName =
       filterApplied &&
@@ -382,10 +349,14 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
       item?.data?.source || '-'
     );
     const selfUpload = true;
+    const showEditDeleteOption =
+      soureName === string.common.clicnical_document_text || soureName === '-' ? true : false;
     return (
       <HealthRecordCard
         item={item?.data}
         index={index}
+        editDeleteData={editDeleteData()}
+        showUpdateDeleteOption={showEditDeleteOption}
         onHealthCardPress={(selectedItem) => onHealthCardItemPress(selectedItem)}
         prescriptionName={prescriptionName}
         doctorName={doctorName}

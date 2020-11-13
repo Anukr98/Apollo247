@@ -54,6 +54,7 @@ export interface HealthRecordCardProps {
   sourceName: string;
   index: number;
   showFollowUp?: boolean;
+  showUpdateDeleteOption?: boolean;
   healthConditionCard?: boolean;
   healthCondtionCardTopView?: React.ReactElement;
 }
@@ -75,6 +76,7 @@ export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
     showFollowUp,
     healthConditionCard,
     healthCondtionCardTopView,
+    showUpdateDeleteOption,
   } = props;
   return (
     <TouchableOpacity
@@ -83,23 +85,31 @@ export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
       onPress={() => onHealthCardPress(item)}
     >
       <View style={{ marginVertical: 12, marginLeft: 13, marginRight: 11 }}>
-        <View style={{ flexDirection: 'row', position: 'absolute', top: 0, right: 0 }}>
-          <Text style={{ ...theme.viewStyles.text('R', 10, '#67909C', 1, 13) }}>{dateText}</Text>
-          {/* For Next Phase */}
-          {/* <MaterialMenu
-            options={editDeleteData}
-            menuContainerStyle={[styles.menuContainerStyle, { marginTop: 25 }]}
-            itemContainer={{ height: 44.8, marginHorizontal: 12, width: 260 / 2 }}
-            itemTextStyle={styles.itemTextStyle}
-            showItemDifferentColor={true}
-            lastContainerStyle={{ borderBottomWidth: 0 }}
-            bottomPadding={{ paddingBottom: 0 }}
-            onPress={(selectedOption) => {
-              onEditDeletePress && onEditDeletePress(selectedOption.key);
-            }}
-          >
-            <More />
-          </MaterialMenu> */}
+        <View style={{ flexDirection: 'row', position: 'absolute', top: 0, right: 0, zIndex: 1 }}>
+          {showUpdateDeleteOption ? null : (
+            <Text style={{ ...theme.viewStyles.text('R', 10, '#67909C', 1, 13) }}>{dateText}</Text>
+          )}
+          {showUpdateDeleteOption ? (
+            <MaterialMenu
+              options={editDeleteData}
+              menuContainerStyle={[styles.menuContainerStyle, { marginTop: 25 }]}
+              itemContainer={{ height: 44.8, marginHorizontal: 12, width: 260 / 2 }}
+              itemTextStyle={styles.itemTextStyle}
+              showItemDifferentColor={true}
+              lastContainerStyle={{ borderBottomWidth: 0 }}
+              bottomPadding={{ paddingBottom: 0 }}
+              onPress={(selectedOption) => {
+                onEditDeletePress && onEditDeletePress(selectedOption.key);
+              }}
+            >
+              <View style={{ flexDirection: 'row' }}>
+                <Text style={{ ...theme.viewStyles.text('R', 10, '#67909C', 1, 13) }}>
+                  {dateText}
+                </Text>
+                <More />
+              </View>
+            </MaterialMenu>
+          ) : null}
         </View>
         {healthConditionCard ? healthCondtionCardTopView : null}
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
