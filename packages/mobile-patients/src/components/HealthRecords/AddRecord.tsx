@@ -126,13 +126,13 @@ const styles = StyleSheet.create({
   placeholderTextStyle: {
     color: '#01475b',
     ...theme.fonts.IBMPlexSansMedium(18),
+    paddingRight: 40,
   },
   placeholderViewStyle: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    width: '100%',
-    borderBottomWidth: 2,
+    width: 'auto',
     paddingTop: 0,
     borderColor: theme.colors.SKY_BLUE,
   },
@@ -321,6 +321,9 @@ const styles = StyleSheet.create({
     marginHorizontal: 14,
     marginBottom: 20,
   },
+  dateViewStyle: { paddingTop: 0, paddingBottom: 10 },
+  illnessTypeViewStyle: { marginBottom: 30 },
+  menuContainerViewStyle: { marginLeft: 14, marginRight: 18 },
 });
 
 type RecordTypeType = {
@@ -1438,8 +1441,31 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       <ListItem
         title={renderTitle()}
         pad={14}
-        containerStyle={{ paddingTop: 0, paddingBottom: 0, paddingRight: 20 }}
+        containerStyle={{ paddingTop: 0, paddingBottom: 3, paddingRight: 20 }}
         rightElement={rightIcon ? <PhrEditIcon style={{ width: 16, height: 16 }} /> : undefined}
+      />
+    );
+  };
+
+  const renderListItemAdd = (
+    title: string,
+    mandatoryField: boolean = false,
+    rightElement: React.ReactElement
+  ) => {
+    const renderTitle = () => {
+      return (
+        <Text style={{ ...theme.viewStyles.text('R', 14, theme.colors.LIGHT_BLUE, 1, 18.2) }}>
+          {title}
+          {mandatoryField ? <Text style={{ color: '#E50000' }}>{' *'}</Text> : null}
+        </Text>
+      );
+    };
+    return (
+      <ListItem
+        title={renderTitle()}
+        pad={14}
+        containerStyle={{ paddingTop: 0, paddingBottom: 0, paddingRight: 20 }}
+        rightElement={rightElement}
       />
     );
   };
@@ -1525,7 +1551,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             true,
             true
           )}
-          <View style={{ paddingTop: 0, paddingBottom: 10 }}>
+          <View style={styles.dateViewStyle}>
             <Text
               style={[styles.textInputStyle, dateOfTest !== '' ? null : styles.placeholderStyle]}
               onPress={() => {
@@ -1779,9 +1805,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const renderAdditionalTextInputView = () => {
     return (
       <View style={{ marginTop: 32 }}>
-        {renderListItem('Additional Notes', false)}
+        {renderListItem(string.common.additional_text, false)}
         <TextInput
-          placeholder={'Enter Additional Notes'}
+          placeholder={string.common.enter_additional_text}
           style={[styles.textInputStyle, styles.additionalTextInputStyle]}
           multiline
           selectionColor={theme.colors.SKY_BLUE}
@@ -1888,7 +1914,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       <>
         <View style={styles.listItemViewStyle}>
           {renderListItem('Record end date', true, true)}
-          <View style={{ paddingTop: 0, paddingBottom: 10 }}>
+          <View style={styles.dateViewStyle}>
             <Text
               style={[styles.textInputStyle, endDate !== '' ? null : styles.placeholderStyle]}
               onPress={() => {
@@ -1990,33 +2016,27 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     };
     return (
       <>
-        <View style={{ marginBottom: 20 }}>
-          <ListItem
-            title={
-              <TextInput
-                placeholder={'Enter name of allergy'}
-                style={[styles.textInputStyle, { paddingHorizontal: 0, marginBottom: 0 }]}
-                selectionColor={theme.colors.SKY_BLUE}
-                numberOfLines={1}
-                value={allergyName}
-                keyboardType={'numbers-and-punctuation'}
-                placeholderTextColor={theme.colors.placeholderTextColor}
-                underlineColorAndroid={'transparent'}
-                onChangeText={(locName) => {
-                  if (isValidText(locName)) {
-                    setAllergyName(locName);
-                  }
-                }}
-              />
-            }
-            pad={14}
-            containerStyle={{ paddingTop: 0, paddingBottom: 0, paddingRight: 18 }}
-            rightElement={rightElement()}
+        <View>
+          {renderListItem('Allergy name', true, true)}
+          <TextInput
+            placeholder={string.common.enter_name_of_text?.replace('{0}', 'allergy')}
+            style={styles.textInputStyle}
+            selectionColor={theme.colors.SKY_BLUE}
+            numberOfLines={1}
+            value={allergyName}
+            keyboardType={'numbers-and-punctuation'}
+            placeholderTextColor={theme.colors.placeholderTextColor}
+            underlineColorAndroid={'transparent'}
+            onChangeText={(locName) => {
+              if (isValidText(locName)) {
+                setAllergyName(locName);
+              }
+            }}
           />
         </View>
-        <View style={{ marginBottom: 20 }}>
-          {renderListItem('Allergy Severity', false, false)}
-          <View style={{ marginLeft: 14, marginRight: 18 }}>
+        <View style={styles.illnessTypeViewStyle}>
+          {renderListItemAdd('Severity of allergy', true, rightElement())}
+          <View style={styles.menuContainerViewStyle}>
             <MaterialMenu
               menuContainerStyle={styles.menuContainerStyle}
               itemContainer={{ height: 44.8, width: 150 / 2 }}
@@ -2031,17 +2051,18 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               }}
             >
               <TextInputComponent noInput={true} conatinerstyles={{ paddingBottom: 0 }} />
-              <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+              <View style={{ flexDirection: 'row' }}>
                 <View style={[styles.placeholderViewStyle]}>
                   <Text
                     style={[
                       styles.placeholderTextStyle,
                       !selectedSeverityType && styles.placeholderStyle,
                     ]}
+                    numberOfLines={1}
                   >
                     {selectedSeverityType
                       ? severityType?.find((item) => item.key === selectedSeverityType)?.value
-                      : 'Select allergy severity'}
+                      : string.common.select_text}
                   </Text>
                   <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
                     <PhrDropdownBlueUpIcon />
@@ -2053,9 +2074,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         </View>
         {showAllergyDetails ? (
           <>
+            {renderListItem(string.common.doctor_name_text)}
             {renderDoctorPrefixListItem(
               <TextInput
-                placeholder={'Enter name of doctor'}
+                placeholder={string.common.enter_doctor_name_text}
                 style={styles.doctorPrefixTextInputStyle}
                 selectionColor={theme.colors.SKY_BLUE}
                 numberOfLines={1}
@@ -2068,15 +2090,15 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                     setAllergyDocName(locName);
                   }
                 }}
-              />,
-              { marginBottom: 20 }
+              />
             )}
-            <View style={{ paddingTop: 0, paddingBottom: 10 }}>
+            {renderListItem(string.common.end_date_text)}
+            <View style={styles.dateViewStyle}>
               <Text
                 style={[
                   styles.textInputStyle,
                   allergyEndDate !== '' ? null : styles.placeholderStyle,
-                  { marginBottom: 10 },
+                  { marginBottom: 20 },
                 ]}
                 onPress={() => {
                   Keyboard.dismiss();
@@ -2084,7 +2106,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                   CommonLogEvent('ADD_RECORD', 'Date picker visible');
                 }}
               >
-                {allergyEndDate !== '' ? allergyEndDate : 'Enter record end date'}
+                {allergyEndDate !== ''
+                  ? allergyEndDate
+                  : string.common.enter_date_text?.replace('{0}', 'allergy')}
               </Text>
             </View>
             <DatePicker
@@ -2102,9 +2126,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               maximumDate={false}
               minimumDate={new Date()}
             />
+            {renderListItem('Allergy Reaction')}
             <TextInput
               placeholder={'Enter allergy reaction'}
-              style={[styles.textInputStyle, { marginBottom: 14 }]}
+              style={styles.textInputStyle}
               selectionColor={theme.colors.SKY_BLUE}
               numberOfLines={1}
               value={allergyReaction}
@@ -2119,10 +2144,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             />
 
             {renderUploadedImages(2)}
-            <View style={{ marginTop: 32 }}>
-              {renderListItem('Additional Notes', false)}
+            <View style={{ marginTop: 24 }}>
+              {renderListItem(string.common.additional_text, false)}
               <TextInput
-                placeholder={'Enter additional notes'}
+                placeholder={string.common.enter_additional_text}
                 style={[styles.textInputStyle, styles.additionalTextInputStyle]}
                 multiline
                 selectionColor={theme.colors.SKY_BLUE}
@@ -2160,33 +2185,27 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     };
     return (
       <>
-        <View style={{ marginBottom: 20 }}>
-          <ListItem
-            title={
-              <TextInput
-                placeholder={'Enter name of health restriction'}
-                style={[styles.textInputStyle, { paddingHorizontal: 0, marginBottom: 0 }]}
-                selectionColor={theme.colors.SKY_BLUE}
-                numberOfLines={1}
-                value={healthRestrictionName}
-                keyboardType={'numbers-and-punctuation'}
-                placeholderTextColor={theme.colors.placeholderTextColor}
-                underlineColorAndroid={'transparent'}
-                onChangeText={(locName) => {
-                  if (isValidText(locName)) {
-                    setHealthRestrictionName(locName);
-                  }
-                }}
-              />
-            }
-            pad={14}
-            containerStyle={{ paddingTop: 0, paddingBottom: 0, paddingRight: 18 }}
-            rightElement={rightElement()}
+        <View>
+          {renderListItem('Health restriction name', true, true)}
+          <TextInput
+            placeholder={string.common.enter_name_of_text?.replace('{0}', 'health restriction')}
+            style={[styles.textInputStyle]}
+            selectionColor={theme.colors.SKY_BLUE}
+            numberOfLines={1}
+            value={healthRestrictionName}
+            keyboardType={'numbers-and-punctuation'}
+            placeholderTextColor={theme.colors.placeholderTextColor}
+            underlineColorAndroid={'transparent'}
+            onChangeText={(locName) => {
+              if (isValidText(locName)) {
+                setHealthRestrictionName(locName);
+              }
+            }}
           />
         </View>
-        <View style={{ marginBottom: 20 }}>
-          {renderListItem('Restriction Nature', false, false)}
-          <View style={{ marginLeft: 14, marginRight: 18 }}>
+        <View style={styles.illnessTypeViewStyle}>
+          {renderListItemAdd('Nature of restriction', true, rightElement())}
+          <View style={styles.menuContainerViewStyle}>
             <MaterialMenu
               menuContainerStyle={styles.menuContainerStyle}
               itemContainer={{ height: 44.8, width: 150 / 2 }}
@@ -2201,7 +2220,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               }}
             >
               <TextInputComponent noInput={true} conatinerstyles={{ paddingBottom: 0 }} />
-              <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+              <View style={{ flexDirection: 'row' }}>
                 <View style={[styles.placeholderViewStyle]}>
                   <Text
                     style={[
@@ -2211,7 +2230,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                   >
                     {selectedRestrictionType
                       ? natureType?.find((item) => item.key === selectedRestrictionType)?.value
-                      : 'Select restriction nature'}
+                      : string.common.select_text}
                   </Text>
                   <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
                     <PhrDropdownBlueUpIcon />
@@ -2223,9 +2242,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         </View>
         {showHealthRestrictionDetails ? (
           <>
+            {renderListItem(string.common.doctor_name_text)}
             {renderDoctorPrefixListItem(
               <TextInput
-                placeholder={'Enter suggested doctor name'}
+                placeholder={string.common.enter_doctor_name_text}
                 style={styles.doctorPrefixTextInputStyle}
                 selectionColor={theme.colors.SKY_BLUE}
                 numberOfLines={1}
@@ -2238,16 +2258,15 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                     setHealthRestrictionDocName(locName);
                   }
                 }}
-              />,
-              { marginBottom: 20 }
+              />
             )}
-
-            <View style={{ paddingTop: 0, paddingBottom: 10 }}>
+            {renderListItem(string.common.end_date_text)}
+            <View style={styles.dateViewStyle}>
               <Text
                 style={[
                   styles.textInputStyle,
                   healthRestrictionEndDate !== '' ? null : styles.placeholderStyle,
-                  { marginBottom: 10 },
+                  { marginBottom: 20 },
                 ]}
                 onPress={() => {
                   Keyboard.dismiss();
@@ -2257,7 +2276,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               >
                 {healthRestrictionEndDate !== ''
                   ? healthRestrictionEndDate
-                  : 'Enter health restriction end date'}
+                  : string.common.enter_date_text?.replace('{0}', 'restriction')}
               </Text>
             </View>
             <DatePicker
@@ -2298,33 +2317,28 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     };
     return (
       <>
-        <View style={{ marginBottom: 20 }}>
-          <ListItem
-            title={
-              <TextInput
-                placeholder={'Enter medical condition name'}
-                style={[styles.textInputStyle, { paddingHorizontal: 0, marginBottom: 0 }]}
-                selectionColor={theme.colors.SKY_BLUE}
-                numberOfLines={1}
-                value={medicalConditionName}
-                keyboardType={'numbers-and-punctuation'}
-                placeholderTextColor={theme.colors.placeholderTextColor}
-                underlineColorAndroid={'transparent'}
-                onChangeText={(locName) => {
-                  if (isValidText(locName)) {
-                    setMedicalConditionName(locName);
-                  }
-                }}
-              />
-            }
-            pad={14}
-            containerStyle={{ paddingTop: 0, paddingBottom: 0, paddingRight: 18 }}
-            rightElement={rightElement()}
+        <View>
+          {renderListItem('Medical condition name', true, true)}
+          <TextInput
+            placeholder={string.common.enter_name_of_text?.replace('{0}', 'medical condition')}
+            style={[styles.textInputStyle]}
+            selectionColor={theme.colors.SKY_BLUE}
+            numberOfLines={1}
+            value={medicalConditionName}
+            keyboardType={'numbers-and-punctuation'}
+            placeholderTextColor={theme.colors.placeholderTextColor}
+            underlineColorAndroid={'transparent'}
+            onChangeText={(locName) => {
+              if (isValidText(locName)) {
+                setMedicalConditionName(locName);
+              }
+            }}
           />
         </View>
+        {renderListItem(string.common.doctor_name_text)}
         {renderDoctorPrefixListItem(
           <TextInput
-            placeholder={'Enter name of doctor'}
+            placeholder={string.common.enter_doctor_name_text}
             style={styles.doctorPrefixTextInputStyle}
             selectionColor={theme.colors.SKY_BLUE}
             numberOfLines={1}
@@ -2337,12 +2351,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 setMedicalConditionDocName(locName);
               }
             }}
-          />,
-          { marginBottom: 20 }
+          />
         )}
-        <View style={{ marginBottom: 20 }}>
-          {renderListItem('Illness Type', false, false)}
-          <View style={{ marginLeft: 14, marginRight: 18 }}>
+        <View style={styles.illnessTypeViewStyle}>
+          {renderListItemAdd('Illness type', true, rightElement())}
+          <View style={styles.menuContainerViewStyle}>
             <MaterialMenu
               menuContainerStyle={styles.menuContainerStyle}
               itemContainer={{ height: 44.8, width: 150 / 2 }}
@@ -2357,7 +2370,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               }}
             >
               <TextInputComponent noInput={true} conatinerstyles={{ paddingBottom: 0 }} />
-              <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+              <View style={{ flexDirection: 'row' }}>
                 <View style={[styles.placeholderViewStyle]}>
                   <Text
                     style={[
@@ -2367,7 +2380,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                   >
                     {selectedIllnessType
                       ? illnessTypeArray?.find((item) => item.key === selectedIllnessType)?.value
-                      : 'Select illness type'}
+                      : string.common.select_text}
                   </Text>
                   <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
                     <PhrDropdownBlueUpIcon />
@@ -2379,7 +2392,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         </View>
         {showMedicalConditionDetails ? (
           <>
-            <View style={{ paddingTop: 0, paddingBottom: 10 }}>
+            {renderListItem(string.common.end_date_text)}
+            <View style={styles.dateViewStyle}>
               <Text
                 style={[
                   styles.textInputStyle,
@@ -2394,7 +2408,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               >
                 {medicalConditionEndDate !== ''
                   ? medicalConditionEndDate
-                  : 'Enter medical condition end date'}
+                  : string.common.enter_date_text?.replace('{0}', 'condition')}
               </Text>
             </View>
             <DatePicker
@@ -2414,9 +2428,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             />
             {renderUploadedImages(3)}
             <View style={{ marginTop: 32 }}>
-              {renderListItem('Additional Notes', false)}
+              {renderListItem(string.common.additional_text, false)}
               <TextInput
-                placeholder={'Enter additional notes'}
+                placeholder={string.common.enter_additional_text}
                 style={[styles.textInputStyle, styles.additionalTextInputStyle]}
                 multiline
                 selectionColor={theme.colors.SKY_BLUE}
@@ -2454,35 +2468,30 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     };
     return (
       <>
-        <View style={{ marginBottom: 20 }}>
-          <ListItem
-            title={
-              <TextInput
-                placeholder={'Enter name of medicine'}
-                style={[styles.textInputStyle, { paddingHorizontal: 0, marginBottom: 0 }]}
-                selectionColor={theme.colors.SKY_BLUE}
-                numberOfLines={1}
-                value={medicationMedicineName}
-                keyboardType={'numbers-and-punctuation'}
-                placeholderTextColor={theme.colors.placeholderTextColor}
-                underlineColorAndroid={'transparent'}
-                onChangeText={(locName) => {
-                  if (isValidText(locName)) {
-                    setMedicationMedicineName(locName);
-                  }
-                }}
-              />
-            }
-            pad={14}
-            containerStyle={{ paddingTop: 0, paddingBottom: 0, paddingRight: 18 }}
-            rightElement={rightElement()}
+        <View>
+          {renderListItemAdd('Medicine name', true, rightElement())}
+          <TextInput
+            placeholder={string.common.enter_name_of_text?.replace('{0}', 'medicine')}
+            style={[styles.textInputStyle]}
+            selectionColor={theme.colors.SKY_BLUE}
+            numberOfLines={1}
+            value={medicationMedicineName}
+            keyboardType={'numbers-and-punctuation'}
+            placeholderTextColor={theme.colors.placeholderTextColor}
+            underlineColorAndroid={'transparent'}
+            onChangeText={(locName) => {
+              if (isValidText(locName)) {
+                setMedicationMedicineName(locName);
+              }
+            }}
           />
         </View>
         {showMedicationDetails ? (
           <>
+            {renderListItem('Medical condition')}
             <TextInput
               placeholder={'Enter medical condition'}
-              style={[styles.textInputStyle, { marginBottom: 20 }]}
+              style={[styles.textInputStyle]}
               selectionColor={theme.colors.SKY_BLUE}
               numberOfLines={1}
               value={medicationCondition}
@@ -2495,9 +2504,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 }
               }}
             />
+            {renderListItem(string.common.doctor_name_text)}
             {renderDoctorPrefixListItem(
               <TextInput
-                placeholder={'Enter medication doctor name'}
+                placeholder={string.common.enter_doctor_name_text}
                 style={styles.doctorPrefixTextInputStyle}
                 selectionColor={theme.colors.SKY_BLUE}
                 numberOfLines={1}
@@ -2510,15 +2520,15 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                     setMedicationDocName(locName);
                   }
                 }}
-              />,
-              { marginBottom: 20 }
+              />
             )}
-            <View style={{ paddingTop: 0, paddingBottom: 10 }}>
+            {renderListItem(string.common.end_date_text)}
+            <View style={styles.dateViewStyle}>
               <Text
                 style={[
                   styles.textInputStyle,
                   medicationEndDate !== '' ? null : styles.placeholderStyle,
-                  { marginBottom: 10 },
+                  { marginBottom: 20 },
                 ]}
                 onPress={() => {
                   Keyboard.dismiss();
@@ -2526,7 +2536,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                   CommonLogEvent('ADD_RECORD', 'Date picker visible');
                 }}
               >
-                {medicationEndDate !== '' ? medicationEndDate : 'Enter medicine end date'}
+                {medicationEndDate !== ''
+                  ? medicationEndDate
+                  : string.common.enter_date_text?.replace('{0}', 'medicine')}
               </Text>
             </View>
             <DatePicker
@@ -2705,7 +2717,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           <Text style={styles.morningTextStyle}>{'Yes'}</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => setMedicalConditionCheckbox(!healthRestrictionCheckbox)}
+          onPress={() => setMedicalConditionCheckbox(!medicalConditionCheckbox)}
           style={{ flexDirection: 'row', flex: 1 }}
         >
           {!medicalConditionCheckbox ? (
@@ -2721,7 +2733,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
 
   const renderRecordDetailsHealthCondition = () => {
     return (
-      <View style={{ marginBottom: 30 }}>
+      <View style={styles.illnessTypeViewStyle}>
         <View style={styles.listItemViewStyle}>
           {renderListItem('Do you have any allergy?', false)}
           {renderAllergyTopView()}

@@ -113,6 +113,21 @@ export interface TestSlotWithArea {
   slotInfo: getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots;
 }
 
+export enum EDIT_DELETE_TYPE {
+  EDIT = 'Edit Details',
+  DELETE = 'Delete Data',
+}
+
+type EditDeleteArray = {
+  key: EDIT_DELETE_TYPE;
+  title: string;
+};
+
+export const ConsultRxEditDeleteArray: EditDeleteArray[] = [
+  { key: EDIT_DELETE_TYPE.EDIT, title: EDIT_DELETE_TYPE.EDIT },
+  { key: EDIT_DELETE_TYPE.DELETE, title: EDIT_DELETE_TYPE.DELETE },
+];
+
 const isDebugOn = __DEV__;
 
 export const aphConsole: AphConsole = {
@@ -247,6 +262,30 @@ const sortByDays = (
     dataArray[dataExistsAt].data = array;
   }
   return dataArray;
+};
+
+export const editDeleteData = () => {
+  return ConsultRxEditDeleteArray.map((i) => {
+    return { key: i.key, value: i.title };
+  });
+};
+
+export const getSourceName = (
+  labTestSource: string,
+  siteDisplayName: string = '',
+  healthCheckSource: string = ''
+) => {
+  if (
+    labTestSource === 'self' ||
+    labTestSource === '247self' ||
+    siteDisplayName === 'self' ||
+    siteDisplayName === '247self' ||
+    healthCheckSource === 'self' ||
+    healthCheckSource === '247self'
+  ) {
+    return string.common.clicnical_document_text;
+  }
+  return labTestSource || siteDisplayName || healthCheckSource;
 };
 
 const getConsiderDate = (type: string, dataObject: any) => {

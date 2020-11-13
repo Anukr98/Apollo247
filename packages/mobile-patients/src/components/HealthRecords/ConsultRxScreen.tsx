@@ -38,6 +38,9 @@ import {
   addTestsToCart,
   doRequestAndAccessLocation,
   initialSortByDays,
+  editDeleteData,
+  getSourceName,
+  EDIT_DELETE_TYPE,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   EPrescription,
@@ -65,6 +68,7 @@ import {
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import moment from 'moment';
 import _ from 'lodash';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const { width, height } = Dimensions.get('window');
 
@@ -106,18 +110,8 @@ export enum FILTER_TYPE {
   DOCTOR_NAME = 'Doctor Name',
 }
 
-export enum EDIT_DELETE_TYPE {
-  EDIT = 'Edit Details',
-  DELETE = 'Delete Data',
-}
-
 type FilterArray = {
   key: FILTER_TYPE;
-  title: string;
-};
-
-type EditDeleteArray = {
-  key: EDIT_DELETE_TYPE;
   title: string;
 };
 
@@ -126,11 +120,6 @@ const ConsultRxFilterArray: FilterArray[] = [
   { key: FILTER_TYPE.NAME, title: FILTER_TYPE.NAME },
   { key: FILTER_TYPE.DATE, title: FILTER_TYPE.DATE },
   { key: FILTER_TYPE.DOCTOR_NAME, title: FILTER_TYPE.DOCTOR_NAME },
-];
-
-const ConsultRxEditDeleteArray: EditDeleteArray[] = [
-  { key: EDIT_DELETE_TYPE.EDIT, title: EDIT_DELETE_TYPE.EDIT },
-  { key: EDIT_DELETE_TYPE.DELETE, title: EDIT_DELETE_TYPE.DELETE },
 ];
 
 export interface ConsultRxScreenProps
@@ -143,7 +132,6 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
   const consultRxData = props.navigation?.getParam('consultRxData') || [];
   const { currentPatient } = useAllCurrentPatients();
   const [filterApplied, setFilterApplied] = useState<FILTER_TYPE | string>('');
-  const [editDeleteOption, setEditDeleteOption] = useState<EDIT_DELETE_TYPE | string>('');
   const client = useApolloClient();
   const [localConsultRxData, setLocalConsultRxData] = useState<Array<{
     key: string;
@@ -235,34 +223,34 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
       consultRxData.sort(({ data: data1 }, { data: data2 }) => {
         const filteredData1 =
           type === FILTER_TYPE.NAME
-            ? data1.patientId
-              ? _.lowerCase(data1.myPrescriptionName)
-              : _.lowerCase(data1.prescriptionName)
+            ? data1?.patientId
+              ? _.lowerCase(data1?.myPrescriptionName)
+              : _.lowerCase(data1?.prescriptionName)
             : type === FILTER_TYPE.DOCTOR_NAME
-            ? data1.patientId
-              ? _.lowerCase(data1.doctorInfo.displayName)
-              : _.lowerCase(data1.prescribedBy)
-            : data1.patientId
-            ? moment(data1.appointmentDateTime)
+            ? data1?.patientId
+              ? _.lowerCase(data1?.doctorInfo?.displayName)
+              : _.lowerCase(data1?.prescribedBy)
+            : data1?.patientId
+            ? moment(data1?.appointmentDateTime)
                 .toDate()
                 .getTime()
-            : moment(data1.date)
+            : moment(data1?.date)
                 .toDate()
                 .getTime();
         const filteredData2 =
           type === FILTER_TYPE.NAME
-            ? data2.patientId
-              ? _.lowerCase(data2.myPrescriptionName)
-              : _.lowerCase(data2.prescriptionName)
+            ? data2?.patientId
+              ? _.lowerCase(data2?.myPrescriptionName)
+              : _.lowerCase(data2?.prescriptionName)
             : type === FILTER_TYPE.DOCTOR_NAME
-            ? data2.patientId
-              ? _.lowerCase(data2.doctorInfo.displayName)
-              : _.lowerCase(data2.prescribedBy)
-            : data2.patientId
-            ? moment(data2.appointmentDateTime)
+            ? data2?.patientId
+              ? _.lowerCase(data2?.doctorInfo?.displayName)
+              : _.lowerCase(data2?.prescribedBy)
+            : data2?.patientId
+            ? moment(data2?.appointmentDateTime)
                 .toDate()
                 .getTime()
-            : moment(data2.date)
+            : moment(data2?.date)
                 .toDate()
                 .getTime();
         if (type === FILTER_TYPE.DATE || !type) {
@@ -577,10 +565,6 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
   };
 
   const renderConsultRxItems = (item: any, index: number) => {
-    // For Next Phase
-    // const editDeleteData = ConsultRxEditDeleteArray.map((i) => {
-    //   return { key: i.key, value: i.title };
-    // });
     const getPresctionDate = (date: string) => {
       let prev_date = new Date();
       prev_date.setDate(prev_date.getDate() - 1);
@@ -609,18 +593,22 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         : getPresctionDate(item?.data?.appointmentDateTime);
     const soureName =
       item?.data?.prescriptionName || item?.data?.date
-        ? 'Clinical Document'
-        : g(item?.data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name');
+        ? getSourceName(item?.data?.source || '-')
+        : g(item?.data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name') || '-';
     const selfUpload = item?.data?.prescriptionName || item?.data?.date ? true : false;
     const caseSheetDetails =
       item?.data?.caseSheet?.length > 0 &&
       item?.data?.caseSheet?.find((caseSheet: any) => caseSheet?.doctorType !== 'JUNIOR');
     const caseSheetFollowUp =
       caseSheetDetails && caseSheetDetails.followUp ? caseSheetDetails.followUp : false;
+    const showEditDeleteOption =
+      soureName === string.common.clicnical_document_text || soureName === '-' ? true : false;
     return (
       <HealthRecordCard
         item={item?.data}
         index={index}
+        editDeleteData={editDeleteData()}
+        showUpdateDeleteOption={showEditDeleteOption}
         onHealthCardPress={(selectedItem) => onHealthCardItemPress(selectedItem)}
         prescriptionName={prescriptionName}
         doctorName={doctorName}
