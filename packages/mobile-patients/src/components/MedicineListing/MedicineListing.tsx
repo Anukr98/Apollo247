@@ -109,13 +109,15 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
       setProductsTotal(data.product_count);
       updateLoading(pageId, false);
       setPageId(pageId + 1);
-      setSortByOptions(Array.isArray(data?.sort_by) ? data?.sort_by : []);
-      setFilterOptions(Array.isArray(data?.filters) ? data?.filters : []);
+      if(data.product_count){
+        setSortByOptions(Array.isArray(data?.sort_by) ? data?.sort_by : []);
+        setFilterOptions(Array.isArray(data?.filters) ? data?.filters : []);
+      }
       setPageTitle(data.search_heading || '');
       if (pageId == 1) {
         MedicineListingEvents.searchEnterClick({
           keyword: searchText,
-          numberofresults: data.product_count,
+          numberofresults: data.product_count || 0,
         });
       }
       MedicineListingEvents.tagalysSearch(currentPatient?.id, {
@@ -296,9 +298,11 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
 
   const renderProductsNotFound = () => {
     const isFiltersApplied = Object.keys(filterBy).filter((k) => filterBy[k].length).length;
-    const text = `No results found for ‘${pageTitle}’. ${
-      isFiltersApplied ? 'Please try removing filters.' : ''
-    }`;
+    const searchPageText= `No results found.`
+    const categoryPageText= `No results found for ‘${pageTitle}’.`
+    const filterText = isFiltersApplied ? 'Please try removing filters.' : ''
+    const text = `${searchText? searchPageText: categoryPageText} ${filterText}`
+
     return !isLoading ? <Text style={styles.loadingMoreProducts}>{text}</Text> : null;
   };
 

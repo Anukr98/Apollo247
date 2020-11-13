@@ -49,7 +49,6 @@ export const MedicineListingFilter: React.FC<Props> = ({
   const [alertVisible, setAlertVisible] = useState<boolean>(false);
   const [isLoading, setLoading] = useState<boolean>(false);
   const isFiltersApplied = Object.keys(formatFilters(selectedFilters) || {}).length;
-  const isFiltersAvailable = !!_filters.find((f) => f.values?.length);
   const categoryFilterProps = ['category', '__categories'];
   const brandFilterProps = ['brand', 'product_brand'];
 
@@ -234,7 +233,6 @@ export const MedicineListingFilter: React.FC<Props> = ({
         style={styles.button}
         titleTextStyle={styles.buttonTitle}
         onPress={onPress}
-        disabled={!isFiltersAvailable}
       />
     );
   };
