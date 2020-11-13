@@ -287,6 +287,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   profileNameTextStyle: { ...theme.viewStyles.text('SB', 36, theme.colors.LIGHT_BLUE, 1, 47) },
+  moreHealthViewStyle: { marginHorizontal: 20, marginBottom: 39 },
 });
 
 type BloodGroupArray = {
@@ -1044,7 +1045,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
 
   const renderBillsInsuranceView = () => {
     return (
-      <View style={{ marginHorizontal: 20, marginBottom: 14 }}>
+      <View style={styles.moreHealthViewStyle}>
         <Text style={{ ...theme.viewStyles.text('B', 18, theme.colors.LIGHT_BLUE, 1, 21) }}>
           {'More From Health'}
         </Text>

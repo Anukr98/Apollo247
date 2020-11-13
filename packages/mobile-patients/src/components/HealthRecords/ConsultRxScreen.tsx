@@ -8,6 +8,7 @@ import {
   ScrollView,
   SectionList,
   Dimensions,
+  BackHandler,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -152,6 +153,27 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
       return obj.doctorType !== 'JUNIOR';
     });
   };
+
+  const handleBack = async () => {
+    BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    gotoPHRHomeScreen();
+    return true;
+  };
+
+  useEffect(() => {
+    const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+    });
+
+    const _willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    });
+
+    return () => {
+      _didFocusSubscription && _didFocusSubscription.remove();
+      _willBlurSubscription && _willBlurSubscription.remove();
+    };
+  }, []);
 
   useEffect(() => {
     const filteredData = sortByTypeRecords(filterApplied);
