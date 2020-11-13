@@ -117,7 +117,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
       if (pageId == 1) {
         MedicineListingEvents.searchEnterClick({
           keyword: searchText,
-          numberofresults: data.product_count,
+          numberofresults: data.product_count || 0,
         });
       }
       MedicineListingEvents.tagalysSearch(currentPatient?.id, {
