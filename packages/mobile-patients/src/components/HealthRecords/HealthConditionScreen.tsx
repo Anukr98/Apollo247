@@ -190,6 +190,22 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
       });
   };
 
+  const onPressEditPrismMedicalRecords = (selectedItem: any) => {
+    const recordType: MedicalRecordType = selectedItem?.allergyName
+      ? MedicalRecordType.ALLERGY
+      : selectedItem?.medicineName
+      ? MedicalRecordType.MEDICATION
+      : selectedItem?.restrictionName
+      ? MedicalRecordType.HEALTHRESTRICTION
+      : MedicalRecordType.MEDICALCONDITION;
+    props.navigation.navigate(AppRoutes.AddRecord, {
+      navigatedFrom: 'HealthCondition',
+      recordType: recordType,
+      selectedRecordID: selectedItem?.id,
+      selectedRecord: selectedItem,
+    });
+  };
+
   const renderHealthConditionItems = (item: any, index: number) => {
     const renderHealthConditionTopView = () => {
       const getHealthConditionTypeIcon = () => {
@@ -240,6 +256,7 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
         showUpdateDeleteOption={showEditDeleteOption}
         onHealthCardPress={(selectedItem) => onHealthCardItemPress(selectedItem)}
         onDeletePress={(selectedItem) => onPressDeletePrismMedicalRecords(selectedItem)}
+        // onEditPress={(selectedItem) => onPressEditPrismMedicalRecords(selectedItem)}
         prescriptionName={prescriptionName}
         dateText={dateText}
         selfUpload={selfUpload}

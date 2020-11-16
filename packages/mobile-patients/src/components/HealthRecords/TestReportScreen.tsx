@@ -364,6 +364,15 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
       });
   };
 
+  const onPressEditPrismMedicalRecords = (selectedItem: any) => {
+    props.navigation.navigate(AppRoutes.AddRecord, {
+      navigatedFrom: 'Test Reports',
+      recordType: MedicalRecordType.TEST_REPORT,
+      selectedRecordID: selectedItem?.id,
+      selectedRecord: selectedItem,
+    });
+  };
+
   const renderTestReportsItems = (item: any, index: number) => {
     const getPresctionDate = (date: string) => {
       let prev_date = new Date();
@@ -413,6 +422,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
         showUpdateDeleteOption={showEditDeleteOption}
         onHealthCardPress={(selectedItem) => onHealthCardItemPress(selectedItem)}
         onDeletePress={(selectedItem) => onPressDeletePrismMedicalRecords(selectedItem)}
+        // onEditPress={(selectedItem) => onPressEditPrismMedicalRecords(selectedItem)}
         prescriptionName={prescriptionName}
         doctorName={doctorName}
         dateText={dateText}

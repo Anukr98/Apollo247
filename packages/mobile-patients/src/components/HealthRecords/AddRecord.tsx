@@ -505,6 +505,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const { showAphAlert } = useUIElements();
 
   const [Images, setImages] = useState<PickerImage>(props.navigation.state.params ? [] : []);
+  const [imageUpdate, setImageUpdate] = useState<boolean>(false);
   const [currentImage, setCurrentImage] = useState<PickerImage>(null);
   const [openCamera, setOpenCamera] = useState<boolean>(false);
   const navigatedFrom = props.navigation.state.params!.navigatedFrom
@@ -513,9 +514,16 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const recordType = props.navigation.state.params
     ? props.navigation.state.params.recordType
     : false;
+  const selectedRecordID = props.navigation.state.params
+    ? props.navigation.state.params.selectedRecordID
+    : null;
+  const selectedRecord = props.navigation.state.params
+    ? props.navigation.state.params.selectedRecord
+    : null;
 
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
+  const client = useApolloClient();
 
   useEffect(() => {
     if (!currentPatient) {
@@ -523,7 +531,153 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     }
   }, [currentPatient]);
 
-  const client = useApolloClient();
+  useEffect(() => {
+    if (selectedRecord) {
+      setImageUpdate(selectedRecord?.fileUrl ? true : false);
+      console.log('selectedRecord', selectedRecord);
+      if (recordType === MedicalRecordType.PRESCRIPTION) {
+        settestName(selectedRecord?.prescriptionName || '');
+        setDocName(selectedRecord?.prescribedBy || '');
+        setdateOfTest(
+          selectedRecord?.date
+            ? moment(selectedRecord?.date).format(string.common.date_placeholder_text)
+            : ''
+        );
+        setadditionalNotes(selectedRecord?.notes || '');
+        setImages(setUploadedImages(selectedRecord?.prescriptionFiles));
+      } else if (recordType === MedicalRecordType.TEST_REPORT) {
+        let labResultsArray: LabTestParameters[] = [];
+        settestName(selectedRecord?.labTestName || '');
+        setDocName(selectedRecord?.labTestRefferedBy || '');
+        selectedRecord?.labTestResults.forEach((item: any) => {
+          let labResultsObj: LabTestParameters = {};
+          labResultsObj.result = parseFloat((item?.result || 0).toString());
+          labResultsObj.unit = item?.unit || '';
+          labResultsObj.parameterName = item?.parameterName || '';
+          let maxMin = item?.range?.split('-');
+          labResultsObj.minimum = parseFloat((maxMin[0] || 0).toString());
+          labResultsObj.maximum = parseFloat((maxMin[1] || 0).toString());
+          labResultsArray.push(labResultsObj);
+        });
+        setTestRecordParameters(labResultsArray || TestRecordInitialValues);
+        setadditionalNotes(selectedRecord?.additionalNotes || '');
+        setdateOfTest(
+          selectedRecord?.date
+            ? moment(selectedRecord?.date).format(string.common.date_placeholder_text)
+            : ''
+        );
+        setUploadedImages(selectedRecord?.testResultFiles);
+        setImages(setUploadedImages(selectedRecord?.testResultFiles));
+      } else if (recordType === MedicalRecordType.HOSPITALIZATION) {
+        setDocName(selectedRecord?.doctorName || '');
+        settestName(selectedRecord?.hospitalName || '');
+        setdateOfTest(
+          selectedRecord?.date
+            ? moment(selectedRecord?.date).format(string.common.date_placeholder_text)
+            : ''
+        );
+        setImages(setUploadedImages(selectedRecord?.hospitalizationFiles));
+        setadditionalNotes(selectedRecord?.diagnosisNotes || '');
+      } else if (recordType === MedicalRecordType.MEDICALBILL) {
+        settestName(selectedRecord?.bill_no || '');
+        setDocName(selectedRecord?.hospitalName || '');
+        setImages(setUploadedImages(selectedRecord?.billFiles));
+        setdateOfTest(
+          selectedRecord?.billDateTime
+            ? moment(selectedRecord?.billDateTime).format(string.common.date_placeholder_text)
+            : ''
+        );
+      } else if (recordType === MedicalRecordType.MEDICALINSURANCE) {
+        settestName(selectedRecord?.insuranceCompany || '');
+        setdateOfTest(
+          selectedRecord?.startDateTime
+            ? moment(selectedRecord?.startDateTime).format(string.common.date_placeholder_text)
+            : ''
+        );
+        setEndDate(
+          selectedRecord?.endDateTime
+            ? moment(selectedRecord?.endDateTime).format(string.common.date_placeholder_text)
+            : ''
+        );
+        setDocName(selectedRecord?.policyNumber || '');
+        setLocationName(selectedRecord?.sumInsured || '');
+        setImages(setUploadedImages(selectedRecord?.insuranceFiles));
+      } else if (recordType === MedicalRecordType.ALLERGY) {
+        setAllergyCheckbox(true);
+        setAllergyName(selectedRecord?.allergyName || '');
+        setSelectedSeverityType(selectedRecord?.severity || null);
+        setShowAllergyDetails(true);
+        setAllergyDocName(selectedRecord?.doctorTreated || '');
+        setdateOfTest(
+          selectedRecord?.startDateTime
+            ? moment(selectedRecord?.startDateTime).format(string.common.date_placeholder_text)
+            : ''
+        );
+        setAllergyEndDate(
+          selectedRecord?.endDateTime
+            ? moment(selectedRecord?.endDateTime).format(string.common.date_placeholder_text)
+            : ''
+        );
+        setAllergyReaction(selectedRecord?.reactionToAllergy || '');
+        setAllergyImage(setUploadedImages(selectedRecord?.attachmentList));
+        setAllergyAdditionalNotes(selectedRecord?.notes || '');
+      } else if (recordType === MedicalRecordType.MEDICATION) {
+        setMedicationCheckbox(true);
+        setShowMedicationDetails(true);
+        setMedicationDocName(selectedRecord?.doctorName || '');
+        setMedicationMedicineName(selectedRecord?.medicineName || '');
+        setMedicationCondition(selectedRecord?.medicalCondition || '');
+        setdateOfTest(
+          selectedRecord?.startDateTime
+            ? moment(selectedRecord?.startDateTime).format(string.common.date_placeholder_text)
+            : ''
+        );
+        setMedicationEndDate(
+          selectedRecord?.endDateTime
+            ? moment(selectedRecord?.endDateTime).format(string.common.date_placeholder_text)
+            : ''
+        );
+        setIsMorningChecked(selectedRecord?.morning || false);
+        setIsNoonChecked(selectedRecord?.noon || false);
+        setIsEveningChecked(selectedRecord?.evening || false);
+        setMedicationAdditionalNotes(selectedRecord?.notes || '');
+      } else if (recordType === MedicalRecordType.HEALTHRESTRICTION) {
+        setHealthRestrictionCheckbox(true);
+        setShowHealthRestrictionDetails(true);
+        setHealthRestrictionName(selectedRecord?.restrictionName || '');
+        setHealthRestrictionDocName(selectedRecord?.suggestedByDoctor || '');
+        setSelectedRestrictionType(selectedRecord?.nature || null);
+        setdateOfTest(
+          selectedRecord?.startDateTime
+            ? moment(selectedRecord?.startDateTime).format(string.common.date_placeholder_text)
+            : ''
+        );
+        setHealthRestrictionEndDate(
+          selectedRecord?.endDateTime
+            ? moment(selectedRecord?.endDateTime).format(string.common.date_placeholder_text)
+            : ''
+        );
+      } else if (recordType === MedicalRecordType.MEDICALCONDITION) {
+        setMedicalConditionCheckbox(true);
+        setShowMedicalConditionDetails(true);
+        setMedicalConditionAdditionalNotes(selectedRecord?.notes || '');
+        setMedicalConditionDocName(selectedRecord?.doctorTreated || '');
+        setSelectedIllnessType(selectedRecord?.illnessType || null);
+        setMedicalConditionName(selectedRecord?.medicalConditionName || '');
+        setdateOfTest(
+          selectedRecord?.startDateTime
+            ? moment(selectedRecord?.startDateTime).format(string.common.date_placeholder_text)
+            : ''
+        );
+        setMedicalConditionEndDate(
+          selectedRecord?.endDateTime
+            ? moment(selectedRecord?.endDateTime).format(string.common.date_placeholder_text)
+            : ''
+        );
+        setMedicalConditionImage(setUploadedImages(selectedRecord?.medicationFiles));
+      }
+    }
+  }, [selectedRecord]);
 
   const isTestRecordParameterFilled = () => {
     const testRecordsVaild = testRecordParameters
@@ -731,6 +885,18 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     }
   };
 
+  const setUploadedImages = (selectedImages: any) => {
+    let imagesArray = [] as any;
+    selectedImages?.forEach((item: any) => {
+      let imageObj = {} as any;
+      imageObj.title = item?.fileName;
+      imageObj.fileType = item?.mimeType;
+      imageObj.base64 = selectedRecord?.fileUrl;
+      imagesArray.push(imageObj);
+    });
+    return imagesArray;
+  };
+
   const getAddedImages = () => {
     let imagesArray = [] as any;
     Images?.forEach((item: any) => {
@@ -773,7 +939,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
 
   const addMedicalRecord = () => {
     setshowSpinner(true);
+    console.log('imageUpdate', imageUpdate);
     const inputData: AddPrescriptionRecordInput = {
+      id: selectedRecordID,
       patientId: currentPatient?.id || '',
       prescriptionName: testName,
       issuingDoctor: docName,
@@ -784,7 +952,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           ? moment(dateOfTest, string.common.date_placeholder_text).format('YYYY-MM-DD')
           : '',
       recordType: MedicalRecordType.PRESCRIPTION,
-      prescriptionFiles: getAddedImages(),
+      prescriptionFiles: imageUpdate ? [] : getAddedImages(),
     };
     client
       .mutate<addPatientPrescriptionRecord>({
@@ -812,6 +980,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const addAllergyRecord = () => {
     setshowSpinner(true);
     const inputData: AddAllergyRecordInput = {
+      id: selectedRecordID,
       patientId: currentPatient?.id || '',
       allergyName: allergyName,
       doctorTreated: showAllergyDetails ? allergyDocName : '',
@@ -859,6 +1028,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const addMedicationRecord = () => {
     setshowSpinner(true);
     const inputData: AddPatientMedicationRecordInput = {
+      id: selectedRecordID,
       patientId: currentPatient?.id || '',
       medicineName: medicationMedicineName,
       doctorName: showMedicationDetails ? medicationDocName : '',
@@ -905,10 +1075,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const addHealthRestrictionRecord = () => {
     setshowSpinner(true);
     const inputData: AddPatientHealthRestrictionRecordInput = {
+      id: selectedRecordID,
       patientId: currentPatient?.id || '',
       restrictionName: healthRestrictionName,
       suggestedByDoctor: showHealthRestrictionDetails ? healthRestrictionDocName : '',
-      nature: selectedRestrictionType,
+      nature: selectedRestrictionType!,
       startDate:
         dateOfTest !== ''
           ? moment(dateOfTest, string.common.date_placeholder_text).format('YYYY-MM-DD')
@@ -947,11 +1118,12 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const addMedicalConditionRecord = () => {
     setshowSpinner(true);
     const inputData: AddMedicalConditionRecordInput = {
+      id: selectedRecordID,
       patientId: currentPatient?.id || '',
       medicalConditionName: medicalConditionName,
       doctorTreated: medicalConditionDocName,
       notes: showMedicalConditionDetails ? medicalConditionAdditionalNotes : '',
-      illnessType: selectedIllnessType,
+      illnessType: selectedIllnessType!,
       startDate:
         dateOfTest !== ''
           ? moment(dateOfTest, string.common.date_placeholder_text).format('YYYY-MM-DD')
@@ -987,6 +1159,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const addPatientLabTestRecords = () => {
     setshowSpinner(true);
     const inputData: AddLabTestRecordInput = {
+      id: selectedRecordID,
       patientId: currentPatient?.id || '',
       labTestName: testName,
       labTestDate:
@@ -998,7 +1171,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       observations: observations,
       additionalNotes: additionalNotes,
       labTestResults: isTestRecordParameterFilled(),
-      testResultFiles: getAddedImages(),
+      testResultFiles: imageUpdate ? [] : getAddedImages(),
     };
     client
       .mutate<addPatientLabTestRecord>({
@@ -1077,6 +1250,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const addPatientHospitalizationRecords = () => {
     setshowSpinner(true);
     const inputData: AddHospitalizationRecordInput = {
+      id: selectedRecordID,
       patientId: currentPatient?.id || '',
       doctorName: docName,
       dischargeDate:
@@ -1085,7 +1259,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           : '',
       recordType: recordType,
       hospitalName: testName,
-      hospitalizationFiles: getAddedImages(),
+      hospitalizationFiles: imageUpdate ? [] : getAddedImages(),
       diagnosisNotes: additionalNotes,
     };
 
@@ -1115,6 +1289,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const addPatientBillRecords = () => {
     setshowSpinner(true);
     const inputData: AddPatientMedicalBillRecordInput = {
+      id: selectedRecordID,
       patientId: currentPatient?.id || '',
       hospitalName: docName,
       billDate:
@@ -1151,6 +1326,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const addPatientInsuranceRecords = () => {
     setshowSpinner(true);
     const inputData: AddPatientMedicalInsuranceRecordInput = {
+      id: selectedRecordID,
       patientId: currentPatient?.id || '',
       insuranceCompany: testName,
       startDate:
@@ -1165,6 +1341,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       policyNumber: docName,
       sumInsured: locationName,
       insuranceFiles: getAddedImages(),
+      notes: additionalNotes,
     };
 
     client
@@ -1369,7 +1546,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           {fileType === 'pdf' || fileType === 'application/pdf' ? (
             <FileBig style={styles.imageStyle} />
           ) : (
-            <Image style={styles.imageStyle} source={{ uri: fin }} />
+            <Image style={styles.imageStyle} source={{ uri: imageUpdate ? data?.base64 : fin }} />
           )}
         </View>
       </View>
@@ -1521,7 +1698,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             {_.capitalize(currentPatient?.firstName) || ''}
           </Text>
         </View>
-        {recordType === MedicalRecordType.MEDICALCONDITION ? null : (
+        {recordType === MedicalRecordType.MEDICALCONDITION ||
+        recordType === MedicalRecordType.ALLERGY ||
+        recordType === MedicalRecordType.MEDICATION ||
+        recordType === MedicalRecordType.HEALTHRESTRICTION ? null : (
           <View style={styles.listItemViewStyle}>
             {renderListItem('Type of Record', false)}
             <View style={{ marginTop: 14, marginHorizontal: 14 }}>
@@ -2339,7 +2519,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             }}
           />
         </View>
-        {renderListItem(string.common.doctor_name_text)}
+        {renderListItem(string.common.doctor_name_text, false, true)}
         {renderDoctorPrefixListItem(
           <TextInput
             placeholder={string.common.enter_doctor_name_text}
@@ -2735,29 +2915,64 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     );
   };
 
+  const renderUpdateRecordDetailsHealthCondition = () => {
+    return (
+      <View style={styles.illnessTypeViewStyle}>
+        {recordType === MedicalRecordType.ALLERGY ? renderAllergyView() : null}
+        {recordType === MedicalRecordType.MEDICATION ? renderMedicationView() : null}
+        {recordType === MedicalRecordType.HEALTHRESTRICTION ? renderHealthRestrictionView() : null}
+        {recordType === MedicalRecordType.MEDICALCONDITION ? renderMedicalConditionView() : null}
+      </View>
+    );
+  };
+
+  const renderAllergyView = () => {
+    return (
+      <View style={styles.listItemViewStyle}>
+        {renderListItem('Do you have any allergy?', false)}
+        {renderAllergyTopView()}
+        {allergyCheckbox ? renderAllergyDetails() : null}
+      </View>
+    );
+  };
+
+  const renderMedicationView = () => {
+    return (
+      <View style={styles.listItemViewStyle}>
+        {renderListItem('Are you taking any medication?', false)}
+        {renderMedicationTopView()}
+        {medicationCheckbox ? renderMedicationDetails() : null}
+      </View>
+    );
+  };
+
+  const renderHealthRestrictionView = () => {
+    return (
+      <View style={styles.listItemViewStyle}>
+        {renderListItem('Do you have any health restrictions?', false)}
+        {renderHealthRestrictionTopView()}
+        {healthRestrictionCheckbox ? renderHealthRestrictionDetails() : null}
+      </View>
+    );
+  };
+
+  const renderMedicalConditionView = () => {
+    return (
+      <View style={styles.listItemViewStyle}>
+        {renderListItem('Are you suffering from any medical condition?', false)}
+        {renderMedicalConditionTopView()}
+        {medicalConditionCheckbox ? renderMedicalConditionDetails() : null}
+      </View>
+    );
+  };
+
   const renderRecordDetailsHealthCondition = () => {
     return (
       <View style={styles.illnessTypeViewStyle}>
-        <View style={styles.listItemViewStyle}>
-          {renderListItem('Do you have any allergy?', false)}
-          {renderAllergyTopView()}
-          {allergyCheckbox ? renderAllergyDetails() : null}
-        </View>
-        <View style={styles.listItemViewStyle}>
-          {renderListItem('Are you taking any medication?', false)}
-          {renderMedicationTopView()}
-          {medicationCheckbox ? renderMedicationDetails() : null}
-        </View>
-        <View style={styles.listItemViewStyle}>
-          {renderListItem('Do you have any health restrictions?', false)}
-          {renderHealthRestrictionTopView()}
-          {healthRestrictionCheckbox ? renderHealthRestrictionDetails() : null}
-        </View>
-        <View style={styles.listItemViewStyle}>
-          {renderListItem('Are you suffering from any medical condition?', false)}
-          {renderMedicalConditionTopView()}
-          {medicalConditionCheckbox ? renderMedicalConditionDetails() : null}
-        </View>
+        {renderAllergyView()}
+        {renderMedicationView()}
+        {renderHealthRestrictionView()}
+        {renderMedicalConditionView()}
       </View>
     );
   };
@@ -2774,8 +2989,13 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           ? renderRecordDetailsBill()
           : recordType === MedicalRecordType.MEDICALINSURANCE
           ? renderRecordDetailsInsurance()
-          : recordType === MedicalRecordType.MEDICALCONDITION
-          ? renderRecordDetailsHealthCondition()
+          : recordType === MedicalRecordType.MEDICALCONDITION ||
+            recordType === MedicalRecordType.ALLERGY ||
+            recordType === MedicalRecordType.MEDICATION ||
+            recordType === MedicalRecordType.HEALTHRESTRICTION
+          ? selectedRecord
+            ? renderUpdateRecordDetailsHealthCondition()
+            : renderRecordDetailsHealthCondition()
           : renderRecordDetailsPrescription()}
         {renderBottomButton()}
       </View>
@@ -2785,7 +3005,12 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const renderData = () => {
     return (
       <View style={{ marginTop: 28 }}>
-        {recordType === MedicalRecordType.MEDICALCONDITION ? null : renderUploadedImages(1)}
+        {recordType === MedicalRecordType.MEDICALCONDITION ||
+        recordType === MedicalRecordType.ALLERGY ||
+        recordType === MedicalRecordType.MEDICATION ||
+        recordType === MedicalRecordType.HEALTHRESTRICTION
+          ? null
+          : renderUploadedImages(1)}
         {renderRecordDetailsCard()}
       </View>
     );
@@ -2887,6 +3112,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           }
           // Logic for multiple images
           // setImages([...Images, ...response]);
+          setImageUpdate(false);
           setImages(response);
           setdisplayOrderPopup(false);
         }
@@ -2902,6 +3128,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           }
           // Logic for multiple images
           // setImages([...Images, ...response]);
+          setImageUpdate(false);
           setAllergyImage(response);
           setdisplayAllergyPopup(false);
         }
@@ -2917,6 +3144,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           }
           // Logic for multiple images
           // setImages([...Images, ...response]);
+          setImageUpdate(false);
           setMedicalConditionImage(response);
           setdisplayMedicalConditionPopup(false);
         }

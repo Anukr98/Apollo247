@@ -178,6 +178,15 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
       });
   };
 
+  const onPressEditPrismMedicalRecords = (selectedItem: any) => {
+    props.navigation.navigate(AppRoutes.AddRecord, {
+      navigatedFrom: 'MedicalInsurance',
+      recordType: MedicalRecordType.MEDICALINSURANCE,
+      selectedRecordID: selectedItem?.id,
+      selectedRecord: selectedItem,
+    });
+  };
+
   const renderMedicalInsuranceItems = (item: MedicalInsuranceType, index: number) => {
     const prescriptionName = item?.insuranceCompany || '';
     const dateText = getPrescriptionDate(item?.startDateTime);
@@ -193,6 +202,7 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
         showUpdateDeleteOption={showEditDeleteOption}
         onHealthCardPress={(selectedItem) => onHealthCardItemPress(selectedItem)}
         onDeletePress={(selectedItem) => onPressDeletePrismMedicalRecords(selectedItem)}
+        // onEditPress={(selectedItem) => onPressEditPrismMedicalRecords(selectedItem)}
         prescriptionName={prescriptionName}
         dateText={dateText}
         selfUpload={selfUpload}

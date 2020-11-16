@@ -182,6 +182,15 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
       });
   };
 
+  const onPressEditPrismMedicalRecords = (selectedItem: any) => {
+    props.navigation.navigate(AppRoutes.AddRecord, {
+      navigatedFrom: 'Hospitalization',
+      recordType: MedicalRecordType.HOSPITALIZATION,
+      selectedRecordID: selectedItem?.id,
+      selectedRecord: selectedItem,
+    });
+  };
+
   const renderHospitalizationItems = (item: HospitalizationType, index: number) => {
     const getSourceName = (source: string) => {
       return source === 'self' || source === '247self'
@@ -207,6 +216,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
         showUpdateDeleteOption={showEditDeleteOption}
         onHealthCardPress={(selectedItem) => onHealthCardItemPress(selectedItem)}
         onDeletePress={(selectedItem) => onPressDeletePrismMedicalRecords(selectedItem)}
+        // onEditPress={(selectedItem) => onPressEditPrismMedicalRecords(selectedItem)}
         prescriptionName={prescriptionName}
         dateText={dateText}
         selfUpload={selfUpload}
