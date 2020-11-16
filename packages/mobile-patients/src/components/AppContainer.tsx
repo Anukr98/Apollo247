@@ -1,15 +1,14 @@
 import { AppCommonDataProvider } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { AuthProvider } from '@aph/mobile-patients/src/components/AuthProvider';
+import { CodePushInfoUi } from '@aph/mobile-patients/src/components/CodePushInfoUi';
 import { DiagnosticsCartProvider } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { NavigatorContainer } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { ShoppingCartProvider } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { UIElementsProvider } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import React from 'react';
-import { Text, TextInput, Platform } from 'react-native';
-import Axios from 'axios';
-import codePush, { CodePushOptions, DownloadProgress } from 'react-native-code-push';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { CodePushInfoUi } from '@aph/mobile-patients/src/components/CodePushInfoUi';
+import React from 'react';
+import { Platform, Text, TextInput, TouchableOpacity } from 'react-native';
+import codePush, { CodePushOptions, DownloadProgress } from 'react-native-code-push';
 
 const codePushOptions: CodePushOptions = {
   checkFrequency: codePush.CheckFrequency.ON_APP_RESUME,
@@ -21,29 +20,6 @@ const codePushOptions: CodePushOptions = {
       : AppConfig.Configuration.CODE_PUSH_DEPLOYMENT_KEY_IOS,
   updateDialog: {},
 };
-
-if (__DEV__) {
-  Axios.interceptors.request.use((request) => {
-    // console.log(
-    //   '\n\nStarting Axios Request',
-    //   '\n\nURL\n',
-    //   JSON.stringify(request.url),
-    //   '\n\nInput\n',
-    //   JSON.stringify(request.data),
-    //   '\n\nHeaders\n',
-    //   JSON.stringify(request.headers),
-    //   '\n\n'
-    // );
-    return request;
-  });
-}
-
-if (__DEV__) {
-  Axios.interceptors.response.use((response) => {
-    // console.log(`Axios Response :\n`, response.data, '\n\n');
-    return response;
-  });
-}
 
 export type CodePushInfo = {
   syncStatus?: codePush.SyncStatus;
@@ -63,6 +39,7 @@ class AppContainer extends React.Component<AppContainerProps, AppContainerState>
     (Text as any).defaultProps.allowFontScaling = false;
     (TextInput as any).defaultProps = (TextInput as any).defaultProps || {};
     (TextInput as any).defaultProps.allowFontScaling = false;
+    (TouchableOpacity as any).defaultProps.activeOpacity = 0.7;
   }
 
   codePushStatusDidChange(status: codePush.SyncStatus) {

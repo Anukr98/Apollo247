@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 //==============================================================
@@ -692,10 +693,27 @@ export interface CreateUserSubscriptionInput {
   storeCode: string;
 }
 
+export interface DiagnosticBookHomeCollectionInput {
+  patientId: string;
+  patientAddressId: string;
+  slotTimings: string;
+  totalPrice: number;
+  prescriptionUrl: string;
+  diagnosticDate: any;
+  bookingSource?: BOOKINGSOURCE | null;
+  deviceType?: DEVICETYPE | null;
+  paymentType?: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
+  items?: (DiagnosticLineItem | null)[] | null;
+  slotId: string;
+  areaId: number;
+  homeCollectionCharges: number;
+}
+
 export interface DiagnosticLineItem {
   itemId?: number | null;
   price?: number | null;
   quantity?: number | null;
+  groupPlan?: string | null;
 }
 
 export interface DiagnosticOrderInput {
@@ -767,6 +785,7 @@ export interface EndAppointmentSessionInput {
   callSource?: BOOKINGSOURCE | null;
   callType?: APPT_CALL_TYPE | null;
   appVersion?: string | null;
+  isReferred?: boolean | null;
 }
 
 export interface FilterDoctorInput {
@@ -916,6 +935,7 @@ export interface MedicinePaymentMqInput {
   paymentMode?: PAYMENT_METHODS | null;
   healthCredits?: number | null;
   partnerInfo?: string | null;
+  payload?: string | null;
 }
 
 export interface MessageInput {
@@ -959,6 +979,7 @@ export interface PatientAddressInput {
   latitude?: number | null;
   longitude?: number | null;
   stateCode?: string | null;
+  defaultAddress?: boolean | null;
 }
 
 export interface PatientAppointmentsInput {

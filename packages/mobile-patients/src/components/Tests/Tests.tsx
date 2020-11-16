@@ -67,6 +67,8 @@ import {
   postWEGNeedHelpEvent,
   setWebEngageScreenNames,
   getFormattedLocation,
+  postAppsFlyerEvent,
+  postFirebaseEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -114,6 +116,8 @@ import {
   getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnosticHotSellers,
   getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnosticOrgans,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticsHomePageItems';
+import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
+import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 
 const { width: winWidth } = Dimensions.get('window');
 const styles = StyleSheet.create({
@@ -559,15 +563,19 @@ export const Tests: React.FC<TestsProps> = (props) => {
       Price: price,
       'Discounted Price': discountedPrice,
       Quantity: 1,
-      // 'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      // 'Patient UHID': g(currentPatient, 'uhid'),
-      // Relation: g(currentPatient, 'relation'),
-      // 'Patient Age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
-      // 'Patient Gender': g(currentPatient, 'gender'),
-      // 'Mobile Number': g(currentPatient, 'mobileNumber'),
-      // 'Customer ID': g(currentPatient, 'id'),
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ADD_TO_CART, eventAttributes);
+
+    const firebaseAttributes: FirebaseEvents[FirebaseEventName.DIAGNOSTIC_ADD_TO_CART] = {
+      productname: name,
+      productid: id,
+      Source: 'Diagnostic',
+      Price: price,
+      DiscountedPrice: discountedPrice,
+      Quantity: 1,
+    };
+    postFirebaseEvent(FirebaseEventName.DIAGNOSTIC_ADD_TO_CART, firebaseAttributes);
+    postAppsFlyerEvent(AppsFlyerEventName.DIAGNOSTIC_ADD_TO_CART, firebaseAttributes);
   };
 
   const postBrowsePackageEvent = (packageName: string) => {
@@ -897,7 +905,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
             },
           ]}
         >
-          <Text style={[styles.priceText, { marginRight: 4 }]}>Rs. {specialPrice || price}</Text>
+          <Text style={[styles.priceText, { marginRight: 4 }]}>
+            {string.common.Rs} {specialPrice || price}
+          </Text>
           {!!specialPrice && (
             <Text style={styles.discountedPriceText}>
               (
@@ -908,7 +918,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                   },
                 ]}
               >
-                Rs. {price}
+                {string.common.Rs} {price}
               </Text>
               )
             </Text>
@@ -1094,7 +1104,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   //             item.title,
   //             `${config.IMAGES_BASE_URL[0]}${item.image_url}`,
   //             () =>
-  //               props.navigation.navigate(AppRoutes.SearchByBrand, {
+  //               props.navigation.navigate(AppRoutes.MedicineListing, {
   //                 category_id: item.category_id,
   //                 title: `${item.title || 'Products'}`.toUpperCase(),
   //                 isTest: true,
@@ -1196,7 +1206,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 ...theme.viewStyles.text('SB', 14, '#02475b', 1, 24),
               }}
             >
-              Rs. {specialPrice || price}
+              {string.common.Rs} {specialPrice || price}
             </Text>
             {!!specialPrice && (
               <Text
@@ -1213,7 +1223,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                     },
                   ]}
                 >
-                  Rs. {price}
+                  {string.common.Rs} {price}
                 </Text>
                 )
               </Text>
@@ -1397,7 +1407,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
       >
         <Text style={theme.viewStyles.text('M', 14, '#01475b', 1, 22)}>{name}</Text>
         <Spearator style={{ marginVertical: 7.5 }} />
-        <Text style={theme.viewStyles.text('B', 14, '#01475b', 1, 20)}>Rs. {price}</Text>
+        <Text style={theme.viewStyles.text('B', 14, '#01475b', 1, 20)}>
+          {string.common.Rs} {price}
+        </Text>
       </TouchableOpacity>
     );
   };
@@ -1438,8 +1450,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
     if (!hLoading && shopByOrgans.length == 0) return null;
     return (
-      <View>
-        <SectionHeader leftText={'FEATURED PACKAGES'} />
+      <View style={{ marginTop: 10 }}>
+        <SectionHeader leftText={'BROWSE PACKAGES'} />
         {hLoading ? (
           renderSectionLoader()
         ) : (
@@ -1586,7 +1598,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04),
             }}
           >
-            Rs. {data.price}
+            {string.common.Rs} {data.price}
           </Text>
         </View>
       );

@@ -70,6 +70,11 @@ public class MyFirebaseMessagingService
 
     private static DeviceEventManagerModule.RCTDeviceEventEmitter eventEmitter = null;
 
+    @Override
+    public void onNewToken(String s) {
+        super.onNewToken(s);
+        WebEngage.get().setRegistrationID(s);
+    }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -100,7 +105,7 @@ public class MyFirebaseMessagingService
                     if(remoteMessage.getData().get("author") != null){
                         VitaTasksNotificationsManager.INSTANCE.createNotificationTwilio(this, remoteMessage.getData());
                     } else  {
-                        (new io.invertase.firebase.messaging.RNFirebaseMessagingService()).onMessageReceived(remoteMessage);
+                        (new io.invertase.firebase.messaging.ReactNativeFirebaseMessagingService()).onMessageReceived(remoteMessage);
 
                 }
 

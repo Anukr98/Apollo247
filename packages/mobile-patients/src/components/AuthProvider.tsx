@@ -1,6 +1,7 @@
 import {
   GET_CURRENT_PATIENTS,
   GET_PATIENTS_MOBILE,
+  GET_PATIENTS_MOBILE_WITH_HISTORY,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
@@ -14,7 +15,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 import { Platform, Alert } from 'react-native';
-import firebase, { RNFirebase } from 'react-native-firebase';
+import firebaseAuth from '@react-native-firebase/auth';
 import {
   getNetStatus,
   postWebEngageEvent,
@@ -47,8 +48,6 @@ function wait<R, E>(promise: Promise<R>): [R, E] {
 }
 
 export interface AuthContextProps {
-  analytics: RNFirebase.Analytics | null;
-
   currentPatientId: string | null;
   setCurrentPatientId: ((pid: string | null) => void) | null;
   allPatients: any | null;
@@ -63,7 +62,7 @@ export interface AuthContextProps {
   signOut: (() => void) | null;
 
   hasAuthToken: boolean;
-  getPatientApiCall: (() => Promise<unknown>) | null;
+  getPatientApiCall: ((containsHistory?: boolean) => Promise<unknown>) | null;
   getPatientByPrism: (() => Promise<unknown>) | null;
 
   mobileAPICalled: boolean;
@@ -83,8 +82,6 @@ export const AuthContext = React.createContext<AuthContextProps>({
   signInError: false,
   isSigningIn: true,
   signOut: null,
-
-  analytics: null,
 
   getPatientApiCall: null,
   allPatients: null,
@@ -108,13 +105,12 @@ export const AuthProvider: React.FC = (props) => {
   const [authToken, setAuthToken] = useState<string>('');
   const hasAuthToken = !_isEmpty(authToken);
 
-  const [analytics, setAnalytics] = useState<AuthContextProps['analytics']>(null);
   const setNewToken = async () => {
     const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
     if (userLoggedIn == 'true') {
       // no need to refresh jwt token on login
       try {
-        firebase.auth().onAuthStateChanged(async (user) => {
+        firebaseAuth().onAuthStateChanged(async (user) => {
           // console.log('authprovider', user);
           if (user) {
             // console.log('authprovider login');
@@ -207,11 +203,11 @@ export const AuthProvider: React.FC = (props) => {
   const [signInError, setSignInError] = useState<AuthContextProps['signInError']>(false);
   const [mobileAPICalled, setMobileAPICalled] = useState<AuthContextProps['signInError']>(false);
 
-  const auth = firebase.auth();
+  const auth = firebaseAuth();
 
   const [allPatients, setAllPatients] = useState<AuthContextProps['allPatients']>(null);
 
-  const { setSavePatientDetails } = useAppCommonData();
+  const { setSavePatientDetails, setSavePatientDetailsWithHistory } = useAppCommonData();
 
   const sendOtp = (customToken: string) => {
     return new Promise(async (resolve, reject) => {
@@ -250,10 +246,6 @@ export const AuthProvider: React.FC = (props) => {
       console.log('signOut error', error);
     }
   }, [auth]);
-
-  useEffect(() => {
-    setAnalytics(firebase.analytics());
-  }, [analytics]);
 
   useEffect(() => {
     async function fetchData() {
@@ -315,7 +307,7 @@ export const AuthProvider: React.FC = (props) => {
     } catch (error) {}
   };
 
-  const getPatientApiCall = async () => {
+  const getPatientApiCall = async (containsHistory: boolean) => {
     return new Promise(async (resolve, reject) => {
       try {
         const storedPhoneNumber = await AsyncStorage.getItem('phoneNumber');
@@ -326,7 +318,7 @@ export const AuthProvider: React.FC = (props) => {
         storedPhoneNumber &&
           apolloClient
             .query<getPatientByMobileNumber, getPatientByMobileNumberVariables>({
-              query: GET_PATIENTS_MOBILE,
+              query: containsHistory ? GET_PATIENTS_MOBILE_WITH_HISTORY : GET_PATIENTS_MOBILE,
               variables: input,
               fetchPolicy: 'no-cache',
             })
@@ -341,15 +333,18 @@ export const AuthProvider: React.FC = (props) => {
               }
 
               const allPatients = g(data, 'data', 'getPatientByMobileNumber', 'patients');
-              setSavePatientDetails && setSavePatientDetails(allPatients);
-
-              setSignInError(false);
-              console.log('getPatientApiCall', data);
-              AsyncStorage.setItem('currentPatient', JSON.stringify(data));
-              AsyncStorage.setItem('callByPrism', 'false');
-              setAllPatients(data);
+              if (!containsHistory) {
+                AsyncStorage.setItem('currentPatient', JSON.stringify(data));
+                setSavePatientDetails && setSavePatientDetails(allPatients);
+                setSignInError(false);
+                console.log('getPatientApiCall', data);
+                AsyncStorage.setItem('callByPrism', 'false');
+                setAllPatients(data);
+                setMobileAPICalled(false);
+              } else {
+                setSavePatientDetailsWithHistory && setSavePatientDetailsWithHistory(allPatients);
+              }
               resolve(data);
-              setMobileAPICalled(false);
             })
             .catch(async (error) => {
               CommonBugFender('AuthProvider_getPatientApiCall', error);
@@ -428,7 +423,6 @@ export const AuthProvider: React.FC = (props) => {
             isSigningIn,
             signOut,
 
-            analytics,
             hasAuthToken,
 
             allPatients,

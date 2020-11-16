@@ -10,10 +10,8 @@
 #import <React/RCTBridge.h>
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTRootView.h>
-#import "Firebase.h"
+#import <Firebase.h>
 #import "RNSplashScreen.h"  // here
-#import "RNFirebaseNotifications.h"
-#import "RNFirebaseMessaging.h"
 #import <React/RCTLinkingManager.h>
 #import <WebEngage/WebEngage.h>
 @import AppsFlyerLib;
@@ -51,8 +49,9 @@
   //  [RNSplashScreen show];  // here
   [RNSplashScreen showSplash:@"LaunchScreen" inRootView:rootView];
   
-  [FIRApp configure];
-  [RNFirebaseNotifications configure];
+  if ([FIRApp defaultApp] == nil) {
+    [FIRApp configure];
+  }
   
   //  [[UNUserNotificationCenter currentNotificationCenter] setDelegate:self];
   
@@ -123,19 +122,6 @@
     [RNCallKeep reportNewIncomingCall:appointmentId handle:name handleType:@"generic" hasVideo:false localizedCallerName:@"Call Disconnecting..." fromPushKit: YES payload:nil];
     [RNCallKeep endCallWithUUID:appointmentId reason:2]; // CXCallEndedReasonRemoteEnded
   }
-}
-
-- (void)application:(UIApplication *)application didReceiveLocalNotification:(UILocalNotification *)notification {
-  [[RNFirebaseNotifications instance] didReceiveLocalNotification:notification];
-}
-
-- (void)application:(UIApplication *)application didReceiveRemoteNotification:(nonnull NSDictionary *)userInfo
-fetchCompletionHandler:(nonnull void (^)(UIBackgroundFetchResult))completionHandler{
-  [[RNFirebaseNotifications instance] didReceiveRemoteNotification:userInfo fetchCompletionHandler:completionHandler];
-}
-
-- (void)application:(UIApplication *)application didRegisterUserNotificationSettings:(UIUserNotificationSettings *)notificationSettings {
-  [[RNFirebaseMessaging instance] didRegisterUserNotificationSettings:notificationSettings];
 }
 
 - (void)applicationDidBecomeActive:(UIApplication *)application

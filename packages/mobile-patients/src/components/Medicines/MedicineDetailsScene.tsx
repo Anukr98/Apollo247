@@ -35,12 +35,19 @@ import {
   isEmptyObject,
   postWebEngageEvent,
   postwebEngageAddToCartEvent,
+  postFirebaseAddToCartEvent,
   postAppsFlyerAddToCartEvent,
   g,
   getDiscountPercentage,
+  addPharmaItemToCart,
+  savePastSearch,
+  postAppsFlyerEvent,
+  postFirebaseEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { useApolloClient } from 'react-apollo-hooks';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import {
@@ -71,6 +78,8 @@ import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 import { ProductList } from '@aph/mobile-patients/src/components/Medicines/ProductList';
 import { ProductUpSellingCard } from '@aph/mobile-patients/src/components/Medicines/ProductUpSellingCard';
 import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
+import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
+import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 
 const { width, height } = Dimensions.get('window');
 
@@ -218,7 +227,7 @@ type PharmacyTatApiCalled = WebEngageEvents[WebEngageEventName.PHARMACY_TAT_API_
 
 export type ProductPageViewedEventProps = Pick<
   WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED],
-  'Category ID' | 'Category Name' | 'Section Name'
+  'CategoryID' | 'CategoryName' | 'SectionName'
 >;
 
 export interface MedicineDetailsSceneProps
@@ -237,6 +246,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const [medicineDetails, setmedicineDetails] = useState<MedicineProductDetails>(
     {} as MedicineProductDetails
   );
+  const client = useApolloClient();
   const [tatEventData, setTatEventData] = useState<PharmacyTatApiCalled>();
   const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
@@ -259,7 +269,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
   const overview = medicineDetails?.PharmaOverview?.[0]?.Overview;
   const medicineOverview =
-    (!overview || typeof overview == 'string') ? [] : helpers.getMedicineOverview(overview || []);
+    !overview || typeof overview == 'string' ? [] : helpers.getMedicineOverview(overview || []);
 
   const sku = props.navigation.getParam('sku'); // 'MED0017';
 
@@ -292,6 +302,14 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           setmedicineDetails(productDetails || {});
           postProductPageViewedEvent(productDetails);
           trackTagalysViewEvent(productDetails);
+          savePastSearch(client, {
+            typeId: productDetails.sku,
+            typeName: productDetails.name,
+            type: SEARCH_TYPE.MEDICINE,
+            patient: currentPatient?.id,
+            image: productDetails.thumbnail,
+          });
+
           if (_deliveryError) {
             setTimeout(() => {
               scrollViewRef.current && scrollViewRef.current.scrollToEnd();
@@ -361,10 +379,12 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         source: movedFrom,
         ProductId: sku,
         ProductName: name,
-        'Stock availability': !!is_in_stock ? 'Yes' : 'No',
+        Stockavailability: !!is_in_stock ? 'Yes' : 'No',
         ...productPageViewedEventProps,
       };
       postWebEngageEvent(WebEngageEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
+      postAppsFlyerEvent(AppsFlyerEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
+      postFirebaseEvent(FirebaseEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
     }
   };
 
@@ -399,6 +419,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       productType: type_id,
     });
     postwebEngageAddToCartEvent(item, 'Pharmacy PDP', sectionName);
+    postFirebaseAddToCartEvent(item, 'Pharmacy PDP', sectionName);
     let id = currentPatient && currentPatient.id ? currentPatient.id : '';
     postAppsFlyerAddToCartEvent(item, id);
   };

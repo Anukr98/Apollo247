@@ -15,6 +15,7 @@ export enum ProductPageViewedSource {
   CART = 'cart',
   PARTIAL_SEARCH = 'partial search',
   FULL_SEARCH = 'full search',
+  RECENT_SEARCH = 'recent search',
   HOME_PAGE = 'home page',
   CATEGORY_OR_LISTING = 'category or listing',
   SUBSTITUTES = 'substitutes',
@@ -65,7 +66,7 @@ export enum WebEngageEventName {
   PHARMACY_DETAIL_IMAGE_CLICK = 'Product Detail page Image clicked',
   DOCTOR_SEARCH = 'Doctor Search',
   SPECIALITY_CLICKED = 'Speciality Clicked',
-  DOCTOR_CLICKED = 'Doctor Clicked',
+  DOCTOR_CLICKED = 'Doctor card on doctor listing screen clicked',
   BOOK_APPOINTMENT = 'Book Appointment',
   TYPE_OF_CONSULT_SELECTED = 'Type of consultation seleted',
   CONSULT_SORT = 'Consult Sort',
@@ -84,7 +85,8 @@ export enum WebEngageEventName {
   CONSULTED_WITH_DOCTOR_BEFORE = 'Chat Window Consulted with doctor before alert',
   DOCTOR_SPECIALITY_SEARCH_NO_RESULT = 'Doctor Speciality Fuzzy Search No Result',
   CONFIRM_LOCATION = 'Confirm Location',
-  
+  DOCTOR_LISTING_FILTER_APPLIED = 'Doctor Listing Filter Apply',
+
   MY_ORDERS_CLICKED = 'My Orders Clicked',
   ORDER_SUMMARY_CLICKED = 'Order Summary Clicked',
   PHARMACY_MY_ORDER_TRACKING_CLICKED = 'Pharmacy My Order Tracking Clicked',
@@ -104,13 +106,13 @@ export enum WebEngageEventName {
   VIEW_HELATH_RECORDS = 'View Helath Records',
   LEARN_MORE_ABOUT_CORONAVIRUS = 'Learn more about coronavirus',
   CHECK_YOUR_RISK_LEVEL = 'Check your risk level',
-  APOLLO_PRO_HEALTH = "Apollo pro health",
+  APOLLO_PRO_HEALTH = 'Apollo pro health',
   NOTIFICATION_ICON = 'Notification Icon clicked',
   ACTIVE_APPOINTMENTS = 'Active Appointments',
   NEED_HELP = 'Need Help?',
   TICKET_RAISED = 'Ticket raised',
   MY_ACCOUNT = 'My Account',
-  FIND_A_DOCTOR = 'Find a Doctor',
+  BOOK_DOCTOR_APPOINTMENT = 'Book Doctor Appointment clicked on homescreen',
   TABBAR_APPOINTMENTS_CLICKED = 'Appointments Clicked on tab bar',
   APOLLO_KAVACH_PROGRAM = 'Apollo Kavach Program',
   COVID_VACCINE_TRACKER = 'Covid Vaccine Tracker',
@@ -194,6 +196,15 @@ export enum WebEngageEventName {
   UPLOAD_PHR_CLICK_CHATROOM = 'Upload from PHR in consult room clicked',
   PATIENT_JOINED_CONSULT = 'Patient Joined the consult with doctor',
   PATIENT_ENDED_CONSULT = 'Patient ended the consult',
+  CALL_ENDED = 'Call Ended',
+  PAST_APPOINTMENT_BOOK_FOLLOW_UP_CLICKED = 'Book follow up clicked from Past appointment',
+  BOOK_AGAIN_CANCELLED_APPOINTMENT = 'Book again clicked from cancelled appointment',
+  VIEW_DETAILS_PAST_APPOINTMENT = 'View details clicked on past appointment',
+  BOOK_APPOINTMENT_CHAT_ROOM = 'Book appointment clicked inside consult room',
+  PATIENT_ANSWERED_CALL = 'Patient Answered the call',
+  PATIENT_DECLINED_CALL = 'Patient Declined the call',
+  PATIENT_MISSED_CALL = 'Patient Missed the call',
+  CALL_DROPPED_UNKNOWN_REASON = 'Call Dropped Due to Unknown Reason',
   // Medicine Events
   PHARMACY_AUTO_SELECT_LOCATION_CLICKED = 'Pharmacy Auto Select Location Clicked',
   PHARMACY_ENTER_DELIVERY_PINCODE_CLICKED = 'Pharmacy Enter Delivery Pincode Clicked',
@@ -418,6 +429,48 @@ export interface DiagnosticPinCode extends DiagnosticUserInfo {
   Pincode: number | string;
 }
 
+export interface DoctorFilterClick {
+  'Patient Name': string;
+  'Patient UHID': string;
+  'Mobile Number': string;
+  pincode: number | string;
+  'Filter Applied': string;
+  'Filter Value': string;
+}
+
+export interface FollowUpAppointment {
+  'Customer ID': string;
+  'Patient Name': string;
+  'Patient UHID': string;
+  'Patient Age': number;
+  'Doctor ID': string;
+  'Doctor Name': string;
+  'Speciality Name': string;
+  'Speciality ID': string;
+  'Doctor Category': DoctorType;
+  'Consult Date Time': Date;
+  'Consult Mode': 'Online' | 'Physical';
+  'Doctor City': string;
+  'Consult ID': string;
+  isConsultStarted: boolean;
+  Prescription: string;
+}
+
+export interface consultCallEndData {
+  'Patient User ID': string;
+  'Patient name': string;
+  'Patient mobile number': string;
+  'Appointment Date time': Date | null;
+  'Appointment display ID': number | null;
+  'Appointment ID': string;
+  'Doctor Name': string;
+  'Speciality Name': string;
+  'Speciality ID': string;
+  'Doctor Type': string;
+  'Mode of Call': 'Audio' | 'Video';
+  'Platform': 'App';
+};
+
 export interface WebEngageEvents {
   // ********** AppEvents ********** \\
 
@@ -454,7 +507,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.NEED_HELP]: PatientInfoWithNeedHelp; // source values may change later
   [WebEngageEventName.TICKET_RAISED]: { Category: string; Query: string };
   [WebEngageEventName.MY_ACCOUNT]: PatientInfo;
-  [WebEngageEventName.FIND_A_DOCTOR]: PatientInfo;
+  [WebEngageEventName.BOOK_DOCTOR_APPOINTMENT]: PatientInfo;
   [WebEngageEventName.TABBAR_APPOINTMENTS_CLICKED]: PatientInfoWithSource;
   [WebEngageEventName.PAST_DOCTOR_SEARCH]: {
     'Patient UHID': string;
@@ -559,13 +612,6 @@ export interface WebEngageEvents {
     'Section Name'?: string;
     af_revenue: number;
     af_currency: string;
-    // 'Patient Name': string;
-    // 'Patient UHID': string;
-    // Relation: string;
-    // 'Patient Age': number;
-    // 'Patient Gender': string;
-    // 'Mobile Number': string;
-    // 'Customer ID': string;
   };
   [WebEngageEventName.PHARMACY_ADD_TO_CART_NONSERVICEABLE]: {
     'product name': string;
@@ -891,9 +937,10 @@ export interface WebEngageEvents {
     'Service Area': 'Pharmacy' | 'Diagnostic';
   };
   [WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED]: {
-    'Payment mode': 'Online' | 'COD';
+    Paymentmode: 'Online' | 'COD';
     Amount: number;
-    'Service Area': 'Pharmacy' | 'Diagnostic';
+    ServiceArea: 'Pharmacy' | 'Diagnostic';
+    LOB: string;
   };
 
   // ********** ConsultEvents ********** \\
@@ -916,6 +963,7 @@ export interface WebEngageEvents {
     'Mobile Number': string;
     'Customer ID': string;
   };
+  [WebEngageEventName.DOCTOR_LISTING_FILTER_APPLIED]: DoctorFilterClick;
   [WebEngageEventName.SPECIALITY_CLICKED]: SpecialityClickedEvent;
   [WebEngageEventName.BOOK_APPOINTMENT]: {
     'Doctor Name': string;
@@ -954,10 +1002,12 @@ export interface WebEngageEvents {
     'Doctor Name': string;
     Source: 'List' | 'Search';
     'Doctor ID': string;
-    'Speciality ID': string;
+    'Speciality ID'?: string;
     'Doctor Category': DoctorType;
     Fee: number;
     'Doctor Speciality': string;
+    Rank: number;
+    Is_TopDoc?: YesOrNo;
   };
   [WebEngageEventName.DOCTOR_CARD_CONSULT_CLICK]: {
     'Patient Name': string;
@@ -1160,6 +1210,7 @@ export interface WebEngageEvents {
     'Net Amount': number;
     af_revenue: number;
     af_currency: string;
+    'Dr of hour appointment'?: YesOrNo;
   };
   [WebEngageEventName.CONSULT_FEEDBACK_GIVEN]: {
     'Doctor Name': string;
@@ -1268,7 +1319,7 @@ export interface WebEngageEvents {
     Response_tat: string;
     Response_tatU: number;
   };
- 
+
   [WebEngageEventName.PHARMACY_CART_SELECT_DELIVERY_ADDRESS_CLICKED]: {
     'Customer ID': string;
   };
@@ -1569,6 +1620,26 @@ export interface WebEngageEvents {
     'Patient Gender': string;
     'Customer ID': string;
   };
+  [WebEngageEventName.CALL_ENDED]: {
+    'Doctor Name': string;
+    'Speciality Name': string;
+    'Speciality ID': string;
+    'Patient Name': string;
+    'Patient UHID': string;
+    'Consult ID': string;
+    'Consult Date Time': Date;
+    'Display ID': number | null;
+    'Ended by': 'Patient' | 'Senior Doctor' | 'Junior Doctor' | 'Network';
+    'Call Duration': number;
+  };
+  [WebEngageEventName.PATIENT_ANSWERED_CALL]: consultCallEndData;
+  [WebEngageEventName.PATIENT_DECLINED_CALL]: consultCallEndData;
+  [WebEngageEventName.PATIENT_MISSED_CALL]: consultCallEndData;
+  [WebEngageEventName.CALL_DROPPED_UNKNOWN_REASON]: consultCallEndData;
+  [WebEngageEventName.PAST_APPOINTMENT_BOOK_FOLLOW_UP_CLICKED]: FollowUpAppointment;
+  [WebEngageEventName.BOOK_AGAIN_CANCELLED_APPOINTMENT]: FollowUpAppointment;
+  [WebEngageEventName.VIEW_DETAILS_PAST_APPOINTMENT]: FollowUpAppointment;
+  [WebEngageEventName.BOOK_APPOINTMENT_CHAT_ROOM]: FollowUpAppointment;
   [WebEngageEventName.DOWNLOAD_PRESCRIPTION]: {
     'Doctor Name': string;
     'Speciality Name': string;
@@ -1667,19 +1738,19 @@ export interface WebEngageEvents {
     source: ProductPageViewedSource;
     ProductId: string;
     ProductName: string;
-    'Stock availability': YesOrNo;
+    Stockavailability: YesOrNo;
     /**
      * Category ID & Category Name is applicable if customers clicks on products from any category (all categories of shop by category or health areas)
      */
-    'Category ID'?: string;
-    'Category Name'?: string;
+    CategoryID?: string;
+    CategoryName?: string;
     /**
      * Section Name is applicable if customer clicked on the product from the homepage product widgets like Hot sellers, Recommended products
      */
-    'Section Name'?: string;
+    SectionName?: string;
   };
   [WebEngageEventName.CATEGORY_PAGE_VIEWED]: {
-    source: 'home' | 'deeplink';
+    source: 'home' | 'deeplink' | 'registration';
     CategoryId: string;
     CategoryName: string;
   };

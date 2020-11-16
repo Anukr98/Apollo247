@@ -8,12 +8,13 @@ import {
   AppStateStatus,
   AppState,
   DeviceEventEmitter,
+  NativeModules,
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import { SplashLogo } from '@aph/mobile-patients/src/components/SplashLogo';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import firebase from 'react-native-firebase';
+import remoteConfig from '@react-native-firebase/remote-config';
 import SplashScreenView from 'react-native-splash-screen';
 import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAuth } from '../hooks/authHooks';
@@ -37,6 +38,7 @@ import {
   postWebEngageEvent,
   callPermissions,
   UnInstallAppsFlyer,
+  postFirebaseEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -56,6 +58,7 @@ import VoipPushNotification from 'react-native-voip-push-notification';
 import { string } from '../strings/string';
 import { isUpperCase } from '@aph/mobile-patients/src/utils/commonUtils';
 import Pubnub from 'pubnub';
+import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
 // finally not working on all promises.
@@ -115,6 +118,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const voipAppointmentId = useRef<string>('');
   const voipPatientId = useRef<string>('');
   const voipCallType = useRef<string>('');
+  const voipDoctorName = useRef<string>('');
 
   const config: Pubnub.PubnubConfig = {
     subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
@@ -224,6 +228,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         voipAppointmentId.current = notification.getData().appointmentId;
         voipPatientId.current = notification.getData().patientId;
         voipCallType.current = notification.getData().isVideo ? 'Video' : 'Audio';
+        voipDoctorName.current = notification.getData().name;
       }
     });
   };
@@ -233,6 +238,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   };
 
   const onDisconnetCallAction = () => {
+    fireWebengageEventForCallDecline();
     RNCallKeep.endAllCalls();
     pubnub.publish(
       {
@@ -248,6 +254,24 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     );
   };
 
+  const fireWebengageEventForCallDecline = () => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PATIENT_DECLINED_CALL] = {
+      'Patient User ID': voipPatientId.current,
+      'Patient name': '',
+      'Patient mobile number': '',
+      'Appointment Date time': null,
+      'Appointment display ID': null,
+      'Appointment ID': voipAppointmentId.current,
+      'Doctor Name': voipDoctorName.current,
+      'Speciality Name': '',
+      'Speciality ID': '',
+      'Doctor Type': '',
+      'Mode of Call': voipCallType.current === 'Video' ? 'Video' : 'Audio',
+      Platform: 'App',
+    };
+    postWebEngageEvent(WebEngageEventName.PATIENT_DECLINED_CALL, eventAttributes);
+  };
+
   const handleDeepLink = () => {
     try {
       Linking.getInitialURL()
@@ -256,8 +280,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           if (url) {
             try {
               handleOpenURL(url);
+              fireAppOpenedEvent(url);
               console.log('linking', url);
             } catch (e) {}
+          } else {
+            fireAppOpenedEvent('');
           }
         })
         .catch((e) => {
@@ -269,6 +296,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           console.log('event', event);
           setBugFenderLog('DEEP_LINK_EVENT', JSON.stringify(event));
           handleOpenURL(event.url);
+          fireAppOpenedEvent(event.url);
         } catch (e) {}
       });
       AsyncStorage.removeItem('location');
@@ -425,9 +453,51 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     } catch (error) {}
   };
 
+  async function fireAppOpenedEvent(event: any) {
+    const a = event.indexOf('apollopatients://');
+    const b = event.indexOf('https://www.apollo247.com');
+    let attributes: FirebaseEvents[FirebaseEventName.APP_OPENED] = {
+      utm_source: 'not set',
+      utm_medium: 'not set',
+      utm_campaign: 'not set',
+      utm_term: 'not set',
+      utm_content: 'not set',
+      referrer: 'not set',
+    };
+    if (a != -1) {
+      const route = event.replace('apollopatients://', '');
+      const data = route.split('?');
+      if (data.length >= 2) {
+        const params = data[1].split('&');
+        const utmParams = params.map((item: any) => item.split('='));
+        utmParams.forEach((item: any) => item?.length == 2 && (attributes[item[0]] = item[1]));
+        console.log('attributes >>>', attributes);
+        postFirebaseEvent(FirebaseEventName.APP_OPENED, attributes);
+      }
+    }
+    if (b != -1) {
+      const route = event.replace('https://www.apollo247.com/', '');
+      const data = route.split('?');
+      if (data.length >= 2) {
+        const params = data[1].split('&');
+        const utmParams = params.map((item: any) => item.split('='));
+        utmParams.forEach((item: any) => item?.length == 2 && (attributes[item[0]] = item[1]));
+        console.log('attributes >>>', attributes);
+        postFirebaseEvent(FirebaseEventName.APP_OPENED, attributes);
+      } else {
+        const referrer = await NativeModules.GetReferrer.referrer();
+        attributes['referrer'] = referrer;
+        console.log('attributes >>>', attributes);
+        postFirebaseEvent(FirebaseEventName.APP_OPENED, attributes);
+      }
+    }
+    if (!event) {
+      console.log('attributes >>>', attributes);
+      postFirebaseEvent(FirebaseEventName.APP_OPENED, attributes);
+    }
+  }
   const getData = (routeName: String, id?: String, timeout?: boolean, isCall?: boolean) => {
     async function fetchData() {
-      firebase.analytics().setAnalyticsCollectionEnabled(true);
       // const onboarding = await AsyncStorage.getItem('onboarding');
       const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
       const signUp = await AsyncStorage.getItem('signUp');
@@ -610,7 +680,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           const [itemId, name] = id.split(',');
           console.log(itemId, name);
 
-          props.navigation.navigate(AppRoutes.SearchByBrand, {
+          props.navigation.navigate(AppRoutes.MedicineListing, {
             category_id: itemId,
             title: `${name ? name : 'Products'}`.toUpperCase(),
             movedFrom: 'deeplink',
@@ -799,7 +869,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     },
   };
 
-  const getConfigStringBasedOnEnv = (
+  const getKeyBasedOnEnv = (
     currentEnv: AppEnv,
     config: typeof RemoteConfigKeys,
     _key: keyof typeof RemoteConfigKeys
@@ -812,109 +882,81 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       : valueBasedOnEnv.DEV || valueBasedOnEnv.QA || valueBasedOnEnv.PROD;
   };
 
-  const getRemoteConfigKeys = (): string[] => {
-    return (Object.keys(RemoteConfigKeys) as (keyof typeof RemoteConfigKeys)[]).map((configKey) =>
-      getConfigStringBasedOnEnv(APP_ENV, RemoteConfigKeys, configKey)
-    );
-  };
-
   const getRemoteConfigValue = (
     remoteConfigKey: keyof typeof RemoteConfigKeys,
-    snapshot: {
-      [key: string]: { val(): any };
-    }
-  ) => snapshot[getConfigStringBasedOnEnv(APP_ENV, RemoteConfigKeys, remoteConfigKey)].val();
+    processValue: (key: string) => any
+  ) => {
+    const key = getKeyBasedOnEnv(APP_ENV, RemoteConfigKeys, remoteConfigKey);
+    return processValue(key);
+  };
 
   const setAppConfig = (
     remoteConfigKey: keyof typeof RemoteConfigKeys,
     appConfigKey: keyof typeof AppConfig.Configuration,
-    snapshot: {
-      [key: string]: { val(): any };
-    },
-    processValue?: (val: string | number) => any
+    processValue: (key: string) => any
   ) => {
-    const _val = snapshot[
-      getConfigStringBasedOnEnv(APP_ENV, RemoteConfigKeys, remoteConfigKey)
-    ].val();
-    const finalValue = processValue ? processValue(_val) : _val;
-    updateAppConfig(appConfigKey, finalValue);
+    const key = getKeyBasedOnEnv(APP_ENV, RemoteConfigKeys, remoteConfigKey);
+    const value = processValue(key);
+    updateAppConfig(appConfigKey, value);
   };
 
-  const checkForVersionUpdate = () => {
-    console.log('checkForVersionUpdate');
-
+  const checkForVersionUpdate = async () => {
     try {
-      if (__DEV__) {
-        firebase.config().enableDeveloperMode();
+      // Note: remote config values will be cached for the specified duration in development mode, update below value if necessary.
+      const minimumFetchIntervalMillis = __DEV__ ? 43200000 : 0;
+      await remoteConfig().setConfigSettings({ minimumFetchIntervalMillis });
+      await remoteConfig().fetchAndActivate();
+      const config = remoteConfig();
+
+      const needHelpToContactInMessage = getRemoteConfigValue('Need_Help_To_Contact_In', (key) =>
+        config.getString(key)
+      );
+      needHelpToContactInMessage && setNeedHelpToContactInMessage!(needHelpToContactInMessage);
+
+      setAppConfig(
+        'Min_Value_For_Pharmacy_Free_Delivery',
+        'MIN_CART_VALUE_FOR_FREE_DELIVERY',
+        (key) => config.getNumber(key)
+      );
+
+      setAppConfig(
+        'min_value_to_nudge_users_to_avail_free_delivery',
+        'MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY',
+        (key) => config.getNumber(key)
+      );
+
+      setAppConfig('Pharmacy_Delivery_Charges', 'DELIVERY_CHARGES', (key) => config.getNumber(key));
+
+      setAppConfig('Doctor_Partner_Text', 'DOCTOR_PARTNER_TEXT', (key) => config.getString(key));
+
+      setAppConfig('Doctors_Page_Size', 'Doctors_Page_Size', (key) => config.getNumber(key));
+
+      setAppConfig('top6_specailties', 'TOP_SPECIALITIES', (key) =>
+        JSON.parse(config.getString(key) || 'null')
+      );
+
+      setAppConfig('Enable_Conditional_Management', 'ENABLE_CONDITIONAL_MANAGEMENT', (key) =>
+        config.getBoolean(key)
+      );
+
+      const { iOS_Version, Android_Version } = AppConfig.Configuration;
+      const isIOS = Platform.OS === 'ios';
+      const appVersion = coerce(isIOS ? iOS_Version : Android_Version)?.version;
+      const appLatestVersionFromConfig = getRemoteConfigValue(
+        isIOS ? 'ios_Latest_version' : 'android_latest_version',
+        (key) => config.getString(key)
+      );
+      const appLatestVersion = coerce(appLatestVersionFromConfig)?.version;
+      const isMandatory: boolean = getRemoteConfigValue(
+        isIOS ? 'ios_mandatory' : 'Android_mandatory',
+        (key) => config.getBoolean(key)
+      );
+
+      if (appVersion && appLatestVersion && isLessThan(appVersion, appLatestVersion)) {
+        showUpdateAlert(isMandatory);
       }
-
-      firebase
-        .config()
-        .fetch(30 * 0) // 30 min
-        .then(() => {
-          return firebase.config().activateFetched();
-        })
-        .then(() => {
-          return firebase.config().getValues(getRemoteConfigKeys());
-        })
-        .then((snapshot) => {
-          const needHelpToContactInMessage = getRemoteConfigValue(
-            'Need_Help_To_Contact_In',
-            snapshot
-          );
-          needHelpToContactInMessage && setNeedHelpToContactInMessage!(needHelpToContactInMessage);
-
-          setAppConfig(
-            'Min_Value_For_Pharmacy_Free_Delivery',
-            'MIN_CART_VALUE_FOR_FREE_DELIVERY',
-            snapshot
-          );
-
-          setAppConfig(
-            'min_value_to_nudge_users_to_avail_free_delivery',
-            'MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY',
-            snapshot
-          );
-
-          setAppConfig('Pharmacy_Delivery_Charges', 'DELIVERY_CHARGES', snapshot);
-
-          setAppConfig('Doctor_Partner_Text', 'DOCTOR_PARTNER_TEXT', snapshot);
-
-          setAppConfig('Doctors_Page_Size', 'Doctors_Page_Size', snapshot);
-          setAppConfig('top6_specailties', 'TOP_SPECIALITIES', snapshot, (val: any) =>
-            JSON.parse(val || 'null')
-          );
-
-          try {
-            AsyncStorage.setItem(
-              'CMEnable',
-              JSON.stringify(getRemoteConfigValue('Enable_Conditional_Management', snapshot))
-            );
-          } catch (error) {}
-
-          const { iOS_Version, Android_Version } = AppConfig.Configuration;
-          const isIOS = Platform.OS === 'ios';
-          const appVersion = coerce(isIOS ? iOS_Version : Android_Version)?.version;
-          const appLatestVersionFromConfig = getRemoteConfigValue(
-            isIOS ? 'ios_Latest_version' : 'android_latest_version',
-            snapshot
-          );
-          const appLatestVersion = coerce(appLatestVersionFromConfig)?.version;
-          const isMandatory: boolean = getRemoteConfigValue(
-            isIOS ? 'ios_mandatory' : 'Android_mandatory',
-            snapshot
-          );
-
-          if (appVersion && appLatestVersion && isLessThan(appVersion, appLatestVersion)) {
-            showUpdateAlert(isMandatory);
-          }
-        })
-        .catch((error) => {
-          CommonBugFender('SplashScreen_checkForVersionUpdate', error);
-          console.log(`Error processing config: ${error}`);
-        });
     } catch (error) {
-      CommonBugFender('SplashScreen_checkForVersionUpdate_try', error);
+      CommonBugFender('SplashScreen - Error processing remote config', error);
     }
   };
 

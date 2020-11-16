@@ -121,7 +121,7 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import KotlinBridge from '@aph/mobile-patients/src/KotlinBridge';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -366,7 +366,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const { cartItems: shopCartItems, setHdfcPlanName, setIsFreeDelivery } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
 
-  const { analytics } = useAuth();
   const { currentPatient } = useAllCurrentPatients();
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [deviceTokenApICalled, setDeviceTokenApICalled] = useState<boolean>(false);
@@ -749,7 +748,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       image: <DoctorIcon style={styles.menuOptionIconStyle} />,
       onPress: () => {
         postHomeFireBaseEvent(FirebaseEventName.FIND_A_DOCTOR, 'Home Screen');
-        postHomeWEGEvent(WebEngageEventName.FIND_A_DOCTOR);
+        postHomeWEGEvent(WebEngageEventName.BOOK_DOCTOR_APPOINTMENT);
         props.navigation.navigate(AppRoutes.DoctorSearch);
         // showProfileSelectionAlert();
       },
@@ -1287,7 +1286,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           .finally(() => setAppointmentLoading(false));
       }
     }
-  }, [currentPatient, analytics, props.navigation.state.params]);
+  }, [currentPatient, props.navigation.state.params]);
 
   useEffect(() => {
     async function fetchData() {
@@ -1302,8 +1301,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           AsyncStorage.setItem('gotIt', 'true');
         }, 5000);
       }
-      const CMEnabled = await AsyncStorage.getItem('CMEnable');
-      const eneabled = CMEnabled ? JSON.parse(CMEnabled) : false;
+      const eneabled = AppConfig.Configuration.ENABLE_CONDITIONAL_MANAGEMENT;
       setEnableCM(eneabled);
     }
     fetchData();
@@ -1776,14 +1774,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       <View style={styles.hdfcConnectContainer}>
         {renderHdfcLogo()}
         {hdfcLoading ? (
-          <View>
-            <Spinner
-              style={{
-                marginVertical: 30,
-                backgroundColor: theme.colors.WHITE,
-              }}
-            />
-          </View>
+          <View />
         ) : showCongratulations ? (
           renderCongratulationsWidget()
         ) : (
@@ -2533,6 +2524,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       } else {
         props.navigation.navigate(AppRoutes.CovidScan, {
           covidUrl: urlToOpen,
+          requestMicroPhonePermission: true,
         });
       }
     } catch (e) {

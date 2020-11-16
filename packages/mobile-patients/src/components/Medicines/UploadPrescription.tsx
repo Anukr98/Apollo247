@@ -249,7 +249,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         if (EPrescriptions.length > 0) setEPrescription && setEPrescription([...EPrescriptions]);
         if (PhysicalPrescriptions.length > 0)
           setPhysicalPrescription && setPhysicalPrescription([...PhysicalPrescriptions]);
-        props.navigation.navigate(AppRoutes.SearchMedicineScene, {
+        props.navigation.navigate(AppRoutes.MedicineSearch, {
           showButton: true,
           isReUpload: isComingFromReUpload,
           orderAutoId: orderId,

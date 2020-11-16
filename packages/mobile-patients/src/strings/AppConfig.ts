@@ -14,7 +14,7 @@ export enum AppEnv {
   DEVReplica = 'DEVReplica',
 }
 
-const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.QA as AppEnv; // For respective API environments in the app.
 
 const pharmaToken201 = 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d';
 const pharmaTokenYXV = 'YXV0aF91c2VyOnN1cGVyc2VjcmV0X3Rhd';
@@ -39,6 +39,7 @@ const testApiCredentialsProd = {
 const appStaticVariables = {
   iOS_Version: DeviceInfo.getVersion(),
   Android_Version: DeviceInfo.getVersion(),
+  ENABLE_CONDITIONAL_MANAGEMENT: true,
   MED_DELIVERY_DATE_API_FORMAT: 'DD-MMM-YYYY hh:mm',
   MED_DELIVERY_DATE_TAT_API_FORMAT: 'DD-MMM-YYYY hh:mm A',
   MED_DELIVERY_DATE_DISPLAY_FORMAT: 'D MMM YYYY | hh:mm A',
@@ -210,7 +211,7 @@ const PharmaApiConfig = {
       pharmaTokenYXV,
     ],
     GET_SUBSTITUTES: [`${apolloUatBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
-    PRODUCTS_BY_CATEGORY: [`${apolloUatBaseUrl}/categoryproducts_api.php`, pharmaToken201],
+    PRODUCTS_BY_CATEGORY: [`${apolloUatBaseUrl}/categoriesScript.php`, pharmaToken201],
     MEDICINE_PAGE: [`${apolloUatBaseUrl}/apollo_24x7_api.php?version=v2`, pharmaToken201],
     ALL_BRANDS: [`${apolloUatBaseUrl}/allbrands_api.php`, pharmaToken201],
     GET_TEST_PACKAGES: [
@@ -286,7 +287,7 @@ const ConfigurationDev = {
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
-  DELIVERY_CHARGES: 25,
+  DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
   PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
@@ -332,7 +333,7 @@ const ConfigurationQA = {
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
-  DELIVERY_CHARGES: 25,
+  DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
   PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
@@ -378,7 +379,7 @@ const ConfigurationQA2 = {
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
-  DELIVERY_CHARGES: 25,
+  DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
   PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
@@ -424,7 +425,7 @@ const ConfigurationVAPT = {
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
-  DELIVERY_CHARGES: 25,
+  DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
   PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
@@ -469,7 +470,7 @@ const ConfigurationProd = {
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
-  DELIVERY_CHARGES: 25,
+  DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
   PRAKTISE_API_KEY: 'FD7632C8-AF22-4534-91ED-4C197E1662F4', // PRODUCTION
   PRO_TOKBOX_KEY: '46422952', // PRODUCTION
@@ -514,7 +515,7 @@ const ConfigurationPERFORM = {
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
-  DELIVERY_CHARGES: 25,
+  DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
   PRAKTISE_API_KEY: 'FD7632C8-AF22-4534-91ED-4C197E1662F4', //'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
@@ -561,7 +562,7 @@ const ConfigurationDevReplica = {
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
-  DELIVERY_CHARGES: 25,
+  DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
   PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',

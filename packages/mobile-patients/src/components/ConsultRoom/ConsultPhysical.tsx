@@ -45,7 +45,6 @@ import moment from 'moment';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
   CommonLogEvent,
-  CommonScreenLog,
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -175,7 +174,6 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
   ]);
 
   useEffect(() => {
-    CommonScreenLog('Consult Physical', 'Consult Physical');
     if (NextAvailableSlot && timeArray) {
       for (const i in timeArray) {
         if (timeArray[i].time.length > 0) {

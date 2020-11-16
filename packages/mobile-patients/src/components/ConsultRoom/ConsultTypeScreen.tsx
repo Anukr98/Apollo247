@@ -158,6 +158,8 @@ export interface ConsultTypeScreenProps extends NavigationScreenProps {
   onlinePrice: string;
   InpersonPrice: string;
   ConsultType: ConsultMode;
+  availNowText?: string;
+  consultNowText?: string;
 }
 
 type stepsObject = {
@@ -181,6 +183,8 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
   const { currentPatientId, currentPatient } = useAllCurrentPatients();
   const [doctorDetails, setdoctorDetails] = useState<getDoctorDetailsById_getDoctorDetailsById>();
   const callSaveSearch = props.navigation.getParam('callSaveSearch');
+  const availNowText = props.navigation.getParam('availNowText');
+  const consultNowText = props.navigation.getParam('consultNowText');
 
   const client = useApolloClient();
 
@@ -301,7 +305,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
             </Text>
             {time && moment(time).isValid() ? (
               <Text style={timeDiff <= 15 ? styles.timeText2Style : styles.timeTextStyle}>
-                {nextAvailability(time)}
+                {availNowText || nextAvailability(time)}
               </Text>
             ) : null}
           </View>
@@ -334,7 +338,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
         </View>
         <TouchableOpacity activeOpacity={1} onPress={onPress}>
           <View style={styles.buttonStyle}>
-            <Text style={styles.buttonTextStyle}>{`${
+            <Text style={styles.buttonTextStyle}>{consultNowText || `${
               time && moment(time).isValid()
                 ? nextAvailability(time, 'Consult')
                 : string.common.book_apointment

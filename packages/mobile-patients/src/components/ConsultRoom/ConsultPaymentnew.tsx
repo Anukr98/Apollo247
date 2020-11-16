@@ -33,6 +33,7 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
   const bankCode = props.navigation.getParam('bankCode')
     ? props.navigation.getParam('bankCode')
     : null;
+  const isDoctorsOfTheHourStatus = props.navigation.getParam('isDoctorsOfTheHourStatus');
   const webEngageEventAttributes = props.navigation.getParam('webEngageEventAttributes');
   const appsflyerEventAttributes = props.navigation.getParam('appsflyerEventAttributes');
   const fireBaseEventAttributes = props.navigation.getParam('fireBaseEventAttributes');
@@ -81,6 +82,8 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
       webEngageEventAttributes: webEngageEventAttributes,
       fireBaseEventAttributes: fireBaseEventAttributes,
       appsflyerEventAttributes: appsflyerEventAttributes,
+      paymentTypeID: paymentTypeID,
+      isDoctorsOfTheHourStatus,
     });
   };
 

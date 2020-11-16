@@ -68,6 +68,16 @@
       }
     }
   },
+  "notInStockInYourArea": "Not in stock in your area",
+  "notForSale": "Not for sale",
+  "outOfStock": "Out of stock",
+  "removeUnavailableItems": "REMOVE UNAVAILABLE ITEMS",
+  "selectDeliveryAddress": "SELECT DELIVERY ADDRESS",
+  "addDeliveryAddress": "ADD DELIVERY ADDRESS",
+  "uploadPrescription": "UPLOAD PRESCRIPTION",
+  "proceedToPay": "PROCEED TO PAY",
+  "microphone": "microphone",
+  "enableMicrophoneToRecordCough": "Enable microphone from settings to record your cough.",
   "consultType": {
     "mainHeading": "How would you like to consult with",
     "checkBoxText": "I have consulted with {0} before",
