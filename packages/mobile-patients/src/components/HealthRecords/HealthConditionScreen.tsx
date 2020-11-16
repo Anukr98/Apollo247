@@ -198,9 +198,9 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
         ) : item?.medicineName ? (
           <PhrMedicationIcon style={{ width: 12.82, height: 13.14, marginRight: 9.8 }} />
         ) : item?.restrictionName ? (
-          <PhrMedicalIcon style={{ width: 14, height: 14.03, marginRight: 8 }} />
-        ) : item?.medicalConditionName ? (
           <PhrRestrictionIcon style={{ width: 14, height: 14, marginRight: 9 }} />
+        ) : item?.medicalConditionName ? (
+          <PhrMedicalIcon style={{ width: 14, height: 14.03, marginRight: 8 }} />
         ) : null;
       };
       const getHealthConditionTypeTitle = item?.allergyName

@@ -6,6 +6,7 @@ import {
   CartPhrIcon,
   FollowUpPhrIcon,
   More,
+  HospitalUploadPhrIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { EDIT_DELETE_TYPE } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -132,7 +133,11 @@ export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
         </View>
         {healthConditionCard && !sourceName ? null : (
           <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 9 }}>
-            <SelfUploadPhrIcon style={{ width: 16, height: 10.14, marginRight: 8 }} />
+            {selfUpload ? (
+              <SelfUploadPhrIcon style={{ width: 16, height: 10.14, marginRight: 8 }} />
+            ) : (
+              <HospitalUploadPhrIcon style={{ height: 14, width: 14, marginRight: 8 }} />
+            )}
             <Text numberOfLines={1} style={styles.sourceNameTextStyle}>
               {sourceName}
             </Text>
