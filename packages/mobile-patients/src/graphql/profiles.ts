@@ -1777,6 +1777,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
         prescriptionImageUrl
         oldOrderTat
         orderTat
+        oldOrderTat
         orderType
         shopAddress
         packagingCharges

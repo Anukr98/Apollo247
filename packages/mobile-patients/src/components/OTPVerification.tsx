@@ -680,17 +680,25 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     };
   }, [subscriptionId]);
 
-  const getDeviceToken = () => {
-    messaging()
-      .getToken()
-      .then((token) => {
-        console.log('token', token);
-        AsyncStorage.setItem('deviceToken', JSON.stringify(token));
-        UnInstallAppsFlyer(token);
-      })
-      .catch((e) => {
-        CommonBugFender('OTPVerification_getDeviceToken', e);
-      });
+  const getDeviceToken = async () => {
+    const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
+    const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
+    if (
+      !currentDeviceToken ||
+      typeof currentDeviceToken != 'string' ||
+      typeof currentDeviceToken == 'object'
+    ) {
+      messaging()
+        .getToken()
+        .then((token) => {
+          console.log('token', token);
+          AsyncStorage.setItem('deviceToken', JSON.stringify(token));
+          UnInstallAppsFlyer(token);
+        })
+        .catch((e) => {
+          CommonBugFender('OTPVerification_getDeviceToken', e);
+        });
+    }
   };
 
   const deviceTokenAPI = async (patientId: string) => {

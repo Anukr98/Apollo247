@@ -823,7 +823,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                     ? 30
                     : 40
                   : 20,
-
               backgroundColor: colorOfBadge,
             }}
           >

@@ -335,6 +335,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       M: 'MALE',
       F: 'FEMALE',
     };
+    const fromAge = (testInfo.FromAgeInDays / 365).toFixed(0);
+    const toAge = (testInfo.ToAgeInDays / 365).toFixed(0);
+
     return (
       <View style={{ overflow: 'hidden', padding: 20 }}>
         <View>
@@ -343,10 +346,12 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             <View style={styles.personDetailsView}>
               <Text style={styles.personDetailLabelStyles}>Age Group</Text>
               <Text style={styles.personDetailStyles}>
-                {(testInfo.FromAgeInDays / 365).toFixed(0)} TO{' '}
+                {fromAge == '0' ? '12' : fromAge} TO{' '}
                 {COVID_NOTIFICATION_ITEMID.includes(testInfo.ItemID)
                   ? 100
-                  : (testInfo.ToAgeInDays / 365).toFixed(0)}{' '}
+                  : toAge == '192'
+                  ? '99'
+                  : toAge}{' '}
                 YEARS
               </Text>
             </View>

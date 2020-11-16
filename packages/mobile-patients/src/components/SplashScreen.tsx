@@ -37,6 +37,7 @@ import {
   APPStateActive,
   postWebEngageEvent,
   callPermissions,
+  UnInstallAppsFlyer,
   postFirebaseEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -58,7 +59,7 @@ import { string } from '../strings/string';
 import { isUpperCase } from '@aph/mobile-patients/src/utils/commonUtils';
 import Pubnub from 'pubnub';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
-
+import messaging from '@react-native-firebase/messaging';
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
 // finally not working on all promises.
 
@@ -168,6 +169,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   useEffect(() => {
     handleDeepLink();
+    getDeviceToken();
   }, []);
 
   useEffect(() => {
@@ -176,6 +178,27 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       handleVoipEventListeners();
     }
   }, []);
+
+  const getDeviceToken = async () => {
+    const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
+    const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
+    if (
+      !currentDeviceToken ||
+      typeof currentDeviceToken != 'string' ||
+      typeof currentDeviceToken == 'object'
+    ) {
+      messaging()
+        .getToken()
+        .then((token) => {
+          console.log('token', token);
+          AsyncStorage.setItem('deviceToken', JSON.stringify(token));
+          UnInstallAppsFlyer(token);
+        })
+        .catch((e) => {
+          CommonBugFender('SplashScreen_getDeviceToken', e);
+        });
+    }
+  };
 
   const initializeCallkit = () => {
     const callkeepOptions = {
@@ -232,18 +255,18 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   const fireWebengageEventForCallDecline = () => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.PATIENT_DECLINED_CALL] = {
-        'Patient User ID': voipPatientId.current,
-        'Patient name': '',
-        'Patient mobile number': '',
-        'Appointment Date time': null,
-        'Appointment display ID': null,
-        'Appointment ID': voipAppointmentId.current,
-        'Doctor Name': voipDoctorName.current,
-        'Speciality Name': '',
-        'Speciality ID': '',
-        'Doctor Type': '',
-        'Mode of Call': voipCallType.current === 'Video' ? 'Video' : 'Audio',
-        'Platform': 'App',
+      'Patient User ID': voipPatientId.current,
+      'Patient name': '',
+      'Patient mobile number': '',
+      'Appointment Date time': null,
+      'Appointment display ID': null,
+      'Appointment ID': voipAppointmentId.current,
+      'Doctor Name': voipDoctorName.current,
+      'Speciality Name': '',
+      'Speciality ID': '',
+      'Doctor Type': '',
+      'Mode of Call': voipCallType.current === 'Video' ? 'Video' : 'Audio',
+      Platform: 'App',
     };
     postWebEngageEvent(WebEngageEventName.PATIENT_DECLINED_CALL, eventAttributes);
   };

@@ -1072,7 +1072,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     if (!hLoading && hotSellers.length == 0) return null;
     return (
       <View>
-        <SectionHeader leftText={'FEATURED TESTS'} />
+        <SectionHeader leftText={'TOP TESTS'} />
         {hLoading ? (
           renderSectionLoader(188)
         ) : (

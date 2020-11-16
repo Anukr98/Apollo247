@@ -86,7 +86,7 @@ public class MyFirebaseMessagingService
             String disconnectCallType="call_disconnect";
 
             if(startCallType.equals(notifDataType)|| disconnectCallType.equals(notifDataType)) {
-                if(!Settings.canDrawOverlays(this) && startCallType.equals(notifDataType)){
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this) && startCallType.equals(notifDataType)){
                     sendNotifications(remoteMessage);
                     return;
                 }else {
