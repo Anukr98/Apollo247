@@ -15,6 +15,7 @@ import {
   HospitalPhrIcon,
   CrossPopup,
   DropdownGreen,
+  PhrArrowRightIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -54,6 +55,7 @@ import {
   Image,
   TouchableOpacity,
   TextInput,
+  Alert,
 } from 'react-native';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -288,6 +290,7 @@ const styles = StyleSheet.create({
   },
   profileNameTextStyle: { ...theme.viewStyles.text('SB', 36, theme.colors.LIGHT_BLUE, 1, 47) },
   moreHealthViewStyle: { marginHorizontal: 20, marginBottom: 39 },
+  profileNameViewStyle: { flexDirection: 'row', alignItems: 'center' },
 });
 
 type BloodGroupArray = {
@@ -380,7 +383,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [medicineOrders, setMedicineOrders] = useState<(medicineOrders | null)[] | null>(null);
   const [combination, setCombination] = useState<{ type: string; data: any }[]>();
   const [testAndHealthCheck, setTestAndHealthCheck] = useState<{ type: string; data: any }[]>();
-  const { loading, setLoading } = useUIElements();
+  const { loading, setLoading, showAphAlert } = useUIElements();
   const [prismdataLoader, setPrismdataLoader] = useState<boolean>(false);
   const [pastDataLoader, setPastDataLoader] = useState<boolean>(false);
   const [arrayValues, setarrayValues] = useState<any>();
@@ -804,14 +807,36 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       );
     };
 
+    const arrowRightIcon = () => {
+      return <PhrArrowRightIcon style={{ width: 20, height: 20 }} />;
+    };
+
+    const renderProfileNameView = () => {
+      return (
+        <View style={styles.profileNameViewStyle}>
+          <Text style={styles.profileNameTextStyle} numberOfLines={1}>
+            {'hi ' + (currentPatient?.firstName?.toLowerCase() + '!') || ''}
+          </Text>
+          <DropdownGreen />
+        </View>
+      );
+    };
+
     return (
       <View style={styles.profileDetailsMainViewStyle}>
         <View style={{ flexDirection: 'row' }}>
           {renderProfileImage()}
-          <View style={{ marginLeft: 8 }}>
-            <Text style={styles.profileNameTextStyle} numberOfLines={1}>
-              {'hi ' + (currentPatient?.firstName?.toLowerCase() + '!') || ''}
-            </Text>
+          <View style={{ marginLeft: 8, flex: 1, marginRight: 18 }}>
+            <ProfileList
+              showProfilePic={true}
+              navigation={props.navigation}
+              saveUserChange={true}
+              childView={renderProfileNameView()}
+              listContainerStyle={{ marginLeft: 0, marginTop: 44 }}
+              selectedProfile={profile}
+              setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+              unsetloaderDisplay={true}
+            ></ProfileList>
             <View>
               <Text style={{ ...theme.viewStyles.text('R', 18, '#67919D', 1, 21) }}>
                 {moment(currentPatient?.dateOfBirth).format('DD MMM YYYY')}
@@ -824,8 +849,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         <View style={styles.profileDetailsCardView}>
           <View style={styles.profileDetailsViewStyle}>
             <View style={{ flex: 1 }}>
-              <View style={{ paddingLeft: 30 }}>
+              <View style={[styles.profileNameViewStyle, { paddingLeft: 30 }]}>
                 <Text style={styles.userBloodTextStyle}>{'Height'}</Text>
+                {arrowRightIcon()}
               </View>
               <View style={styles.heightWeightViewStyle}>
                 <HeightIcon style={{ width: 14, height: 22.14 }} />
@@ -859,8 +885,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             </View>
             {separatorLineView()}
             <View style={{ flex: 1 }}>
-              <View style={{ paddingLeft: 25 }}>
+              <View style={[styles.profileNameViewStyle, { paddingLeft: 25 }]}>
                 <Text style={styles.userBloodTextStyle}>{'Weight'}</Text>
+                {arrowRightIcon()}
               </View>
               <View style={styles.heightWeightViewStyle}>
                 <WeightIcon style={{ width: 14, height: 14, paddingBottom: 8 }} />
@@ -893,8 +920,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             </View>
             {separatorLineView()}
             <View style={{ flex: 1 }}>
-              <View style={{ paddingLeft: 23 }}>
+              <View style={[styles.profileNameViewStyle, { paddingLeft: 23 }]}>
                 <Text style={styles.userBloodTextStyle}>{'Blood'}</Text>
+                {arrowRightIcon()}
               </View>
               <View style={styles.heightWeightViewStyle}>
                 <BloodIcon style={{ width: 14, height: 15.58 }} />
@@ -1118,6 +1146,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           selectionColor={theme.colors.INPUT_CURSOR_COLOR}
           placeholderTextColor={theme.colors.placeholderTextColor}
           value={height}
+          numberOfLines={1}
+          underlineColorAndroid={theme.colors.CLEAR}
+          keyboardType={'numbers-and-punctuation'}
           onChangeText={(text) => {
             setHeight(text);
           }}
@@ -1148,14 +1179,30 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     );
   };
 
+  const formatWeightNumber = (value: string) => {
+    let number =
+      value.indexOf('.') === value.length - 1 ||
+      value.indexOf('0', value.length - 1) === value.length - 1
+        ? value
+        : parseFloat(value);
+    return number || 0;
+  };
+
+  const setWeightValue = (text: string) => {
+    let format_number = formatWeightNumber(text);
+    setWeight((format_number || '').toString());
+  };
+
   const renderWeightView = () => {
     return (
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <TextInputComponent
           placeholder={'Enter Weight'}
           value={weight}
+          numberOfLines={1}
+          keyboardType={'numbers-and-punctuation'}
           onChangeText={(text) => {
-            setWeight(text);
+            setWeightValue(text);
           }}
         />
         <Text style={styles.kgsTextStyle}>{'Kgs'}</Text>
@@ -1188,11 +1235,15 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
 
     const onPressUpdate = () => {
       if (currentUpdatePopupId === 1) {
-        updateMedicalParameters(
-          height,
-          currentPatient?.patientMedicalHistory?.weight,
-          currentPatient?.patientMedicalHistory?.bloodGroup
-        );
+        if (parseFloat(height) < 0) {
+          Alert.alert('Alert!', 'Please enter valid height');
+        } else {
+          updateMedicalParameters(
+            height,
+            currentPatient?.patientMedicalHistory?.weight,
+            currentPatient?.patientMedicalHistory?.bloodGroup
+          );
+        }
       } else if (currentUpdatePopupId === 2) {
         updateMedicalParameters(
           currentPatient?.patientMedicalHistory?.height,
