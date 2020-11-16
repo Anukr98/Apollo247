@@ -1187,6 +1187,10 @@ export const HospitalUploadPhrIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_hospital_upload_phr.png')} />
 );
 
+export const PhrArrowRightIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_phr_arrow_right.png')} />
+);
+
 export const RoundCancelIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/round-cancel.png')} />
 );
