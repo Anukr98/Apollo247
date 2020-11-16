@@ -46,11 +46,13 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0),
     marginLeft: 2,
   },
+  mrp: {
+    ...theme.viewStyles.text('M', 11, '#02475b', 1, 20, 0),
+  },
   offTextStyle: {
     ...theme.viewStyles.text('M', 11, '#00B38E', 1, 20, 0),
   },
   priceAndAddToCartViewStyle: {
-    marginLeft: 3,
     flexDirection: 'row',
     position: 'absolute',
     bottom: 10,
@@ -184,25 +186,29 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
   const renderSpecialPrice = () => {
     const discount = getDiscountPercentage(price, special_price);
     const off_text = discount ? ' ' + discount + '%off' : '';
-    return is_in_stock && special_price ? (
+    return is_in_stock ? (
       <View style={{ flexDirection: 'row' }}>
-        <Text style={styles.specialpriceTextStyle}>
-          {'('}
-          <Text style={{ textDecorationLine: 'line-through' }}>{`Rs. ${price}`}</Text>
-          {')'}
-        </Text>
-        <Text style={styles.offTextStyle}>{off_text}</Text>
+        <Text style={styles.mrp}>{'MRP '}</Text>
+        {!!special_price && [
+          <Text style={styles.specialpriceTextStyle}>
+            {'('}
+            <Text style={{ textDecorationLine: 'line-through' }}>{`Rs. ${price}`}</Text>
+            {')'}
+          </Text>,
+          <Text style={styles.offTextStyle}>{off_text}</Text>,
+        ]}
       </View>
     ) : null;
   };
 
   const renderOutOfStock = () => {
+    const discount = getDiscountPercentage(price, special_price);
     return !is_in_stock && sell_online ? (
       <Text style={styles.outOfStockStyle} numberOfLines={2}>
         {'Out Of Stock'}
       </Text>
     ) : (
-      <Text style={styles.priceTextCollapseStyle}>Rs. {special_price || price}</Text>
+      <Text style={styles.priceTextCollapseStyle}>Rs. {discount ? special_price : price}</Text>
     );
   };
 

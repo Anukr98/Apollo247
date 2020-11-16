@@ -980,7 +980,7 @@ export const getDiscountPercentage = (price: number | string, specialPrice?: num
     : Number(price) == Number(specialPrice)
     ? 0
     : ((Number(price) - Number(specialPrice)) / Number(price)) * 100;
-  return discountPercent != 0 ? Number(discountPercent).toFixed(1) : 0;
+  return discountPercent != 0 ? Number(Number(discountPercent).toFixed(1)) : 0;
 };
 
 export const getBuildEnvironment = () => {
