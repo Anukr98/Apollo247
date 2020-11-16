@@ -59,7 +59,7 @@ import { string } from '../strings/string';
 import { isUpperCase } from '@aph/mobile-patients/src/utils/commonUtils';
 import Pubnub from 'pubnub';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
-
+import messaging from '@react-native-firebase/messaging';
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
 // finally not working on all promises.
 
@@ -187,8 +187,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       typeof currentDeviceToken != 'string' ||
       typeof currentDeviceToken == 'object'
     ) {
-      firebase
-        .messaging()
+      messaging()
         .getToken()
         .then((token) => {
           console.log('token', token);
