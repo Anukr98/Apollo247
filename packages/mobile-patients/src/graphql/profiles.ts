@@ -3346,3 +3346,14 @@ export const GET_DIAGNOSTIC_SLOTS_WITH_AREA_ID = gql`
     }
   }
 `;
+
+export const GET_CASHBACK_DETAILS_OF_PLAN_ID = gql`
+  query GetCashbackDetailsOfPlanById {
+    GetCashbackDetailsOfPlanById {
+      code
+      success
+      message
+      response
+    }
+  }
+`;

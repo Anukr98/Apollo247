@@ -110,6 +110,9 @@ export const ProductCard: React.FC<Props> = ({
       return (
         <CareCashbackBanner
           bannerText={`Extra Care ₹${cashback} Cashback`}
+          textStyle={{
+            left: -5,
+          }}
         />
       );
     } else {
