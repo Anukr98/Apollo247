@@ -67,6 +67,7 @@ import {
   VALIDATE_HDFC_OTP,
   CREATE_USER_SUBSCRIPTION,
   GET_ALL_GROUP_BANNERS_OF_USER,
+  GET_CASHBACK_DETAILS_OF_PLAN_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { getPatientFutureAppointmentCount } from '@aph/mobile-patients/src/graphql/types/getPatientFutureAppointmentCount';
 import {
@@ -163,6 +164,7 @@ import { addVoipPushToken, addVoipPushTokenVariables } from '../../graphql/types
 import Carousel from 'react-native-snap-carousel';
 import { HdfcConnectPopup } from '../HdfcSubscription/HdfcConnectPopup';
 import { getPatientAllAppointments_getPatientAllAppointments_appointments } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
+import { GetCashbackDetailsOfPlanById } from '@aph/mobile-patients/src/graphql/types/GetCashbackDetailsOfPlanById';
 
 const { Vitals } = NativeModules;
 
@@ -1012,14 +1014,25 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         });
   };
 
+  const getProductCashbackDetails = () => {
+    client
+      .query<GetCashbackDetailsOfPlanById>({
+        query: GET_CASHBACK_DETAILS_OF_PLAN_ID,
+        fetchPolicy: 'no-cache',
+      })
+      .then((data) => {
+        const cashback = g(data, 'data', 'GetCashbackDetailsOfPlanById', 'response', 'meta', 'cashback');
+        setCircleCashback && setCircleCashback(cashback);
+      })
+      .catch((e) => {
+        setHdfcLoading(false);
+        CommonBugFender('ConsultRoom_getSubscriptionsOfUserByStatus', e);
+      });
+  };
+
   const getUserSubscriptionsWithBenefits = () => {
     setHdfcLoading(true);
     const mobile_number = g(currentPatient, 'mobileNumber');
-    // setCircleCashback && setCircleCashback({
-    //   "PL": 20,
-    //   "FMCG": 10,
-    //   "PHARMA": 15
-    // });
     mobile_number &&
       client
         .query<
@@ -1378,6 +1391,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     if (isIos()) {
       initializeVoip();
     }
+
+    getProductCashbackDetails();
   }, []);
 
   const initializeVoip = () => {
