@@ -2,7 +2,7 @@ import { MedicineIcon, MedicineRxIcon } from '@aph/mobile-patients/src/component
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
-import { getDiscountPercentage } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { getDiscountPercentage, getCareCashback } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { Image } from 'react-native-elements';
 import { AddToCartButtons } from '@aph/mobile-patients/src/components/Medicines/AddToCartButtons';
 import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
@@ -99,6 +99,7 @@ export interface SearchMedicineGridCardProps {
   containerStyle?: StyleProp<ViewStyle>;
   maxOrderQty: number;
   removeCartItem: () => void;
+  type_id?: string | null;
 }
 
 export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (props) => {
@@ -119,6 +120,7 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
     onPress,
     maxOrderQty,
     removeCartItem,
+    type_id,
   } = props;
 
   const renderTitleAndIcon = () => {
@@ -221,10 +223,19 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
     );
   };
 
-  const renderCareCashback = () => 
-    <CareCashbackBanner
-      bannerText={'Extra Care ₹65 Cashback'}
-    />
+  const renderCareCashback = () => {
+    const finalPrice = (price - Number(specialPrice)) ? Number(specialPrice) : price;
+    const cashback = getCareCashback(Number(finalPrice), type_id);
+    if (!!cashback && type_id) {
+      return (
+        <CareCashbackBanner
+          bannerText={`Extra Care ₹${cashback.toFixed(2)} Cashback`}
+        />
+      );
+    } else {
+      return <></>
+    }
+  };
 
   return (
     <TouchableOpacity
@@ -236,7 +247,7 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
         {renderMedicineIcon()}
         {renderTitleAndIcon()}
       </View>
-      {renderCareCashback()}
+      {!!type_id && renderCareCashback()}
       {renderSpecialPrice()}
       <View style={styles.priceAndAddToCartViewStyle}>
         {renderOutOfStock()}

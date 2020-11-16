@@ -39,6 +39,7 @@ import {
   postAppsFlyerAddToCartEvent,
   g,
   getDiscountPercentage,
+  getCareCashback,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -72,6 +73,7 @@ import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 import { ProductList } from '@aph/mobile-patients/src/components/Medicines/ProductList';
 import { ProductUpSellingCard } from '@aph/mobile-patients/src/components/Medicines/ProductUpSellingCard';
 import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
+import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
 
 const { width, height } = Dimensions.get('window');
 
@@ -300,7 +302,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
   const sku = props.navigation.getParam('sku'); // 'MED0017';
 
-  const { addCartItem, cartItems, updateCartItem, removeCartItem } = useShoppingCart();
+  const { addCartItem, cartItems, updateCartItem, removeCartItem, isCircleSubscription } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const getItemQuantity = (id: string) => {
     const foundItem = cartItems.find((item) => item.id == id);
@@ -313,6 +315,10 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const cartItemsCount = cartItems.length + diagnosticCartItems.length;
   const movedFrom = props.navigation.getParam('movedFrom');
   const productPageViewedEventProps = props.navigation.getParam('productPageViewedEventProps');
+
+  const { special_price, price, type_id } = medicineDetails;
+  const finalPrice = (price - special_price) ? special_price : price;
+  const cashback = getCareCashback(Number(finalPrice), type_id);
 
   useEffect(() => {
     if (!_deliveryError) {
@@ -649,28 +655,31 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     />
   );
 
-  const renderCareCashback = () => (
-    <View style={{paddingVertical: 5}}>
-      <View style={{
-        flexDirection: 'row',
-        paddingBottom: 5,
-      }}>
-        <View style={{
-          backgroundColor: '#F0533B',
-          width: 15,
-          height: 15,
-          borderRadius: 15,
-          marginRight: 6,
-        }} />
-        <Text style={theme.viewStyles.text('M', 12, '#F0533B', 1, 15)}>
-          ₹270.00 extra cashback 
+  const renderCareCashback = () => {
+    if (!!cashback) {
+      return (
+        <>
+        <CareCashbackBanner
+          bannerText={`Extra Care ₹${cashback} Cashback`}
+          textStyle={{
+            ...theme.viewStyles.text('M', 9, '#02475B', 1, 15),
+            paddingVertical: 2,
+          }}
+          logoStyle={{
+            resizeMode: 'contain',
+            width: 40,
+            height: 20,
+          }}
+        />
+        <Text style={theme.viewStyles.text('R', 11, '#02475B', 1, 17)}>
+          {`Effective price for you ₹${finalPrice - cashback}`}
         </Text>
-      </View>
-      <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 15)}>
-        Effective price for you ₹1530
-      </Text>
-    </View>
-  );
+        </>
+      );
+    } else {
+      return <></>
+    }
+  };
 
   const renderBottomButtons = () => {
     const itemQty = getItemQuantity(sku);
@@ -903,7 +912,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const renderCareSubscribeCard = () => 
     <View style={styles.careCardContainer}>
       {
-        !!true ? 
+        !!isCircleSubscription ? 
         <View style={{
           flexDirection: 'row',
         }}>

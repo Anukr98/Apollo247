@@ -123,8 +123,6 @@ export interface AppCommonDataContextProps {
   setHdfcUserSubscriptions: ((items: SubscriptionData) => void) | null;
   circleSubscription: CicleSubscriptionData | null;
   setCircleSubscription: ((items: CicleSubscriptionData) => void) | null;
-  isCircleSubscription: boolean;
-  setIsCircleSubscription: ((value: boolean) => void) | null;
   bannerData: bannerType[] | null;
   setBannerData: ((items: bannerType[]) => void) | null;
   locationDetails: LocationData | null;
@@ -187,8 +185,6 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setHdfcUserSubscriptions: null,
   circleSubscription: null,
   setCircleSubscription: null,
-  isCircleSubscription: false,
-  setIsCircleSubscription: null,
   bannerData: null,
   setBannerData: null,
   locationDetails: null,
@@ -254,10 +250,6 @@ export const AppCommonDataProvider: React.FC = (props) => {
   const [circleSubscription, _setCircleSubscription] = useState<
     AppCommonDataContextProps['circleSubscription']
   >(null);
-
-  const [isCircleSubscription, setIsCircleSubscription] = useState<
-    AppCommonDataContextProps['isCircleSubscription']
-  >();
 
   const [bannerData, _setBannerData] = useState<
     AppCommonDataContextProps['bannerData']
@@ -412,8 +404,6 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setHdfcUserSubscriptions,
         circleSubscription,
         setCircleSubscription,
-        isCircleSubscription,
-        setIsCircleSubscription,
         bannerData,
         setBannerData,
         pharmacyLocation,

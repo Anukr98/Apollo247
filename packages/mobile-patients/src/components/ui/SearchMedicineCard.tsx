@@ -3,7 +3,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { Image } from 'react-native-elements';
-import { getDiscountPercentage } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { getDiscountPercentage, getCareCashback } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AddToCartButtons } from '@aph/mobile-patients/src/components/Medicines/AddToCartButtons';
 import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
 import { CareCashbackBanner } from './CareCashbackBanner';
@@ -65,6 +65,7 @@ export interface SearchMedicineCardProps {
   containerStyle?: StyleProp<ViewStyle>;
   maxOrderQty: number;
   removeCartItem: () => void;
+  type_id?: string | null;
 }
 
 export const SearchMedicineCard: React.FC<SearchMedicineCardProps> = (props) => {
@@ -85,21 +86,29 @@ export const SearchMedicineCard: React.FC<SearchMedicineCardProps> = (props) => 
     onPress,
     maxOrderQty,
     removeCartItem,
+    type_id,
   } = props;
+
+  const renderCareCashback = () => {
+    const finalPrice = (price - Number(specialPrice)) ? Number(specialPrice) : price;
+    const cashback = getCareCashback(Number(finalPrice), type_id);
+    if (!!cashback && type_id) {
+      return (
+        <CareCashbackBanner
+          bannerText={`Extra Care ₹${cashback.toFixed(2)} Cashback`}
+        />
+      );
+    } else {
+      return <></>
+    }
+  };
 
   const renderTitleAndIcon = () => {
     return (
       <View style={styles.rowSpaceBetweenView}>
         <View style={{ flex: 1 }}>
           <Text style={styles.medicineTitle}>{medicineName}</Text>
-          <CareCashbackBanner
-            bannerStyle={{
-              left: -5,
-              width: '80%',
-              marginTop: 5,
-            }}
-            bannerText={'Extra Care ₹65 Cashback'}
-          />
+          {!!type_id && renderCareCashback()}
           {renderOutOfStock()}
         </View>
       </View>

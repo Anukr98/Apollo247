@@ -9,12 +9,14 @@ import { MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   getDiscountPercentage,
   productsThumbnailUrl,
+  getCareCashback,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, TouchableOpacityProps, View } from 'react-native';
 import { Divider, Image } from 'react-native-elements';
 import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 export interface Props extends MedicineProduct {
   onPress: () => void;
@@ -36,6 +38,7 @@ export const ProductCard: React.FC<Props> = ({
   sell_online,
   is_prescription_required,
   MaxOrderQty,
+  type_id,
   quantity,
   containerStyle,
   onPress,
@@ -43,6 +46,7 @@ export const ProductCard: React.FC<Props> = ({
   onPressAddQty,
   onPressSubtractQty,
 }) => {
+  const { circleCashback } = useShoppingCart();
   const isPrescriptionRequired = is_prescription_required == 1;
   const discount = getDiscountPercentage(price, special_price);
 
@@ -99,10 +103,19 @@ export const ProductCard: React.FC<Props> = ({
 
   const renderDivider = () => <Divider style={styles.divider} />;
 
-  const renderCareCashback = () => 
-    <CareCashbackBanner
-      bannerText={'Extra Care ₹65 Cashback'}
-    />
+  const renderCareCashback = () => {
+    const finalPrice = discount ? special_price : price;
+    const cashback = getCareCashback(Number(finalPrice), type_id);
+    if (!!cashback) {
+      return (
+        <CareCashbackBanner
+          bannerText={`Extra Care ₹${cashback} Cashback`}
+        />
+      );
+    } else {
+      return <></>
+    }
+  };
 
   const renderProductActions = () =>
     sell_online ? renderAddToCartButton() : renderNotForSaleTag();
@@ -113,8 +126,8 @@ export const ProductCard: React.FC<Props> = ({
       {renderImage()}
       {renderTitle()}
       {renderDivider()}
-      {renderCareCashback()}
       {renderPrice()}
+      {renderCareCashback()}
       {renderProductActions()}
     </TouchableOpacity>
   );

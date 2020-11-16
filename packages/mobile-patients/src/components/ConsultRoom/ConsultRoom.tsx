@@ -356,7 +356,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     bannerData,
     setBannerData,
     setCircleSubscription,
-    setIsCircleSubscription,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
@@ -367,7 +366,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [isFindDoctorCustomProfile, setFindDoctorCustomProfile] = useState<boolean>(false);
 
   const { cartItems } = useDiagnosticsCart();
-  const { cartItems: shopCartItems, setHdfcPlanName, setIsFreeDelivery } = useShoppingCart();
+  const { cartItems: shopCartItems, setHdfcPlanName, setIsFreeDelivery, setIsCircleSubscription, setCircleCashback } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
 
   const { analytics } = useAuth();
@@ -1016,6 +1015,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const getUserSubscriptionsWithBenefits = () => {
     setHdfcLoading(true);
     const mobile_number = g(currentPatient, 'mobileNumber');
+    // setCircleCashback && setCircleCashback({
+    //   "PL": 20,
+    //   "FMCG": 10,
+    //   "PHARMA": 15
+    // });
     mobile_number &&
       client
         .query<

@@ -4,11 +4,12 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { FreeShippingIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
 
 export interface FreeDeliveryProps {}
 
 export const FreeDelivery: React.FC<FreeDeliveryProps> = (props) => {
-  const { cartItems, cartTotal, couponDiscount, productDiscount, isCareSubscribed } = useShoppingCart();
+  const { cartItems, cartTotal, couponDiscount, productDiscount, isCircleSubscription } = useShoppingCart();
   const minValuetoNudgeUsers =
     AppConfig.Configuration.MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY;
   const minValueForFreeDelivery = AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY;
@@ -28,19 +29,13 @@ export const FreeDelivery: React.FC<FreeDeliveryProps> = (props) => {
 
   function renderFreeDeliveryCard() {
     return (
-        !!isCareSubscribed ?
+        !!isCircleSubscription ?
         <View style={{
           ...theme.viewStyles.cardViewStyle,
           margin: 15,
-          padding: 10,
+          padding: 5,
         }}>
-          <View style={styles.careTextContainer}>
-            <View style={styles.careRedBox} />
-            <Text style={styles.getCareText}>
-              You are now eligible for{' '}
-              <Text style={theme.viewStyles.text('B', 13, '#02475B', 1, 20)}>FREE DELIVERY</Text>
-            </Text>
-          </View>
+          {renderCareCashback()}
         </View> :
         <View style={styles.card}>
           <FreeShippingIcon style={{ width: 15, height: 15, marginTop: 3, marginRight: 3 }} />
@@ -65,6 +60,24 @@ export const FreeDelivery: React.FC<FreeDeliveryProps> = (props) => {
   return showCard() ? (
     renderFreeDeliveryCard()
   ) : null;
+};
+
+const renderCareCashback = () => {
+  return (
+    <CareCashbackBanner
+      bannerText={`You are now eligible for FREE DELIVERY`}
+      textStyle={{
+        ...theme.viewStyles.text('M', 14, '#02475B', 1, 17),
+        paddingVertical: 15,
+        left: -6,
+      }}
+      logoStyle={{
+        resizeMode: 'contain',
+        width: 60,
+        height: 45,
+      }}
+    />
+  );
 };
 
 const styles = StyleSheet.create({

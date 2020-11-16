@@ -3,23 +3,18 @@ import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { Down } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Down, CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
 
 export interface SavingsProps {}
 
 export const Savings: React.FC<SavingsProps> = (props) => {
-  const { couponDiscount, productDiscount, deliveryCharges, isCareSubscribed } = useShoppingCart();
+  const { couponDiscount, productDiscount, deliveryCharges, isCircleSubscription, cartTotalCashback } = useShoppingCart();
   const deliveryFee = AppConfig.Configuration.DELIVERY_CHARGES;
   const [showCareDetails, setShowCareDetails] = useState(true);
+  const careTotal = Number(deliveryFee) + Number(productDiscount) + cartTotalCashback;
 
   function getSavings() {
-    return Number(
-      (
-        (couponDiscount && couponDiscount) +
-        (productDiscount && productDiscount) +
-        (deliveryCharges == 0 ? deliveryFee : 0)
-      ).toFixed(2)
-    );
+    return Number(careTotal).toFixed(2);
   }
 
   function saveMessage() {
@@ -27,7 +22,6 @@ export const Savings: React.FC<SavingsProps> = (props) => {
       <TouchableOpacity
         activeOpacity={1}
         onPress={() => {
-          console.log('isCareSubscribed: ', isCareSubscribed);
           setShowCareDetails(!showCareDetails);
         }}
       >
@@ -67,15 +61,11 @@ export const Savings: React.FC<SavingsProps> = (props) => {
 
   function renderCareLogo() {
     return (
-      <View style={{
-        borderRadius: 4,
-        backgroundColor: '#F0533B',
-        justifyContent: 'center',
-        paddingHorizontal: 3,
-        marginRight: 10,
-      }}>
-        <Text style={theme.viewStyles.text('M', 11, '#FFFFFF', 1, 13)}>CARE</Text>
-      </View>
+      <CircleLogo style={{
+        resizeMode: 'contain',
+        width: 40,
+        height: 20,
+      }} />
     );
   }
 
@@ -89,27 +79,33 @@ export const Savings: React.FC<SavingsProps> = (props) => {
             {renderCareLogo()}
             <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>Membership Cashback</Text>
           </View>
-          <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>₹10</Text>
+          <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>₹{cartTotalCashback}</Text>
         </View>
-        <View style={[
-          styles.rowSpaceBetween,
-          { marginTop: 10 }
-        ]}>
-          <View style={{flexDirection: 'row'}}>
-            {renderCareLogo()}
-            <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>Delivery</Text>
+        {
+          !!deliveryFee &&
+          <View style={[
+            styles.rowSpaceBetween,
+            { marginTop: 10 }
+          ]}>
+            <View style={{flexDirection: 'row'}}>
+              {renderCareLogo()}
+              <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>Delivery</Text>
+            </View>
+            <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>₹{deliveryFee.toFixed(2)}</Text>
           </View>
-          <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>₹50</Text>
-        </View>
-        <View style={[
-          styles.rowSpaceBetween,
-          { marginTop: 10 }
-        ]}>
-          <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>Cart Savings</Text>
-          <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>₹10</Text>
-        </View>
+        }
+        {
+          !!productDiscount &&
+          <View style={[
+            styles.rowSpaceBetween,
+            { marginTop: 10 }
+          ]}>
+            <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>Cart Savings</Text>
+            <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>₹{productDiscount.toFixed(2)}</Text>
+          </View>
+        }
         <View style={styles.totalAmountContainer}>
-          <Text style={styles.totalAmount}>₹70</Text>
+          <Text style={styles.totalAmount}>₹{careTotal.toFixed(2)}</Text>
         </View>
       </View>
     )
@@ -119,9 +115,9 @@ export const Savings: React.FC<SavingsProps> = (props) => {
     <>
       <View style={styles.savingsCard}>
         {saveMessage()}
-        { isCareSubscribed && showCareDetails && careSavings() }
+        { isCircleSubscription && showCareDetails && careSavings() }
       </View>
-      { !isCareSubscribed && showCareDetails && careSubscribeMessage() }
+      { !isCircleSubscription && showCareDetails && careSubscribeMessage() }
     </>
   ) : null;
 };

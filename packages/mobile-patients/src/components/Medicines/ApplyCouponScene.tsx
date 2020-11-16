@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   careMessage: {
-    ...theme.viewStyles.text('M', 13, '#01475B', 1, 20),
+    ...theme.viewStyles.text('R', 13, '#01475B', 1, 20),
     width: '90%'
   },
 });
@@ -142,7 +142,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
     pinCode,
     addresses,
     deliveryAddressId,
-    isCareSubscribed,
+    isCircleSubscription,
   } = useShoppingCart();
   const { showAphAlert } = useUIElements();
   const [loading, setLoading] = useState<boolean>(true);
@@ -368,7 +368,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
           onPressLeftIcon={() => props.navigation.goBack()}
         />
         <ScrollView style={{ marginBottom: 80 }} bounces={false}>
-          {isCareSubscribed && renderCareDiscountBanner()}
+          {isCircleSubscription && renderCareDiscountBanner()}
           {renderCouponCard()}
         </ScrollView>
         {renderBottomButtons()}

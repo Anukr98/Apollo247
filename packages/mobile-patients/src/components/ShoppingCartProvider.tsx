@@ -31,6 +31,7 @@ export interface ShoppingCartItem {
   productType?: 'FMCG' | 'Pharma' | 'PL';
   isFreeCouponProduct?: boolean;
   applicable?: boolean;
+  circleCashbackAmt: number;
 }
 
 export interface CouponProducts {
@@ -90,6 +91,13 @@ export interface CartProduct {
   couponFree?: number;
   applicable?: boolean;
 }
+
+export interface CircleCashbackData {
+  FMCG: number | null;
+  PL: number | null;
+  PHARMA: number | null;
+}
+
 export type EPrescriptionDisableOption = 'CAMERA_AND_GALLERY' | 'E-PRESCRIPTION' | 'NONE';
 
 export interface ShoppingCartContextProps {
@@ -103,6 +111,7 @@ export interface ShoppingCartContextProps {
     | null;
   getCartItemQty: (id: string) => number;
   cartTotal: number;
+  cartTotalCashback: number;
   cartTotalOfRxProducts: number;
   couponDiscount: number;
   couponProducts: CouponProducts[];
@@ -114,6 +123,10 @@ export interface ShoppingCartContextProps {
   uploadPrescriptionRequired: boolean;
   isFreeDelivery: boolean;
   setIsFreeDelivery: ((value: boolean) => void) | null;
+  circleCashback: CircleCashbackData | null;
+  setCircleCashback: ((items: CircleCashbackData) => void) | null;
+  isCircleSubscription: boolean;
+  setIsCircleSubscription: ((value: boolean) => void) | null;
   showPrescriptionAtStore: boolean;
   setShowPrescriptionAtStore: ((value: boolean) => void) | null;
   stores: Store[];
@@ -164,7 +177,6 @@ export interface ShoppingCartContextProps {
   setHdfcPlanName: ((id: string) => void) | null;
 
   isProuctFreeCouponApplied: boolean;
-  isCareSubscribed: boolean;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -176,6 +188,7 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   updateCartItem: null,
   getCartItemQty: () => 0,
   cartTotal: 0,
+  cartTotalCashback: 0,
   cartTotalOfRxProducts: 0,
   couponDiscount: 0,
   productDiscount: 0,
@@ -207,6 +220,11 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   isFreeDelivery: false,
   setIsFreeDelivery: null,
 
+  circleCashback: null,
+  setCircleCashback: null,
+  isCircleSubscription: false,
+  setIsCircleSubscription: null,
+
   showPrescriptionAtStore: false,
   setShowPrescriptionAtStore: null,
   pinCode: '',
@@ -232,7 +250,6 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setHdfcPlanName: null,
 
   isProuctFreeCouponApplied: false,
-  isCareSubscribed: false,
 });
 
 const AsyncStorageKeys = {
@@ -273,6 +290,14 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [isFreeDelivery, setIsFreeDelivery] = useState<ShoppingCartContextProps['isFreeDelivery']>(
     false
   );
+
+  const [circleCashback, _setCircleCashback] = useState<
+    ShoppingCartContextProps['circleCashback']
+  >(null);
+  const [isCircleSubscription, setIsCircleSubscription] = useState<
+    ShoppingCartContextProps['isCircleSubscription']
+  >(false);
+
   const [showPrescriptionAtStore, setShowPrescriptionAtStore] = useState<
     ShoppingCartContextProps['showPrescriptionAtStore']
   >(false);
@@ -329,6 +354,18 @@ export const ShoppingCartProvider: React.FC = (props) => {
   };
 
   const setCartItems: ShoppingCartContextProps['setCartItems'] = (cartItems) => {
+    if (cartItems.length) {
+      // calculate circle cashback
+      cartItems.forEach((item) => {
+        const finalPrice = item.specialPrice ? (item.price - item.specialPrice) ? item.specialPrice : item.price : item.price;
+        let cashback = 0;
+        const type_id = item.productType;
+        if (!!circleCashback && !!circleCashback[type_id]) {
+          cashback = (finalPrice * item.quantity) * (circleCashback[type_id] / 100);
+        }
+        item.circleCashbackAmt = cashback || 0;
+      });
+    }
     _setCartItems(cartItems);
     AsyncStorage.setItem(AsyncStorageKeys.cartItems, JSON.stringify(cartItems)).catch(() => {
       showGenericAlert('Failed to save cart items in local storage.');
@@ -419,6 +456,18 @@ export const ShoppingCartProvider: React.FC = (props) => {
       .toFixed(2)
   );
 
+  const setCircleCashback: ShoppingCartContextProps['setCircleCashback'] = (
+    circleCashback
+  ) => {
+    _setCircleCashback(circleCashback);
+  };
+
+  const cartTotalCashback: ShoppingCartContextProps['cartTotalCashback'] = parseFloat(
+    cartItems
+      .reduce((cbTotal, currItem) => cbTotal + currItem.circleCashbackAmt, 0)
+      .toFixed(2)
+  );
+
   const cartTotalOfRxProducts: ShoppingCartContextProps['cartTotalOfRxProducts'] = parseFloat(
     cartItems
       .filter((currItem) => currItem.prescriptionRequired == true)
@@ -426,10 +475,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
       .toFixed(2)
   );
 
-  const isCareSubscribed = false;
-
   const deliveryCharges =
-    isFreeDelivery || deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP || isCareSubscribed
+    isFreeDelivery || deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP || isCircleSubscription
       ? 0
       : cartTotal > 0 &&
         cartTotal - productDiscount - couponDiscount <
@@ -671,6 +718,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
         updateCartItem,
         getCartItemQty,
         cartTotal, // MRP Total
+        cartTotalCashback,
         cartTotalOfRxProducts,
         grandTotal,
         couponDiscount,
@@ -710,6 +758,10 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setStoreId,
         isFreeDelivery,
         setIsFreeDelivery,
+        circleCashback,
+        setCircleCashback,
+        isCircleSubscription,
+        setIsCircleSubscription,
         showPrescriptionAtStore,
         setShowPrescriptionAtStore,
 
@@ -725,8 +777,6 @@ export const ShoppingCartProvider: React.FC = (props) => {
         hdfcPlanName,
         setHdfcPlanName,
         isProuctFreeCouponApplied,
-
-        isCareSubscribed,
       }}
     >
       {props.children}

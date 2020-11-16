@@ -3,13 +3,15 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { ScrollView } from 'react-native-gesture-handler';
+import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
+import { CheckBoxFilled, CheckUnselectedIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 
 interface CareSelectPlansProps {
   onPressKnowMore: () => void;
 }
 
 export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
-  const { isCareSubscribed } = useShoppingCart();
+  const { isCircleSubscription, coupon, setCoupon } = useShoppingCart();
   const { onPressKnowMore } = props;
   const subscriptionData = [
     {
@@ -99,65 +101,95 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
     </View>
 
   const renderCarePlanAdded = () =>
-    <View>
+    <TouchableOpacity onPress={() => {
+      if (coupon) setCoupon!(null);
+    }} activeOpacity={1}>
       <View style={{
         flexDirection: 'row',
-        justifyContent: 'space-between'
       }}>
-        <View style={{
-          flexDirection: 'row',
-        }}>
-          <View style={[
-            styles.careRedBox,
-            {
-              borderRadius: 25, 
-              justifyContent: 'center',
+        {
+          coupon 
+          ?
+          <>
+            <CheckUnselectedIcon style={{
+              resizeMode: 'contain',
+              height: 25,
+              width: 25,
               marginRight: 10,
-            }
-          ]}>
-            <Text style={{
-              ...theme.viewStyles.text('R', 9, '#FFFFFF', 1, 11),
-              textAlign: 'center',
-            }}>care</Text>
-          </View>
-          <Text style={{
-            ...theme.viewStyles.text('M', 15, '#02475B', 1, 29)
-          }}>CARE Plan added to cart!</Text>
-        </View>
+              marginTop: 8,
+            }} />
+            {renderApplyCareBanner()}
+          </>
+          : 
+          <>
+            <CheckBoxFilled style={{
+              resizeMode: 'contain',
+              height: 25,
+              width: 25,
+              marginRight: 10,
+              marginTop: 8,
+            }} />
+            {renderCareCashback()}
+          </>
+        }
+      </View>
+    </TouchableOpacity>
+
+  const renderApplyCareBanner = () => {
+    return (
+      <View>
         <View style={{
           flexDirection: 'row',
         }}>
           <Text style={{
-            ...theme.viewStyles.text('SB', 18, '#00B38E', 1, 29),
-            marginRight: 5,
-          }}>
-            ₹699
-          </Text>
-          <Text style={{
-            ...theme.viewStyles.text('R', 13, '#979797', 1, 32),
-            textDecorationLine: 'line-through',
-          }}>
-            ₹1999
-          </Text>
+            ...theme.viewStyles.text('M', 14, '#02475B', 1, 17),
+            paddingTop: 12,
+          }}>Apply</Text>
+          <CareCashbackBanner
+            bannerText={`benefits instead`}
+            textStyle={{
+              ...theme.viewStyles.text('M', 14, '#02475B', 1, 17),
+              paddingTop: 12,
+              left: -5,
+            }}
+            logoStyle={{
+              resizeMode: 'contain',
+              width: 50,
+              height: 40,
+            }}
+          />
         </View>
-      </View>
-      <TouchableOpacity 
-        style={{marginTop: 10}}
-        onPress={() => {console.log('remove care plan')}}
-      >
-        <Text style={{
-          ...theme.viewStyles.text('B', 14, '#979797', 1, 15),
-          textAlign: 'right',
-        }}>
-          REMOVE
+        <Text style={theme.viewStyles.text('R', 13, '#02475B', 1, 20)}>
+          Use your Circle membership instead and get{' '}
+          <Text style={theme.viewStyles.text('B', 13, '#02475B', 1, 20)}>₹54 Cashback and Free delivery{' '}</Text>
+          on this order
         </Text>
-      </TouchableOpacity>
-    </View>
+      </View>
+    )
+  };
+
+  const renderCareCashback = () => {
+    return (
+      <CareCashbackBanner
+        bannerText={`benefits APPLIED!`}
+        textStyle={{
+          ...theme.viewStyles.text('M', 14, '#02475B', 1, 17),
+          paddingTop: 12,
+          left: -5,
+        }}
+        logoStyle={{
+          resizeMode: 'contain',
+          width: 50,
+          height: 40,
+        }}
+      />
+    );
+  };
 
   return (
     <View style={styles.careBannerView}>
       {
-        isCareSubscribed ?
+        isCircleSubscription ?
         renderCarePlanAdded() :
         renderSubscribeCareContainer()
       }

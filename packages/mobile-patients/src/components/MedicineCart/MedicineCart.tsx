@@ -117,7 +117,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     ePrescriptions,
     setPhysicalPrescriptions,
     pinCode,
-    isCareSubscribed,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();

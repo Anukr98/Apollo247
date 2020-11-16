@@ -10,7 +10,7 @@ export interface CouponProps {
 }
 
 export const Coupon: React.FC<CouponProps> = (props) => {
-  const { coupon, couponDiscount, isProuctFreeCouponApplied, isCareSubscribed } = useShoppingCart();
+  const { coupon, couponDiscount, isProuctFreeCouponApplied, isCircleSubscription } = useShoppingCart();
   const { onPressApplyCoupon, onPressRemove } = props;
 
   const renderApplyCoupon = () => {
@@ -23,20 +23,16 @@ export const Coupon: React.FC<CouponProps> = (props) => {
           </View>
           <ArrowRight />
         </TouchableOpacity>
-        {!!isCareSubscribed && renderCareMessage()}
+        {!!isCircleSubscription && renderCareMessage()}
       </View>
     );
   };
 
   const renderCareMessage = () => 
     <View style={styles.careMessageContainer}>
-      <PendingIcon style={styles.pendingIconStyle} />
       <View style={styles.careMessage}>
-        <Text style={theme.viewStyles.text('B', 13, '#979797', 1, 20)}>
-          Remove CARE membership to apply coupon.{' '}
-        </Text>
-        <Text style={{...theme.viewStyles.text('R', 13, '#979797', 1, 20), flexWrap: 'wrap'}}>
-          You can either use CARE benefits or apply coupon. Remove CARE membership from CART to avail coupon discount.
+        <Text style={{...theme.viewStyles.text('R', 14, '#979797', 1, 20), flexWrap: 'wrap'}}>
+          You can either use CIRCLE cashback or apply a Coupon code
         </Text>
       </View>
     </View>
@@ -126,17 +122,14 @@ const styles = StyleSheet.create({
   },
   careMessageContainer: {
     flexDirection: 'row',
-    paddingHorizontal: 15,
+    marginLeft: 35,
+    paddingHorizontal: 10,
     paddingVertical: 10,
+    justifyContent: 'flex-start',
     borderTopWidth: 0.5,
     borderTopColor: '#979797',
-    justifyContent: 'flex-start',
-  },
-  pendingIconStyle: {
-    marginRight: 10,
-    marginTop: 5,
   },
   careMessage: {
-    width: '80%',
+    width: '90%',
   }
 });

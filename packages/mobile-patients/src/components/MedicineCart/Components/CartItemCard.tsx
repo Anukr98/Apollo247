@@ -14,6 +14,7 @@ import {
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { getMaxQtyForMedicineItem } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
 
 export interface CartItemCardProps {
   item: ShoppingCartItem;
@@ -24,7 +25,7 @@ export interface CartItemCardProps {
 }
 
 export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
-  const { coupon, isProuctFreeCouponApplied, isCareSubscribed } = useShoppingCart();
+  const { coupon, isProuctFreeCouponApplied, isCircleSubscription } = useShoppingCart();
   const { item, onUpdateQuantity, onPressDelete, onPressProduct } = props;
   const [discountedPrice, setDiscountedPrice] = useState<any>(undefined);
   const [mrp, setmrp] = useState<number>(0);
@@ -92,25 +93,8 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
           </TouchableOpacity>
         </View>
         {renderLowerCont()}
-        {isCareSubscribed && renderCareCashback()}
       </View>
     );
-  };
-
-  const renderCareCashback = () => {
-    return (
-      <View style={{
-        backgroundColor: '#F0533B',
-        marginTop: 5,
-        paddingHorizontal: 5,
-        borderRadius: 4,
-        alignSelf: 'flex-start',
-      }}>
-        <Text style={{
-          ...theme.viewStyles.text('M', 11, '#FFFFFF', 1, 20)
-        }}>20% CARE Cashabck</Text>
-      </View>
-    )
   };
 
   const renderDelete = () => {
@@ -123,6 +107,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
         <View>
           {renderQuantity()}
           {!item.unserviceable && !isProuctFreeCouponApplied && !!coupon && renderCoupon()}
+          {isCircleSubscription && renderCareCashback()}
         </View>
         {!item?.isFreeCouponProduct
           ? discountedPrice || discountedPrice == 0
@@ -131,6 +116,18 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
           : renderFree()}
       </View>
     );
+  };
+
+  const renderCareCashback = () => {
+    if (!!item.circleCashbackAmt) {
+      return (
+        <CareCashbackBanner
+          bannerText={`Extra Care ₹${item.circleCashbackAmt} Cashback`}
+        />
+      );
+    } else {
+      return <></>
+    }
   };
 
   const renderFree = () => {

@@ -201,7 +201,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     medicinePageAPiResponse,
     setMedicinePageAPiResponse,
     setLocationDetails,
-    isCircleSubscription,
   } = useAppCommonData();
   const [ShowPopop, setShowPopop] = useState<boolean>(!!showUploadPrescriptionPopup);
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
