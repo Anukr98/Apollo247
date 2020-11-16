@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, View, Text, StyleSheet, ScrollView, SectionList } from 'react-native';
+import {
+  SafeAreaView,
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  SectionList,
+  BackHandler,
+} from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -7,7 +15,6 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { HealthRecordCard } from '@aph/mobile-patients/src/components/HealthRecords/Components/HealthRecordCard';
 import { getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizationsNew_response as HospitalizationType } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords';
 import { PhrNoDataComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/PhrNoDataComponent';
@@ -22,8 +29,11 @@ import {
   postWebEngageEvent,
   initialSortByDays,
   editDeleteData,
-  EDIT_DELETE_TYPE,
+  handleGraphQlError,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { deletePatientPrismMedicalRecords } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { useApolloClient } from 'react-apollo-hooks';
 import moment from 'moment';
 import _ from 'lodash';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -72,6 +82,8 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
     data: HospitalizationType[];
   }> | null>(null);
   const { currentPatient } = useAllCurrentPatients();
+  const client = useApolloClient();
+  const [showSpinner, setShowSpinner] = useState<boolean>(false);
 
   useEffect(() => {
     if (hospitalizationData) {
@@ -80,6 +92,27 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
       setLocalHospitalizationData(finalData);
     }
   }, [hospitalizationData]);
+
+  const handleBack = async () => {
+    BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    gotoPHRHomeScreen();
+    return true;
+  };
+
+  useEffect(() => {
+    const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+    });
+
+    const _willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    });
+
+    return () => {
+      _didFocusSubscription && _didFocusSubscription.remove();
+      _willBlurSubscription && _willBlurSubscription.remove();
+    };
+  }, []);
 
   const gotoPHRHomeScreen = () => {
     props.navigation.state.params?.onPressBack();
@@ -129,6 +162,26 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
     });
   };
 
+  const onPressDeletePrismMedicalRecords = (selectedItem: any) => {
+    setShowSpinner(true);
+    deletePatientPrismMedicalRecords(
+      client,
+      selectedItem?.id,
+      currentPatient?.id || '',
+      MedicalRecordType.HOSPITALIZATION
+    )
+      .then((status) => {
+        if (status) {
+          setShowSpinner(false);
+          props.navigation.goBack();
+        }
+      })
+      .catch((error) => {
+        setShowSpinner(false);
+        currentPatient && handleGraphQlError(error);
+      });
+  };
+
   const renderHospitalizationItems = (item: HospitalizationType, index: number) => {
     const getSourceName = (source: string) => {
       return source === 'self' || source === '247self'
@@ -153,6 +206,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
         editDeleteData={editDeleteData()}
         showUpdateDeleteOption={showEditDeleteOption}
         onHealthCardPress={(selectedItem) => onHealthCardItemPress(selectedItem)}
+        onDeletePress={(selectedItem) => onPressDeletePrismMedicalRecords(selectedItem)}
         prescriptionName={prescriptionName}
         dateText={dateText}
         selfUpload={selfUpload}
@@ -198,6 +252,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
 
   return (
     <View style={{ flex: 1 }}>
+      {showSpinner && <Spinner />}
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
         {hospitalizationData?.length > 0 ? renderSearchAndFilterView() : null}

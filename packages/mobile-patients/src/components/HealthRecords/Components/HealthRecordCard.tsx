@@ -6,9 +6,10 @@ import {
   CartPhrIcon,
   FollowUpPhrIcon,
   More,
+  HospitalUploadPhrIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
-import moment from 'moment';
+import { EDIT_DELETE_TYPE } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   menuContainerStyle: {
@@ -43,7 +44,8 @@ const styles = StyleSheet.create({
 export interface HealthRecordCardProps {
   item: any;
   editDeleteData?: any;
-  onEditDeletePress?: (optionSeletected: string) => void;
+  onEditPress?: (selectedItem: any) => void;
+  onDeletePress?: (selectedItem: any) => void;
   onHealthCardPress: (selectedItem: any) => void;
   onFollowUpPress?: (selectedItem: any) => void;
   onOrderTestAndMedicinePress?: (selectedItem: any) => void;
@@ -64,7 +66,8 @@ export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
     item,
     editDeleteData,
     onHealthCardPress,
-    onEditDeletePress,
+    onEditPress,
+    onDeletePress,
     prescriptionName,
     doctorName,
     dateText,
@@ -99,7 +102,11 @@ export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
               lastContainerStyle={{ borderBottomWidth: 0 }}
               bottomPadding={{ paddingBottom: 0 }}
               onPress={(selectedOption) => {
-                onEditDeletePress && onEditDeletePress(selectedOption.key);
+                if (selectedOption.key === EDIT_DELETE_TYPE.EDIT) {
+                  onEditPress && onEditPress(item);
+                } else {
+                  onDeletePress && onDeletePress(item);
+                }
               }}
             >
               <View style={{ flexDirection: 'row' }}>
@@ -126,7 +133,11 @@ export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
         </View>
         {healthConditionCard && !sourceName ? null : (
           <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 9 }}>
-            <SelfUploadPhrIcon style={{ width: 16, height: 10.14, marginRight: 8 }} />
+            {selfUpload ? (
+              <SelfUploadPhrIcon style={{ width: 16, height: 10.14, marginRight: 8 }} />
+            ) : (
+              <HospitalUploadPhrIcon style={{ height: 14, width: 14, marginRight: 8 }} />
+            )}
             <Text numberOfLines={1} style={styles.sourceNameTextStyle}>
               {sourceName}
             </Text>

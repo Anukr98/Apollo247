@@ -8,6 +8,7 @@ import {
   ScrollView,
   SectionList,
   Dimensions,
+  BackHandler,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -40,7 +41,6 @@ import {
   initialSortByDays,
   editDeleteData,
   getSourceName,
-  EDIT_DELETE_TYPE,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   EPrescription,
@@ -66,6 +66,8 @@ import {
   CommonBugFender,
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { deletePatientPrismMedicalRecords } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import moment from 'moment';
 import _ from 'lodash';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -133,6 +135,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [filterApplied, setFilterApplied] = useState<FILTER_TYPE | string>('');
   const client = useApolloClient();
+  const [showSpinner, setShowSpinner] = useState<boolean>(false);
   const [localConsultRxData, setLocalConsultRxData] = useState<Array<{
     key: string;
     data: any[];
@@ -150,6 +153,27 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
       return obj.doctorType !== 'JUNIOR';
     });
   };
+
+  const handleBack = async () => {
+    BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    gotoPHRHomeScreen();
+    return true;
+  };
+
+  useEffect(() => {
+    const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+    });
+
+    const _willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    });
+
+    return () => {
+      _didFocusSubscription && _didFocusSubscription.remove();
+      _willBlurSubscription && _willBlurSubscription.remove();
+    };
+  }, []);
 
   useEffect(() => {
     const filteredData = sortByTypeRecords(filterApplied);
@@ -564,6 +588,26 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
     }
   };
 
+  const onPressDeletePrismMedicalRecords = (selectedItem: any) => {
+    setShowSpinner(true);
+    deletePatientPrismMedicalRecords(
+      client,
+      selectedItem?.id,
+      currentPatient?.id || '',
+      MedicalRecordType.PRESCRIPTION
+    )
+      .then((status) => {
+        if (status) {
+          setShowSpinner(false);
+          props.navigation.goBack();
+        }
+      })
+      .catch((error) => {
+        setShowSpinner(false);
+        currentPatient && handleGraphQlError(error);
+      });
+  };
+
   const renderConsultRxItems = (item: any, index: number) => {
     const getPresctionDate = (date: string) => {
       let prev_date = new Date();
@@ -612,6 +656,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         onHealthCardPress={(selectedItem) => onHealthCardItemPress(selectedItem)}
         prescriptionName={prescriptionName}
         doctorName={doctorName}
+        onDeletePress={(selectedItem) => onPressDeletePrismMedicalRecords(selectedItem)}
         dateText={dateText}
         selfUpload={selfUpload}
         sourceName={soureName || ''}
@@ -663,6 +708,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
 
   return (
     <View style={{ flex: 1 }}>
+      {showSpinner && <Spinner />}
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
         {consultRxData.length > 0 ? renderSearchAndFilterView() : null}
