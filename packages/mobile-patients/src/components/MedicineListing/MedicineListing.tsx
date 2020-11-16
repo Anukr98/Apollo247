@@ -335,10 +335,7 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
 
   const renderProductsNotFound = () => {
     const isFiltersApplied = Object.keys(filterBy).filter((k) => filterBy[k].length).length;
-    const searchPageText = `No results found.`;
-    const categoryPageText = `No results found for ‘${pageTitle}’.`;
-    const filterText = isFiltersApplied ? 'Please try removing filters.' : '';
-    const text = `${searchText ? searchPageText : categoryPageText} ${filterText}`;
+    const text = `No results found.${isFiltersApplied ? ' Please try removing filters.' : ''}`;
 
     return !isLoading ? <Text style={styles.loadingMoreProducts}>{text}</Text> : null;
   };
@@ -362,6 +359,12 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
       {renderFilterByOverlay()}
     </SafeAreaView>
   );
+};
+
+let savedFilter: MedFilter | null = null;
+export const getSavedFilter = () => savedFilter;
+export const saveFilter = (filter: MedFilter) => {
+  savedFilter = filter;
 };
 
 const { text, container } = theme.viewStyles;
