@@ -1,6 +1,8 @@
 import { Accordion } from '@aph/mobile-patients/src/components/MedicineListing/Accordion';
 import {
   Filter,
+  getSavedFilter,
+  saveFilter,
   SelectedFilters,
 } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListing';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -14,7 +16,11 @@ import {
   RadioButtonUnselectedIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { formatFilters, getProductsByCategoryApi } from '@aph/mobile-patients/src/helpers/apiCalls';
+import {
+  formatFilters,
+  getProductsByCategoryApi,
+  MedFilter,
+} from '@aph/mobile-patients/src/helpers/apiCalls';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { isEqual } from 'lodash';
 import React, { useState } from 'react';
@@ -43,14 +49,26 @@ export const MedicineListingFilter: React.FC<Props> = ({
   onClose,
   ...overlayProps
 }) => {
-  const [filters, setFilters] = useState<Filter[]>(_filters);
+  const categoryFilterKeys = ['category', '__categories'];
+  const brandFilterKeys = ['brand', 'product_brand'];
+  const gteUpdatedFilters = (_filters: MedFilter[]) => {
+    const brandFilter = getSavedFilter();
+    const isCategoryFilterApplied =
+      _selectedFilters &&
+      Object.keys(_selectedFilters).find((key) => categoryFilterKeys.includes(key));
+    return (
+      brandFilter &&
+      isCategoryFilterApplied &&
+      _filters.map((filter) => (brandFilterKeys.includes(filter.attribute) ? brandFilter : filter))
+    );
+  };
+
+  const [filters, setFilters] = useState<Filter[]>(gteUpdatedFilters(_filters) || _filters);
   const [selectedOption, setSelectedOption] = useState<Filter | null>(_filters[0]);
   const [selectedFilters, setSelectedFilters] = useState<SelectedFilters>(_selectedFilters || {});
   const [alertVisible, setAlertVisible] = useState<boolean>(false);
   const [isLoading, setLoading] = useState<boolean>(false);
   const isFiltersApplied = Object.keys(formatFilters(selectedFilters) || {}).length;
-  const categoryFilterProps = ['category', '__categories'];
-  const brandFilterProps = ['brand', 'product_brand'];
 
   const onRequestClose = () => {
     if (isEqual(_selectedFilters, selectedFilters)) {
@@ -110,14 +128,13 @@ export const MedicineListingFilter: React.FC<Props> = ({
     try {
       setLoading(true);
       const { data } = await getProductsByCategoryApi(categoryId, 1, null, null);
-      const brandFilter = data.filters.find(({ attribute }) =>
-        brandFilterProps.includes(attribute)
-      );
+      const brandFilter = data.filters.find(({ attribute }) => brandFilterKeys.includes(attribute));
       if (brandFilter) {
         const updatedFilter = filters.map((filter) =>
-          brandFilterProps.includes(filter.attribute) ? brandFilter : filter
+          brandFilterKeys.includes(filter.attribute) ? brandFilter : filter
         );
         setFilters([...updatedFilter]);
+        saveFilter(brandFilter);
       }
       setLoading(false);
     } catch (error) {
@@ -142,7 +159,7 @@ export const MedicineListingFilter: React.FC<Props> = ({
           : [id];
         setSelectedFilters({ ...selectedFilters, [attribute]: updatedFilter });
 
-        if (!isSelected && categoryFilterProps.includes(attribute)) {
+        if (!isSelected && categoryFilterKeys.includes(attribute)) {
           updateAssociatedBrandFilter(id);
         }
       };
@@ -178,7 +195,7 @@ export const MedicineListingFilter: React.FC<Props> = ({
                   ? [...(subOptions || []), category_id]
                   : [category_id];
                 setSelectedFilters({ ...selectedFilters, [attribute]: updatedFilter });
-                if (!isCheckBoxSelected && categoryFilterProps.includes(attribute)) {
+                if (!isCheckBoxSelected && categoryFilterKeys.includes(attribute)) {
                   updateAssociatedBrandFilter(id);
                 }
               };
