@@ -1628,7 +1628,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             }
           }}
           value={searchText}
-          onFocus={() => setSearchFocused(true)}
+          onFocus={() => {
+            setSearchFocused(true);
+            setCategoryTreeVisible(false);
+          }}
           onBlur={() => {
             setSearchFocused(false);
             setMedicineList([]);
