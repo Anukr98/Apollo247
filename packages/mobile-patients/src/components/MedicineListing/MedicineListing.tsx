@@ -276,12 +276,23 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
         ListFooterComponent={renderLoading()}
         ListEmptyComponent={renderProductsNotFound()}
         navigation={navigation}
-        addToCartSource={searchText ? 'Pharmacy Full Search' : 'Pharmacy List'}
+        addToCartSource={
+          searchText
+            ? 'Pharmacy Full Search'
+            : breadCrumb.length
+            ? 'Category Tree'
+            : 'Pharmacy List'
+        }
         movedFrom={
           searchText
             ? ProductPageViewedSource.FULL_SEARCH
             : ProductPageViewedSource.CATEGORY_OR_LISTING
         }
+        productPageViewedEventProps={{
+          CategoryID: categoryId,
+          CategoryName: categoryId ? pageTitle : '',
+          SectionName: categoryId ? 'Category Tree' : '',
+        }}
         view={showListView ? 'list' : 'grid'}
       />
     );

@@ -553,9 +553,8 @@ export interface WebEngageEvents {
   [WebEngageEventName.CATEGORY_CLICKED]: {
     'category name': string;
     'category ID': string;
-    Source: 'Home'; // Home
+    Source: 'Home' | 'Category Tree';
     'Section Name': string;
-    imageUrl: string;
   };
   [WebEngageEventName.CATEGORY_FILTER_CLICKED]: {
     'category name': string;
@@ -601,7 +600,8 @@ export interface WebEngageEvents {
       | 'Pharmacy Partial Search'
       | 'Pharmacy Full Search'
       | 'Similar Widget'
-      | 'Pharmacy Cart';
+      | 'Pharmacy Cart'
+      | 'Category Tree';
     Brand?: string;
     'Brand ID'?: string;
     'category name'?: string;

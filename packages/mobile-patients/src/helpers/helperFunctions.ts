@@ -1158,24 +1158,23 @@ export const postwebEngageAddToCartEvent = (
     category_id,
   }: Pick<MedicineProduct, 'sku' | 'name' | 'price' | 'special_price' | 'category_id'>,
   source: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Source'],
-  section?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Section'],
-  sectionName?: string
+  sectionName?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Section Name'],
+  categoryName?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['category name']
 ) => {
   const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART] = {
     'product name': name,
     'product id': sku,
     Brand: '',
     'Brand ID': '',
-    'category name': '',
+    'category name': categoryName || '',
+    'Section Name': sectionName || '',
     'category ID': category_id || '',
     Price: price,
     'Discounted Price': Number(special_price) || undefined,
     Quantity: 1,
     Source: source,
-    Section: section ? section : '',
     af_revenue: Number(special_price) || price,
     af_currency: 'INR',
-    'Section Name': sectionName || '',
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART, eventAttributes);
 };
@@ -1623,6 +1622,7 @@ export const addPharmaItemToCart = (
     source: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Source'];
     section?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Section'];
     categoryId?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['category ID'];
+    categoryName?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['category name'];
   },
   onComplete?: () => void
 ) => {
@@ -1637,16 +1637,19 @@ export const addPharmaItemToCart = (
 
   const addToCart = () => {
     addCartItem!(cartItem);
+    console.log('>>>otherInfo?.categoryName', otherInfo?.categoryName);
+
     postwebEngageAddToCartEvent(
       {
         sku: cartItem.id,
         name: cartItem.name,
         price: cartItem.price,
         special_price: cartItem.specialPrice,
-        category_id: g(otherInfo, 'categoryId'),
+        category_id: otherInfo?.categoryId,
       },
-      g(otherInfo, 'source')!,
-      g(otherInfo, 'section')
+      otherInfo?.source,
+      otherInfo?.section,
+      otherInfo?.categoryName
     );
     postFirebaseAddToCartEvent(
       {
