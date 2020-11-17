@@ -143,6 +143,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
     addresses,
     deliveryAddressId,
     isCircleSubscription,
+    circleMembershipCharges,
   } = useShoppingCart();
   const { showAphAlert } = useUIElements();
   const [loading, setLoading] = useState<boolean>(true);
@@ -354,7 +355,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
     <View style={styles.careMessageContainer}>
       <PendingIcon style={styles.pendingIconStyle} />
       <Text style={styles.careMessage}>
-        You can either use CARE discount or apply a Coupon code
+        You can either use CIRCLE discount or apply a Coupon code
       </Text>
     </View>
 
@@ -368,7 +369,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
           onPressLeftIcon={() => props.navigation.goBack()}
         />
         <ScrollView style={{ marginBottom: 80 }} bounces={false}>
-          {isCircleSubscription && renderCareDiscountBanner()}
+          {(isCircleSubscription || !!circleMembershipCharges) && renderCareDiscountBanner()}
           {renderCouponCard()}
         </ScrollView>
         {renderBottomButtons()}

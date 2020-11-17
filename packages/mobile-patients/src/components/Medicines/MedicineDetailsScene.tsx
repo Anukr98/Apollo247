@@ -322,7 +322,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const { special_price, price, type_id } = medicineDetails;
   const finalPrice = (price - special_price) ? special_price : price;
   const cashback = getCareCashback(Number(finalPrice), type_id);
-  console.log('cashback: ---------', cashback);
 
   useEffect(() => {
     if (!_deliveryError) {
@@ -668,11 +667,13 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           textStyle={{
             ...theme.viewStyles.text('M', 9, '#02475B', 1, 15),
             paddingVertical: 2,
+            left: -5,
           }}
           logoStyle={{
             resizeMode: 'contain',
-            width: 40,
+            width: 38,
             height: 20,
+            left: -5,
           }}
         />
         <Text style={theme.viewStyles.text('R', 11, '#02475B', 1, 17)}>

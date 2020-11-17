@@ -10,7 +10,7 @@ export interface CouponProps {
 }
 
 export const Coupon: React.FC<CouponProps> = (props) => {
-  const { coupon, couponDiscount, isProuctFreeCouponApplied, isCircleSubscription } = useShoppingCart();
+  const { coupon, couponDiscount, isProuctFreeCouponApplied, isCircleSubscription, circleMembershipCharges } = useShoppingCart();
   const { onPressApplyCoupon, onPressRemove } = props;
 
   const renderApplyCoupon = () => {
@@ -23,7 +23,7 @@ export const Coupon: React.FC<CouponProps> = (props) => {
           </View>
           <ArrowRight />
         </TouchableOpacity>
-        {!!isCircleSubscription && renderCareMessage()}
+        {(!!isCircleSubscription || !!circleMembershipCharges) && renderCareMessage()}
       </View>
     );
   };

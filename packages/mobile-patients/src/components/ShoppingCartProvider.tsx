@@ -127,6 +127,8 @@ export interface ShoppingCartContextProps {
   setCircleCashback: ((items: CircleCashbackData) => void) | null;
   isCircleSubscription: boolean;
   setIsCircleSubscription: ((value: boolean) => void) | null;
+  circleMembershipCharges: number;
+  setCircleMembershipCharges: ((value: number) => void) | null;
   showPrescriptionAtStore: boolean;
   setShowPrescriptionAtStore: ((value: boolean) => void) | null;
   stores: Store[];
@@ -224,6 +226,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setCircleCashback: null,
   isCircleSubscription: false,
   setIsCircleSubscription: null,
+  circleMembershipCharges: 0,
+  setCircleMembershipCharges: null,
 
   showPrescriptionAtStore: false,
   setShowPrescriptionAtStore: null,
@@ -297,6 +301,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [isCircleSubscription, setIsCircleSubscription] = useState<
     ShoppingCartContextProps['isCircleSubscription']
   >(false);
+  const [circleMembershipCharges, setCircleMembershipCharges] = useState<
+    ShoppingCartContextProps['circleMembershipCharges']
+  >(0);
 
   const [showPrescriptionAtStore, setShowPrescriptionAtStore] = useState<
     ShoppingCartContextProps['showPrescriptionAtStore']
@@ -487,7 +494,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const packagingCharges = AppConfig.Configuration.PACKAGING_CHARGES;
 
   const grandTotal = parseFloat(
-    (cartTotal + deliveryCharges - couponDiscount - productDiscount).toFixed(2)
+    (cartTotal + deliveryCharges - couponDiscount - productDiscount + circleMembershipCharges).toFixed(2)
   );
 
   const uploadPrescriptionRequired =
@@ -762,6 +769,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setCircleCashback,
         isCircleSubscription,
         setIsCircleSubscription,
+        circleMembershipCharges,
+        setCircleMembershipCharges,
         showPrescriptionAtStore,
         setShowPrescriptionAtStore,
 

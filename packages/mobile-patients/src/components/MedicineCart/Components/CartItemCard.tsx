@@ -25,7 +25,7 @@ export interface CartItemCardProps {
 }
 
 export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
-  const { coupon, isProuctFreeCouponApplied, isCircleSubscription } = useShoppingCart();
+  const { coupon, isProuctFreeCouponApplied, isCircleSubscription, circleMembershipCharges } = useShoppingCart();
   const { item, onUpdateQuantity, onPressDelete, onPressProduct } = props;
   const [discountedPrice, setDiscountedPrice] = useState<any>(undefined);
   const [mrp, setmrp] = useState<number>(0);
@@ -107,7 +107,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
         <View>
           {renderQuantity()}
           {!item.unserviceable && !isProuctFreeCouponApplied && !!coupon && renderCoupon()}
-          {isCircleSubscription && renderCareCashback()}
+          {(isCircleSubscription || !!circleMembershipCharges) && renderCareCashback()}
         </View>
         {!item?.isFreeCouponProduct
           ? discountedPrice || discountedPrice == 0
@@ -123,6 +123,11 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
       return (
         <CareCashbackBanner
           bannerText={`Extra Care ₹${item.circleCashbackAmt} Cashback`}
+          textStyle={{
+            ...theme.viewStyles.text('M', 9, '#00A0E3', 1, 15),
+            paddingVertical: 7,
+            left: -5,
+          }}
         />
       );
     } else {

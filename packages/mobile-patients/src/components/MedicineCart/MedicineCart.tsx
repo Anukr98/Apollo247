@@ -96,6 +96,7 @@ import {
   makeAdressAsDefault,
 } from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
 import { CareSelectPlans } from '@aph/mobile-patients/src/components/ui/CareSelectPlans';
+import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
 
 export interface MedicineCartProps extends NavigationScreenProps {}
 
@@ -117,6 +118,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     ePrescriptions,
     setPhysicalPrescriptions,
     pinCode,
+    setCircleMembershipCharges,
+    isCircleSubscription,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -139,6 +142,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   const pharmacyPincode =
     selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
   const [showCareWebview, setShowCareWebview] = useState(false);
+  const [showCareSelectPlans, setShowCareSelectPlans] = useState(false);
 
   useEffect(() => {
     fetchAddress();
@@ -147,6 +151,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     fetchPickupStores(pharmacyPincode);
     fetchProductSuggestions();
     cartItems.length && PharmacyCartViewedEvent(shoppingCart, g(currentPatient, 'id'));
+    setCircleMembershipCharges && setCircleMembershipCharges(0);
   }, []);
 
   useEffect(() => {
@@ -801,7 +806,89 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     );
   };
 
-  const renderCareSubscriptionOptions = () => <CareSelectPlans onPressKnowMore={() => setShowCareWebview(true)} />
+  const renderCareSubscriptionOptions = () => {
+    if (showCareSelectPlans) {
+      return (
+        <CareSelectPlans 
+          isConsultJourney={false} 
+          onSelectMembershipPlan={(plan) => {
+            if (plan) {
+              // if plan is selected
+              setCircleMembershipCharges && setCircleMembershipCharges(plan?.currentSellingPrice);
+            } else {
+              // if plan is removed
+              setShowCareSelectPlans(false);
+              setCircleMembershipCharges && setCircleMembershipCharges(0);
+            }
+          }}
+          onPressKnowMore={() => {
+            // setShowCareWebview(true)
+          }} />
+      );
+    } else {
+      return (
+        <TouchableOpacity 
+          activeOpacity={0.8}
+          style={{
+            ...theme.viewStyles.cardViewStyle,
+            marginTop: 10,
+            marginHorizontal: 13,
+            borderRadius: 5,
+            marginBottom: 0,
+            paddingHorizontal: 15,
+            paddingVertical: 9,
+            borderColor: '#00B38E',
+            borderWidth: 3,
+            borderStyle: 'dashed',
+          }}
+          onPress={() => {setShowCareSelectPlans(true)}}
+        >
+          <View style={{
+            flexDirection: 'row',
+          }}>
+            <View style={{
+              width: 22,
+              height: 22,
+              borderRadius: 5,
+              borderColor: '#00B38E',
+              borderWidth: 3,
+              marginRight: 10,
+              marginTop: 10,
+            }} />
+            <View>
+              <View style={{
+                flexDirection: 'row',
+              }}>
+                <Text style={{
+                  ...theme.viewStyles.text('M', 14, '#02475B', 1, 17),
+                  paddingTop: 12,
+                }}>View</Text>
+                <CareCashbackBanner
+                  bannerText={`plans`}
+                  textStyle={{
+                    ...theme.viewStyles.text('M', 14, '#02475B', 1, 17),
+                    paddingTop: 12,
+                    left: -5,
+                  }}
+                  logoStyle={{
+                    resizeMode: 'contain',
+                    width: 50,
+                    height: 40,
+                  }}
+                />
+              </View>
+              <Text style={{
+                ...theme.viewStyles.text('R', 13, '#02475B', 1, 20),
+                width: '54%'
+              }}>
+                Viewing and/or selecting plans will remove any applied coupon. You can apply the coupon again later.
+              </Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+      )
+    }
+  };
 
   const renderWebView = () => {
     return (
@@ -936,8 +1023,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           {renderHeader()}
           {renderUnServiceable()}
           {renderCartItems()}
+          {!isCircleSubscription && renderCareSubscriptionOptions()}
           {renderAvailFreeDelivery()}
-          {renderCareSubscriptionOptions()}
           {renderAmountSection()}
           {renderSavings()}
           {renderSuggestProducts()}

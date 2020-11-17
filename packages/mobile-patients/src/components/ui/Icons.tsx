@@ -1206,3 +1206,7 @@ export const CircleBannerNonMember: React.FC<IconProps> = (props) => (
 export const ExpressDeliveryLogo: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/express_delivery.png')} />
 );
+
+export const CheckIconBlue: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_check_blue.png')} />
+);

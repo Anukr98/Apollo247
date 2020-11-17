@@ -8,10 +8,12 @@ import { Down, CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
 export interface SavingsProps {}
 
 export const Savings: React.FC<SavingsProps> = (props) => {
-  const { couponDiscount, productDiscount, deliveryCharges, isCircleSubscription, cartTotalCashback } = useShoppingCart();
+  const { couponDiscount, productDiscount, deliveryCharges, isCircleSubscription, cartTotalCashback, circleMembershipCharges } = useShoppingCart();
   const deliveryFee = AppConfig.Configuration.DELIVERY_CHARGES;
   const [showCareDetails, setShowCareDetails] = useState(true);
-  const careTotal = Number(deliveryFee) + Number(productDiscount) + cartTotalCashback;
+  const careTotal = isCircleSubscription || circleMembershipCharges ? 
+    Number(deliveryFee) + Number(productDiscount) + cartTotalCashback : 
+    Number(deliveryFee) + Number(productDiscount);
 
   function getSavings() {
     return Number(careTotal).toFixed(2);
@@ -51,10 +53,15 @@ export const Savings: React.FC<SavingsProps> = (props) => {
         <Text style={{ ...theme.fonts.IBMPlexSansRegular(13), lineHeight: 17, color: '#02475B' }}>
           You could{' '}
           <Text style={{ ...theme.fonts.IBMPlexSansSemiBold(13), lineHeight: 17, color: '#00B38E' }}>
-            save ₹{getSavings()}
+            save ₹{cartTotalCashback}
           </Text>{' '}
-          on your purchase with CARE
+          on your purchase with
         </Text>
+        <CircleLogo style={{
+          resizeMode: 'contain',
+          width: 45,
+          height: 20,
+        }} />
       </View>
     );
   }
@@ -115,9 +122,9 @@ export const Savings: React.FC<SavingsProps> = (props) => {
     <>
       <View style={styles.savingsCard}>
         {saveMessage()}
-        { isCircleSubscription && showCareDetails && careSavings() }
+        { ((isCircleSubscription || !!circleMembershipCharges) && showCareDetails) && careSavings() }
       </View>
-      { !isCircleSubscription && showCareDetails && careSubscribeMessage() }
+      { (!(isCircleSubscription || !!circleMembershipCharges) && showCareDetails) && careSubscribeMessage() }
     </>
   ) : null;
 };
@@ -136,6 +143,7 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
   },
   careMessageCard: {
+    flexDirection: 'row',
     ...theme.viewStyles.cardViewStyle,
     borderRadius: 5,
     marginHorizontal: 18,

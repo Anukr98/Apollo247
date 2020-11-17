@@ -161,7 +161,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     setHdfcUserSubscriptions,
     setBannerData,
   } = useAppCommonData();
-  const { setIsCircleSubscription } = useShoppingCart();
+  const { setIsCircleSubscription, setCircleMembershipCharges } = useShoppingCart();
 
   useEffect(() => {
     updateCodePushVersioninUi();
@@ -286,6 +286,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       setBannerData && setBannerData([]);
       setAppointmentsPersonalized && setAppointmentsPersonalized([]);
       setIsCircleSubscription && setIsCircleSubscription(false);
+      setCircleMembershipCharges && setCircleMembershipCharges(0);
       signOut();
       setTagalysConfig(null);
 

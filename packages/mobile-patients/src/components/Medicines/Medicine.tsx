@@ -2006,7 +2006,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           {renderSearchInput()}
           {renderSearchResults()}
         </View>
-        <View style={{ flex: 1, paddingBottom: !!cartItems.length ? 50 : 20 }}>
+        <View style={{ flex: 1, paddingBottom: !!cartItems.length ? 50 : 0 }}>
           {renderSections()}
           {renderOverlay()}
           {(!!cartItems.length) && renderCircleCartDetails()}
