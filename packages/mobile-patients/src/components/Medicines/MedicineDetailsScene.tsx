@@ -11,6 +11,7 @@ import {
   MedicineIcon,
   MedicineRxIcon,
   CheckBoxFilled,
+  CircleBannerNonMember,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -225,11 +226,12 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
   },
   checkBoxIconStyle: {
-    borderRadius: 35,
-    width: 35,
-    height: 35,
+    borderRadius: 50,
+    width: 25,
+    height: 25,
     resizeMode: 'contain',
     marginRight: 10,
+    marginTop: 5,
   },
   careTextContainer: {
     flexDirection: 'row',
@@ -293,6 +295,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const [medicineError, setMedicineError] = useState<string>('Product Details Not Available!');
   const [popupHeight, setpopupHeight] = useState<number>(60);
   const [notServiceable, setNotServiceable] = useState<boolean>(false);
+  const [isCircleSubscribed, setIsCircleSubscribed] = useState<boolean>(false);
 
   const { showAphAlert, setLoading: setGlobalLoading } = useUIElements();
 
@@ -319,6 +322,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const { special_price, price, type_id } = medicineDetails;
   const finalPrice = (price - special_price) ? special_price : price;
   const cashback = getCareCashback(Number(finalPrice), type_id);
+  console.log('cashback: ---------', cashback);
 
   useEffect(() => {
     if (!_deliveryError) {
@@ -904,47 +908,54 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         </View>
         {renderNote()}
         {medicineOverview.length === 0 ? renderInfo() : null}
-        {renderCareSubscribeCard()}
+        {isCircleSubscribed && renderCircleSubscribeSuccess()}
+        {!!cashback && renderCareSubscribeBanner()}
       </View>
     );
   };
 
-  const renderCareSubscribeCard = () => 
-    <View style={styles.careCardContainer}>
-      {
-        !!isCircleSubscription ? 
+  const renderCareSubscribeBanner = () => {
+    return (
+      <TouchableOpacity 
+        activeOpacity={1}
+        onPress={() => {}} 
+        style={{
+        paddingHorizontal: 20,
+      }}>
+        <CircleBannerNonMember style={{
+          resizeMode: 'contain',
+          width: '100%',
+          height: 200,
+        }} />
+      </TouchableOpacity>
+    );
+  };
+
+  const renderCircleSubscribeSuccess = () => {
+    return (
+      <View style={styles.careCardContainer}>
         <View style={{
           flexDirection: 'row',
         }}>
           <CheckBoxFilled style={styles.checkBoxIconStyle} />
-          <View>
-            <Text style={theme.viewStyles.text('B', 15, '#02475B', 1, 20)}>
-              CARE benefits applied!
-            </Text>
-            <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>
-              Will be visible at checkout
-            </Text>
-          </View>
-        </View> :
-        <>
-          <View style={styles.careTextContainer}>
-            <View style={styles.careRedBox} />
-            <Text style={styles.getCareText}>
-              Get{' '}
-              <Text style={theme.viewStyles.text('B', 14, '#02475B', 1, 20)}>₹5.40 Cashback</Text>{' '}
-              and{' '}
-              <Text style={theme.viewStyles.text('B', 14, '#02475B', 1, 20)}>Free delivery</Text>{' '}
-              on your CURRENT order with CARE and more.....
-            </Text>
-          </View>
-          <TouchableOpacity activeOpacity={1} onPress={() => {}}>
-            <Text style={styles.careSubscribeButton}>
-              SUBSCRIBE
-            </Text>
-          </TouchableOpacity>
-        </>
-      }
-    </View>;
+          <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 30)}>
+            Yay!
+          </Text>
+          <CareCashbackBanner
+            bannerText={`membership added to your cart!`}
+            textStyle={{
+              ...theme.viewStyles.text('SB', 14, '#02475B', 1, 20),
+              left: -5,
+            }}
+            logoStyle={{
+              width: 60,
+              height: 35,
+            }}
+          />
+        </View> 
+      </View>
+    );
+  };
 
   const filterHtmlContent = (content: string = '') => {
     return content

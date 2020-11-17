@@ -27,6 +27,7 @@ import {
   ShoppingBasketIcon,
   LocationOff,
   CircleBannerNonMember,
+  CircleLogo,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { SearchInput } from '@aph/mobile-patients/src/components/ui/SearchInput';
@@ -215,6 +216,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setAddresses,
     deliveryAddressId,
     setDeliveryAddressId,
+    cartTotalCashback,
+    cartTotal,
+    isCircleSubscription,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const cartItemsCount = cartItems.length + diagnosticCartItems.length;
@@ -1386,7 +1390,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         activeOpacity={1}
         onPress={() => {}} 
         style={{
-        // paddingHorizontal: 20,
+        paddingHorizontal: 20,
         // marginBottom: 10,
       }}>
         <CircleBannerNonMember style={{
@@ -1402,7 +1406,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     if (dealsOfTheDay.length == 0) return null;
     return (
       <View>
-      {/* {renderCircleBanner()} */}
+      {renderCircleBanner()}
       {/* <CirclePopup /> */}
         <SectionHeader leftText={title} />
         <FlatList
@@ -1706,6 +1710,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         isInStock: true,
         maxOrderQty: MaxOrderQty,
         productType: type_id,
+        circleCashbackAmt: 0,
       },
       pharmacyPincode!,
       addCartItem,
@@ -1896,6 +1901,103 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
+  const renderCircleCartDetails = () => {
+    const circleStyles = StyleSheet.create({
+      container: {
+        position: 'absolute',
+        bottom: 0,
+        ...theme.viewStyles.cardContainer,
+        width: '100%',
+        padding: 10,
+      },
+      content: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+      },
+      upgrade: {
+        borderWidth: 2,
+        borderColor: '#FCB716',
+        borderRadius: 8,
+        padding: 5,
+        backgroundColor: '#FFFFFF'
+      },
+      upgradeTo: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+      },
+      circleLogo: {
+        resizeMode: 'contain',
+        width: 40,
+        height: 25,
+      },
+      cartButton: {
+        backgroundColor: '#FCB716',
+        borderRadius: 8,
+        padding: 5,
+        paddingHorizontal: 10,
+        alignItems: 'center',
+        alignSelf: 'center'
+      },
+      circleLogoTwo: {
+        resizeMode: 'contain',
+        width: 40,
+        height: 25,
+        // top: -24,
+      },
+    });
+    const effectivePrice = Math.round(cartTotal - cartTotalCashback);
+    return (
+      <View style={circleStyles.container}>
+        <View style={circleStyles.content}>
+          <View style={{alignItems: isCircleSubscription ? 'flex-start' : 'center'}}>
+            <Text style={theme.viewStyles.text('R', 13, '#02475B', 1, 24, 0)}>
+              {
+                isCircleSubscription ? 
+                'Items' :
+                'Total no. of items'
+              }
+            </Text>
+            <Text style={theme.viewStyles.text('SB', 16, '#02475B', 1, 20, 0)}>{cartItems.length}</Text>
+          </View>
+          {
+            isCircleSubscription ?
+            <View>
+              <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 20, 0)}>₹{cartTotal}</Text>
+              <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
+                <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 17, 0)}>Effective price for</Text>
+                <CircleLogo style={circleStyles.circleLogoTwo} />
+                <Text style={{...theme.viewStyles.text('R', 12, '#02475B', 1, 17, 0), left: -3}}>members</Text>
+                <Text style={theme.viewStyles.text('SB', 12, '#02475B', 1, 17, 0)}>₹{effectivePrice}</Text>
+              </View>
+            </View> :
+            <View style={circleStyles.upgrade}>
+              <View style={circleStyles.upgradeTo}>
+                <Text style={theme.viewStyles.text('M', 13, '#FCB716', 1, 20, 0)}>UPGRADE TO</Text>
+                <CircleLogo style={circleStyles.circleLogo} />
+              </View>
+              <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 17, 0)}>
+                {`Get effective price of ₹${effectivePrice}`}
+              </Text>
+            </View>
+          }
+          <TouchableOpacity 
+            style={circleStyles.cartButton}
+            onPress={() => {
+              props.navigation.navigate(AppRoutes.MedicineCart);
+            }}>
+            <Text style={theme.viewStyles.text('B', 13, '#FFFFFF', 1, 20, 0)}>GO TO CART</Text>
+            {
+              !isCircleSubscription &&
+              <Text style={theme.viewStyles.text('M', 12, '#02475B', 1, 20, 0)}>
+                {`Buy for ₹${cartTotal}`}
+              </Text>
+            }
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ ...viewStyles.container }}>
@@ -1904,9 +2006,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           {renderSearchInput()}
           {renderSearchResults()}
         </View>
-        <View style={{ flex: 1 }}>
+        <View style={{ flex: 1, paddingBottom: !!cartItems.length ? 50 : 20 }}>
           {renderSections()}
           {renderOverlay()}
+          {(!!cartItems.length) && renderCircleCartDetails()}
         </View>
       </SafeAreaView>
       {isSelectPrescriptionVisible && renderEPrescriptionModal()}
