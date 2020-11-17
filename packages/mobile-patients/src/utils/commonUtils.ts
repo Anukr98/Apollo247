@@ -174,12 +174,14 @@ export const isUpperCase = (str: string) => {
 };
 
 export const calculateCareDoctorPricing = (data: any) => {
-  const isCircleDoctor =
-    data?.doctorPricing?.filter((item: any) => item.available_to === PLAN.CARE_PLAN)?.length > 0;
-  const physicalConsult = data?.doctorPricing?.filter(
+  const circleDoctors = data?.doctorPricing?.filter(
+    (item: any) => item.available_to === PLAN.CARE_PLAN
+  );
+  const isCircleDoctor = circleDoctors?.length > 0;
+  const physicalConsult = circleDoctors?.filter(
     (item: any) => item.appointment_type === ConsultMode.PHYSICAL
   );
-  const onlineConsult = data?.doctorPricing?.filter(
+  const onlineConsult = circleDoctors?.filter(
     (item: any) => item.appointment_type === ConsultMode.ONLINE
   );
 
