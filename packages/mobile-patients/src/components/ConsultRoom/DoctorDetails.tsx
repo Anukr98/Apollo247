@@ -13,6 +13,7 @@ import {
 import {
   GET_APPOINTMENT_HISTORY,
   GET_DOCTOR_DETAILS_BY_ID,
+  GET_PLAN_DETAILS_BY_PLAN_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getAppointmentHistory,
@@ -79,6 +80,10 @@ import {
 // import { NotificationListener } from '../NotificationListener';
 import { calculateCareDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { CirclePlanAddedToCart } from '@aph/mobile-patients/src/components/ui/CirclePlanAddedToCart';
+import { CareSelectPlans } from '@aph/mobile-patients/src/components/ui/CareSelectPlans';
+import { GetPlanDetailsByPlanId } from '@aph/mobile-patients/src/graphql/types/GetPlanDetailsByPlanId';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const { height, width } = Dimensions.get('window');
 
@@ -234,6 +239,24 @@ const styles = StyleSheet.create({
     height: 10,
     marginLeft: 3,
   },
+  upgradeContainer: {
+    ...theme.viewStyles.card(),
+    marginHorizontal: 33,
+    height: 47,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: theme.colors.APP_YELLOW,
+    marginTop: 5,
+    marginBottom: 17,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  circleLogo: {
+    width: 72,
+    height: 30,
+    marginRight: -7,
+  },
 });
 type Appointments = {
   date: string;
@@ -273,7 +296,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [availableInMin, setavailableInMin] = useState<number>();
   const [availableTime, setavailableTime] = useState<string>('');
   const [physicalAvailableTime, setphysicalAvailableTime] = useState<string>('');
-
+  const [membershipPlans, setMembershipPlans] = useState<any>([]);
   const [availableInMinPhysical, setavailableInMinPhysical] = useState<Number>();
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const { getPatientApiCall } = useAuth();
@@ -283,6 +306,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [isFocused, setisFocused] = useState<boolean>(false);
   const callSaveSearch = props.navigation.getParam('callSaveSearch');
   const [secretaryData, setSecretaryData] = useState<any>([]);
+  const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
   const circleDoctorDetails = calculateCareDoctorPricing(doctorDetails);
   const {
     isCircleDoctor,
@@ -291,7 +315,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     onlineConsultSlashedPrice,
     physicalConsultSlashedPrice,
   } = circleDoctorDetails;
-  const { circleSubscriptionId } = useShoppingCart();
+  const {
+    circleSubscriptionId,
+    selectDefaultPlan,
+    circlePlanSelected,
+    defaultCirclePlan,
+  } = useShoppingCart();
 
   const rectangularIconHeight = isCircleDoctor
     ? Platform.OS == 'android'
@@ -329,8 +358,13 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   }, []);
 
   useEffect(() => {
+    fetchCarePlans();
+  }, [isCircleDoctor]);
+
+  useEffect(() => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setisFocused(true);
+      fetchCarePlans();
     });
     const didBlur = props.navigation.addListener('didBlur', (payload) => {
       setisFocused(false);
@@ -340,6 +374,27 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       didBlur && didBlur.remove();
     };
   });
+
+  const fetchCarePlans = async () => {
+    if (isCircleDoctor && !circleSubscriptionId && !circlePlanSelected) {
+      try {
+        const res = await client.query<GetPlanDetailsByPlanId>({
+          query: GET_PLAN_DETAILS_BY_PLAN_ID,
+          fetchPolicy: 'no-cache',
+          variables: {
+            plan_id: AppConfig.Configuration.CARE_PLAN_ID,
+          },
+        });
+        const membershipPlans = res?.data?.GetPlanDetailsByPlanId?.response?.plan_summary;
+        if (membershipPlans) {
+          setMembershipPlans(membershipPlans);
+          selectDefaultPlan && selectDefaultPlan(membershipPlans);
+        }
+      } catch (error) {
+        CommonBugFender('CareSelectPlans_GetPlanDetailsByPlanId', error);
+      }
+    }
+  };
 
   const client = useApolloClient();
 
@@ -866,10 +921,42 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               </View>
             </View>
           )}
+          {isCircleDoctor && !circleSubscriptionId && defaultCirclePlan && renderUpgradeToCircle()}
+          {!defaultCirclePlan && circlePlanSelected && renderCirclePlanAddedToCartView()}
+          {showCirclePlans && renderCirclePlans()}
         </View>
       );
     }
     return null;
+  };
+
+  const renderUpgradeToCircle = () => {
+    return (
+      <TouchableOpacity style={styles.upgradeContainer} onPress={() => setShowCirclePlans(true)}>
+        <Text style={{ ...theme.viewStyles.text('SB', 11, theme.colors.APP_YELLOW, 1, 14) }}>
+          UPGRADE TO
+        </Text>
+        <CircleLogo style={styles.circleLogo} />
+        <Text style={{ ...theme.viewStyles.text('M', 10, theme.colors.LIGHT_BLUE, 1, 14) }}>
+          Starting at {string.common.Rs}
+          {defaultCirclePlan?.currentSellingPrice || '-'}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderCirclePlanAddedToCartView = () => (
+    <CirclePlanAddedToCart style={{ marginBottom: 15 }} />
+  );
+
+  const renderCirclePlans = () => {
+    return (
+      <CareSelectPlans
+        isModal={true}
+        membershipPlans={membershipPlans}
+        closeModal={() => setShowCirclePlans(false)}
+      />
+    );
   };
 
   const renderDoctorClinic = () => {

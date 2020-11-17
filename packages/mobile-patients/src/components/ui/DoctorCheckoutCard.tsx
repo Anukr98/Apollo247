@@ -74,7 +74,7 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
         </View>
         {circleSubscriptionId || planSelected ? (
           <Text style={styles.amountSavedTextStyle}>
-            {string.careDoctors.circleSavings.replace('{amount}', `${minDiscountedPrice}`)}
+            {string.circleDoctors.circleSavings.replace('{amount}', `${minDiscountedPrice}`)}
           </Text>
         ) : null}
       </View>

@@ -1214,3 +1214,7 @@ export const OffToggle: React.FC<IconProps> = (props) => (
 export const OnToggle: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/on_toggle.png')} />
 );
+
+export const BlueTick: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_check_blue.png')} />
+);

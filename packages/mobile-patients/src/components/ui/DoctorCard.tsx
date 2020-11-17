@@ -152,6 +152,7 @@ const styles = StyleSheet.create({
     marginLeft: 7,
     width: 10,
     height: 10,
+    marginRight: 2,
   },
   doctorProfile: {
     height: 80,
@@ -299,7 +300,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                 flexWrap: 'wrap',
               }}
             >
-              {string.careDoctors.circleMemberPays}
+              {string.circleDoctors.circleMemberPays}
             </Text>
             <View style={styles.rowContainer}>
               <Text style={{ ...theme.viewStyles.text('M', 12, theme.colors.APP_YELLOW) }}>
@@ -309,6 +310,13 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                   : minSlashedPrice}
               </Text>
               <InfoBlue style={styles.infoIcon} />
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 10, theme.colors.TURQUOISE_LIGHT_BLUE, 1, 12),
+                }}
+              >
+                {string.circleDoctors.upgradeNow}
+              </Text>
             </View>
           </View>
         </View>
@@ -521,7 +529,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                     marginTop: 2,
                   }}
                 >
-                  {string.careDoctors.circleSavings.replace('{amount}', `${minDiscountedPrice}`)}
+                  {string.circleDoctors.circleSavings.replace('{amount}', `${minDiscountedPrice}`)}
                 </Text>
               ) : null}
               <Text

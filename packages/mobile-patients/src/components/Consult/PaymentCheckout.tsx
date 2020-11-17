@@ -128,6 +128,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     physicalConsultSlashedPrice,
     onlineConsultDiscountedPrice,
     physicalConsultDiscountedPrice,
+    onlineConsultMRPPrice,
+    physicalConsultMRPPrice,
   } = circleDoctorDetails;
   const { circleSubscriptionId, circlePlanSelected } = useShoppingCart();
 
@@ -177,7 +179,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   }, []);
 
   const fetchUserSpecificCoupon = () => {
-    setLoading!(true);
     userSpecificCoupon(g(currentPatient, 'mobileNumber'))
       .then((resp: any) => {
         if (resp?.data?.errorCode == 0) {
@@ -187,10 +188,8 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
             validateUserSpecificCoupon(coupon);
           }
         }
-        setLoading!(false);
       })
       .catch((error) => {
-        setLoading!(false);
         CommonBugFender('fetchingUserSpecificCoupon', error);
       });
   };
@@ -283,6 +282,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         style={styles.careSelectContainer}
         onPressKnowMore={() => {}}
         careDiscountPrice={minDiscountedPrice}
+        doctorFees={isOnlineConsult ? onlineConsultMRPPrice : physicalConsultMRPPrice}
         onSelectMembershipPlan={() => {
           setTimeout(() => {
             scrollviewRef.current.scrollToEnd({ animated: true });

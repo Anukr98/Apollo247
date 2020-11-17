@@ -103,6 +103,7 @@ import { getValuesArray } from '@aph/mobile-patients/src/utils/commonUtils';
 import _ from 'lodash';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { Switch } from '@aph/mobile-patients/src/components/ui/Switch';
+import { CirclePlanAddedToCart } from '@aph/mobile-patients/src/components/ui/CirclePlanAddedToCart';
 
 const searchFilters = require('@aph/mobile-patients/src/strings/filters');
 const { width: screenWidth } = Dimensions.get('window');
@@ -196,17 +197,6 @@ const styles = StyleSheet.create({
   careHeadingText: {
     ...theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE),
     marginLeft: 10,
-  },
-  carePlanAddedView: {
-    backgroundColor: 'white',
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: theme.colors.SEARCH_UNDERLINE_COLOR,
-    marginBottom: 5,
-    paddingHorizontal: 10,
-    paddingVertical: 13,
-    marginHorizontal: 20,
-    flexDirection: 'row',
   },
 });
 
@@ -1144,37 +1134,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       );
     }
 
-    const renderCarePlanAddedToCartView = () => {
-      return (
-        <View style={styles.carePlanAddedView}>
-          <TickIcon />
-          <View style={{ marginLeft: 10, flex: 1 }}>
-            <Text
-              style={{
-                ...theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE),
-                flexWrap: 'wrap',
-              }}
-            >
-              {string.careDoctors.carePlanAddedToCart}
-            </Text>
-            <Text
-              style={{
-                ...theme.viewStyles.text('R', 10, theme.colors.LIGHT_BLUE),
-                flexWrap: 'wrap',
-                marginTop: 2,
-              }}
-            >
-              {string.careDoctors.discountInfoReflectsOnCheckout}
-            </Text>
-          </View>
-        </View>
-      );
-    };
+    const renderCirclePlanAddedToCartView = () => <CirclePlanAddedToCart />;
 
     return (
       <View style={{ flex: 1 }}>
         {doctorsType === 'APOLLO' && renderViewCareSwitch()}
-        {doctorsType === 'APOLLO' && showCarePlanNotification && renderCarePlanAddedToCartView()}
+        {doctorsType === 'APOLLO' && showCarePlanNotification && renderCirclePlanAddedToCartView()}
         {doctors.length > 0 && (
           <FlatList
             ref={(ref) => {

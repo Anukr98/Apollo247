@@ -6,7 +6,7 @@ import {
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { ProductPageViewedSource } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { ConsultMode } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { ConsultMode, PLAN } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 export const handleDeepLink = (navigationProps: any) => {
   try {
@@ -174,7 +174,8 @@ export const isUpperCase = (str: string) => {
 };
 
 export const calculateCareDoctorPricing = (data: any) => {
-  const isCircleDoctor = data?.doctorPricing?.length > 0;
+  const isCircleDoctor =
+    data?.doctorPricing?.filter((item: any) => item.available_to === PLAN.CARE_PLAN)?.length > 0;
   const physicalConsult = data?.doctorPricing?.filter(
     (item: any) => item.appointment_type === ConsultMode.PHYSICAL
   );

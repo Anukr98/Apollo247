@@ -168,6 +168,9 @@ export interface ShoppingCartContextProps {
   setCircleSubscriptionId: ((id: string) => void) | null;
   circlePlanSelected: any;
   setCirclePlanSelected: ((plan: any) => void) | null;
+  selectDefaultPlan: ((plan: any) => void) | null;
+  defaultCirclePlan: any;
+  setDefaultCirclePlan: ((plan: any) => void) | null;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -239,6 +242,9 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setCircleSubscriptionId: null,
   circlePlanSelected: null,
   setCirclePlanSelected: null,
+  selectDefaultPlan: null,
+  defaultCirclePlan: null,
+  setDefaultCirclePlan: null,
 });
 
 const AsyncStorageKeys = {
@@ -281,6 +287,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   >('');
   const [circlePlanSelected, setCirclePlanSelected] = useState<
     ShoppingCartContextProps['circlePlanSelected']
+  >(null);
+  const [defaultCirclePlan, setDefaultCirclePlan] = useState<
+    ShoppingCartContextProps['defaultCirclePlan']
   >(null);
   const [isFreeDelivery, setIsFreeDelivery] = useState<ShoppingCartContextProps['isFreeDelivery']>(
     false
@@ -670,6 +679,12 @@ export const ShoppingCartProvider: React.FC = (props) => {
     }
   }, [deliveryAddressId]);
 
+  const selectDefaultPlan = (plan: any) => {
+    const defaultPlan = plan?.filter((item: any) => item.defaultPack === true);
+    if (defaultPlan?.length > 0) {
+      setDefaultCirclePlan(defaultPlan[0]);
+    }
+  };
   return (
     <ShoppingCartContext.Provider
       value={{
@@ -740,6 +755,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setCircleSubscriptionId,
         circlePlanSelected,
         setCirclePlanSelected,
+        selectDefaultPlan,
+        defaultCirclePlan,
+        setDefaultCirclePlan,
       }}
     >
       {props.children}

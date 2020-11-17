@@ -560,12 +560,17 @@
     "audioVideoIssue": "Audio Video Issues",
     "otherReasons": "Others (Please specifiy)"
   },
-  "careDoctors": {
+  "circleDoctors": {
     "care": "CARE",
     "circleMemberPays": "CIRCLE MEMBER PAYS",
-    "carePlanAddedToCart": "CARE plan successfully added to cart.",
-    "discountInfoReflectsOnCheckout": "Discount and other information will be reflected on checkout page",
+    "circlePlanAddedToCart": "Circle plan successfully added to cart.",
+    "discountInfoReflectsOnCheckout": "Discount and other information will be reflected at checkout.",
     "forCareMembers": "for CARE members",
-    "circleSavings": "CIRCLE savings of ₹{amount}"
+    "circleSavings": "CIRCLE savings of ₹{amount}",
+    "upgradeNow": "Upgrade now",
+    "circleMembershipPlans": "Circle Membership Plans",
+    "buyNow": "BUY NOW",
+    "consultCircleOfferDescription": "Enable Circle membership to get the best offers on all transactions you make with us",
+    "getCircleMembershipOffersDescription": "Enable Circle membership to get the best discounts, cashbacks, free delivery and more..."
   }
 }
