@@ -7,7 +7,10 @@ import {
   SortByOption,
 } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListing';
 import { MedicineListingEvents } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListingEvents';
-import { OptionsDisplayView } from '@aph/mobile-patients/src/components/MedicineListing/OptionsDisplayView';
+import {
+  OptionsDisplayView,
+  OptionsDisplayViewItem,
+} from '@aph/mobile-patients/src/components/MedicineListing/OptionsDisplayView';
 import { Badge } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { FilterOutline, SortOutline } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListGridSelectionView } from '@aph/mobile-patients/src/components/ui/ListGridSelectionView';
@@ -90,40 +93,40 @@ export const MedicineListingSections: React.FC<Props> = ({
     fireListGridViewEvent(showListView, searchText, categoryId, pageTitle);
   };
 
+  const sortByOption: OptionsDisplayViewItem = {
+    icon: <SortOutline style={styles.iconOutline} />,
+    title: 'Sort By',
+    subtitle: sortBy?.name || 'Apply sorting',
+    onPress: () => setSortByVisible(true),
+    containerStyle: styles.sortByContainer,
+  };
+  const filterByOption: OptionsDisplayViewItem = {
+    icon: (
+      <View>
+        <FilterOutline style={styles.iconOutline} />
+        {isFiltersApplied && <Badge containerStyle={styles.filterBadgeContainer} />}
+      </View>
+    ),
+    title: 'Filter By',
+    subtitle: isFiltersApplied ? 'Filters applied' : 'Apply filters',
+    onPress: () => setFilterVisible(true),
+    containerStyle: styles.filterByContainer,
+  };
+  const listGridSelection: OptionsDisplayViewItem = {
+    icon: (
+      <ListGridSelectionView
+        isListView={showListView}
+        onPressGridView={() => onPressListGridView(false, searchText, categoryId, pageTitle)}
+        onPressListView={() => onPressListGridView(true, searchText, categoryId, pageTitle)}
+      />
+    ),
+    containerStyle: styles.listGridSelectionContainer,
+    onPress: () => {},
+  };
+
   const optionsView = (
     <OptionsDisplayView
-      options={[
-        {
-          icon: <SortOutline style={styles.iconOutline} />,
-          title: 'Sort By',
-          subtitle: sortBy?.name || 'Apply sorting',
-          onPress: () => setSortByVisible(true),
-          containerStyle: styles.sortByContainer,
-        },
-        {
-          icon: (
-            <View>
-              <FilterOutline style={styles.iconOutline} />
-              {isFiltersApplied && <Badge containerStyle={styles.filterBadgeContainer} />}
-            </View>
-          ),
-          title: 'Filter By',
-          subtitle: isFiltersApplied ? 'Filters applied' : 'Apply filters',
-          onPress: () => setFilterVisible(true),
-          containerStyle: styles.filterByContainer,
-        },
-        {
-          icon: (
-            <ListGridSelectionView
-              isListView={showListView}
-              onPressGridView={() => onPressListGridView(false, searchText, categoryId, pageTitle)}
-              onPressListView={() => onPressListGridView(true, searchText, categoryId, pageTitle)}
-            />
-          ),
-          containerStyle: styles.listGridSelectionContainer,
-          onPress: () => {},
-        },
-      ]}
+      options={searchText ? [listGridSelection] : [sortByOption, filterByOption, listGridSelection]}
     />
   );
 

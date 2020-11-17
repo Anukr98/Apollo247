@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { Divider } from 'react-native-elements';
 
-type OptionsDisplayViewItem = {
+export type OptionsDisplayViewItem = {
   icon?: JSX.Element;
   title?: string;
   subtitle?: string;
