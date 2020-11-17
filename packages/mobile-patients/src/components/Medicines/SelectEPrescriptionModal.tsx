@@ -54,6 +54,7 @@ export interface SelectEPrescriptionModalProps extends NavigationScreenProps {
   selectedEprescriptionIds?: EPrescription['id'][];
   displayPrismRecords?: boolean;
   displayMedicalRecords?: boolean;
+  showLabResults?: boolean;
 }
 
 export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> = (props) => {
@@ -141,10 +142,12 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
       type: 'medical' | 'lab' | 'health' | 'hospital' | 'prescription';
       data: any;
     }[] = [];
-    labResults &&
-      labResults.forEach((item) => {
-        mergeArray.push({ type: 'lab', data: item });
-      });
+    if (props.showLabResults) {
+      labResults &&
+        labResults.forEach((item) => {
+          mergeArray.push({ type: 'lab', data: item });
+        });
+    }
     prescriptions &&
       prescriptions.forEach((item) => {
         mergeArray.push({ type: 'prescription', data: item });
