@@ -1513,31 +1513,29 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [isSearchFocused, setSearchFocused] = useState(false);
   const client = useApolloClient();
 
-  const onSearchMedicine = (_searchText: string) => {
+  const onSearchTest = (_searchText: string) => {
     if (isValidSearch(_searchText)) {
       if (!g(locationForDiagnostics, 'cityId')) {
         renderLocationNotServingPopup();
         return;
       }
-      setSearchText(_searchText);
       if (!(_searchText && _searchText.length > 2)) {
         setMedicineList([]);
         console.log('onSearchMedicine');
         return;
       }
       setsearchSate('load');
+
       client
         .query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
           query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
           variables: {
-            cityID: parseInt(locationForDiagnostics?.cityId!, 10), //be default show of hyderabad
             searchText: _searchText,
+            cityID: parseInt(locationForDiagnostics?.cityId!, 10),
           },
           fetchPolicy: 'no-cache',
         })
         .then(({ data }) => {
-          // aphConsole.log({ data });
-          setSearchText(_searchText);
           const products = g(data, 'searchDiagnosticsByCityID', 'diagnostics') || [];
           setMedicineList(
             products as searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
@@ -1547,7 +1545,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
         })
         .catch((e) => {
           CommonBugFender('Tests_onSearchMedicine', e);
-          // aphConsole.log({ e });
           setsearchSate('fail');
         });
     }
@@ -1744,7 +1741,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 setMedicineList([]);
                 return;
               }
-              const search = _.debounce(onSearchMedicine, 300);
+              const search = _.debounce(onSearchTest, 300);
               setSearchQuery((prevSearch: any) => {
                 if (prevSearch.cancel) {
                   prevSearch.cancel();

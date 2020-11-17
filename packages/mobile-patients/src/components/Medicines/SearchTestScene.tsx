@@ -157,7 +157,7 @@ export interface SearchTestSceneProps
 export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const searchTextFromProp = props.navigation.getParam('searchText');
   const [showMatchingMedicines, setShowMatchingMedicines] = useState<boolean>(false);
-  const [searchText, setSearchText] = useState<string>('');
+  const [searchText, setSearchText] = useState<string>(searchTextFromProp);
   const [medicineList, setMedicineList] = useState<
     searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
   >([]);
