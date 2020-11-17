@@ -56,6 +56,7 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
+  Platform,
 } from 'react-native';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -848,109 +849,76 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         </View>
         <View style={styles.profileDetailsCardView}>
           <View style={styles.profileDetailsViewStyle}>
-            <View style={{ flex: 1 }}>
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() => {
+                setCurrentUpdatePopupId(1);
+                setShowUpdateProfilePopup(true);
+              }}
+              style={{ flex: 1 }}
+            >
               <View style={[styles.profileNameViewStyle, { paddingLeft: 30 }]}>
                 <Text style={styles.userBloodTextStyle}>{'Height'}</Text>
                 {arrowRightIcon()}
               </View>
               <View style={styles.heightWeightViewStyle}>
                 <HeightIcon style={{ width: 14, height: 22.14 }} />
-                {isHeightAvailable ? (
-                  <TouchableOpacity
-                    activeOpacity={1}
-                    onPress={() => {
-                      setCurrentUpdatePopupId(1);
-                      setShowUpdateProfilePopup(true);
-                    }}
-                  >
-                    {patientTextView(
+                {isHeightAvailable
+                  ? patientTextView(
                       currentPatient?.patientMedicalHistory?.height?.includes('’') ||
                         currentPatient?.patientMedicalHistory?.height?.includes("'")
                         ? currentPatient?.patientMedicalHistory?.height
                         : currentPatient?.patientMedicalHistory?.height + ' cm'
-                    )}
-                  </TouchableOpacity>
-                ) : (
-                  <TouchableOpacity
-                    activeOpacity={1}
-                    onPress={() => {
-                      setCurrentUpdatePopupId(1);
-                      setShowUpdateProfilePopup(true);
-                    }}
-                  >
-                    {patientTextView('-')}
-                  </TouchableOpacity>
-                )}
+                    )
+                  : patientTextView('-')}
               </View>
-            </View>
+            </TouchableOpacity>
             {separatorLineView()}
-            <View style={{ flex: 1 }}>
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() => {
+                setCurrentUpdatePopupId(2);
+                setShowUpdateProfilePopup(true);
+              }}
+              style={{ flex: 1 }}
+            >
               <View style={[styles.profileNameViewStyle, { paddingLeft: 25 }]}>
                 <Text style={styles.userBloodTextStyle}>{'Weight'}</Text>
                 {arrowRightIcon()}
               </View>
               <View style={styles.heightWeightViewStyle}>
                 <WeightIcon style={{ width: 14, height: 14, paddingBottom: 8 }} />
-                {isWeightAvailable ? (
-                  <TouchableOpacity
-                    activeOpacity={1}
-                    onPress={() => {
-                      setCurrentUpdatePopupId(2);
-                      setShowUpdateProfilePopup(true);
-                    }}
-                  >
-                    {patientTextView(
+                {isWeightAvailable
+                  ? patientTextView(
                       currentPatient?.patientMedicalHistory?.weight
                         ? currentPatient?.patientMedicalHistory?.weight + ' Kgs'
                         : '-'
-                    )}
-                  </TouchableOpacity>
-                ) : (
-                  <TouchableOpacity
-                    activeOpacity={1}
-                    onPress={() => {
-                      setCurrentUpdatePopupId(2);
-                      setShowUpdateProfilePopup(true);
-                    }}
-                  >
-                    {patientTextView('-')}
-                  </TouchableOpacity>
-                )}
+                    )
+                  : patientTextView('-')}
               </View>
-            </View>
+            </TouchableOpacity>
             {separatorLineView()}
-            <View style={{ flex: 1 }}>
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() => {
+                setCurrentUpdatePopupId(3);
+                setShowUpdateProfilePopup(true);
+              }}
+              style={{ flex: 1 }}
+            >
               <View style={[styles.profileNameViewStyle, { paddingLeft: 23 }]}>
                 <Text style={styles.userBloodTextStyle}>{'Blood'}</Text>
                 {arrowRightIcon()}
               </View>
               <View style={styles.heightWeightViewStyle}>
                 <BloodIcon style={{ width: 14, height: 15.58 }} />
-                {currentPatient?.patientMedicalHistory?.bloodGroup ? (
-                  <TouchableOpacity
-                    activeOpacity={1}
-                    onPress={() => {
-                      setCurrentUpdatePopupId(3);
-                      setShowUpdateProfilePopup(true);
-                    }}
-                  >
-                    {patientTextView(
+                {currentPatient?.patientMedicalHistory?.bloodGroup
+                  ? patientTextView(
                       getBloodGroupValue(currentPatient?.patientMedicalHistory?.bloodGroup)
-                    )}
-                  </TouchableOpacity>
-                ) : (
-                  <TouchableOpacity
-                    activeOpacity={1}
-                    onPress={() => {
-                      setCurrentUpdatePopupId(3);
-                      setShowUpdateProfilePopup(true);
-                    }}
-                  >
-                    {patientTextView('-')}
-                  </TouchableOpacity>
-                )}
+                    )
+                  : patientTextView('-')}
               </View>
-            </View>
+            </TouchableOpacity>
           </View>
         </View>
       </View>
@@ -1150,7 +1118,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           underlineColorAndroid={theme.colors.CLEAR}
           keyboardType={'numbers-and-punctuation'}
           onChangeText={(text) => {
-            setHeight(text);
+            if (/^[0-9\'’.]*$/.test(text)) {
+              setHeight(text);
+            }
           }}
         />
         <MaterialMenu
@@ -1200,7 +1170,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           placeholder={'Enter Weight'}
           value={weight}
           numberOfLines={1}
-          keyboardType={'numbers-and-punctuation'}
+          keyboardType={Platform.OS === 'ios' ? 'numbers-and-punctuation' : 'numeric'}
           onChangeText={(text) => {
             setWeightValue(text);
           }}
@@ -1235,7 +1205,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
 
     const onPressUpdate = () => {
       if (currentUpdatePopupId === 1) {
-        if (parseFloat(height) < 0) {
+        if (parseFloat(height) <= 0 || !height) {
           Alert.alert('Alert!', 'Please enter valid height');
         } else {
           updateMedicalParameters(
@@ -1245,11 +1215,15 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           );
         }
       } else if (currentUpdatePopupId === 2) {
-        updateMedicalParameters(
-          currentPatient?.patientMedicalHistory?.height,
-          weight,
-          currentPatient?.patientMedicalHistory?.bloodGroup
-        );
+        if (parseFloat(weight) <= 0 || !weight) {
+          Alert.alert('Alert!', 'Please enter valid weight');
+        } else {
+          updateMedicalParameters(
+            currentPatient?.patientMedicalHistory?.height,
+            weight,
+            currentPatient?.patientMedicalHistory?.bloodGroup
+          );
+        }
       } else {
         updateMedicalParameters(
           currentPatient?.patientMedicalHistory?.height,
