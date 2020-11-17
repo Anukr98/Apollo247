@@ -143,15 +143,13 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
       data: any;
     }[] = [];
     if (props.showLabResults) {
-      labResults &&
-        labResults.forEach((item) => {
-          mergeArray.push({ type: 'lab', data: item });
-        });
-    }
-    prescriptions &&
-      prescriptions.forEach((item) => {
-        mergeArray.push({ type: 'prescription', data: item });
+      labResults?.forEach((item) => {
+        mergeArray.push({ type: 'lab', data: item });
       });
+    }
+    prescriptions?.forEach((item) => {
+      mergeArray.push({ type: 'prescription', data: item });
+    });
     setCombination(sordByDate(mergeArray));
   }, [labResults, prescriptions]);
 
