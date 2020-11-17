@@ -1,10 +1,15 @@
+import analytics from '@react-native-firebase/analytics';
+import { isNumber } from 'lodash';
 import { AddressBook } from '@aph/mobile-patients/src/components/Account/AddressBook';
 import { MyAccount } from '@aph/mobile-patients/src/components/Account/MyAccount';
 import { NotificationSettings } from '@aph/mobile-patients/src/components/Account/NotificationSettings';
 import { ChatRoom } from '@aph/mobile-patients/src/components/Consult/ChatRoom';
 import { AppointmentDetails } from '@aph/mobile-patients/src/components/ConsultRoom/AppointmentDetails';
 import { Consult } from '@aph/mobile-patients/src/components/ConsultRoom/Consult';
-import { ConsultRoom } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultRoom';
+import {
+  ConsultRoom,
+  tabBarOptions,
+} from '@aph/mobile-patients/src/components/ConsultRoom/ConsultRoom';
 import { DoctorDetails } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorDetails';
 import { DoctorSearch } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorSearch';
 import { DoctorSearchListing } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorSearchListing';
@@ -521,39 +526,33 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
 };
 
-const logTabEvents = (routing: any) => {
-  if (routing.routeName === 'TabBar') {
-    switch (routing.index) {
-      case 0:
-        CommonLogEvent('TAB_BAR', 'CONSULT_ROOM clicked');
-        break;
-      case 1:
-        CommonLogEvent('TAB_BAR', 'HEALTH_RECORDS clicked');
-        break;
-      case 2:
-        CommonLogEvent('TAB_BAR', 'MEDICINES clicked');
-        break;
-      case 3:
-        CommonLogEvent('TAB_BAR', 'MY_ACCOUNT clicked');
-        break;
-      default:
-        break;
-    }
-  }
+const getTabBarRoute = (index: number) => {
+  return tabBarOptions?.[index]?.title || '';
 };
+
+const logRouteChange = (route: string, routeIndex: number | undefined) => {
+  const routeName = isNumber(routeIndex) ? getTabBarRoute(routeIndex) : route;
+  analytics().logScreenView({
+    screen_class: route,
+    screen_name: routeName,
+  });
+};
+
+let prevRoute = '';
 
 const stackConfig: StackNavigatorConfig = {
   initialRouteName: AppRoutes.SplashScreen,
   headerMode: 'none',
   cardStyle: { backgroundColor: 'transparent' },
   mode: 'card',
-  transitionConfig: (sceneProps, prevSceneProps) => {
+  transitionConfig: (sceneProps) => {
     try {
-      const currentRoute = sceneProps.scene.route.routeName;
-      const prevRoute = prevSceneProps?.scene?.route?.routeName;
-      if (prevRoute && prevRoute !== currentRoute) {
+      const currentRoute = sceneProps?.scene?.route?.routeName;
+      const currentRouteIndex = sceneProps?.scene?.route?.index;
+      if (prevRoute !== currentRoute) {
         AsyncStorage.setItem('setCurrentName', currentRoute);
-        logTabEvents(sceneProps.scene.route);
+        prevRoute = currentRoute;
+        logRouteChange(currentRoute, currentRouteIndex);
       }
     } catch (error) {
       CommonBugFender('NavigatorContainer_stackConfig_try', error);

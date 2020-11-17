@@ -69,6 +69,7 @@ import appsFlyer from 'react-native-appsflyer';
 import { AppsFlyerEventName, AppsFlyerEvents } from './AppsFlyerEvents';
 import { FirebaseEventName, FirebaseEvents } from './firebaseEvents';
 import analytics from '@react-native-firebase/analytics';
+import crashlytics from '@react-native-firebase/crashlytics';
 import _ from 'lodash';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import {
@@ -1439,6 +1440,20 @@ export const postAppsFlyerAddToCartEvent = (
 export const setFirebaseUserId = (userId: string) => {
   try {
     analytics().setUserId(userId);
+  } catch (error) {}
+};
+
+export const setCrashlyticsAttributes = async (
+  currentPatient: GetCurrentPatients_getCurrentPatients_patients
+) => {
+  try {
+    await Promise.all([
+      crashlytics().setUserId(currentPatient?.mobileNumber),
+      crashlytics().setAttributes({
+        firstName: currentPatient?.firstName!,
+        lastName: currentPatient?.lastName!,
+      }),
+    ]);
   } catch (error) {}
 };
 

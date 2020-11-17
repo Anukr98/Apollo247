@@ -307,7 +307,7 @@ type TabBarOptions = {
   image: React.ReactNode;
 };
 
-const tabBarOptions: TabBarOptions[] = [
+export const tabBarOptions: TabBarOptions[] = [
   {
     id: 1,
     title: 'APPOINTMENTS',
@@ -568,7 +568,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   useEffect(() => {
     try {
-      if (currentPatient && g(currentPatient, 'relation') == Relation.ME && !isWEGFired) {
+      if (currentPatient && !isWEGFired) {
         setWEGFired(true);
         setWEGUserAttributes();
       }
