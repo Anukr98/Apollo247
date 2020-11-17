@@ -1,3 +1,5 @@
+import crashlytics from '@react-native-firebase/crashlytics';
+import firebaseAuth from '@react-native-firebase/auth';
 import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import {
   LocationData,
@@ -307,7 +309,7 @@ type TabBarOptions = {
   image: React.ReactNode;
 };
 
-const tabBarOptions: TabBarOptions[] = [
+export const tabBarOptions: TabBarOptions[] = [
   {
     id: 1,
     title: 'APPOINTMENTS',
@@ -568,9 +570,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   useEffect(() => {
     try {
-      if (currentPatient && g(currentPatient, 'relation') == Relation.ME && !isWEGFired) {
+      if (currentPatient && !isWEGFired) {
         setWEGFired(true);
         setWEGUserAttributes();
+        setCrashlyticsAttributes();
       }
       getUserSubscriptionsWithBenefits();
       getUserBanners();
@@ -642,6 +645,21 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     webengage.user.setEmail(g(currentPatient, 'emailAddress'));
     webengage.user.setBirthDateString(g(currentPatient, 'dateOfBirth'));
     webengage.user.setPhone(g(currentPatient, 'mobileNumber'));
+  };
+
+  const setCrashlyticsAttributes = async () => {
+    try {
+      const userId = firebaseAuth()?.currentUser?.uid;
+      if (userId) {
+        await Promise.all([
+          crashlytics().setUserId(userId),
+          crashlytics().setAttributes({
+            firstName: currentPatient?.firstName,
+            lastName: currentPatient?.lastName,
+          }),
+        ]);
+      }
+    } catch (error) {}
   };
 
   const postHomeWEGEvent = (
