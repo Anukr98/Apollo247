@@ -221,6 +221,32 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
   },
   stickyBottomComponent: { height: 'auto', flexDirection: 'column' },
+  priceView: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+  },
+  discountPriceView: {
+    display: 'flex',
+    flexDirection: 'row',
+  },
+  mrp: {
+    ...theme.viewStyles.text('SB', 13, '#02475b', 1, 20, 0.35),
+  },
+  price: {
+    ...theme.viewStyles.text('SB', 17, '#02475b', 1, 20, 0.35),
+  },
+  priceStrikeOff: {
+    ...theme.viewStyles.text('M', 13, '#01475b', 1, 20, 0.35),
+    textDecorationLine: 'line-through',
+    color: '#01475b',
+    opacity: 0.6,
+    paddingRight: 5,
+  },
+  discountPercentage: {
+    ...theme.viewStyles.text('M', 13, '#00B38E', 1, 20, 0.35),
+  },
 });
 
 type PharmacyTatApiCalled = WebEngageEvents[WebEngageEventName.PHARMACY_TAT_API_CALLED];
@@ -681,40 +707,17 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         ) : (
           <View style={styles.bottomView}>
             <View style={styles.bottonButtonContainer}>
-              <View
-                style={{
-                  flex: 1,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'flex-start',
-                }}
-              >
-                <Text style={theme.viewStyles.text('SB', 17, '#02475b', 1, 20, 0.35)}>
-                  ₹{medicineDetails.special_price || medicineDetails.price}
+              <View style={styles.priceView}>
+                <Text style={styles.price}>
+                  {discountPercent
+                    ? `₹${medicineDetails.special_price}`
+                    : `MRP ₹${medicineDetails.price}`}
                 </Text>
                 {!!medicineDetails.special_price && (
-                  <View
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'row',
-                    }}
-                  >
-                    <Text
-                      style={[
-                        theme.viewStyles.text('M', 13, '#01475b', 1, 20, 0.35),
-                        {
-                          textDecorationLine: 'line-through',
-                          color: '#01475b',
-                          opacity: 0.6,
-                          paddingRight: 5,
-                        },
-                      ]}
-                    >
-                      (₹{medicineDetails.price})
-                    </Text>
-                    <Text style={theme.viewStyles.text('M', 13, '#00B38E', 1, 20, 0.35)}>
-                      {discountPercent}% off
-                    </Text>
+                  <View style={styles.discountPriceView}>
+                    <Text style={styles.mrp}>{'MRP '}</Text>
+                    <Text style={styles.priceStrikeOff}>(₹{medicineDetails.price})</Text>
+                    <Text style={styles.discountPercentage}>{discountPercent}% off</Text>
                   </View>
                 )}
               </View>

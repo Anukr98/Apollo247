@@ -54,24 +54,22 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
           {data.name}
         </Text>
         {isOutOfStock && !isNotForOnlineSelling ? (
-          <Text style={{ ...theme.viewStyles.text('M', 12, '#890000', 1, 20, 0.04) }}>
+          <Text style={{ ...theme.viewStyles.text('M', 12, '#890000', 1, 20) }}>
             {'Out Of Stock'}
           </Text>
         ) : (
           <View style={{ flexDirection: 'row' }}>
-            <Text
-              style={{
-                ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04),
-              }}
-            >
+            {!specialPrice && (
+              <Text style={theme.viewStyles.text('M', 12, '#02475b', 0.6, 20)}>{'MRP '}</Text>
+            )}
+            <Text style={theme.viewStyles.text('M', 12, '#02475b', 0.6, 20)}>
               Rs. {specialPrice || data.price}
             </Text>
             {specialPrice ? (
               <Text
-                style={[
-                  { ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04), marginLeft: 8 },
-                ]}
+                style={[{ ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20), marginLeft: 8 }]}
               >
+                <Text style={theme.viewStyles.text('M', 12, '#02475b')}>{' MRP '}</Text>
                 {'('}
                 <Text style={{ textDecorationLine: 'line-through' }}>{`Rs. ${data.price}`}</Text>
                 {')'}
