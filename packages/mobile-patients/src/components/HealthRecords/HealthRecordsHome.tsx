@@ -262,14 +262,9 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('SB', 36, '#01475b', 1, 46.8),
   },
   textInputTextStyle: {
-    borderBottomWidth: 2,
-    paddingTop: 0,
     paddingBottom: 0,
-    marginBottom: 8,
-    width: '70%',
-    ...theme.fonts.IBMPlexSansMedium(18),
-    color: theme.colors.SHERPA_BLUE,
-    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
+    paddingTop: Platform.OS === 'ios' ? 13 : 8.5,
+    width: '73%',
   },
   kgsTextStyle: {
     ...theme.fonts.IBMPlexSansMedium(18),
@@ -651,8 +646,12 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         fetchTestData();
       }
     });
+    const didBlurSubsription = props.navigation.addListener('didBlur', (payload) => {
+      setCallApi(true);
+    });
     return () => {
       didFocusSubscription && didFocusSubscription.remove();
+      didBlurSubsription && didBlurSubsription.remove();
     };
   }, [props.navigation, currentPatient, callApi]);
 
@@ -1108,14 +1107,11 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     });
     return (
       <View style={{ flexDirection: 'row' }}>
-        <TextInput
+        <TextInputComponent
+          conatinerstyles={styles.textInputTextStyle}
           placeholder={'Enter Height'}
-          style={styles.textInputTextStyle}
-          selectionColor={theme.colors.INPUT_CURSOR_COLOR}
-          placeholderTextColor={theme.colors.placeholderTextColor}
           value={height}
           numberOfLines={1}
-          underlineColorAndroid={theme.colors.CLEAR}
           keyboardType={'numbers-and-punctuation'}
           onChangeText={(text) => {
             if (/^[0-9\'’.]*$/.test(text)) {
@@ -1138,7 +1134,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         >
           <View style={{ flexDirection: 'row', marginBottom: 8 }}>
             <View style={[styles.placeholderViewStyle, { marginLeft: 10 }]}>
-              <Text style={[styles.placeholderTextStyle]}>{heightArrayValue}</Text>
+              <Text style={[styles.placeholderTextStyle, { lineHeight: 36 }]}>
+                {heightArrayValue}
+              </Text>
               <View style={[{ flex: 1, alignItems: 'flex-end', marginLeft: 22 }]}>
                 <DropdownGreen />
               </View>
