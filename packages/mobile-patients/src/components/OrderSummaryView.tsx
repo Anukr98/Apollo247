@@ -234,7 +234,10 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
   const coupon_discount = orderDetails.couponDiscount || 0;
   const packaging_charges = orderDetails.packagingCharges;
   const cartItemsUpdatedTotal =
-    (packaging_charges || 0) + (orderDetails.devliveryCharges || 0) + updatedItemMrpTotal;
+    (packaging_charges || 0) +
+    (orderDetails.devliveryCharges || 0) +
+    updatedItemMrpTotal -
+    coupon_discount;
   const paymentMethod = g(orderDetails, 'medicineOrderPayments', '0' as any, 'paymentType');
   const paymentMode =
     g(orderDetails, 'medicineOrderPayments', '0' as any, 'paymentMode') || paymentMethod;

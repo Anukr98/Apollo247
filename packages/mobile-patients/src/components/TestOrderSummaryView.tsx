@@ -13,6 +13,7 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const { height } = Dimensions.get('window');
 
@@ -213,7 +214,10 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
             <Text style={styles.commonText}>{g(item, 'quantity')}</Text>
           </View>
           <View style={{ flex: 1, alignItems: 'center' }}>
-            <Text style={styles.commonText}>Rs.{g(item, 'price')}</Text>
+            <Text style={styles.commonText}>
+              {string.common.Rs}
+              {g(item, 'price')}
+            </Text>
           </View>
         </View>
       ))}
@@ -231,7 +235,10 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
           </Text>
         </View>
         <View style={{ flex: 1, alignItems: 'center' }}>
-          <Text style={styles.commonText}>Rs.{totalIndividualDiagonsticsCharges}</Text>
+          <Text style={styles.commonText}>
+            {string.common.Rs}
+            {totalIndividualDiagonsticsCharges}
+          </Text>
         </View>
       </View>
       {!!HomeCollectionCharges && (
@@ -245,7 +252,10 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
             </Text>
           </View>
           <View style={{ flex: 1, alignItems: 'center' }}>
-            <Text style={styles.commonText}>Rs.{HomeCollectionCharges}</Text>
+            <Text style={styles.commonText}>
+              {string.common.Rs}
+              {HomeCollectionCharges}
+            </Text>
           </View>
         </View>
       )}
@@ -255,7 +265,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
         <Text style={styles.paymentText1}> Total </Text>
         <Text style={[styles.paymentText, { marginHorizontal: 20 }]}>
           {' '}
-          Rs. {orderDetails.totalPrice}{' '}
+          {string.common.Rs} {orderDetails.totalPrice}{' '}
         </Text>
       </View>
       {false && (
