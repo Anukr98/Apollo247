@@ -25,6 +25,7 @@ import {
   UnInstallAppsFlyer,
   postFirebaseEvent,
   setFirebaseUserId,
+  setCrashlyticsAttributes,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -586,6 +587,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
   const fireUserLoggedInEvent = (mePatient: any, type: 'Registration' | 'Login') => {
     setFirebaseUserId(mePatient.id);
+    setCrashlyticsAttributes(mePatient);
     const firebaseAttributes: FirebaseEvents[FirebaseEventName.USER_LOGGED_IN] = {
       Type: type,
       userId: mePatient.id,
