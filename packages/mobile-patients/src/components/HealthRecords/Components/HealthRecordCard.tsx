@@ -10,6 +10,7 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { EDIT_DELETE_TYPE } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   menuContainerStyle: {
@@ -134,7 +135,13 @@ export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
         {healthConditionCard && !sourceName ? null : (
           <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 9 }}>
             {selfUpload ? (
-              <SelfUploadPhrIcon style={{ width: 16, height: 10.14, marginRight: 8 }} />
+              sourceName === string.common.clicnical_document_text ||
+              sourceName === string.common.patient_uploaded_text ||
+              sourceName === '-' ? (
+                <SelfUploadPhrIcon style={{ width: 16, height: 10.14, marginRight: 8 }} />
+              ) : (
+                <HospitalUploadPhrIcon style={{ height: 14, width: 14, marginRight: 8 }} />
+              )
             ) : (
               <HospitalUploadPhrIcon style={{ height: 14, width: 14, marginRight: 8 }} />
             )}

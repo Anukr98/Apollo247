@@ -550,6 +550,10 @@ export const PhrAddTestDetailsIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_phr_add_test_details.png')} />
 );
 
+export const PhrRemoveTestDetailsIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_phr_remove_test_details.png')} />
+);
+
 export const PhrGalleryIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_phr_gallery.png')} />
 );

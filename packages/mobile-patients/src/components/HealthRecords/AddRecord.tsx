@@ -17,6 +17,7 @@ import {
   PhrUncheckboxIcon,
   DropdownGreen,
   PhrDropdownBlueUpIcon,
+  PhrRemoveTestDetailsIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
@@ -89,6 +90,7 @@ import {
   View,
   ScrollView,
   TextInput,
+  Platform,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
@@ -324,6 +326,12 @@ const styles = StyleSheet.create({
   dateViewStyle: { paddingTop: 0, paddingBottom: 10 },
   illnessTypeViewStyle: { marginBottom: 30 },
   menuContainerViewStyle: { marginLeft: 14, marginRight: 18 },
+  parameterContainerStyle: {
+    paddingTop: 0,
+    paddingBottom: 3,
+    paddingRight: 20,
+  },
+  parameterNameStyle: { ...theme.viewStyles.text('R', 14, theme.colors.LIGHT_BLUE, 1, 18.2) },
 });
 
 type RecordTypeType = {
@@ -506,6 +514,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
 
   const [Images, setImages] = useState<PickerImage>(props.navigation.state.params ? [] : []);
   const [imageUpdate, setImageUpdate] = useState<boolean>(false);
+  const [callDeleteAttachmentApi, setCallDeleteAttachmentApi] = useState<boolean>(false);
   const [currentImage, setCurrentImage] = useState<PickerImage>(null);
   const [openCamera, setOpenCamera] = useState<boolean>(false);
   const navigatedFrom = props.navigation.state.params!.navigatedFrom
@@ -524,6 +533,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
   const client = useApolloClient();
+  const numberKeyboardType = Platform.OS === 'ios' ? 'numbers-and-punctuation' : 'numeric';
 
   useEffect(() => {
     if (!currentPatient) {
@@ -1612,7 +1622,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   ) => {
     const renderTitle = () => {
       return (
-        <Text style={{ ...theme.viewStyles.text('R', 14, theme.colors.LIGHT_BLUE, 1, 18.2) }}>
+        <Text style={styles.parameterNameStyle}>
           {title}
           {mandatoryField ? <Text style={{ color: '#E50000' }}>{' *'}</Text> : null}
         </Text>
@@ -1635,7 +1645,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   ) => {
     const renderTitle = () => {
       return (
-        <Text style={{ ...theme.viewStyles.text('R', 14, theme.colors.LIGHT_BLUE, 1, 18.2) }}>
+        <Text style={styles.parameterNameStyle}>
           {title}
           {mandatoryField ? <Text style={{ color: '#E50000' }}>{' *'}</Text> : null}
         </Text>
@@ -1651,7 +1661,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     );
   };
 
-  const renderDoctorPrefixListItem = (titleComponent: React.ReactElement, style: any = {}) => {
+  const renderDoctorPrefixListItem = (
+    titleComponent: React.ReactElement,
+    style: any = {},
+    doctorPrefix: string = 'Dr.'
+  ) => {
     return (
       <ListItem
         title={titleComponent}
@@ -1659,7 +1673,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         containerStyle={[styles.doctorPrefixContainerStyle, style]}
         leftElement={
           <Text style={{ ...theme.viewStyles.text('M', 16, theme.colors.SKY_BLUE, 1, 20.8) }}>
-            {'Dr.'}
+            {doctorPrefix}
           </Text>
         }
       />
@@ -1824,12 +1838,26 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       );
     };
 
-    const renderTitle = () => {
+    const onPressRemoveRecordParameter = (i: number) => {
+      const dataCopy = [...testRecordParameters];
+      dataCopy?.splice(i, 1);
+      setTestRecordParameters(dataCopy);
+    };
+
+    const rightElementParameter = (i: number) => {
       return (
-        <Text style={{ ...theme.viewStyles.text('R', 14, theme.colors.LIGHT_BLUE, 1, 18.2) }}>
-          {'Record details'}
-        </Text>
+        <TouchableOpacity activeOpacity={1} onPress={() => onPressRemoveRecordParameter(i)}>
+          <PhrRemoveTestDetailsIcon style={{ width: 20, height: 20 }} />
+        </TouchableOpacity>
       );
+    };
+
+    const renderTitleParameter = () => {
+      return <Text style={styles.parameterNameStyle}>{'Parameter Name'}</Text>;
+    };
+
+    const renderTitle = () => {
+      return <Text style={styles.parameterNameStyle}>{'Record details'}</Text>;
     };
     return (
       <>
@@ -1878,10 +1906,15 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         {testRecordParameters.map((item, i) => (
           <View>
             <View style={{ marginTop: 32 }}>
-              {renderListItem('Parameter Name', true)}
+              <ListItem
+                title={renderTitleParameter()}
+                pad={14}
+                containerStyle={styles.parameterContainerStyle}
+                rightElement={rightElementParameter(i)}
+              />
               <TextInput
                 placeholder={'Enter name'}
-                style={styles.textInputStyle}
+                style={[styles.textInputStyle, { marginBottom: 0 }]}
                 selectionColor={theme.colors.SKY_BLUE}
                 numberOfLines={1}
                 placeholderTextColor={theme.colors.placeholderTextColor}
@@ -1899,18 +1932,18 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               <View style={{ flexDirection: 'row' }}>
                 <TextInput
                   placeholder={'0'}
-                  style={styles.textInputStyle}
+                  style={[styles.textInputStyle, { marginBottom: 0 }]}
                   selectionColor={theme.colors.SKY_BLUE}
                   numberOfLines={1}
                   placeholderTextColor={theme.colors.placeholderTextColor}
                   underlineColorAndroid={'transparent'}
                   value={(item.result || '').toString()}
                   onChangeText={(value) => setTestParametersData('result', value, i, true)}
-                  keyboardType={'numbers-and-punctuation'}
+                  keyboardType={numberKeyboardType}
                 />
                 <TextInput
                   placeholder={'unit'}
-                  style={styles.textInputStyle}
+                  style={[styles.textInputStyle, { marginBottom: 0 }]}
                   selectionColor={theme.colors.SKY_BLUE}
                   numberOfLines={1}
                   placeholderTextColor={theme.colors.placeholderTextColor}
@@ -1929,18 +1962,18 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               <View style={{ flexDirection: 'row', marginTop: 5 }}>
                 <TextInput
                   placeholder={'min'}
-                  style={styles.textInputStyle}
+                  style={[styles.textInputStyle, { marginBottom: 0 }]}
                   selectionColor={theme.colors.SKY_BLUE}
                   numberOfLines={1}
                   placeholderTextColor={theme.colors.placeholderTextColor}
                   underlineColorAndroid={'transparent'}
                   value={(item.minimum || '').toString()}
                   onChangeText={(value) => setTestParametersData('minimum', value, i, true)}
-                  keyboardType={'numbers-and-punctuation'}
+                  keyboardType={numberKeyboardType}
                 />
                 <TextInput
                   placeholder={'unit'}
-                  style={styles.textInputStyle}
+                  style={[styles.textInputStyle, { marginBottom: 0 }]}
                   selectionColor={theme.colors.SKY_BLUE}
                   numberOfLines={1}
                   placeholderTextColor={theme.colors.placeholderTextColor}
@@ -1954,18 +1987,18 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 />
                 <TextInput
                   placeholder={'max'}
-                  style={styles.textInputStyle}
+                  style={[styles.textInputStyle, { marginBottom: 0 }]}
                   selectionColor={theme.colors.SKY_BLUE}
                   numberOfLines={1}
                   placeholderTextColor={theme.colors.placeholderTextColor}
                   underlineColorAndroid={'transparent'}
                   value={(item.maximum || '').toString()}
                   onChangeText={(value) => setTestParametersData('maximum', value, i, true)}
-                  keyboardType={'numbers-and-punctuation'}
+                  keyboardType={numberKeyboardType}
                 />
                 <TextInput
                   placeholder={'unit'}
-                  style={styles.textInputStyle}
+                  style={[styles.textInputStyle, { marginBottom: 0 }]}
                   selectionColor={theme.colors.SKY_BLUE}
                   numberOfLines={1}
                   placeholderTextColor={theme.colors.placeholderTextColor}
@@ -2162,21 +2195,25 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         </View>
         <View style={styles.listItemViewStyle}>
           {renderListItem('Record insurance amount ', true)}
-          <TextInput
-            placeholder={'Enter Record insurance amount '}
-            style={styles.textInputStyle}
-            selectionColor={theme.colors.SKY_BLUE}
-            numberOfLines={1}
-            value={locationName}
-            keyboardType={'numbers-and-punctuation'}
-            placeholderTextColor={theme.colors.placeholderTextColor}
-            underlineColorAndroid={'transparent'}
-            onChangeText={(locName) => {
-              if (isValidText(locName)) {
-                setLocationName(locName);
-              }
-            }}
-          />
+          {renderDoctorPrefixListItem(
+            <TextInput
+              placeholder={'Enter Record insurance amount '}
+              style={styles.doctorPrefixTextInputStyle}
+              selectionColor={theme.colors.SKY_BLUE}
+              numberOfLines={1}
+              value={locationName}
+              keyboardType={numberKeyboardType}
+              placeholderTextColor={theme.colors.placeholderTextColor}
+              underlineColorAndroid={'transparent'}
+              onChangeText={(locName) => {
+                if (/^[0-9.]*$/.test(locName)) {
+                  setLocationName(locName);
+                }
+              }}
+            />,
+            {},
+            'Rs'
+          )}
         </View>
         {renderAdditionalTextInputView()}
       </>
