@@ -345,15 +345,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           {!!testInfo.ToAgeInDays && (
             <View style={styles.personDetailsView}>
               <Text style={styles.personDetailLabelStyles}>Age Group</Text>
-              <Text style={styles.personDetailStyles}>
-                {fromAge == '0' ? '12' : fromAge} TO{' '}
-                {COVID_NOTIFICATION_ITEMID.includes(testInfo.ItemID)
-                  ? 100
-                  : toAge == '192'
-                  ? '99'
-                  : toAge}{' '}
-                YEARS
-              </Text>
+              <Text style={styles.personDetailStyles}>For all Age Group</Text>
             </View>
           )}
           {!!testInfo.Gender && !!gender[testInfo.Gender] && (
