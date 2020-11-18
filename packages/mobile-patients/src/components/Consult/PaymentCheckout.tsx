@@ -134,31 +134,34 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const { circleSubscriptionId, circlePlanSelected } = useShoppingCart();
 
   const amount = Number(price) - couponDiscountFees;
-  const amountToPay = circlePlanSelected
-    ? isOnlineConsult
-      ? onlineConsultSlashedPrice -
-        couponDiscountFees +
-        Number(circlePlanSelected?.currentSellingPrice)
-      : physicalConsultSlashedPrice -
-        couponDiscountFees +
-        Number(circlePlanSelected?.currentSellingPrice)
-    : amount;
+  const amountToPay =
+    circlePlanSelected && isCircleDoctor
+      ? isOnlineConsult
+        ? onlineConsultSlashedPrice -
+          couponDiscountFees +
+          Number(circlePlanSelected?.currentSellingPrice)
+        : physicalConsultSlashedPrice -
+          couponDiscountFees +
+          Number(circlePlanSelected?.currentSellingPrice)
+      : amount;
   const notSubscriberUserForCareDoctor =
     isCircleDoctor && !circleSubscriptionId && !circlePlanSelected;
 
   let finalAppointmentInput = appointmentInput;
   finalAppointmentInput['couponCode'] = coupon ? coupon : null;
   finalAppointmentInput['discountedAmount'] = doctorDiscountedFees;
-  finalAppointmentInput['actualAmount'] = circlePlanSelected
-    ? isOnlineConsult
-      ? onlineConsultSlashedPrice
-      : physicalConsultSlashedPrice
-    : Number(price);
+  finalAppointmentInput['actualAmount'] =
+    circlePlanSelected && isCircleDoctor
+      ? isOnlineConsult
+        ? onlineConsultSlashedPrice
+        : physicalConsultSlashedPrice
+      : Number(price);
   const planPurchaseDetails = {
     TYPE: PLAN.CARE_PLAN,
     PlanAmount: circlePlanSelected?.currentSellingPrice,
   };
-  finalAppointmentInput['planPurchaseDetails'] = circlePlanSelected ? planPurchaseDetails : null;
+  finalAppointmentInput['planPurchaseDetails'] =
+    circlePlanSelected && isCircleDoctor ? planPurchaseDetails : null;
 
   const totalSavings =
     isCircleDoctor && (circleSubscriptionId || circlePlanSelected)
@@ -336,11 +339,12 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
 
   const validateCoupon = (coupon: string, fireEvent?: boolean) => {
     let packageId = '';
-    const billAmount = circlePlanSelected
-      ? isOnlineConsult
-        ? onlineConsultSlashedPrice
-        : physicalConsultSlashedPrice
-      : Number(price);
+    const billAmount =
+      circlePlanSelected && isCircleDoctor
+        ? isOnlineConsult
+          ? onlineConsultSlashedPrice
+          : physicalConsultSlashedPrice
+        : Number(price);
 
     if (!!g(hdfcUserSubscriptions, '_id') && !!g(hdfcUserSubscriptions, 'isActive')) {
       packageId =

@@ -571,6 +571,9 @@
     "circleMembershipPlans": "Circle Membership Plans",
     "addToCart": "ADD TO CART",
     "consultCircleOfferDescription": "Enable Circle membership to get the best offers on all transactions you make with us",
-    "getCircleMembershipOffersDescription": "Enable Circle membership to get the best discounts, cashbacks, free delivery and more..."
+    "getCircleMembershipOffersDescription": "Enable Circle membership to get the best discounts, cashbacks, free delivery and more...",
+    "successfullyPurchashedCircleSubscription": "Congratulations! You have successfully purchased Circle Subscription.",
+    "validTill": "Valid till:",
+    "subscriptionID": "Subscription ID"
   }
 }

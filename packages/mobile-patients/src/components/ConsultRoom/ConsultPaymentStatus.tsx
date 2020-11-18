@@ -1,6 +1,12 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { Failure, Pending, Success, Copy } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  Failure,
+  Pending,
+  Success,
+  Copy,
+  CircleLogo,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -55,6 +61,7 @@ import { Snackbar } from 'react-native-paper';
 import { SearchSendIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import AsyncStorage from '@react-native-community/async-storage';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { AddedCirclePlanWithValidity } from '@aph/mobile-patients/src/components/ui/AddedCirclePlanWithValidity';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -680,18 +687,48 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     );
   };
 
+  const renderAddedCirclePlanWithValidity = () => {
+    return <AddedCirclePlanWithValidity />;
+  };
+
+  const renderCircleSavingsOnPurchase = () => {
+    return (
+      <View style={styles.circleSavingsContainer}>
+        <View style={styles.rowCenter}>
+          <CircleLogo style={styles.circleLogo} />
+          <Text
+            style={{
+              ...theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE, 1, 12),
+              marginTop: 5,
+            }}
+          >
+            You{' '}
+            <Text style={theme.viewStyles.text('SB', 12, theme.colors.SEARCH_UNDERLINE_COLOR)}>
+              saved {string.common.Rs}xxx{' '}
+            </Text>
+            on your purchase
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#01475b" />
       <Header leftIcon="backArrow" title="PAYMENT STATUS" onPressLeftIcon={() => handleBack()} />
       {!loading ? (
-        <ScrollView style={styles.container}>
-          {renderStatusCard()}
-          {appointmentHeader()}
-          {appointmentCard()}
-          {renderNote()}
+        <View style={styles.container}>
+          <ScrollView style={styles.container}>
+            {renderStatusCard()}
+            {renderAddedCirclePlanWithValidity()}
+            {renderCircleSavingsOnPurchase()}
+            {appointmentHeader()}
+            {appointmentCard()}
+            {renderNote()}
+          </ScrollView>
           {renderButton()}
-        </ScrollView>
+        </View>
       ) : (
         <Spinner />
       )}
@@ -828,5 +865,25 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'center',
     marginTop: 8,
+  },
+  circleSavingsContainer: {
+    ...theme.viewStyles.cardViewStyle,
+    marginHorizontal: 20,
+    borderRadius: 5,
+    borderColor: theme.colors.SEARCH_UNDERLINE_COLOR,
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    paddingHorizontal: 10,
+    marginBottom: 20,
+    paddingVertical: 8,
+  },
+  rowCenter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  circleLogo: {
+    width: 50,
+    height: 32,
+    marginRight: 5,
   },
 });

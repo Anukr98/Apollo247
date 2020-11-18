@@ -19,6 +19,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import AsyncStorage from '@react-native-community/async-storage';
 import { ONE_APOLLO_STORE_CODE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { calculateCareDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
 
 export interface ConsultPaymentnewProps extends NavigationScreenProps {}
 
@@ -47,6 +48,8 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
   const planId = AppConfig.Configuration.CARE_PLAN_ID;
   const storeCode =
     Platform.OS === 'ios' ? ONE_APOLLO_STORE_CODE.IOSCUS : ONE_APOLLO_STORE_CODE.ANDCUS;
+  const circleDoctorDetails = calculateCareDoctorPricing(doctor);
+  const { isCircleDoctor } = circleDoctorDetails;
 
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -109,7 +112,7 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
     let url = `${baseUrl}/consultpayment?appointmentId=${appointmentId}&patientId=${currentPatiendId}&price=${price}&paymentTypeID=${paymentTypeID}&paymentModeOnly=YES${
       bankCode ? '&bankCode=' + bankCode : ''
     }`;
-    if (planSelected) {
+    if (planSelected && isCircleDoctor) {
       url = `${url}&planId=${planId}&subPlanId=${planSelected?.subPlanId}&storeCode=${storeCode}`;
     }
     console.log(url);

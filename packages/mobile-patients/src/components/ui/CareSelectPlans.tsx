@@ -8,9 +8,9 @@ import {
   ViewStyle,
   ImageBackground,
   Dimensions,
+  ScrollView,
 } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { ScrollView } from 'react-native-gesture-handler';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useApolloClient } from 'react-apollo-hooks';
 import { GET_PLAN_DETAILS_BY_PLAN_ID } from '@aph/mobile-patients/src/graphql/profiles';

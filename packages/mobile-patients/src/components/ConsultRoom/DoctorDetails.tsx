@@ -933,14 +933,17 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             </View>
           )}
           {isCircleDoctor && !circleSubscriptionId && defaultCirclePlan && renderUpgradeToCircle()}
-          {!defaultCirclePlan && circlePlanSelected && renderCirclePlanAddedToCartView()}
-          {showCirclePlans && renderCirclePlans()}
+          {isCircleDoctor &&
+            !defaultCirclePlan &&
+            circlePlanSelected &&
+            renderCirclePlanAddedToCartView()}
+          {isCircleDoctor && showCirclePlans && renderCirclePlans()}
         </View>
       );
     }
     return null;
   };
-  console.log('defaultCirclePlan', defaultCirclePlan);
+
   const renderUpgradeToCircle = () => {
     return (
       <TouchableOpacity style={styles.upgradeContainer} onPress={() => setShowCirclePlans(true)}>
