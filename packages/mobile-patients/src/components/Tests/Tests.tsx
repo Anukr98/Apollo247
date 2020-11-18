@@ -296,7 +296,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
     'Patient Age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
   };
   useEffect(() => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED] = patientAttributes;
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED] = {
+      ...patientAttributes,
+      Serviceability: isDiagnosticLocationServiceable == 'true' ? 'Yes' : 'No',
+    };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED, eventAttributes);
   }, []);
 
@@ -313,7 +316,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   useEffect(() => {
     if (!!locationDetails || !!diagnosticLocation) {
-      if (isDiagnosticLocationServiceable) {
+      if (isDiagnosticLocationServiceable == 'true') {
         const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_SERVICEABLE] = serviceableAttributes;
         postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_SERVICEABLE, eventAttributes);
       } else {
@@ -715,10 +718,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
               city: serviceableData.cityName || '',
             };
             setDiagnosticServiceabilityData!(obj);
-            setDiagnosticLocationServiceable!(true);
+            setDiagnosticLocationServiceable!('true');
             setServiceabilityMsg('');
           } else {
-            setDiagnosticLocationServiceable!(false);
+            setDiagnosticLocationServiceable!('false');
             setLoadingContext!(false);
             renderLocationNotServingPopUpForPincode(pincode);
           }

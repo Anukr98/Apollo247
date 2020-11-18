@@ -463,9 +463,10 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     };
 
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED] = {
-      'Payment mode': isCashOnDelivery ? 'COD' : 'Online',
+      Paymentmode: isCashOnDelivery ? 'COD' : 'Online',
       Amount: grandTotal,
-      'Service Area': 'Diagnostic',
+      ServiceArea: 'Diagnostic',
+      LOB: 'Diagnostic',
     };
 
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED, eventAttributes);

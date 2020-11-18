@@ -309,6 +309,10 @@ export interface DiagnosticUserInfo {
   'Patient Age': number;
 }
 
+export interface DiagnosticLandingPage extends DiagnosticUserInfo {
+  'Serviceability': 'Yes' | 'No'
+}
+
 export interface DiagnosticServiceble {
   'Patient UHID': string;
   State: string;
@@ -765,7 +769,7 @@ export interface WebEngageEvents {
 
   // ********** Diagnostic Events *******
 
-  [WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED]: DiagnosticUserInfo;
+  [WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED]: DiagnosticLandingPage;
   [WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_SEARCHED]: ItemSearchedOnLanding;
   [WebEngageEventName.DIAGNOSTIC_LANDING_ITEM_CLICKED_AFTER_SEARCH]: ItemClickedOnLanding;
   [WebEngageEventName.DIAGNOSTIC_MY_ORDERS]: {
