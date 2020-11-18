@@ -259,8 +259,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   useEffect(() => {
     if (orders) {
       orders.map((order) => {
-        fetchOrderStatusForEachTest(order!.id!, order);
-        fetchTestDetails(order!.id, order);
+        if (order.orderStatus != DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED) {
+          fetchOrderStatusForEachTest(order!.id!, order);
+          fetchTestDetails(order!.id, order);
+        }
       });
     }
   }, [orders]);
@@ -578,6 +580,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const renderOrder = (order: DiagnosticsOrderList, index: number) => {
+    if (order.orderStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED) {
+      return;
+    }
     const isHomeVisit = !!order.slotTimings;
     const dt = moment(order!.diagnosticDate).format(`D MMM YYYY`);
     const tm = getSlotStartTime(order!.slotTimings);
