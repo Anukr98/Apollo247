@@ -62,7 +62,7 @@ import { SearchSendIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import AsyncStorage from '@react-native-community/async-storage';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { AddedCirclePlanWithValidity } from '@aph/mobile-patients/src/components/ui/AddedCirclePlanWithValidity';
-
+import { paymentTransactionStatus_paymentTransactionStatus_appointment_amountBreakup } from '@aph/mobile-patients/src/graphql/types/paymentTransactionStatus';
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
@@ -96,7 +96,13 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const [showEmailInput, setshowEmailInput] = useState<boolean>(false);
   const [email, setEmail] = useState<string>(currentPatient?.emailAddress || '');
   const [emailSent, setEmailSent] = useState<boolean>(false);
-  const { setCircleSubscriptionId } = useShoppingCart();
+  const [
+    amountBreakup,
+    setAmountBreakup,
+  ] = useState<paymentTransactionStatus_paymentTransactionStatus_appointment_amountBreakup | null>();
+  const circleSavings = amountBreakup?.saving_amount || 0;
+
+  const { setCircleSubscriptionId, circleSubscriptionId } = useShoppingCart();
 
   const copyToClipboard = (refId: string) => {
     Clipboard.setString(refId);
@@ -125,6 +131,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         fetchPolicy: 'no-cache',
       })
       .then((res) => {
+        setAmountBreakup(res?.data?.paymentTransactionStatus?.appointment?.amountBreakup);
         try {
           const paymentEventAttributes = {
             Payment_Status: res.data.paymentTransactionStatus.appointment.paymentStatus,
@@ -165,7 +172,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   }, []);
 
   const clearCircleSubscriptionData = () => {
-    setCircleSubscriptionId && setCircleSubscriptionId('');
     AsyncStorage.removeItem('circlePlanSelected');
   };
 
@@ -688,7 +694,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   };
 
   const renderAddedCirclePlanWithValidity = () => {
-    return <AddedCirclePlanWithValidity />;
+    return <AddedCirclePlanWithValidity amountBreakup={amountBreakup} />;
   };
 
   const renderCircleSavingsOnPurchase = () => {
@@ -704,7 +710,8 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
           >
             You{' '}
             <Text style={theme.viewStyles.text('SB', 12, theme.colors.SEARCH_UNDERLINE_COLOR)}>
-              saved {string.common.Rs}xxx{' '}
+              saved {string.common.Rs}
+              {amountBreakup?.saving_amount}{' '}
             </Text>
             on your purchase
           </Text>
@@ -721,8 +728,10 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         <View style={styles.container}>
           <ScrollView style={styles.container}>
             {renderStatusCard()}
-            {renderAddedCirclePlanWithValidity()}
-            {renderCircleSavingsOnPurchase()}
+            {circleSavings > 0 && !circleSubscriptionId
+              ? renderAddedCirclePlanWithValidity()
+              : null}
+            {circleSavings > 0 && circleSubscriptionId ? renderCircleSavingsOnPurchase() : null}
             {appointmentHeader()}
             {appointmentCard()}
             {renderNote()}

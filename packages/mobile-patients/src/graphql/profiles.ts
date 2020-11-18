@@ -2900,6 +2900,10 @@ export const GET_TRANSACTION_STATUS = gql`
         bankTxnId
         paymentStatus
         amountPaid
+        amountBreakup {
+          plansPurchased
+          saving_amount
+        }
       }
     }
   }
