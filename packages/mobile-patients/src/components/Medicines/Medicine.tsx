@@ -1631,6 +1631,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 return;
               }
               const search = _.debounce(onSearchMedicine, 300);
+              if (value.length >= 3) {
+                setsearchSate('load');
+              } // this block is to fix no results errorMessage appearing while loading response
               setSearchQuery((prevSearch: any) => {
                 if (prevSearch.cancel) {
                   prevSearch.cancel();
