@@ -270,7 +270,7 @@ const PharmaApiConfig = {
       testApiCredentialsProd,
     ],
     PRODUCT_SUGGESTIONS_CATEGORYID: '2252',
-    SPECIAL_OFFERS_CATEGORY_ID: '2252',
+    SPECIAL_OFFERS_CATEGORY_ID: '2255',
   },
 };
 
