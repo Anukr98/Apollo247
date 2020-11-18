@@ -684,11 +684,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
             {'Dr. ' + data?.doctorName || 'Dr. -'}
           </Text>
         ) : null}
-        {prescriptions ? (
-          <Text style={{ ...viewStyles.text('R', 14, '#67909C', 1, 18.2), marginTop: 6 }}>
-            {string.common.clicnical_document_text}
-          </Text>
-        ) : (
+        {medicalInsurance ? null : (
           <Text style={{ ...viewStyles.text('R', 14, '#67909C', 1, 18.2), marginTop: 3 }}>
             {getSourceName(
               data?.labTestSource || '-',

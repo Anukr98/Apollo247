@@ -2153,6 +2153,8 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
             id
             fileName
             mimeType
+            content
+            # byteContent
           }
         }
         errorCode
@@ -2176,6 +2178,8 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
             id
             fileName
             mimeType
+            content
+            # byteContent
           }
           hospital_name
           hospitalId
@@ -2202,8 +2206,8 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
             fileName
             mimeType
             content
-            byteContent
-            dateCreated
+            # byteContent
+            # dateCreated
           }
           source
           healthCheckType
@@ -2235,8 +2239,8 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
             fileName
             mimeType
             content
-            byteContent
-            dateCreated
+            # byteContent
+            # dateCreated
           }
           source
         }
@@ -2258,8 +2262,9 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
             id
             fileName
             mimeType
-            byteContent
-            dateCreated
+            content
+            # byteContent
+            # dateCreated
           }
         }
       }
@@ -2277,14 +2282,15 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
           endDateTime
           source
           fileUrl
+          notes
           sumInsured
           insuranceFiles {
             id
             fileName
             mimeType
             content
-            byteContent
-            dateCreated
+            # byteContent
+            # dateCreated
           }
         }
       }
@@ -2309,8 +2315,8 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
             fileName
             mimeType
             content
-            byteContent
-            dateCreated
+            # byteContent
+            # dateCreated
           }
         }
       }
@@ -2372,11 +2378,19 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
             fileName
             mimeType
             content
-            byteContent
-            dateCreated
+            # byteContent
+            # dateCreated
           }
         }
       }
+    }
+  }
+`;
+
+export const DELETE_HEALTH_RECORD_FILES = gql`
+  mutation deleteHealthRecordFiles($deleteHealthRecordFilesInput: DeleteHealthRecordFilesInput) {
+    deleteHealthRecordFiles(deleteHealthRecordFilesInput: $deleteHealthRecordFilesInput) {
+      status
     }
   }
 `;

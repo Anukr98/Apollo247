@@ -17,6 +17,7 @@ import {
   PhrUncheckboxIcon,
   DropdownGreen,
   PhrDropdownBlueUpIcon,
+  PhrRemoveTestDetailsIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
@@ -37,6 +38,7 @@ import {
   ADD_PATIENT_HEALTH_RESTRICTION_RECORD,
   ADD_PATIENT_MEDICAL_CONDITION_RECORD,
   ADD_PATIENT_MEDICATION_RECORD,
+  DELETE_HEALTH_RECORD_FILES,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { addPatientLabTestRecord } from '@aph/mobile-patients/src/graphql/types/addPatientLabTestRecord';
 import { addPatientHealthCheckRecord } from '@aph/mobile-patients/src/graphql/types/addPatientHealthCheckRecord';
@@ -48,6 +50,7 @@ import { addPatientAllergyRecord } from '@aph/mobile-patients/src/graphql/types/
 import { addPatientHealthRestrictionRecord } from '@aph/mobile-patients/src/graphql/types/addPatientHealthRestrictionRecord';
 import { addPatientMedicalConditionRecord } from '@aph/mobile-patients/src/graphql/types/addPatientMedicalConditionRecord';
 import { addPatientMedicationRecord } from '@aph/mobile-patients/src/graphql/types/addPatientMedicationRecord';
+import { deleteHealthRecordFiles } from '@aph/mobile-patients/src/graphql/types/deleteHealthRecordFiles';
 import {
   LabTestParameters,
   AddPrescriptionRecordInput,
@@ -59,6 +62,7 @@ import {
   AllergySeverity,
   AllergyFileProperties,
   AddAllergyRecordInput,
+  DeleteHealthRecordFilesInput,
   AddMedicalConditionRecordInput,
   AddPatientHealthRestrictionRecordInput,
   AddPatientMedicationRecordInput,
@@ -89,6 +93,7 @@ import {
   View,
   ScrollView,
   TextInput,
+  Platform,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
@@ -324,6 +329,12 @@ const styles = StyleSheet.create({
   dateViewStyle: { paddingTop: 0, paddingBottom: 10 },
   illnessTypeViewStyle: { marginBottom: 30 },
   menuContainerViewStyle: { marginLeft: 14, marginRight: 18 },
+  parameterContainerStyle: {
+    paddingTop: 0,
+    paddingBottom: 3,
+    paddingRight: 20,
+  },
+  parameterNameStyle: { ...theme.viewStyles.text('R', 14, theme.colors.LIGHT_BLUE, 1, 18.2) },
 });
 
 type RecordTypeType = {
@@ -505,6 +516,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const { showAphAlert } = useUIElements();
 
   const [Images, setImages] = useState<PickerImage>(props.navigation.state.params ? [] : []);
+  const [imageUpdate, setImageUpdate] = useState<boolean>(false);
+  const [callDeleteAttachmentApi, setCallDeleteAttachmentApi] = useState<boolean>(false);
   const [currentImage, setCurrentImage] = useState<PickerImage>(null);
   const [openCamera, setOpenCamera] = useState<boolean>(false);
   const navigatedFrom = props.navigation.state.params!.navigatedFrom
@@ -513,9 +526,17 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const recordType = props.navigation.state.params
     ? props.navigation.state.params.recordType
     : false;
+  const selectedRecordID = props.navigation.state.params
+    ? props.navigation.state.params.selectedRecordID
+    : null;
+  const selectedRecord = props.navigation.state.params
+    ? props.navigation.state.params.selectedRecord
+    : null;
 
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
+  const client = useApolloClient();
+  const numberKeyboardType = Platform.OS === 'ios' ? 'numbers-and-punctuation' : 'numeric';
 
   useEffect(() => {
     if (!currentPatient) {
@@ -523,7 +544,153 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     }
   }, [currentPatient]);
 
-  const client = useApolloClient();
+  useEffect(() => {
+    if (selectedRecord) {
+      setImageUpdate(selectedRecord?.fileUrl ? true : false);
+      if (recordType === MedicalRecordType.PRESCRIPTION) {
+        settestName(selectedRecord?.prescriptionName || '');
+        setDocName(selectedRecord?.prescribedBy || '');
+        setdateOfTest(
+          selectedRecord?.date
+            ? moment(selectedRecord?.date).format(string.common.date_placeholder_text)
+            : ''
+        );
+        setadditionalNotes(selectedRecord?.notes || '');
+        setImages(setUploadedImages(selectedRecord?.prescriptionFiles));
+      } else if (recordType === MedicalRecordType.TEST_REPORT) {
+        let labResultsArray: LabTestParameters[] = [];
+        settestName(selectedRecord?.labTestName || '');
+        setDocName(selectedRecord?.labTestRefferedBy || '');
+        selectedRecord?.labTestResults.forEach((item: any) => {
+          let labResultsObj: LabTestParameters = {};
+          labResultsObj.result = parseFloat((item?.result || 0).toString());
+          labResultsObj.unit = item?.unit || '';
+          labResultsObj.parameterName = item?.parameterName || '';
+          let maxMin = item?.range?.split('-');
+          labResultsObj.minimum = parseFloat((maxMin[0] || 0).toString());
+          labResultsObj.maximum = parseFloat((maxMin[1] || 0).toString());
+          labResultsArray.push(labResultsObj);
+        });
+        setTestRecordParameters(labResultsArray || TestRecordInitialValues);
+        setadditionalNotes(selectedRecord?.additionalNotes || '');
+        setdateOfTest(
+          selectedRecord?.date
+            ? moment(selectedRecord?.date).format(string.common.date_placeholder_text)
+            : ''
+        );
+        setUploadedImages(selectedRecord?.testResultFiles);
+        setImages(setUploadedImages(selectedRecord?.testResultFiles));
+      } else if (recordType === MedicalRecordType.HOSPITALIZATION) {
+        setDocName(selectedRecord?.doctorName || '');
+        settestName(selectedRecord?.hospitalName || '');
+        setdateOfTest(
+          selectedRecord?.date
+            ? moment(selectedRecord?.date).format(string.common.date_placeholder_text)
+            : ''
+        );
+        setImages(setUploadedImages(selectedRecord?.hospitalizationFiles));
+        setadditionalNotes(selectedRecord?.diagnosisNotes || '');
+      } else if (recordType === MedicalRecordType.MEDICALBILL) {
+        settestName(selectedRecord?.bill_no || '');
+        setDocName(selectedRecord?.hospitalName || '');
+        setImages(setUploadedImages(selectedRecord?.billFiles));
+        setdateOfTest(
+          selectedRecord?.billDateTime
+            ? moment(selectedRecord?.billDateTime).format(string.common.date_placeholder_text)
+            : ''
+        );
+      } else if (recordType === MedicalRecordType.MEDICALINSURANCE) {
+        settestName(selectedRecord?.insuranceCompany || '');
+        setdateOfTest(
+          selectedRecord?.startDateTime
+            ? moment(selectedRecord?.startDateTime).format(string.common.date_placeholder_text)
+            : ''
+        );
+        setEndDate(
+          selectedRecord?.endDateTime
+            ? moment(selectedRecord?.endDateTime).format(string.common.date_placeholder_text)
+            : ''
+        );
+        setDocName(selectedRecord?.policyNumber || '');
+        setLocationName(selectedRecord?.sumInsured || '');
+        setImages(setUploadedImages(selectedRecord?.insuranceFiles));
+        setadditionalNotes(selectedRecord?.notes || '');
+      } else if (recordType === MedicalRecordType.ALLERGY) {
+        setAllergyCheckbox(true);
+        setAllergyName(selectedRecord?.allergyName || '');
+        setSelectedSeverityType(selectedRecord?.severity || null);
+        setShowAllergyDetails(true);
+        setAllergyDocName(selectedRecord?.doctorTreated || '');
+        setdateOfTest(
+          selectedRecord?.startDateTime
+            ? moment(selectedRecord?.startDateTime).format(string.common.date_placeholder_text)
+            : ''
+        );
+        setAllergyEndDate(
+          selectedRecord?.endDateTime
+            ? moment(selectedRecord?.endDateTime).format(string.common.date_placeholder_text)
+            : ''
+        );
+        setAllergyReaction(selectedRecord?.reactionToAllergy || '');
+        setAllergyImage(setUploadedImages(selectedRecord?.attachmentList));
+        setAllergyAdditionalNotes(selectedRecord?.notes || '');
+      } else if (recordType === MedicalRecordType.MEDICATION) {
+        setMedicationCheckbox(true);
+        setShowMedicationDetails(true);
+        setMedicationDocName(selectedRecord?.doctorName || '');
+        setMedicationMedicineName(selectedRecord?.medicineName || '');
+        setMedicationCondition(selectedRecord?.medicalCondition || '');
+        setdateOfTest(
+          selectedRecord?.startDateTime
+            ? moment(selectedRecord?.startDateTime).format(string.common.date_placeholder_text)
+            : ''
+        );
+        setMedicationEndDate(
+          selectedRecord?.endDateTime
+            ? moment(selectedRecord?.endDateTime).format(string.common.date_placeholder_text)
+            : ''
+        );
+        setIsMorningChecked(selectedRecord?.morning || false);
+        setIsNoonChecked(selectedRecord?.noon || false);
+        setIsEveningChecked(selectedRecord?.evening || false);
+        setMedicationAdditionalNotes(selectedRecord?.notes || '');
+      } else if (recordType === MedicalRecordType.HEALTHRESTRICTION) {
+        setHealthRestrictionCheckbox(true);
+        setShowHealthRestrictionDetails(true);
+        setHealthRestrictionName(selectedRecord?.restrictionName || '');
+        setHealthRestrictionDocName(selectedRecord?.suggestedByDoctor || '');
+        setSelectedRestrictionType(selectedRecord?.nature || null);
+        setdateOfTest(
+          selectedRecord?.startDateTime
+            ? moment(selectedRecord?.startDateTime).format(string.common.date_placeholder_text)
+            : ''
+        );
+        setHealthRestrictionEndDate(
+          selectedRecord?.endDateTime
+            ? moment(selectedRecord?.endDateTime).format(string.common.date_placeholder_text)
+            : ''
+        );
+      } else if (recordType === MedicalRecordType.MEDICALCONDITION) {
+        setMedicalConditionCheckbox(true);
+        setShowMedicalConditionDetails(true);
+        setMedicalConditionAdditionalNotes(selectedRecord?.notes || '');
+        setMedicalConditionDocName(selectedRecord?.doctorTreated || '');
+        setSelectedIllnessType(selectedRecord?.illnessType || null);
+        setMedicalConditionName(selectedRecord?.medicalConditionName || '');
+        setdateOfTest(
+          selectedRecord?.startDateTime
+            ? moment(selectedRecord?.startDateTime).format(string.common.date_placeholder_text)
+            : ''
+        );
+        setMedicalConditionEndDate(
+          selectedRecord?.endDateTime
+            ? moment(selectedRecord?.endDateTime).format(string.common.date_placeholder_text)
+            : ''
+        );
+        setMedicalConditionImage(setUploadedImages(selectedRecord?.medicationFiles));
+      }
+    }
+  }, [selectedRecord]);
 
   const isTestRecordParameterFilled = () => {
     const testRecordsVaild = testRecordParameters
@@ -731,6 +898,18 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     }
   };
 
+  const setUploadedImages = (selectedImages: any) => {
+    let imagesArray = [] as any;
+    selectedImages?.forEach((item: any) => {
+      let imageObj = {} as any;
+      imageObj.title = item?.fileName;
+      imageObj.fileType = item?.mimeType;
+      imageObj.base64 = selectedRecord?.fileUrl;
+      imagesArray.push(imageObj);
+    });
+    return imagesArray;
+  };
+
   const getAddedImages = () => {
     let imagesArray = [] as any;
     Images?.forEach((item: any) => {
@@ -774,6 +953,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const addMedicalRecord = () => {
     setshowSpinner(true);
     const inputData: AddPrescriptionRecordInput = {
+      id: selectedRecordID,
       patientId: currentPatient?.id || '',
       prescriptionName: testName,
       issuingDoctor: docName,
@@ -784,7 +964,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           ? moment(dateOfTest, string.common.date_placeholder_text).format('YYYY-MM-DD')
           : '',
       recordType: MedicalRecordType.PRESCRIPTION,
-      prescriptionFiles: getAddedImages(),
+      prescriptionFiles: imageUpdate ? [] : getAddedImages(),
     };
     client
       .mutate<addPatientPrescriptionRecord>({
@@ -812,6 +992,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const addAllergyRecord = () => {
     setshowSpinner(true);
     const inputData: AddAllergyRecordInput = {
+      id: selectedRecordID,
       patientId: currentPatient?.id || '',
       allergyName: allergyName,
       doctorTreated: showAllergyDetails ? allergyDocName : '',
@@ -827,7 +1008,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         showAllergyDetails && allergyEndDate !== ''
           ? moment(allergyEndDate, string.common.date_placeholder_text).format('YYYY-MM-DD')
           : null,
-      attachmentList: getAddedAllergyImage(),
+      attachmentList: imageUpdate ? [] : getAddedAllergyImage(),
     };
     client
       .mutate<addPatientAllergyRecord>({
@@ -859,6 +1040,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const addMedicationRecord = () => {
     setshowSpinner(true);
     const inputData: AddPatientMedicationRecordInput = {
+      id: selectedRecordID,
       patientId: currentPatient?.id || '',
       medicineName: medicationMedicineName,
       doctorName: showMedicationDetails ? medicationDocName : '',
@@ -905,10 +1087,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const addHealthRestrictionRecord = () => {
     setshowSpinner(true);
     const inputData: AddPatientHealthRestrictionRecordInput = {
+      id: selectedRecordID,
       patientId: currentPatient?.id || '',
       restrictionName: healthRestrictionName,
       suggestedByDoctor: showHealthRestrictionDetails ? healthRestrictionDocName : '',
-      nature: selectedRestrictionType,
+      nature: selectedRestrictionType!,
       startDate:
         dateOfTest !== ''
           ? moment(dateOfTest, string.common.date_placeholder_text).format('YYYY-MM-DD')
@@ -947,11 +1130,12 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const addMedicalConditionRecord = () => {
     setshowSpinner(true);
     const inputData: AddMedicalConditionRecordInput = {
+      id: selectedRecordID,
       patientId: currentPatient?.id || '',
       medicalConditionName: medicalConditionName,
       doctorTreated: medicalConditionDocName,
       notes: showMedicalConditionDetails ? medicalConditionAdditionalNotes : '',
-      illnessType: selectedIllnessType,
+      illnessType: selectedIllnessType!,
       startDate:
         dateOfTest !== ''
           ? moment(dateOfTest, string.common.date_placeholder_text).format('YYYY-MM-DD')
@@ -963,7 +1147,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             )
           : null,
       recordType: MedicalRecordType.MEDICALCONDITION,
-      medicationFiles: getAddedMedicalConditionImage(),
+      medicationFiles: imageUpdate ? [] : getAddedMedicalConditionImage(),
     };
     client
       .mutate<addPatientMedicalConditionRecord>({
@@ -987,6 +1171,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const addPatientLabTestRecords = () => {
     setshowSpinner(true);
     const inputData: AddLabTestRecordInput = {
+      id: selectedRecordID,
       patientId: currentPatient?.id || '',
       labTestName: testName,
       labTestDate:
@@ -998,7 +1183,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       observations: observations,
       additionalNotes: additionalNotes,
       labTestResults: isTestRecordParameterFilled(),
-      testResultFiles: getAddedImages(),
+      testResultFiles: imageUpdate ? [] : getAddedImages(),
     };
     client
       .mutate<addPatientLabTestRecord>({
@@ -1077,6 +1262,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const addPatientHospitalizationRecords = () => {
     setshowSpinner(true);
     const inputData: AddHospitalizationRecordInput = {
+      id: selectedRecordID,
       patientId: currentPatient?.id || '',
       doctorName: docName,
       dischargeDate:
@@ -1085,7 +1271,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           : '',
       recordType: recordType,
       hospitalName: testName,
-      hospitalizationFiles: getAddedImages(),
+      hospitalizationFiles: imageUpdate ? [] : getAddedImages(),
       diagnosisNotes: additionalNotes,
     };
 
@@ -1115,6 +1301,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const addPatientBillRecords = () => {
     setshowSpinner(true);
     const inputData: AddPatientMedicalBillRecordInput = {
+      id: selectedRecordID,
       patientId: currentPatient?.id || '',
       hospitalName: docName,
       billDate:
@@ -1123,7 +1310,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           : '',
       recordType: recordType,
       bill_no: testName,
-      billFiles: getAddedImages(),
+      billFiles: imageUpdate ? [] : getAddedImages(),
     };
 
     client
@@ -1151,6 +1338,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const addPatientInsuranceRecords = () => {
     setshowSpinner(true);
     const inputData: AddPatientMedicalInsuranceRecordInput = {
+      id: selectedRecordID,
       patientId: currentPatient?.id || '',
       insuranceCompany: testName,
       startDate:
@@ -1164,7 +1352,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       recordType: recordType,
       policyNumber: docName,
       sumInsured: locationName,
-      insuranceFiles: getAddedImages(),
+      insuranceFiles: imageUpdate ? [] : getAddedImages(),
+      notes: additionalNotes,
     };
 
     client
@@ -1189,12 +1378,62 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       });
   };
 
+  const callDeleteHealthRecordFileApi = () => {
+    setshowSpinner(true);
+    const inputData: DeleteHealthRecordFilesInput = {
+      patientId: currentPatient?.id || '',
+      recordType: recordType,
+      recordId: selectedRecordID,
+      fileIndex: '0',
+    };
+    client
+      .mutate<deleteHealthRecordFiles>({
+        mutation: DELETE_HEALTH_RECORD_FILES,
+        variables: {
+          deleteHealthRecordFilesInput: inputData,
+        },
+      })
+      .then(({ data }) => {
+        setshowSpinner(false);
+        const status = g(data, 'deleteHealthRecordFiles', 'status');
+        if (status) {
+          if (recordType === MedicalRecordType.PRESCRIPTION) {
+            addMedicalRecord();
+          } else if (recordType === MedicalRecordType.TEST_REPORT) {
+            addPatientLabTestRecords();
+          } else if (recordType === MedicalRecordType.HOSPITALIZATION) {
+            addPatientHospitalizationRecords();
+          } else if (recordType === MedicalRecordType.MEDICALBILL) {
+            addPatientBillRecords();
+          } else if (recordType === MedicalRecordType.MEDICALINSURANCE) {
+            addPatientInsuranceRecords();
+          } else if (
+            recordType === MedicalRecordType.ALLERGY ||
+            recordType === MedicalRecordType.MEDICALCONDITION
+          ) {
+            callHealthConditionApis();
+          }
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('AddRecord_DELETE_HEALTH_RECORD_FILES', e);
+        setshowSpinner(false);
+        console.log(JSON.stringify(e), 'eeeee');
+        currentPatient && handleGraphQlError(e);
+      });
+  };
+
   const onSavePress = () => {
     setshowSpinner(true);
     const valid = isValid();
+    const callDeleteApi = selectedRecord && callDeleteAttachmentApi;
     if (recordType === MedicalRecordType.TEST_REPORT && isValidImage()) {
       if (valid.isvalid && !valid.isValidParameter) {
-        addPatientLabTestRecords();
+        if (callDeleteApi) {
+          callDeleteHealthRecordFileApi();
+        } else {
+          addPatientLabTestRecords();
+        }
       } else {
         setshowSpinner(false);
         showAphAlert!({
@@ -1207,19 +1446,48 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       isValidImage() &&
       isValidPrescription()
     ) {
-      addMedicalRecord();
+      if (callDeleteApi) {
+        callDeleteHealthRecordFileApi();
+      } else {
+        addMedicalRecord();
+      }
     } else if (
       recordType === MedicRecordType.HOSPITALIZATION &&
       isValidImage() &&
       isValidHospitalizationRecord()
     ) {
-      addPatientHospitalizationRecords();
+      if (callDeleteApi) {
+        callDeleteHealthRecordFileApi();
+      } else {
+        addPatientHospitalizationRecords();
+      }
     } else if (recordType === MedicalRecordType.MEDICALBILL && isValidBillRecord()) {
-      addPatientBillRecords();
+      if (callDeleteApi) {
+        callDeleteHealthRecordFileApi();
+      } else {
+        addPatientBillRecords();
+      }
     } else if (recordType === MedicalRecordType.MEDICALINSURANCE && isValidInsuranceRecord()) {
-      addPatientInsuranceRecords();
-    } else if (recordType === MedicalRecordType.MEDICALCONDITION) {
-      callHealthConditionApis();
+      if (callDeleteApi) {
+        callDeleteHealthRecordFileApi();
+      } else {
+        addPatientInsuranceRecords();
+      }
+    } else if (
+      recordType === MedicalRecordType.MEDICALCONDITION ||
+      recordType === MedicalRecordType.ALLERGY ||
+      recordType === MedicalRecordType.MEDICATION ||
+      recordType === MedicalRecordType.HEALTHRESTRICTION
+    ) {
+      if (
+        callDeleteApi &&
+        (recordType === MedicalRecordType.MEDICALCONDITION ||
+          recordType === MedicalRecordType.ALLERGY)
+      ) {
+        callDeleteHealthRecordFileApi();
+      } else {
+        callHealthConditionApis();
+      }
     }
   };
 
@@ -1355,6 +1623,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         : id === 2
         ? setAllergyImage(imageCOPY)
         : setMedicalConditionImage(imageCOPY);
+      if (imageUpdate) {
+        setCallDeleteAttachmentApi(true);
+      }
       CommonLogEvent('ADD_RECORD', 'Set Images');
     };
     return (
@@ -1369,7 +1640,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           {fileType === 'pdf' || fileType === 'application/pdf' ? (
             <FileBig style={styles.imageStyle} />
           ) : (
-            <Image style={styles.imageStyle} source={{ uri: fin }} />
+            <Image style={styles.imageStyle} source={{ uri: imageUpdate ? data?.base64 : fin }} />
           )}
         </View>
       </View>
@@ -1435,7 +1706,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   ) => {
     const renderTitle = () => {
       return (
-        <Text style={{ ...theme.viewStyles.text('R', 14, theme.colors.LIGHT_BLUE, 1, 18.2) }}>
+        <Text style={styles.parameterNameStyle}>
           {title}
           {mandatoryField ? <Text style={{ color: '#E50000' }}>{' *'}</Text> : null}
         </Text>
@@ -1458,7 +1729,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   ) => {
     const renderTitle = () => {
       return (
-        <Text style={{ ...theme.viewStyles.text('R', 14, theme.colors.LIGHT_BLUE, 1, 18.2) }}>
+        <Text style={styles.parameterNameStyle}>
           {title}
           {mandatoryField ? <Text style={{ color: '#E50000' }}>{' *'}</Text> : null}
         </Text>
@@ -1474,7 +1745,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     );
   };
 
-  const renderDoctorPrefixListItem = (titleComponent: React.ReactElement, style: any = {}) => {
+  const renderDoctorPrefixListItem = (
+    titleComponent: React.ReactElement,
+    style: any = {},
+    doctorPrefix: string = 'Dr.'
+  ) => {
     return (
       <ListItem
         title={titleComponent}
@@ -1482,7 +1757,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         containerStyle={[styles.doctorPrefixContainerStyle, style]}
         leftElement={
           <Text style={{ ...theme.viewStyles.text('M', 16, theme.colors.SKY_BLUE, 1, 20.8) }}>
-            {'Dr.'}
+            {doctorPrefix}
           </Text>
         }
       />
@@ -1521,7 +1796,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             {_.capitalize(currentPatient?.firstName) || ''}
           </Text>
         </View>
-        {recordType === MedicalRecordType.MEDICALCONDITION ? null : (
+        {recordType === MedicalRecordType.MEDICALCONDITION ||
+        recordType === MedicalRecordType.ALLERGY ||
+        recordType === MedicalRecordType.MEDICATION ||
+        recordType === MedicalRecordType.HEALTHRESTRICTION ? null : (
           <View style={styles.listItemViewStyle}>
             {renderListItem('Type of Record', false)}
             <View style={{ marginTop: 14, marginHorizontal: 14 }}>
@@ -1644,12 +1922,26 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       );
     };
 
-    const renderTitle = () => {
+    const onPressRemoveRecordParameter = (i: number) => {
+      const dataCopy = [...testRecordParameters];
+      dataCopy?.splice(i, 1);
+      setTestRecordParameters(dataCopy);
+    };
+
+    const rightElementParameter = (i: number) => {
       return (
-        <Text style={{ ...theme.viewStyles.text('R', 14, theme.colors.LIGHT_BLUE, 1, 18.2) }}>
-          {'Record details'}
-        </Text>
+        <TouchableOpacity activeOpacity={1} onPress={() => onPressRemoveRecordParameter(i)}>
+          <PhrRemoveTestDetailsIcon style={{ width: 20, height: 20 }} />
+        </TouchableOpacity>
       );
+    };
+
+    const renderTitleParameter = () => {
+      return <Text style={styles.parameterNameStyle}>{'Parameter Name'}</Text>;
+    };
+
+    const renderTitle = () => {
+      return <Text style={styles.parameterNameStyle}>{'Record details'}</Text>;
     };
     return (
       <>
@@ -1698,10 +1990,15 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         {testRecordParameters.map((item, i) => (
           <View>
             <View style={{ marginTop: 32 }}>
-              {renderListItem('Parameter Name', true)}
+              <ListItem
+                title={renderTitleParameter()}
+                pad={14}
+                containerStyle={styles.parameterContainerStyle}
+                rightElement={rightElementParameter(i)}
+              />
               <TextInput
                 placeholder={'Enter name'}
-                style={styles.textInputStyle}
+                style={[styles.textInputStyle, { marginBottom: 0 }]}
                 selectionColor={theme.colors.SKY_BLUE}
                 numberOfLines={1}
                 placeholderTextColor={theme.colors.placeholderTextColor}
@@ -1719,18 +2016,18 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               <View style={{ flexDirection: 'row' }}>
                 <TextInput
                   placeholder={'0'}
-                  style={styles.textInputStyle}
+                  style={[styles.textInputStyle, { marginBottom: 0 }]}
                   selectionColor={theme.colors.SKY_BLUE}
                   numberOfLines={1}
                   placeholderTextColor={theme.colors.placeholderTextColor}
                   underlineColorAndroid={'transparent'}
                   value={(item.result || '').toString()}
                   onChangeText={(value) => setTestParametersData('result', value, i, true)}
-                  keyboardType={'numbers-and-punctuation'}
+                  keyboardType={numberKeyboardType}
                 />
                 <TextInput
                   placeholder={'unit'}
-                  style={styles.textInputStyle}
+                  style={[styles.textInputStyle, { marginBottom: 0 }]}
                   selectionColor={theme.colors.SKY_BLUE}
                   numberOfLines={1}
                   placeholderTextColor={theme.colors.placeholderTextColor}
@@ -1749,18 +2046,18 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               <View style={{ flexDirection: 'row', marginTop: 5 }}>
                 <TextInput
                   placeholder={'min'}
-                  style={styles.textInputStyle}
+                  style={[styles.textInputStyle, { marginBottom: 0 }]}
                   selectionColor={theme.colors.SKY_BLUE}
                   numberOfLines={1}
                   placeholderTextColor={theme.colors.placeholderTextColor}
                   underlineColorAndroid={'transparent'}
                   value={(item.minimum || '').toString()}
                   onChangeText={(value) => setTestParametersData('minimum', value, i, true)}
-                  keyboardType={'numbers-and-punctuation'}
+                  keyboardType={numberKeyboardType}
                 />
                 <TextInput
                   placeholder={'unit'}
-                  style={styles.textInputStyle}
+                  style={[styles.textInputStyle, { marginBottom: 0 }]}
                   selectionColor={theme.colors.SKY_BLUE}
                   numberOfLines={1}
                   placeholderTextColor={theme.colors.placeholderTextColor}
@@ -1774,18 +2071,18 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 />
                 <TextInput
                   placeholder={'max'}
-                  style={styles.textInputStyle}
+                  style={[styles.textInputStyle, { marginBottom: 0 }]}
                   selectionColor={theme.colors.SKY_BLUE}
                   numberOfLines={1}
                   placeholderTextColor={theme.colors.placeholderTextColor}
                   underlineColorAndroid={'transparent'}
                   value={(item.maximum || '').toString()}
                   onChangeText={(value) => setTestParametersData('maximum', value, i, true)}
-                  keyboardType={'numbers-and-punctuation'}
+                  keyboardType={numberKeyboardType}
                 />
                 <TextInput
                   placeholder={'unit'}
-                  style={styles.textInputStyle}
+                  style={[styles.textInputStyle, { marginBottom: 0 }]}
                   selectionColor={theme.colors.SKY_BLUE}
                   numberOfLines={1}
                   placeholderTextColor={theme.colors.placeholderTextColor}
@@ -1982,21 +2279,25 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         </View>
         <View style={styles.listItemViewStyle}>
           {renderListItem('Record insurance amount ', true)}
-          <TextInput
-            placeholder={'Enter Record insurance amount '}
-            style={styles.textInputStyle}
-            selectionColor={theme.colors.SKY_BLUE}
-            numberOfLines={1}
-            value={locationName}
-            keyboardType={'numbers-and-punctuation'}
-            placeholderTextColor={theme.colors.placeholderTextColor}
-            underlineColorAndroid={'transparent'}
-            onChangeText={(locName) => {
-              if (isValidText(locName)) {
-                setLocationName(locName);
-              }
-            }}
-          />
+          {renderDoctorPrefixListItem(
+            <TextInput
+              placeholder={'Enter Record insurance amount '}
+              style={styles.doctorPrefixTextInputStyle}
+              selectionColor={theme.colors.SKY_BLUE}
+              numberOfLines={1}
+              value={locationName}
+              keyboardType={numberKeyboardType}
+              placeholderTextColor={theme.colors.placeholderTextColor}
+              underlineColorAndroid={'transparent'}
+              onChangeText={(locName) => {
+                if (/^[0-9.]*$/.test(locName)) {
+                  setLocationName(locName);
+                }
+              }}
+            />,
+            {},
+            'Rs'
+          )}
         </View>
         {renderAdditionalTextInputView()}
       </>
@@ -2339,7 +2640,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             }}
           />
         </View>
-        {renderListItem(string.common.doctor_name_text)}
+        {renderListItem(string.common.doctor_name_text, false, true)}
         {renderDoctorPrefixListItem(
           <TextInput
             placeholder={string.common.enter_doctor_name_text}
@@ -2735,29 +3036,64 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     );
   };
 
+  const renderUpdateRecordDetailsHealthCondition = () => {
+    return (
+      <View style={styles.illnessTypeViewStyle}>
+        {recordType === MedicalRecordType.ALLERGY ? renderAllergyView() : null}
+        {recordType === MedicalRecordType.MEDICATION ? renderMedicationView() : null}
+        {recordType === MedicalRecordType.HEALTHRESTRICTION ? renderHealthRestrictionView() : null}
+        {recordType === MedicalRecordType.MEDICALCONDITION ? renderMedicalConditionView() : null}
+      </View>
+    );
+  };
+
+  const renderAllergyView = () => {
+    return (
+      <View style={styles.listItemViewStyle}>
+        {renderListItem('Do you have any allergy?', false)}
+        {renderAllergyTopView()}
+        {allergyCheckbox ? renderAllergyDetails() : null}
+      </View>
+    );
+  };
+
+  const renderMedicationView = () => {
+    return (
+      <View style={styles.listItemViewStyle}>
+        {renderListItem('Are you taking any medication?', false)}
+        {renderMedicationTopView()}
+        {medicationCheckbox ? renderMedicationDetails() : null}
+      </View>
+    );
+  };
+
+  const renderHealthRestrictionView = () => {
+    return (
+      <View style={styles.listItemViewStyle}>
+        {renderListItem('Do you have any health restrictions?', false)}
+        {renderHealthRestrictionTopView()}
+        {healthRestrictionCheckbox ? renderHealthRestrictionDetails() : null}
+      </View>
+    );
+  };
+
+  const renderMedicalConditionView = () => {
+    return (
+      <View style={styles.listItemViewStyle}>
+        {renderListItem('Are you suffering from any medical condition?', false)}
+        {renderMedicalConditionTopView()}
+        {medicalConditionCheckbox ? renderMedicalConditionDetails() : null}
+      </View>
+    );
+  };
+
   const renderRecordDetailsHealthCondition = () => {
     return (
       <View style={styles.illnessTypeViewStyle}>
-        <View style={styles.listItemViewStyle}>
-          {renderListItem('Do you have any allergy?', false)}
-          {renderAllergyTopView()}
-          {allergyCheckbox ? renderAllergyDetails() : null}
-        </View>
-        <View style={styles.listItemViewStyle}>
-          {renderListItem('Are you taking any medication?', false)}
-          {renderMedicationTopView()}
-          {medicationCheckbox ? renderMedicationDetails() : null}
-        </View>
-        <View style={styles.listItemViewStyle}>
-          {renderListItem('Do you have any health restrictions?', false)}
-          {renderHealthRestrictionTopView()}
-          {healthRestrictionCheckbox ? renderHealthRestrictionDetails() : null}
-        </View>
-        <View style={styles.listItemViewStyle}>
-          {renderListItem('Are you suffering from any medical condition?', false)}
-          {renderMedicalConditionTopView()}
-          {medicalConditionCheckbox ? renderMedicalConditionDetails() : null}
-        </View>
+        {renderAllergyView()}
+        {renderMedicationView()}
+        {renderHealthRestrictionView()}
+        {renderMedicalConditionView()}
       </View>
     );
   };
@@ -2774,8 +3110,13 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           ? renderRecordDetailsBill()
           : recordType === MedicalRecordType.MEDICALINSURANCE
           ? renderRecordDetailsInsurance()
-          : recordType === MedicalRecordType.MEDICALCONDITION
-          ? renderRecordDetailsHealthCondition()
+          : recordType === MedicalRecordType.MEDICALCONDITION ||
+            recordType === MedicalRecordType.ALLERGY ||
+            recordType === MedicalRecordType.MEDICATION ||
+            recordType === MedicalRecordType.HEALTHRESTRICTION
+          ? selectedRecord
+            ? renderUpdateRecordDetailsHealthCondition()
+            : renderRecordDetailsHealthCondition()
           : renderRecordDetailsPrescription()}
         {renderBottomButton()}
       </View>
@@ -2785,7 +3126,12 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const renderData = () => {
     return (
       <View style={{ marginTop: 28 }}>
-        {recordType === MedicalRecordType.MEDICALCONDITION ? null : renderUploadedImages(1)}
+        {recordType === MedicalRecordType.MEDICALCONDITION ||
+        recordType === MedicalRecordType.ALLERGY ||
+        recordType === MedicalRecordType.MEDICATION ||
+        recordType === MedicalRecordType.HEALTHRESTRICTION
+          ? null
+          : renderUploadedImages(1)}
         {renderRecordDetailsCard()}
       </View>
     );
@@ -2879,7 +3225,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       if (id === 1) {
         setdisplayOrderPopup(false);
         if (selectedType == 'CAMERA_AND_GALLERY') {
-          console.log('response', response, type);
           if (response.length == 0) return;
           if (type === 'Camera') {
             setDisplayReviewPhotoPopup(true);
@@ -2887,13 +3232,13 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           }
           // Logic for multiple images
           // setImages([...Images, ...response]);
+          setImageUpdate(false);
           setImages(response);
           setdisplayOrderPopup(false);
         }
       } else if (id === 2) {
         setdisplayAllergyPopup(false);
         if (selectedType == 'CAMERA_AND_GALLERY') {
-          console.log('response', response, type);
           if (response.length == 0) return;
           if (type === 'Camera') {
             setDisplayReviewPhotoPopup(true);
@@ -2902,13 +3247,13 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           }
           // Logic for multiple images
           // setImages([...Images, ...response]);
+          setImageUpdate(false);
           setAllergyImage(response);
           setdisplayAllergyPopup(false);
         }
       } else {
         setdisplayMedicalConditionPopup(false);
         if (selectedType == 'CAMERA_AND_GALLERY') {
-          console.log('response', response, type);
           if (response.length == 0) return;
           if (type === 'Camera') {
             setDisplayReviewPhotoPopup(true);
@@ -2917,6 +3262,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           }
           // Logic for multiple images
           // setImages([...Images, ...response]);
+          setImageUpdate(false);
           setMedicalConditionImage(response);
           setdisplayMedicalConditionPopup(false);
         }

@@ -608,6 +608,15 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
       });
   };
 
+  const onPressEditPrismMedicalRecords = (selectedItem: any) => {
+    props.navigation.navigate(AppRoutes.AddRecord, {
+      navigatedFrom: 'Consult & RX',
+      recordType: MedicalRecordType.PRESCRIPTION,
+      selectedRecordID: selectedItem?.id,
+      selectedRecord: selectedItem,
+    });
+  };
+
   const renderConsultRxItems = (item: any, index: number) => {
     const getPresctionDate = (date: string) => {
       let prev_date = new Date();
@@ -656,6 +665,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         onHealthCardPress={(selectedItem) => onHealthCardItemPress(selectedItem)}
         prescriptionName={prescriptionName}
         doctorName={doctorName}
+        onEditPress={(selectedItem) => onPressEditPrismMedicalRecords(selectedItem)}
         onDeletePress={(selectedItem) => onPressDeletePrismMedicalRecords(selectedItem)}
         dateText={dateText}
         selfUpload={selfUpload}

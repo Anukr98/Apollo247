@@ -75,6 +75,7 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_lab
   id: string | null;
   fileName: string | null;
   mimeType: string | null;
+  content: string | null;
 }
 
 export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_labResults_response {
@@ -109,6 +110,7 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_pre
   id: string | null;
   fileName: string | null;
   mimeType: string | null;
+  content: string | null;
 }
 
 export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response {
@@ -140,8 +142,6 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hea
   fileName: string | null;
   mimeType: string | null;
   content: string | null;
-  byteContent: string | null;
-  dateCreated: number | null;
 }
 
 export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthChecksNew_response {
@@ -174,8 +174,6 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hos
   fileName: string | null;
   mimeType: string | null;
   content: string | null;
-  byteContent: string | null;
-  dateCreated: number | null;
 }
 
 export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hospitalizationsNew_response {
@@ -212,8 +210,7 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_med
   id: string | null;
   fileName: string | null;
   mimeType: string | null;
-  byteContent: string | null;
-  dateCreated: number | null;
+  content: string | null;
 }
 
 export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalBills_response {
@@ -243,8 +240,6 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_med
   fileName: string | null;
   mimeType: string | null;
   content: string | null;
-  byteContent: string | null;
-  dateCreated: number | null;
 }
 
 export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalInsurances_response {
@@ -258,6 +253,7 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_med
   endDateTime: any | null;
   source: string | null;
   fileUrl: string | null;
+  notes: string | null;
   sumInsured: string | null;
   insuranceFiles: (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalInsurances_response_insuranceFiles | null)[] | null;
 }
@@ -276,8 +272,6 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_med
   fileName: string | null;
   mimeType: string | null;
   content: string | null;
-  byteContent: string | null;
-  dateCreated: number | null;
 }
 
 export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_medicalConditions_response {
@@ -339,6 +333,7 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_hea
   restrictionName: string | null;
   suggestedByDoctor: string | null;
   nature: HealthRestrictionNature | null;
+  source: string | null;
 }
 
 export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_healthRestrictions {
@@ -355,8 +350,6 @@ export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_all
   fileName: string | null;
   mimeType: string | null;
   content: string | null;
-  byteContent: string | null;
-  dateCreated: number | null;
 }
 
 export interface getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_allergies_response {

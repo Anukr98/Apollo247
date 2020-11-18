@@ -170,6 +170,15 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
       });
   };
 
+  const onPressEditPrismMedicalRecords = (selectedItem: any) => {
+    props.navigation.navigate(AppRoutes.AddRecord, {
+      navigatedFrom: 'MedicalBill',
+      recordType: MedicalRecordType.MEDICALBILL,
+      selectedRecordID: selectedItem?.id,
+      selectedRecord: selectedItem,
+    });
+  };
+
   const renderMedicalBillItems = (item: MedicalBillsType, index: number) => {
     const prescriptionName = item?.hospitalName || '';
     const dateText = getPrescriptionDate(item?.billDateTime);
@@ -185,6 +194,7 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
         showUpdateDeleteOption={showEditDeleteOption}
         onHealthCardPress={(selectedItem) => onHealthCardItemPress(selectedItem)}
         onDeletePress={(selectedItem) => onPressDeletePrismMedicalRecords(selectedItem)}
+        onEditPress={(selectedItem) => onPressEditPrismMedicalRecords(selectedItem)}
         prescriptionName={prescriptionName}
         dateText={dateText}
         selfUpload={selfUpload}
