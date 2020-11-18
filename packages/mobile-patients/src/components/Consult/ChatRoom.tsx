@@ -6706,6 +6706,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     return (
       <SelectEPrescriptionModal
         displayPrismRecords={true}
+        showLabResults
         navigation={props.navigation}
         onSubmit={(selectedEPres) => {
           console.log('selectedEPres', selectedEPres);
