@@ -2903,6 +2903,8 @@ export const GET_TRANSACTION_STATUS = gql`
         amountBreakup {
           plansPurchased
           saving_amount
+          actual_price
+          slashed_price
         }
       }
     }

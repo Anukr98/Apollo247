@@ -62,7 +62,6 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
     defaultCirclePlan,
     selectDefaultPlan,
   } = useShoppingCart();
-
   useEffect(() => {
     if (!props.membershipPlans || props.membershipPlans?.length === 0) {
       fetchCarePlans();
@@ -320,8 +319,8 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
             KNOW MORE
           </Text>
         </TouchableOpacity>
-        {autoPlanAdded && <View style={styles.seperatorLine} />}
-        {autoPlanAdded ? (
+        {!isModal && defaultCirclePlan && <View style={styles.seperatorLine} />}
+        {!isModal && defaultCirclePlan ? (
           <TouchableOpacity style={styles.knowMoreBtn} onPress={() => removeAutoAddedPlan()}>
             <Text style={{ ...theme.viewStyles.text('SB', 13, theme.colors.BORDER_BOTTOM_COLOR) }}>
               REMOVE
@@ -340,6 +339,7 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
 
   const removeAutoAddedPlan = () => {
     setCirclePlanSelected && setCirclePlanSelected(null);
+    setDefaultCirclePlan && setDefaultCirclePlan(null);
     AsyncStorage.removeItem('circlePlanSelected');
     setAutoPlanAdded(false);
   };

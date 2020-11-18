@@ -27,6 +27,9 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
         renderError={(errorCode) => renderError(WebViewRef)}
         onMessage={(event) => {
           const { data } = event.nativeEvent;
+          if (data && JSON.parse(data) === 'back') {
+            navigation.goBack();
+          }
           if (data && JSON.parse(data)?.subPlanId) {
             setDefaultCirclePlan && setDefaultCirclePlan(null);
             setCirclePlanSelected && setCirclePlanSelected(JSON.parse(data));

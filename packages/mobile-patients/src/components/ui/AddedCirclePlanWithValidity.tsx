@@ -4,16 +4,12 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
 const { width } = Dimensions.get('window');
-import { paymentTransactionStatus_paymentTransactionStatus_appointment_amountBreakup } from '@aph/mobile-patients/src/graphql/types/paymentTransactionStatus';
 
 interface AddedCirclePlanWithValidityProps {
-  amountBreakup:
-    | paymentTransactionStatus_paymentTransactionStatus_appointment_amountBreakup
-    | null
-    | undefined;
+  circleSavings: number;
 }
 export const AddedCirclePlanWithValidity: React.FC<AddedCirclePlanWithValidityProps> = (props) => {
-  const { amountBreakup } = props;
+  const { circleSavings } = props;
   return (
     <View style={styles.container}>
       <View style={styles.row}>
@@ -28,7 +24,7 @@ export const AddedCirclePlanWithValidity: React.FC<AddedCirclePlanWithValidityPr
             You{' '}
             <Text style={theme.viewStyles.text('SB', 12, theme.colors.SEARCH_UNDERLINE_COLOR)}>
               saved {string.common.Rs}
-              {amountBreakup?.saving_amount}{' '}
+              {circleSavings}{' '}
             </Text>
             on your purchase
           </Text>

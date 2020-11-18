@@ -100,9 +100,9 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     amountBreakup,
     setAmountBreakup,
   ] = useState<paymentTransactionStatus_paymentTransactionStatus_appointment_amountBreakup | null>();
-  const circleSavings = amountBreakup?.saving_amount || 0;
+  const circleSavings = (amountBreakup?.actual_price || 0) - (amountBreakup?.slashed_price || 0);
 
-  const { setCircleSubscriptionId, circleSubscriptionId } = useShoppingCart();
+  const { circleSubscriptionId } = useShoppingCart();
 
   const copyToClipboard = (refId: string) => {
     Clipboard.setString(refId);
@@ -694,7 +694,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   };
 
   const renderAddedCirclePlanWithValidity = () => {
-    return <AddedCirclePlanWithValidity amountBreakup={amountBreakup} />;
+    return <AddedCirclePlanWithValidity circleSavings={circleSavings} />;
   };
 
   const renderCircleSavingsOnPurchase = () => {
@@ -711,7 +711,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
             You{' '}
             <Text style={theme.viewStyles.text('SB', 12, theme.colors.SEARCH_UNDERLINE_COLOR)}>
               saved {string.common.Rs}
-              {amountBreakup?.saving_amount}{' '}
+              {circleSavings}{' '}
             </Text>
             on your purchase
           </Text>
