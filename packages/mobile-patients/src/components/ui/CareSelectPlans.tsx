@@ -86,6 +86,7 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
         if (doctorFees && doctorFees >= 400) {
           autoSelectDefaultPlan(circlePlans);
           if (!circlePlanSelected) {
+            selectDefaultPlan && selectDefaultPlan(circlePlans);
             setAutoPlanAdded(true);
           }
         }
@@ -416,7 +417,7 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
 
   return (
     <View style={isModal ? {} : [styles.careBannerView, props.style]}>
-      {circlePlanSelected && !isModal && !autoPlanAdded && !loading
+      {circlePlanSelected && !isModal && !autoPlanAdded && !loading && !defaultCirclePlan
         ? renderCarePlanAdded()
         : renderSubscribeCareContainer()}
     </View>

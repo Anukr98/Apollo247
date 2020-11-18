@@ -318,10 +318,24 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
     );
   };
 
-  const openCircleWebView = () => {
+  const openCircleWebView = (heading: string) => {
     props.navigation.navigate(AppRoutes.CommonWebView, {
       url: AppConfig.Configuration.CIRCLE_CONSULT_URL,
+      isCallback: true,
+      onPlanSelected: () => onPlanSelected(heading),
     });
+  };
+
+  const onPlanSelected = (heading: string) => {
+    if (heading === string.consultType.online.heading) {
+      setTimeout(() => {
+        onPressOnlineConsult();
+      }, 1000);
+    } else {
+      setTimeout(() => {
+        onPressPhysicalConsult();
+      }, 1000);
+    }
   };
 
   const renderCard = (
@@ -360,7 +374,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
           {!circleSubscriptionId && isCircleDoctor ? (
             <TouchableOpacity
               activeOpacity={1}
-              onPress={() => openCircleWebView()}
+              onPress={() => openCircleWebView(heading)}
               style={[
                 styles.row,
                 {
@@ -456,16 +470,20 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
         },
       ],
       () => {
-        props.navigation.navigate(AppRoutes.DoctorDetails, {
-          doctorId: DoctorId,
-          consultModeSelected: ConsultMode.ONLINE,
-          externalConnect: null,
-          callSaveSearch: callSaveSearch,
-          ...params,
-        });
-        postWebengaegConsultType('Online');
+        onPressOnlineConsult();
       }
     );
+  };
+
+  const onPressOnlineConsult = () => {
+    props.navigation.navigate(AppRoutes.DoctorDetails, {
+      doctorId: DoctorId,
+      consultModeSelected: ConsultMode.ONLINE,
+      externalConnect: null,
+      callSaveSearch: callSaveSearch,
+      ...params,
+    });
+    postWebengaegConsultType('Online');
   };
 
   const renderInPersonCard = () => {
@@ -492,17 +510,22 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
         },
       ],
       () => {
-        props.navigation.navigate(AppRoutes.DoctorDetails, {
-          doctorId: DoctorId,
-          consultModeSelected: ConsultMode.PHYSICAL,
-          externalConnect: null,
-          callSaveSearch: callSaveSearch,
-          ...params,
-        });
-        postWebengaegConsultType('In Person');
+        onPressPhysicalConsult();
       }
     );
   };
+
+  const onPressPhysicalConsult = () => {
+    props.navigation.navigate(AppRoutes.DoctorDetails, {
+      doctorId: DoctorId,
+      consultModeSelected: ConsultMode.PHYSICAL,
+      externalConnect: null,
+      callSaveSearch: callSaveSearch,
+      ...params,
+    });
+    postWebengaegConsultType('In Person');
+  };
+
   // let ScrollViewRef: any;
 
   return (

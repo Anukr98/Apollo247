@@ -342,10 +342,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   }, [careDoctorsSwitch]);
 
   useEffect(() => {
-    setTimeout(() => {
-      setShowCarePlanNotification(false);
-    }, 10 * 1000);
-  }, []);
+    if (showCarePlanNotification) {
+      setTimeout(() => {
+        setShowCarePlanNotification(false);
+      }, 10 * 1000);
+    }
+  }, [showCarePlanNotification]);
 
   const vaueChange = (sort: any) => {
     if (sort === 'distance') {
@@ -1052,6 +1054,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           onPressConsultNowOrBookAppointment={(type) => {
             postDoctorClickWEGEvent(rowData, 'List', type);
           }}
+          onPlanSelected={() => setShowCarePlanNotification(true)}
         />
       );
     }

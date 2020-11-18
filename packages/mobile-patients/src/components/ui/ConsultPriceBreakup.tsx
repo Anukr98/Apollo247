@@ -90,7 +90,7 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
       <View style={styles.rowContainer}>
         <Text style={styles.regularText}>
           {string.common.subtotal}{' '}
-          {`${isCircleDoctor && (circleSubscriptionId || planSelected) ? '(Care Price)' : ''}`}
+          {`${isCircleDoctor && (circleSubscriptionId || planSelected) ? '(CIRCLE Price)' : ''}`}
         </Text>
         {isCircleDoctor ? renderCareDoctorPricing() : renderNonCareDoctorPricing()}
       </View>

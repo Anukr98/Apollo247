@@ -184,6 +184,7 @@ export interface DoctorCardProps extends NavigationScreenProps {
   numberOfLines?: number;
   availableModes?: ConsultMode | null;
   callSaveSearch?: string;
+  onPlanSelected?: (() => void) | null;
 }
 
 export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
@@ -334,7 +335,13 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const openCircleWebView = () => {
     props.navigation.navigate(AppRoutes.CommonWebView, {
       url: AppConfig.Configuration.CIRCLE_CONSULT_URL,
+      isCallback: true,
+      onPlanSelected: onPlanSelected,
     });
+  };
+
+  const onPlanSelected = () => {
+    props.onPlanSelected && props.onPlanSelected();
   };
 
   const renderCareLogo = () => {

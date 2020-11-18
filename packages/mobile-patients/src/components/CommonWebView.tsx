@@ -12,8 +12,10 @@ import AsyncStorage from '@react-native-community/async-storage';
 export interface CommonWebViewProps extends NavigationScreenProps {}
 
 export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
+  const { navigation } = props;
   const [loading, setLoading] = useState<boolean>(true);
   const { setCirclePlanSelected, setDefaultCirclePlan } = useShoppingCart();
+  const isCallback = props.navigation.getParam('isCallback');
 
   const renderWebView = () => {
     let WebViewRef: any;
@@ -29,7 +31,10 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
             setDefaultCirclePlan && setDefaultCirclePlan(null);
             setCirclePlanSelected && setCirclePlanSelected(JSON.parse(data));
             AsyncStorage.setItem('circlePlanSelected', data);
-            props.navigation.goBack();
+            navigation.goBack();
+            if (isCallback) {
+              navigation?.state?.params?.onPlanSelected();
+            }
           }
         }}
       />
