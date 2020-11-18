@@ -254,6 +254,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           isReUpload: isComingFromReUpload,
           orderAutoId: orderId,
         });
+        setLoading!(false);
       } else {
         const days = durationDays ? parseInt(durationDays) : null;
         if (isComingFromReUpload) {
