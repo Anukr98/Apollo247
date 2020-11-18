@@ -145,6 +145,8 @@ import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/help
 const { width: winWidth } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
+  searchInput: { minHeight: undefined, paddingVertical: 8 },
+  searchInputContainer: { marginBottom: 15, marginTop: 5 },
   sliderDotStyle: {
     height: 8,
     width: 8,
@@ -1629,6 +1631,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 return;
               }
               const search = _.debounce(onSearchMedicine, 300);
+              if (value.length >= 3) {
+                setsearchSate('load');
+              } // this block is to fix no results errorMessage appearing while loading response
               setSearchQuery((prevSearch: any) => {
                 if (prevSearch.cancel) {
                   prevSearch.cancel();
@@ -1641,6 +1646,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           _rigthIconView={rigthIconView}
           placeholder="Search meds, brands &amp; more"
           _itemsNotFound={itemsNotFound}
+          inputStyle={styles.searchInput}
+          containerStyle={styles.searchInputContainer}
         />
       </>
     );
@@ -1834,7 +1841,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         <CategoryAndSpecialOffers
           containerStyle={styles.categoryAndSpecialOffers}
           onPressShopByCategory={() => setCategoryTreeVisible(true)}
-          onPressSpecialOffers={() => {}}
+          onPressSpecialOffers={() => {
+            const categoryId = AppConfig.Configuration.SPECIAL_OFFERS_CATEGORY_ID;
+            props.navigation.navigate(AppRoutes.MedicineListing, {
+              category_id: categoryId,
+              title: string.specialOffers,
+            });
+          }}
         />
         {sectionsView}
         {!error && <View style={{ height: 20 }} />}
