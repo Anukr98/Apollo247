@@ -2109,61 +2109,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
           style={{ flex: 1 }}
           bounces={false}
           stickyHeaderIndices={[1]}
-          onScroll={handleScroll}
-          scrollEventThrottle={20}
           contentContainerStyle={[
             isSearchFocused && searchText.length > 2 && medicineList.length > 0 ? { flex: 1 } : {},
           ]}
         >
-          <ProfileList
-            navigation={props.navigation}
-            saveUserChange={true}
-            childView={
-              <View
-                style={{
-                  flexDirection: 'row',
-                  paddingRight: 8,
-                  borderRightWidth: 0,
-                  borderRightColor: 'rgba(2, 71, 91, 0.2)',
-                  backgroundColor: theme.colors.WHITE,
-                }}
-              >
-                <Text style={styles.hiTextStyle}>{'hi'}</Text>
-                <View style={styles.nameTextContainerStyle}>
-                  <View style={{ flexDirection: 'row', flex: 1 }}>
-                    <Text
-                      style={[
-                        styles.nameTextStyle,
-                        { maxWidth: Platform.OS === 'ios' ? '85%' : '75%' },
-                      ]}
-                      numberOfLines={1}
-                    >
-                      {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
-                    </Text>
-                    {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
-                      <LinkedUhidIcon
-                        style={{
-                          width: 22,
-                          height: 20,
-                          marginLeft: 5,
-                          marginTop: Platform.OS === 'ios' ? 16 : 20,
-                        }}
-                        resizeMode={'contain'}
-                      />
-                    ) : null}
-                    <View style={{ paddingTop: 15, marginLeft: 6 }}>
-                      <DropdownGreen />
-                    </View>
-                  </View>
-                  {currentPatient && <View style={styles.seperatorStyle} />}
-                </View>
-              </View>
-            }
-            selectedProfile={profile}
-            unsetloaderDisplay={true}
-          ></ProfileList>
-
-          <View style={[isSearchFocused ? { flex: 1 } : {}]}>
+          <View style={{ height: 0, backgroundColor: theme.colors.WHITE }} />
+          <View style={{ flex: 1 }}>
             <View
               style={{
                 backgroundColor: 'white',
