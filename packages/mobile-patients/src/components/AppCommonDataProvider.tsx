@@ -109,8 +109,8 @@ export interface AppCommonDataContextProps {
   locationForDiagnostics: DiagnosticData | null;
   diagnosticServiceabilityData: DiagnosticData | null;
   setDiagnosticServiceabilityData: ((items: DiagnosticData) => void) | null;
-  isDiagnosticLocationServiceable?: boolean;
-  setDiagnosticLocationServiceable: ((value: boolean) => void) | null;
+  isDiagnosticLocationServiceable?: string;
+  setDiagnosticLocationServiceable: ((value: string) => void) | null;
   VirtualConsultationFee: string;
   setVirtualConsultationFee: ((arg0: string) => void) | null;
   generalPhysicians: { id: string; data: getDoctorsBySpecialtyAndFilters } | null | undefined;
@@ -171,7 +171,7 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   locationForDiagnostics: null,
   diagnosticServiceabilityData: null,
   setDiagnosticServiceabilityData: null,
-  isDiagnosticLocationServiceable: false,
+  isDiagnosticLocationServiceable: '',
   setDiagnosticLocationServiceable: null,
   VirtualConsultationFee: '',
   setVirtualConsultationFee: null,
@@ -242,7 +242,7 @@ export const AppCommonDataProvider: React.FC = (props) => {
     AppCommonDataContextProps['diagnosticServiceabilityData']
   >(null);
 
-  const [isDiagnosticLocationServiceable, setDiagnosticLocationServiceable] = useState<
+  const [isDiagnosticLocationServiceable, _setDiagnosticLocationServiceable] = useState<
     AppCommonDataContextProps['isDiagnosticLocationServiceable']
   >();
 
@@ -316,6 +316,18 @@ export const AppCommonDataProvider: React.FC = (props) => {
     });
   };
 
+  const setDiagnosticLocationServiceable: AppCommonDataContextProps['setDiagnosticLocationServiceable'] = (
+    diagnosticLocation
+  ) => {
+    _setDiagnosticLocationServiceable(diagnosticLocation);
+    AsyncStorage.setItem(
+      'diagnosticPinCodeServiceability',
+      JSON.stringify(diagnosticLocation)
+    ).catch(() => {
+      console.log('Failed to save diagnostic pincode serviceablity in local storage.');
+    });
+  };
+
   const locationForDiagnostics: AppCommonDataContextProps['locationForDiagnostics'] = {
     cityId: (diagnosticServiceabilityData?.cityId || '') as string,
     city: (diagnosticServiceabilityData?.city || '') as string,
@@ -336,14 +348,17 @@ export const AppCommonDataProvider: React.FC = (props) => {
           'locationDetails',
           'pharmacyLocation',
           'diagnosticLocation',
+          'diagnosticPinCodeServiceability',
         ]);
         const location = locationFromStorage[0][1];
         const pharmacyLocation = locationFromStorage[1][1];
         const diagnosticLocation = locationFromStorage[2][1];
+        const diagnosticPinCodeServiceability = locationFromStorage[3][1];
 
         _setLocationDetails(JSON.parse(location || 'null'));
         _setPharmacyLocation(JSON.parse(pharmacyLocation || 'null'));
         _setDiagnosticLocation(JSON.parse(diagnosticLocation || 'null'));
+        _setDiagnosticLocationServiceable(diagnosticPinCodeServiceability || 'null');
       } catch (error) {
         console.log('Failed to get location from local storage.');
       }
