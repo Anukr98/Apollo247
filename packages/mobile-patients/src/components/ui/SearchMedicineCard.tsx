@@ -155,16 +155,17 @@ export const SearchMedicineCard: React.FC<Props> = (props) => {
   };
 
   const renderOutOfStock = () => {
-    const off_text = getDiscountPercentage(price, special_price)
-      ? ' ' + getDiscountPercentage(price, special_price) + '%off'
-      : '';
+    const discount = getDiscountPercentage(price, special_price);
+    const off_text = discount ? ' ' + discount + '%off' : '';
     return !is_in_stock && sell_online ? (
       <Text style={styles.outOfStockStyle}>{'Out Of Stock'}</Text>
     ) : (
       <View style={{ flexDirection: 'row' }}>
-        <Text style={styles.priceTextCollapseStyle}>Rs. {special_price || price}</Text>
+        {!discount && <Text style={styles.priceTextCollapseStyle}>{'MRP '}</Text>}
+        <Text style={styles.priceTextCollapseStyle}>Rs. {discount ? special_price : price}</Text>
         {!!special_price && (
           <>
+            {!!discount && <Text style={styles.priceTextCollapseStyle}>{'   MRP'}</Text>}
             <Text style={[styles.priceTextCollapseStyle, { marginLeft: 4, letterSpacing: 0 }]}>
               {'('}
               <Text style={{ textDecorationLine: 'line-through' }}>{`Rs. ${price}`}</Text>

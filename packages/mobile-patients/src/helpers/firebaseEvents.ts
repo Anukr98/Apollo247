@@ -221,7 +221,6 @@ export interface FirebaseEvents {
     categoryID: string;
     Source: 'Home'; // Home
     SectionName: string;
-    imageUrl: string;
   };
   [FirebaseEventName.PHARMACY_ADD_TO_CART]: {
     productname: string;

@@ -40,6 +40,7 @@ import {
   UnInstallAppsFlyer,
   postFirebaseEvent,
   readableParam,
+  setCrashlyticsAttributes,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -590,6 +591,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
             if (mePatient) {
               if (mePatient.firstName !== '') {
+                setCrashlyticsAttributes(mePatient);
                 pushTheView(routeName, id ? id : undefined, isCall);
               } else {
                 props.navigation.replace(AppRoutes.Login);

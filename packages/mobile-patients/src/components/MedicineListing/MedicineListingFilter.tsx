@@ -150,6 +150,7 @@ export const MedicineListingFilter: React.FC<Props> = ({
       const uncheckedIcon = isMulti ? <CheckUnselectedIcon /> : <RadioButtonUnselectedIcon />;
       const subOptions = selectedFilters[filter.attribute];
       const isSelected = !!subOptions?.find((subOption) => subOption == id);
+      const isAccordionType = filter.values?.find(({ child }) => child?.length);
 
       const onPress = async () => {
         const updatedFilter = isSelected
@@ -164,10 +165,12 @@ export const MedicineListingFilter: React.FC<Props> = ({
         }
       };
 
-      if (Array.isArray(child) && child.length) {
+      if ((Array.isArray(child) && child.length) || isAccordionType) {
         const isAccordionSelected = !!subOptions?.find(
           (subOption) =>
-            subOption === `>${id}` || child.find(({ category_id }) => category_id === subOption)
+            subOption === id ||
+            subOption === `>${id}` ||
+            child?.find(({ category_id }) => category_id === subOption)
         );
         const onPressAccordion = async (id: string) => {
           const updatedFilter = isAccordionSelected
@@ -182,9 +185,9 @@ export const MedicineListingFilter: React.FC<Props> = ({
           <Accordion
             title={name}
             isOpen={isAccordionSelected}
-            onPress={() => onPressAccordion(`>${id}`)}
+            onPress={() => onPressAccordion(isAccordionType ? id : `>${id}`)}
           >
-            {child.map(({ title, category_id }) => {
+            {child?.map(({ title, category_id }) => {
               const isCheckBoxSelected = !!subOptions?.find(
                 (subOption) => subOption == category_id
               );
@@ -195,7 +198,7 @@ export const MedicineListingFilter: React.FC<Props> = ({
                   ? [...(subOptions || []), category_id]
                   : [category_id];
                 setSelectedFilters({ ...selectedFilters, [attribute]: updatedFilter });
-                if (!isCheckBoxSelected && categoryFilterKeys.includes(attribute)) {
+                if ((!isCheckBoxSelected && categoryFilterKeys.includes(attribute)) || isSelected) {
                   updateAssociatedBrandFilter(id);
                 }
               };

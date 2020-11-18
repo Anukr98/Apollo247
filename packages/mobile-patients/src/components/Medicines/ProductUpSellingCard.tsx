@@ -45,7 +45,6 @@ export const ProductUpSellingCard: React.FC<Props> = ({
   onPressNotify,
   onPressAddQty,
   onPressSubtractQty,
-  onCartScreen,
 }) => {
   const isPrescriptionRequired = is_prescription_required == 1;
 
@@ -67,21 +66,20 @@ export const ProductUpSellingCard: React.FC<Props> = ({
 
   const renderPriceAndAddToCartButton = () => {
     const discount = getDiscountPercentage(price, special_price);
+    const mrp = 'MRP  ';
     return (
       <View style={styles.priceAndAddToCartContainer}>
         {!!discount && (
-          <View style={{ flexDirection: 'row' }}>
-            <Text style={{ ...styles.priceStrikeOff }}>
-              {onCartScreen ? `(₹${price})` : `(Rs. ${price})`}
-            </Text>
-            <Text
-              style={{ ...styles.discountPercentage, color: onCartScreen ? '#00B38E' : '#01475B' }}
-            >{`  ${discount}% off`}</Text>
-          </View>
+          <Text>
+            <Text style={styles.mrp}>{mrp}</Text>
+            <Text style={styles.priceStrikeOff}>(₹{price})</Text>
+            <Text style={styles.discountPercentage}>{`  ${discount}% off`}</Text>
+          </Text>
         )}
         <View style={[styles.priceAndAddToCartButton, { marginTop: !!discount ? 0 : 12 }]}>
-          <Text style={styles.price}>
-            {(onCartScreen ? '₹' : 'Rs.') + (discount ? special_price : price)}
+          <Text>
+            {!discount && <Text style={styles.price}>{mrp}</Text>}
+            <Text style={styles.price}>{`₹${discount ? special_price : price}`}</Text>
           </Text>
           {sell_online
             ? is_in_stock
@@ -131,7 +129,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     width: Dimensions.get('window').width * 0.55,
   },
-  imageAndTitle: { flexDirection: 'row', alignItems: 'center' },
+  imageAndTitle: { flexDirection: 'row', alignItems: 'center', flex: 1 },
   image: {
     height: 50,
     width: 50,
@@ -155,6 +153,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  mrp: {
+    ...theme.viewStyles.text('B', 11, '#01475B', 1, 24),
+    flex: 1,
   },
   price: {
     ...theme.viewStyles.text('B', 14, '#01475B', 1, 24),

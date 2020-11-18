@@ -252,14 +252,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     categoryId: string,
     categoryName: string,
     sectionName: string,
-    imageUrl: string
+    source: WebEngageEvents[WebEngageEventName.CATEGORY_CLICKED]['Source']
   ) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.CATEGORY_CLICKED] = {
       'category name': categoryName,
       'category ID': categoryId,
       'Section Name': sectionName,
-      Source: 'Home',
-      imageUrl: imageUrl,
+      Source: source,
     };
     postWebEngageEvent(WebEngageEventName.CATEGORY_CLICKED, eventAttributes);
     postAppsFlyerEvent(AppsFlyerEventName.CATEGORY_CLICKED, eventAttributes);
@@ -269,7 +268,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       categoryID: categoryId,
       Source: 'Home', // Home
       SectionName: sectionName,
-      imageUrl: imageUrl,
     };
     postFirebaseEvent(FirebaseEventName.CATEGORY_CLICKED, firebaseEventAttributes);
   };
@@ -1376,12 +1374,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               item.title,
               productsThumbnailUrl(item.image_url),
               () => {
-                postwebEngageCategoryClickedEvent(
-                  item.category_id,
-                  item.title,
-                  title,
-                  productsThumbnailUrl(item.image_url)
-                );
+                postwebEngageCategoryClickedEvent(item.category_id, item.title, title, 'Home');
                 props.navigation.navigate(AppRoutes.MedicineListing, {
                   category_id: item.category_id,
                   title: item.title || 'Products',
@@ -1416,12 +1409,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               <TouchableOpacity
                 activeOpacity={1}
                 onPress={() => {
-                  postwebEngageCategoryClickedEvent(
-                    item.category_id,
-                    'Banner',
-                    title,
-                    productsThumbnailUrl(item.image_url)
-                  );
+                  postwebEngageCategoryClickedEvent(item.category_id, 'Banner', title, 'Home');
                   props.navigation.navigate(AppRoutes.MedicineListing, {
                     category_id: item.category_id,
                     title: title,
@@ -1532,12 +1520,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             return renderBrandCard(
               imgUrl,
               () => {
-                postwebEngageCategoryClickedEvent(
-                  item.category_id,
-                  item.title,
-                  title,
-                  productsThumbnailUrl(item.image_url)
-                );
+                postwebEngageCategoryClickedEvent(item.category_id, item.title, title, 'Home');
                 props.navigation.navigate(AppRoutes.MedicineListing, {
                   category_id: item.category_id,
                   title: item.title || 'Products',
@@ -1628,7 +1611,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             }
           }}
           value={searchText}
-          onFocus={() => setSearchFocused(true)}
+          onFocus={() => {
+            setSearchFocused(true);
+            setCategoryTreeVisible(false);
+          }}
           onBlur={() => {
             setSearchFocused(false);
             setMedicineList([]);
@@ -1881,6 +1867,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const renderCategoryTree = () => {
     const onPressCategory: MedicineCategoryTreeProps['onPressCategory'] = (category, tree) => {
       setCategoryTreeVisible(false);
+      postwebEngageCategoryClickedEvent(
+        category.category_id,
+        category.title,
+        tree?.[0]?.title,
+        'Category Tree'
+      );
       props.navigation.navigate(AppRoutes.MedicineListing, {
         category_id: category.category_id,
         title: category.title,

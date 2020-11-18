@@ -87,7 +87,7 @@ import {
   searchClinicApi,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { AppConfig, COVID_NOTIFICATION_ITEMID } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
@@ -1437,6 +1437,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const renderTotalCharges = () => {
+    const isPPEKitChargesApplicable = cartItems.map((item) =>
+      COVID_NOTIFICATION_ITEMID.includes(item.id)
+    );
+    const ppeKitCharges = isPPEKitChargesApplicable.find((item) => item == true);
     return (
       <View>
         {renderLabel('TOTAL CHARGES')}
@@ -1499,6 +1503,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               <Text style={styles.blueTextStyle}>
                 {string.common.Rs} {hcCharges.toFixed(2)}
               </Text>
+            </View>
+          )}
+          {selectedTab == tabs[0].title && ppeKitCharges && (
+            <View style={styles.rowSpaceBetweenStyle}>
+              <Text style={styles.blueTextStyle}>PPE kit charges</Text>
+              <Text style={styles.blueTextStyle}>{string.common.Rs} 500</Text>
             </View>
           )}
           <View style={[styles.separatorStyle, { marginTop: 16, marginBottom: 7 }]} />

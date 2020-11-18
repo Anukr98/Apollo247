@@ -272,20 +272,18 @@ export enum WebEngageEventName {
   PATIENT_SENT_CHAT_MESSAGE_POST_CONSULT = 'Patient sent chat message post consult',
 
   // Symptom Tracker Events
-  SYMPTOM_TRACKER_PAGE_CLICKED = 'User clicked on Track symptoms',
-  SYMPTOM_TRACKER_PROCEED_CLICKED = 'User clicked on proceed_symptom checker',
-  SYMPTOM_TRACKER_FOR_MYSELF = 'User clicked on myself_symptom checker',
-  SYMPTOM_TRACKER_FOR_FAMILY = 'User clicked on someone else_ symptom checker',
-  SYMPTOM_TRACKER_SELECT_ANOTHER_MEMBER_CLICKED = 'User clicked on select other member_symptom checker',
-  SYMPTOM_TRACKER_INFO_CLICKED = 'User clicked on information sign (i)_symptom checker',
-  SYMPTOM_TRACKER_MOST_TROUBLING_SYMPTOM_CLICKED = 'User clicked on symptom that is troubling the most',
-  SYMPTOM_TRACKER_SUGGESTED_SYMPTOMS_CLICKED = 'User selected suggested symptoms',
-  SYMPTOM_TRACKER_ADD_SELECTED_SYMPTOMS_CLICKED = 'User clicked on ‘Add selected symptoms’',
-  SYMPTOM_TRACKER_ADD_OTHER_SYMPTOM_CLICKED = 'User clicked on ‘Add other symptom’',
-  SYMPTOM_TRACKER_NO_OTHER_SYMPTOM_CLICKED = 'User clicked on ‘No other symptom’',
-  SYMPTOM_TRACKER_CONSULT_DOCTOR_CLICKED = 'User clicked on ‘Consult doctor’_symptom checker',
-  SYMPTOM_TRACKER_RESTART_CLICKED = 'User clicked on ‘restart’_symptom checker',
-  SYMPTOM_TRACKER_SEARCH_SYMPTOMS = 'User searched symptom_symptom checker',
+  SYMPTOM_TRACKER_PAGE_CLICKED = 'Track symptoms clicked',
+  SYMPTOM_TRACKER_FOR_MYSELF = 'Myself clicked SC',
+  SYMPTOM_TRACKER_SELECT_ANOTHER_MEMBER_CLICKED = 'select other member clicked SC',
+  SYMPTOM_TRACKER_INFO_CLICKED = 'information sign clicked SC',
+  SYMPTOM_TRACKER_MOST_TROUBLING_SYMPTOM_CLICKED = 'symptom troubling most clicked SC',
+  SYMPTOM_TRACKER_SUGGESTED_SYMPTOMS_CLICKED = 'suggested symptoms clicked SC',
+  SYMPTOM_TRACKER_ADD_SELECTED_SYMPTOMS_CLICKED = 'Add selected symptoms clicked SC',
+  SYMPTOM_TRACKER_ADD_OTHER_SYMPTOM_CLICKED = 'Add other symptom clicked SC',
+  SYMPTOM_TRACKER_NO_OTHER_SYMPTOM_CLICKED = 'No other symptom clicked SC',
+  SYMPTOM_TRACKER_CONSULT_DOCTOR_CLICKED = 'user clicked on consult doc symptom check',
+  SYMPTOM_TRACKER_RESTART_CLICKED = 'restart symptom checker clicked',
+  SYMPTOM_TRACKER_SEARCH_SYMPTOMS = 'User searched symptom SC',
 }
 
 export interface PatientInfo {
@@ -468,8 +466,8 @@ export interface consultCallEndData {
   'Speciality ID': string;
   'Doctor Type': string;
   'Mode of Call': 'Audio' | 'Video';
-  'Platform': 'App';
-};
+  Platform: 'App';
+}
 
 export interface WebEngageEvents {
   // ********** AppEvents ********** \\
@@ -555,9 +553,8 @@ export interface WebEngageEvents {
   [WebEngageEventName.CATEGORY_CLICKED]: {
     'category name': string;
     'category ID': string;
-    Source: 'Home'; // Home
+    Source: 'Home' | 'Category Tree';
     'Section Name': string;
-    imageUrl: string;
   };
   [WebEngageEventName.CATEGORY_FILTER_CLICKED]: {
     'category name': string;
@@ -603,7 +600,8 @@ export interface WebEngageEvents {
       | 'Pharmacy Partial Search'
       | 'Pharmacy Full Search'
       | 'Similar Widget'
-      | 'Pharmacy Cart';
+      | 'Pharmacy Cart'
+      | 'Category Tree';
     Brand?: string;
     'Brand ID'?: string;
     'category name'?: string;
@@ -1981,5 +1979,4 @@ export interface WebEngageEvents {
     'Selected Symptoms': string;
   };
   [WebEngageEventName.SYMPTOM_TRACKER_FOR_MYSELF]: SymptomTrackerPatientInfo;
-  [WebEngageEventName.SYMPTOM_TRACKER_FOR_FAMILY]: SymptomTrackerPatientInfo;
 }

@@ -276,12 +276,23 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
         ListFooterComponent={renderLoading()}
         ListEmptyComponent={renderProductsNotFound()}
         navigation={navigation}
-        addToCartSource={searchText ? 'Pharmacy Full Search' : 'Pharmacy List'}
+        addToCartSource={
+          searchText
+            ? 'Pharmacy Full Search'
+            : breadCrumb.length
+            ? 'Category Tree'
+            : 'Pharmacy List'
+        }
         movedFrom={
           searchText
             ? ProductPageViewedSource.FULL_SEARCH
             : ProductPageViewedSource.CATEGORY_OR_LISTING
         }
+        productPageViewedEventProps={{
+          CategoryID: categoryId,
+          CategoryName: categoryId ? pageTitle : '',
+          SectionName: categoryId ? 'Category Tree' : '',
+        }}
         view={showListView ? 'list' : 'grid'}
       />
     );
@@ -335,9 +346,23 @@ export const MedicineListing: React.FC<Props> = ({ navigation }) => {
 
   const renderProductsNotFound = () => {
     const isFiltersApplied = Object.keys(filterBy).filter((k) => filterBy[k].length).length;
-    const text = `No results found.${isFiltersApplied ? ' Please try removing filters.' : ''}`;
+    const noResults = 'No results found.';
+    const clickHere = ' Click here ';
+    const remove = 'to remove associated filters.';
 
-    return !isLoading ? <Text style={styles.loadingMoreProducts}>{text}</Text> : null;
+    return !isLoading ? (
+      <>
+        <Text style={styles.loadingMoreProducts}>
+          {noResults}
+          {!!isFiltersApplied && [
+            <Text style={styles.clickHere} onPress={() => setFilterBy({})}>
+              {clickHere}
+            </Text>,
+            <Text>{remove}</Text>,
+          ]}
+        </Text>
+      </>
+    ) : null;
   };
 
   const renderLoadingMore = () => {
@@ -368,10 +393,14 @@ export const saveFilter = (filter: MedFilter) => {
 };
 
 const { text, container } = theme.viewStyles;
+const { APP_YELLOW, LIGHT_BLUE } = theme.colors;
 const styles = StyleSheet.create({
   loadingMoreProducts: {
-    ...text('M', 14, '#02475B'),
+    ...text('M', 14, LIGHT_BLUE),
     padding: 12,
     textAlign: 'center',
+  },
+  clickHere: {
+    ...text('M', 14, APP_YELLOW),
   },
 });

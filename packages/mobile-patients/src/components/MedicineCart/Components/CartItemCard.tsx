@@ -179,6 +179,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
         {!item.isFreeCouponProduct && (
           <Text style={styles.dicountPercent}>{`${getDiscountPercent()}%off`}</Text>
         )}
+        <Text style={styles.mrp}>{`MRP `}</Text>
         <Text style={styles.initialPrice}>{`₹${(mrp * item.quantity).toFixed(2)}`}</Text>
       </View>
     );
@@ -196,15 +197,16 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     );
   };
   const renderPrice = (price: number) => {
+    const discount = !!(discountedPrice || discountedPrice == 0);
     const finalAmount =
       item.isFreeCouponProduct && item.quantity > 1
         ? (price * item.quantity - discountedPrice).toFixed(2)
         : (price * item.quantity).toFixed(2);
     return itemAvailable ? (
       <View style={{ alignItems: 'flex-end' }}>
-        {(discountedPrice || discountedPrice == 0) && renderDiscount()}
-        <Text style={styles.finalPrice}>{`₹${finalAmount}`}</Text>
-        {(discountedPrice || discountedPrice == 0) && renderSavings()}
+        {discount && renderDiscount()}
+        <Text style={styles.finalPrice}>{`${discount ? '' : 'MRP '} ₹${finalAmount}`}</Text>
+        {discount && renderSavings()}
       </View>
     ) : (
       renderNoStock()
@@ -275,6 +277,11 @@ const styles = StyleSheet.create({
   },
   initialPrice: {
     textDecorationLine: 'line-through',
+    ...theme.fonts.IBMPlexSansRegular(11),
+    color: '#02475B',
+    opacity: 0.7,
+  },
+  mrp: {
     ...theme.fonts.IBMPlexSansRegular(11),
     color: '#02475B',
     opacity: 0.7,
