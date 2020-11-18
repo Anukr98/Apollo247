@@ -87,6 +87,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { NotificationListener } from '@aph/mobile-patients/src/components/NotificationListener';
 import _ from 'lodash';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 
 const { width, height } = Dimensions.get('window');
 
@@ -447,7 +448,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   >([]);
   const [selectedDate, setSelectedDate] = React.useState<Date | null>(null);
   const [displayFilter, setDisplayFilter] = useState<boolean>(false);
-  const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
+  const { showAphAlert, hideAphAlert } = useUIElements();
+  const [loading, setLoading] = useState(true);
 
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
   const [
@@ -1062,10 +1064,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             onPress={() => {
               setAppoinmentItem(item);
               setdisplayoverlay(true);
-              fireWebengageEvent(
-                item,
-                cancelConsulations ? 'cancel' : 'followup'
-              );
+              fireWebengageEvent(item, cancelConsulations ? 'cancel' : 'followup');
             }}
           >
             <Text
@@ -1087,7 +1086,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       item: getPatinetAppointments_getPatinetAppointments_patinetAppointments,
       eventType: string
     ) => {
-      const eventAttributesFollowUp: 
+      const eventAttributesFollowUp:
         | WebEngageEvents[WebEngageEventName.BOOK_AGAIN_CANCELLED_APPOINTMENT]
         | WebEngageEvents[WebEngageEventName.PAST_APPOINTMENT_BOOK_FOLLOW_UP_CLICKED] = {
         'Customer ID': g(currentPatient, 'id'),
@@ -1104,9 +1103,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         'Speciality Name': g(item, 'doctorInfo', 'specialty', 'name') || '',
         'Consult ID': g(item, 'id') || '',
         'Consult Date Time': moment(g(item, 'appointmentDateTime')).toDate(),
-        'Consult Mode': g(item, 'appointmentType') == APPOINTMENT_TYPE.ONLINE ? 'Online' : 'Physical',
-        'isConsultStarted': !!g(item, 'isConsultStarted'),
-        'Prescription': followUpMedicineNameText || '',
+        'Consult Mode':
+          g(item, 'appointmentType') == APPOINTMENT_TYPE.ONLINE ? 'Online' : 'Physical',
+        isConsultStarted: !!g(item, 'isConsultStarted'),
+        Prescription: followUpMedicineNameText || '',
       };
 
       postWebEngageEvent(
@@ -1114,8 +1114,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           ? WebEngageEventName.BOOK_AGAIN_CANCELLED_APPOINTMENT
           : eventType === 'followup'
           ? WebEngageEventName.PAST_APPOINTMENT_BOOK_FOLLOW_UP_CLICKED
-          : WebEngageEventName.VIEW_DETAILS_PAST_APPOINTMENT
-        ,eventAttributesFollowUp
+          : WebEngageEventName.VIEW_DETAILS_PAST_APPOINTMENT,
+        eventAttributesFollowUp
       );
     };
 
@@ -1979,7 +1979,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           </View>
         </BottomPopUp>
       )}
-      {/* {loading && <Spinner />} */}
+      {loading && <Spinner />}
       {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
       <NotificationListener navigation={props.navigation} />
       {renderAppointmentFilterScreen()}
