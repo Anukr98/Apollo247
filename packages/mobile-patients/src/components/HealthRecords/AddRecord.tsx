@@ -38,6 +38,7 @@ import {
   ADD_PATIENT_HEALTH_RESTRICTION_RECORD,
   ADD_PATIENT_MEDICAL_CONDITION_RECORD,
   ADD_PATIENT_MEDICATION_RECORD,
+  DELETE_HEALTH_RECORD_FILES,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { addPatientLabTestRecord } from '@aph/mobile-patients/src/graphql/types/addPatientLabTestRecord';
 import { addPatientHealthCheckRecord } from '@aph/mobile-patients/src/graphql/types/addPatientHealthCheckRecord';
@@ -49,6 +50,7 @@ import { addPatientAllergyRecord } from '@aph/mobile-patients/src/graphql/types/
 import { addPatientHealthRestrictionRecord } from '@aph/mobile-patients/src/graphql/types/addPatientHealthRestrictionRecord';
 import { addPatientMedicalConditionRecord } from '@aph/mobile-patients/src/graphql/types/addPatientMedicalConditionRecord';
 import { addPatientMedicationRecord } from '@aph/mobile-patients/src/graphql/types/addPatientMedicationRecord';
+import { deleteHealthRecordFiles } from '@aph/mobile-patients/src/graphql/types/deleteHealthRecordFiles';
 import {
   LabTestParameters,
   AddPrescriptionRecordInput,
@@ -60,6 +62,7 @@ import {
   AllergySeverity,
   AllergyFileProperties,
   AddAllergyRecordInput,
+  DeleteHealthRecordFilesInput,
   AddMedicalConditionRecordInput,
   AddPatientHealthRestrictionRecordInput,
   AddPatientMedicationRecordInput,
@@ -544,7 +547,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   useEffect(() => {
     if (selectedRecord) {
       setImageUpdate(selectedRecord?.fileUrl ? true : false);
-      console.log('selectedRecord', selectedRecord);
       if (recordType === MedicalRecordType.PRESCRIPTION) {
         settestName(selectedRecord?.prescriptionName || '');
         setDocName(selectedRecord?.prescribedBy || '');
@@ -612,6 +614,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         setDocName(selectedRecord?.policyNumber || '');
         setLocationName(selectedRecord?.sumInsured || '');
         setImages(setUploadedImages(selectedRecord?.insuranceFiles));
+        setadditionalNotes(selectedRecord?.notes || '');
       } else if (recordType === MedicalRecordType.ALLERGY) {
         setAllergyCheckbox(true);
         setAllergyName(selectedRecord?.allergyName || '');
@@ -949,7 +952,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
 
   const addMedicalRecord = () => {
     setshowSpinner(true);
-    console.log('imageUpdate', imageUpdate);
     const inputData: AddPrescriptionRecordInput = {
       id: selectedRecordID,
       patientId: currentPatient?.id || '',
@@ -1006,7 +1008,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         showAllergyDetails && allergyEndDate !== ''
           ? moment(allergyEndDate, string.common.date_placeholder_text).format('YYYY-MM-DD')
           : null,
-      attachmentList: getAddedAllergyImage(),
+      attachmentList: imageUpdate ? [] : getAddedAllergyImage(),
     };
     client
       .mutate<addPatientAllergyRecord>({
@@ -1145,7 +1147,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             )
           : null,
       recordType: MedicalRecordType.MEDICALCONDITION,
-      medicationFiles: getAddedMedicalConditionImage(),
+      medicationFiles: imageUpdate ? [] : getAddedMedicalConditionImage(),
     };
     client
       .mutate<addPatientMedicalConditionRecord>({
@@ -1308,7 +1310,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           : '',
       recordType: recordType,
       bill_no: testName,
-      billFiles: getAddedImages(),
+      billFiles: imageUpdate ? [] : getAddedImages(),
     };
 
     client
@@ -1350,7 +1352,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       recordType: recordType,
       policyNumber: docName,
       sumInsured: locationName,
-      insuranceFiles: getAddedImages(),
+      insuranceFiles: imageUpdate ? [] : getAddedImages(),
       notes: additionalNotes,
     };
 
@@ -1376,12 +1378,62 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       });
   };
 
+  const callDeleteHealthRecordFileApi = () => {
+    setshowSpinner(true);
+    const inputData: DeleteHealthRecordFilesInput = {
+      patientId: currentPatient?.id || '',
+      recordType: recordType,
+      recordId: selectedRecordID,
+      fileIndex: '0',
+    };
+    client
+      .mutate<deleteHealthRecordFiles>({
+        mutation: DELETE_HEALTH_RECORD_FILES,
+        variables: {
+          deleteHealthRecordFilesInput: inputData,
+        },
+      })
+      .then(({ data }) => {
+        setshowSpinner(false);
+        const status = g(data, 'deleteHealthRecordFiles', 'status');
+        if (status) {
+          if (recordType === MedicalRecordType.PRESCRIPTION) {
+            addMedicalRecord();
+          } else if (recordType === MedicalRecordType.TEST_REPORT) {
+            addPatientLabTestRecords();
+          } else if (recordType === MedicalRecordType.HOSPITALIZATION) {
+            addPatientHospitalizationRecords();
+          } else if (recordType === MedicalRecordType.MEDICALBILL) {
+            addPatientBillRecords();
+          } else if (recordType === MedicalRecordType.MEDICALINSURANCE) {
+            addPatientInsuranceRecords();
+          } else if (
+            recordType === MedicalRecordType.ALLERGY ||
+            recordType === MedicalRecordType.MEDICALCONDITION
+          ) {
+            callHealthConditionApis();
+          }
+        }
+      })
+      .catch((e) => {
+        CommonBugFender('AddRecord_DELETE_HEALTH_RECORD_FILES', e);
+        setshowSpinner(false);
+        console.log(JSON.stringify(e), 'eeeee');
+        currentPatient && handleGraphQlError(e);
+      });
+  };
+
   const onSavePress = () => {
     setshowSpinner(true);
     const valid = isValid();
+    const callDeleteApi = selectedRecord && callDeleteAttachmentApi;
     if (recordType === MedicalRecordType.TEST_REPORT && isValidImage()) {
       if (valid.isvalid && !valid.isValidParameter) {
-        addPatientLabTestRecords();
+        if (callDeleteApi) {
+          callDeleteHealthRecordFileApi();
+        } else {
+          addPatientLabTestRecords();
+        }
       } else {
         setshowSpinner(false);
         showAphAlert!({
@@ -1394,19 +1446,48 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       isValidImage() &&
       isValidPrescription()
     ) {
-      addMedicalRecord();
+      if (callDeleteApi) {
+        callDeleteHealthRecordFileApi();
+      } else {
+        addMedicalRecord();
+      }
     } else if (
       recordType === MedicRecordType.HOSPITALIZATION &&
       isValidImage() &&
       isValidHospitalizationRecord()
     ) {
-      addPatientHospitalizationRecords();
+      if (callDeleteApi) {
+        callDeleteHealthRecordFileApi();
+      } else {
+        addPatientHospitalizationRecords();
+      }
     } else if (recordType === MedicalRecordType.MEDICALBILL && isValidBillRecord()) {
-      addPatientBillRecords();
+      if (callDeleteApi) {
+        callDeleteHealthRecordFileApi();
+      } else {
+        addPatientBillRecords();
+      }
     } else if (recordType === MedicalRecordType.MEDICALINSURANCE && isValidInsuranceRecord()) {
-      addPatientInsuranceRecords();
-    } else if (recordType === MedicalRecordType.MEDICALCONDITION) {
-      callHealthConditionApis();
+      if (callDeleteApi) {
+        callDeleteHealthRecordFileApi();
+      } else {
+        addPatientInsuranceRecords();
+      }
+    } else if (
+      recordType === MedicalRecordType.MEDICALCONDITION ||
+      recordType === MedicalRecordType.ALLERGY ||
+      recordType === MedicalRecordType.MEDICATION ||
+      recordType === MedicalRecordType.HEALTHRESTRICTION
+    ) {
+      if (
+        callDeleteApi &&
+        (recordType === MedicalRecordType.MEDICALCONDITION ||
+          recordType === MedicalRecordType.ALLERGY)
+      ) {
+        callDeleteHealthRecordFileApi();
+      } else {
+        callHealthConditionApis();
+      }
     }
   };
 
@@ -1542,6 +1623,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         : id === 2
         ? setAllergyImage(imageCOPY)
         : setMedicalConditionImage(imageCOPY);
+      if (imageUpdate) {
+        setCallDeleteAttachmentApi(true);
+      }
       CommonLogEvent('ADD_RECORD', 'Set Images');
     };
     return (
@@ -3141,7 +3225,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       if (id === 1) {
         setdisplayOrderPopup(false);
         if (selectedType == 'CAMERA_AND_GALLERY') {
-          console.log('response', response, type);
           if (response.length == 0) return;
           if (type === 'Camera') {
             setDisplayReviewPhotoPopup(true);
@@ -3156,7 +3239,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       } else if (id === 2) {
         setdisplayAllergyPopup(false);
         if (selectedType == 'CAMERA_AND_GALLERY') {
-          console.log('response', response, type);
           if (response.length == 0) return;
           if (type === 'Camera') {
             setDisplayReviewPhotoPopup(true);
@@ -3172,7 +3254,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       } else {
         setdisplayMedicalConditionPopup(false);
         if (selectedType == 'CAMERA_AND_GALLERY') {
-          console.log('response', response, type);
           if (response.length == 0) return;
           if (type === 'Camera') {
             setDisplayReviewPhotoPopup(true);

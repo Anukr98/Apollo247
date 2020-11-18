@@ -194,7 +194,7 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
         showUpdateDeleteOption={showEditDeleteOption}
         onHealthCardPress={(selectedItem) => onHealthCardItemPress(selectedItem)}
         onDeletePress={(selectedItem) => onPressDeletePrismMedicalRecords(selectedItem)}
-        // onEditPress={(selectedItem) => onPressEditPrismMedicalRecords(selectedItem)}
+        onEditPress={(selectedItem) => onPressEditPrismMedicalRecords(selectedItem)}
         prescriptionName={prescriptionName}
         dateText={dateText}
         selfUpload={selfUpload}

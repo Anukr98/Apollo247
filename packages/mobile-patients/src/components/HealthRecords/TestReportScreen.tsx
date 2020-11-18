@@ -422,7 +422,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
         showUpdateDeleteOption={showEditDeleteOption}
         onHealthCardPress={(selectedItem) => onHealthCardItemPress(selectedItem)}
         onDeletePress={(selectedItem) => onPressDeletePrismMedicalRecords(selectedItem)}
-        // onEditPress={(selectedItem) => onPressEditPrismMedicalRecords(selectedItem)}
+        onEditPress={(selectedItem) => onPressEditPrismMedicalRecords(selectedItem)}
         prescriptionName={prescriptionName}
         doctorName={doctorName}
         dateText={dateText}

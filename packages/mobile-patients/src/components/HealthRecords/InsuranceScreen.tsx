@@ -206,7 +206,7 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
         showUpdateDeleteOption={showEditDeleteOption}
         onHealthCardPress={(selectedItem) => onHealthCardItemPress(selectedItem)}
         onDeletePress={(selectedItem) => onPressDeletePrismMedicalRecords(selectedItem)}
-        // onEditPress={(selectedItem) => onPressEditPrismMedicalRecords(selectedItem)}
+        onEditPress={(selectedItem) => onPressEditPrismMedicalRecords(selectedItem)}
         prescriptionName={prescriptionName}
         dateText={dateText}
         selfUpload={selfUpload}

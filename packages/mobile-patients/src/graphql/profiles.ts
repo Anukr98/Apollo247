@@ -2387,6 +2387,14 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
   }
 `;
 
+export const DELETE_HEALTH_RECORD_FILES = gql`
+  mutation deleteHealthRecordFiles($deleteHealthRecordFilesInput: DeleteHealthRecordFilesInput) {
+    deleteHealthRecordFiles(deleteHealthRecordFilesInput: $deleteHealthRecordFilesInput) {
+      status
+    }
+  }
+`;
+
 export const GET_LAB_RESULT_PDF = gql`
   query getLabResultpdf($patientId: ID!, $recordId: String!) {
     getLabResultpdf(patientId: $patientId, recordId: $recordId) {

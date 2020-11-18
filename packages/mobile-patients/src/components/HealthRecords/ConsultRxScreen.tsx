@@ -665,7 +665,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         onHealthCardPress={(selectedItem) => onHealthCardItemPress(selectedItem)}
         prescriptionName={prescriptionName}
         doctorName={doctorName}
-        // onEditPress={(selectedItem) => onPressEditPrismMedicalRecords(selectedItem)}
+        onEditPress={(selectedItem) => onPressEditPrismMedicalRecords(selectedItem)}
         onDeletePress={(selectedItem) => onPressDeletePrismMedicalRecords(selectedItem)}
         dateText={dateText}
         selfUpload={selfUpload}

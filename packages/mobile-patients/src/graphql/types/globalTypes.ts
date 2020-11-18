@@ -776,6 +776,13 @@ export interface ConsultQueueInput {
   gender?: Gender | null;
 }
 
+export interface DeleteHealthRecordFilesInput {
+  fileIndex?: string | null;
+  patientId: string;
+  recordType: MedicalRecordType;
+  recordId?: string | null;
+}
+
 export interface DeletePatientPrismMedicalRecordInput {
   id?: string | null;
   patientId: string;
