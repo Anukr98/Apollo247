@@ -920,3 +920,17 @@ export const getSymptomsTrackerResult = (
   const url = `${baseUrl}/${chatId}/specialities`;
   return Axios.get(url);
 };
+
+export const getMedicineSku = (skuKey: string): Promise<AxiosResponse<any>> => {
+  return Axios({
+    url: config.GET_SKU[0],
+    method: 'POST',
+    data: {
+      params: skuKey,
+      level: 'product',
+    },
+    headers: {
+      Authorization: config.GET_SKU[1],
+    },
+  });
+};

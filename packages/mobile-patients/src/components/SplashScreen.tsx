@@ -39,13 +39,17 @@ import {
   callPermissions,
   UnInstallAppsFlyer,
   postFirebaseEvent,
+  readableParam,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   getAppointmentData as getAppointmentDataQuery,
   getAppointmentDataVariables,
 } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
-import { GET_APPOINTMENT_DATA } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  GET_APPOINTMENT_DATA,
+  GET_ALL_SPECIALTIES,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import {
   ProductPageViewedSource,
   WebEngageEvents,
@@ -62,7 +66,11 @@ import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/help
 import messaging from '@react-native-firebase/messaging';
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
 // finally not working on all promises.
-
+import {
+  getAllSpecialties,
+  getAllSpecialties_getAllSpecialties,
+} from '@aph/mobile-patients/src/graphql/types/getAllSpecialties';
+import { getMedicineSku } from '@aph/mobile-patients/src/helpers/apiCalls';
 (function() {
   /**
    * Praktice.ai
@@ -461,9 +469,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const handleDeeplinkFormatTwo = (event: any) => {
     const url = event.replace('https://www.apollo247.com/', '');
     const data = url.split('/');
-    console.log('data >>>', data);
     const route = data[0];
-    console.log('route >>>', route);
     let linkId = '';
     try {
       if (data.length >= 2) {
@@ -473,7 +479,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         }
       }
     } catch (error) {}
-    console.log('linkId >>>>', linkId);
     switch (route) {
       case 'medicines':
         getData('Medicine');
@@ -481,8 +486,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       case 'prescription-review':
         getData('UploadPrescription');
         break;
-      case 'specialities':
-        getData('DoctorSearch');
+      case 'specialties':
+        linkId == '' ? getData('DoctorSearch') : getData('SpecialityByName', linkId);
+        break;
+      case 'doctors':
+        linkId == '' ? getData('DoctorSearch') : getData('DoctorByNameId', linkId);
+        break;
+      case 'medicine':
+        linkId == '' ? getData('Medicine') : getData('MedicineByName', linkId);
         break;
       default:
         getData('ConsultRoom', undefined, true);
@@ -792,29 +803,63 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           isVoipCall: false,
         });
         break;
-
+      case 'SpecialityByName':
+        fetchSpecialities(id);
+        break;
+      case 'DoctorByNameId':
+        const docId = id.slice(-36);
+        props.navigation.navigate(AppRoutes.DoctorDetails, {
+          doctorId: docId,
+        });
+        break;
+      case 'MedicineByName':
+        getMedicineSKU(id);
+        break;
       default:
         break;
     }
   };
 
-  // useEffect(() => {
-  //   console.log('SplashScreen signInError', signInError);
+  const fetchSpecialities = async (specialityName: string) => {
+    setshowSpinner(true);
+    try {
+      const response = await client.query<getAllSpecialties>({
+        query: GET_ALL_SPECIALTIES,
+        fetchPolicy: 'no-cache',
+      });
+      const { data } = response;
+      if (data?.getAllSpecialties && data?.getAllSpecialties.length) {
+        const specialityId = getSpecialityId(specialityName, data?.getAllSpecialties);
+        props.navigation.navigate(AppRoutes.DoctorSearchListing, {
+          specialityId: specialityId,
+        });
+      }
+    } catch (error) {
+      CommonBugFender('DoctorSearch_fetchSpecialities', error);
+      props.navigation.navigate(AppRoutes.ConsultRoom);
+    }
+  };
 
-  //   firebase.analytics().setCurrentScreen('SplashScreen');
+  const getSpecialityId = (name: string, specialities: getAllSpecialties_getAllSpecialties[]) => {
+    const specialityObject = specialities.filter((item) => name == readableParam(item?.name));
+    return specialityObject[0].id ? specialityObject[0].id : '';
+  };
 
-  //   if (signInError) {
-  //     setshowSpinner(false);
-
-  //     AsyncStorage.setItem('userLoggedIn', 'false');
-  //     AsyncStorage.setItem('multiSignUp', 'false');
-  //     AsyncStorage.setItem('signUp', 'false');
-  //     signOut();
-  //     props.navigation.replace(AppRoutes.Login);
-  //   }
-
-  //   SplashScreenView.hide();
-  // }, [props.navigation, signInError, signOut]);
+  const getMedicineSKU = async (skuKey: string) => {
+    try {
+      const response = await getMedicineSku(skuKey);
+      const { data } = response;
+      data?.Message == 'Product available'
+        ? props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+            sku: data?.sku,
+            movedFrom: ProductPageViewedSource.DEEP_LINK,
+          })
+        : props.navigation.navigate('MEDICINES');
+    } catch (error) {
+      CommonBugFender('getMedicineSku', error);
+      props.navigation.navigate('MEDICINES');
+    }
+  };
 
   const {
     setLocationDetails,
