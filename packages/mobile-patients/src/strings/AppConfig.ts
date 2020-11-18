@@ -230,7 +230,7 @@ const PharmaApiConfig = {
       testApiCredentialsDev,
     ],
     PRODUCT_SUGGESTIONS_CATEGORYID: '41920',
-    SPECIAL_OFFERS_CATEGORY_ID: '41920',
+    SPECIAL_OFFERS_CATEGORY_ID: '42372',
   },
   prod: {
     TRACK_EVENT: [`${tagalysBaseUrl}/analytics/events/track`],
