@@ -909,7 +909,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       fireWebengageEventForCallAnswer(WebEngageEventName.PATIENT_ANSWERED_CALL);
     }
     updateNumberOfParticipants();
-  }, []);
+  }, [isVoipCall, fromIncomingCall]);
 
   const getPatientApiCallWithHistory = async () => {
     if (!disableChat && status !== STATUS.COMPLETED && displayChatQuestions) {
@@ -1004,6 +1004,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const playSound = () => {
+    /*
     try {
       maxVolume();
       if (audioTrack) {
@@ -1014,6 +1015,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     } catch (e) {
       CommonBugFender('playing_callertune__failed', e);
     }
+    */
   };
 
   const stopSound = () => {
@@ -6968,7 +6970,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           />
         )}
       </SafeAreaView>
-      {onSubscribe && IncomingCallView()}
+      {/* {onSubscribe && IncomingCallView()} */}
       {isCall && VideoCall()}
       {isAudioCall && AudioCall()}
       {transferAccept && (

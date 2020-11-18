@@ -749,7 +749,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         });
         break;
       case 'ChatRoom':
-        props.navigation.navigate(AppRoutes.ChatRoom, {
+        props.navigation.push(AppRoutes.ChatRoom, {
           data: id,
           callType: voipCallType.current ? voipCallType.current.toUpperCase() : '',
           prescription: '',
@@ -797,7 +797,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         });
         break;
       case 'DoctorCall':
-        props.navigation.navigate(AppRoutes.ChatRoom, {
+        props.navigation.push(AppRoutes.ChatRoom, {
           data: id,
           callType: voipCallType.current ? voipCallType.current.toUpperCase() : '',
           prescription: '',
