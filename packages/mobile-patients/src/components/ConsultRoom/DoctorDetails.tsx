@@ -616,6 +616,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         nextAppointemntOnlineTime={availableTime}
         nextAppointemntInPresonTime={physicalAvailableTime}
         circleDoctorDetails={circleDoctorDetails}
+        navigation={props.navigation}
       />
     );
   };
@@ -668,15 +669,25 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           ) : null}
         </View>
         {!circleSubscriptionId ? (
-          <View style={styles.row}>
+          <TouchableOpacity
+            activeOpacity={1}
+            style={styles.row}
+            onPress={() => openCircleWebView()}
+          >
             <Text style={styles.smallText}>for</Text>
             <CircleLogo style={styles.smallCareLogo} />
             <Text style={[styles.smallText, { marginLeft: -4 }]}>members</Text>
             <InfoBlue style={styles.smallInfo} />
-          </View>
+          </TouchableOpacity>
         ) : null}
       </View>
     );
+  };
+
+  const openCircleWebView = () => {
+    props.navigation.navigate(AppRoutes.CommonWebView, {
+      url: AppConfig.Configuration.CIRCLE_CONSULT_URL,
+    });
   };
 
   const renderDoctorDetails = () => {
@@ -929,7 +940,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     }
     return null;
   };
-
+  console.log('defaultCirclePlan', defaultCirclePlan);
   const renderUpgradeToCircle = () => {
     return (
       <TouchableOpacity style={styles.upgradeContainer} onPress={() => setShowCirclePlans(true)}>
@@ -953,6 +964,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     return (
       <CareSelectPlans
         isModal={true}
+        navigation={props.navigation}
         membershipPlans={membershipPlans}
         closeModal={() => setShowCirclePlans(false)}
       />

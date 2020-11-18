@@ -280,7 +280,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       <CareSelectPlans
         isConsultJourney={true}
         style={styles.careSelectContainer}
-        onPressKnowMore={() => {}}
+        navigation={props.navigation}
         careDiscountPrice={minDiscountedPrice}
         doctorFees={isOnlineConsult ? onlineConsultMRPPrice : physicalConsultMRPPrice}
         onSelectMembershipPlan={() => {

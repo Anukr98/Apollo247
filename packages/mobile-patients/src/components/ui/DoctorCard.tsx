@@ -55,6 +55,8 @@ import { SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleM
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
 import { calculateCareDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+
 const styles = StyleSheet.create({
   doctorView: {
     flex: 1,
@@ -293,7 +295,11 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             </Text>
           </View>
           <View style={styles.seperatorLine} />
-          <View style={{ flex: 1 }}>
+          <TouchableOpacity
+            style={{ flex: 1 }}
+            onPress={() => openCircleWebView()}
+            activeOpacity={1}
+          >
             <Text
               style={{
                 ...theme.viewStyles.text('M', 10, theme.colors.APP_YELLOW),
@@ -309,6 +315,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                   ? onlineConsultSlashedPrice
                   : minSlashedPrice}
               </Text>
+
               <InfoBlue style={styles.infoIcon} />
               <Text
                 style={{
@@ -318,10 +325,16 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                 {string.circleDoctors.upgradeNow}
               </Text>
             </View>
-          </View>
+          </TouchableOpacity>
         </View>
       </View>
     );
+  };
+
+  const openCircleWebView = () => {
+    props.navigation.navigate(AppRoutes.CommonWebView, {
+      url: AppConfig.Configuration.CIRCLE_CONSULT_URL,
+    });
   };
 
   const renderCareLogo = () => {

@@ -45,6 +45,7 @@ import { CommonBugFender } from '../../FunctionHelpers/DeviceHelper';
 import moment from 'moment';
 import { calculateCareDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const styles = StyleSheet.create({
   mainContainer: {
@@ -317,6 +318,12 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
     );
   };
 
+  const openCircleWebView = () => {
+    props.navigation.navigate(AppRoutes.CommonWebView, {
+      url: AppConfig.Configuration.CIRCLE_CONSULT_URL,
+    });
+  };
+
   const renderCard = (
     headingImage: Element,
     heading: string,
@@ -351,7 +358,9 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
             )}
           </View>
           {!circleSubscriptionId && isCircleDoctor ? (
-            <View
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() => openCircleWebView()}
               style={[
                 styles.row,
                 {
@@ -363,7 +372,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
               <CircleLogo style={styles.careLogo} />
               <Text style={[styles.smallRightAlignText, { marginLeft: -4 }]}>members</Text>
               <InfoBlue style={styles.infoIcon} />
-            </View>
+            </TouchableOpacity>
           ) : null}
         </View>
         <View style={styles.stepsMainContainer}>

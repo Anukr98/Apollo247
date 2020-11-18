@@ -304,6 +304,7 @@ const ConfigurationDev = {
   COVID_VACCINE_TRACKER_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
+  CIRCLE_CONSULT_URL: 'https://aph.dev.web-patients.popcornapps.com/consult-landing?header=false',
 };
 
 // QA
@@ -348,6 +349,7 @@ const ConfigurationQA = {
   COVID_VACCINE_TRACKER_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
+  CIRCLE_CONSULT_URL: 'https://aph.dev.web-patients.popcornapps.com/consult-landing?header=false',
 };
 
 // QA2
@@ -392,6 +394,7 @@ const ConfigurationQA2 = {
   COVID_VACCINE_TRACKER_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
+  CIRCLE_CONSULT_URL: 'https://aph.dev.web-patients.popcornapps.com/consult-landing?header=false',
 };
 
 // VAPT
@@ -436,6 +439,7 @@ const ConfigurationVAPT = {
   COVID_VACCINE_TRACKER_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
+  CIRCLE_CONSULT_URL: 'https://aph.dev.web-patients.popcornapps.com/consult-landing?header=false',
 };
 //Production
 const ConfigurationProd = {
@@ -478,6 +482,7 @@ const ConfigurationProd = {
   SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
   COVID_VACCINE_TRACKER_URL: 'https://www.apollo247.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
+  CIRCLE_CONSULT_URL: 'https://aph.dev.web-patients.popcornapps.com/consult-landing?header=false',
 };
 
 //PERFORMANCE
@@ -523,6 +528,7 @@ const ConfigurationPERFORM = {
   COVID_VACCINE_TRACKER_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
+  CIRCLE_CONSULT_URL: 'https://aph.dev.web-patients.popcornapps.com/consult-landing?header=false',
 };
 
 //DevelopmentReplica
@@ -568,6 +574,7 @@ const ConfigurationDevReplica = {
   COVID_VACCINE_TRACKER_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
+  CIRCLE_CONSULT_URL: 'https://aph.dev.web-patients.popcornapps.com/consult-landing?header=false',
 };
 
 const Configuration =

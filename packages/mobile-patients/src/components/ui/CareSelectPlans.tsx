@@ -23,13 +23,14 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import AsyncStorage from '@react-native-community/async-storage';
 import { Overlay } from 'react-native-elements';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { NavigationScreenProps } from 'react-navigation';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 
 const { width } = Dimensions.get('window');
 const planDimension = 120;
 const defaultPlanDimension = 160;
 
-interface CareSelectPlansProps {
-  onPressKnowMore: () => void;
+interface CareSelectPlansProps extends NavigationScreenProps {
   style?: StyleProp<ViewStyle>;
   onSelectMembershipPlan?: () => void | null;
   isConsultJourney?: boolean;
@@ -45,7 +46,6 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [autoPlanAdded, setAutoPlanAdded] = useState<boolean>(false);
   const {
-    onPressKnowMore,
     isConsultJourney,
     careDiscountPrice,
     onSelectMembershipPlan,
@@ -85,7 +85,9 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
         setMembershipPlans(circlePlans);
         if (doctorFees && doctorFees >= 400) {
           autoSelectDefaultPlan(circlePlans);
-          setAutoPlanAdded(true);
+          if (!circlePlanSelected) {
+            setAutoPlanAdded(true);
+          }
         }
       }
       setLoading(false);
@@ -210,6 +212,7 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
         <TouchableOpacity
           onPress={() => {
             setCirclePlanSelected && setCirclePlanSelected(null);
+            AsyncStorage.removeItem('circlePlanSelected');
             selectDefaultPlan && selectDefaultPlan(membershipPlans);
             closeModal && closeModal();
           }}
@@ -275,7 +278,7 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
           {!isModal && renderKnowMore('flex-end')}
         </View>
         {isModal && renderKnowMore('center')}
-        {isModal && renderBuyNow()}
+        {isModal && renderAddToCart()}
         {isModal && renderCircleFacts()}
       </ContentLoader>
     );
@@ -305,7 +308,13 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
           { alignSelf: alignSelf, marginTop: autoPlanAdded ? 0 : 10 },
         ]}
       >
-        <TouchableOpacity style={styles.knowMoreBtn} onPress={onPressKnowMore}>
+        <TouchableOpacity
+          style={styles.knowMoreBtn}
+          onPress={() => {
+            openCircleWebView();
+            closeModal && closeModal();
+          }}
+        >
           <Text style={{ ...theme.viewStyles.text('SB', 13, theme.colors.APP_YELLOW) }}>
             KNOW MORE
           </Text>
@@ -322,15 +331,22 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
     );
   };
 
+  const openCircleWebView = () => {
+    props.navigation.navigate(AppRoutes.CommonWebView, {
+      url: AppConfig.Configuration.CIRCLE_CONSULT_URL,
+    });
+  };
+
   const removeAutoAddedPlan = () => {
     setCirclePlanSelected && setCirclePlanSelected(null);
+    AsyncStorage.removeItem('circlePlanSelected');
     setAutoPlanAdded(false);
   };
 
-  const renderBuyNow = () => {
+  const renderAddToCart = () => {
     return (
       <Button
-        title={string.circleDoctors.buyNow}
+        title={string.circleDoctors.addToCart}
         style={styles.buyNowBtn}
         onPress={() => {
           setDefaultCirclePlan && setDefaultCirclePlan(null);
@@ -390,6 +406,7 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
         style={{ marginTop: 7 }}
         onPress={() => {
           setCirclePlanSelected && setCirclePlanSelected(null);
+          AsyncStorage.removeItem('circlePlanSelected');
         }}
       >
         <Text style={styles.removeTxt}>REMOVE</Text>

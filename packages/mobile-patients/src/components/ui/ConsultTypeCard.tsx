@@ -29,6 +29,9 @@ import moment from 'moment';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
 import { useAllCurrentPatients } from '../../hooks/authHooks';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { NavigationScreenProps } from 'react-navigation';
 
 const styles = StyleSheet.create({
   mainView: {
@@ -143,7 +146,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface ConsultTypeCardProps {
+export interface ConsultTypeCardProps extends NavigationScreenProps {
   onOnlinePress: () => void;
   onPhysicalPress: () => void;
   isOnlineSelected: boolean;
@@ -245,7 +248,9 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
             {isCircleDoctor && renderCareDoctorPricing()}
           </View>
           {!circleSubscriptionId && isCircleDoctor ? (
-            <View
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() => openCircleWebView()}
               style={[
                 styles.row,
                 {
@@ -257,7 +262,7 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
               <CircleLogo style={styles.careLogo} />
               <Text style={[styles.smallRightAlignText, { marginLeft: -4 }]}>members</Text>
               <InfoBlue style={styles.infoIcon} />
-            </View>
+            </TouchableOpacity>
           ) : null}
         </View>
 
@@ -297,6 +302,12 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
         </TouchableOpacity>
       </View>
     );
+  };
+
+  const openCircleWebView = () => {
+    props.navigation.navigate(AppRoutes.CommonWebView, {
+      url: AppConfig.Configuration.CIRCLE_CONSULT_URL,
+    });
   };
 
   const postWebengaegConsultType = (consultType: 'Online' | 'In Person') => {
