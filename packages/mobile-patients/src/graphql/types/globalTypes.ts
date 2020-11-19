@@ -701,8 +701,13 @@ export interface ConsultQueueInput {
   gender?: Gender | null;
 }
 
+export interface CouponInput {
+  grossOrderAmountExcludingDiscount: number;
+  testsOrdered?: (DiagnosticTestsOrdered | null)[] | null;
+  cityId: number;
+}
+
 export interface CreateUserSubscriptionInput {
-  _id?: string | null;
   plan_id: string;
   payment_reference?: any | null;
   coupon_availed?: string | null;
@@ -721,6 +726,23 @@ export interface CreateUserSubscriptionInput {
   DOB?: any | null;
   storeCode: one_apollo_store_code;
   sub_plan_id?: string | null;
+}
+
+export interface DiagnosticBookHomeCollectionInput {
+  patientId: string;
+  patientAddressId: string;
+  slotTimings: string;
+  totalPrice: number;
+  prescriptionUrl: string;
+  diagnosticDate: any;
+  bookingSource?: BOOKINGSOURCE | null;
+  deviceType?: DEVICETYPE | null;
+  paymentType?: DIAGNOSTIC_ORDER_PAYMENT_TYPE | null;
+  items?: (DiagnosticLineItem | null)[] | null;
+  slotId: string;
+  areaId: number;
+  homeCollectionCharges: number;
+  uniqueID?: string | null;
 }
 
 export interface DiagnosticLineItem {
@@ -755,6 +777,13 @@ export interface DiagnosticOrderInput {
   items?: (DiagnosticLineItem | null)[] | null;
   slotId?: string | null;
   areaId?: number | null;
+}
+
+export interface DiagnosticTestsOrdered {
+  itemId?: number | null;
+  itemName?: string | null;
+  rateExcludingDiscount?: number | null;
+  groupPlan?: string | null;
 }
 
 export interface DoctorAvailabilityInput {

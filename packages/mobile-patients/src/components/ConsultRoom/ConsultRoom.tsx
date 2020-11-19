@@ -7,6 +7,9 @@ import {
   PlanBenefits,
   BenefitCtaAction,
   bannerType,
+  CirclePlanSummary,
+  CircleGroup,
+  CicleSubscriptionData,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -65,6 +68,7 @@ import {
   CREATE_USER_SUBSCRIPTION,
   GET_ALL_GROUP_BANNERS_OF_USER,
   GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+  GET_CASHBACK_DETAILS_OF_PLAN_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { getPatientFutureAppointmentCount } from '@aph/mobile-patients/src/graphql/types/getPatientFutureAppointmentCount';
 import {
@@ -165,6 +169,7 @@ import {
   GetSubscriptionsOfUserByStatus,
   GetSubscriptionsOfUserByStatusVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
+import { GetCashbackDetailsOfPlanById } from '@aph/mobile-patients/src/graphql/types/GetCashbackDetailsOfPlanById';
 
 const { Vitals } = NativeModules;
 
@@ -357,6 +362,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     hdfcUserSubscriptions,
     bannerData,
     setBannerData,
+    setCircleSubscription,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
@@ -366,13 +372,20 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [showList, setShowList] = useState<boolean>(false);
   const [isFindDoctorCustomProfile, setFindDoctorCustomProfile] = useState<boolean>(false);
 
-  const { cartItems } = useDiagnosticsCart();
+  const {
+    cartItems,
+    setIsDiagnosticCircleSubscription,
+    isDiagnosticCircleSubscription,
+  } = useDiagnosticsCart();
+
   const {
     cartItems: shopCartItems,
     setHdfcPlanName,
     setIsFreeDelivery,
     setCircleSubscriptionId,
     setCirclePlanSelected,
+    setIsCircleSubscription,
+    setCircleCashback,
   } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
 
@@ -1059,6 +1072,29 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         });
   };
 
+  const getProductCashbackDetails = () => {
+    client
+      .query<GetCashbackDetailsOfPlanById>({
+        query: GET_CASHBACK_DETAILS_OF_PLAN_ID,
+        fetchPolicy: 'no-cache',
+      })
+      .then((data) => {
+        const cashback = g(
+          data,
+          'data',
+          'GetCashbackDetailsOfPlanById',
+          'response',
+          'meta',
+          'cashback'
+        );
+        setCircleCashback && setCircleCashback(cashback);
+      })
+      .catch((e) => {
+        setHdfcLoading(false);
+        CommonBugFender('ConsultRoom_getSubscriptionsOfUserByStatus', e);
+      });
+  };
+
   const getUserSubscriptionsWithBenefits = () => {
     setHdfcLoading(true);
     const mobile_number = g(currentPatient, 'mobileNumber');
@@ -1075,26 +1111,89 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         .then((data) => {
           setHdfcLoading(false);
           const groupPlans = g(data, 'data', 'GetAllUserSubscriptionsWithPlanBenefits', 'response');
-          if (groupPlans && groupPlans.length) {
-            const plan = groupPlans[0];
-            const subscription = setSubscriptionData(plan);
-            setHdfcUserSubscriptions && setHdfcUserSubscriptions(subscription);
-            const subscriptionName = g(subscription, 'name') ? g(subscription, 'name') : '';
-            if (g(subscription, 'isActive')) {
-              setHdfcPlanName && setHdfcPlanName(subscriptionName);
+          if (groupPlans) {
+            const hdfcPlan = groupPlans?.HDFC;
+            const circlePlan = groupPlans?.APOLLO;
+
+            if (hdfcPlan) {
+              const hdfcSubscription = setSubscriptionData(hdfcPlan[0]);
+              setHdfcUserSubscriptions && setHdfcUserSubscriptions(hdfcSubscription);
+
+              const subscriptionName = g(hdfcSubscription, 'name')
+                ? g(hdfcSubscription, 'name')
+                : '';
+              if (g(hdfcSubscription, 'isActive')) {
+                setHdfcPlanName && setHdfcPlanName(subscriptionName);
+              }
+              if (
+                subscriptionName === hdfc_values.PLATINUM_PLAN &&
+                !!g(hdfcSubscription, 'isActive')
+              ) {
+                setIsFreeDelivery && setIsFreeDelivery(true);
+              }
+              getUserBanners();
+              setShowHdfcWidget(false);
+              setShowHdfcConnectWidget(true);
             }
-            if (subscriptionName === hdfc_values.PLATINUM_PLAN && !!g(subscription, 'isActive')) {
-              setIsFreeDelivery && setIsFreeDelivery(true);
+
+            if (circlePlan) {
+              const circleSubscription = setCircleSubscriptionData(circlePlan[0]);
+              if (!!circlePlan[0]?._id) {
+                setIsCircleSubscription && setIsCircleSubscription(true);
+                setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
+              }
+              setCircleSubscription && setCircleSubscription(circleSubscription);
+              console.log('circleSubscription-------- ', circleSubscription);
             }
-            getUserBanners();
-            setShowHdfcWidget(false);
-            setShowHdfcConnectWidget(true);
           }
         })
         .catch((e) => {
           setHdfcLoading(false);
           CommonBugFender('ConsultRoom_getSubscriptionsOfUserByStatus', e);
         });
+  };
+
+  const setCircleSubscriptionData = (plan: any) => {
+    const planSummary: CirclePlanSummary[] = [];
+    const summary = plan?.plan_summary;
+    if (summary && summary.length) {
+      summary.forEach((value) => {
+        const plan_summary: CirclePlanSummary = {
+          price: value?.price,
+          renewMode: value?.renew_mode,
+          starterPack: !!value?.starter_pack,
+          benefitsWorth: value?.benefits_worth,
+          availableForTrial: !!value?.available_for_trial,
+          specialPriceEnabled: value?.special_price_enabled,
+          subPlanId: value?.subPlanId,
+          durationInMonth: value?.durationInMonth,
+          currentSellingPrice: value?.currentSellingPrice,
+          icon: value?.icon,
+        };
+        planSummary.push(plan_summary);
+      });
+    }
+
+    const group = plan?.group;
+    const groupDetailsData: CircleGroup = {
+      _id: group?._id,
+      name: group?.name,
+      isActive: group?.is_active,
+    };
+
+    const circleSubscptionData: CicleSubscriptionData = {
+      _id: plan?._id,
+      name: plan?.name,
+      planId: plan?.plan_id,
+      activationModes: plan?.activation_modes,
+      status: plan?.status,
+      subscriptionStatus: plan?.subscriptionStatus,
+      subPlanIds: plan?.sub_plan_ids,
+      planSummary: planSummary,
+      groupDetails: groupDetailsData,
+    };
+
+    return circleSubscptionData;
   };
 
   const setSubscriptionData = (plan) => {
@@ -1162,7 +1261,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       let allPatients: any;
 
       const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
-      const item = JSON.parse(retrievedItem);
+      const item = JSON.parse(retrievedItem || 'null');
 
       const callByPrism: any = await AsyncStorage.getItem('callByPrism');
 
@@ -1183,7 +1282,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         : null;
 
       const array: any = await AsyncStorage.getItem('allNotification');
-      const arraySelected = JSON.parse(array);
+      const arraySelected = JSON.parse(array || 'null');
       const selectedCount = arraySelected.filter((item: any) => {
         return item.isActive === true;
       });
@@ -1240,7 +1339,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           const tempArray: any[] = [];
           const filteredNotifications = arrayNotification.filter((el: any) => {
             // If it is not a duplicate and accepts these conditions, return true
-            const val = JSON.parse(el.notificatio_details.push_notification_content);
+            const val = JSON.parse(el.notificatio_details.push_notification_content || 'null');
             const event = val.cta;
             if (event) {
               const actionLink = decodeURIComponent(event.actionLink);
@@ -1337,7 +1436,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           .finally(() => setAppointmentLoading(false));
       }
     }
-  }, [currentPatient, analytics, props.navigation.state.params]);
+  }, [currentPatient, props.navigation.state.params]);
 
   useEffect(() => {
     async function fetchData() {
@@ -1352,8 +1451,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           AsyncStorage.setItem('gotIt', 'true');
         }, 5000);
       }
-      const CMEnabled = await AsyncStorage.getItem('CMEnable');
-      const eneabled = CMEnabled ? JSON.parse(CMEnabled) : false;
+      const eneabled = AppConfig.Configuration.ENABLE_CONDITIONAL_MANAGEMENT;
       setEnableCM(eneabled);
     }
     fetchData();
@@ -1363,6 +1461,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     if (isIos()) {
       initializeVoip();
     }
+
+    getProductCashbackDetails();
   }, []);
 
   const initializeVoip = () => {
@@ -1404,7 +1504,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const getTokenforCM = async () => {
     const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
-    const item = JSON.parse(retrievedItem);
+    const item = JSON.parse(retrievedItem || 'null');
 
     const callByPrism: any = await AsyncStorage.getItem('callByPrism');
 
@@ -2415,6 +2515,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         >
           {string.common.covidYouCanText}
         </Text>
+
         {renderCovidBlueButtons(
           onPressRiskLevel,
           <CovidRiskLevel style={{ width: 24, height: 24 }} />,

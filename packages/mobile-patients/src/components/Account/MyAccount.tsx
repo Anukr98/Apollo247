@@ -21,7 +21,13 @@ import {
   deleteDeviceTokenVariables,
 } from '@aph/mobile-patients/src/graphql/types/deleteDeviceToken';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
-import { g, getNetStatus, statusBarHeight } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  getNetStatus,
+  postAppsFlyerEvent,
+  postFirebaseEvent,
+  statusBarHeight,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -30,6 +36,7 @@ import Moment from 'moment';
 import { differenceInYears, parse } from 'date-fns';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
   Dimensions,
   Image,
@@ -160,8 +167,17 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     hdfcUserSubscriptions,
     setHdfcUserSubscriptions,
     setBannerData,
+    setCircleSubscription,
   } = useAppCommonData();
-  const { setCircleSubscriptionId } = useShoppingCart();
+  const {
+    setIsDiagnosticCircleSubscription,
+    isDiagnosticCircleSubscription,
+  } = useDiagnosticsCart();
+  const {
+    setIsCircleSubscription,
+    setCircleMembershipCharges,
+    setCircleSubscriptionId,
+  } = useShoppingCart();
 
   useEffect(() => {
     updateCodePushVersioninUi();
@@ -285,11 +301,14 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       setHdfcUserSubscriptions && setHdfcUserSubscriptions(null);
       setBannerData && setBannerData([]);
       setAppointmentsPersonalized && setAppointmentsPersonalized([]);
+      setIsCircleSubscription && setIsCircleSubscription(false);
+      setCircleMembershipCharges && setCircleMembershipCharges(0);
+      setCircleSubscription && setCircleSubscription(null);
       signOut();
       setTagalysConfig(null);
       setCircleSubscriptionId && setCircleSubscriptionId('');
       AsyncStorage.removeItem('circlePlanSelected');
-
+      setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
       props.navigation.dispatch(
         StackActions.reset({
           index: 0,
@@ -436,17 +455,19 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           container={{ marginTop: 14 }}
           title={'Manage Family Members'}
           leftIcon={<ManageProfileIcon />}
-          onPress={() =>
+          onPress={() => {
             props.navigation.navigate(AppRoutes.ManageProfile, {
               mobileNumber: profileDetails && profileDetails.mobileNumber,
-            })
-          }
+            });
+          }}
         />
         <ListCard
           container={{ marginTop: 4 }}
           title={'Address Book'}
           leftIcon={<Location />}
-          onPress={() => props.navigation.navigate(AppRoutes.AddressBook)}
+          onPress={() => {
+            props.navigation.navigate(AppRoutes.AddressBook);
+          }}
         />
         <ListCard
           title={'My Orders'}

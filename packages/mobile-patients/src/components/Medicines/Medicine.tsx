@@ -26,6 +26,8 @@ import {
   ArrowRight,
   ShoppingBasketIcon,
   LocationOff,
+  CircleBannerNonMember,
+  CircleLogo,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { SearchInput } from '@aph/mobile-patients/src/components/ui/SearchInput';
@@ -136,6 +138,7 @@ import {
   makeAdressAsDefaultVariables,
   makeAdressAsDefault,
 } from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
+import { CareSelectPlans } from '@aph/mobile-patients/src/components/ui/CareSelectPlans';
 
 const styles = StyleSheet.create({
   sliderDotStyle: {
@@ -165,6 +168,12 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+  circleBanner: {
+    resizeMode: 'contain',
+    width: '100%',
+    height: 200,
+    borderRadius: 10,
+  }
 });
 
 const filterBanners = (banners: OfferBannerSection[]) => {
@@ -213,6 +222,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setAddresses,
     deliveryAddressId,
     setDeliveryAddressId,
+    cartTotalCashback,
+    cartTotal,
+    isCircleSubscription,
+    setCircleMembershipCharges,
+    setCircleSubPlanId,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const cartItemsCount = cartItems.length + diagnosticCartItems.length;
@@ -223,6 +237,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [latestMedicineOrder, setLatestMedicineOrder] = useState<
     getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails
   >();
+  const [showCirclePopup, setShowCirclePopup] = useState<boolean>(false);
 
   const [recommendedProducts, setRecommendedProducts] = useState<MedicineProduct[]>([]);
   const [data, setData] = useState<MedicinePageAPiResponse | null>(medicinePageAPiResponse);
@@ -1378,10 +1393,23 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
+  const renderCircleBanner = () => {
+    return (
+      <TouchableOpacity 
+        activeOpacity={1}
+        onPress={() => {setShowCirclePopup(true)}} 
+        style={{paddingHorizontal: 20}}
+      >
+        <CircleBannerNonMember style={styles.circleBanner} />
+      </TouchableOpacity>
+    );
+  };
+
   const renderDealsOfTheDay = (title: string, dealsOfTheDay: DealsOfTheDaySection[]) => {
     if (dealsOfTheDay.length == 0) return null;
     return (
       <View>
+        {renderCircleBanner()}
         <SectionHeader leftText={title} />
         <FlatList
           bounces={false}
@@ -1684,6 +1712,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         isInStock: true,
         maxOrderQty: MaxOrderQty,
         productType: type_id,
+        circleCashbackAmt: 0,
       },
       pharmacyPincode!,
       addCartItem,
@@ -1874,6 +1903,124 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
+  const renderCircleCartDetails = () => {
+    const circleStyles = StyleSheet.create({
+      container: {
+        position: 'absolute',
+        bottom: 0,
+        ...theme.viewStyles.cardContainer,
+        width: '100%',
+        padding: 10,
+      },
+      content: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+      },
+      upgrade: {
+        borderWidth: 2,
+        borderColor: '#FCB716',
+        borderRadius: 8,
+        padding: 5,
+        backgroundColor: '#FFFFFF'
+      },
+      upgradeTo: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+      },
+      circleLogo: {
+        resizeMode: 'contain',
+        width: 40,
+        height: 25,
+      },
+      cartButton: {
+        backgroundColor: '#FCB716',
+        borderRadius: 8,
+        padding: 5,
+        paddingHorizontal: 10,
+        alignItems: 'center',
+        alignSelf: 'center'
+      },
+      circleLogoTwo: {
+        resizeMode: 'contain',
+        width: 40,
+        height: 25,
+        // top: -24,
+      },
+    });
+    const effectivePrice = Math.round(cartTotal - cartTotalCashback);
+    return (
+      <View style={circleStyles.container}>
+        <View style={circleStyles.content}>
+          <View style={{alignItems: isCircleSubscription ? 'flex-start' : 'center'}}>
+            <Text style={theme.viewStyles.text('R', 13, '#02475B', 1, 24, 0)}>
+              {
+                isCircleSubscription ? 
+                'Items' :
+                'Total no. of items'
+              }
+            </Text>
+            <Text style={theme.viewStyles.text('SB', 16, '#02475B', 1, 20, 0)}>{cartItems.length}</Text>
+          </View>
+          {
+            isCircleSubscription ?
+            <View>
+              <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 20, 0)}>₹{cartTotal}</Text>
+              <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
+                <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 25, 0)}>Effective price for</Text>
+                <CircleLogo style={circleStyles.circleLogoTwo} />
+                <Text style={{...theme.viewStyles.text('R', 12, '#02475B', 1, 25, 0), left: -3}}>members</Text>
+                <Text style={theme.viewStyles.text('SB', 12, '#02475B', 1, 25, 0)}>₹{effectivePrice}</Text>
+              </View>
+            </View> :
+            <TouchableOpacity activeOpacity={1} onPress={() => setShowCirclePopup(true)} style={circleStyles.upgrade}>
+              <View style={circleStyles.upgradeTo}>
+                <Text style={theme.viewStyles.text('M', 13, '#FCB716', 1, 20, 0)}>UPGRADE TO</Text>
+                <CircleLogo style={circleStyles.circleLogo} />
+              </View>
+              <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 17, 0)}>
+                {`Get effective price of ₹${effectivePrice}`}
+              </Text>
+            </TouchableOpacity>
+          }
+          <TouchableOpacity 
+            style={circleStyles.cartButton}
+            onPress={() => {
+              props.navigation.navigate(AppRoutes.MedicineCart);
+            }}>
+            <Text style={theme.viewStyles.text('B', 13, '#FFFFFF', 1, 20, 0)}>GO TO CART</Text>
+            {
+              !isCircleSubscription &&
+              <Text style={theme.viewStyles.text('M', 12, '#02475B', 1, 20, 0)}>
+                {`Buy for ₹${cartTotal}`}
+              </Text>
+            }
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
+
+  const renderCircleMembershipPopup = () => {
+    return (
+      <CareSelectPlans 
+        isModal={true}
+        closeModal={()=>setShowCirclePopup(false)}
+        navigation={props.navigation}
+        isConsultJourney={false} 
+        onSelectMembershipPlan={(plan) => {
+          if (plan) {
+            // if plan is selected
+            setCircleMembershipCharges && setCircleMembershipCharges(plan?.currentSellingPrice);
+            setCircleSubPlanId && setCircleSubPlanId(plan?.subPlanId);
+          } else {
+            // if plan is removed
+            // setShowCareSelectPlans(false);
+            setCircleMembershipCharges && setCircleMembershipCharges(0);
+          }
+        }} />
+    )
+  }
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ ...viewStyles.container }}>
@@ -1882,13 +2029,15 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           {renderSearchInput()}
           {renderSearchResults()}
         </View>
-        <View style={{ flex: 1 }}>
+        <View style={{ flex: 1, paddingBottom: !!cartItems.length ? 50 : 0 }}>
           {renderSections()}
           {renderOverlay()}
+          {(!!cartItems.length) && renderCircleCartDetails()}
         </View>
       </SafeAreaView>
       {isSelectPrescriptionVisible && renderEPrescriptionModal()}
       {ShowPopop && renderUploadPrescriprionPopup()}
+      {showCirclePopup && renderCircleMembershipPopup()}
       {renderMedicineReOrderOverlay()}
     </View>
   );

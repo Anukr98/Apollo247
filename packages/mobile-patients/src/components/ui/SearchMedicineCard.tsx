@@ -1,11 +1,12 @@
-import { MedicineIcon, MedicineRxIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { MedicineIcon, MedicineRxIcon, ExpressDeliveryLogo } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { Image } from 'react-native-elements';
-import { getDiscountPercentage } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { getDiscountPercentage, getCareCashback } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AddToCartButtons } from '@aph/mobile-patients/src/components/Medicines/AddToCartButtons';
 import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
+import { CareCashbackBanner } from './CareCashbackBanner';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -27,7 +28,7 @@ const styles = StyleSheet.create({
     marginRight: 0,
     color: theme.colors.SHERPA_BLUE,
     ...theme.fonts.IBMPlexSansMedium(12),
-    lineHeight: 24,
+    // lineHeight: 24,
   },
   offTextStyle: {
     ...theme.viewStyles.text('M', 11, '#00B38E', 1, 20, 0),
@@ -43,6 +44,16 @@ const styles = StyleSheet.create({
   priceTextCollapseStyle: {
     ...theme.viewStyles.text('M', 12, '#02475b', 0.5, 20, 0.04),
     marginTop: 4,
+  },
+  expressContainer: {
+    position: 'absolute',
+    right: 10,
+    top: 10,
+  },
+  expressLogo: {
+    resizeMode: 'contain',
+    width: 50,
+    height: 20,
   },
 });
 
@@ -64,6 +75,8 @@ export interface SearchMedicineCardProps {
   containerStyle?: StyleProp<ViewStyle>;
   maxOrderQty: number;
   removeCartItem: () => void;
+  type_id?: string | null;
+  is_express?: 'Yes' | 'No';
 }
 
 export const SearchMedicineCard: React.FC<SearchMedicineCardProps> = (props) => {
@@ -84,13 +97,33 @@ export const SearchMedicineCard: React.FC<SearchMedicineCardProps> = (props) => 
     onPress,
     maxOrderQty,
     removeCartItem,
+    type_id,
+    is_express,
   } = props;
+
+  const renderCareCashback = () => {
+    const finalPrice = (price - Number(specialPrice)) ? Number(specialPrice) : price;
+    const cashback = getCareCashback(Number(finalPrice), type_id);
+    if (!!cashback && type_id) {
+      return (
+        <CareCashbackBanner
+          bannerText={`Extra Care ₹${cashback.toFixed(2)} Cashback`}
+          textStyle={{
+            left: -5
+          }}
+        />
+      );
+    } else {
+      return <></>
+    }
+  };
 
   const renderTitleAndIcon = () => {
     return (
       <View style={styles.rowSpaceBetweenView}>
         <View style={{ flex: 1 }}>
           <Text style={styles.medicineTitle}>{medicineName}</Text>
+          {!!type_id && renderCareCashback()}
           {renderOutOfStock()}
         </View>
       </View>
@@ -171,12 +204,21 @@ export const SearchMedicineCard: React.FC<SearchMedicineCardProps> = (props) => 
     );
   };
 
+  const renderExpressFlag = () => {
+    return (
+      <View style={styles.expressContainer}>
+        <ExpressDeliveryLogo style={styles.expressLogo} />
+      </View>
+    )
+  };
+
   return (
     <TouchableOpacity
       activeOpacity={1}
       style={[styles.containerStyle, containerStyle, { zIndex: -1 }]}
       onPress={() => onPress()}
     >
+    {is_express === 'Yes' && renderExpressFlag()}
       <View style={{ flexDirection: 'row' }}>
         {renderMedicineIcon()}
         <View style={styles.flexStyle}>{renderTitleAndIcon()}</View>

@@ -6,10 +6,10 @@
 import { DIAGNOSTICS_TYPE, TEST_COLLECTION_TYPE } from "./globalTypes";
 
 // ====================================================
-// GraphQL query operation: searchDiagnosticsByCityID
+// GraphQL query operation: findDiagnosticsByItemIDsAndCityID
 // ====================================================
 
-export interface searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics_diagnosticPricing {
+export interface findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics_diagnosticPricing {
   __typename: "diagnosticPricing";
   mrp: number;
   price: number;
@@ -19,7 +19,7 @@ export interface searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics
   endDate: any | null;
 }
 
-export interface searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics {
+export interface findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics {
   __typename: "Diagnostics";
   id: string;
   itemId: number;
@@ -34,19 +34,19 @@ export interface searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics
   fromAgeInDays: number;
   toAgeInDays: number;
   testPreparationData: string;
-  diagnosticPricing: (searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics_diagnosticPricing | null)[] | null;
+  diagnosticPricing: (findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics_diagnosticPricing | null)[] | null;
 }
 
-export interface searchDiagnosticsByCityID_searchDiagnosticsByCityID {
+export interface findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID {
   __typename: "SearchDiagnosticsResult";
-  diagnostics: (searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics | null)[] | null;
+  diagnostics: (findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics | null)[] | null;
 }
 
-export interface searchDiagnosticsByCityID {
-  searchDiagnosticsByCityID: searchDiagnosticsByCityID_searchDiagnosticsByCityID;
+export interface findDiagnosticsByItemIDsAndCityID {
+  findDiagnosticsByItemIDsAndCityID: findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID;
 }
 
-export interface searchDiagnosticsByCityIDVariables {
+export interface findDiagnosticsByItemIDsAndCityIDVariables {
   cityID: number;
-  searchText: string;
+  itemIDs: (number | null)[];
 }

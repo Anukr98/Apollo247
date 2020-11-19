@@ -1,4 +1,4 @@
-import { LocationData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { LocationData, useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
   getPackageData,
@@ -72,6 +72,7 @@ import {
   ShoppingCartItem,
   ShoppingCartContextProps,
   EPrescription,
+  useShoppingCart,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { UIElementsContextProps } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
@@ -1924,4 +1925,13 @@ export const checkPermissions = (permissions: string[]) => {
 
 export const removeConsecutiveComma = (value: string) => {
   return value.replace(/^,|,$|,(?=,)/g, '');
+};
+
+export const getCareCashback = (price: number, type_id: string | null | undefined) => {
+  const { circleCashback } = useShoppingCart();
+  let cashback = 0;
+  if (!!circleCashback && !!circleCashback[type_id]) {
+    cashback = price * (circleCashback[type_id] / 100);
+  }
+  return cashback;
 };

@@ -14,8 +14,14 @@ export interface CommonWebViewProps extends NavigationScreenProps {}
 export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
   const { navigation } = props;
   const [loading, setLoading] = useState<boolean>(true);
-  const { setCirclePlanSelected, setDefaultCirclePlan } = useShoppingCart();
   const isCallback = props.navigation.getParam('isCallback');
+  const {
+    setCirclePlanSelected,
+    setDefaultCirclePlan,
+    setIsCircleSubscription,
+    setCircleMembershipCharges,
+    setCircleSubPlanId,
+  } = useShoppingCart();
 
   const renderWebView = () => {
     let WebViewRef: any;
@@ -31,8 +37,13 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
             navigation.goBack();
           }
           if (data && JSON.parse(data)?.subPlanId) {
+            const responseData = JSON.parse(data);
             setDefaultCirclePlan && setDefaultCirclePlan(null);
-            setCirclePlanSelected && setCirclePlanSelected(JSON.parse(data));
+            setCirclePlanSelected && setCirclePlanSelected(responseData);
+            setIsCircleSubscription && setIsCircleSubscription(true);
+            setCircleMembershipCharges &&
+              setCircleMembershipCharges(responseData?.currentSellingPrice);
+            setCircleSubPlanId && setCircleSubPlanId(responseData?.subPlanId);
             AsyncStorage.setItem('circlePlanSelected', data);
             navigation.goBack();
             if (isCallback) {

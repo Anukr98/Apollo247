@@ -575,5 +575,8 @@
     "successfullyPurchashedCircleSubscription": "Congratulations! You have successfully purchased Circle Subscription.",
     "validTill": "Valid till:",
     "subscriptionID": "Subscription ID"
+  },
+  "circlePharmacy": {
+    "modalDescription": "Enable Circle membership to get the best discounts, cashbacks, free delivery and more..."
   }
 }

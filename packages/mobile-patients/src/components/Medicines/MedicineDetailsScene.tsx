@@ -10,6 +10,8 @@ import {
   DropdownGreen,
   MedicineIcon,
   MedicineRxIcon,
+  CheckBoxFilled,
+  CircleBannerNonMember,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -38,6 +40,7 @@ import {
   postAppsFlyerAddToCartEvent,
   g,
   getDiscountPercentage,
+  getCareCashback,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -71,6 +74,7 @@ import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 import { ProductList } from '@aph/mobile-patients/src/components/Medicines/ProductList';
 import { ProductUpSellingCard } from '@aph/mobile-patients/src/components/Medicines/ProductUpSellingCard';
 import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
+import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
 
 const { width, height } = Dimensions.get('window');
 
@@ -212,6 +216,59 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
   },
   stickyBottomComponent: { height: 'auto', flexDirection: 'column' },
+  careCardContainer: {
+    ...theme.viewStyles.cardViewStyle,
+    marginHorizontal: 20,
+    padding: 15,
+    marginBottom: 20,
+    borderColor: '#00B38E',
+    borderWidth: 3,
+    borderStyle: 'dashed',
+  },
+  checkBoxIconStyle: {
+    borderRadius: 50,
+    width: 25,
+    height: 25,
+    resizeMode: 'contain',
+    marginRight: 10,
+    marginTop: 5,
+  },
+  careTextContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  careRedBox: {
+    width: 30,
+    height: 30,
+    backgroundColor: '#F0533B',
+    borderRadius: 5,
+    marginRight: 15,
+  },
+  getCareText: {
+    ...theme.viewStyles.text('R', 14, '#02475B', 1, 20),
+    flexWrap: 'wrap',
+  },
+  careSubscribeButton: {
+    ...theme.viewStyles.text('SB', 16, '#FC9916', 1, 18),
+    textAlign: 'right',
+    marginTop: 15,
+  },
+  circleText: {
+    ...theme.viewStyles.text('M', 9, '#02475B', 1, 15),
+    paddingVertical: 2,
+    left: -10,
+  },
+  circleLogo: {
+    resizeMode: 'contain',
+    width: 38,
+    height: 20,
+    left: -5,
+  },
+  careBanner: {
+    resizeMode: 'contain',
+    width: '100%',
+    height: 200,
+  },
 });
 
 type PharmacyTatApiCalled = WebEngageEvents[WebEngageEventName.PHARMACY_TAT_API_CALLED];
@@ -254,16 +311,17 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const [medicineError, setMedicineError] = useState<string>('Product Details Not Available!');
   const [popupHeight, setpopupHeight] = useState<number>(60);
   const [notServiceable, setNotServiceable] = useState<boolean>(false);
+  const [isCircleSubscribed, setIsCircleSubscribed] = useState<boolean>(false);
 
   const { showAphAlert, setLoading: setGlobalLoading } = useUIElements();
 
   const overview = medicineDetails?.PharmaOverview?.[0]?.Overview;
   const medicineOverview =
-    !overview || typeof overview == 'string' ? [] : helpers.getMedicineOverview(overview || []);
+    (!overview || typeof overview == 'string') ? [] : helpers.getMedicineOverview(overview || []);
 
   const sku = props.navigation.getParam('sku'); // 'MED0017';
 
-  const { addCartItem, cartItems, updateCartItem, removeCartItem } = useShoppingCart();
+  const { addCartItem, cartItems, updateCartItem, removeCartItem, isCircleSubscription } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const getItemQuantity = (id: string) => {
     const foundItem = cartItems.find((item) => item.id == id);
@@ -276,6 +334,10 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const cartItemsCount = cartItems.length + diagnosticCartItems.length;
   const movedFrom = props.navigation.getParam('movedFrom');
   const productPageViewedEventProps = props.navigation.getParam('productPageViewedEventProps');
+
+  const { special_price, price, type_id } = medicineDetails;
+  const finalPrice = (price - special_price) ? special_price : price;
+  const cashback = getCareCashback(Number(finalPrice), type_id);
 
   useEffect(() => {
     if (!_deliveryError) {
@@ -612,6 +674,25 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     />
   );
 
+  const renderCareCashback = () => {
+    if (!!cashback) {
+      return (
+        <>
+          <CareCashbackBanner
+            bannerText={`Extra Care ₹${cashback} Cashback`}
+            textStyle={styles.circleText}
+            logoStyle={styles.circleLogo}
+          />
+          <Text style={theme.viewStyles.text('R', 11, '#02475B', 1, 17)}>
+            {`Effective price for you ₹${finalPrice - cashback}`}
+          </Text>
+        </>
+      );
+    } else {
+      return <></>
+    }
+  };
+
   const renderBottomButtons = () => {
     const itemQty = getItemQuantity(sku);
     const addToCart = () => updateQuantityCartItem(medicineDetails, itemQty + 1);
@@ -696,6 +777,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                     </Text>
                   </View>
                 )}
+                {renderCareCashback()}
               </View>
               {!medicineDetails.sell_online ? (
                 renderNotForSaleTag()
@@ -834,6 +916,47 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         </View>
         {renderNote()}
         {medicineOverview.length === 0 ? renderInfo() : null}
+        {isCircleSubscribed && renderCircleSubscribeSuccess()}
+        {/* {!!cashback && renderCareSubscribeBanner()} */}
+      </View>
+    );
+  };
+
+  const renderCareSubscribeBanner = () => {
+    return (
+      <TouchableOpacity 
+        activeOpacity={1}
+        onPress={() => {}} 
+        style={{
+        paddingHorizontal: 20,
+      }}>
+        <CircleBannerNonMember style={styles.careBanner} />
+      </TouchableOpacity>
+    );
+  };
+
+  const renderCircleSubscribeSuccess = () => {
+    return (
+      <View style={styles.careCardContainer}>
+        <View style={{
+          flexDirection: 'row',
+        }}>
+          <CheckBoxFilled style={styles.checkBoxIconStyle} />
+          <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 30)}>
+            Yay!
+          </Text>
+          <CareCashbackBanner
+            bannerText={`membership added to your cart!`}
+            textStyle={{
+              ...theme.viewStyles.text('SB', 14, '#02475B', 1, 20),
+              left: -5,
+            }}
+            logoStyle={{
+              width: 60,
+              height: 35,
+            }}
+          />
+        </View> 
       </View>
     );
   };

@@ -11,6 +11,7 @@ import {
   AppStateStatus,
   BackHandler,
 } from 'react-native';
+import { WebView } from 'react-native-webview';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
@@ -94,6 +95,9 @@ import {
   makeAdressAsDefaultVariables,
   makeAdressAsDefault,
 } from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
+import { CareSelectPlans } from '@aph/mobile-patients/src/components/ui/CareSelectPlans';
+import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
+import { CheckedIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 
 export interface MedicineCartProps extends NavigationScreenProps {}
 
@@ -115,10 +119,15 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     ePrescriptions,
     setPhysicalPrescriptions,
     pinCode,
+    setCircleMembershipCharges,
+    isCircleSubscription,
+    circlePlanSelected,
+    setCircleSubPlanId,
+    setIsCircleSubscription,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
-  const { locationDetails, pharmacyLocation, setPharmacyLocation } = useAppCommonData();
+  const { locationDetails, pharmacyLocation, setPharmacyLocation, circleSubscription } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setloading] = useState<boolean>(false);
   const [lastCartItems, setlastCartItems] = useState('');
@@ -136,6 +145,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   const navigatedFrom = props.navigation.getParam('movedFrom') || '';
   const pharmacyPincode =
     selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
+  const [showCareSelectPlans, setShowCareSelectPlans] = useState<boolean>(false);
 
   useEffect(() => {
     fetchAddress();
@@ -144,6 +154,10 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     fetchPickupStores(pharmacyPincode);
     fetchProductSuggestions();
     cartItems.length && PharmacyCartViewedEvent(shoppingCart, g(currentPatient, 'id'));
+    setCircleMembershipCharges && setCircleMembershipCharges(0);
+    if (!(circleSubscription?._id) && cartTotal > 400) {
+      setShowCareSelectPlans(true);
+    }
   }, []);
 
   useEffect(() => {
@@ -182,6 +196,17 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       getMedicineDetailsOfCouponProducts();
     }
   }, [couponProducts]);
+
+  
+  useEffect(() => {
+    if (!!coupon) {
+      setCircleMembershipCharges && setCircleMembershipCharges(0);
+    } else {
+      if (!(circleSubscription?._id)) {
+        setCircleMembershipCharges && setCircleMembershipCharges(circlePlanSelected?.currentSellingPrice);
+      }
+    }
+  }, [coupon]);
 
   useEffect(() => {
     onFinishUpload();
@@ -792,10 +817,108 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         <View style={styles.amountHeader}>
           <Text style={styles.amountHeaderText}>TOTAL CHARGES</Text>
         </View>
+        {(circleSubscription?._id) && renderApplyCircleBenefits()}
         {renderCouponSection()}
         <AmountCard />
       </View>
     );
+  };
+
+  const renderApplyCircleBenefits = () => {
+    return (
+      <TouchableOpacity
+      activeOpacity={0.7}
+      style={styles.applyBenefits}
+      onPress={() => {
+        if (!!coupon) {
+          setCoupon && setCoupon(null);
+          setIsCircleSubscription && setIsCircleSubscription(true);
+        } else {
+          if (!(circleSubscription?._id)) {
+            setIsCircleSubscription && setIsCircleSubscription(false);
+          }
+        }
+      }}
+      >
+        {
+          !coupon ?
+          <View style={{flexDirection: 'row'}}>
+            <CheckedIcon style={{marginTop: 8}} />
+            <CareCashbackBanner
+              bannerText={`benefits APPLIED!`}
+              textStyle={styles.circleText}
+              logoStyle={styles.circleLogo}
+            />
+          </View> : 
+          <View>
+            <View style={{flexDirection: 'row'}}>
+              <View style={styles.circleApplyContainer} />
+              <View style={{flexDirection: 'row'}}>
+                <Text style={styles.applyText}>Apply</Text>
+                <CareCashbackBanner
+                  bannerText={`benefits instead`}
+                  textStyle={styles.circleText}
+                  logoStyle={styles.circleLogo}
+                />
+              </View>
+            </View>
+            <Text style={styles.useCircleText}>
+              {`Use your Circle membership instead & get `}
+              <Text style={{...theme.viewStyles.text('SB', 12, '#02475B', 1, 17)}}>{`₹54 Cashback and Free delivery `}</Text>
+              <Text>on this order</Text>
+            </Text>
+          </View>
+        }
+      </TouchableOpacity>
+    );
+  };
+
+  const renderCareSubscriptionOptions = () => {
+    if (showCareSelectPlans) {
+      return (
+        <CareSelectPlans 
+          navigation={props.navigation}
+          isConsultJourney={false} 
+          onSelectMembershipPlan={(plan) => {
+            if (plan && !coupon) {
+              // if plan is selected
+              setCircleMembershipCharges && setCircleMembershipCharges(plan?.currentSellingPrice);
+              setCircleSubPlanId && setCircleSubPlanId(plan?.subPlanId);
+            } else {
+              // if plan is removed
+              setShowCareSelectPlans(false);
+              setCircleMembershipCharges && setCircleMembershipCharges(0);
+            }
+          }} />
+      );
+    } else {
+      return (
+        <TouchableOpacity 
+          activeOpacity={0.8}
+          style={styles.viewPlanContainer}
+          onPress={() => {setShowCareSelectPlans(true)}}
+        >
+          <View style={{flexDirection: 'row'}}>
+            <View style={styles.viewPlan} />
+            <View>
+              <View style={{flexDirection: 'row'}}>
+                <Text style={styles.viewText}>View</Text>
+                <CareCashbackBanner
+                  bannerText={`plans`}
+                  textStyle={[styles.viewText, {
+                    left: -5,
+                  }]}
+                  logoStyle={styles.circleLogo}
+                />
+              </View>
+              <Text style={styles.viewSubText}>
+                Viewing and/or selecting plans will remove any applied coupon. You can apply the coupon again later.
+              </Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+      )
+    }
   };
 
   const renderSavings = () => {
@@ -892,6 +1015,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           {renderHeader()}
           {renderUnServiceable()}
           {renderCartItems()}
+          {((!isCircleSubscription || showCareSelectPlans) && !coupon) && renderCareSubscriptionOptions()}
           {renderAvailFreeDelivery()}
           {renderAmountSection()}
           {renderSavings()}
@@ -938,5 +1062,67 @@ const styles = StyleSheet.create({
   amountHeaderText: {
     color: theme.colors.FILTER_CARD_LABEL,
     ...theme.fonts.IBMPlexSansBold(13),
+  },
+  applyBenefits: {
+    ...theme.viewStyles.cardViewStyle,
+    marginHorizontal: 15,
+    marginTop: 10,
+    padding: 10,
+  },
+  circleText: {
+    ...theme.viewStyles.text('SB', 14, '#02475B', 1, 17),
+    paddingTop: 12,
+    left: -5,
+  },
+  circleLogo: {
+    resizeMode: 'contain',
+    width: 50,
+    height: 40,
+  },
+  circleApplyContainer: {
+    width: 20,
+    height: 20,
+    borderWidth: 2,
+    borderColor: '#00B38E',
+    borderRadius: 5,
+    marginTop: 9,
+    marginRight: 10,
+  },
+  applyText: {
+    ...theme.viewStyles.text('SB', 14, '#02475B', 1, 17),
+    paddingTop: 12,
+  },
+  useCircleText: {
+    ...theme.viewStyles.text('R', 12, '#02475B', 1, 17), 
+    marginLeft: 25,
+  },
+  viewPlanContainer: {
+    ...theme.viewStyles.cardViewStyle,
+    marginTop: 10,
+    marginHorizontal: 13,
+    borderRadius: 5,
+    marginBottom: 0,
+    paddingHorizontal: 15,
+    paddingVertical: 9,
+    borderColor: '#00B38E',
+    borderWidth: 3,
+    borderStyle: 'dashed',
+  },
+  viewPlan: {
+    width: 22,
+    height: 22,
+    borderRadius: 5,
+    borderColor: '#00B38E',
+    borderWidth: 3,
+    marginRight: 10,
+    marginTop: 10,
+  },
+  viewText: {
+    ...theme.viewStyles.text('M', 14, '#02475B', 1, 17),
+    paddingTop: 12,
+  },
+  viewSubText: {
+    ...theme.viewStyles.text('R', 13, '#02475B', 1, 20),
+    width: '54%'
   },
 });

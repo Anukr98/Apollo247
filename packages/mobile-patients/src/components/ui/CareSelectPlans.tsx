@@ -18,21 +18,20 @@ import { GetPlanDetailsByPlanId } from '@aph/mobile-patients/src/graphql/types/G
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import ContentLoader from 'react-native-easy-content-loader';
-import { CircleLogo, CrossPopup, BlueTick } from '@aph/mobile-patients/src/components/ui/Icons';
+import { CircleLogo, BlueTick, CrossPopup } from '@aph/mobile-patients/src/components/ui/Icons';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import AsyncStorage from '@react-native-community/async-storage';
 import { Overlay } from 'react-native-elements';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-
 const { width } = Dimensions.get('window');
 const planDimension = 120;
 const defaultPlanDimension = 160;
 
 interface CareSelectPlansProps extends NavigationScreenProps {
   style?: StyleProp<ViewStyle>;
-  onSelectMembershipPlan?: () => void | null;
+  onSelectMembershipPlan: (plan?: any) => void;
   isConsultJourney?: boolean;
   careDiscountPrice?: number;
   isModal?: boolean;
@@ -43,6 +42,7 @@ interface CareSelectPlansProps extends NavigationScreenProps {
 
 export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
   const [membershipPlans, setMembershipPlans] = useState<any>(props.membershipPlans || []);
+  const [planSelected, setPlanSelected] = useState<any>();
   const [loading, setLoading] = useState<boolean>(true);
   const [autoPlanAdded, setAutoPlanAdded] = useState<boolean>(false);
   const {
@@ -61,7 +61,14 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
     setDefaultCirclePlan,
     defaultCirclePlan,
     selectDefaultPlan,
+    cartTotal,
+    cartTotalCashback,
+    setIsCircleSubscription,
+    setCircleMembershipCharges,
   } = useShoppingCart();
+
+  const isCartTotalLimit = cartTotal > 400;
+
   useEffect(() => {
     if (!props.membershipPlans || props.membershipPlans?.length === 0) {
       fetchCarePlans();
@@ -82,7 +89,7 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
       const circlePlans = res?.data?.GetPlanDetailsByPlanId?.response?.plan_summary;
       if (circlePlans) {
         setMembershipPlans(circlePlans);
-        if (doctorFees && doctorFees >= 400) {
+        if ((doctorFees && doctorFees >= 400) || isCartTotalLimit || isModal) {
           autoSelectDefaultPlan(circlePlans);
           if (!circlePlanSelected) {
             selectDefaultPlan && selectDefaultPlan(circlePlans);
@@ -102,9 +109,17 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
   };
 
   const onPressMembershipPlans = (index: number) => {
-    setCirclePlanSelected && setCirclePlanSelected(membershipPlans?.[index]);
-    AsyncStorage.setItem('circlePlanSelected', JSON.stringify(membershipPlans?.[index]));
-    onSelectMembershipPlan && onSelectMembershipPlan();
+    const membershipPlan = membershipPlans?.[index];
+    setCirclePlanSelected && setCirclePlanSelected(membershipPlan);
+    AsyncStorage.setItem('circlePlanSelected', JSON.stringify(membershipPlan));
+    if (isConsultJourney) {
+      onSelectMembershipPlan && onSelectMembershipPlan();
+    } else {
+      setPlanSelected(membershipPlan);
+      setIsCircleSubscription && setIsCircleSubscription(true);
+      setCircleMembershipCharges && setCircleMembershipCharges(membershipPlan?.currentSellingPrice);
+      onSelectMembershipPlan && onSelectMembershipPlan(membershipPlan);
+    }
     setDefaultCirclePlan && setDefaultCirclePlan(null);
     setAutoPlanAdded(false);
   };
@@ -115,7 +130,6 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
       circlePlanSelected?.subPlanId === value?.subPlanId ||
       (isModal && defaultCirclePlan?.subPlanId === value?.subPlanId);
     const iconDimension = isPlanActive ? defaultPlanDimension : planDimension;
-
     return (
       <View style={{ paddingBottom: 62 }}>
         <TouchableOpacity
@@ -216,6 +230,8 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
         <TouchableOpacity
           onPress={() => {
             setCirclePlanSelected && setCirclePlanSelected(null);
+            setIsCircleSubscription && setIsCircleSubscription(false);
+            setCircleMembershipCharges && setCircleMembershipCharges(0);
             AsyncStorage.removeItem('circlePlanSelected');
             selectDefaultPlan && selectDefaultPlan(membershipPlans);
             closeModal && closeModal();
@@ -251,19 +267,15 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
               )
             ) : isModal ? (
               <Text style={[styles.getCareText, { fontSize: 10.6 }]}>
-                {string.circleDoctors.getCircleMembershipOffersDescription}
+                {isConsultJourney
+                  ? string.circleDoctors.getCircleMembershipOffersDescription
+                  : string.circlePharmacy.modalDescription}
               </Text>
             ) : (
               <Text style={styles.getCareText}>
-                Get{' '}
-                <Text style={theme.viewStyles.text('SB', 13, theme.colors.LIGHT_BLUE)}>
-                  {string.common.Rs}5.40 Cashback
-                </Text>{' '}
-                and{' '}
-                <Text style={theme.viewStyles.text('SB', 13, theme.colors.LIGHT_BLUE)}>
-                  Free delivery
-                </Text>{' '}
-                on your CURRENT order with CARE
+                {isCartTotalLimit
+                  ? 'We have enabled Circle membership to give you the best discounts'
+                  : 'Enable Circle membership to get the best offers on all transactions you make with us'}
               </Text>
             )}
           </View>
@@ -279,6 +291,7 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
             )}
           </ScrollView>
           {!isModal && isConsultJourney && !autoPlanAdded && renderCircleDiscountOnConsult()}
+          {!isModal && !isConsultJourney && renderCircleDiscountOnPharmacy()}
           {!isModal && renderKnowMore('flex-end')}
         </View>
         {isModal && renderKnowMore('center')}
@@ -335,6 +348,44 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
     );
   };
 
+  const renderCircleDiscountOnPharmacy = () => {
+    return (
+      <View
+        style={{
+          marginLeft: 30,
+          marginTop: 10,
+        }}
+      >
+        <View style={{ flexDirection: 'row' }}>
+          <BlueTick
+            style={{
+              resizeMode: 'contain',
+              width: 20,
+              height: 20,
+              marginRight: 8,
+            }}
+          />
+          <Text style={theme.viewStyles.text('SB', 13, '#02475B')}>Instant cashback</Text>
+          <Text
+            style={theme.viewStyles.text('R', 13, '#02475B')}
+          >{` of ₹${cartTotalCashback} on this order`}</Text>
+        </View>
+        <View style={{ flexDirection: 'row' }}>
+          <BlueTick
+            style={{
+              resizeMode: 'contain',
+              width: 20,
+              height: 20,
+              marginRight: 8,
+            }}
+          />
+          <Text style={theme.viewStyles.text('SB', 13, '#02475B')}>Free delivery</Text>
+          <Text style={theme.viewStyles.text('R', 13, '#02475B')}>{` on every order`}</Text>
+        </View>
+      </View>
+    );
+  };
+
   const openCircleWebView = () => {
     props.navigation.navigate(AppRoutes.CommonWebView, {
       url: AppConfig.Configuration.CIRCLE_CONSULT_URL,
@@ -344,6 +395,8 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
   const removeAutoAddedPlan = () => {
     setCirclePlanSelected && setCirclePlanSelected(null);
     setDefaultCirclePlan && setDefaultCirclePlan(null);
+    setIsCircleSubscription && setIsCircleSubscription(false);
+    setCircleMembershipCharges && setCircleMembershipCharges(0);
     AsyncStorage.removeItem('circlePlanSelected');
     setAutoPlanAdded(false);
   };
@@ -367,6 +420,8 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
       const defaultPlan = plans?.filter((item: any) => item.defaultPack === true);
       if (defaultPlan?.length > 0) {
         setCirclePlanSelected && setCirclePlanSelected(defaultPlan[0]);
+        setCircleMembershipCharges &&
+          setCircleMembershipCharges(defaultPlan[0]?.currentSellingPrice);
       }
     }
   };
@@ -391,6 +446,7 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
       </View>
     );
   };
+
   const renderCarePlanAdded = () => (
     <View style={styles.planAddedContainer}>
       <View style={styles.spaceRow}>
@@ -411,6 +467,8 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
         style={{ marginTop: 7 }}
         onPress={() => {
           setCirclePlanSelected && setCirclePlanSelected(null);
+          setIsCircleSubscription && setIsCircleSubscription(false);
+          setCircleMembershipCharges && setCircleMembershipCharges(0);
           AsyncStorage.removeItem('circlePlanSelected');
         }}
       >
