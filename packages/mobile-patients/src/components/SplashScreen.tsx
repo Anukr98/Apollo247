@@ -241,8 +241,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     });
   };
 
-  const onAnswerCallAction = () => {
-    voipAppointmentId.current && getAppointmentDataAndNavigate(voipAppointmentId.current, false);
+  const onAnswerCallAction = async () => {
+    const currentScreen = await AsyncStorage.getItem('setCurrentName');
+    if (currentScreen !== AppRoutes.ChatRoom) {
+      voipAppointmentId.current && getAppointmentDataAndNavigate(voipAppointmentId.current, false);
+    }
   };
 
   const onDisconnetCallAction = () => {
@@ -749,7 +752,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         });
         break;
       case 'ChatRoom':
-        props.navigation.push(AppRoutes.ChatRoom, {
+        props.navigation.navigate(AppRoutes.ChatRoom, {
           data: id,
           callType: voipCallType.current ? voipCallType.current.toUpperCase() : '',
           prescription: '',
@@ -797,7 +800,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         });
         break;
       case 'DoctorCall':
-        props.navigation.push(AppRoutes.ChatRoom, {
+        props.navigation.navigate(AppRoutes.ChatRoom, {
           data: id,
           callType: voipCallType.current ? voipCallType.current.toUpperCase() : '',
           prescription: '',
