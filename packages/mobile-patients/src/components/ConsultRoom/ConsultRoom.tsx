@@ -1,3 +1,4 @@
+import messaging from '@react-native-firebase/messaging';
 import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import {
   LocationData,
@@ -153,7 +154,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import WebEngage from 'react-native-webengage';
 import { NavigationScreenProps } from 'react-navigation';
 import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails } from '../../graphql/types/getPatientPersonalizedAppointments';
-import { getPatientPersonalizedAppointmentList } from '../../helpers/clientCalls';
+import { getPatientPersonalizedAppointmentList, saveTokenDevice } from '../../helpers/clientCalls';
 import { ConsultPersonalizedCard } from '../ui/ConsultPersonalizedCard';
 import VoipPushNotification from 'react-native-voip-push-notification';
 import { LocalStrings } from '@aph/mobile-patients/src/strings/LocalStrings';
@@ -444,6 +445,22 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       CommonBugFender('ConsultRoom_updateLocation', e);
     }
   };
+
+  const saveDeviceNotificationToken = async (id: string) => {
+    try {
+      const savedToken = await AsyncStorage.getItem('deviceToken');
+      const token = await messaging().getToken();
+      if (savedToken !== token) {
+        saveTokenDevice(client, token, id);
+      }
+    } catch (error) {}
+  };
+
+  useEffect(() => {
+    if (currentPatient?.id) {
+      saveDeviceNotificationToken(currentPatient?.id);
+    }
+  }, [currentPatient]);
 
   useEffect(() => {
     //TODO: if deeplinks is causing issue comment handleDeepLink here and uncomment in SplashScreen useEffect
