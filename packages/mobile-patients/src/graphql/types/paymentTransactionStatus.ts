@@ -9,8 +9,6 @@
 
 export interface paymentTransactionStatus_paymentTransactionStatus_appointment_amountBreakup {
   __typename: "AmountBreakUp";
-  plansPurchased: boolean | null;
-  saving_amount: number | null;
   actual_price: number | null;
   slashed_price: number | null;
 }

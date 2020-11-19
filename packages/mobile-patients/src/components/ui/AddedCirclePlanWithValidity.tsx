@@ -33,28 +33,10 @@ export const AddedCirclePlanWithValidity: React.FC<AddedCirclePlanWithValidityPr
           <View style={[styles.spaceRow, { alignItems: 'flex-start' }]}>
             <View>
               <Text style={theme.viewStyles.text('R', 12, theme.colors.BORDER_BOTTOM_COLOR)}>
-                {string.circleDoctors.validTill}
-              </Text>
-              <Text style={theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE)}>
-                {moment(circlePlanDetails?.end_date).format('D MMMM YYYY')}ember
-              </Text>
-            </View>
-            <View style={{ width: '53%' }}>
-              <Text
-                style={{
-                  ...theme.viewStyles.text('R', 12, theme.colors.BORDER_BOTTOM_COLOR),
-                  marginLeft: 'auto',
-                }}
-              >
-                {string.circleDoctors.subscriptionID}
-              </Text>
-              <Text
-                style={{
-                  ...theme.viewStyles.text('M', 12, theme.colors.BORDER_BOTTOM_COLOR),
-                  marginLeft: 'auto',
-                }}
-              >
-                {circlePlanDetails?.group_plan_id}
+                {string.circleDoctors.validTill}{' '}
+                <Text style={theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE)}>
+                  {moment(circlePlanDetails?.end_date).format('D MMMM YYYY')}
+                </Text>
               </Text>
             </View>
           </View>

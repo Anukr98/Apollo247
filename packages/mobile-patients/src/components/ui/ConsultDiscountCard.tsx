@@ -65,7 +65,8 @@ export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
           <Text style={styles.regularText}>
             You{' '}
             <Text style={{ ...styles.regularText, color: theme.colors.SEARCH_UNDERLINE_COLOR }}>
-              saved ₹ {totalSavings}
+              saved {string.common.Rs}
+              {totalSavings}
             </Text>{' '}
             on your purchase.
           </Text>

@@ -88,6 +88,10 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
             selectDefaultPlan && selectDefaultPlan(circlePlans);
             setAutoPlanAdded(true);
           }
+        } else {
+          setDefaultCirclePlan && setDefaultCirclePlan(null);
+          setCirclePlanSelected && setCirclePlanSelected(null);
+          setAutoPlanAdded(false);
         }
       }
       setLoading(false);

@@ -2901,8 +2901,6 @@ export const GET_TRANSACTION_STATUS = gql`
         paymentStatus
         amountPaid
         amountBreakup {
-          plansPurchased
-          saving_amount
           actual_price
           slashed_price
         }

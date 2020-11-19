@@ -62,7 +62,7 @@
     "membershipDiscount": "Membership Discount",
     "savingsOnBill": "Savings of ₹ {amount} on the bill",
     "couponApplied": "Coupon Applied",
-    "careMembership": "CARE Membership"
+    "careMembership": "CIRCLE Membership"
   },
   "components": {
     "medicineDetails": {
