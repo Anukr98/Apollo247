@@ -1392,15 +1392,15 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     return (
       <TouchableOpacity 
         activeOpacity={1}
-        onPress={() => {}} 
+        onPress={() => {setShowCirclePopup(true)}} 
         style={{
         paddingHorizontal: 20,
-        // marginBottom: 10,
       }}>
         <CircleBannerNonMember style={{
           resizeMode: 'contain',
           width: '100%',
           height: 200,
+          borderRadius: 10,
         }} />
       </TouchableOpacity>
     );
@@ -1968,10 +1968,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             <View>
               <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 20, 0)}>₹{cartTotal}</Text>
               <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
-                <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 17, 0)}>Effective price for</Text>
+                <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 25, 0)}>Effective price for</Text>
                 <CircleLogo style={circleStyles.circleLogoTwo} />
-                <Text style={{...theme.viewStyles.text('R', 12, '#02475B', 1, 17, 0), left: -3}}>members</Text>
-                <Text style={theme.viewStyles.text('SB', 12, '#02475B', 1, 17, 0)}>₹{effectivePrice}</Text>
+                <Text style={{...theme.viewStyles.text('R', 12, '#02475B', 1, 25, 0), left: -3}}>members</Text>
+                <Text style={theme.viewStyles.text('SB', 12, '#02475B', 1, 25, 0)}>₹{effectivePrice}</Text>
               </View>
             </View> :
             <TouchableOpacity activeOpacity={1} onPress={() => setShowCirclePopup(true)} style={circleStyles.upgrade}>
@@ -2039,7 +2039,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       </SafeAreaView>
       {isSelectPrescriptionVisible && renderEPrescriptionModal()}
       {ShowPopop && renderUploadPrescriprionPopup()}
-      {/* {showCirclePopup && renderCircleMembershipPopup()} */}
+      {showCirclePopup && renderCircleMembershipPopup()}
       {renderMedicineReOrderOverlay()}
     </View>
   );
