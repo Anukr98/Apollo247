@@ -228,6 +228,16 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
     onPress: () => void
   ) => {
     const timeDiff: Number = timeDiffFromNow(time || '');
+    const current = moment(new Date());
+    const isTomorrow = moment(time).isAfter(
+      current
+        .add(1, 'd')
+        .startOf('d')
+        .set({
+          hour: moment('06:00', 'HH:mm').get('hour'),
+          minute: moment('06:00', 'HH:mm').get('minute'),
+        })
+    );
     return (
       <View style={styles.cardContainer}>
         <View style={styles.cardBorderStyle}>
@@ -254,7 +264,14 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
               style={[
                 styles.row,
                 {
-                  marginTop: heading === string.consultType.online.heading ? -22 : -29,
+                  marginTop:
+                    heading === string.consultType.online.heading
+                      ? isTomorrow
+                        ? -16
+                        : -22
+                      : isTomorrow
+                      ? -23
+                      : -29,
                 },
               ]}
             >

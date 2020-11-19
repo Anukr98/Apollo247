@@ -14,12 +14,14 @@ import {
   CONSULT_ORDER_INVOICE,
   GET_APPOINTMENT_DATA,
   GET_TRANSACTION_STATUS,
+  GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   postAppsFlyerEvent,
   postFirebaseEvent,
   postWebEngageEvent,
   overlyCallPermissions,
+  g,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { mimeType } from '@aph/mobile-patients/src/helpers/mimeType';
 import { WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
@@ -65,6 +67,10 @@ import { AddedCirclePlanWithValidity } from '@aph/mobile-patients/src/components
 import { paymentTransactionStatus_paymentTransactionStatus_appointment_amountBreakup } from '@aph/mobile-patients/src/graphql/types/paymentTransactionStatus';
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
+import {
+  GetSubscriptionsOfUserByStatus,
+  GetSubscriptionsOfUserByStatusVariables,
+} from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
 
 export interface ConsultPaymentStatusProps extends NavigationScreenProps {}
 
@@ -96,6 +102,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const [showEmailInput, setshowEmailInput] = useState<boolean>(false);
   const [email, setEmail] = useState<string>(currentPatient?.emailAddress || '');
   const [emailSent, setEmailSent] = useState<boolean>(false);
+  const [circlePlanDetails, setCirclePlanDetails] = useState();
   const [
     amountBreakup,
     setAmountBreakup,
@@ -117,6 +124,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   useEffect(() => {
     overlyCallPermissions(currentPatient.firstName, doctorName, showAphAlert, hideAphAlert, true);
     clearCircleSubscriptionData();
+    getUserSubscriptionsByStatus();
   }, []);
 
   useEffect(() => {
@@ -170,6 +178,24 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     };
   }, []);
+
+  const getUserSubscriptionsByStatus = async () => {
+    try {
+      const query: GetSubscriptionsOfUserByStatusVariables = {
+        mobile_number: g(currentPatient, 'mobileNumber'),
+        status: ['active', 'deferred_inactive'],
+      };
+      const res = await client.query<GetSubscriptionsOfUserByStatus>({
+        query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+        fetchPolicy: 'no-cache',
+        variables: query,
+      });
+      const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
+      setCirclePlanDetails(data?.APOLLO?.[0]);
+    } catch (error) {
+      CommonBugFender('ConsultRoom_getUserSubscriptionsByStatus', error);
+    }
+  };
 
   const clearCircleSubscriptionData = () => {
     AsyncStorage.removeItem('circlePlanSelected');
@@ -694,7 +720,12 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   };
 
   const renderAddedCirclePlanWithValidity = () => {
-    return <AddedCirclePlanWithValidity circleSavings={circleSavings} />;
+    return (
+      <AddedCirclePlanWithValidity
+        circleSavings={circleSavings}
+        circlePlanDetails={circlePlanDetails}
+      />
+    );
   };
 
   const renderCircleSavingsOnPurchase = () => {

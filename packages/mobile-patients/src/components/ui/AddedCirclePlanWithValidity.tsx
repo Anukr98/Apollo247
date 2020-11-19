@@ -4,12 +4,14 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
 const { width } = Dimensions.get('window');
+import moment from 'moment';
 
 interface AddedCirclePlanWithValidityProps {
   circleSavings: number;
+  circlePlanDetails?: any;
 }
 export const AddedCirclePlanWithValidity: React.FC<AddedCirclePlanWithValidityProps> = (props) => {
-  const { circleSavings } = props;
+  const { circleSavings, circlePlanDetails } = props;
   return (
     <View style={styles.container}>
       <View style={styles.row}>
@@ -28,17 +30,22 @@ export const AddedCirclePlanWithValidity: React.FC<AddedCirclePlanWithValidityPr
             </Text>
             on your purchase
           </Text>
-          <View style={styles.spaceRow}>
+          <View style={[styles.spaceRow, { alignItems: 'flex-start' }]}>
             <View>
               <Text style={theme.viewStyles.text('R', 12, theme.colors.BORDER_BOTTOM_COLOR)}>
                 {string.circleDoctors.validTill}
               </Text>
               <Text style={theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE)}>
-                24 December 2020
+                {moment(circlePlanDetails?.end_date).format('D MMMM YYYY')}ember
               </Text>
             </View>
-            <View>
-              <Text style={theme.viewStyles.text('R', 12, theme.colors.BORDER_BOTTOM_COLOR)}>
+            <View style={{ width: '53%' }}>
+              <Text
+                style={{
+                  ...theme.viewStyles.text('R', 12, theme.colors.BORDER_BOTTOM_COLOR),
+                  marginLeft: 'auto',
+                }}
+              >
                 {string.circleDoctors.subscriptionID}
               </Text>
               <Text
@@ -47,7 +54,7 @@ export const AddedCirclePlanWithValidity: React.FC<AddedCirclePlanWithValidityPr
                   marginLeft: 'auto',
                 }}
               >
-                123456
+                {circlePlanDetails?.group_plan_id}
               </Text>
             </View>
           </View>
