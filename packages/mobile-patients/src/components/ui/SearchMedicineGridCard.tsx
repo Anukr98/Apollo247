@@ -80,6 +80,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  expressContainer: {
+    alignItems:'flex-end',
+    marginBottom: 6,
+  },
+  expressLogo: {
+    resizeMode: 'contain',
+    width: 50,
+    height: 20,
+  },
 });
 
 export interface SearchMedicineGridCardProps {
@@ -244,15 +253,8 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
 
   const renderExpressFlag = () => {
     return (
-      <View style={{
-        alignItems:'flex-end',
-        marginBottom: 6,
-      }}>
-        <ExpressDeliveryLogo style={{
-          resizeMode: 'contain',
-          width: 50,
-          height: 20,
-        }} />
+      <View style={styles.expressContainer}>
+        <ExpressDeliveryLogo style={styles.expressLogo} />
       </View>
     )
   };

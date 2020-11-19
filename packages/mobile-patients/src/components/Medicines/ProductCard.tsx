@@ -112,16 +112,8 @@ export const ProductCard: React.FC<Props> = ({
 
   const renderExpressFlag = () => {
     return (
-      <View style={{
-        position: 'absolute',
-        right: 12,
-        top: !!discount ? 40 : 10,
-      }}>
-        <ExpressDeliveryLogo style={{
-          resizeMode: 'contain',
-          width: 50,
-          height: 25,
-        }} />
+      <View style={[styles.expressContainer, {top: !!discount ? 40 : 10}]}>
+        <ExpressDeliveryLogo style={styles.expressLogo} />
       </View>
     )
   };
@@ -135,9 +127,7 @@ export const ProductCard: React.FC<Props> = ({
       return (
         <CareCashbackBanner
           bannerText={`Extra Care ₹${cashback} Cashback`}
-          textStyle={{
-            left: -5,
-          }}
+          textStyle={{left: -5}}
         />
       );
     } else {
@@ -217,4 +207,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     textAlign: 'center',
   },
+  expressContainer: {
+    position: 'absolute',
+    right: 12,
+  },
+  expressLogo: {
+    resizeMode: 'contain',
+    width: 50,
+    height: 25,
+  }
 });

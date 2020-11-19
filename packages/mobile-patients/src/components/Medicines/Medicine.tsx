@@ -138,7 +138,6 @@ import {
   makeAdressAsDefaultVariables,
   makeAdressAsDefault,
 } from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
-import { CirclePopup } from '@aph/mobile-patients/src/components/Medicines/Components/CirclePopup';
 import { CareSelectPlans } from '@aph/mobile-patients/src/components/ui/CareSelectPlans';
 
 const styles = StyleSheet.create({
@@ -169,6 +168,12 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+  circleBanner: {
+    resizeMode: 'contain',
+    width: '100%',
+    height: 200,
+    borderRadius: 10,
+  }
 });
 
 const filterBanners = (banners: OfferBannerSection[]) => {
@@ -1393,15 +1398,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       <TouchableOpacity 
         activeOpacity={1}
         onPress={() => {setShowCirclePopup(true)}} 
-        style={{
-        paddingHorizontal: 20,
-      }}>
-        <CircleBannerNonMember style={{
-          resizeMode: 'contain',
-          width: '100%',
-          height: 200,
-          borderRadius: 10,
-        }} />
+        style={{paddingHorizontal: 20}}
+      >
+        <CircleBannerNonMember style={styles.circleBanner} />
       </TouchableOpacity>
     );
   };
@@ -1410,8 +1409,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     if (dealsOfTheDay.length == 0) return null;
     return (
       <View>
-      {renderCircleBanner()}
-      {/* <CirclePopup /> */}
+        {renderCircleBanner()}
         <SectionHeader leftText={title} />
         <FlatList
           bounces={false}

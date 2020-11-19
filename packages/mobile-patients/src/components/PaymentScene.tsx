@@ -413,7 +413,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       burnHC ? '&hc=' + burnHC : ''
     }${bankCode ? '&bankCode=' + bankCode : ''}`;
 
-    if (!(circleSubscription && circleSubscription?._id)) {
+    if (!(circleSubscription?._id)) {
       url += `${planId ? '&planId=' + planId : ''
       }${subPlanId ? '&subPlanId=' + subPlanId : ''
       }${'&storeCode=' + storeCode}`;

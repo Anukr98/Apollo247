@@ -30,11 +30,7 @@ export const FreeDelivery: React.FC<FreeDeliveryProps> = (props) => {
   function renderFreeDeliveryCard() {
     return (
         ((!!isCircleSubscription || circleMembershipCharges) && !coupon) ?
-        <View style={{
-          ...theme.viewStyles.cardViewStyle,
-          margin: 15,
-          padding: 5,
-        }}>
+        <View style={styles.careCashbackContainer}>
           {renderCareCashback()}
         </View> :
         <View style={styles.card}>
@@ -66,16 +62,8 @@ const renderCareCashback = () => {
   return (
     <CareCashbackBanner
       bannerText={`You are now eligible for FREE DELIVERY`}
-      textStyle={{
-        ...theme.viewStyles.text('M', 14, '#02475B', 1, 17),
-        paddingVertical: 15,
-        left: -6,
-      }}
-      logoStyle={{
-        resizeMode: 'contain',
-        width: 60,
-        height: 45,
-      }}
+      textStyle={styles.careCashbackText}
+      logoStyle={styles.careCashbackLogo}
     />
   );
 };
@@ -105,5 +93,20 @@ const styles = StyleSheet.create({
   getCareText: {
     ...theme.viewStyles.text('M', 13, '#02475B', 1, 20),
     flexWrap: 'wrap',
+  },
+  careCashbackContainer: {
+    ...theme.viewStyles.cardViewStyle,
+    margin: 15,
+    padding: 5,
+  },
+  careCashbackText: {
+    ...theme.viewStyles.text('M', 14, '#02475B', 1, 17),
+    paddingVertical: 15,
+    left: -6,
+  },
+  careCashbackLogo: {
+    resizeMode: 'contain',
+    width: 60,
+    height: 45,
   },
 });

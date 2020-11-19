@@ -123,11 +123,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
       return (
         <CareCashbackBanner
           bannerText={`Extra Care ₹${item.circleCashbackAmt} Cashback`}
-          textStyle={{
-            ...theme.viewStyles.text('M', 9, '#00A0E3', 1, 15),
-            paddingVertical: 7,
-            left: -5,
-          }}
+          textStyle={styles.careText}
         />
       );
     } else {
@@ -344,5 +340,10 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     height: 18,
     justifyContent: 'center',
+  },
+  careText: {
+    ...theme.viewStyles.text('M', 9, '#00A0E3', 1, 15),
+    paddingVertical: 7,
+    left: -5,
   },
 });

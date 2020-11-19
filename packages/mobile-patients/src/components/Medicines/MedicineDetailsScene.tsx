@@ -253,6 +253,22 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     marginTop: 15,
   },
+  circleText: {
+    ...theme.viewStyles.text('M', 9, '#02475B', 1, 15),
+    paddingVertical: 2,
+    left: -10,
+  },
+  circleLogo: {
+    resizeMode: 'contain',
+    width: 38,
+    height: 20,
+    left: -5,
+  },
+  careBanner: {
+    resizeMode: 'contain',
+    width: '100%',
+    height: 200,
+  },
 });
 
 type PharmacyTatApiCalled = WebEngageEvents[WebEngageEventName.PHARMACY_TAT_API_CALLED];
@@ -662,23 +678,14 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     if (!!cashback) {
       return (
         <>
-        <CareCashbackBanner
-          bannerText={`Extra Care ₹${cashback} Cashback`}
-          textStyle={{
-            ...theme.viewStyles.text('M', 9, '#02475B', 1, 15),
-            paddingVertical: 2,
-            left: -10,
-          }}
-          logoStyle={{
-            resizeMode: 'contain',
-            width: 38,
-            height: 20,
-            left: -5,
-          }}
-        />
-        <Text style={theme.viewStyles.text('R', 11, '#02475B', 1, 17)}>
-          {`Effective price for you ₹${finalPrice - cashback}`}
-        </Text>
+          <CareCashbackBanner
+            bannerText={`Extra Care ₹${cashback} Cashback`}
+            textStyle={styles.circleText}
+            logoStyle={styles.circleLogo}
+          />
+          <Text style={theme.viewStyles.text('R', 11, '#02475B', 1, 17)}>
+            {`Effective price for you ₹${finalPrice - cashback}`}
+          </Text>
         </>
       );
     } else {
@@ -923,11 +930,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         style={{
         paddingHorizontal: 20,
       }}>
-        <CircleBannerNonMember style={{
-          resizeMode: 'contain',
-          width: '100%',
-          height: 200,
-        }} />
+        <CircleBannerNonMember style={styles.careBanner} />
       </TouchableOpacity>
     );
   };

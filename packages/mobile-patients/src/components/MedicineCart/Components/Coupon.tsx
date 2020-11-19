@@ -32,10 +32,10 @@ export const Coupon: React.FC<CouponProps> = (props) => {
     <View style={styles.careMessageContainer}>
       <PendingIcon style={styles.pendingIconStyle} />
       <View style={styles.careMessage}>
-        <Text style={{...theme.viewStyles.text('B', 13, '#979797', 1, 20), flexWrap: 'wrap'}}>
+        <Text style={styles.removeCircleText}>
           Remove Circle membership to apply coupon
         </Text>
-        <Text style={{...theme.viewStyles.text('M', 13, '#979797', 1, 16), flexWrap: 'wrap', marginTop: 5,}}>
+        <Text style={[styles.removeCircleText, { marginTop: 5}]}>
           You can either use CIRCLE benefits or apply coupon. Remove CIRCLE membership from CART to avail coupon discount.
         </Text>
       </View>
@@ -140,4 +140,8 @@ const styles = StyleSheet.create({
     marginRight: 10,
     marginTop: 5,
   },
+  removeCircleText: {
+    ...theme.viewStyles.text('B', 13, '#979797', 1, 20), 
+    flexWrap: 'wrap'
+  }
 });

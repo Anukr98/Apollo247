@@ -368,7 +368,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       paymentInfo.medicinePaymentMqInput['paymentStatus'] = 'TXN_SUCCESS';
       paymentInfo.medicinePaymentMqInput['healthCredits'] = getFormattedAmount(grandTotal);
     }
-    if (!(circleSubscription && circleSubscription?._id) && !!circleMembershipCharges) {
+    if (!(circleSubscription?._id) && !!circleMembershipCharges) {
       paymentInfo.medicinePaymentMqInput['planId'] = circlePlanId;
       paymentInfo.medicinePaymentMqInput['subPlanId'] = circleSubPlanId;
       paymentInfo.medicinePaymentMqInput['storeCode'] = 

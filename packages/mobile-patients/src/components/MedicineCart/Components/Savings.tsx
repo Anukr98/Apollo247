@@ -29,13 +29,10 @@ export const Savings: React.FC<SavingsProps> = (props) => {
           setShowCareDetails(!showCareDetails);
         }}
       >
-        <View style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-        }}>
-          <Text style={{ ...theme.fonts.IBMPlexSansRegular(13), lineHeight: 17, color: '#02475B' }}>
+        <View style={styles.rowSpaceBetween}>
+          <Text style={styles.youText}>
             You{' '}
-            <Text style={{ ...theme.fonts.IBMPlexSansSemiBold(13), lineHeight: 17, color: '#00B38E' }}>
+            <Text style={styles.saveText}>
               saved ₹{getSavings()}
             </Text>{' '}
             on your purchase
@@ -52,29 +49,21 @@ export const Savings: React.FC<SavingsProps> = (props) => {
   function careSubscribeMessage() {
     return (
       <View style={styles.careMessageCard}>
-        <Text style={{ ...theme.fonts.IBMPlexSansRegular(13), lineHeight: 17, color: '#02475B' }}>
+        <Text style={styles.youText}>
           You could{' '}
-          <Text style={{ ...theme.fonts.IBMPlexSansSemiBold(13), lineHeight: 17, color: '#00B38E' }}>
+          <Text style={styles.saveText}>
             save ₹{cartTotalCashback}
           </Text>{' '}
           on your purchase with
         </Text>
-        <CircleLogo style={{
-          resizeMode: 'contain',
-          width: 45,
-          height: 20,
-        }} />
+        <CircleLogo style={styles.circleLogo} />
       </View>
     );
   }
 
   function renderCareLogo() {
     return (
-      <CircleLogo style={{
-        resizeMode: 'contain',
-        width: 40,
-        height: 20,
-      }} />
+      <CircleLogo style={styles.circleLogoTwo} />
     );
   }
 
@@ -173,5 +162,25 @@ const styles = StyleSheet.create({
   totalAmount: {
     ...theme.viewStyles.text('B', 14, '#02475B', 1, 20),
     textAlign: 'right'
+  },
+  youText: { 
+    ...theme.fonts.IBMPlexSansRegular(13), 
+    lineHeight: 17, 
+    color: '#02475B',
+  },
+  saveText: { 
+    ...theme.fonts.IBMPlexSansSemiBold(13), 
+    lineHeight: 17, 
+    color: '#00B38E',
+  },
+  circleLogo: {
+    resizeMode: 'contain',
+    width: 45,
+    height: 20,
+  },
+  circleLogoTwo: {
+    resizeMode: 'contain',
+    width: 40,
+    height: 20,
   },
 });

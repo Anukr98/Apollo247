@@ -155,7 +155,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     fetchProductSuggestions();
     cartItems.length && PharmacyCartViewedEvent(shoppingCart, g(currentPatient, 'id'));
     setCircleMembershipCharges && setCircleMembershipCharges(0);
-    if (!(circleSubscription && circleSubscription?._id) && cartTotal > 400) {
+    if (!(circleSubscription?._id) && cartTotal > 400) {
       setShowCareSelectPlans(true);
     }
   }, []);
@@ -202,7 +202,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     if (!!coupon) {
       setCircleMembershipCharges && setCircleMembershipCharges(0);
     } else {
-      if (!(circleSubscription && circleSubscription?._id)) {
+      if (!(circleSubscription?._id)) {
         setCircleMembershipCharges && setCircleMembershipCharges(circlePlanSelected?.currentSellingPrice);
       }
     }
@@ -817,7 +817,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         <View style={styles.amountHeader}>
           <Text style={styles.amountHeaderText}>TOTAL CHARGES</Text>
         </View>
-        {(circleSubscription && circleSubscription?._id) && renderApplyCircleBenefits()}
+        {(circleSubscription?._id) && renderApplyCircleBenefits()}
         {renderCouponSection()}
         <AmountCard />
       </View>
@@ -828,18 +828,13 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     return (
       <TouchableOpacity
       activeOpacity={0.7}
-      style={{
-        ...theme.viewStyles.cardViewStyle,
-        marginHorizontal: 15,
-        marginTop: 10,
-        padding: 10,
-      }}
+      style={styles.applyBenefits}
       onPress={() => {
         if (!!coupon) {
           setCoupon && setCoupon(null);
           setIsCircleSubscription && setIsCircleSubscription(true);
         } else {
-          if (!(circleSubscription && circleSubscription?._id)) {
+          if (!(circleSubscription?._id)) {
             setIsCircleSubscription && setIsCircleSubscription(false);
           }
         }
@@ -848,53 +843,26 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         {
           !coupon ?
           <View style={{flexDirection: 'row'}}>
-            <CheckedIcon style={{marginTop: 8,}} />
+            <CheckedIcon style={{marginTop: 8}} />
             <CareCashbackBanner
               bannerText={`benefits APPLIED!`}
-              textStyle={{
-                ...theme.viewStyles.text('SB', 14, '#02475B', 1, 17),
-                paddingTop: 12,
-                left: -5,
-              }}
-              logoStyle={{
-                resizeMode: 'contain',
-                width: 50,
-                height: 40,
-              }}
+              textStyle={styles.circleText}
+              logoStyle={styles.circleLogo}
             />
           </View> : 
           <View>
             <View style={{flexDirection: 'row'}}>
-              <View style={{
-                width: 20,
-                height: 20,
-                borderWidth: 2,
-                borderColor: '#00B38E',
-                borderRadius: 5,
-                marginTop: 9,
-                marginRight: 10,
-              }} />
+              <View style={styles.circleApplyContainer} />
               <View style={{flexDirection: 'row'}}>
-                <Text style={{
-                  ...theme.viewStyles.text('SB', 14, '#02475B', 1, 17),
-                  paddingTop: 12,
-                }}>Apply</Text>
+                <Text style={styles.applyText}>Apply</Text>
                 <CareCashbackBanner
                   bannerText={`benefits instead`}
-                  textStyle={{
-                    ...theme.viewStyles.text('SB', 14, '#02475B', 1, 17),
-                    paddingTop: 12,
-                    left: -5,
-                  }}
-                  logoStyle={{
-                    resizeMode: 'contain',
-                    width: 50,
-                    height: 40,
-                  }}
+                  textStyle={styles.circleText}
+                  logoStyle={styles.circleLogo}
                 />
               </View>
             </View>
-            <Text style={{...theme.viewStyles.text('R', 12, '#02475B', 1, 17), marginLeft: 25,}}>
+            <Text style={styles.useCircleText}>
               {`Use your Circle membership instead & get `}
               <Text style={{...theme.viewStyles.text('SB', 12, '#02475B', 1, 17)}}>{`₹54 Cashback and Free delivery `}</Text>
               <Text>on this order</Text>
@@ -927,58 +895,23 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       return (
         <TouchableOpacity 
           activeOpacity={0.8}
-          style={{
-            ...theme.viewStyles.cardViewStyle,
-            marginTop: 10,
-            marginHorizontal: 13,
-            borderRadius: 5,
-            marginBottom: 0,
-            paddingHorizontal: 15,
-            paddingVertical: 9,
-            borderColor: '#00B38E',
-            borderWidth: 3,
-            borderStyle: 'dashed',
-          }}
+          style={styles.viewPlanContainer}
           onPress={() => {setShowCareSelectPlans(true)}}
         >
-          <View style={{
-            flexDirection: 'row',
-          }}>
-            <View style={{
-              width: 22,
-              height: 22,
-              borderRadius: 5,
-              borderColor: '#00B38E',
-              borderWidth: 3,
-              marginRight: 10,
-              marginTop: 10,
-            }} />
+          <View style={{flexDirection: 'row'}}>
+            <View style={styles.viewPlan} />
             <View>
-              <View style={{
-                flexDirection: 'row',
-              }}>
-                <Text style={{
-                  ...theme.viewStyles.text('M', 14, '#02475B', 1, 17),
-                  paddingTop: 12,
-                }}>View</Text>
+              <View style={{flexDirection: 'row'}}>
+                <Text style={styles.viewText}>View</Text>
                 <CareCashbackBanner
                   bannerText={`plans`}
-                  textStyle={{
-                    ...theme.viewStyles.text('M', 14, '#02475B', 1, 17),
-                    paddingTop: 12,
+                  textStyle={[styles.viewText, {
                     left: -5,
-                  }}
-                  logoStyle={{
-                    resizeMode: 'contain',
-                    width: 50,
-                    height: 40,
-                  }}
+                  }]}
+                  logoStyle={styles.circleLogo}
                 />
               </View>
-              <Text style={{
-                ...theme.viewStyles.text('R', 13, '#02475B', 1, 20),
-                width: '54%'
-              }}>
+              <Text style={styles.viewSubText}>
                 Viewing and/or selecting plans will remove any applied coupon. You can apply the coupon again later.
               </Text>
             </View>
@@ -1129,5 +1062,67 @@ const styles = StyleSheet.create({
   amountHeaderText: {
     color: theme.colors.FILTER_CARD_LABEL,
     ...theme.fonts.IBMPlexSansBold(13),
+  },
+  applyBenefits: {
+    ...theme.viewStyles.cardViewStyle,
+    marginHorizontal: 15,
+    marginTop: 10,
+    padding: 10,
+  },
+  circleText: {
+    ...theme.viewStyles.text('SB', 14, '#02475B', 1, 17),
+    paddingTop: 12,
+    left: -5,
+  },
+  circleLogo: {
+    resizeMode: 'contain',
+    width: 50,
+    height: 40,
+  },
+  circleApplyContainer: {
+    width: 20,
+    height: 20,
+    borderWidth: 2,
+    borderColor: '#00B38E',
+    borderRadius: 5,
+    marginTop: 9,
+    marginRight: 10,
+  },
+  applyText: {
+    ...theme.viewStyles.text('SB', 14, '#02475B', 1, 17),
+    paddingTop: 12,
+  },
+  useCircleText: {
+    ...theme.viewStyles.text('R', 12, '#02475B', 1, 17), 
+    marginLeft: 25,
+  },
+  viewPlanContainer: {
+    ...theme.viewStyles.cardViewStyle,
+    marginTop: 10,
+    marginHorizontal: 13,
+    borderRadius: 5,
+    marginBottom: 0,
+    paddingHorizontal: 15,
+    paddingVertical: 9,
+    borderColor: '#00B38E',
+    borderWidth: 3,
+    borderStyle: 'dashed',
+  },
+  viewPlan: {
+    width: 22,
+    height: 22,
+    borderRadius: 5,
+    borderColor: '#00B38E',
+    borderWidth: 3,
+    marginRight: 10,
+    marginTop: 10,
+  },
+  viewText: {
+    ...theme.viewStyles.text('M', 14, '#02475B', 1, 17),
+    paddingTop: 12,
+  },
+  viewSubText: {
+    ...theme.viewStyles.text('R', 13, '#02475B', 1, 20),
+    width: '54%'
   },
 });

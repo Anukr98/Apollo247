@@ -45,6 +45,16 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('M', 12, '#02475b', 0.5, 20, 0.04),
     marginTop: 4,
   },
+  expressContainer: {
+    position: 'absolute',
+    right: 10,
+    top: 10,
+  },
+  expressLogo: {
+    resizeMode: 'contain',
+    width: 50,
+    height: 20,
+  },
 });
 
 export interface SearchMedicineCardProps {
@@ -196,16 +206,8 @@ export const SearchMedicineCard: React.FC<SearchMedicineCardProps> = (props) => 
 
   const renderExpressFlag = () => {
     return (
-      <View style={{
-        position: 'absolute',
-        right: 10,
-        top: 10,
-      }}>
-        <ExpressDeliveryLogo style={{
-          resizeMode: 'contain',
-          width: 50,
-          height: 20,
-        }} />
+      <View style={styles.expressContainer}>
+        <ExpressDeliveryLogo style={styles.expressLogo} />
       </View>
     )
   };
