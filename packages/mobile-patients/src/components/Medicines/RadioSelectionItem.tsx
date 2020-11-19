@@ -73,6 +73,7 @@ export const RadioSelectionItem: React.FC<RadioSelectionItemProps> = (props) => 
           </TouchableOpacity>
         ) : null}
       </TouchableOpacity>
+      {props.radioSubBody && props.radioSubBody}
     </>
   );
 };
