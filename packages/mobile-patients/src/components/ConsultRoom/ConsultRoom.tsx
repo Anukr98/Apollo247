@@ -372,6 +372,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setIsDiagnosticCircleSubscription,
     isDiagnosticCircleSubscription,
   } = useDiagnosticsCart();
+
   const {
     cartItems: shopCartItems,
     setHdfcPlanName,
@@ -379,7 +380,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setIsCircleSubscription,
     setCircleCashback,
   } = useShoppingCart();
-
   const cartItemsCount = cartItems.length + shopCartItems.length;
 
   const { analytics } = useAuth();

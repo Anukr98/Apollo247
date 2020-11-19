@@ -253,6 +253,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
 
   const [bannerData, _setBannerData] = useState<AppCommonDataContextProps['bannerData']>(null);
 
+  const [bannerData, _setBannerData] = useState<AppCommonDataContextProps['bannerData']>(null);
+
   const [pharmacyLocation, _setPharmacyLocation] = useState<
     AppCommonDataContextProps['pharmacyLocation']
   >(null);
@@ -328,6 +330,10 @@ export const AppCommonDataProvider: React.FC = (props) => {
   const setCircleSubscription: AppCommonDataContextProps['setCircleSubscription'] = (
     circleSubscription
   ) => {
+    _setCircleSubscription(circleSubscription);
+  };
+
+  const setBannerData: AppCommonDataContextProps['setBannerData'] = (bannerData) => {
     _setCircleSubscription(circleSubscription);
   };
 

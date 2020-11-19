@@ -3501,9 +3501,7 @@ export const GET_CASHBACK_DETAILS_OF_PLAN_ID = gql`
       response
     }
   }
-
 `;
-
 
 export const GET_PLAN_DETAILS_BY_PLAN_ID = gql`
   query GetPlanDetailsByPlanId($plan_id: String!) {
@@ -3516,5 +3514,4 @@ export const GET_PLAN_DETAILS_BY_PLAN_ID = gql`
       }
     }
   }
-
 `;
