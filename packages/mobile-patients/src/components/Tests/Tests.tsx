@@ -250,6 +250,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     textAlign: 'center',
   },
+  nonSubPrice: {
+    ...theme.viewStyles.text('SB', 12, '#02475b', 0.6, 24),
+    textAlign: 'center',
+    marginRight: 5,
+    marginTop: -2,
+  },
+  nonSubStrikedPrice: {
+    ...theme.viewStyles.text('SB', 12, '#02475b', 0.6, 24),
+    textAlign: 'left',
+    marginRight: 5,
+    textDecorationLine: 'line-through',
+  },
+  addToCartView: {
+    flexGrow: 1,
+    alignItems: 'flex-end',
+    justifyContent: 'flex-end',
+  },
+  strikedPrice: {
+    ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04),
+    textDecorationLine: 'line-through',
+  },
+  normalPrice: {
+    ...theme.viewStyles.text('M', 14, '#02475b', 1, 20, 0.04),
+  },
 });
 
 export interface TestsProps
@@ -1141,17 +1165,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
-  const renderHotSellerItem = (
-    data: ListRenderItemInfo<
-      getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnosticHotSellers
-    >
-  ) => {
-    const getDiagnosticPricingForItem = g(data, 'item', 'diagnostics', 'diagnosticPricing');
+  const getActiveItems = (getDiagnosticPricingForItem: any) => {
     const itemWithAll = getDiagnosticPricingForItem!.find(
-      (item) => item!.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL
+      (item: any) => item!.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL
     );
     const itemWithSub = getDiagnosticPricingForItem!.find(
-      (item) => item!.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
+      (item: any) => item!.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
     );
 
     const currentDate = moment(new Date()).format('YYYY-MM-DD');
@@ -1163,20 +1182,39 @@ export const Tests: React.FC<TestsProps> = (props) => {
           itemWithAll!.status == 'active' &&
           isItemPriceActive(itemWithAll?.startDate!, itemWithAll?.endDate!, currentDate);
 
-    if (!isItemActive) {
+    const activeItemsObject = {
+      itemWithAll: itemWithAll,
+      itemWithSub: itemWithSub,
+      isItemActive: isItemActive,
+    };
+
+    return activeItemsObject;
+  };
+
+  const renderHotSellerItem = (
+    data: ListRenderItemInfo<
+      getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnosticHotSellers
+    >
+  ) => {
+    const getDiagnosticPricingForItem = g(data, 'item', 'diagnostics', 'diagnosticPricing');
+    const getActiveItemsObject = getActiveItems(getDiagnosticPricingForItem);
+    const itemWithAll = getActiveItemsObject?.itemWithAll;
+    const itemWithSub = getActiveItemsObject?.itemWithSub;
+
+    if (!getActiveItemsObject?.isItemActive) {
       return null;
     }
     const { packageImage, packageName, diagnostics } = data.item;
-    const foundTestInCart = !!cartItems.find((item) => item.id == `${diagnostics!.itemId}`);
+    const foundTestInCart = !!cartItems.find((item) => item.id == `${diagnostics?.itemId}`);
 
     //check wrt to plan
     const specialPrice = itemWithAll?.price!;
     const price = itemWithAll?.mrp!; //more than price (black)
     const circlePrice = itemWithSub?.mrp!;
-    const circleSpecialPrice = itemWithSub?.price;
+    const circleSpecialPrice = itemWithSub?.price!;
 
     const discount = getDiscountPercentage(price, specialPrice);
-    const circleDiscount = getDiscountPercentage(circlePrice!, circleSpecialPrice);
+    const circleDiscount = getDiscountPercentage(circlePrice, circleSpecialPrice);
     const promoteCircle = discount < circleDiscount;
 
     const addToCart = () => {
@@ -1199,7 +1237,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           circlePrice: circlePrice,
           circleSpecialPrice: circleSpecialPrice,
           thumbnail: packageImage,
-          collectionMethod: diagnostics!.collectionType!,
+          collectionMethod: diagnostics?.collectionType!,
           groupPlan: promoteCircle ? itemWithSub?.groupPlan : itemWithAll?.groupPlan,
         });
       });
@@ -1208,7 +1246,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       if (!isDiagnosticLocationServiceable) {
         return;
       }
-      removeCartItem!(`${diagnostics!.itemId}`);
+      removeCartItem!(`${diagnostics?.itemId}`);
     };
 
     return hotSellerCard({
@@ -1228,8 +1266,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }
         setWebEnageEventForItemViewedOnLanding(
           packageName!,
-          `${diagnostics!.itemId}`,
-          `${diagnostics!.itemType}`
+          `${diagnostics?.itemId}`,
+          `${diagnostics?.itemType}`
         );
         postFeaturedTestEvent(packageName!, `${diagnostics!.itemId}`);
         props.navigation.navigate(AppRoutes.TestDetails, {
@@ -1241,10 +1279,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
             Gender: diagnostics!.gender,
             ItemID: `${diagnostics!.itemId}`,
             ItemName: diagnostics?.itemName!,
-            collectionType: diagnostics!.collectionType,
-            FromAgeInDays: diagnostics!.fromAgeInDays,
-            ToAgeInDays: diagnostics!.toAgeInDays,
-            preparation: diagnostics!.testPreparationData,
+            collectionType: diagnostics?.collectionType,
+            FromAgeInDays: diagnostics?.fromAgeInDays,
+            ToAgeInDays: diagnostics?.toAgeInDays,
+            preparation: diagnostics?.testPreparationData,
             source: 'Landing Page',
             type: diagnostics!.itemType,
           } as TestPackageForDetails,
@@ -1406,14 +1444,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                   <CircleHeading isSubscribed={isDiagnosticCircleSubscription} />
                 </View>
                 {!isDiagnosticCircleSubscription && (
-                  <Text
-                    style={{
-                      ...theme.viewStyles.text('SB', 12, '#02475b', 0.6, 24),
-                      textAlign: 'center',
-                      marginRight: 5,
-                      marginTop: -2,
-                    }}
-                  >
+                  <Text style={styles.nonSubPrice}>
                     {string.common.Rs}
                     {promoteCircle ? circleSpecialPrice : specialPrice || price}
                   </Text>
@@ -1431,14 +1462,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 !!specialPrice &&
                 specialPrice != price &&
                 !isDiagnosticCircleSubscription && (
-                  <Text
-                    style={{
-                      ...theme.viewStyles.text('SB', 12, '#02475b', 0.6, 24),
-                      textAlign: 'left',
-                      marginRight: 5,
-                      textDecorationLine: 'line-through',
-                    }}
-                  >
+                  <Text style={styles.nonSubStrikedPrice}>
                     ({string.common.Rs} {price})
                   </Text>
                 )}
@@ -1485,13 +1509,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               {/**
                * add to cart
                */}
-              <View
-                style={{
-                  flexGrow: 1,
-                  alignItems: 'flex-end',
-                  justifyContent: 'flex-end',
-                }}
-              >
+              <View style={styles.addToCartView}>
                 <Text
                   style={theme.viewStyles.text('B', 13, '#fc9916', 1, 24)}
                   onPress={onPressBookNow}
@@ -1602,24 +1620,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
             data={PackagesWithDiagnosticPricing}
             renderItem={({ item, index }) => {
               const getDiagnosticPricingForItem = g(item, 'diagnostics', 'diagnosticPricing');
+              const getActiveItemsObject = getActiveItems(getDiagnosticPricingForItem);
+              const itemWithAll = getActiveItemsObject?.itemWithAll;
+              const itemWithSub = getActiveItemsObject?.itemWithSub;
 
-              const itemWithAll = getDiagnosticPricingForItem!.find(
-                (item) => item!.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL
-              );
-              const itemWithSub = getDiagnosticPricingForItem!.find(
-                (item) => item!.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
-              );
-
-              const currentDate = moment(new Date()).format('YYYY-MM-DD');
-              const isItemActive =
-                isDiagnosticCircleSubscription && itemWithSub
-                  ? itemWithSub!.status == 'active' &&
-                    isItemPriceActive(itemWithSub?.startDate!, itemWithSub?.endDate!, currentDate)
-                  : itemWithAll &&
-                    itemWithAll!.status == 'active' &&
-                    isItemPriceActive(itemWithAll?.startDate!, itemWithAll?.endDate!, currentDate);
-
-              if (!isItemActive) {
+              if (!getActiveItemsObject?.isItemActive) {
                 return null;
               }
 
@@ -1632,7 +1637,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               const circleDiscount = getDiscountPercentage(circlePrice!, circleSpecialPrice!);
               const promoteCircle = discount < circleDiscount;
 
-              const diagnosticItem = item.diagnostics;
+              const diagnosticItem = item?.diagnostics;
               const fromAge = (diagnosticItem?.fromAgeInDays! / 365).toFixed(0);
               const toAge = (diagnosticItem?.toAgeInDays! / 365).toFixed(0);
 
@@ -1665,17 +1670,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
                     props.navigation.navigate(AppRoutes.TestDetails, {
                       testDetails: {
                         // ...item.diagnostics,
-                        Gender: product!.gender,
-                        ItemID: `${product!.itemId}`,
+                        Gender: product?.gender,
+                        ItemID: `${product?.itemId}`,
                         ItemName: product?.itemName!,
                         Rate: price,
                         specialPrice: specialPrice! || price,
                         circleRate: circlePrice,
                         circleSpecialPrice: circleSpecialPrice,
-                        collectionType: product.collectionType,
-                        preparation: product.testPreparationData,
+                        collectionType: product?.collectionType,
+                        preparation: product?.testPreparationData,
                         source: 'Landing Page',
-                        type: product.itemType,
+                        type: product?.itemType,
                       } as TestPackageForDetails,
                       type: 'Package',
                     });
@@ -1701,7 +1706,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                           specialPrice: specialPrice! || price,
                           circlePrice: circlePrice,
                           circleSpecialPrice: circleSpecialPrice,
-                          collectionMethod: product.collectionType!,
+                          collectionMethod: product?.collectionType!,
                           groupPlan: promoteCircle
                             ? itemWithSub?.groupPlan
                             : itemWithAll?.groupPlan,
@@ -1851,15 +1856,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
     const itemWithSub = diagnosticPricing?.find(
       (item) => item?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
     );
-    console.log({ itemWithAll });
-    console.log({ itemWithSub });
     addCartItem!({
       id: `${itemId}`,
       name: stripHtml(itemName),
-      price: pricesObject.rate,
-      specialPrice: pricesObject.specialPrice! | pricesObject.rate,
-      circlePrice: pricesObject.circlePrice,
-      circleSpecialPrice: pricesObject.circleSpecialPrice,
+      price: pricesObject?.rate,
+      specialPrice: pricesObject?.specialPrice! || pricesObject?.rate,
+      circlePrice: pricesObject?.circlePrice,
+      circleSpecialPrice: pricesObject?.circleSpecialPrice,
       mou: testsIncluded,
       thumbnail: '',
       collectionMethod: collectionType!,
@@ -2001,24 +2004,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
            */}
           {!promoteCircle && data.specialPrice != data.rate && (
             <View style={{ alignSelf: 'flex-end', marginBottom: 1 }}>
-              <Text
-                style={{
-                  ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04),
-                  textDecorationLine: 'line-through',
-                }}
-              >
+              <Text style={styles.strikedPrice}>
                 {string.common.Rs} {data.rate}
               </Text>
             </View>
           )}
           {isDiagnosticCircleSubscription && promoteCircle && (
             <View style={{ alignSelf: 'flex-end', marginBottom: 1 }}>
-              <Text
-                style={{
-                  ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04),
-                  textDecorationLine: 'line-through',
-                }}
-              >
+              <Text style={styles.strikedPrice}>
                 {string.common.Rs} {data.specialPrice! || data.rate}
               </Text>
             </View>
@@ -2061,29 +2054,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
               </>
             )}
             {!isDiagnosticCircleSubscription && promoteCircle && (
-              <Text
-                style={{
-                  ...theme.viewStyles.text('M', 14, '#02475b', 1, 20, 0.04),
-                }}
-              >
+              <Text style={styles.normalPrice}>
                 {string.common.Rs} {data.specialPrice! || data.rate}
               </Text>
             )}
             {!isDiagnosticCircleSubscription && !promoteCircle && (
-              <Text
-                style={{
-                  ...theme.viewStyles.text('M', 14, '#02475b', 1, 20, 0.04),
-                }}
-              >
+              <Text style={styles.normalPrice}>
                 {string.common.Rs} {data.specialPrice! || data.rate}
               </Text>
             )}
             {isDiagnosticCircleSubscription && !promoteCircle && (
-              <Text
-                style={{
-                  ...theme.viewStyles.text('M', 14, '#02475b', 1, 20, 0.04),
-                }}
-              >
+              <Text style={styles.normalPrice}>
                 {string.common.Rs} {data.specialPrice! || data.rate}
               </Text>
             )}
@@ -2094,10 +2075,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
               <View style={{ flexDirection: 'row' }}>
                 <CircleHeading isSubscribed={isDiagnosticCircleSubscription} />
                 <Text
-                  style={{
-                    marginLeft: 5,
-                    ...theme.viewStyles.text('M', 14, '#02475b', 1, 20, 0.04),
-                  }}
+                  style={[
+                    styles.normalPrice,
+                    {
+                      marginLeft: 5,
+                    },
+                  ]}
                 >
                   {string.common.Rs} {data.circleSpecialPrice!}
                 </Text>
@@ -2159,8 +2142,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
       },
       inputContainerStyle: isFocusedStyle
         ? {
-            // borderBottomColor: colors.APP_GREEN,
-            // borderBottomWidth: 2,
             borderRadius: 5,
             backgroundColor: colors.WHITE,
             marginHorizontal: 10,
@@ -2172,7 +2153,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
             backgroundColor: colors.WHITE, //'#f7f8f5'
             marginHorizontal: 10,
             paddingHorizontal: 16,
-            //borderBottomWidth:0
             borderWidth: 1,
             borderColor: colors.APP_GREEN,
           },
@@ -2465,31 +2445,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
       diagnosticPricing,
     } = item;
 
-    const itemWithAll = diagnosticPricing!.find(
-      (item) => item!.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL
-    );
-    const itemWithSub = diagnosticPricing!.find(
-      (item) => item!.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
-    );
-    const currentDate = moment(new Date()).format('YYYY-MM-DD');
-    /**
-     * this needs to be changed
-     */
-    const isItemActive =
-      isDiagnosticCircleSubscription && itemWithSub
-        ? itemWithSub!.status == 'active' &&
-          isItemPriceActive(itemWithSub?.startDate!, itemWithSub?.endDate!, currentDate)
-        : itemWithAll &&
-          itemWithAll!.status == 'active' &&
-          isItemPriceActive(itemWithAll?.startDate!, itemWithAll?.endDate!, currentDate);
+    const getActiveItemsObject = getActiveItems(diagnosticPricing);
+    const itemWithAll = getActiveItemsObject?.itemWithAll;
+    const itemWithSub = getActiveItemsObject?.itemWithSub;
 
-    if (!isItemActive) {
+    if (!getActiveItemsObject.isItemActive) {
       return null;
     }
 
-    /**
-     * can keep it in seperate function
-     */
     const specialPrice = itemWithAll?.price!;
     const price = itemWithAll?.mrp!; //more than price (black)
     const circlePrice = itemWithSub?.mrp!;
@@ -2614,9 +2577,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }}
         onPress={() => _navigateToCareLanding()}
       >
-        <CircleBannerNonMember
-          style={{ height: 200, marginTop: -15, marginBottom: -25, width: winWidth - 32 }}
-        />
+        <CircleBannerNonMember style={{ height: 200, width: winWidth - 32 }} />
       </TouchableOpacity>
     );
   };

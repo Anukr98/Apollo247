@@ -15,6 +15,8 @@ import {
   isValidTestSlotWithArea,
   isEmptyObject,
   getDiscountPercentage,
+  postAppsFlyerEvent,
+  postFirebaseEvent,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import {
   DiagnosticData,
@@ -154,20 +156,20 @@ import {
 import {
   vaidateDiagnosticCoupon,
   vaidateDiagnosticCouponVariables,
-} from '@aph/mobile-patients/src/graphql/types/vaidateDiagnosticCoupon';
+} from '../../graphql/types/vaidateDiagnosticCoupon';
 import {
   getPincodeServiceability,
   getPincodeServiceabilityVariables,
-} from '@aph/mobile-patients/src/graphql/types/getPincodeServiceability';
+} from '../../graphql/types/getPincodeServiceability';
 import { fonts } from '../../theme/fonts';
 import {
   SaveDiagnosticOrder,
   SaveDiagnosticOrderVariables,
-} from '@aph/mobile-patients/src/graphql/types/SaveDiagnosticOrder';
+} from '../../graphql/types/SaveDiagnosticOrder';
 import {
   DiagnosticBookHomeCollection,
   DiagnosticBookHomeCollectionVariables,
-} from '@aph/mobile-patients/src/graphql/types/DiagnosticBookHomeCollection';
+} from '../../graphql/types/DiagnosticBookHomeCollection';
 const { width: screenWidth } = Dimensions.get('window');
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
@@ -242,6 +244,54 @@ const styles = StyleSheet.create({
     height: 2,
     backgroundColor: '#00b38e',
     opacity: 1,
+  },
+  scrollViewOuterView: {
+    flexDirection: 'row',
+    marginTop: '10%',
+    width: '70%',
+    height: 90,
+  },
+  orderPlacedText: {
+    flexWrap: 'wrap',
+    textAlign: 'left',
+    alignSelf: 'center',
+    ...theme.fonts.IBMPlexSansRegular(14),
+    lineHeight: 22,
+    color: theme.colors.SKY_BLUE,
+  },
+  bookingIdText: {
+    color: theme.colors.SHERPA_BLUE,
+    ...fonts.IBMPlexSansMedium(14),
+    lineHeight: 22,
+  },
+  bookingNumberText: {
+    color: theme.colors.APP_GREEN,
+    ...fonts.IBMPlexSansMedium(14),
+    lineHeight: 22,
+    marginHorizontal: 4,
+  },
+  horizontalSeparator: { width: screenWidth - 40, marginLeft: -16, height: 1, opacity: 0.4 },
+  placeholderText: {
+    color: theme.colors.SHERPA_BLUE,
+    ...fonts.IBMPlexSansRegular(11),
+    lineHeight: 16,
+    letterSpacing: 1,
+  },
+  contentText: {
+    color: theme.colors.SHERPA_BLUE,
+    ...fonts.IBMPlexSansMedium(14),
+    lineHeight: 22,
+  },
+  totalSavingOuterView: {
+    marginVertical: 20,
+    borderColor: theme.colors.APP_GREEN,
+    borderWidth: 1,
+
+    borderRadius: 1,
+    padding: 16,
+    paddingTop: 8,
+    paddingBottom: 8,
+    borderStyle: 'dashed',
   },
 });
 
@@ -751,6 +801,32 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     });
   };
 
+  const getActiveItems = (getDiagnosticPricingForItem: any) => {
+    const itemWithAll = getDiagnosticPricingForItem!.find(
+      (item: any) => item!.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL
+    );
+    const itemWithSub = getDiagnosticPricingForItem!.find(
+      (item: any) => item!.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
+    );
+
+    const currentDate = moment(new Date()).format('YYYY-MM-DD');
+    const isItemActive =
+      isDiagnosticCircleSubscription && itemWithSub
+        ? itemWithSub!.status == 'active' &&
+          isItemPriceActive(itemWithSub?.startDate!, itemWithSub?.endDate!, currentDate)
+        : itemWithAll &&
+          itemWithAll!.status == 'active' &&
+          isItemPriceActive(itemWithAll?.startDate!, itemWithAll?.endDate!, currentDate);
+
+    const activeItemsObject = {
+      itemWithAll: itemWithAll,
+      itemWithSub: itemWithSub,
+      isItemActive: isItemActive,
+    };
+
+    return activeItemsObject;
+  };
+
   const fetchPackageDetails = (
     itemIds: string | number[],
     func: (
@@ -786,12 +862,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               product.map((item) => {
                 const diagnosticPricing = g(item, 'diagnosticPricing');
 
-                const itemWithAll = diagnosticPricing?.find(
-                  (items) => items?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL
-                );
-                const itemWithSub = diagnosticPricing?.find(
-                  (items) => items?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
-                );
+                const getActiveItemsObject = getActiveItems(diagnosticPricing);
+                const itemWithAll = getActiveItemsObject?.itemWithAll;
+                const itemWithSub = getActiveItemsObject?.itemWithSub;
+
                 const discount = getDiscountPercentage(itemWithAll?.mrp!, itemWithAll?.price!);
                 const circleDiscount = getDiscountPercentage(
                   itemWithSub?.mrp!,
@@ -1087,96 +1161,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           });
         }
       });
-  };
-
-  const checkServicability = (
-    selectedAddress: savePatientAddress_savePatientAddress_patientAddress
-  ) => {
-    if (!checkingServicability) {
-      setCheckingServicability(true);
-      client
-        .query<getDiagnosticSlots, getDiagnosticSlotsVariables>({
-          query: GET_DIAGNOSTIC_SLOTS,
-          fetchPolicy: 'no-cache',
-          variables: {
-            patientId: g(currentPatient, 'id') || '',
-            hubCode: 'HYD_HUB1', // not considering this field at backend
-            selectedDate: moment(date).format('YYYY-MM-DD'),
-            zipCode: parseInt(selectedAddress.zipcode!),
-          },
-        })
-        .then(({ data }) => {
-          const diagnosticSlots = g(data, 'getDiagnosticSlots', 'diagnosticSlot') || [];
-          console.log('ORIGINAL DIAGNOSTIC SLOTS', { diagnosticSlots });
-
-          const slotsArray: TestSlot[] = [];
-          diagnosticSlots!.forEach((item) => {
-            item!.slotInfo!.forEach((slot) => {
-              if (isValidTestSlot(slot!, date)) {
-                slotsArray.push({
-                  employeeCode: item!.employeeCode,
-                  employeeName: item!.employeeName,
-                  slotInfo: slot,
-                  date: date,
-                  diagnosticBranchCode: g(data, 'getDiagnosticSlots', 'diagnosticBranchCode'),
-                } as TestSlot);
-              }
-            });
-          });
-
-          const uniqueSlots = getUniqueTestSlots(slotsArray);
-
-          console.log('ARRAY OF SLOTS', { slotsArray });
-          console.log('UNIQUE SLOTS', { uniqueSlots });
-
-          setSlots(slotsArray);
-          uniqueSlots.length &&
-            setselectedTimeSlot(
-              getTestSlotDetailsByTime(
-                slotsArray,
-                uniqueSlots[0].startTime!,
-                uniqueSlots[0].endTime!
-              )
-            );
-
-          setDeliveryAddressId!(selectedAddress.id);
-          setPinCode!(selectedAddress.zipcode!);
-          setDisplaySchedule(true);
-        })
-        .catch((e) => {
-          CommonBugFender('TestsCart_checkServicability', e);
-          console.log('Error occured', { e });
-          setDiagnosticSlot && setDiagnosticSlot(null);
-          setselectedTimeSlot(undefined);
-          const noHubSlots = g(e, 'graphQLErrors', '0', 'message') === 'NO_HUB_SLOTS';
-
-          if (noHubSlots) {
-            setDeliveryAddressId!(selectedAddress.id);
-            setPinCode!(selectedAddress.zipcode!);
-            showAphAlert!({
-              title: 'Uh oh.. :(',
-              description: `Sorry! There are no slots available on ${moment(date).format(
-                'DD MMM, YYYY'
-              )}. Please choose another date.`,
-              onPressOk: () => {
-                setDisplaySchedule(true);
-                hideAphAlert && hideAphAlert();
-              },
-            });
-          } else {
-            setDeliveryAddressId && setDeliveryAddressId('');
-            // setPinCode && setPinCode('');
-            showAphAlert!({
-              title: 'Uh oh.. :(',
-              description:
-                'Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address.',
-            });
-          }
-        })
-        .finally(() => {
-          setCheckingServicability(false);
-        });
-    }
   };
 
   const _navigateToEditAddress = (dataname: string, address: any, comingFrom: string) => {
@@ -1803,6 +1787,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           flexDirection: 'row',
           borderColor: theme.colors.APP_GREEN,
           borderWidth: 1,
+          borderRadius: 1,
           borderStyle: 'dashed',
           justifyContent: imagePosition == 'left' ? 'flex-start' : 'center',
         }}
@@ -2202,10 +2187,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     };
 
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED] = {
-      Paymentmode: isCashOnDelivery ? 'COD' : 'Online',
+      'Payment mode': isCashOnDelivery ? 'COD' : 'Online',
       Amount: grandTotal,
-      ServiceArea: 'Diagnostic',
-      LOB: 'Diagnostic',
+      'Service Area': 'Diagnostic',
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED, eventAttributes);
 
@@ -2272,7 +2256,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     console.log(physicalPrescriptions, 'physical prescriptions');
     console.log('idddd...' + validateCouponUniqueId);
     const allItems = cartItems.find((item) => item.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL);
-    console.log({ allItems });
+
     const bookingOrderInfo: DiagnosticBookHomeCollectionInput = {
       uniqueID: validateCouponUniqueId,
       patientId: (currentPatient && currentPatient.id) || '',
@@ -2293,9 +2277,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         (item) =>
           ({
             itemId: typeof item.id == 'string' ? parseInt(item.id) : item.id,
-            price: isDiagnosticCircleSubscription
-              ? (item.circleSpecialPrice! as number) || (item.specialPrice as number) || item.price
-              : (item.specialPrice as number) || item.price,
+            price:
+              isDiagnosticCircleSubscription && item.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
+                ? (item.circleSpecialPrice as number)
+                : (item.specialPrice as number) || item.price,
             quantity: 1,
             groupPlan: isDiagnosticCircleSubscription ? item.groupPlan! : DIAGNOSTIC_GROUP_PLAN.ALL,
           } as DiagnosticLineItem)
@@ -2312,13 +2297,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     console.log(JSON.stringify({ diagnosticOrderInput: bookingOrderInfo }));
     console.log('home collection \n', { diagnosticOrderInput: bookingOrderInfo });
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED] = {
-      Paymentmode: isCashOnDelivery ? 'COD' : 'Online',
+      'Payment mode': isCashOnDelivery ? 'COD' : 'Online',
       Amount: grandTotal,
-      ServiceArea: 'Diagnostic',
-      LOB: 'Diagnostic',
+      'Service Area': 'Diagnostic',
     };
-
-    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED, eventAttributes);
+    'Diagnostic',
+      postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED, eventAttributes);
     saveHomeCollectionBookingOrder(bookingOrderInfo)
       .then(({ data }) => {
         const { orderId, displayId, errorCode, errorMessage } =
@@ -2423,7 +2407,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             style={{
               flex: 1,
               padding: 20,
-              marginTop: '10%',
+              marginTop: screenHeight > 600 ? '5%' : 0,
             }}
           >
             <View style={{ alignSelf: 'flex-end' }}>
@@ -2439,292 +2423,215 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             {/**
              * order success view
              */}
-
-            <View
-              style={{
-                flexDirection: 'row',
-                marginTop: '10%',
-                width: '70%',
-                height: 90,
-              }}
-            >
-              <OrderPlacedCheckedIcon style={{ marginRight: 20 }} />
-              <Text
-                style={{
-                  flexWrap: 'wrap',
-                  textAlign: 'left',
-                  alignSelf: 'center',
-                  ...theme.fonts.IBMPlexSansRegular(14),
-                  lineHeight: 22,
-                  color: theme.colors.SKY_BLUE,
-                }}
-              >
-                Your order has been placed successfully.
-              </Text>
-            </View>
-            {/** order view */}
-            <View style={{ backgroundColor: '#F7F8F5', padding: 16 }}>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  marginBottom: '5%',
-                }}
-              >
-                <Text
-                  style={{
-                    color: theme.colors.SHERPA_BLUE,
-                    ...fonts.IBMPlexSansMedium(14),
-                    lineHeight: 22,
-                  }}
-                >
-                  Your Booking ID is{' '}
-                </Text>
-                <Text
-                  style={{
-                    color: theme.colors.APP_GREEN,
-                    ...fonts.IBMPlexSansMedium(14),
-                    lineHeight: 22,
-                    marginHorizontal: 4,
-                  }}
-                >
-                  #{orderDetails?.displayId!}
-                </Text>
-              </View>
-              <Spearator
-                style={{ width: screenWidth - 40, marginLeft: -16, height: 1, opacity: 0.4 }}
-              />
-              {/**
-               * mid - first view
-               */}
-              <View style={{ marginVertical: 28, marginHorizontal: 4 }}>
-                <Text
-                  style={{
-                    color: theme.colors.SHERPA_BLUE,
-                    ...fonts.IBMPlexSansRegular(11),
-                    lineHeight: 16,
-                    letterSpacing: 1,
-                  }}
-                >
-                  BOOKING DATE/TIME
-                </Text>
-                <Text
-                  style={{
-                    color: theme.colors.SHERPA_BLUE,
-                    ...fonts.IBMPlexSansMedium(14),
-                    lineHeight: 22,
-                  }}
-                >
-                  {moment().format('DD MMM')}, {moment().format('YYYY')} |{' '}
-                  {moment().format('hh:mm A')}
-                </Text>
-              </View>
-              {/**
-               * mid - second view add a check for clinic selection as well
-               */}
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                {pickupDate && pickupYear && (
-                  <View style={{ marginHorizontal: 4 }}>
-                    <Text
-                      style={{
-                        color: theme.colors.SHERPA_BLUE,
-                        ...fonts.IBMPlexSansRegular(11),
-                        lineHeight: 16,
-                        letterSpacing: 1,
-                      }}
-                    >
-                      PICKUP DATE
-                    </Text>
-                    <Text
-                      style={{
-                        color: theme.colors.SHERPA_BLUE,
-                        ...fonts.IBMPlexSansMedium(14),
-                        lineHeight: 22,
-                        marginVertical: 2,
-                      }}
-                    >
-                      {pickupDate}, {pickupYear}
-                    </Text>
-                  </View>
-                )}
-                {pickupTime && (
-                  <View style={{ marginHorizontal: 4 }}>
-                    <Text
-                      style={{
-                        color: theme.colors.SHERPA_BLUE,
-                        ...fonts.IBMPlexSansRegular(11),
-                        lineHeight: 16,
-                        letterSpacing: 1,
-                        marginHorizontal: 4,
-                      }}
-                    >
-                      PICKUP TIME
-                    </Text>
-                    <Text
-                      style={{
-                        color: theme.colors.SHERPA_BLUE,
-                        ...fonts.IBMPlexSansMedium(14),
-                        lineHeight: 22,
-                        marginVertical: 2,
-                      }}
-                    >
-                      {pickupTime}
-                    </Text>
-                  </View>
-                )}
-              </View>
-            </View>
-            {/**
-             * top green view
-             */}
-            {(orderCartSaving > 0 || (isDiagnosticCircleSubscription && orderCircleSaving > 0)) && (
-              <View
-                style={{
-                  marginVertical: 20,
-                  borderColor: theme.colors.APP_GREEN,
-                  borderWidth: 1,
-                  padding: 16,
-                  paddingTop: 8,
-                  paddingBottom: 8,
-                  borderStyle: 'dashed',
-                }}
-              >
-                {(orderCartSaving > 0 ||
-                  (isDiagnosticCircleSubscription && orderCircleSaving > 0)) && (
-                  <Text
+            <ScrollView bounces={false} style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+              <>
+                <View style={styles.scrollViewOuterView}>
+                  <OrderPlacedCheckedIcon style={{ marginRight: 20 }} />
+                  <Text style={styles.orderPlacedText}>
+                    Your order has been placed successfully.
+                  </Text>
+                </View>
+                {/** order view */}
+                <View style={{ backgroundColor: '#F7F8F5', padding: 16 }}>
+                  <View
                     style={{
-                      color: '#02475b',
-                      ...theme.fonts.IBMPlexSansRegular(14),
-                      lineHeight: 16,
+                      flexDirection: 'row',
+                      marginBottom: '5%',
                     }}
                   >
-                    You
-                    <Text style={{ color: theme.colors.APP_GREEN }}>
-                      {' '}
-                      saved {string.common.Rs}
-                      {isDiagnosticCircleSubscription
-                        ? Number(orderCartSaving) + Number(orderCircleSaving)
-                        : orderCartSaving}
-                    </Text>{' '}
-                    on your purchase.
-                  </Text>
-                )}
-                {isDiagnosticCircleSubscription && orderCircleSaving > 0 && (
-                  <>
-                    <Spearator style={{ margin: 5 }} />
-
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                      <View style={{ flexDirection: 'row' }}>
-                        <CircleLogo style={{ height: 20, width: 34, resizeMode: 'contain' }} />
+                    <Text style={styles.bookingIdText}>Your Booking ID is </Text>
+                    <Text style={styles.bookingNumberText}>#{orderDetails?.displayId!}</Text>
+                  </View>
+                  <Spearator style={styles.horizontalSeparator} />
+                  {/**
+                   * mid - first view
+                   */}
+                  <View style={{ marginVertical: 28, marginHorizontal: 4 }}>
+                    <Text style={styles.placeholderText}>BOOKING DATE/TIME</Text>
+                    <Text style={styles.contentText}>
+                      {moment().format('DD MMM')}, {moment().format('YYYY')} |{' '}
+                      {moment().format('hh:mm A')}
+                    </Text>
+                  </View>
+                  {/**
+                   * mid - second view add a check for clinic selection as well
+                   */}
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                    {pickupDate && pickupYear && (
+                      <View style={{ marginHorizontal: 4 }}>
+                        <Text style={styles.placeholderText}>PICKUP DATE</Text>
                         <Text
-                          style={{
-                            color: theme.colors.APP_GREEN,
-                            ...theme.fonts.IBMPlexSansRegular(14),
-                            lineHeight: 16,
-                          }}
+                          style={[
+                            styles.contentText,
+                            {
+                              marginVertical: 2,
+                            },
+                          ]}
                         >
-                          Membership Discount
+                          {pickupDate}, {pickupYear}
                         </Text>
                       </View>
-                      <Text
-                        style={{
-                          color: theme.colors.APP_GREEN,
-                          ...theme.fonts.IBMPlexSansRegular(14),
-                          lineHeight: 16,
-                        }}
-                      >
-                        {string.common.Rs} {orderCircleSaving}
-                      </Text>
-                    </View>
-                  </>
-                )}
+                    )}
+                    {pickupTime && (
+                      <View style={{ marginHorizontal: 4 }}>
+                        <Text
+                          style={[
+                            styles.placeholderText,
+                            {
+                              marginHorizontal: 4,
+                            },
+                          ]}
+                        >
+                          PICKUP TIME
+                        </Text>
+                        <Text
+                          style={[
+                            styles.contentText,
+                            {
+                              marginVertical: 2,
+                            },
+                          ]}
+                        >
+                          {pickupTime}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
                 {/**
-                 * add a check a here that if it contains all or has all circle
+                 * top green view
                  */}
-
-                {showCartSaving! && (
-                  <>
-                    <Spearator style={{ margin: 5 }} />
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                {(orderCartSaving > 0 ||
+                  (isDiagnosticCircleSubscription && orderCircleSaving > 0)) && (
+                  <View style={styles.totalSavingOuterView}>
+                    {(orderCartSaving > 0 ||
+                      (isDiagnosticCircleSubscription && orderCircleSaving > 0)) && (
                       <Text
                         style={{
-                          color: theme.colors.APP_GREEN,
+                          color: '#02475b',
                           ...theme.fonts.IBMPlexSansRegular(14),
                           lineHeight: 16,
                         }}
                       >
-                        {' '}
-                        Cart Saving
+                        You
+                        <Text style={{ color: theme.colors.APP_GREEN }}>
+                          {' '}
+                          saved {string.common.Rs}
+                          {isDiagnosticCircleSubscription
+                            ? Number(orderCartSaving) + Number(orderCircleSaving)
+                            : orderCartSaving}
+                        </Text>{' '}
+                        on your purchase.
                       </Text>
+                    )}
+                    {isDiagnosticCircleSubscription && orderCircleSaving > 0 && (
+                      <>
+                        <Spearator style={{ margin: 5 }} />
 
-                      <Text
-                        style={{
-                          color: theme.colors.APP_GREEN,
-                          ...theme.fonts.IBMPlexSansRegular(14),
-                          lineHeight: 16,
-                        }}
-                      >
-                        {string.common.Rs} {orderCartSaving}
-                      </Text>
-                    </View>
-                  </>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                          <View style={{ flexDirection: 'row' }}>
+                            <CircleLogo style={{ height: 20, width: 34, resizeMode: 'contain' }} />
+                            <Text
+                              style={{
+                                color: theme.colors.APP_GREEN,
+                                ...theme.fonts.IBMPlexSansRegular(14),
+                                lineHeight: 16,
+                              }}
+                            >
+                              Membership Discount
+                            </Text>
+                          </View>
+                          <Text
+                            style={{
+                              color: theme.colors.APP_GREEN,
+                              ...theme.fonts.IBMPlexSansRegular(14),
+                              lineHeight: 16,
+                            }}
+                          >
+                            {string.common.Rs} {orderCircleSaving}
+                          </Text>
+                        </View>
+                      </>
+                    )}
+                    {/**
+                     * add a check a here that if it contains all or has all circle
+                     */}
+
+                    {showCartSaving! && (
+                      <>
+                        <Spearator style={{ margin: 5 }} />
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                          <Text
+                            style={{
+                              color: theme.colors.APP_GREEN,
+                              ...theme.fonts.IBMPlexSansRegular(14),
+                              lineHeight: 16,
+                            }}
+                          >
+                            {' '}
+                            Cart Saving
+                          </Text>
+
+                          <Text
+                            style={{
+                              color: theme.colors.APP_GREEN,
+                              ...theme.fonts.IBMPlexSansRegular(14),
+                              lineHeight: 16,
+                            }}
+                          >
+                            {string.common.Rs} {orderCartSaving}
+                          </Text>
+                        </View>
+                      </>
+                    )}
+                  </View>
                 )}
-              </View>
-            )}
 
-            {!isDiagnosticCircleSubscription && orderCircleSaving > 0 && (
-              <View
-                style={{
-                  borderColor: theme.colors.APP_GREEN,
-                  borderWidth: 1,
-                  padding: 16,
-                  paddingTop: 8,
-                  paddingBottom: 8,
-                  borderStyle: 'dashed',
-                  flexDirection: 'row',
-                  marginVertical: orderCartSaving > 0 ? 0 : 30,
-                }}
-              >
-                <Text
-                  style={{
-                    color: '#02475b',
-                    ...theme.fonts.IBMPlexSansRegular(14),
-                    lineHeight: 16,
-                  }}
-                >
-                  You could have
-                  <Text style={{ color: theme.colors.APP_GREEN }}>
-                    {' '}
-                    saved extra {string.common.Rs}
-                    {orderCircleSaving}
-                  </Text>{' '}
-                  with
-                </Text>
-                <CircleLogo style={{ resizeMode: 'contain', height: 18, width: 35 }} />
-              </View>
-            )}
+                {!isDiagnosticCircleSubscription && orderCircleSaving > 0 && (
+                  <View
+                    style={{
+                      borderColor: theme.colors.APP_GREEN,
+                      borderWidth: 1,
+                      borderRadius: 1,
+                      padding: 16,
+                      paddingTop: 8,
+                      paddingBottom: 8,
+                      borderStyle: 'dashed',
+                      flexDirection: 'row',
+                      marginVertical: orderCartSaving > 0 ? 0 : 30,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: '#02475b',
+                        ...theme.fonts.IBMPlexSansRegular(14),
+                        lineHeight: 16,
+                      }}
+                    >
+                      You could have
+                      <Text style={{ color: theme.colors.APP_GREEN }}>
+                        {' '}
+                        saved extra {string.common.Rs}
+                        {orderCircleSaving}
+                      </Text>{' '}
+                      with
+                    </Text>
+                    <CircleLogo style={{ resizeMode: 'contain', height: 18, width: 35 }} />
+                  </View>
+                )}
+              </>
+            </ScrollView>
 
-            <StickyBottomComponent
-              style={{
-                marginBottom: '32%',
-                justifyContent: 'center',
-                flexDirection: 'column',
-                alignItems: 'center',
-              }}
+            <View style={{ height: 90 }}>{renderDiagnosticHelpText()}</View>
+            <Spearator style={{ opacity: 0.3, marginBottom: 20 }} />
+            <TouchableOpacity
+              style={{ alignItems: 'center', justifyContent: 'flex-end' }}
+              onPress={() => navigateToOrderDetails(true, orderDetails?.orderId!)}
             >
-              <View style={{ height: 90 }}>{renderDiagnosticHelpText()}</View>
-              <Spearator style={{ opacity: 0.3, marginBottom: 20 }} />
-
-              <TouchableOpacity
-                style={{ alignItems: 'flex-end' }}
-                onPress={() => navigateToOrderDetails(true, orderDetails?.orderId!)}
-              >
-                <Text
-                  style={{ ...theme.viewStyles.text('B', 16, '#FC9916'), marginVertical: '4%' }}
-                >
-                  VIEW ORDER SUMMARY
-                </Text>
-              </TouchableOpacity>
-            </StickyBottomComponent>
+              <Text style={{ ...theme.viewStyles.text('B', 16, '#FC9916'), marginVertical: '4%' }}>
+                VIEW ORDER SUMMARY
+              </Text>
+            </TouchableOpacity>
           </View>
         </Modal>
       </View>
@@ -2734,11 +2641,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const navigateToOrderDetails = (showOrderSummaryTab: boolean, orderId: string) => {
     setModalVisible(false);
     setLoading!(false);
-    props.navigation.navigate(AppRoutes.TestOrderDetailsSummary, {
+    props.navigation.navigate(AppRoutes.TestOrderDetails, {
       goToHomeOnBack: true,
       showOrderSummaryTab,
       orderId: orderId,
-      comingFrom: AppRoutes.TestsCheckoutScene,
+      comingFrom: AppRoutes.TestsCart,
     });
   };
 
