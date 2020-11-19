@@ -1791,7 +1791,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     return (
       <>
         <View style={styles.listItemViewStyle}>
-          {renderListItem('Record for')}
+          {renderListItem('Record for', false)}
           <Text style={styles.textInputStyle} numberOfLines={1}>
             {_.capitalize(currentPatient?.firstName) || ''}
           </Text>
