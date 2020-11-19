@@ -24,7 +24,13 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  MedicalRecordType,
+  AddLabTestRecordInput,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { addPatientLabTestRecord } from '@aph/mobile-patients/src/graphql/types/addPatientLabTestRecord';
+import { ADD_PATIENT_LAB_TEST_RECORD } from '@aph/mobile-patients/src/graphql/profiles';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   g,
   postWebEngageEvent,
@@ -32,6 +38,7 @@ import {
   editDeleteData,
   getSourceName,
   handleGraphQlError,
+  postWebEngagePHR,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { deletePatientPrismMedicalRecords } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -339,37 +346,94 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
 
   const onHealthCardItemPress = (selectedItem: any) => {
     props.navigation.navigate(AppRoutes.HealthRecordDetails, {
-      data: selectedItem,
+      data: filterApplied === FILTER_TYPE.PARAMETER_NAME ? selectedItem?.data : selectedItem,
       labResults: true,
     });
   };
 
   const onPressDeletePrismMedicalRecords = (selectedItem: any) => {
-    setShowSpinner(true);
-    deletePatientPrismMedicalRecords(
-      client,
-      selectedItem?.id,
-      currentPatient?.id || '',
-      selectedItem?.labTestName ? MedicalRecordType.TEST_REPORT : MedicalRecordType.HEALTHCHECK
-    )
-      .then((status) => {
-        if (status) {
+    if (filterApplied === FILTER_TYPE.PARAMETER_NAME) {
+      setShowSpinner(true);
+      let resultParams = selectedItem?.data?.labTestResults?.filter(
+        (result: any) => selectedItem?.paramObject !== result
+      );
+      if (resultParams?.length > 0) {
+        resultParams = resultParams.map((labParam: any) => {
+          const splitRange = labParam?.range?.split('-');
+          return {
+            parameterName: labParam?.parameterName || '',
+            result: parseFloat((labParam?.result || 0).toString()),
+            unit: labParam?.unit || '',
+            maximum: parseFloat((splitRange[1] || 0).toString()),
+            minimum: parseFloat((splitRange[0] || 0).toString()),
+          };
+        });
+      }
+      const inputData: AddLabTestRecordInput = {
+        id: selectedItem?.data?.id || null,
+        patientId: currentPatient?.id || '',
+        labTestName: selectedItem?.data?.labTestName || '',
+        labTestDate:
+          selectedItem?.data?.date !== ''
+            ? moment(selectedItem?.data?.date).format('YYYY-MM-DD')
+            : '',
+        recordType: MedicalRecordType.TEST_REPORT,
+        referringDoctor: selectedItem?.data?.labTestRefferedBy || '',
+        observations: '',
+        additionalNotes: selectedItem?.data?.additionalNotes || '',
+        labTestResults: resultParams || [],
+        testResultFiles: [],
+      };
+      client
+        .mutate<addPatientLabTestRecord>({
+          mutation: ADD_PATIENT_LAB_TEST_RECORD,
+          variables: {
+            AddLabTestRecordInput: inputData,
+          },
+        })
+        .then(({ data }) => {
           setShowSpinner(false);
-          props.navigation.goBack();
-        }
-      })
-      .catch((error) => {
-        setShowSpinner(false);
-        currentPatient && handleGraphQlError(error);
-      });
+          const status = g(data, 'addPatientLabTestRecord', 'status');
+          if (status) {
+            postWebEngagePHR('Lab Test', WebEngageEventName.PHR_ADD_LAB_TESTS);
+            props.navigation.goBack();
+          }
+        })
+        .catch((e) => {
+          CommonBugFender('AddRecord_ADD_PATIENT_LAB_TEST_RECORD', e);
+          setShowSpinner(false);
+          console.log(JSON.stringify(e), 'eeeee');
+          currentPatient && handleGraphQlError(e);
+        });
+    } else {
+      setShowSpinner(true);
+      deletePatientPrismMedicalRecords(
+        client,
+        selectedItem?.id,
+        currentPatient?.id || '',
+        selectedItem?.labTestName ? MedicalRecordType.TEST_REPORT : MedicalRecordType.HEALTHCHECK
+      )
+        .then((status) => {
+          if (status) {
+            setShowSpinner(false);
+            props.navigation.goBack();
+          }
+        })
+        .catch((error) => {
+          setShowSpinner(false);
+          currentPatient && handleGraphQlError(error);
+        });
+    }
   };
 
   const onPressEditPrismMedicalRecords = (selectedItem: any) => {
     props.navigation.navigate(AppRoutes.AddRecord, {
       navigatedFrom: 'Test Reports',
       recordType: MedicalRecordType.TEST_REPORT,
-      selectedRecordID: selectedItem?.id,
-      selectedRecord: selectedItem,
+      selectedRecordID:
+        filterApplied === FILTER_TYPE.PARAMETER_NAME ? selectedItem?.data?.id : selectedItem?.id,
+      selectedRecord:
+        filterApplied === FILTER_TYPE.PARAMETER_NAME ? selectedItem?.data : selectedItem,
     });
   };
 
@@ -416,7 +480,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
       soureName === string.common.clicnical_document_text || soureName === '-' ? true : false;
     return (
       <HealthRecordCard
-        item={item?.data}
+        item={filterApplied === FILTER_TYPE.PARAMETER_NAME ? item : item?.data}
         index={index}
         editDeleteData={editDeleteData()}
         showUpdateDeleteOption={showEditDeleteOption}
