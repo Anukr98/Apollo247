@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 import { DIAGNOSTIC_ORDER_STATUS, DIAGNOSTICS_TYPE, TEST_COLLECTION_TYPE } from "./globalTypes";
@@ -7,6 +8,16 @@ import { DIAGNOSTIC_ORDER_STATUS, DIAGNOSTICS_TYPE, TEST_COLLECTION_TYPE } from 
 // ====================================================
 // GraphQL query operation: getDiagnosticOrderDetails
 // ====================================================
+
+export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems_diagnostics_diagnosticPricing {
+  __typename: "diagnosticPricing";
+  mrp: number;
+  price: number;
+  groupPlan: string;
+  status: string | null;
+  startDate: any | null;
+  endDate: any | null;
+}
 
 export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems_diagnostics {
   __typename: "Diagnostics";
@@ -21,6 +32,7 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_
   itemType: DIAGNOSTICS_TYPE | null;
   fromAgeInDays: number;
   collectionType: TEST_COLLECTION_TYPE | null;
+  diagnosticPricing: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems_diagnostics_diagnosticPricing | null)[] | null;
 }
 
 export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems {
@@ -30,6 +42,14 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_
   price: number | null;
   quantity: number | null;
   diagnostics: getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems_diagnostics | null;
+}
+
+export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrdersStatus {
+  __typename: "DiagnosticOrdersStatus";
+  orderStatus: DIAGNOSTIC_ORDER_STATUS | null;
+  itemId: number | null;
+  statusDate: any | null;
+  packageId: number | null;
 }
 
 export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList {
@@ -54,6 +74,7 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList 
   displayId: number;
   createdDate: any;
   diagnosticOrderLineItems: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems | null)[] | null;
+  diagnosticOrdersStatus: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrdersStatus | null)[] | null;
 }
 
 export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails {

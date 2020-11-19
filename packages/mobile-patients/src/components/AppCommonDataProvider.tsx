@@ -90,7 +90,7 @@ export interface CicleSubscriptionData {
   subPlanIds: string[] | [];
   planSummary: CirclePlanSummary[] | [];
   groupDetails: CircleGroup;
-};
+}
 
 export interface CirclePlanSummary {
   price: number;
@@ -251,9 +251,7 @@ export const AppCommonDataProvider: React.FC = (props) => {
     AppCommonDataContextProps['circleSubscription']
   >(null);
 
-  const [bannerData, _setBannerData] = useState<
-    AppCommonDataContextProps['bannerData']
-  >(null);
+  const [bannerData, _setBannerData] = useState<AppCommonDataContextProps['bannerData']>(null);
 
   const [pharmacyLocation, _setPharmacyLocation] = useState<
     AppCommonDataContextProps['pharmacyLocation']
@@ -290,7 +288,6 @@ export const AppCommonDataProvider: React.FC = (props) => {
   const [savePatientDetails, setSavePatientDetails] = useState<
     AppCommonDataContextProps['savePatientDetails']
   >([]);
-
   const [VirtualConsultationFee, setVirtualConsultationFee] = useState<string>('');
   const [generalPhysicians, setGeneralPhysicians] = useState<{
     id: string;
@@ -334,9 +331,7 @@ export const AppCommonDataProvider: React.FC = (props) => {
     _setCircleSubscription(circleSubscription);
   };
 
-  const setBannerData: AppCommonDataContextProps['setBannerData'] = (
-    bannerData
-  ) => {
+  const setBannerData: AppCommonDataContextProps['setBannerData'] = (bannerData) => {
     _setBannerData(bannerData);
   };
 

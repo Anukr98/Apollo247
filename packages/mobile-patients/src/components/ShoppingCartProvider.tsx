@@ -181,7 +181,6 @@ export interface ShoppingCartContextProps {
   setHdfcPlanName: ((id: string) => void) | null;
 
   isProuctFreeCouponApplied: boolean;
-
   circleSubscriptionId: string;
   setCircleSubscriptionId: ((id: string) => void) | null;
   circlePlanSelected: any;
@@ -323,9 +322,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
     false
   );
 
-  const [circleCashback, _setCircleCashback] = useState<
-    ShoppingCartContextProps['circleCashback']
-  >(null);
+  const [circleCashback, _setCircleCashback] = useState<ShoppingCartContextProps['circleCashback']>(
+    null
+  );
   const [isCircleSubscription, setIsCircleSubscription] = useState<
     ShoppingCartContextProps['isCircleSubscription']
   >(false);
@@ -395,11 +394,15 @@ export const ShoppingCartProvider: React.FC = (props) => {
     if (cartItems.length) {
       // calculate circle cashback
       cartItems.forEach((item) => {
-        const finalPrice = item.specialPrice ? (item.price - item.specialPrice) ? item.specialPrice : item.price : item.price;
+        const finalPrice = item.specialPrice
+          ? item.price - item.specialPrice
+            ? item.specialPrice
+            : item.price
+          : item.price;
         let cashback = 0;
         const type_id = item.productType;
         if (!!circleCashback && !!circleCashback[type_id]) {
-          cashback = (finalPrice * item.quantity) * (circleCashback[type_id] / 100);
+          cashback = finalPrice * item.quantity * (circleCashback[type_id] / 100);
         }
         item.circleCashbackAmt = cashback || 0;
       });
@@ -494,16 +497,12 @@ export const ShoppingCartProvider: React.FC = (props) => {
       .toFixed(2)
   );
 
-  const setCircleCashback: ShoppingCartContextProps['setCircleCashback'] = (
-    circleCashback
-  ) => {
+  const setCircleCashback: ShoppingCartContextProps['setCircleCashback'] = (circleCashback) => {
     _setCircleCashback(circleCashback);
   };
 
   const cartTotalCashback: ShoppingCartContextProps['cartTotalCashback'] = parseFloat(
-    cartItems
-      .reduce((cbTotal, currItem) => cbTotal + currItem.circleCashbackAmt, 0)
-      .toFixed(2)
+    cartItems.reduce((cbTotal, currItem) => cbTotal + currItem.circleCashbackAmt, 0).toFixed(2)
   );
 
   const cartTotalOfRxProducts: ShoppingCartContextProps['cartTotalOfRxProducts'] = parseFloat(
@@ -514,7 +513,10 @@ export const ShoppingCartProvider: React.FC = (props) => {
   );
 
   const deliveryCharges =
-    isFreeDelivery || deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP || isCircleSubscription || circleSubscriptionId
+    isFreeDelivery ||
+    deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP ||
+    isCircleSubscription ||
+    circleSubscriptionId
       ? 0
       : cartTotal > 0 &&
         cartTotal - productDiscount - couponDiscount <
@@ -525,7 +527,13 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const packagingCharges = AppConfig.Configuration.PACKAGING_CHARGES;
 
   const grandTotal = parseFloat(
-    (cartTotal + deliveryCharges - couponDiscount - productDiscount + (!!circleMembershipCharges ? circleMembershipCharges : 0)).toFixed(2)
+    (
+      cartTotal +
+      deliveryCharges -
+      couponDiscount -
+      productDiscount +
+      (!!circleMembershipCharges ? circleMembershipCharges : 0)
+    ).toFixed(2)
   );
 
   const uploadPrescriptionRequired =
@@ -826,7 +834,6 @@ export const ShoppingCartProvider: React.FC = (props) => {
         hdfcPlanName,
         setHdfcPlanName,
         isProuctFreeCouponApplied,
-
         circleSubscriptionId,
         setCircleSubscriptionId,
         circlePlanSelected,

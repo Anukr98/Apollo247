@@ -367,8 +367,19 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [showList, setShowList] = useState<boolean>(false);
   const [isFindDoctorCustomProfile, setFindDoctorCustomProfile] = useState<boolean>(false);
 
-  const { cartItems } = useDiagnosticsCart();
-  const { cartItems: shopCartItems, setHdfcPlanName, setIsFreeDelivery, setIsCircleSubscription, setCircleCashback } = useShoppingCart();
+  const {
+    cartItems,
+    setIsDiagnosticCircleSubscription,
+    isDiagnosticCircleSubscription,
+  } = useDiagnosticsCart();
+
+  const {
+    cartItems: shopCartItems,
+    setHdfcPlanName,
+    setIsFreeDelivery,
+    setIsCircleSubscription,
+    setCircleCashback,
+  } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
 
   const { analytics } = useAuth();
@@ -1021,7 +1032,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((data) => {
-        const cashback = g(data, 'data', 'GetCashbackDetailsOfPlanById', 'response', 'meta', 'cashback');
+        const cashback = g(
+          data,
+          'data',
+          'GetCashbackDetailsOfPlanById',
+          'response',
+          'meta',
+          'cashback'
+        );
         setCircleCashback && setCircleCashback(cashback);
       })
       .catch((e) => {
@@ -1054,22 +1072,28 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               const hdfcSubscription = setSubscriptionData(hdfcPlan[0]);
               setHdfcUserSubscriptions && setHdfcUserSubscriptions(hdfcSubscription);
 
-              const subscriptionName = g(hdfcSubscription, 'name') ? g(hdfcSubscription, 'name') : '';
+              const subscriptionName = g(hdfcSubscription, 'name')
+                ? g(hdfcSubscription, 'name')
+                : '';
               if (g(hdfcSubscription, 'isActive')) {
                 setHdfcPlanName && setHdfcPlanName(subscriptionName);
               }
-              if (subscriptionName === hdfc_values.PLATINUM_PLAN && !!g(hdfcSubscription, 'isActive')) {
+              if (
+                subscriptionName === hdfc_values.PLATINUM_PLAN &&
+                !!g(hdfcSubscription, 'isActive')
+              ) {
                 setIsFreeDelivery && setIsFreeDelivery(true);
               }
               getUserBanners();
               setShowHdfcWidget(false);
               setShowHdfcConnectWidget(true);
             }
-            
+
             if (circlePlan) {
               const circleSubscription = setCircleSubscriptionData(circlePlan[0]);
               if (!!circlePlan[0]?._id) {
                 setIsCircleSubscription && setIsCircleSubscription(true);
+                setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
               }
               setCircleSubscription && setCircleSubscription(circleSubscription);
               console.log('circleSubscription-------- ', circleSubscription);
@@ -1086,7 +1110,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     const planSummary: CirclePlanSummary[] = [];
     const summary = plan?.plan_summary;
     if (summary && summary.length) {
-      summary.forEach(value => {
+      summary.forEach((value) => {
         const plan_summary: CirclePlanSummary = {
           price: value?.price,
           renewMode: value?.renew_mode,
@@ -1190,7 +1214,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       let allPatients: any;
 
       const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
-      const item = JSON.parse(retrievedItem);
+      const item = JSON.parse(retrievedItem || 'null');
 
       const callByPrism: any = await AsyncStorage.getItem('callByPrism');
 
@@ -1211,7 +1235,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         : null;
 
       const array: any = await AsyncStorage.getItem('allNotification');
-      const arraySelected = JSON.parse(array);
+      const arraySelected = JSON.parse(array || 'null');
       const selectedCount = arraySelected.filter((item: any) => {
         return item.isActive === true;
       });
@@ -1268,7 +1292,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           const tempArray: any[] = [];
           const filteredNotifications = arrayNotification.filter((el: any) => {
             // If it is not a duplicate and accepts these conditions, return true
-            const val = JSON.parse(el.notificatio_details.push_notification_content);
+            const val = JSON.parse(el.notificatio_details.push_notification_content || 'null');
             const event = val.cta;
             if (event) {
               const actionLink = decodeURIComponent(event.actionLink);
@@ -1365,7 +1389,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           .finally(() => setAppointmentLoading(false));
       }
     }
-  }, [currentPatient, analytics, props.navigation.state.params]);
+  }, [currentPatient, props.navigation.state.params]);
 
   useEffect(() => {
     async function fetchData() {
@@ -1380,8 +1404,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           AsyncStorage.setItem('gotIt', 'true');
         }, 5000);
       }
-      const CMEnabled = await AsyncStorage.getItem('CMEnable');
-      const eneabled = CMEnabled ? JSON.parse(CMEnabled) : false;
+      const eneabled = AppConfig.Configuration.ENABLE_CONDITIONAL_MANAGEMENT;
       setEnableCM(eneabled);
     }
     fetchData();
@@ -1434,7 +1457,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const getTokenforCM = async () => {
     const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
-    const item = JSON.parse(retrievedItem);
+    const item = JSON.parse(retrievedItem || 'null');
 
     const callByPrism: any = await AsyncStorage.getItem('callByPrism');
 
@@ -2445,6 +2468,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         >
           {string.common.covidYouCanText}
         </Text>
+
         {renderCovidBlueButtons(
           onPressRiskLevel,
           <CovidRiskLevel style={{ width: 24, height: 24 }} />,

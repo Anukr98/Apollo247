@@ -1196,9 +1196,11 @@ export const DashedLine: React.FC<IconProps> = (props) => (
 );
 
 export const CircleLogo: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/circle_logo.png')} />
+  <IconBase size="sm" {...props} source={require('./icons/circleLogo.png')} />
 );
-
+export const OrderPlacedCheckedIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('./icons/checked.png')} />
+);
 export const CircleBannerNonMember: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/circle_banner.png')} />
 );
