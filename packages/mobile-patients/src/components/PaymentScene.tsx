@@ -43,6 +43,9 @@ import { ShoppingCartItem } from '@aph/mobile-patients/src/components/ShoppingCa
 import { trackTagalysEvent } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
+import { ONE_APOLLO_STORE_CODE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import AsyncStorage from '@react-native-community/async-storage';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   popupButtonStyle: {
@@ -74,10 +77,12 @@ export interface PaymentSceneProps
     appsflyerEventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED];
     coupon: any;
     cartItems: ShoppingCartItem[];
+    planId?: string;
+    subPlanId?: string;
   }> {}
 
 export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
-  const { clearCartInfo } = useShoppingCart();
+  const { clearCartInfo, circleMembershipCharges, setCircleMembershipCharges } = useShoppingCart();
   const totalAmount = props.navigation.getParam('amount');
   const burnHC = props.navigation.getParam('burnHC');
   const orderAutoId = props.navigation.getParam('orderAutoId');
@@ -90,12 +95,15 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   const appsflyerEventAttributes = props.navigation.getParam('appsflyerEventAttributes');
   const coupon = props.navigation.getParam('coupon');
   const cartItems = props.navigation.getParam('cartItems');
+  const planId = props.navigation.getParam('planId');
+  const subPlanId = props.navigation.getParam('subPlanId');
   const { currentPatient } = useAllCurrentPatients();
   const currentPatiendId = currentPatient && currentPatient.id;
   const [isRemindMeChecked, setIsRemindMeChecked] = useState(true);
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
   const [loading, setLoading] = useState(true);
+  const { circleSubscription } = useAppCommonData();
 
   const handleBack = async () => {
     Alert.alert('Alert', 'Are you sure you want to change your payment mode?', [
@@ -208,6 +216,10 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       }
     } catch (error) {}
 
+    if (!!circleMembershipCharges) {
+      setCircleMembershipCharges && setCircleMembershipCharges(0);
+      AsyncStorage.removeItem('circlePlanSelected');
+    }
     setLoading!(false);
     props.navigation.dispatch(
       StackActions.reset({
@@ -396,9 +408,16 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
 
   const renderWebView = () => {
     const baseUrl = AppConfig.Configuration.PAYMENT_GATEWAY_BASE_URL;
-    const url = `${baseUrl}/paymed?amount=${totalAmount}&oid=${orderAutoId}&pid=${currentPatiendId}&source=mobile&paymentTypeID=${paymentTypeID}&paymentModeOnly=YES${
+    const storeCode = Platform.OS == 'android' ? ONE_APOLLO_STORE_CODE.ANDCUS : ONE_APOLLO_STORE_CODE.IOSCUS
+    let url = `${baseUrl}/paymed?amount=${totalAmount}&oid=${orderAutoId}&pid=${currentPatiendId}&source=mobile&paymentTypeID=${paymentTypeID}&paymentModeOnly=YES${
       burnHC ? '&hc=' + burnHC : ''
     }${bankCode ? '&bankCode=' + bankCode : ''}`;
+
+    if (!(circleSubscription && circleSubscription?._id)) {
+      url += `${planId ? '&planId=' + planId : ''
+      }${subPlanId ? '&subPlanId=' + subPlanId : ''
+      }${'&storeCode=' + storeCode}`;
+    }
 
     // PATH: /paymed?amount=${totalAmount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=mobile
     // SUCCESS_PATH: /mob?tk=<>&status=<>

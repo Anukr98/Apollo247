@@ -160,6 +160,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     hdfcUserSubscriptions,
     setHdfcUserSubscriptions,
     setBannerData,
+    setCircleSubscription,
   } = useAppCommonData();
   const { setIsCircleSubscription, setCircleMembershipCharges } = useShoppingCart();
 
@@ -287,6 +288,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       setAppointmentsPersonalized && setAppointmentsPersonalized([]);
       setIsCircleSubscription && setIsCircleSubscription(false);
       setCircleMembershipCharges && setCircleMembershipCharges(0);
+      setCircleSubscription && setCircleSubscription(null);
       signOut();
       setTagalysConfig(null);
 

@@ -30,9 +30,13 @@ export const Coupon: React.FC<CouponProps> = (props) => {
 
   const renderCareMessage = () => 
     <View style={styles.careMessageContainer}>
+      <PendingIcon style={styles.pendingIconStyle} />
       <View style={styles.careMessage}>
-        <Text style={{...theme.viewStyles.text('R', 14, '#979797', 1, 20), flexWrap: 'wrap'}}>
-          You can either use CIRCLE cashback or apply a Coupon code
+        <Text style={{...theme.viewStyles.text('B', 13, '#979797', 1, 20), flexWrap: 'wrap'}}>
+          Remove Circle membership to apply coupon
+        </Text>
+        <Text style={{...theme.viewStyles.text('M', 13, '#979797', 1, 16), flexWrap: 'wrap', marginTop: 5,}}>
+          You can either use CIRCLE benefits or apply coupon. Remove CIRCLE membership from CART to avail coupon discount.
         </Text>
       </View>
     </View>
@@ -122,7 +126,7 @@ const styles = StyleSheet.create({
   },
   careMessageContainer: {
     flexDirection: 'row',
-    marginLeft: 35,
+    marginLeft: 8,
     paddingHorizontal: 10,
     paddingVertical: 10,
     justifyContent: 'flex-start',
@@ -131,5 +135,9 @@ const styles = StyleSheet.create({
   },
   careMessage: {
     width: '90%',
-  }
+  },
+  pendingIconStyle: {
+    marginRight: 10,
+    marginTop: 5,
+  },
 });

@@ -667,7 +667,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           textStyle={{
             ...theme.viewStyles.text('M', 9, '#02475B', 1, 15),
             paddingVertical: 2,
-            left: -5,
+            left: -10,
           }}
           logoStyle={{
             resizeMode: 'contain',
@@ -910,7 +910,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         {renderNote()}
         {medicineOverview.length === 0 ? renderInfo() : null}
         {isCircleSubscribed && renderCircleSubscribeSuccess()}
-        {!!cashback && renderCareSubscribeBanner()}
+        {/* {!!cashback && renderCareSubscribeBanner()} */}
       </View>
     );
   };

@@ -4,6 +4,7 @@ import {
   MedicineIcon,
   MedicineRxIcon,
   OfferIcon,
+  ExpressDeliveryLogo,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
@@ -45,6 +46,7 @@ export const ProductCard: React.FC<Props> = ({
   onPressAddToCart,
   onPressAddQty,
   onPressSubtractQty,
+  is_express,
 }) => {
   const { circleCashback } = useShoppingCart();
   const isPrescriptionRequired = is_prescription_required == 1;
@@ -73,18 +75,25 @@ export const ProductCard: React.FC<Props> = ({
         addToCart={onPressAddQty}
         removeItemFromCart={onPressSubtractQty}
         removeFromCart={onPressSubtractQty}
+        containerStyle={{
+          width: '49%',
+        }}
       />
     );
 
   const renderNotForSaleTag = () => <NotForSaleBadge />;
 
   const renderImage = () => (
-    <Image
-      placeholderStyle={styles.imagePlaceHolder}
-      PlaceholderContent={isPrescriptionRequired ? <MedicineRxIcon /> : <MedicineIcon />}
-      source={{ uri: productsThumbnailUrl(image || thumbnail) }}
-      style={styles.image}
-    />
+    <View style={{
+      alignSelf: 'flex-start'
+    }}>
+      <Image
+        placeholderStyle={styles.imagePlaceHolder}
+        PlaceholderContent={isPrescriptionRequired ? <MedicineRxIcon /> : <MedicineIcon />}
+        source={{ uri: productsThumbnailUrl(image || thumbnail) }}
+        style={styles.image}
+      />
+    </View>
   );
 
   const renderTitle = () => (
@@ -99,7 +108,23 @@ export const ProductCard: React.FC<Props> = ({
         <OfferIcon />
         <Text style={styles.discountTagText}>-{discount}%</Text>
       </View>
-    );
+  )
+
+  const renderExpressFlag = () => {
+    return (
+      <View style={{
+        position: 'absolute',
+        right: 12,
+        top: !!discount ? 40 : 10,
+      }}>
+        <ExpressDeliveryLogo style={{
+          resizeMode: 'contain',
+          width: 50,
+          height: 25,
+        }} />
+      </View>
+    )
+  };
 
   const renderDivider = () => <Divider style={styles.divider} />;
 
@@ -126,6 +151,7 @@ export const ProductCard: React.FC<Props> = ({
   return (
     <TouchableOpacity activeOpacity={1} style={[styles.card, containerStyle]} onPress={onPress}>
       {renderDiscountTag()}
+      {is_express === 'Yes' && renderExpressFlag()}
       {renderImage()}
       {renderTitle()}
       {renderDivider()}
@@ -140,7 +166,6 @@ const { text } = theme.viewStyles;
 const styles = StyleSheet.create({
   card: {
     ...theme.viewStyles.card(12, 0),
-    alignItems: 'center',
     width: 168,
     maxHeight: 245,
   },
@@ -152,7 +177,6 @@ const styles = StyleSheet.create({
   },
   title: {
     ...text('M', 14, '#01475B', 1, 17),
-    textAlign: 'center',
     height: 51,
   },
   divider: {

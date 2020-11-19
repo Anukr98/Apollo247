@@ -97,6 +97,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
 import { CareSelectPlans } from '@aph/mobile-patients/src/components/ui/CareSelectPlans';
 import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
+import { CheckedIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 
 export interface MedicineCartProps extends NavigationScreenProps {}
 
@@ -120,10 +121,13 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     pinCode,
     setCircleMembershipCharges,
     isCircleSubscription,
+    circlePlanSelected,
+    setCircleSubPlanId,
+    setIsCircleSubscription,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
-  const { locationDetails, pharmacyLocation, setPharmacyLocation } = useAppCommonData();
+  const { locationDetails, pharmacyLocation, setPharmacyLocation, circleSubscription } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setloading] = useState<boolean>(false);
   const [lastCartItems, setlastCartItems] = useState('');
@@ -141,8 +145,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   const navigatedFrom = props.navigation.getParam('movedFrom') || '';
   const pharmacyPincode =
     selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
-  const [showCareWebview, setShowCareWebview] = useState(false);
-  const [showCareSelectPlans, setShowCareSelectPlans] = useState(false);
+  const [showCareSelectPlans, setShowCareSelectPlans] = useState<boolean>(false);
 
   useEffect(() => {
     fetchAddress();
@@ -152,6 +155,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     fetchProductSuggestions();
     cartItems.length && PharmacyCartViewedEvent(shoppingCart, g(currentPatient, 'id'));
     setCircleMembershipCharges && setCircleMembershipCharges(0);
+    if (!(circleSubscription && circleSubscription?._id) && cartTotal > 400) {
+      setShowCareSelectPlans(true);
+    }
   }, []);
 
   useEffect(() => {
@@ -190,6 +196,17 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       getMedicineDetailsOfCouponProducts();
     }
   }, [couponProducts]);
+
+  
+  useEffect(() => {
+    if (!!coupon) {
+      setCircleMembershipCharges && setCircleMembershipCharges(0);
+    } else {
+      if (!(circleSubscription && circleSubscription?._id)) {
+        setCircleMembershipCharges && setCircleMembershipCharges(circlePlanSelected?.currentSellingPrice);
+      }
+    }
+  }, [coupon]);
 
   useEffect(() => {
     onFinishUpload();
@@ -800,9 +817,91 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         <View style={styles.amountHeader}>
           <Text style={styles.amountHeaderText}>TOTAL CHARGES</Text>
         </View>
+        {(circleSubscription && circleSubscription?._id) && renderApplyCircleBenefits()}
         {renderCouponSection()}
         <AmountCard />
       </View>
+    );
+  };
+
+  const renderApplyCircleBenefits = () => {
+    return (
+      <TouchableOpacity
+      activeOpacity={0.7}
+      style={{
+        ...theme.viewStyles.cardViewStyle,
+        marginHorizontal: 15,
+        marginTop: 10,
+        padding: 10,
+      }}
+      onPress={() => {
+        if (!!coupon) {
+          setCoupon && setCoupon(null);
+          setIsCircleSubscription && setIsCircleSubscription(true);
+        } else {
+          if (!(circleSubscription && circleSubscription?._id)) {
+            setIsCircleSubscription && setIsCircleSubscription(false);
+          }
+        }
+      }}
+      >
+        {
+          !coupon ?
+          <View style={{flexDirection: 'row'}}>
+            <CheckedIcon style={{marginTop: 8,}} />
+            <CareCashbackBanner
+              bannerText={`benefits APPLIED!`}
+              textStyle={{
+                ...theme.viewStyles.text('SB', 14, '#02475B', 1, 17),
+                paddingTop: 12,
+                left: -5,
+              }}
+              logoStyle={{
+                resizeMode: 'contain',
+                width: 50,
+                height: 40,
+              }}
+            />
+          </View> : 
+          <View>
+            <View style={{flexDirection: 'row'}}>
+              <View style={{
+                width: 20,
+                height: 20,
+                borderWidth: 2,
+                borderColor: '#00B38E',
+                borderRadius: 5,
+                marginTop: 9,
+                marginRight: 10,
+              }} />
+              <View style={{flexDirection: 'row'}}>
+                <Text style={{
+                  ...theme.viewStyles.text('SB', 14, '#02475B', 1, 17),
+                  paddingTop: 12,
+                }}>Apply</Text>
+                <CareCashbackBanner
+                  bannerText={`benefits instead`}
+                  textStyle={{
+                    ...theme.viewStyles.text('SB', 14, '#02475B', 1, 17),
+                    paddingTop: 12,
+                    left: -5,
+                  }}
+                  logoStyle={{
+                    resizeMode: 'contain',
+                    width: 50,
+                    height: 40,
+                  }}
+                />
+              </View>
+            </View>
+            <Text style={{...theme.viewStyles.text('R', 12, '#02475B', 1, 17), marginLeft: 25,}}>
+              {`Use your Circle membership instead & get `}
+              <Text style={{...theme.viewStyles.text('SB', 12, '#02475B', 1, 17)}}>{`₹54 Cashback and Free delivery `}</Text>
+              <Text>on this order</Text>
+            </Text>
+          </View>
+        }
+      </TouchableOpacity>
     );
   };
 
@@ -810,19 +909,18 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     if (showCareSelectPlans) {
       return (
         <CareSelectPlans 
+          navigation={props.navigation}
           isConsultJourney={false} 
           onSelectMembershipPlan={(plan) => {
-            if (plan) {
+            if (plan && !coupon) {
               // if plan is selected
               setCircleMembershipCharges && setCircleMembershipCharges(plan?.currentSellingPrice);
+              setCircleSubPlanId && setCircleSubPlanId(plan?.subPlanId);
             } else {
               // if plan is removed
               setShowCareSelectPlans(false);
               setCircleMembershipCharges && setCircleMembershipCharges(0);
             }
-          }}
-          onPressKnowMore={() => {
-            // setShowCareWebview(true)
           }} />
       );
     } else {
@@ -888,45 +986,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         </TouchableOpacity>
       )
     }
-  };
-
-  const renderWebView = () => {
-    return (
-      <View
-        style={{
-          flex: 1,
-          position: 'absolute',
-          top: 0,
-          bottom: 0,
-          left: 0,
-          right: 0,
-        }}
-      >
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: 'black',
-            opacity: 0.6,
-            position: 'absolute',
-            top: 0,
-            bottom: 0,
-            left: 0,
-            right: 0,
-          }}
-        />
-        <WebView
-          style={{
-            // flex: 1,
-            //resizeMode: 'stretch',
-            marginTop: 20,
-            marginHorizontal: 20,
-            marginBottom: 20,
-            borderRadius: 10,
-          }}
-          source={{ uri: 'https://twitter.com/home' }}
-        />
-      </View>
-    );
   };
 
   const renderSavings = () => {
@@ -1023,7 +1082,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           {renderHeader()}
           {renderUnServiceable()}
           {renderCartItems()}
-          {!isCircleSubscription && renderCareSubscriptionOptions()}
+          {((!isCircleSubscription || showCareSelectPlans) && !coupon) && renderCareSubscriptionOptions()}
           {renderAvailFreeDelivery()}
           {renderAmountSection()}
           {renderSavings()}
@@ -1034,7 +1093,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         {renderuploadPrescriptionPopup()}
         {renderProceedBar()}
         {loading && <Spinner />}
-        {showCareWebview && renderWebView()}
       </SafeAreaView>
     );
   };

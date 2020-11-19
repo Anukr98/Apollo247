@@ -1,4 +1,4 @@
-import { MedicineIcon, MedicineRxIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { MedicineIcon, MedicineRxIcon, ExpressDeliveryLogo } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
@@ -66,6 +66,7 @@ export interface SearchMedicineCardProps {
   maxOrderQty: number;
   removeCartItem: () => void;
   type_id?: string | null;
+  is_express?: 'Yes' | 'No';
 }
 
 export const SearchMedicineCard: React.FC<SearchMedicineCardProps> = (props) => {
@@ -87,6 +88,7 @@ export const SearchMedicineCard: React.FC<SearchMedicineCardProps> = (props) => 
     maxOrderQty,
     removeCartItem,
     type_id,
+    is_express,
   } = props;
 
   const renderCareCashback = () => {
@@ -96,6 +98,9 @@ export const SearchMedicineCard: React.FC<SearchMedicineCardProps> = (props) => 
       return (
         <CareCashbackBanner
           bannerText={`Extra Care ₹${cashback.toFixed(2)} Cashback`}
+          textStyle={{
+            left: -5
+          }}
         />
       );
     } else {
@@ -189,12 +194,29 @@ export const SearchMedicineCard: React.FC<SearchMedicineCardProps> = (props) => 
     );
   };
 
+  const renderExpressFlag = () => {
+    return (
+      <View style={{
+        position: 'absolute',
+        right: 10,
+        top: 10,
+      }}>
+        <ExpressDeliveryLogo style={{
+          resizeMode: 'contain',
+          width: 50,
+          height: 20,
+        }} />
+      </View>
+    )
+  };
+
   return (
     <TouchableOpacity
       activeOpacity={1}
       style={[styles.containerStyle, containerStyle, { zIndex: -1 }]}
       onPress={() => onPress()}
     >
+    {is_express === 'Yes' && renderExpressFlag()}
       <View style={{ flexDirection: 'row' }}>
         {renderMedicineIcon()}
         <View style={styles.flexStyle}>{renderTitleAndIcon()}</View>

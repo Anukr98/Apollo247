@@ -8,10 +8,12 @@ import { Down, CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
 export interface SavingsProps {}
 
 export const Savings: React.FC<SavingsProps> = (props) => {
-  const { couponDiscount, productDiscount, deliveryCharges, isCircleSubscription, cartTotalCashback, circleMembershipCharges } = useShoppingCart();
+  const { couponDiscount, productDiscount, deliveryCharges, isCircleSubscription, cartTotalCashback, circleMembershipCharges, coupon } = useShoppingCart();
   const deliveryFee = AppConfig.Configuration.DELIVERY_CHARGES;
   const [showCareDetails, setShowCareDetails] = useState(true);
-  const careTotal = isCircleSubscription || circleMembershipCharges ? 
+  const careTotal = !!coupon ? 
+    Number(deliveryFee) + Number(productDiscount) + Number(couponDiscount) : 
+    isCircleSubscription || circleMembershipCharges ? 
     Number(deliveryFee) + Number(productDiscount) + cartTotalCashback : 
     Number(deliveryFee) + Number(productDiscount);
 
@@ -122,9 +124,9 @@ export const Savings: React.FC<SavingsProps> = (props) => {
     <>
       <View style={styles.savingsCard}>
         {saveMessage()}
-        { ((isCircleSubscription || !!circleMembershipCharges) && showCareDetails) && careSavings() }
+        { ((isCircleSubscription || !!circleMembershipCharges) && !coupon && showCareDetails) && careSavings() }
       </View>
-      { (!(isCircleSubscription || !!circleMembershipCharges) && showCareDetails) && careSubscribeMessage() }
+      { (!(isCircleSubscription || !!circleMembershipCharges) || !!coupon && showCareDetails) && careSubscribeMessage() }
     </>
   ) : null;
 };

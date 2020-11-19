@@ -9,7 +9,7 @@ import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareC
 export interface FreeDeliveryProps {}
 
 export const FreeDelivery: React.FC<FreeDeliveryProps> = (props) => {
-  const { cartItems, cartTotal, couponDiscount, productDiscount, isCircleSubscription, circleMembershipCharges } = useShoppingCart();
+  const { cartItems, cartTotal, couponDiscount, productDiscount, isCircleSubscription, circleMembershipCharges, coupon } = useShoppingCart();
   const minValuetoNudgeUsers =
     AppConfig.Configuration.MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY;
   const minValueForFreeDelivery = AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY;
@@ -29,7 +29,7 @@ export const FreeDelivery: React.FC<FreeDeliveryProps> = (props) => {
 
   function renderFreeDeliveryCard() {
     return (
-        (!!isCircleSubscription || circleMembershipCharges) ?
+        ((!!isCircleSubscription || circleMembershipCharges) && !coupon) ?
         <View style={{
           ...theme.viewStyles.cardViewStyle,
           margin: 15,

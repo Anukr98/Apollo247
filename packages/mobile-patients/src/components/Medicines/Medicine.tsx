@@ -139,6 +139,7 @@ import {
   makeAdressAsDefault,
 } from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
 import { CirclePopup } from '@aph/mobile-patients/src/components/Medicines/Components/CirclePopup';
+import { CareSelectPlans } from '@aph/mobile-patients/src/components/ui/CareSelectPlans';
 
 const styles = StyleSheet.create({
   sliderDotStyle: {
@@ -219,6 +220,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     cartTotalCashback,
     cartTotal,
     isCircleSubscription,
+    setCircleMembershipCharges,
+    setCircleSubPlanId,
   } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const cartItemsCount = cartItems.length + diagnosticCartItems.length;
@@ -229,6 +232,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [latestMedicineOrder, setLatestMedicineOrder] = useState<
     getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails
   >();
+  const [showCirclePopup, setShowCirclePopup] = useState<boolean>(false);
 
   const [recommendedProducts, setRecommendedProducts] = useState<MedicineProduct[]>([]);
   const [data, setData] = useState<MedicinePageAPiResponse | null>(medicinePageAPiResponse);
@@ -1970,7 +1974,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 <Text style={theme.viewStyles.text('SB', 12, '#02475B', 1, 17, 0)}>₹{effectivePrice}</Text>
               </View>
             </View> :
-            <View style={circleStyles.upgrade}>
+            <TouchableOpacity activeOpacity={1} onPress={() => setShowCirclePopup(true)} style={circleStyles.upgrade}>
               <View style={circleStyles.upgradeTo}>
                 <Text style={theme.viewStyles.text('M', 13, '#FCB716', 1, 20, 0)}>UPGRADE TO</Text>
                 <CircleLogo style={circleStyles.circleLogo} />
@@ -1978,7 +1982,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 17, 0)}>
                 {`Get effective price of ₹${effectivePrice}`}
               </Text>
-            </View>
+            </TouchableOpacity>
           }
           <TouchableOpacity 
             style={circleStyles.cartButton}
@@ -1998,6 +2002,27 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
+  const renderCircleMembershipPopup = () => {
+    return (
+      <CareSelectPlans 
+        isModal={true}
+        closeModal={()=>setShowCirclePopup(false)}
+        navigation={props.navigation}
+        isConsultJourney={false} 
+        onSelectMembershipPlan={(plan) => {
+          if (plan) {
+            // if plan is selected
+            setCircleMembershipCharges && setCircleMembershipCharges(plan?.currentSellingPrice);
+            setCircleSubPlanId && setCircleSubPlanId(plan?.subPlanId);
+          } else {
+            // if plan is removed
+            // setShowCareSelectPlans(false);
+            setCircleMembershipCharges && setCircleMembershipCharges(0);
+          }
+        }} />
+    )
+  }
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ ...viewStyles.container }}>
@@ -2014,6 +2039,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       </SafeAreaView>
       {isSelectPrescriptionVisible && renderEPrescriptionModal()}
       {ShowPopop && renderUploadPrescriprionPopup()}
+      {/* {showCirclePopup && renderCircleMembershipPopup()} */}
       {renderMedicineReOrderOverlay()}
     </View>
   );

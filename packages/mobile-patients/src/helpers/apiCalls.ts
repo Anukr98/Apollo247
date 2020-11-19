@@ -22,6 +22,7 @@ export interface MedicineProduct {
   type_id: 'FMCG' | 'Pharma' | 'PL';
   url_key: string;
   careCashback?: number | null;
+  is_express?: 'Yes' | 'No';
 }
 
 export interface MedicineProductDetails extends Omit<MedicineProduct, 'image'> {

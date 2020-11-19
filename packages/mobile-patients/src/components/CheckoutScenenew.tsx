@@ -26,6 +26,7 @@ import {
   CODCity,
   BOOKINGSOURCE,
   DEVICETYPE,
+  ONE_APOLLO_STORE_CODE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   saveMedicineOrderOMS,
@@ -80,6 +81,7 @@ import { CollapseCard } from '@aph/mobile-patients/src/components/CollapseCard';
 import { Down, Up } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 export interface CheckoutSceneNewProps extends NavigationScreenProps {}
 
@@ -93,6 +95,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   const storeDistance: number = props.navigation.getParam('storeDistance');
   const paramShopId = props.navigation.getParam('shopId');
   const isStorePickup = props.navigation.getParam('isStorePickup');
+  const circlePlanId = AppConfig.Configuration.CARE_PLAN_ID;
   const { currentPatient } = useAllCurrentPatients();
   const [isCashOnDelivery, setCashOnDelivery] = useState(false);
   const [showChennaiOrderForm, setShowChennaiOrderForm] = useState(false);
@@ -125,7 +128,10 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     stores,
     coupon,
     pinCode,
+    circleMembershipCharges,
+    circleSubPlanId,
   } = useShoppingCart();
+  const { circleSubscription } = useAppCommonData();
 
   type bankOptions = {
     name: string;
@@ -362,7 +368,12 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       paymentInfo.medicinePaymentMqInput['paymentStatus'] = 'TXN_SUCCESS';
       paymentInfo.medicinePaymentMqInput['healthCredits'] = getFormattedAmount(grandTotal);
     }
-    console.log(JSON.stringify(paymentInfo));
+    if (!(circleSubscription && circleSubscription?._id) && !!circleMembershipCharges) {
+      paymentInfo.medicinePaymentMqInput['planId'] = circlePlanId;
+      paymentInfo.medicinePaymentMqInput['subPlanId'] = circleSubPlanId;
+      paymentInfo.medicinePaymentMqInput['storeCode'] = 
+        Platform.OS == 'android' ? ONE_APOLLO_STORE_CODE.ANDCUS : ONE_APOLLO_STORE_CODE.IOSCUS;
+    }
 
     savePayment(paymentInfo)
       .then(({ data }) => {
@@ -440,6 +451,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       bankCode: bankCode,
       coupon: coupon ? coupon.coupon : null,
       cartItems: cartItems,
+      planId: circlePlanId || '',
+      subPlanId: circleSubPlanId || '',
     });
   };
 
@@ -454,6 +467,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       setShowChennaiOrderForm(true);
       return;
     }
+    const estimatedAmount = !!circleMembershipCharges ? getFormattedAmount(grandTotal - circleMembershipCharges) : getFormattedAmount(grandTotal);
     setLoading && setLoading(true);
     const selectedStore = storeId && stores.find((item) => item.storeid == storeId);
     const { storename, address, workinghrs, phone, city, state, state_id } = selectedStore || {};
@@ -484,7 +498,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         medicineDeliveryType: deliveryType!,
         devliveryCharges: deliveryCharges,
         packagingCharges: packagingCharges,
-        estimatedAmount: getFormattedAmount(grandTotal),
+        estimatedAmount,
         prescriptionImageUrl: [
           ...physicalPrescriptions.map((item) => item.uploadedUrl),
           ...ePrescriptions.map((item) => item.uploadedUrl),
@@ -1256,7 +1270,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             {availableHC != 0 && renderOneApolloOption()}
             {renderPaymentOptions()}
             {bankOptions.length > 0 && renderNetBanking()}
-            {renderCOD()}
+            {!circleMembershipCharges && renderCOD()}
             {(isCashOnDelivery || HCorder) && renderPlaceorder()}
           </ScrollView>
         ) : (

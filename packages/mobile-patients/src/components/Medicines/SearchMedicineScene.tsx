@@ -636,6 +636,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         removeCartItem={() => removeCartItem!(medicine.sku)}
         maxOrderQty={getMaxQtyForMedicineItem(medicine.MaxOrderQty)}
         type_id={medicine.type_id}
+        is_express={medicine.is_express}
       />
     );
   };
@@ -707,6 +708,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         removeCartItem={() => removeCartItem!(medicine.sku)}
         maxOrderQty={getMaxQtyForMedicineItem(medicine.MaxOrderQty)}
         type_id={medicine.type_id}
+        is_express={medicine.is_express}
       />
     );
   };

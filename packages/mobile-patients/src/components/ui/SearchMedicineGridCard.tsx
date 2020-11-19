@@ -1,4 +1,4 @@
-import { MedicineIcon, MedicineRxIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { MedicineIcon, MedicineRxIcon, ExpressDeliveryLogo } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
@@ -15,7 +15,7 @@ const styles = StyleSheet.create({
     padding: 10,
     paddingTop: 14,
     flex: 0.5,
-    minHeight: 150,
+    minHeight: 160,
   },
   rowSpaceBetweenView: {
     flex: 1,
@@ -100,6 +100,7 @@ export interface SearchMedicineGridCardProps {
   maxOrderQty: number;
   removeCartItem: () => void;
   type_id?: string | null;
+  is_express?: 'Yes' | 'No';
 }
 
 export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (props) => {
@@ -121,6 +122,7 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
     maxOrderQty,
     removeCartItem,
     type_id,
+    is_express,
   } = props;
 
   const renderTitleAndIcon = () => {
@@ -230,11 +232,29 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
       return (
         <CareCashbackBanner
           bannerText={`Extra Care ₹${cashback.toFixed(2)} Cashback`}
+          textStyle={{
+            left: -5
+          }}
         />
       );
     } else {
       return <></>
     }
+  };
+
+  const renderExpressFlag = () => {
+    return (
+      <View style={{
+        alignItems:'flex-end',
+        marginBottom: 6,
+      }}>
+        <ExpressDeliveryLogo style={{
+          resizeMode: 'contain',
+          width: 50,
+          height: 20,
+        }} />
+      </View>
+    )
   };
 
   return (
@@ -243,6 +263,7 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
       style={[styles.containerStyle, containerStyle, { zIndex: -1 }]}
       onPress={() => onPress()}
     >
+      {is_express === 'Yes' && renderExpressFlag()}
       <View style={styles.medicineIconAndNameViewStyle}>
         {renderMedicineIcon()}
         {renderTitleAndIcon()}
