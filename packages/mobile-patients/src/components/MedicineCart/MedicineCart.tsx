@@ -95,7 +95,7 @@ import {
   makeAdressAsDefaultVariables,
   makeAdressAsDefault,
 } from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
-import { CareSelectPlans } from '@aph/mobile-patients/src/components/ui/CareSelectPlans';
+import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
 import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
 import { CheckedIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 
@@ -127,7 +127,12 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
-  const { locationDetails, pharmacyLocation, setPharmacyLocation, circleSubscription } = useAppCommonData();
+  const {
+    locationDetails,
+    pharmacyLocation,
+    setPharmacyLocation,
+    circleSubscription,
+  } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setloading] = useState<boolean>(false);
   const [lastCartItems, setlastCartItems] = useState('');
@@ -155,7 +160,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     fetchProductSuggestions();
     cartItems.length && PharmacyCartViewedEvent(shoppingCart, g(currentPatient, 'id'));
     setCircleMembershipCharges && setCircleMembershipCharges(0);
-    if (!(circleSubscription?._id) && cartTotal > 400) {
+    if (!circleSubscription?._id && cartTotal > 400) {
       setShowCareSelectPlans(true);
     }
   }, []);
@@ -197,13 +202,13 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     }
   }, [couponProducts]);
 
-  
   useEffect(() => {
     if (!!coupon) {
       setCircleMembershipCharges && setCircleMembershipCharges(0);
     } else {
-      if (!(circleSubscription?._id)) {
-        setCircleMembershipCharges && setCircleMembershipCharges(circlePlanSelected?.currentSellingPrice);
+      if (!circleSubscription?._id) {
+        setCircleMembershipCharges &&
+          setCircleMembershipCharges(circlePlanSelected?.currentSellingPrice);
       }
     }
   }, [coupon]);
@@ -817,7 +822,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         <View style={styles.amountHeader}>
           <Text style={styles.amountHeaderText}>TOTAL CHARGES</Text>
         </View>
-        {(circleSubscription?._id) && renderApplyCircleBenefits()}
+        {circleSubscription?._id && renderApplyCircleBenefits()}
         {renderCouponSection()}
         <AmountCard />
       </View>
@@ -827,33 +832,33 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   const renderApplyCircleBenefits = () => {
     return (
       <TouchableOpacity
-      activeOpacity={0.7}
-      style={styles.applyBenefits}
-      onPress={() => {
-        if (!!coupon) {
-          setCoupon && setCoupon(null);
-          setIsCircleSubscription && setIsCircleSubscription(true);
-        } else {
-          if (!(circleSubscription?._id)) {
-            setIsCircleSubscription && setIsCircleSubscription(false);
+        activeOpacity={0.7}
+        style={styles.applyBenefits}
+        onPress={() => {
+          if (!!coupon) {
+            setCoupon && setCoupon(null);
+            setIsCircleSubscription && setIsCircleSubscription(true);
+          } else {
+            if (!circleSubscription?._id) {
+              setIsCircleSubscription && setIsCircleSubscription(false);
+            }
           }
-        }
-      }}
+        }}
       >
-        {
-          !coupon ?
-          <View style={{flexDirection: 'row'}}>
-            <CheckedIcon style={{marginTop: 8}} />
+        {!coupon ? (
+          <View style={{ flexDirection: 'row' }}>
+            <CheckedIcon style={{ marginTop: 8 }} />
             <CareCashbackBanner
               bannerText={`benefits APPLIED!`}
               textStyle={styles.circleText}
               logoStyle={styles.circleLogo}
             />
-          </View> : 
+          </View>
+        ) : (
           <View>
-            <View style={{flexDirection: 'row'}}>
+            <View style={{ flexDirection: 'row' }}>
               <View style={styles.circleApplyContainer} />
-              <View style={{flexDirection: 'row'}}>
+              <View style={{ flexDirection: 'row' }}>
                 <Text style={styles.applyText}>Apply</Text>
                 <CareCashbackBanner
                   bannerText={`benefits instead`}
@@ -864,11 +869,13 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             </View>
             <Text style={styles.useCircleText}>
               {`Use your Circle membership instead & get `}
-              <Text style={{...theme.viewStyles.text('SB', 12, '#02475B', 1, 17)}}>{`₹54 Cashback and Free delivery `}</Text>
+              <Text
+                style={{ ...theme.viewStyles.text('SB', 12, '#02475B', 1, 17) }}
+              >{`₹54 Cashback and Free delivery `}</Text>
               <Text>on this order</Text>
             </Text>
           </View>
-        }
+        )}
       </TouchableOpacity>
     );
   };
@@ -876,9 +883,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   const renderCareSubscriptionOptions = () => {
     if (showCareSelectPlans) {
       return (
-        <CareSelectPlans 
+        <CircleMembershipPlans
           navigation={props.navigation}
-          isConsultJourney={false} 
+          isConsultJourney={false}
           onSelectMembershipPlan={(plan) => {
             if (plan && !coupon) {
               // if plan is selected
@@ -889,35 +896,42 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
               setShowCareSelectPlans(false);
               setCircleMembershipCharges && setCircleMembershipCharges(0);
             }
-          }} />
+          }}
+        />
       );
     } else {
       return (
-        <TouchableOpacity 
+        <TouchableOpacity
           activeOpacity={0.8}
           style={styles.viewPlanContainer}
-          onPress={() => {setShowCareSelectPlans(true)}}
+          onPress={() => {
+            setShowCareSelectPlans(true);
+          }}
         >
-          <View style={{flexDirection: 'row'}}>
+          <View style={{ flexDirection: 'row' }}>
             <View style={styles.viewPlan} />
             <View>
-              <View style={{flexDirection: 'row'}}>
+              <View style={{ flexDirection: 'row' }}>
                 <Text style={styles.viewText}>View</Text>
                 <CareCashbackBanner
                   bannerText={`plans`}
-                  textStyle={[styles.viewText, {
-                    left: -5,
-                  }]}
+                  textStyle={[
+                    styles.viewText,
+                    {
+                      left: -5,
+                    },
+                  ]}
                   logoStyle={styles.circleLogo}
                 />
               </View>
               <Text style={styles.viewSubText}>
-                Viewing and/or selecting plans will remove any applied coupon. You can apply the coupon again later.
+                Viewing and/or selecting plans will remove any applied coupon. You can apply the
+                coupon again later.
               </Text>
             </View>
           </View>
         </TouchableOpacity>
-      )
+      );
     }
   };
 
@@ -1015,7 +1029,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           {renderHeader()}
           {renderUnServiceable()}
           {renderCartItems()}
-          {((!isCircleSubscription || showCareSelectPlans) && !coupon) && renderCareSubscriptionOptions()}
+          {(!isCircleSubscription || showCareSelectPlans) &&
+            !coupon &&
+            renderCareSubscriptionOptions()}
           {renderAvailFreeDelivery()}
           {renderAmountSection()}
           {renderSavings()}
@@ -1093,7 +1109,7 @@ const styles = StyleSheet.create({
     paddingTop: 12,
   },
   useCircleText: {
-    ...theme.viewStyles.text('R', 12, '#02475B', 1, 17), 
+    ...theme.viewStyles.text('R', 12, '#02475B', 1, 17),
     marginLeft: 25,
   },
   viewPlanContainer: {
@@ -1123,6 +1139,6 @@ const styles = StyleSheet.create({
   },
   viewSubText: {
     ...theme.viewStyles.text('R', 13, '#02475B', 1, 20),
-    width: '54%'
+    width: '54%',
   },
 });

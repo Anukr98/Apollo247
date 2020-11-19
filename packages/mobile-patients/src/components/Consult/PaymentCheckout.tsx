@@ -80,7 +80,7 @@ import {
   AppsFlyerEvents,
 } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { CareSelectPlans } from '@aph/mobile-patients/src/components/ui/CareSelectPlans';
+import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
 
 interface PaymentCheckoutProps extends NavigationScreenProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
@@ -280,7 +280,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
 
   const renderCareSubscriptionPlans = () => {
     return (
-      <CareSelectPlans
+      <CircleMembershipPlans
         isConsultJourney={true}
         style={styles.careSelectContainer}
         navigation={props.navigation}

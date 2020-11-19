@@ -29,7 +29,7 @@ const { width } = Dimensions.get('window');
 const planDimension = 120;
 const defaultPlanDimension = 160;
 
-interface CareSelectPlansProps extends NavigationScreenProps {
+interface CircleMembershipPlansProps extends NavigationScreenProps {
   style?: StyleProp<ViewStyle>;
   onSelectMembershipPlan: (plan?: any) => void;
   isConsultJourney?: boolean;
@@ -40,9 +40,8 @@ interface CareSelectPlansProps extends NavigationScreenProps {
   doctorFees?: number;
 }
 
-export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
+export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (props) => {
   const [membershipPlans, setMembershipPlans] = useState<any>(props.membershipPlans || []);
-  const [planSelected, setPlanSelected] = useState<any>();
   const [loading, setLoading] = useState<boolean>(true);
   const [autoPlanAdded, setAutoPlanAdded] = useState<boolean>(false);
   const {
@@ -115,7 +114,6 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
     if (isConsultJourney) {
       onSelectMembershipPlan && onSelectMembershipPlan();
     } else {
-      setPlanSelected(membershipPlan);
       setIsCircleSubscription && setIsCircleSubscription(true);
       setCircleMembershipCharges && setCircleMembershipCharges(membershipPlan?.currentSellingPrice);
       onSelectMembershipPlan && onSelectMembershipPlan(membershipPlan);
@@ -274,8 +272,8 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
             ) : (
               <Text style={styles.getCareText}>
                 {isCartTotalLimit
-                  ? 'We have enabled Circle membership to give you the best discounts'
-                  : 'Enable Circle membership to get the best offers on all transactions you make with us'}
+                  ? string.circlePharmacy.enabledCircleMembership
+                  : string.circlePharmacy.enableCircleToGetBestOffers}
               </Text>
             )}
           </View>
@@ -357,29 +355,19 @@ export const CareSelectPlans: React.FC<CareSelectPlansProps> = (props) => {
         }}
       >
         <View style={{ flexDirection: 'row' }}>
-          <BlueTick
-            style={{
-              resizeMode: 'contain',
-              width: 20,
-              height: 20,
-              marginRight: 8,
-            }}
-          />
-          <Text style={theme.viewStyles.text('SB', 13, '#02475B')}>Instant cashback</Text>
+          <BlueTick style={styles.blueTickIcon} />
+          <Text style={theme.viewStyles.text('SB', 13, '#02475B')}>
+            {string.circlePharmacy.instantCashback}
+          </Text>
           <Text
             style={theme.viewStyles.text('R', 13, '#02475B')}
           >{` of ₹${cartTotalCashback} on this order`}</Text>
         </View>
         <View style={{ flexDirection: 'row' }}>
-          <BlueTick
-            style={{
-              resizeMode: 'contain',
-              width: 20,
-              height: 20,
-              marginRight: 8,
-            }}
-          />
-          <Text style={theme.viewStyles.text('SB', 13, '#02475B')}>Free delivery</Text>
+          <BlueTick style={styles.blueTickIcon} />
+          <Text style={theme.viewStyles.text('SB', 13, '#02475B')}>
+            {string.circlePharmacy.freeDelivery}
+          </Text>
           <Text style={theme.viewStyles.text('R', 13, '#02475B')}>{` on every order`}</Text>
         </View>
       </View>
@@ -694,5 +682,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 15,
+  },
+  blueTickIcon: {
+    resizeMode: 'contain',
+    width: 20,
+    height: 20,
+    marginRight: 8,
   },
 });

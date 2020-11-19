@@ -577,6 +577,10 @@
     "subscriptionID": "Subscription ID"
   },
   "circlePharmacy": {
-    "modalDescription": "Enable Circle membership to get the best discounts, cashbacks, free delivery and more..."
+    "modalDescription": "Enable Circle membership to get the best discounts, cashbacks, free delivery and more...",
+    "enabledCircleMembership": "We have enabled Circle membership to give you the best discounts",
+    "enableCircleToGetBestOffers": "Enable Circle membership to get the best offers on all transactions you make with us",
+    "instantCashback": "Instant cashback",
+    "freeDelivery": "Free delivery"
   }
 }

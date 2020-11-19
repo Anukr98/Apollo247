@@ -81,7 +81,7 @@ import {
 import { calculateCareDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { CirclePlanAddedToCart } from '@aph/mobile-patients/src/components/ui/CirclePlanAddedToCart';
-import { CareSelectPlans } from '@aph/mobile-patients/src/components/ui/CareSelectPlans';
+import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
 import { GetPlanDetailsByPlanId } from '@aph/mobile-patients/src/graphql/types/GetPlanDetailsByPlanId';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
@@ -391,7 +391,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           selectDefaultPlan && selectDefaultPlan(membershipPlans);
         }
       } catch (error) {
-        CommonBugFender('CareSelectPlans_GetPlanDetailsByPlanId', error);
+        CommonBugFender('CircleMembershipPlans_GetPlanDetailsByPlanId', error);
       }
     }
   };
@@ -965,7 +965,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
   const renderCirclePlans = () => {
     return (
-      <CareSelectPlans
+      <CircleMembershipPlans
         isModal={true}
         navigation={props.navigation}
         membershipPlans={membershipPlans}
