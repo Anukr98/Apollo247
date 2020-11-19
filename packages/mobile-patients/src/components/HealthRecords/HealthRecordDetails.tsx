@@ -144,6 +144,10 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('SB', 18, theme.colors.SKY_BLUE, 1, 23.4),
     marginTop: 11,
   },
+  recordNameTextStyle: {
+    ...viewStyles.text('SB', 23, theme.colors.LIGHT_BLUE, 1, 30),
+    marginRight: 10,
+  },
 });
 
 export interface HealthRecordDetailsProps extends NavigationScreenProps {}
@@ -228,7 +232,6 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
               <Text style={styles.descriptionStyle}>
                 {data?.additionalNotes ||
                   data?.healthCheckSummary ||
-                  data?.dischargeSummary ||
                   data?.notes ||
                   data?.diagnosisNotes}
               </Text>
@@ -567,11 +570,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         data?.medicalConditionName
           ? renderDetailsFinding()
           : null}
-        {data?.additionalNotes ||
-        data?.healthCheckSummary ||
-        data?.dischargeSummary ||
-        data?.notes ||
-        data?.diagnosisNotes
+        {data?.additionalNotes || data?.healthCheckSummary || data?.notes || data?.diagnosisNotes
           ? healthCondition
             ? null
             : renderTopLineReport()
@@ -627,14 +626,13 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
         {data?.labTestName ||
         data?.prescriptionName ||
         data?.healthCheckName ||
-        (hospitalization && (data?.doctorName || data?.doctorName === '')) ||
-        data?.hospitalName ||
+        (!hospitalization && data?.hospitalName) ||
         data?.insuranceCompany ||
         data?.allergyName ||
         data?.medicineName ||
         data?.restrictionName ||
         data?.medicalConditionName ? (
-          <Text style={{ ...viewStyles.text('SB', 23, theme.colors.LIGHT_BLUE, 1, 30) }}>
+          <Text style={styles.recordNameTextStyle}>
             {data?.labTestName ||
               data?.healthCheckName ||
               data?.prescriptionName ||
@@ -643,9 +641,13 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
               data?.allergyName ||
               data?.medicineName ||
               data?.restrictionName ||
-              data?.medicalConditionName ||
-              'Dr. ' + data?.doctorName ||
-              'Dr. '}{' '}
+              data?.medicalConditionName}{' '}
+            <RoundGreenTickIcon style={styles.greenTickIconStyle} />
+          </Text>
+        ) : null}
+        {hospitalization && (data?.doctorName || data?.doctorName === '') ? (
+          <Text style={styles.recordNameTextStyle}>
+            {'Dr. ' + data?.doctorName || 'Dr. '}{' '}
             <RoundGreenTickIcon style={styles.greenTickIconStyle} />
           </Text>
         ) : null}
