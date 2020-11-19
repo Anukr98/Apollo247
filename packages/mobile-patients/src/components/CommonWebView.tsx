@@ -6,11 +6,14 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Spinner } from './ui/Spinner';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import AsyncStorage from '@react-native-community/async-storage';
 
 export interface CommonWebViewProps extends NavigationScreenProps {}
 
 export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(true);
+  const { setCirclePlanSelected, setDefaultCirclePlan, setIsCircleSubscription, setCircleMembershipCharges, setCircleSubPlanId } = useShoppingCart();
 
   const renderWebView = () => {
     let WebViewRef: any;
@@ -20,6 +23,19 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
         onLoadEnd={() => setLoading!(false)}
         source={{ uri: props.navigation.getParam('url') }}
         renderError={(errorCode) => renderError(WebViewRef)}
+        onMessage={(event) => {
+          const { data } = event.nativeEvent;
+          if (data && JSON.parse(data)?.subPlanId) {
+            const responseData = JSON.parse(data);
+            setDefaultCirclePlan && setDefaultCirclePlan(null);
+            setCirclePlanSelected && setCirclePlanSelected(responseData);
+            setIsCircleSubscription && setIsCircleSubscription(true);
+            setCircleMembershipCharges && setCircleMembershipCharges(responseData?.currentSellingPrice);
+            setCircleSubPlanId && setCircleSubPlanId(responseData?.subPlanId);
+            AsyncStorage.setItem('circlePlanSelected', data);
+            props.navigation.goBack();
+          }
+        }}
       />
     );
   };

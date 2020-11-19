@@ -14,6 +14,7 @@ import {
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { getMaxQtyForMedicineItem } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
 
 export interface CartItemCardProps {
   item: ShoppingCartItem;
@@ -24,7 +25,7 @@ export interface CartItemCardProps {
 }
 
 export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
-  const { coupon, isProuctFreeCouponApplied } = useShoppingCart();
+  const { coupon, isProuctFreeCouponApplied, isCircleSubscription, circleMembershipCharges } = useShoppingCart();
   const { item, onUpdateQuantity, onPressDelete, onPressProduct } = props;
   const [discountedPrice, setDiscountedPrice] = useState<any>(undefined);
   const [mrp, setmrp] = useState<number>(0);
@@ -106,6 +107,7 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
         <View>
           {renderQuantity()}
           {!item.unserviceable && !isProuctFreeCouponApplied && !!coupon && renderCoupon()}
+          {(isCircleSubscription || !!circleMembershipCharges) && renderCareCashback()}
         </View>
         {!item?.isFreeCouponProduct
           ? discountedPrice || discountedPrice == 0
@@ -114,6 +116,19 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
           : renderFree()}
       </View>
     );
+  };
+
+  const renderCareCashback = () => {
+    if (!!item.circleCashbackAmt && !coupon) {
+      return (
+        <CareCashbackBanner
+          bannerText={`Extra Care ₹${item.circleCashbackAmt} Cashback`}
+          textStyle={styles.careText}
+        />
+      );
+    } else {
+      return <></>
+    }
   };
 
   const renderFree = () => {
@@ -325,5 +340,10 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     height: 18,
     justifyContent: 'center',
+  },
+  careText: {
+    ...theme.viewStyles.text('M', 9, '#00A0E3', 1, 15),
+    paddingVertical: 7,
+    left: -5,
   },
 });

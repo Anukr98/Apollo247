@@ -519,6 +519,8 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         isPrescriptionRequired={medicine.is_prescription_required == '1'}
         removeCartItem={() => removeCartItem!(medicine.sku)}
         maxOrderQty={getMaxQtyForMedicineItem(medicine.MaxOrderQty)}
+        type_id={medicine.type_id}
+        is_express={medicine.is_express}
       />
     );
   };
@@ -589,6 +591,8 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         isPrescriptionRequired={medicine.is_prescription_required == '1'}
         removeCartItem={() => removeCartItem!(medicine.sku)}
         maxOrderQty={getMaxQtyForMedicineItem(medicine.MaxOrderQty)}
+        type_id={medicine.type_id}
+        is_express={medicine.is_express}
       />
     );
   };

@@ -546,5 +546,14 @@
     "doctorDeniedMode": "Doctor denied your preferable mode of consult",
     "audioVideoIssue": "Audio Video Issues",
     "otherReasons": "Others (Please specifiy)"
+  },
+  "circleDoctors": {
+    "consultCircleOfferDescription": "consultCircleOfferDescription",
+    "getCircleMembershipOffersDescription": "getCircleMembershipOffersDescription",
+    "addToCart": "ADD TO CART",
+    "circleMembershipPlans": "circleMembershipPlans"
+  },
+  "circlePharmacy": {
+    "modalDescription": "Enable Circle membership to get the best discounts, cashbacks, free delivery and more..."
   }
 }
