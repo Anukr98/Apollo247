@@ -32,6 +32,10 @@ export interface MedicineProductDetails extends Omit<MedicineProduct, 'image'> {
 }
 
 export type Doseform = 'TABLET' | 'INJECTION' | 'SYRUP' | '';
+export enum DIAGNOSTIC_GROUP_PLAN {
+   ALL ='ALL',
+   CIRCLE = 'CIRCLE'
+  }
 
 interface PharmaOverview {
   generic: string;

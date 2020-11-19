@@ -22,8 +22,11 @@ export interface DiagnosticsCartItem {
   mou: number; // package of how many tests (eg. 10)
   price: number;
   thumbnail: string | null;
-  specialPrice?: number;
+  specialPrice?: number | null;
+  circlePrice?: number | null;
+  circleSpecialPrice?: number | null;
   collectionMethod: TEST_COLLECTION_TYPE; // Home or Clinic (most probably `H` will not be an option)
+  groupPlan?: string;
 }
 
 export interface DiagnosticClinic extends Clinic {
@@ -59,6 +62,8 @@ export interface DiagnosticsCartContextProps {
     | null;
 
   cartTotal: number;
+  cartSaving: number;
+  circleSaving: number;
   couponDiscount: number;
   deliveryCharges: number;
 
@@ -119,6 +124,9 @@ export interface DiagnosticsCartContextProps {
 
   diagnosticClinic: DiagnosticClinic | null;
   setDiagnosticClinic: ((item: DiagnosticClinic) => void) | null;
+
+  isDiagnosticCircleSubscription: boolean;
+  setIsDiagnosticCircleSubscription: ((value: boolean) => void) | null;
 }
 
 export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>({
@@ -132,6 +140,8 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   removeCartItem: null,
   updateCartItem: null,
   cartTotal: 0,
+  cartSaving: 0,
+  circleSaving: 0,
   couponDiscount: 0,
   deliveryCharges: 0,
 
@@ -182,6 +192,8 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   setAreaSelected: null,
   diagnosticAreas: [],
   setDiagnosticAreas: null,
+  isDiagnosticCircleSubscription: false,
+  setIsDiagnosticCircleSubscription: null,
 });
 
 const showGenericAlert = (message: string) => {
@@ -283,6 +295,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setEPrescriptions(newItems);
   };
 
+  const [isDiagnosticCircleSubscription, setIsDiagnosticCircleSubscription] = useState<
+    DiagnosticsCartContextProps['isDiagnosticCircleSubscription']
+  >(false);
+
   const addMultipleEPrescriptions: DiagnosticsCartContextProps['addMultipleEPrescriptions'] = (
     itemsToAdd
   ) => {
@@ -351,15 +367,42 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   };
 
   const cartTotal: DiagnosticsCartContextProps['cartTotal'] = parseFloat(
+    cartItems.reduce((currTotal, currItem) => currTotal + currItem.price, 0).toFixed(2)
+  );
+
+  const cartSaving: DiagnosticsCartContextProps['cartSaving'] =
+    cartTotal -
+    parseFloat(
+      cartItems
+        .reduce((currTotal, currItem) => currTotal + (currItem.specialPrice || currItem.price), 0)
+        .toFixed(2)
+    );
+
+  const circleSaving: DiagnosticsCartContextProps['circleSaving'] = parseFloat(
     cartItems
-      .reduce((currTotal, currItem) => currTotal + (currItem.specialPrice || currItem.price), 0)
+      .reduce(
+        (currTotal, currItem) =>
+          currTotal +
+          (currItem.groupPlan == 'CIRCLE'
+            ? currItem.circlePrice! - currItem.circleSpecialPrice!
+            : 0 || 0),
+        0
+      )
       .toFixed(2)
   );
 
   const deliveryCharges =
     deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP ? 0 : cartTotal > 0 ? hcCharges : 0;
 
-  const grandTotal = parseFloat((cartTotal + deliveryCharges - couponDiscount).toFixed(2));
+  const grandTotal = parseFloat(
+    (
+      cartTotal +
+      deliveryCharges +
+      couponDiscount -
+      cartSaving -
+      (isDiagnosticCircleSubscription ? circleSaving : 0)
+    ).toFixed(2)
+  );
 
   const setClinicId = (id: DiagnosticsCartContextProps['clinicId']) => {
     setDeliveryType(MEDICINE_DELIVERY_TYPE.STORE_PICKUP);
@@ -480,6 +523,8 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         removeCartItem,
         updateCartItem,
         cartTotal,
+        cartSaving,
+        circleSaving,
         grandTotal,
         couponDiscount,
         deliveryCharges,
@@ -528,6 +573,8 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         setDiagnosticClinic,
         diagnosticSlot,
         setDiagnosticSlot,
+        isDiagnosticCircleSubscription,
+        setIsDiagnosticCircleSubscription,
       }}
     >
       {props.children}

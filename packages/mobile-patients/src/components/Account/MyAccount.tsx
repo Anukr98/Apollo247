@@ -21,7 +21,13 @@ import {
   deleteDeviceTokenVariables,
 } from '@aph/mobile-patients/src/graphql/types/deleteDeviceToken';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
-import { g, getNetStatus, statusBarHeight } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  getNetStatus,
+  postAppsFlyerEvent,
+  postFirebaseEvent,
+  statusBarHeight,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -30,6 +36,7 @@ import Moment from 'moment';
 import { differenceInYears, parse } from 'date-fns';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import {
   Dimensions,
   Image,
@@ -55,6 +62,7 @@ import { TabHeader } from '@aph/mobile-patients/src/components/ui/TabHeader';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import codePush from 'react-native-code-push';
 import { setTagalysConfig } from '@aph/mobile-patients/src/helpers/Tagalys';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 const { width } = Dimensions.get('window');
 
@@ -160,7 +168,11 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     setHdfcUserSubscriptions,
     setBannerData,
   } = useAppCommonData();
-
+  const {
+    setIsDiagnosticCircleSubscription,
+    isDiagnosticCircleSubscription,
+  } = useDiagnosticsCart();
+  const { setCircleSubscriptionId } = useShoppingCart();
   useEffect(() => {
     updateCodePushVersioninUi();
   }, []);
@@ -285,6 +297,8 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       setAppointmentsPersonalized && setAppointmentsPersonalized([]);
       signOut();
       setTagalysConfig(null);
+      setCircleSubscriptionId && setCircleSubscriptionId('');
+      setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
 
       props.navigation.dispatch(
         StackActions.reset({
@@ -432,17 +446,19 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           container={{ marginTop: 14 }}
           title={'Manage Family Members'}
           leftIcon={<ManageProfileIcon />}
-          onPress={() =>
+          onPress={() => {
             props.navigation.navigate(AppRoutes.ManageProfile, {
               mobileNumber: profileDetails && profileDetails.mobileNumber,
-            })
-          }
+            });
+          }}
         />
         <ListCard
           container={{ marginTop: 4 }}
           title={'Address Book'}
           leftIcon={<Location />}
-          onPress={() => props.navigation.navigate(AppRoutes.AddressBook)}
+          onPress={() => {
+            props.navigation.navigate(AppRoutes.AddressBook);
+          }}
         />
         <ListCard
           title={'My Orders'}

@@ -2,9 +2,11 @@ import {
   AddIcon,
   CheckedIcon,
   CheckUnselectedIcon,
+  CircleLogo,
   DropdownGreen,
   MedicineIcon,
   MedicineRxIcon,
+  PendingIcon,
   RemoveIcon,
   TestsIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -15,6 +17,12 @@ import React, { useState } from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { Image } from 'react-native-elements';
 import { getMaxQtyForMedicineItem } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { string } from '../../strings/string';
+import strings from '@aph/mobile-patients/src/strings/strings.json';
+import { colors } from '../../theme/colors';
+import { fonts } from '../../theme/fonts';
+import { Spearator } from './BasicComponents';
+import { CircleHeading } from './CircleHeading';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -130,6 +138,7 @@ export interface MedicineCardProps {
   personName?: string;
   specialPrice?: number;
   price: number;
+  circlePrice?: number;
   imageUrl?: string;
   type?: Doseform;
   subscriptionStatus: 'already-subscribed' | 'subscribed-now' | 'unsubscribed';
@@ -149,6 +158,9 @@ export interface MedicineCardProps {
   onAddSubscriptionPress: () => void;
   containerStyle?: StyleProp<ViewStyle>;
   maxQty?: number;
+  isCareSubscribed?: boolean;
+  isComingFrom?: string;
+  discount?: number | string;
 }
 
 export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
@@ -207,6 +219,40 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
               ? renderTouchable(<RemoveIcon />, () => onPressRemove())
               : renderTouchable(<AddIcon />, () => onPressAdd())
             : null}
+        </View>
+      </View>
+    );
+  };
+
+  const renderTitleIconForTestResult = () => {
+    return (
+      <View style={styles.rowSpaceBetweenView}>
+        <View style={{ flex: 1 }}>
+          <View style={{ flexDirection: 'row', marginBottom: 10 }}>
+            <Text style={styles.medicineTitle}>{medicineName}</Text>
+            <View style={{ flex: 0.1, justifyContent: 'center' }}>
+              {isInStock || props.showRemoveWhenOutOfStock
+                ? isCardExpanded
+                  ? renderTouchable(<RemoveIcon />, () => onPressRemove())
+                  : renderTouchable(<AddIcon />, () => onPressAdd())
+                : null}
+            </View>
+          </View>
+          <Spearator style={{ marginBottom: 5 }} />
+
+          {isTest
+            ? !!packOfCount &&
+              isCardExpanded && (
+                <Text style={styles.packOfTextStyle}>{`Includes ${packOfCount} test${
+                  packOfCount == 1 ? '' : 's'
+                }`}</Text>
+              )
+            : !!packOfCount &&
+              isCardExpanded &&
+              !props.showRemoveWhenOutOfStock && (
+                <Text style={styles.packOfTextStyle}>{`Pack of ${packOfCount}`}</Text>
+              )}
+          {renderOutOfStock()}
         </View>
       </View>
     );
@@ -314,7 +360,9 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
                     ...theme.viewStyles.text('SB', 13, '#02475b', 0.7, undefined, 0.33),
                     textDecorationLine: 'line-through',
                   }}
-                >{`Rs. ${price.toFixed(2)}`}</Text>
+                >
+                  {`${strings.common.Rs} ${price.toFixed(2)}`}
+                </Text>
                 <Text
                   style={{
                     ...theme.viewStyles.text('M', 10, '#02475b', 0.7, undefined, 0.25),
@@ -328,9 +376,9 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
           ) : (
             <Text style={[styles.unitAndRupeeText, { flex: 1 }]}>MRP</Text>
           )}
-          <Text style={[styles.unitAndRupeeText, { flex: 0, alignSelf: 'center' }]}>{`Rs. ${(
-            priceToBeDisplayed
-          ).toFixed(2)}`}</Text>
+          <Text style={[styles.unitAndRupeeText, { flex: 0, alignSelf: 'center' }]}>
+            {`${strings.common.Rs} ${priceToBeDisplayed!.toFixed(2)}`}
+          </Text>
         </View>
       </View>
     );
@@ -377,23 +425,249 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
     );
   };
 
+  const renderSearchPriceView = () => {
+    return (
+      <>
+        {props.isCareSubscribed && (
+          <View style={{ alignSelf: 'flex-end' }}>
+            <Text
+              style={{
+                ...theme.viewStyles.text(
+                  'M',
+                  props.circlePrice! ? 12 : 14,
+                  '#02475B',
+                  props.circlePrice! ? 0.5 : 1,
+                  20,
+                  0.04
+                ),
+                marginTop: 4,
+                marginBottom: -4,
+                textDecorationLine: props.circlePrice! ? 'line-through' : 'none',
+              }}
+            >
+              {strings.common.Rs} {(specialPrice! ? specialPrice! : price!).toFixed(2)}
+            </Text>
+          </View>
+        )}
+        {/**
+         * non-sub + no-circle + special price
+         */}
+        {props.circlePrice == undefined && specialPrice && (
+          <View style={{ alignSelf: 'flex-end' }}>
+            <Text style={[styles.priceTextCollapseStyle, { marginLeft: 4 }]}>
+              {'('}
+              <Text style={{ textDecorationLine: 'line-through' }}>
+                {`${strings.common.Rs} ${price.toFixed(2)}`}
+              </Text>
+              {')'}
+            </Text>
+          </View>
+        )}
+        <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+          {/**
+           * if getting circle price then  promoting.
+           */}
+          {!props.isCareSubscribed && props.circlePrice! && (
+            <>
+              <View style={{ flexDirection: 'row', alignSelf: 'flex-end', marginRight: 5 }}>
+                <CircleHeading />
+              </View>
+
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 12, colors.SHERPA_BLUE, 0.7, 20, 0.04),
+                  marginTop: 4,
+                  marginRight: 5,
+                }}
+              >
+                {strings.common.Rs} {props.circlePrice?.toFixed(2)}
+              </Text>
+              <View
+                style={{
+                  borderLeftWidth: 1,
+                  borderLeftColor: '#02475b',
+                  opacity: 0.3,
+                  marginRight: 4,
+                  marginTop: 4,
+                }}
+              />
+            </>
+          )}
+          {props.isCareSubscribed && props.circlePrice! && (
+            <>
+              <View style={{ flexDirection: 'row', alignSelf: 'flex-end', marginRight: 5 }}>
+                <CircleHeading isSubscribed={props.isCareSubscribed} />
+              </View>
+
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 14, colors.SHERPA_BLUE, 1, 20, 0.04),
+                  marginTop: 4,
+                }}
+              >
+                {strings.common.Rs} {props.circlePrice?.toFixed(2)}
+              </Text>
+            </>
+          )}
+
+          {!props.isCareSubscribed && (
+            <Text
+              style={{ ...theme.viewStyles.text('M', 14, '#02475B', 1, 20, 0.04), marginTop: 4 }}
+            >
+              {strings.common.Rs} {(specialPrice! || price).toFixed(2)}
+            </Text>
+          )}
+        </View>
+      </>
+    );
+  };
+
   const renderOutOfStock = () => {
     return unserviceable || !isInStock ? (
       <Text style={styles.outOfStockStyle}>
         {unserviceable ? 'Not serviceable in your area.' : 'Out Of Stock'}
       </Text>
+    ) : !isCardExpanded && props.isComingFrom == 'testSearchResult' ? (
+      renderSearchPriceView()
     ) : !isCardExpanded ? (
       <View style={{ flexDirection: 'row' }}>
-        <Text style={styles.priceTextCollapseStyle}>Rs. {(specialPrice || price).toFixed(2)}</Text>
+        <Text style={styles.priceTextCollapseStyle}>
+          {strings.common.Rs} {(specialPrice || price).toFixed(2)}
+        </Text>
         {specialPrice && (
           <Text style={[styles.priceTextCollapseStyle, { marginLeft: 4 }]}>
             {'('}
-            <Text style={{ textDecorationLine: 'line-through' }}>{`Rs. ${price.toFixed(2)}`}</Text>
+            <Text style={{ textDecorationLine: 'line-through' }}>
+              {`${strings.common.Rs} ${price.toFixed(2)}`}
+            </Text>
             {')'}
           </Text>
         )}
       </View>
     ) : null;
+  };
+
+  const renderPriceView = () => {
+    return (
+      <>
+        {/**
+         * (non-sub + not promote circle + special) || (sub + not-promote cirlce +special)
+         */}
+        {props.circlePrice == undefined && (
+          <View
+            style={{
+              alignSelf: 'flex-end',
+            }}
+          >
+            {props.specialPrice! && (
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 12, '#02475B', 0.5, 20, 0.04),
+                  textDecorationLine: 'line-through',
+                  textAlign: 'right',
+                }}
+              >
+                {strings.common.Rs} ({price!.toFixed(2)})
+              </Text>
+            )}
+            <View style={{ flexDirection: 'row' }}>
+              {props.specialPrice! && props.discount! > 0 && (
+                <Text
+                  style={{
+                    ...theme.fonts.IBMPlexSansMedium(11),
+                    color: colors.APP_GREEN,
+                    lineHeight: 16,
+                    marginHorizontal: 10,
+                  }}
+                >
+                  {Number(props.discount!).toFixed(0)}%off
+                </Text>
+              )}
+              <Text style={{ ...theme.viewStyles.text('M', 14, '#02475B', 1, 20, 0.04) }}>
+                {strings.common.Rs} {(specialPrice! || price).toFixed(2)}
+              </Text>
+            </View>
+          </View>
+        )}
+
+        {/**
+         * non - sub + promote circle
+         */}
+        {!props.isCareSubscribed && props.circlePrice! && (
+          <View
+            style={{
+              flexDirection: 'row',
+
+              marginLeft: -40,
+              justifyContent: 'space-between',
+            }}
+          >
+            <View style={{ flexDirection: 'row' }}>
+              <CircleHeading />
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 12, '#02475B', 1, 20, 0.04),
+                  marginLeft: 5,
+                }}
+              >
+                {strings.common.Rs} {props.circlePrice!.toFixed(2)}
+              </Text>
+            </View>
+            <View style={{ alignSelf: 'flex-end' }}>
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 14, '#02475B', 1, 20, 0.04),
+                  marginLeft: 5,
+                }}
+              >
+                {strings.common.Rs} {(specialPrice! || price).toFixed(2)}
+              </Text>
+            </View>
+          </View>
+        )}
+
+        {/**
+         * sub - promote circle
+         */}
+        {props.isCareSubscribed && props.circlePrice! && (
+          <View
+            style={{
+              // alignSelf: 'flex-end',
+              marginLeft: -32,
+            }}
+          >
+            {props.price && (
+              <View style={{ alignSelf: 'flex-end' }}>
+                <Text
+                  style={{
+                    ...theme.viewStyles.text('M', 14, '#02475B', 0.5, 20, 0.04),
+                    textDecorationLine: 'line-through',
+                  }}
+                >
+                  {strings.common.Rs} {price.toFixed(2)}
+                </Text>
+              </View>
+            )}
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+              <CircleHeading isSubscribed={props.isCareSubscribed} />
+              <View style={{ flexDirection: 'row', alignSelf: 'flex-end' }}>
+                <Text
+                  style={{
+                    ...theme.viewStyles.text('M', 11, colors.APP_GREEN, 1, 20, 0.04),
+                    marginRight: 5,
+                  }}
+                >
+                  {Number(props.discount).toFixed(0)}% off
+                </Text>
+                <Text style={{ ...theme.viewStyles.text('M', 14, '#02475B', 1, 20, 0.04) }}>
+                  {strings.common.Rs} {props.circlePrice!.toFixed(2)}
+                </Text>
+              </View>
+            </View>
+          </View>
+        )}
+      </>
+    );
   };
 
   const outOfStockContainerStyle: ViewStyle =
@@ -412,11 +686,18 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
       <View style={{ flexDirection: 'row' }}>
         {renderMedicineIcon()}
         <View style={styles.flexStyle}>
-          {renderTitleAndIcon()}
+          {props.isComingFrom == 'testSearchResult'
+            ? renderTitleIconForTestResult()
+            : renderTitleAndIcon()}
           {isCardExpanded && !props.showRemoveWhenOutOfStock ? (
             <>
               <View style={[styles.separator, { marginTop: 0 }]} />
-              {renderUnitDropdownAndPrice()}
+
+              {props.isComingFrom == 'testSearchResult'
+                ? renderSearchPriceView()
+                : props.isComingFrom == 'testCart'
+                ? renderPriceView()
+                : renderUnitDropdownAndPrice()}
             </>
           ) : null}
         </View>
