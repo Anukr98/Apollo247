@@ -113,10 +113,9 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   PAYMENT_PENDING = "PAYMENT_PENDING",
   PICKUP_CONFIRMED = "PICKUP_CONFIRMED",
   PICKUP_REQUESTED = "PICKUP_REQUESTED",
+  REPORT_GENERATED = "REPORT_GENERATED",
   SAMPLE_COLLECTED = "SAMPLE_COLLECTED",
   SAMPLE_RECEIVED_IN_LAB = "SAMPLE_RECEIVED_IN_LAB",
-  SAMPLE_RECIEVED_IN_LAB = "SAMPLE_RECIEVED_IN_LAB",
-  REPORT_GENERATED = "REPORT_GENERATED",
 }
 
 export enum DOCTOR_ONLINE_STATUS {
@@ -673,7 +672,6 @@ export interface ConsultQueueInput {
 }
 
 export interface CreateUserSubscriptionInput {
-  _id?: string | null;
   plan_id: string;
   payment_reference_id?: string | null;
   coupon_availed?: string | null;
@@ -707,6 +705,7 @@ export interface DiagnosticBookHomeCollectionInput {
   slotId: string;
   areaId: number;
   homeCollectionCharges: number;
+  uniqueID?: string | null;
 }
 
 export interface DiagnosticLineItem {

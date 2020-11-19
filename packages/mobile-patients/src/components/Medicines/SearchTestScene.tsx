@@ -487,16 +487,17 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           fetchPackageDetails(pastSeacrh.name!, (product) => {
             props.navigation.navigate(AppRoutes.TestDetails, {
               testDetails: {
-                Rate: product.rate,
-                Gender: product.gender,
-                ItemID: `${product.itemId}`,
-                ItemName: product.itemName,
-                FromAgeInDays: product.fromAgeInDays,
-                ToAgeInDays: product.toAgeInDays,
-                collectionType: product.collectionType,
-                preparation: product.testPreparationData,
+                Rate: product?.rate,
+                Gender: product?.gender,
+                ItemID: `${product?.itemId}`,
+                ItemName: product?.itemName,
+                FromAgeInDays: product?.fromAgeInDays,
+                ToAgeInDays: product?.toAgeInDays,
+                collectionType: product?.collectionType,
+                preparation: product?.testPreparationData,
+                testDescription: product?.testPreparationData,
                 source: 'Search Page',
-                type: product.itemType,
+                type: product?.itemType,
               } as TestPackageForDetails,
             });
           });
@@ -554,26 +555,27 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           props.navigation.navigate(AppRoutes.TestDetails, {
             testDetails: {
               Rate: price,
-              Gender: product.gender,
-              ItemID: `${product.itemId}`,
-              ItemName: product.itemName,
-              FromAgeInDays: product.fromAgeInDays,
-              ToAgeInDays: product.toAgeInDays,
-              collectionType: product.collectionType,
-              preparation: product.testPreparationData,
+              Gender: product?.gender,
+              ItemID: `${product?.itemId}`,
+              ItemName: product?.itemName,
+              FromAgeInDays: product?.fromAgeInDays,
+              ToAgeInDays: product?.toAgeInDays,
+              collectionType: product?.collectionType,
+              preparation: product?.testPreparationData,
+              testDescription: product?.testPreparationData,
               source: 'Search Page',
-              type: product.itemType,
+              type: product?.itemType,
             } as TestPackageForDetails,
           });
         }}
-        medicineName={stripHtml(product.itemName)}
+        medicineName={stripHtml(product?.itemName)}
         imageUrl={''}
         price={price}
         specialPrice={undefined}
         unit={1}
         onPressAdd={() => {
           CommonLogEvent(AppRoutes.SearchTestScene, 'Add item to cart');
-          fetchPackageInclusion(`${product.itemId}`, (tests) => {
+          fetchPackageInclusion(`${product?.itemId}`, (tests) => {
             onAddCartItem(product, tests.length);
           });
         }}

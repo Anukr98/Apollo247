@@ -1423,6 +1423,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
             itemName
             itemType
             testPreparationData
+            testDescription
           }
         }
       }
@@ -1485,6 +1486,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
             itemType
             fromAgeInDays
             collectionType
+            testDescription
           }
         }
         diagnosticOrdersStatus {
@@ -1533,6 +1535,7 @@ export const GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID = gql`
         fromAgeInDays
         toAgeInDays
         testPreparationData
+        testDescription
       }
     }
   }
@@ -1554,6 +1557,7 @@ export const GET_DIAGNOSTIC_ORDER_ITEM = gql`
         fromAgeInDays
         toAgeInDays
         testPreparationData
+        testDescription
       }
     }
   }
@@ -1579,6 +1583,7 @@ export const GET_DIAGNOSTIC_HOME_PAGE_ITEMS = gql`
           fromAgeInDays
           toAgeInDays
           testPreparationData
+          testDescription
           collectionType
         }
       }
@@ -1600,6 +1605,7 @@ export const GET_DIAGNOSTIC_HOME_PAGE_ITEMS = gql`
           fromAgeInDays
           toAgeInDays
           testPreparationData
+          testDescription
           collectionType
         }
       }
@@ -2731,6 +2737,7 @@ export const SEARCH_DIAGNOSTICS = gql`
         collectionType
         fromAgeInDays
         toAgeInDays
+        testDescription
         testPreparationData
       }
     }
@@ -2754,6 +2761,7 @@ export const SEARCH_DIAGNOSTICS_BY_CITY_ID = gql`
         collectionType
         fromAgeInDays
         toAgeInDays
+        testDescription
         testPreparationData
       }
     }
@@ -2777,6 +2785,7 @@ export const SEARCH_DIAGNOSTICS_BY_ID = gql`
         collectionType
         fromAgeInDays
         toAgeInDays
+        testDescription
         testPreparationData
       }
     }
