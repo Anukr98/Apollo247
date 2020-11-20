@@ -194,33 +194,39 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
   } = circleDoctorDetails;
 
   const renderCareDoctorPricing = () => {
-    return (
-      <View>
-        <Text
-          style={[
-            styles.carePrice,
-            {
-              textDecorationLine: showCircleSubscribed ? 'line-through' : 'none',
-              ...theme.viewStyles.text(
-                'M',
-                15,
-                showCircleSubscribed ? theme.colors.BORDER_BOTTOM_COLOR : theme.colors.LIGHT_BLUE
-              ),
-            },
-          ]}
-        >
-          {string.common.Rs}
-          {isOnlineSelected ? onlineConsultMRPPrice : physicalConsultMRPPrice}
-        </Text>
-        <View style={styles.rowContainer}>
-          {showCircleSubscribed ? <CircleLogo style={styles.careLogo} /> : null}
-          <Text style={styles.careDiscountedPrice}>
+    if (
+      (isOnlineSelected && onlineConsultMRPPrice > 0) ||
+      (!isOnlineSelected && physicalConsultMRPPrice > 0)
+    ) {
+      return (
+        <View>
+          <Text
+            style={[
+              styles.carePrice,
+              {
+                textDecorationLine: showCircleSubscribed ? 'line-through' : 'none',
+                ...theme.viewStyles.text(
+                  'M',
+                  15,
+                  showCircleSubscribed ? theme.colors.BORDER_BOTTOM_COLOR : theme.colors.LIGHT_BLUE
+                ),
+              },
+            ]}
+          >
             {string.common.Rs}
-            {isOnlineSelected ? onlineConsultSlashedPrice : physicalConsultSlashedPrice}
+            {isOnlineSelected ? onlineConsultMRPPrice : physicalConsultMRPPrice}
           </Text>
+          <View style={styles.rowContainer}>
+            {showCircleSubscribed ? <CircleLogo style={styles.careLogo} /> : null}
+            <Text style={styles.careDiscountedPrice}>
+              {string.common.Rs}
+              {isOnlineSelected ? onlineConsultSlashedPrice : physicalConsultSlashedPrice}
+            </Text>
+          </View>
         </View>
-      </View>
-    );
+      );
+    }
+    return <></>;
   };
 
   const renderCard = (

@@ -369,7 +369,9 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
                 </Text>
               ) : null}
             </View>
-            {isCircleDoctor ? (
+            {isCircleDoctor &&
+            ((heading === string.consultType.online.heading && onlineConsultMRPPrice > 0) ||
+              (heading === string.consultType.inperson.heading && physicalConsultMRPPrice > 0)) ? (
               renderCareDoctorPricing(heading)
             ) : (
               <Text style={styles.priceTextStyle}>{`${string.common.Rs}${price}`}</Text>
