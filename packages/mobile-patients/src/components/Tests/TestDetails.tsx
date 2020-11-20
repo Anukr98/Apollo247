@@ -222,7 +222,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     if (testInfo?.testDescription != null) {
       tabs.push({
         id: '3',
-        title: 'Description',
+        title: 'Overview',
       });
     } else {
       tabs = [
