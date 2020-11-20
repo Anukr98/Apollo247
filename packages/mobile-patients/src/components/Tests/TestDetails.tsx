@@ -220,10 +220,20 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
   useEffect(() => {
     if (testInfo?.testDescription != null) {
-      tabs.push({
-        id: '3',
-        title: 'Overview',
-      });
+      tabs = [
+        {
+          id: '1',
+          title: 'Tests Included',
+        },
+        {
+          id: '2',
+          title: 'Preparation',
+        },
+        {
+          id: '3',
+          title: 'Overview',
+        },
+      ];
     } else {
       tabs = [
         {
