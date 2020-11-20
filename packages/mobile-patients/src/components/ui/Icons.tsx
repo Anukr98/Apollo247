@@ -1195,6 +1195,25 @@ export const DashedLine: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/dashedLine.png')} />
 );
 
+export const InfoBlue: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/info_light_blue.png')} />
+);
+
+export const TickIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_tick.png')} />
+);
+
+export const OffToggle: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/off_toggle.png')} />
+);
+
+export const OnToggle: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/on_toggle.png')} />
+);
+
+export const BlueTick: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_check_blue.png')} />
+);
 export const CircleLogo: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/circleLogo.png')} />
 );
@@ -1207,8 +1226,4 @@ export const CircleBannerNonMember: React.FC<IconProps> = (props) => (
 
 export const ExpressDeliveryLogo: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/express_delivery.png')} />
-);
-
-export const BlueTick: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/ic_check_blue.png')} />
 );

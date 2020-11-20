@@ -759,7 +759,6 @@ export const ShoppingCartProvider: React.FC = (props) => {
       setDefaultCirclePlan(defaultPlan[0]);
     }
   };
-
   return (
     <ShoppingCartContext.Provider
       value={{

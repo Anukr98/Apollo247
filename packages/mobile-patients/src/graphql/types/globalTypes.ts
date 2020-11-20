@@ -320,6 +320,12 @@ export enum NonCartOrderOMSCity {
   CHENNAI = "CHENNAI",
 }
 
+export enum ONE_APOLLO_STORE_CODE {
+  ANDCUS = "ANDCUS",
+  IOSCUS = "IOSCUS",
+  WEBCUS = "WEBCUS",
+}
+
 export enum OTP_STATUS {
   BLOCKED = "BLOCKED",
   EXPIRED = "EXPIRED",
@@ -353,6 +359,16 @@ export enum PAYMENT_METHODS_REVERSE {
   PAYTM_POSTPAID = "PAYTM_POSTPAID",
   PAYTM_WALLET = "PAYTM_WALLET",
   UPI = "UPI",
+}
+
+export enum PLAN {
+  ALL = "ALL",
+  CARE_PLAN = "CARE_PLAN",
+}
+
+export enum PLAN_STATUS {
+  ACTIVE = "ACTIVE",
+  INACTIVE = "INACTIVE",
 }
 
 export enum PRISM_DOCUMENT_CATEGORY {
@@ -455,6 +471,8 @@ export enum SubscriptionStatus {
   CANCELLED = "CANCELLED",
   DEFERRED_INACTIVE = "DEFERRED_INACTIVE",
   DISABLED = "DISABLED",
+  PAYMENT_FAILED = "PAYMENT_FAILED",
+  PAYMENT_PENDING = "PAYMENT_PENDING",
   UPGRADED = "UPGRADED",
 }
 
@@ -517,6 +535,12 @@ export enum notificationStatus {
 
 export enum notificationType {
   CHAT = "CHAT",
+}
+
+export enum one_apollo_store_code {
+  ANDCUS = "ANDCUS",
+  IOSCUS = "IOSCUS",
+  WEBCUS = "WEBCUS",
 }
 
 export interface AddHealthCheckRecordInput {
@@ -588,6 +612,7 @@ export interface AppointmentHistoryInput {
 }
 
 export interface AppointmentPaymentInput {
+  mid?: string | null;
   amountPaid: number;
   paymentRefId?: string | null;
   paymentStatus: string;
@@ -600,6 +625,9 @@ export interface AppointmentPaymentInput {
   refundAmount?: number | null;
   paymentMode?: PAYMENT_METHODS | null;
   partnerInfo?: string | null;
+  planId?: string | null;
+  subPlanId?: string | null;
+  storeCode?: ONE_APOLLO_STORE_CODE | null;
 }
 
 export interface BookAppointmentInput {
@@ -616,6 +644,8 @@ export interface BookAppointmentInput {
   pinCode?: string | null;
   actualAmount?: number | null;
   discountedAmount?: number | null;
+  subscriptionDetails?: SUBSCRIPTION_DETAILS | null;
+  planPurchaseDetails?: PLAN_PURCHASE_DETAILS | null;
 }
 
 export interface BookFollowUpAppointmentInput {
@@ -679,7 +709,7 @@ export interface CouponInput {
 
 export interface CreateUserSubscriptionInput {
   plan_id: string;
-  payment_reference_id?: string | null;
+  payment_reference?: any | null;
   coupon_availed?: string | null;
   mobile_number: string;
   order_id?: string | null;
@@ -692,9 +722,10 @@ export interface CreateUserSubscriptionInput {
   FirstName?: string | null;
   LastName?: string | null;
   Email?: string | null;
-  Gender?: string | null;
+  Gender?: Gender | null;
   DOB?: any | null;
-  storeCode: string;
+  storeCode: one_apollo_store_code;
+  sub_plan_id?: string | null;
 }
 
 export interface DiagnosticBookHomeCollectionInput {
@@ -819,6 +850,7 @@ export interface FilterDoctorInput {
   pageNo?: number | null;
   pageSize?: number | null;
   searchText?: string | null;
+  isCare?: boolean | null;
 }
 
 export interface Geolocation {
@@ -929,6 +961,7 @@ export interface MedicineOrderCancelOMSInput {
 }
 
 export interface MedicinePaymentMqInput {
+  mid?: string | null;
   orderAutoId: number;
   paymentType: MEDICINE_ORDER_PAYMENT_TYPE;
   amountPaid: number;
@@ -946,6 +979,10 @@ export interface MedicinePaymentMqInput {
   paymentMode?: PAYMENT_METHODS | null;
   healthCredits?: number | null;
   partnerInfo?: string | null;
+  planId?: string | null;
+  storeCode?: ONE_APOLLO_STORE_CODE | null;
+  subPlanId?: string | null;
+  payload?: string | null;
 }
 
 export interface MessageInput {
@@ -974,6 +1011,11 @@ export interface OtpVerificationInput {
   loginType: LOGIN_TYPE;
 }
 
+export interface PLAN_PURCHASE_DETAILS {
+  TYPE?: PLAN | null;
+  PlanAmount?: number | null;
+}
+
 export interface PatientAddressInput {
   patientId: string;
   name?: string | null;
@@ -989,6 +1031,7 @@ export interface PatientAddressInput {
   latitude?: number | null;
   longitude?: number | null;
   stateCode?: string | null;
+  defaultAddress?: boolean | null;
 }
 
 export interface PatientAppointmentsInput {
@@ -1062,6 +1105,11 @@ export interface PrescriptionMedicinePaymentOMSDetails {
 export interface Range {
   minimum?: number | null;
   maximum?: number | null;
+}
+
+export interface SUBSCRIPTION_DETAILS {
+  userSubscriptionId?: string | null;
+  plan?: PLAN | null;
 }
 
 export interface SaveDeviceTokenInput {

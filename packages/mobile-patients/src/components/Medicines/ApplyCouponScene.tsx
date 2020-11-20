@@ -9,7 +9,6 @@ import {
   RadioButtonIcon,
   RadioButtonUnselectedIcon,
   SearchSendIcon,
-  PendingIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -116,7 +115,7 @@ const styles = StyleSheet.create({
   },
   careMessage: {
     ...theme.viewStyles.text('R', 13, '#01475B', 1, 20),
-    width: '90%'
+    width: '90%',
   },
 });
 export interface pharma_coupon {
@@ -351,13 +350,14 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
     );
   };
 
-  const renderCareDiscountBanner = () => 
+  const renderCareDiscountBanner = () => (
     <View style={styles.careMessageContainer}>
       <PendingIcon style={styles.pendingIconStyle} />
       <Text style={styles.careMessage}>
         You can either use CIRCLE discount or apply a Coupon code
       </Text>
     </View>
+  );
 
   return (
     <View style={{ flex: 1 }}>

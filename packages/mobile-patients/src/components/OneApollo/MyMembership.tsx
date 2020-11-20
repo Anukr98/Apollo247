@@ -13,6 +13,7 @@ import {
   OneApolloPlatinum,
   OneApolloLockIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   subHeading: {
@@ -346,8 +347,8 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
             <TriangleGreyBulletPoint style={styles.bulletPoint} />
             <Text style={[styles.bulletText, { color: theme.colors.PLATINUM_GREY }]}>
               {showGoldContent
-                ? 'Spend Rs. 75,000 in one year period'
-                : 'Spend Rs. 2,00,000 in one year period'}
+                ? `Spend ${string.common.Rs} 75,000 in one year period`
+                : `Spend ${string.common.Rs} 2,00,000 in one year period`}
             </Text>
           </View>
           <View style={styles.pointsContainer}>

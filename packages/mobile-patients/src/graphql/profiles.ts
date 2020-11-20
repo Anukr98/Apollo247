@@ -748,6 +748,13 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       awards
       photoUrl
       availableModes
+      doctorPricing {
+        slashed_price
+        available_to
+        status
+        mrp
+        appointment_type
+      }
       specialty {
         id
         name
@@ -1403,7 +1410,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
             itemName
             itemType
             testPreparationData
-            diagnosticPricing{
+            diagnosticPricing {
               mrp
               price
               groupPlan
@@ -1473,7 +1480,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
             itemType
             fromAgeInDays
             collectionType
-            diagnosticPricing{
+            diagnosticPricing {
               mrp
               price
               groupPlan
@@ -1529,7 +1536,7 @@ export const GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID = gql`
         fromAgeInDays
         toAgeInDays
         testPreparationData
-        diagnosticPricing{
+        diagnosticPricing {
           mrp
           price
           groupPlan
@@ -1558,7 +1565,7 @@ export const GET_DIAGNOSTIC_ORDER_ITEM = gql`
         fromAgeInDays
         toAgeInDays
         testPreparationData
-        diagnosticPricing{
+        diagnosticPricing {
           mrp
           price
           groupPlan
@@ -1592,7 +1599,7 @@ export const GET_DIAGNOSTIC_HOME_PAGE_ITEMS = gql`
           toAgeInDays
           testPreparationData
           collectionType
-          diagnosticPricing{
+          diagnosticPricing {
             mrp
             price
             groupPlan
@@ -1621,7 +1628,7 @@ export const GET_DIAGNOSTIC_HOME_PAGE_ITEMS = gql`
           toAgeInDays
           testPreparationData
           collectionType
-          diagnosticPricing{
+          diagnosticPricing {
             mrp
             price
             groupPlan
@@ -1640,8 +1647,8 @@ export const VALIDATE_DIAGNOSTIC_COUPON = gql`
       status
       message
       uniqueid
-      data{
-        tests{
+      data {
+        tests {
           itemid
           itemName
           discamount
@@ -2762,7 +2769,7 @@ export const SEARCH_DIAGNOSTICS = gql`
         fromAgeInDays
         toAgeInDays
         testPreparationData
-        diagnosticPricing{
+        diagnosticPricing {
           mrp
           price
           groupPlan
@@ -2793,7 +2800,7 @@ export const SEARCH_DIAGNOSTICS_BY_CITY_ID = gql`
         fromAgeInDays
         toAgeInDays
         testPreparationData
-        diagnosticPricing{
+        diagnosticPricing {
           mrp
           price
           groupPlan
@@ -3038,6 +3045,10 @@ export const GET_TRANSACTION_STATUS = gql`
         bankTxnId
         paymentStatus
         amountPaid
+        amountBreakup {
+          actual_price
+          slashed_price
+        }
       }
     }
   }
@@ -3512,6 +3523,17 @@ export const GET_PLAN_DETAILS_BY_PLAN_ID = gql`
         plan_id
         plan_summary
       }
+    }
+  }
+`;
+
+export const GET_SUBSCRIPTIONS_OF_USER_BY_STATUS = gql`
+  query GetSubscriptionsOfUserByStatus($mobile_number: String!, $status: [String!]!) {
+    GetSubscriptionsOfUserByStatus(mobile_number: $mobile_number, status: $status) {
+      code
+      success
+      message
+      response
     }
   }
 `;

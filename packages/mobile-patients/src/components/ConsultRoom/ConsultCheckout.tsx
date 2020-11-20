@@ -37,6 +37,7 @@ import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents'
 import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEvents';
 import { saveSearchDoctor, saveSearchSpeciality } from '../../helpers/clientCalls';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -61,6 +62,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
   const couponApplied = props.navigation.getParam('couponApplied');
   const callSaveSearch = props.navigation.getParam('callSaveSearch');
   const patientId = props.navigation.getParam('patientId');
+  const planSelected = props.navigation.getParam('planSelected');
 
   type bankOptions = {
     name: string;
@@ -290,6 +292,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
                 g(apptmt, 'appointmentDateTime'),
                 g(data, 'data', 'bookAppointment', 'appointment', 'id')!
               ),
+              planSelected: planSelected,
             })
           : props.navigation.navigate(AppRoutes.ConsultPaymentnew, {
               consultedWithDoctorBefore: consultedWithDoctorBefore,
@@ -312,6 +315,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
                 g(apptmt, 'appointmentDateTime'),
                 g(data, 'data', 'bookAppointment', 'appointment', 'id')!
               ),
+              planSelected: planSelected,
             });
         setLoading && setLoading(false);
       })
@@ -383,7 +387,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
           }}
         >
           <Text style={{ ...theme.viewStyles.text('SB', 15, theme.colors.SHERPA_BLUE, 1, 20) }}>
-            Rs. {price}
+            {string.common.Rs} {price}
           </Text>
         </View>
       </View>

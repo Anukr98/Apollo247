@@ -307,7 +307,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
             {data.name}
           </Text>
           <Text style={{ ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04) }}>
-            Rs. {data.price}
+            {string.common.Rs} {data.price}
           </Text>
         </View>
       );

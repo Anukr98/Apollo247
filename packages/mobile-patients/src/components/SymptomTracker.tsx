@@ -733,7 +733,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
       <Overlay
         onRequestClose={() => setShowInfo(false)}
         isVisible={showInfo}
-        windowBackgroundColor={'rgba(0, 0, 0, 0.8)'}
+        windowBackgroundColor={'rgba(0, 0, 0, 0.31)'}
         containerStyle={styles.overlayContainerStyle}
         fullScreen
         transparent

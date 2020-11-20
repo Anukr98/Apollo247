@@ -16,6 +16,8 @@ import {
   CTChat,
   OnlineHeader,
   CTPhone,
+  InfoBlue,
+  CircleLogo,
 } from '../ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import {
@@ -29,23 +31,21 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { ConsultMode } from '../../graphql/types/globalTypes';
+import { ConsultMode } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppRoutes } from '../NavigatorContainer';
 import { useApolloClient } from 'react-apollo-hooks';
 import { useUIElements } from '../UIElementsProvider';
-import { PAST_APPOINTMENTS_COUNT, GET_DOCTOR_DETAILS_BY_ID } from '../../graphql/profiles';
+import { GET_DOCTOR_DETAILS_BY_ID } from '../../graphql/profiles';
 import {
-  getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor,
   getDoctorDetailsById,
   getDoctorDetailsById_getDoctorDetailsById,
 } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
-import {
-  getPastAppointmentsCount,
-  getPastAppointmentsCountVariables,
-} from '../../graphql/types/getPastAppointmentsCount';
 import { useAllCurrentPatients } from '../../hooks/authHooks';
 import { CommonBugFender } from '../../FunctionHelpers/DeviceHelper';
 import moment from 'moment';
+import { calculateCareDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const styles = StyleSheet.create({
   mainContainer: {
@@ -92,11 +92,13 @@ const styles = StyleSheet.create({
   cardHeaderStyle: {
     flexDirection: 'row',
     marginTop: 13,
-    marginHorizontal: 16,
     paddingBottom: 9,
     justifyContent: 'space-between',
+  },
+  cardBorderStyle: {
     borderBottomWidth: 0.5,
     borderBottomColor: theme.colors.SEPARATOR_LINE,
+    marginHorizontal: 16,
   },
   headingTextContainer: {
     flex: 1,
@@ -148,6 +150,43 @@ const styles = StyleSheet.create({
     marginRight: 12,
     height: '100%',
   },
+  carePrice: {
+    ...theme.viewStyles.text('M', 15, theme.colors.BORDER_BOTTOM_COLOR),
+    textDecorationLine: 'line-through',
+    textDecorationStyle: 'solid',
+    marginLeft: 'auto',
+  },
+  careDiscountedPrice: {
+    ...theme.viewStyles.text('M', 12, theme.colors.APP_YELLOW),
+    marginLeft: 'auto',
+  },
+  rowContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  careLogo: {
+    width: 40,
+    height: 21,
+  },
+  careLogoText: {
+    ...theme.viewStyles.text('M', 4, 'white'),
+  },
+  smallRightAlignText: {
+    ...theme.viewStyles.text('M', 10, theme.colors.APP_YELLOW),
+    marginLeft: 'auto',
+    lineHeight: 12,
+  },
+  row: {
+    flexDirection: 'row',
+    paddingBottom: 9,
+    alignItems: 'center',
+    marginTop: -15,
+  },
+  infoIcon: {
+    width: 10,
+    height: 10,
+    marginLeft: 3,
+  },
 });
 
 export interface ConsultTypeScreenProps extends NavigationScreenProps {
@@ -166,12 +205,9 @@ type stepsObject = {
   textColor?: string;
 };
 export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
-  const [consultedChecked, setConsultedChecked] = useState<boolean>(false);
   const DoctorName = props.navigation.getParam('DoctorName');
   const DoctorId = props.navigation.getParam('DoctorId');
   // const chatDays = props.navigation.getParam('chatDays');
-  const [hideCheckbox, setHideCheckbox] = useState<boolean>(false);
-  const nextAppointemntOnlineTime = props.navigation.getParam('nextSlot');
   const nextAppointemntInPresonTime = props.navigation.getParam('nextSlot');
   // const onlinePrice = props.navigation.getParam('onlinePrice');
   // const InpersonPrice = props.navigation.getParam('InpersonPrice');
@@ -181,34 +217,17 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
   const { currentPatientId, currentPatient } = useAllCurrentPatients();
   const [doctorDetails, setdoctorDetails] = useState<getDoctorDetailsById_getDoctorDetailsById>();
   const callSaveSearch = props.navigation.getParam('callSaveSearch');
+  const circleDoctorDetails = calculateCareDoctorPricing(doctorDetails);
+  const {
+    isCircleDoctor,
+    physicalConsultMRPPrice,
+    onlineConsultMRPPrice,
+    onlineConsultSlashedPrice,
+    physicalConsultSlashedPrice,
+  } = circleDoctorDetails;
+  const { circleSubscriptionId } = useShoppingCart();
 
   const client = useApolloClient();
-
-  // useEffect(() => {
-  //   if (DoctorId && currentPatientId) {
-  //     setLoading && setLoading(true);
-  //     client
-  //       .query<getPastAppointmentsCount, getPastAppointmentsCountVariables>({
-  //         query: PAST_APPOINTMENTS_COUNT,
-  //         variables: {
-  //           doctorId: DoctorId,
-  //           patientId: currentPatientId || '',
-  //         },
-  //         fetchPolicy: 'no-cache',
-  //       })
-  //       .then((data) => {
-  //         const count = g(data, 'data', 'getPastAppointmentsCount', 'count');
-  //         console.log('getPastAppointmentsCount', data);
-  //         if (count && count > 0) {
-  //           setHideCheckbox(true);
-  //         }
-  //         setLoading && setLoading(false);
-  //       })
-  //       .catch((e) => {
-  //         CommonBugFender('ConsultTypeScreen_getCount', e);
-  //       });
-  //   }
-  // }, [DoctorId, client, currentPatientId, setLoading]);
 
   useEffect(() => {
     fetchDoctorDetails(DoctorId);
@@ -264,21 +283,59 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
       </View>
     );
   };
-  const renderCheckbox = () => {
+
+  const renderCareDoctorPricing = (heading: string) => {
     return (
-      <View style={styles.checkboxContainer}>
-        <TouchableOpacity
-          activeOpacity={1}
-          style={{ marginLeft: 17 }}
-          onPress={() => setConsultedChecked(!consultedChecked)}
+      <View style={{ justifyContent: 'center' }}>
+        <Text
+          style={[
+            styles.carePrice,
+            {
+              textDecorationLine: circleSubscriptionId ? 'line-through' : 'none',
+              ...theme.viewStyles.text(
+                'M',
+                15,
+                circleSubscriptionId ? theme.colors.BORDER_BOTTOM_COLOR : theme.colors.LIGHT_BLUE
+              ),
+            },
+          ]}
         >
-          {consultedChecked ? <CheckedIcon /> : <CheckUnselectedIcon />}
-        </TouchableOpacity>
-        <Text style={styles.checkboxTextStyle}>
-          {string.consultType.checkBoxText.replace('{0}', DoctorName)}
+          {string.common.Rs}
+          {heading === string.consultType.online.heading
+            ? onlineConsultMRPPrice
+            : physicalConsultMRPPrice}
         </Text>
+        <View style={styles.rowContainer}>
+          {circleSubscriptionId ? <CircleLogo style={styles.careLogo} /> : null}
+          <Text style={styles.careDiscountedPrice}>
+            {string.common.Rs}
+            {heading === string.consultType.online.heading
+              ? onlineConsultSlashedPrice
+              : physicalConsultSlashedPrice}
+          </Text>
+        </View>
       </View>
     );
+  };
+
+  const openCircleWebView = (heading: string) => {
+    props.navigation.navigate(AppRoutes.CommonWebView, {
+      url: AppConfig.Configuration.CIRCLE_CONSULT_URL,
+      isCallback: true,
+      onPlanSelected: () => onPlanSelected(heading),
+    });
+  };
+
+  const onPlanSelected = (heading: string) => {
+    if (heading === string.consultType.online.heading) {
+      setTimeout(() => {
+        onPressOnlineConsult();
+      }, 1000);
+    } else {
+      setTimeout(() => {
+        onPressPhysicalConsult();
+      }, 1000);
+    }
   };
 
   const renderCard = (
@@ -293,19 +350,44 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
     const timeDiff: Number = timeDiffFromNow(time || '');
     return (
       <View style={styles.cardContainer}>
-        <View style={styles.cardHeaderStyle}>
-          {headingImage}
-          <View style={styles.headingTextContainer}>
-            <Text style={theme.viewStyles.text('M', 14, theme.colors.SKY_BLUE, 1, undefined, 0.02)}>
-              {heading}
-            </Text>
-            {time && moment(time).isValid() ? (
-              <Text style={timeDiff <= 15 ? styles.timeText2Style : styles.timeTextStyle}>
-                {nextAvailability(time)}
+        <View style={styles.cardBorderStyle}>
+          <View style={styles.cardHeaderStyle}>
+            {headingImage}
+            <View style={styles.headingTextContainer}>
+              <Text
+                style={theme.viewStyles.text('M', 14, theme.colors.SKY_BLUE, 1, undefined, 0.02)}
+              >
+                {heading}
               </Text>
-            ) : null}
+              {time && moment(time).isValid() ? (
+                <Text style={timeDiff <= 15 ? styles.timeText2Style : styles.timeTextStyle}>
+                  {nextAvailability(time)}
+                </Text>
+              ) : null}
+            </View>
+            {isCircleDoctor ? (
+              renderCareDoctorPricing(heading)
+            ) : (
+              <Text style={styles.priceTextStyle}>{`${string.common.Rs}${price}`}</Text>
+            )}
           </View>
-          <Text style={styles.priceTextStyle}>{`Rs. ${price}`}</Text>
+          {!circleSubscriptionId && isCircleDoctor ? (
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() => openCircleWebView(heading)}
+              style={[
+                styles.row,
+                {
+                  marginTop: heading === string.consultType.online.heading ? -16 : -20,
+                },
+              ]}
+            >
+              <Text style={styles.smallRightAlignText}>for</Text>
+              <CircleLogo style={styles.careLogo} />
+              <Text style={[styles.smallRightAlignText, { marginLeft: -4 }]}>members</Text>
+              <InfoBlue style={styles.infoIcon} />
+            </TouchableOpacity>
+          ) : null}
         </View>
         <View style={styles.stepsMainContainer}>
           <Text style={theme.viewStyles.text('M', 12, theme.colors.SHERPA_BLUE, 1, 18)}>
@@ -388,16 +470,20 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
         },
       ],
       () => {
-        props.navigation.navigate(AppRoutes.DoctorDetails, {
-          doctorId: DoctorId,
-          consultModeSelected: ConsultMode.ONLINE,
-          externalConnect: null,
-          callSaveSearch: callSaveSearch,
-          ...params,
-        });
-        postWebengaegConsultType('Online');
+        onPressOnlineConsult();
       }
     );
+  };
+
+  const onPressOnlineConsult = () => {
+    props.navigation.navigate(AppRoutes.DoctorDetails, {
+      doctorId: DoctorId,
+      consultModeSelected: ConsultMode.ONLINE,
+      externalConnect: null,
+      callSaveSearch: callSaveSearch,
+      ...params,
+    });
+    postWebengaegConsultType('Online');
   };
 
   const renderInPersonCard = () => {
@@ -424,17 +510,22 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
         },
       ],
       () => {
-        props.navigation.navigate(AppRoutes.DoctorDetails, {
-          doctorId: DoctorId,
-          consultModeSelected: ConsultMode.PHYSICAL,
-          externalConnect: null,
-          callSaveSearch: callSaveSearch,
-          ...params,
-        });
-        postWebengaegConsultType('In Person');
+        onPressPhysicalConsult();
       }
     );
   };
+
+  const onPressPhysicalConsult = () => {
+    props.navigation.navigate(AppRoutes.DoctorDetails, {
+      doctorId: DoctorId,
+      consultModeSelected: ConsultMode.PHYSICAL,
+      externalConnect: null,
+      callSaveSearch: callSaveSearch,
+      ...params,
+    });
+    postWebengaegConsultType('In Person');
+  };
+
   // let ScrollViewRef: any;
 
   return (

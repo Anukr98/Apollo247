@@ -15,6 +15,7 @@ import ViewInvoice from './ViewInvoice';
 import PaymentStatusConstants from '../../constants';
 import { Copy } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Snackbar } from 'react-native-paper';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 interface StatusCardProps {
   item: any;
@@ -66,7 +67,7 @@ const StatusCard: FC<StatusCardProps> = (props) => {
       return {
         status: status,
         refId: refId,
-        price: 'Rs. ' + String(price),
+        price: `${string.common.Rs} ` + String(price),
         orderID: orderID,
       };
     } else {
@@ -93,7 +94,7 @@ const StatusCard: FC<StatusCardProps> = (props) => {
       return {
         status: status,
         refId: refId,
-        price: 'Rs. ' + String(price),
+        price: `${string.common.Rs} ` + String(price),
         orderID: orderID,
       };
     }

@@ -13,7 +13,7 @@ export enum AppEnv {
   DEVReplica = 'DEVReplica',
 }
 
-const APP_ENV: AppEnv = AppEnv.PROD as AppEnv; // For respective API environments in the app.
+const APP_ENV: AppEnv = AppEnv.DEV as AppEnv; // For respective API environments in the app.
 
 const pharmaToken201 = 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d';
 const pharmaTokenYXV = 'YXV0aF91c2VyOnN1cGVyc2VjcmV0X3Rhd';
@@ -69,6 +69,7 @@ const appStaticVariables = {
   CUSTOMER_CARE_NUMBER: string.common.customerCareNumber,
   PRODUCT_SUGGESTIONS_CATEGORYID: '41920',
   PRODUCT_SUGGESTIONS_COUNT: 10,
+  CARE_PLAN_ID: 'CAREPlan',
 };
 
 const DEV_top6_specailties = [
@@ -303,6 +304,7 @@ const ConfigurationDev = {
   COVID_VACCINE_TRACKER_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
+  CIRCLE_CONSULT_URL: 'https://aph.dev.web-patients.popcornapps.com/consult-landing?header=false',
 };
 
 // QA
@@ -347,6 +349,7 @@ const ConfigurationQA = {
   COVID_VACCINE_TRACKER_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
+  CIRCLE_CONSULT_URL: 'https://aph.dev.web-patients.popcornapps.com/consult-landing?header=false',
 };
 
 // QA2
@@ -391,6 +394,7 @@ const ConfigurationQA2 = {
   COVID_VACCINE_TRACKER_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
+  CIRCLE_CONSULT_URL: 'https://aph.dev.web-patients.popcornapps.com/consult-landing?header=false',
 };
 
 // VAPT
@@ -435,6 +439,7 @@ const ConfigurationVAPT = {
   COVID_VACCINE_TRACKER_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
+  CIRCLE_CONSULT_URL: 'https://aph.dev.web-patients.popcornapps.com/consult-landing?header=false',
 };
 //Production
 const ConfigurationProd = {
@@ -477,6 +482,7 @@ const ConfigurationProd = {
   SYMPTOM_TRACKER: 'https://sympai.apollo247.com/api/v1/chatbot',
   COVID_VACCINE_TRACKER_URL: 'https://www.apollo247.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
+  CIRCLE_CONSULT_URL: 'https://aph.dev.web-patients.popcornapps.com/consult-landing?header=false',
 };
 
 //PERFORMANCE
@@ -522,6 +528,7 @@ const ConfigurationPERFORM = {
   COVID_VACCINE_TRACKER_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
+  CIRCLE_CONSULT_URL: 'https://aph.dev.web-patients.popcornapps.com/consult-landing?header=false',
 };
 
 //DevelopmentReplica
@@ -567,6 +574,7 @@ const ConfigurationDevReplica = {
   COVID_VACCINE_TRACKER_URL:
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
+  CIRCLE_CONSULT_URL: 'https://aph.dev.web-patients.popcornapps.com/consult-landing?header=false',
 };
 
 const Configuration =

@@ -19,6 +19,8 @@ import {
   RadioButtonUnselectedIcon,
   SearchIcon,
   RetryButtonIcon,
+  TickIcon,
+  CircleLogo,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
@@ -100,6 +102,8 @@ import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEven
 import { getValuesArray } from '@aph/mobile-patients/src/utils/commonUtils';
 import _ from 'lodash';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { Switch } from '@aph/mobile-patients/src/components/ui/Switch';
+import { CirclePlanAddedToCart } from '@aph/mobile-patients/src/components/ui/CirclePlanAddedToCart';
 
 const searchFilters = require('@aph/mobile-patients/src/strings/filters');
 const { width: screenWidth } = Dimensions.get('window');
@@ -180,6 +184,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderBottomWidth: 4,
   },
+  rowContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 20,
+    marginBottom: 10,
+  },
+  careLogo: {
+    width: 54,
+    height: 29,
+  },
+  careHeadingText: {
+    ...theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE),
+    marginLeft: 10,
+  },
 });
 
 let latlng: locationType | null = null;
@@ -203,6 +221,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [displayFilter, setDisplayFilter] = useState<boolean>(false);
   const [currentLocation, setcurrentLocation] = useState<string>('');
   const [locationSearchText, setLocationSearchText] = useState<string>('');
+  const [showCarePlanNotification, setShowCarePlanNotification] = useState<boolean>(false);
 
   const [doctorsList, setDoctorsList] = useState<
     (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null)[]
@@ -240,6 +259,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [value, setValue] = useState<boolean>(false);
   const [sortValue, setSortValue] = useState<string>('');
   const [searchIconClicked, setSearchIconClicked] = useState<boolean>(false);
+  const [careDoctorsSwitch, setCareDoctorsSwitch] = useState<boolean>(false);
+  const [filterActionTaken, setFilterActionTaken] = useState<boolean>(false);
+
   let DoctorsflatListRef: any;
   const filterOptions = (filters: any) => {
     let preFilters = filters;
@@ -304,6 +326,28 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       getPatientApiCall();
     }
   }, [currentPatient]);
+
+  useEffect(() => {
+    if (filterActionTaken) {
+      fetchSpecialityFilterData(
+        filterMode,
+        FilterData,
+        latlng,
+        sortValue,
+        undefined,
+        false,
+        doctorSearch
+      );
+    }
+  }, [careDoctorsSwitch]);
+
+  useEffect(() => {
+    if (showCarePlanNotification) {
+      setTimeout(() => {
+        setShowCarePlanNotification(false);
+      }, 10 * 1000);
+    }
+  }, [showCarePlanNotification]);
 
   const vaueChange = (sort: any) => {
     if (sort === 'distance') {
@@ -606,6 +650,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       pageNo: pageNo ? pageNo + 1 : 1,
       pageSize: pageSize,
       searchText: searchText,
+      isCare: careDoctorsSwitch,
     };
     setBugFenderLog('DOCTOR_FILTER_INPUT', JSON.stringify(FilterInput));
     !pageNo && setshowSpinner(true);
@@ -1009,6 +1054,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           onPressConsultNowOrBookAppointment={(type) => {
             postDoctorClickWEGEvent(rowData, 'List', type);
           }}
+          onPlanSelected={() => setShowCarePlanNotification(true)}
         />
       );
     }
@@ -1090,8 +1136,13 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         </View>
       );
     }
+
+    const renderCirclePlanAddedToCartView = () => <CirclePlanAddedToCart />;
+
     return (
       <View style={{ flex: 1 }}>
+        {doctorsType === 'APOLLO' && renderViewCareSwitch()}
+        {doctorsType === 'APOLLO' && showCarePlanNotification && renderCirclePlanAddedToCartView()}
         {doctors.length > 0 && (
           <FlatList
             ref={(ref) => {
@@ -1632,6 +1683,24 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       );
     }
   };
+
+  const renderViewCareSwitch = () => {
+    return (
+      <View style={styles.rowContainer}>
+        <Text style={styles.careHeadingText}>View</Text>
+        <CircleLogo style={styles.careLogo} resizeMode="contain" />
+        <Text style={[styles.careHeadingText, { marginLeft: -5 }]}>Doctors</Text>
+        <Switch
+          onChange={(value) => {
+            setCareDoctorsSwitch(value);
+            setFilterActionTaken(true);
+          }}
+          value={careDoctorsSwitch}
+        />
+      </View>
+    );
+  };
+
   return (
     <View style={styles.mainContainer}>
       <SafeAreaView style={theme.viewStyles.container}>

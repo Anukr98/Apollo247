@@ -13,6 +13,8 @@ import {
   CTLightGrayChat,
   CTLightGrayVideo,
   CTPhone,
+  InfoBlue,
+  CircleLogo,
 } from './Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '../../theme/theme';
@@ -26,6 +28,10 @@ import {
 import moment from 'moment';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
 import { useAllCurrentPatients } from '../../hooks/authHooks';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { NavigationScreenProps } from 'react-navigation';
 
 const styles = StyleSheet.create({
   mainView: {
@@ -43,11 +49,13 @@ const styles = StyleSheet.create({
   cardHeaderStyle: {
     flexDirection: 'row',
     marginTop: 13,
-    marginHorizontal: 16,
     paddingBottom: 9,
     justifyContent: 'space-between',
+  },
+  cardBorderStyle: {
     borderBottomWidth: 0.5,
     borderBottomColor: theme.colors.SEPARATOR_LINE,
+    marginHorizontal: 16,
   },
   headingTextContainer: {
     flex: 1,
@@ -99,9 +107,46 @@ const styles = StyleSheet.create({
     marginRight: 12,
     height: '100%',
   },
+  careLogo: {
+    width: 40,
+    height: 21,
+  },
+  careLogoText: {
+    ...theme.viewStyles.text('M', 4, 'white'),
+  },
+  carePrice: {
+    ...theme.viewStyles.text('M', 15, theme.colors.BORDER_BOTTOM_COLOR),
+    textDecorationLine: 'line-through',
+    textDecorationStyle: 'solid',
+    marginLeft: 'auto',
+  },
+  careDiscountedPrice: {
+    ...theme.viewStyles.text('M', 12, theme.colors.APP_YELLOW),
+    marginLeft: 'auto',
+  },
+  rowContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  smallRightAlignText: {
+    ...theme.viewStyles.text('M', 10, theme.colors.APP_YELLOW),
+    marginLeft: 'auto',
+    lineHeight: 12,
+  },
+  row: {
+    flexDirection: 'row',
+    paddingBottom: 9,
+    alignItems: 'center',
+    marginTop: -16,
+  },
+  infoIcon: {
+    width: 10,
+    height: 10,
+    marginLeft: 3,
+  },
 });
 
-export interface ConsultTypeCardProps {
+export interface ConsultTypeCardProps extends NavigationScreenProps {
   onOnlinePress: () => void;
   onPhysicalPress: () => void;
   isOnlineSelected: boolean;
@@ -110,6 +155,7 @@ export interface ConsultTypeCardProps {
   DoctorName: string | null;
   nextAppointemntOnlineTime: string;
   nextAppointemntInPresonTime: string;
+  circleDoctorDetails?: any;
 }
 
 type stepsObject = {
@@ -128,11 +174,50 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
     DoctorName,
     nextAppointemntOnlineTime,
     nextAppointemntInPresonTime,
+    circleDoctorDetails,
   } = props;
 
   const { currentPatient } = useAllCurrentPatients();
+  const { circleSubscriptionId } = useShoppingCart();
 
   const [consultDoctorName, setConsultDocotrName] = useState<string>(DoctorName ? DoctorName : '');
+  const {
+    isCircleDoctor,
+    onlineConsultMRPPrice,
+    onlineConsultSlashedPrice,
+    physicalConsultMRPPrice,
+    physicalConsultSlashedPrice,
+  } = circleDoctorDetails;
+
+  const renderCareDoctorPricing = () => {
+    return (
+      <View>
+        <Text
+          style={[
+            styles.carePrice,
+            {
+              textDecorationLine: circleSubscriptionId ? 'line-through' : 'none',
+              ...theme.viewStyles.text(
+                'M',
+                15,
+                circleSubscriptionId ? theme.colors.BORDER_BOTTOM_COLOR : theme.colors.LIGHT_BLUE
+              ),
+            },
+          ]}
+        >
+          {string.common.Rs}
+          {isOnlineSelected ? onlineConsultMRPPrice : physicalConsultMRPPrice}
+        </Text>
+        <View style={styles.rowContainer}>
+          {circleSubscriptionId ? <CircleLogo style={styles.careLogo} /> : null}
+          <Text style={styles.careDiscountedPrice}>
+            {string.common.Rs}
+            {isOnlineSelected ? onlineConsultSlashedPrice : physicalConsultSlashedPrice}
+          </Text>
+        </View>
+      </View>
+    );
+  };
 
   const renderCard = (
     headingImage: Element,
@@ -143,21 +228,61 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
     onPress: () => void
   ) => {
     const timeDiff: Number = timeDiffFromNow(time || '');
+    const current = moment(new Date());
+    const isTomorrow = moment(time).isAfter(
+      current
+        .add(1, 'd')
+        .startOf('d')
+        .set({
+          hour: moment('06:00', 'HH:mm').get('hour'),
+          minute: moment('06:00', 'HH:mm').get('minute'),
+        })
+    );
     return (
       <View style={styles.cardContainer}>
-        <View style={styles.cardHeaderStyle}>
-          {headingImage}
-          <View style={styles.headingTextContainer}>
-            <Text style={theme.viewStyles.text('M', 14, theme.colors.SKY_BLUE, 1, undefined, 0.02)}>
-              {heading}
-            </Text>
-            {time && moment(time).isValid() ? (
-              <Text style={timeDiff <= 15 ? styles.timeText2Style : styles.timeTextStyle}>
-                {nextAvailability(time)}
+        <View style={styles.cardBorderStyle}>
+          <View style={styles.cardHeaderStyle}>
+            {headingImage}
+            <View style={styles.headingTextContainer}>
+              <Text
+                style={theme.viewStyles.text('M', 14, theme.colors.SKY_BLUE, 1, undefined, 0.02)}
+              >
+                {heading}
               </Text>
-            ) : null}
+              {time && moment(time).isValid() ? (
+                <Text style={timeDiff <= 15 ? styles.timeText2Style : styles.timeTextStyle}>
+                  {nextAvailability(time)}
+                </Text>
+              ) : null}
+            </View>
+            {isCircleDoctor && renderCareDoctorPricing()}
           </View>
+          {!circleSubscriptionId && isCircleDoctor ? (
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() => openCircleWebView()}
+              style={[
+                styles.row,
+                {
+                  marginTop:
+                    heading === string.consultType.online.heading
+                      ? isTomorrow
+                        ? -16
+                        : -22
+                      : isTomorrow
+                      ? -23
+                      : -29,
+                },
+              ]}
+            >
+              <Text style={styles.smallRightAlignText}>for</Text>
+              <CircleLogo style={styles.careLogo} />
+              <Text style={[styles.smallRightAlignText, { marginLeft: -4 }]}>members</Text>
+              <InfoBlue style={styles.infoIcon} />
+            </TouchableOpacity>
+          ) : null}
         </View>
+
         <View style={styles.stepsMainContainer}>
           <Text style={theme.viewStyles.text('M', 12, theme.colors.SHERPA_BLUE, 1, 18)}>
             {question}
@@ -194,6 +319,12 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
         </TouchableOpacity>
       </View>
     );
+  };
+
+  const openCircleWebView = () => {
+    props.navigation.navigate(AppRoutes.CommonWebView, {
+      url: AppConfig.Configuration.CIRCLE_CONSULT_URL,
+    });
   };
 
   const postWebengaegConsultType = (consultType: 'Online' | 'In Person') => {

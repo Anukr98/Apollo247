@@ -17,6 +17,7 @@ import {
   View,
 } from 'react-native';
 import { Divider, Image } from 'react-native-elements';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 export interface Props extends MedicineProduct {
   onPress: () => void;
@@ -72,7 +73,7 @@ export const ProductUpSellingCard: React.FC<Props> = ({
         {!!discount && (
           <View style={{ flexDirection: 'row' }}>
             <Text style={{ ...styles.priceStrikeOff }}>
-              {onCartScreen ? `(₹${price})` : `(Rs. ${price})`}
+              {onCartScreen ? `(₹${price})` : `(${string.common.Rs} ${price})`}
             </Text>
             <Text
               style={{ ...styles.discountPercentage, color: onCartScreen ? '#00B38E' : '#01475B' }}
@@ -81,7 +82,7 @@ export const ProductUpSellingCard: React.FC<Props> = ({
         )}
         <View style={[styles.priceAndAddToCartButton, { marginTop: !!discount ? 0 : 12 }]}>
           <Text style={styles.price}>
-            {(onCartScreen ? '₹' : 'Rs.') + (discount ? special_price : price)}
+            {(onCartScreen ? '₹' : string.common.Rs) + (discount ? special_price : price)}
           </Text>
           {sell_online
             ? is_in_stock

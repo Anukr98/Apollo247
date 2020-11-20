@@ -138,7 +138,7 @@ import {
   makeAdressAsDefaultVariables,
   makeAdressAsDefault,
 } from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
-import { CareSelectPlans } from '@aph/mobile-patients/src/components/ui/CareSelectPlans';
+import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
 
 const styles = StyleSheet.create({
   sliderDotStyle: {
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 200,
     borderRadius: 10,
-  }
+  },
 });
 
 const filterBanners = (banners: OfferBannerSection[]) => {
@@ -1395,10 +1395,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const renderCircleBanner = () => {
     return (
-      <TouchableOpacity 
+      <TouchableOpacity
         activeOpacity={1}
-        onPress={() => {setShowCirclePopup(true)}} 
-        style={{paddingHorizontal: 20}}
+        onPress={() => {
+          setShowCirclePopup(true);
+        }}
+        style={{ paddingHorizontal: 20 }}
       >
         <CircleBannerNonMember style={styles.circleBanner} />
       </TouchableOpacity>
@@ -1921,7 +1923,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         borderColor: '#FCB716',
         borderRadius: 8,
         padding: 5,
-        backgroundColor: '#FFFFFF'
+        backgroundColor: '#FFFFFF',
       },
       upgradeTo: {
         flexDirection: 'row',
@@ -1938,7 +1940,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         padding: 5,
         paddingHorizontal: 10,
         alignItems: 'center',
-        alignSelf: 'center'
+        alignSelf: 'center',
       },
       circleLogoTwo: {
         resizeMode: 'contain',
@@ -1951,28 +1953,36 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     return (
       <View style={circleStyles.container}>
         <View style={circleStyles.content}>
-          <View style={{alignItems: isCircleSubscription ? 'flex-start' : 'center'}}>
+          <View style={{ alignItems: isCircleSubscription ? 'flex-start' : 'center' }}>
             <Text style={theme.viewStyles.text('R', 13, '#02475B', 1, 24, 0)}>
-              {
-                isCircleSubscription ? 
-                'Items' :
-                'Total no. of items'
-              }
+              {isCircleSubscription ? 'Items' : 'Total no. of items'}
             </Text>
-            <Text style={theme.viewStyles.text('SB', 16, '#02475B', 1, 20, 0)}>{cartItems.length}</Text>
+            <Text style={theme.viewStyles.text('SB', 16, '#02475B', 1, 20, 0)}>
+              {cartItems.length}
+            </Text>
           </View>
-          {
-            isCircleSubscription ?
+          {isCircleSubscription ? (
             <View>
               <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 20, 0)}>₹{cartTotal}</Text>
-              <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
-                <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 25, 0)}>Effective price for</Text>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+                <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 25, 0)}>
+                  Effective price for
+                </Text>
                 <CircleLogo style={circleStyles.circleLogoTwo} />
-                <Text style={{...theme.viewStyles.text('R', 12, '#02475B', 1, 25, 0), left: -3}}>members</Text>
-                <Text style={theme.viewStyles.text('SB', 12, '#02475B', 1, 25, 0)}>₹{effectivePrice}</Text>
+                <Text style={{ ...theme.viewStyles.text('R', 12, '#02475B', 1, 25, 0), left: -3 }}>
+                  members
+                </Text>
+                <Text style={theme.viewStyles.text('SB', 12, '#02475B', 1, 25, 0)}>
+                  ₹{effectivePrice}
+                </Text>
               </View>
-            </View> :
-            <TouchableOpacity activeOpacity={1} onPress={() => setShowCirclePopup(true)} style={circleStyles.upgrade}>
+            </View>
+          ) : (
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() => setShowCirclePopup(true)}
+              style={circleStyles.upgrade}
+            >
               <View style={circleStyles.upgradeTo}>
                 <Text style={theme.viewStyles.text('M', 13, '#FCB716', 1, 20, 0)}>UPGRADE TO</Text>
                 <CircleLogo style={circleStyles.circleLogo} />
@@ -1981,19 +1991,19 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 {`Get effective price of ₹${effectivePrice}`}
               </Text>
             </TouchableOpacity>
-          }
-          <TouchableOpacity 
+          )}
+          <TouchableOpacity
             style={circleStyles.cartButton}
             onPress={() => {
               props.navigation.navigate(AppRoutes.MedicineCart);
-            }}>
+            }}
+          >
             <Text style={theme.viewStyles.text('B', 13, '#FFFFFF', 1, 20, 0)}>GO TO CART</Text>
-            {
-              !isCircleSubscription &&
+            {!isCircleSubscription && (
               <Text style={theme.viewStyles.text('M', 12, '#02475B', 1, 20, 0)}>
                 {`Buy for ₹${cartTotal}`}
               </Text>
-            }
+            )}
           </TouchableOpacity>
         </View>
       </View>
@@ -2002,11 +2012,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const renderCircleMembershipPopup = () => {
     return (
-      <CareSelectPlans 
+      <CircleMembershipPlans
         isModal={true}
-        closeModal={()=>setShowCirclePopup(false)}
+        closeModal={() => setShowCirclePopup(false)}
         navigation={props.navigation}
-        isConsultJourney={false} 
+        isConsultJourney={false}
         onSelectMembershipPlan={(plan) => {
           if (plan) {
             // if plan is selected
@@ -2017,9 +2027,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             // setShowCareSelectPlans(false);
             setCircleMembershipCharges && setCircleMembershipCharges(0);
           }
-        }} />
-    )
-  }
+        }}
+      />
+    );
+  };
 
   return (
     <View style={{ flex: 1 }}>
@@ -2032,7 +2043,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         <View style={{ flex: 1, paddingBottom: !!cartItems.length ? 50 : 0 }}>
           {renderSections()}
           {renderOverlay()}
-          {(!!cartItems.length) && renderCircleCartDetails()}
+          {!!cartItems.length && renderCircleCartDetails()}
         </View>
       </SafeAreaView>
       {isSelectPrescriptionVisible && renderEPrescriptionModal()}
