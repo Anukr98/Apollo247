@@ -341,7 +341,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [autoCirlcePlanAdded, setAutoCirlcePlanAdded] = useState<
     ShoppingCartContextProps['autoCirlcePlanAdded']
   >(false);
-  const showCircleSubscribed = circleSubscriptionId || (!autoCirlcePlanAdded && circlePlanSelected);
+  const showCircleSubscribed =
+    circleSubscriptionId || (!autoCirlcePlanAdded && circlePlanSelected && !defaultCirclePlan);
 
   const [isFreeDelivery, setIsFreeDelivery] = useState<ShoppingCartContextProps['isFreeDelivery']>(
     false
