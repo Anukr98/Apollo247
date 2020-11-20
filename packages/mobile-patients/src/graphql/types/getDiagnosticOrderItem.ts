@@ -22,6 +22,7 @@ export interface getDiagnosticOrderItem_getDiagnosticOrderItem_diagnostics {
   fromAgeInDays: number;
   toAgeInDays: number;
   testPreparationData: string;
+  testDescription: string | null;
 }
 
 export interface getDiagnosticOrderItem_getDiagnosticOrderItem {

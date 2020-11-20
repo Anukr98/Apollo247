@@ -748,24 +748,25 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                   (product) => {
                     props.navigation.navigate(AppRoutes.TestDetails, {
                       testDetails: {
-                        ItemID: test.id,
-                        ItemName: test.name,
-                        Rate: test!.price,
-                        FromAgeInDays: product.fromAgeInDays!,
-                        ToAgeInDays: product.toAgeInDays!,
+                        ItemID: test?.id,
+                        ItemName: test?.name,
+                        Rate: test?.price,
+                        FromAgeInDays: product?.fromAgeInDays!,
+                        ToAgeInDays: product?.toAgeInDays!,
                         Gender: product.gender,
-                        collectionType: test.collectionMethod,
-                        preparation: product.testPreparationData,
+                        collectionType: test?.collectionMethod,
+                        preparation: product?.testPreparationData,
+                        testDescription: product?.testDescription,
                         source: 'Cart Page',
-                        type: product.itemType,
+                        type: product?.itemType,
                       } as TestPackageForDetails,
                     });
                   },
                   'onPress'
                 );
               }}
-              medicineName={test.name!}
-              price={test.price!}
+              medicineName={test?.name!}
+              price={test?.price!}
               imageUrl={imageUrl}
               onPressAdd={() => {}}
               onPressRemove={() => {
@@ -777,7 +778,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               isCardExpanded={true}
               isInStock={true}
               isTest={true}
-              specialPrice={test.specialPrice!}
+              specialPrice={test?.specialPrice!}
               isPrescriptionRequired={false}
               subscriptionStatus={'unsubscribed'}
               packOfCount={test.mou}

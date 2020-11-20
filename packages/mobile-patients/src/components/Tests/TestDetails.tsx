@@ -9,6 +9,7 @@ import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/glo
 import { getPackageData, TestPackage } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import stripHtml from 'string-strip-html';
 import {
   aphConsole,
   postWebEngageEvent,
@@ -155,7 +156,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const tabs = [
+var tabs = [
   {
     id: '1',
     title: 'Tests Included',
@@ -180,11 +181,12 @@ export interface TestDetailsProps
   }> {}
 
 export const TestDetails: React.FC<TestDetailsProps> = (props) => {
-  const [selectedTab, setSelectedTab] = useState<string>(tabs[0].title);
   const testDetails = props.navigation.getParam('testDetails', {} as TestPackageForDetails);
   const itemId = props.navigation.getParam('itemId');
 
   const [testInfo, setTestInfo] = useState<TestPackageForDetails>(testDetails);
+  const [selectedTab, setSelectedTab] = useState<string>(tabs[0].title);
+
   const TestDetailsDiscription = testInfo.PackageInClussion;
   const { locationDetails, diagnosticLocation, diagnosticServiceabilityData } = useAppCommonData();
   const { cartItems, addCartItem } = useDiagnosticsCart();
@@ -213,6 +215,26 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             aphConsole.log('getPackageData Error \n', { e });
             setsearchSate('fail');
           });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (testInfo?.testDescription != null) {
+      tabs.push({
+        id: '3',
+        title: 'Description',
+      });
+    } else {
+      tabs = [
+        {
+          id: '1',
+          title: 'Tests Included',
+        },
+        {
+          id: '2',
+          title: 'Preparation',
+        },
+      ];
     }
   }, []);
 
@@ -424,6 +446,17 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     );
   };
 
+  const renderTestDescription = () => {
+    return (
+      <View style={styles.descriptionStyles}>
+        <Text style={styles.descriptionTextStyles}>
+          {(testInfo && stripHtml(testInfo?.testDescription)) ||
+            string.diagnostics.noTestDescription}
+        </Text>
+      </View>
+    );
+  };
+
   const renderNotification = () => {
     if (!COVID_NOTIFICATION_ITEMID.includes(testInfo.ItemID)) {
       return null;
@@ -505,7 +538,11 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           <View>{renderTestDetails()}</View>
           {renderNotification()}
           {renderTabsData()}
-          {selectedTab === tabs[0].title ? renderTestsIncludedData() : renderPreparation()}
+          {selectedTab === tabs[0].title
+            ? renderTestsIncludedData()
+            : selectedTab === tabs[1].title
+            ? renderPreparation()
+            : renderTestDescription()}
           <View style={{ height: 100 }} />
         </ScrollView>
         <StickyBottomComponent defaultBG style={styles.container}>

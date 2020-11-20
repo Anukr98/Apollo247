@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 import { DIAGNOSTICS_TYPE, TEST_COLLECTION_TYPE } from "./globalTypes";
@@ -22,6 +23,7 @@ export interface searchDiagnosticsById_searchDiagnosticsById_diagnostics {
   collectionType: TEST_COLLECTION_TYPE | null;
   fromAgeInDays: number;
   toAgeInDays: number;
+  testDescription: string | null;
   testPreparationData: string;
 }
 

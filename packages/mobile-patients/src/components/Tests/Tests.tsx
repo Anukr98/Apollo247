@@ -1046,16 +1046,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
         postFeaturedTestEvent(packageName!, `${diagnostics!.itemId}`);
         props.navigation.navigate(AppRoutes.TestDetails, {
           testDetails: {
-            Rate: diagnostics!.rate,
-            Gender: diagnostics!.gender,
-            ItemID: `${diagnostics!.itemId}`,
+            Rate: diagnostics?.rate,
+            Gender: diagnostics?.gender,
+            ItemID: `${diagnostics?.itemId}`,
             ItemName: packageName,
-            collectionType: diagnostics!.collectionType,
-            FromAgeInDays: diagnostics!.fromAgeInDays,
-            ToAgeInDays: diagnostics!.toAgeInDays,
-            preparation: diagnostics!.testPreparationData,
+            collectionType: diagnostics?.collectionType,
+            FromAgeInDays: diagnostics?.fromAgeInDays,
+            ToAgeInDays: diagnostics?.toAgeInDays,
+            preparation: diagnostics?.testPreparationData,
+            testDescription: diagnostics?.testDescription,
             source: 'Landing Page',
-            type: diagnostics!.itemType,
+            type: diagnostics?.itemType,
           } as TestPackageForDetails,
         });
       },
@@ -1363,10 +1364,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
                     props.navigation.navigate(AppRoutes.TestDetails, {
                       testDetails: {
                         ...item,
-                        collectionType: product.collectionType,
-                        preparation: product.testPreparationData,
+                        collectionType: product?.collectionType,
+                        preparation: product?.testPreparationData,
+                        testDescription: product?.testDescription,
                         source: 'Landing Page',
-                        type: product.itemType,
+                        type: product?.itemType,
                       } as TestPackageForDetails,
                       type: 'Package',
                     });
@@ -1919,6 +1921,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       toAgeInDays,
       testPreparationData,
       itemType,
+      testDescription,
     } = item;
     return renderSearchSuggestionItem({
       onPress: () => {
@@ -1936,6 +1939,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             preparation: testPreparationData,
             source: 'Landing Page',
             type: itemType,
+            testDescription: testDescription,
           } as TestPackageForDetails,
         });
       },
