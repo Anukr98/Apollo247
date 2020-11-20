@@ -25,6 +25,8 @@ import { Overlay } from 'react-native-elements';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+
 const { width } = Dimensions.get('window');
 const planDimension = 120;
 const defaultPlanDimension = 160;
@@ -65,6 +67,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     setIsCircleSubscription,
     setCircleMembershipCharges,
   } = useShoppingCart();
+  const { setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
 
   const isCartTotalLimit = cartTotal > 400;
 
@@ -115,6 +118,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       onSelectMembershipPlan && onSelectMembershipPlan();
     } else {
       setIsCircleSubscription && setIsCircleSubscription(true);
+      setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
       setCircleMembershipCharges && setCircleMembershipCharges(membershipPlan?.currentSellingPrice);
       onSelectMembershipPlan && onSelectMembershipPlan(membershipPlan);
     }
@@ -229,6 +233,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
           onPress={() => {
             setCirclePlanSelected && setCirclePlanSelected(null);
             setIsCircleSubscription && setIsCircleSubscription(false);
+            setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
             setCircleMembershipCharges && setCircleMembershipCharges(0);
             AsyncStorage.removeItem('circlePlanSelected');
             selectDefaultPlan && selectDefaultPlan(membershipPlans);
@@ -384,6 +389,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     setCirclePlanSelected && setCirclePlanSelected(null);
     setDefaultCirclePlan && setDefaultCirclePlan(null);
     setIsCircleSubscription && setIsCircleSubscription(false);
+    setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
     setCircleMembershipCharges && setCircleMembershipCharges(0);
     AsyncStorage.removeItem('circlePlanSelected');
     setAutoPlanAdded(false);
@@ -456,6 +462,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         onPress={() => {
           setCirclePlanSelected && setCirclePlanSelected(null);
           setIsCircleSubscription && setIsCircleSubscription(false);
+          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
           setCircleMembershipCharges && setCircleMembershipCharges(0);
           AsyncStorage.removeItem('circlePlanSelected');
         }}
