@@ -46,9 +46,15 @@ import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import { SafeAreaView, StyleSheet, View } from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import {
+  NavigationActions,
+  NavigationScreenProps,
+  ScrollView,
+  StackActions,
+} from 'react-navigation';
 import { OrderCancelOverlay } from './OrderCancelOverlay';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { AppRoutes } from '../NavigatorContainer';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -152,7 +158,15 @@ export const TestOrderDetailsSummary: React.FC<TestOrderDetailsSummaryProps> = (
           CommonBugFender('TestOrderDetails_refetchOrders', e);
         });
     }
-    props.navigation.goBack();
+
+    props.navigation.dispatch(
+      StackActions.reset({
+        index: 0,
+        key: null,
+        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+      })
+    );
+
     return false;
   };
 
