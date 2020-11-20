@@ -468,7 +468,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     addMultipleCartItems: addMultipleTestCartItems,
     addMultipleEPrescriptions: addMultipleTestEPrescriptions,
   } = useDiagnosticsCart();
-  const { locationDetails, setLocationDetails } = useAppCommonData();
+  const { locationDetails, setLocationDetails, diagnosticLocation } = useAppCommonData();
 
   const onAddTestsToCart = async () => {
     let location: LocationData | null = null;
@@ -507,13 +507,17 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     } as EPrescription;
 
     // Adding tests to DiagnosticsCart
-    addTestsToCart(testPrescription, client, g(locationDetails || location, 'city') || '')
+    addTestsToCart(
+      testPrescription,
+      client,
+      g(diagnosticLocation || locationDetails || location, 'pincode') || ''
+    )
       .then((tests: DiagnosticsCartItem[]) => {
         // Adding ePrescriptions to DiagnosticsCart
         const unAvailableItemsArray = testPrescription.filter(
-          (item) => !tests.find((val) => val.name == item.itemname!)
+          (item) => !tests.find((val) => val?.name!.toLowerCase() == item?.itemname!.toLowerCase())
         );
-
+        console.log({ unAvailableItemsArray });
         const unAvailableItems = unAvailableItemsArray.map((item) => item.itemname).join(', ');
 
         if (tests.length) {
