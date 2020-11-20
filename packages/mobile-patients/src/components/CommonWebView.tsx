@@ -8,6 +8,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Spinner } from './ui/Spinner';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import AsyncStorage from '@react-native-community/async-storage';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 export interface CommonWebViewProps extends NavigationScreenProps {}
 
@@ -22,6 +23,7 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
     setCircleMembershipCharges,
     setCircleSubPlanId,
   } = useShoppingCart();
+  const { setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
 
   const renderWebView = () => {
     let WebViewRef: any;
@@ -41,6 +43,7 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
             setDefaultCirclePlan && setDefaultCirclePlan(null);
             setCirclePlanSelected && setCirclePlanSelected(responseData);
             setIsCircleSubscription && setIsCircleSubscription(true);
+            setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
             setCircleMembershipCharges &&
               setCircleMembershipCharges(responseData?.currentSellingPrice);
             setCircleSubPlanId && setCircleSubPlanId(responseData?.subPlanId);
