@@ -24,7 +24,12 @@ import {
   GET_SECRETARY_DETAILS_BY_DOCTOR_ID,
   GET_PARTICIPANTS_LIVE_STATUS,
   DELETE_PATIENT_PRISM_MEDICAL_RECORD,
+  GET_PHR_USER_NOTIFY_EVENTS,
 } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  getUserNotifyEvents as getUserNotifyEventsQuery,
+  getUserNotifyEventsVariables,
+} from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
 import { GetDoctorNextAvailableSlot } from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
 import { linkUhidsVariables } from '@aph/mobile-patients/src/graphql/types/linkUhids';
 import ApolloClient from 'apollo-client';
@@ -305,7 +310,28 @@ export const deletePatientPrismMedicalRecords = (
         res({ status: data?.deletePatientPrismMedicalRecord?.status });
       })
       .catch((e: any) => {
-        CommonBugFender('clientCalls_getPrismUrls', e);
+        CommonBugFender('clientCalls_deletePatientPrismMedicalRecords', e);
+        const error = JSON.parse(JSON.stringify(e));
+        rej({ error: e });
+      });
+  });
+};
+
+export const phrNotificationCountApi = (client: ApolloClient<object>, patientId: string) => {
+  return new Promise((res, rej) => {
+    client
+      .query<getUserNotifyEventsQuery, getUserNotifyEventsVariables>({
+        query: GET_PHR_USER_NOTIFY_EVENTS,
+        fetchPolicy: 'no-cache',
+        variables: {
+          patientId: patientId,
+        },
+      })
+      .then(({ data }) => {
+        res(data?.getUserNotifyEvents?.phr?.newRecordsCount);
+      })
+      .catch((e: any) => {
+        CommonBugFender('clientCalls_phrNotificationCountApi', e);
         const error = JSON.parse(JSON.stringify(e));
         rej({ error: e });
       });

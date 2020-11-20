@@ -2395,6 +2395,27 @@ export const DELETE_HEALTH_RECORD_FILES = gql`
   }
 `;
 
+export const GET_PHR_USER_NOTIFY_EVENTS = gql`
+  query getUserNotifyEvents($patientId: ID!) {
+    getUserNotifyEvents(patientId: $patientId) {
+      phr {
+        newRecordsCount {
+          LabTest
+          Allergy
+          Bill
+          HealthCheck
+          Hospitalization
+          Insurance
+          MedicalCondition
+          Medication
+          Prescription
+          Restriction
+        }
+      }
+    }
+  }
+`;
+
 export const GET_LAB_RESULT_PDF = gql`
   query getLabResultpdf($patientId: ID!, $recordId: String!) {
     getLabResultpdf(patientId: $patientId, recordId: $recordId) {
