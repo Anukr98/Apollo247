@@ -123,6 +123,14 @@ export const Filter: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_filter.png')} />
 );
 
+export const FilterOutline: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/ic_filter_outline.png')} />
+);
+
+export const SortOutline: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/ic_sort.png')} />
+);
+
 export const DoctorFilter: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_doctor_filter.png')} />
 );
@@ -215,6 +223,15 @@ export const ShareGreen: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_share_green.png')} />
 );
 
+export const ShopByCategoryIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    resizeMode="contain"
+    {...props}
+    source={require('./icons/ic_shop_by_category.png')}
+  />
+);
+
 export const MedicineIconWhite: React.FC<IconProps> = (props) => (
   <IconBase
     style={{ width: 17, height: 20 }}
@@ -229,6 +246,10 @@ export const MedicineIcon: React.FC<IconProps> = (props) => (
 
 export const MedicineRxIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_tablets_rx.png')} />
+);
+
+export const SpecialOffers: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_special_offers.png')} />
 );
 
 export const ShoppingBasketIcon: React.FC<IconProps> = (props) => (
@@ -282,6 +303,24 @@ export const WhiteArrowRightIcon: React.FC<IconProps> = (props) => (
 
 export const ArrowRight: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_arrow_right.png')} />
+);
+
+export const ArrowRightGreen: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 12, width: 12, margin: 6 }}
+    resizeMode="contain"
+    {...props}
+    source={require('./icons/ic_arrow_right_green.png')}
+  />
+);
+
+export const ArrowUpGreen: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 12, width: 12, margin: 6 }}
+    resizeMode="contain"
+    {...props}
+    source={require('./icons/ic_arrow_up_green.png')}
+  />
 );
 
 export const DropdownBlueDown: React.FC<IconProps> = (props) => (
@@ -460,6 +499,14 @@ export const FreeArrowIcon: React.FC<IconProps> = (props) => (
 
 export const OrangeCallIcon: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/ic_orange_phone.png')} />
+);
+
+export const FamilyDoctorIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="md"
+    {...props}
+    source={require('@aph/mobile-patients/src/images/home/ic_family_doctor.png')}
+  />
 );
 
 export const SmallOrangeCallIcon: React.FC<IconProps> = (props) => (
@@ -696,7 +743,7 @@ export const ChatBlueIcon: React.FC<IconProps> = (props) => (
 );
 
 export const WhiteSearchIcon: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./icons/ic_search.png')} />
+  <IconBase size="sm" {...props} source={require('./icons/ic_search.png')} />
 );
 
 export const WhiteListViewIcon: React.FC<IconProps> = (props) => (
@@ -1023,6 +1070,14 @@ export const KavachIcon: React.FC<IconProps> = (props) => (
     style={{ width: 24, height: 24 }}
     {...props}
     source={require('./icons/bitmap.png')}
+    resizeMode="contain"
+  />
+);
+export const ApolloHealthProIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ width: 24, height: 24 }}
+    {...props}
+    source={require('./icons/prohealth.jpg')}
     resizeMode="contain"
   />
 );

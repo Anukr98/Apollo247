@@ -159,7 +159,12 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
   }
 
   useEffect(() => {
-    fetchConsultCoupons(packageId)
+    const data = {
+      packageId,
+      mobile: g(currentPatient, 'mobileNumber'),
+      email: g(currentPatient, 'emailAddress')
+    };
+    fetchConsultCoupons(data)
       .then((res: any) => {
         console.log(JSON.stringify(res.data), 'objobj');
         setcouponList(res.data.response);

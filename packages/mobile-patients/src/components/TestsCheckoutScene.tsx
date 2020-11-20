@@ -15,13 +15,17 @@ import {
   CommonLogEvent,
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { SAVE_DIAGNOSTIC_ORDER } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  SAVE_DIAGNOSTIC_ORDER,
+  SAVE_DIAGNOSTIC_HOME_COLLECTION_ORDER,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import {
   DiagnosticLineItem,
   DiagnosticOrderInput,
   DIAGNOSTIC_ORDER_PAYMENT_TYPE,
   BOOKINGSOURCE,
   DEVICETYPE,
+  DiagnosticBookHomeCollectionInput,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   SaveDiagnosticOrder,
@@ -32,6 +36,7 @@ import {
   postWebEngageEvent,
   formatAddress,
   postFirebaseEvent,
+  postAppsFlyerEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -55,8 +60,13 @@ import {
   WebEngageEvents,
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
-import { FirebaseEvents, FirebaseEventName } from '../helpers/firebaseEvents';
+import { FirebaseEvents, FirebaseEventName } from '@aph/mobile-patients/src/helpers/firebaseEvents';
+import {
+  DiagnosticBookHomeCollection,
+  DiagnosticBookHomeCollectionVariables,
+} from '../graphql/types/DiagnosticBookHomeCollection';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 
 const styles = StyleSheet.create({
   headerContainerStyle: {
@@ -204,6 +214,7 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     couponDiscount,
     coupon,
     areaSelected,
+    hcCharges,
   } = useDiagnosticsCart();
   const { locationForDiagnostics } = useAppCommonData();
   const client = useApolloClient();
@@ -225,6 +236,12 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
   const saveOrder = (orderInfo: DiagnosticOrderInput) =>
     client.mutate<SaveDiagnosticOrder, SaveDiagnosticOrderVariables>({
       mutation: SAVE_DIAGNOSTIC_ORDER,
+      variables: { diagnosticOrderInput: orderInfo },
+    });
+
+  const saveHomeCollectionBookingOrder = (orderInfo: DiagnosticBookHomeCollectionInput) =>
+    client.mutate<DiagnosticBookHomeCollection, DiagnosticBookHomeCollectionVariables>({
+      mutation: SAVE_DIAGNOSTIC_HOME_COLLECTION_ORDER,
       variables: { diagnosticOrderInput: orderInfo },
     });
 
@@ -261,17 +278,23 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       'Service Area': 'Diagnostic',
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_CHECKOUT_COMPLETED, eventAttributes);
-
-    try {
-      // const eventFirebaseAttributes: FirebaseEvents[FirebaseEventName.IN_APP_PURCHASE] = {
-      //   type: 'Diagnostics',
-      // };
-      // postFirebaseEvent(FirebaseEventName.IN_APP_PURCHASE, eventFirebaseAttributes);
-    } catch (error) {}
   };
 
   const initiateOrder = async () => {
     setShowSpinner(true);
+    const { CentreCode, CentreName } = diagnosticClinic || {};
+    /**
+     * check is home collection or clinic visit
+     */
+
+    if (CentreCode == '' && CentreName == '') {
+      saveHomeCollectionOrder();
+    } else {
+      saveClinicOrder();
+    }
+  };
+
+  const saveClinicOrder = () => {
     const { CentreCode, CentreName, City, State, Locality } = diagnosticClinic || {};
     const {
       slotStartTime,
@@ -282,7 +305,6 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       // city, // ignore city for now from this and take from "locationForDiagnostics" context
       diagnosticBranchCode,
     } = diagnosticSlot || {};
-
     const slotTimings = (slotStartTime && slotEndTime
       ? `${slotStartTime}-${slotEndTime}`
       : ''
@@ -336,19 +358,122 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     };
 
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED] = {
-      'Payment mode': isCashOnDelivery ? 'COD' : 'Online',
+      Paymentmode: isCashOnDelivery ? 'COD' : 'Online',
       Amount: grandTotal,
-      'Service Area': 'Diagnostic',
+      ServiceArea: 'Diagnostic',
+      LOB: 'Diagnostics',
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED, eventAttributes);
+    postAppsFlyerEvent(AppsFlyerEventName.PAYMENT_INSTRUMENT, eventAttributes);
+    postFirebaseEvent(FirebaseEventName.PAYMENT_INSTRUMENT, eventAttributes);
 
     console.log(JSON.stringify({ diagnosticOrderInput: orderInfo }));
     console.log('orderInfo\n', { diagnosticOrderInput: orderInfo });
     saveOrder(orderInfo)
       .then(({ data }) => {
-        console.log('SaveDiagnosticOrder API\n', { data });
         const { orderId, displayId, errorCode, errorMessage } =
           g(data, 'SaveDiagnosticOrder')! || {};
+        if (errorCode || errorMessage) {
+          // Order-failed
+          showAphAlert!({
+            unDismissable: true,
+            title: `Uh oh.. :(`,
+            description: `We're sorry :(  There's been a problem with your booking. Please book again.`,
+            // description: `Order failed, ${errorMessage}.`,
+          });
+          fireOrderFailedEvent(orderId);
+        } else {
+          // Order-Success
+          if (!isCashOnDelivery) {
+            // PG order, redirect to web page
+            redirectToPaymentGateway(orderId!, displayId!);
+            return;
+          }
+          // COD order, show popup here & clear cart info
+          postwebEngageCheckoutCompletedEvent(`${displayId}`); // Make sure to add this event in test payment as well when enabled
+          clearCartInfo!();
+          handleOrderSuccess(orderId!, displayId!);
+        }
+      })
+      .catch((error) => {
+        CommonBugFender('TestsCheckoutScene_saveOrder', error);
+        console.log('SaveDiagnosticOrder API Error\n', { error });
+        showAphAlert!({
+          unDismissable: true,
+          title: `Hi ${g(currentPatient, 'firstName') || ''}!`,
+          description: `We're sorry :(  There's been a problem with your booking. Please book again.`,
+        });
+      })
+      .finally(() => {
+        setShowSpinner(false);
+      });
+  };
+
+  const fireOrderFailedEvent = (orderId: any) => {
+    const eventAttributes: FirebaseEvents[FirebaseEventName.ORDER_FAILED] = {
+      OrderID: orderId,
+      Price: Number(grandTotal),
+      CouponCode: coupon ? coupon.code : '',
+      PaymentType: isCashOnDelivery ? 'COD' : 'Prepaid',
+      LOB: 'Diagnostics',
+    };
+    postAppsFlyerEvent(AppsFlyerEventName.ORDER_FAILED, eventAttributes);
+    postFirebaseEvent(FirebaseEventName.ORDER_FAILED, eventAttributes);
+  };
+
+  const saveHomeCollectionOrder = () => {
+    const { slotStartTime, slotEndTime, employeeSlotId, date } = diagnosticSlot || {};
+    const slotTimings = (slotStartTime && slotEndTime
+      ? `${slotStartTime}-${slotEndTime}`
+      : ''
+    ).replace(' ', '');
+    console.log(physicalPrescriptions, 'physical prescriptions');
+
+    const bookingOrderInfo: DiagnosticBookHomeCollectionInput = {
+      patientId: (currentPatient && currentPatient.id) || '',
+      patientAddressId: deliveryAddressId!,
+      slotTimings: slotTimings,
+      totalPrice: grandTotal,
+      prescriptionUrl: [
+        ...physicalPrescriptions.map((item) => item.uploadedUrl),
+        ...ePrescriptions.map((item) => item.uploadedUrl),
+      ].join(','),
+      diagnosticDate: moment(date).format('YYYY-MM-DD'),
+      bookingSource: BOOKINGSOURCE.MOBILE,
+      deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,
+      paymentType: isCashOnDelivery
+        ? DIAGNOSTIC_ORDER_PAYMENT_TYPE.COD
+        : DIAGNOSTIC_ORDER_PAYMENT_TYPE.ONLINE_PAYMENT,
+      items: cartItems.map(
+        (item) =>
+          ({
+            itemId: typeof item.id == 'string' ? parseInt(item.id) : item.id,
+            price: (item.specialPrice as number) || item.price,
+            quantity: 1,
+            groupPlan: 'ALL',
+          } as any) //DiagnosticLineItem
+      ),
+      slotId: employeeSlotId?.toString() || '0',
+      areaId: (areaSelected || {}).key!,
+      homeCollectionCharges: hcCharges,
+      // prismPrescriptionFileId: [
+      //   ...physicalPrescriptions.map((item) => item.prismPrescriptionFileId),
+      //   ...ePrescriptions.map((item) => item.prismPrescriptionFileId),
+      // ].join(','),
+    };
+
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED] = {
+      Paymentmode: isCashOnDelivery ? 'COD' : 'Online',
+      Amount: grandTotal,
+      ServiceArea: 'Diagnostic',
+      LOB: 'Diagnostic',
+    };
+
+    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED, eventAttributes);
+    saveHomeCollectionBookingOrder(bookingOrderInfo)
+      .then(({ data }) => {
+        const { orderId, displayId, errorCode, errorMessage } =
+          g(data, 'DiagnosticBookHomeCollection')! || {};
         if (errorCode || errorMessage) {
           // Order-failed
           showAphAlert!({
@@ -372,7 +497,7 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       })
       .catch((error) => {
         CommonBugFender('TestsCheckoutScene_saveOrder', error);
-        console.log('SaveDiagnosticOrder API Error\n', { error });
+        console.log('DiagnosticBookHomeCollectionInput API Error\n', { error });
         showAphAlert!({
           unDismissable: true,
           title: `Hi ${g(currentPatient, 'firstName') || ''}!`,
@@ -425,7 +550,6 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       <OneApollo />
     </View>
   );
-
   const renderAvailableHealthCredits = (
     <View style={[styles.healthCreditsRowStyle, styles.availableHealthCreditsView]}>
       <View style={styles.verticalSeparator} />
@@ -442,7 +566,6 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         {renderAvailableHealthCredits}
       </View>
     );
-
     const balanceAmountToPay = (
       <View style={[styles.balanceAmountViewStyle, { marginHorizontal: 16 }]}>
         <Text style={styles.balanceAmountPayTextStyle}>{'Balance amount to pay'}</Text>
@@ -453,7 +576,6 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         </Text>
       </View>
     );
-
     const slider = (
       <Slider
         value={oneApolloCredits}
@@ -466,7 +588,6 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         maximumTrackTintColor={'rgba(0, 135, 186, 0.1)'}
       />
     );
-
     const sliderValues = (
       <View style={styles.sliderValuesViewStyle}>
         <Text style={[styles.sliderValueStyle, oneApolloCredits == 0 ? { opacity: 1 } : {}]}>
@@ -487,14 +608,12 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         </Text>
       </View>
     );
-
     const healthCreditsSliderAndValues = (
       <View style={styles.sliderStyle}>
         {slider}
         {sliderValues}
       </View>
     );
-
     const content = (
       <View>
         {oneApolloCheckBoxAndCredits}
@@ -507,7 +626,6 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         ) : null}
       </View>
     );
-
     return renderHeadingAndCard(
       'Would you like to use Apollo Health Credits for this payment?',
       content,
@@ -599,10 +717,11 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
 
   const navigateToOrderDetails = (showOrderSummaryTab: boolean, orderId: string) => {
     hideAphAlert!();
-    props.navigation.navigate(AppRoutes.TestOrderDetails, {
+    props.navigation.navigate(AppRoutes.TestOrderDetailsSummary, {
       goToHomeOnBack: true,
       showOrderSummaryTab,
       orderId: orderId,
+      comingFrom: AppRoutes.TestsCheckoutScene,
     });
   };
 
@@ -630,6 +749,7 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       value: Number(grandTotal),
     };
     postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
+    postAppsFlyerEvent(AppsFlyerEventName.PURCHASE, eventAttributes);
   };
 
   const handleOrderSuccess = (orderId: string, displayId: string) => {

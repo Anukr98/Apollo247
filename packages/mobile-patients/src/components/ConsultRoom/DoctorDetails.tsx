@@ -22,6 +22,7 @@ import {
 import {
   getDoctorDetailsById,
   getDoctorDetailsById_getDoctorDetailsById,
+  getDoctorDetailsById_getDoctorDetailsById_availabilityTitle,
 } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { ConsultMode, DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -64,6 +65,7 @@ import {
   Platform,
 } from 'react-native';
 import { FlatList, NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { LinearGradientComponent } from '@aph/mobile-patients/src/components/ui/LinearGradientComponent';
 import { AppsFlyerEventName, AppsFlyerEvents } from '../../helpers/AppsFlyerEvents';
 import { useAppCommonData } from '../AppCommonDataProvider';
 import { ConsultTypeCard } from '../ui/ConsultTypeCard';
@@ -73,6 +75,7 @@ import {
   DoctorPlaceholderImage,
   RectangularIcon,
   VideoPlayIcon,
+  FamilyDoctorIcon,
   CTGrayChat,
   InfoBlue,
   CircleLogo,
@@ -257,6 +260,17 @@ const styles = StyleSheet.create({
     height: 30,
     marginRight: -7,
   },
+  linearGradient: {
+    height: 63,
+    width: '100%',
+    justifyContent: 'center',
+  },
+  doctorOfTheHourTextStyle: {
+    ...theme.viewStyles.text('SB', 13, '#FFFFFF', 1, 16.9, 0.3),
+    textAlign: 'center',
+    paddingTop: 4,
+    paddingLeft: 20,
+  },
 });
 type Appointments = {
   date: string;
@@ -284,6 +298,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [consultMode, setConsultMode] = useState<ConsultMode>(ConsultMode.ONLINE);
   const [onlineSelected, setOnlineSelected] = useState<boolean>(true);
   const [doctorDetails, setDoctorDetails] = useState<getDoctorDetailsById_getDoctorDetailsById>();
+  const [
+    ctaBannerText,
+    setCtaBannerText,
+  ] = useState<getDoctorDetailsById_getDoctorDetailsById_availabilityTitle | null>(null);
   const [appointmentHistory, setAppointmentHistory] = useState<
     getAppointmentHistory_getAppointmentHistory_appointmentsHistory[] | null
   >([]);
@@ -521,8 +539,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     const input = {
       id: doctorId,
     };
-    console.log('input ', input);
-
     client
       .query<getDoctorDetailsById>({
         query: GET_DOCTOR_DETAILS_BY_ID,
@@ -530,12 +546,11 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then(({ data }) => {
-        console.log(data, 'data');
-
         try {
           if (data && data.getDoctorDetailsById && doctorDetails !== data.getDoctorDetailsById) {
             setDoctorDetails(data.getDoctorDetailsById);
             setDoctorId(data.getDoctorDetailsById.id);
+            setCtaBannerText(data?.getDoctorDetailsById?.availabilityTitle);
             setshowSpinner(false);
             fetchNextAvailableSlots([data.getDoctorDetailsById.id]);
             setAvailableModes(data.getDoctorDetailsById);
@@ -617,6 +632,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         nextAppointemntInPresonTime={physicalAvailableTime}
         circleDoctorDetails={circleDoctorDetails}
         navigation={props.navigation}
+        availNowText={ctaBannerText?.AVAILABLE_NOW || ''}
+        consultNowText={ctaBannerText?.CONSULT_NOW || ''}
       />
     );
   };
@@ -690,6 +707,19 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     });
   };
 
+  const renderPlatinumDoctorView = () => {
+    return (
+      <LinearGradientComponent style={styles.linearGradient}>
+        <View style={{ flexDirection: 'row', alignSelf: 'center' }}>
+          <FamilyDoctorIcon style={{ width: 16.58, height: 24 }} />
+          <Text style={styles.doctorOfTheHourTextStyle}>
+            {ctaBannerText?.DOCTOR_OF_HOUR || 'Doctor of the Hour!'}
+          </Text>
+        </View>
+      </LinearGradientComponent>
+    );
+  };
+
   const renderDoctorDetails = () => {
     if (doctorDetails && doctorDetails.doctorHospital && doctorDetails.doctorHospital.length > 0) {
       const doctorClinics = doctorDetails.doctorHospital.filter((item) => {
@@ -714,6 +744,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
       return (
         <View style={styles.topView}>
+          {doctorDetails?.doctorsOfTheHourStatus ? renderPlatinumDoctorView() : null}
           {doctorDetails && (
             <View style={styles.detailsViewStyle}>
               <Text style={styles.doctorNameStyles}>{doctorDetails.fullName}</Text>
@@ -850,6 +881,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                         titleTextStyle={{ paddingHorizontal: 7 }}
                         styles={{ marginTop: -5 }}
                         availableTime={availableTime}
+                        availNowText={ctaBannerText?.AVAILABLE_NOW || ''}
                       />
                     </View>
                   </TouchableOpacity>
@@ -923,6 +955,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                             titleTextStyle={{ paddingHorizontal: 7 }}
                             styles={{ marginTop: -5 }}
                             availableTime={physicalAvailableTime}
+                            availNowText={ctaBannerText?.AVAILABLE_NOW || ''}
                           />
                         </>
                       )}
@@ -1411,6 +1444,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           externalConnect={null}
           availableMode={ConsultMode.BOTH}
           callSaveSearch={callSaveSearch}
+          isDoctorsOfTheHourStatus={doctorDetails?.doctorsOfTheHourStatus}
         />
       )}
       <Animated.View

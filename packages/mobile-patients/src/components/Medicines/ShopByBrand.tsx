@@ -165,7 +165,7 @@ export const ShopByBrand: React.FC<ShopByBrandProps> = (props) => {
                   activeOpacity={1}
                   onPress={() => {
                     CommonLogEvent(AppRoutes.ShopByBrand, 'Naviagte to search by brand view');
-                    props.navigation.navigate(AppRoutes.SearchByBrand, {
+                    props.navigation.navigate(AppRoutes.MedicineListing, {
                       title: item.title,
                       category_id: item.category_id,
                     });

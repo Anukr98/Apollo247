@@ -63,6 +63,8 @@ import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonD
 import codePush from 'react-native-code-push';
 import { setTagalysConfig } from '@aph/mobile-patients/src/helpers/Tagalys';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
+import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 
 const { width } = Dimensions.get('window');
 
@@ -288,6 +290,8 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     try {
       const webengage = new WebEngage();
       webengage.user.logout();
+      postAppsFlyerEvent(AppsFlyerEventName.USER_LOGGED_OUT, {});
+      postFirebaseEvent(FirebaseEventName.USER_LOGGED_OUT, {});
       AsyncStorage.setItem('userLoggedIn', 'false');
       AsyncStorage.setItem('multiSignUp', 'false');
       AsyncStorage.setItem('signUp', 'false');
@@ -448,6 +452,14 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     );
   };
 
+  const fireProfileAccessedEvent = (type: string) => {
+    const eventAttributes: FirebaseEvents[FirebaseEventName.PROFILE_ACCESSED] = {
+      Type: type,
+    };
+    postAppsFlyerEvent(AppsFlyerEventName.PROFILE_ACCESSED, eventAttributes);
+    postFirebaseEvent(FirebaseEventName.PROFILE_ACCESSED, eventAttributes);
+  };
+
   const renderRows = () => {
     return (
       <View>
@@ -459,6 +471,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             props.navigation.navigate(AppRoutes.ManageProfile, {
               mobileNumber: profileDetails && profileDetails.mobileNumber,
             });
+            fireProfileAccessedEvent('Manage Family Members');
           }}
         />
         <ListCard
@@ -467,6 +480,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           leftIcon={<Location />}
           onPress={() => {
             props.navigation.navigate(AppRoutes.AddressBook);
+            fireProfileAccessedEvent('Address Book');
           }}
         />
         <ListCard
@@ -475,6 +489,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           onPress={() => {
             postMyOrdersClicked('My Account', currentPatient);
             props.navigation.navigate(AppRoutes.YourOrdersScene);
+            fireProfileAccessedEvent('My Orders');
           }}
         />
         <ListCard
@@ -485,6 +500,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
               patientId: currentPatient.id,
               fromNotification: false,
             });
+            fireProfileAccessedEvent('My Payments');
           }}
         />
         <ListCard
@@ -492,6 +508,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           leftIcon={<OneApollo style={{ height: 20, width: 26 }} />}
           onPress={() => {
             props.navigation.navigate(AppRoutes.OneApolloMembership);
+            fireProfileAccessedEvent('OneApollo Membership');
           }}
         />
         {hdfcUserSubscriptions && g(hdfcUserSubscriptions, '_id') && (
@@ -500,6 +517,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             leftIcon={<MyMembershipIcon style={{ height: 20, width: 26 }} />}
             onPress={() => {
               props.navigation.navigate(AppRoutes.MyMembership);
+              fireProfileAccessedEvent('My Memberships');
             }}
           />
         )}
@@ -508,6 +526,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           leftIcon={<NeedHelpIcon />}
           onPress={() => {
             props.navigation.navigate(AppRoutes.MobileHelp);
+            fireProfileAccessedEvent('Need Help');
           }}
         />
         {/* <ListCard

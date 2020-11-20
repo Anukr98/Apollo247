@@ -3,8 +3,14 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { OrderCard } from '@aph/mobile-patients/src/components/ui/OrderCard';
-import { MEDICINE_DELIVERY_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { getOrderStatusText } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  MEDICINE_DELIVERY_TYPE,
+  MEDICINE_ORDER_STATUS,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  getOrderStatusText,
+  isEmptyObject,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -63,6 +69,12 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
     }
   };
 
+  const statusToShowNewItems = [
+    MEDICINE_ORDER_STATUS.ORDER_PLACED,
+    MEDICINE_ORDER_STATUS.VERIFICATION_DONE,
+    MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
+  ];
+
   const getDeliverTypeOrDescription = (order: MedOrder) => {
     const getStore = () => {
       const shopAddress = order?.shopAddress;
@@ -118,9 +130,38 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
 
     return title;
   };
+  const checkIsJSON = (val: string) => {
+    try {
+      JSON.parse(val);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  };
 
   const renderOrder = (order: MedOrder, index: number) => {
     const orderNumber = order.billNumber || order.orderAutoId;
+    const ordersOnHold =
+      order?.medicineOrdersStatus!.filter(
+        (item) => item?.orderStatus! == MEDICINE_ORDER_STATUS.ON_HOLD //PRESCRIPTION_UPLOADED
+      ) || [];
+    const isNonCart = order?.medicineOrdersStatus!.find(
+      (item) => item?.orderStatus! == MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED
+    );
+
+    const latestOrdersOnHold = ordersOnHold.sort((a: any, b: any) => {
+      (new Date(b?.statusDate) as any) - (new Date(a?.statusDate) as any);
+    });
+
+    const orderOnHold = latestOrdersOnHold?.[0];
+
+    const reasonForOnHold =
+      orderOnHold! &&
+      !isEmptyObject(orderOnHold!) &&
+      checkIsJSON(orderOnHold?.statusMessage!) &&
+      JSON.parse(orderOnHold?.statusMessage!);
+
+    const isOnHold = reasonForOnHold! && reasonForOnHold?.showOnHold;
     return (
       <OrderCard
         style={[
@@ -139,8 +180,33 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
         }}
         title={getOrderTitle(order)}
         description={getDeliverTypeOrDescription(order)}
-        statusDesc={getOrderStatusText(order.currentStatus!)}
+        statusDesc={
+          order.currentStatus == MEDICINE_ORDER_STATUS.ON_HOLD
+            ? getOrderStatusText(MEDICINE_ORDER_STATUS.ORDER_PLACED)
+            : getOrderStatusText(order.currentStatus!)
+        }
         status={order.currentStatus!}
+        isOnHold={
+          order.currentStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED &&
+          isOnHold &&
+          !order?.medicineOrdersStatus!.find(
+            (item) =>
+              item?.orderStatus == MEDICINE_ORDER_STATUS.VERIFICATION_DONE ||
+              item?.orderStatus == MEDICINE_ORDER_STATUS.READY_FOR_VERIFICATION
+          ) //remove just after verification done (no check earlier)
+            ? true
+            : false
+        }
+        isItemsUpdated={
+          statusToShowNewItems.includes(order.currentStatus!) &&
+          isNonCart && //check
+          order?.medicineOrderLineItems!.length > 0
+            ? true
+            : false
+        }
+        isChanged={
+          statusToShowNewItems.includes(order.currentStatus!) && order.oldOrderTat! ? true : false
+        }
         dateTime={getFormattedTime(order?.createdDate)}
       />
     );
@@ -172,7 +238,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
             style={{ marginTop: 20 }}
             title={'ORDER NOW'}
             onPress={() => {
-              props.navigation.navigate(AppRoutes.SearchMedicineScene);
+              props.navigation.navigate(AppRoutes.MedicineSearch);
             }}
           />
         </Card>

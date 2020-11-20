@@ -8,6 +8,7 @@ import {
   StatusBar,
   Dimensions,
   Clipboard,
+  SafeAreaView,
 } from 'react-native';
 import { Copy } from '@aph/mobile-patients/src/components/ui/Icons';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
@@ -27,7 +28,11 @@ import { GET_PHARMA_TRANSACTION_STATUS } from '@aph/mobile-patients/src/graphql/
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  postWebEngageEvent,
+  postAppsFlyerEvent,
+  postFirebaseEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -109,10 +114,12 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
         const paymentEventAttributes = {
           order_Id: orderId,
           order_AutoId: orderAutoId,
-          Type: 'Pharmacy',
+          LOB: 'Pharmacy',
           Payment_Status: res.data.pharmaPaymentStatus.paymentStatus,
         };
         postWebEngageEvent(WebEngageEventName.PAYMENT_STATUS, paymentEventAttributes);
+        postAppsFlyerEvent(AppsFlyerEventName.PAYMENT_STATUS, paymentEventAttributes);
+        postFirebaseEvent(FirebaseEventName.PAYMENT_STATUS, paymentEventAttributes);
         setorderDateTime(res.data.pharmaPaymentStatus.orderDateTime);
         setrefNo(res.data.pharmaPaymentStatus.paymentRefId);
         setStatus(res.data.pharmaPaymentStatus.paymentStatus);
@@ -377,19 +384,20 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#01475b" />
-      <Header leftIcon="backArrow" title="PAYMENT STATUS" onPressLeftIcon={() => handleBack()} />
-
-      {!loading ? (
-        <ScrollView style={styles.container}>
-          {renderStatusCard()}
-          {appointmentHeader()}
-          {orderCard()}
-          {renderNote()}
-          {renderButton()}
-        </ScrollView>
-      ) : (
-        <Spinner />
-      )}
+      <SafeAreaView style={styles.container}>
+        <Header leftIcon="backArrow" title="PAYMENT STATUS" onPressLeftIcon={() => handleBack()} />
+        {!loading ? (
+          <ScrollView style={styles.container}>
+            {renderStatusCard()}
+            {appointmentHeader()}
+            {orderCard()}
+            {renderNote()}
+            {renderButton()}
+          </ScrollView>
+        ) : (
+          <Spinner />
+        )}
+      </SafeAreaView>
     </View>
   );
 };

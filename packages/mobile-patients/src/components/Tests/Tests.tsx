@@ -73,6 +73,8 @@ import {
   setWebEngageScreenNames,
   getFormattedLocation,
   getDiscountPercentage,
+  postAppsFlyerEvent,
+  postFirebaseEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -127,6 +129,8 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticsHomePageItems';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
+import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
+import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 
 const { width: winWidth } = Dimensions.get('window');
 const styles = StyleSheet.create({
@@ -349,7 +353,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
     'Patient Age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
   };
   useEffect(() => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED] = patientAttributes;
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED] = {
+      ...patientAttributes,
+      Serviceability: isDiagnosticLocationServiceable == 'true' ? 'Yes' : 'No',
+    };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED, eventAttributes);
   }, []);
 
@@ -366,7 +373,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   useEffect(() => {
     if (!!locationDetails || !!diagnosticLocation) {
-      if (isDiagnosticLocationServiceable) {
+      if (isDiagnosticLocationServiceable == 'true') {
         const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_SERVICEABLE] = serviceableAttributes;
         postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_SERVICEABLE, eventAttributes);
       } else {
@@ -616,6 +623,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
       Quantity: 1,
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ADD_TO_CART, eventAttributes);
+
+    const firebaseAttributes: FirebaseEvents[FirebaseEventName.DIAGNOSTIC_ADD_TO_CART] = {
+      productname: name,
+      productid: id,
+      Source: 'Diagnostic',
+      Price: price,
+      DiscountedPrice: discountedPrice,
+      Quantity: 1,
+    };
+    postFirebaseEvent(FirebaseEventName.DIAGNOSTIC_ADD_TO_CART, firebaseAttributes);
+    postAppsFlyerEvent(AppsFlyerEventName.DIAGNOSTIC_ADD_TO_CART, firebaseAttributes);
   };
 
   const postBrowsePackageEvent = (packageName: string) => {
@@ -750,10 +768,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
               city: serviceableData.cityName || '',
             };
             setDiagnosticServiceabilityData!(obj);
-            setDiagnosticLocationServiceable!(true);
+            setDiagnosticLocationServiceable!('true');
             setServiceabilityMsg('');
           } else {
-            setDiagnosticLocationServiceable!(false);
+            setDiagnosticLocationServiceable!('false');
             setLoadingContext!(false);
             renderLocationNotServingPopUpForPincode(pincode);
           }
@@ -1341,7 +1359,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   //             item.title,
   //             `${config.IMAGES_BASE_URL[0]}${item.image_url}`,
   //             () =>
-  //               props.navigation.navigate(AppRoutes.SearchByBrand, {
+  //               props.navigation.navigate(AppRoutes.MedicineListing, {
   //                 category_id: item.category_id,
   //                 title: `${item.title || 'Products'}`.toUpperCase(),
   //                 isTest: true,
@@ -2679,61 +2697,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
           style={{ flex: 1 }}
           bounces={false}
           stickyHeaderIndices={[1]}
-          onScroll={handleScroll}
-          scrollEventThrottle={20}
           contentContainerStyle={[
             isSearchFocused && searchText.length > 2 && medicineList.length > 0 ? { flex: 1 } : {},
           ]}
         >
-          <ProfileList
-            navigation={props.navigation}
-            saveUserChange={true}
-            childView={
-              <View
-                style={{
-                  flexDirection: 'row',
-                  paddingRight: 8,
-                  borderRightWidth: 0,
-                  borderRightColor: 'rgba(2, 71, 91, 0.2)',
-                  backgroundColor: theme.colors.WHITE,
-                }}
-              >
-                <Text style={styles.hiTextStyle}>{'hi'}</Text>
-                <View style={styles.nameTextContainerStyle}>
-                  <View style={{ flexDirection: 'row', flex: 1 }}>
-                    <Text
-                      style={[
-                        styles.nameTextStyle,
-                        { maxWidth: Platform.OS === 'ios' ? '85%' : '75%' },
-                      ]}
-                      numberOfLines={1}
-                    >
-                      {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
-                    </Text>
-                    {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
-                      <LinkedUhidIcon
-                        style={{
-                          width: 22,
-                          height: 20,
-                          marginLeft: 5,
-                          marginTop: Platform.OS === 'ios' ? 16 : 20,
-                        }}
-                        resizeMode={'contain'}
-                      />
-                    ) : null}
-                    <View style={{ paddingTop: 15, marginLeft: 6 }}>
-                      <DropdownGreen />
-                    </View>
-                  </View>
-                  {currentPatient && <View style={styles.seperatorStyle} />}
-                </View>
-              </View>
-            }
-            selectedProfile={profile}
-            unsetloaderDisplay={true}
-          ></ProfileList>
-
-          <View style={[isSearchFocused ? { flex: 1 } : {}]}>
+          <View style={{ height: 0, backgroundColor: theme.colors.WHITE }} />
+          <View style={{ flex: 1 }}>
             <View
               style={{
                 backgroundColor: 'white',

@@ -3,9 +3,16 @@ import {
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
-import { postWebEngageEvent, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  postWebEngageEvent,
+  g,
+  postAppsFlyerEvent,
+  postFirebaseEvent,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { Store } from '@aph/mobile-patients/src/helpers/apiCalls';
 import moment from 'moment';
+import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
+import { AppsFlyerEventName } from './AppsFlyerEvents';
 
 type MyOrdersClicked = WebEngageEvents[WebEngageEventName.MY_ORDERS_CLICKED];
 
@@ -60,7 +67,7 @@ export const postPharmacyAddNewAddressCompleted = (
   deliveryAddress: PharmacyAddNewAddressCompleted['Delivery address'],
   tat: PharmacyAddNewAddressCompleted['TAT Displayed'],
   deliveryTat: PhamracyCartAddressSelectedSuccess['Delivery TAT'],
-  success?: PharmacyAddNewAddressCompleted['Success'],
+  success?: PharmacyAddNewAddressCompleted['Success']
 ) => {
   const eventAttributes: PharmacyAddNewAddressCompleted = {
     Source: source,
@@ -87,9 +94,20 @@ export const postPhamracyCartAddressSelectedSuccess = (
     'Delivery Successful': success,
     'Delivery Address': deliveryAddress,
     Pincode: pincode,
-    'Delivery TAT': deliveryTat
+    'Delivery TAT': deliveryTat,
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS, eventAttributes);
+
+  const firebaseAttributes: FirebaseEvents[FirebaseEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS] = {
+    TATDisplayed: tatDisplayed,
+    DeliverySuccessful: success,
+    DeliveryAddress: deliveryAddress,
+    Pincode: pincode,
+    DeliveryTAT: deliveryTat,
+    LOB: 'Pharmacy',
+  };
+  postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS, firebaseAttributes);
+  postFirebaseEvent(FirebaseEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS, firebaseAttributes);
 };
 
 type PhamracyCartAddressSelectedFailure = WebEngageEvents[WebEngageEventName.PHARMACY_CART_ADDRESS_SELECTED_FAILURE];

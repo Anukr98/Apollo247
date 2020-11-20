@@ -1,5 +1,0 @@
-<resources>
-    <string name="app_name">ApolloDoctor</string>
-    <string name="default_notification_channel_id" translatable="false">fcm_FirebaseNotifiction_default_channel</string>
-    <string moduleConfig="true" name="CodePushDeploymentKey">KxH39pCo6oa0qHrp0n3zf3Kyemn9QnoIzm4T_</string>
-</resources>

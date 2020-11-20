@@ -156,6 +156,8 @@ export interface ConsultTypeCardProps extends NavigationScreenProps {
   nextAppointemntOnlineTime: string;
   nextAppointemntInPresonTime: string;
   circleDoctorDetails?: any;
+  availNowText?: string;
+  consultNowText?: string;
 }
 
 type stepsObject = {
@@ -175,6 +177,8 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
     nextAppointemntOnlineTime,
     nextAppointemntInPresonTime,
     circleDoctorDetails,
+    availNowText,
+    consultNowText,
   } = props;
 
   const { currentPatient } = useAllCurrentPatients();
@@ -251,7 +255,7 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
               </Text>
               {time && moment(time).isValid() ? (
                 <Text style={timeDiff <= 15 ? styles.timeText2Style : styles.timeTextStyle}>
-                  {nextAvailability(time)}
+                  {availNowText || nextAvailability(time)}
                 </Text>
               ) : null}
             </View>
@@ -310,11 +314,14 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
         </View>
         <TouchableOpacity activeOpacity={1} onPress={onPress}>
           <View style={styles.buttonStyle}>
-            <Text style={styles.buttonTextStyle}>{`${
-              time && moment(time).isValid()
-                ? nextAvailability(time, 'Consult')
-                : string.common.book_apointment
-            }`}</Text>
+            <Text style={styles.buttonTextStyle}>
+              {consultNowText ||
+                `${
+                  time && moment(time).isValid()
+                    ? nextAvailability(time, 'Consult')
+                    : string.common.book_apointment
+                }`}
+            </Text>
           </View>
         </TouchableOpacity>
       </View>

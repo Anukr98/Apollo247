@@ -729,7 +729,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                   key: null,
                   actions: [
                     NavigationActions.navigate({
-                      routeName: AppRoutes.SearchByBrand,
+                      routeName: AppRoutes.MedicineListing,
                       params: {
                         category_id: itemId,
                         title: `${name ? name : 'Products'}`.toUpperCase(),
@@ -833,7 +833,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                       console.log('signup currentPatient', currentPatient);
 
                       const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
-                      const item = JSON.parse(retrievedItem);
+                      const item = JSON.parse(retrievedItem || 'null');
 
                       const callByPrism: any = await AsyncStorage.getItem('callByPrism');
                       let allPatients;

@@ -26,6 +26,7 @@ import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/Device
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useAppCommonData } from '../AppCommonDataProvider';
 import { g } from '../../helpers/helperFunctions';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
 const styles = StyleSheet.create({
   bottonButtonContainer: {
@@ -116,6 +117,7 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
   const [validating, setValidating] = useState<boolean>(false);
   const { showAphAlert } = useUIElements();
   const { hdfcUserSubscriptions } = useAppCommonData();
+  const { currentPatient } = useAllCurrentPatients();
 
   let packageId = '';
   if (!!g(hdfcUserSubscriptions, '_id') && !!g(hdfcUserSubscriptions, 'isActive')) {
@@ -130,7 +132,12 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
     });
 
   useEffect(() => {
-    fetchConsultCoupons(packageId)
+    const data = {
+      packageId,
+      mobile: g(currentPatient, 'mobileNumber'),
+      email: g(currentPatient, 'emailAddress')
+    };
+    fetchConsultCoupons(data)
       .then((res: any) => {
         console.log(JSON.stringify(res.data), 'objobj');
         setcouponList(res.data.response);

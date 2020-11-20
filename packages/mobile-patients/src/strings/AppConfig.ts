@@ -2,6 +2,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { ChennaiDeliveryPinCodes } from '@aph/mobile-patients/src/strings/ChennaiDeliveryPinCodes';
 import { PharmaStateCodeMapping } from '@aph/mobile-patients/src/strings/PharmaStateCodeMapping';
 import DeviceInfo from 'react-native-device-info';
+import { DIAGNOSTIC_ORDER_STATUS } from '../graphql/types/globalTypes';
 
 export enum AppEnv {
   DEV = 'DEV',
@@ -38,6 +39,7 @@ const testApiCredentialsProd = {
 const appStaticVariables = {
   iOS_Version: DeviceInfo.getVersion(),
   Android_Version: DeviceInfo.getVersion(),
+  ENABLE_CONDITIONAL_MANAGEMENT: true,
   MED_DELIVERY_DATE_API_FORMAT: 'DD-MMM-YYYY hh:mm',
   MED_DELIVERY_DATE_TAT_API_FORMAT: 'DD-MMM-YYYY hh:mm A',
   MED_DELIVERY_DATE_DISPLAY_FORMAT: 'D MMM YYYY | hh:mm A',
@@ -68,8 +70,14 @@ const appStaticVariables = {
   CUSTOMER_CARE_HELP_TEXT: string.common.customerCareHelpText,
   CUSTOMER_CARE_NUMBER: string.common.customerCareNumber,
   PRODUCT_SUGGESTIONS_CATEGORYID: '41920',
-  PRODUCT_SUGGESTIONS_COUNT: 10,
   CARE_PLAN_ID: 'CAREPlan',
+  PRODUCT_SUGGESTIONS_COUNT: 15,
+  MED_ORDER_NON_CART_CALL_ME_OPTION_WHATSAPP_LINK:
+    'https://api.whatsapp.com/send?phone=914041894343&text=I%20want%20to%20inform%20the%20pharmacist%20regarding%20my%20medicines',
+  MED_ORDER_ON_HOLD_ORDER_WHATSAPP_LINK:
+    'https://api.whatsapp.com/send?phone=914041894343&text=On-hold%20order:%20I%20want%20to%20chat%20with%20the%20pharmacist',
+  MED_ORDER_POST_ORDER_VERIFICATION_WHATSAPP_LINK:
+    'https://api.whatsapp.com/send?phone=914041894343&text=I%20have%20a%20query%20regarding%20the%20items%20in%20my%20verified%20order',
 };
 
 const DEV_top6_specailties = [
@@ -188,6 +196,7 @@ const PharmaApiConfig = {
   dev: {
     TRACK_EVENT: [`${tagalysBaseUrl}/analytics/events/track`],
     MED_SEARCH: [`${apolloUatBaseUrl}/popcsrchprd_api.php`, pharmaToken201],
+    GET_SKU: [`${apolloUatBaseUrl}/popcsrchsku_api.php`, pharmaToken201],
     MED_DETAIL: [apolloUatBaseUrl, pharmaToken201],
     MED_SEARCH_SUGGESTION: [`${apolloUatBaseUrl}/popcsrchss_api.php`, pharmaToken201],
     STORES_LIST: [apolloUatBaseUrl, pharmaToken201],
@@ -207,7 +216,7 @@ const PharmaApiConfig = {
       pharmaTokenYXV,
     ],
     GET_SUBSTITUTES: [`${apolloUatBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
-    PRODUCTS_BY_CATEGORY: [`${apolloUatBaseUrl}/categoryproducts_api.php`, pharmaToken201],
+    PRODUCTS_BY_CATEGORY: [`${apolloUatBaseUrl}/categoriesScript.php`, pharmaToken201],
     MEDICINE_PAGE: [`${apolloUatBaseUrl}/apollo_24x7_api.php?version=v2`, pharmaToken201],
     ALL_BRANDS: [`${apolloUatBaseUrl}/allbrands_api.php`, pharmaToken201],
     GET_TEST_PACKAGES: [
@@ -222,10 +231,13 @@ const PharmaApiConfig = {
       'http://uatlims.apollohl.in/ApolloLive/CronJob/GetCentreDetail.aspx',
       testApiCredentialsDev,
     ],
+    PRODUCT_SUGGESTIONS_CATEGORYID: '41920',
+    SPECIAL_OFFERS_CATEGORY_ID: '42372',
   },
   prod: {
     TRACK_EVENT: [`${tagalysBaseUrl}/analytics/events/track`],
     MED_SEARCH: [`${apolloProdBaseUrl}/popcsrchprd_api.php`, pharmaToken201],
+    GET_SKU: [`${apolloProdBaseUrl}/popcsrchsku_api.php`, pharmaToken201],
     MED_DETAIL: [apolloProdBaseUrl, pharmaToken201],
     MED_SEARCH_SUGGESTION: [`${apolloProdBaseUrl}/popcsrchss_api.php`, pharmaToken201],
     STORES_LIST: [apolloProdBaseUrl, pharmaToken201],
@@ -259,6 +271,8 @@ const PharmaApiConfig = {
       'https://report.apollodiagnostics.in/Apollo/CronJob/GetCentreDetail.aspx',
       testApiCredentialsProd,
     ],
+    PRODUCT_SUGGESTIONS_CATEGORYID: '2252',
+    SPECIAL_OFFERS_CATEGORY_ID: '2255',
   },
 };
 
@@ -281,7 +295,7 @@ const ConfigurationDev = {
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
-  DELIVERY_CHARGES: 25,
+  DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
   PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
@@ -305,6 +319,8 @@ const ConfigurationDev = {
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
   CIRCLE_CONSULT_URL: 'https://aph.dev.web-patients.popcornapps.com/consult-landing?header=false',
+  APOLLO_PRO_HEALTH_URL:
+    'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
 };
 
 // QA
@@ -326,7 +342,7 @@ const ConfigurationQA = {
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
-  DELIVERY_CHARGES: 25,
+  DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
   PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
@@ -350,6 +366,8 @@ const ConfigurationQA = {
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
   CIRCLE_CONSULT_URL: 'https://aph.dev.web-patients.popcornapps.com/consult-landing?header=false',
+  APOLLO_PRO_HEALTH_URL:
+    'https://aph.staging.web-patients.popcornapps.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
 };
 
 // QA2
@@ -371,7 +389,7 @@ const ConfigurationQA2 = {
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
-  DELIVERY_CHARGES: 25,
+  DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
   PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
@@ -395,6 +413,8 @@ const ConfigurationQA2 = {
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
   CIRCLE_CONSULT_URL: 'https://aph.dev.web-patients.popcornapps.com/consult-landing?header=false',
+  APOLLO_PRO_HEALTH_URL:
+    'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
 };
 
 // VAPT
@@ -416,7 +436,7 @@ const ConfigurationVAPT = {
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
-  DELIVERY_CHARGES: 25,
+  DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
   PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
@@ -440,6 +460,8 @@ const ConfigurationVAPT = {
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
   CIRCLE_CONSULT_URL: 'https://aph.dev.web-patients.popcornapps.com/consult-landing?header=false',
+  APOLLO_PRO_HEALTH_URL:
+    'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
 };
 //Production
 const ConfigurationProd = {
@@ -460,7 +482,7 @@ const ConfigurationProd = {
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
-  DELIVERY_CHARGES: 25,
+  DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
   PRAKTISE_API_KEY: 'FD7632C8-AF22-4534-91ED-4C197E1662F4', // PRODUCTION
   PRO_TOKBOX_KEY: '46422952', // PRODUCTION
@@ -483,6 +505,8 @@ const ConfigurationProd = {
   COVID_VACCINE_TRACKER_URL: 'https://www.apollo247.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
   CIRCLE_CONSULT_URL: 'https://aph.dev.web-patients.popcornapps.com/consult-landing?header=false',
+  APOLLO_PRO_HEALTH_URL:
+    'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
 };
 
 //PERFORMANCE
@@ -504,7 +528,7 @@ const ConfigurationPERFORM = {
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
-  DELIVERY_CHARGES: 25,
+  DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
   PRAKTISE_API_KEY: 'FD7632C8-AF22-4534-91ED-4C197E1662F4', //'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
@@ -529,6 +553,8 @@ const ConfigurationPERFORM = {
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
   CIRCLE_CONSULT_URL: 'https://aph.dev.web-patients.popcornapps.com/consult-landing?header=false',
+  APOLLO_PRO_HEALTH_URL:
+    'https://aph.staging.web-patients.popcornapps.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
 };
 
 //DevelopmentReplica
@@ -550,7 +576,7 @@ const ConfigurationDevReplica = {
   DIAGNOSTICS_PG_ERROR_PATH: '/diagnostic-pg-error?',
   DIAGNOSTICS_PG_CANCEL_PATH: '/diagnostic-pg-cancel-url',
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 200,
-  DELIVERY_CHARGES: 25,
+  DELIVERY_CHARGES: 50,
   DIASGNOS_DELIVERY_CHARGES: 0,
   PRAKTISE_API_KEY: 'AFF2F0D8-5320-4E4D-A673-33626CD1C3F2', //'4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
@@ -575,6 +601,8 @@ const ConfigurationDevReplica = {
     'https://aph.staging.web-patients.popcornapps.com/covid-vaccine-tracker',
   BLOG_URL: 'https://www.apollo247.com/blog',
   CIRCLE_CONSULT_URL: 'https://aph.dev.web-patients.popcornapps.com/consult-landing?header=false',
+  APOLLO_PRO_HEALTH_URL:
+    'https://aph.staging.web-patients.popcornapps.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
 };
 
 const Configuration =
@@ -698,20 +726,41 @@ export const ConsultFeedBackData = {
   },
 };
 
+export const SequenceForDiagnosticStatus = [
+  DIAGNOSTIC_ORDER_STATUS.ORDER_PLACED,
+  DIAGNOSTIC_ORDER_STATUS.ORDER_CANCELLED,
+  DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
+  DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB,
+  DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECIEVED_IN_LAB,
+  DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED,
+];
+
+export const COVID_NOTIFICATION_ITEMID = ['2411', '2410', '2539'];
+
+export const TestsNewFeedbackData = {
+  options: [
+    'Wrong Report recieved',
+    'Delayed Report generation',
+    'Did not get the required time slot',
+    'Inappropriate behaviour of diagnostics staff',
+    'Insufficient communication to customer',
+    'Difficulty in finding the test while booking order',
+    'Others (Please specify)',
+  ],
+};
+
 export const TestsFeedBackData = {
   POOR: {
     question: 'What went wrong?',
     options: [
-      'The pick-up person was impolite',
-      'The pick-up person was ill-trained/ ill-equipped',
-      'Pick-up person was late',
-      'Delay in report generation',
-      'Difficulty in using the App',
-      'I could not find the tests I was looking for',
-      'I found better offers on other portals',
-      'Payment-related issues on App',
-      'Unavailability of preferred slots',
-      'Unavailability of some tests',
+      'Wrong Report received',
+      'Delayed Report generation',
+      'Did not get the required time slot',
+      'Inappropriate behaviour of pick up person',
+      'Insufficient communication to customer',
+      'Difficulty in finding the test while booking order',
       'Others',
     ],
   },
@@ -719,12 +768,11 @@ export const TestsFeedBackData = {
     question: 'What could have been improved?',
     options: [
       'Report generation time',
-      'Options of tests to choose from',
-      'Ordering experience',
-      'Offers',
-      'The pick-up person’s training',
-      'Pick-up person’s punctuality',
-      'Number of slots for pick-up time to choose from',
+      "Sample Pick up person's training and punctuality",
+      'Number of time slots to choose from',
+      'Options of Tests to choose from',
+      'Communication to customer',
+      'Order Booking Process',
       'Others',
     ],
   },
@@ -732,8 +780,7 @@ export const TestsFeedBackData = {
     question: 'Thanks! What could make this a Great experience for you?',
     options: [
       'More tests to choose from',
-      'Simpler booking',
-      'Better offers',
+      'Simpler booking process',
       'Quicker report generation time',
       'Better trained pick-up person',
       'More punctual pick-up person',
@@ -741,16 +788,37 @@ export const TestsFeedBackData = {
     ],
   },
   GREAT: {
-    question: 'What went well?',
+    question: 'Thanks! What went well?',
     options: [
       'Booking experience',
       'Variety and options to choose from',
-      'Timely pick-up',
-      'Offers and prices',
+      'Timely sample pick-up',
       'Friendly and polite delivery person',
-      'Others',
     ],
   },
+};
+
+export const TestCancelReasons = {
+  reasons: [
+    'Home Collection Charges are too high',
+    'Need to change the payment mode',
+    'Need to modify the order details',
+    'I am getting lesser price elsewhere',
+    'Home Collection not occuring at desired time slot',
+    'No need for diagnosis now',
+    'Order created by mistake',
+    'Others (Please specify)s',
+  ],
+};
+
+export const TestReschedulingReasons = {
+  reasons: [
+    'Not present at home',
+    'Did not follow preparation guidelines (Fasting etc.)',
+    'Not in a condition to provide sample',
+    'Slot picked by mistake',
+    'Others (please specify)',
+  ],
 };
 
 export const NeedHelp = [
@@ -773,7 +841,7 @@ export const NeedHelp = [
     category: 'Virtual/Online Consult',
     options: [
       'I am unable to book an appointment (slot not available/ Doctor not listed)',
-      'The doctor did not start the consultation on time',
+      'The doctor did not start the consultation call on time',
       'My money got deducted but no confirmation on the doctor appointment',
       'I faced technical issues during/after booking an appointment',
       'I want to reschedule/cancel my appointment ',
@@ -781,7 +849,7 @@ export const NeedHelp = [
       'Improper behaviour/attitude of doctor or staff',
       'I need to know my refund status',
       'I did not recieve invoice/ receipt of my appointment',
-      'Doctor did not respond to follow-up chats',
+      'Consultation ended, Doctor has not replied to my query over 24 hours',
     ],
   },
   {

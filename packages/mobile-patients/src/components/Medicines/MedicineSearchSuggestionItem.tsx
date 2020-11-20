@@ -1,20 +1,14 @@
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
-import {
-  InjectionIcon,
-  MedicineIcon,
-  MedicineRxIcon,
-  SyrupBottleIcon,
-} from '@aph/mobile-patients/src/components/ui/Icons';
+import { MedicineIcon, MedicineRxIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { Image } from 'react-native-elements';
 import { MedicineProduct } from '../../helpers/apiCalls';
-import { g } from '../../helpers/helperFunctions';
-import { AppConfig } from '../../strings/AppConfig';
 import { QuantityButton } from '../ui/QuantityButton';
 import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { productsThumbnailUrl } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   containerStyle: {},
@@ -42,25 +36,17 @@ export interface MedicineSearchSuggestionItemProps {
   showSeparator?: boolean;
   loading?: boolean;
   data: MedicineProduct;
-  maxOrderQty: number;
-  removeCartItem: () => void;
 }
 
 export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItemProps> = (
   props
 ) => {
   const { data } = props;
-  const config = AppConfig.Configuration;
   const prescriptionRequired = data.is_prescription_required == '1';
-  const type = g(data, 'PharmaOverview', '0' as any, 'Doseform');
-  const imageUri = data.thumbnail ? `${config.IMAGES_BASE_URL[0]}${data.thumbnail}` : '';
+  const imageUri = productsThumbnailUrl(data.thumbnail);
   const isOutOfStock = !data.is_in_stock;
   const isNotForOnlineSelling = !data.sell_online;
-  const specialPrice = data.special_price
-    ? typeof data.special_price == 'string'
-      ? Number(data.special_price)
-      : data.special_price
-    : undefined;
+  const specialPrice = Number(data.special_price) || undefined;
 
   const renderNamePriceAndInStockStatus = () => {
     return (
@@ -69,24 +55,22 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
           {data.name}
         </Text>
         {isOutOfStock && !isNotForOnlineSelling ? (
-          <Text style={{ ...theme.viewStyles.text('M', 12, '#890000', 1, 20, 0.04) }}>
+          <Text style={{ ...theme.viewStyles.text('M', 12, '#890000', 1, 20) }}>
             {'Out Of Stock'}
           </Text>
         ) : (
           <View style={{ flexDirection: 'row' }}>
-            <Text
-              style={{
-                ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04),
-              }}
-            >
+            {!specialPrice && (
+              <Text style={theme.viewStyles.text('M', 12, '#02475b', 0.6, 20)}>{'MRP '}</Text>
+            )}
+            <Text style={theme.viewStyles.text('M', 12, '#02475b', 0.6, 20)}>
               {string.common.Rs} {specialPrice || data.price}
             </Text>
             {specialPrice ? (
               <Text
-                style={[
-                  { ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04), marginLeft: 8 },
-                ]}
+                style={[{ ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20), marginLeft: 8 }]}
               >
+                <Text style={theme.viewStyles.text('M', 12, '#02475b')}>{' MRP '}</Text>
                 {'('}
                 <Text
                   style={{ textDecorationLine: 'line-through' }}
@@ -110,10 +94,6 @@ export const MedicineSearchSuggestionItem: React.FC<MedicineSearchSuggestionItem
             style={{ height: 40, width: 40 }}
             resizeMode="contain"
           />
-        ) : type == 'SYRUP' ? (
-          <SyrupBottleIcon />
-        ) : type == 'INJECTION' ? (
-          <InjectionIcon />
         ) : prescriptionRequired ? (
           <MedicineRxIcon />
         ) : (

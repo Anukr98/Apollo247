@@ -37,13 +37,20 @@ import {
   isEmptyObject,
   postWebEngageEvent,
   postwebEngageAddToCartEvent,
+  postFirebaseAddToCartEvent,
   postAppsFlyerAddToCartEvent,
   g,
   getDiscountPercentage,
   getCareCashback,
+  addPharmaItemToCart,
+  savePastSearch,
+  postAppsFlyerEvent,
+  postFirebaseEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { useApolloClient } from 'react-apollo-hooks';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import {
@@ -75,6 +82,8 @@ import { ProductList } from '@aph/mobile-patients/src/components/Medicines/Produ
 import { ProductUpSellingCard } from '@aph/mobile-patients/src/components/Medicines/ProductUpSellingCard';
 import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
 import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
+import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
+import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 
 const { width, height } = Dimensions.get('window');
 
@@ -269,13 +278,39 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 200,
   },
+  priceView: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+  },
+  discountPriceView: {
+    display: 'flex',
+    flexDirection: 'row',
+  },
+  mrp: {
+    ...theme.viewStyles.text('SB', 13, '#02475b', 1, 20, 0.35),
+  },
+  price: {
+    ...theme.viewStyles.text('SB', 17, '#02475b', 1, 20, 0.35),
+  },
+  priceStrikeOff: {
+    ...theme.viewStyles.text('M', 13, '#01475b', 1, 20, 0.35),
+    textDecorationLine: 'line-through',
+    color: '#01475b',
+    opacity: 0.6,
+    paddingRight: 5,
+  },
+  discountPercentage: {
+    ...theme.viewStyles.text('M', 13, '#00B38E', 1, 20, 0.35),
+  },
 });
 
 type PharmacyTatApiCalled = WebEngageEvents[WebEngageEventName.PHARMACY_TAT_API_CALLED];
 
 export type ProductPageViewedEventProps = Pick<
   WebEngageEvents[WebEngageEventName.PRODUCT_PAGE_VIEWED],
-  'Category ID' | 'Category Name' | 'Section Name'
+  'CategoryID' | 'CategoryName' | 'SectionName'
 >;
 
 export interface MedicineDetailsSceneProps
@@ -294,6 +329,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const [medicineDetails, setmedicineDetails] = useState<MedicineProductDetails>(
     {} as MedicineProductDetails
   );
+  const client = useApolloClient();
   const [tatEventData, setTatEventData] = useState<PharmacyTatApiCalled>();
   const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
@@ -317,11 +353,17 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
   const overview = medicineDetails?.PharmaOverview?.[0]?.Overview;
   const medicineOverview =
-    (!overview || typeof overview == 'string') ? [] : helpers.getMedicineOverview(overview || []);
+    !overview || typeof overview == 'string' ? [] : helpers.getMedicineOverview(overview || []);
 
   const sku = props.navigation.getParam('sku'); // 'MED0017';
 
-  const { addCartItem, cartItems, updateCartItem, removeCartItem, isCircleSubscription } = useShoppingCart();
+  const {
+    addCartItem,
+    cartItems,
+    updateCartItem,
+    removeCartItem,
+    isCircleSubscription,
+  } = useShoppingCart();
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const getItemQuantity = (id: string) => {
     const foundItem = cartItems.find((item) => item.id == id);
@@ -336,7 +378,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const productPageViewedEventProps = props.navigation.getParam('productPageViewedEventProps');
 
   const { special_price, price, type_id } = medicineDetails;
-  const finalPrice = (price - special_price) ? special_price : price;
+  const finalPrice = price - special_price ? special_price : price;
   const cashback = getCareCashback(Number(finalPrice), type_id);
 
   useEffect(() => {
@@ -354,6 +396,14 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           setmedicineDetails(productDetails || {});
           postProductPageViewedEvent(productDetails);
           trackTagalysViewEvent(productDetails);
+          savePastSearch(client, {
+            typeId: productDetails.sku,
+            typeName: productDetails.name,
+            type: SEARCH_TYPE.MEDICINE,
+            patient: currentPatient?.id,
+            image: productDetails.thumbnail,
+          });
+
           if (_deliveryError) {
             setTimeout(() => {
               scrollViewRef.current && scrollViewRef.current.scrollToEnd();
@@ -423,10 +473,12 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         source: movedFrom,
         ProductId: sku,
         ProductName: name,
-        'Stock availability': !!is_in_stock ? 'Yes' : 'No',
+        Stockavailability: !!is_in_stock ? 'Yes' : 'No',
         ...productPageViewedEventProps,
       };
       postWebEngageEvent(WebEngageEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
+      postAppsFlyerEvent(AppsFlyerEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
+      postFirebaseEvent(FirebaseEventName.PRODUCT_PAGE_VIEWED, eventAttributes);
     }
   };
 
@@ -461,6 +513,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       productType: type_id,
     });
     postwebEngageAddToCartEvent(item, 'Pharmacy PDP', sectionName);
+    postFirebaseAddToCartEvent(item, 'Pharmacy PDP', sectionName);
     let id = currentPatient && currentPatient.id ? currentPatient.id : '';
     postAppsFlyerAddToCartEvent(item, id);
   };
@@ -689,7 +742,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         </>
       );
     } else {
-      return <></>
+      return <></>;
     }
   };
 
@@ -741,40 +794,17 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         ) : (
           <View style={styles.bottomView}>
             <View style={styles.bottonButtonContainer}>
-              <View
-                style={{
-                  flex: 1,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'flex-start',
-                }}
-              >
-                <Text style={theme.viewStyles.text('SB', 17, '#02475b', 1, 20, 0.35)}>
-                  ₹{medicineDetails.special_price || medicineDetails.price}
+              <View style={styles.priceView}>
+                <Text style={styles.price}>
+                  {discountPercent
+                    ? `₹${medicineDetails.special_price}`
+                    : `MRP ₹${medicineDetails.price}`}
                 </Text>
                 {!!medicineDetails.special_price && (
-                  <View
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'row',
-                    }}
-                  >
-                    <Text
-                      style={[
-                        theme.viewStyles.text('M', 13, '#01475b', 1, 20, 0.35),
-                        {
-                          textDecorationLine: 'line-through',
-                          color: '#01475b',
-                          opacity: 0.6,
-                          paddingRight: 5,
-                        },
-                      ]}
-                    >
-                      (₹{medicineDetails.price})
-                    </Text>
-                    <Text style={theme.viewStyles.text('M', 13, '#00B38E', 1, 20, 0.35)}>
-                      {discountPercent}% off
-                    </Text>
+                  <View style={styles.discountPriceView}>
+                    <Text style={styles.mrp}>{'MRP '}</Text>
+                    <Text style={styles.priceStrikeOff}>(₹{medicineDetails.price})</Text>
+                    <Text style={styles.discountPercentage}>{discountPercent}% off</Text>
                   </View>
                 )}
                 {renderCareCashback()}
@@ -924,12 +954,13 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
   const renderCareSubscribeBanner = () => {
     return (
-      <TouchableOpacity 
+      <TouchableOpacity
         activeOpacity={1}
-        onPress={() => {}} 
+        onPress={() => {}}
         style={{
-        paddingHorizontal: 20,
-      }}>
+          paddingHorizontal: 20,
+        }}
+      >
         <CircleBannerNonMember style={styles.careBanner} />
       </TouchableOpacity>
     );
@@ -938,13 +969,13 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const renderCircleSubscribeSuccess = () => {
     return (
       <View style={styles.careCardContainer}>
-        <View style={{
-          flexDirection: 'row',
-        }}>
+        <View
+          style={{
+            flexDirection: 'row',
+          }}
+        >
           <CheckBoxFilled style={styles.checkBoxIconStyle} />
-          <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 30)}>
-            Yay!
-          </Text>
+          <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 30)}>Yay!</Text>
           <CareCashbackBanner
             bannerText={`membership added to your cart!`}
             textStyle={{
@@ -956,7 +987,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
               height: 35,
             }}
           />
-        </View> 
+        </View>
       </View>
     );
   };

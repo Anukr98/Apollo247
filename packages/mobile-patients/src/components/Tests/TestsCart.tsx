@@ -108,7 +108,7 @@ import {
   searchClinicApi,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { AppConfig, COVID_NOTIFICATION_ITEMID } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
@@ -1171,6 +1171,22 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     });
   };
 
+  const AddressSelectedEvent = (address: savePatientAddress_savePatientAddress_patientAddress) => {
+    const firebaseAttributes: FirebaseEvents[FirebaseEventName.DIAGNOSTIC_CART_ADDRESS_SELECTED_SUCCESS] = {
+      DeliveryAddress: formatAddress(address),
+      Pincode: address?.zipcode || '',
+      LOB: 'Diagnostics',
+    };
+    postAppsFlyerEvent(
+      AppsFlyerEventName.DIAGNOSTIC_CART_ADDRESS_SELECTED_SUCCESS,
+      firebaseAttributes
+    );
+    postFirebaseEvent(
+      FirebaseEventName.DIAGNOSTIC_CART_ADDRESS_SELECTED_SUCCESS,
+      firebaseAttributes
+    );
+  };
+
   const renderHomeDelivery = () => {
     const selectedAddressIndex = addresses.findIndex((address) => address.id == deliveryAddressId);
     const addressListLength = addresses.length;
@@ -1211,6 +1227,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                       )}), that can only be done at the centre, we request you to get all tests in your cart done at the centre of your convenience. Please proceed to select.`,
                   });
                 } else {
+                  AddressSelectedEvent(item);
                   setDeliveryAddressId!(item.id);
                   setDiagnosticAreas!([]);
                   setAreaSelected!({});
@@ -1660,8 +1677,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const renderTotalCharges = () => {
-    const ppeKitCharges = false;
-    const anyCartSaving = isDiagnosticCircleSubscription ? cartSaving + circleSaving : cartSaving;
+    const isPPEKitChargesApplicable = cartItems.map((item) =>
+      COVID_NOTIFICATION_ITEMID.includes(item.id)
+    );
+    const ppeKitCharges = isPPEKitChargesApplicable.find((item) => item == true);
     return (
       <View>
         {renderLabel('TOTAL CHARGES')}

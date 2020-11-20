@@ -29,6 +29,7 @@ import {
   addTestsToCart,
   doRequestAndAccessLocation,
   postWebEngageEvent,
+  formatToCartItem,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -114,27 +115,6 @@ const styles = StyleSheet.create({
     color: theme.colors.APP_YELLOW,
   },
 });
-
-type rowData = {
-  id?: string;
-  salutation?: string | null;
-  firstName?: string | null;
-  lastName?: string | null;
-  qualification?: string | null;
-  mobileNumber?: string;
-  experience?: string | null;
-  specialization?: string | null;
-  languages?: string | null;
-  city?: string | null;
-  awards?: string | null;
-  photoUrl?: string | null;
-  specialty?: getDoctorDetailsById_getDoctorDetailsById_specialty;
-  registrationNumber?: string;
-  onlineConsultationFees?: string;
-  physicalConsultationFees?: string;
-  status: string;
-  desease: string;
-};
 
 export interface HealthConsultViewProps extends NavigationScreenProps {
   PastData?: any; //getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults;
@@ -491,58 +471,25 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                                   );
 
                                   return {
-                                    id: medicineDetails!.sku!,
-                                    mou: medicineDetails.mou,
-                                    name: medicineDetails!.name,
-                                    price: medicineDetails!.price,
-                                    specialPrice: medicineDetails.special_price
-                                      ? typeof medicineDetails.special_price == 'string'
-                                        ? parseInt(medicineDetails.special_price)
-                                        : medicineDetails.special_price
-                                      : undefined,
+                                    ...formatToCartItem({ ...medicineDetails, image: '' }),
                                     quantity: qty,
-                                    prescriptionRequired:
-                                      medicineDetails.is_prescription_required == '1',
-                                    isMedicine:
-                                      (medicineDetails.type_id || '').toLowerCase() == 'pharma',
-                                    thumbnail: medicineDetails.thumbnail || medicineDetails.image,
-                                    isInStock: !!medicineDetails.is_in_stock,
-                                    productType: medicineDetails.type_id,
                                   } as ShoppingCartItem;
                                 });
-                                const medicines = medicineAll.filter((item: any) => !!item);
+                                const medicines = medicineAll.filter((item) => !!item);
 
                                 addMultipleCartItems!(medicines as ShoppingCartItem[]);
-
-                                const totalItems = (item.medicinePrescription || []).length;
-                                const outOfStockItems = medicines.filter((item) => !item!.isInStock)
-                                  .length;
-                                const outOfStockMeds = medicines
-                                  .filter((item) => !item!.isInStock)
-                                  .map((item) => `${item!.name}`)
-                                  .join(', ');
-
-                                if (outOfStockItems > 0) {
-                                  const alertMsg =
-                                    totalItems == outOfStockItems
-                                      ? 'Unfortunately, we do not have any medicines available right now.'
-                                      : `Out of ${totalItems} medicines, you are trying to order, following medicine(s) are out of stock.\n\n${outOfStockMeds}\n`;
-                                }
 
                                 const rxMedicinesCount =
                                   medicines.length == 0
                                     ? 0
-                                    : medicines.filter((item: any) => item!.prescriptionRequired)
-                                        .length;
+                                    : medicines.filter((item) => item!.prescriptionRequired).length;
 
                                 if (rxMedicinesCount) {
                                   setEPrescriptions!([
                                     ...ePrescriptions.filter((item) => !(item.id == presToAdd.id)),
                                     {
                                       ...presToAdd,
-                                      medicines: medicines
-                                        .map((item: any) => item!.name)
-                                        .join(', '),
+                                      medicines: medicines.map((item) => item!.name).join(', '),
                                     },
                                   ]);
                                 }

@@ -22,6 +22,8 @@ import {
   postWebEngageEvent,
   g,
   getDiscountPercentage,
+  postAppsFlyerEvent,
+  postFirebaseEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
@@ -46,17 +48,21 @@ import {
   WebEngageEventName,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useApolloClient } from 'react-apollo-hooks';
-
-import { GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
+  SEARCH_DIAGNOSTICS_BY_ID,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { colors } from '@aph/mobile-patients/src/theme/colors';
-import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import {
   findDiagnosticsByItemIDsAndCityIDVariables,
   findDiagnosticsByItemIDsAndCityID,
-} from '@aph/mobile-patients/src/graphql/types/findDiagnosticsByItemIDsAndCityID';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+} from '../../graphql/types/findDiagnosticsByItemIDsAndCityID';
+import { AppConfig, COVID_NOTIFICATION_ITEMID } from '../../strings/AppConfig';
+import { FirebaseEventName, FirebaseEvents } from '../../helpers/firebaseEvents';
+import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
+import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { CircleHeading } from '@aph/mobile-patients/src/components/ui/CircleHeading';
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
@@ -264,6 +270,19 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       'Item Price': testInfo.Rate,
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION, eventAttributes);
+
+    const firebaseEventAttributes: FirebaseEvents[FirebaseEventName.PRODUCT_PAGE_VIEWED] = {
+      PatientUHID: g(currentPatient, 'uhid'),
+      PatientName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      source: testInfo.source,
+      ItemName: testInfo.ItemName,
+      ItemType: testInfo.type,
+      ItemCode: testInfo.ItemID,
+      ItemPrice: testInfo.Rate,
+      LOB: 'Diagnostics',
+    };
+    postFirebaseEvent(FirebaseEventName.PRODUCT_PAGE_VIEWED, firebaseEventAttributes);
+    postAppsFlyerEvent(AppsFlyerEventName.PRODUCT_PAGE_VIEWED, firebaseEventAttributes);
   }, []);
 
   const loadTestDetails = async (itemId: string) => {
@@ -449,7 +468,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   };
 
   const renderNotification = () => {
-    if (testInfo.ItemID != '2411') {
+    if (!COVID_NOTIFICATION_ITEMID.includes(testInfo.ItemID)) {
       return null;
     }
     return (
@@ -504,6 +523,16 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       Quantity: 1,
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ADD_TO_CART, eventAttributes);
+    const firebaseAttributes: FirebaseEvents[FirebaseEventName.DIAGNOSTIC_ADD_TO_CART] = {
+      productname: name,
+      productid: id,
+      Source: 'Diagnostic',
+      Price: price,
+      DiscountedPrice: discountedPrice,
+      Quantity: 1,
+    };
+    postFirebaseEvent(FirebaseEventName.DIAGNOSTIC_ADD_TO_CART, firebaseAttributes);
+    postAppsFlyerEvent(AppsFlyerEventName.DIAGNOSTIC_ADD_TO_CART, firebaseAttributes);
   };
 
   const isAddedToCart = !!cartItems.find((item) => item.id == testInfo.ItemID);

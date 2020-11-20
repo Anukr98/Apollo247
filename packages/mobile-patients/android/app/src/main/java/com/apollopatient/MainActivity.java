@@ -23,11 +23,21 @@ public class MainActivity extends ReactActivity {
      * This is used to schedule rendering of the component.
      */
     public static final String NOTIFICATION_ID = "NOTIFICATION_ID";
+    private static final String TAG = "intentlogs";
+    private static String referrer = "";
     private Ringtone ringtone;
 
     @Override
     protected String getMainComponentName() {
         return "ApolloPatient";
+    }
+
+    public static String getIntentReferrer() {
+        return referrer;
+    }
+
+    private static void setReferrer(String value) {
+        referrer = value;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -37,15 +47,30 @@ public class MainActivity extends ReactActivity {
         Intent intent = getIntent();
         String action = intent.getAction();
         Uri data = intent.getData();
+        Log.d("intent recieved now", intent.toString());
+        Bundle bundle = intent.getExtras();
+        if (bundle != null) {
+            for (String key : bundle.keySet()) {
+                Log.d(TAG, key + " : " + (bundle.get(key) != null ? bundle.get(key) : "NULL"));
+            }
+            String referrerString = bundle.get(Intent.EXTRA_REFERRER) != null ? bundle.get(Intent.EXTRA_REFERRER).toString() : "";
+            Log.d(TAG, referrerString);
+            setReferrer( referrerString);
+        }
 
-        //start
-        if (!Settings.canDrawOverlays(this)) {
-            Uri incoming_call_notif = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
-            ringtone = RingtoneManager.getRingtone(getApplicationContext(), incoming_call_notif);
-            Log.e("notificationActivity", String.valueOf(getIntent().getIntExtra(NOTIFICATION_ID, -1)));
-            NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-            manager.cancel(getIntent().getIntExtra(NOTIFICATION_ID, -1));
-            ringtone.stop();
+        try {
+            //start
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
+                Uri incoming_call_notif = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
+                ringtone = RingtoneManager.getRingtone(getApplicationContext(), incoming_call_notif);
+                Log.e("notificationActivity", String.valueOf(getIntent().getIntExtra(NOTIFICATION_ID, -1)));
+                NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                manager.cancel(getIntent().getIntExtra(NOTIFICATION_ID, -1));
+                ringtone.stop();
+            }
+        }
+        catch(Exception e){
+            Log.e("overlay permission err", e.getMessage() + "\n" + e.toString());
         }
         //end
     }
