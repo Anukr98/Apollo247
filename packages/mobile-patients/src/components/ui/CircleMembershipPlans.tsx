@@ -45,7 +45,6 @@ interface CircleMembershipPlansProps extends NavigationScreenProps {
 export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (props) => {
   const [membershipPlans, setMembershipPlans] = useState<any>(props.membershipPlans || []);
   const [loading, setLoading] = useState<boolean>(true);
-  const [autoPlanAdded, setAutoPlanAdded] = useState<boolean>(false);
   const {
     isConsultJourney,
     careDiscountPrice,
@@ -66,6 +65,8 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     cartTotalCashback,
     setIsCircleSubscription,
     setCircleMembershipCharges,
+    setAutoCirlcePlanAdded,
+    autoCirlcePlanAdded,
   } = useShoppingCart();
   const { setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
 
@@ -95,12 +96,14 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
           autoSelectDefaultPlan(circlePlans);
           if (!circlePlanSelected) {
             selectDefaultPlan && selectDefaultPlan(circlePlans);
-            setAutoPlanAdded(true);
+            setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(true);
+          } else {
+            setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
           }
         } else {
           setDefaultCirclePlan && setDefaultCirclePlan(null);
-          setCirclePlanSelected && setCirclePlanSelected(null);
-          setAutoPlanAdded(false);
+          defaultCirclePlan && setCirclePlanSelected && setCirclePlanSelected(null);
+          setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
         }
       }
       setLoading(false);
@@ -109,7 +112,6 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       CommonBugFender('CareSelectPlans_GetPlanDetailsByPlanId', error);
     }
   };
-
   const onPressMembershipPlans = (index: number) => {
     const membershipPlan = membershipPlans?.[index];
     setCirclePlanSelected && setCirclePlanSelected(membershipPlan);
@@ -123,7 +125,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       onSelectMembershipPlan && onSelectMembershipPlan(membershipPlan);
     }
     setDefaultCirclePlan && setDefaultCirclePlan(null);
-    setAutoPlanAdded(false);
+    setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
   };
 
   const renderCareSubscribeCard = (value: any, index: number) => {
@@ -254,7 +256,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
           <View style={styles.careTextContainer}>
             <CircleLogo style={styles.circleLogo} />
             {isConsultJourney ? (
-              autoPlanAdded ? (
+              autoCirlcePlanAdded ? (
                 <Text style={styles.getCareText}>
                   Get{' '}
                   <Text style={theme.viewStyles.text('SB', 13, theme.colors.LIGHT_BLUE)}>
@@ -293,7 +295,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
               renderCareSubscribeCard(value, index)
             )}
           </ScrollView>
-          {!isModal && isConsultJourney && !autoPlanAdded && renderCircleDiscountOnConsult()}
+          {!isModal && isConsultJourney && !autoCirlcePlanAdded && renderCircleDiscountOnConsult()}
           {!isModal && !isConsultJourney && renderCircleDiscountOnPharmacy()}
           {!isModal && renderKnowMore('flex-end')}
         </View>
@@ -325,7 +327,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       <View
         style={[
           styles.bottomBtnContainer,
-          { alignSelf: alignSelf, marginTop: autoPlanAdded ? 0 : 10 },
+          { alignSelf: alignSelf, marginTop: autoCirlcePlanAdded ? 0 : 10 },
         ]}
       >
         <TouchableOpacity
@@ -392,7 +394,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
     setCircleMembershipCharges && setCircleMembershipCharges(0);
     AsyncStorage.removeItem('circlePlanSelected');
-    setAutoPlanAdded(false);
+    setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
   };
 
   const renderAddToCart = () => {
@@ -474,7 +476,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
 
   return (
     <View style={isModal ? {} : [styles.careBannerView, props.style]}>
-      {circlePlanSelected && !isModal && !autoPlanAdded && !loading && !defaultCirclePlan
+      {circlePlanSelected && !isModal && !autoCirlcePlanAdded && !loading && !defaultCirclePlan
         ? renderCarePlanAdded()
         : renderSubscribeCareContainer()}
     </View>

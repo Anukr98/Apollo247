@@ -338,14 +338,16 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     selectDefaultPlan,
     circlePlanSelected,
     defaultCirclePlan,
+    autoCirlcePlanAdded,
+    showCircleSubscribed,
   } = useShoppingCart();
 
   const rectangularIconHeight = isCircleDoctor
     ? Platform.OS == 'android'
-      ? circleSubscriptionId
+      ? showCircleSubscribed
         ? 154
         : 164
-      : circleSubscriptionId
+      : showCircleSubscribed
       ? 149
       : 159
     : Platform.OS == 'android'
@@ -354,10 +356,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
   const consultViewHeight = isCircleDoctor
     ? Platform.OS == 'android'
-      ? circleSubscriptionId
+      ? showCircleSubscribed
         ? 133
         : 143
-      : circleSubscriptionId
+      : showCircleSubscribed
       ? 128
       : 138
     : Platform.OS == 'android'
@@ -657,16 +659,16 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
   const renderCareDoctorPricing = (consultType: ConsultMode) => {
     return (
-      <View style={{ paddingBottom: circleSubscriptionId ? 16 : 3 }}>
+      <View style={{ paddingBottom: showCircleSubscribed ? 16 : 3 }}>
         <Text
           style={[
             styles.carePrice,
             {
-              textDecorationLine: circleSubscriptionId ? 'line-through' : 'none',
+              textDecorationLine: showCircleSubscribed ? 'line-through' : 'none',
               ...theme.viewStyles.text(
                 'M',
                 15,
-                circleSubscriptionId ? theme.colors.BORDER_BOTTOM_COLOR : theme.colors.LIGHT_BLUE
+                showCircleSubscribed ? theme.colors.BORDER_BOTTOM_COLOR : theme.colors.LIGHT_BLUE
               ),
             },
           ]}
@@ -681,11 +683,11 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               ? onlineConsultSlashedPrice
               : physicalConsultSlashedPrice}
           </Text>
-          {circleSubscriptionId ? (
+          {showCircleSubscribed ? (
             <CircleLogo style={[styles.smallCareLogo, { height: 17 }]} />
           ) : null}
         </View>
-        {!circleSubscriptionId ? (
+        {!showCircleSubscribed ? (
           <TouchableOpacity
             activeOpacity={1}
             style={styles.row}
@@ -851,7 +853,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   >
                     <View>
                       <Text style={styles.onlineConsultLabel}>Consult In-App</Text>
-                      {isCircleDoctor ? (
+                      {isCircleDoctor && onlineConsultMRPPrice ? (
                         renderCareDoctorPricing(ConsultMode.ONLINE)
                       ) : (
                         <Text style={styles.onlineConsultAmount}>
@@ -943,7 +945,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                       {doctorDetails.doctorType !== DoctorType.PAYROLL && (
                         <>
                           <Text style={styles.onlineConsultLabel}>Meet in Person</Text>
-                          {isCircleDoctor ? (
+                          {isCircleDoctor && physicalConsultMRPPrice ? (
                             renderCareDoctorPricing(ConsultMode.PHYSICAL)
                           ) : (
                             <Text style={styles.onlineConsultAmount}>
@@ -965,7 +967,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               </View>
             </View>
           )}
-          {isCircleDoctor && !circleSubscriptionId && defaultCirclePlan && renderUpgradeToCircle()}
+          {isCircleDoctor && !showCircleSubscribed && defaultCirclePlan && renderUpgradeToCircle()}
           {isCircleDoctor &&
             !defaultCirclePlan &&
             circlePlanSelected &&

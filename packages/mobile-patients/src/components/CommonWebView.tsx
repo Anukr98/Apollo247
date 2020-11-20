@@ -22,6 +22,7 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
     setIsCircleSubscription,
     setCircleMembershipCharges,
     setCircleSubPlanId,
+    setAutoCirlcePlanAdded,
   } = useShoppingCart();
   const { setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
 
@@ -40,6 +41,7 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
           }
           if (data && JSON.parse(data)?.subPlanId) {
             const responseData = JSON.parse(data);
+            setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
             setDefaultCirclePlan && setDefaultCirclePlan(null);
             setCirclePlanSelected && setCirclePlanSelected(responseData);
             setIsCircleSubscription && setIsCircleSubscription(true);

@@ -255,17 +255,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         }}
       >
         <Button
-          title={`${string.common.proceedToCheckout} - ${string.common.Rs}${
-            isCircleDoctor
-              ? selectedTab === 'Consult Online'
-                ? circleSubscriptionId
-                  ? onlineConsultSlashedPrice
-                  : onlineConsultMRPPrice
-                : circleSubscriptionId
-                ? physicalConsultSlashedPrice
-                : physicalConsultMRPPrice
-              : Number(doctorFees)
-          }`}
+          title={`${string.common.proceedToCheckout}`}
           disabled={
             disablePay
               ? true
