@@ -40,6 +40,7 @@ interface CircleMembershipPlansProps extends NavigationScreenProps {
   closeModal?: (() => void) | null;
   membershipPlans?: any;
   doctorFees?: number;
+  onEndApiCall?: (() => void) | null;
 }
 
 export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (props) => {
@@ -52,6 +53,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     isModal,
     closeModal,
     doctorFees,
+    onEndApiCall,
   } = props;
   const client = useApolloClient();
   const planId = AppConfig.Configuration.CARE_PLAN_ID;
@@ -77,6 +79,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       fetchCarePlans();
     } else {
       setLoading(false);
+      onEndApiCall && onEndApiCall();
     }
   }, []);
 
@@ -107,8 +110,10 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         }
       }
       setLoading(false);
+      onEndApiCall && onEndApiCall();
     } catch (error) {
       setLoading(false);
+      onEndApiCall && onEndApiCall();
       CommonBugFender('CareSelectPlans_GetPlanDetailsByPlanId', error);
     }
   };
