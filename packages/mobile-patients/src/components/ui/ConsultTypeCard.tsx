@@ -248,6 +248,10 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
           minute: moment('06:00', 'HH:mm').get('minute'),
         })
     );
+    const showCirclePricing =
+      isCircleDoctor &&
+      ((isOnlineSelected && onlineConsultMRPPrice > 0) ||
+        (!isOnlineSelected && physicalConsultMRPPrice > 0));
     return (
       <View style={styles.cardContainer}>
         <View style={styles.cardBorderStyle}>
@@ -267,7 +271,7 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
             </View>
             {isCircleDoctor && renderCareDoctorPricing()}
           </View>
-          {!showCircleSubscribed && isCircleDoctor ? (
+          {!showCircleSubscribed && showCirclePricing ? (
             <TouchableOpacity
               activeOpacity={1}
               onPress={() => openCircleWebView()}

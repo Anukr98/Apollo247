@@ -352,6 +352,10 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
     onPress: () => void
   ) => {
     const timeDiff: Number = timeDiffFromNow(time || '');
+    const showCirclePricing =
+      isCircleDoctor &&
+      ((heading === string.consultType.online.heading && onlineConsultMRPPrice > 0) ||
+        (heading === string.consultType.inperson.heading && physicalConsultMRPPrice > 0));
     return (
       <View style={styles.cardContainer}>
         <View style={styles.cardBorderStyle}>
@@ -369,15 +373,13 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
                 </Text>
               ) : null}
             </View>
-            {isCircleDoctor &&
-            ((heading === string.consultType.online.heading && onlineConsultMRPPrice > 0) ||
-              (heading === string.consultType.inperson.heading && physicalConsultMRPPrice > 0)) ? (
+            {showCirclePricing ? (
               renderCareDoctorPricing(heading)
             ) : (
               <Text style={styles.priceTextStyle}>{`${string.common.Rs}${price}`}</Text>
             )}
           </View>
-          {!showCircleSubscribed && isCircleDoctor ? (
+          {!showCircleSubscribed && showCirclePricing ? (
             <TouchableOpacity
               activeOpacity={1}
               onPress={() => openCircleWebView(heading)}

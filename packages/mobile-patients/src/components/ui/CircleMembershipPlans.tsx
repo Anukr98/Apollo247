@@ -33,7 +33,7 @@ const defaultPlanDimension = 160;
 
 interface CircleMembershipPlansProps extends NavigationScreenProps {
   style?: StyleProp<ViewStyle>;
-  onSelectMembershipPlan: (plan?: any) => void;
+  onSelectMembershipPlan?: (plan?: any) => void;
   isConsultJourney?: boolean;
   careDiscountPrice?: number;
   isModal?: boolean;
