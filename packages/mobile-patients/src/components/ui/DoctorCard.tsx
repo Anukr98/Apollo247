@@ -207,7 +207,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     minDiscountedPrice,
   } = circleDoctorDetails;
 
-  const { circleSubscriptionId } = useShoppingCart();
+  const { showCircleSubscribed } = useShoppingCart();
   const [fetchedSlot, setfetchedSlot] = useState<string>('');
 
   useEffect(() => {
@@ -268,7 +268,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   };
 
   const renderCareDoctorsFee = () => {
-    if (circleSubscriptionId) {
+    if (showCircleSubscribed) {
       return (
         <View style={{ marginTop: 5 }}>
           <View style={styles.rowContainer}>
@@ -570,7 +570,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               <Text style={styles.doctorNameStyles}>{rowData.displayName}</Text>
               {renderSpecialities()}
               {isCircleDoctor ? renderCareDoctorsFee() : calculatefee(rowData, isBoth, isOnline)}
-              {isCircleDoctor && minDiscountedPrice > -1 && circleSubscriptionId ? (
+              {isCircleDoctor && minDiscountedPrice > -1 && showCircleSubscribed ? (
                 <Text
                   style={{
                     ...theme.viewStyles.text('M', 10, theme.colors.APP_YELLOW),

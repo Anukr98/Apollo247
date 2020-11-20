@@ -227,7 +227,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
     onlineConsultSlashedPrice,
     physicalConsultSlashedPrice,
   } = circleDoctorDetails;
-  const { circleSubscriptionId } = useShoppingCart();
+  const { showCircleSubscribed } = useShoppingCart();
   const availNowText = props.navigation.getParam('availNowText');
   const consultNowText = props.navigation.getParam('consultNowText');
 
@@ -295,11 +295,11 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
           style={[
             styles.carePrice,
             {
-              textDecorationLine: circleSubscriptionId ? 'line-through' : 'none',
+              textDecorationLine: showCircleSubscribed ? 'line-through' : 'none',
               ...theme.viewStyles.text(
                 'M',
                 15,
-                circleSubscriptionId ? theme.colors.BORDER_BOTTOM_COLOR : theme.colors.LIGHT_BLUE
+                showCircleSubscribed ? theme.colors.BORDER_BOTTOM_COLOR : theme.colors.LIGHT_BLUE
               ),
             },
           ]}
@@ -310,7 +310,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
             : physicalConsultMRPPrice}
         </Text>
         <View style={styles.rowContainer}>
-          {circleSubscriptionId ? <CircleLogo style={styles.careLogo} /> : null}
+          {showCircleSubscribed ? <CircleLogo style={styles.careLogo} /> : null}
           <Text style={styles.careDiscountedPrice}>
             {string.common.Rs}
             {heading === string.consultType.online.heading
@@ -375,7 +375,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
               <Text style={styles.priceTextStyle}>{`${string.common.Rs}${price}`}</Text>
             )}
           </View>
-          {!circleSubscriptionId && isCircleDoctor ? (
+          {!showCircleSubscribed && isCircleDoctor ? (
             <TouchableOpacity
               activeOpacity={1}
               onPress={() => openCircleWebView(heading)}

@@ -182,7 +182,7 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
   } = props;
 
   const { currentPatient } = useAllCurrentPatients();
-  const { circleSubscriptionId } = useShoppingCart();
+  const { showCircleSubscribed } = useShoppingCart();
 
   const [consultDoctorName, setConsultDocotrName] = useState<string>(DoctorName ? DoctorName : '');
   const {
@@ -200,11 +200,11 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
           style={[
             styles.carePrice,
             {
-              textDecorationLine: circleSubscriptionId ? 'line-through' : 'none',
+              textDecorationLine: showCircleSubscribed ? 'line-through' : 'none',
               ...theme.viewStyles.text(
                 'M',
                 15,
-                circleSubscriptionId ? theme.colors.BORDER_BOTTOM_COLOR : theme.colors.LIGHT_BLUE
+                showCircleSubscribed ? theme.colors.BORDER_BOTTOM_COLOR : theme.colors.LIGHT_BLUE
               ),
             },
           ]}
@@ -213,7 +213,7 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
           {isOnlineSelected ? onlineConsultMRPPrice : physicalConsultMRPPrice}
         </Text>
         <View style={styles.rowContainer}>
-          {circleSubscriptionId ? <CircleLogo style={styles.careLogo} /> : null}
+          {showCircleSubscribed ? <CircleLogo style={styles.careLogo} /> : null}
           <Text style={styles.careDiscountedPrice}>
             {string.common.Rs}
             {isOnlineSelected ? onlineConsultSlashedPrice : physicalConsultSlashedPrice}
@@ -261,7 +261,7 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
             </View>
             {isCircleDoctor && renderCareDoctorPricing()}
           </View>
-          {!circleSubscriptionId && isCircleDoctor ? (
+          {!showCircleSubscribed && isCircleDoctor ? (
             <TouchableOpacity
               activeOpacity={1}
               onPress={() => openCircleWebView()}
