@@ -1681,6 +1681,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       COVID_NOTIFICATION_ITEMID.includes(item.id)
     );
     const ppeKitCharges = isPPEKitChargesApplicable.find((item) => item == true);
+    const anyCartSaving = isDiagnosticCircleSubscription ? cartSaving + circleSaving : cartSaving;
+
     return (
       <View>
         {renderLabel('TOTAL CHARGES')}
@@ -2660,7 +2662,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const navigateToOrderDetails = (showOrderSummaryTab: boolean, orderId: string) => {
     setModalVisible(false);
     setLoading!(false);
-    props.navigation.navigate(AppRoutes.TestOrderDetails, {
+    props.navigation.navigate(AppRoutes.TestOrderDetailsSummary, {
       goToHomeOnBack: true,
       showOrderSummaryTab,
       orderId: orderId,
