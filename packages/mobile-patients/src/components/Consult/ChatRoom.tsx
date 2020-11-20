@@ -905,10 +905,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       joinCallHandler();
     }
 
-    if (fromIncomingCall === false) {
-      // not undefined
-      fireWebengageEventForCallAnswer(WebEngageEventName.PATIENT_DECLINED_CALL);
-    } else if (fromIncomingCall === true) {
+    if (fromIncomingCall === true) {
       fireWebengageEventForCallAnswer(WebEngageEventName.PATIENT_ANSWERED_CALL);
     }
     updateNumberOfParticipants();
@@ -2101,7 +2098,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       'Ended by': source,
       'Call Duration': callDuration,
     };
-    console.log('event attributes: ', eventAttributes);
+    postWebEngageEvent(WebEngageEventName.CALL_ENDED, eventAttributes);
   };
 
   const eventsAfterConnectionDestroyed = () => {
@@ -2997,6 +2994,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setDoctorJoinedChat && setDoctorJoinedChat(false);
         setDoctorJoined(false);
       } else if (message.message.message === endCallMsg) {
+        callEndWebengageEvent('Doctor');
         AsyncStorage.setItem('callDisconnected', 'true');
       } else if (message.message.message === exotelCall) {
         addMessages(message);

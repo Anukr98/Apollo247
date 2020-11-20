@@ -310,7 +310,7 @@ export interface DiagnosticUserInfo {
 }
 
 export interface DiagnosticLandingPage extends DiagnosticUserInfo {
-  'Serviceability': 'Yes' | 'No'
+  Serviceability: 'Yes' | 'No';
 }
 
 export interface DiagnosticServiceble {
@@ -1631,7 +1631,7 @@ export interface WebEngageEvents {
     'Consult ID': string;
     'Consult Date Time': Date;
     'Display ID': number | null;
-    'Ended by': 'Patient' | 'Senior Doctor' | 'Junior Doctor' | 'Network';
+    'Ended by': 'Doctor' | 'Patient' | 'Senior Doctor' | 'Junior Doctor' | 'Network';
     'Call Duration': number;
   };
   [WebEngageEventName.PATIENT_ANSWERED_CALL]: consultCallEndData;
