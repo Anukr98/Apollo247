@@ -19,10 +19,53 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { createBottomTabNavigator, NavigationRouteConfig } from 'react-navigation';
 import { Tests } from '@aph/mobile-patients/src/components/Tests/Tests';
+import { View, Text, StyleSheet } from 'react-native';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { getPhrNotificationAllCount } from '@aph/mobile-patients/src/helpers/helperFunctions';
+
+const styles = StyleSheet.create({
+  badgelabelView: {
+    position: 'absolute',
+    top: -4,
+    right: -6,
+    backgroundColor: '#E50000',
+    height: 15,
+    width: 15,
+    borderRadius: 7.5,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  badgelabelText: {
+    ...theme.fonts.IBMPlexSansMedium(9),
+    color: theme.colors.WHITE,
+  },
+});
+
+const healthRecordsIcon = (focus: boolean, count: number) => {
+  return (
+    <View>
+      {focus ? <MyHealthFocused /> : <MyHealth />}
+      {count !== 0 ? (
+        <View style={[styles.badgelabelView]}>
+          <Text style={styles.badgelabelText}>{count}</Text>
+        </View>
+      ) : null}
+    </View>
+  );
+};
+interface TabBarProps {
+  focus?: boolean;
+}
+
+const TabBarCompo: React.FC<TabBarProps> = (props) => {
+  const { phrNotificationData } = useAppCommonData();
+  const phrNotificationCount = getPhrNotificationAllCount(phrNotificationData!);
+  return healthRecordsIcon(props.focus!, phrNotificationCount);
+};
 
 const routeToIcon: Partial<Record<string, NavigationRouteConfig>> = {
   APPOINTMENTS: <ConsultationRoom />,
-  'HEALTH RECORDS': <MyHealth />,
+  'HEALTH RECORDS': <TabBarCompo />,
   MEDICINES: <MedicineIcon />,
   TESTS: <TestsIcon />,
   'MY ACCOUNT': <Person />,
@@ -30,7 +73,7 @@ const routeToIcon: Partial<Record<string, NavigationRouteConfig>> = {
 
 const routeToFocusedIcon: Partial<Record<string, NavigationRouteConfig>> = {
   APPOINTMENTS: <ConsultationRoomFocused />,
-  'HEALTH RECORDS': <MyHealthFocused />,
+  'HEALTH RECORDS': <TabBarCompo focus />,
   MEDICINES: <MedicineIconWhite />,
   TESTS: <TestsIconFocused />,
   'MY ACCOUNT': <PersonFocused />,
