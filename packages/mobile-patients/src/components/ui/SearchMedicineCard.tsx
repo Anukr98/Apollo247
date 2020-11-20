@@ -122,7 +122,7 @@ export const SearchMedicineCard: React.FC<Props> = (props) => {
   } = props;
 
   const renderCareCashback = () => {
-    const finalPrice = price - Number(specialPrice) ? Number(specialPrice) : price;
+    const finalPrice = price - Number(special_price) ? Number(special_price) : price;
     const cashback = getCareCashback(Number(finalPrice), type_id);
     if (!!cashback && type_id) {
       return (
@@ -153,7 +153,11 @@ export const SearchMedicineCard: React.FC<Props> = (props) => {
   const renderAddToCartView = () => {
     return (
       <TouchableOpacity
-        style={[styles.addToCartViewStyle, !!is_in_stock && { paddingHorizontal: 23 }]}
+        style={[
+          styles.addToCartViewStyle, 
+          !!is_in_stock && { paddingHorizontal: 23 }, 
+          !!is_express && { marginTop: 10 }
+        ]}
         onPress={!is_in_stock ? onPressNotify : onPressAddToCart}
       >
         <Text style={theme.viewStyles.text('SB', 10, '#fc9916', 1, 24, 0)}>

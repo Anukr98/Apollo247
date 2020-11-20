@@ -53,18 +53,18 @@ export const ProductCard: React.FC<Props> = ({
   const discount = getDiscountPercentage(price, special_price);
 
   const renderPrice = () => {
-    const strikeOffPrice = `(Rs. ${price})`;
+    const strikeOffPrice = `(₹ ${price})`;
     const mrp = 'MRP  ';
-    const finalPrice = `${discount ? '' : mrp}Rs. ${discount ? special_price : price}`;
+    const finalPrice = `₹${discount ? special_price : price}`;
     return (
       <View style={styles.priceContainer}>
+        <Text style={styles.finalPrice}>{mrp}</Text>
+        <Text style={styles.finalPrice}>{finalPrice}</Text>
         {!!discount && (
           <View style={styles.specialPriceContainer}>
-            <Text style={styles.finalPrice}>{mrp}</Text>
             <Text style={styles.priceStrikeOff}>{strikeOffPrice}</Text>
           </View>
         )}
-        <Text style={styles.finalPrice}>{finalPrice}</Text>
       </View>
     );
   };
@@ -185,14 +185,13 @@ const styles = StyleSheet.create({
   },
   priceContainer: {
     paddingVertical: 5,
-    height: 60,
+    flexDirection: 'row',
   },
   specialPriceContainer: {
     flexDirection: 'row',
   },
   finalPrice: {
     ...text('B', 13, '#01475b', 1, 24),
-    textAlign: 'center',
   },
   priceStrikeOff: {
     ...text('M', 13, '#01475b', 0.6, 24),
