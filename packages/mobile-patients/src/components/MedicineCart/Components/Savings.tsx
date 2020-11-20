@@ -47,18 +47,22 @@ export const Savings: React.FC<SavingsProps> = (props) => {
   }
 
   function careSubscribeMessage() {
-    return (
-      <View style={styles.careMessageCard}>
-        <Text style={styles.youText}>
-          You could{' '}
-          <Text style={styles.saveText}>
-            save ₹{cartTotalCashback}
-          </Text>{' '}
-          on your purchase with
-        </Text>
-        <CircleLogo style={styles.circleLogo} />
-      </View>
-    );
+    if (cartTotalCashback > 1) {
+      return (
+        <View style={styles.careMessageCard}>
+          <Text style={styles.youText}>
+            You could{' '}
+            <Text style={styles.saveText}>
+              save ₹{cartTotalCashback}
+            </Text>{' '}
+            on your purchase with
+          </Text>
+          <CircleLogo style={styles.circleLogo} />
+        </View>
+      );
+    } else {
+      return <></>
+    }
   }
 
   function renderCareLogo() {

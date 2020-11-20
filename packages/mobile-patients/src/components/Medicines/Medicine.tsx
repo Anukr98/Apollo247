@@ -1428,7 +1428,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     if (dealsOfTheDay.length == 0) return null;
     return (
       <View>
-        {renderCircleBanner()}
+        {/* {renderCircleBanner()} */}
         <SectionHeader leftText={title} />
         <FlatList
           bounces={false}
@@ -1953,6 +1953,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       },
     });
     const effectivePrice = Math.round(cartTotal - cartTotalCashback);
+    console.log('cartTotalCashback: ', cartTotalCashback);
     return (
       <View style={circleStyles.container}>
         <View style={circleStyles.content}>
@@ -1964,37 +1965,51 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               {cartItems.length}
             </Text>
           </View>
-          {isCircleSubscription ? (
-            <View>
-              <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 20, 0)}>₹{cartTotal}</Text>
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-                <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 25, 0)}>
-                  Effective price for
-                </Text>
-                <CircleLogo style={circleStyles.circleLogoTwo} />
-                <Text style={{ ...theme.viewStyles.text('R', 12, '#02475B', 1, 25, 0), left: -3 }}>
-                  members
-                </Text>
-                <Text style={theme.viewStyles.text('SB', 12, '#02475B', 1, 25, 0)}>
-                  ₹{effectivePrice}
+          {
+            cartTotalCashback > 1 ? (
+              <>
+              {isCircleSubscription ? (
+                <View>
+                  <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 20, 0)}>₹{cartTotal}</Text>
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+                    <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 25, 0)}>
+                      Effective price for
+                    </Text>
+                    <CircleLogo style={circleStyles.circleLogoTwo} />
+                    <Text style={{ ...theme.viewStyles.text('R', 12, '#02475B', 1, 25, 0), left: -3 }}>
+                      members
+                    </Text>
+                    <Text style={theme.viewStyles.text('SB', 12, '#02475B', 1, 25, 0)}>
+                      ₹{effectivePrice}
+                    </Text>
+                  </View>
+                </View>
+              ) : (
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={() => setShowCirclePopup(true)}
+                  style={circleStyles.upgrade}
+                >
+                  <View style={circleStyles.upgradeTo}>
+                    <Text style={theme.viewStyles.text('M', 13, '#FCB716', 1, 20, 0)}>UPGRADE TO</Text>
+                    <CircleLogo style={circleStyles.circleLogo} />
+                  </View>
+                  <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 17, 0)}>
+                    {`Get effective price of ₹${effectivePrice}`}
+                  </Text>
+                </TouchableOpacity>
+              )}
+              </>
+            ) : (
+              <View style={{
+                marginTop: 13,
+              }}>
+                <Text style={theme.viewStyles.text('SB', 16, '#02475B', 1, 20, 0)}>
+                  ₹{cartTotal}
                 </Text>
               </View>
-            </View>
-          ) : (
-            <TouchableOpacity
-              activeOpacity={1}
-              onPress={() => setShowCirclePopup(true)}
-              style={circleStyles.upgrade}
-            >
-              <View style={circleStyles.upgradeTo}>
-                <Text style={theme.viewStyles.text('M', 13, '#FCB716', 1, 20, 0)}>UPGRADE TO</Text>
-                <CircleLogo style={circleStyles.circleLogo} />
-              </View>
-              <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 17, 0)}>
-                {`Get effective price of ₹${effectivePrice}`}
-              </Text>
-            </TouchableOpacity>
-          )}
+            )
+          }
           <TouchableOpacity
             style={circleStyles.cartButton}
             onPress={() => {
@@ -2002,7 +2017,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             }}
           >
             <Text style={theme.viewStyles.text('B', 13, '#FFFFFF', 1, 20, 0)}>GO TO CART</Text>
-            {!isCircleSubscription && (
+            {(!isCircleSubscription && cartTotalCashback > 1) && (
               <Text style={theme.viewStyles.text('M', 12, '#02475B', 1, 20, 0)}>
                 {`Buy for ₹${cartTotal}`}
               </Text>

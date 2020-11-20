@@ -9,6 +9,7 @@ import {
   RadioButtonIcon,
   RadioButtonUnselectedIcon,
   SearchSendIcon,
+  PendingIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
