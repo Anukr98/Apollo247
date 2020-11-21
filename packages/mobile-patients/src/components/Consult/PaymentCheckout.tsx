@@ -121,6 +121,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const [notificationAlert, setNotificationAlert] = useState(false);
   const scrollviewRef = useRef<any>(null);
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
+  const [disabledCheckout, setDisabledCheckout] = useState<boolean>(true);
 
   const circleDoctorDetails = calculateCareDoctorPricing(doctor);
   const {
@@ -293,6 +294,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
             scrollviewRef.current.scrollToEnd({ animated: true });
           }, 300);
         }}
+        onEndApiCall={() => setDisabledCheckout(false)}
       />
     );
   };
@@ -458,6 +460,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           title={`PAY ${string.common.Rs}${amountToPay} `}
           style={styles.bottomBtn}
           onPress={() => onPressPay()}
+          disabled={disabledCheckout}
         />
       </View>
     );
