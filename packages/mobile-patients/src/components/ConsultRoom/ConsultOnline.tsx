@@ -285,7 +285,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
     let eventAttributes:
       | WebEngageEvents[WebEngageEventName.CONSULT_SCHEDULE_FOR_LATER_CLICKED]
       | WebEngageEvents[WebEngageEventName.CONSULT_NOW_CLICKED] = {
-      'Consult Date Time': new Date(NextAvailableSlot),
+      'Consult Date Time': moment(NextAvailableSlot).toDate(),
       'Consult Mode': 'Online',
       specialisation: g(props.doctor, 'specialty', 'name')!,
       'Doctor Experience': Number(g(props.doctor, 'experience')!),
@@ -333,7 +333,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
         'Speciality ID': g(data, 'specialty', 'id')!,
         'Speciality Name': g(data, 'specialty', 'name')!,
         'Doctor Category': g(data, 'doctorType')!,
-        'Consult Date Time': new Date(),
+        'Consult Date Time': moment().toDate(),
         'Consult Mode': 'Online',
         'Hospital Name': g(data, 'doctorHospital', '0' as any, 'facility', 'name')!,
         'Hospital City': g(data, 'doctorHospital', '0' as any, 'facility', 'city')!,

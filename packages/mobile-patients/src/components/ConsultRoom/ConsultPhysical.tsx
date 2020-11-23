@@ -375,7 +375,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
         'Speciality ID': g(data, 'specialty', 'id')!,
         'Speciality Name': g(data, 'specialty', 'name')!,
         'Doctor Category': g(data, 'doctorType')!,
-        'Consult Date Time': new Date(),
+        'Consult Date Time': moment().toDate(),
         'Consult Mode': 'Physical',
         'Hospital Name': g(data, 'doctorHospital', '0' as any, 'facility', 'name')!,
         'Hospital City': g(data, 'doctorHospital', '0' as any, 'facility', 'city')!,
