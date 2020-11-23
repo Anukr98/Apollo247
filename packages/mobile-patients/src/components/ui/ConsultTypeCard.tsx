@@ -108,8 +108,9 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   careLogo: {
-    width: 40,
-    height: 21,
+    width: 25,
+    height: 15,
+    marginHorizontal: 2.5,
   },
   careLogoText: {
     ...theme.viewStyles.text('M', 4, 'white'),
@@ -291,7 +292,7 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
             >
               <Text style={styles.smallRightAlignText}>for</Text>
               <CircleLogo style={styles.careLogo} />
-              <Text style={[styles.smallRightAlignText, { marginLeft: -4 }]}>members</Text>
+              <Text style={[styles.smallRightAlignText, { marginLeft: 0 }]}>members</Text>
               <InfoBlue style={styles.infoIcon} />
             </TouchableOpacity>
           ) : null}

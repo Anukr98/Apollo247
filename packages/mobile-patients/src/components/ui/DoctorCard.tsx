@@ -54,7 +54,7 @@ import {
 import { NavigationScreenProps } from 'react-navigation';
 import { SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors } from '../../graphql/types/SearchDoctorAndSpecialtyByName';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
-import { calculateCareDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
+import { calculateCircleDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
@@ -123,8 +123,9 @@ const styles = StyleSheet.create({
   careLogo: {
     alignSelf: 'center',
     marginBottom: 10,
-    width: 40,
-    height: 21,
+    width: 30,
+    height: 18,
+    marginTop: 2,
   },
   rowContainer: {
     flexDirection: 'row',
@@ -196,7 +197,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const ctaBannerText = rowData?.availabilityTitle;
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
-  const circleDoctorDetails = calculateCareDoctorPricing(rowData);
+  const circleDoctorDetails = calculateCircleDoctorPricing(rowData);
   const {
     isCircleDoctor,
     physicalConsultMRPPrice,

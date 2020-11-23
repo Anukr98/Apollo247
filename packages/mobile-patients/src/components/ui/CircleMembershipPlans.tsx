@@ -566,8 +566,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   careLogo: {
-    width: 50,
-    height: 32,
+    width: 45,
+    height: 27,
+    marginRight: 3,
   },
   careLogoTextStyle: {
     textTransform: 'lowercase',
@@ -586,9 +587,9 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   circleLogo: {
-    width: 50,
-    height: 32,
-    marginRight: 4,
+    width: 45,
+    height: 27,
+    marginRight: 5,
   },
   box: {
     height: 100,
