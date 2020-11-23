@@ -29,6 +29,7 @@ import { StorePickupScene } from '@aph/mobile-patients/src/components/Medicines/
 import { UploadPrescription } from '@aph/mobile-patients/src/components/Medicines/UploadPrescription';
 import { YourCart } from '@aph/mobile-patients/src/components/Medicines/YourCart';
 import { YourCartUploadPrescriptions } from '@aph/mobile-patients/src/components/Medicines/YourCartUploadPrescriptions';
+import { PharmacyPaymentStatus } from '@aph/mobile-patients/src/components/Medicines/PharmacyPaymentStatus';
 import { MultiSignup } from '@aph/mobile-patients/src/components/MultiSignup';
 import { OrderDetailsScene } from '@aph/mobile-patients/src/components/OrderDetailsScene';
 import { OrderModifiedScreen } from '@aph/mobile-patients/src/components/OrderModifiedScreen';
@@ -144,6 +145,7 @@ export enum AppRoutes {
   OrderModifiedScreen = 'OrderModifiedScreen',
   YourCart = 'YourCart',
   YourCartUploadPrescriptions = 'YourCartUploadPrescriptions',
+  PharmacyPaymentStatus = 'PharmacyPaymentStatus',
   TestsCheckoutScene = 'TestsCheckoutScene',
   PaymentScene = 'PaymentScene',
   AddAddress = 'AddAddress',
@@ -352,6 +354,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.YourCartUploadPrescriptions]: {
     screen: YourCartUploadPrescriptions,
+  },
+  [AppRoutes.PharmacyPaymentStatus]: {
+    screen: PharmacyPaymentStatus,
   },
   [AppRoutes.AddAddress]: {
     screen: AddAddress,

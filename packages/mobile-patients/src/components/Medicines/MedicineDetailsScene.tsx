@@ -331,7 +331,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   );
   const client = useApolloClient();
   const [tatEventData, setTatEventData] = useState<PharmacyTatApiCalled>();
-  const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable } = useAppCommonData();
+  const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable, circleSubscription } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
   const pharmacyPincode = g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
 
@@ -807,7 +807,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                     <Text style={styles.discountPercentage}>{discountPercent}% off</Text>
                   </View>
                 )}
-                {renderCareCashback()}
+                {circleSubscription?._id && renderCareCashback()}
               </View>
               {!medicineDetails.sell_online ? (
                 renderNotForSaleTag()

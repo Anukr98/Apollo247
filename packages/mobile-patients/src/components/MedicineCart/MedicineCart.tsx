@@ -1175,6 +1175,6 @@ const styles = StyleSheet.create({
   },
   viewSubText: {
     ...theme.viewStyles.text('R', 13, '#02475B', 1, 20),
-    width: '54%',
+    width: '50%',
   },
 });

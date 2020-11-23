@@ -3563,8 +3563,8 @@ export const GET_DIAGNOSTIC_SLOTS_WITH_AREA_ID = gql`
 `;
 
 export const GET_CASHBACK_DETAILS_OF_PLAN_ID = gql`
-  query GetCashbackDetailsOfPlanById {
-    GetCashbackDetailsOfPlanById {
+  query GetCashbackDetailsOfPlanById($plan_id: String!) {
+    GetCashbackDetailsOfPlanById(plan_id: $plan_id) {
       code
       success
       message
