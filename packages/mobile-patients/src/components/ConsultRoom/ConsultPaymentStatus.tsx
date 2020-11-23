@@ -143,10 +143,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         fetchPolicy: 'no-cache',
       })
       .then((res) => {
-        const amountBreakup = res?.data?.paymentTransactionStatus?.appointment?.amountBreakup;
-        if (isCircleDoctor && amountBreakup?.slashed_price) {
-          setAmountBreakup(res?.data?.paymentTransactionStatus?.appointment?.amountBreakup);
-        }
         try {
           const paymentEventAttributes = {
             Payment_Status: res.data.paymentTransactionStatus.appointment.paymentStatus,
@@ -159,6 +155,10 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         } catch (error) {}
         console.log(res.data);
         if (res.data.paymentTransactionStatus.appointment.paymentStatus == success) {
+          const amountBreakup = res?.data?.paymentTransactionStatus?.appointment?.amountBreakup;
+          if (isCircleDoctor && amountBreakup?.slashed_price) {
+            setAmountBreakup(res?.data?.paymentTransactionStatus?.appointment?.amountBreakup);
+          }
           fireBaseFCM();
           try {
             let eventAttributes = webEngageEventAttributes;
