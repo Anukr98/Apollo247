@@ -54,6 +54,7 @@ import {
   searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics,
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
 import {
+  GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
   SAVE_SEARCH,
   SEARCH_DIAGNOSTICS,
   SEARCH_DIAGNOSTICS_BY_CITY_ID,
@@ -84,7 +85,8 @@ import { getLatestMedicineOrder_getLatestMedicineOrder_medicineOrderDetails } fr
 import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails } from '@aph/mobile-patients/src/graphql/types/getMedicineOrderOMSDetailsWithAddress';
 import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 import { handleUniversalLinks } from './UniversalLinks';
-import { getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots } from '../graphql/types/getDiagnosticSlotsWithAreaID';
+import { getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots } from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsWithAreaID';
+import { getPincodeServiceability, getPincodeServiceabilityVariables } from '@aph/mobile-patients/src/graphql/types/getPincodeServiceability';
 
 const { RNAppSignatureHelper } = NativeModules;
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
@@ -920,29 +922,54 @@ export const reOrderMedicines = async (
 export const addTestsToCart = async (
   testPrescription: getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[], // testsIncluded will not come from API
   apolloClient: ApolloClient<object>,
-  city: string
+  pincode: string
 ) => {
-  const searchQuery = (name: string, city: string) =>
-    apolloClient.query<searchDiagnostics, searchDiagnosticsVariables>({
-      query: SEARCH_DIAGNOSTICS,
+  const searchQuery = (name: string, cityId: string) =>
+    apolloClient.query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
+      query:SEARCH_DIAGNOSTICS_BY_CITY_ID,
       variables: {
         searchText: name,
-        city: city,
-        patientId: '',
+        cityID: parseInt(cityId, 10),
       },
       fetchPolicy: 'no-cache',
     });
   const detailQuery = (itemId: string) => getPackageData(itemId);
 
+  const getPinCodeServiceable = (pincode: string) =>
+    apolloClient
+        .query<getPincodeServiceability, getPincodeServiceabilityVariables>({
+          query: GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES,
+          variables: {
+            pincode: parseInt(pincode, 10),
+          },
+          fetchPolicy: 'no-cache',
+        });
+
   try {
+
     const items = testPrescription.filter((val) => val.itemname).map((item) => item.itemname);
 
     console.log('\n\n\n\n\ntestPrescriptionNames\n', items, '\n\n\n\n\n');
 
-    const searchQueries = Promise.all(items.map((item) => searchQuery(item!, city)));
+    const checkIsPinCodeServiceable = await getPinCodeServiceable(pincode)
+    
+    const serviceableData = g(checkIsPinCodeServiceable,'data' ,'getPincodeServiceability');
+    console.log({serviceableData});
+    try{
+
+
+     if (serviceableData && serviceableData?.cityName != '') {
+      let obj = {
+        cityId: serviceableData.cityID?.toString() || '',
+        stateId: serviceableData.stateID?.toString() || '',
+        state: serviceableData.stateName || '',
+        city: serviceableData.cityName || '',
+      };
+
+      const searchQueries = Promise.all(items.map((item) => searchQuery(item!, obj.cityId)));
     const searchQueriesData = (await searchQueries)
-      .map((item) => g(item, 'data', 'searchDiagnostics', 'diagnostics', '0' as any)!)
-      .filter((item, index) => g(item, 'itemName')! == items[index])
+      .map((item) => g(item, 'data', 'searchDiagnosticsByCityID', 'diagnostics', '0' as any)!)
+      // .filter((item, index) => g(item, 'itemName')! == items[index])
       .filter((item) => !!item);
     const detailQueries = Promise.all(
       searchQueriesData.map((item) => detailQuery(`${item.itemId}`))
@@ -969,10 +996,19 @@ export const addTestsToCart = async (
 
     console.log('\n\n\n\n\n\nfinalArray-testPrescriptionNames\n', finalArray, '\n\n\n\n\n');
     return finalArray;
+    } 
+    else{
+      return [];
+    }
   } catch (error) {
-    CommonBugFender('helperFunctions_addTestsToCart', error);
+    CommonBugFender('helperFunctions_pincodeserviceable', error);
     throw 'error';
   }
+}
+catch (error) {
+  CommonBugFender('helperFunctions_addTestsToCart', error);
+  throw 'error';
+}
 };
 
 export const getDiscountPercentage = (price: number | string, specialPrice?: number | string) => {
