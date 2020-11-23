@@ -49,6 +49,7 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_
   itemId: number | null;
   price: number | null;
   quantity: number | null;
+  groupPlan: string | null;
   pricingObj: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems_pricingObj | null)[] | null;
   diagnostics: getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems_diagnostics | null;
 }

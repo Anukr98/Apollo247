@@ -2321,8 +2321,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       : ''
     ).replace(' ', '');
     const formattedDate = moment(date).format('YYYY-MM-DD');
-    const formattedTime = moment(slotStartTime).format('HH:mm:ss');
-    const dateTimeInUTC = formattedDate + 'T' + formattedTime + ':00Z';
+
+    const dateTimeInUTC = moment(formattedDate + ' ' + slotStartTime).toISOString();
 
     console.log(physicalPrescriptions, 'physical prescriptions');
     console.log('idddd...' + validateCouponUniqueId);
@@ -2598,12 +2598,19 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                           <View style={{ flexDirection: 'row' }}>
-                            <CircleLogo style={{ height: 20, width: 34, resizeMode: 'contain' }} />
+                            <CircleLogo
+                              style={{
+                                height: 20,
+                                width: 34,
+                                resizeMode: 'contain',
+                              }}
+                            />
                             <Text
                               style={{
                                 color: theme.colors.APP_GREEN,
                                 ...theme.fonts.IBMPlexSansRegular(14),
                                 lineHeight: 16,
+                                alignSelf: 'flex-end',
                               }}
                             >
                               Membership Discount
@@ -2614,6 +2621,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                               color: theme.colors.APP_GREEN,
                               ...theme.fonts.IBMPlexSansRegular(14),
                               lineHeight: 16,
+                              alignSelf: 'flex-end',
                             }}
                           >
                             {string.common.Rs} {orderCircleSaving}
@@ -2634,6 +2642,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                               color: theme.colors.APP_GREEN,
                               ...theme.fonts.IBMPlexSansRegular(14),
                               lineHeight: 16,
+                              alignSelf: 'flex-end',
                             }}
                           >
                             {' '}
@@ -2645,6 +2654,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                               color: theme.colors.APP_GREEN,
                               ...theme.fonts.IBMPlexSansRegular(14),
                               lineHeight: 16,
+                              alignSelf: 'flex-end',
                             }}
                           >
                             {string.common.Rs} {orderCartSaving}

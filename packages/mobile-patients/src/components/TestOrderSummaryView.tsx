@@ -14,6 +14,7 @@ import {
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { DIAGNOSTIC_GROUP_PLAN } from '../helpers/apiCalls';
 
 const { height } = Dimensions.get('window');
 
@@ -142,6 +143,19 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
     return newSlot.map((item) => moment(item.trim(), 'hh:mm').format('hh:mm A')).join(' - ');
   };
 
+  const getCircleObject = orderDetails?.diagnosticOrderLineItems?.filter(
+    (items) => items?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
+  );
+
+  const allCircleObjects = getCircleObject?.map((item) =>
+    item?.pricingObj?.filter((obj) => obj?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE)
+  );
+
+  // const totall = allCircleObjects?.map((item) =>
+  //   item?.reduce((prevVal, currVal) => prevVal + (currVal?.mrp! - currVal?.price!))
+  // );
+  // console.log({ totall });
+
   /**
    * to handle the quantity
    */
@@ -225,13 +239,18 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
        * HOME COLLECTION CHARGES
        */}
       <View style={styles.lineSeparator} />
-      <View style={styles.grossTotalView}>
+      <View style={styles.commonTax}>
         <View style={{ flex: 1 }}>
           <Text style={styles.commonText}></Text>
         </View>
-        <View style={{ flex: 1, alignItems: 'flex-end' }}>
-          <Text style={[styles.commonText, { ...theme.fonts.IBMPlexSansMedium(10) }]}>
-            GROSS AMOUNT
+        <View style={{ width: '40%' }}>
+          <Text
+            style={[
+              styles.commonText,
+              { ...theme.fonts.IBMPlexSansMedium(10), textAlign: 'right' },
+            ]}
+          >
+            GROSS CHARGES
           </Text>
         </View>
         <View style={{ flex: 1, alignItems: 'center' }}>
@@ -246,8 +265,13 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
           <View style={{ flex: 1 }}>
             <Text style={styles.commonText}></Text>
           </View>
-          <View style={{ flex: 1, alignItems: 'flex-end' }}>
-            <Text style={[styles.commonText, { ...theme.fonts.IBMPlexSansMedium(10) }]}>
+          <View style={{ width: '50%' }}>
+            <Text
+              style={[
+                styles.commonText,
+                { ...theme.fonts.IBMPlexSansMedium(10), textAlign: 'right' },
+              ]}
+            >
               HOME COLLECTION CHARGES
             </Text>
           </View>

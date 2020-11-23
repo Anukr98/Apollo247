@@ -1424,6 +1424,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
           itemId
           quantity
           price
+          groupPlan
           pricingObj{
             mrp
             price
@@ -1494,6 +1495,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
           itemId
           price
           quantity
+          groupPlan
           pricingObj{
             mrp
             price
