@@ -30,12 +30,12 @@ export interface findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCi
   itemRemarks: string;
   city: string;
   state: string;
-  testDescription: string;
   collectionType: TEST_COLLECTION_TYPE | null;
   fromAgeInDays: number;
   toAgeInDays: number;
   testPreparationData: string;
   diagnosticPricing: (findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics_diagnosticPricing | null)[] | null;
+  testDescription: string | null;
 }
 
 export interface findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID {
