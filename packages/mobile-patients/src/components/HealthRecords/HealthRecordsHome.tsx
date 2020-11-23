@@ -79,6 +79,7 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import _ from 'lodash';
 import { ListItem, Overlay } from 'react-native-elements';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -287,6 +288,17 @@ const styles = StyleSheet.create({
   profileNameTextStyle: { ...theme.viewStyles.text('SB', 36, theme.colors.LIGHT_BLUE, 1, 47) },
   moreHealthViewStyle: { marginHorizontal: 20, marginBottom: 39 },
   profileNameViewStyle: { flexDirection: 'row', alignItems: 'center' },
+  notificationViewStyle: {
+    backgroundColor: '#00B38E',
+    borderRadius: 10,
+    justifyContent: 'center',
+    height: 15,
+  },
+  notificationMainViewStyle: { flexDirection: 'row', alignItems: 'center' },
+  notificationCountTextStyle: {
+    ...theme.viewStyles.text('M', 10, '#FFFFFF', 1, 13),
+    paddingHorizontal: 6,
+  },
 });
 
 type BloodGroupArray = {
@@ -385,6 +397,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [arrayValues, setarrayValues] = useState<any>();
   const client = useApolloClient();
   const { getPatientApiCall } = useAuth();
+  const { phrNotificationData } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
   const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
@@ -1003,6 +1016,45 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       }
     };
 
+    const getNotificationCount = () => {
+      switch (id) {
+        case 1:
+          return phrNotificationData?.Prescription || 0;
+        case 2:
+          return (phrNotificationData?.LabTest || 0) + (phrNotificationData?.HealthCheck || 0);
+        case 3:
+          return phrNotificationData?.Hospitalization || 0;
+        case 4:
+          return (
+            (phrNotificationData?.Allergy || 0) +
+            (phrNotificationData?.MedicalCondition || 0) +
+            (phrNotificationData?.Medication || 0) +
+            (phrNotificationData?.Restriction || 0)
+          );
+        case 5:
+          return phrNotificationData?.Bill || 0;
+        case 6:
+          return phrNotificationData?.Insurance || 0;
+        case 7:
+          return 0;
+      }
+    };
+
+    const renderRightElement = () => {
+      return (
+        <View style={styles.notificationMainViewStyle}>
+          {getNotificationCount() !== 0 ? (
+            <View style={styles.notificationViewStyle}>
+              <Text style={styles.notificationCountTextStyle}>
+                {getNotificationCount() + ' New'}
+              </Text>
+            </View>
+          ) : null}
+          <ArrowRight style={{ height: 24, width: 24 }} />
+        </View>
+      );
+    };
+
     return (
       <ListItem
         title={title}
@@ -1017,7 +1069,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         activeOpacity={1}
         onPress={onPressListItem}
         leftAvatar={renderLeftAvatar()}
-        rightAvatar={<ArrowRight style={{ height: 24, width: 24 }} />}
+        rightAvatar={renderRightElement()}
       />
     );
   };

@@ -6,6 +6,7 @@ import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/Device
 import { getDoctorsBySpecialtyAndFilters } from '@aph/mobile-patients/src/graphql/types/getDoctorsBySpecialtyAndFilters';
 import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails } from '../graphql/types/getPatientPersonalizedAppointments';
 import { MedicinePageAPiResponse } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
 
 export interface LocationData {
   displayName: string;
@@ -90,6 +91,12 @@ export interface DiagnosticData {
 export interface AppCommonDataContextProps {
   hdfcUserSubscriptions: SubscriptionData | null;
   setHdfcUserSubscriptions: ((items: SubscriptionData) => void) | null;
+  phrNotificationData: getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount | null;
+  setPhrNotificationData:
+    | ((
+        phrNotificationObj: getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount | null
+      ) => void)
+    | null;
   bannerData: bannerType[] | null;
   setBannerData: ((items: bannerType[]) => void) | null;
   locationDetails: LocationData | null;
@@ -150,6 +157,8 @@ export interface AppCommonDataContextProps {
 export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   hdfcUserSubscriptions: null,
   setHdfcUserSubscriptions: null,
+  phrNotificationData: null,
+  setPhrNotificationData: null,
   bannerData: null,
   setBannerData: null,
   locationDetails: null,
@@ -212,8 +221,10 @@ export const AppCommonDataProvider: React.FC = (props) => {
     AppCommonDataContextProps['hdfcUserSubscriptions']
   >(null);
 
-  const [bannerData, _setBannerData] = useState<
-    AppCommonDataContextProps['bannerData']
+  const [bannerData, _setBannerData] = useState<AppCommonDataContextProps['bannerData']>(null);
+
+  const [phrNotificationData, setPhrNotificationData] = useState<
+    AppCommonDataContextProps['phrNotificationData']
   >(null);
 
   const [pharmacyLocation, _setPharmacyLocation] = useState<
@@ -289,9 +300,7 @@ export const AppCommonDataProvider: React.FC = (props) => {
     _setHdfcUserSubscriptions(hdfcUserSubscriptions);
   };
 
-  const setBannerData: AppCommonDataContextProps['setBannerData'] = (
-    bannerData
-  ) => {
+  const setBannerData: AppCommonDataContextProps['setBannerData'] = (bannerData) => {
     _setBannerData(bannerData);
   };
 
@@ -353,6 +362,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
       value={{
         isCurrentLocationFetched,
         setCurrentLocationFetched,
+        phrNotificationData,
+        setPhrNotificationData,
         locationDetails,
         setLocationDetails,
         hdfcUserSubscriptions,
