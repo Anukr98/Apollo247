@@ -119,6 +119,7 @@ import {
   AppState,
   AppStateStatus,
   BackHandler,
+  DeviceEventEmitter,
   Dimensions,
   FlatList,
   Image as ImageReact,
@@ -878,6 +879,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
+    if (Platform.OS === 'android') {
+      handleAndroidCallAcceptListeners();
+    } else if (Platform.OS === 'ios') {
+      handleCallkitEventListeners();
+      handleVoipEventListeners();
+    }
+  }, []);
+
+  useEffect(() => {
     if (!currentPatientWithHistory) {
       getPatientApiCallWithHistory();
     }
@@ -909,7 +919,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       fireWebengageEventForCallAnswer(WebEngageEventName.PATIENT_ANSWERED_CALL);
     }
     updateNumberOfParticipants();
-  }, [isVoipCall, fromIncomingCall]);
+  }, []);
 
   const getPatientApiCallWithHistory = async () => {
     if (!disableChat && status !== STATUS.COMPLETED && displayChatQuestions) {
@@ -971,10 +981,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     getSecretaryData();
     // requestToJrDoctor();
     // updateSessionAPI();
-    if (isIos()) {
-      handleCallkitEventListeners();
-      handleVoipEventListeners();
-    }
   }, []);
 
   useEffect(() => {
@@ -1001,6 +1007,25 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const onAnswerCallAction = () => {
     joinCallHandler();
+  };
+
+  const onDisconnetCallAction = () => {
+    RNCallKeep.endAllCalls();
+  };
+
+  const handleAndroidCallAcceptListeners = () => {
+    DeviceEventEmitter.addListener('accept', () => {
+      joinCallHandler();
+    });
+    Linking.addEventListener('url', (event) => {
+      try {
+        const index = event.url.indexOf('apollopatients://DoctorCall?');
+        const isDoctorCall = index > -1;
+        if (isDoctorCall) {
+          joinCallHandler();
+        }
+      } catch (e) {}
+    });
   };
 
   const playSound = () => {
@@ -5102,6 +5127,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const joinCallHandler = () => {
+    setLoading(true);
     callPermissions(() => {
       setLoading(true);
       stopTimer();
