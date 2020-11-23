@@ -2320,6 +2320,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       ? `${slotStartTime}-${slotEndTime}`
       : ''
     ).replace(' ', '');
+    const formattedDate = moment(date).format('YYYY-MM-DD');
+    const formattedTime = moment(slotStartTime).format('HH:mm:ss');
+    const dateTimeInUTC = formattedDate + 'T' + formattedTime + ':00Z';
+
     console.log(physicalPrescriptions, 'physical prescriptions');
     console.log('idddd...' + validateCouponUniqueId);
     const allItems = cartItems.find((item) => item.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL);
@@ -2329,12 +2333,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       patientId: (currentPatient && currentPatient.id) || '',
       patientAddressId: deliveryAddressId!,
       slotTimings: slotTimings,
+      slotDateTimeInUTC: dateTimeInUTC,
       totalPrice: grandTotal,
       prescriptionUrl: [
         ...physicalPrescriptions.map((item) => item.uploadedUrl),
         ...ePrescriptions.map((item) => item.uploadedUrl),
       ].join(','),
-      diagnosticDate: moment(date).format('YYYY-MM-DD'),
+      diagnosticDate: formattedDate,
       bookingSource: BOOKINGSOURCE.MOBILE,
       deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,
       paymentType: isCashOnDelivery
@@ -2679,7 +2684,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                       </Text>{' '}
                       with
                     </Text>
-                    <CircleLogo style={{ resizeMode: 'contain', height: 18, width: 35 }} />
+                    <CircleLogo
+                      style={{
+                        resizeMode: 'contain',
+                        height: 20,
+                        width: 37,
+                        marginTop: -2,
+                      }}
+                    />
                   </View>
                 )}
               </>
@@ -3095,6 +3107,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           zipCode={parseInt(zipCode, 10)}
           slotInfo={selectedTimeSlot}
           onSchedule={(date: Date, slotInfo: TestSlot) => {
+            console.log({ date });
             console.log({ slotInfo });
             setDate(date);
             setselectedTimeSlot(slotInfo);
