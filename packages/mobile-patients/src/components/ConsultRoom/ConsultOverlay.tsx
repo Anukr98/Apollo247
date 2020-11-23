@@ -275,7 +275,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
 
   const getConsultationBookedEventAttributes = (time: string, id: string) => {
     const localTimeSlot = moment(new Date(time));
-    let date = new Date(time);
+    let date = moment(time).toDate();
     // date = new Date(date.getTime() + 5.5 * 60 * 60 * 1000);
     const doctorClinics = (g(props.doctor, 'doctorHospital') || []).filter((item) => {
       if (item && item.facility && item.facility.facilityType)
@@ -560,7 +560,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       0 < availableInMin!
         ? nextAvailableSlot
         : selectedTimeSlot;
-    const localTimeSlot = new Date(timeSlot);
+    const localTimeSlot = moment(timeSlot).toDate();
     const doctorClinics = (g(props.doctor, 'doctorHospital') || []).filter((item) => {
       if (item && item.facility && item.facility.facilityType)
         return item.facility.facilityType === 'HOSPITAL';
@@ -1035,6 +1035,8 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     }
     // to avoid duplicate events
     if (!slotsSelected.find((val) => val == slot)) {
+      console.log('new Date >>>>', new Date(slot));
+      console.log('moment >>>>>', moment(slot).toDate());
       const doctorClinics = (g(props.doctor, 'doctorHospital') || []).filter((item) => {
         if (item && item.facility && item.facility.facilityType)
           return item.facility.facilityType === 'HOSPITAL';
@@ -1048,7 +1050,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         'Doctor ID': g(props.doctor, 'id')!,
         'Speciality ID': g(props.doctor, 'specialty', 'id')!,
         'Patient UHID': g(currentPatient, 'uhid'),
-        'Consult Date Time': new Date(slot),
+        'Consult Date Time': moment(slot).toDate(),
       };
       postWebEngageEvent(WebEngageEventName.CONSULT_SLOT_SELECTED, eventAttributes);
       setSlotsSelected([...slotsSelected, slot]);
