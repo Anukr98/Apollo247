@@ -1297,12 +1297,15 @@ export const Tests: React.FC<TestsProps> = (props) => {
             Gender: diagnostics!.gender,
             ItemID: `${diagnostics!.itemId}`,
             ItemName: diagnostics?.itemName!,
+            collectionType: diagnostics?.collectionType,
             FromAgeInDays: diagnostics?.fromAgeInDays,
             ToAgeInDays: diagnostics?.toAgeInDays,
             preparation: diagnostics?.testPreparationData,
-            testDescription: diagnostics?.testDescription,
             source: 'Landing Page',
+            type: diagnostics!.itemType,
+          } as TestPackageForDetails,
         });
+      },
       style: {
         marginHorizontal: 4,
         marginTop: 16,
@@ -1694,7 +1697,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
                         circleSpecialPrice: circleSpecialPrice,
                         collectionType: product?.collectionType,
                         preparation: product?.testPreparationData,
-                        testDescription: product?.testDescription,
                         source: 'Landing Page',
                         type: product?.itemType,
                       } as TestPackageForDetails,
@@ -2459,7 +2461,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
       testPreparationData,
       itemType,
       diagnosticPricing,
-      testDescription,
     } = item;
 
     const getActiveItemsObject = getActiveItems(diagnosticPricing);
@@ -2494,7 +2495,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
             preparation: testPreparationData,
             source: 'Landing Page',
             type: itemType,
-            testDescription: testDescription,
           } as TestPackageForDetails,
         });
       },
