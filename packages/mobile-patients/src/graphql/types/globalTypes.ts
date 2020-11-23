@@ -377,13 +377,6 @@ export enum PRISM_DOCUMENT_CATEGORY {
   TestReports = "TestReports",
 }
 
-export enum PaymentStatus {
-  INVALID_PAYMENT = "INVALID_PAYMENT",
-  PENDING = "PENDING",
-  TXN_FAILURE = "TXN_FAILURE",
-  TXN_SUCCESS = "TXN_SUCCESS",
-}
-
 export enum PharmaDiscountApplicableOn {
   MRP = "MRP",
   SPECIAL_PRICE = "SPECIAL_PRICE",
@@ -717,7 +710,7 @@ export interface CouponInput {
 export interface CreateUserSubscriptionInput {
   _id?: string | null;
   plan_id: string;
-  payment_reference?: PaymentReference | null;
+  payment_reference?: any | null;
   coupon_availed?: string | null;
   mobile_number: string;
   order_id?: string | null;
@@ -1076,15 +1069,6 @@ export interface PatientProfileInput {
   emailAddress: string;
   photoUrl: string;
   mobileNumber: string;
-}
-
-export interface PaymentReference {
-  mid?: string | null;
-  amount_paid?: number | null;
-  payment_status?: PaymentStatus | null;
-  payment_reference_id?: string | null;
-  purchase_via_HC?: boolean | null;
-  HC_used?: number | null;
 }
 
 export interface PharmaCouponInput {

@@ -1424,12 +1424,18 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
           itemId
           quantity
           price
+          pricingObj{
+            mrp
+            price
+            groupPlan
+          }
           diagnostics {
             id
             itemId
             itemName
             itemType
             testPreparationData
+            testDescription
             diagnosticPricing {
               mrp
               price
@@ -1438,7 +1444,6 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
               startDate
               endDate
             }
-            testDescription
           }
         }
       }
@@ -1489,6 +1494,11 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
           itemId
           price
           quantity
+          pricingObj{
+            mrp
+            price
+            groupPlan
+          }
           diagnostics {
             id
             itemId
@@ -1501,6 +1511,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
             itemType
             fromAgeInDays
             collectionType
+            testDescription
             diagnosticPricing {
               mrp
               price
@@ -1509,7 +1520,6 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
               startDate
               endDate
             }
-            testDescription
           }
         }
         diagnosticOrdersStatus {

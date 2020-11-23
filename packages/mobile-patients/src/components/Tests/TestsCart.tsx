@@ -581,6 +581,54 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_APPOINTMENT_TIME_SELECTED, eventAttributes);
   };
+  const fireOrderFailedEvent = (orderId: any) => {
+    const eventAttributes: FirebaseEvents[FirebaseEventName.ORDER_FAILED] = {
+      OrderID: orderId,
+      Price: Number(grandTotal),
+      CouponCode: coupon ? coupon.code : '',
+      PaymentType: isCashOnDelivery ? 'COD' : 'Prepaid',
+      LOB: 'Diagnostics',
+    };
+    postAppsFlyerEvent(AppsFlyerEventName.ORDER_FAILED, eventAttributes);
+    postFirebaseEvent(FirebaseEventName.ORDER_FAILED, eventAttributes);
+  };
+
+  const postPaymentInitiatedWebengage = () => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED] = {
+      Paymentmode: isCashOnDelivery ? 'COD' : 'Online',
+      Amount: grandTotal,
+      ServiceArea: 'Diagnostic',
+      LOB: 'Diagnostic',
+    };
+    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED, eventAttributes);
+  };
+
+  const firePurchaseEvent = (orderId: string) => {
+    let items: any = [];
+    cartItems.forEach((item, index) => {
+      let itemObj: any = {};
+      itemObj.item_name = item.name; // Product Name or Doctor Name
+      itemObj.item_id = item.id; // Product SKU or Doctor ID
+      itemObj.price = item.specialPrice ? item.specialPrice : item.price; // Product Price After discount or Doctor VC price (create another item in array for PC price)
+      itemObj.item_brand = ''; // Product brand or Apollo (for Apollo doctors) or Partner Doctors (for 3P doctors)
+      itemObj.item_category = 'Diagnostics'; // 'Pharmacy' or 'Consultations'
+      itemObj.item_category2 = ''; // FMCG or Drugs (for Pharmacy) or Specialty Name (for Consultations)
+      itemObj.item_variant = item.collectionMethod; // "Default" (for Pharmacy) or Virtual / Physcial (for Consultations)
+      itemObj.index = index + 1; // Item sequence number in the list
+      itemObj.quantity = 1; // "1" or actual quantity
+      items.push(itemObj);
+    });
+    let code: any = coupon ? coupon.code : null;
+    const eventAttributes: FirebaseEvents[FirebaseEventName.PURCHASE] = {
+      coupon: code,
+      currency: 'INR',
+      items: items,
+      transaction_id: orderId,
+      value: Number(grandTotal),
+    };
+    postFirebaseEvent(FirebaseEventName.PURCHASE, eventAttributes);
+    postAppsFlyerEvent(AppsFlyerEventName.PURCHASE, eventAttributes);
+  };
 
   useEffect(() => {
     onFinishUpload();
@@ -1034,15 +1082,15 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                   (product) => {
                     props.navigation.navigate(AppRoutes.TestDetails, {
                       testDetails: {
-                        ItemID: test.id,
-                        ItemName: test.name,
+                        ItemID: test?.id,
+                        ItemName: test?.name,
                         Rate: price,
                         specialPrice: specialPrice! || price,
                         circleRate: circlePrice,
                         circleSpecialPrice: circleSpecialPrice,
-                        FromAgeInDays: product.fromAgeInDays!,
-                        ToAgeInDays: product.toAgeInDays!,
-                        Gender: product.gender,
+                        FromAgeInDays: product?.fromAgeInDays!,
+                        ToAgeInDays: product?.toAgeInDays!,
+                        Gender: product?.gender,
                         collectionType: test?.collectionMethod,
                         preparation: product?.testPreparationData,
                         testDescription: product?.testDescription,
@@ -2208,12 +2256,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       deviceType: Platform.OS == 'android' ? DEVICETYPE.ANDROID : DEVICETYPE.IOS,
     };
 
-    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED] = {
-      'Payment mode': isCashOnDelivery ? 'COD' : 'Online',
-      Amount: grandTotal,
-      'Service Area': 'Diagnostic',
-    };
-    postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED, eventAttributes);
+    postPaymentInitiatedWebengage();
 
     console.log(JSON.stringify({ diagnosticOrderInput: orderInfo }));
     console.log('orderInfo\n', { diagnosticOrderInput: orderInfo });
@@ -2230,6 +2273,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             title: `Uh oh.. :(`,
             description: `We're sorry :(  There's been a problem with your booking. Please book again.`,
           });
+          fireOrderFailedEvent(orderId);
         } else {
           // Order-Success
           if (!isCashOnDelivery) {
@@ -2241,6 +2285,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           postwebEngageCheckoutCompletedEvent(`${displayId}`); // Make sure to add this event in test payment as well when enabled
 
           setModalVisible(true);
+          firePurchaseEvent(orderId!);
           setOrderDetails({
             orderId: orderId,
             displayId: displayId,
@@ -2318,13 +2363,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
     console.log(JSON.stringify({ diagnosticOrderInput: bookingOrderInfo }));
     console.log('home collection \n', { diagnosticOrderInput: bookingOrderInfo });
-    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED] = {
-      'Payment mode': isCashOnDelivery ? 'COD' : 'Online',
-      Amount: grandTotal,
-      'Service Area': 'Diagnostic',
-    };
-    'Diagnostic',
-      postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_PAYMENT_INITIATED, eventAttributes);
+    postPaymentInitiatedWebengage();
     saveHomeCollectionBookingOrder(bookingOrderInfo)
       .then(({ data }) => {
         const { orderId, displayId, errorCode, errorMessage } =
@@ -2341,6 +2380,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             description: `We're sorry :(  There's been a problem with your booking. Please book again.`,
             // description: `Order failed, ${errorMessage}.`,
           });
+          fireOrderFailedEvent(orderId);
         } else {
           // Order-Success
           if (!isCashOnDelivery) {
@@ -2351,6 +2391,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           // COD order, show popup here & clear cart info
           postwebEngageCheckoutCompletedEvent(`${displayId}`); // Make sure to add this event in test payment as well when enabled
           setModalVisible(true);
+          firePurchaseEvent(orderId!);
           setOrderDetails({
             orderId: orderId,
             displayId: displayId,
