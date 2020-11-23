@@ -18,6 +18,7 @@ import {
   TestPackage,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import stripHtml from 'string-strip-html';
 import {
   aphConsole,
   postWebEngageEvent,
@@ -168,7 +169,7 @@ const styles = StyleSheet.create({
     margin: 10,
     textAlign: 'center',
     color: '#658F9B',
-    ...theme.fonts.IBMPlexSansMedium(12),
+    ...theme.fonts.IBMPlexSansMedium(11),
     alignSelf: 'flex-end',
   },
   notificationCard: {
@@ -194,7 +195,7 @@ const styles = StyleSheet.create({
   circlePriceView: { alignSelf: 'flex-start', marginTop: 5 },
 });
 
-const tabs = [
+var tabs = [
   {
     id: '1',
     title: 'Tests Included',
@@ -222,13 +223,14 @@ export interface TestDetailsProps
   }> {}
 
 export const TestDetails: React.FC<TestDetailsProps> = (props) => {
-  const [selectedTab, setSelectedTab] = useState<string>(tabs[0].title);
   const testDetails = props.navigation.getParam('testDetails', {} as TestPackageForDetails);
   const itemId = props.navigation.getParam('itemId');
 
   const [showAddedView, setShowAddedView] = useState<boolean>(false);
 
   const [testInfo, setTestInfo] = useState<TestPackageForDetails>(testDetails);
+  const [selectedTab, setSelectedTab] = useState<string>(tabs[0].title);
+
   const TestDetailsDiscription = testInfo.PackageInClussion;
   const { locationDetails, diagnosticLocation, diagnosticServiceabilityData } = useAppCommonData();
   const { cartItems, addCartItem, isDiagnosticCircleSubscription } = useDiagnosticsCart();
@@ -275,6 +277,36 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             aphConsole.log('getPackageData Error \n', { e });
             setsearchSate('fail');
           });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (testInfo?.testDescription != null) {
+      tabs = [
+        {
+          id: '1',
+          title: 'Tests Included',
+        },
+        {
+          id: '2',
+          title: 'Preparation',
+        },
+        {
+          id: '3',
+          title: 'Overview',
+        },
+      ];
+    } else {
+      tabs = [
+        {
+          id: '1',
+          title: 'Tests Included',
+        },
+        {
+          id: '2',
+          title: 'Preparation',
+        },
+      ];
     }
   }, []);
 
@@ -486,6 +518,17 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     );
   };
 
+  const renderTestDescription = () => {
+    return (
+      <View style={styles.descriptionStyles}>
+        <Text style={styles.descriptionTextStyles}>
+          {(testInfo && stripHtml(testInfo?.testDescription)) ||
+            string.diagnostics.noTestDescription}
+        </Text>
+      </View>
+    );
+  };
+
   const renderNotification = () => {
     if (!COVID_NOTIFICATION_ITEMID.includes(testInfo.ItemID)) {
       return null;
@@ -527,22 +570,30 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     //open the pop-up
   };
 
-  setTimeout(() => isItemAdded && setItemAdded(false), 2000);
+  // setTimeout(() => isItemAdded && setItemAdded(false), 2000);
 
   const renderItemAdded = () => {
     return (
-      <>
+      <View>
         {isItemAdded && isAddedToCart && (
-          <View style={{ ...theme.viewStyles.cardViewStyle }}>
+          <View
+            style={{
+              ...theme.viewStyles.cardViewStyle,
+              flexDirection: 'row',
+            }}
+          >
             <Text style={[styles.successfulText, { flexDirection: 'row' }]}>
               {string.diagnostics.itemsAddedSuccessfullyCTA}
-              <TouchableOpacity onPress={() => setItemAdded(false)}>
-                <Cross style={styles.crossIconStyle} />
-              </TouchableOpacity>
             </Text>
+            <TouchableOpacity
+              style={{ marginTop: 13, marginRight: 10 }}
+              onPress={() => setItemAdded(false)}
+            >
+              <Cross style={styles.crossIconStyle} />
+            </TouchableOpacity>
           </View>
         )}
-      </>
+      </View>
     );
   };
 
@@ -612,7 +663,11 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           <View>{renderTestDetails()}</View>
           {renderNotification()}
           {renderTabsData()}
-          {selectedTab === tabs[0].title ? renderTestsIncludedData() : renderPreparation()}
+          {selectedTab === tabs[0].title
+            ? renderTestsIncludedData()
+            : selectedTab === tabs[1].title
+            ? renderPreparation()
+            : renderTestDescription()}
           {!isDiagnosticCircleSubscription && renderCareBanner()}
           <View style={{ height: screenHeight * 0.2 }} />
         </ScrollView>
