@@ -95,6 +95,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const isDoctorsOfTheHourStatus = props.navigation.getParam('isDoctorsOfTheHourStatus');
   const coupon = props.navigation.getParam('coupon');
   const paymentTypeID = props.navigation.getParam('paymentTypeID');
+  const isCircleDoctor = props.navigation.getParam('isCircleDoctor');
   const client = useApolloClient();
   const { success, failure, pending, aborted } = Payment;
   const { showAphAlert, hideAphAlert } = useUIElements();
@@ -142,7 +143,6 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         fetchPolicy: 'no-cache',
       })
       .then((res) => {
-        setAmountBreakup(res?.data?.paymentTransactionStatus?.appointment?.amountBreakup);
         try {
           const paymentEventAttributes = {
             Payment_Status: res.data.paymentTransactionStatus.appointment.paymentStatus,
@@ -155,6 +155,10 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         } catch (error) {}
         console.log(res.data);
         if (res.data.paymentTransactionStatus.appointment.paymentStatus == success) {
+          const amountBreakup = res?.data?.paymentTransactionStatus?.appointment?.amountBreakup;
+          if (isCircleDoctor && amountBreakup?.slashed_price) {
+            setAmountBreakup(res?.data?.paymentTransactionStatus?.appointment?.amountBreakup);
+          }
           fireBaseFCM();
           try {
             let eventAttributes = webEngageEventAttributes;
@@ -936,8 +940,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   circleLogo: {
-    width: 50,
-    height: 32,
+    width: 45,
+    height: 27,
     marginRight: 5,
   },
 });

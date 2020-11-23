@@ -34,5 +34,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     alignSelf: 'center',
   },
-  circleIconStyle: { height: 20, width: 36, resizeMode: 'contain' },
+  circleIconStyle: { height: 20, width: 36, resizeMode: 'contain', marginRight: 2 },
 });

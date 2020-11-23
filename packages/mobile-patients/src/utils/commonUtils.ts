@@ -173,7 +173,7 @@ export const isUpperCase = (str: string) => {
   return str === str.toUpperCase();
 };
 
-export const calculateCareDoctorPricing = (data: any) => {
+export const calculateCircleDoctorPricing = (data: any) => {
   const circleDoctors = data?.doctorPricing?.filter(
     (item: any) => item.available_to === PLAN.CARE_PLAN
   );

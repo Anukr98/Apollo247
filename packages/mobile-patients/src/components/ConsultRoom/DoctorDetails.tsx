@@ -81,7 +81,7 @@ import {
   CircleLogo,
 } from '../ui/Icons';
 // import { NotificationListener } from '../NotificationListener';
-import { calculateCareDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
+import { calculateCircleDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { CirclePlanAddedToCart } from '@aph/mobile-patients/src/components/ui/CirclePlanAddedToCart';
 import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
@@ -221,8 +221,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   smallCareLogo: {
-    height: 21,
-    width: 40,
+    height: 18,
+    width: 30,
+    marginHorizontal: 2.5,
   },
   smallInfo: {
     width: 10,
@@ -256,9 +257,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   circleLogo: {
-    width: 72,
-    height: 30,
-    marginRight: -7,
+    width: 45,
+    height: 27,
+    marginHorizontal: 4,
   },
   linearGradient: {
     height: 63,
@@ -325,7 +326,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const callSaveSearch = props.navigation.getParam('callSaveSearch');
   const [secretaryData, setSecretaryData] = useState<any>([]);
   const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
-  const circleDoctorDetails = calculateCareDoctorPricing(doctorDetails);
+  const circleDoctorDetails = calculateCircleDoctorPricing(doctorDetails);
   const {
     isCircleDoctor,
     physicalConsultMRPPrice,
@@ -338,14 +339,16 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     selectDefaultPlan,
     circlePlanSelected,
     defaultCirclePlan,
+    autoCirlcePlanAdded,
+    showCircleSubscribed,
   } = useShoppingCart();
 
   const rectangularIconHeight = isCircleDoctor
     ? Platform.OS == 'android'
-      ? circleSubscriptionId
+      ? showCircleSubscribed
         ? 154
         : 164
-      : circleSubscriptionId
+      : showCircleSubscribed
       ? 149
       : 159
     : Platform.OS == 'android'
@@ -354,10 +357,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
   const consultViewHeight = isCircleDoctor
     ? Platform.OS == 'android'
-      ? circleSubscriptionId
+      ? showCircleSubscribed
         ? 133
         : 143
-      : circleSubscriptionId
+      : showCircleSubscribed
       ? 128
       : 138
     : Platform.OS == 'android'
@@ -657,16 +660,16 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
   const renderCareDoctorPricing = (consultType: ConsultMode) => {
     return (
-      <View style={{ paddingBottom: circleSubscriptionId ? 16 : 3 }}>
+      <View style={{ paddingBottom: showCircleSubscribed ? 16 : 3 }}>
         <Text
           style={[
             styles.carePrice,
             {
-              textDecorationLine: circleSubscriptionId ? 'line-through' : 'none',
+              textDecorationLine: showCircleSubscribed ? 'line-through' : 'none',
               ...theme.viewStyles.text(
                 'M',
                 15,
-                circleSubscriptionId ? theme.colors.BORDER_BOTTOM_COLOR : theme.colors.LIGHT_BLUE
+                showCircleSubscribed ? theme.colors.BORDER_BOTTOM_COLOR : theme.colors.LIGHT_BLUE
               ),
             },
           ]}
@@ -681,11 +684,11 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               ? onlineConsultSlashedPrice
               : physicalConsultSlashedPrice}
           </Text>
-          {circleSubscriptionId ? (
+          {showCircleSubscribed ? (
             <CircleLogo style={[styles.smallCareLogo, { height: 17 }]} />
           ) : null}
         </View>
-        {!circleSubscriptionId ? (
+        {!showCircleSubscribed ? (
           <TouchableOpacity
             activeOpacity={1}
             style={styles.row}
@@ -693,7 +696,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           >
             <Text style={styles.smallText}>for</Text>
             <CircleLogo style={styles.smallCareLogo} />
-            <Text style={[styles.smallText, { marginLeft: -4 }]}>members</Text>
+            <Text style={styles.smallText}>members</Text>
             <InfoBlue style={styles.smallInfo} />
           </TouchableOpacity>
         ) : null}
@@ -851,7 +854,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   >
                     <View>
                       <Text style={styles.onlineConsultLabel}>Consult In-App</Text>
-                      {isCircleDoctor ? (
+                      {isCircleDoctor && onlineConsultMRPPrice ? (
                         renderCareDoctorPricing(ConsultMode.ONLINE)
                       ) : (
                         <Text style={styles.onlineConsultAmount}>
@@ -943,7 +946,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                       {doctorDetails.doctorType !== DoctorType.PAYROLL && (
                         <>
                           <Text style={styles.onlineConsultLabel}>Meet in Person</Text>
-                          {isCircleDoctor ? (
+                          {isCircleDoctor && physicalConsultMRPPrice ? (
                             renderCareDoctorPricing(ConsultMode.PHYSICAL)
                           ) : (
                             <Text style={styles.onlineConsultAmount}>
@@ -965,7 +968,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               </View>
             </View>
           )}
-          {isCircleDoctor && !circleSubscriptionId && defaultCirclePlan && renderUpgradeToCircle()}
+          {isCircleDoctor && !showCircleSubscribed && defaultCirclePlan && renderUpgradeToCircle()}
           {isCircleDoctor &&
             !defaultCirclePlan &&
             circlePlanSelected &&

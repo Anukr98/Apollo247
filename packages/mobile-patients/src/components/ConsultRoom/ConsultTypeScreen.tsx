@@ -43,7 +43,7 @@ import {
 import { useAllCurrentPatients } from '../../hooks/authHooks';
 import { CommonBugFender } from '../../FunctionHelpers/DeviceHelper';
 import moment from 'moment';
-import { calculateCareDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
+import { calculateCircleDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
@@ -165,8 +165,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   careLogo: {
-    width: 40,
-    height: 21,
+    width: 25,
+    height: 15,
+    marginHorizontal: 2.5,
   },
   careLogoText: {
     ...theme.viewStyles.text('M', 4, 'white'),
@@ -219,7 +220,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
   const { currentPatientId, currentPatient } = useAllCurrentPatients();
   const [doctorDetails, setdoctorDetails] = useState<getDoctorDetailsById_getDoctorDetailsById>();
   const callSaveSearch = props.navigation.getParam('callSaveSearch');
-  const circleDoctorDetails = calculateCareDoctorPricing(doctorDetails);
+  const circleDoctorDetails = calculateCircleDoctorPricing(doctorDetails);
   const {
     isCircleDoctor,
     physicalConsultMRPPrice,
@@ -227,7 +228,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
     onlineConsultSlashedPrice,
     physicalConsultSlashedPrice,
   } = circleDoctorDetails;
-  const { circleSubscriptionId } = useShoppingCart();
+  const { showCircleSubscribed } = useShoppingCart();
   const availNowText = props.navigation.getParam('availNowText');
   const consultNowText = props.navigation.getParam('consultNowText');
 
@@ -295,11 +296,11 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
           style={[
             styles.carePrice,
             {
-              textDecorationLine: circleSubscriptionId ? 'line-through' : 'none',
+              textDecorationLine: showCircleSubscribed ? 'line-through' : 'none',
               ...theme.viewStyles.text(
                 'M',
                 15,
-                circleSubscriptionId ? theme.colors.BORDER_BOTTOM_COLOR : theme.colors.LIGHT_BLUE
+                showCircleSubscribed ? theme.colors.BORDER_BOTTOM_COLOR : theme.colors.LIGHT_BLUE
               ),
             },
           ]}
@@ -310,7 +311,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
             : physicalConsultMRPPrice}
         </Text>
         <View style={styles.rowContainer}>
-          {circleSubscriptionId ? <CircleLogo style={styles.careLogo} /> : null}
+          {showCircleSubscribed ? <CircleLogo style={styles.careLogo} /> : null}
           <Text style={styles.careDiscountedPrice}>
             {string.common.Rs}
             {heading === string.consultType.online.heading
@@ -352,6 +353,10 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
     onPress: () => void
   ) => {
     const timeDiff: Number = timeDiffFromNow(time || '');
+    const showCirclePricing =
+      isCircleDoctor &&
+      ((heading === string.consultType.online.heading && onlineConsultMRPPrice > 0) ||
+        (heading === string.consultType.inperson.heading && physicalConsultMRPPrice > 0));
     return (
       <View style={styles.cardContainer}>
         <View style={styles.cardBorderStyle}>
@@ -369,13 +374,13 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
                 </Text>
               ) : null}
             </View>
-            {isCircleDoctor ? (
+            {showCirclePricing ? (
               renderCareDoctorPricing(heading)
             ) : (
               <Text style={styles.priceTextStyle}>{`${string.common.Rs}${price}`}</Text>
             )}
           </View>
-          {!circleSubscriptionId && isCircleDoctor ? (
+          {!showCircleSubscribed && showCirclePricing ? (
             <TouchableOpacity
               activeOpacity={1}
               onPress={() => openCircleWebView(heading)}
@@ -388,7 +393,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
             >
               <Text style={styles.smallRightAlignText}>for</Text>
               <CircleLogo style={styles.careLogo} />
-              <Text style={[styles.smallRightAlignText, { marginLeft: -4 }]}>members</Text>
+              <Text style={[styles.smallRightAlignText, { marginLeft: 0 }]}>members</Text>
               <InfoBlue style={styles.infoIcon} />
             </TouchableOpacity>
           ) : null}
