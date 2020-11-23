@@ -27,6 +27,7 @@ export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diag
   itemType: DIAGNOSTICS_TYPE | null;
   testPreparationData: string;
   diagnosticPricing: (getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems_diagnostics_diagnosticPricing | null)[] | null;
+  testDescription: string | null;
 }
 
 export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems {

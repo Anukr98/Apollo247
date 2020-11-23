@@ -33,6 +33,7 @@ export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_
   fromAgeInDays: number;
   collectionType: TEST_COLLECTION_TYPE | null;
   diagnosticPricing: (getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems_diagnostics_diagnosticPricing | null)[] | null;
+  testDescription: string | null;
 }
 
 export interface getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList_diagnosticOrderLineItems {
