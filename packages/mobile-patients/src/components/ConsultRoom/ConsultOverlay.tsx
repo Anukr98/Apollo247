@@ -217,12 +217,13 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       ...externalConnectParam,
       actualAmount: actualPrice,
       pinCode: locationDetails && locationDetails.pincode,
-      subscriptionDetails: circleSubscriptionId
-        ? {
-            userSubscriptionId: circleSubscriptionId,
-            plan: PLAN.CARE_PLAN,
-          }
-        : null,
+      subscriptionDetails:
+        circleSubscriptionId && isCircleDoctor
+          ? {
+              userSubscriptionId: circleSubscriptionId,
+              plan: PLAN.CARE_PLAN,
+            }
+          : null,
     };
 
     props.navigation.navigate(AppRoutes.PaymentCheckout, {

@@ -166,7 +166,6 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('M', 16, theme.colors.BORDER_BOTTOM_COLOR),
     textDecorationLine: 'line-through',
     textDecorationStyle: 'solid',
-    marginRight: 4,
   },
   couponText: {
     ...theme.viewStyles.text('M', 16, theme.colors.SKY_BLUE),
