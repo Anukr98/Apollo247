@@ -1,6 +1,5 @@
 package com.apollopatient;
 
-
 import android.app.ActivityManager;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -57,14 +56,19 @@ public class MyFirebaseMessagingService
             String disconnectCallType = "call_disconnect";
 
             if (startCallType.equals(notifDataType) || disconnectCallType.equals(notifDataType)) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this) && startCallType.equals(notifDataType)) {
-                    sendNotifications(remoteMessage);
-                    return;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
+                    if (startCallType.equals(notifDataType)) {
+                        sendNotifications(remoteMessage);
+                    } else if (disconnectCallType.equals(notifDataType)) {
+                        SharedPreferences sharedPref = this.getSharedPreferences("com.apollopatient", Context.MODE_PRIVATE);
+                        Integer notificationId = sharedPref.getInt("com.apollopatient.call_start", -1);
+                        NotificationManager notificationManager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
+                        notificationManager.cancel(notificationId);
+                    }
                 } else {
                     showUnlockScreen(remoteMessage, !isAppRunning());
-                    return;
                 }
-
+                return;
             }
 
             Map<String, String> data = remoteMessage.getData();
