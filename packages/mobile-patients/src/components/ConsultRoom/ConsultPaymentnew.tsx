@@ -92,6 +92,7 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
       appsflyerEventAttributes: appsflyerEventAttributes,
       paymentTypeID: paymentTypeID,
       isDoctorsOfTheHourStatus,
+      isCircleDoctor: isCircleDoctor,
     });
   };
 

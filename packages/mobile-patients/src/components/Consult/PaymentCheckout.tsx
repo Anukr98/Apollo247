@@ -121,7 +121,6 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const [notificationAlert, setNotificationAlert] = useState(false);
   const scrollviewRef = useRef<any>(null);
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
-  const [disabledCheckout, setDisabledCheckout] = useState<boolean>(true);
 
   const circleDoctorDetails = calculateCircleDoctorPricing(doctor);
   const {
@@ -135,6 +134,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     physicalConsultMRPPrice,
   } = circleDoctorDetails;
   const { circleSubscriptionId, circlePlanSelected } = useShoppingCart();
+  const [disabledCheckout, setDisabledCheckout] = useState<boolean>(isCircleDoctor);
 
   const amount = Number(price) - couponDiscountFees;
   const amountToPay =
