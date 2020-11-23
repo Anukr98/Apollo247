@@ -81,6 +81,7 @@ import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAdd
 import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 import { handleUniversalLinks } from './UniversalLinks';
 import { getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots } from '../graphql/types/getDiagnosticSlotsWithAreaID';
+import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
 
 const { RNAppSignatureHelper } = NativeModules;
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
@@ -268,6 +269,23 @@ export const editDeleteData = () => {
   return ConsultRxEditDeleteArray.map((i) => {
     return { key: i.key, value: i.title };
   });
+};
+
+export const getPhrNotificationAllCount = (
+  phrNotificationData: getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount
+) => {
+  return (
+    (phrNotificationData?.Prescription || 0) +
+    (phrNotificationData?.LabTest || 0) +
+    (phrNotificationData?.HealthCheck || 0) +
+    (phrNotificationData?.Hospitalization || 0) +
+    (phrNotificationData?.Allergy || 0) +
+    (phrNotificationData?.MedicalCondition || 0) +
+    (phrNotificationData?.Medication || 0) +
+    (phrNotificationData?.Restriction || 0) +
+    (phrNotificationData?.Bill || 0) +
+    (phrNotificationData?.Insurance || 0)
+  );
 };
 
 export const getSourceName = (
