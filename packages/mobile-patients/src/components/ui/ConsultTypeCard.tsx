@@ -156,6 +156,8 @@ export interface ConsultTypeCardProps extends NavigationScreenProps {
   nextAppointemntOnlineTime: string;
   nextAppointemntInPresonTime: string;
   circleDoctorDetails?: any;
+  availNowText?: string;
+  consultNowText?: string;
 }
 
 type stepsObject = {
@@ -175,10 +177,12 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
     nextAppointemntOnlineTime,
     nextAppointemntInPresonTime,
     circleDoctorDetails,
+    availNowText,
+    consultNowText,
   } = props;
 
   const { currentPatient } = useAllCurrentPatients();
-  const { circleSubscriptionId } = useShoppingCart();
+  const { showCircleSubscribed } = useShoppingCart();
 
   const [consultDoctorName, setConsultDocotrName] = useState<string>(DoctorName ? DoctorName : '');
   const {
@@ -190,33 +194,39 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
   } = circleDoctorDetails;
 
   const renderCareDoctorPricing = () => {
-    return (
-      <View>
-        <Text
-          style={[
-            styles.carePrice,
-            {
-              textDecorationLine: circleSubscriptionId ? 'line-through' : 'none',
-              ...theme.viewStyles.text(
-                'M',
-                15,
-                circleSubscriptionId ? theme.colors.BORDER_BOTTOM_COLOR : theme.colors.LIGHT_BLUE
-              ),
-            },
-          ]}
-        >
-          {string.common.Rs}
-          {isOnlineSelected ? onlineConsultMRPPrice : physicalConsultMRPPrice}
-        </Text>
-        <View style={styles.rowContainer}>
-          {circleSubscriptionId ? <CircleLogo style={styles.careLogo} /> : null}
-          <Text style={styles.careDiscountedPrice}>
+    if (
+      (isOnlineSelected && onlineConsultMRPPrice > 0) ||
+      (!isOnlineSelected && physicalConsultMRPPrice > 0)
+    ) {
+      return (
+        <View>
+          <Text
+            style={[
+              styles.carePrice,
+              {
+                textDecorationLine: showCircleSubscribed ? 'line-through' : 'none',
+                ...theme.viewStyles.text(
+                  'M',
+                  15,
+                  showCircleSubscribed ? theme.colors.BORDER_BOTTOM_COLOR : theme.colors.LIGHT_BLUE
+                ),
+              },
+            ]}
+          >
             {string.common.Rs}
-            {isOnlineSelected ? onlineConsultSlashedPrice : physicalConsultSlashedPrice}
+            {isOnlineSelected ? onlineConsultMRPPrice : physicalConsultMRPPrice}
           </Text>
+          <View style={styles.rowContainer}>
+            {showCircleSubscribed ? <CircleLogo style={styles.careLogo} /> : null}
+            <Text style={styles.careDiscountedPrice}>
+              {string.common.Rs}
+              {isOnlineSelected ? onlineConsultSlashedPrice : physicalConsultSlashedPrice}
+            </Text>
+          </View>
         </View>
-      </View>
-    );
+      );
+    }
+    return <></>;
   };
 
   const renderCard = (
@@ -238,6 +248,10 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
           minute: moment('06:00', 'HH:mm').get('minute'),
         })
     );
+    const showCirclePricing =
+      isCircleDoctor &&
+      ((isOnlineSelected && onlineConsultMRPPrice > 0) ||
+        (!isOnlineSelected && physicalConsultMRPPrice > 0));
     return (
       <View style={styles.cardContainer}>
         <View style={styles.cardBorderStyle}>
@@ -251,13 +265,13 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
               </Text>
               {time && moment(time).isValid() ? (
                 <Text style={timeDiff <= 15 ? styles.timeText2Style : styles.timeTextStyle}>
-                  {nextAvailability(time)}
+                  {availNowText || nextAvailability(time)}
                 </Text>
               ) : null}
             </View>
             {isCircleDoctor && renderCareDoctorPricing()}
           </View>
-          {!circleSubscriptionId && isCircleDoctor ? (
+          {!showCircleSubscribed && showCirclePricing ? (
             <TouchableOpacity
               activeOpacity={1}
               onPress={() => openCircleWebView()}
@@ -310,11 +324,14 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
         </View>
         <TouchableOpacity activeOpacity={1} onPress={onPress}>
           <View style={styles.buttonStyle}>
-            <Text style={styles.buttonTextStyle}>{`${
-              time && moment(time).isValid()
-                ? nextAvailability(time, 'Consult')
-                : string.common.book_apointment
-            }`}</Text>
+            <Text style={styles.buttonTextStyle}>
+              {consultNowText ||
+                `${
+                  time && moment(time).isValid()
+                    ? nextAvailability(time, 'Consult')
+                    : string.common.book_apointment
+                }`}
+            </Text>
           </View>
         </TouchableOpacity>
       </View>

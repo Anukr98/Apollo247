@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 import { DEVICE_TYPE, Gender, Relation } from "./globalTypes";
@@ -7,31 +8,6 @@ import { DEVICE_TYPE, Gender, Relation } from "./globalTypes";
 // ====================================================
 // GraphQL query operation: GetCurrentPatients
 // ====================================================
-
-export interface GetCurrentPatients_getCurrentPatients_patients_familyHistory {
-  __typename: "FamilyHistory";
-  description: string | null;
-  relation: string | null;
-}
-
-export interface GetCurrentPatients_getCurrentPatients_patients_lifeStyle {
-  __typename: "LifeStyle";
-  description: string | null;
-  occupationHistory: string | null;
-}
-
-export interface GetCurrentPatients_getCurrentPatients_patients_patientMedicalHistory {
-  __typename: "MedicalHistory";
-  bp: string | null;
-  dietAllergies: string | null;
-  drugAllergies: string | null;
-  height: string | null;
-  menstrualHistory: string | null;
-  pastMedicalHistory: string | null;
-  pastSurgicalHistory: string | null;
-  temperature: string | null;
-  weight: string | null;
-}
 
 export interface GetCurrentPatients_getCurrentPatients_patients {
   __typename: "Patient";
@@ -53,9 +29,6 @@ export interface GetCurrentPatients_getCurrentPatients_patients {
   primaryPatientId: string | null;
   whatsAppMedicine: boolean | null;
   whatsAppConsult: boolean | null;
-  familyHistory: (GetCurrentPatients_getCurrentPatients_patients_familyHistory | null)[] | null;
-  lifeStyle: (GetCurrentPatients_getCurrentPatients_patients_lifeStyle | null)[] | null;
-  patientMedicalHistory: GetCurrentPatients_getCurrentPatients_patients_patientMedicalHistory | null;
 }
 
 export interface GetCurrentPatients_getCurrentPatients {

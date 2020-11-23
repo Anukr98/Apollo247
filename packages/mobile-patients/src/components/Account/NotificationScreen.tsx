@@ -111,14 +111,14 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
     async function fetchData() {
       setLoader(true);
       const array: any = await AsyncStorage.getItem('selectedRow');
-      const arraySelected = JSON.parse(array);
+      const arraySelected = JSON.parse(array || 'null');
       if (arraySelected !== null) {
         setSelected([...arraySelected]);
       }
       // console.log('arraySelected.......', arraySelected);
 
       const allStoredNotification: any = await AsyncStorage.getItem('allNotification');
-      const arrayNotification = JSON.parse(allStoredNotification);
+      const arrayNotification = JSON.parse(allStoredNotification || 'null');
       if (arrayNotification !== null) {
         setMessages([...arrayNotification]);
       } else {
@@ -384,7 +384,7 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
   };
 
   const renderRow = (item: any, index: number) => {
-    const val = JSON.parse(item.notificatio_details.push_notification_content);
+    const val = JSON.parse(item.notificatio_details.push_notification_content || 'null');
     const event = val.cta;
     if (event) {
       const CTAName = ctaNamesMethod(event);
@@ -623,7 +623,7 @@ export const NotificationScreen: React.FC<NotificationScreenProps> = (props) => 
           const [itemId, name] = id.split(',');
           console.log(itemId, name);
 
-          props.navigation.navigate(AppRoutes.SearchByBrand, {
+          props.navigation.navigate(AppRoutes.MedicineListing, {
             category_id: itemId,
             title: `${name ? name : 'Products'}`.toUpperCase(),
           });

@@ -82,7 +82,12 @@ export const ProductList: React.FC<Props> = ({
       navigation,
       currentPatient,
       !!isPharmacyLocationServiceable,
-      { source: addToCartSource, categoryId: item.category_id }
+      {
+        source: addToCartSource,
+        categoryId: productPageViewedEventProps?.CategoryID,
+        categoryName: productPageViewedEventProps?.CategoryName,
+        section: productPageViewedEventProps?.SectionName,
+      }
     );
   };
 
@@ -114,6 +119,7 @@ export const ProductList: React.FC<Props> = ({
           ? styles.itemEndContainer
           : styles.itemContainer,
     };
+
     return renderComponent ? (
       renderComponent({ ...info, item: props })
     ) : Component ? (

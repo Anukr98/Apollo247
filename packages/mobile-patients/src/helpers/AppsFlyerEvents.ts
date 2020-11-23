@@ -1,16 +1,38 @@
 type YesOrNo = { value: 'Yes' | 'No' };
 
+export enum ProductPageViewedSource {
+  NOTIFICATION = 'notification',
+  DEEP_LINK = 'deeplink',
+  BANNER = 'banner',
+  REGISTRATION = 'registration',
+  CART = 'cart',
+  PARTIAL_SEARCH = 'partial search',
+  FULL_SEARCH = 'full search',
+  RECENT_SEARCH = 'recent search',
+  HOME_PAGE = 'home page',
+  CATEGORY_OR_LISTING = 'category or listing',
+  SUBSTITUTES = 'substitutes',
+  CROSS_SELLING_PRODUCTS = 'cross selling products',
+  SIMILAR_PRODUCTS = 'similar products',
+}
+
 export enum AppsFlyerEventName {
+  MOBILE_ENTRY = 'LoginClicked',
+  OTP_DEMANDED = 'OTPDemanded',
   MOBILE_NUMBER_ENTERED = 'Mobile Number Entered',
-  OTP_ENTERED = 'OTP Entered',
+  OTP_ENTERED = 'OTPSubmitted',
   OTP_VERIFICATION_SUCCESS = 'OTP Verification Success',
+  OTP_VALIDATION_FAILED = 'OTPValidationFailed',
+  USER_LOGGED_IN = 'UserLoggedIn',
   PRE_APOLLO_CUSTOMER = 'Pre Apollo Customer',
   REGISTRATION_DONE = 'Registration Done',
+  USER_LOGGED_OUT = 'UserLoggedOut',
+  PROFILE_ACCESSED = 'ProfileAccessed',
   NUMBER_OF_PROFILES_FETCHED = 'Number of Profiles fetched',
   SEARCH = 'Pharmacy Search',
   CATEGORY_CLICKED = 'Pharmacy Category Clicked',
   PHARMACY_ADD_TO_CART = 'Pharmacy Add to cart',
-  DIAGNOSTIC_ADD_TO_CART = 'Diagnostic Add to cart',
+  DIAGNOSTIC_ADD_TO_CART = 'ItemAddedtoCart',
   PHARMACY_CART_VIEWED = 'Pharmacy Cart Viewed',
   DIAGNOSTIC_CART_VIEWED = 'Diagnostic Cart Viewed',
   PHARMACY_PROCEED_TO_PAY_CLICKED = 'Pharmacy Proceed To Pay Clicked',
@@ -32,7 +54,11 @@ export enum AppsFlyerEventName {
   CONSULT_COUPON_APPLIED = 'Coupon Applied',
   PAY_BUTTON_CLICKED = 'Pay Button Clicked',
   CONSULTATION_BOOKED = 'Consultation booked',
-
+  CATEGORY_PAGE_VIEWED = 'CategoryPageViewed',
+  PRODUCT_PAGE_VIEWED = 'ItemViewed',
+  ITEMS_REMOVED_FROM_CART = 'Items removed from cart',
+  PHARMACY_CART_ADDRESS_SELECTED_SUCCESS = 'AddressSelected',
+  ORDER_FAILED = 'OrderFailed',
   // HomePageElements Events
   BUY_MEDICINES = 'Buy Medicines',
   ORDER_TESTS = 'Order Tests',
@@ -47,6 +73,8 @@ export enum AppsFlyerEventName {
   // Diagnostics Events
   FEATURED_TEST_CLICKED = 'Featured Test Clicked',
   BROWSE_PACKAGE = 'Browse Package',
+  DIAGNOSTIC_ITEM_VIEWED = 'DiagnosticItemViewed',
+  DIAGNOSTIC_CART_ADDRESS_SELECTED_SUCCESS = 'AddressSelected',
 
   // Health Records
   CONSULT_RX = 'Consult & RX',
@@ -56,6 +84,12 @@ export enum AppsFlyerEventName {
   UPLOAD_PHOTO = 'Upload Photo',
   ITEMS_CLICKED = 'Items Clicked',
   REORDER_MEDICINES = 'Reorder Medicines',
+
+  // Payments Events
+  PAYMENT_INSTRUMENT = 'PaymentModeSelected',
+  PAYMENT_STATUS = 'Payment Status',
+
+  PURCHASE = 'purchase',
 }
 
 export interface PatientInfo {
@@ -83,6 +117,7 @@ export interface SpecialityClickedEvent extends PatientInfo {
 export interface AppsFlyerEvents {
   // ********** AppEvents ********** \\
 
+  [AppsFlyerEventName.OTP_DEMANDED]: { mobilenumber: string };
   [AppsFlyerEventName.MOBILE_NUMBER_ENTERED]: { mobilenumber: string };
   [AppsFlyerEventName.OTP_ENTERED]: YesOrNo;
   [AppsFlyerEventName.PRE_APOLLO_CUSTOMER]: YesOrNo;
@@ -94,6 +129,12 @@ export interface AppsFlyerEvents {
   [AppsFlyerEventName.OTP_VERIFICATION_SUCCESS]: {
     'customer id': string;
   };
+  [AppsFlyerEventName.USER_LOGGED_IN]: {
+    Type: 'Registration' | 'Login';
+    userId: string;
+  };
+  [AppsFlyerEventName.PROFILE_ACCESSED]: { Type: string };
+
   // ********** Home Screen Events ********** \\
 
   [AppsFlyerEventName.BUY_MEDICINES]: PatientInfoWithSource;
@@ -117,6 +158,7 @@ export interface AppsFlyerEvents {
     'category ID': string;
     Source: 'Home'; // Home
     'Section Name': string;
+    imageUrl: string;
   };
   [AppsFlyerEventName.PHARMACY_ADD_TO_CART]: {
     'customer id': string;
@@ -127,16 +169,16 @@ export interface AppsFlyerEvents {
     sku: string;
   };
   [AppsFlyerEventName.DIAGNOSTIC_ADD_TO_CART]: {
-    'product name': string;
-    'product id': string; // (SKUID)
+    productname: string;
+    productid: string; // (SKUID)
     Price: number;
-    'Discounted Price': number;
+    DiscountedPrice: number;
     Quantity: number;
     Source: 'Pharmacy Home' | 'Pharmacy PDP' | 'Pharmacy List' | 'Diagnostic';
     Brand?: string;
-    'Brand ID'?: string;
-    'category name'?: string;
-    'category ID'?: string;
+    BrandID?: string;
+    categoryname?: string;
+    categoryID?: string;
     // 'Patient Name': string;
     // 'Patient UHID': string;
     // Relation: string;
@@ -146,6 +188,7 @@ export interface AppsFlyerEvents {
     // 'Customer ID': string;
   };
   [AppsFlyerEventName.PHARMACY_CART_VIEWED]: {
+    'Customer ID': string;
     'Total items in cart': number;
     'Sub Total': number;
     'Delivery charge': number;
@@ -156,6 +199,11 @@ export interface AppsFlyerEvents {
     'Cart ID'?: string;
     'Cart Items': object[];
     'Service Area': 'Pharmacy' | 'Diagnostic';
+  };
+  [AppsFlyerEventName.CATEGORY_PAGE_VIEWED]: {
+    source: 'home' | 'deeplink' | 'registration';
+    CategoryId: string;
+    CategoryName: string;
   };
   [AppsFlyerEventName.DIAGNOSTIC_CART_VIEWED]: {
     'Total items in cart': number;
@@ -241,7 +289,54 @@ export interface AppsFlyerEvents {
     'Cart ID'?: string | number; // Optional
     'Service Area': 'Pharmacy' | 'Diagnostic';
   };
+  [AppsFlyerEventName.PRODUCT_PAGE_VIEWED]: {
+    source: ProductPageViewedSource;
+    ProductId: string;
+    ProductName: string;
+    Stockavailability: YesOrNo;
+    /**
+     * Category ID & Category Name is applicable if customers clicks on products from any category (all categories of shop by category or health areas)
+     */
+    CategoryID?: string;
+    CategoryName?: string;
+    /**
+     * Section Name is applicable if customer clicked on the product from the homepage product widgets like Hot sellers, Recommended products
+     */
+    SectionName?: string;
+    PatientName?: string;
+    PatientUHID?: string;
+    ItemName?: string;
+    ItemType?: string;
+    ItemCode?: string;
+    ItemPrice?: number;
+    LOB?: string;
+  };
 
+  [AppsFlyerEventName.ITEMS_REMOVED_FROM_CART]: {
+    'Product ID': string;
+    'Customer ID': string;
+    'Product Name': string;
+    'No. of items': number;
+  };
+
+  [AppsFlyerEventName.PHARMACY_CART_ADDRESS_SELECTED_SUCCESS]: {
+    TATDisplayed?: Date;
+    DeliverySuccessful?: YesOrNo; // Yes / No (If Error message shown because it is unservicable)
+    DeliveryAddress?: string;
+    Pincode?: string;
+    DeliveryTAT?: number;
+    LOB?: string;
+  };
+
+  [AppsFlyerEventName.ORDER_FAILED]: {
+    OrderID?: string;
+    Price: number;
+    CouponCode?: string | undefined;
+    CouponValue?: string | undefined;
+    PaymentType: string;
+    LOB: string;
+    Appointment_Id?: string;
+  };
   // ********** ConsultEvents ********** \\
 
   [AppsFlyerEventName.DOCTOR_SEARCH]: {
@@ -344,6 +439,17 @@ export interface AppsFlyerEvents {
     'Customer ID': string;
   };
 
+  [AppsFlyerEventName.DIAGNOSTIC_ITEM_VIEWED]: {
+    PatientUHID: string;
+    PatientName: string;
+    Source: 'Search Page' | 'Landing Page' | 'Cart Page';
+    ItemName: string;
+    ItemType: string;
+    ItemCode: string;
+    ItemPrice: number;
+    LOB: string;
+  };
+
   [AppsFlyerEventName.BROWSE_PACKAGE]: {
     'Package Name': string;
     // Category: string; we don't have category for test
@@ -410,5 +516,13 @@ export interface AppsFlyerEvents {
     'Patient Gender': string;
     'Mobile Number': string;
     'Customer ID': string;
+  };
+
+  [AppsFlyerEventName.PURCHASE]: {
+    coupon?: string;
+    currency: string;
+    items: any;
+    transaction_id: string;
+    value: number;
   };
 }

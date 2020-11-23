@@ -6,7 +6,7 @@ import {
   StyleSheet,
   View,
   KeyboardAvoidingView,
-  ActivityIndicator,
+  SafeAreaView,
   StatusBar,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
@@ -35,6 +35,7 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
   const bankCode = props.navigation.getParam('bankCode')
     ? props.navigation.getParam('bankCode')
     : null;
+  const isDoctorsOfTheHourStatus = props.navigation.getParam('isDoctorsOfTheHourStatus');
   const webEngageEventAttributes = props.navigation.getParam('webEngageEventAttributes');
   const appsflyerEventAttributes = props.navigation.getParam('appsflyerEventAttributes');
   const fireBaseEventAttributes = props.navigation.getParam('fireBaseEventAttributes');
@@ -89,6 +90,8 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
       webEngageEventAttributes: webEngageEventAttributes,
       fireBaseEventAttributes: fireBaseEventAttributes,
       appsflyerEventAttributes: appsflyerEventAttributes,
+      paymentTypeID: paymentTypeID,
+      isDoctorsOfTheHourStatus,
     });
   };
 
@@ -155,15 +158,16 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#01475b" />
-      <Header leftIcon="backArrow" title="PAYMENT" onPressLeftIcon={() => handleBack()} />
-      {Platform.OS == 'android' ? (
-        <KeyboardAvoidingView style={styles.container} behavior={'height'}>
-          {renderwebView()}
-        </KeyboardAvoidingView>
-      ) : (
-        renderwebView()
-      )}
-
+      <SafeAreaView style={styles.container}>
+        <Header leftIcon="backArrow" title="PAYMENT" onPressLeftIcon={() => handleBack()} />
+        {Platform.OS == 'android' ? (
+          <KeyboardAvoidingView style={styles.container} behavior={'height'}>
+            {renderwebView()}
+          </KeyboardAvoidingView>
+        ) : (
+          renderwebView()
+        )}
+      </SafeAreaView>
       {loading && <Spinner />}
     </View>
   );

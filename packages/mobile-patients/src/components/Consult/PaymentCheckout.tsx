@@ -81,6 +81,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
+import messaging from '@react-native-firebase/messaging';
 
 interface PaymentCheckoutProps extends NavigationScreenProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
@@ -111,6 +112,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const nextAvailableSlot = props.navigation.getParam('nextAvailableSlot');
   const selectedTimeSlot = props.navigation.getParam('selectedTimeSlot');
   const whatsAppUpdate = props.navigation.getParam('whatsAppUpdate');
+  const isDoctorsOfTheHourStatus = props.navigation.getParam('isDoctorsOfTheHourStatus');
   const isOnlineConsult = selectedTab === 'Consult Online';
   const { currentPatient } = useAllCurrentPatients();
   const [doctorDiscountedFees, setDoctorDiscountedFees] = useState<number>(0);
@@ -119,6 +121,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const [notificationAlert, setNotificationAlert] = useState(false);
   const scrollviewRef = useRef<any>(null);
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
+  const [disabledCheckout, setDisabledCheckout] = useState<boolean>(true);
 
   const circleDoctorDetails = calculateCareDoctorPricing(doctor);
   const {
@@ -291,6 +294,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
             scrollviewRef.current.scrollToEnd({ animated: true });
           }, 300);
         }}
+        onEndApiCall={() => setDisabledCheckout(false)}
       />
     );
   };
@@ -435,24 +439,17 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     });
 
   const fireBaseFCM = async () => {
-    const enabled = await firebase.messaging().hasPermission();
-    if (enabled) {
-      // user has permissions
-      console.log('enabled', enabled);
-    } else {
-      // user doesn't have permission
-      console.log('not enabled');
-      setNotificationAlert(true);
-      try {
-        const authorized = await firebase.messaging().requestPermission();
-        console.log('authorized', authorized);
-
-        // User has authorised
-      } catch (error) {
-        // User has rejected permissions
-        CommonBugFender('Login_fireBaseFCM_try', error);
-        console.log('not enabled error', error);
+    try {
+      const authStatus = await messaging().hasPermission();
+      const enabled =
+        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+      if (!enabled) {
+        setNotificationAlert(true);
+        await messaging().requestPermission();
       }
+    } catch (error) {
+      CommonBugFender('ConsultOverlay_FireBaseFCM_Error', error);
     }
   };
 
@@ -463,6 +460,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           title={`PAY ${string.common.Rs}${amountToPay} `}
           style={styles.bottomBtn}
           onPress={() => onPressPay()}
+          disabled={disabledCheckout}
         />
       </View>
     );
@@ -674,8 +672,9 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     const localTimeSlot = moment(new Date(time));
     let date = new Date(time);
     // date = new Date(date.getTime() + 5.5 * 60 * 60 * 1000);
-    const doctorClinics = (g(doctor, 'doctorHospital') || []).filter((item: any) => {
-      if (item?.facility?.facilityType) return item?.facility?.facilityType === 'HOSPITAL';
+    const doctorClinics = (g(props.doctor, 'doctorHospital') || []).filter((item) => {
+      if (item && item.facility && item.facility.facilityType)
+        return item.facility.facilityType === 'HOSPITAL';
     });
 
     const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULTATION_BOOKED] = {
@@ -708,6 +707,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
       'Net Amount': amountToPay,
       af_revenue: amountToPay,
       af_currency: 'INR',
+      'Dr of hour appointment': !!isDoctorsOfTheHourStatus ? 'Yes' : 'No',
     };
     return eventAttributes;
   };

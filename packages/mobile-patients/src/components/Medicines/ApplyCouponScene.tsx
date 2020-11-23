@@ -9,6 +9,7 @@ import {
   RadioButtonIcon,
   RadioButtonUnselectedIcon,
   SearchSendIcon,
+  PendingIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -159,7 +160,12 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
   }
 
   useEffect(() => {
-    fetchConsultCoupons(packageId)
+    const data = {
+      packageId,
+      mobile: g(currentPatient, 'mobileNumber'),
+      email: g(currentPatient, 'emailAddress')
+    };
+    fetchConsultCoupons(data)
       .then((res: any) => {
         console.log(JSON.stringify(res.data), 'objobj');
         setcouponList(res.data.response);

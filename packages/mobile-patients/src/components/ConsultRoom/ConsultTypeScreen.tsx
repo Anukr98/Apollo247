@@ -197,6 +197,8 @@ export interface ConsultTypeScreenProps extends NavigationScreenProps {
   onlinePrice: string;
   InpersonPrice: string;
   ConsultType: ConsultMode;
+  availNowText?: string;
+  consultNowText?: string;
 }
 
 type stepsObject = {
@@ -225,7 +227,9 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
     onlineConsultSlashedPrice,
     physicalConsultSlashedPrice,
   } = circleDoctorDetails;
-  const { circleSubscriptionId } = useShoppingCart();
+  const { showCircleSubscribed } = useShoppingCart();
+  const availNowText = props.navigation.getParam('availNowText');
+  const consultNowText = props.navigation.getParam('consultNowText');
 
   const client = useApolloClient();
 
@@ -291,11 +295,11 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
           style={[
             styles.carePrice,
             {
-              textDecorationLine: circleSubscriptionId ? 'line-through' : 'none',
+              textDecorationLine: showCircleSubscribed ? 'line-through' : 'none',
               ...theme.viewStyles.text(
                 'M',
                 15,
-                circleSubscriptionId ? theme.colors.BORDER_BOTTOM_COLOR : theme.colors.LIGHT_BLUE
+                showCircleSubscribed ? theme.colors.BORDER_BOTTOM_COLOR : theme.colors.LIGHT_BLUE
               ),
             },
           ]}
@@ -306,7 +310,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
             : physicalConsultMRPPrice}
         </Text>
         <View style={styles.rowContainer}>
-          {circleSubscriptionId ? <CircleLogo style={styles.careLogo} /> : null}
+          {showCircleSubscribed ? <CircleLogo style={styles.careLogo} /> : null}
           <Text style={styles.careDiscountedPrice}>
             {string.common.Rs}
             {heading === string.consultType.online.heading
@@ -348,6 +352,10 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
     onPress: () => void
   ) => {
     const timeDiff: Number = timeDiffFromNow(time || '');
+    const showCirclePricing =
+      isCircleDoctor &&
+      ((heading === string.consultType.online.heading && onlineConsultMRPPrice > 0) ||
+        (heading === string.consultType.inperson.heading && physicalConsultMRPPrice > 0));
     return (
       <View style={styles.cardContainer}>
         <View style={styles.cardBorderStyle}>
@@ -361,17 +369,17 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
               </Text>
               {time && moment(time).isValid() ? (
                 <Text style={timeDiff <= 15 ? styles.timeText2Style : styles.timeTextStyle}>
-                  {nextAvailability(time)}
+                  {availNowText || nextAvailability(time)}
                 </Text>
               ) : null}
             </View>
-            {isCircleDoctor ? (
+            {showCirclePricing ? (
               renderCareDoctorPricing(heading)
             ) : (
               <Text style={styles.priceTextStyle}>{`${string.common.Rs}${price}`}</Text>
             )}
           </View>
-          {!circleSubscriptionId && isCircleDoctor ? (
+          {!showCircleSubscribed && showCirclePricing ? (
             <TouchableOpacity
               activeOpacity={1}
               onPress={() => openCircleWebView(heading)}
@@ -416,11 +424,14 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
         </View>
         <TouchableOpacity activeOpacity={1} onPress={onPress}>
           <View style={styles.buttonStyle}>
-            <Text style={styles.buttonTextStyle}>{`${
-              time && moment(time).isValid()
-                ? nextAvailability(time, 'Consult')
-                : string.common.book_apointment
-            }`}</Text>
+            <Text style={styles.buttonTextStyle}>
+              {consultNowText ||
+                `${
+                  time && moment(time).isValid()
+                    ? nextAvailability(time, 'Consult')
+                    : string.common.book_apointment
+                }`}
+            </Text>
           </View>
         </TouchableOpacity>
       </View>

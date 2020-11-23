@@ -708,6 +708,7 @@ export interface CouponInput {
 }
 
 export interface CreateUserSubscriptionInput {
+  _id?: string | null;
   plan_id: string;
   payment_reference?: any | null;
   coupon_availed?: string | null;
@@ -828,6 +829,7 @@ export interface EndAppointmentSessionInput {
   callSource?: BOOKINGSOURCE | null;
   callType?: APPT_CALL_TYPE | null;
   appVersion?: string | null;
+  isReferred?: boolean | null;
 }
 
 export interface FilterDoctorInput {
@@ -983,6 +985,7 @@ export interface MedicinePaymentMqInput {
   storeCode?: ONE_APOLLO_STORE_CODE | null;
   subPlanId?: string | null;
   payload?: string | null;
+  healthCreditsSub?: number | null;
 }
 
 export interface MessageInput {
@@ -993,6 +996,7 @@ export interface MessageInput {
   message: string;
   status: notificationStatus;
   type: notificationType;
+  source?: TRANSFER_INITIATED_TYPE | null;
 }
 
 export interface OrderLineItems {
@@ -1102,6 +1106,12 @@ export interface PrescriptionMedicinePaymentOMSDetails {
   paymentDateTime?: any | null;
 }
 
+export interface PrescriptionReUploadInput {
+  orderId: number;
+  fileUrl: string;
+  prismPrescriptionFileId?: string | null;
+}
+
 export interface Range {
   minimum?: number | null;
   maximum?: number | null;
@@ -1110,6 +1120,8 @@ export interface Range {
 export interface SUBSCRIPTION_DETAILS {
   userSubscriptionId?: string | null;
   plan?: PLAN | null;
+  planId?: string | null;
+  groupPlanId?: string | null;
 }
 
 export interface SaveDeviceTokenInput {

@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 import { MEDICINE_ORDER_TYPE, MEDICINE_DELIVERY_TYPE, MEDICINE_ORDER_STATUS, MEDICINE_ORDER_PAYMENT_TYPE, PAYMENT_METHODS_REVERSE, REFUND_STATUS } from "./globalTypes";
@@ -142,6 +143,7 @@ export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetail
   estimatedAmount: number | null;
   prescriptionImageUrl: string | null;
   orderTat: string | null;
+  oldOrderTat: string | null;
   orderType: MEDICINE_ORDER_TYPE | null;
   shopAddress: string | null;
   packagingCharges: number | null;
@@ -149,6 +151,9 @@ export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetail
   currentStatus: MEDICINE_ORDER_STATUS | null;
   patientAddressId: string | null;
   alertStore: boolean | null;
+  prescriptionOptionSelected: string | null;
+  tatType: string | null;
+  shopId: string | null;
   medicineOrderLineItems: (getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderLineItems | null)[] | null;
   medicineOrderPayments: (getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderPayments | null)[] | null;
   medicineOrderRefunds: (getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderRefunds | null)[] | null;

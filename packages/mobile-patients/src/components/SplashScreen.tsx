@@ -8,12 +8,13 @@ import {
   AppStateStatus,
   AppState,
   DeviceEventEmitter,
+  NativeModules,
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import { SplashLogo } from '@aph/mobile-patients/src/components/SplashLogo';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import firebase from 'react-native-firebase';
+import remoteConfig from '@react-native-firebase/remote-config';
 import SplashScreenView from 'react-native-splash-screen';
 import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAuth } from '../hooks/authHooks';
@@ -36,13 +37,20 @@ import {
   APPStateActive,
   postWebEngageEvent,
   callPermissions,
+  UnInstallAppsFlyer,
+  postFirebaseEvent,
+  readableParam,
+  setCrashlyticsAttributes,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   getAppointmentData as getAppointmentDataQuery,
   getAppointmentDataVariables,
 } from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
-import { GET_APPOINTMENT_DATA } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  GET_APPOINTMENT_DATA,
+  GET_ALL_SPECIALTIES,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import {
   ProductPageViewedSource,
   WebEngageEvents,
@@ -55,10 +63,15 @@ import VoipPushNotification from 'react-native-voip-push-notification';
 import { string } from '../strings/string';
 import { isUpperCase } from '@aph/mobile-patients/src/utils/commonUtils';
 import Pubnub from 'pubnub';
-
+import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
+import messaging from '@react-native-firebase/messaging';
 // The moment we import from sdk @praktice/navigator-react-native-sdk,
 // finally not working on all promises.
-
+import {
+  getAllSpecialties,
+  getAllSpecialties_getAllSpecialties,
+} from '@aph/mobile-patients/src/graphql/types/getAllSpecialties';
+import { getMedicineSku } from '@aph/mobile-patients/src/helpers/apiCalls';
 (function() {
   /**
    * Praktice.ai
@@ -114,6 +127,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const voipAppointmentId = useRef<string>('');
   const voipPatientId = useRef<string>('');
   const voipCallType = useRef<string>('');
+  const voipDoctorName = useRef<string>('');
 
   const config: Pubnub.PubnubConfig = {
     subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
@@ -164,6 +178,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   useEffect(() => {
     handleDeepLink();
+    getDeviceToken();
   }, []);
 
   useEffect(() => {
@@ -172,6 +187,27 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       handleVoipEventListeners();
     }
   }, []);
+
+  const getDeviceToken = async () => {
+    const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
+    const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
+    if (
+      !currentDeviceToken ||
+      typeof currentDeviceToken != 'string' ||
+      typeof currentDeviceToken == 'object'
+    ) {
+      messaging()
+        .getToken()
+        .then((token) => {
+          console.log('token', token);
+          AsyncStorage.setItem('deviceToken', JSON.stringify(token));
+          UnInstallAppsFlyer(token);
+        })
+        .catch((e) => {
+          CommonBugFender('SplashScreen_getDeviceToken', e);
+        });
+    }
+  };
 
   const initializeCallkit = () => {
     const callkeepOptions = {
@@ -200,6 +236,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         voipAppointmentId.current = notification.getData().appointmentId;
         voipPatientId.current = notification.getData().patientId;
         voipCallType.current = notification.getData().isVideo ? 'Video' : 'Audio';
+        voipDoctorName.current = notification.getData().name;
       }
     });
   };
@@ -209,6 +246,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   };
 
   const onDisconnetCallAction = () => {
+    fireWebengageEventForCallDecline();
     RNCallKeep.endAllCalls();
     pubnub.publish(
       {
@@ -224,6 +262,24 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     );
   };
 
+  const fireWebengageEventForCallDecline = () => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PATIENT_DECLINED_CALL] = {
+      'Patient User ID': voipPatientId.current,
+      'Patient name': '',
+      'Patient mobile number': '',
+      'Appointment Date time': null,
+      'Appointment display ID': null,
+      'Appointment ID': voipAppointmentId.current,
+      'Doctor Name': voipDoctorName.current,
+      'Speciality Name': '',
+      'Speciality ID': '',
+      'Doctor Type': '',
+      'Mode of Call': voipCallType.current === 'Video' ? 'Video' : 'Audio',
+      Platform: 'App',
+    };
+    postWebEngageEvent(WebEngageEventName.PATIENT_DECLINED_CALL, eventAttributes);
+  };
+
   const handleDeepLink = () => {
     try {
       Linking.getInitialURL()
@@ -232,8 +288,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           if (url) {
             try {
               handleOpenURL(url);
+              fireAppOpenedEvent(url);
               console.log('linking', url);
             } catch (e) {}
+          } else {
+            fireAppOpenedEvent('');
           }
         })
         .catch((e) => {
@@ -245,6 +304,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           console.log('event', event);
           setBugFenderLog('DEEP_LINK_EVENT', JSON.stringify(event));
           handleOpenURL(event.url);
+          fireAppOpenedEvent(event.url);
         } catch (e) {}
       });
       AsyncStorage.removeItem('location');
@@ -260,150 +320,237 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       }
       let route;
 
-      route = event.replace('apollopatients://', '');
+      const a = event.indexOf('https://www.apollo247.com');
 
-      const data = route.split('?');
-      setBugFenderLog('DEEP_LINK_DATA', data);
-      route = data[0];
+      if (a != -1) {
+        handleDeeplinkFormatTwo(event);
+      } else {
+        route = event.replace('apollopatients://', '');
 
-      // console.log(data, 'data');
+        const data = route.split('?');
+        setBugFenderLog('DEEP_LINK_DATA', data);
+        route = data[0];
 
-      let linkId = '';
+        // console.log(data, 'data');
 
-      try {
-        if (data.length >= 2) {
-          linkId = data[1].split('&');
-          if (linkId.length > 0) {
-            linkId = linkId[0];
-            setBugFenderLog('DEEP_LINK_SPECIALITY_ID', linkId);
+        let linkId = '';
+
+        try {
+          if (data.length >= 2) {
+            linkId = data[1].split('&');
+            if (linkId.length > 0) {
+              linkId = linkId[0];
+              setBugFenderLog('DEEP_LINK_SPECIALITY_ID', linkId);
+            }
           }
+        } catch (error) {}
+        console.log(linkId, 'linkId');
+
+        switch (route) {
+          case 'Consult':
+            console.log('Consult');
+            getData('Consult', data.length === 2 ? linkId : undefined);
+            break;
+
+          case 'Medicine':
+            console.log('Medicine');
+            getData('Medicine', data.length === 2 ? linkId : undefined);
+            break;
+
+          case 'UploadPrescription':
+            getData('UploadPrescription', data.length === 2 ? linkId : undefined);
+            break;
+
+          case 'MedicineRecommendedSection':
+            getData('MedicineRecommendedSection');
+            break;
+
+          case 'Test':
+            console.log('Test');
+            getData('Test');
+            break;
+
+          case 'Speciality':
+            console.log('Speciality handleopen');
+            if (data.length === 2) getData('Speciality', linkId);
+            break;
+
+          case 'Doctor':
+            console.log('Doctor handleopen');
+            if (data.length === 2) getData('Doctor', linkId);
+            break;
+
+          case 'DoctorSearch':
+            console.log('DoctorSearch handleopen');
+            getData('DoctorSearch');
+            break;
+
+          case 'MedicineSearch':
+            console.log('MedicineSearch handleopen');
+            getData('MedicineSearch', data.length === 2 ? linkId : undefined);
+            break;
+
+          case 'MedicineDetail':
+            console.log('MedicineDetail handleopen');
+            getData('MedicineDetail', data.length === 2 ? linkId : undefined);
+            break;
+
+          case 'MedicineCart':
+            console.log('MedicineCart handleopen');
+            getData('MedicineCart', data.length === 2 ? linkId : undefined);
+            break;
+
+          case 'ChatRoom':
+            if (data.length === 2) getAppointmentDataAndNavigate(linkId, false);
+            break;
+
+          case 'DoctorCall':
+            if (data.length === 2) {
+              const params = linkId.split('+');
+              voipCallType.current = params[1];
+              callPermissions();
+              getAppointmentDataAndNavigate(params[0], true);
+            }
+            break;
+
+          case 'Order':
+            if (data.length === 2) getData('Order', linkId);
+            break;
+
+          case 'MyOrders':
+            getData('MyOrders');
+            break;
+
+          case 'webview':
+            if (data.length === 2) {
+              let url = data[1].replace('param=', '');
+              getData('webview', url);
+            }
+            break;
+          case 'FindDoctors':
+            if (data.length === 2) getData('FindDoctors', linkId);
+            break;
+
+          case 'HealthRecordsHome':
+            console.log('HealthRecordsHome handleopen');
+            getData('HealthRecordsHome');
+            break;
+
+          case 'ManageProfile':
+            console.log('ManageProfile handleopen');
+            getData('ManageProfile');
+            break;
+
+          case 'OneApolloMembership':
+            getData('OneApolloMembership');
+            break;
+
+          case 'TestDetails':
+            getData('TestDetails', data.length === 2 ? linkId : undefined);
+            break;
+
+          case 'ConsultDetails':
+            getData('ConsultDetails', data.length === 2 ? linkId : undefined);
+            break;
+
+          default:
+            getData('ConsultRoom', undefined, true);
+            // webengage event
+            const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
+              source: 'deeplink',
+            };
+            postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
+            break;
         }
-      } catch (error) {}
-      console.log(linkId, 'linkId');
-
-      switch (route) {
-        case 'Consult':
-          console.log('Consult');
-          getData('Consult', data.length === 2 ? linkId : undefined);
-          break;
-
-        case 'Medicine':
-          console.log('Medicine');
-          getData('Medicine', data.length === 2 ? linkId : undefined);
-          break;
-
-        case 'UploadPrescription':
-          getData('UploadPrescription', data.length === 2 ? linkId : undefined);
-          break;
-
-        case 'MedicineRecommendedSection':
-          getData('MedicineRecommendedSection');
-          break;
-
-        case 'Test':
-          console.log('Test');
-          getData('Test');
-          break;
-
-        case 'Speciality':
-          console.log('Speciality handleopen');
-          if (data.length === 2) getData('Speciality', linkId);
-          break;
-
-        case 'Doctor':
-          console.log('Doctor handleopen');
-          if (data.length === 2) getData('Doctor', linkId);
-          break;
-
-        case 'DoctorSearch':
-          console.log('DoctorSearch handleopen');
-          getData('DoctorSearch');
-          break;
-
-        case 'MedicineSearch':
-          console.log('MedicineSearch handleopen');
-          getData('MedicineSearch', data.length === 2 ? linkId : undefined);
-          break;
-
-        case 'MedicineDetail':
-          console.log('MedicineDetail handleopen');
-          getData('MedicineDetail', data.length === 2 ? linkId : undefined);
-          break;
-
-        case 'MedicineCart':
-          console.log('MedicineCart handleopen');
-          getData('MedicineCart', data.length === 2 ? linkId : undefined);
-          break;
-
-        case 'ChatRoom':
-          if (data.length === 2) getAppointmentDataAndNavigate(linkId, false);
-          break;
-
-        case 'DoctorCall':
-          if (data.length === 2) {
-            const params = linkId.split('+');
-            voipCallType.current = params[1];
-            callPermissions();
-            getAppointmentDataAndNavigate(params[0], true);
-          }
-          break;
-
-        case 'Order':
-          if (data.length === 2) getData('Order', linkId);
-          break;
-
-        case 'MyOrders':
-          getData('MyOrders');
-          break;
-
-        case 'webview':
-          if (data.length === 2) {
-            let url = data[1].replace('param=', '');
-            getData('webview', url);
-          }
-          break;
-        case 'FindDoctors':
-          if (data.length === 2) getData('FindDoctors', linkId);
-          break;
-
-        case 'HealthRecordsHome':
-          console.log('HealthRecordsHome handleopen');
-          getData('HealthRecordsHome');
-          break;
-
-        case 'ManageProfile':
-          console.log('ManageProfile handleopen');
-          getData('ManageProfile');
-          break;
-
-        case 'OneApolloMembership':
-          getData('OneApolloMembership');
-          break;
-
-        case 'TestDetails':
-          getData('TestDetails', data.length === 2 ? linkId : undefined);
-          break;
-
-        case 'ConsultDetails':
-          getData('ConsultDetails', data.length === 2 ? linkId : undefined);
-          break;
-
-        default:
-          getData('ConsultRoom', undefined, true);
-          // webengage event
-          const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
-            source: 'deeplink',
-          };
-          postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
-          break;
+        console.log('route', route);
       }
-      console.log('route', route);
     } catch (error) {}
   };
 
+  const handleDeeplinkFormatTwo = (event: any) => {
+    const url = event.replace('https://www.apollo247.com/', '');
+    const data = url.split('/');
+    const route = data[0];
+    let linkId = '';
+    try {
+      if (data.length >= 2) {
+        linkId = data[1].split('&');
+        if (linkId.length > 0) {
+          linkId = linkId[0];
+        }
+      }
+    } catch (error) {}
+    switch (route) {
+      case 'medicines':
+        getData('Medicine');
+        break;
+      case 'prescription-review':
+        getData('UploadPrescription');
+        break;
+      case 'specialties':
+        linkId == '' ? getData('DoctorSearch') : getData('SpecialityByName', linkId);
+        break;
+      case 'doctors':
+        linkId == '' ? getData('DoctorSearch') : getData('DoctorByNameId', linkId);
+        break;
+      case 'medicine':
+        linkId == '' ? getData('Medicine') : getData('MedicineByName', linkId);
+        break;
+      default:
+        getData('ConsultRoom', undefined, true);
+        const eventAttributes: WebEngageEvents[WebEngageEventName.HOME_PAGE_VIEWED] = {
+          source: 'deeplink',
+        };
+        postWebEngageEvent(WebEngageEventName.HOME_PAGE_VIEWED, eventAttributes);
+        break;
+    }
+  };
+
+  async function fireAppOpenedEvent(event: any) {
+    const a = event.indexOf('apollopatients://');
+    const b = event.indexOf('https://www.apollo247.com');
+    let attributes: FirebaseEvents[FirebaseEventName.APP_OPENED] = {
+      utm_source: 'not set',
+      utm_medium: 'not set',
+      utm_campaign: 'not set',
+      utm_term: 'not set',
+      utm_content: 'not set',
+      referrer: 'not set',
+    };
+    if (a != -1) {
+      const route = event.replace('apollopatients://', '');
+      const data = route.split('?');
+      if (data.length >= 2) {
+        const params = data[1].split('&');
+        const utmParams = params.map((item: any) => item.split('='));
+        utmParams.forEach((item: any) => item?.length == 2 && (attributes[item[0]] = item[1]));
+        console.log('attributes >>>', attributes);
+        postFirebaseEvent(FirebaseEventName.APP_OPENED, attributes);
+      }
+    }
+    if (b != -1) {
+      const route = event.replace('https://www.apollo247.com/', '');
+      const data = route.split('?');
+      if (data.length >= 2) {
+        const params = data[1].split('&');
+        const utmParams = params.map((item: any) => item.split('='));
+        utmParams.forEach((item: any) => item?.length == 2 && (attributes[item[0]] = item[1]));
+        console.log('attributes >>>', attributes);
+        postFirebaseEvent(FirebaseEventName.APP_OPENED, attributes);
+      } else {
+        const referrer = await NativeModules.GetReferrer.referrer();
+        attributes['referrer'] = referrer;
+        console.log('attributes >>>', attributes);
+        postFirebaseEvent(FirebaseEventName.APP_OPENED, attributes);
+      }
+    }
+    if (!event) {
+      console.log('attributes >>>', attributes);
+      postFirebaseEvent(FirebaseEventName.APP_OPENED, attributes);
+    }
+  }
   const getData = (routeName: String, id?: String, timeout?: boolean, isCall?: boolean) => {
     async function fetchData() {
-      firebase.analytics().setAnalyticsCollectionEnabled(true);
       // const onboarding = await AsyncStorage.getItem('onboarding');
       const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
       const signUp = await AsyncStorage.getItem('signUp');
@@ -411,7 +558,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       AsyncStorage.setItem('showSchduledPopup', 'false');
 
       const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
-      const item = JSON.parse(retrievedItem);
+      const item = JSON.parse(retrievedItem || 'null');
 
       const callByPrism: any = await AsyncStorage.getItem('callByPrism');
       let allPatients;
@@ -444,6 +591,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
             if (mePatient) {
               if (mePatient.firstName !== '') {
+                setCrashlyticsAttributes(mePatient);
                 pushTheView(routeName, id ? id : undefined, isCall);
               } else {
                 props.navigation.replace(AppRoutes.Login);
@@ -586,7 +734,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           const [itemId, name] = id.split(',');
           console.log(itemId, name);
 
-          props.navigation.navigate(AppRoutes.SearchByBrand, {
+          props.navigation.navigate(AppRoutes.MedicineListing, {
             category_id: itemId,
             title: `${name ? name : 'Products'}`.toUpperCase(),
             movedFrom: 'deeplink',
@@ -657,29 +805,63 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           isVoipCall: false,
         });
         break;
-
+      case 'SpecialityByName':
+        fetchSpecialities(id);
+        break;
+      case 'DoctorByNameId':
+        const docId = id.slice(-36);
+        props.navigation.navigate(AppRoutes.DoctorDetails, {
+          doctorId: docId,
+        });
+        break;
+      case 'MedicineByName':
+        getMedicineSKU(id);
+        break;
       default:
         break;
     }
   };
 
-  // useEffect(() => {
-  //   console.log('SplashScreen signInError', signInError);
+  const fetchSpecialities = async (specialityName: string) => {
+    setshowSpinner(true);
+    try {
+      const response = await client.query<getAllSpecialties>({
+        query: GET_ALL_SPECIALTIES,
+        fetchPolicy: 'no-cache',
+      });
+      const { data } = response;
+      if (data?.getAllSpecialties && data?.getAllSpecialties.length) {
+        const specialityId = getSpecialityId(specialityName, data?.getAllSpecialties);
+        props.navigation.navigate(AppRoutes.DoctorSearchListing, {
+          specialityId: specialityId,
+        });
+      }
+    } catch (error) {
+      CommonBugFender('DoctorSearch_fetchSpecialities', error);
+      props.navigation.navigate(AppRoutes.ConsultRoom);
+    }
+  };
 
-  //   firebase.analytics().setCurrentScreen('SplashScreen');
+  const getSpecialityId = (name: string, specialities: getAllSpecialties_getAllSpecialties[]) => {
+    const specialityObject = specialities.filter((item) => name == readableParam(item?.name));
+    return specialityObject[0].id ? specialityObject[0].id : '';
+  };
 
-  //   if (signInError) {
-  //     setshowSpinner(false);
-
-  //     AsyncStorage.setItem('userLoggedIn', 'false');
-  //     AsyncStorage.setItem('multiSignUp', 'false');
-  //     AsyncStorage.setItem('signUp', 'false');
-  //     signOut();
-  //     props.navigation.replace(AppRoutes.Login);
-  //   }
-
-  //   SplashScreenView.hide();
-  // }, [props.navigation, signInError, signOut]);
+  const getMedicineSKU = async (skuKey: string) => {
+    try {
+      const response = await getMedicineSku(skuKey);
+      const { data } = response;
+      data?.Message == 'Product available'
+        ? props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+            sku: data?.sku,
+            movedFrom: ProductPageViewedSource.DEEP_LINK,
+          })
+        : props.navigation.navigate('MEDICINES');
+    } catch (error) {
+      CommonBugFender('getMedicineSku', error);
+      props.navigation.navigate('MEDICINES');
+    }
+  };
 
   const {
     setLocationDetails,
@@ -775,7 +957,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     },
   };
 
-  const getConfigStringBasedOnEnv = (
+  const getKeyBasedOnEnv = (
     currentEnv: AppEnv,
     config: typeof RemoteConfigKeys,
     _key: keyof typeof RemoteConfigKeys
@@ -788,109 +970,81 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       : valueBasedOnEnv.DEV || valueBasedOnEnv.QA || valueBasedOnEnv.PROD;
   };
 
-  const getRemoteConfigKeys = (): string[] => {
-    return (Object.keys(RemoteConfigKeys) as (keyof typeof RemoteConfigKeys)[]).map((configKey) =>
-      getConfigStringBasedOnEnv(APP_ENV, RemoteConfigKeys, configKey)
-    );
-  };
-
   const getRemoteConfigValue = (
     remoteConfigKey: keyof typeof RemoteConfigKeys,
-    snapshot: {
-      [key: string]: { val(): any };
-    }
-  ) => snapshot[getConfigStringBasedOnEnv(APP_ENV, RemoteConfigKeys, remoteConfigKey)].val();
+    processValue: (key: string) => any
+  ) => {
+    const key = getKeyBasedOnEnv(APP_ENV, RemoteConfigKeys, remoteConfigKey);
+    return processValue(key);
+  };
 
   const setAppConfig = (
     remoteConfigKey: keyof typeof RemoteConfigKeys,
     appConfigKey: keyof typeof AppConfig.Configuration,
-    snapshot: {
-      [key: string]: { val(): any };
-    },
-    processValue?: (val: string | number) => any
+    processValue: (key: string) => any
   ) => {
-    const _val = snapshot[
-      getConfigStringBasedOnEnv(APP_ENV, RemoteConfigKeys, remoteConfigKey)
-    ].val();
-    const finalValue = processValue ? processValue(_val) : _val;
-    updateAppConfig(appConfigKey, finalValue);
+    const key = getKeyBasedOnEnv(APP_ENV, RemoteConfigKeys, remoteConfigKey);
+    const value = processValue(key);
+    updateAppConfig(appConfigKey, value);
   };
 
-  const checkForVersionUpdate = () => {
-    console.log('checkForVersionUpdate');
-
+  const checkForVersionUpdate = async () => {
     try {
-      if (__DEV__) {
-        firebase.config().enableDeveloperMode();
+      // Note: remote config values will be cached for the specified duration in development mode, update below value if necessary.
+      const minimumFetchIntervalMillis = __DEV__ ? 43200000 : 0;
+      await remoteConfig().setConfigSettings({ minimumFetchIntervalMillis });
+      await remoteConfig().fetchAndActivate();
+      const config = remoteConfig();
+
+      const needHelpToContactInMessage = getRemoteConfigValue('Need_Help_To_Contact_In', (key) =>
+        config.getString(key)
+      );
+      needHelpToContactInMessage && setNeedHelpToContactInMessage!(needHelpToContactInMessage);
+
+      setAppConfig(
+        'Min_Value_For_Pharmacy_Free_Delivery',
+        'MIN_CART_VALUE_FOR_FREE_DELIVERY',
+        (key) => config.getNumber(key)
+      );
+
+      setAppConfig(
+        'min_value_to_nudge_users_to_avail_free_delivery',
+        'MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY',
+        (key) => config.getNumber(key)
+      );
+
+      setAppConfig('Pharmacy_Delivery_Charges', 'DELIVERY_CHARGES', (key) => config.getNumber(key));
+
+      setAppConfig('Doctor_Partner_Text', 'DOCTOR_PARTNER_TEXT', (key) => config.getString(key));
+
+      setAppConfig('Doctors_Page_Size', 'Doctors_Page_Size', (key) => config.getNumber(key));
+
+      setAppConfig('top6_specailties', 'TOP_SPECIALITIES', (key) =>
+        JSON.parse(config.getString(key) || 'null')
+      );
+
+      setAppConfig('Enable_Conditional_Management', 'ENABLE_CONDITIONAL_MANAGEMENT', (key) =>
+        config.getBoolean(key)
+      );
+
+      const { iOS_Version, Android_Version } = AppConfig.Configuration;
+      const isIOS = Platform.OS === 'ios';
+      const appVersion = coerce(isIOS ? iOS_Version : Android_Version)?.version;
+      const appLatestVersionFromConfig = getRemoteConfigValue(
+        isIOS ? 'ios_Latest_version' : 'android_latest_version',
+        (key) => config.getString(key)
+      );
+      const appLatestVersion = coerce(appLatestVersionFromConfig)?.version;
+      const isMandatory: boolean = getRemoteConfigValue(
+        isIOS ? 'ios_mandatory' : 'Android_mandatory',
+        (key) => config.getBoolean(key)
+      );
+
+      if (appVersion && appLatestVersion && isLessThan(appVersion, appLatestVersion)) {
+        showUpdateAlert(isMandatory);
       }
-
-      firebase
-        .config()
-        .fetch(30 * 0) // 30 min
-        .then(() => {
-          return firebase.config().activateFetched();
-        })
-        .then(() => {
-          return firebase.config().getValues(getRemoteConfigKeys());
-        })
-        .then((snapshot) => {
-          const needHelpToContactInMessage = getRemoteConfigValue(
-            'Need_Help_To_Contact_In',
-            snapshot
-          );
-          needHelpToContactInMessage && setNeedHelpToContactInMessage!(needHelpToContactInMessage);
-
-          setAppConfig(
-            'Min_Value_For_Pharmacy_Free_Delivery',
-            'MIN_CART_VALUE_FOR_FREE_DELIVERY',
-            snapshot
-          );
-
-          setAppConfig(
-            'min_value_to_nudge_users_to_avail_free_delivery',
-            'MIN_VALUE_TO_NUDGE_USERS_TO_AVAIL_FREE_DELIVERY',
-            snapshot
-          );
-
-          setAppConfig('Pharmacy_Delivery_Charges', 'DELIVERY_CHARGES', snapshot);
-
-          setAppConfig('Doctor_Partner_Text', 'DOCTOR_PARTNER_TEXT', snapshot);
-
-          setAppConfig('Doctors_Page_Size', 'Doctors_Page_Size', snapshot);
-          setAppConfig('top6_specailties', 'TOP_SPECIALITIES', snapshot, (val: any) =>
-            JSON.parse(val)
-          );
-
-          try {
-            AsyncStorage.setItem(
-              'CMEnable',
-              JSON.stringify(getRemoteConfigValue('Enable_Conditional_Management', snapshot))
-            );
-          } catch (error) {}
-
-          const { iOS_Version, Android_Version } = AppConfig.Configuration;
-          const isIOS = Platform.OS === 'ios';
-          const appVersion = coerce(isIOS ? iOS_Version : Android_Version)?.version;
-          const appLatestVersionFromConfig = getRemoteConfigValue(
-            isIOS ? 'ios_Latest_version' : 'android_latest_version',
-            snapshot
-          );
-          const appLatestVersion = coerce(appLatestVersionFromConfig)?.version;
-          const isMandatory: boolean = getRemoteConfigValue(
-            isIOS ? 'ios_mandatory' : 'Android_mandatory',
-            snapshot
-          );
-
-          if (appVersion && appLatestVersion && isLessThan(appVersion, appLatestVersion)) {
-            showUpdateAlert(isMandatory);
-          }
-        })
-        .catch((error) => {
-          CommonBugFender('SplashScreen_checkForVersionUpdate', error);
-          console.log(`Error processing config: ${error}`);
-        });
     } catch (error) {
-      CommonBugFender('SplashScreen_checkForVersionUpdate_try', error);
+      CommonBugFender('SplashScreen - Error processing remote config', error);
     }
   };
 

@@ -27,11 +27,12 @@ export interface ShoppingCartItem {
   couponPrice?: number;
   isInStock: boolean;
   unserviceable?: boolean;
+  unavailableOnline?: boolean; // sell_online
   isMedicine: boolean;
   productType?: 'FMCG' | 'Pharma' | 'PL';
   isFreeCouponProduct?: boolean;
   applicable?: boolean;
-  circleCashbackAmt: number;
+  circleCashbackAmt?: number;
 }
 
 export interface CouponProducts {
@@ -97,6 +98,10 @@ export interface CircleCashbackData {
   PL: number | null;
   PHARMA: number | null;
 }
+export interface onHold {
+  id: string;
+  itemName?: string;
+}
 
 export type EPrescriptionDisableOption = 'CAMERA_AND_GALLERY' | 'E-PRESCRIPTION' | 'NONE';
 
@@ -157,7 +162,8 @@ export interface ShoppingCartContextProps {
   addAddress: ((address: savePatientAddress_savePatientAddress_patientAddress) => void) | null;
   deliveryAddressId: string;
   setDeliveryAddressId: ((id: string) => void) | null;
-
+  deliveryTime: string;
+  setdeliveryTime: ((date: string) => void) | null;
   newAddressAdded: string;
   setNewAddressAdded: ((id: string) => void) | null;
 
@@ -188,6 +194,11 @@ export interface ShoppingCartContextProps {
   selectDefaultPlan: ((plan: any) => void) | null;
   defaultCirclePlan: any;
   setDefaultCirclePlan: ((plan: any) => void) | null;
+  onHoldOptionOrder: onHold[];
+  setOnHoldOptionOrder: ((items: onHold[]) => void) | null;
+  autoCirlcePlanAdded: boolean;
+  setAutoCirlcePlanAdded: ((planAdded: boolean) => void) | null;
+  showCircleSubscribed: boolean;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -272,12 +283,20 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   selectDefaultPlan: null,
   defaultCirclePlan: null,
   setDefaultCirclePlan: null,
+  onHoldOptionOrder: [],
+  setOnHoldOptionOrder: null,
+  deliveryTime: '',
+  setdeliveryTime: null,
+  autoCirlcePlanAdded: false,
+  setAutoCirlcePlanAdded: null,
+  showCircleSubscribed: false,
 });
 
 const AsyncStorageKeys = {
   cartItems: 'cartItems',
   ePrescriptions: 'ePrescriptions',
   physicalPrescriptions: 'physicalPrescriptions',
+  onHoldOptionOrder: 'onHoldItems',
 };
 
 const showGenericAlert = (message: string) => {
@@ -305,6 +324,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [newAddressAdded, _setNewAddedAddress] = useState<
     ShoppingCartContextProps['newAddressAdded']
   >('');
+  const [deliveryTime, setdeliveryTime] = useState<ShoppingCartContextProps['deliveryTime']>('');
   const [storeId, _setStoreId] = useState<ShoppingCartContextProps['storeId']>('');
   const [coupon, setCoupon] = useState<ShoppingCartContextProps['coupon']>(null);
   const [deliveryType, setDeliveryType] = useState<ShoppingCartContextProps['deliveryType']>(null);
@@ -318,6 +338,12 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [defaultCirclePlan, setDefaultCirclePlan] = useState<
     ShoppingCartContextProps['defaultCirclePlan']
   >(null);
+  const [autoCirlcePlanAdded, setAutoCirlcePlanAdded] = useState<
+    ShoppingCartContextProps['autoCirlcePlanAdded']
+  >(false);
+  const showCircleSubscribed =
+    circleSubscriptionId || (!autoCirlcePlanAdded && circlePlanSelected && !defaultCirclePlan);
+
   const [isFreeDelivery, setIsFreeDelivery] = useState<ShoppingCartContextProps['isFreeDelivery']>(
     false
   );
@@ -342,6 +368,10 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [couponProducts, _setCouponProducts] = useState<ShoppingCartContextProps['couponProducts']>(
     []
   );
+
+  const [onHoldOptionOrder, _setOnHoldOptionOrder] = useState<
+    ShoppingCartContextProps['onHoldOptionOrder']
+  >([]);
 
   const [physicalPrescriptions, _setPhysicalPrescriptions] = useState<
     ShoppingCartContextProps['physicalPrescriptions']
@@ -491,6 +521,16 @@ export const ShoppingCartProvider: React.FC = (props) => {
     _setCouponProducts(items);
   };
 
+  const setOnHoldOptionOrder: ShoppingCartContextProps['setOnHoldOptionOrder'] = (items) => {
+    const addOnHoldItems = [...onHoldOptionOrder, ...items];
+    _setOnHoldOptionOrder(addOnHoldItems);
+    AsyncStorage.setItem(AsyncStorageKeys.onHoldOptionOrder, JSON.stringify(addOnHoldItems)).catch(
+      () => {
+        console.log('Failed to save on hold options in local storage.');
+      }
+    );
+  };
+
   const cartTotal: ShoppingCartContextProps['cartTotal'] = parseFloat(
     cartItems
       .reduce((currTotal, currItem) => currTotal + currItem.quantity * currItem.price, 0)
@@ -604,6 +644,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     setCoupon(null);
     setCouponProducts([]);
     setHdfcPlanName('');
+    setdeliveryTime('');
   };
 
   useEffect(() => {
@@ -614,14 +655,17 @@ export const ShoppingCartProvider: React.FC = (props) => {
           AsyncStorageKeys.cartItems,
           AsyncStorageKeys.physicalPrescriptions,
           AsyncStorageKeys.ePrescriptions,
+          AsyncStorageKeys.onHoldOptionOrder,
         ]);
         const cartItems = cartItemsFromStorage[0][1];
         const physicalPrescriptions = cartItemsFromStorage[1][1];
         const ePrescriptions = cartItemsFromStorage[2][1];
+        const showOnHoldOptions = cartItemsFromStorage[3][1];
 
         _setCartItems(JSON.parse(cartItems || 'null') || []);
         _setPhysicalPrescriptions(JSON.parse(physicalPrescriptions || 'null') || []);
         _setEPrescriptions(JSON.parse(ePrescriptions || 'null') || []);
+        _setOnHoldOptionOrder(JSON.parse(showOnHoldOptions || 'null') || []);
       } catch (error) {
         CommonBugFender('ShoppingCartProvider_updateCartItemsFromStorage_try', error);
         showGenericAlert('Failed to get cart items from local storage.');
@@ -840,6 +884,13 @@ export const ShoppingCartProvider: React.FC = (props) => {
         selectDefaultPlan,
         defaultCirclePlan,
         setDefaultCirclePlan,
+        onHoldOptionOrder,
+        setOnHoldOptionOrder,
+        deliveryTime,
+        setdeliveryTime,
+        autoCirlcePlanAdded,
+        setAutoCirlcePlanAdded,
+        showCircleSubscribed,
       }}
     >
       {props.children}

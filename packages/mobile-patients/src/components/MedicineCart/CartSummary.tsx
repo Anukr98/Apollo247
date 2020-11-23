@@ -41,6 +41,7 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import {
   postwebEngageProceedToPayEvent,
   uploadPrescriptionClickedEvent,
+  postTatResponseFailureEvent,
 } from '@aph/mobile-patients/src/components/MedicineCart/Events';
 import { UPLOAD_DOCUMENT, SET_DEFAULT_ADDRESS } from '@aph/mobile-patients/src/graphql/profiles';
 import { uploadDocument } from '@aph/mobile-patients/src/graphql/types/uploadDocument';
@@ -49,6 +50,7 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import {
   postPhamracyCartAddressSelectedFailure,
   postPharmacyAddNewAddressClick,
+  postPhamracyCartAddressSelectedSuccess,
 } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import { AddressSource } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
@@ -56,6 +58,7 @@ import {
   makeAdressAsDefaultVariables,
   makeAdressAsDefault,
 } from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
+import moment from 'moment';
 
 export interface CartSummaryProps extends NavigationScreenProps {}
 
@@ -71,6 +74,8 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
     setCartItems,
     setPhysicalPrescriptions,
     setAddresses,
+    deliveryTime,
+    setdeliveryTime,
   } = useShoppingCart();
   const { setPharmacyLocation } = useAppCommonData();
   const { showAphAlert, hideAphAlert } = useUIElements();
@@ -87,11 +92,9 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   const [shopId, setShopId] = useState<string | undefined>(
     props.navigation.getParam('shopId') || ''
   );
-  const [deliveryTime, setdeliveryTime] = useState<string>(
-    props.navigation.getParam('deliveryTime')
-  );
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
   const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>(false);
+  const [appState, setappState] = useState<string>('');
   const shoppingCart = useShoppingCart();
 
   useEffect(() => {
@@ -107,8 +110,14 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
   }, [isPhysicalUploadComplete]);
 
   const handleAppStateChange = (nextAppState: AppStateStatus) => {
-    nextAppState === 'active' && availabilityTat(deliveryAddressId);
+    setappState(nextAppState);
   };
+
+  useEffect(() => {
+    if (appState == 'active') {
+      availabilityTat(deliveryAddressId);
+    }
+  }, [appState]);
 
   function hasUnserviceableproduct() {
     const unserviceableItems = cartItems.filter((item) => item.unserviceable) || [];
@@ -185,36 +194,69 @@ export const CartSummary: React.FC<CartSummaryProps> = (props) => {
           lng: selectedAddress?.longitude!,
           items: serviceableItems,
         };
-        const res = await getDeliveryTAT247(tatInput);
-        setloading!(false);
-        const tatResponse = res?.data?.response;
-        const tatTimeStamp = tatResponse?.tatU;
-        if (tatTimeStamp && tatTimeStamp !== -1) {
-          const deliveryDate = tatResponse?.tat;
-          if (deliveryDate) {
-            const inventoryData = tatResponse?.items || [];
-            if (inventoryData && inventoryData.length) {
-              setStoreType(tatResponse?.storeType);
-              setShopId(tatResponse?.storeCode);
-              setStoreDistance(tatResponse?.distance);
-              setdeliveryTime(deliveryDate);
-              updatePricesAfterTat(inventoryData, updatedCartItems);
-              if (unserviceableSkus.length) {
-                // showUnServiceableItemsAlert(updatedCartItems);
-                props.navigation.goBack();
+        try {
+          const res = await getDeliveryTAT247(tatInput);
+          setloading!(false);
+          const tatResponse = res?.data?.response;
+          const tatTimeStamp = tatResponse?.tatU;
+          if (tatTimeStamp && tatTimeStamp !== -1) {
+            const deliveryDate = tatResponse?.tat;
+            if (deliveryDate) {
+              const inventoryData = tatResponse?.items || [];
+              if (inventoryData && inventoryData.length) {
+                setStoreType(tatResponse?.storeType);
+                setShopId(tatResponse?.storeCode);
+                setStoreDistance(tatResponse?.distance);
+                setdeliveryTime?.(deliveryDate);
+                addressSelectedEvent(selectedAddress, deliveryDate);
+                updatePricesAfterTat(inventoryData, updatedCartItems);
+                if (unserviceableSkus.length) {
+                  props.navigation.goBack();
+                }
               }
+            } else {
+              handleTatApiFailure(selectedAddress, {});
             }
           } else {
-            setloading(false);
+            handleTatApiFailure(selectedAddress, {});
           }
-        } else {
-          setloading(false);
+        } catch (error) {
+          handleTatApiFailure(selectedAddress, error);
         }
       } catch (error) {
-        console.log(error);
-        setloading(false);
+        handleTatApiFailure(selectedAddress, error);
       }
     }
+  }
+
+  const genericServiceableDate = moment()
+    .add(2, 'days')
+    .set('hours', 20)
+    .set('minutes', 0)
+    .format(AppConfig.Configuration.TAT_API_RESPONSE_DATE_FORMAT);
+
+  function handleTatApiFailure(
+    selectedAddress: savePatientAddress_savePatientAddress_patientAddress,
+    error: any
+  ) {
+    addressSelectedEvent(selectedAddress, genericServiceableDate);
+    setdeliveryTime?.(genericServiceableDate);
+    postTatResponseFailureEvent(cartItems, selectedAddress.zipcode || '', error);
+    setloading(false);
+  }
+
+  function addressSelectedEvent(
+    address: savePatientAddress_savePatientAddress_patientAddress,
+    tatDate: string
+  ) {
+    const currentDate = moment();
+    postPhamracyCartAddressSelectedSuccess(
+      address?.zipcode!,
+      formatAddress(address),
+      'Yes',
+      new Date(tatDate),
+      moment(tatDate).diff(currentDate, 'd')
+    );
   }
 
   function updatePricesAfterTat(

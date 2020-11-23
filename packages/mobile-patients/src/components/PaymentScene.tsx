@@ -183,10 +183,12 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
         const paymentEventAttributes = {
           order_Id: orderId,
           order_AutoId: orderAutoId,
-          Type: 'Pharmacy',
+          LOB: 'Pharmacy',
           Payment_Status: 'PAYMENT_SUCCESS',
         };
         postWebEngageEvent(WebEngageEventName.PAYMENT_STATUS, paymentEventAttributes);
+        postAppsFlyerEvent(AppsFlyerEventName.PAYMENT_STATUS, paymentEventAttributes);
+        postFirebaseEvent(FirebaseEventName.PAYMENT_STATUS, paymentEventAttributes);
         postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, checkoutEventAttributes);
         postAppsFlyerEvent(
           AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED,
@@ -357,6 +359,18 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
     });
   };
 
+  const fireOrderFailedEvent = () => {
+    const eventAttributes: FirebaseEvents[FirebaseEventName.ORDER_FAILED] = {
+      OrderID: orderId,
+      Price: totalAmount,
+      CouponCode: coupon,
+      PaymentType: paymentTypeID,
+      LOB: 'Pharmacy',
+    };
+    postAppsFlyerEvent(AppsFlyerEventName.ORDER_FAILED, eventAttributes);
+    postFirebaseEvent(FirebaseEventName.ORDER_FAILED, eventAttributes);
+  };
+
   const onWebViewStateChange = (data: NavState) => {
     const redirectedUrl = data.url;
     console.log({ redirectedUrl, data });
@@ -370,6 +384,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       redirectedUrl &&
       redirectedUrl.indexOf(AppConfig.Configuration.PAYMENT_GATEWAY_ERROR_PATH) > -1
     ) {
+      fireOrderFailedEvent();
       props.navigation.navigate(AppRoutes.PaymentStatus, {
         orderId: orderId,
         orderAutoId: orderAutoId,
@@ -377,6 +392,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
         paymentTypeID: paymentTypeID,
       });
     }
+
     // const isMatchesSuccessUrl =
     //   (redirectedUrl &&
     //     redirectedUrl.indexOf(AppConfig.Configuration.PAYMENT_GATEWAY_SUCCESS_PATH) > -1) ||

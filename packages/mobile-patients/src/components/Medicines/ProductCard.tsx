@@ -53,12 +53,18 @@ export const ProductCard: React.FC<Props> = ({
   const discount = getDiscountPercentage(price, special_price);
 
   const renderPrice = () => {
-    const strikeOffPrice = `(Rs. ${price})`;
-    const finalPrice = `  Rs. ${discount ? special_price : price}`;
+    const strikeOffPrice = `(₹ ${price})`;
+    const mrp = 'MRP  ';
+    const finalPrice = `₹${discount ? special_price : price}`;
     return (
       <View style={styles.priceContainer}>
-        {!!discount && <Text style={styles.priceStrikeOff}>{strikeOffPrice}</Text>}
+        <Text style={styles.finalPrice}>{mrp}</Text>
         <Text style={styles.finalPrice}>{finalPrice}</Text>
+        {!!discount && (
+          <View style={styles.specialPriceContainer}>
+            <Text style={styles.priceStrikeOff}>{strikeOffPrice}</Text>
+          </View>
+        )}
       </View>
     );
   };
@@ -84,9 +90,11 @@ export const ProductCard: React.FC<Props> = ({
   const renderNotForSaleTag = () => <NotForSaleBadge />;
 
   const renderImage = () => (
-    <View style={{
-      alignSelf: 'flex-start'
-    }}>
+    <View
+      style={{
+        alignSelf: 'flex-start',
+      }}
+    >
       <Image
         placeholderStyle={styles.imagePlaceHolder}
         PlaceholderContent={isPrescriptionRequired ? <MedicineRxIcon /> : <MedicineIcon />}
@@ -108,14 +116,14 @@ export const ProductCard: React.FC<Props> = ({
         <OfferIcon />
         <Text style={styles.discountTagText}>-{discount}%</Text>
       </View>
-  )
+    );
 
   const renderExpressFlag = () => {
     return (
-      <View style={[styles.expressContainer, {top: !!discount ? 40 : 10}]}>
+      <View style={[styles.expressContainer, { top: !!discount ? 40 : 10 }]}>
         <ExpressDeliveryLogo style={styles.expressLogo} />
       </View>
-    )
+    );
   };
 
   const renderDivider = () => <Divider style={styles.divider} />;
@@ -127,11 +135,11 @@ export const ProductCard: React.FC<Props> = ({
       return (
         <CareCashbackBanner
           bannerText={`Extra Care ₹${cashback} Cashback`}
-          textStyle={{left: -5}}
+          textStyle={{ left: -5 }}
         />
       );
     } else {
-      return <></>
+      return <></>;
     }
   };
 
@@ -157,7 +165,7 @@ const styles = StyleSheet.create({
   card: {
     ...theme.viewStyles.card(12, 0),
     width: 168,
-    maxHeight: 245,
+    height: 245,
   },
   image: {
     resizeMode: 'contain',
@@ -176,7 +184,10 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   priceContainer: {
-    // paddingVertical: 10,
+    paddingVertical: 5,
+    flexDirection: 'row',
+  },
+  specialPriceContainer: {
     flexDirection: 'row',
   },
   finalPrice: {
@@ -184,6 +195,7 @@ const styles = StyleSheet.create({
   },
   priceStrikeOff: {
     ...text('M', 13, '#01475b', 0.6, 24),
+    textAlign: 'center',
     textDecorationLine: 'line-through',
   },
   addToCart: {
@@ -215,5 +227,5 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
     width: 50,
     height: 25,
-  }
+  },
 });

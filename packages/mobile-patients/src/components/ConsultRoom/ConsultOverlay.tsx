@@ -85,6 +85,7 @@ export interface ConsultOverlayProps extends NavigationScreenProps {
   callSaveSearch: string;
   mainContainerStyle?: StyleProp<ViewStyle>;
   scrollToSlot?: boolean;
+  isDoctorsOfTheHourStatus?: boolean;
 }
 export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const client = useApolloClient();
@@ -239,6 +240,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       selectedTimeSlot: selectedTimeSlot,
       followUp: props.FollowUp,
       whatsAppUpdate: whatsAppUpdate,
+      isDoctorsOfTheHourStatus: props.isDoctorsOfTheHourStatus,
     });
   };
 
@@ -253,17 +255,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         }}
       >
         <Button
-          title={`${string.common.proceedToCheckout} - ${string.common.Rs}${
-            isCircleDoctor
-              ? selectedTab === 'Consult Online'
-                ? circleSubscriptionId
-                  ? onlineConsultSlashedPrice
-                  : onlineConsultMRPPrice
-                : circleSubscriptionId
-                ? physicalConsultSlashedPrice
-                : physicalConsultMRPPrice
-              : Number(doctorFees)
-          }`}
+          title={`${string.common.proceedToCheckout}`}
           disabled={
             disablePay
               ? true

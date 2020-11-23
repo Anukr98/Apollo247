@@ -1,12 +1,29 @@
-import { MedicineIcon, MedicineRxIcon, ExpressDeliveryLogo } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  MedicineIcon,
+  MedicineRxIcon,
+  ExpressDeliveryLogo,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
-import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
-import { getDiscountPercentage, getCareCashback } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { CareCashbackBanner } from './CareCashbackBanner';
+import {
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  TouchableOpacityProps,
+  View,
+  StyleProp,
+  ViewStyle,
+} from 'react-native';
+import {
+  getDiscountPercentage,
+  productsThumbnailUrl,
+  getCareCashback,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { Image } from 'react-native-elements';
 import { AddToCartButtons } from '@aph/mobile-patients/src/components/Medicines/AddToCartButtons';
 import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
-import { CareCashbackBanner } from './CareCashbackBanner';
+import { MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -43,11 +60,13 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0),
     marginLeft: 2,
   },
+  mrp: {
+    ...theme.viewStyles.text('M', 11, '#02475b', 1, 20, 0),
+  },
   offTextStyle: {
     ...theme.viewStyles.text('M', 11, '#00B38E', 1, 20, 0),
   },
   priceAndAddToCartViewStyle: {
-    marginLeft: 3,
     flexDirection: 'row',
     position: 'absolute',
     bottom: 10,
@@ -81,7 +100,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   expressContainer: {
-    alignItems:'flex-end',
+    alignItems: 'flex-end',
     marginBottom: 6,
   },
   expressLogo: {
@@ -89,17 +108,13 @@ const styles = StyleSheet.create({
     width: 50,
     height: 20,
   },
+  imageStyle: {
+    height: 40,
+    width: 40,
+  },
 });
 
-export interface SearchMedicineGridCardProps {
-  isSellOnline: boolean;
-  medicineName: string;
-  specialPrice?: number;
-  price: number;
-  imageUrl?: string;
-  quantity: number;
-  isInStock: boolean;
-  isPrescriptionRequired: boolean;
+export interface Props extends MedicineProduct {
   onPress: () => void;
   onPressAdd: () => void;
   onNotifyMeClicked: () => void;
@@ -110,36 +125,42 @@ export interface SearchMedicineGridCardProps {
   removeCartItem: () => void;
   type_id?: string | null;
   is_express?: 'Yes' | 'No';
+  onPressAddToCart: () => void;
+  onPressNotify: () => void;
+  onPressAddQty: () => void;
+  onPressSubtractQty: () => void;
+  quantity: number;
 }
 
-export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (props) => {
+export const SearchMedicineGridCard: React.FC<Props> = (props) => {
   const {
-    isSellOnline,
-    medicineName,
-    specialPrice,
+    name,
     price,
-    imageUrl,
-    isInStock,
+    special_price,
+    thumbnail,
+    is_in_stock,
+    sell_online,
+    is_prescription_required,
+    MaxOrderQty,
     quantity,
     containerStyle,
-    isPrescriptionRequired,
-    onNotifyMeClicked,
-    onPressAddQuantity,
-    onPressSubtractQuantity,
-    onPressAdd,
     onPress,
     maxOrderQty,
     removeCartItem,
     type_id,
     is_express,
+    onPressAddToCart,
+    onPressNotify,
+    onPressAddQty,
+    onPressSubtractQty,
   } = props;
 
   const renderTitleAndIcon = () => {
     return (
       <View style={styles.rowSpaceBetweenView}>
         <View style={{ flex: 1 }}>
-          <Text style={styles.medicineTitle} numberOfLines={specialPrice ? 2 : 3}>
-            {medicineName}
+          <Text style={styles.medicineTitle} numberOfLines={special_price ? 2 : 3}>
+            {name}
           </Text>
         </View>
       </View>
@@ -151,23 +172,11 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
   const renderAddToCartView = () => {
     return (
       <TouchableOpacity
-        style={[styles.addToCartViewStyle, isInStock && { paddingHorizontal: 23.5 }]}
-        activeOpacity={1}
-        onPress={!isInStock ? onNotifyMeClicked : onPressAdd}
+        style={[styles.addToCartViewStyle, !!is_in_stock && { paddingHorizontal: 23 }]}
+        onPress={!is_in_stock ? onPressNotify : onPressAddToCart}
       >
-        <Text
-          style={{
-            ...theme.viewStyles.text(
-              'SB',
-              !isInStock ? 9 : 10,
-              '#fc9916',
-              1,
-              !isInStock ? 17 : 24.2,
-              0
-            ),
-          }}
-        >
-          {!isInStock ? 'NOTIFY ME' : 'ADD'}
+        <Text style={theme.viewStyles.text('SB', 9, '#fc9916', 1, 24, 0)}>
+          {!is_in_stock ? 'NOTIFY ME' : 'ADD'}
         </Text>
       </TouchableOpacity>
     );
@@ -178,10 +187,10 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
       <View style={styles.qtyViewStyle}>
         <AddToCartButtons
           numberOfItemsInCart={quantity}
-          maxOrderQty={maxOrderQty}
-          addToCart={onPressAddQuantity}
-          removeItemFromCart={onPressSubtractQuantity}
-          removeFromCart={removeCartItem}
+          maxOrderQty={MaxOrderQty}
+          addToCart={onPressAddQty}
+          removeItemFromCart={onPressSubtractQty}
+          removeFromCart={onPressSubtractQty}
           isSolidContainer={false}
         />
       </View>
@@ -189,14 +198,15 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
   };
 
   const renderMedicineIcon = () => {
+    const isPrescriptionRequired = is_prescription_required == 1;
     return (
       <View style={styles.medicineIconViewStyle}>
-        {imageUrl ? (
+        {thumbnail ? (
           <Image
             PlaceholderContent={isPrescriptionRequired ? <MedicineRxIcon /> : <MedicineIcon />}
             placeholderStyle={{ backgroundColor: 'transparent' }}
-            source={{ uri: imageUrl }}
-            style={{ height: 40, width: 36 }}
+            source={{ uri: productsThumbnailUrl(thumbnail) }}
+            style={styles.imageStyle}
             resizeMode="contain"
           />
         ) : isPrescriptionRequired ? (
@@ -209,45 +219,48 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
   };
 
   const renderSpecialPrice = () => {
-    const off_text = getDiscountPercentage(price, specialPrice)
-      ? ' ' + getDiscountPercentage(price, specialPrice) + '%off'
-      : '';
-    return isInStock && specialPrice ? (
+    const discount = getDiscountPercentage(price, special_price);
+    const off_text = discount ? ' ' + discount + '%off' : '';
+    return is_in_stock ? (
       <View style={{ flexDirection: 'row' }}>
-        <Text style={styles.specialpriceTextStyle}>
-          {'('}
-          <Text style={{ textDecorationLine: 'line-through' }}>{`Rs. ${price}`}</Text>
-          {')'}
-        </Text>
-        <Text style={styles.offTextStyle}>{off_text}</Text>
+        <Text style={styles.mrp}>{'MRP '}</Text>
+        {!!special_price && [
+          <Text style={styles.specialpriceTextStyle}>
+            {'('}
+            <Text style={{ textDecorationLine: 'line-through' }}>{`Rs. ${price}`}</Text>
+            {')'}
+          </Text>,
+          <Text style={styles.offTextStyle}>{off_text}</Text>,
+        ]}
       </View>
     ) : null;
   };
 
   const renderOutOfStock = () => {
-    return !isInStock && isSellOnline ? (
+    const discount = getDiscountPercentage(price, special_price);
+    return !is_in_stock && sell_online ? (
       <Text style={styles.outOfStockStyle} numberOfLines={2}>
         {'Out Of Stock'}
       </Text>
     ) : (
-      <Text style={styles.priceTextCollapseStyle}>Rs. {specialPrice || price}</Text>
+      <Text style={styles.priceTextCollapseStyle}>Rs. {discount ? special_price : price}</Text>
     );
   };
 
   const renderCareCashback = () => {
-    const finalPrice = (price - Number(specialPrice)) ? Number(specialPrice) : price;
+    const finalPrice = price - Number(special_price) ? Number(special_price) : price;
     const cashback = getCareCashback(Number(finalPrice), type_id);
     if (!!cashback && type_id) {
       return (
         <CareCashbackBanner
           bannerText={`Extra Care ₹${cashback.toFixed(2)} Cashback`}
           textStyle={{
-            left: -5
+            left: -5,
           }}
         />
       );
     } else {
-      return <></>
+      return <></>;
     }
   };
 
@@ -256,7 +269,7 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
       <View style={styles.expressContainer}>
         <ExpressDeliveryLogo style={styles.expressLogo} />
       </View>
-    )
+    );
   };
 
   return (
@@ -274,7 +287,7 @@ export const SearchMedicineGridCard: React.FC<SearchMedicineGridCardProps> = (pr
       {renderSpecialPrice()}
       <View style={styles.priceAndAddToCartViewStyle}>
         {renderOutOfStock()}
-        {!isSellOnline
+        {!sell_online
           ? renderNotForSaleTag()
           : !quantity
           ? renderAddToCartView()

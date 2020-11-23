@@ -38,16 +38,12 @@ import {
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  SAVE_SEARCH,
   GET_RECOMMENDED_PRODUCTS_LIST,
   GET_LATEST_MEDICINE_ORDER,
   GET_PATIENT_ADDRESS_LIST,
   SET_DEFAULT_ADDRESS,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import {
-  SEARCH_TYPE,
-  MEDICINE_ORDER_TYPE,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { MEDICINE_ORDER_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   Brand,
   getMedicinePageProducts,
@@ -72,6 +68,8 @@ import {
   reOrderMedicines,
   getMaxQtyForMedicineItem,
   setWebEngageScreenNames,
+  postAppsFlyerEvent,
+  postFirebaseEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
@@ -120,11 +118,16 @@ import {
   MedicineReOrderOverlayProps,
   MedicineReOrderOverlay,
 } from '@aph/mobile-patients/src/components/Medicines/MedicineReOrderOverlay';
+import {
+  MedicineCategoryTree,
+  Props as MedicineCategoryTreeProps,
+} from '@aph/mobile-patients/src/components/Medicines/MedicineCategoryTree';
 import { ProductList } from '@aph/mobile-patients/src/components/Medicines/ProductList';
 import { ProductCard } from '@aph/mobile-patients/src/components/Medicines/ProductCard';
 import { ProductPageViewedEventProps } from '@aph/mobile-patients/src/components/Medicines/MedicineDetailsScene';
 import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails } from '../../graphql/types/getMedicineOrderOMSDetailsWithAddress';
 import _ from 'lodash';
+import { CategoryAndSpecialOffers } from '@aph/mobile-patients/src/components/Medicines/CategoryAndSpecialOffers';
 import { AccessLocation } from '@aph/mobile-patients/src/components/Medicines/Components/AccessLocation';
 import {
   getPatientAddressList,
@@ -139,8 +142,14 @@ import {
   makeAdressAsDefault,
 } from '@aph/mobile-patients/src/graphql/types/makeAdressAsDefault';
 import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
+import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
+import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
+
+const { width: winWidth } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
+  searchInput: { minHeight: undefined, paddingVertical: 8 },
+  searchInputContainer: { marginBottom: 15, marginTop: 5 },
   sliderDotStyle: {
     height: 8,
     width: 8,
@@ -154,19 +163,24 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     justifyContent: 'center',
   },
-  searchBarSuggestionsViewStyle: {
-    flex: 1,
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    left: 0,
-    top: 76,
+  categoryAndSpecialOffers: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 20,
+    paddingBottom: 10,
   },
-  searchBarAndSuggestionMainViewStyle: {
-    flex: 1,
-    position: 'absolute',
-    width: '100%',
+  categoryTreeWrapper: {
+    ...StyleSheet.absoluteFill,
+    marginTop: -20,
+    flexDirection: 'row',
+  },
+  categoryTreeContainer: {
     height: '100%',
+    width: '75%',
+  },
+  categoryTreeDismissView: {
+    height: '100%',
+    width: winWidth,
+    backgroundColor: 'rgba(0,0,0,0.31)',
   },
   circleBanner: {
     resizeMode: 'contain',
@@ -241,11 +255,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const [recommendedProducts, setRecommendedProducts] = useState<MedicineProduct[]>([]);
   const [data, setData] = useState<MedicinePageAPiResponse | null>(medicinePageAPiResponse);
+  const [categoryTreeVisible, setCategoryTreeVisible] = useState(false);
   const [loading, setLoading] = useState<boolean>(!medicinePageAPiResponse);
   const [error, setError] = useState<boolean>(false);
   const banners = !loading && !error && data ? filterBanners(g(data, 'mainbanners') || []) : [];
   const [imgHeight, setImgHeight] = useState(120);
-  const { width: winWidth } = Dimensions.get('window');
   const [bannerLoading, setBannerLoading] = useState(true);
   const defaultAddress = addresses.find((item) => item.defaultAddress);
   const hasLocation = locationDetails || pharmacyLocation || defaultAddress;
@@ -255,16 +269,24 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     categoryId: string,
     categoryName: string,
     sectionName: string,
-    imageUrl: string
+    source: WebEngageEvents[WebEngageEventName.CATEGORY_CLICKED]['Source']
   ) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.CATEGORY_CLICKED] = {
       'category name': categoryName,
       'category ID': categoryId,
       'Section Name': sectionName,
-      Source: 'Home',
-      imageUrl: imageUrl,
+      Source: source,
     };
     postWebEngageEvent(WebEngageEventName.CATEGORY_CLICKED, eventAttributes);
+    postAppsFlyerEvent(AppsFlyerEventName.CATEGORY_CLICKED, eventAttributes);
+
+    const firebaseEventAttributes: FirebaseEvents[FirebaseEventName.CATEGORY_CLICKED] = {
+      categoryname: categoryName,
+      categoryID: categoryId,
+      Source: 'Home', // Home
+      SectionName: sectionName,
+    };
+    postFirebaseEvent(FirebaseEventName.CATEGORY_CLICKED, firebaseEventAttributes);
   };
 
   const WebEngageEventAutoDetectLocation = (pincode: string, serviceable: boolean) => {
@@ -683,7 +705,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       if (formattedRecommendedProducts.length >= 5) {
         setRecommendedProducts(formattedRecommendedProducts);
         showRecommendedSection &&
-          props.navigation.navigate(AppRoutes.SearchByBrand, {
+          props.navigation.navigate(AppRoutes.MedicineListing, {
             category_id: -1,
             products: formattedRecommendedProducts,
             title: string.medicine.recommendedForYou,
@@ -982,9 +1004,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       };
       postWebEngageEvent(WebEngageEventName.PHARMACY_BANNER_CLICK, eventAttributes);
       if (item.category_id) {
-        props.navigation.navigate(AppRoutes.SearchByBrand, {
+        props.navigation.navigate(AppRoutes.MedicineListing, {
           category_id: item.category_id,
-          title: item.name || '',
+          title: item.name || 'Products',
         });
       } else if (item.sku) {
         props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
@@ -1369,15 +1391,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               item.title,
               productsThumbnailUrl(item.image_url),
               () => {
-                postwebEngageCategoryClickedEvent(
-                  item.category_id,
-                  item.title,
-                  title,
-                  productsThumbnailUrl(item.image_url)
-                );
-                props.navigation.navigate(AppRoutes.SearchByBrand, {
+                postwebEngageCategoryClickedEvent(item.category_id, item.title, title, 'Home');
+                props.navigation.navigate(AppRoutes.MedicineListing, {
                   category_id: item.category_id,
-                  title: `${item.title || 'Products'}`.toUpperCase(),
+                  title: item.title || 'Products',
                 });
               },
               {
@@ -1411,7 +1428,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     if (dealsOfTheDay.length == 0) return null;
     return (
       <View>
-        {renderCircleBanner()}
+        {/* {renderCircleBanner()} */}
         <SectionHeader leftText={title} />
         <FlatList
           bounces={false}
@@ -1424,13 +1441,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               <TouchableOpacity
                 activeOpacity={1}
                 onPress={() => {
-                  postwebEngageCategoryClickedEvent(
-                    item.category_id,
-                    'Banner',
-                    title,
-                    productsThumbnailUrl(item.image_url)
-                  );
-                  props.navigation.navigate(AppRoutes.SearchByBrand, {
+                  postwebEngageCategoryClickedEvent(item.category_id, 'Banner', title, 'Home');
+                  props.navigation.navigate(AppRoutes.MedicineListing, {
                     category_id: item.category_id,
                     title: title,
                   });
@@ -1485,10 +1497,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           onPressRightText={
             categoryId
               ? () =>
-                  props.navigation.navigate(AppRoutes.SearchByBrand, {
-                    category_id: categoryId,
+                  props.navigation.navigate(AppRoutes.MedicineListing, {
+                    category_id: categoryId == -1 ? undefined : categoryId,
                     products: categoryId == -1 ? products : null,
-                    title: `${title || 'Products'}`.toUpperCase(),
+                    title: title || 'Products',
                     movedFrom: 'home',
                   })
               : undefined
@@ -1540,15 +1552,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             return renderBrandCard(
               imgUrl,
               () => {
-                postwebEngageCategoryClickedEvent(
-                  item.category_id,
-                  item.title,
-                  title,
-                  productsThumbnailUrl(item.image_url)
-                );
-                props.navigation.navigate(AppRoutes.SearchByBrand, {
+                postwebEngageCategoryClickedEvent(item.category_id, item.title, title, 'Home');
+                props.navigation.navigate(AppRoutes.MedicineListing, {
                   category_id: item.category_id,
-                  title: `${item.title || 'Products'}`.toUpperCase(),
+                  title: item.title || 'Products',
                 });
               },
               {
@@ -1608,7 +1615,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             Source: 'Pharmacy Home',
           };
           postWebEngageEvent(WebEngageEventName.PHARMACY_SEARCH_RESULTS, eventAttributes);
-          props.navigation.navigate(AppRoutes.SearchMedicineScene, { searchText });
+          props.navigation.navigate(AppRoutes.MedicineListing, { searchText });
           setSearchText('');
           setMedicineList([]);
         }}
@@ -1632,11 +1639,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 Source: 'Pharmacy Home',
               };
               postWebEngageEvent(WebEngageEventName.PHARMACY_SEARCH_RESULTS, eventAttributes);
-              props.navigation.navigate(AppRoutes.SearchMedicineScene, { searchText });
+              props.navigation.navigate(AppRoutes.MedicineListing, { searchText });
             }
           }}
           value={searchText}
-          onFocus={() => setSearchFocused(true)}
+          onFocus={() => {
+            setSearchFocused(true);
+            setCategoryTreeVisible(false);
+          }}
           onBlur={() => {
             setSearchFocused(false);
             setMedicineList([]);
@@ -1651,6 +1661,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 return;
               }
               const search = _.debounce(onSearchMedicine, 300);
+              if (value.length >= 3) {
+                setsearchSate('load');
+              } // this block is to fix no results errorMessage appearing while loading response
               setSearchQuery((prevSearch: any) => {
                 if (prevSearch.cancel) {
                   prevSearch.cancel();
@@ -1663,24 +1676,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           _rigthIconView={rigthIconView}
           placeholder="Search meds, brands &amp; more"
           _itemsNotFound={itemsNotFound}
+          inputStyle={styles.searchInput}
+          containerStyle={styles.searchInputContainer}
         />
       </>
     );
   };
 
   const client = useApolloClient();
-  const savePastSeacrh = (sku: string, name: string) =>
-    client.mutate({
-      mutation: SAVE_SEARCH,
-      variables: {
-        saveSearchInput: {
-          type: SEARCH_TYPE.MEDICINE,
-          typeId: sku,
-          typeName: name,
-          patient: currentPatient && currentPatient.id ? currentPatient.id : '',
-        },
-      },
-    });
 
   const onAddCartItem = (item: MedicineProduct) => {
     const {
@@ -1753,7 +1756,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       <MedicineSearchSuggestionItem
         onPress={() => {
           CommonLogEvent(AppRoutes.Medicine, 'Search suggestion Item');
-          savePastSeacrh(`${item.sku}`, item.name).catch((e) => {});
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: item.sku,
             movedFrom: ProductPageViewedSource.PARTIAL_SEARCH,
@@ -1867,7 +1869,17 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
     return (
       <ScrollView removeClippedSubviews={true} bounces={false}>
-        <View style={{ height: 10 }} />
+        <CategoryAndSpecialOffers
+          containerStyle={styles.categoryAndSpecialOffers}
+          onPressShopByCategory={() => setCategoryTreeVisible(true)}
+          onPressSpecialOffers={() => {
+            const categoryId = AppConfig.Configuration.SPECIAL_OFFERS_CATEGORY_ID;
+            props.navigation.navigate(AppRoutes.MedicineListing, {
+              category_id: categoryId,
+              title: string.specialOffers,
+            });
+          }}
+        />
         {sectionsView}
         {!error && <View style={{ height: 20 }} />}
       </ScrollView>
@@ -1877,22 +1889,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const renderOverlay = () => {
     const isNoResultsFound =
       searchSate != 'load' && searchText.length > 2 && medicineList.length == 0;
-    const overlayStyle = {
-      flex: 1,
-      position: 'absolute',
-      left: 0,
-      top: 0,
-      backgroundColor: 'rgba(0,0,0,0.5)',
-      width: Dimensions.get('window').width,
-      height: Dimensions.get('window').height,
-    } as ViewStyle;
 
     return (
       (!!medicineList.length || searchSate == 'load' || isNoResultsFound) && (
-        <View style={overlayStyle}>
+        <View style={theme.viewStyles.overlayStyle}>
           <TouchableOpacity
             activeOpacity={1}
-            style={overlayStyle}
+            style={theme.viewStyles.overlayStyle}
             onPress={() => {
               if (medicineList.length == 0 && !searchText) return;
               setSearchText('');
@@ -1950,6 +1953,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       },
     });
     const effectivePrice = Math.round(cartTotal - cartTotalCashback);
+    console.log('cartTotalCashback: ', cartTotalCashback);
     return (
       <View style={circleStyles.container}>
         <View style={circleStyles.content}>
@@ -1961,37 +1965,51 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               {cartItems.length}
             </Text>
           </View>
-          {isCircleSubscription ? (
-            <View>
-              <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 20, 0)}>₹{cartTotal}</Text>
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-                <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 25, 0)}>
-                  Effective price for
-                </Text>
-                <CircleLogo style={circleStyles.circleLogoTwo} />
-                <Text style={{ ...theme.viewStyles.text('R', 12, '#02475B', 1, 25, 0), left: -3 }}>
-                  members
-                </Text>
-                <Text style={theme.viewStyles.text('SB', 12, '#02475B', 1, 25, 0)}>
-                  ₹{effectivePrice}
+          {
+            cartTotalCashback > 1 ? (
+              <>
+              {isCircleSubscription ? (
+                <View>
+                  <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 20, 0)}>₹{cartTotal}</Text>
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+                    <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 25, 0)}>
+                      Effective price for
+                    </Text>
+                    <CircleLogo style={circleStyles.circleLogoTwo} />
+                    <Text style={{ ...theme.viewStyles.text('R', 12, '#02475B', 1, 25, 0), left: -3 }}>
+                      members
+                    </Text>
+                    <Text style={theme.viewStyles.text('SB', 12, '#02475B', 1, 25, 0)}>
+                      ₹{effectivePrice}
+                    </Text>
+                  </View>
+                </View>
+              ) : (
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={() => setShowCirclePopup(true)}
+                  style={circleStyles.upgrade}
+                >
+                  <View style={circleStyles.upgradeTo}>
+                    <Text style={theme.viewStyles.text('M', 13, '#FCB716', 1, 20, 0)}>UPGRADE TO</Text>
+                    <CircleLogo style={circleStyles.circleLogo} />
+                  </View>
+                  <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 17, 0)}>
+                    {`Get effective price of ₹${effectivePrice}`}
+                  </Text>
+                </TouchableOpacity>
+              )}
+              </>
+            ) : (
+              <View style={{
+                marginTop: 13,
+              }}>
+                <Text style={theme.viewStyles.text('SB', 16, '#02475B', 1, 20, 0)}>
+                  ₹{cartTotal}
                 </Text>
               </View>
-            </View>
-          ) : (
-            <TouchableOpacity
-              activeOpacity={1}
-              onPress={() => setShowCirclePopup(true)}
-              style={circleStyles.upgrade}
-            >
-              <View style={circleStyles.upgradeTo}>
-                <Text style={theme.viewStyles.text('M', 13, '#FCB716', 1, 20, 0)}>UPGRADE TO</Text>
-                <CircleLogo style={circleStyles.circleLogo} />
-              </View>
-              <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 17, 0)}>
-                {`Get effective price of ₹${effectivePrice}`}
-              </Text>
-            </TouchableOpacity>
-          )}
+            )
+          }
           <TouchableOpacity
             style={circleStyles.cartButton}
             onPress={() => {
@@ -1999,7 +2017,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             }}
           >
             <Text style={theme.viewStyles.text('B', 13, '#FFFFFF', 1, 20, 0)}>GO TO CART</Text>
-            {!isCircleSubscription && (
+            {(!isCircleSubscription && cartTotalCashback > 1) && (
               <Text style={theme.viewStyles.text('M', 12, '#02475B', 1, 20, 0)}>
                 {`Buy for ₹${cartTotal}`}
               </Text>
@@ -2032,6 +2050,40 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
+  const renderCategoryTree = () => {
+    const onPressCategory: MedicineCategoryTreeProps['onPressCategory'] = (category, tree) => {
+      setCategoryTreeVisible(false);
+      postwebEngageCategoryClickedEvent(
+        category.category_id,
+        category.title,
+        tree?.[0]?.title,
+        'Category Tree'
+      );
+      props.navigation.navigate(AppRoutes.MedicineListing, {
+        category_id: category.category_id,
+        title: category.title,
+        breadCrumb: tree,
+      });
+    };
+    const onPressDismissView = () => {
+      setCategoryTreeVisible(false);
+    };
+    return (
+      categoryTreeVisible && (
+        <View style={styles.categoryTreeWrapper}>
+          <MedicineCategoryTree
+            containerStyle={styles.categoryTreeContainer}
+            onPressCategory={onPressCategory}
+            categories={data?.categories || []}
+          />
+          <TouchableOpacity onPress={onPressDismissView}>
+            <View style={styles.categoryTreeDismissView} />
+          </TouchableOpacity>
+        </View>
+      )
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ ...viewStyles.container }}>
@@ -2044,6 +2096,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           {renderSections()}
           {renderOverlay()}
           {!!cartItems.length && renderCircleCartDetails()}
+          {renderCategoryTree()}
         </View>
       </SafeAreaView>
       {isSelectPrescriptionVisible && renderEPrescriptionModal()}

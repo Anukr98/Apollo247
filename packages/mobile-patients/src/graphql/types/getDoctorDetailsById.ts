@@ -18,6 +18,13 @@ export interface getDoctorDetailsById_getDoctorDetailsById_doctorPricing {
   appointment_type: APPOINTMENT_TYPE | null;
 }
 
+export interface getDoctorDetailsById_getDoctorDetailsById_availabilityTitle {
+  __typename: "AvailabilityTitle";
+  AVAILABLE_NOW: string | null;
+  CONSULT_NOW: string | null;
+  DOCTOR_OF_HOUR: string | null;
+}
+
 export interface getDoctorDetailsById_getDoctorDetailsById_specialty {
   __typename: "DoctorSpecialties";
   id: string;
@@ -139,6 +146,7 @@ export interface getDoctorDetailsById_getDoctorDetailsById {
   displayName: string | null;
   doctorType: DoctorType;
   chatDays: number | null;
+  doctorsOfTheHourStatus: boolean | null;
   qualification: string | null;
   mobileNumber: string;
   experience: string | null;
@@ -149,6 +157,7 @@ export interface getDoctorDetailsById_getDoctorDetailsById {
   photoUrl: string | null;
   availableModes: (ConsultMode | null)[] | null;
   doctorPricing: (getDoctorDetailsById_getDoctorDetailsById_doctorPricing | null)[] | null;
+  availabilityTitle: getDoctorDetailsById_getDoctorDetailsById_availabilityTitle | null;
   specialty: getDoctorDetailsById_getDoctorDetailsById_specialty | null;
   registrationNumber: string;
   onlineConsultationFees: string;

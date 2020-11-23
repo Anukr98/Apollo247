@@ -31,14 +31,16 @@ export const AddedCirclePlanWithValidity: React.FC<AddedCirclePlanWithValidityPr
             on your purchase
           </Text>
           <View style={[styles.spaceRow, { alignItems: 'flex-start' }]}>
-            <View>
-              <Text style={theme.viewStyles.text('R', 12, theme.colors.BORDER_BOTTOM_COLOR)}>
-                {string.circleDoctors.validTill}{' '}
-                <Text style={theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE)}>
-                  {moment(circlePlanDetails?.end_date).format('D MMMM YYYY')}
+            {circlePlanDetails?.end_date ? (
+              <View>
+                <Text style={theme.viewStyles.text('R', 12, theme.colors.BORDER_BOTTOM_COLOR)}>
+                  {string.circleDoctors.validTill}{' '}
+                  <Text style={theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE)}>
+                    {moment(circlePlanDetails?.end_date).format('D MMMM YYYY')}
+                  </Text>
                 </Text>
-              </Text>
-            </View>
+              </View>
+            ) : null}
           </View>
         </View>
       </View>

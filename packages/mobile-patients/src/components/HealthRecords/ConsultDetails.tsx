@@ -164,6 +164,14 @@ const styles = StyleSheet.create({
     paddingTop: 7,
     paddingBottom: 12,
   },
+  orderMedicineMsg: {
+    textAlign: 'right',
+    color: theme.colors.SKY_BLUE,
+    lineHeight: 14,
+    ...theme.fonts.IBMPlexSansMedium(12),
+    paddingTop: 5,
+    paddingBottom: 10,
+  },
   subDataTextStyle: {
     color: theme.colors.SKY_BLUE,
     lineHeight: 24,
@@ -779,13 +787,11 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                     onAddToCart();
                   }}
                 >
-                  <Text
-                    style={[
-                      theme.viewStyles.yellowTextStyle,
-                      { textAlign: 'right', paddingBottom: 16 },
-                    ]}
-                  >
+                  <Text style={[theme.viewStyles.yellowTextStyle, { textAlign: 'right' }]}>
                     {strings.health_records_home.order_medicine}
+                  </Text>
+                  <Text style={styles.orderMedicineMsg}>
+                    {strings.health_records_home.order_medicine_msg}
                   </Text>
                 </TouchableOpacity>
               </View>

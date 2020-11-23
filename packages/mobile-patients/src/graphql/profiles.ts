@@ -32,25 +32,6 @@ export const GET_CURRENT_PATIENTS = gql`
         primaryPatientId
         whatsAppMedicine
         whatsAppConsult
-        familyHistory {
-          description
-          relation
-        }
-        lifeStyle {
-          description
-          occupationHistory
-        }
-        patientMedicalHistory {
-          bp
-          dietAllergies
-          drugAllergies
-          height
-          menstrualHistory
-          pastMedicalHistory
-          pastSurgicalHistory
-          temperature
-          weight
-        }
       }
     }
   }
@@ -739,6 +720,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       displayName
       doctorType
       chatDays
+      doctorsOfTheHourStatus
       qualification
       mobileNumber
       experience
@@ -754,6 +736,11 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
         status
         mrp
         appointment_type
+      }
+      availabilityTitle {
+        AVAILABLE_NOW
+        CONSULT_NOW
+        DOCTOR_OF_HOUR
       }
       specialty {
         id
@@ -835,6 +822,36 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       doctorNextAvailSlots {
         onlineSlot
         physicalSlot
+      }
+    }
+  }
+`;
+
+export const GET_PLATINUM_DOCTOR = gql`
+  query getPlatinumDoctor($specialtyId: ID) {
+    getPlatinumDoctor(specialtyId: $specialtyId) {
+      doctors {
+        id
+        displayName
+        doctorType
+        consultMode
+        earliestSlotInMinutes
+        doctorfacility
+        fee
+        specialistPluralTerm
+        specialistPluralTerm
+        specialtydisplayName
+        doctorType
+        qualification
+        experience
+        photoUrl
+        slot
+        thumbnailUrl
+        availabilityTitle {
+          AVAILABLE_NOW
+          CONSULT_NOW
+          DOCTOR_OF_HOUR
+        }
       }
     }
   }
@@ -1299,11 +1316,14 @@ export const GET_MEDICINE_ORDERS_OMS__LIST = gql`
         shopAddress
         deliveryType
         currentStatus
+        oldOrderTat
+        orderTat
         medicineOrdersStatus {
           id
           # statusDate
           orderStatus
           hideStatus
+          statusMessage
         }
         medicineOrderLineItems {
           medicineName
@@ -1700,6 +1720,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
         estimatedAmount
         prescriptionImageUrl
         orderTat
+        oldOrderTat
         orderType
         shopAddress
         packagingCharges
@@ -1707,6 +1728,9 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
         currentStatus
         patientAddressId
         alertStore
+        prescriptionOptionSelected
+        tatType
+        shopId
         medicineOrderLineItems {
           medicineSKU
           medicineName
@@ -1823,7 +1847,9 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
         redeemedAmount
         estimatedAmount
         prescriptionImageUrl
+        oldOrderTat
         orderTat
+        oldOrderTat
         orderType
         shopAddress
         packagingCharges
@@ -1831,6 +1857,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
         currentStatus
         patientAddressId
         alertStore
+        prescriptionOptionSelected
         medicineOrdersStatus {
           id
           orderStatus
@@ -1905,6 +1932,14 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
           }
         }
       }
+    }
+  }
+`;
+
+export const RE_UPLOAD_PRESCRIPTION = gql`
+  mutation ReUploadPrescription($prescriptionInput: PrescriptionReUploadInput) {
+    reUploadPrescription(prescriptionInput: $prescriptionInput) {
+      success
     }
   }
 `;
@@ -2991,14 +3026,38 @@ export const GET_PATIENTS_MOBILE = gql`
         primaryPatientId
         whatsAppMedicine
         whatsAppConsult
-        familyHistory {
-          description
-          relation
-        }
-        lifeStyle {
-          description
-          occupationHistory
-        }
+        isLinked
+        isUhidPrimary
+        primaryUhid
+        primaryPatientId
+        partnerId
+      }
+    }
+  }
+`;
+
+export const GET_PATIENTS_MOBILE_WITH_HISTORY = gql`
+  query getPatientByMobileNumberWithHistory($mobileNumber: String) {
+    getPatientByMobileNumber(mobileNumber: $mobileNumber) {
+      patients {
+        id
+        uhid
+        firstName
+        lastName
+        mobileNumber
+        dateOfBirth
+        emailAddress
+        gender
+        relation
+        photoUrl
+        athsToken
+        referralCode
+        isLinked
+        isUhidPrimary
+        primaryUhid
+        primaryPatientId
+        whatsAppMedicine
+        whatsAppConsult
         patientMedicalHistory {
           bp
           dietAllergies

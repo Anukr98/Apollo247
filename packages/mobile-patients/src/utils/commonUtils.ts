@@ -146,7 +146,7 @@ export const pushTheView = (navigationProps: any, routeName: String, id?: String
       if (id) {
         const [itemId, name] = id.split(',');
 
-        navigationProps.navigate(AppRoutes.SearchByBrand, {
+        navigationProps.navigate(AppRoutes.MedicineListing, {
           category_id: itemId,
           title: `${name ? name : 'Products'}`.toUpperCase(),
         });

@@ -51,6 +51,7 @@ import {
   formatOrderAddress,
   formatAddressWithLandmark,
   extractUrlFromString,
+  isEmptyObject,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -68,6 +69,7 @@ import {
   TouchableOpacity,
   View,
   Linking,
+  Dimensions,
 } from 'react-native';
 import { Overlay } from 'react-native-elements';
 import {
@@ -110,7 +112,12 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/GetPatientFeedback';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { RefundDetails } from '@aph/mobile-patients/src/components/RefundDetails';
+import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
+import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
+import { ChatWithUs } from '@aph/mobile-patients/src/components/ui/ChatWithUs';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
 const whatsappScheme = `whatsapp://send?text=${AppConfig.Configuration.CUSTOMER_CARE_HELP_TEXT}&phone=91${AppConfig.Configuration.CUSTOMER_CARE_NUMBER}`;
+const screenWidth = Dimensions.get('window').width;
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -162,20 +169,26 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     flex: 1,
   },
-  pendingIconStyle: { height: 24, width: 24, resizeMode: 'contain' },
+  pendingIconStyle: { height: 20, width: 20, resizeMode: 'contain' },
   inconvenienceText: {
     marginHorizontal: 10,
     ...theme.fonts.IBMPlexSansRegular(13),
     color: theme.colors.SHERPA_BLUE,
   },
-  chatWithUsView: { paddingBottom: 10, paddingTop: 4 },
-  chatWithUsTouch: { flexDirection: 'row', justifyContent: 'flex-end' },
-  whatsappIconStyle: { height: 24, width: 24, resizeMode: 'contain' },
-  chatWithUsText: {
-    textAlign: 'center',
-    paddingRight: 0,
-    marginHorizontal: 5,
-    ...theme.viewStyles.text('B', 14, '#fcb716'),
+  badgeOuterView: {
+    alignSelf: 'center',
+  },
+  badgeText: { ...theme.viewStyles.text('M', 12, colors.WHITE, 1, 24), padding: 5, paddingTop: 2 },
+  deliveryOuterview: { flex: 1 },
+  expectedDeliveryText: {
+    ...theme.viewStyles.text('SB', 13, '#01475b', 1, 24),
+  },
+  expectedDeliveryDateText: {
+    ...theme.viewStyles.text('M', 13, '#01475b', 1, 24),
+  },
+  deliverySubText: {
+    color: '#01475b',
+    ...theme.fonts.IBMPlexSansRegular(12),
   },
 });
 
@@ -218,9 +231,16 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       scrollViewRef.current.scrollTo({ x: 0, y: scrollYValue, animated: true });
   };
   const { currentPatient } = useAllCurrentPatients();
-  const { addMultipleCartItems, addMultipleEPrescriptions, addresses } = useShoppingCart();
+  const {
+    addMultipleCartItems,
+    addMultipleEPrescriptions,
+    addresses,
+    onHoldOptionOrder,
+  } = useShoppingCart();
   const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [isCancelVisible, setCancelVisible] = useState(false);
+  const [showPrescriptionPopup, setPrescriptionPopUp] = useState(false);
+  const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
 
   const vars: getMedicineOrderOMSDetailsWithAddressVariables = {
     patientId: currentPatient && currentPatient.id,
@@ -242,6 +262,33 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const orderCancel = (g(order, 'medicineOrdersStatus') || []).find(
     (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED
   );
+  //added for order put on hold, if multiple then return the latest
+  const ordersOnHold = (g(order, 'medicineOrdersStatus') || []).filter(
+    (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.ON_HOLD
+  );
+  const orderOnHold = (ordersOnHold.length > 0 && ordersOnHold[ordersOnHold.length - 1]) || [];
+  //for status message of orders on hold
+
+  const checkIsJSON = (val: string) => {
+    try {
+      JSON.parse(val);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  };
+
+  const reasonForOnHold = order?.medicineOrdersStatus!.find(
+    (item) =>
+      item?.orderStatus == MEDICINE_ORDER_STATUS.VERIFICATION_DONE ||
+      item?.orderStatus == MEDICINE_ORDER_STATUS.READY_FOR_VERIFICATION
+  )
+    ? false
+    : orderOnHold! &&
+      !isEmptyObject(orderOnHold!) &&
+      checkIsJSON(orderOnHold?.statusMessage!) &&
+      JSON.parse(orderOnHold?.statusMessage!);
+
   const orderDetails = ((!loading && order) ||
     {}) as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails;
   const orderStatusList = ((!loading && order && order.medicineOrdersStatus) || []).filter(
@@ -250,7 +297,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const paymentDetails = (!loading && order && order.medicineOrderPayments) || [];
   const RefundTypes = ['REFUND_REQUEST_RAISED', 'REFUND_SUCCESSFUL'];
   const refundDetails = ((!loading && order && order.medicineOrderRefunds) || []).filter(
-    (item) => RefundTypes.indexOf(item.refundStatus) != -1
+    (item) => RefundTypes.indexOf(item?.refundStatus!) != -1
   );
   const offlineOrderBillNumber = loading
     ? 0
@@ -417,6 +464,34 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     return finalDateTime;
   };
 
+  const getFormattedDaySubscript = (day: number) => {
+    if (day > 3 && day < 21) return 'th';
+    switch (day % 10) {
+      case 1:
+        return 'st';
+      case 2:
+        return 'nd';
+      case 3:
+        return 'rd';
+      default:
+        return 'th';
+    }
+  };
+
+  const getFormattedDateTimeWithBefore = (time: string) => {
+    let day = parseInt(moment(time).format('D'));
+    let getDaySubscript = getFormattedDaySubscript(day);
+    let finalDateTime =
+      day +
+      getDaySubscript +
+      ' ' +
+      moment(time).format('MMMM') +
+      ' before ' +
+      moment(time).format('hh:mm A');
+
+    return finalDateTime;
+  };
+
   const reOrder = async () => {
     try {
       setLoading!(true);
@@ -502,7 +577,15 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     );
   };
 
+  const statusToShowNewItems = [
+    MEDICINE_ORDER_STATUS.ORDER_PLACED,
+    MEDICINE_ORDER_STATUS.VERIFICATION_DONE,
+    MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
+  ];
+
   const renderOrderTrackTopView = () => {
+    const diffInTat = checkOrderTatDiff();
+
     const isDelivered = orderStatusList.find(
       (item) =>
         item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED ||
@@ -536,6 +619,15 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       capsuleViewBGColor = 'rgba(0, 179, 142, 0.2)';
     }
     const tatInfo = orderDetails.orderTat;
+    const showChangedBadge = orderDetails.oldOrderTat! ? true : false;
+    const showDeliveryBadge =
+      orderDetails.orderTat! &&
+      orderDetails.medicineOrderLineItems!.length > 0 &&
+      orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION &&
+      statusToShowNewItems.includes(orderDetails.currentStatus!);
+    const showHoldBadge =
+      orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ON_HOLD && reasonForOnHold.showOnHold!;
+    const showBadge = showChangedBadge || showDeliveryBadge || showHoldBadge;
 
     const renderCapsuleView = (backgroundColor: string, capsuleText: string, textColor: string) => {
       return (
@@ -620,43 +712,125 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               paddingTop: 14,
               paddingBottom: 13,
               flexDirection: 'row',
+              height: showChangedBadge || showDeliveryBadge ? 80 : undefined,
             }}
           >
-            <NotifySymbol />
-            <Text
-              style={{
-                ...theme.viewStyles.text('SB', 13, '#01475b', 1, 24),
-                marginLeft: 20,
-              }}
-            >
-              {orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-                ? 'STORE PICKUP - '
-                : isDelivered
-                ? 'ORDER DELIVERED - '
-                : 'EXPECTED DELIVERY - '}
-            </Text>
-            <Text
-              style={{
-                ...theme.viewStyles.text('M', 13, '#01475b', 1, 24),
-              }}
-            >
-              {orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
-                ? getFormattedDate(currentOrderStatus && currentOrderStatus.statusDate)
-                : isDelivered
-                ? getFormattedDate(isDelivered.statusDate)
-                : tatInfo && getFormattedDate(tatInfo)}
-            </Text>
+            {/* <NotifySymbol /> */}
+            <View style={styles.deliveryOuterview}>
+              <View style={{ flexDirection: 'row' }}>
+                <Text style={styles.expectedDeliveryText}>
+                  {orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+                    ? 'STORE PICKUP - '
+                    : isDelivered
+                    ? 'ORDER DELIVERED - '
+                    : 'EXPECTED DELIVERY - '}
+                </Text>
+                <Text style={styles.expectedDeliveryDateText}>
+                  {orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+                    ? getFormattedDateTime(currentOrderStatus && currentOrderStatus.statusDate)
+                    : isDelivered
+                    ? getFormattedDate(isDelivered.statusDate)
+                    : orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ON_HOLD
+                    ? orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER
+                      ? 'To be Updated'
+                      : 'Awaited' //do it bold
+                    : tatInfo
+                    ? orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER &&
+                      orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED &&
+                      orderDetails?.medicineOrdersStatus!.find(
+                        (item) => item?.orderStatus == MEDICINE_ORDER_STATUS.ON_HOLD
+                      )
+                      ? 'To be Updated'
+                      : getFormattedDateTimeWithBefore(tatInfo)
+                    : 'Awaited'}
+                </Text>
+              </View>
+              <View style={{ flexDirection: 'row', width: showBadge ? '82%' : '90%' }}>
+                <Text style={styles.deliverySubText}>
+                  {orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER &&
+                  orderDetails.oldOrderTat!
+                    ? diffInTat > 1
+                      ? `Delivery date extended by ${diffInTat} days.`
+                      : diffInTat == 1
+                      ? `Delivery date extended by a day.`
+                      : 'Delivery extended by few hours.'
+                    : orderDetails.orderTat!
+                    ? orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ON_HOLD
+                      ? string.medicine_cart.orderDetailsExpectedDeliverySubTextNonCartOrder
+                      : orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER &&
+                        orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED &&
+                        orderDetails?.medicineOrdersStatus!.find(
+                          (item) => item?.orderStatus == MEDICINE_ORDER_STATUS.ON_HOLD
+                        )
+                      ? string.medicine_cart.orderDetailsExpectedDeliverySubTextNonCartOrder
+                      : ''
+                    : string.medicine_cart.orderDetailsExpectedDeliverySubTextNonCartOrder}
+                </Text>
+              </View>
+            </View>
+            {renderBadge()}
           </View>
         )}
       </View>
     );
   };
 
-  const shouldScrollToSlot = (
-    isNotTatBreach: boolean,
-    order: getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails
-  ) => {
-    !isNotTatBreach ? null : scrollToSlots();
+  const checkOrderTatDiff = () => {
+    const olderTat = moment(orderDetails.oldOrderTat!).format('LL'); //MMMM D, YYYY
+    const newTat = moment(orderDetails.orderTat!).format('LL');
+    let diff = moment(newTat).diff(olderTat, 'days');
+    return diff;
+  };
+
+  const renderBadge = () => {
+    const isExpectedDateChanged =
+      orderDetails.oldOrderTat! && statusToShowNewItems.includes(orderDetails.currentStatus!)
+        ? true
+        : false;
+    const isSKUPopulated = orderDetails?.medicineOrderLineItems?.length > 0;
+
+    const colorOfBadge =
+      orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ON_HOLD
+        ? theme.colors.INPUT_FAILURE_TEXT
+        : isExpectedDateChanged
+        ? 'rgb(230,130,49)'
+        : '#00b38e';
+    const textOfBadge =
+      orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ON_HOLD
+        ? 'ON-HOLD'
+        : isExpectedDateChanged
+        ? 'CHANGED'
+        : 'DELIVERY UPDATED';
+
+    return (
+      <>
+        {(orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ON_HOLD &&
+          reasonForOnHold.showOnHold!) ||
+        (orderDetails.orderTat! &&
+          isSKUPopulated &&
+          orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION &&
+          statusToShowNewItems.includes(orderDetails.currentStatus!)) ||
+        isExpectedDateChanged ? (
+          <View
+            style={{
+              position: 'absolute',
+              right: '5%',
+              top:
+                isExpectedDateChanged || (orderDetails.orderTat && isSKUPopulated)
+                  ? screenWidth > 400 &&
+                    orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER &&
+                    orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ON_HOLD
+                    ? 30
+                    : 40
+                  : 20,
+              backgroundColor: colorOfBadge,
+            }}
+          >
+            <Text style={styles.badgeText}>{textOfBadge}</Text>
+          </View>
+        ) : null}
+      </>
+    );
   };
 
   const renderOrderHistory = () => {
@@ -696,17 +870,46 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       isOrderRequirePrescription?: boolean, // if any of the order item requires prescription
       orderCancelText?: string
     ) => {
+      const isCartItemsUpdated =
+        orderDetails.medicineOrderShipments!.length > 0 &&
+        !isEmptyObject(orderDetails.medicineOrderShipments![0]?.itemDetails!) &&
+        checkIsJSON(orderDetails.medicineOrderShipments![0]?.itemDetails!) &&
+        JSON.parse(orderDetails.medicineOrderShipments![0]?.itemDetails!);
       const orderStatusDescMapping = {
-        [MEDICINE_ORDER_STATUS.ORDER_PLACED]: !isOrderRequirePrescription
-          ? ['', '']
-          : [
-              'Verification Pending: ',
-              'Your order is being verified by our pharmacists. Our pharmacists might be required to call you for order verification.',
-            ],
-        [MEDICINE_ORDER_STATUS.ORDER_VERIFIED]: [
-          'Store Assigned: ',
-          'Your order has been assigned to our pharmacy.',
-        ],
+        [MEDICINE_ORDER_STATUS.ORDER_PLACED]:
+          orderDetails?.prescriptionOptionSelected! == 'Call me for details'
+            ? orderDetails.medicineOrdersStatus!.find(
+                (item) =>
+                  item?.orderStatus == MEDICINE_ORDER_STATUS.VERIFICATION_DONE ||
+                  item?.orderStatus == MEDICINE_ORDER_STATUS.READY_FOR_VERIFICATION
+              )
+              ? ['', '']
+              : [
+                  '',
+                  'Chat with Apollo Pharmacist to inform your requirements to process your Order Faster',
+                ]
+            : orderDetails?.prescriptionOptionSelected! ==
+              'Need all medicine and for duration as per prescription'
+            ? orderDetails.medicineOrdersStatus!.find(
+                (item) =>
+                  item?.orderStatus == MEDICINE_ORDER_STATUS.VERIFICATION_DONE ||
+                  item?.orderStatus == MEDICINE_ORDER_STATUS.READY_FOR_VERIFICATION
+              )
+              ? ['', '']
+              : [
+                  'Verification Pending: ',
+                  'Your order is being verified by our pharmacists. Our pharmacists might be required to call you for order verification.',
+                ]
+            : !isOrderRequirePrescription
+            ? ['', '']
+            : [
+                'Verification Pending: ',
+                'Your order is being verified by our pharmacists. Our pharmacists might be required to call you for order verification.',
+              ],
+        [MEDICINE_ORDER_STATUS.ORDER_VERIFIED]:
+          orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER && isCartItemsUpdated
+            ? ['', '']
+            : ['Store Assigned: ', 'Your order has been assigned to our pharmacy.'],
         [MEDICINE_ORDER_STATUS.ORDER_BILLED]: [
           '',
           `Your order #${orderAutoId} has been packed. Soon would be dispatched from our pharmacy.`,
@@ -745,6 +948,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           '',
           'Order Not Placed! Please try to place the order again with an alternative payment method or Cash on Delivery (COD).',
         ],
+        [MEDICINE_ORDER_STATUS.ON_HOLD]: ['Order On-Hold : ', `${reasonForOnHold?.displayText}`],
       };
 
       const isStatusAvailable = Object.keys(orderStatusDescMapping).includes(status);
@@ -761,15 +965,30 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     const showExpectedDelivery =
       isDeliveryOrder && tatInfo && !isCancelled && !isDelivered && hours > 0;
 
-    // const isNotTatBreach = moment(tatInfo!).isSameOrAfter(moment(), 'day');
-    const isNotTatBreach = true;
+    const statusToConsiderTatBreach = [
+      MEDICINE_ORDER_STATUS.ORDER_INITIATED,
+      MEDICINE_ORDER_STATUS.ORDER_PLACED,
+      MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
+      MEDICINE_ORDER_STATUS.ORDER_BILLED,
+      MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY,
+    ];
+
+    const isNotTatBreach = tatInfo == null ? true : moment(tatInfo!).isSameOrAfter(moment(), 'day');
+    const shouldScrollToSlot = (isNotTatBreach: boolean) => {
+      !isNotTatBreach && statusToConsiderTatBreach.includes(orderDetails.currentStatus!)
+        ? null
+        : scrollToSlots();
+    };
 
     let statusList = orderStatusList
       .filter(
         (item, idx, array) => array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
       )
       .concat([]);
-    shouldScrollToSlot(isNotTatBreach!, order!);
+    order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+      ? shouldScrollToSlot(isNotTatBreach!)
+      : scrollToSlots();
+
     if (
       orderDetails.currentStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
       orderDetails.currentStatus == MEDICINE_ORDER_STATUS.RETURN_INITIATED ||
@@ -780,7 +999,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           (item, idx, array) => array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
         )
         .concat([]);
-      shouldScrollToSlot(isNotTatBreach!, order!);
+      order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+        ? shouldScrollToSlot(isNotTatBreach!)
+        : scrollToSlots();
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_INITIATED) {
       statusList = orderStatusList
         .filter(
@@ -838,7 +1059,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                 } as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
               ]
         );
-      shouldScrollToSlot(isNotTatBreach!, order!);
+      order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+        ? shouldScrollToSlot(isNotTatBreach!)
+        : scrollToSlots();
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED) {
       statusList = orderStatusList
         .filter(
@@ -887,7 +1110,61 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                 } as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
               ]
         );
-      shouldScrollToSlot(isNotTatBreach!, order!);
+      order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+        ? shouldScrollToSlot(isNotTatBreach!)
+        : scrollToSlots();
+    }
+    //added for on-hold
+    else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ON_HOLD) {
+      statusList = orderStatusList
+        .filter(
+          (item, idx, array) => array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
+        )
+        .concat(
+          orderDetails.deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+            ? [
+                {
+                  statusDate: tatInfo,
+                  id: 'idToBeDelivered',
+                  orderStatus: MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
+                } as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
+                {
+                  statusDate: tatInfo,
+                  id: 'idToBeDelivered',
+                  orderStatus: MEDICINE_ORDER_STATUS.READY_AT_STORE,
+                } as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
+                {
+                  statusDate: tatInfo,
+                  id: 'idToBeDelivered',
+                  orderStatus: MEDICINE_ORDER_STATUS.PICKEDUP,
+                } as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
+              ]
+            : [
+                {
+                  statusDate: tatInfo,
+                  id: 'idToBeDelivered',
+                  orderStatus: MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
+                } as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
+                {
+                  statusDate: tatInfo,
+                  id: 'idToBeDelivered',
+                  orderStatus: MEDICINE_ORDER_STATUS.ORDER_BILLED,
+                } as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
+                {
+                  statusDate: tatInfo,
+                  id: 'idToBeDelivered',
+                  orderStatus: MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY,
+                } as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
+                {
+                  statusDate: tatInfo,
+                  id: 'idToBeDelivered',
+                  orderStatus: MEDICINE_ORDER_STATUS.DELIVERED,
+                } as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
+              ]
+        );
+      order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+        ? shouldScrollToSlot(isNotTatBreach!)
+        : scrollToSlots();
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_VERIFIED) {
       statusList = orderStatusList
         .filter(
@@ -925,7 +1202,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                 } as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
               ]
         );
-      shouldScrollToSlot(isNotTatBreach!, order!);
+      order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+        ? shouldScrollToSlot(isNotTatBreach!)
+        : scrollToSlots();
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.READY_AT_STORE) {
       statusList = orderStatusList
         .filter(
@@ -938,7 +1217,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             orderStatus: MEDICINE_ORDER_STATUS.PICKEDUP,
           } as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
         ]);
-      shouldScrollToSlot(isNotTatBreach!, order!);
+      order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+        ? shouldScrollToSlot(isNotTatBreach!)
+        : scrollToSlots();
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ORDER_BILLED) {
       statusList = orderStatusList
         .filter(
@@ -956,7 +1237,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             orderStatus: MEDICINE_ORDER_STATUS.DELIVERED,
           } as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
         ]);
-      shouldScrollToSlot(isNotTatBreach!, order!);
+      order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+        ? shouldScrollToSlot(isNotTatBreach!)
+        : scrollToSlots();
     } else if (orderDetails.currentStatus == MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY) {
       statusList = orderStatusList
         .filter(
@@ -969,7 +1252,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             orderStatus: MEDICINE_ORDER_STATUS.DELIVERED,
           } as getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrdersStatus,
         ]);
-      shouldScrollToSlot(isNotTatBreach!, order!);
+      order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+        ? shouldScrollToSlot(isNotTatBreach!)
+        : scrollToSlots();
     } else if (
       orderDetails.currentStatus == MEDICINE_ORDER_STATUS.DELIVERED ||
       orderDetails.currentStatus == MEDICINE_ORDER_STATUS.PICKEDUP
@@ -979,14 +1264,33 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           (item, idx, array) => array.map((i) => i!.orderStatus).indexOf(item!.orderStatus) === idx
         )
         .concat([]);
-      shouldScrollToSlot(isNotTatBreach!, order!);
+      order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+        ? shouldScrollToSlot(isNotTatBreach!)
+        : scrollToSlots();
     }
+    console.log({ orderDetails });
+
+    const cartObject = {
+      heading: '',
+      description: 'Please check your items in order summary to ensure they are correct.',
+      showOption: true,
+    };
+    const nonCartObject = {
+      heading: '',
+      description: 'Items added to the order by our pharmacist as per your instructions.',
+      showOption: true,
+    };
+    console.log({ reasonForOnHold });
+    const isOrderOnHoldOption = onHoldOptionOrder.filter((item) => item.id == orderAutoId);
+
     return (
       <View>
         <View style={{ margin: 20 }}>
-          {/* {!isNotTatBreach && order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP
+          {!isNotTatBreach &&
+          order?.deliveryType != MEDICINE_DELIVERY_TYPE.STORE_PICKUP &&
+          statusToConsiderTatBreach.includes(order?.currentStatus!)
             ? renderInconvenienceView()
-            : null} */}
+            : null}
           {statusList.map((order, index, array) => {
             return (
               <OrderProgressCard
@@ -1005,7 +1309,14 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                         .replace(' hours', 'hrs')}`
                     : ''
                 }
-                showCurrentStatusDesc={orderDetails.currentStatus == order!.orderStatus}
+                showCurrentStatusDesc={
+                  reasonForOnHold?.showOnHold &&
+                  orderDetails.currentStatus == MEDICINE_ORDER_STATUS.ON_HOLD &&
+                  order!.orderStatus == MEDICINE_ORDER_STATUS.ORDER_PLACED
+                    ? true
+                    : orderDetails.currentStatus == order!.orderStatus
+                }
+                isOnHold={reasonForOnHold?.showOnHold} //change
                 getOrderDescription={getOrderDescription(
                   orderDetails.currentStatus!,
                   prescriptionRequired,
@@ -1014,6 +1325,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                 status={getOrderStatusText(order!.orderStatus!)}
                 date={getFormattedDate(order!.statusDate)}
                 time={getFormattedTime(order!.statusDate)}
+                showReUploadPrescription={reasonForOnHold?.reUploadPrescription}
+                shouldShowReUploadOption={isOrderOnHoldOption.length > 0 ? false : true}
+                showChatWithUs={reasonForOnHold?.enableChatSupport}
+                reUploadPrescription={() => onPressReUploadPrescription()}
                 isStatusDone={order!.id != 'idToBeDelivered'}
                 nextItemStatus={
                   index == array.length - 1
@@ -1022,6 +1337,34 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                     ? 'NOT_DONE'
                     : 'DONE'
                 }
+                showDescriptionChatOption={
+                  orderDetails?.currentStatus! == MEDICINE_ORDER_STATUS.ORDER_PLACED &&
+                  !prescriptionRequired &&
+                  orderDetails?.prescriptionOptionSelected! &&
+                  orderDetails?.prescriptionOptionSelected! == 'Call me for details' &&
+                  !orderDetails?.medicineOrdersStatus!.find(
+                    (item) => item?.orderStatus == MEDICINE_ORDER_STATUS.VERIFICATION_DONE
+                  )
+                    ? true
+                    : false
+                }
+                showNewItemsDescription={
+                  statusToShowNewItems.includes(orderDetails?.currentStatus!) &&
+                  orderDetails.orderTat! &&
+                  (orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER
+                    ? orderDetails?.medicineOrderShipments!.length > 0
+                    : orderDetails.medicineOrderLineItems!.length > 0)
+                    ? true
+                    : false
+                }
+                newItemsDescription={
+                  orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION
+                    ? nonCartObject
+                    : cartObject
+                }
+                onPressViewSummary={() => _navigateToViewSummary()}
+                orderType={orderDetails.orderType}
+                isPrescriptionUploaded={orderDetails.prescriptionImageUrl}
               />
             );
           })}
@@ -1084,6 +1427,73 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     );
   };
 
+  const _navigateToViewSummary = () => {
+    setSelectedTab(string.orders.viewBill);
+  };
+
+  const onPressReUploadPrescription = () => {
+    setPrescriptionPopUp(true);
+  };
+  const renderUploadPrescriptionPopUp = () => {
+    return (
+      <UploadPrescriprionPopup
+        isVisible={showPrescriptionPopup}
+        disabledOption="NONE"
+        heading={'Re-Upload Prescription(s)'}
+        instructionHeading={'Instructions For Uploading Prescriptions'}
+        instructions={[
+          'Take clear picture of your complete prescription. (edge to edge)',
+          'Doctor details & date of the prescription should be clearly visible.',
+          'Ensure a valid prescription, for acute illnesses such as Virals, infections etc a recent prescription is required. For Chronic illnesses such as Blood pressure & diabetes, upto 1 year old prescriptions are acceptable',
+        ]}
+        optionTexts={{
+          camera: 'TAKE A PHOTO',
+          gallery: 'CHOOSE\nFROM GALLERY',
+          prescription: 'SELECT FROM\nE-PRESCRIPTION',
+        }}
+        onClickClose={() => setPrescriptionPopUp(false)}
+        onResponse={(selectedType, response, type) => {
+          setPrescriptionPopUp(false);
+          if (selectedType == 'CAMERA_AND_GALLERY') {
+            if (response.length == 0) return;
+            props.navigation.navigate(AppRoutes.UploadPrescription, {
+              phyPrescriptionsProp: response,
+              type,
+              showOptions: false,
+              isReUpload: true,
+              orderAutoId: orderAutoId,
+            });
+          } else {
+            setSelectPrescriptionVisible(true);
+          }
+        }}
+      />
+    );
+  };
+  const renderEPrescriptionModal = () => {
+    return (
+      <SelectEPrescriptionModal
+        displayPrismRecords={true}
+        navigation={props.navigation}
+        onSubmit={(selectedEPres) => {
+          setSelectPrescriptionVisible(false);
+          if (selectedEPres.length == 0) {
+            return;
+          }
+          props.navigation.navigate(AppRoutes.UploadPrescription, {
+            ePrescriptionsProp: selectedEPres,
+            type: 'E-Prescription',
+            showOptions: false,
+            isReUpload: true,
+            orderAutoId: orderAutoId,
+          });
+        }}
+        selectedEprescriptionIds={[]}
+        isVisible={isSelectPrescriptionVisible}
+      />
+    );
+  };
+
   const renderInconvenienceView = () => {
     return (
       <View>
@@ -1093,25 +1503,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             {string.OrderSummery.tatBreach_InconvenienceText}
           </Text>
         </View>
-        <View style={styles.chatWithUsView}>
-          <TouchableOpacity
-            style={styles.chatWithUsTouch}
-            onPress={() => {
-              Linking.canOpenURL(whatsappScheme)
-                .then((supported) =>
-                  Linking.openURL(
-                    supported
-                      ? whatsappScheme
-                      : AppConfig.Configuration.MED_ORDERS_CUSTOMER_CARE_WHATSAPP_LINK
-                  )
-                )
-                .catch((err) => CommonBugFender(`${AppRoutes.OrderModifiedScreen}_TATBreach`, err));
-            }}
-          >
-            <WhatsAppIcon style={styles.whatsappIconStyle} />
-            <Text style={styles.chatWithUsText}>{string.OrderSummery.chatWithUs}</Text>
-          </TouchableOpacity>
-        </View>
+        <ChatWithUs />
       </View>
     );
   };
@@ -1737,7 +2129,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                   orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER
                     ? true
                     : orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION
-                    ? isNonCartOrderBilled
+                    ? orderDetails.orderTat! && orderDetails?.medicineOrderLineItems!.length > 0
+                      ? true
+                      : isNonCartOrderBilled
                     : true;
 
                 if (enableOrderSummary) {
@@ -1764,6 +2158,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       {renderFeedbackPopup()}
       {(loading || showSpinner) && <Spinner style={{ zIndex: 200 }} />}
       {renderMedicineReOrderOverlay()}
+      {isSelectPrescriptionVisible && renderEPrescriptionModal()}
+      {showPrescriptionPopup && renderUploadPrescriptionPopUp()}
     </View>
   );
 };
