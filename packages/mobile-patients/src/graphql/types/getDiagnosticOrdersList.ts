@@ -26,6 +26,7 @@ export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diag
   itemName: string;
   itemType: DIAGNOSTICS_TYPE | null;
   testPreparationData: string;
+  groupPlan: string;
   diagnosticPricing: (getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems_diagnostics_diagnosticPricing | null)[] | null;
   testDescription: string | null;
 }
