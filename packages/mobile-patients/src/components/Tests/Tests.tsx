@@ -631,7 +631,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     getPlaceInfoByPincode(pincode)
       .then(({ data }) => {
         try {
-          if (data.results.length > 0) {
+          if (data?.results?.length > 0) {
             const addrComponents = data.results[0].address_components || [];
             const latLang = data.results[0].geometry.location || {};
             const response = getFormattedLocation(addrComponents, latLang, pincode);
@@ -694,9 +694,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
       .then((response) => {
         setLoadingContext!(false);
         checkIsPinCodeServiceable(response.pincode);
-        response && setDiagnosticLocation!(response);
-        // response && WebEngageEventAutoDetectLocation(response.pincode, true);
-        response && !locationDetails && setLocationDetails!(response);
       })
       .catch((e) => {
         CommonBugFender('Diagnostic__ALLOW_AUTO_DETECT', e);
