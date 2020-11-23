@@ -196,7 +196,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
               },
             ]}
           >
-            Save {value?.saved_extra_on_lower_plan}% extra
+            Save {value?.saved_extra_on_lower_plan} extra
           </Text>
         )}
         <TouchableOpacity
