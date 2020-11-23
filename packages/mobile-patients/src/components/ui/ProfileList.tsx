@@ -13,6 +13,10 @@ import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
 import AsyncStorage from '@react-native-community/async-storage';
 import { g } from '../../helpers/helperFunctions';
 import { useAppCommonData } from '../AppCommonDataProvider';
+import { useApolloClient } from 'react-apollo-hooks';
+import { phrNotificationCountApi } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount } from '@aph/mobile-patients/src/graphql/types/getUserNotifyEvents';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   placeholderViewStyle: {
@@ -96,6 +100,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
     profileAllPatients,
   } = useAllCurrentPatients();
   const { width, height } = Dimensions.get('window');
+  const client = useApolloClient();
 
   const [profile, setProfile] = useState<
     GetCurrentPatients_getCurrentPatients_patients | undefined
@@ -104,7 +109,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
     GetCurrentPatients_getCurrentPatients_patients[] | null
   >(allCurrentPatients);
 
-  const { isUHID } = useAppCommonData();
+  const { isUHID, setPhrNotificationData } = useAppCommonData();
 
   const titleCase = (str: string) => {
     var splitStr = str.toLowerCase().split(' ');
@@ -260,6 +265,21 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
     return pArray;
   };
 
+  const callPhrNotificationApi = async (currentPatient: any) => {
+    phrNotificationCountApi(client, currentPatient || '')
+      .then((newRecordsCount) => {
+        if (newRecordsCount) {
+          setPhrNotificationData &&
+            setPhrNotificationData(
+              newRecordsCount! as getUserNotifyEvents_getUserNotifyEvents_phr_newRecordsCount
+            );
+        }
+      })
+      .catch((error) => {
+        CommonBugFender('SplashcallPhrNotificationApi', error);
+      });
+  };
+
   const renderPicker = () => {
     const usersList = moveSelectedToTop();
     return (
@@ -303,11 +323,12 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
             });
             setDisplayAddProfile && setDisplayAddProfile(true);
           } else {
-            console.log(' selectedUser.key', selectedUser.key, selectedUser);
             const pfl = profileArray!.find((i) => selectedUser.key === i.id);
             props.onProfileChange && props.onProfileChange(pfl!);
             profileArray && setProfile(pfl);
-            console.log(' pfl.key', pfl);
+            if (pfl?.id) {
+              callPhrNotificationApi(pfl?.id);
+            }
           }
           saveUserChange &&
             selectedUser.key !== addString &&

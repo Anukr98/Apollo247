@@ -54,7 +54,7 @@ import {
   ScrollView,
   Image,
   TouchableOpacity,
-  TextInput,
+  Keyboard,
   Alert,
   Platform,
 } from 'react-native';
@@ -397,7 +397,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [arrayValues, setarrayValues] = useState<any>();
   const client = useApolloClient();
   const { getPatientApiCall } = useAuth();
-  const { phrNotificationData } = useAppCommonData();
+  const { phrNotificationData, setPhrNotificationData } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
   const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
@@ -661,6 +661,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     });
     const didBlurSubsription = props.navigation.addListener('didBlur', (payload) => {
       setCallApi(true);
+      setPhrNotificationData && setPhrNotificationData(null);
     });
     return () => {
       didFocusSubscription && didFocusSubscription.remove();
@@ -725,6 +726,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   };
 
   const updateMedicalParameters = (height: string, weight: string, bloodGroup: string) => {
+    Keyboard.dismiss();
     if (currentPatient?.id) {
       setOverlaySpinner(true);
       client
@@ -748,6 +750,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           console.log(e);
         })
         .finally(() => {
+          setLoading!(true);
           setOverlaySpinner(false);
         });
     }

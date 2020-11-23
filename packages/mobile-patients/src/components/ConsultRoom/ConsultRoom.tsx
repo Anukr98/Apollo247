@@ -443,6 +443,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const webengage = new WebEngage();
   const client = useApolloClient();
   const hdfc_values = string.Hdfc_values;
+  const phrNotificationCount = getPhrNotificationAllCount(phrNotificationData!);
 
   const _handleAppStateChange = (nextAppState: AppStateStatus) => {
     if (nextAppState === 'active') {
@@ -781,6 +782,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     });
   };
 
+  const renderBadgeView = () => {
+    return phrNotificationCount ? (
+      <View style={[styles.badgelabelView]}>
+        <Text style={styles.badgelabelText}>{phrNotificationCount}</Text>
+      </View>
+    ) : null;
+  };
+
   const listValues: menuOptions[] = [
     {
       id: 1,
@@ -850,7 +859,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     {
       id: 6,
       title: 'View Health Records',
-      image: <PrescriptionMenu style={styles.menuOptionIconStyle} />,
+      image: (
+        <View>
+          <PrescriptionMenu style={styles.menuOptionIconStyle} />
+          {renderBadgeView()}
+        </View>
+      ),
       onPress: () => {
         postHomeFireBaseEvent(FirebaseEventName.VIEW_HELATH_RECORDS, 'Home Screen');
         postHomeWEGEvent(WebEngageEventName.VIEW_HELATH_RECORDS, 'Home Screen');
@@ -1544,7 +1558,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderBottomTabBar = () => {
-    const phrNotificationCount = getPhrNotificationAllCount(phrNotificationData!);
     return (
       <View style={[styles.tabBarMainViewStyle, { height: showPopUp ? 0 : isIphoneX() ? 87 : 57 }]}>
         {tabBarOptions.map((tabBarOptions, i) => (
@@ -1588,11 +1601,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <View style={styles.tabBarViewStyle} key={i}>
                 <View>
                   {tabBarOptions.image}
-                  {i === 1 && phrNotificationCount ? (
-                    <View style={[styles.badgelabelView]}>
-                      <Text style={styles.badgelabelText}>{phrNotificationCount}</Text>
-                    </View>
-                  ) : null}
+                  {i === 1 && renderBadgeView()}
                 </View>
                 <Text style={styles.tabBarTitleStyle}>{tabBarOptions.title}</Text>
               </View>
