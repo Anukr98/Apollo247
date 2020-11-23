@@ -708,7 +708,6 @@ export interface CouponInput {
 }
 
 export interface CreateUserSubscriptionInput {
-  _id?: string | null;
   plan_id: string;
   payment_reference?: any | null;
   coupon_availed?: string | null;

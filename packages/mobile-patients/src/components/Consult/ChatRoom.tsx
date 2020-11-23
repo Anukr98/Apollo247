@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { OverlayRescheduleView } from '@aph/mobile-patients/src/components/Consult/OverlayRescheduleView';
 import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
 import { UploadPrescriprionChatPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionChatPopup';
@@ -842,28 +843,29 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const fireWebengageEventForCallAnswer = (
-    eventName: 
+    eventName:
       | WebEngageEventName.PATIENT_ANSWERED_CALL
       | WebEngageEventName.PATIENT_DECLINED_CALL
       | WebEngageEventName.PATIENT_MISSED_CALL
-      | WebEngageEventName.CALL_DROPPED_UNKNOWN_REASON) => {
+      | WebEngageEventName.CALL_DROPPED_UNKNOWN_REASON
+  ) => {
     const eventAttributes:
       | WebEngageEvents[WebEngageEventName.PATIENT_ANSWERED_CALL]
       | WebEngageEvents[WebEngageEventName.PATIENT_DECLINED_CALL]
       | WebEngageEvents[WebEngageEventName.PATIENT_MISSED_CALL]
       | WebEngageEvents[WebEngageEventName.CALL_DROPPED_UNKNOWN_REASON] = {
-        'Patient User ID': g(currentPatient, 'id'),
-        'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-        'Patient mobile number': g(currentPatient, 'mobileNumber'),
-        'Appointment Date time': moment(g(appointmentData, 'appointmentDateTime')).toDate(),
-        'Appointment display ID': g(appointmentData, 'displayId')!,
-        'Appointment ID': g(appointmentData, 'id')!,
-        'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName')!,
-        'Speciality Name': g(appointmentData, 'doctorInfo', 'specialty', 'name')!,
-        'Speciality ID': g(appointmentData, 'doctorInfo', 'specialty', 'id')!,
-        'Doctor Type': g(appointmentData, 'doctorInfo', 'doctorType')!,
-        'Mode of Call': isAudioCall ? 'Audio' : 'Video',
-        'Platform': 'App',
+      'Patient User ID': g(currentPatient, 'id'),
+      'Patient name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient mobile number': g(currentPatient, 'mobileNumber'),
+      'Appointment Date time': moment(g(appointmentData, 'appointmentDateTime')).toDate(),
+      'Appointment display ID': g(appointmentData, 'displayId')!,
+      'Appointment ID': g(appointmentData, 'id')!,
+      'Doctor Name': g(appointmentData, 'doctorInfo', 'fullName')!,
+      'Speciality Name': g(appointmentData, 'doctorInfo', 'specialty', 'name')!,
+      'Speciality ID': g(appointmentData, 'doctorInfo', 'specialty', 'id')!,
+      'Doctor Type': g(appointmentData, 'doctorInfo', 'doctorType')!,
+      'Mode of Call': isAudioCall ? 'Audio' : 'Video',
+      Platform: 'App',
     };
     postWebEngageEvent(eventName, eventAttributes);
   };
@@ -2479,9 +2481,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   let insertText: object[] = [];
-  const newmessage: { 
-    message: string,
-    duration: string,
+  const newmessage: {
+    message: string;
+    duration: string;
   }[] = [];
 
   const getHistory = (timetoken: number) => {
@@ -2529,11 +2531,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               checkingAppointmentDates();
             }
 
-            if ((lastMessage.message === 'Audio call ended' 
-              || lastMessage.message === 'Video call ended')
-              && lastMessage.duration === '00 : 00') 
-              {
-                fireWebengageEventForCallAnswer(WebEngageEventName.PATIENT_MISSED_CALL);
+            if (
+              (lastMessage.message === 'Audio call ended' ||
+                lastMessage.message === 'Video call ended') &&
+              lastMessage.duration === '00 : 00'
+            ) {
+              fireWebengageEventForCallAnswer(WebEngageEventName.PATIENT_MISSED_CALL);
             }
 
             if (msgs.length == 100) {
@@ -2842,6 +2845,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
   };
 
+  const [callEndEventDebounce, setCallEndEventDebounce] = useState({});
   const [showFeedback, setShowFeedback] = useState(false);
   const { showAphAlert, audioTrack, setPrevVolume, maxVolume, hideAphAlert } = useUIElements();
   const pubNubMessages = (message: Pubnub.MessageEvent) => {
@@ -2974,7 +2978,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setDoctorJoinedChat && setDoctorJoinedChat(false);
         setDoctorJoined(false);
       } else if (message.message.message === endCallMsg) {
-        callEndWebengageEvent('Doctor');
+        try {
+          const event = _.debounce(() => {
+            callEndWebengageEvent('Doctor');
+          }, 300);
+          setCallEndEventDebounce((prevEvent: any) => {
+            if (prevEvent.cancel) {
+              prevEvent.cancel();
+            }
+            return event;
+          });
+          event();
+        } catch (error) {}
         AsyncStorage.setItem('callDisconnected', 'true');
       } else if (message.message.message === exotelCall) {
         addMessages(message);

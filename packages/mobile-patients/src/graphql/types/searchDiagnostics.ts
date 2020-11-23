@@ -33,6 +33,7 @@ export interface searchDiagnostics_searchDiagnostics_diagnostics {
   collectionType: TEST_COLLECTION_TYPE | null;
   fromAgeInDays: number;
   toAgeInDays: number;
+  testDescription: string | null;
   testPreparationData: string;
   diagnosticPricing: (searchDiagnostics_searchDiagnostics_diagnostics_diagnosticPricing | null)[] | null;
 }

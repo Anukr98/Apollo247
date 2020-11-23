@@ -9,16 +9,6 @@ import { DIAGNOSTIC_ORDER_STATUS, DIAGNOSTICS_TYPE } from "./globalTypes";
 // GraphQL query operation: getDiagnosticOrdersList
 // ====================================================
 
-export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems_diagnostics_diagnosticPricing {
-  __typename: "diagnosticPricing";
-  mrp: number;
-  price: number;
-  groupPlan: string;
-  status: string | null;
-  startDate: any | null;
-  endDate: any | null;
-}
-
 export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems_diagnostics {
   __typename: "Diagnostics";
   id: string;
@@ -26,7 +16,7 @@ export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diag
   itemName: string;
   itemType: DIAGNOSTICS_TYPE | null;
   testPreparationData: string;
-  diagnosticPricing: (getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems_diagnostics_diagnosticPricing | null)[] | null;
+  testDescription: string | null;
 }
 
 export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems {
