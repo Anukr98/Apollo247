@@ -11,7 +11,7 @@ const { width } = Dimensions.get('window');
 import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import { BookAppointmentInput } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { dateFormatter } from '@aph/mobile-patients/src/utils/dateUtil';
-import { calculateCareDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
+import { calculateCircleDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
 import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 interface DoctorCheckoutProps {
@@ -33,7 +33,7 @@ export const DoctorCheckoutCard: React.FC<DoctorCheckoutProps> = (props) => {
     planSelected,
   } = props;
   const isOnlineConsult = selectedTab === 'Consult Online';
-  const circleDoctorDetails = calculateCareDoctorPricing(doctor);
+  const circleDoctorDetails = calculateCircleDoctorPricing(doctor);
   const {
     isCircleDoctor,
     physicalConsultMRPPrice,
@@ -187,8 +187,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   careLogo: {
-    width: 52,
-    height: 27,
+    width: 30,
+    height: 18,
     alignSelf: 'center',
   },
   careLogoText: {

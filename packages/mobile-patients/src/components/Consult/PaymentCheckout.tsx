@@ -36,7 +36,7 @@ import {
   DoctorType,
   PLAN,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { calculateCareDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
+import { calculateCircleDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import {
@@ -123,7 +123,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const [disabledCheckout, setDisabledCheckout] = useState<boolean>(true);
 
-  const circleDoctorDetails = calculateCareDoctorPricing(doctor);
+  const circleDoctorDetails = calculateCircleDoctorPricing(doctor);
   const {
     isCircleDoctor,
     minDiscountedPrice,
@@ -921,8 +921,8 @@ const styles = StyleSheet.create({
     maxWidth: width - 100,
   },
   careLogo: {
-    width: 46,
-    height: 25,
+    width: 40,
+    height: 20,
   },
   careLogoText: {
     ...theme.viewStyles.text('SB', 7, theme.colors.WHITE),

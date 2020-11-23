@@ -43,7 +43,7 @@ import {
 import { useAllCurrentPatients } from '../../hooks/authHooks';
 import { CommonBugFender } from '../../FunctionHelpers/DeviceHelper';
 import moment from 'moment';
-import { calculateCareDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
+import { calculateCircleDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
@@ -165,8 +165,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   careLogo: {
-    width: 40,
-    height: 21,
+    width: 25,
+    height: 15,
+    marginHorizontal: 2.5,
   },
   careLogoText: {
     ...theme.viewStyles.text('M', 4, 'white'),
@@ -219,7 +220,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
   const { currentPatientId, currentPatient } = useAllCurrentPatients();
   const [doctorDetails, setdoctorDetails] = useState<getDoctorDetailsById_getDoctorDetailsById>();
   const callSaveSearch = props.navigation.getParam('callSaveSearch');
-  const circleDoctorDetails = calculateCareDoctorPricing(doctorDetails);
+  const circleDoctorDetails = calculateCircleDoctorPricing(doctorDetails);
   const {
     isCircleDoctor,
     physicalConsultMRPPrice,
@@ -392,7 +393,7 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
             >
               <Text style={styles.smallRightAlignText}>for</Text>
               <CircleLogo style={styles.careLogo} />
-              <Text style={[styles.smallRightAlignText, { marginLeft: -4 }]}>members</Text>
+              <Text style={[styles.smallRightAlignText, { marginLeft: 0 }]}>members</Text>
               <InfoBlue style={styles.infoIcon} />
             </TouchableOpacity>
           ) : null}

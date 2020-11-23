@@ -81,7 +81,7 @@ import {
   CircleLogo,
 } from '../ui/Icons';
 // import { NotificationListener } from '../NotificationListener';
-import { calculateCareDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
+import { calculateCircleDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { CirclePlanAddedToCart } from '@aph/mobile-patients/src/components/ui/CirclePlanAddedToCart';
 import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
@@ -221,8 +221,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   smallCareLogo: {
-    height: 21,
-    width: 40,
+    height: 18,
+    width: 30,
+    marginHorizontal: 2.5,
   },
   smallInfo: {
     width: 10,
@@ -256,9 +257,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   circleLogo: {
-    width: 72,
-    height: 30,
-    marginRight: -7,
+    width: 45,
+    height: 27,
+    marginHorizontal: 4,
   },
   linearGradient: {
     height: 63,
@@ -325,7 +326,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const callSaveSearch = props.navigation.getParam('callSaveSearch');
   const [secretaryData, setSecretaryData] = useState<any>([]);
   const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
-  const circleDoctorDetails = calculateCareDoctorPricing(doctorDetails);
+  const circleDoctorDetails = calculateCircleDoctorPricing(doctorDetails);
   const {
     isCircleDoctor,
     physicalConsultMRPPrice,
@@ -695,7 +696,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           >
             <Text style={styles.smallText}>for</Text>
             <CircleLogo style={styles.smallCareLogo} />
-            <Text style={[styles.smallText, { marginLeft: -4 }]}>members</Text>
+            <Text style={styles.smallText}>members</Text>
             <InfoBlue style={styles.smallInfo} />
           </TouchableOpacity>
         ) : null}

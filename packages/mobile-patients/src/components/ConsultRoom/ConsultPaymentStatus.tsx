@@ -936,8 +936,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   circleLogo: {
-    width: 50,
-    height: 32,
+    width: 45,
+    height: 27,
     marginRight: 5,
   },
 });
