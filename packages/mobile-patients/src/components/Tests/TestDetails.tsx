@@ -570,7 +570,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     //open the pop-up
   };
 
-  // setTimeout(() => isItemAdded && setItemAdded(false), 2000);
+  setTimeout(() => isItemAdded && setItemAdded(false), 2000);
 
   const renderItemAdded = () => {
     return (
