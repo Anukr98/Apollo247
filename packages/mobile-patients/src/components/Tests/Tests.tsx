@@ -631,12 +631,30 @@ export const Tests: React.FC<TestsProps> = (props) => {
     getPlaceInfoByPincode(pincode)
       .then(({ data }) => {
         try {
-          const addrComponents = data.results[0].address_components || [];
-          const latLang = data.results[0].geometry.location || {};
-          const response = getFormattedLocation(addrComponents, latLang, pincode);
-          setDiagnosticLocation!(response);
-          !locationDetails && setLocationDetails!(response);
+          if (data.results.length > 0) {
+            const addrComponents = data.results[0].address_components || [];
+            const latLang = data.results[0].geometry.location || {};
+            const response = getFormattedLocation(addrComponents, latLang, pincode);
+            response.city = diagnosticServiceabilityData?.city || response.city;
+            response.state = diagnosticServiceabilityData?.state || response.state;
+            setDiagnosticLocation!(response);
+            !locationDetails && setLocationDetails!(response);
+          } else {
+            if (diagnosticServiceabilityData?.city != '') {
+              let response = {
+                displayName: diagnosticServiceabilityData?.city!,
+                area: '',
+                city: diagnosticServiceabilityData?.city!,
+                state: diagnosticServiceabilityData?.state!,
+                country: 'India',
+                pincode: String(pincode),
+              };
+              setDiagnosticLocation!(response);
+              !locationDetails && setLocationDetails!(response);
+            }
+          }
         } catch (e) {
+          console.log(e);
           handleUpdatePlaceInfoByPincodeError(e);
         }
       })
@@ -1840,7 +1858,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
           <View style={{ marginTop: -7.5, marginRight: 40 }}>
             <View style={{ flexDirection: 'row' }}>
               <View>
-                <Text style={styles.locationText}>{location}</Text>
+                <Text style={[styles.locationText, { textTransform: 'capitalize' }]}>
+                  {location}
+                </Text>
                 {!serviceabilityMsg ? null : ( // <Spearator style={styles.locationTextUnderline} />
                   <View style={{ height: 2 }} />
                 )}
