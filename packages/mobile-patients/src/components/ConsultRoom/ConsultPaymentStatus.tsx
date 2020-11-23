@@ -144,7 +144,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       })
       .then((res) => {
         const amountBreakup = res?.data?.paymentTransactionStatus?.appointment?.amountBreakup;
-        if (isCircleDoctor && amountBreakup.slashed_price) {
+        if (isCircleDoctor && amountBreakup?.slashed_price) {
           setAmountBreakup(res?.data?.paymentTransactionStatus?.appointment?.amountBreakup);
         }
         try {
