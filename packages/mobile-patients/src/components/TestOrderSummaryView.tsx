@@ -152,28 +152,19 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
   );
 
   const allCirclePlanObjects =
-    getCircleObject?.length! > 0
-      ? getCircleObject?.map((item) =>
-          item?.pricingObj?.filter((obj) => obj?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE)
-        )
-      : [];
+    getCircleObject?.map((item) =>
+      item?.pricingObj?.filter((obj) => obj?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE)
+    ) || [];
   const allNormalPlanObjects =
-    getAllObject?.length! > 0
-      ? getAllObject?.map((item) =>
-          item?.pricingObj?.filter((obj) => obj?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL)
-        )
-      : [];
-
+    getAllObject?.map((item) =>
+      item?.pricingObj?.filter((obj) => obj?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL)
+    ) || [];
   const discountCirclePrice =
-    allCirclePlanObjects?.length! > 0
-      ? allCirclePlanObjects?.map((item) => item?.[0]?.mrp! - item?.[0]?.price!)
-      : [];
+    allCirclePlanObjects?.map((item) => item?.[0]?.mrp! - item?.[0]?.price!) || [];
   console.log({ discountCirclePrice });
 
   const discountNormalPrice =
-    allNormalPlanObjects?.length! > 0
-      ? allNormalPlanObjects?.map((item) => item?.[0]?.mrp! - item?.[0]?.price!)
-      : [];
+    allNormalPlanObjects?.map((item) => item?.[0]?.mrp! - item?.[0]?.price!) || [];
   console.log({ discountNormalPrice });
 
   const totalCircleSaving = discountCirclePrice?.reduce((prevVal, currVal) => prevVal + currVal, 0);
