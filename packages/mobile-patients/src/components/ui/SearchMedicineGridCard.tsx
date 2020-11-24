@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
     padding: 10,
     paddingTop: 14,
     flex: 0.5,
-    minHeight: 160,
+    minHeight: 175,
   },
   rowSpaceBetweenView: {
     flex: 1,
@@ -254,9 +254,6 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
       return (
         <CareCashbackBanner
           bannerText={`Extra Care ₹${cashback.toFixed(2)} Cashback`}
-          textStyle={{
-            left: -5,
-          }}
         />
       );
     } else {
