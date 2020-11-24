@@ -1496,7 +1496,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
           price
           quantity
           groupPlan
-          pricingObj {
+          pricingObj{
             mrp
             price
             groupPlan
