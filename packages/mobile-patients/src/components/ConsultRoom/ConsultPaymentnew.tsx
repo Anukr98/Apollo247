@@ -19,7 +19,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import AsyncStorage from '@react-native-community/async-storage';
 import { ONE_APOLLO_STORE_CODE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { calculateCareDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
+import { calculateCircleDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
 
 export interface ConsultPaymentnewProps extends NavigationScreenProps {}
 
@@ -49,7 +49,7 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
   const planId = AppConfig.Configuration.CARE_PLAN_ID;
   const storeCode =
     Platform.OS === 'ios' ? ONE_APOLLO_STORE_CODE.IOSCUS : ONE_APOLLO_STORE_CODE.ANDCUS;
-  const circleDoctorDetails = calculateCareDoctorPricing(doctor);
+  const circleDoctorDetails = calculateCircleDoctorPricing(doctor);
   const { isCircleDoctor } = circleDoctorDetails;
 
   useEffect(() => {
@@ -92,6 +92,7 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
       appsflyerEventAttributes: appsflyerEventAttributes,
       paymentTypeID: paymentTypeID,
       isDoctorsOfTheHourStatus,
+      isCircleDoctor: isCircleDoctor,
     });
   };
 

@@ -36,7 +36,7 @@ import {
   DoctorType,
   PLAN,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { calculateCareDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
+import { calculateCircleDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import {
@@ -122,7 +122,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
   const scrollviewRef = useRef<any>(null);
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
 
-  const circleDoctorDetails = calculateCareDoctorPricing(doctor);
+  const circleDoctorDetails = calculateCircleDoctorPricing(doctor);
   const {
     isCircleDoctor,
     minDiscountedPrice,
@@ -134,6 +134,9 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     physicalConsultMRPPrice,
   } = circleDoctorDetails;
   const { circleSubscriptionId, circlePlanSelected } = useShoppingCart();
+  const [disabledCheckout, setDisabledCheckout] = useState<boolean>(
+    isCircleDoctor && !circleSubscriptionId
+  );
 
   const amount = Number(price) - couponDiscountFees;
   const amountToPay =
@@ -293,6 +296,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
             scrollviewRef.current.scrollToEnd({ animated: true });
           }, 300);
         }}
+        onEndApiCall={() => setDisabledCheckout(false)}
       />
     );
   };
@@ -458,6 +462,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           title={`PAY ${string.common.Rs}${amountToPay} `}
           style={styles.bottomBtn}
           onPress={() => onPressPay()}
+          disabled={disabledCheckout}
         />
       </View>
     );
@@ -918,8 +923,8 @@ const styles = StyleSheet.create({
     maxWidth: width - 100,
   },
   careLogo: {
-    width: 46,
-    height: 25,
+    width: 40,
+    height: 20,
   },
   careLogoText: {
     ...theme.viewStyles.text('SB', 7, theme.colors.WHITE),

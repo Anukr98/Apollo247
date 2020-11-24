@@ -5,6 +5,7 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
   CartIcon,
   CircleBannerNonMember,
+  Cross,
   PendingIcon,
   WhiteTickIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -17,6 +18,7 @@ import {
   TestPackage,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import stripHtml from 'string-strip-html';
 import {
   aphConsole,
   postWebEngageEvent,
@@ -28,6 +30,7 @@ import {
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
+  Alert,
   Dimensions,
   SafeAreaView,
   ScrollView,
@@ -166,7 +169,7 @@ const styles = StyleSheet.create({
     margin: 10,
     textAlign: 'center',
     color: '#658F9B',
-    ...theme.fonts.IBMPlexSansMedium(12),
+    ...theme.fonts.IBMPlexSansMedium(11),
     alignSelf: 'flex-end',
   },
   notificationCard: {
@@ -175,9 +178,24 @@ const styles = StyleSheet.create({
     margin: 16,
     padding: 16,
   },
+  crossIconStyle: {
+    tintColor: colors.APP_YELLOW_COLOR,
+    height: 10,
+    width: 10,
+    marginHorizontal: 5,
+    resizeMode: 'contain',
+    justifyContent: 'center',
+  },
+  topPriceView: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    height: 50,
+  },
+  circlePriceView: { alignSelf: 'flex-start', marginTop: 5 },
 });
 
-const tabs = [
+var tabs = [
   {
     id: '1',
     title: 'Tests Included',
@@ -205,11 +223,14 @@ export interface TestDetailsProps
   }> {}
 
 export const TestDetails: React.FC<TestDetailsProps> = (props) => {
-  const [selectedTab, setSelectedTab] = useState<string>(tabs[0].title);
   const testDetails = props.navigation.getParam('testDetails', {} as TestPackageForDetails);
   const itemId = props.navigation.getParam('itemId');
 
+  const [showAddedView, setShowAddedView] = useState<boolean>(false);
+
   const [testInfo, setTestInfo] = useState<TestPackageForDetails>(testDetails);
+  const [selectedTab, setSelectedTab] = useState<string>(tabs[0].title);
+
   const TestDetailsDiscription = testInfo.PackageInClussion;
   const { locationDetails, diagnosticLocation, diagnosticServiceabilityData } = useAppCommonData();
   const { cartItems, addCartItem, isDiagnosticCircleSubscription } = useDiagnosticsCart();
@@ -256,6 +277,36 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             aphConsole.log('getPackageData Error \n', { e });
             setsearchSate('fail');
           });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (testInfo?.testDescription != null) {
+      tabs = [
+        {
+          id: '1',
+          title: 'Tests Included',
+        },
+        {
+          id: '2',
+          title: 'Preparation',
+        },
+        {
+          id: '3',
+          title: 'Overview',
+        },
+      ];
+    } else {
+      tabs = [
+        {
+          id: '1',
+          title: 'Tests Included',
+        },
+        {
+          id: '2',
+          title: 'Preparation',
+        },
+      ];
     }
   }, []);
 
@@ -467,6 +518,17 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     );
   };
 
+  const renderTestDescription = () => {
+    return (
+      <View style={styles.descriptionStyles}>
+        <Text style={styles.descriptionTextStyles}>
+          {(testInfo && stripHtml(testInfo?.testDescription)) ||
+            string.diagnostics.noTestDescription}
+        </Text>
+      </View>
+    );
+  };
+
   const renderNotification = () => {
     if (!COVID_NOTIFICATION_ITEMID.includes(testInfo.ItemID)) {
       return null;
@@ -506,6 +568,33 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
   const _navigateToCareLanding = () => {
     //open the pop-up
+  };
+
+  setTimeout(() => isItemAdded && setItemAdded(false), 2000);
+
+  const renderItemAdded = () => {
+    return (
+      <View>
+        {isItemAdded && isAddedToCart && (
+          <View
+            style={{
+              ...theme.viewStyles.cardViewStyle,
+              flexDirection: 'row',
+            }}
+          >
+            <Text style={[styles.successfulText, { flexDirection: 'row' }]}>
+              {string.diagnostics.itemsAddedSuccessfullyCTA}
+            </Text>
+            <TouchableOpacity
+              style={{ marginTop: 13, marginRight: 10 }}
+              onPress={() => setItemAdded(false)}
+            >
+              <Cross style={styles.crossIconStyle} />
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+    );
   };
 
   const postDiagnosticAddToCartEvent = (
@@ -574,7 +663,11 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           <View>{renderTestDetails()}</View>
           {renderNotification()}
           {renderTabsData()}
-          {selectedTab === tabs[0].title ? renderTestsIncludedData() : renderPreparation()}
+          {selectedTab === tabs[0].title
+            ? renderTestsIncludedData()
+            : selectedTab === tabs[1].title
+            ? renderPreparation()
+            : renderTestDescription()}
           {!isDiagnosticCircleSubscription && renderCareBanner()}
           <View style={{ height: screenHeight * 0.2 }} />
         </ScrollView>
@@ -585,14 +678,17 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
            */}
 
           {!isDiagnosticCircleSubscription && promoteCircle && (
-            <View style={{ height: 75, alignItems: 'flex-start' }}>
-              <CircleHeading />
-              <View style={{ alignSelf: 'flex-start', marginTop: 5 }}>
-                <Text style={styles.priceText}>
-                  {string.common.Rs}{' '}
-                  {findItemFromCart?.circleSpecialPrice! || testInfo?.circleSpecialPrice}
-                </Text>
+            <View style={[styles.topPriceView, { height: 75 }]}>
+              <View>
+                <CircleHeading />
+                <View style={styles.circlePriceView}>
+                  <Text style={styles.priceText}>
+                    {string.common.Rs}{' '}
+                    {findItemFromCart?.circleSpecialPrice! || testInfo?.circleSpecialPrice}
+                  </Text>
+                </View>
               </View>
+              {renderItemAdded()}
             </View>
           )}
           {/**
@@ -603,28 +699,30 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             (testDetails.source == 'Cart Page' && findItemFromCart!
               ? findItemFromCart?.price != findItemFromCart?.specialPrice
               : testDetails?.Rate != testDetails?.specialPrice) && (
-              <View style={{ height: 50, alignItems: 'flex-start' }}>
-                <View style={{ alignSelf: 'flex-start', marginTop: 5 }}>
+              <View style={[styles.topPriceView, { height: 60 }]}>
+                <View style={styles.circlePriceView}>
                   <Text
                     style={[styles.priceText, { textDecorationLine: 'line-through', opacity: 0.5 }]}
                   >
                     {string.common.Rs} {findItemFromCart?.price! || testInfo?.Rate}
                   </Text>
                 </View>
+                {renderItemAdded()}
               </View>
             )}
           {/**
            * subscribed + promote circle
            */}
           {isDiagnosticCircleSubscription && promoteCircle && (
-            <View style={{ height: 50, alignItems: 'flex-start' }}>
-              <View style={{ alignSelf: 'flex-start', marginTop: 5 }}>
+            <View style={[styles.topPriceView]}>
+              <View style={styles.circlePriceView}>
                 <Text
                   style={[styles.priceText, { textDecorationLine: 'line-through', opacity: 0.5 }]}
                 >
                   {string.common.Rs} {testInfo?.specialPrice! || testInfo?.Rate}
                 </Text>
               </View>
+              {renderItemAdded()}
             </View>
           )}
 
@@ -637,40 +735,37 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             (testDetails.source == 'Cart Page' && findItemFromCart!
               ? findItemFromCart?.price != findItemFromCart?.specialPrice
               : testDetails.Rate != testDetails.specialPrice) && (
-              <View style={{ height: 50, alignItems: 'flex-start' }}>
-                <View style={{ alignSelf: 'flex-start', marginTop: 5 }}>
+              <View style={[styles.topPriceView, { height: 60 }]}>
+                <View style={styles.circlePriceView}>
                   <Text
                     style={[styles.priceText, { textDecorationLine: 'line-through', opacity: 0.5 }]}
                   >
                     {string.common.Rs} {findItemFromCart?.price || testInfo?.Rate}
                   </Text>
                 </View>
+                {renderItemAdded()}
+              </View>
+            )}
+
+          {/**
+           * for normal cases where no special price + no circle price
+           */}
+          {!promoteCircle &&
+            (testDetails.source == 'Cart Page' && findItemFromCart!
+              ? findItemFromCart?.price == findItemFromCart?.specialPrice
+              : testDetails.Rate == testDetails.specialPrice) && (
+              <View
+                style={{
+                  height: isItemAdded ? 60 : 40,
+                  alignItems: 'flex-end',
+                }}
+              >
+                {renderItemAdded()}
               </View>
             )}
 
           <View style={{ backgroundColor: 'white', margin: -16 }}>
             <View style={{ margin: 16 }}>
-              {isItemAdded && (
-                <Text style={[styles.successfulText, { flexDirection: 'row' }]}>
-                  {string.diagnostics.itemsAddedSuccessfullyCTA}
-                  <WhiteTickIcon
-                    style={{
-                      height: 15,
-                      width: 15,
-                      tintColor: '#658F9B',
-                      resizeMode: 'contain',
-                      alignSelf: 'center',
-                    }}
-                  />
-                </Text>
-              )}
-              {isAddedToCart && !isItemAdded && (
-                <View style={{ height: 30, alignSelf: 'flex-end' }}>
-                  <Text onPress={onProceedToCartCTA} style={styles.proceedToCartText}>
-                    {string.diagnostics.proceedToCartCTA}
-                  </Text>
-                </View>
-              )}
               <View
                 style={{
                   justifyContent: 'space-between',
@@ -746,14 +841,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
                 <View style={{ width: '50%', alignSelf: 'flex-end' }}>
                   <Button
-                    title={
-                      !isAddedToCart
-                        ? 'ADD TO CART'
-                        : isItemAdded
-                        ? string.diagnostics.proceedToCartCTA
-                        : 'ITEM ADDED'
-                    }
-                    disabled={!isAddedToCart || isItemAdded ? false : true}
+                    title={!isAddedToCart ? 'ADD TO CART' : string.diagnostics.proceedToCartCTA}
+                    // disabled={!isAddedToCart}
                     style={{ marginBottom: 20 }}
                     onPress={() => {
                       if (!isAddedToCart) {
