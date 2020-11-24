@@ -362,14 +362,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           CommonBugFender('TestOrderDetails_refetchOrders', e);
         });
     }
-    // props.navigation.goBack();
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-      })
-    );
+    props.navigation.goBack();
     return false;
   };
 

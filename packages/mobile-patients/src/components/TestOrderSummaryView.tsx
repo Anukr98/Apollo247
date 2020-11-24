@@ -147,20 +147,43 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
     (items) => items?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE
   );
 
-  const allCircleObjects = getCircleObject?.map((item) =>
-    item?.pricingObj?.filter((obj) => obj?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE)
+  const getAllObject = orderDetails?.diagnosticOrderLineItems?.filter(
+    (items) => items?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL
   );
 
-  // const totall = allCircleObjects?.map((item) =>
-  //   item?.reduce((prevVal, currVal) => prevVal + (currVal?.mrp! - currVal?.price!))
-  // );
-  // console.log({ totall });
+  const allCirclePlanObjects =
+    getCircleObject?.length! > 0
+      ? getCircleObject?.map((item) =>
+          item?.pricingObj?.filter((obj) => obj?.groupPlan == DIAGNOSTIC_GROUP_PLAN.CIRCLE)
+        )
+      : [];
+  const allNormalPlanObjects =
+    getAllObject?.length! > 0
+      ? getAllObject?.map((item) =>
+          item?.pricingObj?.filter((obj) => obj?.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL)
+        )
+      : [];
+
+  const discountCirclePrice =
+    allCirclePlanObjects?.length! > 0
+      ? allCirclePlanObjects?.map((item) => item?.[0]?.mrp! - item?.[0]?.price!)
+      : [];
+  console.log({ discountCirclePrice });
+
+  const discountNormalPrice =
+    allNormalPlanObjects?.length! > 0
+      ? allNormalPlanObjects?.map((item) => item?.[0]?.mrp! - item?.[0]?.price!)
+      : [];
+  console.log({ discountNormalPrice });
+
+  const totalCircleSaving = discountCirclePrice?.reduce((prevVal, currVal) => prevVal + currVal, 0);
+  const totalCartSaving = discountNormalPrice?.reduce((prevVal, currVal) => prevVal + currVal, 0);
 
   /**
    * to handle the quantity
    */
   const individualDiagnosticsArray = orderDetails?.diagnosticOrderLineItems!.map(
-    (item) => item?.price * item?.quantity
+    (item) => item?.price! * item?.quantity!
   );
 
   const totalIndividualDiagonsticsCharges = individualDiagnosticsArray?.reduce(
@@ -168,7 +191,8 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
   );
 
   const HomeCollectionCharges = orderDetails?.totalPrice! - totalIndividualDiagonsticsCharges!;
-  const grossCharges = totalIndividualDiagonsticsCharges!;
+
+  const grossCharges = totalIndividualDiagonsticsCharges! + totalCartSaving! + totalCircleSaving!;
 
   const orderLineItems = orderDetails!.diagnosticOrderLineItems || [];
   return (
@@ -243,7 +267,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
         <View style={{ flex: 1 }}>
           <Text style={styles.commonText}></Text>
         </View>
-        <View style={{ width: '40%' }}>
+        <View style={{ width: '46%' }}>
           <Text
             style={[
               styles.commonText,
@@ -256,7 +280,8 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
         <View style={{ flex: 1, alignItems: 'center' }}>
           <Text style={styles.commonText}>
             {string.common.Rs}
-            {totalIndividualDiagonsticsCharges}
+            {/* {totalIndividalDiagonsticsCharges} */}
+            {grossCharges}
           </Text>
         </View>
       </View>
@@ -265,7 +290,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
           <View style={{ flex: 1 }}>
             <Text style={styles.commonText}></Text>
           </View>
-          <View style={{ width: '50%' }}>
+          <View style={{ width: '46%' }}>
             <Text
               style={[
                 styles.commonText,
@@ -277,8 +302,57 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
           </View>
           <View style={{ flex: 1, alignItems: 'center' }}>
             <Text style={styles.commonText}>
-              {string.common.Rs}
+              + {string.common.Rs}
               {HomeCollectionCharges}
+            </Text>
+          </View>
+        </View>
+      )}
+      {/**
+       * check with home collection
+       */}
+      {!!totalCircleSaving && (
+        <View style={styles.commonTax}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.commonText}></Text>
+          </View>
+          <View style={{ width: '46%' }}>
+            <Text
+              style={[
+                styles.commonText,
+                { ...theme.fonts.IBMPlexSansMedium(10), textAlign: 'right' },
+              ]}
+            >
+              CIRCLE SAVING
+            </Text>
+          </View>
+          <View style={{ flex: 1, alignItems: 'center' }}>
+            <Text style={styles.commonText}>
+              - {string.common.Rs}
+              {totalCircleSaving}
+            </Text>
+          </View>
+        </View>
+      )}
+      {!!totalCartSaving && (
+        <View style={styles.commonTax}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.commonText}></Text>
+          </View>
+          <View style={{ width: '46%' }}>
+            <Text
+              style={[
+                styles.commonText,
+                { ...theme.fonts.IBMPlexSansMedium(10), textAlign: 'right' },
+              ]}
+            >
+              CART SAVING
+            </Text>
+          </View>
+          <View style={{ flex: 1, alignItems: 'center' }}>
+            <Text style={styles.commonText}>
+              - {string.common.Rs}
+              {totalCartSaving}
             </Text>
           </View>
         </View>
