@@ -469,7 +469,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [showPopup, setShowPopup] = useState(false);
   const [showCallAbandmentPopup, setShowCallAbandmentPopup] = useState(false);
   const [showConnectAlertPopup, setShowConnectAlertPopup] = useState(false);
-  const { setDoctorJoinedChat, doctorJoinedChat, locationDetails } = useAppCommonData(); //setting in context since we are updating this in NotificationListener
+  const {
+    setDoctorJoinedChat,
+    doctorJoinedChat,
+    locationDetails,
+    isDoctorCallDisconnected,
+    setDoctorCallDisconnected,
+  } = useAppCommonData(); // setting in context since we are updating this in NotificationListener
+  const _isDoctorCallDisconnected = useRef<boolean>(isDoctorCallDisconnected); // to handle: Doctor disconnected the call, still patient received the call.
   const [name, setname] = useState<string>('');
   const [talkStyles, setTalkStyles] = useState<object>({
     flex: 1,
@@ -576,6 +583,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const subscriberConnected = useRef<boolean>(false);
   const [secretaryData, setSecretaryData] = useState<any>([]);
   const [callDuration, setCallDuration] = useState<number>(0);
+
+  useEffect(() => {
+    _isDoctorCallDisconnected.current = isDoctorCallDisconnected;
+  }, [isDoctorCallDisconnected]);
 
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
@@ -912,7 +923,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   useEffect(() => {
     if (isVoipCall || fromIncomingCall) {
-      joinCallHandler();
+      if (_isDoctorCallDisconnected.current) {
+        setDoctorCallDisconnected(false);
+        _isDoctorCallDisconnected.current = false;
+      } else {
+        joinCallHandler();
+      }
     }
 
     if (fromIncomingCall === true) {
@@ -2547,6 +2563,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
           if (messages.length !== newmessage.length) {
             const lastMessage = newmessage[newmessage.length - 1];
+            const callEnded =
+              lastMessage.message === 'Audio call ended' ||
+              lastMessage.message === 'Video call ended';
             if (lastMessage.message === startConsultMsg) {
               jrDoctorJoined.current = false;
               updateSessionAPI();
@@ -2558,11 +2577,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               checkingAppointmentDates();
             }
 
-            if (
-              (lastMessage.message === 'Audio call ended' ||
-                lastMessage.message === 'Video call ended') &&
-              lastMessage.duration === '00 : 00'
-            ) {
+            if (callEnded && lastMessage.duration === '00 : 00') {
               fireWebengageEventForCallAnswer(WebEngageEventName.PATIENT_MISSED_CALL);
             }
 
@@ -5129,6 +5144,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const joinCallHandler = () => {
     setLoading(true);
     callPermissions(() => {
+      if (_isDoctorCallDisconnected.current) {
+        setLoading(false);
+        setDoctorCallDisconnected(false);
+        _isDoctorCallDisconnected.current = false;
+        return;
+      }
       setLoading(true);
       stopTimer();
       startTimer(0);
@@ -6245,9 +6266,29 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       });
   };
 
-  const PublishAudioVideo = () => {
-    console.log('PublishAudioVideo');
+  const resetCallState = () => {
+    AsyncStorage.setItem('callDisconnected', 'true');
+    setOnSubscribe(false);
+    callhandelBack = true;
+    setIsCall(false);
+    setIsAudioCall(false);
+    stopSound();
+    AsyncStorage.setItem('callDisconnected', 'true');
+    setIsPublishAudio(true);
+    setShowVideo(true);
+    setCameraPosition('front');
+    stopTimer();
+    setHideStatusBar(false);
+    setChatReceived(false);
+    setDoctorCallDisconnected(false);
+    _isDoctorCallDisconnected.current = false;
+  };
 
+  const PublishAudioVideo = () => {
+    if (_isDoctorCallDisconnected.current) {
+      resetCallState();
+      return;
+    }
     pubnub.publish(
       {
         message: {
@@ -6258,7 +6299,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         channel: channel,
         storeInHistory: false,
       },
-      (status, response) => {}
+      (status, response) => {
+        if (_isDoctorCallDisconnected.current) {
+          resetCallState();
+        }
+      }
     );
     AsyncStorage.setItem('callDisconnected', 'false');
     if (isAudio.current && !patientJoinedCall.current) {

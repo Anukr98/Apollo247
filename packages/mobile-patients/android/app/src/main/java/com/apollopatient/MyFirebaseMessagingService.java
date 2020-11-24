@@ -68,6 +68,7 @@ public class MyFirebaseMessagingService
                 } else {
                     showUnlockScreen(remoteMessage, !isAppRunning());
                 }
+                (new io.invertase.firebase.messaging.ReactNativeFirebaseMessagingService()).onMessageReceived(remoteMessage);
                 return;
             }
 
