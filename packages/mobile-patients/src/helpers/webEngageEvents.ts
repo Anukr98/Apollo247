@@ -284,6 +284,7 @@ export enum WebEngageEventName {
   SYMPTOM_TRACKER_CONSULT_DOCTOR_CLICKED = 'user clicked on consult doc symptom check',
   SYMPTOM_TRACKER_RESTART_CLICKED = 'restart symptom checker clicked',
   SYMPTOM_TRACKER_SEARCH_SYMPTOMS = 'User searched symptom SC',
+  SYMPTOM_TRACKER_CLICKED_ON_SPECIALITY_SCREEN = 'Track symptoms in speciality screen clicked',
 }
 
 export interface PatientInfo {
@@ -1950,6 +1951,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.SYMPTOM_TRACKER_ADD_OTHER_SYMPTOM_CLICKED]: SymptomTrackerPatientInfo;
   [WebEngageEventName.SYMPTOM_TRACKER_MOST_TROUBLING_SYMPTOM_CLICKED]: SymptomTrackerPatientInfo;
   [WebEngageEventName.SYMPTOM_TRACKER_NO_OTHER_SYMPTOM_CLICKED]: SymptomTrackerPatientInfo;
+  [WebEngageEventName.SYMPTOM_TRACKER_CLICKED_ON_SPECIALITY_SCREEN]: SymptomTrackerPatientInfo;
   [WebEngageEventName.SYMPTOM_TRACKER_RESTART_CLICKED]: SymptomTrackerCompleteInfo;
   [WebEngageEventName.SYMPTOM_TRACKER_CONSULT_DOCTOR_CLICKED]: SymptomTrackerCompleteInfo;
   [WebEngageEventName.SYMPTOM_TRACKER_SEARCH_SYMPTOMS]: {
