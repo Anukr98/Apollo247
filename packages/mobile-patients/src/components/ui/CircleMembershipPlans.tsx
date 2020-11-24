@@ -41,6 +41,7 @@ interface CircleMembershipPlansProps extends NavigationScreenProps {
   membershipPlans?: any;
   doctorFees?: number;
   onEndApiCall?: (() => void) | null;
+  buyNow?: boolean;
 }
 
 export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (props) => {
@@ -54,6 +55,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     closeModal,
     doctorFees,
     onEndApiCall,
+    buyNow,
   } = props;
   const client = useApolloClient();
   const planId = AppConfig.Configuration.CARE_PLAN_ID;
@@ -332,7 +334,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       <View
         style={[
           styles.bottomBtnContainer,
-          { alignSelf: alignSelf, marginTop: autoCirlcePlanAdded ? 0 : 10 },
+          { alignSelf: alignSelf, marginTop: autoCirlcePlanAdded ? 0 : 12 },
         ]}
       >
         <TouchableOpacity
@@ -405,12 +407,15 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
   const renderAddToCart = () => {
     return (
       <Button
-        title={string.circleDoctors.addToCart}
+        title={buyNow ? string.circleDoctors.buyNow : string.circleDoctors.addToCart}
         style={styles.buyNowBtn}
         onPress={() => {
           setDefaultCirclePlan && setDefaultCirclePlan(null);
           autoSelectDefaultPlan(membershipPlans);
           closeModal && closeModal();
+          if (buyNow) {
+            props.navigation.navigate(AppRoutes.CircleSubscription);
+          }
         }}
       />
     );
@@ -666,7 +671,7 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE),
   },
   buyNowBtn: {
-    marginTop: 6,
+    marginTop: 2,
     width: 212,
     backgroundColor: theme.colors.APP_YELLOW_COLOR,
     alignSelf: 'center',

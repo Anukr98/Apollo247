@@ -283,7 +283,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     );
   };
 
-  const renderCareSubscriptionPlans = () => {
+  const renderCircleSubscriptionPlans = () => {
     return (
       <CircleMembershipPlans
         isConsultJourney={true}
@@ -429,7 +429,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
           CommonBugFender('validatingConsultCoupon', error);
           console.log(error);
           rej();
-          renderErrorPopup(`Something went wrong, plaease try again after sometime`);
+          renderErrorPopup(string.common.tryAgainLater);
         });
     });
   };
@@ -838,7 +838,7 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
         <ScrollView ref={scrollviewRef}>
           {renderDoctorCard()}
           {isCircleDoctor && circleSubscriptionId ? renderCareMembershipAddedCard() : null}
-          {isCircleDoctor && !circleSubscriptionId ? renderCareSubscriptionPlans() : null}
+          {isCircleDoctor && !circleSubscriptionId ? renderCircleSubscriptionPlans() : null}
           {renderApplyCoupon()}
           {renderPriceBreakup()}
           {renderDiscountView()}

@@ -62,7 +62,8 @@
     "membershipDiscount": "Membership Discount",
     "savingsOnBill": "Savings of ₹ {amount} on the bill",
     "couponApplied": "Coupon Applied",
-    "careMembership": "CIRCLE Membership"
+    "careMembership": "CIRCLE Membership",
+    "tryAgainLater": "Something went wrong, please try again after sometime"
   },
   "components": {
     "medicineDetails": {
@@ -588,7 +589,11 @@
     "getCircleMembershipOffersDescription": "Enable Circle membership to get the best discounts, cashbacks, free delivery and more...",
     "successfullyPurchashedCircleSubscription": "Congratulations! You have successfully purchased Circle Subscription.",
     "validTill": "Valid till:",
-    "subscriptionID": "Subscription ID"
+    "subscriptionID": "Subscription ID",
+    "buyNow": "BUY NOW",
+    "billTotal": "BILL TOTAL",
+    "membershipPlan": "Membership Plan",
+    "total": "TOTAL"
   },
   "circlePharmacy": {
     "modalDescription": "Enable Circle membership to get the best discounts, cashbacks, free delivery and more...",

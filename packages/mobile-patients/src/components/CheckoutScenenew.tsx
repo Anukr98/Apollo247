@@ -222,7 +222,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         CommonBugFender('fetchingPaymentOptions', error);
         console.log(error);
         props.navigation.navigate(AppRoutes.MedicineCart);
-        renderErrorPopup(`Something went wrong, plaease try again after sometime`);
+        renderErrorPopup(string.common.tryAgainLater);
       });
     return () => {
       // setLoading && setLoading(false);
@@ -368,10 +368,10 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       paymentInfo.medicinePaymentMqInput['paymentStatus'] = 'TXN_SUCCESS';
       paymentInfo.medicinePaymentMqInput['healthCredits'] = getFormattedAmount(grandTotal);
     }
-    if (!(circleSubscription?._id) && !!circleMembershipCharges) {
+    if (!circleSubscription?._id && !!circleMembershipCharges) {
       paymentInfo.medicinePaymentMqInput['planId'] = circlePlanId;
       paymentInfo.medicinePaymentMqInput['subPlanId'] = circleSubPlanId;
-      paymentInfo.medicinePaymentMqInput['storeCode'] = 
+      paymentInfo.medicinePaymentMqInput['storeCode'] =
         Platform.OS == 'android' ? ONE_APOLLO_STORE_CODE.ANDCUS : ONE_APOLLO_STORE_CODE.IOSCUS;
     }
 
@@ -470,7 +470,9 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       setShowChennaiOrderForm(true);
       return;
     }
-    const estimatedAmount = !!circleMembershipCharges ? getFormattedAmount(grandTotal - circleMembershipCharges) : getFormattedAmount(grandTotal);
+    const estimatedAmount = !!circleMembershipCharges
+      ? getFormattedAmount(grandTotal - circleMembershipCharges)
+      : getFormattedAmount(grandTotal);
     setLoading && setLoading(true);
     const selectedStore = storeId && stores.find((item) => item.storeid == storeId);
     const { storename, address, workinghrs, phone, city, state, state_id } = selectedStore || {};

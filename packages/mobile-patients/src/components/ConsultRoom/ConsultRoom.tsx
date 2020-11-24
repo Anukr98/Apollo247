@@ -171,6 +171,7 @@ import {
   GetSubscriptionsOfUserByStatusVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
 import { GetCashbackDetailsOfPlanById } from '@aph/mobile-patients/src/graphql/types/GetCashbackDetailsOfPlanById';
+import { CircleBannerComponent } from '@aph/mobile-patients/src/components/ui/CircleBannerComponent';
 
 const { Vitals } = NativeModules;
 
@@ -2822,6 +2823,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
+  const renderCircleBanners = () => <CircleBannerComponent navigation={props.navigation} />;
+
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
@@ -2840,6 +2843,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               {/* <Text style={styles.descriptionTextStyle}>{string.home.description}</Text> */}
               {isPersonalizedCard && renderAppointmentWidget()}
               {renderMenuOptions()}
+              {renderCircleBanners()}
               {showHdfcWidget && (
                 <View style={{ backgroundColor: '#f0f1ec' }}>{renderHdfcConnect()}</View>
               )}
