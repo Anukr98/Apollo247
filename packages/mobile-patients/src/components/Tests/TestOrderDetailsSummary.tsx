@@ -96,6 +96,7 @@ export interface TestOrderDetailsSummaryProps extends NavigationScreenProps {
   orderId: string;
   showOrderSummaryTab: boolean;
   goToHomeOnBack: boolean;
+  comingFrom?: string;
 }
 {
 }
@@ -105,6 +106,7 @@ export const TestOrderDetailsSummary: React.FC<TestOrderDetailsSummaryProps> = (
   const goToHomeOnBack = props.navigation.getParam('goToHomeOnBack');
   const showOrderSummaryTab = props.navigation.getParam('showOrderSummaryTab');
   const setOrders = props.navigation.getParam('setOrders');
+  const isComingFrom = props.navigation.getParam('comingFrom');
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const [selectedTab, setSelectedTab] = useState<string>(
@@ -158,14 +160,17 @@ export const TestOrderDetailsSummary: React.FC<TestOrderDetailsSummaryProps> = (
           CommonBugFender('TestOrderDetails_refetchOrders', e);
         });
     }
-
-    props.navigation.dispatch(
-      StackActions.reset({
-        index: 0,
-        key: null,
-        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
-      })
-    );
+    if (isComingFrom == AppRoutes.TestsCart) {
+      props.navigation.dispatch(
+        StackActions.reset({
+          index: 0,
+          key: null,
+          actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+        })
+      );
+    } else {
+      props.navigation.goBack();
+    }
 
     return false;
   };
