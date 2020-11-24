@@ -563,7 +563,6 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
                 ToAgeInDays: product?.toAgeInDays,
                 collectionType: product?.collectionType,
                 preparation: product?.testPreparationData,
-                testDescription: product?.testPreparationData,
                 source: 'Search Page',
                 type: product?.itemType,
               } as TestPackageForDetails,
@@ -672,9 +671,8 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
               ToAgeInDays: product?.toAgeInDays,
               collectionType: product?.collectionType,
               preparation: product?.testPreparationData,
-              testDescription: product?.testPreparationData,
               source: 'Search Page',
-              type: product?.itemType,
+              type: product.itemType,
             } as TestPackageForDetails,
           });
         }}

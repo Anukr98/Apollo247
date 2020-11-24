@@ -33,7 +33,6 @@ export interface getDiagnosticOrderItem_getDiagnosticOrderItem_diagnostics {
   toAgeInDays: number;
   testPreparationData: string;
   diagnosticPricing: (getDiagnosticOrderItem_getDiagnosticOrderItem_diagnostics_diagnosticPricing | null)[] | null;
-  testDescription: string | null;
 }
 
 export interface getDiagnosticOrderItem_getDiagnosticOrderItem {

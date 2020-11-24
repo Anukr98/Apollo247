@@ -108,9 +108,8 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   careLogo: {
-    width: 25,
-    height: 15,
-    marginHorizontal: 2.5,
+    width: 40,
+    height: 21,
   },
   careLogoText: {
     ...theme.viewStyles.text('M', 4, 'white'),
@@ -183,7 +182,7 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
   } = props;
 
   const { currentPatient } = useAllCurrentPatients();
-  const { showCircleSubscribed } = useShoppingCart();
+  const { circleSubscriptionId } = useShoppingCart();
 
   const [consultDoctorName, setConsultDocotrName] = useState<string>(DoctorName ? DoctorName : '');
   const {
@@ -195,39 +194,33 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
   } = circleDoctorDetails;
 
   const renderCareDoctorPricing = () => {
-    if (
-      (isOnlineSelected && onlineConsultMRPPrice > 0) ||
-      (!isOnlineSelected && physicalConsultMRPPrice > 0)
-    ) {
-      return (
-        <View>
-          <Text
-            style={[
-              styles.carePrice,
-              {
-                textDecorationLine: showCircleSubscribed ? 'line-through' : 'none',
-                ...theme.viewStyles.text(
-                  'M',
-                  15,
-                  showCircleSubscribed ? theme.colors.BORDER_BOTTOM_COLOR : theme.colors.LIGHT_BLUE
-                ),
-              },
-            ]}
-          >
+    return (
+      <View>
+        <Text
+          style={[
+            styles.carePrice,
+            {
+              textDecorationLine: circleSubscriptionId ? 'line-through' : 'none',
+              ...theme.viewStyles.text(
+                'M',
+                15,
+                circleSubscriptionId ? theme.colors.BORDER_BOTTOM_COLOR : theme.colors.LIGHT_BLUE
+              ),
+            },
+          ]}
+        >
+          {string.common.Rs}
+          {isOnlineSelected ? onlineConsultMRPPrice : physicalConsultMRPPrice}
+        </Text>
+        <View style={styles.rowContainer}>
+          {circleSubscriptionId ? <CircleLogo style={styles.careLogo} /> : null}
+          <Text style={styles.careDiscountedPrice}>
             {string.common.Rs}
-            {isOnlineSelected ? onlineConsultMRPPrice : physicalConsultMRPPrice}
+            {isOnlineSelected ? onlineConsultSlashedPrice : physicalConsultSlashedPrice}
           </Text>
-          <View style={styles.rowContainer}>
-            {showCircleSubscribed ? <CircleLogo style={styles.careLogo} /> : null}
-            <Text style={styles.careDiscountedPrice}>
-              {string.common.Rs}
-              {isOnlineSelected ? onlineConsultSlashedPrice : physicalConsultSlashedPrice}
-            </Text>
-          </View>
         </View>
-      );
-    }
-    return <></>;
+      </View>
+    );
   };
 
   const renderCard = (
@@ -249,10 +242,6 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
           minute: moment('06:00', 'HH:mm').get('minute'),
         })
     );
-    const showCirclePricing =
-      isCircleDoctor &&
-      ((isOnlineSelected && onlineConsultMRPPrice > 0) ||
-        (!isOnlineSelected && physicalConsultMRPPrice > 0));
     return (
       <View style={styles.cardContainer}>
         <View style={styles.cardBorderStyle}>
@@ -272,7 +261,7 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
             </View>
             {isCircleDoctor && renderCareDoctorPricing()}
           </View>
-          {!showCircleSubscribed && showCirclePricing ? (
+          {!circleSubscriptionId && isCircleDoctor ? (
             <TouchableOpacity
               activeOpacity={1}
               onPress={() => openCircleWebView()}
@@ -292,7 +281,7 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
             >
               <Text style={styles.smallRightAlignText}>for</Text>
               <CircleLogo style={styles.careLogo} />
-              <Text style={[styles.smallRightAlignText, { marginLeft: 0 }]}>members</Text>
+              <Text style={[styles.smallRightAlignText, { marginLeft: -4 }]}>members</Text>
               <InfoBlue style={styles.infoIcon} />
             </TouchableOpacity>
           ) : null}

@@ -3,7 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
-import { calculateCircleDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
+import { calculateCareDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
 
 interface ConsultPriceProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
@@ -26,7 +26,7 @@ export const ConsultPriceBreakup: React.FC<ConsultPriceProps> = (props) => {
     planSelected,
   } = props;
   const isOnlineConsult = selectedTab === 'Consult Online';
-  const circleDoctorDetails = calculateCircleDoctorPricing(doctor);
+  const circleDoctorDetails = calculateCareDoctorPricing(doctor);
   const {
     isCircleDoctor,
     physicalConsultMRPPrice,

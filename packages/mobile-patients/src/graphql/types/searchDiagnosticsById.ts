@@ -23,7 +23,6 @@ export interface searchDiagnosticsById_searchDiagnosticsById_diagnostics {
   collectionType: TEST_COLLECTION_TYPE | null;
   fromAgeInDays: number;
   toAgeInDays: number;
-  testDescription: string | null;
   testPreparationData: string;
 }
 

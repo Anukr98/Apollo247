@@ -1270,7 +1270,7 @@ export const BlueTick: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_check_blue.png')} />
 );
 export const CircleLogo: React.FC<IconProps> = (props) => (
-  <IconBase resizeMode="contain" size="sm" {...props} source={require('./icons/circleLogo.png')} />
+  <IconBase size="sm" {...props} source={require('./icons/circleLogo.png')} />
 );
 export const OrderPlacedCheckedIcon: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/checked.png')} />

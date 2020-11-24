@@ -194,11 +194,9 @@ export interface ShoppingCartContextProps {
   selectDefaultPlan: ((plan: any) => void) | null;
   defaultCirclePlan: any;
   setDefaultCirclePlan: ((plan: any) => void) | null;
+
   onHoldOptionOrder: onHold[];
   setOnHoldOptionOrder: ((items: onHold[]) => void) | null;
-  autoCirlcePlanAdded: boolean;
-  setAutoCirlcePlanAdded: ((planAdded: boolean) => void) | null;
-  showCircleSubscribed: boolean;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -283,13 +281,11 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   selectDefaultPlan: null,
   defaultCirclePlan: null,
   setDefaultCirclePlan: null,
+
   onHoldOptionOrder: [],
   setOnHoldOptionOrder: null,
   deliveryTime: '',
   setdeliveryTime: null,
-  autoCirlcePlanAdded: false,
-  setAutoCirlcePlanAdded: null,
-  showCircleSubscribed: false,
 });
 
 const AsyncStorageKeys = {
@@ -338,12 +334,6 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [defaultCirclePlan, setDefaultCirclePlan] = useState<
     ShoppingCartContextProps['defaultCirclePlan']
   >(null);
-  const [autoCirlcePlanAdded, setAutoCirlcePlanAdded] = useState<
-    ShoppingCartContextProps['autoCirlcePlanAdded']
-  >(false);
-  const showCircleSubscribed =
-    circleSubscriptionId || (!autoCirlcePlanAdded && circlePlanSelected && !defaultCirclePlan);
-
   const [isFreeDelivery, setIsFreeDelivery] = useState<ShoppingCartContextProps['isFreeDelivery']>(
     false
   );
@@ -888,9 +878,6 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setOnHoldOptionOrder,
         deliveryTime,
         setdeliveryTime,
-        autoCirlcePlanAdded,
-        setAutoCirlcePlanAdded,
-        showCircleSubscribed,
       }}
     >
       {props.children}

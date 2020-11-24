@@ -33,19 +33,19 @@ const defaultPlanDimension = 160;
 
 interface CircleMembershipPlansProps extends NavigationScreenProps {
   style?: StyleProp<ViewStyle>;
-  onSelectMembershipPlan?: (plan?: any) => void;
+  onSelectMembershipPlan: (plan?: any) => void;
   isConsultJourney?: boolean;
   careDiscountPrice?: number;
   isModal?: boolean;
   closeModal?: (() => void) | null;
   membershipPlans?: any;
   doctorFees?: number;
-  onEndApiCall?: (() => void) | null;
 }
 
 export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (props) => {
   const [membershipPlans, setMembershipPlans] = useState<any>(props.membershipPlans || []);
   const [loading, setLoading] = useState<boolean>(true);
+  const [autoPlanAdded, setAutoPlanAdded] = useState<boolean>(false);
   const {
     isConsultJourney,
     careDiscountPrice,
@@ -53,7 +53,6 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     isModal,
     closeModal,
     doctorFees,
-    onEndApiCall,
   } = props;
   const client = useApolloClient();
   const planId = AppConfig.Configuration.CARE_PLAN_ID;
@@ -67,8 +66,6 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     cartTotalCashback,
     setIsCircleSubscription,
     setCircleMembershipCharges,
-    setAutoCirlcePlanAdded,
-    autoCirlcePlanAdded,
   } = useShoppingCart();
   const { setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
 
@@ -79,7 +76,6 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       fetchCarePlans();
     } else {
       setLoading(false);
-      onEndApiCall && onEndApiCall();
     }
   }, []);
 
@@ -99,24 +95,21 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
           autoSelectDefaultPlan(circlePlans);
           if (!circlePlanSelected) {
             selectDefaultPlan && selectDefaultPlan(circlePlans);
-            setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(true);
-          } else {
-            setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
+            setAutoPlanAdded(true);
           }
         } else {
           setDefaultCirclePlan && setDefaultCirclePlan(null);
-          defaultCirclePlan && setCirclePlanSelected && setCirclePlanSelected(null);
-          setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
+          setCirclePlanSelected && setCirclePlanSelected(null);
+          setAutoPlanAdded(false);
         }
       }
       setLoading(false);
-      onEndApiCall && onEndApiCall();
     } catch (error) {
       setLoading(false);
-      onEndApiCall && onEndApiCall();
       CommonBugFender('CareSelectPlans_GetPlanDetailsByPlanId', error);
     }
   };
+
   const onPressMembershipPlans = (index: number) => {
     const membershipPlan = membershipPlans?.[index];
     setCirclePlanSelected && setCirclePlanSelected(membershipPlan);
@@ -130,7 +123,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       onSelectMembershipPlan && onSelectMembershipPlan(membershipPlan);
     }
     setDefaultCirclePlan && setDefaultCirclePlan(null);
-    setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
+    setAutoPlanAdded(false);
   };
 
   const renderCareSubscribeCard = (value: any, index: number) => {
@@ -196,7 +189,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
               },
             ]}
           >
-            Save {value?.saved_extra_on_lower_plan} extra
+            Save {value?.saved_extra_on_lower_plan}% extra
           </Text>
         )}
         <TouchableOpacity
@@ -261,7 +254,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
           <View style={styles.careTextContainer}>
             <CircleLogo style={styles.circleLogo} />
             {isConsultJourney ? (
-              autoCirlcePlanAdded ? (
+              autoPlanAdded ? (
                 <Text style={styles.getCareText}>
                   Get{' '}
                   <Text style={theme.viewStyles.text('SB', 13, theme.colors.LIGHT_BLUE)}>
@@ -300,7 +293,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
               renderCareSubscribeCard(value, index)
             )}
           </ScrollView>
-          {!isModal && isConsultJourney && !autoCirlcePlanAdded && renderCircleDiscountOnConsult()}
+          {!isModal && isConsultJourney && !autoPlanAdded && renderCircleDiscountOnConsult()}
           {!isModal && !isConsultJourney && renderCircleDiscountOnPharmacy()}
           {!isModal && renderKnowMore('flex-end')}
         </View>
@@ -332,7 +325,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       <View
         style={[
           styles.bottomBtnContainer,
-          { alignSelf: alignSelf, marginTop: autoCirlcePlanAdded ? 0 : 10 },
+          { alignSelf: alignSelf, marginTop: autoPlanAdded ? 0 : 10 },
         ]}
       >
         <TouchableOpacity
@@ -399,7 +392,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
     setCircleMembershipCharges && setCircleMembershipCharges(0);
     AsyncStorage.removeItem('circlePlanSelected');
-    setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
+    setAutoPlanAdded(false);
   };
 
   const renderAddToCart = () => {
@@ -481,7 +474,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
 
   return (
     <View style={isModal ? {} : [styles.careBannerView, props.style]}>
-      {circlePlanSelected && !isModal && !autoCirlcePlanAdded && !loading && !defaultCirclePlan
+      {circlePlanSelected && !isModal && !autoPlanAdded && !loading && !defaultCirclePlan
         ? renderCarePlanAdded()
         : renderSubscribeCareContainer()}
     </View>
@@ -566,9 +559,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   careLogo: {
-    width: 45,
-    height: 27,
-    marginRight: 3,
+    width: 50,
+    height: 32,
   },
   careLogoTextStyle: {
     textTransform: 'lowercase',
@@ -587,9 +579,9 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   circleLogo: {
-    width: 45,
-    height: 27,
-    marginRight: 5,
+    width: 50,
+    height: 32,
+    marginRight: 4,
   },
   box: {
     height: 100,

@@ -66,6 +66,7 @@ import { MedAndTestCart } from '@aph/mobile-patients/src/components/Tests/MedAnd
 import { TestDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
 
 import { SearchTestScene } from '@aph/mobile-patients/src/components/Medicines/SearchTestScene';
+import { TestsCheckoutScene } from '@aph/mobile-patients/src/components/TestsCheckoutScene';
 import { YourOrdersTest } from '@aph/mobile-patients/src/components/Tests/YourOrdersTests';
 import { YourTestDetails } from '@aph/mobile-patients/src/components/Tests/YourTestDetails';
 import { TestOrderDetails } from '@aph/mobile-patients/src/components/Tests/TestOrderDetails';
@@ -325,6 +326,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.YourOrdersScene]: {
     screen: YourOrdersScene,
+  },
+  [AppRoutes.TestsCheckoutScene]: {
+    screen: TestsCheckoutScene,
   },
   [AppRoutes.PaymentScene]: {
     screen: PaymentScene,

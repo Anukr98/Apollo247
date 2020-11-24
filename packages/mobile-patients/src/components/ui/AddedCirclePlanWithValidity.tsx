@@ -63,8 +63,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   circleLogo: {
-    width: 45,
-    height: 27,
+    width: 50,
+    height: 32,
   },
   spaceRow: {
     flexDirection: 'row',

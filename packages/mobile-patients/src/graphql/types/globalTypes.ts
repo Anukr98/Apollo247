@@ -744,7 +744,6 @@ export interface DiagnosticBookHomeCollectionInput {
   areaId: number;
   homeCollectionCharges: number;
   uniqueID?: string | null;
-  slotDateTimeInUTC?: any | null;
 }
 
 export interface DiagnosticLineItem {

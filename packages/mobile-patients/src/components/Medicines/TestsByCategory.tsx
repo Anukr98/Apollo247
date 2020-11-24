@@ -369,7 +369,6 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
       testPreparationData,
       toAgeInDays,
       itemType,
-      testDescription,
     } = item;
     return renderSearchSuggestionItem({
       onPress: () => {
@@ -383,7 +382,6 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
             ToAgeInDays: toAgeInDays,
             collectionType: collectionType,
             preparation: testPreparationData,
-            testDescription: testDescription,
             source: 'Landing Page',
             type: itemType,
           } as TestPackageForDetails,
@@ -519,17 +517,16 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
           props.navigation.navigate(AppRoutes.TestDetails, {
             title: medicine.itemName,
             testDetails: {
-              Rate: medicine?.rate,
-              Gender: medicine?.gender,
-              ItemID: `${medicine?.itemId}`,
-              ItemName: medicine?.itemName,
-              collectionType: medicine?.collectionType,
-              FromAgeInDays: medicine?.fromAgeInDays,
-              ToAgeInDays: medicine?.toAgeInDays,
-              preparation: medicine?.testPreparationData,
-              testDescription: medicine?.testDescription,
+              Rate: medicine!.rate,
+              Gender: medicine!.gender,
+              ItemID: `${medicine!.itemId}`,
+              ItemName: medicine!.itemName,
+              collectionType: medicine!.collectionType,
+              FromAgeInDays: medicine!.fromAgeInDays,
+              ToAgeInDays: medicine!.toAgeInDays,
+              preparation: medicine!.testPreparationData,
               source: 'Landing Page',
-              type: medicine?.itemType,
+              type: medicine!.itemType,
             } as TestPackageForDetails,
           });
         }}

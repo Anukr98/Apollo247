@@ -1424,19 +1424,12 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
           itemId
           quantity
           price
-          groupPlan
-          pricingObj{
-            mrp
-            price
-            groupPlan
-          }
           diagnostics {
             id
             itemId
             itemName
             itemType
             testPreparationData
-            testDescription
             diagnosticPricing {
               mrp
               price
@@ -1495,12 +1488,6 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
           itemId
           price
           quantity
-          groupPlan
-          pricingObj{
-            mrp
-            price
-            groupPlan
-          }
           diagnostics {
             id
             itemId
@@ -1513,7 +1500,6 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
             itemType
             fromAgeInDays
             collectionType
-            testDescription
             diagnosticPricing {
               mrp
               price
@@ -1578,7 +1564,6 @@ export const GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID = gql`
           startDate
           endDate
         }
-        testDescription
       }
     }
   }
@@ -1608,7 +1593,6 @@ export const GET_DIAGNOSTIC_ORDER_ITEM = gql`
           startDate
           endDate
         }
-        testDescription
       }
     }
   }
@@ -1634,7 +1618,6 @@ export const GET_DIAGNOSTIC_HOME_PAGE_ITEMS = gql`
           fromAgeInDays
           toAgeInDays
           testPreparationData
-          testDescription
           collectionType
           diagnosticPricing {
             mrp
@@ -1664,7 +1647,6 @@ export const GET_DIAGNOSTIC_HOME_PAGE_ITEMS = gql`
           fromAgeInDays
           toAgeInDays
           testPreparationData
-          testDescription
           collectionType
           diagnosticPricing {
             mrp
@@ -2821,7 +2803,6 @@ export const SEARCH_DIAGNOSTICS = gql`
         collectionType
         fromAgeInDays
         toAgeInDays
-        testDescription
         testPreparationData
         diagnosticPricing {
           mrp
@@ -2853,7 +2834,6 @@ export const SEARCH_DIAGNOSTICS_BY_CITY_ID = gql`
         collectionType
         fromAgeInDays
         toAgeInDays
-        testDescription
         testPreparationData
         diagnosticPricing {
           mrp
@@ -2885,7 +2865,6 @@ export const SEARCH_DIAGNOSTICS_BY_ID = gql`
         collectionType
         fromAgeInDays
         toAgeInDays
-        testDescription
         testPreparationData
       }
     }

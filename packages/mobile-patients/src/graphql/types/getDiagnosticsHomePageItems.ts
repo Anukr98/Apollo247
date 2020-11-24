@@ -33,7 +33,6 @@ export interface getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnos
   fromAgeInDays: number;
   toAgeInDays: number;
   testPreparationData: string;
-  testDescription: string | null;
   collectionType: TEST_COLLECTION_TYPE | null;
   diagnosticPricing: (getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnosticOrgans_diagnostics_diagnosticPricing | null)[] | null;
 }
@@ -70,7 +69,6 @@ export interface getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnos
   fromAgeInDays: number;
   toAgeInDays: number;
   testPreparationData: string;
-  testDescription: string | null;
   collectionType: TEST_COLLECTION_TYPE | null;
   diagnosticPricing: (getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnosticHotSellers_diagnostics_diagnosticPricing | null)[] | null;
 }

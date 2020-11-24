@@ -368,7 +368,6 @@ export interface TestPackage {
   ToAgeInDays: number;
   Gender: string;
   PackageInClussion: PackageInclusion[];
-  testDescription: string
 }
 
 export interface TestsPackageResponse {

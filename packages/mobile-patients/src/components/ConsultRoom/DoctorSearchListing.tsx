@@ -198,12 +198,12 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   careLogo: {
-    width: 45,
-    height: 27,
-    marginHorizontal: 3,
+    width: 54,
+    height: 29,
   },
   careHeadingText: {
     ...theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE),
+    marginLeft: 10,
   },
   linearGradient: {
     flex: 1,
@@ -1842,8 +1842,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     return (
       <View style={styles.rowContainer}>
         <Text style={styles.careHeadingText}>View</Text>
-        <CircleLogo style={styles.careLogo} />
-        <Text style={[styles.careHeadingText, { marginLeft: 0 }]}>Doctors</Text>
+        <CircleLogo style={styles.careLogo} resizeMode="contain" />
+        <Text style={[styles.careHeadingText, { marginLeft: -5 }]}>Doctors</Text>
         <Switch
           onChange={(value) => {
             setCareDoctorsSwitch(value);
