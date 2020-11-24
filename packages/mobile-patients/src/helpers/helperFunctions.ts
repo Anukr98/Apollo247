@@ -288,6 +288,26 @@ export const getPhrNotificationAllCount = (
   );
 };
 
+export const phrSortByDate = (array: { type: string; data: any }[]) => {
+  return array.sort(({ data: data1 }, { data: data2 }) => {
+    let date1 = new Date(data1.date || data1.bookingDate || data1.quoteDateTime);
+    let date2 = new Date(data2.date || data2.bookingDate || data2.quoteDateTime);
+    return date1 > date2 ? -1 : date1 < date2 ? 1 : data2.id - data1.id;
+  });
+};
+
+export const phrSortWithDate = (array: any) => {
+  return array?.sort(
+    (a: any, b: any) =>
+      moment(b.date || b.billDateTime || b.startDateTime)
+        .toDate()
+        .getTime() -
+      moment(a.date || a.billDateTime || a.startDateTime)
+        .toDate()
+        .getTime()
+  );
+};
+
 export const getSourceName = (
   labTestSource: string,
   siteDisplayName: string = '',

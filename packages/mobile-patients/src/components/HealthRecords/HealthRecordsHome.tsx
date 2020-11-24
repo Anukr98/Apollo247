@@ -35,6 +35,8 @@ import {
   g,
   handleGraphQlError,
   postWebEngageEvent,
+  phrSortByDate,
+  phrSortWithDate,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -519,26 +521,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       .finally(() => setPastDataLoader(false));
   };
 
-  const sortByDate = (array: { type: string; data: any }[]) => {
-    return array.sort(({ data: data1 }, { data: data2 }) => {
-      let date1 = new Date(data1.date || data1.bookingDate || data1.quoteDateTime);
-      let date2 = new Date(data2.date || data2.bookingDate || data2.quoteDateTime);
-      return date1 > date2 ? -1 : date1 < date2 ? 1 : data2.id - data1.id;
-    });
-  };
-
-  const sortWithDate = (array: any) => {
-    return array?.sort(
-      (a: any, b: any) =>
-        moment(b.date || b.billDateTime || b.startDateTime)
-          .toDate()
-          .getTime() -
-        moment(a.date || a.billDateTime || a.startDateTime)
-          .toDate()
-          .getTime()
-    );
-  };
-
   const getBloodGroupValue = (bloodGroup: BloodGroups) => {
     switch (bloodGroup) {
       case BloodGroups.APositive:
@@ -634,9 +616,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         setLabResults(labResultsData);
         setPrescriptions(prescriptionsData);
         setHealthChecksNew(healthChecksNewData);
-        setHospitalizationsNew(sortWithDate(hospitalizationsNewData));
-        setMedicalBills(sortWithDate(medicalBillsData));
-        setInsuranceBills(sortWithDate(medicalInsuranceData));
+        setHospitalizationsNew(phrSortWithDate(hospitalizationsNewData));
+        setMedicalBills(phrSortWithDate(medicalBillsData));
+        setInsuranceBills(phrSortWithDate(medicalInsuranceData));
         setMedicalConditions(medicalConditionsData);
         setMedicalHealthRestrictions(medicalHealthRestrictionsData);
         setMedicalMedications(medicalMedicationsData);
@@ -684,7 +666,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       prescriptions?.forEach((c) => {
         mergeArray.push({ type: 'prescriptions', data: c });
       });
-      setCombination(sortByDate(mergeArray));
+      setCombination(phrSortByDate(mergeArray));
     }
   }, [arrayValues, prescriptions]);
 
@@ -696,7 +678,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     healthChecksNew?.forEach((c) => {
       mergeArray.push({ type: 'healthCheck', data: c });
     });
-    setTestAndHealthCheck(sortByDate(mergeArray));
+    setTestAndHealthCheck(phrSortByDate(mergeArray));
   }, [labResults, healthChecksNew]);
 
   useEffect(() => {
@@ -713,7 +695,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     medicalAllergies?.forEach((allergyRecord: any) => {
       allergyRecord && healthConditionsArray.push(allergyRecord);
     });
-    const sortedData = sortWithDate(healthConditionsArray);
+    const sortedData = phrSortWithDate(healthConditionsArray);
     setHealthConditions(sortedData);
   }, [medicalConditions, medicalHealthRestrictions, medicalMedications, medicalAllergies]);
 

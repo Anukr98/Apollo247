@@ -435,7 +435,10 @@ const TestRecordInitialValues: LabTestParameters = {
   maximum: 0,
 };
 
-export interface AddRecordProps extends NavigationScreenProps {}
+export interface AddRecordProps
+  extends NavigationScreenProps<{
+    onRecordAdded: () => void;
+  }> {}
 
 export const AddRecord: React.FC<AddRecordProps> = (props) => {
   var fin = '';
@@ -947,7 +950,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   };
 
   const gotoHealthRecordsHomeScreen = () => {
-    props.navigation.pop(2);
+    props.navigation.state.params?.onRecordAdded();
+    props.navigation.goBack();
   };
 
   const addMedicalRecord = () => {
