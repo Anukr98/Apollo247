@@ -123,17 +123,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
     try {
       BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
       CommonLogEvent(AppRoutes.SymptomTracker, 'Go back clicked');
-      props.navigation.dispatch(
-        StackActions.reset({
-          index: 0,
-          key: null,
-          actions: [
-            NavigationActions.navigate({
-              routeName: AppRoutes.ConsultRoom,
-            }),
-          ],
-        })
-      );
+      props.navigation.goBack();
     } catch (error) {}
     return false;
   };
