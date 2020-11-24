@@ -51,7 +51,7 @@ import {
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
 import { WhatsAppStatus } from '../ui/WhatsAppStatus';
-import { calculateCareDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
+import { calculateCircleDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 const { width, height } = Dimensions.get('window');
@@ -127,7 +127,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   );
   const { currentPatient } = useAllCurrentPatients();
   const { locationDetails, hdfcUserSubscriptions } = useAppCommonData();
-  const circleDoctorDetails = calculateCareDoctorPricing(props.doctor);
+  const circleDoctorDetails = calculateCircleDoctorPricing(props.doctor);
   const {
     isCircleDoctor,
     onlineConsultSlashedPrice,
@@ -255,17 +255,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         }}
       >
         <Button
-          title={`${string.common.proceedToCheckout} - ${string.common.Rs}${
-            isCircleDoctor
-              ? selectedTab === 'Consult Online'
-                ? circleSubscriptionId
-                  ? onlineConsultSlashedPrice
-                  : onlineConsultMRPPrice
-                : circleSubscriptionId
-                ? physicalConsultSlashedPrice
-                : physicalConsultMRPPrice
-              : Number(doctorFees)
-          }`}
+          title={`${string.common.proceedToCheckout}`}
           disabled={
             disablePay
               ? true

@@ -11,9 +11,8 @@ import {
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { Down, Up, CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
-import { CareLogo } from '@aph/mobile-patients/src/components/ui/CareLogo';
 import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
-import { calculateCareDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
+import { calculateCircleDoctorPricing } from '@aph/mobile-patients/src/utils/commonUtils';
 
 interface ConsultDiscountProps {
   onPressCard: TouchableOpacityProps['onPress'];
@@ -36,7 +35,7 @@ export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
     circleSubscriptionId,
     planSelected,
   } = props;
-  const circleDoctorDetails = calculateCareDoctorPricing(doctor);
+  const circleDoctorDetails = calculateCircleDoctorPricing(doctor);
   const {
     isCircleDoctor,
     physicalConsultDiscountedPrice,
@@ -144,8 +143,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   careLogo: {
-    width: 33,
-    height: 21,
+    width: 25,
+    height: 15,
+    marginRight: 2,
   },
   careLogoText: {
     ...theme.viewStyles.text('M', 7, 'white'),
