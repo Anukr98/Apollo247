@@ -208,7 +208,6 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
     props.status == DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED ||
     props.status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED ||
     props.status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB ||
-    props.status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECIEVED_IN_LAB ||
     props.status == DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED;
 
   const getProgressWidth = (
@@ -222,10 +221,7 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
         return 2;
       } else if (status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED) {
         return 3; //4
-      } else if (
-        status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB ||
-        status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECIEVED_IN_LAB
-      ) {
+      } else if (status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB) {
         return 4;
       } else {
         return 5;
@@ -237,10 +233,7 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
         return 4;
       } else if (status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED) {
         return 3;
-      } else if (
-        status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB ||
-        status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECIEVED_IN_LAB
-      ) {
+      } else if (status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB) {
         return 2;
       } else {
         return 0;

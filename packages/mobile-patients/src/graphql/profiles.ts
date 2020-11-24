@@ -1698,17 +1698,19 @@ export const VALIDATE_DIAGNOSTIC_COUPON = gql`
 `;
 
 export const CANCEL_DIAGNOSTIC_ORDER = gql`
-  mutation cancelDiagnosticOrder($diagnosticOrderId: Int) {
-    cancelDiagnosticOrder(diagnosticOrderId: $diagnosticOrderId) {
+  mutation cancelDiagnosticsOrder($cancellationDiagnosticsInput: CancellationDiagnosticsInput) {
+    cancelDiagnosticsOrder(cancellationDiagnosticsInput: $cancellationDiagnosticsInput) {
+      status
       message
     }
   }
 `;
 
-export const UPDATE_DIAGNOSTIC_ORDER = gql`
-  mutation updateDiagnosticOrder($updateDiagnosticOrderInput: UpdateDiagnosticOrderInput) {
-    updateDiagnosticOrder(updateDiagnosticOrderInput: $updateDiagnosticOrderInput) {
-      message
+export const RESCHEDULE_DIAGNOSTIC_ORDER = gql`
+  mutation rescheduleDiagnosticsOrder($rescheduleDiagnosticsInput: RescheduleDiagnosticsInput) {
+    rescheduleDiagnosticsOrder(rescheduleDiagnosticsInput: $rescheduleDiagnosticsInput) {
+      status
+      rescheduleCount
     }
   }
 `;

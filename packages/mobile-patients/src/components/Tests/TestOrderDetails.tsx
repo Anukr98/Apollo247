@@ -35,12 +35,7 @@ import {
   GET_DIAGNOSTIC_ORDER_LIST,
   GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
   GET_PATIENT_FEEDBACK,
-  UPDATE_DIAGNOSTIC_ORDER,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import {
-  cancelDiagnosticOrder,
-  cancelDiagnosticOrderVariables,
-} from '@aph/mobile-patients/src/graphql/types/cancelDiagnosticOrder';
 import {
   getDiagnosticOrderDetails,
   getDiagnosticOrderDetailsVariables,
@@ -50,10 +45,6 @@ import {
   getDiagnosticOrdersList,
   getDiagnosticOrdersListVariables,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
-import {
-  updateDiagnosticOrder,
-  updateDiagnosticOrderVariables,
-} from '@aph/mobile-patients/src/graphql/types/updateDiagnosticOrder';
 import {
   g,
   handleGraphQlError,
@@ -85,6 +76,7 @@ import { OrderCancelOverlay } from '@aph/mobile-patients/src/components/Tests/Or
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonBugFender, isIphone5s } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
+  CancellationDiagnosticsInput,
   DIAGNOSTIC_ORDER_STATUS,
   FEEDBACKTYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -100,6 +92,10 @@ import {
   getDiagnosticsOrderStatus_getDiagnosticsOrderStatus,
   getDiagnosticsOrderStatus_getDiagnosticsOrderStatus_ordersList,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticsOrderStatus';
+import {
+  cancelDiagnosticsOrder,
+  cancelDiagnosticsOrderVariables,
+} from '@aph/mobile-patients/src/graphql/types/cancelDiagnosticsOrder';
 
 const screenHeight = Dimensions.get('window').height;
 const reasonForCancellation = TestCancelReasons.reasons;
@@ -272,6 +268,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const [showCancelReasonPopUp, setCancelReasonPopUp] = useState<boolean>(false);
   const [showRescheduleReasonPopUp, setRescheduleReasonPopUp] = useState<boolean>(false);
   const [selectedReasonForCancel, setSelectedReasonForCancel] = useState('');
+  const [selectedOrderId, setSelectedOrderId] = useState<number>(orderId);
+
   const [commentForCancel, setCommentForCancel] = useState('');
   const [allStatusForTest, setAllStatusForTest] = useState();
 
@@ -540,13 +538,14 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     return (
       <View>
         {!showReportsGenerated && renderPreTestingRequirement(order)}
-        {showReportsGenerated ? renderButtons() : null}
-        {/* {!showReportsGenerated ? (
+        {/* {showReportsGenerated ? renderButtons() : null} */}
+        {renderButtons()}
+        {!showReportsGenerated ? (
           <>
             <Spearator />
             {renderNotesSection()}
           </>
-        ) : null} */}
+        ) : null}
       </View>
     );
   };
@@ -602,7 +601,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           disabled={buttonTitle == 'VIEW REPORT' && !isReportGenerated}
         />
 
-        {/* {orderDetails && !isReportGenerated ? (
+        {orderDetails && !isReportGenerated ? (
           <View style={{ justifyContent: 'center', alignSelf: 'center' }}>
             <TouchableOpacity onPress={() => onPressTestCancel()}>
               <Text
@@ -618,7 +617,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
               </Text>
             </TouchableOpacity>
           </View>
-        ) : null} */}
+        ) : null}
       </>
     );
   };
@@ -681,23 +680,44 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     setDisplaySchedule(true);
   };
 
+  const cancelOrder = (cancellationDiagnosticsInput: CancellationDiagnosticsInput) =>
+    client.mutate<cancelDiagnosticsOrder, cancelDiagnosticsOrderVariables>({
+      mutation: CANCEL_DIAGNOSTIC_ORDER,
+      variables: { cancellationDiagnosticsInput: cancellationDiagnosticsInput },
+      fetchPolicy: 'no-cache',
+    });
+
   const onSubmitCancelOrder = (reason: string, comment: string) => {
     setApiLoading(true);
     setSelectedReasonForCancel(reason);
     setCommentForCancel(comment);
     setCancelReasonPopUp(false);
 
-    /**check for the cancel diagnostic api. */
-    // const api = client.mutate<cancelDiagnosticOrder, cancelDiagnosticOrderVariables>({
-    //   mutation: CANCEL_DIAGNOSTIC_ORDER,
-    //   variables: { diagnosticOrderId: selectedOrderId },
-    // });
-    // callApiAndRefetchOrderDetails(api);
+    const orderCancellationInput: CancellationDiagnosticsInput = {
+      comment: comment,
+      orderId: orderId,
+      patientId: g(currentPatient, 'id'),
+      reason: reason,
+    };
+    console.log({ orderCancellationInput });
+    cancelOrder(orderCancellationInput)
+      .then((data) => {
+        console.log('data....');
+        console.log({ data });
+        // callApiAndRefetchOrderDetails(api);
+        //refetch the orders
+      })
+      .catch((error) => {
+        console.log('error' + error);
+      })
+      .finally(() => {
+        setApiLoading(true);
+        console.log('finally mein');
+      });
   };
 
   const onPressTestCancel = () => {
     setCancelPopUp(true);
-    // setSelectedOrderId(item.id);
   };
 
   const renderCancelPopUp = () => {
@@ -741,61 +761,61 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     setCancelReasonPopUp(false);
   };
 
-  // const renderNotesSection = () => {
-  //   return (
-  //     <View style={{ margin: 20 }}>
-  //       <Text style={{ color: theme.colors.SHERPA_BLUE, ...fonts.IBMPlexSansSemiBold(14) }}>
-  //         Note:
-  //       </Text>
-  //       <View style={{ marginTop: 3, flexDirection: 'row' }}>
-  //         <Text
-  //           style={{
-  //             color: theme.colors.SHERPA_BLUE,
-  //             fontSize: 6,
-  //             textAlign: 'center',
-  //             paddingTop: 3,
-  //           }}
-  //         >
-  //           {'\u2B24'}
-  //         </Text>
-  //         <Text
-  //           style={{
-  //             color: theme.colors.SHERPA_BLUE,
-  //             ...fonts.IBMPlexSansRegular(11),
-  //             textAlign: 'left',
-  //             marginHorizontal: 5,
-  //           }}
-  //         >
-  //           Cancellation and Rescheduling should be done 1 hour before sample collection
-  //         </Text>
-  //       </View>
-  //       <View style={{ marginTop: 3, flexDirection: 'row' }}>
-  //         <Text
-  //           style={{
-  //             color: theme.colors.SHERPA_BLUE,
-  //             fontSize: 6,
-  //             textAlign: 'center',
-  //             paddingTop: 3,
-  //             lineHeight: 13,
-  //           }}
-  //         >
-  //           {'\u2B24'}
-  //         </Text>
-  //         <Text
-  //           style={{
-  //             color: theme.colors.SHERPA_BLUE,
-  //             ...fonts.IBMPlexSansRegular(11),
-  //             textAlign: 'left',
-  //             marginHorizontal: 5,
-  //             lineHeight: 13,
-  //           }}
-  //         >
-  //           Rescheduling can be done upto 3 times only
-  //         </Text>
-  //       </View>
-  //     </View>
-  //   );
-  // };
+  const renderNotesSection = () => {
+    return (
+      <View style={{ margin: 20 }}>
+        <Text style={{ color: theme.colors.SHERPA_BLUE, ...fonts.IBMPlexSansSemiBold(14) }}>
+          Note:
+        </Text>
+        <View style={{ marginTop: 3, flexDirection: 'row' }}>
+          <Text
+            style={{
+              color: theme.colors.SHERPA_BLUE,
+              fontSize: 6,
+              textAlign: 'center',
+              paddingTop: 3,
+            }}
+          >
+            {'\u2B24'}
+          </Text>
+          <Text
+            style={{
+              color: theme.colors.SHERPA_BLUE,
+              ...fonts.IBMPlexSansRegular(11),
+              textAlign: 'left',
+              marginHorizontal: 5,
+            }}
+          >
+            Cancellation and Rescheduling should be done 1 hour before sample collection
+          </Text>
+        </View>
+        <View style={{ marginTop: 3, flexDirection: 'row' }}>
+          <Text
+            style={{
+              color: theme.colors.SHERPA_BLUE,
+              fontSize: 6,
+              textAlign: 'center',
+              paddingTop: 3,
+              lineHeight: 13,
+            }}
+          >
+            {'\u2B24'}
+          </Text>
+          <Text
+            style={{
+              color: theme.colors.SHERPA_BLUE,
+              ...fonts.IBMPlexSansRegular(11),
+              textAlign: 'left',
+              marginHorizontal: 5,
+              lineHeight: 13,
+            }}
+          >
+            Rescheduling can be done upto 3 times only
+          </Text>
+        </View>
+      </View>
+    );
+  };
 
   /**check this on small device */
   const renderChatWithUs = () => {
@@ -861,20 +881,20 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     );
   };
 
-  // const renderCancelOrderOverlay = () => {
-  //   return (
-  //     isCancelVisible && (
-  //       <OrderCancelOverlay
-  //         heading="Cancel Order"
-  //         onClose={() => setCancelVisible(false)}
-  //         isVisible={isCancelVisible}
-  //         loading={apiLoading}
-  //         options={cancelOptions}
-  //         onSubmit={onSubmitCancelOrder}
-  //       />
-  //     )
-  //   );
-  // };
+  const renderCancelOrderOverlay = () => {
+    return (
+      isCancelVisible && (
+        <OrderCancelOverlay
+          heading="Cancel Order"
+          onClose={() => setCancelVisible(false)}
+          isVisible={isCancelVisible}
+          loading={apiLoading}
+          options={cancelOptions}
+          onSubmit={onSubmitCancelOrder}
+        />
+      )
+    );
+  };
 
   const renderRescheduleOrderOverlay = () => {
     return (
@@ -929,45 +949,45 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   //   callApiAndRefetchOrderDetails(api);
   // };
 
-  const onSubmitRescheduleOrder = (
-    type: TestScheduleType,
-    date: Date,
-    reason: string,
-    comment?: string,
-    slotInfo?: SlotInfo
-  ) => {
-    // TODO: call api and change visibility, refetch
-    setApiLoading(true);
-    const isClinicVisit = type == 'clinic-visit';
-    const slotTimings = !isClinicVisit
-      ? [slotInfo!.startTime, slotInfo!.endTime].map((val) => val.trim()).join(' - ')
-      : '';
-    const variables: updateDiagnosticOrderVariables = {
-      updateDiagnosticOrderInput: {
-        id: g(order, 'id'),
-        prescriptionUrl: g(order, 'prescriptionUrl')!,
-        centerName: g(order, 'centerName')!,
-        centerCode: g(order, 'centerCode')!,
-        centerCity: g(order, 'centerCity')!,
-        centerState: g(order, 'centerState')!,
-        centerLocality: g(order, 'centerLocality')!,
-        // customizations
-        diagnosticDate: moment(date).format('YYYY-MM-DD'),
-        slotTimings: slotTimings || '',
-        employeeSlotId: g(slotInfo, 'slot')!,
-        diagnosticEmployeeCode: g(slotInfo, 'employeeCode') || '',
-        diagnosticBranchCode: g(slotInfo, 'diagnosticBranchCode') || '',
-      },
-    };
-    console.log({ variables });
-    console.log(JSON.stringify(variables));
+  // const onSubmitRescheduleOrder = (
+  //   type: TestScheduleType,
+  //   date: Date,
+  //   reason: string,
+  //   comment?: string,
+  //   slotInfo?: SlotInfo
+  // ) => {
+  //   // TODO: call api and change visibility, refetch
+  //   setApiLoading(true);
+  //   const isClinicVisit = type == 'clinic-visit';
+  //   const slotTimings = !isClinicVisit
+  //     ? [slotInfo!.startTime, slotInfo!.endTime].map((val) => val.trim()).join(' - ')
+  //     : '';
+  // const variables: updateDiagnosticOrderVariables = {
+  //   updateDiagnosticOrderInput: {
+  //     id: g(order, 'id'),
+  //     prescriptionUrl: g(order, 'prescriptionUrl')!,
+  //     centerName: g(order, 'centerName')!,
+  //     centerCode: g(order, 'centerCode')!,
+  //     centerCity: g(order, 'centerCity')!,
+  //     centerState: g(order, 'centerState')!,
+  //     centerLocality: g(order, 'centerLocality')!,
+  //     // customizations
+  //     diagnosticDate: moment(date).format('YYYY-MM-DD'),
+  //     slotTimings: slotTimings || '',
+  //     employeeSlotId: g(slotInfo, 'slot')!,
+  //     diagnosticEmployeeCode: g(slotInfo, 'employeeCode') || '',
+  //     diagnosticBranchCode: g(slotInfo, 'diagnosticBranchCode') || '',
+  //   },
+  // };
+  // console.log({ variables });
+  // console.log(JSON.stringify(variables));
 
-    const api = client.mutate<updateDiagnosticOrder, updateDiagnosticOrderVariables>({
-      mutation: UPDATE_DIAGNOSTIC_ORDER,
-      variables,
-    });
-    callApiAndRefetchOrderDetails(api);
-  };
+  // const api = client.mutate<updateDiagnosticOrder, updateDiagnosticOrderVariables>({
+  //   mutation: UPDATE_DIAGNOSTIC_ORDER,
+  //   variables,
+  // });
+  // callApiAndRefetchOrderDetails(api);
+  // };
 
   const renderOrderSummary = () => {
     return !!g(orderDetails, 'totalPrice') && <TestOrderSummaryView orderDetails={orderDetails} />;
@@ -975,9 +995,11 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
 
   return (
     <View style={{ flex: 1 }}>
-      {/* {showCancelReasonPopUp && renderCancelReasonPopUp()} */}
+      {showCancelReasonPopUp && renderCancelReasonPopUp()}
       {/* {showRescheduleReasonPopUp && renderRescheduleReasonPopUp()} */}
-      {/* {renderCancelOrderOverlay()} */}
+      {renderCancelOrderOverlay()}
+      {renderCancelPopUp()}
+
       {/* {renderRescheduleOrderOverlay()} */}
       <SafeAreaView style={theme.viewStyles.container}>
         <View style={styles.headerShadowContainer}>

@@ -24,16 +24,7 @@ import {
 import {
   CANCEL_DIAGNOSTIC_ORDER,
   GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
-  UPDATE_DIAGNOSTIC_ORDER,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import {
-  cancelDiagnosticOrder,
-  cancelDiagnosticOrderVariables,
-} from '@aph/mobile-patients/src/graphql/types/cancelDiagnosticOrder';
-import {
-  updateDiagnosticOrder,
-  updateDiagnosticOrderVariables,
-} from '@aph/mobile-patients/src/graphql/types/updateDiagnosticOrder';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -52,7 +43,10 @@ import {
   Alert,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView, FlatList } from 'react-navigation';
-import { DIAGNOSTIC_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  CancellationDiagnosticsInput,
+  DIAGNOSTIC_ORDER_STATUS,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { ScrollableFooter } from '@aph/mobile-patients/src/components/ui/ScrollableFooter';
 import { TestOrderCard } from '@aph/mobile-patients/src/components/ui/TestOrderCard';
 import { ReasonPopUp } from '@aph/mobile-patients/src/components/ui/ReasonPopUp';
@@ -82,6 +76,10 @@ import {
   searchDiagnosticsById,
   searchDiagnosticsByIdVariables,
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsById';
+import {
+  cancelDiagnosticsOrder,
+  cancelDiagnosticsOrderVariables,
+} from '@aph/mobile-patients/src/graphql/types/cancelDiagnosticsOrder';
 
 export interface DiagnosticsOrderList
   extends getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList {
@@ -250,7 +248,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         setOrders(_orders);
         setLoading!(false);
       })
-      .catch((e) => {
+      .catch((e: any) => {
         setLoading!(false);
         CommonBugFender('YourOrdersTest_refetch', e);
       });
@@ -259,7 +257,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   useEffect(() => {
     if (orders) {
       orders.map((order) => {
-        if (order.orderStatus != DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED) {
+        if (
+          order.orderStatus != DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED ||
+          order?.diagnosticOrderLineItems?.length! > 0
+        ) {
           fetchOrderStatusForEachTest(order!.id!, order);
           fetchTestDetails(order!.id, order);
         }
@@ -360,10 +361,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         } else {
           if (calMaxStatus(_testStatus, DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED)) {
             maxStatus = DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED;
-          } else if (
-            calMaxStatus(_testStatus, DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB) ||
-            calMaxStatus(_testStatus, DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECIEVED_IN_LAB)
-          ) {
+          } else if (calMaxStatus(_testStatus, DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB)) {
             maxStatus = DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB;
           } else if (calMaxStatus(_testStatus, DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED)) {
             maxStatus = DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED;
@@ -478,7 +476,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           .then(() => {
             setInitialState();
           })
-          .catch((e) => {
+          .catch((e: any) => {
             CommonBugFender('TestOrderDetails_refetch_callApiAndRefetchOrderDetails', e);
             setInitialState();
           });
@@ -495,18 +493,41 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
    *
    * code for cancel the order
    */
+
+  const cancelOrder = (cancellationDiagnosticsInput: CancellationDiagnosticsInput) =>
+    client.mutate<cancelDiagnosticsOrder, cancelDiagnosticsOrderVariables>({
+      mutation: CANCEL_DIAGNOSTIC_ORDER,
+      variables: { cancellationDiagnosticsInput: cancellationDiagnosticsInput },
+      fetchPolicy: 'no-cache',
+    });
+
   const onSubmitCancelOrder = (reason: string, comment: string) => {
     setApiLoading(true);
     setSelectedReasonForCancel(reason);
     setCommentForCancel(comment);
     setCancelReasonPopUp(false);
 
-    /**check for the cancel diagnostic api. */
-    // const api = client.mutate<cancelDiagnosticOrder, cancelDiagnosticOrderVariables>({
-    //   mutation: CANCEL_DIAGNOSTIC_ORDER,
-    //   variables: { diagnosticOrderId: selectedOrderId },
-    // });
-    // callApiAndRefetchOrderDetails(api);
+    const orderCancellationInput: CancellationDiagnosticsInput = {
+      comment: comment,
+      orderId: String(selectedOrderId),
+      patientId: g(currentPatient, 'id'),
+      reason: reason,
+    };
+    console.log({ orderCancellationInput });
+    cancelOrder(orderCancellationInput)
+      .then((data) => {
+        console.log('data....');
+        console.log({ data });
+        // callApiAndRefetchOrderDetails(api);
+        //refetch the orders
+      })
+      .catch((error) => {
+        console.log('error' + error);
+      })
+      .finally(() => {
+        setApiLoading(true);
+        console.log('finally mein');
+      });
   };
 
   const onPressTestCancel = (item: any) => {
@@ -580,7 +601,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const renderOrder = (order: DiagnosticsOrderList, index: number) => {
-    if (order.orderStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED) {
+    if (
+      order.orderStatus == DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED ||
+      order?.diagnosticOrderLineItems?.length == 0
+    ) {
       return;
     }
     const isHomeVisit = !!order.slotTimings;
@@ -606,7 +630,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         patientName={patientName}
         isComingFrom={'individualOrders'}
         showDateTime={false}
-        showRescheduleCancel={false}
+        showRescheduleCancel={!isSampleCollected}
         ordersData={order?.diagnosticOrderLineItems!}
         dateTime={`Scheduled For: ${dtTm}`}
         statusDesc={isHomeVisit ? 'Home Visit' : 'Clinic Visit'}
@@ -749,7 +773,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   return (
     <View style={{ flex: 1 }}>
-      {/* {showCancelReasonPopUp && renderCancelReasonPopUp()} */}
+      {showCancelReasonPopUp && renderCancelReasonPopUp()}
       {/* {showRescheduleReasonPopUp && renderRescheduleReasonPopUp()} */}
       {/* {showDisplaySchedule && renderRescheduleOrderOverlay()} */}
       <SafeAreaView style={theme.viewStyles.container}>
@@ -767,8 +791,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           {renderError()}
           {renderOrders()}
           {/* {!loading && !error && renderChatWithUs()} */}
-          {/* {renderCancelPopUp()}
-          {renderReschedulePopUp()} */}
+          {renderCancelPopUp()}
+          {/* {renderReschedulePopUp()} */}
         </ScrollView>
         {!loading && <ScrollableFooter show={show} />}
       </SafeAreaView>

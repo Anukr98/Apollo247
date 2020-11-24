@@ -377,6 +377,13 @@ export enum PRISM_DOCUMENT_CATEGORY {
   TestReports = "TestReports",
 }
 
+export enum PaymentStatus {
+  INVALID_PAYMENT = "INVALID_PAYMENT",
+  PENDING = "PENDING",
+  TXN_FAILURE = "TXN_FAILURE",
+  TXN_SUCCESS = "TXN_SUCCESS",
+}
+
 export enum PharmaDiscountApplicableOn {
   MRP = "MRP",
   SPECIAL_PRICE = "SPECIAL_PRICE",
@@ -682,6 +689,13 @@ export interface CancelAppointmentInput {
   cancelledById: string;
 }
 
+export interface CancellationDiagnosticsInput {
+  comment?: string | null;
+  orderId: string;
+  patientId: string;
+  reason: string;
+}
+
 export interface ChooseDoctorInput {
   slotDateTime: any;
   specialityId: string;
@@ -710,7 +724,7 @@ export interface CouponInput {
 export interface CreateUserSubscriptionInput {
   _id?: string | null;
   plan_id: string;
-  payment_reference?: any | null;
+  payment_reference?: PaymentReference | null;
   coupon_availed?: string | null;
   mobile_number: string;
   order_id?: string | null;
@@ -1071,6 +1085,15 @@ export interface PatientProfileInput {
   mobileNumber: string;
 }
 
+export interface PaymentReference {
+  mid?: string | null;
+  amount_paid?: number | null;
+  payment_status?: PaymentStatus | null;
+  payment_reference_id?: string | null;
+  purchase_via_HC?: boolean | null;
+  HC_used?: number | null;
+}
+
 export interface PharmaCouponInput {
   code: string;
   patientId: string;
@@ -1116,6 +1139,16 @@ export interface PrescriptionReUploadInput {
 export interface Range {
   minimum?: number | null;
   maximum?: number | null;
+}
+
+export interface RescheduleDiagnosticsInput {
+  comment?: string | null;
+  date: any;
+  dateTimeInUTC: any;
+  orderId: string;
+  patientId: string;
+  reason?: string | null;
+  slotId: string;
 }
 
 export interface SUBSCRIPTION_DETAILS {
@@ -1164,21 +1197,6 @@ export interface ShopAddress {
 export interface UpdateAppointmentSessionInput {
   appointmentId: string;
   requestRole: string;
-}
-
-export interface UpdateDiagnosticOrderInput {
-  id?: string | null;
-  slotTimings: string;
-  employeeSlotId: number;
-  diagnosticEmployeeCode: string;
-  diagnosticBranchCode: string;
-  prescriptionUrl: string;
-  diagnosticDate: any;
-  centerName: string;
-  centerCode: string;
-  centerCity: string;
-  centerState: string;
-  centerLocality: string;
 }
 
 export interface UpdatePatientAddressInput {
