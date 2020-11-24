@@ -564,6 +564,11 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     client
       .query<getPatientPrismMedicalRecords>({
         query: GET_MEDICAL_PRISM_RECORD,
+        context: {
+          headers: {
+            callingSource: 'healthRecords',
+          },
+        },
         variables: {
           patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
         },
