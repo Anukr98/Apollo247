@@ -364,7 +364,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
     <View style={styles.careMessageContainer}>
       <PendingIcon style={styles.pendingIconStyle} />
       <Text style={styles.careMessage}>
-        You can either use CIRCLE discount or apply a Coupon code
+        You can either use CARE discount or apply a Coupon code
       </Text>
     </View>
   );

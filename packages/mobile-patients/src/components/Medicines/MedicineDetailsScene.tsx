@@ -265,7 +265,6 @@ const styles = StyleSheet.create({
   circleText: {
     ...theme.viewStyles.text('M', 9, '#02475B', 1, 15),
     paddingVertical: 2,
-    left: -10,
   },
   circleLogo: {
     resizeMode: 'contain',
@@ -980,7 +979,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             bannerText={`membership added to your cart!`}
             textStyle={{
               ...theme.viewStyles.text('SB', 14, '#02475B', 1, 20),
-              left: -5,
             }}
             logoStyle={{
               width: 60,

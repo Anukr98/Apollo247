@@ -126,6 +126,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     setIsCircleSubscription,
     deliveryTime,
     setdeliveryTime,
+    cartTotalCashback,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -907,7 +908,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
               {`Use your Circle membership instead & get `}
               <Text
                 style={{ ...theme.viewStyles.text('SB', 12, '#02475B', 1, 17) }}
-              >{`₹54 Cashback and Free delivery `}</Text>
+              >{`₹${cartTotalCashback} Cashback and Free delivery `}</Text>
               <Text>on this order</Text>
             </Text>
           </View>
@@ -951,12 +952,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
                 <Text style={styles.viewText}>View</Text>
                 <CareCashbackBanner
                   bannerText={`plans`}
-                  textStyle={[
-                    styles.viewText,
-                    {
-                      left: -5,
-                    },
-                  ]}
+                  textStyle={styles.viewText}
                   logoStyle={styles.circleLogo}
                 />
               </View>
@@ -1124,7 +1120,6 @@ const styles = StyleSheet.create({
   circleText: {
     ...theme.viewStyles.text('SB', 14, '#02475B', 1, 17),
     paddingTop: 12,
-    left: -5,
   },
   circleLogo: {
     resizeMode: 'contain',
@@ -1172,6 +1167,7 @@ const styles = StyleSheet.create({
   viewText: {
     ...theme.viewStyles.text('M', 14, '#02475B', 1, 17),
     paddingTop: 12,
+    marginRight: 5,
   },
   viewSubText: {
     ...theme.viewStyles.text('R', 13, '#02475B', 1, 20),
