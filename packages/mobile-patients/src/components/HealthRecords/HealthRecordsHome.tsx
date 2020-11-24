@@ -566,11 +566,11 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         query: GET_MEDICAL_PRISM_RECORD,
         context: {
           headers: {
-            callingSource: 'healthRecords',
+            callingsource: 'healthRecords',
           },
         },
         variables: {
-          patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
+          patientId: currentPatient?.id || '',
         },
         fetchPolicy: 'no-cache',
       })
