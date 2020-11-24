@@ -79,7 +79,7 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [selectedPatient, setSelectedPatient] = useState<any>();
-  const [showHowItWorks, setShowHowItWorks] = useState<boolean>(true);
+  const [showHowItWorks, setShowHowItWorks] = useState<boolean>(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [symptoms, setSymptoms] = useState<Symptoms[]>([]);
   const [specialities, setSpecialities] = useState<SymptomsSpecialities[]>([]);
@@ -114,9 +114,10 @@ export const SymptomTracker: React.FC<SymptomTrackerProps> = (props) => {
         setSelectedPatient(currentPatient);
       }
       initializeChat(currentPatient);
-      setShowHowItWorks(false);
+    } else {
+      setShowHowItWorks(true);
+      AsyncStorage.setItem('symptomTrackerStarted', JSON.stringify(true));
     }
-    AsyncStorage.setItem('symptomTrackerStarted', JSON.stringify(true));
   };
 
   const backDataFunctionality = async () => {
