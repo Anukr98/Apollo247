@@ -18,6 +18,7 @@ import { StyleSheet, Text, TouchableOpacity, TouchableOpacityProps, View } from 
 import { Divider, Image } from 'react-native-elements';
 import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 export interface Props extends MedicineProduct {
   onPress: () => void;
@@ -53,9 +54,9 @@ export const ProductCard: React.FC<Props> = ({
   const discount = getDiscountPercentage(price, special_price);
 
   const renderPrice = () => {
-    const strikeOffPrice = `(₹ ${price})`;
+    const strikeOffPrice = `(${string.common.Rs} ${price})`;
     const mrp = 'MRP  ';
-    const finalPrice = `₹${discount ? special_price : price}`;
+    const finalPrice = `${string.common.Rs}${discount ? special_price : price}`;
     return (
       <View style={styles.priceContainer}>
         <Text style={styles.finalPrice}>{mrp}</Text>

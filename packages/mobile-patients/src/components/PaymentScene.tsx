@@ -371,6 +371,28 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
     postFirebaseEvent(FirebaseEventName.ORDER_FAILED, eventAttributes);
   };
 
+  const fireOrderEvent = (isSuccess?: boolean) => {
+    if (checkoutEventAttributes) {
+      const paymentEventAttributes = {
+        order_Id: orderId,
+        order_AutoId: orderAutoId,
+        LOB: 'Pharmacy',
+        Payment_Status: !!isSuccess ? 'PAYMENT_SUCCESS' : 'PAYMENT_PENDING',
+      };
+      postWebEngageEvent(WebEngageEventName.PAYMENT_STATUS, paymentEventAttributes);
+      postAppsFlyerEvent(AppsFlyerEventName.PAYMENT_STATUS, paymentEventAttributes);
+      postFirebaseEvent(FirebaseEventName.PAYMENT_STATUS, paymentEventAttributes);
+      postAppsFlyerEvent(
+        AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED,
+        appsflyerEventAttributes
+      );
+      firePurchaseEvent();
+      if (!!isSuccess) {
+        postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, checkoutEventAttributes);
+      }
+    }
+  };
+
   const onWebViewStateChange = (data: NavState) => {
     const redirectedUrl = data.url;
     console.log({ redirectedUrl, data });
@@ -378,19 +400,32 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       redirectedUrl &&
       redirectedUrl.indexOf(AppConfig.Configuration.PAYMENT_GATEWAY_SUCCESS_PATH) > -1
     ) {
-      handleOrderSuccess();
-      clearCartInfo && clearCartInfo();
+        fireOrderEvent(true);
+        props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
+          status: 'PAYMENT_SUCCESS',
+          price: totalAmount,
+          orderId: orderAutoId,
+        });
     } else if (
       redirectedUrl &&
       redirectedUrl.indexOf(AppConfig.Configuration.PAYMENT_GATEWAY_ERROR_PATH) > -1
     ) {
       fireOrderFailedEvent();
-      props.navigation.navigate(AppRoutes.PaymentStatus, {
-        orderId: orderId,
-        orderAutoId: orderAutoId,
-        amount: totalAmount,
-        paymentTypeID: paymentTypeID,
-      });
+      if (!!circleMembershipCharges) {
+        props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
+          status: 'PAYMENT_FAILED',
+          price: totalAmount,
+          orderId: orderAutoId,
+        });
+      } 
+      else {
+        fireOrderEvent(false);
+        props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
+          status: 'PAYMENT_PENDING',
+          price: totalAmount,
+          orderId: orderAutoId,
+        });
+      }
     }
 
     // const isMatchesSuccessUrl =

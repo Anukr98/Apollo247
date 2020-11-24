@@ -1076,6 +1076,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     client
       .query<GetCashbackDetailsOfPlanById>({
         query: GET_CASHBACK_DETAILS_OF_PLAN_ID,
+        variables: { plan_id: AppConfig.Configuration.CARE_PLAN_ID },
         fetchPolicy: 'no-cache',
       })
       .then((data) => {
