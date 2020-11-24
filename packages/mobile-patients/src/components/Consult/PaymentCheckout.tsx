@@ -134,7 +134,9 @@ export const PaymentCheckout: React.FC<PaymentCheckoutProps> = (props) => {
     physicalConsultMRPPrice,
   } = circleDoctorDetails;
   const { circleSubscriptionId, circlePlanSelected } = useShoppingCart();
-  const [disabledCheckout, setDisabledCheckout] = useState<boolean>(isCircleDoctor);
+  const [disabledCheckout, setDisabledCheckout] = useState<boolean>(
+    isCircleDoctor && !circleSubscriptionId
+  );
 
   const amount = Number(price) - couponDiscountFees;
   const amountToPay =
