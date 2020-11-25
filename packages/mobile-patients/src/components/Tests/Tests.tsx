@@ -636,19 +636,19 @@ export const Tests: React.FC<TestsProps> = (props) => {
             const latLang = data.results[0].geometry.location || {};
             const response = getFormattedLocation(addrComponents, latLang, pincode);
             response.city =
-              (isDiagnosticLocationServiceable == 'true' && diagnosticServiceabilityData?.city) ||
+              (isDiagnosticLocationServiceable == 'true' && diagnosticLocation?.city) ||
               response.city;
             response.state =
-              (isDiagnosticLocationServiceable == 'true' && diagnosticServiceabilityData?.state) ||
+              (isDiagnosticLocationServiceable == 'true' && diagnosticLocation?.state) ||
               response.state;
             setDiagnosticLocation!(response);
             !locationDetails && setLocationDetails!(response);
           } else {
             let response = {
-              displayName: diagnosticServiceabilityData?.city! || '',
+              displayName: diagnosticLocation?.city! || '',
               area: '',
-              city: diagnosticServiceabilityData?.city! || '',
-              state: diagnosticServiceabilityData?.state! || '',
+              city: diagnosticLocation?.city! || '',
+              state: diagnosticLocation?.state! || '',
               country: 'India',
               pincode: String(pincode),
             };
