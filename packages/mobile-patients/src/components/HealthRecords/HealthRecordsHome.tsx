@@ -782,6 +782,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         }
         container={{ borderBottomWidth: 0 }}
         onPressLeftIcon={() => {
+          setPhrNotificationData && setPhrNotificationData(null);
           props.navigation.dispatch(
             StackActions.reset({
               index: 0,
