@@ -143,7 +143,9 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
     addresses,
     deliveryAddressId,
     isCircleSubscription,
+    setIsCircleSubscription,
     circleMembershipCharges,
+    setCircleSubscriptionId,
   } = useShoppingCart();
   const { showAphAlert } = useUIElements();
   const [loading, setLoading] = useState<boolean>(true);
@@ -203,6 +205,8 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
     validateConsultCoupon(data)
       .then((resp: any) => {
         if (resp.data.errorCode == 0) {
+          setIsCircleSubscription && setIsCircleSubscription(false);
+          setCircleSubscriptionId && setCircleSubscriptionId('');
           if (resp.data.response.valid) {
             console.log(g(resp.data, 'response'));
             setCoupon!({ ...g(resp.data, 'response')!, message: couponMsg });
@@ -360,7 +364,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
     <View style={styles.careMessageContainer}>
       <PendingIcon style={styles.pendingIconStyle} />
       <Text style={styles.careMessage}>
-        You can either use CIRCLE discount or apply a Coupon code
+        You can either use CARE discount or apply a Coupon code
       </Text>
     </View>
   );

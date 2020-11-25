@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
     margin: 10,
     textAlign: 'center',
     color: '#658F9B',
-    ...theme.fonts.IBMPlexSansMedium(12),
+    ...theme.fonts.IBMPlexSansMedium(11),
     alignSelf: 'flex-end',
   },
   notificationCard: {
@@ -574,18 +574,27 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
   const renderItemAdded = () => {
     return (
-      <>
+      <View>
         {isItemAdded && isAddedToCart && (
-          <View style={{ ...theme.viewStyles.cardViewStyle }}>
+          <View
+            style={{
+              ...theme.viewStyles.cardViewStyle,
+              flexDirection: 'row',
+              marginTop: -10,
+            }}
+          >
             <Text style={[styles.successfulText, { flexDirection: 'row' }]}>
               {string.diagnostics.itemsAddedSuccessfullyCTA}
-              <TouchableOpacity onPress={() => setItemAdded(false)}>
-                <Cross style={styles.crossIconStyle} />
-              </TouchableOpacity>
             </Text>
+            <TouchableOpacity
+              style={{ marginTop: 13, marginRight: 10 }}
+              onPress={() => setItemAdded(false)}
+            >
+              <Cross style={styles.crossIconStyle} />
+            </TouchableOpacity>
           </View>
         )}
-      </>
+      </View>
     );
   };
 

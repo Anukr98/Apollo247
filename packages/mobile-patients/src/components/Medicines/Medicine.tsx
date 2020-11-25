@@ -222,6 +222,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     medicinePageAPiResponse,
     setMedicinePageAPiResponse,
     setLocationDetails,
+    setAxdcCode,
+    axdcCode,
   } = useAppCommonData();
   const [ShowPopop, setShowPopop] = useState<boolean>(!!showUploadPrescriptionPopup);
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
@@ -358,11 +360,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     globalLoading!(true);
     pinCodeServiceabilityApi247(pincode)
       .then(({ data: { response } }) => {
-        setServiceabilityMsg(response ? '' : 'Services unavailable. Change delivery location.');
-        setPharmacyLocationServiceable!(response ? true : false);
-        type == 'autoDetect' && WebEngageEventAutoDetectLocation(pincode, response ? true : false);
-        type == 'pincode' && webEngageDeliveryPincodeEntered(pincode, response ? true : false);
-        console.log(pincode, response);
+        const { servicable, axdcCode } = response;
+        setAxdcCode && setAxdcCode(axdcCode);
+        setServiceabilityMsg(servicable ? '' : 'Services unavailable. Change delivery location.');
+        setPharmacyLocationServiceable!(servicable ? true : false);
+        type == 'autoDetect' &&
+          WebEngageEventAutoDetectLocation(pincode, servicable ? true : false);
+        type == 'pincode' && webEngageDeliveryPincodeEntered(pincode, servicable ? true : false);
         globalLoading!(false);
         if (!response) {
           globalLoading!(true);
@@ -470,8 +474,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   useEffect(() => {
     setWebEngageScreenNames('Medicine Home Page');
-    fetchMedicinePageProducts();
+    fetchMedicinePageProducts(false);
   }, []);
+
+  useEffect(() => {
+    if (axdcCode) {
+      fetchMedicinePageProducts(true);
+    }
+  }, [axdcCode]);
 
   useEffect(() => {
     if (g(currentPatient, 'uhid')) {
@@ -645,13 +655,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       .map((v) => `/catalog/product${v}`)[0];
   };
 
-  const fetchMedicinePageProducts = async () => {
-    if (medicinePageAPiResponse) {
+  const fetchMedicinePageProducts = async (callApiAgain?: boolean) => {
+    if (medicinePageAPiResponse && !callApiAgain) {
       return;
     }
     try {
       setLoading(true);
-      const resonse = (await getMedicinePageProducts()).data;
+      const resonse = (await getMedicinePageProducts(axdcCode)).data;
       setData(resonse);
       setMedicinePageAPiResponse!(resonse);
       setLoading(false);
@@ -1580,7 +1590,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const onSearchMedicine = (_searchText: string) => {
     setsearchSate('load');
-    getMedicineSearchSuggestionsApi(_searchText)
+    getMedicineSearchSuggestionsApi(_searchText, axdcCode)
       .then(({ data }) => {
         const products = data.products || [];
         setMedicineList(products);
@@ -1934,8 +1944,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       },
       circleLogo: {
         resizeMode: 'contain',
-        width: 40,
+        width: 35,
         height: 25,
+        marginLeft: 5,
       },
       cartButton: {
         backgroundColor: '#FCB716',
@@ -1965,18 +1976,21 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               {cartItems.length}
             </Text>
           </View>
-          {
-            cartTotalCashback > 1 ? (
-              <>
+          {cartTotalCashback > 1 ? (
+            <>
               {isCircleSubscription ? (
                 <View>
-                  <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 20, 0)}>₹{cartTotal}</Text>
+                  <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 20, 0)}>
+                    ₹{cartTotal}
+                  </Text>
                   <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
                     <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 25, 0)}>
                       Effective price for
                     </Text>
                     <CircleLogo style={circleStyles.circleLogoTwo} />
-                    <Text style={{ ...theme.viewStyles.text('R', 12, '#02475B', 1, 25, 0), left: -3 }}>
+                    <Text
+                      style={{ ...theme.viewStyles.text('R', 12, '#02475B', 1, 25, 0), left: -3 }}
+                    >
                       members
                     </Text>
                     <Text style={theme.viewStyles.text('SB', 12, '#02475B', 1, 25, 0)}>
@@ -1985,13 +1999,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                   </View>
                 </View>
               ) : (
-                <TouchableOpacity
-                  activeOpacity={1}
-                  onPress={() => setShowCirclePopup(true)}
-                  style={circleStyles.upgrade}
-                >
+                <TouchableOpacity activeOpacity={1} onPress={() => {}} style={circleStyles.upgrade}>
                   <View style={circleStyles.upgradeTo}>
-                    <Text style={theme.viewStyles.text('M', 13, '#FCB716', 1, 20, 0)}>UPGRADE TO</Text>
+                    <Text style={theme.viewStyles.text('M', 13, '#FCB716', 1, 20, 0)}>
+                      UPGRADE TO
+                    </Text>
                     <CircleLogo style={circleStyles.circleLogo} />
                   </View>
                   <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 17, 0)}>
@@ -1999,17 +2011,16 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                   </Text>
                 </TouchableOpacity>
               )}
-              </>
-            ) : (
-              <View style={{
+            </>
+          ) : (
+            <View
+              style={{
                 marginTop: 13,
-              }}>
-                <Text style={theme.viewStyles.text('SB', 16, '#02475B', 1, 20, 0)}>
-                  ₹{cartTotal}
-                </Text>
-              </View>
-            )
-          }
+              }}
+            >
+              <Text style={theme.viewStyles.text('SB', 16, '#02475B', 1, 20, 0)}>₹{cartTotal}</Text>
+            </View>
+          )}
           <TouchableOpacity
             style={circleStyles.cartButton}
             onPress={() => {
@@ -2017,7 +2028,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             }}
           >
             <Text style={theme.viewStyles.text('B', 13, '#FFFFFF', 1, 20, 0)}>GO TO CART</Text>
-            {(!isCircleSubscription && cartTotalCashback > 1) && (
+            {!isCircleSubscription && cartTotalCashback > 1 && (
               <Text style={theme.viewStyles.text('M', 12, '#02475B', 1, 20, 0)}>
                 {`Buy for ₹${cartTotal}`}
               </Text>

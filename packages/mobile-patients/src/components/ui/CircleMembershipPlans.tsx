@@ -390,7 +390,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
 
   const openCircleWebView = () => {
     props.navigation.navigate(AppRoutes.CommonWebView, {
-      url: AppConfig.Configuration.CIRCLE_CONSULT_URL,
+      url: isConsultJourney ? AppConfig.Configuration.CIRCLE_CONSULT_URL : AppConfig.Configuration.CIRLCE_PHARMA_URL,
     });
   };
 
