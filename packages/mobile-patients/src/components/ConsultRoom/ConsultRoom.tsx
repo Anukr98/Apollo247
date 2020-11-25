@@ -905,8 +905,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
          */
         if (data?.APOLLO?.[0]._id) {
           setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
+          setIsCircleSubscription && setIsCircleSubscription(true);
+          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
         } else {
           setCircleSubscriptionId && setCircleSubscriptionId('');
+          setIsCircleSubscription && setIsCircleSubscription(false);
+          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
         }
         setShowCircleBanner(true);
       }
@@ -1082,7 +1086,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     client
       .query<GetCashbackDetailsOfPlanById>({
         query: GET_CASHBACK_DETAILS_OF_PLAN_ID,
-        variables: { plan_id: AppConfig.Configuration.CARE_PLAN_ID },
+        variables: { plan_id: AppConfig.Configuration.CIRCLE_PLAN_ID },
         fetchPolicy: 'no-cache',
       })
       .then((data) => {
@@ -1226,7 +1230,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       planSummary: planSummary,
       groupDetails: groupDetailsData,
       benefits: circleBenefits,
-      endDate: plan?.end_date,
+      endDate: plan?.subscriptionEndDate,
     };
 
     return circleSubscptionData;
@@ -2867,7 +2871,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const renderCircleBanners = () => (
     <CircleBannerComponent
       navigation={props.navigation}
-      planActivationCallback={() => getUserSubscriptionsByStatus()}
+      planActivationCallback={() => {
+        getUserSubscriptionsByStatus();
+        getUserSubscriptionsWithBenefits();
+      }}
     />
   );
 

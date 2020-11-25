@@ -25,6 +25,9 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Circle } from '@aph/mobile-patients/src/strings/strings.json';
+import { useApolloClient } from 'react-apollo-hooks';
+import { GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE } from '@aph/mobile-patients/src/graphql/profiles';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -151,7 +154,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
   const [showAvailPopup, setShowAvailPopup] = useState<boolean>(false);
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [upgradeTransactionValue, setUpgradeTransactionValue] = useState<number>(0);
-  const subscription_name = hdfcUserSubscriptions?.name;
+  const subscription_name = showHdfcSubscriptions ? hdfcUserSubscriptions?.name : '';
 
   useEffect(() => {
     if (showHdfcSubscriptions) {
@@ -162,6 +165,30 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
       postWebEngageEvent(WebEngageEventName.HDFC_MY_MEMBERSHIP_VIEWED, eventAttributes);
     }
   }, []);
+
+  const fetchCircleSavings = async () => {
+    const client = useApolloClient();
+    try {
+      const res = await client.query({
+        query: GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE,
+        variables: {
+          mobile_number: currentPatient?.mobileNumber,
+        },
+        fetchPolicy: 'no-cache',
+      });
+      const consultSavings =
+        res?.data?.GetCircleSavingsOfUserByMobile?.response?.savings?.consult || 0;
+      const pharmaSavings =
+        res?.data?.GetCircleSavingsOfUserByMobile?.response?.savings?.pharma || 0;
+      const diagnosticsSavings =
+        res?.data?.GetCircleSavingsOfUserByMobile?.response?.savings?.diagnostics || 0;
+      const deliverySavings =
+        res?.data?.GetCircleSavingsOfUserByMobile?.response?.savings?.delivery || 0;
+      const totalSavings = consultSavings + pharmaSavings + diagnosticsSavings + deliverySavings;
+    } catch (error) {
+      CommonBugFender('CircleBannerComponent_fetchCircleSavings', error);
+    }
+  };
 
   useEffect(() => {
     if (hdfcUserSubscriptions?._id || circleSubscriptionId) {

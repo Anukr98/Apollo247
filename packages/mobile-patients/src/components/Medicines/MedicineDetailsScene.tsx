@@ -84,6 +84,12 @@ import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/N
 import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
+import { CircleBannerComponent } from '@aph/mobile-patients/src/components/ui/CircleBannerComponent';
+import {
+  GetSubscriptionsOfUserByStatusVariables,
+  GetSubscriptionsOfUserByStatus,
+} from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
+import { GET_SUBSCRIPTIONS_OF_USER_BY_STATUS } from '@aph/mobile-patients/src/graphql/profiles';
 
 const { width, height } = Dimensions.get('window');
 
@@ -330,7 +336,12 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   );
   const client = useApolloClient();
   const [tatEventData, setTatEventData] = useState<PharmacyTatApiCalled>();
-  const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable, circleSubscription } = useAppCommonData();
+  const {
+    locationDetails,
+    pharmacyLocation,
+    isPharmacyLocationServiceable,
+    circleSubscription,
+  } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
   const pharmacyPincode = g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
 
@@ -362,8 +373,13 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     updateCartItem,
     removeCartItem,
     isCircleSubscription,
+    setCircleSubscriptionId,
+    setIsCircleSubscription,
   } = useShoppingCart();
-  const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
+  const {
+    cartItems: diagnosticCartItems,
+    setIsDiagnosticCircleSubscription,
+  } = useDiagnosticsCart();
   const getItemQuantity = (id: string) => {
     const foundItem = cartItems.find((item) => item.id == id);
     return foundItem ? foundItem.quantity : 0;
@@ -946,24 +962,49 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         {renderNote()}
         {medicineOverview.length === 0 ? renderInfo() : null}
         {isCircleSubscribed && renderCircleSubscribeSuccess()}
-        {/* {!!cashback && renderCareSubscribeBanner()} */}
+        {!!cashback && renderCircleBanners()}
       </View>
     );
   };
 
-  const renderCareSubscribeBanner = () => {
-    return (
-      <TouchableOpacity
-        activeOpacity={1}
-        onPress={() => {}}
-        style={{
-          paddingHorizontal: 20,
-        }}
-      >
-        <CircleBannerNonMember style={styles.careBanner} />
-      </TouchableOpacity>
-    );
+  const getUserSubscriptionsByStatus = async () => {
+    try {
+      const query: GetSubscriptionsOfUserByStatusVariables = {
+        mobile_number: g(currentPatient, 'mobileNumber'),
+        status: ['active', 'deferred_inactive'],
+      };
+      const res = await client.query<GetSubscriptionsOfUserByStatus>({
+        query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+        fetchPolicy: 'no-cache',
+        variables: query,
+      });
+      const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
+      if (data) {
+        if (data?.APOLLO?.[0]._id) {
+          setIsCircleSubscribed(true);
+          setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
+          setIsCircleSubscription && setIsCircleSubscription(true);
+          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
+        } else {
+          setIsCircleSubscribed(false);
+          setCircleSubscriptionId && setCircleSubscriptionId('');
+          setIsCircleSubscription && setIsCircleSubscription(false);
+          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
+        }
+      }
+    } catch (error) {
+      CommonBugFender('ConsultRoom_GetSubscriptionsOfUserByStatus', error);
+    }
   };
+
+  const renderCircleBanners = () => (
+    <CircleBannerComponent
+      navigation={props.navigation}
+      planActivationCallback={() => {
+        getUserSubscriptionsByStatus();
+      }}
+    />
+  );
 
   const renderCircleSubscribeSuccess = () => {
     return (

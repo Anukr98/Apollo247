@@ -32,6 +32,7 @@ import { CardContent } from '@aph/mobile-patients/src/components/SubscriptionMem
 import { BenefitsConsumedTab } from '@aph/mobile-patients/src/components/SubscriptionMembership/Components/BenefitsConsumedTab';
 import { CircleSavings } from '@aph/mobile-patients/src/components/SubscriptionMembership/Components/CircleSavings';
 import { FAQComponent } from '@aph/mobile-patients/src/components/SubscriptionMembership/Components/FAQComponent';
+import { Circle } from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -147,7 +148,7 @@ export interface MembershipDetailsProps extends NavigationScreenProps {
 
 export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const membershipType = props.navigation.getParam('membershipType');
-  const isCirclePlan = membershipType.includes('CARE');
+  const isCirclePlan = membershipType === Circle.planName;
 
   const {
     hdfcUserSubscriptions,
@@ -334,12 +335,15 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     id: string,
     webengageevent: string | null
   ) => {
-    if (webengageevent) handleWebengageEvents(webengageevent);
-    const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_REDEEM_CLICKED] = {
-      'User ID': g(currentPatient, 'id'),
-      Benefit: type == Hdfc_values.WHATSAPP_OPEN_CHAT ? type : action,
-    };
-    postWebEngageEvent(WebEngageEventName.HDFC_REDEEM_CLICKED, eventAttributes);
+    if (webengageevent) {
+      handleWebengageEvents(webengageevent);
+      const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_REDEEM_CLICKED] = {
+        'User ID': g(currentPatient, 'id'),
+        Benefit: type == Hdfc_values.WHATSAPP_OPEN_CHAT ? type : action,
+      };
+      postWebEngageEvent(WebEngageEventName.HDFC_REDEEM_CLICKED, eventAttributes);
+    }
+
     if (type == Hdfc_values.REDIRECT) {
       if (action == Hdfc_values.SPECIALITY_LISTING) {
         props.navigation.navigate(AppRoutes.DoctorSearch);
@@ -575,7 +579,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         <TouchableOpacity
           activeOpacity={1}
           onPress={() => {
-            // if (availableCount) handleCtaClick(type, action, message, availableCount, _id, null);
+            handleCtaClick(type, action, message, availableCount, _id, null);
           }}
           style={[styles.cardStyle, { marginVertical: 10 }]}
         >

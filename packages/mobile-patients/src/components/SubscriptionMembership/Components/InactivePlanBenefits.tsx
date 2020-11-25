@@ -13,7 +13,7 @@ export const InactivePlanBenefits: React.FC<InactivePlanBenefitsProps> = (props)
 
   return (
     <View style={styles.cardStyle}>
-      {benefits.length &&
+      {!!benefits?.length &&
         benefits.map((value, index) => {
           const { headerContent, description, icon } = value;
           return (

@@ -12,6 +12,7 @@ import {
   OneApolloLogo,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import moment from 'moment';
 
 export interface CircleSavingsProps {}
 
@@ -22,8 +23,8 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
     return (
       <View style={styles.expiryBanner}>
         <CircleLogo style={styles.circleLogo} />
-        <Text style={theme.viewStyles.text('R', 14, '#01475B', 1, 28, 0.35)}>
-          Membership expires on {circleSubscription?.endDate}
+        <Text style={theme.viewStyles.text('SB', 14, '#01475B', 1, 28, 0.35)}>
+          Membership expires on {moment(circleSubscription?.endDate).format('DD/MM/YYYY')}
         </Text>
       </View>
     );
