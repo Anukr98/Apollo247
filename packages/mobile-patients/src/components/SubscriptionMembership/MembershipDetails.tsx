@@ -154,6 +154,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     hdfcUserSubscriptions,
     circleSubscription,
     hdfcUpgradeUserSubscriptions,
+    totalCircleSavings,
   } = useAppCommonData();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
@@ -572,6 +573,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   };
 
   const renderCircleBenefits = (circleBenefits: any) => {
+    const totalSavingsDone = totalCircleSavings?.totalSavings + totalCircleSavings?.callsUsed;
     return circleBenefits.map((value) => {
       const { headerContent, description, benefitCtaAction, icon, availableCount, _id } = value;
       const { action, message, type, webEngageEvent } = benefitCtaAction;
@@ -579,7 +581,9 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         <TouchableOpacity
           activeOpacity={1}
           onPress={() => {
-            handleCtaClick(type, action, message, availableCount, _id, null);
+            if (totalSavingsDone) {
+              handleCtaClick(type, action, message, availableCount, _id, null);
+            }
           }}
           style={[styles.cardStyle, { marginVertical: 10 }]}
         >
@@ -597,7 +601,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const renderCirclePlan = () => {
     return (
       <ScrollView bounces={false}>
-        <CircleSavings />
+        <CircleSavings navigation={props.navigation} />
         <View
           style={{
             backgroundColor: '#FFFFFF',

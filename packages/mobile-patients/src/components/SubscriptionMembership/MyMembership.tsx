@@ -178,15 +178,16 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
         },
         fetchPolicy: 'no-cache',
       });
-      const consultSavings =
-        res?.data?.GetCircleSavingsOfUserByMobile?.response?.savings?.consult || 0;
-      const pharmaSavings =
-        res?.data?.GetCircleSavingsOfUserByMobile?.response?.savings?.pharma || 0;
-      const diagnosticsSavings =
-        res?.data?.GetCircleSavingsOfUserByMobile?.response?.savings?.diagnostics || 0;
-      const deliverySavings =
-        res?.data?.GetCircleSavingsOfUserByMobile?.response?.savings?.delivery || 0;
+      const savings = res?.data?.GetCircleSavingsOfUserByMobile?.response?.savings;
+      const circlebenefits = res?.data?.GetCircleSavingsOfUserByMobile?.response?.benefits;
+      const consultSavings = savings?.consult || 0;
+      const pharmaSavings = savings?.pharma || 0;
+      const diagnosticsSavings = savings?.diagnostics || 0;
+      const deliverySavings = savings?.delivery || 0;
       const totalSavings = consultSavings + pharmaSavings + diagnosticsSavings + deliverySavings;
+      const docOnCallBenefit = circlebenefits?.filter(
+        (value) => value?.attribute === Circle.DOC_ON_CALL
+      );
       setTotalCircleSavings &&
         setTotalCircleSavings({
           consultSavings,
@@ -194,6 +195,8 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
           diagnosticsSavings,
           deliverySavings,
           totalSavings,
+          callsTotal: docOnCallBenefit?.[0]?.attribute_type?.total,
+          callsUsed: docOnCallBenefit?.[0]?.attribute_type?.used,
         });
     } catch (error) {
       CommonBugFender('CircleBannerComponent_fetchCircleSavings', error);
