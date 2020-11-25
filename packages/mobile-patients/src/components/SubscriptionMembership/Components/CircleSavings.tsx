@@ -13,11 +13,12 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import moment from 'moment';
+import strings from '@aph/mobile-patients/src/strings/strings.json';
 
 export interface CircleSavingsProps {}
 
 export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
-  const { circleSubscription } = useAppCommonData();
+  const { circleSubscription, totalCircleSavings } = useAppCommonData();
 
   const renderCircleExpiryBanner = () => {
     return (
@@ -41,7 +42,10 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
       >
         <Text style={theme.viewStyles.text('M', 16, '#02475B', 1, 28, 0.35)}>
           Total Savings Using Circle Plan{'  '}
-          <Text style={theme.viewStyles.text('SB', 19, '#00B38E', 1, 28, 0.35)}>₹900</Text>
+          <Text style={theme.viewStyles.text('SB', 19, '#00B38E', 1, 28, 0.35)}>
+            {strings.common.Rs}
+            {totalCircleSavings?.totalSavings || 0}
+          </Text>
         </Text>
         {renderSavingsCard()}
       </View>
@@ -61,14 +65,20 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
             <HealthLogo style={styles.savingsIcon} />
             <Text style={styles.savingsHeading}>Total Savings on Pharmacy</Text>
           </View>
-          <Text style={styles.savingsAmount}>₹500</Text>
+          <Text style={styles.savingsAmount}>
+            {strings.common.Rs}
+            {totalCircleSavings?.pharmaSavings || 0}
+          </Text>
         </View>
         <View style={styles.savingsContainer}>
           <View style={styles.savingsRow}>
             <DoctorIcon style={styles.savingsIcon} />
             <Text style={styles.savingsHeading}>Total Savings on Doctor Consult</Text>
           </View>
-          <Text style={styles.savingsAmount}>₹200</Text>
+          <Text style={styles.savingsAmount}>
+            {strings.common.Rs}
+            {totalCircleSavings?.consultSavings || 0}
+          </Text>
         </View>
         <View style={styles.savingsContainer}>
           <View style={styles.savingsRow}>
@@ -82,7 +92,10 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
             <ExpressDelivery style={styles.savingsIcon} />
             <Text style={styles.savingsHeading}>Total Delivery Charges Saved</Text>
           </View>
-          <Text style={styles.savingsAmount}>₹200</Text>
+          <Text style={styles.savingsAmount}>
+            {strings.common.Rs}
+            {totalCircleSavings?.deliverySavings || 0}
+          </Text>
         </View>
         <View style={styles.savingsContainer}>
           <View style={styles.savingsRow}>
