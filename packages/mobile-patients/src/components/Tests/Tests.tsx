@@ -278,6 +278,13 @@ const styles = StyleSheet.create({
   normalPrice: {
     ...theme.viewStyles.text('M', 14, '#02475b', 1, 20, 0.04),
   },
+  featuredPackageImageView: { height: 80, width: 70 },
+  featuredPackageImageStyle: { height: 70, width: 70, resizeMode: 'contain' },
+  featuredPackageTextView: {
+    marginHorizontal: 10,
+    width: '65%',
+    justifyContent: 'center',
+  },
 });
 
 export interface TestsProps
@@ -1162,8 +1169,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
           <View style={styles.discountTagView}>
             <OfferIcon
               style={{
-                height: comingFrom == 'tests' ? 36 : 52,
-                width: comingFrom == 'tests' ? 40 : 50,
+                height: comingFrom == 'tests' ? 36 : 45,
+                width: comingFrom == 'tests' ? 40 : 45,
               }}
             />
             <Text
@@ -1389,6 +1396,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     circlePrice: number | undefined,
     circleSpecialPrice: number | undefined,
     promoteCircle: boolean,
+    numberOfInclusions: number,
     imageUri: string,
     style: ViewStyle,
     isAddedToCart: boolean,
@@ -1413,13 +1421,27 @@ export const Tests: React.FC<TestsProps> = (props) => {
           'packages'
         )}
 
-        <View style={{ height: 80, width: 70 }}>
-          <Image
-            style={{ height: 70, width: 70, resizeMode: 'contain' }}
-            source={{
-              uri: imageUri,
-            }}
-          />
+        <View
+          style={{
+            flexDirection: 'row',
+          }}
+        >
+          <View style={styles.featuredPackageImageView}>
+            <Image
+              style={styles.featuredPackageImageStyle}
+              source={{
+                uri: imageUri,
+              }}
+            />
+          </View>
+          <View style={styles.featuredPackageTextView}>
+            <Text
+              style={{ ...theme.viewStyles.text('SB', 16, '#02475b', 1, 24) }}
+              numberOfLines={2}
+            >
+              {title}
+            </Text>
+          </View>
         </View>
         <View
           style={{
@@ -1432,14 +1454,35 @@ export const Tests: React.FC<TestsProps> = (props) => {
             }}
           >
             <View>
-              <Text style={theme.viewStyles.text('SB', 16, '#02475b', 1, 24)} numberOfLines={2}>
-                {title}
-              </Text>
               <Spearator style={{ marginTop: 4, marginBottom: 4 }} />
-              <View style={{ flexDirection: 'row', width: Dimensions.get('window').width * 0.4 }}>
-                <Text style={theme.viewStyles.text('M', 11, colors.SHERPA_BLUE, 1, 22)}>
-                  {desc}
-                </Text>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  width: Dimensions.get('window').width * 0.4,
+                  justifyContent: 'space-between',
+                }}
+              >
+                <View
+                  style={{
+                    width:
+                      numberOfInclusions > 1
+                        ? Dimensions.get('window').width * 0.53
+                        : Dimensions.get('window').width * 0.54,
+                  }}
+                >
+                  <Text style={theme.viewStyles.text('M', 11, colors.SHERPA_BLUE, 1, 22)}>
+                    {desc}
+                  </Text>
+                </View>
+                <View style={{ alignSelf: 'flex-end' }}>
+                  <Text
+                    style={{
+                      ...theme.viewStyles.text('M', 11, colors.SHERPA_BLUE, 1, 22),
+                    }}
+                  >
+                    {numberOfInclusions} {numberOfInclusions > 1 ? 'TESTS' : 'TEST'} INCLUDED
+                  </Text>
+                </View>
               </View>
               <Spearator style={{ marginTop: 4, marginBottom: 4 }} />
             </View>
@@ -1662,6 +1705,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
               const desc = '';
               const applicableAge = `For all Age Group`;
+              const numberOfInclusions = diagnosticItem?.inclusions?.length || 1;
+
               return renderPackageCard(
                 diagnosticItem?.itemName!,
                 desc,
@@ -1673,6 +1718,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 circlePrice,
                 circleSpecialPrice,
                 promoteCircle,
+                numberOfInclusions,
                 item.organImage!,
                 {
                   marginHorizontal: 4,

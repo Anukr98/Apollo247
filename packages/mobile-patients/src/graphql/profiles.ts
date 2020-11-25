@@ -1636,6 +1636,7 @@ export const GET_DIAGNOSTIC_HOME_PAGE_ITEMS = gql`
           testPreparationData
           testDescription
           collectionType
+          inclusions
           diagnosticPricing {
             mrp
             price
@@ -1666,6 +1667,7 @@ export const GET_DIAGNOSTIC_HOME_PAGE_ITEMS = gql`
           testPreparationData
           testDescription
           collectionType
+          inclusions
           diagnosticPricing {
             mrp
             price
