@@ -580,6 +580,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             style={{
               ...theme.viewStyles.cardViewStyle,
               flexDirection: 'row',
+              marginTop: -10,
             }}
           >
             <Text style={[styles.successfulText, { flexDirection: 'row' }]}>
