@@ -93,6 +93,7 @@ import {
   View,
   ScrollView,
   TextInput,
+  BackHandler,
   Platform,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -546,6 +547,19 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       getPatientApiCall();
     }
   }, [currentPatient]);
+
+  const handleBack = async () => {
+    BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    props.navigation.goBack();
+    return true;
+  };
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    };
+  }, []);
 
   useEffect(() => {
     if (selectedRecord) {

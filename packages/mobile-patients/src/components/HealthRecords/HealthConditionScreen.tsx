@@ -146,19 +146,11 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
   };
 
   useEffect(() => {
-    const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-      BackHandler.addEventListener('hardwareBackPress', handleBack);
-    });
-
-    const _willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    });
-
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {
-      _didFocusSubscription && _didFocusSubscription.remove();
-      _willBlurSubscription && _willBlurSubscription.remove();
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
     };
-  }, []);
+  }, [callApi, callPhrMainApi]);
 
   useEffect(() => {
     if (callApi) {

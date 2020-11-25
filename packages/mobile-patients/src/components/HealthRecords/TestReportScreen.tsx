@@ -180,19 +180,11 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
   }, [callApi]);
 
   useEffect(() => {
-    const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-      BackHandler.addEventListener('hardwareBackPress', handleBack);
-    });
-
-    const _willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    });
-
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {
-      _didFocusSubscription && _didFocusSubscription.remove();
-      _willBlurSubscription && _willBlurSubscription.remove();
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
     };
-  }, []);
+  }, [callApi, callPhrMainApi]);
 
   useEffect(() => {
     const filteredData = sortByTypeRecords(filterApplied);
@@ -209,7 +201,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
             : filterApplied === FILTER_TYPE.PARAMETER_NAME
             ? 'parameterName'
             : 'labTestSource';
-        filteredData.forEach((dataObject: any) => {
+        filteredData?.forEach((dataObject: any) => {
           const dataObjectArray: any[] = [];
           if (dataObject?.data?.labTestName && filterApplied === FILTER_TYPE.PARAMETER_NAME) {
             const labParametersLength = dataObject?.data?.labTestResults?.length;
