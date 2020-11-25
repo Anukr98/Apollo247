@@ -154,8 +154,7 @@
     "need_help": "Need Help?",
     "book_appointment": "BOOK AN APPOINTMENT",
     "book_appointment_question": "Want to book an appointment?",
-    "arrayTest": [
-      {
+    "arrayTest": [{
         "id": 1,
         "title": "Are you looking for a particular doctor?",
         "descripiton": "FIND SPECIALIST",
@@ -174,8 +173,7 @@
         "image": "require('@aph/mobile-patients/src/images/home/test.png')"
       }
     ],
-    "startDoctor": [
-      {
+    "startDoctor": [{
         "name": "Dr. Narayana Rao’s",
         "status": "AVAILABLE",
         "Program": "Star Cardiology Program",
@@ -204,8 +202,7 @@
     }
   },
   "consult_room": {
-    "specialities": [
-      {
+    "specialities": [{
         "image": "",
         "name": "General Physician",
         "id": 1
@@ -239,8 +236,7 @@
     "description": "You have no consultations today :) Hope you are doing well?",
     "things_to_do": {
       "label": "Things To Do",
-      "data": [
-        {
+      "data": [{
           "title": "Your Health Profile is just 30% complete. Update it now!",
           "description": "UPDATE HEALTH PROFILE"
         },
@@ -252,8 +248,7 @@
     },
     "articles": {
       "label": "Read a few articles on how to stay healthy",
-      "data": [
-        {
+      "data": [{
           "image": "",
           "title": "5 Simple Daily Yoga Exercises For Good Health!",
           "link": ""
@@ -280,8 +275,7 @@
     "avaliablity": "Availability",
     "online": "Online\nConsults",
     "inperson": "In-Person\nConsults",
-    "filter_data": [
-      {
+    "filter_data": [{
         "label": "City",
         "options": ["Hyderabad", "Chennai"]
       },
@@ -385,8 +379,7 @@
     "order_test": "ORDER TESTS",
     "book_follow_up": "BOOK FOLLOW-UP",
     "add_note_to_notify_users": "Please note that you can share these health records with the doctor during a consult by uploading them in the consult chat room!",
-    "tabs": [
-      {
+    "tabs": [{
         "title": "Consults & Rx",
         "count": "0"
       },
@@ -431,8 +424,7 @@
   "alerts": {
     "Open_camera_in_video_call": "Image capturing is disabled during a video call. Please switch to the Audio call if you want to send an Image."
   },
-  "muiltdosages": [
-    {
+  "muiltdosages": [{
       "single": "tablet",
       "multiple": "tablet(s)"
     },
@@ -598,5 +590,8 @@
     "freeDelivery": "Free delivery"
   },
   "reachUsOut": "If you have any queries please reach out to us",
-  "Diagnostics_Feedback_Others": "Others (Please specify)"
+  "Diagnostics_Feedback_Others": "Others (Please specify)",
+  "Circle": {
+    "planName": "CARE PLAN"
+  }
 }

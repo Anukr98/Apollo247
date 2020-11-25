@@ -90,6 +90,8 @@ export interface CicleSubscriptionData {
   subPlanIds: string[] | [];
   planSummary: CirclePlanSummary[] | [];
   groupDetails: CircleGroup;
+  endDate?: Date | null;
+  benefits?: PlanBenefits[];
 }
 
 export interface CirclePlanSummary {
@@ -111,6 +113,8 @@ export interface CircleGroup {
   name: string | '';
 }
 
+export interface CircleBenefits {}
+
 export interface DiagnosticData {
   cityId: string;
   stateId: string;
@@ -121,6 +125,8 @@ export interface DiagnosticData {
 export interface AppCommonDataContextProps {
   hdfcUserSubscriptions: SubscriptionData | null;
   setHdfcUserSubscriptions: ((items: SubscriptionData) => void) | null;
+  hdfcUpgradeUserSubscriptions: SubscriptionData[] | [];
+  setHdfcUpgradeUserSubscriptions: ((items: SubscriptionData[]) => void) | null;
   circleSubscription: CicleSubscriptionData | null;
   setCircleSubscription: ((items: CicleSubscriptionData) => void) | null;
   bannerData: bannerType[] | null;
@@ -185,6 +191,8 @@ export interface AppCommonDataContextProps {
 export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   hdfcUserSubscriptions: null,
   setHdfcUserSubscriptions: null,
+  hdfcUpgradeUserSubscriptions: [],
+  setHdfcUpgradeUserSubscriptions: null,
   circleSubscription: null,
   setCircleSubscription: null,
   bannerData: null,
@@ -250,6 +258,10 @@ export const AppCommonDataProvider: React.FC = (props) => {
   const [hdfcUserSubscriptions, _setHdfcUserSubscriptions] = useState<
     AppCommonDataContextProps['hdfcUserSubscriptions']
   >(null);
+
+  const [hdfcUpgradeUserSubscriptions, _setHdfcUpgradeUserSubscriptions] = useState<
+    AppCommonDataContextProps['hdfcUpgradeUserSubscriptions']
+  >([]);
 
   const [circleSubscription, _setCircleSubscription] = useState<
     AppCommonDataContextProps['circleSubscription']
@@ -331,6 +343,12 @@ export const AppCommonDataProvider: React.FC = (props) => {
     hdfcUserSubscriptions
   ) => {
     _setHdfcUserSubscriptions(hdfcUserSubscriptions);
+  };
+
+  const setHdfcUpgradeUserSubscriptions: AppCommonDataContextProps['setHdfcUpgradeUserSubscriptions'] = (
+    hdfcUpgradeUserSubscriptions
+  ) => {
+    _setHdfcUpgradeUserSubscriptions(hdfcUpgradeUserSubscriptions);
   };
 
   const setCircleSubscription: AppCommonDataContextProps['setCircleSubscription'] = (
@@ -420,6 +438,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setLocationDetails,
         hdfcUserSubscriptions,
         setHdfcUserSubscriptions,
+        hdfcUpgradeUserSubscriptions,
+        setHdfcUpgradeUserSubscriptions,
         circleSubscription,
         setCircleSubscription,
         bannerData,
