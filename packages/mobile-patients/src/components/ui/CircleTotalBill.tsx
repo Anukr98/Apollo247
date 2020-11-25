@@ -7,14 +7,20 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 
 interface CircleTotalBillProps {}
 export const CircleTotalBill: React.FC<CircleTotalBillProps> = (props) => {
-  const { circlePlanSelected } = useShoppingCart();
+  const { circlePlanSelected, defaultCirclePlan } = useShoppingCart();
+  const planSellingPrice = defaultCirclePlan
+    ? defaultCirclePlan?.currentSellingPrice
+    : circlePlanSelected?.currentSellingPrice;
+  const planDurationInMonth = defaultCirclePlan
+    ? defaultCirclePlan?.durationInMonth
+    : circlePlanSelected?.durationInMonth;
   return (
     <View style={styles.container}>
       <View style={styles.spaceRow}>
         <Text style={styles.regularText}>{string.circleDoctors.billTotal}</Text>
         <Text style={styles.regularText}>
           {string.common.Rs}
-          {circlePlanSelected?.currentSellingPrice}
+          {planSellingPrice}
         </Text>
       </View>
       <View style={styles.seperator} />
@@ -25,8 +31,8 @@ export const CircleTotalBill: React.FC<CircleTotalBillProps> = (props) => {
             {string.circleDoctors.membershipPlan}
           </Text>
           <Text style={{ ...theme.viewStyles.text('M', 16, theme.colors.SHERPA_BLUE) }}>
-            {circlePlanSelected?.durationInMonth} month
-            {`${circlePlanSelected?.durationInMonth === 1 ? '' : 's'}`} plan
+            {planDurationInMonth} month
+            {`${planDurationInMonth === 1 ? '' : 's'}`} plan
           </Text>
           <Text style={styles.validityText}>Valid till: xxxx</Text>
         </View>
@@ -36,7 +42,7 @@ export const CircleTotalBill: React.FC<CircleTotalBillProps> = (props) => {
         <Text style={styles.mediumText}>{string.circleDoctors.total}</Text>
         <Text style={styles.mediumText}>
           {string.common.Rs}
-          {circlePlanSelected?.currentSellingPrice}
+          {planSellingPrice}
         </Text>
       </View>
     </View>

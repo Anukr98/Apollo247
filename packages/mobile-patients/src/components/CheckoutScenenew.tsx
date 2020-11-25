@@ -95,7 +95,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
   const storeDistance: number = props.navigation.getParam('storeDistance');
   const paramShopId = props.navigation.getParam('shopId');
   const isStorePickup = props.navigation.getParam('isStorePickup');
-  const circlePlanId = AppConfig.Configuration.CARE_PLAN_ID;
+  const circlePlanId = AppConfig.Configuration.CIRCLE_PLAN_ID;
   const { currentPatient } = useAllCurrentPatients();
   const [isCashOnDelivery, setCashOnDelivery] = useState(false);
   const [showChennaiOrderForm, setShowChennaiOrderForm] = useState(false);

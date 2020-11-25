@@ -4,10 +4,10 @@
 // This file was automatically generated and should not be edited.
 
 // ====================================================
-// GraphQL query operation: GetSubscriptionsOfUserByStatus
+// GraphQL query operation: GetCircleSavingsOfUserByMobile
 // ====================================================
 
-export interface GetSubscriptionsOfUserByStatus_GetSubscriptionsOfUserByStatus {
+export interface GetCircleSavingsOfUserByMobile_GetCircleSavingsOfUserByMobile {
   __typename: "GetGenericJSONResponse";
   code: number;
   success: boolean;
@@ -15,11 +15,10 @@ export interface GetSubscriptionsOfUserByStatus_GetSubscriptionsOfUserByStatus {
   response: any | null;
 }
 
-export interface GetSubscriptionsOfUserByStatus {
-  GetSubscriptionsOfUserByStatus: GetSubscriptionsOfUserByStatus_GetSubscriptionsOfUserByStatus;
+export interface GetCircleSavingsOfUserByMobile {
+  GetCircleSavingsOfUserByMobile: GetCircleSavingsOfUserByMobile_GetCircleSavingsOfUserByMobile;
 }
 
-export interface GetSubscriptionsOfUserByStatusVariables {
+export interface GetCircleSavingsOfUserByMobileVariables {
   mobile_number: string;
-  status: string[];
 }

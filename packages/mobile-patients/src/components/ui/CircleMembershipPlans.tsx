@@ -58,7 +58,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     buyNow,
   } = props;
   const client = useApolloClient();
-  const planId = AppConfig.Configuration.CARE_PLAN_ID;
+  const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
   const {
     circlePlanSelected,
     setCirclePlanSelected,

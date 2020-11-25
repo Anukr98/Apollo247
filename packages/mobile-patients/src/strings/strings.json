@@ -593,7 +593,15 @@
     "buyNow": "BUY NOW",
     "billTotal": "BILL TOTAL",
     "membershipPlan": "Membership Plan",
-    "total": "TOTAL"
+    "total": "TOTAL",
+    "greatChoice": "Great choice!",
+    "upgradingWithHealthCredits": "We are upgrading you to Circle with your Health Credits to the amount of {credits}HC",
+    "goAhead": "SURE! GO AHEAD",
+    "useAnotherPaymentMethod": "USE ANOTHER PAYMENT METHOD",
+    "membershipActivated": "Circle Membership Activated!",
+    "healthCreditsRemaining": "Health Credits remaining",
+    "returnToHomepage": "RETURN TO HOMEPAGE",
+    "availableHealthCredits": "*Available Health Credits"
   },
   "circlePharmacy": {
     "modalDescription": "Enable Circle membership to get the best discounts, cashbacks, free delivery and more...",

@@ -24,13 +24,19 @@ interface PaymentGatewayProps extends NavigationScreenProps {
 export const SubscriptionPaymentGateway: React.FC<PaymentGatewayProps> = (props) => {
   let WebViewRef: any;
   const { currentPatient } = useAllCurrentPatients();
-  const { circlePlanSelected } = useShoppingCart();
+  const { circlePlanSelected, defaultCirclePlan } = useShoppingCart();
 
   const paymentTypeID = props.navigation.getParam('paymentTypeID');
   const storeCode =
     Platform.OS === 'ios' ? ONE_APOLLO_STORE_CODE.IOSCUS : ONE_APOLLO_STORE_CODE.ANDCUS;
-  const planId = AppConfig.Configuration.CARE_PLAN_ID;
+  const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
   const { setLoading } = useUIElements();
+  const planSellingPrice = defaultCirclePlan
+    ? defaultCirclePlan?.currentSellingPrice
+    : circlePlanSelected?.currentSellingPrice;
+  const subPlanId = defaultCirclePlan
+    ? defaultCirclePlan?.subPlanId
+    : circlePlanSelected?.subPlanId;
 
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', handleBack);
@@ -55,7 +61,7 @@ export const SubscriptionPaymentGateway: React.FC<PaymentGatewayProps> = (props)
 
   const renderwebView = () => {
     const baseUrl = AppConfig.Configuration.CONSULT_PG_BASE_URL;
-    let circlePurchaseUrl = `${baseUrl}/subscriptionpayment?patientId=${currentPatient?.id}&price=${circlePlanSelected?.currentSellingPrice}&paymentTypeID=${paymentTypeID}&paymentModeOnly=YES&planId=${planId}&subPlanId=${circlePlanSelected?.subPlanId}&storeCode=${storeCode}`;
+    let circlePurchaseUrl = `${baseUrl}/subscriptionpayment?patientId=${currentPatient?.id}&price=${planSellingPrice}&paymentTypeID=${paymentTypeID}&paymentModeOnly=YES&planId=${planId}&subPlanId=${subPlanId}&storeCode=${storeCode}`;
 
     return (
       <WebView
@@ -79,29 +85,12 @@ export const SubscriptionPaymentGateway: React.FC<PaymentGatewayProps> = (props)
       (redirectedUrl.indexOf(AppConfig.Configuration.CONSULT_PG_SUCCESS_PATH) > -1 ||
         redirectedUrl.indexOf(AppConfig.Configuration.CONSULT_PG_ERROR_PATH) > -1)
     ) {
-      navigatetoStatusScreen('PAYMENT_PENDING_PG');
+      navigatetoStatusScreen();
     }
   };
 
-  const navigatetoStatusScreen = (status: string) => {
-    // props.navigation.navigate(AppRoutes.ConsultPaymentStatus, {
-    //   orderId: appointmentId,
-    //   price: price,
-    //   doctorName: doctorName,
-    //   doctorID: doctorID,
-    //   doctor: doctor,
-    //   appointmentDateTime: appointmentInput.appointmentDateTime,
-    //   appointmentType: appointmentInput.appointmentType,
-    //   coupon: appointmentInput.couponCode,
-    //   displayID: displayID,
-    //   status: status,
-    //   webEngageEventAttributes: webEngageEventAttributes,
-    //   fireBaseEventAttributes: fireBaseEventAttributes,
-    //   appsflyerEventAttributes: appsflyerEventAttributes,
-    //   paymentTypeID: paymentTypeID,
-    //   isDoctorsOfTheHourStatus,
-    //   isCircleDoctor: isCircleDoctor,
-    // });
+  const navigatetoStatusScreen = () => {
+    // show circle member activated component
   };
 
   return (

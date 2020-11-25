@@ -1282,3 +1282,21 @@ export const CircleBannerNonMember: React.FC<IconProps> = (props) => (
 export const ExpressDeliveryLogo: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/express_delivery.png')} />
 );
+
+export const EllipseCircle: React.FC<IconProps> = (props) => (
+  <IconBase
+    resizeMode="contain"
+    size="md"
+    {...props}
+    source={require('./icons/ellipseCircle.png')}
+  />
+);
+
+export const CircleLogoBig: React.FC<IconProps> = (props) => (
+  <IconBase
+    resizeMode="contain"
+    size="md"
+    {...props}
+    source={require('./icons/circleLogoBig.png')}
+  />
+);

@@ -15,7 +15,6 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { fetchPaymentOptions } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { NavigationScreenProps } from 'react-navigation';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
 const { width, height } = Dimensions.get('window');
 
@@ -40,7 +39,6 @@ interface PaymentOptionsProps extends NavigationScreenProps {}
 export const PaymentOptions: React.FC<PaymentOptionsProps> = (props) => {
   const { setLoading, showAphAlert } = useUIElements();
   const [paymentOptions, setpaymentOptions] = useState<paymentOptions[]>([]);
-  const { currentPatient } = useAllCurrentPatients();
 
   useEffect(() => {
     setLoading && setLoading(true);

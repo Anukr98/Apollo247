@@ -388,6 +388,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setCirclePlanSelected,
     setIsCircleSubscription,
     setCircleCashback,
+    circleSubscriptionId,
   } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
 
@@ -408,6 +409,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     getPatientAllAppointments_getPatientAllAppointments_appointments[]
   >([]);
   const [profileChange, setProfileChange] = useState<boolean>(false);
+  const [showCircleBanner, setShowCircleBanner] = useState<boolean>(false);
 
   const [showHdfcWidget, setShowHdfcWidget] = useState<boolean>(false);
   const [showHdfcConnectWidget, setShowHdfcConnectWidget] = useState<boolean>(false);
@@ -904,6 +906,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         } else {
           setCircleSubscriptionId && setCircleSubscriptionId('');
         }
+        setShowCircleBanner(true);
       }
     } catch (error) {
       CommonBugFender('ConsultRoom_getUserSubscriptionsByStatus', error);
@@ -2823,7 +2826,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
-  const renderCircleBanners = () => <CircleBannerComponent navigation={props.navigation} />;
+  const renderCircleBanners = () => (
+    <CircleBannerComponent
+      navigation={props.navigation}
+      planActivationCallback={() => getUserSubscriptionsByStatus()}
+    />
+  );
 
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
@@ -2843,7 +2851,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               {/* <Text style={styles.descriptionTextStyle}>{string.home.description}</Text> */}
               {isPersonalizedCard && renderAppointmentWidget()}
               {renderMenuOptions()}
-              {renderCircleBanners()}
+              {showCircleBanner && renderCircleBanners()}
               {showHdfcWidget && (
                 <View style={{ backgroundColor: '#f0f1ec' }}>{renderHdfcConnect()}</View>
               )}
