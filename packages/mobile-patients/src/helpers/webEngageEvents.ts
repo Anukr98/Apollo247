@@ -216,7 +216,7 @@ export enum WebEngageEventName {
   PAYMENT_INSTRUMENT = 'Payment Instrument',
   PAYMENT_STATUS = 'Payment Status',
   CONSULT_PAYMENT_MODE_SELECTED = 'Consult booking payment mode selected',
-
+  PAYMENT_FAILED_AND_CONVERTED_TO_COD = 'Payment Failed & Converted to COD',
   // Deeplink Events
   HOME_PAGE_VIEWED = 'Pharmacy Home page viewed',
   PRODUCT_PAGE_VIEWED = 'Product page viewed',
@@ -955,6 +955,10 @@ export interface WebEngageEvents {
   [WebEngageEventName.DOCTOR_CONNECT_TAB_CLICKED]: UserInfo;
   [WebEngageEventName.CONSULT_PAYMENT_MODE_SELECTED]: {
     'Payment Mode': string;
+  };
+  [WebEngageEventName.PAYMENT_FAILED_AND_CONVERTED_TO_COD]: {
+    'Payment failed order id': string;
+    'Payment Success Order Id': string;
   };
   [WebEngageEventName.DOCTOR_SEARCH]: {
     'Search Text': string;
