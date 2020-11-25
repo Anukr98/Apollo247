@@ -2641,25 +2641,24 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     });
   };
 
-  const onPressHealthPro = () => {
+  const onPressHealthPro = async () => {
+    const deviceToken = (await AsyncStorage.getItem('jwt')) || '';
+    const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
+    const healthProWithParams = AppConfig.Configuration.APOLLO_PRO_HEALTH_URL.concat(
+      '&utm_token=',
+      currentDeviceToken,
+      '&utm_mobile_number=',
+      currentPatient && g(currentPatient, 'mobileNumber') ? currentPatient.mobileNumber : ''
+    );
+
     postHomeWEGEvent(WebEngageEventName.APOLLO_PRO_HEALTH);
-    const urlToOpen = AppConfig.Configuration.APOLLO_PRO_HEALTH_URL;
+
     try {
-      if (Platform.OS != 'ios') {
-        Linking.canOpenURL(urlToOpen).then((supported) => {
-          if (supported) {
-            Linking.openURL(urlToOpen);
-          } else {
-            setBugFenderLog('CONSULT_ROOM_FAILED_OPEN_URL_HEALTH_PRO', urlToOpen);
-          }
-        });
-      } else {
-        props.navigation.navigate(AppRoutes.CovidScan, {
-          covidUrl: urlToOpen,
-        });
-      }
+      props.navigation.navigate(AppRoutes.CovidScan, {
+        covidUrl: healthProWithParams,
+      });
     } catch (e) {
-      setBugFenderLog('CONSULT_ROOM_FAILED_OPEN_URL_HEALTH_PRO', urlToOpen);
+      setBugFenderLog('CONSULT_ROOM_FAILED_OPEN_URL', healthProWithParams);
     }
   };
 
