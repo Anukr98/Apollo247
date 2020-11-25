@@ -8,7 +8,7 @@
 // ====================================================
 
 export interface GetSubscriptionsOfUserByStatus_GetSubscriptionsOfUserByStatus {
-  __typename: "GetSubscriptionsOfUserByStatusResponse";
+  __typename: "GetGenericJSONResponse";
   code: number;
   success: boolean;
   message: string | null;

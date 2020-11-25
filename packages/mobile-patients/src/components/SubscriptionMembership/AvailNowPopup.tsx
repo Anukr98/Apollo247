@@ -80,7 +80,7 @@ export const AvailNowPopup: React.FC<AvailNowPopupProps> = (props) => {
       >
         <View>
           <Text style={theme.viewStyles.text('SB', 13, '#007C9D', 1, 20, 0.35)}>
-            {`Complete transactions worth ${string.common.Rs}${
+            {`Complete transactions worth ${string.common.Rs}.${
               props!.transactionAmount
             } or more on the Apollo 24|7 app to unlock ${displayPlanName} membership​`}
           </Text>

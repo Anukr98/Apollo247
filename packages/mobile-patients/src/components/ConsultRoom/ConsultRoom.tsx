@@ -164,13 +164,14 @@ import VoipPushNotification from 'react-native-voip-push-notification';
 import { LocalStrings } from '@aph/mobile-patients/src/strings/LocalStrings';
 import { addVoipPushToken, addVoipPushTokenVariables } from '../../graphql/types/addVoipPushToken';
 import Carousel from 'react-native-snap-carousel';
-import { HdfcConnectPopup } from '../HdfcSubscription/HdfcConnectPopup';
+import { HdfcConnectPopup } from '../SubscriptionMembership/HdfcConnectPopup';
 import { getPatientAllAppointments_getPatientAllAppointments_appointments } from '@aph/mobile-patients/src/graphql/types/getPatientAllAppointments';
 import {
   GetSubscriptionsOfUserByStatus,
   GetSubscriptionsOfUserByStatusVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
 import { GetCashbackDetailsOfPlanById } from '@aph/mobile-patients/src/graphql/types/GetCashbackDetailsOfPlanById';
+import { CircleBannerComponent } from '@aph/mobile-patients/src/components/ui/CircleBannerComponent';
 
 const { Vitals } = NativeModules;
 
@@ -364,6 +365,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     bannerData,
     setBannerData,
     setCircleSubscription,
+    hdfcUpgradeUserSubscriptions,
+    setHdfcUpgradeUserSubscriptions,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
@@ -387,6 +390,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setCirclePlanSelected,
     setIsCircleSubscription,
     setCircleCashback,
+    circleSubscriptionId,
   } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
 
@@ -407,6 +411,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     getPatientAllAppointments_getPatientAllAppointments_appointments[]
   >([]);
   const [profileChange, setProfileChange] = useState<boolean>(false);
+  const [showCircleBanner, setShowCircleBanner] = useState<boolean>(false);
 
   const [showHdfcWidget, setShowHdfcWidget] = useState<boolean>(false);
   const [showHdfcConnectWidget, setShowHdfcConnectWidget] = useState<boolean>(false);
@@ -900,12 +905,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
          */
         if (data?.APOLLO?.[0]._id) {
           setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
+          setIsCircleSubscription && setIsCircleSubscription(true);
+          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
         } else {
           setCircleSubscriptionId && setCircleSubscriptionId('');
+          setIsCircleSubscription && setIsCircleSubscription(false);
+          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
         }
+        setShowCircleBanner(true);
       }
     } catch (error) {
-      CommonBugFender('ConsultRoom_getUserSubscriptionsByStatus', error);
+      CommonBugFender('ConsultRoom_GetSubscriptionsOfUserByStatus', error);
     }
   };
 
@@ -1076,6 +1086,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     client
       .query<GetCashbackDetailsOfPlanById>({
         query: GET_CASHBACK_DETAILS_OF_PLAN_ID,
+        variables: { plan_id: AppConfig.Configuration.CIRCLE_PLAN_ID },
         fetchPolicy: 'no-cache',
       })
       .then((data) => {
@@ -1091,7 +1102,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       })
       .catch((e) => {
         setHdfcLoading(false);
-        CommonBugFender('ConsultRoom_getSubscriptionsOfUserByStatus', e);
+        CommonBugFender('ConsultRoom_GetCashbackDetailsOfPlanById', e);
       });
   };
 
@@ -1143,13 +1154,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
               }
               setCircleSubscription && setCircleSubscription(circleSubscription);
-              console.log('circleSubscription-------- ', circleSubscription);
             }
           }
         })
         .catch((e) => {
           setHdfcLoading(false);
-          CommonBugFender('ConsultRoom_getSubscriptionsOfUserByStatus', e);
+          CommonBugFender('ConsultRoom_getUserSubscriptionsWithBenefits', e);
         });
   };
 
@@ -1181,6 +1191,34 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       isActive: group?.is_active,
     };
 
+    const benefits = plan.benefits;
+    const circleBenefits: PlanBenefits[] = [];
+    if (benefits && benefits.length) {
+      benefits.forEach((item) => {
+        const ctaAction = item?.cta_action;
+        const benefitCtaAction: BenefitCtaAction = {
+          type: ctaAction?.type,
+          action: ctaAction?.meta?.action,
+          message: ctaAction?.meta?.message,
+          webEngageEvent: ctaAction?.meta?.webEngage,
+        };
+        const benefit: PlanBenefits = {
+          _id: item?._id,
+          attribute: item?.attribute,
+          headerContent: item?.header_content,
+          description: item?.description,
+          ctaLabel: item?.cta_label,
+          ctaAction: item?.cta_action?.cta_action,
+          benefitCtaAction,
+          attributeType: item?.attribute_type,
+          availableCount: item?.available_count,
+          refreshFrequency: item?.refresh_frequency,
+          icon: item?.icon,
+        };
+        circleBenefits.push(benefit);
+      });
+    }
+
     const circleSubscptionData: CicleSubscriptionData = {
       _id: plan?._id,
       name: plan?.name,
@@ -1191,12 +1229,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       subPlanIds: plan?.sub_plan_ids,
       planSummary: planSummary,
       groupDetails: groupDetailsData,
+      benefits: circleBenefits,
+      endDate: plan?.subscriptionEndDate,
     };
 
     return circleSubscptionData;
   };
 
-  const setSubscriptionData = (plan) => {
+  const setSubscriptionData = (plan: any, isUpgradePlan?: boolean) => {
     try {
       const group = plan.group;
       const groupData: GroupPlan = {
@@ -1231,7 +1271,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           planBenefits.push(benefit);
         });
       }
-      const upgradeToPlan = g(plan, 'can_upgrade_to');
       const isActive = plan!.subscriptionStatus === hdfc_values.ACTIVE_STATUS;
       const subscription: SubscriptionData = {
         _id: plan!._id || '',
@@ -1240,16 +1279,24 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         benefitsWorth: plan!.benefits_worth || '',
         activationModes: plan!.activation_modes,
         price: plan!.price,
-        minTransactionValue: plan!.min_transaction_value,
+        minTransactionValue: plan?.plan_summary?.[0]?.min_transaction_value,
         status: plan!.status || '',
         subscriptionStatus: plan!.subscriptionStatus || '',
         isActive,
         group: groupData,
         benefits: planBenefits,
         coupons: plan!.coupons ? plan!.coupons : [],
-        canUpgradeTo: g(upgradeToPlan, '_id') ? setSubscriptionData(upgradeToPlan) : {},
-        upgradeTransactionValue: plan!.upgrade_transaction_value,
+        upgradeTransactionValue: plan?.plan_summary?.[0]?.upgrade_transaction_value,
       };
+      const upgradeToPlan = g(plan, 'can_upgrade_to');
+      if (g(upgradeToPlan, '_id')) {
+        setSubscriptionData(upgradeToPlan, true);
+      }
+
+      if (!!isUpgradePlan) {
+        setHdfcUpgradeUserSubscriptions &&
+          setHdfcUpgradeUserSubscriptions([...hdfcUpgradeUserSubscriptions, subscription]);
+      }
       return subscription;
     } catch (e) {
       console.log('ERROR: ', e);
@@ -2640,25 +2687,24 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     });
   };
 
-  const onPressHealthPro = () => {
+  const onPressHealthPro = async () => {
+    const deviceToken = (await AsyncStorage.getItem('jwt')) || '';
+    const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
+    const healthProWithParams = AppConfig.Configuration.APOLLO_PRO_HEALTH_URL.concat(
+      '&utm_token=',
+      currentDeviceToken,
+      '&utm_mobile_number=',
+      currentPatient && g(currentPatient, 'mobileNumber') ? currentPatient.mobileNumber : ''
+    );
+
     postHomeWEGEvent(WebEngageEventName.APOLLO_PRO_HEALTH);
-    const urlToOpen = AppConfig.Configuration.APOLLO_PRO_HEALTH_URL;
+
     try {
-      if (Platform.OS != 'ios') {
-        Linking.canOpenURL(urlToOpen).then((supported) => {
-          if (supported) {
-            Linking.openURL(urlToOpen);
-          } else {
-            setBugFenderLog('CONSULT_ROOM_FAILED_OPEN_URL_HEALTH_PRO', urlToOpen);
-          }
-        });
-      } else {
-        props.navigation.navigate(AppRoutes.CovidScan, {
-          covidUrl: urlToOpen,
-        });
-      }
+      props.navigation.navigate(AppRoutes.CovidScan, {
+        covidUrl: healthProWithParams,
+      });
     } catch (e) {
-      setBugFenderLog('CONSULT_ROOM_FAILED_OPEN_URL_HEALTH_PRO', urlToOpen);
+      setBugFenderLog('CONSULT_ROOM_FAILED_OPEN_URL', healthProWithParams);
     }
   };
 
@@ -2822,6 +2868,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
+  const renderCircleBanners = () => (
+    <CircleBannerComponent
+      navigation={props.navigation}
+      planActivationCallback={() => {
+        getUserSubscriptionsByStatus();
+        getUserSubscriptionsWithBenefits();
+      }}
+    />
+  );
+
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
@@ -2840,6 +2896,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               {/* <Text style={styles.descriptionTextStyle}>{string.home.description}</Text> */}
               {isPersonalizedCard && renderAppointmentWidget()}
               {renderMenuOptions()}
+              {showCircleBanner && renderCircleBanners()}
               {showHdfcWidget && (
                 <View style={{ backgroundColor: '#f0f1ec' }}>{renderHdfcConnect()}</View>
               )}

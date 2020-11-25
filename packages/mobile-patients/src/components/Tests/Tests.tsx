@@ -41,6 +41,7 @@ import {
   SEARCH_DIAGNOSTICS_BY_CITY_ID,
   GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
   GET_DIAGNOSTIC_HOME_PAGE_ITEMS,
+  GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
@@ -131,6 +132,11 @@ import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
+import { CircleBannerComponent } from '@aph/mobile-patients/src/components/ui/CircleBannerComponent';
+import {
+  GetSubscriptionsOfUserByStatus,
+  GetSubscriptionsOfUserByStatusVariables,
+} from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
 
 const { width: winWidth } = Dimensions.get('window');
 const styles = StyleSheet.create({
@@ -278,6 +284,13 @@ const styles = StyleSheet.create({
   normalPrice: {
     ...theme.viewStyles.text('M', 14, '#02475b', 1, 20, 0.04),
   },
+  featuredPackageImageView: { height: 80, width: 70 },
+  featuredPackageImageStyle: { height: 70, width: 70, resizeMode: 'contain' },
+  featuredPackageTextView: {
+    marginHorizontal: 10,
+    width: '65%',
+    justifyContent: 'center',
+  },
 });
 
 export interface TestsProps
@@ -293,8 +306,16 @@ export const Tests: React.FC<TestsProps> = (props) => {
     removeCartItem,
     clearCartInfo,
     isDiagnosticCircleSubscription,
+    setIsDiagnosticCircleSubscription,
   } = useDiagnosticsCart();
-  const { cartItems: shopCartItems } = useShoppingCart();
+  const {
+    cartItems: shopCartItems,
+    setCircleSubscriptionId,
+    setCirclePlanSelected,
+    setIsCircleSubscription,
+    setCircleCashback,
+    circleSubscriptionId,
+  } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setLoading] = useState<boolean>(true);
@@ -1162,8 +1183,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
           <View style={styles.discountTagView}>
             <OfferIcon
               style={{
-                height: comingFrom == 'tests' ? 36 : 52,
-                width: comingFrom == 'tests' ? 40 : 50,
+                height: comingFrom == 'tests' ? 36 : 45,
+                width: comingFrom == 'tests' ? 40 : 45,
               }}
             />
             <Text
@@ -1389,6 +1410,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     circlePrice: number | undefined,
     circleSpecialPrice: number | undefined,
     promoteCircle: boolean,
+    numberOfInclusions: number,
     imageUri: string,
     style: ViewStyle,
     isAddedToCart: boolean,
@@ -1413,13 +1435,27 @@ export const Tests: React.FC<TestsProps> = (props) => {
           'packages'
         )}
 
-        <View style={{ height: 80, width: 70 }}>
-          <Image
-            style={{ height: 70, width: 70, resizeMode: 'contain' }}
-            source={{
-              uri: imageUri,
-            }}
-          />
+        <View
+          style={{
+            flexDirection: 'row',
+          }}
+        >
+          <View style={styles.featuredPackageImageView}>
+            <Image
+              style={styles.featuredPackageImageStyle}
+              source={{
+                uri: imageUri,
+              }}
+            />
+          </View>
+          <View style={styles.featuredPackageTextView}>
+            <Text
+              style={{ ...theme.viewStyles.text('SB', 16, '#02475b', 1, 24) }}
+              numberOfLines={2}
+            >
+              {title}
+            </Text>
+          </View>
         </View>
         <View
           style={{
@@ -1432,14 +1468,35 @@ export const Tests: React.FC<TestsProps> = (props) => {
             }}
           >
             <View>
-              <Text style={theme.viewStyles.text('SB', 16, '#02475b', 1, 24)} numberOfLines={2}>
-                {title}
-              </Text>
               <Spearator style={{ marginTop: 4, marginBottom: 4 }} />
-              <View style={{ flexDirection: 'row', width: Dimensions.get('window').width * 0.4 }}>
-                <Text style={theme.viewStyles.text('M', 11, colors.SHERPA_BLUE, 1, 22)}>
-                  {desc}
-                </Text>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  width: Dimensions.get('window').width * 0.4,
+                  justifyContent: 'space-between',
+                }}
+              >
+                <View
+                  style={{
+                    width:
+                      numberOfInclusions > 1
+                        ? Dimensions.get('window').width * 0.53
+                        : Dimensions.get('window').width * 0.54,
+                  }}
+                >
+                  <Text style={theme.viewStyles.text('M', 11, colors.SHERPA_BLUE, 1, 22)}>
+                    {desc}
+                  </Text>
+                </View>
+                <View style={{ alignSelf: 'flex-end' }}>
+                  <Text
+                    style={{
+                      ...theme.viewStyles.text('M', 11, colors.SHERPA_BLUE, 1, 22),
+                    }}
+                  >
+                    {numberOfInclusions} {numberOfInclusions > 1 ? 'TESTS' : 'TEST'} INCLUDED
+                  </Text>
+                </View>
               </View>
               <Spearator style={{ marginTop: 4, marginBottom: 4 }} />
             </View>
@@ -1662,6 +1719,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
               const desc = '';
               const applicableAge = `For all Age Group`;
+              const numberOfInclusions = diagnosticItem?.inclusions?.length || 1;
+
               return renderPackageCard(
                 diagnosticItem?.itemName!,
                 desc,
@@ -1673,6 +1732,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 circlePrice,
                 circleSpecialPrice,
                 promoteCircle,
+                numberOfInclusions,
                 item.organImage!,
                 {
                   marginHorizontal: 4,
@@ -1933,6 +1993,34 @@ export const Tests: React.FC<TestsProps> = (props) => {
           CommonBugFender('Tests_onSearchMedicine', e);
           setsearchSate('fail');
         });
+    }
+  };
+
+  const getUserSubscriptionsByStatus = async () => {
+    try {
+      const query: GetSubscriptionsOfUserByStatusVariables = {
+        mobile_number: g(currentPatient, 'mobileNumber'),
+        status: ['active', 'deferred_inactive'],
+      };
+      const res = await client.query<GetSubscriptionsOfUserByStatus>({
+        query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+        fetchPolicy: 'no-cache',
+        variables: query,
+      });
+      const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
+      if (data) {
+        if (data?.APOLLO?.[0]._id) {
+          setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
+          setIsCircleSubscription && setIsCircleSubscription(true);
+          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
+        } else {
+          setCircleSubscriptionId && setCircleSubscriptionId('');
+          setIsCircleSubscription && setIsCircleSubscription(false);
+          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
+        }
+      }
+    } catch (error) {
+      CommonBugFender('Diagnositic_Landing_Page_Tests_GetSubscriptionsOfUserByStatus', error);
     }
   };
 
@@ -2587,22 +2675,16 @@ export const Tests: React.FC<TestsProps> = (props) => {
       </TouchableOpacity>
     );
   };
-  const renderCareBanner = () => {
-    return (
-      <TouchableOpacity
-        style={{
-          marginLeft: 16,
-          margin: 20,
-          marginBottom: 10,
-          marginTop: 10,
-          padding: -16,
-        }}
-        onPress={() => _navigateToCareLanding()}
-      >
-        <CircleBannerNonMember style={{ height: 200, width: winWidth - 32 }} />
-      </TouchableOpacity>
-    );
-  };
+
+  const renderCircleBanners = () => (
+    <CircleBannerComponent
+      navigation={props.navigation}
+      comingFrom={'diagnostics'}
+      nonSubscribedText={string.circleDiagnostics.nonSubscribedText}
+      nonSubscribedSubText={string.circleDiagnostics.nonSubscribedSubText}
+      planActivationCallback={() => getUserSubscriptionsByStatus()}
+    />
+  );
 
   const _navigateToCareLanding = () => {
     //props.navigation.navigate(AppRoutes.CareLanding,{})
@@ -2625,7 +2707,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
         {renderYourOrders()}
         <>
           {renderHotSellers()}
-          {!isDiagnosticCircleSubscription && renderCareBanner()}
+          {renderCircleBanners()}
+          <View style={{ marginTop: 10 }}></View>
           {/* {renderBrowseByCondition()} */}
           {renderTestPackages()}
           {/* {renderTestsByOrgan()} */}

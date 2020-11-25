@@ -53,6 +53,7 @@ import {
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
+  GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
   SEARCH_DIAGNOSTICS_BY_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -67,6 +68,11 @@ import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { CircleHeading } from '@aph/mobile-patients/src/components/ui/CircleHeading';
+import { CircleBannerComponent } from '@aph/mobile-patients/src/components/ui/CircleBannerComponent';
+import {
+  GetSubscriptionsOfUserByStatus,
+  GetSubscriptionsOfUserByStatusVariables,
+} from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
 const screenHeight = Dimensions.get('window').height;
 const screenWidth = Dimensions.get('window').width;
 
@@ -233,11 +239,20 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
   const TestDetailsDiscription = testInfo.PackageInClussion;
   const { locationDetails, diagnosticLocation, diagnosticServiceabilityData } = useAppCommonData();
-  const { cartItems, addCartItem, isDiagnosticCircleSubscription } = useDiagnosticsCart();
+  const {
+    cartItems,
+    addCartItem,
+    isDiagnosticCircleSubscription,
+    setIsDiagnosticCircleSubscription,
+  } = useDiagnosticsCart();
   const {
     cartItems: shopCartItems,
     isCircleSubscription,
     setIsCircleSubscription,
+    setCircleSubscriptionId,
+    setCirclePlanSelected,
+    setCircleCashback,
+    circleSubscriptionId,
   } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
   const [isItemAdded, setItemAdded] = useState<boolean>(false);
@@ -547,27 +562,42 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     props.navigation.navigate(AppRoutes.MedAndTestCart);
   };
 
-  const renderCareBanner = () => {
-    return (
-      <TouchableOpacity
-        style={{
-          marginLeft: 16,
-          margin: 20,
-          marginBottom: 10,
-          marginTop: 10,
-          padding: -16,
-        }}
-        onPress={() => _navigateToCareLanding()}
-      >
-        <CircleBannerNonMember
-          style={{ height: 200, marginTop: -15, marginBottom: -25, width: screenWidth - 32 }}
-        />
-      </TouchableOpacity>
-    );
-  };
+  const renderCircleBanners = () => (
+    <CircleBannerComponent
+      navigation={props.navigation}
+      comingFrom={'diagnostics'}
+      nonSubscribedText={string.circleDiagnostics.nonSubscribedText}
+      nonSubscribedSubText={string.circleDiagnostics.nonSubscribedSubText}
+      planActivationCallback={() => getUserSubscriptionsByStatus()}
+    />
+  );
 
-  const _navigateToCareLanding = () => {
-    //open the pop-up
+  const getUserSubscriptionsByStatus = async () => {
+    try {
+      const query: GetSubscriptionsOfUserByStatusVariables = {
+        mobile_number: g(currentPatient, 'mobileNumber'),
+        status: ['active', 'deferred_inactive'],
+      };
+      const res = await client.query<GetSubscriptionsOfUserByStatus>({
+        query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+        fetchPolicy: 'no-cache',
+        variables: query,
+      });
+      const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
+      if (data) {
+        if (data?.APOLLO?.[0]._id) {
+          setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
+          setIsCircleSubscription && setIsCircleSubscription(true);
+          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
+        } else {
+          setCircleSubscriptionId && setCircleSubscriptionId('');
+          setIsCircleSubscription && setIsCircleSubscription(false);
+          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
+        }
+      }
+    } catch (error) {
+      CommonBugFender('Diagnositic_DetailsPage_GetSubscriptionsOfUserByStatus', error);
+    }
   };
 
   setTimeout(() => isItemAdded && setItemAdded(false), 2000);
@@ -580,6 +610,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             style={{
               ...theme.viewStyles.cardViewStyle,
               flexDirection: 'row',
+              marginTop: -10,
             }}
           >
             <Text style={[styles.successfulText, { flexDirection: 'row' }]}>
@@ -668,7 +699,8 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             : selectedTab === tabs[1].title
             ? renderPreparation()
             : renderTestDescription()}
-          {!isDiagnosticCircleSubscription && renderCareBanner()}
+          {promoteCircle && renderCircleBanners()}
+          {promoteCircle && <View style={{ marginBottom: 30 }}></View>}
           <View style={{ height: screenHeight * 0.2 }} />
         </ScrollView>
 

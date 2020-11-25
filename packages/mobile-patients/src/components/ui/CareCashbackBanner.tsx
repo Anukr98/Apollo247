@@ -27,10 +27,11 @@ const styles = StyleSheet.create({
   careBannerText: {
     ...theme.viewStyles.text('M', 9, '#02475B', 1, 15),
     paddingVertical: 7,
+    left: 5,
   },
   circleLogo: {
     resizeMode: 'contain',
-    width: 40,
+    width: 30,
     height: 30,
   },
 });
