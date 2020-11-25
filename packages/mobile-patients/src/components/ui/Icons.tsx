@@ -1269,16 +1269,39 @@ export const OnToggle: React.FC<IconProps> = (props) => (
 export const BlueTick: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_check_blue.png')} />
 );
+
 export const CircleLogo: React.FC<IconProps> = (props) => (
   <IconBase resizeMode="contain" size="sm" {...props} source={require('./icons/circleLogo.png')} />
 );
+
 export const OrderPlacedCheckedIcon: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/checked.png')} />
 );
+
 export const CircleBannerNonMember: React.FC<IconProps> = (props) => (
   <IconBase size="lg" {...props} source={require('./icons/circle_banner.png')} />
 );
 
 export const ExpressDeliveryLogo: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/express_delivery.png')} />
+);
+
+export const CircleMembershipBanner: React.FC<IconProps> = (props) => (
+  <IconBase {...props} source={require('./icons/CircleMembershipBanner.png')} />
+);
+
+export const HealthLogo: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ic_healthcare.png')} />
+);
+
+export const EmergencyCall: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/EmergencyCall.png')} />
+);
+
+export const ExpressDelivery: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/ExpressDelivery.png')} />
+);
+
+export const OneApolloLogo: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/oneapollo.png')} />
 );

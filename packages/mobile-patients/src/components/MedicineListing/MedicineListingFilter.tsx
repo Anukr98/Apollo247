@@ -34,6 +34,7 @@ import {
   View,
 } from 'react-native';
 import { Badge, CheckBox, ListItem, Overlay, OverlayProps } from 'react-native-elements';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 export interface Props extends Omit<OverlayProps, 'children'> {
   filters: Filter[];
@@ -69,6 +70,7 @@ export const MedicineListingFilter: React.FC<Props> = ({
   const [alertVisible, setAlertVisible] = useState<boolean>(false);
   const [isLoading, setLoading] = useState<boolean>(false);
   const isFiltersApplied = Object.keys(formatFilters(selectedFilters) || {}).length;
+  const { axdcCode } = useAppCommonData();
 
   const onRequestClose = () => {
     if (isEqual(_selectedFilters, selectedFilters)) {
@@ -127,7 +129,7 @@ export const MedicineListingFilter: React.FC<Props> = ({
     // update associated brand filter on selection of category
     try {
       setLoading(true);
-      const { data } = await getProductsByCategoryApi(categoryId, 1, null, null);
+      const { data } = await getProductsByCategoryApi(categoryId, 1, null, null, axdcCode);
       const brandFilter = data.filters.find(({ attribute }) => brandFilterKeys.includes(attribute));
       if (brandFilter) {
         const updatedFilter = filters.map((filter) =>

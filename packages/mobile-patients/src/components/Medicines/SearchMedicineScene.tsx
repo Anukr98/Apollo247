@@ -174,7 +174,12 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { showAphAlert, setLoading: globalLoading } = useUIElements();
   const { getPatientApiCall } = useAuth();
-  const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable } = useAppCommonData();
+  const {
+    locationDetails,
+    pharmacyLocation,
+    isPharmacyLocationServiceable,
+    axdcCode,
+  } = useAppCommonData();
   const pharmacyPincode = g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
 
   const getSpecialPrice = (special_price?: string | number) =>
@@ -232,7 +237,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
 
   const onSearchMedicine = (_searchText: string) => {
     setsearchSate('load');
-    getMedicineSearchSuggestionsApi(_searchText)
+    getMedicineSearchSuggestionsApi(_searchText, axdcCode)
       .then(({ data }) => {
         const products = data.products || [];
         setMedicineList(products);
@@ -261,7 +266,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       }
       setShowMatchingMedicines(true);
       setProductsIsLoading(true);
-      searchMedicineApi(_searchText)
+      searchMedicineApi(_searchText, pageCount, sortBy, {}, axdcCode)
         .then(async ({ data }) => {
           const products = data.products || [];
           setSearchHeading(data.search_heading!);
@@ -805,7 +810,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
                 onEndReached={() => {
                   if (!listFetching && !endReached) {
                     setListFetching(true);
-                    searchMedicineApi(searchText, pageCount)
+                    searchMedicineApi(searchText, pageCount, sortBy, {}, axdcCode)
                       .then(({ data }) => {
                         const products = data.products || [];
                         if (prevData && JSON.stringify(prevData) !== JSON.stringify(products)) {

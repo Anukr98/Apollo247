@@ -90,6 +90,8 @@ export interface CicleSubscriptionData {
   subPlanIds: string[] | [];
   planSummary: CirclePlanSummary[] | [];
   groupDetails: CircleGroup;
+  endDate?: Date | null;
+  benefits?: PlanBenefits[];
 }
 
 export interface CirclePlanSummary {
@@ -111,6 +113,8 @@ export interface CircleGroup {
   name: string | '';
 }
 
+export interface CircleBenefits {}
+
 export interface DiagnosticData {
   cityId: string;
   stateId: string;
@@ -121,6 +125,8 @@ export interface DiagnosticData {
 export interface AppCommonDataContextProps {
   hdfcUserSubscriptions: SubscriptionData | null;
   setHdfcUserSubscriptions: ((items: SubscriptionData) => void) | null;
+  hdfcUpgradeUserSubscriptions: SubscriptionData[] | [];
+  setHdfcUpgradeUserSubscriptions: ((items: SubscriptionData[]) => void) | null;
   circleSubscription: CicleSubscriptionData | null;
   setCircleSubscription: ((items: CicleSubscriptionData) => void) | null;
   bannerData: bannerType[] | null;
@@ -180,11 +186,15 @@ export interface AppCommonDataContextProps {
   setSavePatientDetailsWithHistory: ((items: any) => void) | null;
   doctorJoinedChat: boolean;
   setDoctorJoinedChat: ((isJoined: boolean) => void) | null;
+  axdcCode: string;
+  setAxdcCode: ((value: string) => void) | null;
 }
 
 export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   hdfcUserSubscriptions: null,
   setHdfcUserSubscriptions: null,
+  hdfcUpgradeUserSubscriptions: [],
+  setHdfcUpgradeUserSubscriptions: null,
   circleSubscription: null,
   setCircleSubscription: null,
   bannerData: null,
@@ -236,6 +246,8 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setSavePatientDetailsWithHistory: null,
   doctorJoinedChat: false,
   setDoctorJoinedChat: null,
+  axdcCode: '',
+  setAxdcCode: null,
 });
 
 export const AppCommonDataProvider: React.FC = (props) => {
@@ -250,6 +262,10 @@ export const AppCommonDataProvider: React.FC = (props) => {
   const [hdfcUserSubscriptions, _setHdfcUserSubscriptions] = useState<
     AppCommonDataContextProps['hdfcUserSubscriptions']
   >(null);
+
+  const [hdfcUpgradeUserSubscriptions, _setHdfcUpgradeUserSubscriptions] = useState<
+    AppCommonDataContextProps['hdfcUpgradeUserSubscriptions']
+  >([]);
 
   const [circleSubscription, _setCircleSubscription] = useState<
     AppCommonDataContextProps['circleSubscription']
@@ -333,6 +349,12 @@ export const AppCommonDataProvider: React.FC = (props) => {
     _setHdfcUserSubscriptions(hdfcUserSubscriptions);
   };
 
+  const setHdfcUpgradeUserSubscriptions: AppCommonDataContextProps['setHdfcUpgradeUserSubscriptions'] = (
+    hdfcUpgradeUserSubscriptions
+  ) => {
+    _setHdfcUpgradeUserSubscriptions(hdfcUpgradeUserSubscriptions);
+  };
+
   const setCircleSubscription: AppCommonDataContextProps['setCircleSubscription'] = (
     circleSubscription
   ) => {
@@ -372,6 +394,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
       console.log('Failed to save diagnostic pincode serviceablity in local storage.');
     });
   };
+
+  const [axdcCode, setAxdcCode] = useState<AppCommonDataContextProps['axdcCode']>('');
 
   const locationForDiagnostics: AppCommonDataContextProps['locationForDiagnostics'] = {
     cityId: (diagnosticServiceabilityData?.cityId || '') as string,
@@ -420,6 +444,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setLocationDetails,
         hdfcUserSubscriptions,
         setHdfcUserSubscriptions,
+        hdfcUpgradeUserSubscriptions,
+        setHdfcUpgradeUserSubscriptions,
         circleSubscription,
         setCircleSubscription,
         bannerData,
@@ -467,6 +493,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setDoctorJoinedChat,
         savePatientDetailsWithHistory,
         setSavePatientDetailsWithHistory,
+        axdcCode,
+        setAxdcCode,
       }}
     >
       {props.children}
