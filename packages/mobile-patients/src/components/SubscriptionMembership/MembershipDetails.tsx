@@ -575,7 +575,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         <TouchableOpacity
           activeOpacity={1}
           onPress={() => {
-            if (availableCount) handleCtaClick(type, action, message, availableCount, _id, null);
+            // if (availableCount) handleCtaClick(type, action, message, availableCount, _id, null);
           }}
           style={[styles.cardStyle, { marginVertical: 10 }]}
         >
