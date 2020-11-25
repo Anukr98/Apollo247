@@ -635,23 +635,25 @@ export const Tests: React.FC<TestsProps> = (props) => {
             const addrComponents = data.results[0].address_components || [];
             const latLang = data.results[0].geometry.location || {};
             const response = getFormattedLocation(addrComponents, latLang, pincode);
-            response.city = diagnosticServiceabilityData?.city || response.city;
-            response.state = diagnosticServiceabilityData?.state || response.state;
+            response.city =
+              (isDiagnosticLocationServiceable == 'true' && diagnosticServiceabilityData?.city) ||
+              response.city;
+            response.state =
+              (isDiagnosticLocationServiceable == 'true' && diagnosticServiceabilityData?.state) ||
+              response.state;
             setDiagnosticLocation!(response);
             !locationDetails && setLocationDetails!(response);
           } else {
-            if (diagnosticServiceabilityData?.city != '') {
-              let response = {
-                displayName: diagnosticServiceabilityData?.city!,
-                area: '',
-                city: diagnosticServiceabilityData?.city!,
-                state: diagnosticServiceabilityData?.state!,
-                country: 'India',
-                pincode: String(pincode),
-              };
-              setDiagnosticLocation!(response);
-              !locationDetails && setLocationDetails!(response);
-            }
+            let response = {
+              displayName: diagnosticServiceabilityData?.city! || '',
+              area: '',
+              city: diagnosticServiceabilityData?.city! || '',
+              state: diagnosticServiceabilityData?.state! || '',
+              country: 'India',
+              pincode: String(pincode),
+            };
+            setDiagnosticLocation!(response);
+            !locationDetails && setLocationDetails!(response);
           }
         } catch (e) {
           console.log(e);
@@ -727,8 +729,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
           const serviceableData = g(data, 'getPincodeServiceability');
           if (serviceableData && serviceableData?.cityName != '') {
             let obj = {
-              cityId: serviceableData.cityID?.toString() || '',
-              stateId: serviceableData.stateID?.toString() || '',
+              cityId: serviceableData.cityID?.toString() || '0',
+              stateId: serviceableData.stateID?.toString() || '0',
               state: serviceableData.stateName || '',
               city: serviceableData.cityName || '',
             };
