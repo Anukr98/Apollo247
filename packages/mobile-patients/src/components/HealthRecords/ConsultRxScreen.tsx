@@ -41,6 +41,7 @@ import {
   initialSortByDays,
   editDeleteData,
   getSourceName,
+  phrSortByDate,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   EPrescription,
@@ -66,7 +67,11 @@ import {
   CommonBugFender,
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { deletePatientPrismMedicalRecords } from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  deletePatientPrismMedicalRecords,
+  getPatientPrismMedicalRecordsApi,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
+import { getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import moment from 'moment';
 import _ from 'lodash';
@@ -126,12 +131,13 @@ const ConsultRxFilterArray: FilterArray[] = [
 
 export interface ConsultRxScreenProps
   extends NavigationScreenProps<{
-    consultRxData: any;
+    consultArray: any[];
+    prescriptionArray: any[];
     onPressBack: () => void;
   }> {}
 
 export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
-  const consultRxData = props.navigation?.getParam('consultRxData') || [];
+  const [consultRxMainData, setConsultRxMainData] = useState<any>([]);
   const { currentPatient } = useAllCurrentPatients();
   const [filterApplied, setFilterApplied] = useState<FILTER_TYPE | string>('');
   const client = useApolloClient();
@@ -147,6 +153,16 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
     addMultipleCartItems: addMultipleTestCartItems,
     addMultipleEPrescriptions: addMultipleTestEPrescriptions,
   } = useDiagnosticsCart();
+  const [prescriptions, setPrescriptions] = useState<
+    | (getPatientPrismMedicalRecords_getPatientPrismMedicalRecords_prescriptions_response | null)[]
+    | null
+    | undefined
+  >(props.navigation?.getParam('prescriptionArray') || []);
+  const [consultArray, setConsultArray] = useState<any>(
+    props.navigation?.getParam('consultArray') || []
+  );
+  const [callApi, setCallApi] = useState(false);
+  const [callPhrMainApi, setCallPhrMainApi] = useState(false);
 
   const doctorType = (item: any) => {
     return item?.caseSheet?.find((obj: any) => {
@@ -159,6 +175,26 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
     gotoPHRHomeScreen();
     return true;
   };
+
+  useEffect(() => {
+    if (consultArray?.length > 0 || (prescriptions && prescriptions?.length > 0)) {
+      let mergeArray: { type: string; data: any }[] = [];
+      consultArray?.forEach((item: any) => {
+        item['myPrescriptionName'] = 'Prescription';
+        mergeArray.push({ type: 'pastConsults', data: item });
+      });
+      prescriptions?.forEach((c) => {
+        mergeArray.push({ type: 'prescriptions', data: c });
+      });
+      setConsultRxMainData(phrSortByDate(mergeArray));
+    }
+  }, [consultArray, prescriptions]);
+
+  useEffect(() => {
+    if (callApi) {
+      getLatestPrescriptionRecords();
+    }
+  }, [callApi]);
 
   useEffect(() => {
     const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
@@ -239,54 +275,74 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
       }
       setLocalConsultRxData(finalData);
     }
-  }, [filterApplied, consultRxData]);
+  }, [filterApplied, consultRxMainData]);
+
+  const getLatestPrescriptionRecords = () => {
+    setShowSpinner(true);
+    getPatientPrismMedicalRecordsApi(client, currentPatient?.id)
+      .then((data: any) => {
+        const prescriptionsData = g(
+          data,
+          'getPatientPrismMedicalRecords',
+          'prescriptions',
+          'response'
+        );
+        setPrescriptions(prescriptionsData);
+        setShowSpinner(false);
+        setCallPhrMainApi(true);
+      })
+      .catch((error) => {
+        setShowSpinner(false);
+        console.log('error getPatientPrismMedicalRecordsApi', error);
+        currentPatient && handleGraphQlError(error);
+      });
+  };
 
   const sortByTypeRecords = (type: FILTER_TYPE | string) => {
-    return (
-      consultRxData &&
-      consultRxData.sort(({ data: data1 }, { data: data2 }) => {
-        const filteredData1 =
-          type === FILTER_TYPE.NAME
-            ? data1?.patientId
-              ? _.lowerCase(data1?.myPrescriptionName)
-              : _.lowerCase(data1?.prescriptionName)
-            : type === FILTER_TYPE.DOCTOR_NAME
-            ? data1?.patientId
-              ? _.lowerCase(data1?.doctorInfo?.displayName)
-              : _.lowerCase(data1?.prescribedBy)
-            : data1?.patientId
-            ? moment(data1?.appointmentDateTime)
-                .toDate()
-                .getTime()
-            : moment(data1?.date)
-                .toDate()
-                .getTime();
-        const filteredData2 =
-          type === FILTER_TYPE.NAME
-            ? data2?.patientId
-              ? _.lowerCase(data2?.myPrescriptionName)
-              : _.lowerCase(data2?.prescriptionName)
-            : type === FILTER_TYPE.DOCTOR_NAME
-            ? data2?.patientId
-              ? _.lowerCase(data2?.doctorInfo?.displayName)
-              : _.lowerCase(data2?.prescribedBy)
-            : data2?.patientId
-            ? moment(data2?.appointmentDateTime)
-                .toDate()
-                .getTime()
-            : moment(data2?.date)
-                .toDate()
-                .getTime();
-        if (type === FILTER_TYPE.DATE || !type) {
-          return filteredData1 > filteredData2 ? -1 : filteredData1 < filteredData2 ? 1 : 0;
-        }
-        return filteredData2 > filteredData1 ? -1 : filteredData2 < filteredData1 ? 1 : 0;
-      })
-    );
+    return consultRxMainData?.sort(({ data: data1 }, { data: data2 }) => {
+      const filteredData1 =
+        type === FILTER_TYPE.NAME
+          ? data1?.patientId
+            ? _.lowerCase(data1?.myPrescriptionName)
+            : _.lowerCase(data1?.prescriptionName)
+          : type === FILTER_TYPE.DOCTOR_NAME
+          ? data1?.patientId
+            ? _.lowerCase(data1?.doctorInfo?.displayName)
+            : _.lowerCase(data1?.prescribedBy)
+          : data1?.patientId
+          ? moment(data1?.appointmentDateTime)
+              .toDate()
+              .getTime()
+          : moment(data1?.date)
+              .toDate()
+              .getTime();
+      const filteredData2 =
+        type === FILTER_TYPE.NAME
+          ? data2?.patientId
+            ? _.lowerCase(data2?.myPrescriptionName)
+            : _.lowerCase(data2?.prescriptionName)
+          : type === FILTER_TYPE.DOCTOR_NAME
+          ? data2?.patientId
+            ? _.lowerCase(data2?.doctorInfo?.displayName)
+            : _.lowerCase(data2?.prescribedBy)
+          : data2?.patientId
+          ? moment(data2?.appointmentDateTime)
+              .toDate()
+              .getTime()
+          : moment(data2?.date)
+              .toDate()
+              .getTime();
+      if (type === FILTER_TYPE.DATE || !type) {
+        return filteredData1 > filteredData2 ? -1 : filteredData1 < filteredData2 ? 1 : 0;
+      }
+      return filteredData2 > filteredData1 ? -1 : filteredData2 < filteredData1 ? 1 : 0;
+    });
   };
 
   const gotoPHRHomeScreen = () => {
-    props.navigation.state.params?.onPressBack();
+    if (!callApi && !callPhrMainApi) {
+      props.navigation.state.params?.onPressBack();
+    }
     props.navigation.goBack();
   };
 
@@ -598,8 +654,9 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
     )
       .then((status) => {
         if (status) {
+          getLatestPrescriptionRecords();
+        } else {
           setShowSpinner(false);
-          props.navigation.goBack();
         }
       })
       .catch((error) => {
@@ -609,11 +666,13 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
   };
 
   const onPressEditPrismMedicalRecords = (selectedItem: any) => {
+    setCallApi(false);
     props.navigation.navigate(AppRoutes.AddRecord, {
       navigatedFrom: 'Consult & RX',
       recordType: MedicalRecordType.PRESCRIPTION,
       selectedRecordID: selectedItem?.id,
       selectedRecord: selectedItem,
+      onRecordAdded: onRecordAdded,
     });
   };
 
@@ -695,6 +754,10 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
     );
   };
 
+  const onRecordAdded = () => {
+    setCallApi(true);
+  };
+
   const renderAddButton = () => {
     return (
       <StickyBottomComponent style={styles.stickyBottomComponentStyle}>
@@ -702,6 +765,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
           style={{ width: '100%' }}
           title={`ADD DATA`}
           onPress={() => {
+            setCallApi(false);
             const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_RECORD] = {
               Source: 'Consult & RX',
             };
@@ -709,6 +773,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
             props.navigation.navigate(AppRoutes.AddRecord, {
               navigatedFrom: 'Consult & RX',
               recordType: MedicalRecordType.PRESCRIPTION,
+              onRecordAdded: onRecordAdded,
             });
           }}
         />
@@ -721,7 +786,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
       {showSpinner && <Spinner />}
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
-        {consultRxData.length > 0 ? renderSearchAndFilterView() : null}
+        {consultRxMainData?.length > 0 ? renderSearchAndFilterView() : null}
         <ScrollView style={{ flex: 1 }} bounces={false}>
           {renderConsults()}
         </ScrollView>

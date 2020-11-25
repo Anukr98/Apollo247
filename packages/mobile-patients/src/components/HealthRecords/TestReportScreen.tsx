@@ -165,7 +165,6 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
         setTestReportMainData(phrSortByDate(mergeArray));
         setShowSpinner(false);
         setCallPhrMainApi(true);
-        console.log('getPatientPrismMedicalRecordsApi', data);
       })
       .catch((error) => {
         setShowSpinner(false);
@@ -478,6 +477,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
   };
 
   const onPressEditPrismMedicalRecords = (selectedItem: any) => {
+    setCallApi(false);
     props.navigation.navigate(AppRoutes.AddRecord, {
       navigatedFrom: 'Test Reports',
       recordType: MedicalRecordType.TEST_REPORT,
@@ -573,6 +573,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
           style={{ width: '100%' }}
           title={`ADD DATA`}
           onPress={() => {
+            setCallApi(false);
             const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_RECORD] = {
               Source: 'Test Reports',
             };

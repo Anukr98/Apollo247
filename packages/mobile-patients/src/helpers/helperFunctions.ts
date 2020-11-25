@@ -356,7 +356,7 @@ export const initialSortByDays = (
   toBeFinalData: { key: string; data: any[] }[]
 ) => {
   let finalData = toBeFinalData;
-  filteredData.forEach((dataObject: any) => {
+  filteredData?.forEach((dataObject: any) => {
     const startDate = moment().set({
       hour: 23,
       minute: 59,

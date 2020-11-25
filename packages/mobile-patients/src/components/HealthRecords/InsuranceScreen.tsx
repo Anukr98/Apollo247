@@ -19,12 +19,17 @@ import { HealthRecordCard } from '@aph/mobile-patients/src/components/HealthReco
 import { PhrNoDataComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/PhrNoDataComponent';
 import { ProfileImageComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/ProfileImageComponent';
 import {
+  g,
   getPrescriptionDate,
   initialSortByDays,
   editDeleteData,
   handleGraphQlError,
+  phrSortWithDate,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { deletePatientPrismMedicalRecords } from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  deletePatientPrismMedicalRecords,
+  getPatientPrismMedicalRecordsApi,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useApolloClient } from 'react-apollo-hooks';
 import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -72,6 +77,9 @@ export interface InsuranceScreenProps
 
 export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
   const medicalInsuranceData = props.navigation.getParam('medicalInsuranceData') || [];
+  const [medicalInsuranceMainData, setMedicalInsuranceMainData] = useState<any>(
+    medicalInsuranceData
+  );
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
@@ -79,14 +87,14 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
     key: string;
     data: MedicalInsuranceType[];
   }> | null>(null);
+  const [callApi, setCallApi] = useState(false);
+  const [callPhrMainApi, setCallPhrMainApi] = useState(false);
 
   useEffect(() => {
-    if (medicalInsuranceData) {
-      let finalData: { key: string; data: MedicalInsuranceType[] }[] = [];
-      finalData = initialSortByDays('insurance', medicalInsuranceData, finalData);
-      setLocalInsuranceBillsData(finalData);
-    }
-  }, [medicalInsuranceData]);
+    let finalData: { key: string; data: MedicalInsuranceType[] }[] = [];
+    finalData = initialSortByDays('insurance', medicalInsuranceMainData, finalData);
+    setLocalInsuranceBillsData(finalData);
+  }, [medicalInsuranceMainData]);
 
   const handleBack = async () => {
     BackHandler.removeEventListener('hardwareBackPress', handleBack);
@@ -109,9 +117,38 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
     };
   }, []);
 
+  useEffect(() => {
+    if (callApi) {
+      getLatestMedicalInsuranceRecords();
+    }
+  }, [callApi]);
+
   const gotoPHRHomeScreen = () => {
-    props.navigation.state.params?.onPressBack();
+    if (!callApi && !callPhrMainApi) {
+      props.navigation.state.params?.onPressBack();
+    }
     props.navigation.goBack();
+  };
+
+  const getLatestMedicalInsuranceRecords = () => {
+    setShowSpinner(true);
+    getPatientPrismMedicalRecordsApi(client, currentPatient?.id)
+      .then((data: any) => {
+        const medicalInsurance = g(
+          data,
+          'getPatientPrismMedicalRecords',
+          'medicalInsurances',
+          'response'
+        );
+        setMedicalInsuranceMainData(phrSortWithDate(medicalInsurance));
+        setShowSpinner(false);
+        setCallPhrMainApi(true);
+      })
+      .catch((error) => {
+        setShowSpinner(false);
+        console.log('error getPatientPrismMedicalRecordsApi', error);
+        currentPatient && handleGraphQlError(error);
+      });
   };
 
   const renderProfileImage = () => {
@@ -167,8 +204,9 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
     )
       .then((status) => {
         if (status) {
+          getLatestMedicalInsuranceRecords();
+        } else {
           setShowSpinner(false);
-          props.navigation.goBack();
         }
       })
       .catch((error) => {
@@ -178,11 +216,13 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
   };
 
   const onPressEditPrismMedicalRecords = (selectedItem: any) => {
+    setCallApi(false);
     props.navigation.navigate(AppRoutes.AddRecord, {
       navigatedFrom: 'MedicalInsurance',
       recordType: MedicalRecordType.MEDICALINSURANCE,
       selectedRecordID: selectedItem?.id,
       selectedRecord: selectedItem,
+      onRecordAdded: onRecordAdded,
     });
   };
 
@@ -229,6 +269,10 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
     );
   };
 
+  const onRecordAdded = () => {
+    setCallApi(true);
+  };
+
   const renderAddButton = () => {
     return (
       <StickyBottomComponent style={styles.stickyBottomComponentStyle}>
@@ -236,9 +280,11 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
           style={{ width: '100%' }}
           title={`ADD DATA`}
           onPress={() => {
+            setCallApi(false);
             props.navigation.navigate(AppRoutes.AddRecord, {
               navigatedFrom: 'MedicalInsurance',
               recordType: MedicalRecordType.MEDICALINSURANCE,
+              onRecordAdded: onRecordAdded,
             });
           }}
         />
@@ -251,7 +297,7 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
       {showSpinner && <Spinner />}
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
-        {medicalInsuranceData?.length > 0 ? renderSearchAndFilterView() : null}
+        {medicalInsuranceMainData?.length > 0 ? renderSearchAndFilterView() : null}
         <ScrollView style={{ flex: 1 }} bounces={false}>
           {renderMedicalInsuranceData()}
         </ScrollView>

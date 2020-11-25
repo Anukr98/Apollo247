@@ -564,7 +564,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         let labResultsArray: LabTestParameters[] = [];
         settestName(selectedRecord?.labTestName || '');
         setDocName(selectedRecord?.labTestRefferedBy || '');
-        selectedRecord?.labTestResults.forEach((item: any) => {
+        selectedRecord?.labTestResults?.forEach((item: any) => {
           let labResultsObj: LabTestParameters = {};
           labResultsObj.result = parseFloat((item?.result || 0).toString());
           labResultsObj.unit = item?.unit || '';
