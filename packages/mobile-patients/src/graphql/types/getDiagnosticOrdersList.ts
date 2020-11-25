@@ -33,8 +33,8 @@ export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diag
   itemName: string;
   itemType: DIAGNOSTICS_TYPE | null;
   testPreparationData: string;
-  groupPlan: string;
   testDescription: string | null;
+  inclusions: (number | null)[] | null;
   diagnosticPricing: (getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems_diagnostics_diagnosticPricing | null)[] | null;
 }
 
@@ -70,6 +70,9 @@ export interface getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList {
   orderType: string;
   displayId: number;
   createdDate: any;
+  areaId: number | null;
+  isRescheduled: boolean | null;
+  rescheduleCount: number | null;
   diagnosticOrderLineItems: (getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems | null)[] | null;
 }
 

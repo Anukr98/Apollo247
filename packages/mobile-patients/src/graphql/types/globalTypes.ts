@@ -108,6 +108,7 @@ export enum DIAGNOSTIC_ORDER_PAYMENT_TYPE {
 
 export enum DIAGNOSTIC_ORDER_STATUS {
   ORDER_CANCELLED = "ORDER_CANCELLED",
+  ORDER_COMPLETED = "ORDER_COMPLETED",
   ORDER_FAILED = "ORDER_FAILED",
   ORDER_PLACED = "ORDER_PLACED",
   PAYMENT_PENDING = "PAYMENT_PENDING",
@@ -375,6 +376,13 @@ export enum PRISM_DOCUMENT_CATEGORY {
   HealthChecks = "HealthChecks",
   OpSummary = "OpSummary",
   TestReports = "TestReports",
+}
+
+export enum PaymentStatus {
+  INVALID_PAYMENT = "INVALID_PAYMENT",
+  PENDING = "PENDING",
+  TXN_FAILURE = "TXN_FAILURE",
+  TXN_SUCCESS = "TXN_SUCCESS",
 }
 
 export enum PharmaDiscountApplicableOn {
@@ -710,7 +718,7 @@ export interface CouponInput {
 export interface CreateUserSubscriptionInput {
   _id?: string | null;
   plan_id: string;
-  payment_reference?: any | null;
+  payment_reference?: PaymentReference | null;
   coupon_availed?: string | null;
   mobile_number: string;
   order_id?: string | null;
@@ -940,6 +948,9 @@ export interface MedicineCartOMSInput {
   shopAddress?: ShopAddress | null;
   customerComment?: string | null;
   storeDistanceKm?: number | null;
+  subscriptionDetails?: SUBSCRIPTION_DETAILS | null;
+  planPurchaseDetails?: PLAN_PURCHASE_DETAILS | null;
+  healthCreditUsed?: number | null;
 }
 
 export interface MedicineCartOMSItem {
@@ -1069,6 +1080,15 @@ export interface PatientProfileInput {
   emailAddress: string;
   photoUrl: string;
   mobileNumber: string;
+}
+
+export interface PaymentReference {
+  mid?: string | null;
+  amount_paid?: number | null;
+  payment_status?: PaymentStatus | null;
+  payment_reference_id?: string | null;
+  purchase_via_HC?: boolean | null;
+  HC_used?: number | null;
 }
 
 export interface PharmaCouponInput {

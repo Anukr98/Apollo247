@@ -1419,6 +1419,9 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
         orderType
         displayId
         createdDate
+        areaId
+        isRescheduled
+        rescheduleCount
         diagnosticOrderLineItems {
           id
           itemId
@@ -1437,6 +1440,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
             itemType
             testPreparationData
             testDescription
+            inclusions
             diagnosticPricing {
               mrp
               price
