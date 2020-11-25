@@ -18,3 +18,7 @@ export interface GetCashbackDetailsOfPlanById_GetCashbackDetailsOfPlanById {
 export interface GetCashbackDetailsOfPlanById {
   GetCashbackDetailsOfPlanById: GetCashbackDetailsOfPlanById_GetCashbackDetailsOfPlanById;
 }
+
+export interface GetCashbackDetailsOfPlanByIdVariables {
+  plan_id: string;
+}

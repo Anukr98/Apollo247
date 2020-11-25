@@ -265,7 +265,6 @@ const styles = StyleSheet.create({
   circleText: {
     ...theme.viewStyles.text('M', 9, '#02475B', 1, 15),
     paddingVertical: 2,
-    left: -10,
   },
   circleLogo: {
     resizeMode: 'contain',
@@ -331,7 +330,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   );
   const client = useApolloClient();
   const [tatEventData, setTatEventData] = useState<PharmacyTatApiCalled>();
-  const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable } = useAppCommonData();
+  const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable, circleSubscription } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
   const pharmacyPincode = g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
 
@@ -807,7 +806,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                     <Text style={styles.discountPercentage}>{discountPercent}% off</Text>
                   </View>
                 )}
-                {renderCareCashback()}
+                {circleSubscription?._id && renderCareCashback()}
               </View>
               {!medicineDetails.sell_online ? (
                 renderNotForSaleTag()
@@ -980,7 +979,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             bannerText={`membership added to your cart!`}
             textStyle={{
               ...theme.viewStyles.text('SB', 14, '#02475B', 1, 20),
-              left: -5,
             }}
             logoStyle={{
               width: 60,

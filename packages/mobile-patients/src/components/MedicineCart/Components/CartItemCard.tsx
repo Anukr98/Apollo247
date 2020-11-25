@@ -361,6 +361,5 @@ const styles = StyleSheet.create({
   careText: {
     ...theme.viewStyles.text('M', 9, '#00A0E3', 1, 15),
     paddingVertical: 7,
-    left: -5,
   },
 });

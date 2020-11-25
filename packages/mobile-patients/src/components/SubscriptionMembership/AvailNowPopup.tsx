@@ -4,7 +4,6 @@ import { RoundCancelIcon, ExclamationGreen } from '../ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '../NavigatorContainer';
-import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   blurView: {
@@ -80,7 +79,7 @@ export const AvailNowPopup: React.FC<AvailNowPopupProps> = (props) => {
       >
         <View>
           <Text style={theme.viewStyles.text('SB', 13, '#007C9D', 1, 20, 0.35)}>
-            {`Complete transactions worth ${string.common.Rs}${
+            {`Complete transactions worth Rs.${
               props!.transactionAmount
             } or more on the Apollo 24|7 app to unlock ${displayPlanName} membership​`}
           </Text>

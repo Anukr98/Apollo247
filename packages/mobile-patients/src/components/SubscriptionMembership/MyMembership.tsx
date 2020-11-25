@@ -4,19 +4,33 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { EllipseBulletPoint, LockIcon, HdfcBankLogo } from '@aph/mobile-patients/src/components/ui/Icons';
-import { useAppCommonData, PlanBenefits } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import {
+  EllipseBulletPoint,
+  LockIcon,
+  HdfcBankLogo,
+  CircleLogo,
+} from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  useAppCommonData,
+  PlanBenefits,
+  SubscriptionData,
+} from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AvailNowPopup } from './AvailNowPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { WebEngageEvents, WebEngageEventName } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import {
+  WebEngageEvents,
+  WebEngageEventName,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { Circle } from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   cardStyle: {
     ...theme.viewStyles.cardViewStyle,
     marginHorizontal: 20,
-    marginVertical: 4,
+    marginVertical: 10,
   },
   textStyle: {
     ...theme.fonts.IBMPlexSansMedium(14),
@@ -40,7 +54,7 @@ const styles = StyleSheet.create({
     paddingTop: 10,
   },
   planName: {
-    ...theme.viewStyles.text('B', 14, '#00B38E', 1, 20, 0.35),
+    ...theme.viewStyles.text('B', 14, '#02475B', 1, 20, 0.35),
     marginRight: 10,
   },
   medalIcon: {
@@ -109,35 +123,48 @@ const styles = StyleSheet.create({
     paddingLeft: 20,
     paddingBottom: 10,
   },
+  circleLogo: {
+    resizeMode: 'contain',
+    width: 50,
+    height: 30,
+    position: 'absolute',
+    right: 0,
+  },
 });
 
 export interface MyMembershipProps extends NavigationScreenProps {}
 
 export const MyMembership: React.FC<MyMembershipProps> = (props) => {
-  const { hdfcUserSubscriptions } = useAppCommonData();
+  const {
+    hdfcUserSubscriptions,
+    hdfcUpgradeUserSubscriptions,
+    circleSubscription,
+  } = useAppCommonData();
+  const { circleSubscriptionId } = useShoppingCart();
   const { currentPatient } = useAllCurrentPatients();
-  const showSubscriptions = !!(hdfcUserSubscriptions && hdfcUserSubscriptions.name);
-  const canUpgradeToPlans = g(hdfcUserSubscriptions, 'canUpgradeTo');
-  const canUpgradeMultiplePlans = !!g(canUpgradeToPlans, 'canUpgradeTo', 'name');
-  const premiumPlan = canUpgradeMultiplePlans ? g(canUpgradeToPlans, 'canUpgradeTo') : {};
-  const canUpgrade = !!g(canUpgradeToPlans, 'name');
+  const showHdfcSubscriptions = !!(hdfcUserSubscriptions && hdfcUserSubscriptions?.name);
+  const canUpgradeMultiplePlans = !!(hdfcUpgradeUserSubscriptions.length > 1);
+  const premiumPlan = canUpgradeMultiplePlans ? hdfcUpgradeUserSubscriptions[1] : {};
+  const canUpgrade = !!hdfcUpgradeUserSubscriptions.length;
   const isActive = !!(hdfcUserSubscriptions && hdfcUserSubscriptions.isActive);
-  const upgradePlanName = g(hdfcUserSubscriptions, 'canUpgradeTo', 'name');
+  const upgradePlanName = hdfcUpgradeUserSubscriptions[0]?.name;
   const [showAvailPopup, setShowAvailPopup] = useState<boolean>(false);
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [upgradeTransactionValue, setUpgradeTransactionValue] = useState<number>(0);
-  const subscription_name = hdfcUserSubscriptions!.name;
+  const subscription_name = hdfcUserSubscriptions?.name;
 
   useEffect(() => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_MY_MEMBERSHIP_VIEWED] = {
-      'User ID': g(currentPatient, 'id'),
-      'Plan': subscription_name.substring(0, subscription_name.indexOf('+')),
-    };
-    postWebEngageEvent(WebEngageEventName.HDFC_MY_MEMBERSHIP_VIEWED, eventAttributes);
+    if (showHdfcSubscriptions) {
+      const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_MY_MEMBERSHIP_VIEWED] = {
+        'User ID': g(currentPatient, 'id'),
+        Plan: subscription_name.substring(0, subscription_name.indexOf('+')),
+      };
+      postWebEngageEvent(WebEngageEventName.HDFC_MY_MEMBERSHIP_VIEWED, eventAttributes);
+    }
   }, []);
 
   useEffect(() => {
-    if (hdfcUserSubscriptions && g(hdfcUserSubscriptions, '_id')) {
+    if (hdfcUserSubscriptions?._id || circleSubscriptionId) {
       setshowSpinner(false);
     }
   }, [hdfcUserSubscriptions]);
@@ -184,25 +211,35 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
     subscriptionName: string,
     isCanUpgradeToPlan: boolean
   ) => {
-    const buttonText = isCanUpgradeToPlan ? 'HOW TO AVAIL' : isActive ? 'EXPLORE' : 'ACTIVATE NOW';
-    const premiumPlanName = g(hdfcUserSubscriptions, 'canUpgradeTo', 'canUpgradeTo', 'name');
+    const isCare = subscriptionName === Circle.planName;
+    const buttonText = isCare
+      ? 'GO TO HOMEPAGE'
+      : isCanUpgradeToPlan
+      ? 'HOW TO AVAIL'
+      : isActive
+      ? 'EXPLORE'
+      : 'ACTIVATE NOW';
+    const premiumPlanName = premiumPlan?.name;
 
     const transactionValue =
       subscriptionName === upgradePlanName
         ? g(hdfcUserSubscriptions, 'upgradeTransactionValue')
         : subscriptionName === premiumPlanName
-        ? g(hdfcUserSubscriptions, 'canUpgradeTo', 'upgradeTransactionValue')
+        ? hdfcUpgradeUserSubscriptions?.upgradeTransactionValue
         : 0;
     return (
       <View style={styles.membershipButtons}>
         <TouchableOpacity
           style={{ padding: 10 }}
           onPress={() => {
-            const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_PLAN_DETAILS_VIEWED] = {
-              'User ID': g(currentPatient, 'id'),
-              'Plan': subscription_name.substring(0, subscription_name.indexOf('+')),
-            };
-            postWebEngageEvent(WebEngageEventName.HDFC_PLAN_DETAILS_VIEWED, eventAttributes);
+            if (!isCare) {
+              const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_PLAN_DETAILS_VIEWED] = {
+                'User ID': g(currentPatient, 'id'),
+                Plan: subscription_name.substring(0, subscription_name.indexOf('+')),
+              };
+              postWebEngageEvent(WebEngageEventName.HDFC_PLAN_DETAILS_VIEWED, eventAttributes);
+            }
+
             props.navigation.navigate(AppRoutes.MembershipDetails, {
               membershipType: subscriptionName,
               isActive: isActive,
@@ -217,17 +254,17 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
             if (isCanUpgradeToPlan) {
               const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_HOW_TO_AVAIL_CLICKED] = {
                 'User ID': g(currentPatient, 'id'),
-                'Plan': subscription_name.substring(0, subscription_name.indexOf('+')),
+                Plan: subscription_name.substring(0, subscription_name.indexOf('+')),
               };
               postWebEngageEvent(WebEngageEventName.HDFC_HOW_TO_AVAIL_CLICKED, eventAttributes);
               setUpgradeTransactionValue(transactionValue);
               setShowAvailPopup(true);
             } else {
               props.navigation.navigate(AppRoutes.ConsultRoom, {});
-              if (isActive) {
+              if (isActive && !isCare) {
                 const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_EXPLORE_PLAN_CLICKED] = {
                   'User ID': g(currentPatient, 'id'),
-                  'Plan': subscription_name.substring(0, subscription_name.indexOf('+')),
+                  Plan: subscription_name.substring(0, subscription_name.indexOf('+')),
                 };
                 postWebEngageEvent(WebEngageEventName.HDFC_EXPLORE_PLAN_CLICKED, eventAttributes);
               }
@@ -241,20 +278,32 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
   };
 
   const renderMembershipCard = (subscription: any, isCanUpgradeToPlan: boolean) => {
+    const planBenefits = subscription?.benefits;
+    const isCare = subscription?.name === Circle.planName;
+    const isactive = isCare ? true : subscription!.isActive;
     return (
       <View style={styles.cardStyle}>
         <View style={styles.healthyLifeContainer}>
           <Text style={theme.viewStyles.text('B', 12, '#164884', 1, 20, 0.35)}>
             #ApolloHealthyLife
           </Text>
-          <HdfcBankLogo style={styles.hdfcLogo} />
+          {isCare ? (
+            <CircleLogo style={styles.circleLogo} />
+          ) : (
+            <HdfcBankLogo style={styles.hdfcLogo} />
+          )}
         </View>
         <View style={styles.membershipCardContainer}>
-          <Text style={styles.planName}>{subscription!.name}</Text>
-          {isCanUpgradeToPlan || !isActive ? <LockIcon style={styles.lockIcon} /> : <></>}
+          <Text style={styles.planName}>{subscription?.name}</Text>
+          {!isCare && (isCanUpgradeToPlan || !isActive) ? (
+            <LockIcon style={styles.lockIcon} />
+          ) : (
+            <></>
+          )}
         </View>
-        {renderCardBody(subscription!.benefits, subscription!.name, isCanUpgradeToPlan)}
-        {renderBottomButtons(subscription!.isActive, subscription!.name, isCanUpgradeToPlan)}
+        {!!planBenefits?.length &&
+          renderCardBody(planBenefits, subscription?.name, isCanUpgradeToPlan)}
+        {renderBottomButtons(isactive, subscription?.name, isCanUpgradeToPlan)}
       </View>
     );
   };
@@ -279,19 +328,23 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
           container={styles.headerContainer}
           onPressLeftIcon={() => props.navigation.goBack()}
         />
-        {showSubscriptions && (
+        {(hdfcUserSubscriptions?._id || circleSubscriptionId) && (
           <ScrollView bounces={false}>
             <View>
               <View>
                 <Text style={styles.currentBenefits}>CURRENT BENEFITS</Text>
-                {renderMembershipCard(hdfcUserSubscriptions, false)}
+                {hdfcUserSubscriptions?._id && renderMembershipCard(hdfcUserSubscriptions, false)}
+                {circleSubscriptionId && renderMembershipCard(circleSubscription, false)}
               </View>
               {canUpgrade && (
                 <View>
                   <Text style={styles.otherPlans}>OTHER PLANS</Text>
-                  {renderMembershipCard(hdfcUserSubscriptions!.canUpgradeTo, true)}
+                  {hdfcUpgradeUserSubscriptions.map((subscription: SubscriptionData) => {
+                    return renderMembershipCard(subscription, true);
+                  })}
+                  {/* {renderMembershipCard(hdfcUpgradeUserSubscriptions[0], true)} */}
                   <View style={{ marginTop: 15 }} />
-                  {canUpgradeMultiplePlans && renderMembershipCard(premiumPlan, true)}
+                  {/* {canUpgradeMultiplePlans && renderMembershipCard(premiumPlan, true)} */}
                 </View>
               )}
             </View>
