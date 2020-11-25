@@ -363,10 +363,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         const { servicable, axdcCode } = response;
         setAxdcCode && setAxdcCode(axdcCode);
         setServiceabilityMsg(servicable ? '' : 'Services unavailable. Change delivery location.');
-        setPharmacyLocationServiceable!(servicable ? true : false);
-        type == 'autoDetect' &&
-          WebEngageEventAutoDetectLocation(pincode, servicable ? true : false);
-        type == 'pincode' && webEngageDeliveryPincodeEntered(pincode, servicable ? true : false);
+        setPharmacyLocationServiceable!(!!servicable);
+        type == 'autoDetect' && WebEngageEventAutoDetectLocation(pincode, !!servicable);
+        type == 'pincode' && webEngageDeliveryPincodeEntered(pincode, !!servicable);
         globalLoading!(false);
         if (!response) {
           globalLoading!(true);
