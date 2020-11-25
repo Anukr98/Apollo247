@@ -142,12 +142,12 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
   } = useAppCommonData();
   const { circleSubscriptionId } = useShoppingCart();
   const { currentPatient } = useAllCurrentPatients();
-  const showHdfcSubscriptions = !!(hdfcUserSubscriptions && hdfcUserSubscriptions?.name);
+  const showHdfcSubscriptions = !!hdfcUserSubscriptions?.name;
   const canUpgradeMultiplePlans = !!(hdfcUpgradeUserSubscriptions.length > 1);
   const premiumPlan = canUpgradeMultiplePlans ? hdfcUpgradeUserSubscriptions[1] : {};
   const canUpgrade = !!hdfcUpgradeUserSubscriptions.length;
-  const isActive = !!(hdfcUserSubscriptions && hdfcUserSubscriptions.isActive);
-  const upgradePlanName = hdfcUpgradeUserSubscriptions[0]?.name;
+  const isActive = !!hdfcUserSubscriptions?.isActive;
+  const upgradePlanName = hdfcUpgradeUserSubscriptions?.[0]?.name;
   const [showAvailPopup, setShowAvailPopup] = useState<boolean>(false);
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [upgradeTransactionValue, setUpgradeTransactionValue] = useState<number>(0);

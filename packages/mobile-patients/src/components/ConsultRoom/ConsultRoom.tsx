@@ -1271,14 +1271,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         benefitsWorth: plan!.benefits_worth || '',
         activationModes: plan!.activation_modes,
         price: plan!.price,
-        minTransactionValue: plan?.plan_summary[0]?.min_transaction_value,
+        minTransactionValue: plan?.plan_summary?.[0]?.min_transaction_value,
         status: plan!.status || '',
         subscriptionStatus: plan!.subscriptionStatus || '',
         isActive,
         group: groupData,
         benefits: planBenefits,
         coupons: plan!.coupons ? plan!.coupons : [],
-        upgradeTransactionValue: plan?.plan_summary[0]?.upgrade_transaction_value,
+        upgradeTransactionValue: plan?.plan_summary?.[0]?.upgrade_transaction_value,
       };
       const upgradeToPlan = g(plan, 'can_upgrade_to');
       if (g(upgradeToPlan, '_id')) {
