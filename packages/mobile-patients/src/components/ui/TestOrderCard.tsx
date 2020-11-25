@@ -19,6 +19,7 @@ import {
 } from 'react-native';
 import { getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList_diagnosticOrderLineItems } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
+import { colors } from '../../theme/colors';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -208,7 +209,6 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
     props.status == DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED ||
     props.status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED ||
     props.status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB ||
-    props.status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECIEVED_IN_LAB ||
     props.status == DIAGNOSTIC_ORDER_STATUS.REPORT_GENERATED;
 
   const getProgressWidth = (
@@ -222,10 +222,7 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
         return 2;
       } else if (status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED) {
         return 3; //4
-      } else if (
-        status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB ||
-        status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECIEVED_IN_LAB
-      ) {
+      } else if (status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB) {
         return 4;
       } else {
         return 5;
@@ -237,10 +234,7 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
         return 4;
       } else if (status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED) {
         return 3;
-      } else if (
-        status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB ||
-        status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECIEVED_IN_LAB
-      ) {
+      } else if (status == DIAGNOSTIC_ORDER_STATUS.SAMPLE_RECEIVED_IN_LAB) {
         return 2;
       } else {
         return 0;
@@ -281,13 +275,41 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
           </Text>
         </View>
       );
+    } else if (props.isCancelled) {
+      return (
+        <View style={{ marginLeft: -20 }}>
+          <View style={styles.progressLineContainer}>
+            <View style={[styles.progressLineBefore, { flex: 0 }]} />
+            <OrderPlacedIcon
+              style={[styles.statusIconStyle, { opacity: 0.6, tintColor: '#c2bcbc' }]}
+            />
+            <View
+              style={[
+                styles.progressLineAfter,
+                { flex: 5, backgroundColor: '#c2bcbc', opacity: 0.2 },
+              ]}
+            />
+          </View>
+          <Text
+            style={[
+              {
+                ...theme.fonts.IBMPlexSansMedium(12),
+                lineHeight: 24,
+                color: '#c2bcbc',
+                opacity: 1,
+                textTransform: 'capitalize',
+              },
+            ]}
+          >
+            Pickup Requested
+          </Text>
+        </View>
+      );
     }
     return <View style={styles.separator} />;
   };
 
   const getTextAlign = (status: TestOrderCardProps['status']) => {
-    let textAlign = 'left';
-    let marginLeft = '1%';
     switch (status) {
       case DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED:
         return {
@@ -375,27 +397,36 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
   };
 
   const renderTestOptions = () => {
+    const hideLeftOption = props.isCancelled && props.isComingFrom == 'individualTest';
     return (
-      <View style={styles.testOptionsOuterView}>
-        <View style={{ flex: props.isComingFrom == 'individualTest' ? 1 : 0.6 }}>
-          <View
-            style={{
-              alignItems: props.isComingFrom == 'individualTest' ? 'flex-end' : 'flex-start',
-            }}
-          >
-            <Text
+      <View
+        style={[
+          styles.testOptionsOuterView,
+          { alignSelf: hideLeftOption ? 'flex-end' : undefined },
+        ]}
+      >
+        {hideLeftOption ? null : (
+          <View style={{ flex: props.isComingFrom == 'individualTest' ? 1 : 0.6 }}>
+            <View
               style={{
-                ...theme.viewStyles.yellowTextStyle,
+                alignItems: props.isComingFrom == 'individualTest' ? 'flex-end' : 'flex-start',
               }}
-              onPress={props.onOptionPress}
             >
-              {props.isComingFrom == 'individualTest' ? 'ORDER STATUS' : 'VIEW DETAILS'}
-            </Text>
+              <Text
+                style={{
+                  ...theme.viewStyles.yellowTextStyle,
+                }}
+                onPress={props.onOptionPress}
+              >
+                {props.isComingFrom == 'individualTest' ? 'ORDER STATUS' : 'VIEW DETAILS'}
+              </Text>
+            </View>
           </View>
-        </View>
+        )}
         {/** right view options */}
+
         {props.showViewReport ? (
-          <View style={{ flex: 0.4 }}>
+          <View style={{ flex: 0.4, alignItems: 'flex-end' }}>
             <Text
               style={{
                 ...theme.fonts.IBMPlexSansBold(13),
@@ -430,7 +461,23 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
                   </View>
                 </TouchableOpacity>
               </View>
-            ) : null}
+            ) : (
+              <>
+                {props.isCancelled ? (
+                  <View style={{ flex: 0.4, alignItems: 'flex-end' }}>
+                    <Text
+                      style={{
+                        ...theme.fonts.IBMPlexSansBold(13),
+                        color: theme.colors.INPUT_FAILURE_TEXT,
+                        lineHeight: 24,
+                      }}
+                    >
+                      Test Cancelled
+                    </Text>
+                  </View>
+                ) : null}
+              </>
+            )}
           </>
         )}
       </View>
