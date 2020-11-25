@@ -14,8 +14,10 @@ import {
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import moment from 'moment';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
+import { NavigationScreenProps } from 'react-navigation';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 
-export interface CircleSavingsProps {}
+export interface CircleSavingsProps extends NavigationScreenProps {}
 
 export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
   const { circleSubscription, totalCircleSavings } = useAppCommonData();
@@ -32,7 +34,8 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
   };
 
   const renderCircleSavings = () => {
-    return (
+    const totalSavingsDone = totalCircleSavings?.totalSavings + totalCircleSavings?.callsUsed;
+    return totalSavingsDone ? (
       <View
         style={{
           backgroundColor: 'rgba(0, 179, 142, 0.1)',
@@ -48,6 +51,57 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
           </Text>
         </Text>
         {renderSavingsCard()}
+      </View>
+    ) : (
+      renderSaveFromCircle()
+    );
+  };
+
+  const renderSaveFromCircle = () => {
+    return (
+      <View>
+        <View
+          style={[styles.expiryBanner, { justifyContent: 'flex-start', paddingHorizontal: 20 }]}
+        >
+          <View style={styles.saveCircleContainer}>
+            <DoctorIcon style={styles.doctorIcon} />
+          </View>
+          <View style={{ marginLeft: 20 }}>
+            <Text style={theme.viewStyles.text('M', 16, '#01475B', 1, 24, 0.35)}>
+              UNLIMITED Doctor Consult
+            </Text>
+            <TouchableOpacity
+              onPress={() => {
+                props.navigation.navigate(AppRoutes.DoctorSearch);
+              }}
+            >
+              <Text style={theme.viewStyles.text('SB', 16, '#FC9916', 1, 24, 0.35)}>
+                BOOK APPOINTMENT
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        <View
+          style={[styles.expiryBanner, { justifyContent: 'flex-start', paddingHorizontal: 20 }]}
+        >
+          <View style={styles.saveCircleContainer}>
+            <HealthLogo style={styles.doctorIcon} />
+          </View>
+          <View style={{ marginLeft: 20 }}>
+            <Text style={theme.viewStyles.text('M', 16, '#01475B', 1, 24, 0.35)}>
+              Get 20% Cashback on Medicines
+            </Text>
+            <TouchableOpacity
+              onPress={() => {
+                props.navigation.navigate('MEDICINES');
+              }}
+            >
+              <Text style={theme.viewStyles.text('SB', 16, '#FC9916', 1, 24, 0.35)}>
+                ORDER MEDICINES
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </View>
     );
   };
@@ -85,7 +139,9 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
             <EmergencyCall style={styles.savingsIcon} />
             <Text style={styles.savingsHeading}>Free Emergency Calls Made</Text>
           </View>
-          <Text style={styles.savingsAmount}>3/5</Text>
+          <Text style={styles.savingsAmount}>
+            {totalCircleSavings?.callsUsed || 0}/{totalCircleSavings?.callsTotal || 0}
+          </Text>
         </View>
         <View style={styles.savingsContainer}>
           <View style={styles.savingsRow}>
@@ -102,7 +158,10 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
             <OneApolloLogo style={styles.savingsIcon} />
             <Text style={styles.savingsHeading}>Total Health Credits Earned</Text>
           </View>
-          <Text style={styles.savingsAmount}>₹500</Text>
+          <Text style={styles.savingsAmount}>
+            {strings.common.Rs}
+            {totalCircleSavings?.pharmaSavings || 0}
+          </Text>
         </View>
       </View>
     );
@@ -154,5 +213,18 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
     width: 25,
     height: 25,
+  },
+  saveCircleContainer: {
+    ...theme.viewStyles.cardViewStyle,
+    padding: 10,
+    width: 50,
+    height: 50,
+    borderRadius: 50,
+    justifyContent: 'center',
+  },
+  doctorIcon: {
+    resizeMode: 'contain',
+    width: 30,
+    height: 30,
   },
 });

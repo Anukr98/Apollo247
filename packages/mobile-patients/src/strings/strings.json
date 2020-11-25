@@ -605,6 +605,7 @@
   "reachUsOut": "If you have any queries please reach out to us",
   "Diagnostics_Feedback_Others": "Others (Please specify)",
   "Circle": {
-    "planName": "CIRCLE PLAN"
+    "planName": "CIRCLE PLAN",
+    "DOC_ON_CALL": "Doc on Call",
   }
 }

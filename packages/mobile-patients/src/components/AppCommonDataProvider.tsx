@@ -128,6 +128,8 @@ export interface TotalCircleSavings {
   diagnosticsSavings: number;
   deliverySavings: number;
   totalSavings: number;
+  callsTotal: number;
+  callsUsed: number;
 }
 
 export interface AppCommonDataContextProps {
