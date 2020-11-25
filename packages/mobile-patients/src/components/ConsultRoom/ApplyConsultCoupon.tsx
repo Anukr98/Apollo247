@@ -27,6 +27,7 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useAppCommonData } from '../AppCommonDataProvider';
 import { g } from '../../helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   bottonButtonContainer: {
@@ -135,7 +136,7 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
     const data = {
       packageId,
       mobile: g(currentPatient, 'mobileNumber'),
-      email: g(currentPatient, 'emailAddress')
+      email: g(currentPatient, 'emailAddress'),
     };
     fetchConsultCoupons(data)
       .then((res: any) => {
@@ -147,7 +148,7 @@ export const ApplyConsultCoupon: React.FC<ApplyConsultCouponProps> = (props) => 
         CommonBugFender('fetchingConsultCoupons', error);
         console.log(error);
         props.navigation.goBack();
-        renderErrorPopup(`Something went wrong, plaease try again after sometime`);
+        renderErrorPopup(string.common.tryAgainLater);
       });
   }, []);
 

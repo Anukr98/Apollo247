@@ -140,7 +140,7 @@ export const PaymentStatus: React.FC<PaymentStatusProps> = (props) => {
             ],
           })
         );
-        renderErrorPopup(`Something went wrong, plaease try again after sometime`);
+        renderErrorPopup(string.common.tryAgainLater);
       });
     BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {

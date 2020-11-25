@@ -132,7 +132,7 @@ export const ConsultCheckout: React.FC<ConsultCheckoutProps> = (props) => {
         CommonBugFender('fetchingPaymentOptions', error);
         console.log(error);
         props.navigation.navigate(AppRoutes.DoctorSearch);
-        renderErrorPopup(`Something went wrong, plaease try again after sometime`);
+        renderErrorPopup(string.common.tryAgainLater);
       });
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBack);

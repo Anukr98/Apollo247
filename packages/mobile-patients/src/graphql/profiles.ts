@@ -3619,3 +3619,14 @@ export const GET_SUBSCRIPTIONS_OF_USER_BY_STATUS = gql`
     }
   }
 `;
+
+export const GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE = gql`
+  query GetCircleSavingsOfUserByMobile($mobile_number: String!) {
+    GetCircleSavingsOfUserByMobile(mobile_number: $mobile_number) {
+      code
+      success
+      message
+      response
+    }
+  }
+`;

@@ -46,7 +46,7 @@ export const ConsultPaymentnew: React.FC<ConsultPaymentnewProps> = (props) => {
   const [loading, setLoading] = useState(true);
   const displayID = props.navigation.getParam('displayID');
   let WebViewRef: any;
-  const planId = AppConfig.Configuration.CARE_PLAN_ID;
+  const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
   const storeCode =
     Platform.OS === 'ios' ? ONE_APOLLO_STORE_CODE.IOSCUS : ONE_APOLLO_STORE_CODE.ANDCUS;
   const circleDoctorDetails = calculateCircleDoctorPricing(doctor);

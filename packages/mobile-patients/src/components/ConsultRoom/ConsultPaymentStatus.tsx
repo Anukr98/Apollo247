@@ -182,7 +182,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         CommonBugFender('fetchingTxnStutus', error);
         console.log(error);
         props.navigation.navigate(AppRoutes.DoctorSearch);
-        renderErrorPopup(`Something went wrong, plaease try again after sometime`);
+        renderErrorPopup(string.common.tryAgainLater);
       });
     BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {

@@ -171,6 +171,7 @@ import {
   GetSubscriptionsOfUserByStatusVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
 import { GetCashbackDetailsOfPlanById } from '@aph/mobile-patients/src/graphql/types/GetCashbackDetailsOfPlanById';
+import { CircleBannerComponent } from '@aph/mobile-patients/src/components/ui/CircleBannerComponent';
 
 const { Vitals } = NativeModules;
 
@@ -389,6 +390,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setCirclePlanSelected,
     setIsCircleSubscription,
     setCircleCashback,
+    circleSubscriptionId,
   } = useShoppingCart();
   const cartItemsCount = cartItems.length + shopCartItems.length;
 
@@ -409,6 +411,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     getPatientAllAppointments_getPatientAllAppointments_appointments[]
   >([]);
   const [profileChange, setProfileChange] = useState<boolean>(false);
+  const [showCircleBanner, setShowCircleBanner] = useState<boolean>(false);
 
   const [showHdfcWidget, setShowHdfcWidget] = useState<boolean>(false);
   const [showHdfcConnectWidget, setShowHdfcConnectWidget] = useState<boolean>(false);
@@ -905,6 +908,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         } else {
           setCircleSubscriptionId && setCircleSubscriptionId('');
         }
+        setShowCircleBanner(true);
       }
     } catch (error) {
       CommonBugFender('ConsultRoom_GetSubscriptionsOfUserByStatus', error);
@@ -2860,6 +2864,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
+  const renderCircleBanners = () => (
+    <CircleBannerComponent
+      navigation={props.navigation}
+      planActivationCallback={() => getUserSubscriptionsByStatus()}
+    />
+  );
+
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
@@ -2878,6 +2889,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               {/* <Text style={styles.descriptionTextStyle}>{string.home.description}</Text> */}
               {isPersonalizedCard && renderAppointmentWidget()}
               {renderMenuOptions()}
+              {showCircleBanner && renderCircleBanners()}
               {showHdfcWidget && (
                 <View style={{ backgroundColor: '#f0f1ec' }}>{renderHdfcConnect()}</View>
               )}
