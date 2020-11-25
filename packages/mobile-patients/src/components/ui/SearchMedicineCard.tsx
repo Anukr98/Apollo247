@@ -128,9 +128,6 @@ export const SearchMedicineCard: React.FC<Props> = (props) => {
       return (
         <CareCashbackBanner
           bannerText={`Extra Care ₹${cashback.toFixed(2)} Cashback`}
-          textStyle={{
-            left: -5,
-          }}
         />
       );
     } else {

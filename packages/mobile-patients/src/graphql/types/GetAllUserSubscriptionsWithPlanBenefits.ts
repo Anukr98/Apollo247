@@ -8,7 +8,7 @@
 // ====================================================
 
 export interface GetAllUserSubscriptionsWithPlanBenefits_GetAllUserSubscriptionsWithPlanBenefits {
-  __typename: "GetAllUserSubscriptionsResponse";
+  __typename: "GetGenericJSONResponse";
   code: number;
   success: boolean;
   message: string | null;

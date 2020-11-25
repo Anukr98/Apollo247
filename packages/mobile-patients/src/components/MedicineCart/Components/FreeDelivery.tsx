@@ -102,11 +102,11 @@ const styles = StyleSheet.create({
   careCashbackText: {
     ...theme.viewStyles.text('M', 14, '#02475B', 1, 17),
     paddingVertical: 15,
-    left: -6,
   },
   careCashbackLogo: {
     resizeMode: 'contain',
-    width: 60,
+    marginLeft: 5,
+    width: 50,
     height: 45,
   },
 });

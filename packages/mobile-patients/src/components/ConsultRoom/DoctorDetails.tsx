@@ -403,7 +403,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           query: GET_PLAN_DETAILS_BY_PLAN_ID,
           fetchPolicy: 'no-cache',
           variables: {
-            plan_id: AppConfig.Configuration.CARE_PLAN_ID,
+            plan_id: AppConfig.Configuration.CIRCLE_PLAN_ID,
           },
         });
         const membershipPlans = res?.data?.GetPlanDetailsByPlanId?.response?.plan_summary;

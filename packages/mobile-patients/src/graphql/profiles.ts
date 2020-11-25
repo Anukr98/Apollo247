@@ -1640,6 +1640,7 @@ export const GET_DIAGNOSTIC_HOME_PAGE_ITEMS = gql`
           testPreparationData
           testDescription
           collectionType
+          inclusions
           diagnosticPricing {
             mrp
             price
@@ -1670,6 +1671,7 @@ export const GET_DIAGNOSTIC_HOME_PAGE_ITEMS = gql`
           testPreparationData
           testDescription
           collectionType
+          inclusions
           diagnosticPricing {
             mrp
             price
@@ -3590,8 +3592,8 @@ export const GET_DIAGNOSTIC_SLOTS_WITH_AREA_ID = gql`
 `;
 
 export const GET_CASHBACK_DETAILS_OF_PLAN_ID = gql`
-  query GetCashbackDetailsOfPlanById {
-    GetCashbackDetailsOfPlanById {
+  query GetCashbackDetailsOfPlanById($plan_id: String!) {
+    GetCashbackDetailsOfPlanById(plan_id: $plan_id) {
       code
       success
       message
@@ -3616,6 +3618,17 @@ export const GET_PLAN_DETAILS_BY_PLAN_ID = gql`
 export const GET_SUBSCRIPTIONS_OF_USER_BY_STATUS = gql`
   query GetSubscriptionsOfUserByStatus($mobile_number: String!, $status: [String!]!) {
     GetSubscriptionsOfUserByStatus(mobile_number: $mobile_number, status: $status) {
+      code
+      success
+      message
+      response
+    }
+  }
+`;
+
+export const GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE = gql`
+  query GetCircleSavingsOfUserByMobile($mobile_number: String!) {
+    GetCircleSavingsOfUserByMobile(mobile_number: $mobile_number) {
       code
       success
       message

@@ -29,6 +29,7 @@ import { StorePickupScene } from '@aph/mobile-patients/src/components/Medicines/
 import { UploadPrescription } from '@aph/mobile-patients/src/components/Medicines/UploadPrescription';
 import { YourCart } from '@aph/mobile-patients/src/components/Medicines/YourCart';
 import { YourCartUploadPrescriptions } from '@aph/mobile-patients/src/components/Medicines/YourCartUploadPrescriptions';
+import { PharmacyPaymentStatus } from '@aph/mobile-patients/src/components/Medicines/PharmacyPaymentStatus';
 import { MultiSignup } from '@aph/mobile-patients/src/components/MultiSignup';
 import { OrderDetailsScene } from '@aph/mobile-patients/src/components/OrderDetailsScene';
 import { OrderModifiedScreen } from '@aph/mobile-patients/src/components/OrderModifiedScreen';
@@ -78,8 +79,8 @@ import { EditProfile } from '@aph/mobile-patients/src/components/Account/EditPro
 import { ManageProfile } from '@aph/mobile-patients/src/components/Account/ManageProfile';
 import { LinkUHID } from '@aph/mobile-patients/src/components/Account/LinkUHID';
 import { ReadMoreLinkUHID } from '@aph/mobile-patients/src/components/Account/ReadMoreLinkUHID';
-import { MyMembership } from '@aph/mobile-patients/src/components/HdfcSubscription/MyMembership';
-import { MembershipDetails } from '@aph/mobile-patients/src/components/HdfcSubscription/MembershipDetails';
+import { MyMembership } from '@aph/mobile-patients/src/components/SubscriptionMembership/MyMembership';
+import { MembershipDetails } from '@aph/mobile-patients/src/components/SubscriptionMembership/MembershipDetails';
 import { TestsByCategory } from '@aph/mobile-patients/src/components/Medicines/TestsByCategory';
 import { RenderPdf } from '@aph/mobile-patients/src/components/ui/RenderPdf';
 import { TestPayment } from '@aph/mobile-patients/src/components/Tests/TestPayment';
@@ -108,6 +109,8 @@ import { PickUpCartSummary } from '@aph/mobile-patients/src/components/MedicineC
 import { SymptomTracker } from '@aph/mobile-patients/src/components/SymptomTracker';
 import { SymptomSelection } from '@aph/mobile-patients/src/components/SymptomSelection';
 import { PaymentCheckout } from '@aph/mobile-patients/src/components/Consult/PaymentCheckout';
+import { CircleSubscription } from '@aph/mobile-patients/src/components/CirclePlan/CircleSubscription';
+import { SubscriptionPaymentGateway } from '@aph/mobile-patients/src/components/CirclePlan/SubscriptionPaymentGateway';
 
 import { Maps } from '@aph/mobile-patients/src/components/ui/Maps';
 export enum AppRoutes {
@@ -143,6 +146,7 @@ export enum AppRoutes {
   OrderModifiedScreen = 'OrderModifiedScreen',
   YourCart = 'YourCart',
   YourCartUploadPrescriptions = 'YourCartUploadPrescriptions',
+  PharmacyPaymentStatus = 'PharmacyPaymentStatus',
   TestsCheckoutScene = 'TestsCheckoutScene',
   PaymentScene = 'PaymentScene',
   AddAddress = 'AddAddress',
@@ -205,6 +209,8 @@ export enum AppRoutes {
   SearchAppointmentScreen = 'SearchAppointmentScreen',
   AppointmentFilterScene = 'AppointmentFilterScene',
   PaymentCheckout = 'PaymentCheckout',
+  CircleSubscription = 'CircleSubscription',
+  SubscriptionPaymentGateway = 'SubscriptionPaymentGateway',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -348,6 +354,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.YourCartUploadPrescriptions]: {
     screen: YourCartUploadPrescriptions,
+  },
+  [AppRoutes.PharmacyPaymentStatus]: {
+    screen: PharmacyPaymentStatus,
   },
   [AppRoutes.AddAddress]: {
     screen: AddAddress,
@@ -524,6 +533,12 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.PaymentCheckout]: {
     screen: PaymentCheckout,
+  },
+  [AppRoutes.CircleSubscription]: {
+    screen: CircleSubscription,
+  },
+  [AppRoutes.SubscriptionPaymentGateway]: {
+    screen: SubscriptionPaymentGateway,
   },
 };
 

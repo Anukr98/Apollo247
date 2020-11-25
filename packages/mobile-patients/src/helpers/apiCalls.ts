@@ -35,9 +35,9 @@ export interface MedicineProductDetails extends Omit<MedicineProduct, 'image'> {
 
 export type Doseform = 'TABLET' | 'INJECTION' | 'SYRUP' | '';
 export enum DIAGNOSTIC_GROUP_PLAN {
-   ALL ='ALL',
-   CIRCLE = 'CIRCLE'
-  }
+  ALL = 'ALL',
+  CIRCLE = 'CIRCLE',
+}
 
 interface PharmaOverview {
   generic: string;
@@ -368,7 +368,7 @@ export interface TestPackage {
   ToAgeInDays: number;
   Gender: string;
   PackageInClussion: PackageInclusion[];
-  testDescription: string
+  testDescription: string;
 }
 
 export interface TestsPackageResponse {
@@ -491,7 +491,8 @@ export const searchMedicineApi = async (
   searchText: string,
   pageId: number = 1,
   sortBy: string | null,
-  filters: { [key: string]: string[] } | null
+  filters: { [key: string]: string[] } | null,
+  axdcCode?: string | null
 ): Promise<AxiosResponse<PopcSrchPrdApiResponse>> => {
   return Axios({
     url: config.MED_SEARCH[0],
@@ -501,6 +502,7 @@ export const searchMedicineApi = async (
       page_id: pageId,
       sort_by: sortBy,
       filters,
+      axdcCode,
     },
     headers: {
       Authorization: config.MED_SEARCH[1],
@@ -570,7 +572,7 @@ export const getStoreInventoryApi = (
 export const pinCodeServiceabilityApi247 = (
   pincode: string
 ): Promise<AxiosResponse<{ response: boolean }>> => {
-  const url = `${config.UATTAT_CONFIG[0]}/serviceable?pincode=${pincode}`;
+  const url = `${config.UATTAT_CONFIG[0]}/v2/serviceable?pincode=${pincode}`;
   return Axios.get(url, {
     headers: {
       Authorization: config.UATTAT_CONFIG[1],
@@ -621,13 +623,15 @@ export const trackTagalysEvent = (
 };
 
 export const getMedicineSearchSuggestionsApi = (
-  searchText: string
+  searchText: string,
+  axdcCode?: string | null
 ): Promise<AxiosResponse<MedicineProductsResponse>> => {
   return Axios({
     url: config.MED_SEARCH_SUGGESTION[0],
     method: 'POST',
     data: {
       params: searchText,
+      axdcCode,
     },
     headers: {
       Authorization: config.MED_SEARCH_SUGGESTION[1],
@@ -639,7 +643,8 @@ export const getProductsByCategoryApi = (
   categoryId: string,
   pageId: number = 1,
   sortBy: string | null,
-  filters: { [key: string]: string[] } | null
+  filters: { [key: string]: string[] } | null,
+  axdcCode?: string | null
 ): Promise<AxiosResponse<CategoryProductsApiResponse>> => {
   return Axios.post(
     config.PRODUCTS_BY_CATEGORY[0],
@@ -648,6 +653,7 @@ export const getProductsByCategoryApi = (
       page_id: pageId,
       sort_by: sortBy,
       filters,
+      axdcCode,
     },
     {
       headers: {
@@ -675,16 +681,18 @@ export const getProductsByCategoryApi = (
   );
 };
 
-export const getMedicinePageProducts = (): Promise<AxiosResponse<MedicinePageAPiResponse>> => {
-  return Axios.post(
-    `${config.MEDICINE_PAGE[0]}`,
-    {},
-    {
-      headers: {
-        Authorization: config.MEDICINE_PAGE[1],
-      },
-    }
-  );
+export const getMedicinePageProducts = (
+  axdcCode?: string | null
+): Promise<AxiosResponse<MedicinePageAPiResponse>> => {
+  let url = `${config.MEDICINE_PAGE[0]}`;
+  if (axdcCode) {
+    url += `&axdcCode=${axdcCode}`;
+  }
+  return Axios.get(url, {
+    headers: {
+      Authorization: config.MEDICINE_PAGE[1],
+    },
+  });
 };
 
 const googlePlacesApiKey = AppConfig.Configuration.GOOGLE_API_KEY;

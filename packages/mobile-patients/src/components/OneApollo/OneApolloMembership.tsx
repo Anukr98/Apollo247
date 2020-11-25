@@ -22,6 +22,7 @@ import { NavigationScreenProps } from 'react-navigation';
 import { dataSavedUserID, g } from '../../helpers/helperFunctions';
 import { MyMembership } from './MyMembership';
 import { MyTransactions } from './MyTransactions';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -88,7 +89,7 @@ export const OneApolloMembership: React.FC<OneApolloProps> = (props) => {
         setFetchFailed(true);
         CommonBugFender('fetchingOneApolloUser', error);
         console.log(error);
-        renderErrorPopup(`Something went wrong, plaease try again after sometime`);
+        renderErrorPopup(string.common.tryAgainLater);
       });
   };
 
