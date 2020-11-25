@@ -142,6 +142,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
     hdfcUserSubscriptions,
     hdfcUpgradeUserSubscriptions,
     circleSubscription,
+    setTotalCircleSavings,
   } = useAppCommonData();
   const { circleSubscriptionId } = useShoppingCart();
   const { currentPatient } = useAllCurrentPatients();
@@ -155,6 +156,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [upgradeTransactionValue, setUpgradeTransactionValue] = useState<number>(0);
   const subscription_name = showHdfcSubscriptions ? hdfcUserSubscriptions?.name : '';
+  const client = useApolloClient();
 
   useEffect(() => {
     if (showHdfcSubscriptions) {
@@ -164,10 +166,10 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
       };
       postWebEngageEvent(WebEngageEventName.HDFC_MY_MEMBERSHIP_VIEWED, eventAttributes);
     }
+    fetchCircleSavings();
   }, []);
 
   const fetchCircleSavings = async () => {
-    const client = useApolloClient();
     try {
       const res = await client.query({
         query: GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE,
@@ -185,6 +187,14 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
       const deliverySavings =
         res?.data?.GetCircleSavingsOfUserByMobile?.response?.savings?.delivery || 0;
       const totalSavings = consultSavings + pharmaSavings + diagnosticsSavings + deliverySavings;
+      setTotalCircleSavings &&
+        setTotalCircleSavings({
+          consultSavings,
+          pharmaSavings,
+          diagnosticsSavings,
+          deliverySavings,
+          totalSavings,
+        });
     } catch (error) {
       CommonBugFender('CircleBannerComponent_fetchCircleSavings', error);
     }
