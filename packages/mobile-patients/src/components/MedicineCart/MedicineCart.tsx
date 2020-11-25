@@ -135,6 +135,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     pharmacyLocation,
     setPharmacyLocation,
     circleSubscription,
+    axdcCode,
   } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setloading] = useState<boolean>(false);
@@ -652,7 +653,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     const categoryId = AppConfig.Configuration.PRODUCT_SUGGESTIONS_CATEGORYID;
     const pageCount = AppConfig.Configuration.PRODUCT_SUGGESTIONS_COUNT;
     try {
-      const response = await getProductsByCategoryApi(categoryId, pageCount);
+      const response = await getProductsByCategoryApi(categoryId, pageCount, null, null, axdcCode);
       const products = response?.data?.products.slice(0, 15) || [];
       setsuggestedProducts(products);
     } catch (error) {

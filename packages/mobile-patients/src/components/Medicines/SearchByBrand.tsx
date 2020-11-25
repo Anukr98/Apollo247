@@ -148,7 +148,12 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
   const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
   const { getPatientApiCall } = useAuth();
   const { showAphAlert, setLoading: globalLoading } = useUIElements();
-  const { locationDetails, pharmacyLocation, isPharmacyLocationServiceable } = useAppCommonData();
+  const {
+    locationDetails,
+    pharmacyLocation,
+    isPharmacyLocationServiceable,
+    axdcCode,
+  } = useAppCommonData();
   const pharmacyPincode = g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
 
   useEffect(() => {
@@ -171,7 +176,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     if (products) {
       return;
     }
-    getProductsByCategoryApi(category_id, pageCount)
+    getProductsByCategoryApi(category_id, pageCount, null, null, axdcCode)
       .then(({ data }) => {
         console.log(data, 'getProductsByCategoryApi');
         const products = data.products || [];
@@ -761,7 +766,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           onEndReached={() => {
             if (!listFetching && !endReached) {
               setListFetching(true);
-              getProductsByCategoryApi(category_id, pageCount)
+              getProductsByCategoryApi(category_id, pageCount, null, null, axdcCode)
                 .then(({ data }) => {
                   const products = data.products || [];
                   if (prevData && JSON.stringify(prevData) !== JSON.stringify(products)) {
@@ -860,7 +865,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
 
   const onSearchMedicine = (_searchText: string) => {
     setsearchSate('load');
-    getMedicineSearchSuggestionsApi(_searchText)
+    getMedicineSearchSuggestionsApi(_searchText, axdcCode)
       .then(({ data }) => {
         const products = data.products || [];
         setMedicineList(products);

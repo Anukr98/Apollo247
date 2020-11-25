@@ -222,6 +222,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     medicinePageAPiResponse,
     setMedicinePageAPiResponse,
     setLocationDetails,
+    setAxdcCode,
+    axdcCode,
   } = useAppCommonData();
   const [ShowPopop, setShowPopop] = useState<boolean>(!!showUploadPrescriptionPopup);
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
@@ -358,11 +360,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     globalLoading!(true);
     pinCodeServiceabilityApi247(pincode)
       .then(({ data: { response } }) => {
-        setServiceabilityMsg(response ? '' : 'Services unavailable. Change delivery location.');
-        setPharmacyLocationServiceable!(response ? true : false);
-        type == 'autoDetect' && WebEngageEventAutoDetectLocation(pincode, response ? true : false);
-        type == 'pincode' && webEngageDeliveryPincodeEntered(pincode, response ? true : false);
-        console.log(pincode, response);
+        const { servicable, axdcCode } = response;
+        setAxdcCode && setAxdcCode(axdcCode);
+        setServiceabilityMsg(servicable ? '' : 'Services unavailable. Change delivery location.');
+        setPharmacyLocationServiceable!(servicable ? true : false);
+        type == 'autoDetect' &&
+          WebEngageEventAutoDetectLocation(pincode, servicable ? true : false);
+        type == 'pincode' && webEngageDeliveryPincodeEntered(pincode, servicable ? true : false);
         globalLoading!(false);
         if (!response) {
           globalLoading!(true);
@@ -470,8 +474,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   useEffect(() => {
     setWebEngageScreenNames('Medicine Home Page');
-    fetchMedicinePageProducts();
+    fetchMedicinePageProducts(false);
   }, []);
+
+  useEffect(() => {
+    if (axdcCode) {
+      fetchMedicinePageProducts(true);
+    }
+  }, [axdcCode]);
 
   useEffect(() => {
     if (g(currentPatient, 'uhid')) {
@@ -645,13 +655,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       .map((v) => `/catalog/product${v}`)[0];
   };
 
-  const fetchMedicinePageProducts = async () => {
-    if (medicinePageAPiResponse) {
+  const fetchMedicinePageProducts = async (callApiAgain?: boolean) => {
+    if (medicinePageAPiResponse && !callApiAgain) {
       return;
     }
     try {
       setLoading(true);
-      const resonse = (await getMedicinePageProducts()).data;
+      const resonse = (await getMedicinePageProducts(axdcCode)).data;
       setData(resonse);
       setMedicinePageAPiResponse!(resonse);
       setLoading(false);
@@ -1580,7 +1590,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const onSearchMedicine = (_searchText: string) => {
     setsearchSate('load');
-    getMedicineSearchSuggestionsApi(_searchText)
+    getMedicineSearchSuggestionsApi(_searchText, axdcCode)
       .then(({ data }) => {
         const products = data.products || [];
         setMedicineList(products);
