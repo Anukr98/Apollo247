@@ -230,6 +230,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setLocationDetails,
     setAxdcCode,
     axdcCode,
+    circleSubscription,
   } = useAppCommonData();
   const [ShowPopop, setShowPopop] = useState<boolean>(!!showUploadPrescriptionPopup);
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
@@ -251,6 +252,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setCircleSubPlanId,
     setCircleSubscriptionId,
     setIsCircleSubscription,
+    productDiscount,
   } = useShoppingCart();
   const {
     cartItems: diagnosticCartItems,
@@ -1999,13 +2001,16 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       },
     });
     const effectivePrice = Math.round(cartTotal - cartTotalCashback);
-    console.log('cartTotalCashback: ', cartTotalCashback);
     return (
       <View style={circleStyles.container}>
         <View style={circleStyles.content}>
-          <View style={{ alignItems: isCircleSubscription ? 'flex-start' : 'center' }}>
+          <View
+            style={{
+              alignItems: circleSubscription?._id || isCircleSubscription ? 'flex-start' : 'center',
+            }}
+          >
             <Text style={theme.viewStyles.text('R', 13, '#02475B', 1, 24, 0)}>
-              {isCircleSubscription ? 'Items' : 'Total no. of items'}
+              {circleSubscription?._id || isCircleSubscription ? 'Items' : 'Total items'}
             </Text>
             <Text style={theme.viewStyles.text('SB', 16, '#02475B', 1, 20, 0)}>
               {cartItems.length}
@@ -2013,10 +2018,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           </View>
           {cartTotalCashback > 1 ? (
             <>
-              {isCircleSubscription ? (
+              {circleSubscription?._id || isCircleSubscription ? (
                 <View>
                   <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 20, 0)}>
-                    ₹{cartTotal}
+                    ₹{cartTotal - productDiscount}
                   </Text>
                   <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
                     <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 25, 0)}>
@@ -2024,7 +2029,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                     </Text>
                     <CircleLogo style={circleStyles.circleLogoTwo} />
                     <Text style={{ ...theme.viewStyles.text('R', 12, '#02475B', 1, 25, 0) }}>
-                      members
+                      members{' '}
                     </Text>
                     <Text style={theme.viewStyles.text('SB', 12, '#02475B', 1, 25, 0)}>
                       ₹{effectivePrice}
@@ -2051,7 +2056,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 marginTop: 13,
               }}
             >
-              <Text style={theme.viewStyles.text('SB', 16, '#02475B', 1, 20, 0)}>₹{cartTotal}</Text>
+              <Text style={theme.viewStyles.text('SB', 16, '#02475B', 1, 20, 0)}>
+                ₹{cartTotal - productDiscount}
+              </Text>
             </View>
           )}
           <TouchableOpacity
@@ -2061,7 +2068,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             }}
           >
             <Text style={theme.viewStyles.text('B', 13, '#FFFFFF', 1, 20, 0)}>GO TO CART</Text>
-            {!isCircleSubscription && cartTotalCashback > 1 && (
+            {!circleSubscription?._id && !isCircleSubscription && cartTotalCashback > 1 && (
               <Text style={theme.viewStyles.text('M', 12, '#02475B', 1, 20, 0)}>
                 {`Buy for ₹${cartTotal}`}
               </Text>
