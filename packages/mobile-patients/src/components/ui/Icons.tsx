@@ -1323,3 +1323,7 @@ export const ExpressDelivery: React.FC<IconProps> = (props) => (
 export const OneApolloLogo: React.FC<IconProps> = (props) => (
   <IconBase size="md" {...props} source={require('./icons/oneapollo.png')} />
 );
+
+export const CircleLogoWhite: React.FC<IconProps> = (props) => (
+  <IconBase size="md" {...props} source={require('./icons/circleLogoWhite.png')} />
+);

@@ -108,6 +108,7 @@ export enum DIAGNOSTIC_ORDER_PAYMENT_TYPE {
 
 export enum DIAGNOSTIC_ORDER_STATUS {
   ORDER_CANCELLED = "ORDER_CANCELLED",
+  ORDER_COMPLETED = "ORDER_COMPLETED",
   ORDER_FAILED = "ORDER_FAILED",
   ORDER_PLACED = "ORDER_PLACED",
   PAYMENT_PENDING = "PAYMENT_PENDING",
@@ -752,6 +753,9 @@ export interface DiagnosticBookHomeCollectionInput {
   homeCollectionCharges: number;
   uniqueID?: string | null;
   slotDateTimeInUTC?: any | null;
+  totalPriceExcludingDiscounts?: number | null;
+  userSubscriptionId?: string | null;
+  subscriptionInclusionId?: string | null;
 }
 
 export interface DiagnosticLineItem {
@@ -786,6 +790,9 @@ export interface DiagnosticOrderInput {
   items?: (DiagnosticLineItem | null)[] | null;
   slotId?: string | null;
   areaId?: number | null;
+  totalPriceExcludingDiscounts?: number | null;
+  userSubscriptionId?: string | null;
+  subscriptionInclusionId?: string | null;
 }
 
 export interface DiagnosticTestsOrdered {

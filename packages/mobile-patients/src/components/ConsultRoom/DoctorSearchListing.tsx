@@ -260,7 +260,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     []
   );
   const { locationForDiagnostics, locationDetails, setLocationDetails } = useAppCommonData();
-  const { clearCartInfo } = useDiagnosticsCart();
+  const { clearDiagnoticCartInfo } = useDiagnosticsCart();
   const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
 
   const [
@@ -802,7 +802,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           city.toLowerCase() !=
           ((locationForDiagnostics && locationForDiagnostics.city) || '').toLowerCase()
         ) {
-          clearCartInfo && clearCartInfo();
+          clearDiagnoticCartInfo && clearDiagnoticCartInfo();
         }
         if (addrComponents.length > 0) {
           setcurrentLocation(item.name);

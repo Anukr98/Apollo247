@@ -174,12 +174,14 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
   const {
     setIsDiagnosticCircleSubscription,
     isDiagnosticCircleSubscription,
+    clearDiagnoticCartInfo,
   } = useDiagnosticsCart();
   const {
     setIsCircleSubscription,
     setCircleMembershipCharges,
     setCircleSubscriptionId,
     circleSubscriptionId,
+    clearCartInfo,
   } = useShoppingCart();
 
   useEffect(() => {
@@ -313,6 +315,8 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       setTagalysConfig(null);
       setCircleSubscriptionId && setCircleSubscriptionId('');
       AsyncStorage.removeItem('circlePlanSelected');
+      clearCartInfo && clearCartInfo();
+      clearDiagnoticCartInfo && clearDiagnoticCartInfo();
       setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
       props.navigation.dispatch(
         StackActions.reset({

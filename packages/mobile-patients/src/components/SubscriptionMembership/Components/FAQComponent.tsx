@@ -1,55 +1,38 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { ArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Circle } from '@aph/mobile-patients/src/strings/strings.json';
 
 export interface FAQComponentProps {}
 
 export const FAQComponent: React.FC<FAQComponentProps> = (props) => {
-  const faq = [
-    {
-      question: 'What is the first question?',
-      answer: 'Here, we will answer the questions you’ve raised over the time.',
-      showAnswer: true,
-    },
-    {
-      question: 'What is the second question?',
-      answer: 'Here, we will answer the questions you’ve raised over the time.',
-      showAnswer: true,
-    },
-    {
-      question: 'What is the third question?',
-      answer: 'Here, we will answer the questions you’ve raised over the time.',
-      showAnswer: true,
-    },
-    {
-      question: 'What is the fourth question?',
-      answer: 'Here, we will answer the questions you’ve raised over the time.',
-      showAnswer: true,
-    },
-  ];
+  const faq = Circle.FAQ;
+  const [activeIndex, setActiveIndex] = useState<number>(-1);
 
   const renderQuestions = () => {
-    return (
-      faq.map((value, index) => 
+    return faq.map((value, index) => {
+      return (
         <View>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.questionContainer}
             activeOpacity={0.7}
             onPress={() => {
-              console.log(index);
+              setActiveIndex(index);
             }}
           >
             <Text style={styles.faqQuestion}>{value.question}</Text>
-            <ArrowRight style={{
-              transform: [{ rotate: value.showAnswer ? '90deg' : '270deg' }],
-            }} />
+            <ArrowRight
+              style={{
+                transform: [{ rotate: !!(activeIndex === index) ? '90deg' : '270deg' }],
+              }}
+            />
           </TouchableOpacity>
-          {value.showAnswer && <Text style={styles.faqAnswer}>{value.answer}</Text>}
+          {!!(activeIndex === index) ? <Text style={styles.faqAnswer}>{value.answer}</Text> : <></>}
           {faq.length - 1 !== index && <View style={styles.horizontalLine} />}
         </View>
-      )
-    )
+      );
+    });
   };
 
   return (
@@ -86,6 +69,7 @@ const styles = StyleSheet.create({
   faqQuestion: {
     ...theme.viewStyles.text('M', 14, '#01475B', 1, 20, 0.35),
     marginBottom: 10,
+    width: '80%',
   },
   faqAnswer: {
     ...theme.viewStyles.text('L', 13, '#01475B', 1, 20, 0.35),

@@ -14,9 +14,7 @@ import {
   GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
   GET_PHARMA_TRANSACTION_STATUS,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import {
-  g,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string, { Payment } from '@aph/mobile-patients/src/strings/strings.json';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
@@ -50,10 +48,11 @@ import {
 export interface PharmacyPaymentStatusProps extends NavigationScreenProps {}
 
 export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (props) => {
-  const { 
-    clearCartInfo, 
-    setCircleMembershipCharges, 
+  const {
+    clearCartInfo,
+    setCircleMembershipCharges,
     cartTotalCashback,
+    isCircleSubscription,
     setIsCircleSubscription,
   } = useShoppingCart();
   const [loading, setLoading] = useState<boolean>(false);
@@ -65,6 +64,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const price = props.navigation.getParam('price');
   const orderId = props.navigation.getParam('orderId');
   const circleSavings = cartTotalCashback;
+  console.log('isCircleSubscription: ', isCircleSubscription);
   const [circleSubscriptionID, setCircleSubscriptionID] = useState<string>('');
 
   const client = useApolloClient();
@@ -73,7 +73,6 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   const { currentPatient } = useAllCurrentPatients();
   const [snackbarState, setSnackbarState] = useState<boolean>(false);
   const [circlePlanDetails, setCirclePlanDetails] = useState({});
-
 
   const copyToClipboard = (refId: string) => {
     Clipboard.setString(refId);
@@ -218,13 +217,17 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     const priceText = `${string.common.Rs} ` + String(price);
     return (
       <View style={[styles.statusCardStyle, { backgroundColor: statusCardColour() }]}>
-        <View style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-        }}>
-          <View style={{
+        <View
+          style={{
             flexDirection: 'row',
-          }}>
+            justifyContent: 'space-between',
+          }}
+        >
+          <View
+            style={{
+              flexDirection: 'row',
+            }}
+          >
             <View style={styles.statusCardSubContainerStyle}>{statusIcon()}</View>
             <View
               style={{
@@ -237,12 +240,14 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
           </View>
           <Text style={theme.viewStyles.text('SB', 16, '#02475B', 1, 22, 0.7)}>{priceText}</Text>
         </View>
-        <View style={{
-          marginVertical: 10,
-          marginHorizontal: 20,
-          borderTopColor: '#E5E5E5',
-          borderTopWidth: 1,
-        }}/>
+        <View
+          style={{
+            marginVertical: 10,
+            marginHorizontal: 20,
+            borderTopColor: '#E5E5E5',
+            borderTopWidth: 1,
+          }}
+        />
         <View>
           <View
             style={{
@@ -251,12 +256,21 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
             }}
           >
             <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 30, 0.7)}>Order ID : </Text>
-            <Text style={theme.viewStyles.text('M', 15, theme.colors.SHADE_GREY, 1, 30)}>{orderId}</Text>
+            <Text style={theme.viewStyles.text('M', 15, theme.colors.SHADE_GREY, 1, 30)}>
+              {orderId}
+            </Text>
           </View>
           <View style={{ justifyContent: 'flex-start' }}>
-            <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 30, 0.7)}>Payment Reference Number : </Text>
-            <TouchableOpacity style={styles.refStyles} onPress={() => copyToClipboard(refNumberText)}>
-              <Text style={theme.viewStyles.text('M', 15, theme.colors.SHADE_GREY, 1, 30)}>{paymentRefId}</Text>
+            <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 30, 0.7)}>
+              Payment Reference Number :{' '}
+            </Text>
+            <TouchableOpacity
+              style={styles.refStyles}
+              onPress={() => copyToClipboard(refNumberText)}
+            >
+              <Text style={theme.viewStyles.text('M', 15, theme.colors.SHADE_GREY, 1, 30)}>
+                {paymentRefId}
+              </Text>
               <Copy style={styles.iconStyle} />
             </TouchableOpacity>
           </View>
@@ -292,12 +306,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         <View style={{ marginVertical: 20, flexDirection: 'row', justifyContent: 'space-between' }}>
           <View>
             <View style={{ justifyContent: 'flex-start' }}>
-              {textComponent(
-                'Order Date & Time',
-                undefined,
-                theme.colors.ASTRONAUT_BLUE,
-                false
-              )}
+              {textComponent('Order Date & Time', undefined, theme.colors.ASTRONAUT_BLUE, false)}
             </View>
             <View style={{ justifyContent: 'flex-start', marginTop: 5 }}>
               {textComponent(
@@ -310,20 +319,10 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
           </View>
           <View>
             <View style={{ justifyContent: 'flex-start' }}>
-              {textComponent(
-                'Mode of Payment',
-                undefined,
-                theme.colors.ASTRONAUT_BLUE,
-                false
-              )}
+              {textComponent('Mode of Payment', undefined, theme.colors.ASTRONAUT_BLUE, false)}
             </View>
             <View style={{ justifyContent: 'flex-start', marginTop: 5 }}>
-              {textComponent(
-                paymentMode,
-                undefined,
-                theme.colors.SHADE_CYAN_BLUE,
-                false
-              )}
+              {textComponent(paymentMode, undefined, theme.colors.SHADE_CYAN_BLUE, false)}
             </View>
           </View>
         </View>
@@ -394,9 +393,8 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
             {getButtonText()}
           </Text>
         </TouchableOpacity>
-        {
-          (status === success) &&
-            <TouchableOpacity
+        {status === success && (
+          <TouchableOpacity
             style={styles.textButtonStyle}
             onPress={() => {
               clearCircleSubscriptionData();
@@ -407,7 +405,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
               GO TO HOMEPAGE
             </Text>
           </TouchableOpacity>
-        }
+        )}
       </View>
     );
   };
@@ -430,7 +428,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
             style={{
               ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 14),
               marginTop: 3,
-              left: -5
+              left: -5,
             }}
           >
             You{' '}
@@ -453,10 +451,18 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         <View style={styles.container}>
           <ScrollView style={styles.container}>
             {renderStatusCard()}
-            {status === 'PAYMENT_SUCCESS' && circleSavings > 0 && !circleSubscriptionID
+            {status === 'PAYMENT_SUCCESS' &&
+            circleSavings > 0 &&
+            !circleSubscriptionID &&
+            isCircleSubscription
               ? renderAddedCirclePlanWithValidity()
               : null}
-            {(status === 'PAYMENT_SUCCESS' && circleSavings > 0 && circleSubscriptionID) ? renderCircleSavingsOnPurchase() : null}
+            {status === 'PAYMENT_SUCCESS' &&
+            circleSavings > 0 &&
+            circleSubscriptionID &&
+            isCircleSubscription
+              ? renderCircleSavingsOnPurchase()
+              : null}
             {appointmentHeader()}
             {appointmentCard()}
             {renderNote()}

@@ -1419,6 +1419,9 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
         orderType
         displayId
         createdDate
+        areaId
+        rescheduleCount
+      	isRescheduled
         diagnosticOrderLineItems {
           id
           itemId
@@ -1437,6 +1440,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
             itemType
             testPreparationData
             testDescription
+            inclusions
             diagnosticPricing {
               mrp
               price
@@ -1579,6 +1583,7 @@ export const GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID = gql`
           endDate
         }
         testDescription
+        inclusions
       }
     }
   }
@@ -1751,6 +1756,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
         prescriptionOptionSelected
         tatType
         shopId
+        totalCashback
         medicineOrderLineItems {
           medicineSKU
           medicineName
@@ -1878,6 +1884,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
         patientAddressId
         alertStore
         prescriptionOptionSelected
+        totalCashback
         medicineOrdersStatus {
           id
           orderStatus

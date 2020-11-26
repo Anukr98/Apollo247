@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 const { width } = Dimensions.get('window');
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
+import { CircleLogoWhite, CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
 import { NavigationScreenProps } from 'react-navigation';
@@ -123,7 +123,9 @@ export const CircleBannerComponent: React.FC<CircleBannerProps> = (props) => {
       return (
         <View style={{ paddingLeft: 6 }}>
           <View style={[styles.row, { marginTop: 20 }]}>
-            {props.comingFrom == 'diagnostics' ? null : <CircleLogo style={styles.circleLogo} />}
+            {props.comingFrom == 'diagnostics' ? null : (
+              <CircleLogoWhite style={styles.circleLogo} />
+            )}
             {props.nonSubscribedText ? (
               <View style={{ width: '55%' }}>
                 <Text style={styles.headerText}>{props.nonSubscribedText}</Text>
@@ -162,7 +164,7 @@ export const CircleBannerComponent: React.FC<CircleBannerProps> = (props) => {
       <View>
         <View style={styles.row}>
           <Text style={styles.title}>BEING A PART OF</Text>
-          <CircleLogo style={[styles.circleLogo, { marginLeft: 3 }]} />
+          <CircleLogoWhite style={[styles.circleLogo, { marginLeft: 4 }]} />
         </View>
         <Text style={[styles.title, { marginTop: -5 }]}>YOU HAVE SAVED</Text>
         <Text style={[styles.title, { fontSize: 20, marginTop: 3 }]}>
@@ -172,6 +174,7 @@ export const CircleBannerComponent: React.FC<CircleBannerProps> = (props) => {
       </View>
     );
   };
+
   const renderUpgradeBtn = () => {
     return (
       <TouchableOpacity
@@ -230,12 +233,18 @@ export const CircleBannerComponent: React.FC<CircleBannerProps> = (props) => {
       navigation={props.navigation}
     />
   );
+  const backGroundImage =
+    props.comingFrom == 'diagnostics'
+      ? require('@aph/mobile-patients/src/components/ui/icons/circleBanner_diagnostic.png')
+      : require('@aph/mobile-patients/src/components/ui/icons/circleBanner.png');
   return (
-    <View style={styles.container}>
+    <View style={[styles.container]}>
       <ImageBackground
-        source={require('@aph/mobile-patients/src/components/ui/icons/circleBanner.png')}
+        source={backGroundImage}
         style={[styles.banner, { height: props.comingFrom == 'diagnostics' ? 180 : 150 }]}
-        imageStyle={{ borderRadius: 16 }}
+        imageStyle={{
+          borderRadius: props.comingFrom == 'diagnostics' ? 5 : 16,
+        }}
       >
         {renderConditionalViews()}
         {!circleSubscriptionId ? (
@@ -275,7 +284,7 @@ const styles = StyleSheet.create({
   circleLogo: {
     width: 50,
     height: 30,
-    marginRight: 3,
+    marginRight: 4,
   },
   title: {
     ...theme.viewStyles.text('M', 14, theme.colors.WHITE, 1, 22),

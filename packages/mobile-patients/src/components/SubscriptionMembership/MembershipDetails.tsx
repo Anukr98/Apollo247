@@ -191,6 +191,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const renderTabComponent = () => {
     return (
       <ScrollView bounces={false}>
+        {renderMembershipBanner()}
         {renderCoupons()}
         <TabsComponent
           style={styles.tabsContainer}
@@ -256,7 +257,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     );
   };
 
-  const renderTermsAndConditions = () => <TermsAndConditions />;
+  const renderTermsAndConditions = () => <TermsAndConditions isCirclePlan={isCirclePlan} />;
 
   const renderRedeemableCards = (
     heading: string,
@@ -420,6 +421,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         }}
         bounces={false}
       >
+        {renderMembershipBanner()}
         {areBenefitsAvailable && renderWhatWillYouGet()}
         {renderHowToAvail()}
       </ScrollView>
@@ -512,6 +514,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const renderInactivePlansContainer = () => {
     return (
       <ScrollView bounces={false}>
+        {renderMembershipBanner()}
         {renderInactivePlanMessage()}
         <Text style={styles.benefitsAvailableHeading}>Benefits Available</Text>
         {renderBenefitsAvailable()}
@@ -581,9 +584,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         <TouchableOpacity
           activeOpacity={1}
           onPress={() => {
-            if (totalSavingsDone) {
-              handleCtaClick(type, action, message, availableCount, _id, null);
-            }
+            handleCtaClick(type, action, message, availableCount, _id, null);
           }}
           style={[styles.cardStyle, { marginVertical: 10 }]}
         >
@@ -601,6 +602,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const renderCirclePlan = () => {
     return (
       <ScrollView bounces={false}>
+        {renderMembershipBanner()}
         <CircleSavings navigation={props.navigation} />
         <View
           style={{
@@ -613,6 +615,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
           </Text>
           {renderCircleBenefits(circleSubscription?.benefits)}
           <FAQComponent />
+          {renderTermsAndConditions()}
         </View>
       </ScrollView>
     );
@@ -622,7 +625,6 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     <View style={{ flex: 1 }}>
       <SafeAreaView style={styles.safeAreaStyle}>
         {renderHeader()}
-        {renderMembershipBanner()}
         {isCirclePlan ? renderCirclePlan() : renderHdfcMembershipDetails()}
       </SafeAreaView>
       {showHdfcConnectPopup && (

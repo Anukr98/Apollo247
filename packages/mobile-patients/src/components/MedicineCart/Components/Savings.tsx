@@ -8,14 +8,21 @@ import { Down, CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
 export interface SavingsProps {}
 
 export const Savings: React.FC<SavingsProps> = (props) => {
-  const { couponDiscount, productDiscount, deliveryCharges, isCircleSubscription, cartTotalCashback, circleMembershipCharges, coupon } = useShoppingCart();
+  const {
+    couponDiscount,
+    productDiscount,
+    isCircleSubscription,
+    cartTotalCashback,
+    circleMembershipCharges,
+    coupon,
+  } = useShoppingCart();
   const deliveryFee = AppConfig.Configuration.DELIVERY_CHARGES;
   const [showCareDetails, setShowCareDetails] = useState(true);
-  const careTotal = !!coupon ? 
-    Number(deliveryFee) + Number(productDiscount) + Number(couponDiscount) : 
-    isCircleSubscription || circleMembershipCharges ? 
-    Number(deliveryFee) + Number(productDiscount) + cartTotalCashback : 
-    Number(deliveryFee) + Number(productDiscount);
+  const careTotal = !!coupon
+    ? Number(deliveryFee) + Number(productDiscount) + Number(couponDiscount)
+    : isCircleSubscription || circleMembershipCharges
+    ? Number(deliveryFee) + Number(productDiscount) + cartTotalCashback
+    : Number(productDiscount);
 
   function getSavings() {
     return Number(careTotal).toFixed(2);
@@ -31,16 +38,14 @@ export const Savings: React.FC<SavingsProps> = (props) => {
       >
         <View style={styles.rowSpaceBetween}>
           <Text style={styles.youText}>
-            You{' '}
-            <Text style={styles.saveText}>
-              saved ₹{getSavings()}
-            </Text>{' '}
-            on your purchase
+            You <Text style={styles.saveText}>saved ₹{getSavings()}</Text> on your purchase
           </Text>
-            <Down style={{
+          <Down
+            style={{
               height: 15,
-              transform: [{ rotate: showCareDetails ? '180deg' : '0deg'}],
-            }} />
+              transform: [{ rotate: showCareDetails ? '180deg' : '0deg' }],
+            }}
+          />
         </View>
       </TouchableOpacity>
     );
@@ -53,7 +58,7 @@ export const Savings: React.FC<SavingsProps> = (props) => {
           <Text style={styles.youText}>
             You could{' '}
             <Text style={styles.saveText}>
-              save ₹{cartTotalCashback}
+              save ₹{(cartTotalCashback + deliveryFee + Number(productDiscount)).toFixed(2)}
             </Text>{' '}
             on your purchase with
           </Text>
@@ -61,65 +66,67 @@ export const Savings: React.FC<SavingsProps> = (props) => {
         </View>
       );
     } else {
-      return <></>
+      return <></>;
     }
   }
 
   function renderCareLogo() {
-    return (
-      <CircleLogo style={styles.circleLogoTwo} />
-    );
+    return <CircleLogo style={styles.circleLogoTwo} />;
   }
 
   function careSavings() {
     return (
       <View style={styles.careSavingsContainer}>
         <View style={styles.rowSpaceBetween}>
-          <View style={{
-            flexDirection: 'row',
-          }}>
+          <View
+            style={{
+              flexDirection: 'row',
+            }}
+          >
             {renderCareLogo()}
-            <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>Membership Cashback</Text>
+            <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>
+              Membership Cashback
+            </Text>
           </View>
           <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>₹{cartTotalCashback}</Text>
         </View>
-        {
-          !!deliveryFee &&
-          <View style={[
-            styles.rowSpaceBetween,
-            { marginTop: 10 }
-          ]}>
-            <View style={{flexDirection: 'row'}}>
+        {!!deliveryFee && (
+          <View style={[styles.rowSpaceBetween, { marginTop: 10 }]}>
+            <View style={{ flexDirection: 'row' }}>
               {renderCareLogo()}
               <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>Delivery</Text>
             </View>
-            <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>₹{deliveryFee.toFixed(2)}</Text>
+            <Text style={theme.viewStyles.text('R', 14, '#00B38E', 1, 20)}>
+              ₹{deliveryFee.toFixed(2)}
+            </Text>
           </View>
-        }
-        {
-          !!productDiscount &&
-          <View style={[
-            styles.rowSpaceBetween,
-            { marginTop: 10 }
-          ]}>
+        )}
+        {!!productDiscount && (
+          <View style={[styles.rowSpaceBetween, { marginTop: 10 }]}>
             <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>Cart Savings</Text>
-            <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>₹{productDiscount.toFixed(2)}</Text>
+            <Text style={theme.viewStyles.text('R', 14, '#02475B', 1, 20)}>
+              ₹{productDiscount.toFixed(2)}
+            </Text>
           </View>
-        }
+        )}
         <View style={styles.totalAmountContainer}>
           <Text style={styles.totalAmount}>₹{careTotal.toFixed(2)}</Text>
         </View>
       </View>
-    )
+    );
   }
 
   return getSavings() && getSavings() != 0 ? (
     <>
       <View style={styles.savingsCard}>
         {saveMessage()}
-        { ((isCircleSubscription || !!circleMembershipCharges) && !coupon && showCareDetails) && careSavings() }
+        {(isCircleSubscription || !!circleMembershipCharges) &&
+          !coupon &&
+          showCareDetails &&
+          careSavings()}
       </View>
-      { (!(isCircleSubscription || !!circleMembershipCharges) || !!coupon && showCareDetails) && careSubscribeMessage() }
+      {(!(isCircleSubscription || !!circleMembershipCharges) || (!!coupon && showCareDetails)) &&
+        careSubscribeMessage()}
     </>
   ) : null;
 };
@@ -165,16 +172,16 @@ const styles = StyleSheet.create({
   },
   totalAmount: {
     ...theme.viewStyles.text('B', 14, '#02475B', 1, 20),
-    textAlign: 'right'
+    textAlign: 'right',
   },
-  youText: { 
-    ...theme.fonts.IBMPlexSansRegular(13), 
-    lineHeight: 17, 
+  youText: {
+    ...theme.fonts.IBMPlexSansRegular(13),
+    lineHeight: 17,
     color: '#02475B',
   },
-  saveText: { 
-    ...theme.fonts.IBMPlexSansSemiBold(13), 
-    lineHeight: 17, 
+  saveText: {
+    ...theme.fonts.IBMPlexSansSemiBold(13),
+    lineHeight: 17,
     color: '#00B38E',
   },
   circleLogo: {

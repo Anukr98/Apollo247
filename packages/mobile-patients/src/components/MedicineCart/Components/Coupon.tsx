@@ -2,7 +2,12 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { ArrowRight, CouponIcon, Cross, PendingIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  ArrowRight,
+  CouponIcon,
+  Cross,
+  PendingIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 
 export interface CouponProps {
   onPressApplyCoupon: () => void;
@@ -10,7 +15,13 @@ export interface CouponProps {
 }
 
 export const Coupon: React.FC<CouponProps> = (props) => {
-  const { coupon, couponDiscount, isProuctFreeCouponApplied, isCircleSubscription, circleMembershipCharges } = useShoppingCart();
+  const {
+    coupon,
+    couponDiscount,
+    isProuctFreeCouponApplied,
+    isCircleSubscription,
+    circleMembershipCharges,
+  } = useShoppingCart();
   const { onPressApplyCoupon, onPressRemove } = props;
 
   const renderApplyCoupon = () => {
@@ -28,18 +39,18 @@ export const Coupon: React.FC<CouponProps> = (props) => {
     );
   };
 
-  const renderCareMessage = () => 
+  const renderCareMessage = () => (
     <View style={styles.careMessageContainer}>
       <PendingIcon style={styles.pendingIconStyle} />
       <View style={styles.careMessage}>
-        <Text style={styles.removeCircleText}>
-          Remove Circle membership to apply coupon
-        </Text>
-        <Text style={[styles.removeCircleText, { marginTop: 5}]}>
-          You can either use CIRCLE benefits or apply coupon. Remove CIRCLE membership from CART to avail coupon discount.
+        <Text style={styles.removeCircleText}>Remove Circle membership to apply coupon</Text>
+        <Text style={[styles.removeCircleText, { marginTop: 5 }]}>
+          You can either use CIRCLE benefits or apply coupon. Remove CIRCLE membership from CART to
+          avail coupon discount.
         </Text>
       </View>
     </View>
+  );
 
   const renderCouponMsg = () => {
     return !isProuctFreeCouponApplied ? (
@@ -141,7 +152,7 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   removeCircleText: {
-    ...theme.viewStyles.text('B', 13, '#979797', 1, 20), 
-    flexWrap: 'wrap'
-  }
+    ...theme.viewStyles.text('M', 13, '#979797', 1, 20),
+    flexWrap: 'wrap',
+  },
 });
