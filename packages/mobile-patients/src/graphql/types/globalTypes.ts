@@ -753,6 +753,9 @@ export interface DiagnosticBookHomeCollectionInput {
   homeCollectionCharges: number;
   uniqueID?: string | null;
   slotDateTimeInUTC?: any | null;
+  totalPriceExcludingDiscounts?: number | null;
+  userSubscriptionId?: string | null;
+  subscriptionInclusionId?: string | null;
 }
 
 export interface DiagnosticLineItem {
@@ -787,6 +790,9 @@ export interface DiagnosticOrderInput {
   items?: (DiagnosticLineItem | null)[] | null;
   slotId?: string | null;
   areaId?: number | null;
+  totalPriceExcludingDiscounts?: number | null;
+  userSubscriptionId?: string | null;
+  subscriptionInclusionId?: string | null;
 }
 
 export interface DiagnosticTestsOrdered {

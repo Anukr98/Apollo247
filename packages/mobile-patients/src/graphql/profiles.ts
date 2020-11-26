@@ -1583,6 +1583,7 @@ export const GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID = gql`
           endDate
         }
         testDescription
+        inclusions
       }
     }
   }

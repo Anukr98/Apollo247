@@ -15,6 +15,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { DIAGNOSTIC_GROUP_PLAN } from '../helpers/apiCalls';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
 
 const { height } = Dimensions.get('window');
 
@@ -311,14 +312,18 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
             <Text
               style={[
                 styles.commonText,
-                { ...theme.fonts.IBMPlexSansMedium(10), textAlign: 'right' },
+                {
+                  ...theme.fonts.IBMPlexSansMedium(10),
+                  textAlign: 'right',
+                  color: colors.APP_GREEN,
+                },
               ]}
             >
               CIRCLE SAVING
             </Text>
           </View>
           <View style={{ flex: 1, alignItems: 'center' }}>
-            <Text style={styles.commonText}>
+            <Text style={[styles.commonText, { color: colors.APP_GREEN }]}>
               - {string.common.Rs}
               {totalCircleSaving}
             </Text>
@@ -334,14 +339,18 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
             <Text
               style={[
                 styles.commonText,
-                { ...theme.fonts.IBMPlexSansMedium(10), textAlign: 'right' },
+                {
+                  ...theme.fonts.IBMPlexSansMedium(10),
+                  textAlign: 'right',
+                  color: colors.APP_GREEN,
+                },
               ]}
             >
               CART SAVING
             </Text>
           </View>
           <View style={{ flex: 1, alignItems: 'center' }}>
-            <Text style={styles.commonText}>
+            <Text style={[styles.commonText, { color: colors.APP_GREEN }]}>
               - {string.common.Rs}
               {totalCartSaving}
             </Text>

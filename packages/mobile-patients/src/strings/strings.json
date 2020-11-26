@@ -331,7 +331,10 @@
     "proceedToCartCTA": "PROCEED TO CART",
     "noPreparationRequiredText": "No special preparation required",
     "noTestDescription": "No test description available",
-    "priceNotificationForCovidText": "Extra charges for Phlebotomist Protection Kit and Home Collection may apply for COVID Test. You will be informed of the charges after booking of the order."
+    "priceNotificationForCovidText": "Extra charges for Phlebotomist Protection Kit and Home Collection may apply for COVID Test. You will be informed of the charges after booking of the order.",
+    "cashOnDeliverySubText":"Currently we have Cash on delivery as a payment option.",
+    "bookingOrderFailedMessage": "We're sorry :(  There's been a problem with your booking. Please book again.",
+    "bookingOrderDuplicateFailedMessage":"Few of the tests are added twice. Please remove duplicates and proceed to place order",
   },
   "orders": {
     "urOrders": "MY ORDERS",

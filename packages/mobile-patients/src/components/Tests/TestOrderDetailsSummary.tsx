@@ -45,7 +45,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
-import { SafeAreaView, StyleSheet, View } from 'react-native';
+import { BackHandler, SafeAreaView, StyleSheet, View } from 'react-native';
 import {
   NavigationActions,
   NavigationScreenProps,
@@ -149,7 +149,15 @@ export const TestOrderDetailsSummary: React.FC<TestOrderDetailsSummaryProps> = (
   //   setRescheduleVisible(true);
   // }, []);
 
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    };
+  }, []);
+
   const handleBack = () => {
+    BackHandler.removeEventListener('hardwareBackPress', handleBack);
     if (!goToHomeOnBack) {
       refetchOrders()
         .then((data: any) => {
@@ -171,8 +179,7 @@ export const TestOrderDetailsSummary: React.FC<TestOrderDetailsSummaryProps> = (
     } else {
       props.navigation.goBack();
     }
-
-    return false;
+    return true;
   };
 
   const getFormattedDate = (time: string) => {
