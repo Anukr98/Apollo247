@@ -380,7 +380,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         type == 'autoDetect' && WebEngageEventAutoDetectLocation(pincode, !!servicable);
         type == 'pincode' && webEngageDeliveryPincodeEntered(pincode, !!servicable);
         globalLoading!(false);
-        if (!response) {
+        if (!servicable) {
           globalLoading!(true);
           getNearByStoreDetailsApi(pincode)
             .then((response: any) => {

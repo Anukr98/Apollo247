@@ -136,6 +136,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     setPharmacyLocation,
     circleSubscription,
     axdcCode,
+    setAxdcCode,
   } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
   const [loading, setloading] = useState<boolean>(false);
@@ -295,8 +296,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       setloading(true);
       const response = await pinCodeServiceabilityApi247(address.zipcode!);
       const { data } = response;
-      console.log(data);
-      if (data.response) {
+      setAxdcCode && setAxdcCode(data?.response?.axdcCode);
+      if (data?.response?.servicable) {
         setDeliveryAddressId && setDeliveryAddressId(address.id);
         setDefaultAddress(address);
         fetchPickupStores(address?.zipcode || '');
@@ -888,6 +889,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
               setIsCircleSubscription && setIsCircleSubscription(false);
             }
           } else {
+            setCoupon && setCoupon(null);
             setIsCircleSubscription && setIsCircleSubscription(true);
           }
         }}

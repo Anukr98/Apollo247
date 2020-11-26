@@ -1166,7 +1166,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     setLoading!(true);
     pinCodeServiceabilityApi247(address.zipcode!)
       .then(({ data }) => {
-        if (g(data, 'response')) {
+        if (g(data, 'response', 'servicable')) {
           // Not stopping checkingServicability spinner here, it'll be stopped in useEffect that triggers when change in DeliveryAddressId
           setDeliveryAddressId && setDeliveryAddressId(address.id);
         } else {
