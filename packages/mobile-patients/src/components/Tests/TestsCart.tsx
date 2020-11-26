@@ -355,7 +355,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     setAreaSelected,
     diagnosticAreas,
     setDiagnosticAreas,
-    clearCartInfo,
+    clearDiagnoticCartInfo,
     cartSaving,
     circleSaving,
     isDiagnosticCircleSubscription,
@@ -2294,7 +2294,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             cartSaving: cartSaving,
             circleSaving: circleSaving,
           });
-          clearCartInfo!();
+          clearDiagnoticCartInfo && clearDiagnoticCartInfo();
         }
       })
       .catch((error) => {
@@ -2406,7 +2406,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             circleSaving: circleSaving,
             cartHasAll: allItems != undefined ? true : false,
           });
-          clearCartInfo!();
+          clearDiagnoticCartInfo && clearDiagnoticCartInfo!();
         }
       })
       .catch((error) => {

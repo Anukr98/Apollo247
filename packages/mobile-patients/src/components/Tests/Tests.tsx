@@ -304,7 +304,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     cartItems,
     addCartItem,
     removeCartItem,
-    clearCartInfo,
+    clearDiagnoticCartInfo,
     isDiagnosticCircleSubscription,
     setIsDiagnosticCircleSubscription,
   } = useDiagnosticsCart();
@@ -2708,7 +2708,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         <>
           {renderHotSellers()}
           {renderCircleBanners()}
-          <View style={{ marginTop: 10 }}></View>
+          <View style={{ marginTop: 20 }}></View>
           {/* {renderBrowseByCondition()} */}
           {renderTestPackages()}
           {/* {renderTestsByOrgan()} */}
