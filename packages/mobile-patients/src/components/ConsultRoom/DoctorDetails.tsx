@@ -40,6 +40,7 @@ import {
   statusBarHeight,
   timeDiffFromNow,
   setWebEngageScreenNames,
+  nextAvailability,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -77,7 +78,9 @@ import {
   FamilyDoctorIcon,
   CTGrayChat,
 } from '../ui/Icons';
-// import { NotificationListener } from '../NotificationListener';
+import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import moment from 'moment';
 
 const { height, width } = Dimensions.get('window');
 
@@ -187,6 +190,15 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingTop: 4,
     paddingLeft: 20,
+  },
+  stickyBottomComponentStyle: {
+    paddingTop: 0,
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  buttonTextStyle: {
+    ...theme.viewStyles.text('B', 13, theme.colors.WHITE, 1, 24),
+    textTransform: 'uppercase',
   },
 });
 type Appointments = {
@@ -1165,6 +1177,46 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     } catch (error) {}
   };
 
+  const postWebengaegConsultType = (consultType: 'Online' | 'In Person') => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULT_TYPE_SELECTION] = {
+      'Consult Type': consultType,
+      'Doctor ID': doctorId,
+      'Doctor Name': doctorDetails?.fullName || '',
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+    };
+    postWebEngageEvent(WebEngageEventName.CONSULT_TYPE_SELECTION, eventAttributes);
+  };
+
+  const renderConsultNow = () => {
+    return (
+      <StickyBottomComponent style={styles.stickyBottomComponentStyle}>
+        <Button
+          style={{}}
+          titleTextStyle={styles.buttonTextStyle}
+          title={getTitle()}
+          onPress={() => onPressConsultNow()}
+        />
+      </StickyBottomComponent>
+    );
+  };
+
+  const onPressConsultNow = () => {
+    onlineSelected
+      ? (postWebengaegConsultType('Online'), openConsultPopup(ConsultMode.ONLINE))
+      : (postWebengaegConsultType('In Person'), openConsultPopup(ConsultMode.PHYSICAL));
+  };
+
+  const getTitle = () => {
+    const consultNowText = ctaBannerText?.CONSULT_NOW || '';
+    const time = onlineSelected ? availableTime : physicalAvailableTime;
+    return consultNowText || (time && moment(time).isValid())
+      ? nextAvailability(time, 'Consult')
+      : string.common.book_apointment;
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView
@@ -1220,6 +1272,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             />
           </StickyBottomComponent>
         )} */}
+        {doctorDetails && renderConsultNow()}
       </SafeAreaView>
 
       {displayoverlay && doctorDetails && (

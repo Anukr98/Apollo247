@@ -187,7 +187,7 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
             </View>
           ))}
         </View>
-        <TouchableOpacity activeOpacity={1} onPress={onPress}>
+        {/* <TouchableOpacity activeOpacity={1} onPress={onPress}>
           <View style={styles.buttonStyle}>
             <Text style={styles.buttonTextStyle}>{consultNowText || `${
               time && moment(time).isValid()
@@ -195,7 +195,7 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
                 : string.common.book_apointment
             }`}</Text>
           </View>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
     );
   };
