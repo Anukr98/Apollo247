@@ -67,8 +67,6 @@ export interface PaymentSceneProps
     appsflyerEventAttributes: AppsFlyerEvents[AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED];
     coupon: any;
     cartItems: ShoppingCartItem[];
-    isChennaiOrder: any;
-    email: string;
     orderInfo: saveMedicineOrderOMSVariables;
   }> {}
 
@@ -86,8 +84,6 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   const appsflyerEventAttributes = props.navigation.getParam('appsflyerEventAttributes');
   const coupon = props.navigation.getParam('coupon');
   const cartItems = props.navigation.getParam('cartItems');
-  const isChennaiOrder = props.navigation.getParam('isChennaiOrder');
-  const email = props.navigation.getParam('email');
   const orderInfo = props.navigation.getParam('orderInfo');
   const { currentPatient } = useAllCurrentPatients();
   const currentPatiendId = currentPatient && currentPatient.id;
@@ -263,8 +259,6 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
         orderAutoId: orderAutoId,
         amount: totalAmount,
         paymentTypeID: paymentTypeID,
-        isChennaiOrder: isChennaiOrder,
-        email: email,
         orderInfo: orderInfo,
         deliveryTime: deliveryTime,
         checkoutEventAttributes: checkoutEventAttributes,
