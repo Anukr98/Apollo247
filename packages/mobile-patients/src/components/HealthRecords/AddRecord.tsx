@@ -1658,7 +1658,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     const base64Icon = 'data:image/png;base64,';
     fin = base64Icon.concat(data?.base64);
     const fileType = data?.fileType;
-    const onPressRemoveIcon = () => {
+    const deleteImage = () => {
       const imageCOPY =
         id === 1 ? [...Images] : id === 2 ? [...allergyImage] : [...medicalConditionImage];
       imageCOPY.splice(i, 1);
@@ -1671,6 +1671,22 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         setCallDeleteAttachmentApi(true);
       }
       CommonLogEvent('ADD_RECORD', 'Set Images');
+    };
+    const onPressRemoveIcon = () => {
+      if (
+        imageUpdate &&
+        (recordType === MedicalRecordType.MEDICALBILL ||
+          recordType === MedicalRecordType.MEDICALINSURANCE ||
+          recordType === MedicalRecordType.ALLERGY ||
+          recordType === MedicalRecordType.MEDICALCONDITION)
+      ) {
+        Alert.alert('Alert!', 'Are you sure, you want to remove the attachment', [
+          { text: 'Yes', onPress: () => deleteImage() },
+          { text: 'No', onPress: () => {} },
+        ]);
+      } else {
+        deleteImage();
+      }
     };
     return (
       <View style={[styles.addMoreImageViewStyle, { marginRight: 5 }]}>
