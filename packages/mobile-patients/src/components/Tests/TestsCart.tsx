@@ -285,9 +285,8 @@ const styles = StyleSheet.create({
   totalSavingOuterView: {
     marginVertical: 20,
     borderColor: theme.colors.APP_GREEN,
-    borderWidth: 1,
-
-    borderRadius: 1,
+    borderWidth: 2,
+    borderRadius: 5,
     padding: 16,
     paddingTop: 8,
     paddingBottom: 8,
@@ -364,6 +363,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     setAddresses: setMedAddresses,
     isCircleSubscription,
     setIsCircleSubscription,
+    circleSubscriptionId,
   } = useShoppingCart();
 
   const clinicHours: clinicHoursData[] = [
@@ -1856,8 +1856,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           marginTop: 10,
           flexDirection: 'row',
           borderColor: theme.colors.APP_GREEN,
-          borderWidth: 1,
-          borderRadius: 1,
+          borderWidth: 2,
+          borderRadius: 5,
           borderStyle: 'dashed',
           justifyContent: imagePosition == 'left' ? 'flex-start' : 'center',
         }}
@@ -1885,13 +1885,17 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         <Text
           style={{
             color: theme.colors.LIGHT_BLUE,
-            ...theme.fonts.IBMPlexSansMedium(imagePosition == 'left' ? 13 : 11),
+            ...theme.fonts.IBMPlexSansMedium(imagePosition == 'left' ? 14 : 12),
             lineHeight: 16,
             alignSelf: 'center',
           }}
         >
           {leftText}
-          <Text style={{ color: theme.colors.APP_GREEN }}> {greenText}</Text> {rightText}
+          <Text style={{ color: theme.colors.APP_GREEN, fontWeight: 'bold' }}>
+            {' '}
+            {greenText}
+          </Text>{' '}
+          {rightText}
         </Text>
         {imagePosition == 'right' && (
           <CircleLogo
@@ -1934,14 +1938,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           style={{
             marginHorizontal: 15,
             color: theme.colors.APP_GREEN,
-            ...theme.fonts.IBMPlexSansMedium(10),
+            ...theme.fonts.IBMPlexSansMedium(11),
             marginVertical: 2,
             lineHeight: 24,
             alignSelf: 'center',
             marginLeft: -20,
           }}
         >
-          Currently we have Cash on delivery as a payment option.
+          {string.diagnostics.cashOnDeliverySubText}
         </Text>
       </View>
     );
@@ -2327,6 +2331,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     console.log(physicalPrescriptions, 'physical prescriptions');
     console.log('idddd...' + validateCouponUniqueId);
     const allItems = cartItems.find((item) => item.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL);
+    const totalPriceWithoutAnyDiscount = cartItems.reduce(
+      (prevVal, currVal) => prevVal + currVal.price,
+      0
+    );
 
     const bookingOrderInfo: DiagnosticBookHomeCollectionInput = {
       uniqueID: validateCouponUniqueId,
@@ -2360,6 +2368,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       slotId: employeeSlotId?.toString() || '0',
       areaId: (areaSelected || {}).key!,
       homeCollectionCharges: hcCharges,
+      totalPriceExcludingDiscounts: totalPriceWithoutAnyDiscount,
+      subscriptionInclusionId: null,
+      userSubscriptionId: circleSubscriptionId,
       // prismPrescriptionFileId: [
       //   ...physicalPrescriptions.map((item) => item.prismPrescriptionFileId),
       //   ...ePrescriptions.map((item) => item.prismPrescriptionFileId),
@@ -2378,12 +2389,15 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           console.log('bookkk..' + errorMessage);
           setLoading!(false);
           setshowSpinner!(false);
+          let descriptionText = string.diagnostics.bookingOrderFailedMessage;
+          if (errorCode == -1 && errorMessage?.indexOf('duplicate') != -1) {
+            descriptionText = string.diagnostics.bookingOrderDuplicateFailedMessage;
+          }
           // Order-failed
           showAphAlert!({
             unDismissable: true,
             title: `Uh oh.. :(`,
-            description: `We're sorry :(  There's been a problem with your booking. Please book again.`,
-            // description: `Order failed, ${errorMessage}.`,
+            description: descriptionText,
           });
           fireOrderFailedEvent(orderId);
         } else {
@@ -2491,7 +2505,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             {/**
              * order success view
              */}
-            <ScrollView bounces={false} style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+            <ScrollView bounces={false} style={{ flex: 1 }} showsVerticalScrollIndicator={true}>
               <>
                 <View style={styles.scrollViewOuterView}>
                   <OrderPlacedCheckedIcon style={{ marginRight: 20 }} />
@@ -2669,8 +2683,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                   <View
                     style={{
                       borderColor: theme.colors.APP_GREEN,
-                      borderWidth: 1,
-                      borderRadius: 1,
+                      borderWidth: 2,
+                      borderRadius: 5,
                       padding: 16,
                       paddingTop: 8,
                       paddingBottom: 8,
@@ -2687,7 +2701,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                       }}
                     >
                       You could have
-                      <Text style={{ color: theme.colors.APP_GREEN }}>
+                      <Text style={{ color: theme.colors.APP_GREEN, fontWeight: 'bold' }}>
                         {' '}
                         saved extra {string.common.Rs}
                         {orderCircleSaving}
@@ -2705,6 +2719,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                   </View>
                 )}
               </>
+              <View style={{ marginBottom: 20 }}></View>
             </ScrollView>
 
             <View style={{ height: 90 }}>{renderDiagnosticHelpText()}</View>

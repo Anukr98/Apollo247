@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
   featuredPackageImageStyle: { height: 70, width: 70, resizeMode: 'contain' },
   featuredPackageTextView: {
     marginHorizontal: 10,
-    width: '65%',
+    width: '63%',
     justifyContent: 'center',
   },
 });
@@ -1055,7 +1055,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             ...theme.viewStyles.card(12, 0),
             elevation: 10,
             height: 210, //220
-            width: 170, //152
+            width: 180, //152
             marginHorizontal: 4,
             alignItems: 'flex-start', //center
             ...style,
