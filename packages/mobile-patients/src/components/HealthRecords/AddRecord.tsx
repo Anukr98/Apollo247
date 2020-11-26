@@ -1520,6 +1520,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         title: 'Alert!',
         description: 'Please select allergy severity',
       });
+    } else if (allergyEndDate && moment(allergyEndDate).isSameOrBefore(dateOfTest)) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Please select correct end date of allergy',
+      });
     } else if (medicationCheckbox) {
       callMedicationApi();
     } else if (healthRestrictionCheckbox) {
@@ -1536,6 +1541,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       showAphAlert!({
         title: 'Alert!',
         description: 'Please enter name of medicine',
+      });
+    } else if (medicationEndDate && moment(medicationEndDate).isSameOrBefore(dateOfTest)) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Please select correct end date of medicine',
       });
     } else if (healthRestrictionCheckbox) {
       callHealthRestricitonApi();
@@ -1558,6 +1568,14 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       showAphAlert!({
         title: 'Alert!',
         description: 'Please select restriction nature',
+      });
+    } else if (
+      healthRestrictionEndDate &&
+      moment(healthRestrictionEndDate).isSameOrBefore(dateOfTest)
+    ) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Please select correct end date of restriction',
       });
     } else if (medicalConditionCheckbox) {
       callMedicalConditionApi();
@@ -1585,6 +1603,14 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       showAphAlert!({
         title: 'Alert!',
         description: 'Please select illness type',
+      });
+    } else if (
+      medicalConditionEndDate &&
+      moment(medicalConditionEndDate).isSameOrBefore(dateOfTest)
+    ) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Please select correct end date of condition',
       });
     } else if (allergyCheckbox) {
       addAllergyRecord();
