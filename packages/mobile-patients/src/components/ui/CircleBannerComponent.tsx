@@ -224,12 +224,18 @@ export const CircleBannerComponent: React.FC<CircleBannerProps> = (props) => {
       navigation={props.navigation}
     />
   );
+  const backGroundImage =
+    props.comingFrom == 'diagnostics'
+      ? require('@aph/mobile-patients/src/components/ui/icons/circleBanner_diagnostic.png')
+      : require('@aph/mobile-patients/src/components/ui/icons/circleBanner.png');
   return (
-    <View style={styles.container}>
+    <View style={[styles.container]}>
       <ImageBackground
-        source={require('@aph/mobile-patients/src/components/ui/icons/circleBanner.png')}
+        source={backGroundImage}
         style={[styles.banner, { height: props.comingFrom == 'diagnostics' ? 180 : 150 }]}
-        imageStyle={{ borderRadius: 16 }}
+        imageStyle={{
+          borderRadius: props.comingFrom == 'diagnostics' ? 5 : 16,
+        }}
       >
         {renderConditionalViews()}
         {!circleSubscriptionId ? (

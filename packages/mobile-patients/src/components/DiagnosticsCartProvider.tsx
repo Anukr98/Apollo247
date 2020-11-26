@@ -111,7 +111,7 @@ export interface DiagnosticsCartContextProps {
   setCoupon: ((id: getCoupons_getCoupons_coupons) => void) | null;
 
   deliveryType: MEDICINE_DELIVERY_TYPE | null;
-  clearCartInfo: (() => void) | null;
+  clearDiagnoticCartInfo: (() => void) | null;
 
   diagnosticSlot: DiagnosticSlot | null;
   setDiagnosticSlot: ((item: DiagnosticSlot | null) => void) | null;
@@ -182,7 +182,7 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   pinCode: '',
   setPinCode: null,
 
-  clearCartInfo: null,
+  clearDiagnoticCartInfo: null,
 
   diagnosticClinic: null,
   diagnosticSlot: null,
@@ -453,7 +453,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     setEPrescriptions([...newItems]);
   };
 
-  const clearCartInfo = () => {
+  const clearDiagnoticCartInfo = () => {
     setPhysicalPrescriptions([]);
     setEPrescriptions([]);
     setCartItems([]);
@@ -573,7 +573,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         pinCode,
         setPinCode,
 
-        clearCartInfo,
+        clearDiagnoticCartInfo,
 
         diagnosticClinic,
         setDiagnosticClinic,
