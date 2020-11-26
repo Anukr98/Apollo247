@@ -368,6 +368,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     hdfcUpgradeUserSubscriptions,
     setHdfcUpgradeUserSubscriptions,
     circleSubscription,
+    setAxdcCode,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
@@ -549,7 +550,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     if (locationDetails && locationDetails.pincode) {
       await pinCodeServiceabilityApi247(locationDetails.pincode!)
         .then(({ data: { response } }) => {
-          if (response) {
+          const { servicable, axdcCode } = response;
+          setAxdcCode && setAxdcCode(axdcCode);
+          if (servicable) {
             setserviceable('Yes');
           } else {
             setserviceable('No');
