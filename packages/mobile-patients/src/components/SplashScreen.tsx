@@ -420,6 +420,29 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             }
             break;
 
+          case 'DoctorCallRejected':
+            {
+              const appointmentId = linkId?.split('+')?.[0];
+              const config: Pubnub.PubnubConfig = {
+                origin: 'apollo.pubnubapi.com',
+                subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
+                publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
+                ssl: true,
+                restore: true,
+              };
+              const pubnub = new Pubnub(config);
+              pubnub.publish(
+                {
+                  message: { message: '^^#PATIENT_REJECTED_CALL' },
+                  channel: appointmentId,
+                  storeInHistory: true,
+                  sendByPost: true,
+                },
+                (status, response) => {}
+              );
+            }
+            break;
+
           case 'Order':
             if (data.length === 2) getData('Order', linkId);
             break;

@@ -119,7 +119,6 @@ import {
   AppState,
   AppStateStatus,
   BackHandler,
-  DeviceEventEmitter,
   Dimensions,
   FlatList,
   Image as ImageReact,
@@ -1014,14 +1013,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     joinCallHandler();
   };
 
-  const onDisconnetCallAction = () => {
-    RNCallKeep.endAllCalls();
-  };
-
   const handleAndroidCallAcceptListeners = () => {
-    DeviceEventEmitter.addListener('accept', () => {
-      joinCallHandler();
-    });
     Linking.addEventListener('url', (event) => {
       try {
         const index = event.url.indexOf('apollopatients://DoctorCall?');

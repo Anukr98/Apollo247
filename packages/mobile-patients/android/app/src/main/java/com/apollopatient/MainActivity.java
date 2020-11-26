@@ -4,7 +4,6 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -81,10 +80,11 @@ public class MainActivity extends ReactActivity {
         try {
             // to close notification when activity is brought front 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
-                SharedPreferences sharedPref = this.getSharedPreferences("com.apollopatient", Context.MODE_PRIVATE);
-                Integer notificationId = sharedPref.getInt("com.apollopatient.call_start", -1);
                 NotificationManager notificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
-                notificationManager.cancel(notificationId);
+                notificationManager.cancelAll();
+                Uri incoming_call_notif = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
+                ringtone = RingtoneManager.getRingtone(getApplicationContext(), incoming_call_notif);
+                ringtone.stop();
             }
         } catch (Exception e) {
             Log.e("overlay permission err", e.getMessage() + "\n" + e.toString());
@@ -98,4 +98,5 @@ public class MainActivity extends ReactActivity {
         PendingIntent acceptIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         return acceptIntent;
     }
+
 }
