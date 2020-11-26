@@ -21,6 +21,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  BackHandler,
   View,
 } from 'react-native';
 import { GET_LAB_RESULT_PDF } from '@aph/mobile-patients/src/graphql/profiles';
@@ -210,6 +211,19 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
       console.log('error', error);
     }
   };
+
+  const handleBack = async () => {
+    BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    props.navigation.goBack();
+    return true;
+  };
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    };
+  }, []);
 
   const renderTopLineReport = () => {
     return (

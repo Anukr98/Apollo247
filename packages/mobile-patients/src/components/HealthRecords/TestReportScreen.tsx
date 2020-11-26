@@ -39,8 +39,12 @@ import {
   getSourceName,
   handleGraphQlError,
   postWebEngagePHR,
+  phrSortByDate,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { deletePatientPrismMedicalRecords } from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  deletePatientPrismMedicalRecords,
+  getPatientPrismMedicalRecordsApi,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useApolloClient } from 'react-apollo-hooks';
 import moment from 'moment';
@@ -109,6 +113,7 @@ export interface TestReportScreenProps
 
 export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
   const testReportsData = props.navigation?.getParam('testReportsData') || [];
+  const [testReportMainData, setTestReportMainData] = useState<any>([]);
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
@@ -117,9 +122,13 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
     key: string;
     data: any[];
   }> | null>(null);
+  const [callApi, setCallApi] = useState(false);
+  const [callPhrMainApi, setCallPhrMainApi] = useState(false);
 
   const gotoPHRHomeScreen = () => {
-    props.navigation.state.params?.onPressBack();
+    if (!callApi && !callPhrMainApi) {
+      props.navigation.state.params?.onPressBack();
+    }
     props.navigation.goBack();
   };
 
@@ -130,19 +139,52 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
   };
 
   useEffect(() => {
-    const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-      BackHandler.addEventListener('hardwareBackPress', handleBack);
-    });
+    if (testReportsData?.length > 0) {
+      setTestReportMainData(testReportsData);
+    }
+  }, [testReportsData]);
 
-    const _willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    });
+  const getLatestLabAndHealthCheckRecords = () => {
+    setShowSpinner(true);
+    getPatientPrismMedicalRecordsApi(client, currentPatient?.id)
+      .then((data: any) => {
+        const labResultsData = g(data, 'getPatientPrismMedicalRecords', 'labResults', 'response');
+        const healthChecksNewData = g(
+          data,
+          'getPatientPrismMedicalRecords',
+          'healthChecksNew',
+          'response'
+        );
+        let mergeArray: { type: string; data: any }[] = [];
+        labResultsData?.forEach((c) => {
+          mergeArray.push({ type: 'testReports', data: c });
+        });
+        healthChecksNewData?.forEach((c) => {
+          mergeArray.push({ type: 'healthCheck', data: c });
+        });
+        setTestReportMainData(phrSortByDate(mergeArray));
+        setShowSpinner(false);
+        setCallPhrMainApi(true);
+      })
+      .catch((error) => {
+        setShowSpinner(false);
+        console.log('error getPatientPrismMedicalRecordsApi', error);
+        currentPatient && handleGraphQlError(error);
+      });
+  };
 
+  useEffect(() => {
+    if (callApi) {
+      getLatestLabAndHealthCheckRecords();
+    }
+  }, [callApi]);
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {
-      _didFocusSubscription && _didFocusSubscription.remove();
-      _willBlurSubscription && _willBlurSubscription.remove();
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
     };
-  }, []);
+  }, [callApi, callPhrMainApi]);
 
   useEffect(() => {
     const filteredData = sortByTypeRecords(filterApplied);
@@ -159,7 +201,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
             : filterApplied === FILTER_TYPE.PARAMETER_NAME
             ? 'parameterName'
             : 'labTestSource';
-        filteredData.forEach((dataObject: any) => {
+        filteredData?.forEach((dataObject: any) => {
           const dataObjectArray: any[] = [];
           if (dataObject?.data?.labTestName && filterApplied === FILTER_TYPE.PARAMETER_NAME) {
             const labParametersLength = dataObject?.data?.labTestResults?.length;
@@ -223,7 +265,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
       }
       setLocalTestReportsData(finalData);
     }
-  }, [filterApplied, testReportsData]);
+  }, [filterApplied, testReportMainData]);
 
   const getObjectParameter = (obj: any, filterAppliedString: string) => {
     if (obj.healthCheckName) {
@@ -245,35 +287,32 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
   };
 
   const sortByTypeRecords = (type: FILTER_TYPE | string) => {
-    return (
-      testReportsData &&
-      testReportsData.sort(({ data: data1 }, { data: data2 }) => {
-        const filteredData1 =
-          type === FILTER_TYPE.DATE
-            ? moment(data1?.date)
-                .toDate()
-                .getTime()
-            : type === FILTER_TYPE.TEST_NAME
-            ? _.lowerCase(data1?.labTestName || data1?.healthCheckName)
-            : type === FILTER_TYPE.SOURCE
-            ? _.lowerCase(data1?.labTestSource || data1?.source)
-            : _.lowerCase(data1?.packageName);
-        const filteredData2 =
-          type === FILTER_TYPE.DATE
-            ? moment(data2?.date)
-                .toDate()
-                .getTime()
-            : type === FILTER_TYPE.TEST_NAME
-            ? _.lowerCase(data2?.labTestName || data2?.healthCheckName)
-            : type === FILTER_TYPE.SOURCE
-            ? _.lowerCase(data2?.labTestSource || data2?.source)
-            : _.lowerCase(data2?.packageName);
-        if (type === FILTER_TYPE.DATE || !type) {
-          return filteredData1 > filteredData2 ? -1 : filteredData1 < filteredData2 ? 1 : 0;
-        }
-        return filteredData2 > filteredData1 ? -1 : filteredData2 < filteredData1 ? 1 : 0;
-      })
-    );
+    return testReportMainData?.sort(({ data: data1 }, { data: data2 }) => {
+      const filteredData1 =
+        type === FILTER_TYPE.DATE
+          ? moment(data1?.date)
+              .toDate()
+              .getTime()
+          : type === FILTER_TYPE.TEST_NAME
+          ? _.lowerCase(data1?.labTestName || data1?.healthCheckName)
+          : type === FILTER_TYPE.SOURCE
+          ? _.lowerCase(data1?.labTestSource || data1?.source)
+          : _.lowerCase(data1?.packageName);
+      const filteredData2 =
+        type === FILTER_TYPE.DATE
+          ? moment(data2?.date)
+              .toDate()
+              .getTime()
+          : type === FILTER_TYPE.TEST_NAME
+          ? _.lowerCase(data2?.labTestName || data2?.healthCheckName)
+          : type === FILTER_TYPE.SOURCE
+          ? _.lowerCase(data2?.labTestSource || data2?.source)
+          : _.lowerCase(data2?.packageName);
+      if (type === FILTER_TYPE.DATE || !type) {
+        return filteredData1 > filteredData2 ? -1 : filteredData1 < filteredData2 ? 1 : 0;
+      }
+      return filteredData2 > filteredData1 ? -1 : filteredData2 < filteredData1 ? 1 : 0;
+    });
   };
 
   const renderProfileImage = () => {
@@ -396,7 +435,9 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
           const status = g(data, 'addPatientLabTestRecord', 'status');
           if (status) {
             postWebEngagePHR('Lab Test', WebEngageEventName.PHR_ADD_LAB_TESTS);
-            props.navigation.goBack();
+            getLatestLabAndHealthCheckRecords();
+          } else {
+            setShowSpinner(false);
           }
         })
         .catch((e) => {
@@ -415,8 +456,9 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
       )
         .then((status) => {
           if (status) {
+            getLatestLabAndHealthCheckRecords();
+          } else {
             setShowSpinner(false);
-            props.navigation.goBack();
           }
         })
         .catch((error) => {
@@ -427,6 +469,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
   };
 
   const onPressEditPrismMedicalRecords = (selectedItem: any) => {
+    setCallApi(false);
     props.navigation.navigate(AppRoutes.AddRecord, {
       navigatedFrom: 'Test Reports',
       recordType: MedicalRecordType.TEST_REPORT,
@@ -434,6 +477,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
         filterApplied === FILTER_TYPE.PARAMETER_NAME ? selectedItem?.data?.id : selectedItem?.id,
       selectedRecord:
         filterApplied === FILTER_TYPE.PARAMETER_NAME ? selectedItem?.data : selectedItem,
+      onRecordAdded: onRecordAdded,
     });
   };
 
@@ -510,6 +554,10 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
     );
   };
 
+  const onRecordAdded = () => {
+    setCallApi(true);
+  };
+
   const renderAddButton = () => {
     return (
       <StickyBottomComponent style={styles.stickyBottomComponentStyle}>
@@ -517,6 +565,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
           style={{ width: '100%' }}
           title={`ADD DATA`}
           onPress={() => {
+            setCallApi(false);
             const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_RECORD] = {
               Source: 'Test Reports',
             };
@@ -524,6 +573,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
             props.navigation.navigate(AppRoutes.AddRecord, {
               navigatedFrom: 'Test Reports',
               recordType: MedicalRecordType.TEST_REPORT,
+              onRecordAdded: onRecordAdded,
             });
           }}
         />
@@ -536,7 +586,7 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
       {showSpinner && <Spinner />}
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
-        {testReportsData.length > 0 ? renderSearchAndFilterView() : null}
+        {testReportMainData?.length > 0 ? renderSearchAndFilterView() : null}
         <ScrollView style={{ flex: 1 }} bounces={false}>
           {renderTestReports()}
         </ScrollView>

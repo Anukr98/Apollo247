@@ -93,6 +93,7 @@ import {
   View,
   ScrollView,
   TextInput,
+  BackHandler,
   Platform,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -435,7 +436,10 @@ const TestRecordInitialValues: LabTestParameters = {
   maximum: 0,
 };
 
-export interface AddRecordProps extends NavigationScreenProps {}
+export interface AddRecordProps
+  extends NavigationScreenProps<{
+    onRecordAdded: () => void;
+  }> {}
 
 export const AddRecord: React.FC<AddRecordProps> = (props) => {
   var fin = '';
@@ -544,6 +548,19 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     }
   }, [currentPatient]);
 
+  const handleBack = async () => {
+    BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    props.navigation.goBack();
+    return true;
+  };
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    };
+  }, []);
+
   useEffect(() => {
     if (selectedRecord) {
       setImageUpdate(selectedRecord?.fileUrl ? true : false);
@@ -561,7 +578,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         let labResultsArray: LabTestParameters[] = [];
         settestName(selectedRecord?.labTestName || '');
         setDocName(selectedRecord?.labTestRefferedBy || '');
-        selectedRecord?.labTestResults.forEach((item: any) => {
+        selectedRecord?.labTestResults?.forEach((item: any) => {
           let labResultsObj: LabTestParameters = {};
           labResultsObj.result = parseFloat((item?.result || 0).toString());
           labResultsObj.unit = item?.unit || '';
@@ -947,7 +964,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   };
 
   const gotoHealthRecordsHomeScreen = () => {
-    props.navigation.pop(2);
+    props.navigation.state.params?.onRecordAdded();
+    props.navigation.goBack();
   };
 
   const addMedicalRecord = () => {

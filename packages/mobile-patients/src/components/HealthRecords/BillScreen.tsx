@@ -19,13 +19,18 @@ import { HealthRecordCard } from '@aph/mobile-patients/src/components/HealthReco
 import { PhrNoDataComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/PhrNoDataComponent';
 import { ProfileImageComponent } from '@aph/mobile-patients/src/components/HealthRecords/Components/ProfileImageComponent';
 import {
+  g,
   getPrescriptionDate,
   initialSortByDays,
   editDeleteData,
   getSourceName,
   handleGraphQlError,
+  phrSortWithDate,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { deletePatientPrismMedicalRecords } from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  deletePatientPrismMedicalRecords,
+  getPatientPrismMedicalRecordsApi,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useApolloClient } from 'react-apollo-hooks';
 import { MedicalRecordType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -72,6 +77,7 @@ export interface BillScreenProps
 
 export const BillScreen: React.FC<BillScreenProps> = (props) => {
   const medicalBillsData = props.navigation?.getParam('medicalBillsData') || [];
+  const [medicalBillsMainData, setMedicalBillsMainData] = useState<any>(medicalBillsData);
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
@@ -79,14 +85,14 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
     key: string;
     data: MedicalBillsType[];
   }> | null>(null);
+  const [callApi, setCallApi] = useState(false);
+  const [callPhrMainApi, setCallPhrMainApi] = useState(false);
 
   useEffect(() => {
-    if (medicalBillsData) {
-      let finalData: { key: string; data: MedicalBillsType[] }[] = [];
-      finalData = initialSortByDays('bills', medicalBillsData, finalData);
-      setLocalMedicalBillsData(finalData);
-    }
-  }, [medicalBillsData]);
+    let finalData: { key: string; data: MedicalBillsType[] }[] = [];
+    finalData = initialSortByDays('bills', medicalBillsMainData, finalData);
+    setLocalMedicalBillsData(finalData);
+  }, [medicalBillsMainData]);
 
   const handleBack = async () => {
     BackHandler.removeEventListener('hardwareBackPress', handleBack);
@@ -95,23 +101,39 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
   };
 
   useEffect(() => {
-    const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-      BackHandler.addEventListener('hardwareBackPress', handleBack);
-    });
-
-    const _willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    });
-
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {
-      _didFocusSubscription && _didFocusSubscription.remove();
-      _willBlurSubscription && _willBlurSubscription.remove();
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
     };
-  }, []);
+  }, [callApi, callPhrMainApi]);
+
+  useEffect(() => {
+    if (callApi) {
+      getLatestMedicalBillRecords();
+    }
+  }, [callApi]);
 
   const gotoPHRHomeScreen = () => {
-    props.navigation.state.params?.onPressBack();
+    if (!callApi && !callPhrMainApi) {
+      props.navigation.state.params?.onPressBack();
+    }
     props.navigation.goBack();
+  };
+
+  const getLatestMedicalBillRecords = () => {
+    setShowSpinner(true);
+    getPatientPrismMedicalRecordsApi(client, currentPatient?.id)
+      .then((data: any) => {
+        const medicalBills = g(data, 'getPatientPrismMedicalRecords', 'medicalBills', 'response');
+        setMedicalBillsMainData(phrSortWithDate(medicalBills));
+        setShowSpinner(false);
+        setCallPhrMainApi(true);
+      })
+      .catch((error) => {
+        setShowSpinner(false);
+        console.log('error getPatientPrismMedicalRecordsApi', error);
+        currentPatient && handleGraphQlError(error);
+      });
   };
 
   const renderProfileImage = () => {
@@ -160,8 +182,9 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
     )
       .then((status) => {
         if (status) {
+          getLatestMedicalBillRecords();
+        } else {
           setShowSpinner(false);
-          props.navigation.goBack();
         }
       })
       .catch((error) => {
@@ -171,11 +194,13 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
   };
 
   const onPressEditPrismMedicalRecords = (selectedItem: any) => {
+    setCallApi(false);
     props.navigation.navigate(AppRoutes.AddRecord, {
       navigatedFrom: 'MedicalBill',
       recordType: MedicalRecordType.MEDICALBILL,
       selectedRecordID: selectedItem?.id,
       selectedRecord: selectedItem,
+      onRecordAdded: onRecordAdded,
     });
   };
 
@@ -222,6 +247,10 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
     );
   };
 
+  const onRecordAdded = () => {
+    setCallApi(true);
+  };
+
   const renderAddButton = () => {
     return (
       <StickyBottomComponent style={styles.stickyBottomComponentStyle}>
@@ -229,9 +258,11 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
           style={{ width: '100%' }}
           title={`ADD DATA`}
           onPress={() => {
+            setCallApi(false);
             props.navigation.navigate(AppRoutes.AddRecord, {
               navigatedFrom: 'MedicalBill',
               recordType: MedicalRecordType.MEDICALBILL,
+              onRecordAdded: onRecordAdded,
             });
           }}
         />
@@ -244,7 +275,7 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
       {showSpinner && <Spinner />}
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
-        {medicalBillsData?.length > 0 ? renderSearchAndFilterView() : null}
+        {medicalBillsMainData?.length > 0 ? renderSearchAndFilterView() : null}
         <ScrollView style={{ flex: 1 }} bounces={false}>
           {renderMedicalBillsData()}
         </ScrollView>

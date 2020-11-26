@@ -35,6 +35,8 @@ import {
   g,
   handleGraphQlError,
   postWebEngageEvent,
+  phrSortByDate,
+  phrSortWithDate,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
@@ -299,6 +301,21 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('M', 10, '#FFFFFF', 1, 13),
     paddingHorizontal: 6,
   },
+  errorPopupViewStyle: {
+    ...theme.viewStyles.cardViewStyle,
+    paddingTop: 28,
+    paddingLeft: 33,
+    paddingRight: 24,
+    paddingBottom: 21,
+    borderRadius: 2,
+  },
+  uhHoTextStyle: { ...theme.viewStyles.text('SB', 18, '#000000', 1, 23.4) },
+  validTextStyle: { ...theme.viewStyles.text('M', 13, '#880200', 1, 16.9), marginTop: 16 },
+  errorOKTextStyle: {
+    ...theme.viewStyles.text('M', 13, '#0B8178', 1, 16.9),
+    marginTop: 16,
+    textAlign: 'right',
+  },
 });
 
 type BloodGroupArray = {
@@ -385,16 +402,12 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     | null
     | undefined
   >([]);
-  const [healthConditions, setHealthConditions] = useState<any[] | null>(null);
 
-  const [consultsData, setConsultsData] = useState<(ConsultsType | null)[] | null>(null);
-  const [medicineOrders, setMedicineOrders] = useState<(medicineOrders | null)[] | null>(null);
-  const [combination, setCombination] = useState<{ type: string; data: any }[]>();
   const [testAndHealthCheck, setTestAndHealthCheck] = useState<{ type: string; data: any }[]>();
   const { loading, setLoading, showAphAlert } = useUIElements();
   const [prismdataLoader, setPrismdataLoader] = useState<boolean>(false);
   const [pastDataLoader, setPastDataLoader] = useState<boolean>(false);
-  const [arrayValues, setarrayValues] = useState<any>();
+  const [arrayValues, setarrayValues] = useState<any>([]);
   const client = useApolloClient();
   const { getPatientApiCall } = useAuth();
   const { phrNotificationData, setPhrNotificationData } = useAppCommonData();
@@ -403,6 +416,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
   const [callApi, setCallApi] = useState(true);
   const [showUpdateProfilePopup, setShowUpdateProfilePopup] = useState(false);
+  const [showUpdateProfileErrorPopup, setShowUpdateProfileErrorPopup] = useState(false);
   const [currentUpdatePopupId, setCurrentUpdatePopupId] = useState(0);
   const [weight, setWeight] = useState('');
   const [height, setHeight] = useState('');
@@ -471,17 +485,15 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         fetchPolicy: 'no-cache',
         variables: {
           consultsAndOrdersInput: {
-            patient: currentPatient && currentPatient.id ? currentPatient.id : '',
+            patient: currentPatient?.id || '',
             filter: filterArray,
           },
         },
       })
       .then((_data) => {
-        const consults = _data.data.getPatientPastConsultsAndPrescriptions!.consults || [];
-        const medOrders = _data.data.getPatientPastConsultsAndPrescriptions!.medicineOrders || [];
+        const consults = _data?.data?.getPatientPastConsultsAndPrescriptions?.consults || [];
+        const medOrders = _data?.data?.getPatientPastConsultsAndPrescriptions?.medicineOrders || [];
         const consultsAndMedOrders: { [key: string]: any } = {};
-        setConsultsData(consults);
-        setMedicineOrders(medOrders);
         consults.forEach((c) => {
           consultsAndMedOrders[c!.bookingDate] = {
             ...consultsAndMedOrders[c!.bookingDate],
@@ -517,26 +529,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         console.log('Error occured while fetching Heath records', error);
       })
       .finally(() => setPastDataLoader(false));
-  };
-
-  const sortByDate = (array: { type: string; data: any }[]) => {
-    return array.sort(({ data: data1 }, { data: data2 }) => {
-      let date1 = new Date(data1.date || data1.bookingDate || data1.quoteDateTime);
-      let date2 = new Date(data2.date || data2.bookingDate || data2.quoteDateTime);
-      return date1 > date2 ? -1 : date1 < date2 ? 1 : data2.id - data1.id;
-    });
-  };
-
-  const sortWithDate = (array: any) => {
-    return array?.sort(
-      (a: any, b: any) =>
-        moment(b.date || b.billDateTime || b.startDateTime)
-          .toDate()
-          .getTime() -
-        moment(a.date || a.billDateTime || a.startDateTime)
-          .toDate()
-          .getTime()
-    );
   };
 
   const getBloodGroupValue = (bloodGroup: BloodGroups) => {
@@ -634,9 +626,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         setLabResults(labResultsData);
         setPrescriptions(prescriptionsData);
         setHealthChecksNew(healthChecksNewData);
-        setHospitalizationsNew(sortWithDate(hospitalizationsNewData));
-        setMedicalBills(sortWithDate(medicalBillsData));
-        setInsuranceBills(sortWithDate(medicalInsuranceData));
+        setHospitalizationsNew(phrSortWithDate(hospitalizationsNewData));
+        setMedicalBills(phrSortWithDate(medicalBillsData));
+        setInsuranceBills(phrSortWithDate(medicalInsuranceData));
         setMedicalConditions(medicalConditionsData);
         setMedicalHealthRestrictions(medicalHealthRestrictionsData);
         setMedicalMedications(medicalMedicationsData);
@@ -675,20 +667,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   }, [props.navigation, currentPatient, callApi]);
 
   useEffect(() => {
-    if (consultsData && medicineOrders && prescriptions) {
-      let mergeArray: { type: string; data: any }[] = [];
-      arrayValues?.forEach((item: any) => {
-        item['myPrescriptionName'] = 'Prescription';
-        mergeArray.push({ type: 'pastConsults', data: item });
-      });
-      prescriptions?.forEach((c) => {
-        mergeArray.push({ type: 'prescriptions', data: c });
-      });
-      setCombination(sortByDate(mergeArray));
-    }
-  }, [arrayValues, prescriptions]);
-
-  useEffect(() => {
     let mergeArray: { type: string; data: any }[] = [];
     labResults?.forEach((c) => {
       mergeArray.push({ type: 'testReports', data: c });
@@ -696,26 +674,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     healthChecksNew?.forEach((c) => {
       mergeArray.push({ type: 'healthCheck', data: c });
     });
-    setTestAndHealthCheck(sortByDate(mergeArray));
+    setTestAndHealthCheck(phrSortByDate(mergeArray));
   }, [labResults, healthChecksNew]);
-
-  useEffect(() => {
-    const healthConditionsArray: any[] = [];
-    medicalMedications?.forEach((medicationRecord: any) => {
-      medicationRecord && healthConditionsArray.push(medicationRecord);
-    });
-    medicalConditions?.forEach((medicalConditionsRecord: any) => {
-      medicalConditionsRecord && healthConditionsArray.push(medicalConditionsRecord);
-    });
-    medicalHealthRestrictions?.forEach((healthRestrictionRecord: any) => {
-      healthRestrictionRecord && healthConditionsArray.push(healthRestrictionRecord);
-    });
-    medicalAllergies?.forEach((allergyRecord: any) => {
-      allergyRecord && healthConditionsArray.push(allergyRecord);
-    });
-    const sortedData = sortWithDate(healthConditionsArray);
-    setHealthConditions(sortedData);
-  }, [medicalConditions, medicalHealthRestrictions, medicalMedications, medicalAllergies]);
 
   const tabsClickedWebEngageEvent = (webEngageEventName: WebEngageEventName) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.MEDICAL_RECORDS] = {
@@ -748,15 +708,19 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           fetchPolicy: 'no-cache',
         })
         .then(({ data }) => {
-          setShowUpdateProfilePopup(false);
           getPatientApiCall();
+          setTimeout(() => {
+            setShowUpdateProfilePopup(false);
+            setOverlaySpinner(false);
+          }, 1500);
         })
         .catch((e) => {
+          setShowUpdateProfilePopup(false);
+          setOverlaySpinner(false);
           console.log(e);
         })
         .finally(() => {
           setLoading!(true);
-          setOverlaySpinner(false);
         });
     }
   };
@@ -976,7 +940,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           setCallApi(true);
           tabsClickedWebEngageEvent(WebEngageEventName.PHR_VIEW_PRESCRIPTIONS);
           props.navigation.navigate(AppRoutes.ConsultRxScreen, {
-            consultRxData: combination,
+            consultArray: arrayValues,
+            prescriptionArray: prescriptions,
             onPressBack: onBackArrowPressed,
           });
           break;
@@ -1000,7 +965,10 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         case 4:
           setCallApi(true);
           props.navigation.navigate(AppRoutes.HealthConditionScreen, {
-            healthConditionData: healthConditions,
+            allergyArray: medicalAllergies,
+            medicalConditionArray: medicalConditions,
+            medicationArray: medicalMedications,
+            healthRestrictionArray: medicalHealthRestrictions,
             onPressBack: onBackArrowPressed,
           });
           break;
@@ -1175,9 +1143,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           numberOfLines={1}
           keyboardType={'numbers-and-punctuation'}
           onChangeText={(text) => {
-            if (/^[0-9\'’.]*$/.test(text)) {
-              setHeight(text);
-            }
+            setHeight(text);
           }}
         />
         <MaterialMenu
@@ -1264,8 +1230,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
 
     const onPressUpdate = () => {
       if (currentUpdatePopupId === 1) {
-        if (parseFloat(height) <= 0 || !height) {
-          Alert.alert('Alert!', 'Please enter valid height');
+        if (parseFloat(height) <= 0 || !height || !/^[0-9\'’.]*$/.test(height)) {
+          setShowUpdateProfileErrorPopup(true);
         } else {
           updateMedicalParameters(
             height,
@@ -1275,7 +1241,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         }
       } else if (currentUpdatePopupId === 2) {
         if (parseFloat(weight) <= 0 || !weight) {
-          Alert.alert('Alert!', 'Please enter valid weight');
+          setShowUpdateProfileErrorPopup(true);
         } else {
           updateMedicalParameters(
             currentPatient?.patientMedicalHistory?.height,
@@ -1314,6 +1280,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
                     : currentUpdatePopupId === 1
                     ? renderHeightView()
                     : renderWeightView()}
+                  {renderErrorPopup()}
                   <Button
                     title={'UPDATE'}
                     onPress={onPressUpdate}
@@ -1324,6 +1291,36 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             </View>
           </View>
         </>
+      </Overlay>
+    );
+  };
+
+  const renderErrorPopup = () => {
+    return (
+      <Overlay
+        onRequestClose={() => setShowUpdateProfileErrorPopup(false)}
+        isVisible={showUpdateProfileErrorPopup}
+        windowBackgroundColor={'rgba(0, 0, 0, 0.2)'}
+        containerStyle={{ marginBottom: 0 }}
+        fullScreen
+        overlayStyle={styles.phrOverlayStyle}
+      >
+        <View style={styles.overlayViewStyle}>
+          <View style={styles.overlaySafeAreaViewStyle}>
+            <View style={styles.errorPopupViewStyle}>
+              <Text style={styles.uhHoTextStyle}>{'Uh oh..:('}</Text>
+              <Text style={styles.validTextStyle}>
+                {'Please enter numeric values (eg. 0,1...)'}
+              </Text>
+              <Text
+                style={styles.errorOKTextStyle}
+                onPress={() => setShowUpdateProfileErrorPopup(false)}
+              >
+                {'OK'}
+              </Text>
+            </View>
+          </View>
+        </View>
       </Overlay>
     );
   };

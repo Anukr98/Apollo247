@@ -25,6 +25,7 @@ import {
   GET_PARTICIPANTS_LIVE_STATUS,
   DELETE_PATIENT_PRISM_MEDICAL_RECORD,
   GET_PHR_USER_NOTIFY_EVENTS,
+  GET_MEDICAL_PRISM_RECORD,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getUserNotifyEvents as getUserNotifyEventsQuery,
@@ -102,6 +103,7 @@ import {
   setAndGetNumberOfParticipants,
   setAndGetNumberOfParticipantsVariables,
 } from '@aph/mobile-patients/src/graphql/types/setAndGetNumberOfParticipants';
+import { getPatientPrismMedicalRecords } from '@aph/mobile-patients/src/graphql/types/getPatientPrismMedicalRecords';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -334,6 +336,34 @@ export const phrNotificationCountApi = (client: ApolloClient<object>, patientId:
         CommonBugFender('clientCalls_phrNotificationCountApi', e);
         const error = JSON.parse(JSON.stringify(e));
         rej({ error: e });
+      });
+  });
+};
+
+export const getPatientPrismMedicalRecordsApi = (
+  client: ApolloClient<object>,
+  patientId: string
+) => {
+  return new Promise((res, rej) => {
+    client
+      .query<getPatientPrismMedicalRecords>({
+        query: GET_MEDICAL_PRISM_RECORD,
+        context: {
+          headers: {
+            callingsource: 'healthRecords',
+          },
+        },
+        variables: {
+          patientId: patientId || '',
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data }) => {
+        res(data);
+      })
+      .catch((e) => {
+        CommonBugFender('clientCalls_getPatientPrismMedicalRecordsApi', e);
+        rej(e);
       });
   });
 };

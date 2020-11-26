@@ -76,6 +76,7 @@ import {
   Dimensions,
   Platform,
   SafeAreaView,
+  BackHandler,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -228,6 +229,19 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       getPatientApiCall();
     }
   }, [currentPatient]);
+
+  const handleBack = async () => {
+    BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    props.navigation.goBack();
+    return true;
+  };
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    };
+  }, []);
 
   useEffect(() => {
     setLoading && setLoading(true);

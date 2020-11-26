@@ -30,8 +30,12 @@ import {
   initialSortByDays,
   editDeleteData,
   handleGraphQlError,
+  phrSortWithDate,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { deletePatientPrismMedicalRecords } from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  deletePatientPrismMedicalRecords,
+  getPatientPrismMedicalRecordsApi,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useApolloClient } from 'react-apollo-hooks';
 import moment from 'moment';
@@ -77,6 +81,7 @@ export interface HospitalizationScreenProps
 
 export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (props) => {
   const hospitalizationData = props.navigation?.getParam('hospitalizationData') || [];
+  const [hospitalizationMainData, setHospitalizationMainData] = useState<any>(hospitalizationData);
   const [localHospitalizationData, setLocalHospitalizationData] = useState<Array<{
     key: string;
     data: HospitalizationType[];
@@ -84,14 +89,14 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
+  const [callApi, setCallApi] = useState(false);
+  const [callPhrMainApi, setCallPhrMainApi] = useState(false);
 
   useEffect(() => {
-    if (hospitalizationData) {
-      let finalData: { key: string; data: HospitalizationType[] }[] = [];
-      finalData = initialSortByDays('hospitalizations', hospitalizationData, finalData);
-      setLocalHospitalizationData(finalData);
-    }
-  }, [hospitalizationData]);
+    let finalData: { key: string; data: HospitalizationType[] }[] = [];
+    finalData = initialSortByDays('hospitalizations', hospitalizationMainData, finalData);
+    setLocalHospitalizationData(finalData);
+  }, [hospitalizationMainData]);
 
   const handleBack = async () => {
     BackHandler.removeEventListener('hardwareBackPress', handleBack);
@@ -100,22 +105,22 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
   };
 
   useEffect(() => {
-    const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-      BackHandler.addEventListener('hardwareBackPress', handleBack);
-    });
-
-    const _willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    });
-
+    BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {
-      _didFocusSubscription && _didFocusSubscription.remove();
-      _willBlurSubscription && _willBlurSubscription.remove();
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
     };
-  }, []);
+  }, [callApi, callPhrMainApi]);
+
+  useEffect(() => {
+    if (callApi) {
+      getLatestHospitalizationRecords();
+    }
+  }, [callApi]);
 
   const gotoPHRHomeScreen = () => {
-    props.navigation.state.params?.onPressBack();
+    if (!callApi && !callPhrMainApi) {
+      props.navigation.state.params?.onPressBack();
+    }
     props.navigation.goBack();
   };
 
@@ -162,6 +167,27 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
     });
   };
 
+  const getLatestHospitalizationRecords = () => {
+    setShowSpinner(true);
+    getPatientPrismMedicalRecordsApi(client, currentPatient?.id)
+      .then((data: any) => {
+        const hospitalizationsNewData = g(
+          data,
+          'getPatientPrismMedicalRecords',
+          'hospitalizationsNew',
+          'response'
+        );
+        setHospitalizationMainData(phrSortWithDate(hospitalizationsNewData));
+        setShowSpinner(false);
+        setCallPhrMainApi(true);
+      })
+      .catch((error) => {
+        setShowSpinner(false);
+        console.log('error getPatientPrismMedicalRecordsApi', error);
+        currentPatient && handleGraphQlError(error);
+      });
+  };
+
   const onPressDeletePrismMedicalRecords = (selectedItem: any) => {
     setShowSpinner(true);
     deletePatientPrismMedicalRecords(
@@ -172,8 +198,9 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
     )
       .then((status) => {
         if (status) {
+          getLatestHospitalizationRecords();
+        } else {
           setShowSpinner(false);
-          props.navigation.goBack();
         }
       })
       .catch((error) => {
@@ -183,11 +210,13 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
   };
 
   const onPressEditPrismMedicalRecords = (selectedItem: any) => {
+    setCallApi(false);
     props.navigation.navigate(AppRoutes.AddRecord, {
       navigatedFrom: 'Hospitalization',
       recordType: MedicalRecordType.HOSPITALIZATION,
       selectedRecordID: selectedItem?.id,
       selectedRecord: selectedItem,
+      onRecordAdded: onRecordAdded,
     });
   };
 
@@ -239,6 +268,10 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
     );
   };
 
+  const onRecordAdded = () => {
+    setCallApi(true);
+  };
+
   const renderAddButton = () => {
     return (
       <StickyBottomComponent style={styles.stickyBottomComponentStyle}>
@@ -246,6 +279,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
           style={{ width: '100%' }}
           title={`ADD DATA`}
           onPress={() => {
+            setCallApi(false);
             const eventAttributes: WebEngageEvents[WebEngageEventName.ADD_RECORD] = {
               Source: 'Hospitalization',
             };
@@ -253,6 +287,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
             props.navigation.navigate(AppRoutes.AddRecord, {
               navigatedFrom: 'Hospitalization',
               recordType: MedicalRecordType.HOSPITALIZATION,
+              onRecordAdded: onRecordAdded,
             });
           }}
         />
@@ -265,7 +300,7 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
       {showSpinner && <Spinner />}
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
-        {hospitalizationData?.length > 0 ? renderSearchAndFilterView() : null}
+        {hospitalizationMainData?.length > 0 ? renderSearchAndFilterView() : null}
         <ScrollView style={{ flex: 1 }} bounces={false}>
           {renderHospitalizationData()}
         </ScrollView>
