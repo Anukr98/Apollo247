@@ -198,6 +198,10 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     if (isfocused) {
       availabilityTat(false);
     }
+    // remove circle subscription applied(for non member) if cart items are empty
+    if (cartItems.length < 1 && !circleSubscription?._id) {
+      setIsCircleSubscription && setIsCircleSubscription(false);
+    }
   }, [cartItems]);
 
   useEffect(() => {
