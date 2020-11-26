@@ -700,15 +700,19 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
             {'Dr. ' + data?.doctorName || 'Dr. -'}
           </Text>
         ) : null}
-        {medicalInsurance ? null : (
+        {medicalInsurance || hospitalization ? null : (
           <Text style={{ ...viewStyles.text('R', 14, '#67909C', 1, 18.2), marginTop: 3 }}>
-            {getSourceName(
-              data?.labTestSource || '-',
-              data?.siteDisplayName || '-',
-              data?.source || '-'
-            )}
+            {getSourceName(data?.labTestSource, data?.siteDisplayName, data?.source) || '-'}
           </Text>
         )}
+        {hospitalization ? (
+          <Text style={{ ...viewStyles.text('R', 14, '#67909C', 1, 18.2), marginTop: 3 }}>
+            {data?.hospitalName &&
+            getSourceName(data?.source) === string.common.clicnical_document_text
+              ? data?.hospitalName
+              : getSourceName(data?.source) || '-'}
+          </Text>
+        ) : null}
         <View style={styles.separatorLineStyle} />
         <Text style={{ ...viewStyles.text('M', 16, theme.colors.LIGHT_BLUE, 1, 21) }}>
           {date_text}

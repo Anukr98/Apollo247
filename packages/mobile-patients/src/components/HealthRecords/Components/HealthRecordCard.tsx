@@ -135,9 +135,7 @@ export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
         {healthConditionCard && !sourceName ? null : (
           <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 9 }}>
             {selfUpload ? (
-              sourceName === string.common.clicnical_document_text ||
-              sourceName === string.common.patient_uploaded_text ||
-              sourceName === '-' ? (
+              showUpdateDeleteOption ? (
                 <SelfUploadPhrIcon style={{ width: 16, height: 10.14, marginRight: 8 }} />
               ) : (
                 <HospitalUploadPhrIcon style={{ height: 14, width: 14, marginRight: 8 }} />

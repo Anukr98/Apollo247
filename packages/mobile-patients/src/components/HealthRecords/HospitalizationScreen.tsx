@@ -229,14 +229,20 @@ export const HospitalizationScreen: React.FC<HospitalizationScreenProps> = (prop
     const prescriptionName = 'Dr. ' + item?.doctorName;
     const dateText =
       item?.dateOfHospitalization && item?.date
-        ? `From ${moment(item?.dateOfHospitalization).format('DD MMM, YYYY')} to ${moment(
+        ? `${moment(item?.dateOfHospitalization).format('DD MMM, YYYY')} - ${moment(
             item?.date
           ).format('DD MMM, YYYY')}`
         : moment(item?.date).format('DD MMM YYYY');
-    const soureName = getSourceName(item?.source || '-');
+    const soureName =
+      item?.hospitalName && getSourceName(item?.source!) === string.common.clicnical_document_text
+        ? item?.hospitalName
+        : getSourceName(item?.source!) || '-';
     const selfUpload = true;
     const showEditDeleteOption =
-      soureName === string.common.clicnical_document_text || soureName === '-' ? true : false;
+      getSourceName(item?.source!) === string.common.clicnical_document_text ||
+      getSourceName(item?.source!) === '-'
+        ? true
+        : false;
     return (
       <HealthRecordCard
         item={item}
