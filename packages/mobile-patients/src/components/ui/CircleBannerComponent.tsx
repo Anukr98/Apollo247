@@ -43,6 +43,7 @@ export const CircleBannerComponent: React.FC<CircleBannerProps> = (props) => {
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const defaultPlanSellingPrice = defaultCirclePlan?.currentSellingPrice;
+  const monthlySavings = AppConfig.Configuration.CIRCLE_STATIC_MONTHLY_SAVINGS;
 
   useEffect(() => {
     if (!circleSubscriptionId) {
@@ -121,7 +122,7 @@ export const CircleBannerComponent: React.FC<CircleBannerProps> = (props) => {
     if (!circleSubscriptionId) {
       return (
         <View style={{ paddingLeft: 6 }}>
-          <View style={styles.row}>
+          <View style={[styles.row, { marginTop: 20 }]}>
             {props.comingFrom == 'diagnostics' ? null : <CircleLogo style={styles.circleLogo} />}
             {props.nonSubscribedText ? (
               <View style={{ width: '55%' }}>
@@ -134,8 +135,26 @@ export const CircleBannerComponent: React.FC<CircleBannerProps> = (props) => {
           {props.nonSubscribedText ? (
             <Text style={styles.subText}>{props.nonSubscribedSubText}</Text>
           ) : (
-            <Text style={styles.title}>SAVE {string.common.Rs}XXX MONTHLY!</Text>
+            <Text style={styles.title}>
+              SAVE {string.common.Rs}
+              {monthlySavings} MONTHLY!
+            </Text>
           )}
+        </View>
+      );
+    }
+    if (totalCircleSavings === 0) {
+      return (
+        <View>
+          <View style={styles.row}>
+            <CircleLogo style={styles.circleLogo} />
+            <Text style={styles.title}>MEMBERS SAVE BIG!</Text>
+          </View>
+          <Text style={styles.title}>YOU COULD SAVE</Text>
+          <Text style={styles.title}>
+            {string.common.Rs}
+            {monthlySavings} TOO
+          </Text>
         </View>
       );
     }
@@ -152,18 +171,6 @@ export const CircleBannerComponent: React.FC<CircleBannerProps> = (props) => {
         </Text>
       </View>
     );
-    // need api for this
-
-    // return (
-    //   <View>
-    //     <View style={styles.row}>
-    //       <CircleLogo style={styles.circleLogo} />
-    //       <Text style={styles.title}>MEMBERS SAVE BIG!</Text>
-    //     </View>
-    //     <Text style={styles.title}>YOU COULD SAVE</Text>
-    //     <Text style={styles.title}>{string.common.Rs}XXX TOO</Text>
-    //   </View>
-    // );
   };
   const renderUpgradeBtn = () => {
     return (
@@ -261,7 +268,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 13,
   },
   row: {
-    marginTop: 20,
+    marginTop: 25,
     flexDirection: 'row',
     alignItems: 'center',
   },

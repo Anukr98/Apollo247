@@ -31,10 +31,10 @@ import {
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import moment from 'moment';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { NavigationScreenProps } from 'react-navigation';
+import { Spinner } from './Spinner';
 
 interface props extends NavigationScreenProps {
   visible: boolean;
@@ -45,8 +45,8 @@ interface props extends NavigationScreenProps {
 export const CircleMembershipActivation: React.FC<props> = (props) => {
   const { visible, closeModal, defaultCirclePlan, healthCredits } = props;
   const [planActivated, setPlanActivated] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [planValidity, setPlanValidity] = useState<string>('');
-  const { setLoading } = useUIElements();
 
   const storeCode =
     Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
@@ -130,7 +130,7 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
   };
 
   const onPurchasePlan = async () => {
-    // setLoading && setLoading(true);
+    setLoading && setLoading(true);
     try {
       const res = await client.mutate<CreateUserSubscription, CreateUserSubscriptionVariables>({
         mutation: CREATE_USER_SUBSCRIPTION,
@@ -173,7 +173,8 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
       onRequestClose={() => closeModal && closeModal()}
     >
       <View>
-        {renderCloseIcon()}
+        {loading && <Spinner />}
+        {!loading && renderCloseIcon()}
         <View style={styles.container}>
           <View style={styles.leftCircle} />
           <EllipseCircle style={styles.ellipse} />

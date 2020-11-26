@@ -11,12 +11,13 @@ import {
 } from 'react-native';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { WebView } from 'react-native-webview';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { ONE_APOLLO_STORE_CODE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 
 interface PaymentGatewayProps extends NavigationScreenProps {
   paymentTypeID: string;
@@ -82,8 +83,7 @@ export const SubscriptionPaymentGateway: React.FC<PaymentGatewayProps> = (props)
     console.log({ data, redirectedUrl });
     if (
       redirectedUrl &&
-      (redirectedUrl.indexOf(AppConfig.Configuration.CONSULT_PG_SUCCESS_PATH) > -1 ||
-        redirectedUrl.indexOf(AppConfig.Configuration.CONSULT_PG_ERROR_PATH) > -1)
+      redirectedUrl.indexOf(AppConfig.Configuration.SUBSCRIPTION_PG_SUCCESS) > -1
     ) {
       navigatetoStatusScreen();
     }
@@ -91,6 +91,14 @@ export const SubscriptionPaymentGateway: React.FC<PaymentGatewayProps> = (props)
 
   const navigatetoStatusScreen = () => {
     // show circle member activated component
+    setLoading!(false);
+    props.navigation.dispatch(
+      StackActions.reset({
+        index: 0,
+        key: null,
+        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+      })
+    );
   };
 
   return (
