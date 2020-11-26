@@ -1755,6 +1755,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
         prescriptionOptionSelected
         tatType
         shopId
+        totalCashback
         medicineOrderLineItems {
           medicineSKU
           medicineName
@@ -1882,6 +1883,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
         patientAddressId
         alertStore
         prescriptionOptionSelected
+        totalCashback
         medicineOrdersStatus {
           id
           orderStatus

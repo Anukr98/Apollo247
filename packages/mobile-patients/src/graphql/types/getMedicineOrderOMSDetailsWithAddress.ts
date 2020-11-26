@@ -154,6 +154,7 @@ export interface getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetail
   prescriptionOptionSelected: string | null;
   tatType: string | null;
   shopId: string | null;
+  totalCashback: number | null;
   medicineOrderLineItems: (getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderLineItems | null)[] | null;
   medicineOrderPayments: (getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderPayments | null)[] | null;
   medicineOrderRefunds: (getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAddress_medicineOrderDetails_medicineOrderRefunds | null)[] | null;
