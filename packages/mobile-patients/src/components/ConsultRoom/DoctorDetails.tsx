@@ -508,12 +508,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     return (
       <ConsultTypeCard
         isOnlineSelected={onlineSelected}
-        onPhysicalPress={() => {
-          openConsultPopup(ConsultMode.PHYSICAL);
-        }}
-        onOnlinePress={() => {
-          openConsultPopup(ConsultMode.ONLINE);
-        }}
         DoctorId={doctorId}
         chatDays={g(doctorDetails, 'chatDays') ? g(doctorDetails, 'chatDays')!.toString() : '7'}
         DoctorName={doctorDetails ? doctorDetails.fullName : ''}
