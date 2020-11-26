@@ -102,8 +102,6 @@ const styles = StyleSheet.create({
 });
 
 export interface ConsultTypeCardProps {
-  onOnlinePress: () => void;
-  onPhysicalPress: () => void;
   isOnlineSelected: boolean;
   DoctorId: string;
   chatDays: string;
@@ -122,8 +120,6 @@ type stepsObject = {
 
 export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
   const {
-    onOnlinePress,
-    onPhysicalPress,
     isOnlineSelected,
     DoctorId,
     chatDays,
@@ -143,8 +139,7 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
     heading: string,
     question: string,
     time: string | null,
-    steps: stepsObject[],
-    onPress: () => void
+    steps: stepsObject[]
   ) => {
     const timeDiff: Number = timeDiffFromNow(time || '');
     return (
@@ -187,30 +182,8 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
             </View>
           ))}
         </View>
-        <TouchableOpacity activeOpacity={1} onPress={onPress}>
-          <View style={styles.buttonStyle}>
-            <Text style={styles.buttonTextStyle}>{consultNowText || `${
-              time && moment(time).isValid()
-                ? nextAvailability(time, 'Consult')
-                : string.common.book_apointment
-            }`}</Text>
-          </View>
-        </TouchableOpacity>
       </View>
     );
-  };
-
-  const postWebengaegConsultType = (consultType: 'Online' | 'In Person') => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.CONSULT_TYPE_SELECTION] = {
-      'Consult Type': consultType,
-      'Doctor ID': DoctorId,
-      'Doctor Name': consultDoctorName,
-      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      'Patient UHID': g(currentPatient, 'uhid'),
-      'Mobile Number': g(currentPatient, 'mobileNumber'),
-      'Customer ID': g(currentPatient, 'id'),
-    };
-    postWebEngageEvent(WebEngageEventName.CONSULT_TYPE_SELECTION, eventAttributes);
   };
 
   const renderOnlineCard = () => {
@@ -236,18 +209,7 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
           image: <CTLightGrayChat />,
           description: string.consultType.follow_up_chat_days_text.replace('{0}', chatDays),
         },
-      ],
-      () => {
-        onOnlinePress();
-        postWebengaegConsultType('Online');
-
-        // props.navigation.navigate(AppRoutes.DoctorDetails, {
-        //   doctorId: DoctorId,
-        //   consultModeSelected: ConsultMode.ONLINE,
-        //   externalConnect: hideCheckbox ? null : consultedChecked,
-        //   ...params,
-        // });
-      }
+      ]
     );
   };
 
@@ -272,18 +234,7 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
           description: string.consultType.follow_up_chat_days_text.replace('{0}', chatDays),
           textColor: theme.colors.SKY_BLUE,
         },
-      ],
-      () => {
-        onPhysicalPress();
-        postWebengaegConsultType('In Person');
-
-        // props.navigation.navigate(AppRoutes.DoctorDetails, {
-        //   doctorId: DoctorId,
-        //   consultModeSelected: ConsultMode.PHYSICAL,
-        //   externalConnect: hideCheckbox ? null : consultedChecked,
-        //   ...params,
-        // });
-      }
+      ]
     );
   };
 
