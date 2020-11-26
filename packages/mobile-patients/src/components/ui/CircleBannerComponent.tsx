@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   TouchableOpacity,
@@ -31,14 +31,19 @@ interface CircleBannerProps extends NavigationScreenProps {
   comingFrom?: string;
   nonSubscribedText?: string;
   nonSubscribedSubText?: string;
+  circleActivated?: boolean;
+  circlePlanValidity?: string;
 }
 export const CircleBannerComponent: React.FC<CircleBannerProps> = (props) => {
-  const { planActivationCallback } = props;
+  const { planActivationCallback, circleActivated, circlePlanValidity } = props;
   const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
-  const [showCircleActivation, setShowCircleActivation] = useState<boolean>(false);
+  const [showCircleActivation, setShowCircleActivation] = useState<boolean>(
+    circleActivated || false
+  );
   const [membershipPlans, setMembershipPlans] = useState<any>([]);
   const [healthCredits, setHealthCredits] = useState<number>(0);
   const [totalCircleSavings, setTotalCircleSavings] = useState<number>(0);
+  const planPurchased = useRef<boolean | undefined>(circleActivated);
   const { circleSubscriptionId, selectDefaultPlan, defaultCirclePlan } = useShoppingCart();
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
@@ -149,7 +154,7 @@ export const CircleBannerComponent: React.FC<CircleBannerProps> = (props) => {
       return (
         <View>
           <View style={styles.row}>
-            <CircleLogo style={styles.circleLogo} />
+            <CircleLogoWhite style={styles.circleLogo} />
             <Text style={styles.title}>MEMBERS SAVE BIG!</Text>
           </View>
           <Text style={styles.title}>YOU COULD SAVE</Text>
@@ -180,6 +185,7 @@ export const CircleBannerComponent: React.FC<CircleBannerProps> = (props) => {
       <TouchableOpacity
         style={styles.upgradeBtnView}
         onPress={() => {
+          planPurchased.current = false;
           if (healthCredits >= defaultPlanSellingPrice) {
             setShowCircleActivation(true);
           } else if (defaultPlanSellingPrice) {
@@ -231,6 +237,8 @@ export const CircleBannerComponent: React.FC<CircleBannerProps> = (props) => {
       defaultCirclePlan={defaultCirclePlan}
       healthCredits={healthCredits}
       navigation={props.navigation}
+      circlePaymentDone={planPurchased.current}
+      circlePlanValidity={circlePlanValidity}
     />
   );
   const backGroundImage =

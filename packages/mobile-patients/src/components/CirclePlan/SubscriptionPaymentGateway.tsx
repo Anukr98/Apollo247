@@ -63,7 +63,6 @@ export const SubscriptionPaymentGateway: React.FC<PaymentGatewayProps> = (props)
   const renderwebView = () => {
     const baseUrl = AppConfig.Configuration.CONSULT_PG_BASE_URL;
     let circlePurchaseUrl = `${baseUrl}/subscriptionpayment?patientId=${currentPatient?.id}&price=${planSellingPrice}&paymentTypeID=${paymentTypeID}&paymentModeOnly=YES&planId=${planId}&subPlanId=${subPlanId}&storeCode=${storeCode}`;
-
     return (
       <WebView
         ref={(WEBVIEW_REF) => (WebViewRef = WEBVIEW_REF)}
@@ -85,18 +84,27 @@ export const SubscriptionPaymentGateway: React.FC<PaymentGatewayProps> = (props)
       redirectedUrl &&
       redirectedUrl.indexOf(AppConfig.Configuration.SUBSCRIPTION_PG_SUCCESS) > -1
     ) {
-      navigatetoStatusScreen();
+      navigatetoStatusScreen(redirectedUrl);
     }
   };
 
-  const navigatetoStatusScreen = () => {
+  const navigatetoStatusScreen = (url: string) => {
     // show circle member activated component
     setLoading!(false);
+    const circlePlanValidity = url.split('end_date=');
     props.navigation.dispatch(
       StackActions.reset({
         index: 0,
         key: null,
-        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+        actions: [
+          NavigationActions.navigate({
+            routeName: AppRoutes.ConsultRoom,
+            params: {
+              circleActivated: true,
+              circlePlanValidity: circlePlanValidity[1],
+            },
+          }),
+        ],
       })
     );
   };

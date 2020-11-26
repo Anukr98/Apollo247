@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   StyleSheet,
@@ -41,12 +41,21 @@ interface props extends NavigationScreenProps {
   closeModal: ((planActivated?: boolean) => void) | null;
   defaultCirclePlan?: any;
   healthCredits?: number;
+  circlePaymentDone?: boolean;
+  circlePlanValidity?: string;
 }
 export const CircleMembershipActivation: React.FC<props> = (props) => {
-  const { visible, closeModal, defaultCirclePlan, healthCredits } = props;
-  const [planActivated, setPlanActivated] = useState<boolean>(false);
+  const {
+    visible,
+    closeModal,
+    defaultCirclePlan,
+    healthCredits,
+    circlePaymentDone,
+    circlePlanValidity,
+  } = props;
+  const planActivated = useRef<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
-  const [planValidity, setPlanValidity] = useState<string>('');
+  const [planValidity, setPlanValidity] = useState<string>(circlePlanValidity || '');
 
   const storeCode =
     Platform.OS === 'ios' ? one_apollo_store_code.IOSCUS : one_apollo_store_code.ANDCUS;
@@ -54,12 +63,14 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
   const defaultPlanSellingPrice = defaultCirclePlan?.currentSellingPrice;
+  planActivated.current = circlePaymentDone ? true : planActivated.current;
+
   const renderCloseIcon = () => {
     return (
       <View style={styles.closeIcon}>
         <TouchableOpacity
           onPress={() => {
-            closeModal && closeModal(planActivated);
+            closeModal && closeModal(planActivated.current);
           }}
         >
           <CrossPopup style={styles.crossIconStyle} />
@@ -102,13 +113,13 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
     return (
       <View>
         <Text style={styles.title}>{string.circleDoctors.membershipActivated}</Text>
-        {planValidity ? (
+        {moment(planValidity).isValid() ? (
           <Text style={styles.description}>
             Valid till:{' '}
             <Text style={styles.mediumText}>{moment(planValidity).format('D MMMM YYYY')}</Text>
           </Text>
         ) : null}
-        {healthCredits ? (
+        {healthCredits && !circlePaymentDone ? (
           <Text style={[styles.description, { marginTop: 0 }]}>
             {string.circleDoctors.healthCreditsRemaining}:{' '}
             <Text style={styles.mediumText}>{healthCredits - defaultPlanSellingPrice}</Text>
@@ -155,7 +166,7 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
       });
       setLoading && setLoading(false);
       if (res?.data?.CreateUserSubscription?.success) {
-        setPlanActivated(true);
+        planActivated.current = true;
         setPlanValidity(res?.data?.CreateUserSubscription?.response?.end_date);
       } else {
         Alert.alert('Apollo', `${res?.data?.CreateUserSubscription?.message}`);
@@ -180,7 +191,7 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
           <EllipseCircle style={styles.ellipse} />
           <View style={styles.rightCircle} />
           <CircleLogoBig style={styles.circleLogo} />
-          {!planActivated ? renderAskingBeforeUpgradation() : renderMembershipActivated()}
+          {!planActivated.current ? renderAskingBeforeUpgradation() : renderMembershipActivated()}
         </View>
       </View>
     </Overlay>
