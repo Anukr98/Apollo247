@@ -367,6 +367,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setCircleSubscription,
     hdfcUpgradeUserSubscriptions,
     setHdfcUpgradeUserSubscriptions,
+    circleSubscription,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
@@ -2869,13 +2870,25 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const renderCircleBanners = () => (
-    <CircleBannerComponent
-      navigation={props.navigation}
-      planActivationCallback={() => {
-        getUserSubscriptionsByStatus();
-        getUserSubscriptionsWithBenefits();
+    <TouchableOpacity
+      onPress={() => {
+        if (circleSubscription?._id) {
+          props.navigation.navigate(AppRoutes.MembershipDetails, {
+            membershipType: string.Circle.planName,
+            isActive: true,
+          });
+        }
       }}
-    />
+      activeOpacity={1}
+    >
+      <CircleBannerComponent
+        navigation={props.navigation}
+        planActivationCallback={() => {
+          getUserSubscriptionsByStatus();
+          getUserSubscriptionsWithBenefits();
+        }}
+      />
+    </TouchableOpacity>
   );
 
   return (

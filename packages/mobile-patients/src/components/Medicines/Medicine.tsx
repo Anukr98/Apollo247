@@ -1992,8 +1992,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       },
       circleLogoTwo: {
         resizeMode: 'contain',
-        width: 40,
+        width: 35,
         height: 25,
+        marginHorizontal: 4,
         // top: -24,
       },
     });
@@ -2022,9 +2023,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                       Effective price for
                     </Text>
                     <CircleLogo style={circleStyles.circleLogoTwo} />
-                    <Text
-                      style={{ ...theme.viewStyles.text('R', 12, '#02475B', 1, 25, 0), left: -3 }}
-                    >
+                    <Text style={{ ...theme.viewStyles.text('R', 12, '#02475B', 1, 25, 0) }}>
                       members
                     </Text>
                     <Text style={theme.viewStyles.text('SB', 12, '#02475B', 1, 25, 0)}>
