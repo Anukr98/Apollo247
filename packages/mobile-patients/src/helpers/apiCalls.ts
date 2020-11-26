@@ -684,17 +684,15 @@ export const getProductsByCategoryApi = (
 export const getMedicinePageProducts = (
   axdcCode?: string | null
 ): Promise<AxiosResponse<MedicinePageAPiResponse>> => {
-  return Axios.post(
-    `${config.MEDICINE_PAGE[0]}`,
-    {
-      axdcCode,
+  let url = `${config.MEDICINE_PAGE[0]}`;
+  if (axdcCode) {
+    url += `&axdcCode=${axdcCode}`;
+  }
+  return Axios.get(url, {
+    headers: {
+      Authorization: config.MEDICINE_PAGE[1],
     },
-    {
-      headers: {
-        Authorization: config.MEDICINE_PAGE[1],
-      },
-    }
-  );
+  });
 };
 
 const googlePlacesApiKey = AppConfig.Configuration.GOOGLE_API_KEY;

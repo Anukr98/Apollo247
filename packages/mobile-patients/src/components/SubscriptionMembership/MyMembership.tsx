@@ -25,6 +25,9 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Circle } from '@aph/mobile-patients/src/strings/strings.json';
+import { useApolloClient } from 'react-apollo-hooks';
+import { GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE } from '@aph/mobile-patients/src/graphql/profiles';
+import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -139,19 +142,21 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
     hdfcUserSubscriptions,
     hdfcUpgradeUserSubscriptions,
     circleSubscription,
+    setTotalCircleSavings,
   } = useAppCommonData();
   const { circleSubscriptionId } = useShoppingCart();
   const { currentPatient } = useAllCurrentPatients();
-  const showHdfcSubscriptions = !!(hdfcUserSubscriptions && hdfcUserSubscriptions?.name);
+  const showHdfcSubscriptions = !!hdfcUserSubscriptions?.name;
   const canUpgradeMultiplePlans = !!(hdfcUpgradeUserSubscriptions.length > 1);
   const premiumPlan = canUpgradeMultiplePlans ? hdfcUpgradeUserSubscriptions[1] : {};
   const canUpgrade = !!hdfcUpgradeUserSubscriptions.length;
-  const isActive = !!(hdfcUserSubscriptions && hdfcUserSubscriptions.isActive);
-  const upgradePlanName = hdfcUpgradeUserSubscriptions[0]?.name;
+  const isActive = !!hdfcUserSubscriptions?.isActive;
+  const upgradePlanName = hdfcUpgradeUserSubscriptions?.[0]?.name;
   const [showAvailPopup, setShowAvailPopup] = useState<boolean>(false);
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [upgradeTransactionValue, setUpgradeTransactionValue] = useState<number>(0);
-  const subscription_name = hdfcUserSubscriptions?.name;
+  const subscription_name = showHdfcSubscriptions ? hdfcUserSubscriptions?.name : '';
+  const client = useApolloClient();
 
   useEffect(() => {
     if (showHdfcSubscriptions) {
@@ -161,7 +166,42 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
       };
       postWebEngageEvent(WebEngageEventName.HDFC_MY_MEMBERSHIP_VIEWED, eventAttributes);
     }
+    fetchCircleSavings();
   }, []);
+
+  const fetchCircleSavings = async () => {
+    try {
+      const res = await client.query({
+        query: GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE,
+        variables: {
+          mobile_number: currentPatient?.mobileNumber,
+        },
+        fetchPolicy: 'no-cache',
+      });
+      const savings = res?.data?.GetCircleSavingsOfUserByMobile?.response?.savings;
+      const circlebenefits = res?.data?.GetCircleSavingsOfUserByMobile?.response?.benefits;
+      const consultSavings = savings?.consult || 0;
+      const pharmaSavings = savings?.pharma || 0;
+      const diagnosticsSavings = savings?.diagnostics || 0;
+      const deliverySavings = savings?.delivery || 0;
+      const totalSavings = consultSavings + pharmaSavings + diagnosticsSavings + deliverySavings;
+      const docOnCallBenefit = circlebenefits?.filter(
+        (value) => value?.attribute === Circle.DOC_ON_CALL
+      );
+      setTotalCircleSavings &&
+        setTotalCircleSavings({
+          consultSavings,
+          pharmaSavings,
+          diagnosticsSavings,
+          deliverySavings,
+          totalSavings,
+          callsTotal: docOnCallBenefit?.[0]?.attribute_type?.total,
+          callsUsed: docOnCallBenefit?.[0]?.attribute_type?.used,
+        });
+    } catch (error) {
+      CommonBugFender('CircleBannerComponent_fetchCircleSavings', error);
+    }
+  };
 
   useEffect(() => {
     if (hdfcUserSubscriptions?._id || circleSubscriptionId) {

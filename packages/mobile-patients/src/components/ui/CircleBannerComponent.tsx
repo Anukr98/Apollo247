@@ -28,6 +28,9 @@ import { CircleMembershipActivation } from '@aph/mobile-patients/src/components/
 
 interface CircleBannerProps extends NavigationScreenProps {
   planActivationCallback?: (() => void) | null;
+  comingFrom?: string;
+  nonSubscribedText?: string;
+  nonSubscribedSubText?: string;
 }
 export const CircleBannerComponent: React.FC<CircleBannerProps> = (props) => {
   const { planActivationCallback } = props;
@@ -117,12 +120,22 @@ export const CircleBannerComponent: React.FC<CircleBannerProps> = (props) => {
   const renderConditionalViews = () => {
     if (!circleSubscriptionId) {
       return (
-        <View>
+        <View style={{ paddingLeft: 6 }}>
           <View style={styles.row}>
-            <CircleLogo style={styles.circleLogo} />
-            <Text style={styles.title}>MEMBERS</Text>
+            {props.comingFrom == 'diagnostics' ? null : <CircleLogo style={styles.circleLogo} />}
+            {props.nonSubscribedText ? (
+              <View style={{ width: '55%' }}>
+                <Text style={styles.headerText}>{props.nonSubscribedText}</Text>
+              </View>
+            ) : (
+              <Text style={styles.title}>MEMBERS</Text>
+            )}
           </View>
-          <Text style={styles.title}>SAVE {string.common.Rs}XXX MONTHLY!</Text>
+          {props.nonSubscribedText ? (
+            <Text style={styles.subText}>{props.nonSubscribedSubText}</Text>
+          ) : (
+            <Text style={styles.title}>SAVE {string.common.Rs}XXX MONTHLY!</Text>
+          )}
         </View>
       );
     }
@@ -214,7 +227,7 @@ export const CircleBannerComponent: React.FC<CircleBannerProps> = (props) => {
     <View style={styles.container}>
       <ImageBackground
         source={require('@aph/mobile-patients/src/components/ui/icons/circleBanner.png')}
-        style={styles.banner}
+        style={[styles.banner, { height: props.comingFrom == 'diagnostics' ? 180 : 150 }]}
         imageStyle={{ borderRadius: 16 }}
       >
         {renderConditionalViews()}
@@ -285,4 +298,8 @@ const styles = StyleSheet.create({
     bottom: 10,
     left: 13,
   },
+  headerText: {
+    ...theme.viewStyles.text('SB', 20, theme.colors.WHITE, 1, 25),
+  },
+  subText: { ...theme.viewStyles.text('M', 10, theme.colors.WHITE, 1, 24) },
 });

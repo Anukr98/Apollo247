@@ -42,6 +42,7 @@ import {
   GET_LATEST_MEDICINE_ORDER,
   GET_PATIENT_ADDRESS_LIST,
   SET_DEFAULT_ADDRESS,
+  GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { MEDICINE_ORDER_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
@@ -144,6 +145,11 @@ import {
 import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
+import { CircleBannerComponent } from '@aph/mobile-patients/src/components/ui/CircleBannerComponent';
+import {
+  GetSubscriptionsOfUserByStatusVariables,
+  GetSubscriptionsOfUserByStatus,
+} from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
 
 const { width: winWidth } = Dimensions.get('window');
 
@@ -243,8 +249,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     isCircleSubscription,
     setCircleMembershipCharges,
     setCircleSubPlanId,
+    setCircleSubscriptionId,
+    setIsCircleSubscription,
   } = useShoppingCart();
-  const { cartItems: diagnosticCartItems } = useDiagnosticsCart();
+  const {
+    cartItems: diagnosticCartItems,
+    setIsDiagnosticCircleSubscription,
+  } = useDiagnosticsCart();
   const cartItemsCount = cartItems.length + diagnosticCartItems.length;
   const { currentPatient } = useAllCurrentPatients();
   const [allBrandData, setAllBrandData] = useState<Brand[]>([]);
@@ -363,10 +374,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         const { servicable, axdcCode } = response;
         setAxdcCode && setAxdcCode(axdcCode);
         setServiceabilityMsg(servicable ? '' : 'Services unavailable. Change delivery location.');
-        setPharmacyLocationServiceable!(servicable ? true : false);
-        type == 'autoDetect' &&
-          WebEngageEventAutoDetectLocation(pincode, servicable ? true : false);
-        type == 'pincode' && webEngageDeliveryPincodeEntered(pincode, servicable ? true : false);
+        setPharmacyLocationServiceable!(!!servicable);
+        type == 'autoDetect' && WebEngageEventAutoDetectLocation(pincode, !!servicable);
+        type == 'pincode' && webEngageDeliveryPincodeEntered(pincode, !!servicable);
         globalLoading!(false);
         if (!response) {
           globalLoading!(true);
@@ -1420,25 +1430,49 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
-  const renderCircleBanner = () => {
-    return (
-      <TouchableOpacity
-        activeOpacity={1}
-        onPress={() => {
-          setShowCirclePopup(true);
-        }}
-        style={{ paddingHorizontal: 20 }}
-      >
-        <CircleBannerNonMember style={styles.circleBanner} />
-      </TouchableOpacity>
-    );
+  const getUserSubscriptionsByStatus = async () => {
+    try {
+      const query: GetSubscriptionsOfUserByStatusVariables = {
+        mobile_number: g(currentPatient, 'mobileNumber'),
+        status: ['active', 'deferred_inactive'],
+      };
+      const res = await client.query<GetSubscriptionsOfUserByStatus>({
+        query: GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+        fetchPolicy: 'no-cache',
+        variables: query,
+      });
+      const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
+      if (data) {
+        if (data?.APOLLO?.[0]._id) {
+          setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
+          setIsCircleSubscription && setIsCircleSubscription(true);
+          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
+        } else {
+          setCircleSubscriptionId && setCircleSubscriptionId('');
+          setIsCircleSubscription && setIsCircleSubscription(false);
+          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
+        }
+      }
+    } catch (error) {
+      CommonBugFender('ConsultRoom_GetSubscriptionsOfUserByStatus', error);
+    }
   };
+
+  const renderCircleBanners = () => (
+    <CircleBannerComponent
+      navigation={props.navigation}
+      planActivationCallback={() => {
+        getUserSubscriptionsByStatus();
+      }}
+    />
+  );
 
   const renderDealsOfTheDay = (title: string, dealsOfTheDay: DealsOfTheDaySection[]) => {
     if (dealsOfTheDay.length == 0) return null;
     return (
       <View>
-        {/* {renderCircleBanner()} */}
+        {renderCircleBanners()}
+        <View style={{ marginBottom: 10 }} />
         <SectionHeader leftText={title} />
         <FlatList
           bounces={false}

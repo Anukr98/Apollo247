@@ -905,8 +905,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
          */
         if (data?.APOLLO?.[0]._id) {
           setCircleSubscriptionId && setCircleSubscriptionId(data?.APOLLO?.[0]._id);
+          setIsCircleSubscription && setIsCircleSubscription(true);
+          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(true);
         } else {
           setCircleSubscriptionId && setCircleSubscriptionId('');
+          setIsCircleSubscription && setIsCircleSubscription(false);
+          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
         }
         setShowCircleBanner(true);
       }
@@ -1082,7 +1086,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     client
       .query<GetCashbackDetailsOfPlanById>({
         query: GET_CASHBACK_DETAILS_OF_PLAN_ID,
-        variables: { plan_id: AppConfig.Configuration.CARE_PLAN_ID },
+        variables: { plan_id: AppConfig.Configuration.CIRCLE_PLAN_ID },
         fetchPolicy: 'no-cache',
       })
       .then((data) => {
@@ -1226,7 +1230,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       planSummary: planSummary,
       groupDetails: groupDetailsData,
       benefits: circleBenefits,
-      endDate: plan?.end_date,
+      endDate: plan?.subscriptionEndDate,
     };
 
     return circleSubscptionData;
@@ -1275,14 +1279,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         benefitsWorth: plan!.benefits_worth || '',
         activationModes: plan!.activation_modes,
         price: plan!.price,
-        minTransactionValue: plan?.plan_summary[0]?.min_transaction_value,
+        minTransactionValue: plan?.plan_summary?.[0]?.min_transaction_value,
         status: plan!.status || '',
         subscriptionStatus: plan!.subscriptionStatus || '',
         isActive,
         group: groupData,
         benefits: planBenefits,
         coupons: plan!.coupons ? plan!.coupons : [],
-        upgradeTransactionValue: plan?.plan_summary[0]?.upgrade_transaction_value,
+        upgradeTransactionValue: plan?.plan_summary?.[0]?.upgrade_transaction_value,
       };
       const upgradeToPlan = g(plan, 'can_upgrade_to');
       if (g(upgradeToPlan, '_id')) {
@@ -2867,7 +2871,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const renderCircleBanners = () => (
     <CircleBannerComponent
       navigation={props.navigation}
-      planActivationCallback={() => getUserSubscriptionsByStatus()}
+      planActivationCallback={() => {
+        getUserSubscriptionsByStatus();
+        getUserSubscriptionsWithBenefits();
+      }}
     />
   );
 
