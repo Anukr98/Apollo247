@@ -361,7 +361,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
     const renderDurationView = () => {
       return (
         <>
-          {detailRowView('Duration', '')}
+          {detailRowView('Duration', data?.endDateTime ? '' : 'Active')}
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
             <Text style={styles.resultTextStyle}>
               {'Started: ' + moment(data?.startDateTime).format('DD MMM YYYY')}
