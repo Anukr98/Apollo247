@@ -153,16 +153,6 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
             {totalCircleSavings?.deliverySavings || 0}
           </Text>
         </View>
-        <View style={styles.savingsContainer}>
-          <View style={styles.savingsRow}>
-            <OneApolloLogo style={styles.savingsIcon} />
-            <Text style={styles.savingsHeading}>Total Health Credits Earned</Text>
-          </View>
-          <Text style={styles.savingsAmount}>
-            {strings.common.Rs}
-            {totalCircleSavings?.pharmaSavings || 0}
-          </Text>
-        </View>
       </View>
     );
   };

@@ -82,7 +82,12 @@ export interface PaymentSceneProps
   }> {}
 
 export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
-  const { clearCartInfo, circleMembershipCharges, setCircleMembershipCharges } = useShoppingCart();
+  const {
+    clearCartInfo,
+    circleMembershipCharges,
+    setCircleMembershipCharges,
+    isCircleSubscription,
+  } = useShoppingCart();
   const totalAmount = props.navigation.getParam('amount');
   const burnHC = props.navigation.getParam('burnHC');
   const orderAutoId = props.navigation.getParam('orderAutoId');
@@ -382,10 +387,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       postWebEngageEvent(WebEngageEventName.PAYMENT_STATUS, paymentEventAttributes);
       postAppsFlyerEvent(AppsFlyerEventName.PAYMENT_STATUS, paymentEventAttributes);
       postFirebaseEvent(FirebaseEventName.PAYMENT_STATUS, paymentEventAttributes);
-      postAppsFlyerEvent(
-        AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED,
-        appsflyerEventAttributes
-      );
+      postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_CHECKOUT_COMPLETED, appsflyerEventAttributes);
       firePurchaseEvent();
       if (!!isSuccess) {
         postWebEngageEvent(WebEngageEventName.PHARMACY_CHECKOUT_COMPLETED, checkoutEventAttributes);
@@ -400,12 +402,12 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
       redirectedUrl &&
       redirectedUrl.indexOf(AppConfig.Configuration.PAYMENT_GATEWAY_SUCCESS_PATH) > -1
     ) {
-        fireOrderEvent(true);
-        props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
-          status: 'PAYMENT_SUCCESS',
-          price: totalAmount,
-          orderId: orderAutoId,
-        });
+      fireOrderEvent(true);
+      props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
+        status: 'PAYMENT_SUCCESS',
+        price: totalAmount,
+        orderId: orderAutoId,
+      });
     } else if (
       redirectedUrl &&
       redirectedUrl.indexOf(AppConfig.Configuration.PAYMENT_GATEWAY_ERROR_PATH) > -1
@@ -417,8 +419,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
           price: totalAmount,
           orderId: orderAutoId,
         });
-      } 
-      else {
+      } else {
         fireOrderEvent(false);
         props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
           status: 'PAYMENT_PENDING',
@@ -459,14 +460,15 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
 
   const renderWebView = () => {
     const baseUrl = AppConfig.Configuration.PAYMENT_GATEWAY_BASE_URL;
-    const storeCode = Platform.OS == 'android' ? ONE_APOLLO_STORE_CODE.ANDCUS : ONE_APOLLO_STORE_CODE.IOSCUS
+    const storeCode =
+      Platform.OS == 'android' ? ONE_APOLLO_STORE_CODE.ANDCUS : ONE_APOLLO_STORE_CODE.IOSCUS;
     let url = `${baseUrl}/paymed?amount=${totalAmount}&oid=${orderAutoId}&pid=${currentPatiendId}&source=mobile&paymentTypeID=${paymentTypeID}&paymentModeOnly=YES${
       burnHC ? '&hc=' + burnHC : ''
     }${bankCode ? '&bankCode=' + bankCode : ''}`;
 
-    if (!(circleSubscription?._id)) {
-      url += `${planId ? '&planId=' + planId : ''
-      }${subPlanId ? '&subPlanId=' + subPlanId : ''
+    if (!circleSubscription?._id && isCircleSubscription) {
+      url += `${planId ? '&planId=' + planId : ''}${
+        subPlanId ? '&subPlanId=' + subPlanId : ''
       }${'&storeCode=' + storeCode}`;
     }
 
