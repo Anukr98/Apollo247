@@ -13,6 +13,7 @@ export interface rescheduleDiagnosticsOrder_rescheduleDiagnosticsOrder {
   __typename: "RescheduleDiagnosticsOrderResponse";
   status: string;
   rescheduleCount: number;
+  message: string;
 }
 
 export interface rescheduleDiagnosticsOrder {

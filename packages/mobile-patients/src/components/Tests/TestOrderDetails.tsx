@@ -263,6 +263,7 @@ export interface TestOrderDetailsProps extends NavigationScreenProps {
   comingFrom?: string;
   selectedTest: any;
   individualTestStatus: any;
+  selectedOrder: object;
 }
 {
 }
@@ -270,6 +271,7 @@ export interface TestOrderDetailsProps extends NavigationScreenProps {
 export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const { diagnosticSlot, setDiagnosticSlot } = useDiagnosticsCart();
   const orderId = props.navigation.getParam('orderId');
+  const selectedOrder = props.navigation.getParam('selectedOrder');
   const goToHomeOnBack = props.navigation.getParam('goToHomeOnBack');
   const showOrderSummaryTab = props.navigation.getParam('showOrderSummaryTab');
   const setOrders = props.navigation.getParam('setOrders');
@@ -726,16 +728,20 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
     console.log({ orderCancellationInput });
     cancelOrder(orderCancellationInput)
       .then((data) => {
+        setApiLoading(true);
         console.log({ data });
         const cancelResponse = g(data, 'data', 'cancelDiagnosticsOrder', 'status');
         if (cancelResponse == 'true') {
-          refetch()
-            .then(() => {
-              setInitialSate();
+          refetchOrders()
+            .then((data: any) => {
+              const _orders = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
+              setOrders(_orders);
+              //build new orderList, hide the reschedule cancel button and note
             })
             .catch((e: any) => {
               CommonBugFender('TestOrderDetails_refetch_callApiAndRefetchOrderDetails', e);
               setInitialSate();
+              setApiLoading(false);
             });
         }
         //refetch the orders
@@ -940,7 +946,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
           <TestSlotSelectionOverlay
             heading="Schedule Appointment"
             date={date}
-            areaId={'62142'}
+            areaId={String(selectedOrder.areaID)}
             maxDate={moment()
               .add(AppConfig.Configuration.DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS, 'day')
               .toDate()}
@@ -952,7 +958,6 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
             onSchedule={(date: Date, slotInfo: TestSlot) => {
               console.log({ date });
               console.log({ slotInfo });
-              console.log('yahaaaa');
               setDate(date);
               setselectedTimeSlot(slotInfo);
               setDiagnosticSlot!({
@@ -1101,9 +1106,10 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         console.log({ data });
         const rescheduleResponse = g(data, 'data', 'rescheduleDiagnosticsOrder');
         if (rescheduleResponse?.status == 'true' && rescheduleResponse.rescheduleCount <= 3) {
-          refetch()
-            .then(() => {
-              setInitialSate();
+          refetchOrders()
+            .then((data: any) => {
+              const _orders = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
+              setOrders(_orders);
             })
             .catch((e: any) => {
               CommonBugFender('TestOrderDetails_refetch_callApiAndRefetchOrderDetails', e);

@@ -216,28 +216,31 @@ export const YourTestDetails: React.FC<YourTestDetailsProps> = (props) => {
        * we don't have the itemId,packageId so creating the object with the data from
        *  all the tests/packages (searchDiagnosticsById + getPackages).
        */
-
+      console.log('yaahhhh...');
       if (key == 'null' && lengthOfItems == 1) {
         for (let index = 0; index < orderSelected.diagnosticOrderLineItems.length; index++) {
-          orderSelected?.diagnosticOrderLineItems[index]?.diagnostics?.PackageInclussion?.map(
-            (test: any) => {
-              objArray.push({
-                id: orderSelected.diagnosticOrderLineItems[index].diagnostics.id,
-                displayId: orderSelected!.displayId!,
-                slotTimings: orderSelected!.slotTimings,
-                patientName: currentPatient.firstName,
-                showDateTime: orderSelected!.diagnosticDate,
-                itemId: orderSelected.diagnosticOrderLineItems[index].diagnostics.itemId,
-                currentStatus: orderSelected.maxStatus,
-                packageId: orderSelected.diagnosticOrderLineItems[index].diagnostics.itemId,
-                packageName: orderSelected.diagnosticOrderLineItems[index].diagnostics.itemName,
-                itemName: test.TestName,
-                statusDate: itemIdObject[key][0].statusDate,
-                testPreparationData:
-                  orderSelected.diagnosticOrderLineItems[index].diagnostics.testPreparationData,
-              });
-            }
-          );
+          let inclusionVal =
+            orderSelected?.diagnosticOrderLineItems[index]?.diagnostics?.inclusions == null
+              ? [{}]
+              : orderSelected?.diagnosticOrderLineItems[index]?.diagnostics?.inclusions.length;
+          inclusionVal?.map((test: any) => {
+            objArray.push({
+              id: orderSelected.diagnosticOrderLineItems[index].diagnostics.id,
+              displayId: orderSelected!.displayId!,
+              slotTimings: orderSelected!.slotTimings,
+              patientName: currentPatient.firstName,
+              showDateTime: orderSelected!.diagnosticDate,
+              itemId: orderSelected.diagnosticOrderLineItems[index].diagnostics.itemId,
+              // currentStatus: orderSelected.maxStatus,
+              currentStatus: DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED,
+              packageId: orderSelected.diagnosticOrderLineItems[index].diagnostics.itemId,
+              packageName: orderSelected.diagnosticOrderLineItems[index].diagnostics.itemName,
+              itemName: test.TestName,
+              statusDate: itemIdObject[key][0].statusDate,
+              testPreparationData:
+                orderSelected.diagnosticOrderLineItems[index].diagnostics.testPreparationData,
+            });
+          });
         }
       } else {
         /**

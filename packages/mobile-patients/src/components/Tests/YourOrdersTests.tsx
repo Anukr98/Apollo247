@@ -236,7 +236,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   const [selectedReasonForReschedule, setSelectedReasonForReschedule] = useState('');
   const [commentForReschedule, setCommentForReschedule] = useState('');
-
+  const [selectedOrder, setSelectedOrder] = useState<
+    getDiagnosticOrdersList_getDiagnosticOrdersList_ordersList
+  >();
   const { getPatientApiCall } = useAuth();
   const client = useApolloClient();
 
@@ -284,7 +286,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           order?.diagnosticOrderLineItems?.length! > 0
         ) {
           fetchOrderStatusForEachTest(order!.id!, order);
-          fetchTestDetails(order!.id, order);
+          // fetchTestDetails(order!.id, order);
         }
       });
     }
@@ -406,7 +408,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   };
 
   const setInitialState = () => {
-    setApiLoading(false);
+    setLoading!(false);
     // setCancelPopUp(false);
     // setReschedulePopUp(false);
   };
@@ -493,18 +495,18 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   const onPressTestReschedule = (item: any) => {
     setSelectedOrderId(item.id);
+    setSelectedOrder(item);
     setReschedulePopUp(true);
   };
 
   const renderReschedulePopUp = () => {
-    //check for the number of time the order can be rescheduled. by seeing the doctor consult logic
+    const selectedOrderRescheduleCount = selectedOrder?.rescheduleCount;
+    console.log({ selectedOrderRescheduleCount });
     return (
       <AlertPopup
         visible={showReschedulePopUp}
         onDismiss={() => setReschedulePopUp(false)}
-        title={
-          'You can reschedule to a maximum of 3 times. If you click ok, you will have 2 reschedule attempt(s) left.'
-        }
+        title={`You can reschedule to a maximum of 3 times. If you click ok, you will have 2 reschedule attempt(s) left.`}
         leftButton={'CANCEL'}
         rightButton={'OK, GOT IT'}
         showCloseIcon={false}
@@ -537,7 +539,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           onPressSubmit={(reason, comment) => onSubmitRescheduleRequest(reason, comment)}
           cancelVisible={showRescheduleReasonPopUp}
           headingText={'Reschedule Order'}
-          reasonForCancelText={'Why are you cancelling this order?'}
+          reasonForCancelText={'Why are you rescheduling this order?'}
           dropDownOptions={reasonForRescheduling}
           onPressCross={hideRescheduleReasonOverlay}
           otherReasonText={OTHER_REASON}
@@ -550,6 +552,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
 
   const onSubmitRescheduleRequest = (reason: string, comment: string) => {
     //show the slot pop up and call teh api
+    setLoading!(true);
     setSelectedReasonForReschedule(reason);
     setCommentForReschedule(comment);
     setRescheduleReasonPopUp(false);
@@ -569,7 +572,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     });
 
   const onReschduleDoneSelected = () => {
-    setApiLoading(true);
+    setLoading!(true);
     const formattedDate = moment(diagnosticSlot?.date).format('YYYY-MM-DD');
     console.log({ diagnosticSlot });
 
@@ -591,13 +594,26 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         const rescheduleResponse = g(data, 'data', 'rescheduleDiagnosticsOrder');
         if (rescheduleResponse?.status == 'true' && rescheduleResponse.rescheduleCount <= 3) {
           refetch()
-            .then(() => {
-              setInitialState();
+            .then((data: any) => {
+              const _orders = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
+              setOrders(_orders);
+              setLoading!(false);
             })
             .catch((e: any) => {
               CommonBugFender('TestOrderDetails_refetch_callApiAndRefetchOrderDetails', e);
               setInitialState();
+              // showAphAlert!({
+              //   unDismissable: true,
+              //   title: 'Uh oh! :(',
+              //   description: 'We are not servicing in this area.',
+              // });
             });
+        } else {
+          showAphAlert!({
+            unDismissable: true,
+            title: 'Uh oh! :(',
+            description: rescheduleResponse?.message,
+          });
         }
       })
       .catch((error) => {
@@ -605,10 +621,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         console.log('error' + error);
         CommonBugFender('TestOrderDetails_callApiAndRefetchOrderDetails', error);
         handleGraphQlError(error);
-        setApiLoading(false);
+        setLoading!(false);
       })
       .finally(() => {
-        setApiLoading(false);
+        setLoading!(false);
       });
   };
 
@@ -618,7 +634,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         <TestSlotSelectionOverlay
           heading="Schedule Appointment"
           date={date}
-          areaId={'62142'}
+          areaId={String(selectedOrder?.areaId)}
           maxDate={moment()
             .add(AppConfig.Configuration.DIAGNOSTIC_SLOTS_MAX_FORWARD_DAYS, 'day')
             .toDate()}
@@ -630,7 +646,6 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           onSchedule={(date: Date, slotInfo: TestSlot) => {
             console.log({ date });
             console.log({ slotInfo });
-            console.log('yahaaaa');
             setDate(date);
             setselectedTimeSlot(slotInfo);
             setDiagnosticSlot!({
@@ -668,7 +683,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         CommonBugFender('TestOrderDetails_callApiAndRefetchOrderDetails', e);
         console.log({ e });
         handleGraphQlError(e);
-        setApiLoading(false);
+        setLoading!(false);
       });
   };
 
@@ -685,7 +700,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     });
 
   const onSubmitCancelOrder = (reason: string, comment: string) => {
-    setApiLoading(true);
+    setLoading!(true);
     setSelectedReasonForCancel(reason);
     setCommentForCancel(comment);
     setCancelReasonPopUp(false);
@@ -702,9 +717,12 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         console.log({ data });
         const cancelResponse = g(data, 'data', 'cancelDiagnosticsOrder', 'status');
         if (cancelResponse == 'true') {
+          setLoading!(true);
           refetch()
-            .then(() => {
-              setInitialState();
+            .then((data: any) => {
+              const _orders = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
+              setOrders(_orders);
+              setLoading!(false);
             })
             .catch((e: any) => {
               CommonBugFender('TestOrderDetails_refetch_callApiAndRefetchOrderDetails', e);
@@ -718,10 +736,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
         console.log('error' + error);
         CommonBugFender('TestOrderDetails_callApiAndRefetchOrderDetails', error);
         handleGraphQlError(error);
-        setApiLoading(false);
+        setLoading!(false);
       })
       .finally(() => {
-        setApiLoading(false);
+        setLoading!(false);
         console.log('finally mein');
       });
   };
@@ -729,6 +747,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const onPressTestCancel = (item: any) => {
     setCancelPopUp(true);
     setSelectedOrderId(item.id);
+    setSelectedOrder(item);
   };
 
   const renderCancelPopUp = () => {
@@ -804,19 +823,23 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       return;
     }
     const isHomeVisit = !!order.slotTimings;
-    const dt = moment(order!.diagnosticDate).format(`D MMM YYYY`);
-    const tm = getSlotStartTime(order!.slotTimings);
+    const dt = moment(order?.diagnosticDate).format(`D MMM YYYY`);
+    const tm = getSlotStartTime(order?.slotTimings);
     const dtTm = `${dt}${isHomeVisit ? `, ${tm}` : ''}`;
     // const currentStatus = order.orderStatus;
     const currentStatus = order.maxStatus! ? order.maxStatus! : order.orderStatus;
     const patientName = g(currentPatient, 'firstName'); //check for only firstName
     //create an interface with new additions in the object. or copy it and then manipulate
-    const isSampleCollected = order.maxStatus!
-      ? sequenceOfStatus.indexOf(order.maxStatus!) >=
+    const isSampleCollected = order?.maxStatus!
+      ? sequenceOfStatus.indexOf(order?.maxStatus!) >=
         sequenceOfStatus.indexOf(DIAGNOSTIC_ORDER_STATUS.SAMPLE_COLLECTED)
       : false;
 
     const showPreTesting = isSampleCollected ? false : checkIfPreTestingExists(order);
+    const getStartTime = order?.slotTimings.split('-')[0];
+    //don't show reschedule cancel option if diagnostic date is same and slot time within 2 hrs of current time
+    const showCancelReschdule =
+      order?.diagnosticDate == moment().format('YYYY-MM-DD') && getStartTime;
 
     return (
       <TestOrderCard
