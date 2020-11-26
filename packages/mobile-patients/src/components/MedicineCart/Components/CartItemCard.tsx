@@ -122,8 +122,13 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
     if (!!item.circleCashbackAmt && !coupon) {
       return (
         <CareCashbackBanner
-          bannerText={`Extra Care ₹${item.circleCashbackAmt} Cashback`}
+          bannerText={`Extra Care ₹${item.circleCashbackAmt.toFixed(2)} Cashback`}
           textStyle={styles.careText}
+          logoStyle={{
+            resizeMode: 'contain',
+            width: 40,
+            height: 30,
+          }}
         />
       );
     } else {
@@ -359,7 +364,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   careText: {
-    ...theme.viewStyles.text('M', 9, '#00A0E3', 1, 15),
+    ...theme.viewStyles.text('M', 10, '#00A0E3', 1, 15),
     paddingVertical: 7,
   },
 });

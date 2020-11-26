@@ -553,10 +553,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
   );
 
   const deliveryCharges =
-    isFreeDelivery ||
-    deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP ||
-    isCircleSubscription ||
-    circleSubscriptionId
+    isFreeDelivery || deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP || isCircleSubscription
       ? 0
       : cartTotal > 0 &&
         cartTotal - productDiscount - couponDiscount <

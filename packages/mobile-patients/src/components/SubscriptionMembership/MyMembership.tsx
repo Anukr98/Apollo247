@@ -199,7 +199,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
           callsUsed: docOnCallBenefit?.[0]?.attribute_type?.used,
         });
     } catch (error) {
-      CommonBugFender('CircleBannerComponent_fetchCircleSavings', error);
+      CommonBugFender('MyMembership_fetchCircleSavings', error);
     }
   };
 
@@ -211,7 +211,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
 
   const getEllipseBulletPoint = (text: string, index: number) => {
     return (
-      <View style={[styles.ellipseBulletContainer, index === 2 ? { width: '80%' } : {}]}>
+      <View style={[styles.ellipseBulletContainer, index === 2 ? { width: '75%' } : {}]}>
         <EllipseBulletPoint style={styles.ellipseBullet} />
         <Text style={theme.viewStyles.text('B', 13, '#007C9D', 1, 20, 0.35)}>{text}</Text>
       </View>
@@ -373,8 +373,8 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
             <View>
               <View>
                 <Text style={styles.currentBenefits}>CURRENT BENEFITS</Text>
-                {hdfcUserSubscriptions?._id && renderMembershipCard(hdfcUserSubscriptions, false)}
                 {circleSubscriptionId && renderMembershipCard(circleSubscription, false)}
+                {hdfcUserSubscriptions?._id && renderMembershipCard(hdfcUserSubscriptions, false)}
               </View>
               {canUpgrade && (
                 <View>
