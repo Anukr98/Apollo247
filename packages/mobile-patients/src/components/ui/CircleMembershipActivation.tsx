@@ -170,14 +170,17 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
       isVisible={visible}
       windowBackgroundColor={'rgba(0, 0, 0, 0.31)'}
       overlayStyle={styles.overlayStyle}
+      onRequestClose={() => closeModal && closeModal()}
     >
       <View>
         {renderCloseIcon()}
-        <View style={styles.leftCircle} />
-        <EllipseCircle style={styles.ellipse} />
-        <View style={styles.rightCircle} />
-        <CircleLogoBig style={styles.circleLogo} />
-        {!planActivated ? renderAskingBeforeUpgradation() : renderMembershipActivated()}
+        <View style={styles.container}>
+          <View style={styles.leftCircle} />
+          <EllipseCircle style={styles.ellipse} />
+          <View style={styles.rightCircle} />
+          <CircleLogoBig style={styles.circleLogo} />
+          {!planActivated ? renderAskingBeforeUpgradation() : renderMembershipActivated()}
+        </View>
       </View>
     </Overlay>
   );
@@ -186,11 +189,13 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
 const styles = StyleSheet.create({
   overlayStyle: {
     borderRadius: 10,
-    backgroundColor: 'white',
     width: width - 36,
     height: 'auto',
     padding: 0,
-    paddingBottom: 30,
+    backgroundColor: 'transparent',
+    elevation: 0,
+    flex: 1,
+    justifyContent: 'center',
   },
   leftCircle: {
     width: 30,
@@ -274,5 +279,10 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     height: 32,
     borderRadius: 6,
+  },
+  container: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    paddingBottom: 30,
   },
 });

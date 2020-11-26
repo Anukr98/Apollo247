@@ -184,7 +184,6 @@ export const CircleBannerComponent: React.FC<CircleBannerProps> = (props) => {
       </TouchableOpacity>
     );
   };
-
   const renderCircleSubscriptionPlans = () => {
     return (
       <CircleMembershipPlans
@@ -249,7 +248,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 13,
   },
   row: {
-    marginTop: 25,
+    marginTop: 20,
     flexDirection: 'row',
     alignItems: 'center',
   },
