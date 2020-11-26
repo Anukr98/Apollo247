@@ -256,7 +256,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     );
   };
 
-  const renderTermsAndConditions = () => <TermsAndConditions />;
+  const renderTermsAndConditions = () => <TermsAndConditions isCirclePlan={isCirclePlan} />;
 
   const renderRedeemableCards = (
     heading: string,
@@ -613,6 +613,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
           </Text>
           {renderCircleBenefits(circleSubscription?.benefits)}
           <FAQComponent />
+          {renderTermsAndConditions()}
         </View>
       </ScrollView>
     );
