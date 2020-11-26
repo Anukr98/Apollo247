@@ -611,5 +611,64 @@
   "Circle": {
     "planName": "CIRCLE PLAN",
     "DOC_ON_CALL": "Doc on Call",
+    "TnC": [
+      "Circle is the marketing program offered by Apollo 24/7, a digital platform managed by Apollo Hospitals Enterprise Limited (AHEL)",
+      "The validity of the program (“Term”) will be as per the plan selected by the customer.",
+      "The discounts offered under Circle program shall be applied at the time of payment checkout by the customer.",
+      "The offerings under the program will vary with the different categories under it.",
+      "The Circle program is non-transferable.",
+      "The activation of the benefits for the Circle program will be completed 24 hours post the service delivery/fulfillment of the qualifying transaction.",
+      "By enrolling for the Circle program, a member consents to allow use and disclosure of his/her personal and other information as provided by the member at the time of enrolment and/or upto subsequently by Apollo Hospitals Group ",
+      "As a prerequisite to becoming a member, a customer is required to provide mandatory information including full name, valid and active Indian mobile number. He/she shall be governed by such terms and conditions as may be prescribed for membership from time to time.",
+      "The Circle membership program will be issued solely at the discretion of the management and the final discretion on all matters relating to the membership shall rest with Apollo 24/7(AHEL).",
+      "Apollo 24/7 reserves the right to add, alter, amend and revise terms and conditions without prior notice and intimation.",
+      "Benefits and offers available through the program may change or be withdrawn without prior intimation. Apollo 24/7 will not be responsible for any liability arising from such situations or use of such offers.",
+      "Any disputes arising out of the program shall be subject to arbitration by a sole arbitrator appointed by Apollo 24/7 for this purpose. The proceedings of the arbitration shall be conducted as per the provisions of Arbitration and Conciliation Act, 1996. The place of arbitration shall be at Chennai and language of arbitration shall be English. The existence of a dispute, if at all, shall not constitute a claim against Apollo 24/7."
+    ],
+    "FAQ": [{
+        "question": "What is the Apollo 24|7 CIRCLE Membership program?",
+        "answer": "Apollo 24|7 CIRCLE membership is a one-of-its-kind program designed to give the best care and value to its members. Once you sign up by choosing the plan that suits your needs, you will receive benefits like an emergency doctor-on-call, cashback on medicines, discounts on doctor consultations, and diagnostics. Did we also tell you that all your deliveries will be done free of cost and on a priority basis?",
+      },
+      {
+        "question": "Sounds good. Tell me more about the plans?",
+        "answer": "There are 3 plans available for you to choose from: INR 49 for 2 months, INR 199 for 6 months, and INR 349 for 12 months ",
+      },
+      {
+        "question": "How Do I Sign Up for a Circle Membership?",
+        "answer": "It’s simple! If you’re a part of Apollo 24|7 already, you can click on the link above and sign up. If you’re new to Apollo 24|7, download the app today and get started.",
+      },
+      {
+        "question": "Is annual membership better than the monthly membership?",
+        "answer": "Yes, if you’re big on savings! The yearly membership only costs you INR 349, which translates to INR 29 per month!",
+      },
+      {
+        "question": "Can I buy Circle Membership using my health credits?",
+        "answer": "Yes, you can! If you have Health Credits that equal the price of the membership. If not, you can always pay via our easy payment methods.",
+      },
+      {
+        "question": "Where will I get the Circle cashback?",
+        "answer": "You will be eligible for Circle cashback every time you buy medicines or Apollo products. We also have discounts on doctor consultations and diagnostic tests. Cashback will be credited to your OneApollo Health Credits as soon as a transaction gets completed.",
+      },
+      {
+        "question": "How can I use Circle cashback?",
+        "answer": "You can use your Circle cashback as Health Credits to buy medicines and Apollo branded products on Apollo 24|7",
+      },
+      {
+        "question": "Can I cancel Circle membership after purchasing it?",
+        "answer": "Yes, but we do recommend retaining it to continue enjoying its privileges and benefits.",
+      },
+      {
+        "question": "Can the offers change after I buy the membership?",
+        "answer": "Yes, it’s possible but we will always aim to upgrade benefits so that you get the best out of your Circle membership",
+      },
+      {
+        "question": "What does Circle Cashback mean? Is it different from One Apollo Cashback?",
+        "answer": "Every time you make a transaction through Circle, you will be rewarded with Circle Cashback that you can use to purchase medicines and Apollo-branded products. It’s the same as OneApollo Cashback.",
+      },
+      {
+        "question": "Can Circle cashback be used to pay for a Virtual Consultation?",
+        "answer": "Not yet, but you can use your Circle cashback as Health Credits to re-order medicines or any healthcare products from Apollo 247.",
+      }
+    ]
   }
 }

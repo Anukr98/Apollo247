@@ -213,6 +213,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       if (!circleSubscription?._id) {
         setCircleMembershipCharges &&
           setCircleMembershipCharges(circlePlanSelected?.currentSellingPrice);
+      } else {
+        setIsCircleSubscription && setIsCircleSubscription(true);
       }
     }
   }, [coupon]);
@@ -873,17 +875,16 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
         activeOpacity={0.7}
         style={styles.applyBenefits}
         onPress={() => {
-          if (!!coupon) {
-            setCoupon && setCoupon(null);
-            setIsCircleSubscription && setIsCircleSubscription(true);
-          } else {
-            if (!circleSubscription?._id) {
+          if (!coupon && isCircleSubscription) {
+            if (!circleSubscription?._id || cartTotalCashback) {
               setIsCircleSubscription && setIsCircleSubscription(false);
             }
+          } else {
+            setIsCircleSubscription && setIsCircleSubscription(true);
           }
         }}
       >
-        {!coupon ? (
+        {!coupon && isCircleSubscription ? (
           <View style={{ flexDirection: 'row' }}>
             <CheckedIcon style={{ marginTop: 8 }} />
             <CareCashbackBanner
@@ -1064,6 +1065,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           {renderCartItems()}
           {(!isCircleSubscription || showCareSelectPlans) &&
             !coupon &&
+            !circleSubscription?._id &&
             renderCareSubscriptionOptions()}
           {renderAvailFreeDelivery()}
           {renderAmountSection()}

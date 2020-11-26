@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import { Hdfc_values } from '@aph/mobile-patients/src/strings/strings.json';
+import { Hdfc_values, Circle } from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { DownOrange, UpOrange } from '@aph/mobile-patients/src/components/ui/Icons';
 
-export interface TermsAndConditionsProps {}
+export interface TermsAndConditionsProps {
+  isCirclePlan?: boolean;
+}
 
 export const TermsAndConditions: React.FC<TermsAndConditionsProps> = (props) => {
   const [isTnCVisible, setIsTnCVisible] = useState<boolean>(false);
-  const { TnC } = Hdfc_values;
+  const TnC = props.isCirclePlan ? Circle.TnC : Hdfc_values.TnC;
   return (
     <View style={[styles.cardStyle, styles.tncContainer]}>
       <TouchableOpacity
