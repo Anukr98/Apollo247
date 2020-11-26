@@ -80,6 +80,7 @@ import { CollapseCard } from '@aph/mobile-patients/src/components/CollapseCard';
 import { Down, Up } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { OrderPlacedPopUp } from '@aph/mobile-patients/src/components/ui/OrderPlacedPopUp';
 
 export interface CheckoutSceneNewProps extends NavigationScreenProps {}
 
@@ -408,7 +409,8 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
     orderId: string,
     orderAutoId: number,
     paymentMode: string,
-    bankCode: string
+    bankCode: string,
+    orderInfo: saveMedicineOrderOMSVariables
   ) => {
     try {
       const paymentEventAttributes = {
@@ -443,6 +445,9 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
       bankCode: bankCode,
       coupon: coupon ? coupon.coupon : null,
       cartItems: cartItems,
+      isChennaiOrder: isChennaiOrder,
+      email: email,
+      orderInfo: orderInfo,
     });
   };
 
@@ -559,7 +564,7 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             placeOrder(orderId, orderAutoId, 'HCorder', false);
           } else {
             console.log('Redirect To Payment Gateway');
-            redirectToPaymentGateway(orderId, orderAutoId, paymentMode, bankCode)
+            redirectToPaymentGateway(orderId, orderAutoId, paymentMode, bankCode, orderInfo)
               .catch((e) => {
                 CommonBugFender('CheckoutScene_redirectToPaymentGateway', e);
               })
@@ -628,104 +633,17 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
         actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
       })
     );
-    const deliveryTimeMomentFormat = moment(
-      deliveryTime,
-      AppConfig.Configuration.TAT_API_RESPONSE_DATE_FORMAT
-    );
     showAphAlert!({
-      // unDismissable: true,
       title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
       description:
         'Your order has been placed successfully. We will confirm the order in a few minutes.',
       children: (
-        <View
-          style={{
-            margin: 20,
-            marginTop: 16,
-            padding: 16,
-            backgroundColor: '#f7f8f5',
-            borderRadius: 10,
-          }}
-        >
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
-          >
-            <MedicineIcon />
-            <Text
-              style={{
-                flex: 1,
-                ...theme.fonts.IBMPlexSansMedium(17),
-                lineHeight: 24,
-                color: '#01475b',
-              }}
-            >
-              Medicines
-            </Text>
-            <Text
-              style={{
-                flex: 1,
-                ...theme.fonts.IBMPlexSansMedium(14),
-                lineHeight: 24,
-                color: '#01475b',
-                textAlign: 'right',
-              }}
-            >
-              {`#${orderAutoId}`}
-            </Text>
-          </View>
-          {deliveryTimeMomentFormat.isValid() && (
-            <>
-              <View
-                style={{
-                  height: 1,
-                  backgroundColor: '#02475b',
-                  opacity: 0.1,
-                  marginBottom: 7.5,
-                  marginTop: 15.5,
-                }}
-              />
-              <View>
-                <Text
-                  style={{
-                    ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04),
-                  }}
-                >
-                  {deliveryTime &&
-                    `Delivery By: ${deliveryTimeMomentFormat.format(
-                      AppConfig.Configuration.MED_DELIVERY_DATE_DISPLAY_FORMAT
-                    )}`}
-                </Text>
-              </View>
-            </>
-          )}
-          <View
-            style={{
-              height: 1,
-              backgroundColor: '#02475b',
-              opacity: 0.1,
-              marginBottom: 15.5,
-              marginTop: 7.5,
-            }}
-          />
-          <View style={styles.popupButtonStyle}>
-            <TouchableOpacity
-              style={{ flex: 1 }}
-              onPress={() => navigateToOrderDetails(true, orderAutoId)}
-            >
-              <Text style={styles.popupButtonTextStyle}>VIEW INVOICE</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={{ flex: 1, alignItems: 'flex-end' }}
-              onPress={() => navigateToOrderDetails(false, orderAutoId)}
-            >
-              <Text style={styles.popupButtonTextStyle}>TRACK ORDER</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+        <OrderPlacedPopUp
+          deliveryTime={deliveryTime}
+          orderAutoId={orderAutoId}
+          onPressViewInvoice={() => navigateToOrderDetails(true, orderAutoId)}
+          onPressTrackOrder={() => navigateToOrderDetails(false, orderAutoId)}
+        />
       ),
     });
   };
@@ -1314,15 +1232,6 @@ const styles = StyleSheet.create({
   stickyBottomComponentStyle: {
     justifyContent: 'center',
     backgroundColor: 'transparent',
-  },
-  popupButtonStyle: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  popupButtonTextStyle: {
-    ...theme.fonts.IBMPlexSansBold(13),
-    color: theme.colors.APP_YELLOW,
-    lineHeight: 24,
   },
   textStyle1: {
     ...theme.viewStyles.text('R', 13, '#02475b'),
