@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Image } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import {
   DownOrange,
@@ -132,6 +132,21 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
           <Text style={styles.savingsAmount}>
             {strings.common.Rs}
             {totalCircleSavings?.consultSavings || 0}
+          </Text>
+        </View>
+        <View style={styles.savingsContainer}>
+          <View style={styles.savingsRow}>
+            <Image
+              source={{
+                uri: 'https://assets.apollo247.com/images/circle/ic_diagnostics.png',
+              }}
+              style={styles.savingsIcon}
+            />
+            <Text style={styles.savingsHeading}>Total Savings on Diagnostics</Text>
+          </View>
+          <Text style={styles.savingsAmount}>
+            {strings.common.Rs}
+            {totalCircleSavings?.diagnosticsSavings || 0}
           </Text>
         </View>
         <View style={styles.savingsContainer}>

@@ -221,6 +221,7 @@ export const CircleBannerComponent: React.FC<CircleBannerProps> = (props) => {
         closeModal={() => setShowCirclePlans(false)}
         buyNow={true}
         membershipPlans={membershipPlans}
+        isDiagnosticJourney={props.comingFrom == 'diagnostics'}
       />
     );
   };
