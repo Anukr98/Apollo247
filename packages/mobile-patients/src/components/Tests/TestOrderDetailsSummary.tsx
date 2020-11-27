@@ -173,7 +173,7 @@ export const TestOrderDetailsSummary: React.FC<TestOrderDetailsSummaryProps> = (
         StackActions.reset({
           index: 0,
           key: null,
-          actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+          actions: [NavigationActions.navigate({ routeName: AppRoutes.Tests })],
         })
       );
     } else {
