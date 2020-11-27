@@ -1,3 +1,4 @@
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import React, { useEffect, useState, useRef } from 'react';
 import {
   StyleSheet,
@@ -13,7 +14,7 @@ import {
 import AsyncStorage from '@react-native-community/async-storage';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import { SplashLogo } from '@aph/mobile-patients/src/components/SplashLogo';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { AppRoutes, getCurrentRoute } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import remoteConfig from '@react-native-firebase/remote-config';
 import SplashScreenView from 'react-native-splash-screen';
 import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -60,7 +61,7 @@ import isLessThan from 'semver/functions/lt';
 import coerce from 'semver/functions/coerce';
 import RNCallKeep from 'react-native-callkeep';
 import VoipPushNotification from 'react-native-voip-push-notification';
-import { string } from '../strings/string';
+import { string as localStrings } from '../strings/string';
 import { isUpperCase } from '@aph/mobile-patients/src/utils/commonUtils';
 import Pubnub from 'pubnub';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
@@ -121,7 +122,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { APP_ENV } = AppConfig;
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const { setAllPatients, setMobileAPICalled } = useAuth();
-  const { showAphAlert, hideAphAlert } = useUIElements();
+  const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const [appState, setAppState] = useState(AppState.currentState);
   const client = useApolloClient();
   const voipAppointmentId = useRef<string>('');
@@ -130,16 +131,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const voipDoctorName = useRef<string>('');
 
   const config: Pubnub.PubnubConfig = {
+    origin: 'apollo.pubnubapi.com',
     subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
     publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
+    restore: true,
     ssl: true,
     uuid: `PATIENT_${voipPatientId.current}`,
-    restore: true,
-    keepAlive: true,
-    // autoNetworkDetection: true,
-    // listenToBrowserNetworkEvents: true,
-    // presenceTimeout: 20,
-    heartbeatInterval: 20,
   };
   const pubnub = new Pubnub(config);
 
@@ -149,14 +146,16 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     getData('ConsultRoom', undefined, false); // no need to set timeout on didMount
     InitiateAppsFlyer(props.navigation);
     DeviceEventEmitter.addListener('accept', (params) => {
-      console.log('Accept Params', params);
-      voipCallType.current = params.call_type;
-      callPermissions();
-      getAppointmentDataAndNavigate(params.appointment_id, true);
+      if (getCurrentRoute() !== AppRoutes.ChatRoom) {
+        voipCallType.current = params.call_type;
+        callPermissions();
+        getAppointmentDataAndNavigate(params.appointment_id, true);
+      }
     });
     DeviceEventEmitter.addListener('reject', (params) => {
-      console.log('Reject Params', params);
-      getAppointmentDataAndNavigate(params.appointment_id, false);
+      if (getCurrentRoute() !== AppRoutes.ChatRoom) {
+        getAppointmentDataAndNavigate(params.appointment_id, false);
+      }
     });
     setBugfenderPhoneNumber();
     AppState.addEventListener('change', _handleAppStateChange);
@@ -212,7 +211,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const initializeCallkit = () => {
     const callkeepOptions = {
       ios: {
-        appName: string.LocalStrings.appName,
+        appName: localStrings.LocalStrings.appName,
         imageName: 'callkitAppIcon.png',
       },
     };
@@ -241,25 +240,30 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     });
   };
 
-  const onAnswerCallAction = () => {
-    voipAppointmentId.current && getAppointmentDataAndNavigate(voipAppointmentId.current, false);
+  const onAnswerCallAction = async () => {
+    if (getCurrentRoute() !== AppRoutes.ChatRoom) {
+      voipAppointmentId.current && getAppointmentDataAndNavigate(voipAppointmentId.current, false);
+    }
   };
 
   const onDisconnetCallAction = () => {
-    fireWebengageEventForCallDecline();
-    RNCallKeep.endAllCalls();
-    pubnub.publish(
-      {
-        message: '^^#PATIENT_REJECTED_CALL',
-        channel: voipAppointmentId.current,
-        storeInHistory: true,
-      },
-      (status, response) => {
-        voipAppointmentId.current = '';
-        voipPatientId.current = '';
-        voipCallType.current = '';
-      }
-    );
+    if (getCurrentRoute() !== AppRoutes.ChatRoom) {
+      fireWebengageEventForCallDecline();
+      RNCallKeep.endAllCalls();
+      pubnub.publish(
+        {
+          message: { message: '^^#PATIENT_REJECTED_CALL' },
+          channel: voipAppointmentId.current,
+          storeInHistory: true,
+          sendByPost: true,
+        },
+        (status, response) => {
+          voipAppointmentId.current = '';
+          voipPatientId.current = '';
+          voipCallType.current = '';
+        }
+      );
+    }
   };
 
   const fireWebengageEventForCallDecline = () => {
@@ -405,11 +409,34 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             break;
 
           case 'DoctorCall':
-            if (data.length === 2) {
+            if (data.length === 2 && getCurrentRoute() !== AppRoutes.ChatRoom) {
               const params = linkId.split('+');
               voipCallType.current = params[1];
               callPermissions();
               getAppointmentDataAndNavigate(params[0], true);
+            }
+            break;
+
+          case 'DoctorCallRejected':
+            {
+              const appointmentId = linkId?.split('+')?.[0];
+              const config: Pubnub.PubnubConfig = {
+                origin: 'apollo.pubnubapi.com',
+                subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
+                publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
+                ssl: true,
+                restore: true,
+              };
+              const pubnub = new Pubnub(config);
+              pubnub.publish(
+                {
+                  message: { message: '^^#PATIENT_REJECTED_CALL' },
+                  channel: appointmentId,
+                  storeInHistory: true,
+                  sendByPost: true,
+                },
+                (status, response) => {}
+              );
             }
             break;
 
@@ -626,24 +653,40 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       return encodedString.split('%20');
     }
   };
-  const getAppointmentDataAndNavigate = (appointmentID: string, isCall: boolean) => {
-    client
-      .query<getAppointmentDataQuery, getAppointmentDataVariables>({
+  const getAppointmentDataAndNavigate = async (appointmentId: string, isCall: boolean) => {
+    try {
+      setLoading!(true);
+      const response = await client.query<getAppointmentDataQuery, getAppointmentDataVariables>({
         query: GET_APPOINTMENT_DATA,
-        variables: {
-          appointmentId: appointmentID,
-        },
+        variables: { appointmentId },
         fetchPolicy: 'no-cache',
-      })
-      .then((_data) => {
-        const appointmentData: any = _data.data.getAppointmentData!.appointmentsHistory;
-        if (appointmentData[0]!.doctorInfo !== null) {
-          getData('ChatRoom', appointmentData[0], true, isCall);
-        }
-      })
-      .catch((error) => {
-        CommonBugFender('SplashFetchingAppointmentData', error);
       });
+      const appointmentData: any = response.data?.getAppointmentData?.appointmentsHistory?.[0];
+      if (appointmentData?.doctorInfo) {
+        getData('ChatRoom', appointmentData, false, isCall);
+      } else {
+        throw new Error('Doctor info is required to process the request.');
+      }
+      setLoading!(false);
+    } catch (error) {
+      setLoading!(false);
+      showAphAlert!({
+        title: string.common.uhOh,
+        description: 'An error occurred processing the request, do you want to try again?',
+        CTAs: [
+          { text: 'CANCEL', onPress: () => hideAphAlert!(), type: 'white-button' },
+          {
+            text: 'RETRY',
+            onPress: () => {
+              hideAphAlert!();
+              getAppointmentDataAndNavigate(appointmentId, isCall);
+            },
+            type: 'orange-button',
+          },
+        ],
+      });
+      CommonBugFender('SplashFetchingAppointmentData', error);
+    }
   };
 
   const pushTheView = (routeName: String, id?: any, isCall?: boolean) => {

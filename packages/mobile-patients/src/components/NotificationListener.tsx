@@ -78,6 +78,8 @@ const styles = StyleSheet.create({
 });
 
 type CustomNotificationType =
+  | 'call_start'
+  | 'call_disconnect'
   | 'Reschedule_Appointment'
   | 'Cart_Ready'
   | 'call_started'
@@ -118,7 +120,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
   } = useUIElements();
   const { cartItems, setCartItems, ePrescriptions, setEPrescriptions } = useShoppingCart();
   const client = useApolloClient();
-  const { setDoctorJoinedChat } = useAppCommonData();
+  const { setDoctorJoinedChat, setDoctorCallDisconnected } = useAppCommonData();
 
   const showMedOrderStatusAlert = (
     data:
@@ -348,6 +350,16 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
     aphConsole.log('processNotification after return statement');
 
     switch (notificationType) {
+      case 'call_start':
+        {
+          setDoctorCallDisconnected(false);
+        }
+        break;
+      case 'call_disconnect':
+        {
+          setDoctorCallDisconnected(true);
+        }
+        break;
       case 'Reschedule_Appointment':
         {
           aphConsole.log('Reschedule_Appointment');

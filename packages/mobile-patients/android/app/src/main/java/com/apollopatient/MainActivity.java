@@ -55,31 +55,48 @@ public class MainActivity extends ReactActivity {
             }
             String referrerString = bundle.get(Intent.EXTRA_REFERRER) != null ? bundle.get(Intent.EXTRA_REFERRER).toString() : "";
             Log.d(TAG, referrerString);
-            setReferrer( referrerString);
+            setReferrer(referrerString);
         }
 
         try {
             //start
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
-                Uri incoming_call_notif = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
+                Uri incoming_call_notif = Uri.parse("android.resource://" + this.getPackageName() + "/" + R.raw.incallmanager_ringtone);
                 ringtone = RingtoneManager.getRingtone(getApplicationContext(), incoming_call_notif);
                 Log.e("notificationActivity", String.valueOf(getIntent().getIntExtra(NOTIFICATION_ID, -1)));
                 NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
                 manager.cancel(getIntent().getIntExtra(NOTIFICATION_ID, -1));
                 ringtone.stop();
             }
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             Log.e("overlay permission err", e.getMessage() + "\n" + e.toString());
         }
         //end
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        try {
+            // to close notification when activity is brought front 
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
+                NotificationManager notificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
+                notificationManager.cancelAll();
+                Uri incoming_call_notif = Uri.parse("android.resource://" + this.getPackageName() + "/" + R.raw.incallmanager_ringtone);
+                ringtone = RingtoneManager.getRingtone(getApplicationContext(), incoming_call_notif);
+                ringtone.stop();
+            }
+        } catch (Exception e) {
+            Log.e("overlay permission err", e.getMessage() + "\n" + e.toString());
+        }
+    }
+
     public static PendingIntent getActionIntent(int notificationId, Uri uri, Context context) {
-        Intent intent =  new Intent(Intent.ACTION_VIEW,uri);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         intent.putExtra(NOTIFICATION_ID, notificationId);
         PendingIntent acceptIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         return acceptIntent;
     }
+
 }
