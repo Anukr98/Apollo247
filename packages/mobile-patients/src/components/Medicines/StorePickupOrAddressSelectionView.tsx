@@ -177,8 +177,9 @@ export const StorePickupOrAddressSelectionView: React.FC<StorePickupOrAddressSel
     setCheckingServicability(true);
     pinCodeServiceabilityApi247(address.zipcode!)
       .then(({ data: { response } }) => {
+        const { servicable } = response;
         setCheckingServicability(false);
-        if (response) {
+        if (servicable) {
           setDeliveryAddressId && setDeliveryAddressId(address.id);
         } else {
           showAphAlert!({
@@ -187,7 +188,7 @@ export const StorePickupOrAddressSelectionView: React.FC<StorePickupOrAddressSel
           });
         }
         const eventAttributes: WebEngageEvents[WebEngageEventName.UPLOAD_PRESCRIPTION_ADDRESS_SELECTED] = {
-          Serviceable: response ? 'Yes' : 'No',
+          Serviceable: servicable ? 'Yes' : 'No',
         };
         postWebEngageEvent(
           WebEngageEventName.UPLOAD_PRESCRIPTION_ADDRESS_SELECTED,

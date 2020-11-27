@@ -341,6 +341,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     pharmacyLocation,
     isPharmacyLocationServiceable,
     circleSubscription,
+    setAxdcCode,
   } = useAppCommonData();
   const { currentPatient } = useAllCurrentPatients();
   const pharmacyPincode = g(pharmacyLocation, 'pincode') || g(locationDetails, 'pincode');
@@ -558,9 +559,12 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     // To handle deeplink scenario and
     // If we performed pincode serviceability check already in Medicine Home Screen and the current pincode is same as Pharma pincode
     try {
+      const response = await pinCodeServiceabilityApi247(pincode);
+      const { data } = response;
+      setAxdcCode && setAxdcCode(data?.response?.axdcCode);
       let pinCodeNotServiceable =
         isPharmacyLocationServiceable == undefined || pharmacyPincode != pincode
-          ? !(await pinCodeServiceabilityApi247(pincode)).data.response
+          ? !data?.response?.servicable
           : pharmacyPincode == pincode && !isPharmacyLocationServiceable;
       setNotServiceable(pinCodeNotServiceable);
       if (pinCodeNotServiceable) {

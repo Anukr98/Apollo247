@@ -1260,25 +1260,23 @@ export const Tests: React.FC<TestsProps> = (props) => {
       if (!isDiagnosticLocationServiceable) {
         return;
       }
-      fetchPackageInclusion(`${diagnostics!.itemId}`, (tests) => {
-        postDiagnosticAddToCartEvent(
-          diagnostics?.itemName!,
-          `${diagnostics!.itemId}`,
-          price,
-          diagnostics?.diagnosticPricing?.[0]?.price!
-        );
-        addCartItem!({
-          id: `${diagnostics!.itemId}`,
-          mou: tests.length,
-          name: diagnostics?.itemName!,
-          price: price,
-          specialPrice: specialPrice! | price,
-          circlePrice: circlePrice,
-          circleSpecialPrice: circleSpecialPrice,
-          thumbnail: packageImage,
-          collectionMethod: diagnostics?.collectionType!,
-          groupPlan: promoteCircle ? itemWithSub?.groupPlan : itemWithAll?.groupPlan,
-        });
+      postDiagnosticAddToCartEvent(
+        diagnostics?.itemName!,
+        `${diagnostics!.itemId}`,
+        price,
+        diagnostics?.diagnosticPricing?.[0]?.price!
+      );
+      addCartItem!({
+        id: `${diagnostics!.itemId}`,
+        mou: diagnostics?.inclusions == null ? 1 : diagnostics?.inclusions.length,
+        name: diagnostics?.itemName!,
+        price: price,
+        specialPrice: specialPrice! | price,
+        circlePrice: circlePrice,
+        circleSpecialPrice: circleSpecialPrice,
+        thumbnail: packageImage,
+        collectionMethod: diagnostics?.collectionType!,
+        groupPlan: promoteCircle ? itemWithSub?.groupPlan : itemWithAll?.groupPlan,
       });
     };
     const removeFromCart = () => {
@@ -1780,7 +1778,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
                       : addCartItem!({
                           id: String(diagnosticItem?.itemId),
                           name: diagnosticItem?.itemName!,
-                          mou: 1, //not coming
+                          mou:
+                            diagnosticItem?.inclusions == null
+                              ? 1
+                              : diagnosticItem?.inclusions.length,
                           price: price,
                           thumbnail: '',
                           specialPrice: specialPrice! || price,
