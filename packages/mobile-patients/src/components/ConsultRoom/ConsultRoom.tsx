@@ -45,6 +45,10 @@ import {
   CovidOrange,
   DashedLine,
   ApolloHealthProIcon,
+  FemaleIcon,
+  MaleIcon,
+  FemaleCircleIcon,
+  MaleCircleIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { LocationSearchPopup } from '@aph/mobile-patients/src/components/ui/LocationSearchPopup';
@@ -92,7 +96,12 @@ import {
   GetAllGroupBannersOfUser,
   GetAllGroupBannersOfUserVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetAllGroupBannersOfUser';
-import { DEVICE_TYPE, Relation, STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  DEVICE_TYPE,
+  Relation,
+  STATUS,
+  Gender,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   saveDeviceToken,
   saveDeviceTokenVariables,
@@ -222,7 +231,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   hiTextStyle: {
-    marginLeft: 20,
+    marginLeft: 10,
     color: '#02475b',
     ...theme.fonts.IBMPlexSansSemiBold(36),
   },
@@ -302,6 +311,12 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 1,
     marginVertical: 16,
+  },
+  profileIcon: {
+    width: 38,
+    height: 38,
+    marginLeft: 16,
+    marginTop: 5,
   },
 });
 
@@ -1804,6 +1819,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               backgroundColor: theme.colors.CLEAR,
             }}
           >
+            {currentPatient?.gender === Gender.MALE ? (
+              circleSubscriptionId ? (
+                <MaleCircleIcon style={styles.profileIcon} />
+              ) : (
+                <MaleIcon style={styles.profileIcon} />
+              )
+            ) : circleSubscriptionId ? (
+              <FemaleCircleIcon style={styles.profileIcon} />
+            ) : (
+              <FemaleIcon style={styles.profileIcon} />
+            )}
             <Text style={styles.hiTextStyle}>{'hi'}</Text>
             <View style={styles.nameTextContainerStyle}>
               <View style={{ flexDirection: 'row', flex: 1 }}>
