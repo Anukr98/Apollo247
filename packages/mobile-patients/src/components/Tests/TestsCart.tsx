@@ -62,10 +62,8 @@ import {
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  GET_DIAGNOSTIC_SLOTS,
   GET_PATIENT_ADDRESS_LIST,
   UPLOAD_DOCUMENT,
-  SEARCH_DIAGNOSTICS_BY_ID,
   GET_DIAGNOSTIC_AREAS,
   GET_DIAGNOSTIC_SLOTS_WITH_AREA_ID,
   GET_DIAGNOSTICS_HC_CHARGES,
@@ -76,10 +74,6 @@ import {
   SAVE_DIAGNOSTIC_HOME_COLLECTION_ORDER,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
-import {
-  getDiagnosticSlots,
-  getDiagnosticSlotsVariables,
-} from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlots';
 import {
   getDiagnosticsHCCharges_getDiagnosticsHCCharges,
   getDiagnosticsHCChargesVariables,
@@ -146,8 +140,7 @@ import { getAreas, getAreasVariables } from '@aph/mobile-patients/src/graphql/ty
 import {
   getDiagnosticSlotsWithAreaID,
   getDiagnosticSlotsWithAreaIDVariables,
-} from '../../graphql/types/getDiagnosticSlotsWithAreaID';
-import { colors } from 'react-native-elements';
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlotsWithAreaID';
 import {
   findDiagnosticsByItemIDsAndCityID,
   findDiagnosticsByItemIDsAndCityIDVariables,
@@ -156,20 +149,20 @@ import {
 import {
   vaidateDiagnosticCoupon,
   vaidateDiagnosticCouponVariables,
-} from '../../graphql/types/vaidateDiagnosticCoupon';
+} from '@aph/mobile-patients/src/graphql/types/vaidateDiagnosticCoupon';
 import {
   getPincodeServiceability,
   getPincodeServiceabilityVariables,
-} from '../../graphql/types/getPincodeServiceability';
+} from '@aph/mobile-patients/src/graphql/types/getPincodeServiceability';
 import { fonts } from '../../theme/fonts';
 import {
   SaveDiagnosticOrder,
   SaveDiagnosticOrderVariables,
-} from '../../graphql/types/SaveDiagnosticOrder';
+} from '@aph/mobile-patients/src/graphql/types/SaveDiagnosticOrder';
 import {
   DiagnosticBookHomeCollection,
   DiagnosticBookHomeCollectionVariables,
-} from '../../graphql/types/DiagnosticBookHomeCollection';
+} from '@aph/mobile-patients/src/graphql/types/DiagnosticBookHomeCollection';
 const { width: screenWidth } = Dimensions.get('window');
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
@@ -1818,7 +1811,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const renderCartSavingBanner = () => {
     return dashedBanner(
       'You ',
-      `Saved ${string.common.Rs}${
+      `saved ${string.common.Rs}${
         isDiagnosticCircleSubscription ? cartSaving + circleSaving : cartSaving
       }`,
       'on this order',
@@ -1941,8 +1934,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             ...theme.fonts.IBMPlexSansMedium(11),
             marginVertical: 2,
             lineHeight: 24,
-            alignSelf: 'center',
-            marginLeft: -20,
+            alignSelf: 'flex-start',
           }}
         >
           {string.diagnostics.cashOnDeliverySubText}
@@ -2263,7 +2255,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     postPaymentInitiatedWebengage();
 
     console.log(JSON.stringify({ diagnosticOrderInput: orderInfo }));
-    console.log('orderInfo\n', { diagnosticOrderInput: orderInfo });
     saveOrder(orderInfo)
       .then(({ data }) => {
         const { orderId, displayId, errorCode, errorMessage } =
@@ -2329,7 +2320,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     const dateTimeInUTC = moment(formattedDate + ' ' + slotStartTime).toISOString();
 
     console.log(physicalPrescriptions, 'physical prescriptions');
-    console.log('idddd...' + validateCouponUniqueId);
+    console.log('unique id' + validateCouponUniqueId);
     const allItems = cartItems.find((item) => item.groupPlan == DIAGNOSTIC_GROUP_PLAN.ALL);
     const totalPriceWithoutAnyDiscount = cartItems.reduce(
       (prevVal, currVal) => prevVal + currVal.price,
@@ -2377,7 +2368,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       // ].join(','),
     };
 
-    console.log(JSON.stringify({ diagnosticOrderInput: bookingOrderInfo }));
     console.log('home collection \n', { diagnosticOrderInput: bookingOrderInfo });
     postPaymentInitiatedWebengage();
     saveHomeCollectionBookingOrder(bookingOrderInfo)
@@ -2385,8 +2375,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         const { orderId, displayId, errorCode, errorMessage } =
           g(data, 'DiagnosticBookHomeCollection')! || {};
         if (errorCode || errorMessage) {
-          console.log('error' + errorCode);
-          console.log('bookkk..' + errorMessage);
+          console.log('error in booking' + errorCode + 'message' + errorMessage);
           setLoading!(false);
           setshowSpinner!(false);
           let descriptionText = string.diagnostics.bookingOrderFailedMessage;
@@ -2452,17 +2441,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const renderNewView = () => {
-    console.log({ orderDetails });
     const pickupDate = moment(orderDetails?.diagnosticDate!).format('DD MMM');
     const pickupYear = moment(orderDetails?.diagnosticDate!).format('YYYY');
     const pickupTime = orderDetails && formatTestSlotWithBuffer(orderDetails?.slotTime!);
     const orderCartSaving = orderDetails?.cartSaving!;
     const orderCircleSaving = orderDetails?.circleSaving!;
     const showCartSaving = orderCartSaving > 0 && orderDetails?.cartHasAll;
-    //add a check to see if we have price and special price same (circle + normal)
-    console.log(showCartSaving);
-    console.log('orderCartSavinf//' + orderCartSaving);
-    console.log('orderCircleSaving' + orderCircleSaving);
 
     return (
       <View
@@ -2999,7 +2983,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const validateDiagnosticCoupon = async () => {
     if (addressCityId != '') {
       setLoading!(true);
-      console.log({ cartItems });
       var orderedTestArray: {
         itemId: number;
         itemName: string;
@@ -3014,7 +2997,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           groupPlan: items.groupPlan!,
         });
       });
-      console.log({ orderedTestArray });
       const CouponInput = {
         grossOrderAmountExcludingDiscount: cartTotal,
         testsOrdered: orderedTestArray,
@@ -3132,8 +3114,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           zipCode={parseInt(zipCode, 10)}
           slotInfo={selectedTimeSlot}
           onSchedule={(date: Date, slotInfo: TestSlot) => {
-            console.log({ date });
-            console.log({ slotInfo });
             setDate(date);
             setselectedTimeSlot(slotInfo);
             setDiagnosticSlot!({
