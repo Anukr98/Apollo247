@@ -371,7 +371,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   ];
   const tabs = [
     { title: 'Home Visit', subtitle: 'Appointment Slot' },
-    { title: 'Clinic Visit', subtitle: 'Clinic Hours' },
+    // { title: 'Clinic Visit', subtitle: 'Clinic Hours' },
   ];
 
   const [slots, setSlots] = useState<TestSlot[]>([]);
