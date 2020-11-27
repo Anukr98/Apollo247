@@ -196,7 +196,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
               style={[
                 styles.price,
                 {
-                  marginTop: isPlanActive ? iconDimension / 2 - 10 : iconDimension / 2 - 8,
+                  marginTop: isPlanActive ? iconDimension / 2 - 12 : iconDimension / 2 - 8,
                   fontSize: isPlanActive ? 22 : 16,
                   color: value?.defaultPack ? 'white' : theme.colors.SEARCH_UNDERLINE_COLOR,
                 },
