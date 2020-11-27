@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
     maxWidth: '75%',
   },
   nameTextStyle: {
-    marginLeft: 5,
+    marginLeft: 7,
     color: '#02475b',
     ...theme.fonts.IBMPlexSansSemiBold(36),
   },
