@@ -7,7 +7,6 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioAttributes;
-import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.SystemClock;
@@ -155,10 +154,7 @@ public class MyFirebaseMessagingService
         //channel info start
         String channelId = "fcm_call_channel";
         String channelName = "Incoming Call";
-        Uri incoming_call_notif = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
-//                Uri.parse("android.resource://"+this.getPackageName()+"/"+R.raw.incallmanager_ringtone);
-//                RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
-        //end
+        Uri incoming_call_notif = Uri.parse("android.resource://" + this.getPackageName() + "/" + R.raw.incallmanager_ringtone);
 
         // notification action buttons start
         int notificationId = new Random().nextInt();
@@ -181,6 +177,7 @@ public class MyFirebaseMessagingService
                         .setAutoCancel(true)
                         .setVibrate(v)
                         .setSound(incoming_call_notif)
+                        .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                         .addAction(acceptCall)
                         .addAction(rejectCall)
                         .setFullScreenIntent(fullScreenIntent, true)

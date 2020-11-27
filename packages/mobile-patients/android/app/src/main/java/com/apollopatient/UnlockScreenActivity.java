@@ -68,7 +68,7 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
         Integer notifID = intent.getIntExtra("NOTIFICATION_ID", -1);
 
         //ringtoneManager start
-        Uri incoming_call_notif = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
+        Uri incoming_call_notif = Uri.parse("android.resource://" + this.getPackageName() + "/" + R.raw.incallmanager_ringtone);
         this.ringtone = RingtoneManager.getRingtone(getApplicationContext(), incoming_call_notif);
         //ringtoneManager end
 

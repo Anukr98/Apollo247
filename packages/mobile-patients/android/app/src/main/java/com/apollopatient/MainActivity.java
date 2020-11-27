@@ -61,7 +61,7 @@ public class MainActivity extends ReactActivity {
         try {
             //start
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
-                Uri incoming_call_notif = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
+                Uri incoming_call_notif = Uri.parse("android.resource://" + this.getPackageName() + "/" + R.raw.incallmanager_ringtone);
                 ringtone = RingtoneManager.getRingtone(getApplicationContext(), incoming_call_notif);
                 Log.e("notificationActivity", String.valueOf(getIntent().getIntExtra(NOTIFICATION_ID, -1)));
                 NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -82,7 +82,7 @@ public class MainActivity extends ReactActivity {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
                 NotificationManager notificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
                 notificationManager.cancelAll();
-                Uri incoming_call_notif = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
+                Uri incoming_call_notif = Uri.parse("android.resource://" + this.getPackageName() + "/" + R.raw.incallmanager_ringtone);
                 ringtone = RingtoneManager.getRingtone(getApplicationContext(), incoming_call_notif);
                 ringtone.stop();
             }
