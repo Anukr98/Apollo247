@@ -233,15 +233,16 @@ const styles = StyleSheet.create({
   hiTextStyle: {
     marginLeft: 10,
     color: '#02475b',
-    ...theme.fonts.IBMPlexSansSemiBold(36),
+    ...theme.fonts.IBMPlexSansSemiBold(26),
   },
   nameTextContainerStyle: {
-    maxWidth: '75%',
+    maxWidth: '70%',
   },
   nameTextStyle: {
     marginLeft: 7,
     color: '#02475b',
-    ...theme.fonts.IBMPlexSansSemiBold(36),
+    ...theme.fonts.IBMPlexSansSemiBold(26),
+    // textTransform: 'capitalize',
   },
   seperatorStyle: {
     height: 2,
@@ -251,11 +252,9 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   descriptionTextStyle: {
-    marginLeft: 20,
-    marginTop: 0,
-    color: theme.colors.SKY_BLUE,
-    ...theme.fonts.IBMPlexSansMedium(17),
-    lineHeight: 24,
+    marginHorizontal: 16,
+    marginTop: 6,
+    ...theme.viewStyles.text('M', 14, theme.colors.SKY_BLUE),
   },
   labelView: {
     position: 'absolute',
@@ -316,7 +315,6 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     marginLeft: 16,
-    marginTop: Platform.OS === 'ios' ? 5 : 7,
   },
 });
 
@@ -1819,7 +1817,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               // paddingTop: 80,
               // marginTop: 30,
               borderRightColor: 'rgba(2, 71, 91, 0.2)',
-              backgroundColor: theme.colors.CLEAR,
             }}
           >
             {currentPatient?.gender === Gender.MALE ? (
@@ -1836,14 +1833,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             <Text style={styles.hiTextStyle}>{'hi'}</Text>
             <View style={styles.nameTextContainerStyle}>
               <View style={{ flexDirection: 'row', flex: 1 }}>
-                <Text
-                  style={[
-                    styles.nameTextStyle,
-                    { maxWidth: Platform.OS === 'ios' ? '85%' : '75%' },
-                  ]}
-                  numberOfLines={1}
-                >
-                  {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
+                <Text style={styles.nameTextStyle} numberOfLines={1}>
+                  {currentPatient?.firstName || ''}
                 </Text>
                 {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
                   <LinkedUhidIcon
@@ -1856,7 +1847,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     resizeMode={'contain'}
                   />
                 ) : null}
-                <View style={{ paddingTop: 15, marginLeft: 6 }}>
+                <View style={{ paddingTop: 12, marginLeft: 6 }}>
                   <DropdownGreen />
                 </View>
               </View>
@@ -2833,8 +2824,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           justifyContent: 'space-between',
           flexDirection: 'row',
           paddingTop: 16,
-          paddingHorizontal: 20,
+          paddingHorizontal: 16,
           backgroundColor: theme.colors.CLEAR,
+          paddingBottom: 15,
         }}
       >
         <TouchableOpacity activeOpacity={1} onPress={() => {}}>
@@ -2928,16 +2920,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         <ScrollView style={{ flex: 1 }} bounces={false}>
           <View style={{ width: '100%' }}>
             <View style={styles.viewName}>
-              <ImageBackground
-                style={{ width: '100%' }}
-                imageStyle={{ width: width }}
-                source={require('@aph/mobile-patients/src/images/apollo/img_doctorimage.png')}
-              >
-                {renderTopIcons()}
-                <View style={{ height: 100 }} />
-                <View style={{ flexDirection: 'row' }}>{renderProfileDrop()}</View>
-              </ImageBackground>
-              {/* <Text style={styles.descriptionTextStyle}>{string.home.description}</Text> */}
+              {renderTopIcons()}
+              <View style={{ flexDirection: 'row' }}>{renderProfileDrop()}</View>
+              <Text style={styles.descriptionTextStyle}>{string.common.weAreHereToHelpYou}</Text>
               {isPersonalizedCard && renderAppointmentWidget()}
               {renderMenuOptions()}
               {showCircleBanner && renderCircleBanners()}

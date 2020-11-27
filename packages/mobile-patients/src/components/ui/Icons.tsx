@@ -1329,17 +1329,32 @@ export const CircleLogoWhite: React.FC<IconProps> = (props) => (
 );
 
 export const FemaleIcon: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/femaleIcon.png')} />
+  <IconBase
+    resizeMode={'contain'}
+    size="md"
+    {...props}
+    source={require('./icons/femaleIcon.png')}
+  />
 );
 
 export const MaleIcon: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/maleIcon.png')} />
+  <IconBase resizeMode={'contain'} size="md" {...props} source={require('./icons/maleIcon.png')} />
 );
 
 export const FemaleCircleIcon: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/femaleCircleIcon.png')} />
+  <IconBase
+    resizeMode={'contain'}
+    size="md"
+    {...props}
+    source={require('./icons/femaleCircleIcon.png')}
+  />
 );
 
 export const MaleCircleIcon: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/maleCircleIcon.png')} />
+  <IconBase
+    resizeMode={'contain'}
+    size="md"
+    {...props}
+    source={require('./icons/maleCircleIcon.png')}
+  />
 );
