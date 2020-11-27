@@ -87,6 +87,20 @@ export enum WebEngageEventName {
   CONFIRM_LOCATION = 'Confirm Location',
   DOCTOR_LISTING_FILTER_APPLIED = 'Doctor Listing Filter Apply',
 
+  //Circle Plan event names
+  VC_NON_CIRCLE = 'VC Non Circle Clicks on Know More at Doctor Listing',
+  VC_NON_CIRCLE_ADD = 'VC Non Circle Adds Circle Plan at Doctor Listing',
+  VC_NON_CIRCLE_KNOWMORE_CONSULT = 'VC Non Circle Clicks on Know More at Choose Consult Type',
+  VC_NON_CIRCLE_KNOWMORE_PROFILE = 'VC Non Circle Clicks on Know More at Doctor Profile',
+  VC_NON_CIRCLE_ADDS_PROFILE = 'VC Non Circle Adds Circle Plan at Doctor Profile',
+  VC_CIRCLE_FILTER = 'VC Circle Filter Selected',
+  VC_NON_CIRCLE_PLAN_1 = 'VC Non Circle chooses Plan 1 in Consult Web View',
+  VC_NON_CIRCLE_PLAN_2 = 'VC Non Circle chooses Plan 2 in Consult Web View',
+  VC_NON_CIRCLE_PLAN_3 = 'VC Non Circle chooses Plan 3 in Consult Web View',
+  VC_NON_CIRCLE_ADDS_CART = 'VC Non Circle adds Circle to Cart',
+  VC_NON_CIRCLE_REMOVES_CART = 'VC Non Circle removes Circle from Cart',
+  VC_NON_CIRCLE_BUYS_SUBSCRIPTION = 'VC Non Circle buys Circle subscription',
+
   MY_ORDERS_CLICKED = 'My Orders Clicked',
   ORDER_SUMMARY_CLICKED = 'Order Summary Clicked',
   PHARMACY_MY_ORDER_TRACKING_CLICKED = 'Pharmacy My Order Tracking Clicked',

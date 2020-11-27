@@ -708,6 +708,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     props.navigation.navigate(AppRoutes.CommonWebView, {
       url: AppConfig.Configuration.CIRCLE_CONSULT_URL,
     });
+    circlePlanWebEngage(WebEngageEventName.VC_NON_CIRCLE_KNOWMORE_PROFILE);
   };
 
   const renderPlatinumDoctorView = () => {
@@ -980,9 +981,30 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     return null;
   };
 
+  const circlePlanWebEngage = (eventName: any) => {
+    const eventAttributes = {
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient Age': Math.round(
+        Moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+      ),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+    };
+    postWebEngageEvent(eventName, eventAttributes);
+  };
+
   const renderUpgradeToCircle = () => {
     return (
-      <TouchableOpacity style={styles.upgradeContainer} onPress={() => setShowCirclePlans(true)}>
+      <TouchableOpacity
+        style={styles.upgradeContainer}
+        onPress={() => {
+          setShowCirclePlans(true);
+          circlePlanWebEngage(WebEngageEventName.VC_NON_CIRCLE_ADDS_PROFILE);
+        }}
+      >
         <Text style={{ ...theme.viewStyles.text('SB', 11, theme.colors.APP_YELLOW, 1, 14) }}>
           UPGRADE TO
         </Text>

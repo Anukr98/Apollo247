@@ -347,10 +347,12 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       isCallback: true,
       onPlanSelected: onPlanSelected,
     });
+    webEngageAttributes(WebEngageEventName.VC_NON_CIRCLE);
   };
 
   const onPlanSelected = () => {
     props.onPlanSelected && props.onPlanSelected();
+    webEngageAttributes(WebEngageEventName.VC_NON_CIRCLE_ADD);
   };
 
   const renderCareLogo = () => {
@@ -396,6 +398,21 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       </View>
     );
   };
+
+  const webEngageAttributes = (evenName) => {
+    try {
+      const eventAttributes = {
+        'Patient Name': currentPatient.firstName,
+        'Patient UHID': currentPatient.uhid,
+        Relation: currentPatient?.relation,
+        'Patient Age': Math.round(moment().diff(currentPatient?.dateOfBirth || 0, 'years', true)),
+        'Patient Gender': currentPatient.gender,
+        'Customer ID': currentPatient.id,
+      };
+      postWebEngageEvent(evenName, eventAttributes);
+    } catch (error) {}
+  };
+
   function getButtonTitle(slot: string) {
     const title =
       slot && moment(slot).isValid()
