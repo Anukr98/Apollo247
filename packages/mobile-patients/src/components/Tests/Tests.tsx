@@ -2687,11 +2687,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
     />
   );
 
-  const _navigateToCareLanding = () => {
-    //props.navigation.navigate(AppRoutes.CareLanding,{})
-    console.log('navigate to care landing clicked');
-  };
-
   const renderSections = () => {
     return (
       <TouchableOpacity

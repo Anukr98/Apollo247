@@ -2025,6 +2025,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 borderLeftColor: colors.DEFAULT_BACKGROUND_COLOR,
                 marginTop: 6,
                 marginBottom: 6,
+                paddingLeft: 2,
               }}
             ></View>
           ) : null}

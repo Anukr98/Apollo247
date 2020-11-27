@@ -33,6 +33,7 @@ interface CircleMembershipPlansProps extends NavigationScreenProps {
   style?: StyleProp<ViewStyle>;
   onSelectMembershipPlan?: (plan?: any) => void;
   isConsultJourney?: boolean;
+  isDiagnosticJourney?: boolean;
   careDiscountPrice?: number;
   isModal?: boolean;
   closeModal?: (() => void) | null;
@@ -47,6 +48,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
   const [loading, setLoading] = useState<boolean>(true);
   const {
     isConsultJourney,
+    isDiagnosticJourney,
     careDiscountPrice,
     onSelectMembershipPlan,
     isModal,
@@ -415,9 +417,12 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
   };
 
   const openCircleWebView = () => {
+    console.log(isDiagnosticJourney);
     props.navigation.navigate(AppRoutes.CommonWebView, {
       url: isConsultJourney
         ? AppConfig.Configuration.CIRCLE_CONSULT_URL
+        : isDiagnosticJourney
+        ? AppConfig.Configuration.CIRCLE_TEST_URL
         : AppConfig.Configuration.CIRLCE_PHARMA_URL,
     });
   };

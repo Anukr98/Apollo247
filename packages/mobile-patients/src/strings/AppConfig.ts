@@ -323,6 +323,7 @@ const ConfigurationDev = {
   CIRCLE_CONSULT_URL:
     'https://aph.staging.web-patients.popcornapps.com/consult-landing?header=false',
   CIRLCE_PHARMA_URL: 'https://aph.staging.web-patients.popcornapps.com/pharma-landing?header=false',
+  CIRCLE_TEST_URL: 'https://aph.staging.web-patients.popcornapps.com/test-landing?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
 };
@@ -372,6 +373,7 @@ const ConfigurationQA = {
   CIRCLE_CONSULT_URL:
     'https://aph.staging.web-patients.popcornapps.com/consult-landing?header=false',
   CIRLCE_PHARMA_URL: 'https://aph.staging.web-patients.popcornapps.com/pharma-landing?header=false',
+  CIRCLE_TEST_URL: 'https://aph.staging.web-patients.popcornapps.com/test-landing?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://aph.staging.web-patients.popcornapps.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
 };
@@ -421,6 +423,7 @@ const ConfigurationQA2 = {
   CIRCLE_CONSULT_URL:
     'https://aph.staging.web-patients.popcornapps.com/consult-landing?header=false',
   CIRLCE_PHARMA_URL: 'https://aph.staging.web-patients.popcornapps.com/pharma-landing?header=false',
+  CIRCLE_TEST_URL: 'https://aph.staging.web-patients.popcornapps.com/test-landing?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
 };
@@ -470,6 +473,7 @@ const ConfigurationVAPT = {
   CIRCLE_CONSULT_URL:
     'https://aph.staging.web-patients.popcornapps.com/consult-landing?header=false',
   CIRLCE_PHARMA_URL: 'https://aph.staging.web-patients.popcornapps.com/pharma-landing?header=false',
+  CIRCLE_TEST_URL: 'https://aph.staging.web-patients.popcornapps.com/test-landing?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
 };
@@ -517,6 +521,7 @@ const ConfigurationProd = {
   CIRCLE_CONSULT_URL:
     'https://aph.staging.web-patients.popcornapps.com/consult-landing?header=false',
   CIRLCE_PHARMA_URL: 'https://aph.staging.web-patients.popcornapps.com/pharma-landing?header=false',
+  CIRCLE_TEST_URL: 'https://aph.staging.web-patients.popcornapps.com/test-landing?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://www.apollo247.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
 };
@@ -567,6 +572,7 @@ const ConfigurationPERFORM = {
   CIRCLE_CONSULT_URL:
     'https://aph.staging.web-patients.popcornapps.com/consult-landing?header=false',
   CIRLCE_PHARMA_URL: 'https://aph.staging.web-patients.popcornapps.com/pharma-landing?header=false',
+  CIRCLE_TEST_URL: 'https://aph.staging.web-patients.popcornapps.com/test-landing?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://aph.staging.web-patients.popcornapps.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
 };
@@ -617,6 +623,7 @@ const ConfigurationDevReplica = {
   CIRCLE_CONSULT_URL:
     'https://aph.staging.web-patients.popcornapps.com/consult-landing?header=false',
   CIRLCE_PHARMA_URL: 'https://aph.staging.web-patients.popcornapps.com/pharma-landing?header=false',
+  CIRCLE_TEST_URL: 'https://aph.staging.web-patients.popcornapps.com/test-landing?header=false',
   APOLLO_PRO_HEALTH_URL:
     'https://aph.staging.web-patients.popcornapps.com/apollo-pro-health?utm_source=mobile_app&utm_medium=Webview&utm_campaign=Apollo%20Pro%20Health%20Content',
 };
