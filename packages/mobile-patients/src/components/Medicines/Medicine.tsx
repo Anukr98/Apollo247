@@ -150,6 +150,7 @@ import {
   GetSubscriptionsOfUserByStatusVariables,
   GetSubscriptionsOfUserByStatus,
 } from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
 
 const { width: winWidth } = Dimensions.get('window');
 
@@ -2002,11 +2003,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     });
     const effectivePrice = Math.round(cartTotal - cartTotalCashback);
     return (
-      <View style={circleStyles.container}>
+      <View style={[circleStyles.container, { backgroundColor: 'white' }]}>
         <View style={circleStyles.content}>
           <View
             style={{
-              alignItems: circleSubscription?._id || isCircleSubscription ? 'flex-start' : 'center',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
             <Text style={theme.viewStyles.text('R', 13, '#02475B', 1, 24, 0)}>
@@ -2016,13 +2018,31 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               {cartItems.length}
             </Text>
           </View>
+          {circleSubscription?._id || isCircleSubscription ? (
+            <View
+              style={{
+                borderLeftWidth: 2,
+                borderLeftColor: colors.DEFAULT_BACKGROUND_COLOR,
+                marginTop: 6,
+                marginBottom: 6,
+              }}
+            ></View>
+          ) : null}
           {cartTotalCashback > 1 ? (
             <>
               {circleSubscription?._id || isCircleSubscription ? (
-                <View>
+                <View style={{ width: '60%' }}>
                   <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 20, 0)}>
-                    ₹{cartTotal - productDiscount}
+                    {string.common.Rs}
+                    {cartTotal - productDiscount}
                   </Text>
+                  <View style={{ flexDirection: 'row' }}>
+                    <CircleLogo style={circleStyles.circleLogoTwo} />
+                    <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 25, 0)}>
+                      cashback {string.common.Rs}
+                      {cartTotalCashback.toFixed(2)}
+                    </Text>
+                  </View>
                   <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
                     <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 25, 0)}>
                       Effective price for
