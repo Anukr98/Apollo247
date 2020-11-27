@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   TouchableOpacity,
@@ -31,18 +31,24 @@ interface CircleBannerProps extends NavigationScreenProps {
   comingFrom?: string;
   nonSubscribedText?: string;
   nonSubscribedSubText?: string;
+  circleActivated?: boolean;
+  circlePlanValidity?: string;
 }
 export const CircleBannerComponent: React.FC<CircleBannerProps> = (props) => {
-  const { planActivationCallback } = props;
+  const { planActivationCallback, circleActivated, circlePlanValidity } = props;
   const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
-  const [showCircleActivation, setShowCircleActivation] = useState<boolean>(false);
+  const [showCircleActivation, setShowCircleActivation] = useState<boolean>(
+    circleActivated || false
+  );
   const [membershipPlans, setMembershipPlans] = useState<any>([]);
   const [healthCredits, setHealthCredits] = useState<number>(0);
   const [totalCircleSavings, setTotalCircleSavings] = useState<number>(0);
+  const planPurchased = useRef<boolean | undefined>(circleActivated);
   const { circleSubscriptionId, selectDefaultPlan, defaultCirclePlan } = useShoppingCart();
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const defaultPlanSellingPrice = defaultCirclePlan?.currentSellingPrice;
+  const monthlySavings = AppConfig.Configuration.CIRCLE_STATIC_MONTHLY_SAVINGS;
 
   useEffect(() => {
     if (!circleSubscriptionId) {
@@ -121,7 +127,7 @@ export const CircleBannerComponent: React.FC<CircleBannerProps> = (props) => {
     if (!circleSubscriptionId) {
       return (
         <View style={{ paddingLeft: 6 }}>
-          <View style={styles.row}>
+          <View style={[styles.row, { marginTop: 20 }]}>
             {props.comingFrom == 'diagnostics' ? null : (
               <CircleLogoWhite style={styles.circleLogo} />
             )}
@@ -136,8 +142,26 @@ export const CircleBannerComponent: React.FC<CircleBannerProps> = (props) => {
           {props.nonSubscribedText ? (
             <Text style={styles.subText}>{props.nonSubscribedSubText}</Text>
           ) : (
-            <Text style={styles.title}>SAVE {string.common.Rs}XXX MONTHLY!</Text>
+            <Text style={styles.title}>
+              SAVE {string.common.Rs}
+              {monthlySavings} MONTHLY!
+            </Text>
           )}
+        </View>
+      );
+    }
+    if (totalCircleSavings === 0) {
+      return (
+        <View>
+          <View style={styles.row}>
+            <CircleLogoWhite style={styles.circleLogo} />
+            <Text style={styles.title}>MEMBERS SAVE BIG!</Text>
+          </View>
+          <Text style={styles.title}>YOU COULD SAVE</Text>
+          <Text style={styles.title}>
+            {string.common.Rs}
+            {monthlySavings} TOO
+          </Text>
         </View>
       );
     }
@@ -154,24 +178,14 @@ export const CircleBannerComponent: React.FC<CircleBannerProps> = (props) => {
         </Text>
       </View>
     );
-    // need api for this
-
-    // return (
-    //   <View>
-    //     <View style={styles.row}>
-    //       <CircleLogoWhite style={styles.circleLogo} />
-    //       <Text style={styles.title}>MEMBERS SAVE BIG!</Text>
-    //     </View>
-    //     <Text style={styles.title}>YOU COULD SAVE</Text>
-    //     <Text style={styles.title}>{string.common.Rs}XXX TOO</Text>
-    //   </View>
-    // );
   };
+
   const renderUpgradeBtn = () => {
     return (
       <TouchableOpacity
         style={styles.upgradeBtnView}
         onPress={() => {
+          planPurchased.current = false;
           if (healthCredits >= defaultPlanSellingPrice) {
             setShowCircleActivation(true);
           } else if (defaultPlanSellingPrice) {
@@ -223,6 +237,8 @@ export const CircleBannerComponent: React.FC<CircleBannerProps> = (props) => {
       defaultCirclePlan={defaultCirclePlan}
       healthCredits={healthCredits}
       navigation={props.navigation}
+      circlePaymentDone={planPurchased.current}
+      circlePlanValidity={circlePlanValidity}
     />
   );
   const backGroundImage =
@@ -269,7 +285,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 13,
   },
   row: {
-    marginTop: 20,
+    marginTop: 25,
     flexDirection: 'row',
     alignItems: 'center',
   },

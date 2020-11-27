@@ -368,6 +368,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     hdfcUpgradeUserSubscriptions,
     setHdfcUpgradeUserSubscriptions,
     circleSubscription,
+    setAxdcCode,
   } = useAppCommonData();
 
   // const startDoctor = string.home.startDoctor;
@@ -429,11 +430,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [slideIndex, setSlideIndex] = useState(0);
   const [benefitId, setbenefitId] = useState<string>('');
   const [showSavingsAccountButton, setShowSavingsAccountButton] = useState<boolean>(false);
-
+  const circleActivated = props.navigation.getParam('circleActivated');
+  const circlePlanValidity = props.navigation.getParam('circlePlanValidity');
   const webengage = new WebEngage();
   const client = useApolloClient();
   const hdfc_values = string.Hdfc_values;
-
   const _handleAppStateChange = (nextAppState: AppStateStatus) => {
     if (nextAppState === 'active') {
       getUserSubscriptionsWithBenefits();
@@ -549,7 +550,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     if (locationDetails && locationDetails.pincode) {
       await pinCodeServiceabilityApi247(locationDetails.pincode!)
         .then(({ data: { response } }) => {
-          if (response) {
+          const { servicable, axdcCode } = response;
+          setAxdcCode && setAxdcCode(axdcCode);
+          if (servicable) {
             setserviceable('Yes');
           } else {
             setserviceable('No');
@@ -2887,6 +2890,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           getUserSubscriptionsByStatus();
           getUserSubscriptionsWithBenefits();
         }}
+        circleActivated={circleActivated}
+        circlePlanValidity={circlePlanValidity}
       />
     </TouchableOpacity>
   );

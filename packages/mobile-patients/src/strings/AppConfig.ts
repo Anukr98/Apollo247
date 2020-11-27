@@ -71,6 +71,7 @@ const appStaticVariables = {
   CUSTOMER_CARE_NUMBER: string.common.customerCareNumber,
   PRODUCT_SUGGESTIONS_CATEGORYID: '41920',
   CIRCLE_PLAN_ID: 'CIRCLEPlan',
+  CIRCLE_STATIC_MONTHLY_SAVINGS: '848',
   PRODUCT_SUGGESTIONS_COUNT: 15,
   MED_ORDER_NON_CART_CALL_ME_OPTION_WHATSAPP_LINK:
     'https://api.whatsapp.com/send?phone=914041894343&text=I%20want%20to%20inform%20the%20pharmacist%20regarding%20my%20medicines',
@@ -78,6 +79,7 @@ const appStaticVariables = {
     'https://api.whatsapp.com/send?phone=914041894343&text=On-hold%20order:%20I%20want%20to%20chat%20with%20the%20pharmacist',
   MED_ORDER_POST_ORDER_VERIFICATION_WHATSAPP_LINK:
     'https://api.whatsapp.com/send?phone=914041894343&text=I%20have%20a%20query%20regarding%20the%20items%20in%20my%20verified%20order',
+  SUBSCRIPTION_PG_SUCCESS: '/subscriptionpg-success?',
 };
 
 const DEV_top6_specailties = [
