@@ -1970,13 +1970,17 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const renderCartDiscount = () => {
     const cartDiscountPercent = getDiscountPercentage(cartTotal, cartTotal - productDiscount);
     return (
-      <View style={{ flexDirection: 'row', marginLeft: 10 }}>
-        <Text style={styles.priceStrikeOff}>
-          ({string.common.Rs}
-          {cartTotal})
-        </Text>
-        <Text style={styles.discountPercentage}>{cartDiscountPercent}% off</Text>
-      </View>
+      <>
+        {cartDiscountPercent ? (
+          <View style={{ flexDirection: 'row', marginLeft: 10 }}>
+            <Text style={styles.priceStrikeOff}>
+              ({string.common.Rs}
+              {cartTotal})
+            </Text>
+            <Text style={styles.discountPercentage}>{cartDiscountPercent}% off</Text>
+          </View>
+        ) : null}
+      </>
     );
   };
 
