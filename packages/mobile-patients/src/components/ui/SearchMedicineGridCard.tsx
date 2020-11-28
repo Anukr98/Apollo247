@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   priceTextCollapseStyle: {
-    ...theme.viewStyles.text('M', 12, '#02475b', 1, 20, 0.04),
+    ...theme.viewStyles.text('SB', 13, '#02475b', 1, 20, 0.04),
     marginTop: 1,
   },
   specialpriceTextStyle: {
