@@ -3,6 +3,8 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
+import { UserState } from "./globalTypes";
+
 // ====================================================
 // GraphQL query operation: GetAllGroupBannersOfUser
 // ====================================================
@@ -31,4 +33,6 @@ export interface GetAllGroupBannersOfUser {
 
 export interface GetAllGroupBannersOfUserVariables {
   mobile_number: string;
+  banner_context: string;
+  user_state?: UserState | null;
 }

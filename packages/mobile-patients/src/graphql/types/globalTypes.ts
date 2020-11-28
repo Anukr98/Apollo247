@@ -517,6 +517,11 @@ export enum USER_TYPE {
   PATIENT = "PATIENT",
 }
 
+export enum UserState {
+  LOGGED_IN = "LOGGED_IN",
+  LOGGED_OUT = "LOGGED_OUT",
+}
+
 export enum WeekDay {
   FRIDAY = "FRIDAY",
   MONDAY = "MONDAY",
@@ -954,6 +959,10 @@ export interface MedicineCartOMSInput {
   shopAddress?: ShopAddress | null;
   customerComment?: string | null;
   storeDistanceKm?: number | null;
+  subscriptionDetails?: SUBSCRIPTION_DETAILS_PHARMA | null;
+  planPurchaseDetails?: PLAN_PURCHASE_DETAILS_PHARMA | null;
+  healthCreditUsed?: number | null;
+  totalCashBack?: number | null;
 }
 
 export interface MedicineCartOMSItem {
@@ -1035,6 +1044,13 @@ export interface PLAN_PURCHASE_DETAILS {
   PlanAmount?: number | null;
 }
 
+export interface PLAN_PURCHASE_DETAILS_PHARMA {
+  TYPE?: PLAN | null;
+  PlanAmount?: number | null;
+  planId?: string | null;
+  subPlanId?: string | null;
+}
+
 export interface PatientAddressInput {
   patientId: string;
   name?: string | null;
@@ -1092,6 +1108,17 @@ export interface PaymentReference {
   payment_reference_id?: string | null;
   purchase_via_HC?: boolean | null;
   HC_used?: number | null;
+  ORDERID?: string | null;
+  TXNAMOUNT?: string | null;
+  PAYMENTMODE?: string | null;
+  CURRENCY?: string | null;
+  TXNDATE?: any | null;
+  RESPCODE?: string | null;
+  RESPMSG?: string | null;
+  MERC_UNQ_REF?: string | null;
+  GATEWAYNAME?: string | null;
+  BANKTXNID?: string | null;
+  BANKNAME?: string | null;
 }
 
 export interface PharmaCouponInput {
@@ -1146,6 +1173,10 @@ export interface SUBSCRIPTION_DETAILS {
   plan?: PLAN | null;
   planId?: string | null;
   groupPlanId?: string | null;
+}
+
+export interface SUBSCRIPTION_DETAILS_PHARMA {
+  userSubscriptionId?: string | null;
 }
 
 export interface SaveDeviceTokenInput {
