@@ -36,6 +36,7 @@ export interface findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCi
   testPreparationData: string;
   diagnosticPricing: (findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics_diagnosticPricing | null)[] | null;
   testDescription: string | null;
+  inclusions: (number | null)[] | null;
 }
 
 export interface findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID {

@@ -1421,14 +1421,14 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
         createdDate
         areaId
         rescheduleCount
-      	isRescheduled
+        isRescheduled
         diagnosticOrderLineItems {
           id
           itemId
           quantity
           price
           groupPlan
-          pricingObj{
+          pricingObj {
             mrp
             price
             groupPlan
@@ -1500,7 +1500,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
           price
           quantity
           groupPlan
-          pricingObj{
+          pricingObj {
             mrp
             price
             groupPlan
@@ -1756,7 +1756,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS_WITH_ADDRESS = gql`
         prescriptionOptionSelected
         tatType
         shopId
-        totalCashback
+        totalCashBack
         medicineOrderLineItems {
           medicineSKU
           medicineName
@@ -1884,7 +1884,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
         patientAddressId
         alertStore
         prescriptionOptionSelected
-        totalCashback
+        totalCashBack
         medicineOrdersStatus {
           id
           orderStatus
@@ -3479,8 +3479,16 @@ export const GET_DIAGNOSTIC_PINCODE_SERVICEABILITIES = gql`
 `;
 
 export const GET_ALL_GROUP_BANNERS_OF_USER = gql`
-  query GetAllGroupBannersOfUser($mobile_number: String!) {
-    GetAllGroupBannersOfUser(mobile_number: $mobile_number) {
+  query GetAllGroupBannersOfUser(
+    $mobile_number: String!
+    $banner_context: String!
+    $user_state: UserState
+  ) {
+    GetAllGroupBannersOfUser(
+      mobile_number: $mobile_number
+      banner_context: $banner_context
+      user_state: $user_state
+    ) {
       code
       success
       message
