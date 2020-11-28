@@ -84,6 +84,7 @@ import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/N
 import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareCashbackBanner';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import { CircleBannerComponent } from '@aph/mobile-patients/src/components/ui/CircleBannerComponent';
 import {
   GetSubscriptionsOfUserByStatusVariables,
@@ -269,14 +270,14 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   circleText: {
-    ...theme.viewStyles.text('M', 9, '#02475B', 1, 15),
+    ...theme.viewStyles.text('M', 10, '#02475B', 1, 15),
     paddingVertical: 2,
+    marginLeft: -4,
   },
   circleLogo: {
     resizeMode: 'contain',
     width: 38,
     height: 20,
-    left: -5,
   },
   careBanner: {
     resizeMode: 'contain',
@@ -751,12 +752,17 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       return (
         <>
           <CareCashbackBanner
-            bannerText={`Extra Care ₹${cashback} Cashback`}
+            bannerText={`extra cashback ${string.common.Rs}${cashback.toFixed(2)}`}
             textStyle={styles.circleText}
             logoStyle={styles.circleLogo}
           />
           <Text style={theme.viewStyles.text('R', 11, '#02475B', 1, 17)}>
-            {`Effective price for you ₹${finalPrice - cashback}`}
+            Effective price for you
+            <Text style={{ fontWeight: 'bold' }}>
+              {' '}
+              {string.common.Rs}
+              {(finalPrice - cashback).toFixed(2)}
+            </Text>
           </Text>
         </>
       );
@@ -816,13 +822,16 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
               <View style={styles.priceView}>
                 <Text style={styles.price}>
                   {discountPercent
-                    ? `₹${medicineDetails.special_price}`
-                    : `MRP ₹${medicineDetails.price}`}
+                    ? `${string.common.Rs}${medicineDetails.special_price}`
+                    : `${string.common.Rs}${medicineDetails.price}`}
                 </Text>
                 {!!medicineDetails.special_price && (
                   <View style={styles.discountPriceView}>
-                    <Text style={styles.mrp}>{'MRP '}</Text>
-                    <Text style={styles.priceStrikeOff}>(₹{medicineDetails.price})</Text>
+                    {/* <Text style={styles.mrp}>{'MRP '}</Text> */}
+                    <Text style={styles.priceStrikeOff}>
+                      ({string.common.Rs}
+                      {medicineDetails.price})
+                    </Text>
                     <Text style={styles.discountPercentage}>{discountPercent}% off</Text>
                   </View>
                 )}
@@ -1002,12 +1011,14 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   };
 
   const renderCircleBanners = () => (
-    <CircleBannerComponent
-      navigation={props.navigation}
-      planActivationCallback={() => {
-        getUserSubscriptionsByStatus();
-      }}
-    />
+    <View style={{ marginBottom: 30 }}>
+      <CircleBannerComponent
+        navigation={props.navigation}
+        planActivationCallback={() => {
+          getUserSubscriptionsByStatus();
+        }}
+      />
+    </View>
   );
 
   const renderCircleSubscribeSuccess = () => {

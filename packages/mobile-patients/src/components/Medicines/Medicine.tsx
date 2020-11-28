@@ -71,6 +71,7 @@ import {
   setWebEngageScreenNames,
   postAppsFlyerEvent,
   postFirebaseEvent,
+  getDiscountPercentage,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
@@ -195,6 +196,16 @@ const styles = StyleSheet.create({
     height: 200,
     borderRadius: 10,
   },
+  priceStrikeOff: {
+    ...theme.viewStyles.text('M', 13, '#01475b', 1, 20, 0.35),
+    textDecorationLine: 'line-through',
+    color: '#01475b',
+    opacity: 0.6,
+    paddingRight: 5,
+  },
+  discountPercentage: {
+    ...theme.viewStyles.text('M', 13, '#00B38E', 1, 20, 0.35),
+  },
 });
 
 const filterBanners = (banners: OfferBannerSection[]) => {
@@ -254,6 +265,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setCircleSubscriptionId,
     setIsCircleSubscription,
     productDiscount,
+    cartDiscountTotal,
   } = useShoppingCart();
   const {
     cartItems: diagnosticCartItems,
@@ -1955,6 +1967,23 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
+  const renderCartDiscount = () => {
+    const cartDiscountPercent = getDiscountPercentage(cartTotal, cartTotal - productDiscount);
+    return (
+      <>
+        {cartDiscountPercent ? (
+          <View style={{ flexDirection: 'row', marginLeft: 10 }}>
+            <Text style={styles.priceStrikeOff}>
+              ({string.common.Rs}
+              {cartTotal})
+            </Text>
+            <Text style={styles.discountPercentage}>{cartDiscountPercent}% off</Text>
+          </View>
+        ) : null}
+      </>
+    );
+  };
+
   const renderCircleCartDetails = () => {
     const circleStyles = StyleSheet.create({
       container: {
@@ -2001,7 +2030,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         // top: -24,
       },
     });
-    const effectivePrice = Math.round(cartTotal - cartTotalCashback);
+    // const effectivePrice = Math.round(cartTotal - cartTotalCashback);
+    const effectivePrice = Math.round(cartDiscountTotal - cartTotalCashback);
+
     return (
       <View style={[circleStyles.container, { backgroundColor: 'white' }]}>
         <View style={circleStyles.content}>
@@ -2025,7 +2056,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 borderLeftColor: colors.DEFAULT_BACKGROUND_COLOR,
                 marginTop: 6,
                 marginBottom: 6,
-                paddingLeft: 2,
               }}
             ></View>
           ) : null}
@@ -2033,10 +2063,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             <>
               {circleSubscription?._id || isCircleSubscription ? (
                 <View style={{ width: '60%' }}>
-                  <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 20, 0)}>
-                    {string.common.Rs}
-                    {cartTotal - productDiscount}
-                  </Text>
+                  <View style={{ flexDirection: 'row' }}>
+                    <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 20, 0)}>
+                      {string.common.Rs}
+                      {(cartTotal - productDiscount).toFixed(2)}
+                    </Text>
+                    {renderCartDiscount()}
+                  </View>
                   <View style={{ flexDirection: 'row' }}>
                     <CircleLogo style={circleStyles.circleLogoTwo} />
                     <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 25, 0)}>
@@ -2091,7 +2124,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             <Text style={theme.viewStyles.text('B', 13, '#FFFFFF', 1, 20, 0)}>GO TO CART</Text>
             {!circleSubscription?._id && !isCircleSubscription && cartTotalCashback > 1 && (
               <Text style={theme.viewStyles.text('M', 12, '#02475B', 1, 20, 0)}>
-                {`Buy for ₹${cartTotal}`}
+                {`Buy for ${string.common.Rs}${cartTotal}`}
               </Text>
             )}
           </TouchableOpacity>

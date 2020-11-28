@@ -187,18 +187,7 @@ export const CircleBannerComponent: React.FC<CircleBannerProps> = (props) => {
 
   const renderUpgradeBtn = () => {
     return (
-      <TouchableOpacity
-        style={styles.upgradeBtnView}
-        onPress={() => {
-          planPurchased.current = false;
-          setCirclePlanSelected && setCirclePlanSelected(null);
-          if (healthCredits >= defaultPlanSellingPrice) {
-            setShowCircleActivation(true);
-          } else if (defaultPlanSellingPrice) {
-            setShowCirclePlans(true);
-          }
-        }}
-      >
+      <View style={styles.upgradeBtnView}>
         <View style={[styles.row, { marginTop: 6 }]}>
           <Text style={styles.upgradeText}>UPGRADE TO</Text>
           <CircleLogo style={styles.smallCircleLogo} />
@@ -216,7 +205,7 @@ export const CircleBannerComponent: React.FC<CircleBannerProps> = (props) => {
             {defaultPlanSellingPrice}
           </Text>
         ) : null}
-      </TouchableOpacity>
+      </View>
     );
   };
   const renderCircleSubscriptionPlans = () => {
@@ -254,27 +243,38 @@ export const CircleBannerComponent: React.FC<CircleBannerProps> = (props) => {
       : require('@aph/mobile-patients/src/components/ui/icons/circleBanner.png');
   return (
     <View style={[styles.container]}>
-      <ImageBackground
-        source={backGroundImage}
-        style={[styles.banner, { height: props.comingFrom == 'diagnostics' ? 180 : 150 }]}
-        imageStyle={{
-          borderRadius: props.comingFrom == 'diagnostics' ? 5 : 16,
+      <TouchableOpacity
+        onPress={() => {
+          planPurchased.current = false;
+          if (healthCredits >= defaultPlanSellingPrice) {
+            setShowCircleActivation(true);
+          } else if (defaultPlanSellingPrice) {
+            setShowCirclePlans(true);
+          }
         }}
       >
-        {renderConditionalViews()}
-        {!circleSubscriptionId ? (
-          <View style={styles.bottomView}>
-            {renderUpgradeBtn()}
-            {healthCredits >= defaultPlanSellingPrice ? (
-              <Text style={styles.regularText}>
-                {string.circleDoctors.availableHealthCredits}: {healthCredits}
-              </Text>
-            ) : null}
-          </View>
-        ) : null}
-        {showCirclePlans && renderCircleSubscriptionPlans()}
-        {renderCircleMembershipActivated()}
-      </ImageBackground>
+        <ImageBackground
+          source={backGroundImage}
+          style={[styles.banner, { height: props.comingFrom == 'diagnostics' ? 180 : 150 }]}
+          imageStyle={{
+            borderRadius: props.comingFrom == 'diagnostics' ? 5 : 16,
+          }}
+        >
+          {renderConditionalViews()}
+          {!circleSubscriptionId ? (
+            <View style={styles.bottomView}>
+              {renderUpgradeBtn()}
+              {healthCredits >= defaultPlanSellingPrice ? (
+                <Text style={styles.regularText}>
+                  {string.circleDoctors.availableHealthCredits}: {healthCredits}
+                </Text>
+              ) : null}
+            </View>
+          ) : null}
+          {showCirclePlans && renderCircleSubscriptionPlans()}
+          {renderCircleMembershipActivated()}
+        </ImageBackground>
+      </TouchableOpacity>
     </View>
   );
 };
