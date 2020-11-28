@@ -19,7 +19,11 @@ import {
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  postWebEngageEvent,
+  reactStringReplace,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -129,7 +133,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
         >
           <View style={styles.bannerContainer}>
             <View style={styles.row}>
-              <Text style={styles.bannerTitle}>{item?.banner_template_info?.headerText}</Text>
+              {renderBannerText(item?.banner_template_info?.headerText)}
             </View>
           </View>
           {item?.banner_template_info?.Button ? (
@@ -166,6 +170,39 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
         </View>
       </TouchableOpacity>
     );
+  };
+
+  const renderBannerText = (str: string) => {
+    if (str?.includes('<circle>')) {
+      const rightText = str.split('<circle>')[1];
+      const leftText = str.split('<circle>')[0];
+      if (rightText && leftText) {
+        return (
+          <View style={[styles.headerTitleContainer, { alignItems: 'center' }]}>
+            <Text style={[styles.bannerTitle, { width: 'auto' }]}>{leftText}</Text>
+            <CircleLogoWhite style={styles.circleLogo} />
+            <Text style={[styles.bannerTitle, { width: 'auto' }]}>{rightText}</Text>
+          </View>
+        );
+      }
+      if (rightText) {
+        return (
+          <View style={styles.headerTitleContainer}>
+            <CircleLogoWhite style={styles.circleLogo} />
+            <Text style={styles.bannerTitle}>{rightText}</Text>
+          </View>
+        );
+      }
+      if (leftText) {
+        return (
+          <View style={styles.headerTitleContainer}>
+            <Text style={styles.bannerTitle}>{leftText}</Text>
+            <CircleLogoWhite style={styles.circleLogo} />
+          </View>
+        );
+      }
+    }
+    return <Text style={styles.bannerTitle}>{str}</Text>;
   };
 
   const handleOnBannerClick = (type: any, action: any, message: any) => {
@@ -349,7 +386,7 @@ const styles = StyleSheet.create({
   },
   bannerTitle: {
     ...theme.viewStyles.text('M', 16, theme.colors.WHITE),
-    maxWidth: '60%',
+    width: '60%',
   },
   sliderDots: {
     height: 6,
@@ -408,5 +445,11 @@ const styles = StyleSheet.create({
     elevation: 0,
     flex: 1,
     justifyContent: 'center',
+  },
+  headerTitleContainer: {
+    width: '62%',
+    flexDirection: 'row',
+    flex: 1,
+    flexWrap: 'wrap',
   },
 });
