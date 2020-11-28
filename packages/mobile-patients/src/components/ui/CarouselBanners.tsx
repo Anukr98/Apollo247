@@ -134,7 +134,10 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
             </View>
           </View>
           {item?.banner_template_info?.Button ? (
-            <View style={styles.bottomView}>{renderUpgradeBtn(item)}</View>
+            <View style={styles.bottomView}>
+              {renderUpgradeBtn(item)}
+              <Text style={styles.regularText}>{item?.banner_template_info?.fineText}</Text>
+            </View>
           ) : null}
         </ImageBackground>
       </TouchableOpacity>
@@ -151,8 +154,16 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
           handleOnBannerClick(cta_action?.type, cta_action?.meta?.action, cta_action?.meta?.message)
         }
       >
-        <View style={[styles.row, { marginTop: 6 }]}>
-          <Text style={styles.upgradeText}>{item?.banner_template_info?.Button}</Text>
+        <View style={styles.row}>
+          <Text
+            style={
+              cta_action?.type === hdfc_values.CALL_API
+                ? theme.viewStyles.text('SB', 12, theme.colors.APP_YELLOW)
+                : theme.viewStyles.text('SB', 9, theme.colors.APP_YELLOW)
+            }
+          >
+            {item?.banner_template_info?.Button}
+          </Text>
         </View>
       </TouchableOpacity>
     );
@@ -359,15 +370,21 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 10,
     paddingHorizontal: 10,
-    paddingBottom: 5,
+    height: 40,
     ...theme.viewStyles.cardViewStyle,
     zIndex: 1,
+    justifyContent: 'center',
   },
   upgradeText: {
-    ...theme.viewStyles.text('SB', 9, theme.colors.APP_YELLOW, 1),
+    ...theme.viewStyles.text('SB', 12, theme.colors.APP_YELLOW),
   },
   smallCircleLogo: {
     width: 40,
     height: 20,
+  },
+  regularText: {
+    ...theme.viewStyles.text('R', 8, theme.colors.LIGHT_BLUE),
+    left: 12,
+    marginTop: 2,
   },
 });
