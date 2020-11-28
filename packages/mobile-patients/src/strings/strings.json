@@ -539,7 +539,9 @@
       "HDFCDigitalVaultClick": "HDFCDigitalVaultClick",
       "HDFC7000DoctorsClick": "HDFC7000DoctorsClick",
       "HDFCFreeMedClick": "HDFCFreeMedClick"
-    }
+    },
+    "ONE_TOUCH": "ONE-TOUCH",
+    "UPGRADE_CIRCLE": "UPGRADE_CIRCLE"
   },
   "symptomChecker": {
     "howItWorks": "HOW IT WORKS?",

@@ -491,7 +491,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             cashback of{' '}
             <Text style={styles.highlightedCashBackText}>
               {string.common.Rs}
-              {orderDetails?.totalCashback!} earned{' '}
+              {orderDetails?.totalCashBack!} earned{' '}
             </Text>
             on your order
           </Text>
@@ -694,7 +694,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({
             : medicineOrderLineItems.map((item) => renderMedicineRow(item!))}
         </View>
 
-        {orderDetails?.totalCashback! > 0 && renderCircleSaving()}
+        {orderDetails?.totalCashBack! > 0 && renderCircleSaving()}
         {orderDetails.orderType == MEDICINE_ORDER_TYPE.CART_ORDER ||
         (orderDetails.orderType == MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION &&
           orderBilledAndPacked) ? (
