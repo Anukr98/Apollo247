@@ -44,7 +44,12 @@ export const CircleBannerComponent: React.FC<CircleBannerProps> = (props) => {
   const [healthCredits, setHealthCredits] = useState<number>(0);
   const [totalCircleSavings, setTotalCircleSavings] = useState<number>(0);
   const planPurchased = useRef<boolean | undefined>(circleActivated);
-  const { circleSubscriptionId, selectDefaultPlan, defaultCirclePlan } = useShoppingCart();
+  const {
+    circleSubscriptionId,
+    selectDefaultPlan,
+    defaultCirclePlan,
+    setCirclePlanSelected,
+  } = useShoppingCart();
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
   const defaultPlanSellingPrice = defaultCirclePlan?.currentSellingPrice;
