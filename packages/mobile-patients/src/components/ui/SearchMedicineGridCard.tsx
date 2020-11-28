@@ -251,11 +251,7 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
     const finalPrice = price - Number(special_price) ? Number(special_price) : price;
     const cashback = getCareCashback(Number(finalPrice), type_id);
     if (!!cashback && type_id) {
-      return (
-        <CareCashbackBanner
-          bannerText={`Extra Care ₹${cashback.toFixed(2)} Cashback`}
-        />
-      );
+      return <CareCashbackBanner bannerText={`extra ₹${cashback.toFixed(2)} cashback`} />;
     } else {
       return <></>;
     }

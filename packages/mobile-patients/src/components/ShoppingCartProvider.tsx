@@ -117,6 +117,7 @@ export interface ShoppingCartContextProps {
   getCartItemQty: (id: string) => number;
   cartTotal: number;
   cartTotalCashback: number;
+  cartDiscountTotal: number; //consider the special price or price
   cartTotalOfRxProducts: number;
   couponDiscount: number;
   couponProducts: CouponProducts[];
@@ -211,6 +212,7 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   getCartItemQty: () => 0,
   cartTotal: 0,
   cartTotalCashback: 0,
+  cartDiscountTotal: 0,
   cartTotalOfRxProducts: 0,
   couponDiscount: 0,
   productDiscount: 0,
@@ -537,12 +539,22 @@ export const ShoppingCartProvider: React.FC = (props) => {
       .toFixed(2)
   );
 
+  const cartDiscountTotal: ShoppingCartContextProps['cartDiscountTotal'] = parseFloat(
+    cartItems
+      .reduce(
+        (currTotal, currItem) =>
+          currTotal + currItem.quantity * (currItem?.specialPrice! || currItem.price),
+        0
+      )
+      .toFixed(2)
+  );
+
   const setCircleCashback: ShoppingCartContextProps['setCircleCashback'] = (circleCashback) => {
     _setCircleCashback(circleCashback);
   };
 
   const cartTotalCashback: ShoppingCartContextProps['cartTotalCashback'] = parseFloat(
-    cartItems.reduce((cbTotal, currItem) => cbTotal + currItem.circleCashbackAmt, 0).toFixed(2)
+    cartItems.reduce((cbTotal, currItem) => cbTotal + currItem?.circleCashbackAmt!, 0).toFixed(2)
   );
 
   const cartTotalOfRxProducts: ShoppingCartContextProps['cartTotalOfRxProducts'] = parseFloat(
@@ -813,6 +825,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
         cartTotal, // MRP Total
         cartTotalCashback,
         cartTotalOfRxProducts,
+        cartDiscountTotal, //discounted or price total
         grandTotal,
         couponDiscount,
         productDiscount,

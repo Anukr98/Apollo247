@@ -1782,7 +1782,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             <View style={[styles.rowSpaceBetweenStyle]}>
               <View style={{ flexDirection: 'row', flex: 0.8 }}>
                 <CircleLogo
-                  style={{ resizeMode: 'contain', height: 20, width: 35, alignSelf: 'center' }}
+                  style={{
+                    resizeMode: 'contain',
+                    height: 25,
+                    width: 37,
+                    alignSelf: 'center',
+                    marginRight: 5,
+                  }}
                 />
                 <Text style={[styles.blueTextStyle, { color: theme.colors.APP_GREEN }]}>
                   Membership discount
@@ -1868,7 +1874,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               style={{
                 justifyContent: 'flex-end',
                 height: 32,
-                width: 70,
+                width: 60,
                 resizeMode: 'contain',
                 marginRight: -12,
               }}
@@ -1881,6 +1887,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             ...theme.fonts.IBMPlexSansMedium(imagePosition == 'left' ? 14 : 12),
             lineHeight: 16,
             alignSelf: 'center',
+            marginLeft: imagePosition == 'left' ? 10 : 0,
+            fontWeight: imagePosition == 'left' ? 'bold' : 'normal',
           }}
         >
           {leftText}
@@ -1931,10 +1939,11 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           style={{
             marginHorizontal: 15,
             color: theme.colors.APP_GREEN,
-            ...theme.fonts.IBMPlexSansMedium(11),
+            ...theme.fonts.IBMPlexSansMedium(10.5),
             marginVertical: 2,
             lineHeight: 24,
             alignSelf: 'flex-start',
+            width: '91%',
           }}
         >
           {string.diagnostics.cashOnDeliverySubText}
