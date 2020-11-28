@@ -68,7 +68,6 @@ import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { CircleHeading } from '@aph/mobile-patients/src/components/ui/CircleHeading';
-import { CircleBannerComponent } from '@aph/mobile-patients/src/components/ui/CircleBannerComponent';
 import {
   GetSubscriptionsOfUserByStatus,
   GetSubscriptionsOfUserByStatusVariables,
@@ -562,16 +561,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     props.navigation.navigate(AppRoutes.MedAndTestCart);
   };
 
-  const renderCircleBanners = () => (
-    <CircleBannerComponent
-      navigation={props.navigation}
-      comingFrom={'diagnostics'}
-      nonSubscribedText={string.circleDiagnostics.nonSubscribedText}
-      nonSubscribedSubText={string.circleDiagnostics.nonSubscribedSubText}
-      planActivationCallback={() => getUserSubscriptionsByStatus()}
-    />
-  );
-
   const getUserSubscriptionsByStatus = async () => {
     try {
       const query: GetSubscriptionsOfUserByStatusVariables = {
@@ -699,7 +688,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             : selectedTab === tabs[1].title
             ? renderPreparation()
             : renderTestDescription()}
-          {promoteCircle && renderCircleBanners()}
           {promoteCircle && <View style={{ marginBottom: 30 }}></View>}
           <View style={{ height: screenHeight * 0.2 }} />
         </ScrollView>

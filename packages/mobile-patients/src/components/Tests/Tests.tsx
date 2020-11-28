@@ -1,6 +1,7 @@
 import {
   LocationData,
   useAppCommonData,
+  bannerType,
 } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import stripHtml from 'string-strip-html';
@@ -42,6 +43,7 @@ import {
   GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID,
   GET_DIAGNOSTIC_HOME_PAGE_ITEMS,
   GET_SUBSCRIPTIONS_OF_USER_BY_STATUS,
+  GET_ALL_GROUP_BANNERS_OF_USER,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
@@ -132,11 +134,12 @@ import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
-import { CircleBannerComponent } from '@aph/mobile-patients/src/components/ui/CircleBannerComponent';
 import {
   GetSubscriptionsOfUserByStatus,
   GetSubscriptionsOfUserByStatusVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
+import { CarouselBanners } from '@aph/mobile-patients/src/components/ui/CarouselBanners';
+import { getUserBannersList } from '@aph/mobile-patients/src/helpers/clientCalls';
 
 const { width: winWidth } = Dimensions.get('window');
 const styles = StyleSheet.create({
@@ -341,6 +344,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setDiagnosticLocationServiceable,
     circleSubscription,
     setCircleSubscription,
+    setBannerData,
+    bannerData,
   } = useAppCommonData();
 
   const [ordersFetched, setOrdersFetched] = useState<
@@ -468,6 +473,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
         .catch((e) => {
           CommonBugFender('Tests_ordersRefetch_PATIENT_CHANGE', e);
         });
+    }
+    if (currentPatient) {
+      getUserBanners();
     }
   }, [currentPatient]);
 
@@ -600,6 +608,34 @@ export const Tests: React.FC<TestsProps> = (props) => {
         });
     }
   }, []);
+
+  const getUserBanners = async () => {
+    const res: any = await getUserBannersList(
+      client,
+      currentPatient,
+      string.banner_context.DIAGNOSTIC_HOME
+    );
+    if (res) {
+      setBannerData && setBannerData(res);
+    } else {
+      setBannerData && setBannerData([]);
+    }
+  };
+
+  const renderCarouselBanners = () => {
+    const showBanner = bannerData && bannerData.length > 0;
+    if (showBanner) {
+      return (
+        <CarouselBanners
+          navigation={props.navigation}
+          planActivationCallback={() => {
+            getUserBanners();
+            getUserSubscriptionsByStatus();
+          }}
+        />
+      );
+    }
+  };
 
   const setWebEnageEventForItemViewedOnLanding = (name: string, id: string, type: string) => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_ITEM_CLICKED_ON_LANDING] = {
@@ -2677,16 +2713,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
-  const renderCircleBanners = () => (
-    <CircleBannerComponent
-      navigation={props.navigation}
-      comingFrom={'diagnostics'}
-      nonSubscribedText={string.circleDiagnostics.nonSubscribedText}
-      nonSubscribedSubText={string.circleDiagnostics.nonSubscribedSubText}
-      planActivationCallback={() => getUserSubscriptionsByStatus()}
-    />
-  );
-
   const renderSections = () => {
     return (
       <TouchableOpacity
@@ -2703,7 +2729,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         {renderYourOrders()}
         <>
           {renderHotSellers()}
-          {renderCircleBanners()}
+          {renderCarouselBanners()}
           <View style={{ marginTop: 20 }}></View>
           {/* {renderBrowseByCondition()} */}
           {renderTestPackages()}

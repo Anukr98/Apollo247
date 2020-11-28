@@ -35,20 +35,16 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { GET_PLAN_DETAILS_BY_PLAN_ID } from '@aph/mobile-patients/src/graphql/profiles';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { HdfcConnectPopup } from '@aph/mobile-patients/src/components/SubscriptionMembership/HdfcConnectPopup';
+import { Overlay } from 'react-native-elements';
 
 interface CarouselProps extends NavigationScreenProps {
-  setShowHdfcConnectPopup?: ((showPopup: boolean, benefitId: string) => void) | null;
   circleActivated?: boolean;
   planActivationCallback?: (() => void) | null;
   circlePlanValidity?: string;
 }
 export const CarouselBanners: React.FC<CarouselProps> = (props) => {
-  const {
-    setShowHdfcConnectPopup,
-    circleActivated,
-    planActivationCallback,
-    circlePlanValidity,
-  } = props;
+  const { circleActivated, planActivationCallback, circlePlanValidity } = props;
   const [slideIndex, setSlideIndex] = useState(0);
   const { currentPatient } = useAllCurrentPatients();
   const hdfc_values = string.Hdfc_values;
@@ -61,6 +57,9 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
   const { setCirclePlanSelected, defaultCirclePlan, selectDefaultPlan } = useShoppingCart();
   const [showCirclePlans, setShowCirclePlans] = useState<boolean>(false);
   const [membershipPlans, setMembershipPlans] = useState<any>([]);
+  const [showHdfcConnectPopup, setShowHdfcConnectPopup] = useState<boolean>(false);
+  const [benefitId, setbenefitId] = useState<string>('');
+
   const client = useApolloClient();
 
   useEffect(() => {
@@ -98,7 +97,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
 
   const renderHdfcSliderItem = ({ item }) => {
     const { cta_action } = item;
-
+    const fineText = item?.banner_template_info?.fineText;
     const bannerUri = getMobileURL(item.banner);
     let imageHeight = 144;
     Image.getSize(
@@ -136,7 +135,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
           {item?.banner_template_info?.Button ? (
             <View style={styles.bottomView}>
               {renderUpgradeBtn(item)}
-              <Text style={styles.regularText}>{item?.banner_template_info?.fineText}</Text>
+              {fineText && <Text style={styles.regularText}>{fineText}</Text>}
             </View>
           ) : null}
         </ImageBackground>
@@ -191,50 +190,52 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
       } else {
         setShowCirclePlans(true);
       }
-    }
-    if (type == hdfc_values.REDIRECT) {
-      if (action == hdfc_values.SPECIALITY_LISTING) {
-        props.navigation.navigate(AppRoutes.DoctorSearch);
-      } else if (action == hdfc_values.PHARMACY_LANDING) {
-        props.navigation.navigate('MEDICINES');
-      } else if (action == hdfc_values.PHR) {
-        props.navigation.navigate('HEALTH RECORDS');
-      } else if (action == hdfc_values.DOC_LISTING_WITH_PAYROLL_DOCS_SELECTED) {
-        props.navigation.navigate(AppRoutes.DoctorSearch);
-      } else if (action == hdfc_values.DIAGNOSTICS_LANDING) {
-        props.navigation.navigate('TESTS');
-      } else if (action == hdfc_values.MEMBERSHIP_DETAIL) {
-        props.navigation.navigate(AppRoutes.MembershipDetails, {
-          membershipType: g(hdfcUserSubscriptions, 'name'),
-          isActive: g(hdfcUserSubscriptions, 'isActive'),
-        });
-      } else if ((action = hdfc_values.DIETECIAN_LANDING)) {
-        props.navigation.navigate('DoctorSearchListing', {
-          specialities: hdfc_values.DIETICS_SPECIALITY_NAME,
-        });
+    } else {
+      if (type == hdfc_values.REDIRECT) {
+        if (action == hdfc_values.SPECIALITY_LISTING) {
+          props.navigation.navigate(AppRoutes.DoctorSearch);
+        } else if (action == hdfc_values.PHARMACY_LANDING) {
+          props.navigation.navigate('MEDICINES');
+        } else if (action == hdfc_values.PHR) {
+          props.navigation.navigate('HEALTH RECORDS');
+        } else if (action == hdfc_values.DOC_LISTING_WITH_PAYROLL_DOCS_SELECTED) {
+          props.navigation.navigate(AppRoutes.DoctorSearch);
+        } else if (action == hdfc_values.DIAGNOSTICS_LANDING) {
+          props.navigation.navigate('TESTS');
+        } else if (action == hdfc_values.MEMBERSHIP_DETAIL) {
+          props.navigation.navigate(AppRoutes.MembershipDetails, {
+            membershipType: g(hdfcUserSubscriptions, 'name'),
+            isActive: g(hdfcUserSubscriptions, 'isActive'),
+          });
+        } else if ((action = hdfc_values.DIETECIAN_LANDING)) {
+          props.navigation.navigate('DoctorSearchListing', {
+            specialities: hdfc_values.DIETICS_SPECIALITY_NAME,
+          });
+        } else {
+          props.navigation.navigate(AppRoutes.ConsultRoom);
+        }
+      } else if (type == hdfc_values.CALL_API) {
+        if (action == hdfc_values.CALL_EXOTEL_API) {
+          const benefits = g(hdfcUserSubscriptions, 'benefits');
+          const currentBenefit = benefits.filter((value) => {
+            return g(value, 'benefitCtaAction', 'type') === type;
+          });
+          const availableCount = currentBenefit.length ? currentBenefit[0].availableCount : 0;
+          const benefit_id = currentBenefit.length ? currentBenefit[0]._id : '';
+          setbenefitId(benefit_id);
+          if (availableCount > 0) {
+            setShowHdfcConnectPopup(true);
+          } else {
+            renderAlert(
+              'Hey, looks like you have exhausted the monthly usage limit for this benefit. If you feel this is an error, please raise a ticket on the Help section.'
+            );
+          }
+        }
+      } else if (type == hdfc_values.WHATSAPP_OPEN_CHAT) {
+        Linking.openURL(`whatsapp://send?text=${message}&phone=91${action}`);
       } else {
         props.navigation.navigate(AppRoutes.ConsultRoom);
       }
-    } else if (type == hdfc_values.CALL_API) {
-      if (action == hdfc_values.CALL_EXOTEL_API) {
-        const benefits = g(hdfcUserSubscriptions, 'benefits');
-        const currentBenefit = benefits.filter((value) => {
-          return g(value, 'benefitCtaAction', 'type') === type;
-        });
-        const availableCount = currentBenefit.length ? currentBenefit[0].availableCount : 0;
-        const benefit_id = currentBenefit.length ? currentBenefit[0]._id : '';
-        if (availableCount > 0) {
-          setShowHdfcConnectPopup && setShowHdfcConnectPopup(true, benefit_id);
-        } else {
-          renderAlert(
-            'Hey, looks like you have exhausted the monthly usage limit for this benefit. If you feel this is an error, please raise a ticket on the Help section.'
-          );
-        }
-      }
-    } else if (type == hdfc_values.WHATSAPP_OPEN_CHAT) {
-      Linking.openURL(`whatsapp://send?text=${message}&phone=91${action}`);
-    } else {
-      props.navigation.navigate(AppRoutes.ConsultRoom);
     }
   };
 
@@ -291,19 +292,24 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
           loop={true}
           autoplay={false}
         />
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'center',
-            position: 'absolute',
-            bottom: 10,
-            alignSelf: 'center',
-          }}
+        {bannerData && bannerData.length > 1 ? (
+          <View style={styles.sliderDotsContainer}>
+            {bannerData?.map((_, index) =>
+              index == slideIndex ? renderDot(true) : renderDot(false)
+            )}
+          </View>
+        ) : null}
+        <Overlay
+          isVisible={showHdfcConnectPopup}
+          windowBackgroundColor={'rgba(0, 0, 0, 0.31)'}
+          overlayStyle={styles.overlayStyle}
+          onRequestClose={() => setShowHdfcConnectPopup(false)}
         >
-          {bannerData?.map((_, index) =>
-            index == slideIndex ? renderDot(true) : renderDot(false)
-          )}
-        </View>
+          <HdfcConnectPopup
+            onClose={() => setShowHdfcConnectPopup(false)}
+            benefitId={benefitId || ''}
+          />
+        </Overlay>
       </View>
     );
   }
@@ -370,7 +376,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 10,
     paddingHorizontal: 10,
-    height: 40,
+    height: 35,
     ...theme.viewStyles.cardViewStyle,
     zIndex: 1,
     justifyContent: 'center',
@@ -386,5 +392,21 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('R', 8, theme.colors.LIGHT_BLUE),
     left: 12,
     marginTop: 2,
+  },
+  sliderDotsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    position: 'absolute',
+    bottom: 10,
+    alignSelf: 'center',
+  },
+  overlayStyle: {
+    width: width,
+    height: 'auto',
+    padding: 0,
+    backgroundColor: 'transparent',
+    elevation: 0,
+    flex: 1,
+    justifyContent: 'center',
   },
 });
