@@ -2034,13 +2034,3 @@ const replaceString = (str: string, match:any, fn:any) => {
   }
   return result;
 };
-
-export const reactStringReplace = (source: any, match:any, fn:any) => {
-  if (!Array.isArray(source)) source = [source];
-
-  return flatten(
-    source.map(function(x: any) {
-      return isString(x) ? replaceString(x, match, fn) : x;
-    })
-  );
-};

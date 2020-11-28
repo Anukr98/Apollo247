@@ -541,7 +541,8 @@
       "HDFCFreeMedClick": "HDFCFreeMedClick"
     },
     "ONE_TOUCH": "ONE-TOUCH",
-    "UPGRADE_CIRCLE": "UPGRADE_CIRCLE"
+    "UPGRADE_CIRCLE": "UPGRADE_CIRCLE",
+    "MEMBERSHIP_DETAIL_CIRCLE": "MEMBERSHIP_DETAIL_CIRCLE"
   },
   "symptomChecker": {
     "howItWorks": "HOW IT WORKS?",

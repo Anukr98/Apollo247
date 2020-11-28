@@ -19,11 +19,7 @@ import {
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import {
-  g,
-  postWebEngageEvent,
-  reactStringReplace,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -41,6 +37,7 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { CommonBugFender } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { HdfcConnectPopup } from '@aph/mobile-patients/src/components/SubscriptionMembership/HdfcConnectPopup';
 import { Overlay } from 'react-native-elements';
+import { Circle } from '@aph/mobile-patients/src/strings/strings.json';
 
 interface CarouselProps extends NavigationScreenProps {
   circleActivated?: boolean;
@@ -103,7 +100,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     const { cta_action } = item;
     const fineText = item?.banner_template_info?.fineText;
     const bannerUri = getMobileURL(item.banner);
-    let imageHeight = 144;
+    let imageHeight = 160;
     Image.getSize(
       bannerUri,
       (width, height) => {
@@ -113,6 +110,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
         console.log(error);
       }
     );
+    const isDynamicBanner = item?.banner_template_info?.headerText1;
     return (
       <TouchableOpacity
         activeOpacity={1}
@@ -126,22 +124,23 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
             height: imageHeight,
             width: '100%',
           }}
+          imageStyle={{
+            borderRadius: isDynamicBanner ? 7 : 0,
+          }}
           source={{
             uri: bannerUri,
           }}
-          resizeMode={'cover'}
+          resizeMode={isDynamicBanner ? 'cover' : 'contain'}
         >
           <View style={styles.bannerContainer}>
-            <View style={styles.row}>
-              {renderBannerText(item?.banner_template_info?.headerText)}
-            </View>
+            {renderBannerText(item?.banner_template_info?.headerText1)}
+            {renderBannerText(item?.banner_template_info?.headerText2)}
+            {renderBannerText(item?.banner_template_info?.headerText3)}
           </View>
-          {item?.banner_template_info?.Button ? (
-            <View style={styles.bottomView}>
-              {renderUpgradeBtn(item)}
-              {fineText && <Text style={styles.regularText}>{fineText}</Text>}
-            </View>
-          ) : null}
+          <View style={styles.bottomView}>
+            {renderUpgradeBtn(item)}
+            {fineText && <Text style={styles.regularText}>{fineText}</Text>}
+          </View>
         </ImageBackground>
       </TouchableOpacity>
     );
@@ -149,60 +148,79 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
 
   const renderUpgradeBtn = (item: bannerType) => {
     const { cta_action } = item;
-
-    return (
-      <TouchableOpacity
-        style={styles.upgradeBtnView}
-        onPress={() =>
-          handleOnBannerClick(cta_action?.type, cta_action?.meta?.action, cta_action?.meta?.message)
-        }
-      >
-        <View style={styles.row}>
-          <Text
-            style={
-              cta_action?.type === hdfc_values.CALL_API
-                ? theme.viewStyles.text('SB', 12, theme.colors.APP_YELLOW)
-                : theme.viewStyles.text('SB', 9, theme.colors.APP_YELLOW)
-            }
-          >
-            {item?.banner_template_info?.Button}
-          </Text>
-        </View>
-      </TouchableOpacity>
-    );
+    const btnTxt = item?.banner_template_info?.Button;
+    const btnSubTxt = item?.banner_template_info?.ButtonSubText;
+    if (btnTxt || btnSubTxt) {
+      return (
+        <TouchableOpacity
+          style={styles.upgradeBtnView}
+          onPress={() =>
+            handleOnBannerClick(
+              cta_action?.type,
+              cta_action?.meta?.action,
+              cta_action?.meta?.message
+            )
+          }
+        >
+          {btnTxt && renderBannerButtonText(btnTxt, cta_action, false)}
+          {btnSubTxt && renderBannerButtonText(btnSubTxt, cta_action, true)}
+        </TouchableOpacity>
+      );
+    }
   };
 
   const renderBannerText = (str: string) => {
     if (str?.includes('<circle>')) {
-      const rightText = str.split('<circle>')[1];
-      const leftText = str.split('<circle>')[0];
-      if (rightText && leftText) {
-        return (
-          <View style={[styles.headerTitleContainer, { alignItems: 'center' }]}>
-            <Text style={[styles.bannerTitle, { width: 'auto' }]}>{leftText}</Text>
-            <CircleLogoWhite style={styles.circleLogo} />
-            <Text style={[styles.bannerTitle, { width: 'auto' }]}>{rightText}</Text>
-          </View>
-        );
-      }
-      if (rightText) {
-        return (
-          <View style={styles.headerTitleContainer}>
-            <CircleLogoWhite style={styles.circleLogo} />
-            <Text style={styles.bannerTitle}>{rightText}</Text>
-          </View>
-        );
-      }
-      if (leftText) {
-        return (
-          <View style={styles.headerTitleContainer}>
-            <Text style={styles.bannerTitle}>{leftText}</Text>
-            <CircleLogoWhite style={styles.circleLogo} />
-          </View>
-        );
-      }
+      const arrayOfStrings = str.split(' ');
+      console.log('arrayOfStrings', arrayOfStrings);
+      var headerText = arrayOfStrings.map((str, i) => {
+        if (str == '<circle>') {
+          return <CircleLogoWhite style={styles.circleLogo} />;
+        } else {
+          return <Text style={styles.bannerTitle}>{str} </Text>;
+        }
+      });
+
+      return <View style={styles.row}>{headerText}</View>;
     }
     return <Text style={styles.bannerTitle}>{str}</Text>;
+  };
+
+  const renderBannerButtonText = (str: string, action: any, containsSubText: boolean) => {
+    const textColor = containsSubText ? theme.colors.LIGHT_BLUE : theme.colors.APP_YELLOW;
+    if (str?.includes('<circle>')) {
+      const arrayOfStrings = str.split(' ');
+      var headerText = arrayOfStrings.map((str, i) => {
+        if (str == '<circle>') {
+          return <CircleLogo style={styles.smallCircleLogo} />;
+        } else {
+          return (
+            <Text
+              style={
+                action?.type === hdfc_values.CALL_API
+                  ? theme.viewStyles.text('SB', 12, textColor)
+                  : theme.viewStyles.text('SB', containsSubText ? 8 : 9, textColor)
+              }
+            >
+              {str}
+            </Text>
+          );
+        }
+      });
+
+      return <View style={styles.row}>{headerText}</View>;
+    }
+    return (
+      <Text
+        style={
+          action?.type === hdfc_values.CALL_API
+            ? theme.viewStyles.text('SB', 12, textColor)
+            : theme.viewStyles.text('SB', containsSubText ? 8 : 9, textColor)
+        }
+      >
+        {str}
+      </Text>
+    );
   };
 
   const handleOnBannerClick = (type: any, action: any, message: any) => {
@@ -244,9 +262,13 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
             membershipType: g(hdfcUserSubscriptions, 'name'),
             isActive: g(hdfcUserSubscriptions, 'isActive'),
           });
-        } else if ((action = hdfc_values.DIETECIAN_LANDING)) {
+        } else if (action == hdfc_values.DIETECIAN_LANDING) {
           props.navigation.navigate('DoctorSearchListing', {
             specialities: hdfc_values.DIETICS_SPECIALITY_NAME,
+          });
+        } else if (action == hdfc_values.MEMBERSHIP_DETAIL_CIRCLE) {
+          props.navigation.navigate(AppRoutes.MembershipDetails, {
+            membershipType: Circle.planName,
           });
         } else {
           props.navigation.navigate(AppRoutes.ConsultRoom);
@@ -377,7 +399,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 28,
     marginBottom: 30,
     padding: 0,
-    height: 140,
+    height: 160,
     width: 330,
     alignSelf: 'center',
   },
@@ -386,7 +408,6 @@ const styles = StyleSheet.create({
   },
   bannerTitle: {
     ...theme.viewStyles.text('M', 16, theme.colors.WHITE),
-    width: '60%',
   },
   sliderDots: {
     height: 6,
@@ -413,10 +434,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 10,
     paddingHorizontal: 10,
-    height: 35,
+    paddingVertical: 4,
     ...theme.viewStyles.cardViewStyle,
     zIndex: 1,
     justifyContent: 'center',
+    minHeight: 35,
   },
   upgradeText: {
     ...theme.viewStyles.text('SB', 12, theme.colors.APP_YELLOW),
@@ -447,7 +469,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerTitleContainer: {
-    width: '62%',
     flexDirection: 'row',
     flex: 1,
     flexWrap: 'wrap',
