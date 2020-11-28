@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { Down, CircleLogo } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Down, CircleLogo, CouponIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 
 export interface SavingsProps {}
 
@@ -15,11 +15,18 @@ export const Savings: React.FC<SavingsProps> = (props) => {
     cartTotalCashback,
     circleMembershipCharges,
     coupon,
+    cartTotal,
   } = useShoppingCart();
   const deliveryFee = AppConfig.Configuration.DELIVERY_CHARGES;
   const [showCareDetails, setShowCareDetails] = useState(true);
+  // const careTotal = !!coupon
+  //   ? Number(deliveryFee) + Number(productDiscount) + Number(couponDiscount)
+  //   : isCircleSubscription || circleMembershipCharges
+  //   ? Number(deliveryFee) + Number(productDiscount) + cartTotalCashback
+  //   : Number(productDiscount);
+
   const careTotal = !!coupon
-    ? Number(deliveryFee) + Number(productDiscount) + Number(couponDiscount)
+    ? Number(cartTotal > 200 ? 0 : deliveryFee) + Number(productDiscount) + Number(couponDiscount)
     : isCircleSubscription || circleMembershipCharges
     ? Number(deliveryFee) + Number(productDiscount) + cartTotalCashback
     : Number(productDiscount);
