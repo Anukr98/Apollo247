@@ -564,12 +564,14 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
 
   const renderHdfcMembershipDetails = () => {
     return (
-      <View>
-        {isCanUpgradeTo
-          ? renderSubscribeContent()
-          : isActivePlan
-          ? renderTabComponent()
-          : renderInactivePlansContainer()}
+      <View style={{ flex: 1 }}>
+        <ScrollView>
+          {isCanUpgradeTo
+            ? renderSubscribeContent()
+            : isActivePlan
+            ? renderTabComponent()
+            : renderInactivePlansContainer()}
+        </ScrollView>
         {renderBottomContainer()}
       </View>
     );
