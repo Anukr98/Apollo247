@@ -2,10 +2,12 @@ import {
   MedicineIcon,
   MedicineRxIcon,
   ExpressDeliveryLogo,
+  CircleDiscountBadge,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { CareCashbackBanner } from './CareCashbackBanner';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import {
   StyleSheet,
   Text,
@@ -112,6 +114,14 @@ const styles = StyleSheet.create({
     height: 40,
     width: 40,
   },
+  discountBadgeText: {
+    color: 'white',
+    position: 'absolute',
+    left: 10,
+    ...theme.fonts.IBMPlexSansMedium(12),
+  },
+  discountBadgeIcon: { height: 15, width: 70 },
+  discountBadgeView: { position: 'absolute', top: 0 },
 });
 
 export interface Props extends MedicineProduct {
@@ -223,11 +233,13 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
     const off_text = discount ? ' ' + discount + '%off' : '';
     return is_in_stock ? (
       <View style={{ flexDirection: 'row' }}>
-        <Text style={styles.mrp}>{'MRP '}</Text>
+        {/* <Text style={styles.mrp}>{'MRP '}</Text> */}
         {!!special_price && [
           <Text style={styles.specialpriceTextStyle}>
             {'('}
-            <Text style={{ textDecorationLine: 'line-through' }}>{`Rs. ${price}`}</Text>
+            <Text
+              style={{ textDecorationLine: 'line-through' }}
+            >{`${string.common.Rs}${price}`}</Text>
             {')'}
           </Text>,
           <Text style={styles.offTextStyle}>{off_text}</Text>,
@@ -243,7 +255,10 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
         {'Out Of Stock'}
       </Text>
     ) : (
-      <Text style={styles.priceTextCollapseStyle}>Rs. {discount ? special_price : price}</Text>
+      <Text style={styles.priceTextCollapseStyle}>
+        {string.common.Rs}
+        {discount ? special_price : price}
+      </Text>
     );
   };
 
@@ -251,7 +266,26 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
     const finalPrice = price - Number(special_price) ? Number(special_price) : price;
     const cashback = getCareCashback(Number(finalPrice), type_id);
     if (!!cashback && type_id) {
-      return <CareCashbackBanner bannerText={`extra ₹${cashback.toFixed(2)} cashback`} />;
+      return (
+        <CareCashbackBanner
+          bannerText={`extra ${string.common.Rs}${cashback.toFixed(2)} cashback`}
+        />
+      );
+    } else {
+      return <></>;
+    }
+  };
+
+  const renderOfferTag = () => {
+    const finalPrice = price - Number(special_price) ? Number(special_price) : price;
+    const cashback = getCareCashback(Number(finalPrice), type_id);
+    if (!!cashback && type_id) {
+      return (
+        <View style={styles.discountBadgeView}>
+          <CircleDiscountBadge style={styles.discountBadgeIcon} />
+          <Text style={styles.discountBadgeText}>OFFER</Text>
+        </View>
+      );
     } else {
       return <></>;
     }
@@ -271,6 +305,7 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
       style={[styles.containerStyle, containerStyle, { zIndex: -1 }]}
       onPress={() => onPress()}
     >
+      {renderOfferTag()}
       {is_express === 'Yes' && renderExpressFlag()}
       <View style={styles.medicineIconAndNameViewStyle}>
         {renderMedicineIcon()}

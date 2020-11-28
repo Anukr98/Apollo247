@@ -16,6 +16,7 @@ import {
 import { AddToCartButtons } from '@aph/mobile-patients/src/components/Medicines/AddToCartButtons';
 import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
 import { MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -125,7 +126,11 @@ export const SearchMedicineCard: React.FC<Props> = (props) => {
     const finalPrice = price - Number(special_price) ? Number(special_price) : price;
     const cashback = getCareCashback(Number(finalPrice), type_id);
     if (!!cashback && type_id) {
-      return <CareCashbackBanner bannerText={`extra ₹${cashback.toFixed(2)} cashback`} />;
+      return (
+        <CareCashbackBanner
+          bannerText={`extra ${string.common.Rs}${cashback.toFixed(2)} cashback`}
+        />
+      );
     } else {
       return <></>;
     }
@@ -205,14 +210,19 @@ export const SearchMedicineCard: React.FC<Props> = (props) => {
       <Text style={styles.outOfStockStyle}>{'Out Of Stock'}</Text>
     ) : (
       <View style={{ flexDirection: 'row' }}>
-        {!discount && <Text style={styles.priceTextCollapseStyle}>{'MRP '}</Text>}
-        <Text style={styles.priceTextCollapseStyle}>Rs. {discount ? special_price : price}</Text>
+        {/* {!discount && <Text style={styles.priceTextCollapseStyle}>{'MRP '}</Text>} */}
+        <Text style={styles.priceTextCollapseStyle}>
+          {string.common.Rs}
+          {discount ? special_price : price}
+        </Text>
         {!!special_price && (
           <>
-            {!!discount && <Text style={styles.priceTextCollapseStyle}>{'   MRP'}</Text>}
+            {/* {!!discount && <Text style={styles.priceTextCollapseStyle}>{'   MRP'}</Text>} */}
             <Text style={[styles.priceTextCollapseStyle, { marginLeft: 4, letterSpacing: 0 }]}>
               {'('}
-              <Text style={{ textDecorationLine: 'line-through' }}>{`Rs. ${price}`}</Text>
+              <Text
+                style={{ textDecorationLine: 'line-through' }}
+              >{`${string.common.Rs}${price}`}</Text>
               {')'}
             </Text>
             <Text style={styles.offTextStyle}>{off_text}</Text>

@@ -1358,3 +1358,7 @@ export const MaleCircleIcon: React.FC<IconProps> = (props) => (
     source={require('./icons/maleCircleIcon.png')}
   />
 );
+
+export const CircleDiscountBadge: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('./icons/discountBadge.png')} />
+);
