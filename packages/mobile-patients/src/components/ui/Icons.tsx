@@ -1325,7 +1325,12 @@ export const OneApolloLogo: React.FC<IconProps> = (props) => (
 );
 
 export const CircleLogoWhite: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/circleLogoWhite.png')} />
+  <IconBase
+    resizeMode={'contain'}
+    size="md"
+    {...props}
+    source={require('./icons/circleLogoWhite.png')}
+  />
 );
 
 export const FemaleIcon: React.FC<IconProps> = (props) => (
