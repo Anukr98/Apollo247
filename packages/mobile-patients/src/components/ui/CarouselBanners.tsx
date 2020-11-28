@@ -224,7 +224,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
   };
 
   const handleOnBannerClick = (type: any, action: any, message: any) => {
-    const subscription_name = hdfcUserSubscriptions.name;
+    const subscription_name = hdfcUserSubscriptions?.name;
     const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_HOMEPAGE_CAROUSEL_CLICKED] = {
       'Patient UHID': g(currentPatient, 'uhid'),
       'Customer ID': g(currentPatient, 'id'),
@@ -232,7 +232,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
       'Mobile Number': g(currentPatient, 'mobileNumber'),
       'Date of Birth': g(currentPatient, 'dateOfBirth'),
       Email: g(currentPatient, 'emailAddress'),
-      HDFCMembershipLevel: subscription_name.substring(0, subscription_name.indexOf('+')),
+      HDFCMembershipLevel: subscription_name?.substring(0, subscription_name?.indexOf('+')),
       'Partner ID': g(currentPatient, 'partnerId'),
       HDFCMembershipState: !!g(hdfcUserSubscriptions, 'isActive') ? 'Active' : 'Inactive',
     };
@@ -276,11 +276,11 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
       } else if (type == hdfc_values.CALL_API) {
         if (action == hdfc_values.CALL_EXOTEL_API) {
           const benefits = g(hdfcUserSubscriptions, 'benefits');
-          const currentBenefit = benefits.filter((value) => {
+          const currentBenefit = benefits?.filter((value) => {
             return g(value, 'benefitCtaAction', 'type') === type;
           });
-          const availableCount = currentBenefit.length ? currentBenefit[0].availableCount : 0;
-          const benefit_id = currentBenefit.length ? currentBenefit[0]._id : '';
+          const availableCount = currentBenefit?.length ? currentBenefit?.[0].availableCount : 0;
+          const benefit_id = currentBenefit?.length ? currentBenefit?.[0]._id : '';
           setbenefitId(benefit_id);
           if (availableCount > 0) {
             setShowHdfcConnectPopup(true);

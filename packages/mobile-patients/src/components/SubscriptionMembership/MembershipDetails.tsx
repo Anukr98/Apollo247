@@ -579,7 +579,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
 
   const renderCircleBenefits = (circleBenefits: any) => {
     const totalSavingsDone = totalCircleSavings?.totalSavings + totalCircleSavings?.callsUsed;
-    return circleBenefits.map((value) => {
+    return circleBenefits?.map((value) => {
       const { headerContent, description, benefitCtaAction, icon, availableCount, _id } = value;
       const { action, message, type, webEngageEvent } = benefitCtaAction;
       return (
