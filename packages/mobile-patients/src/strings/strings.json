@@ -685,5 +685,10 @@
         "answer": "Not yet, but you can use your Circle cashback as Health Credits to re-order medicines or any healthcare products from Apollo 247."
       }
     ]
+  },
+  "banner_context": {
+    "HOME": "HOME",
+    "PHARMACY_HOME": "PHARMACY_HOME",
+    "DIAGNOSTIC_HOME": "DIAGNOSTIC_HOME"
   }
 }

@@ -93,15 +93,10 @@ import {
   CreateUserSubscriptionVariables,
 } from '@aph/mobile-patients/src/graphql/types/CreateUserSubscription';
 import {
-  GetAllGroupBannersOfUser,
-  GetAllGroupBannersOfUserVariables,
-} from '@aph/mobile-patients/src/graphql/types/GetAllGroupBannersOfUser';
-import {
   DEVICE_TYPE,
   Relation,
   STATUS,
   Gender,
-  UserState,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   saveDeviceToken,
@@ -168,7 +163,10 @@ import { ScrollView } from 'react-native-gesture-handler';
 import WebEngage from 'react-native-webengage';
 import { NavigationScreenProps } from 'react-navigation';
 import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails } from '../../graphql/types/getPatientPersonalizedAppointments';
-import { getPatientPersonalizedAppointmentList } from '../../helpers/clientCalls';
+import {
+  getPatientPersonalizedAppointmentList,
+  getUserBannersList,
+} from '@aph/mobile-patients/src/helpers/clientCalls';
 import { ConsultPersonalizedCard } from '../ui/ConsultPersonalizedCard';
 import VoipPushNotification from 'react-native-voip-push-notification';
 import { LocalStrings } from '@aph/mobile-patients/src/strings/LocalStrings';
@@ -431,7 +429,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const [showHdfcWidget, setShowHdfcWidget] = useState<boolean>(false);
   const [showHdfcConnectWidget, setShowHdfcConnectWidget] = useState<boolean>(false);
-  const [showHdfcConnectPopup, setShowHdfcConnectPopup] = useState<boolean>(false);
   const [hdfcToken, setHdfcToken] = useState<string | null>('');
   const [hdfcLoading, setHdfcLoading] = useState<boolean>(false);
   const [showHdfcOtpView, setShowHdfcOtpView] = useState<boolean>(false);
@@ -441,8 +438,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [showCongratulations, setShowCongratulations] = useState<boolean>(false);
   const [isValidOtp, setIsValidOtp] = useState<boolean>(false);
   const [showNotHdfcCustomer, setShowNotHdfcCustomer] = useState<boolean>(false);
-  const [slideIndex, setSlideIndex] = useState(0);
-  const [benefitId, setbenefitId] = useState<string>('');
   const [showSavingsAccountButton, setShowSavingsAccountButton] = useState<boolean>(false);
   const circleActivated = props.navigation.getParam('circleActivated');
   const circlePlanValidity = props.navigation.getParam('circlePlanValidity');
@@ -1065,39 +1060,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       });
   };
 
-  const getUserBanners = () => {
+  const getUserBanners = async () => {
     setHdfcLoading(true);
-    const mobile_number = g(currentPatient, 'mobileNumber');
-    mobile_number &&
-      client
-        .query<GetAllGroupBannersOfUser, GetAllGroupBannersOfUserVariables>({
-          query: GET_ALL_GROUP_BANNERS_OF_USER,
-          variables: { mobile_number, banner_context: 'HOME', user_state: UserState.LOGGED_IN },
-          fetchPolicy: 'no-cache',
-        })
-        .then((data) => {
-          setHdfcLoading(false);
-          const bannersData = g(data, 'data', 'GetAllGroupBannersOfUser', 'response');
-          const banners: bannerType[] = [];
-          if (bannersData && bannersData.length) {
-            bannersData.forEach((value) => {
-              const { _id, is_active, banner, cta_action, meta } = value;
-              banners.push({
-                _id,
-                is_active: !!is_active,
-                banner,
-                cta_action,
-                meta,
-                ...value,
-              });
-            });
-            setBannerData && setBannerData(banners);
-          }
-        })
-        .catch((e) => {
-          setHdfcLoading(false);
-          CommonBugFender('ConsultRoom_GetAllGroupBannersOfUser', e);
-        });
+    const res: any = await getUserBannersList(client, currentPatient, string.banner_context.HOME);
+    setHdfcLoading(false);
+    if (res) {
+      setBannerData && setBannerData(res);
+    } else {
+      setBannerData && setBannerData([]);
+    }
   };
 
   const getProductCashbackDetails = () => {
@@ -2327,10 +2298,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       return (
         <CarouselBanners
           navigation={props.navigation}
-          setShowHdfcConnectPopup={(show: boolean, benefitId: string) => {
-            setShowHdfcConnectPopup(show);
-            setbenefitId(benefitId);
-          }}
           planActivationCallback={() => {
             getUserSubscriptionsByStatus();
             getUserSubscriptionsWithBenefits();
@@ -2825,12 +2792,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         </>
       )}
       {showSpinner && <Spinner />}
-      {showHdfcConnectPopup && (
-        <HdfcConnectPopup
-          onClose={() => setShowHdfcConnectPopup(false)}
-          benefitId={benefitId || ''}
-        />
-      )}
       {isLocationSearchVisible && (
         <LocationSearchPopup
           onPressLocationSearchItem={() => {

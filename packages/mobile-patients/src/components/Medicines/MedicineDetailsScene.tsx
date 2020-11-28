@@ -85,7 +85,6 @@ import { CareCashbackBanner } from '@aph/mobile-patients/src/components/ui/CareC
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { CircleBannerComponent } from '@aph/mobile-patients/src/components/ui/CircleBannerComponent';
 import {
   GetSubscriptionsOfUserByStatusVariables,
   GetSubscriptionsOfUserByStatus,
@@ -975,7 +974,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         {renderNote()}
         {medicineOverview.length === 0 ? renderInfo() : null}
         {isCircleSubscribed && renderCircleSubscribeSuccess()}
-        {!!cashback && renderCircleBanners()}
+        {/* {!!cashback && renderCircleBanners()} */}
       </View>
     );
   };
@@ -1009,17 +1008,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       CommonBugFender('ConsultRoom_GetSubscriptionsOfUserByStatus', error);
     }
   };
-
-  const renderCircleBanners = () => (
-    <View style={{ marginBottom: 30 }}>
-      <CircleBannerComponent
-        navigation={props.navigation}
-        planActivationCallback={() => {
-          getUserSubscriptionsByStatus();
-        }}
-      />
-    </View>
-  );
 
   const renderCircleSubscribeSuccess = () => {
     return (

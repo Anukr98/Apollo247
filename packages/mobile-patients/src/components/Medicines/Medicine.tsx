@@ -152,6 +152,8 @@ import {
   GetSubscriptionsOfUserByStatus,
 } from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
+import { getUserBannersList } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { CarouselBanners } from '@aph/mobile-patients/src/components/ui/CarouselBanners';
 
 const { width: winWidth } = Dimensions.get('window');
 
@@ -243,6 +245,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setAxdcCode,
     axdcCode,
     circleSubscription,
+    setBannerData,
+    bannerData,
   } = useAppCommonData();
   const [ShowPopop, setShowPopop] = useState<boolean>(!!showUploadPrescriptionPopup);
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
@@ -513,11 +517,42 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       fetchRecommendedProducts();
       fetchLatestMedicineOrder();
     }
+    if (currentPatient) {
+      getUserBanners();
+    }
   }, [currentPatient]);
 
   useEffect(() => {
     fetchAddress();
   }, []);
+
+  const getUserBanners = async () => {
+    const res: any = await getUserBannersList(
+      client,
+      currentPatient,
+      string.banner_context.PHARMACY_HOME
+    );
+    if (res) {
+      setBannerData && setBannerData(res);
+    } else {
+      setBannerData && setBannerData([]);
+    }
+  };
+
+  const renderCarouselBanners = () => {
+    const showBanner = bannerData && bannerData.length > 0;
+    if (showBanner) {
+      return (
+        <CarouselBanners
+          navigation={props.navigation}
+          planActivationCallback={() => {
+            getUserBanners();
+            getUserSubscriptionsByStatus();
+          }}
+        />
+      );
+    }
+  };
 
   const formatAddressToLocation = (address: Address): LocationData => ({
     displayName: address.city!,
@@ -1473,20 +1508,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     }
   };
 
-  const renderCircleBanners = () => (
-    <CircleBannerComponent
-      navigation={props.navigation}
-      planActivationCallback={() => {
-        getUserSubscriptionsByStatus();
-      }}
-    />
-  );
-
   const renderDealsOfTheDay = (title: string, dealsOfTheDay: DealsOfTheDaySection[]) => {
     if (dealsOfTheDay.length == 0) return null;
     return (
       <View>
-        {renderCircleBanners()}
+        {renderCarouselBanners()}
         <View style={{ marginBottom: 10 }} />
         <SectionHeader leftText={title} />
         <FlatList
