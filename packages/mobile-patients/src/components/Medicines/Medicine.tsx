@@ -549,6 +549,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             getUserBanners();
             getUserSubscriptionsByStatus();
           }}
+          from={string.banner_context.PHARMACY_HOME}
         />
       );
     }
