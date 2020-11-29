@@ -428,7 +428,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [profileChange, setProfileChange] = useState<boolean>(false);
 
   const [showHdfcWidget, setShowHdfcWidget] = useState<boolean>(false);
-  const [showHdfcConnectWidget, setShowHdfcConnectWidget] = useState<boolean>(false);
+  const [showHdfcConnectWidget, setShowHdfcConnectWidget] = useState<boolean>(true);
   const [hdfcToken, setHdfcToken] = useState<string | null>('');
   const [hdfcLoading, setHdfcLoading] = useState<boolean>(false);
   const [showHdfcOtpView, setShowHdfcOtpView] = useState<boolean>(false);
@@ -2259,37 +2259,38 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     const isMembershipActive = g(hdfcUserSubscriptions, 'isActive');
     const minimumTransaction = g(hdfcUserSubscriptions, 'minTransactionValue');
     const membershipType = g(hdfcUserSubscriptions, 'name');
-    return isMembershipActive ? (
-      renderHdfcCarousel()
-    ) : (
-      <View style={styles.hdfcConnectContainer}>
-        {renderHdfcLogo()}
-        <View>
-          <Text style={theme.viewStyles.text('B', 24, '#02475B', 1, 35, 0.35)}>Hey !</Text>
-          <Text style={theme.viewStyles.text('SB', 15, '#01475B', 1, 20, 0.35)}>
-            You are missing out on a world of exclusive benefits
-          </Text>
-          <Text
-            style={{
-              ...theme.viewStyles.text('L', 13, '#01475B', 1, 20, 0.35),
-              marginTop: 10,
-            }}
-          >
-            {`Just book a Doctor Consultation or order Pharmacy products worth Rs ${minimumTransaction} or more to join the club!`}
-          </Text>
-          <TouchableOpacity
-            onPress={() => {
-              props.navigation.navigate(AppRoutes.MembershipDetails, {
-                membershipType,
-                isActive: isMembershipActive,
-              });
-            }}
-          >
-            <Text style={styles.hdfcConnectButton}>TELL ME MORE</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
+    return renderHdfcCarousel();
+    // return isMembershipActive ? (
+    //   renderHdfcCarousel()
+    // ) : (
+    //   <View style={styles.hdfcConnectContainer}>
+    //     {renderHdfcLogo()}
+    //     <View>
+    //       <Text style={theme.viewStyles.text('B', 24, '#02475B', 1, 35, 0.35)}>Hey !</Text>
+    //       <Text style={theme.viewStyles.text('SB', 15, '#01475B', 1, 20, 0.35)}>
+    //         You are missing out on a world of exclusive benefits
+    //       </Text>
+    //       <Text
+    //         style={{
+    //           ...theme.viewStyles.text('L', 13, '#01475B', 1, 20, 0.35),
+    //           marginTop: 10,
+    //         }}
+    //       >
+    //         {`Just book a Doctor Consultation or order Pharmacy products worth Rs ${minimumTransaction} or more to join the club!`}
+    //       </Text>
+    //       <TouchableOpacity
+    //         onPress={() => {
+    //           props.navigation.navigate(AppRoutes.MembershipDetails, {
+    //             membershipType,
+    //             isActive: isMembershipActive,
+    //           });
+    //         }}
+    //       >
+    //         <Text style={styles.hdfcConnectButton}>TELL ME MORE</Text>
+    //       </TouchableOpacity>
+    //     </View>
+    //   </View>
+    // );
   };
 
   const renderHdfcCarousel = () => {
@@ -2305,6 +2306,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           }}
           circleActivated={circleActivated}
           circlePlanValidity={circlePlanValidity}
+          from={string.banner_context.HOME}
         />
       );
     }
@@ -2740,9 +2742,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <Text style={styles.descriptionTextStyle}>{string.common.weAreHereToHelpYou}</Text>
               {isPersonalizedCard && renderAppointmentWidget()}
               {renderMenuOptions()}
-              {showHdfcWidget && (
+              {/* {showHdfcWidget && (
                 <View style={{ backgroundColor: '#f0f1ec' }}>{renderHdfcConnect()}</View>
-              )}
+              )} */}
               {showHdfcConnectWidget && (
                 <View style={{ backgroundColor: '#f0f1ec' }}>{renderHDFCConnectWidget()}</View>
               )}

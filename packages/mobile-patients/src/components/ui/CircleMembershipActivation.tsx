@@ -43,6 +43,7 @@ interface props extends NavigationScreenProps {
   healthCredits?: number;
   circlePaymentDone?: boolean;
   circlePlanValidity?: string;
+  from: string;
 }
 export const CircleMembershipActivation: React.FC<props> = (props) => {
   const {
@@ -52,6 +53,7 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
     healthCredits,
     circlePaymentDone,
     circlePlanValidity,
+    from,
   } = props;
   const planActivated = useRef<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
@@ -125,7 +127,7 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
             <Text style={styles.mediumText}>{healthCredits - defaultPlanSellingPrice}</Text>
           </Text>
         ) : null}
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => openCircleWebView()}>
           <Text style={styles.btnText}>{string.common.knowMore}</Text>
         </TouchableOpacity>
         <Button
@@ -138,6 +140,17 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
         />
       </View>
     );
+  };
+
+  const openCircleWebView = () => {
+    props.navigation.navigate(AppRoutes.CommonWebView, {
+      url:
+        from === string.banner_context.HOME
+          ? AppConfig.Configuration.CIRCLE_CONSULT_URL
+          : from === string.banner_context.DIAGNOSTIC_HOME
+          ? AppConfig.Configuration.CIRCLE_TEST_URL
+          : AppConfig.Configuration.CIRLCE_PHARMA_URL,
+    });
   };
 
   const onPurchasePlan = async () => {

@@ -632,6 +632,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             getUserBanners();
             getUserSubscriptionsByStatus();
           }}
+          from={string.banner_context.DIAGNOSTIC_HOME}
         />
       );
     }
