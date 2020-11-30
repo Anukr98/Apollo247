@@ -146,7 +146,6 @@ import {
 import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
-import { CircleBannerComponent } from '@aph/mobile-patients/src/components/ui/CircleBannerComponent';
 import {
   GetSubscriptionsOfUserByStatusVariables,
   GetSubscriptionsOfUserByStatus,

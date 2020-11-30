@@ -1150,18 +1150,6 @@ export const ExclamationGreen: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/info_blue.png')} />
 );
 
-export const LastStepIcon: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./icons/last_step.png')} />
-);
-
-export const SadFaceYellow: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./icons/sad_face_yellow.png')} />
-);
-
-export const ThumbsUp: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./icons/thumbs_up.png')} />
-);
-
 export const HdfcBannerSilver: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/Hdfc-Silver-Banner.png')} />
 );
