@@ -575,7 +575,6 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
   };
 
   const renderCarePlanAdded = () => {
-    circleWebEngageEvent(WebEngageEventName.VC_NON_CIRCLE_ADDS_CART);
     return (
       <View style={styles.planAddedContainer}>
         <View style={styles.spaceRow}>
