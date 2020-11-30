@@ -80,6 +80,7 @@ import {
   applyCouponClickedEvent,
   selectDeliveryAddressClickedEvent,
   uploadPrescriptionClickedEvent,
+  fireCircleBuyNowEvent,
 } from '@aph/mobile-patients/src/components/MedicineCart/Events';
 import {
   postPhamracyCartAddressSelectedFailure,
@@ -944,6 +945,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           onSelectMembershipPlan={(plan) => {
             if (plan && !coupon) {
               // if plan is selected
+              fireCircleBuyNowEvent(currentPatient);
               setCircleMembershipCharges && setCircleMembershipCharges(plan?.currentSellingPrice);
               setCircleSubPlanId && setCircleSubPlanId(plan?.subPlanId);
             } else {
@@ -952,6 +954,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
               setCircleMembershipCharges && setCircleMembershipCharges(0);
             }
           }}
+          source={'Pharma Cart'}
         />
       );
     } else {
