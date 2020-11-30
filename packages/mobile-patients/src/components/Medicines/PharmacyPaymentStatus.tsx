@@ -44,6 +44,11 @@ import {
   GetSubscriptionsOfUserByStatus,
   GetSubscriptionsOfUserByStatusVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 export interface PharmacyPaymentStatusProps extends NavigationScreenProps {}
 
@@ -104,6 +109,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
         setStatus(res.data.pharmaPaymentStatus.paymentStatus);
         setPaymentMode(res.data.pharmaPaymentStatus.paymentMode);
         setLoading(false);
+        fireCirclePlanActivatedEvent();
       })
       .catch((error) => {
         CommonBugFender('fetchingTxnStutus', error);
@@ -157,7 +163,23 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
     return true;
   };
 
+  const fireCirclePlanActivatedEvent = () => {
+    const CircleEventAttributes: WebEngageEvents[WebEngageEventName.PHARMA_CIRCLE_SUBSCRIPTION_PURCHASE] = {
+      'Patient UHID': currentPatient?.uhid,
+      'Mobile Number': currentPatient?.mobileNumber,
+      'Customer ID': currentPatient?.id,
+    };
+    circleSavings > 0 &&
+      !circleSubscriptionID &&
+      isCircleSubscription &&
+      postWebEngageEvent(
+        WebEngageEventName.PHARMA_CIRCLE_SUBSCRIPTION_PURCHASE,
+        CircleEventAttributes
+      );
+  };
+
   const statusIcon = () => {
+    fireCirclePlanActivatedEvent();
     if (status === success) {
       return <Success style={styles.statusIconStyles} />;
     } else if (status === failure || status === aborted) {

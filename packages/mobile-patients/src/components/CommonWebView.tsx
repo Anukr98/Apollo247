@@ -9,11 +9,17 @@ import { Spinner } from './ui/Spinner';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import AsyncStorage from '@react-native-community/async-storage';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
 
 export interface CommonWebViewProps extends NavigationScreenProps {}
 
 export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
   const { navigation } = props;
+  const source = props.navigation.getParam('source');
   const [loading, setLoading] = useState<boolean>(true);
   const isCallback = props.navigation.getParam('isCallback');
   const {
@@ -26,6 +32,14 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
   } = useShoppingCart();
   const { setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
 
+  const fireCirclePlanSelectedEvent = (currentPatient: any) => {
+    const CircleEventAttributes: WebEngageEvents[WebEngageEventName.PHARMA_WEBVIEW_PLAN1] = {
+      'Patient UHID': currentPatient?.uhid,
+      'Mobile Number': currentPatient?.mobileNumber,
+      'Customer ID': currentPatient?.id,
+    };
+    postWebEngageEvent(WebEngageEventName.PHARMA_WEBVIEW_PLAN1, CircleEventAttributes);
+  };
   const renderWebView = () => {
     let WebViewRef: any;
     return (
@@ -41,6 +55,7 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
           }
           if (data && JSON.parse(data)?.subPlanId) {
             const responseData = JSON.parse(data);
+            console.log('responseData >>>', responseData);
             setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
             setDefaultCirclePlan && setDefaultCirclePlan(null);
             setCirclePlanSelected && setCirclePlanSelected(responseData);

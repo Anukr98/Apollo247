@@ -189,3 +189,15 @@ export function uploadPrescriptionClickedEvent(id: string) {
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_CART_UPLOAD_PRESCRIPTION_CLICKED, eventAttributes);
 }
+
+export const fireCircleBuyNowEvent = (currentPatient: any) => {
+  const CircleEventAttributes: WebEngageEvents[WebEngageEventName.PHARMA_CART_ADD_TO_CART_CLICKED_CIRCLE_POPUP] = {
+    'Patient UHID': currentPatient?.uhid,
+    'Mobile Number': currentPatient?.mobileNumber,
+    'Customer ID': currentPatient?.id,
+  };
+  postWebEngageEvent(
+    WebEngageEventName.PHARMA_CART_ADD_TO_CART_CLICKED_CIRCLE_POPUP,
+    CircleEventAttributes
+  );
+};

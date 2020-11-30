@@ -8,6 +8,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 
 interface CirclePaymentProps extends NavigationScreenProps {}
 export const CircleSubscription: React.FC<CirclePaymentProps> = (props) => {
+  const from = props.navigation.getParam('from');
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', handleBack);
     return () => {
@@ -28,7 +29,7 @@ export const CircleSubscription: React.FC<CirclePaymentProps> = (props) => {
     return true;
   };
 
-  const renderPaymentOptions = () => <PaymentOptions navigation={props.navigation} />;
+  const renderPaymentOptions = () => <PaymentOptions navigation={props.navigation} from={from} />;
 
   const renderHeader = () => {
     return (

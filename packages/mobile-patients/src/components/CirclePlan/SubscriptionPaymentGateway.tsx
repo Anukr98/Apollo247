@@ -18,6 +18,12 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import { ONE_APOLLO_STORE_CODE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 
 interface PaymentGatewayProps extends NavigationScreenProps {
   paymentTypeID: string;
@@ -26,7 +32,7 @@ export const SubscriptionPaymentGateway: React.FC<PaymentGatewayProps> = (props)
   let WebViewRef: any;
   const { currentPatient } = useAllCurrentPatients();
   const { circlePlanSelected, defaultCirclePlan } = useShoppingCart();
-
+  const from = props.navigation.getParam('from');
   const paymentTypeID = props.navigation.getParam('paymentTypeID');
   const storeCode =
     Platform.OS === 'ios' ? ONE_APOLLO_STORE_CODE.IOSCUS : ONE_APOLLO_STORE_CODE.ANDCUS;
@@ -45,6 +51,19 @@ export const SubscriptionPaymentGateway: React.FC<PaymentGatewayProps> = (props)
       BackHandler.removeEventListener('hardwareBackPress', handleBack);
     };
   }, []);
+
+  const fireCircleActivatedEvent = () => {
+    const CircleEventAttributes: WebEngageEvents[WebEngageEventName.PHARMA_HOME_UPGRADE_TO_CIRCLE] = {
+      'Patient UHID': currentPatient?.uhid,
+      'Mobile Number': currentPatient?.mobileNumber,
+      'Customer ID': currentPatient?.id,
+    };
+    from == string.banner_context.DIAGNOSTIC_HOME &&
+      postWebEngageEvent(
+        WebEngageEventName.DIAGNOSTIC_CIRCLE_MEMBERSHIP_ACTIVATED,
+        CircleEventAttributes
+      );
+  };
 
   const handleBack = () => {
     Alert.alert('Alert', 'Are you sure you want to choose a different payment mode?', [
@@ -84,6 +103,7 @@ export const SubscriptionPaymentGateway: React.FC<PaymentGatewayProps> = (props)
       redirectedUrl &&
       redirectedUrl.indexOf(AppConfig.Configuration.SUBSCRIPTION_PG_SUCCESS) > -1
     ) {
+      fireCircleActivatedEvent();
       navigatetoStatusScreen(redirectedUrl);
     }
   };

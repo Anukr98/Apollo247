@@ -558,6 +558,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             getUserSubscriptionsByStatus();
           }}
           from={string.banner_context.PHARMACY_HOME}
+          source={'Product Detail'}
         />
       );
     }
