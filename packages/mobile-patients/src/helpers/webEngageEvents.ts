@@ -223,9 +223,6 @@ export enum WebEngageEventName {
   CATEGORY_PAGE_VIEWED = 'Category page viewed',
 
   // HDFC events
-  HDFC_OTP_GENERATE_CLICKED = 'HDFC Generate OTP Clicked',
-  HDFC_OTP_VERIFY_CLICKED = 'HDFC Verify OTP Clicked',
-  HDFC_EXPLORE_BENEFITS_CLICKED = 'HDFC Explore Benefits Clicked',
   HDFC_HOMEPAGE_CAROUSEL_CLICKED = 'HDFC Home Page Carousel Clicked',
   HDFC_MY_MEMBERSHIP_VIEWED = 'HDFC My Membership Viewed',
   HDFC_PLAN_DETAILS_VIEWED = 'HDFC Plan Details Viewed',
@@ -1760,9 +1757,6 @@ export interface WebEngageEvents {
     isMarkerModified: boolean;
     changedByInMeters: number;
   };
-  [WebEngageEventName.HDFC_OTP_GENERATE_CLICKED]: HdfcCustomerInfo;
-  [WebEngageEventName.HDFC_OTP_VERIFY_CLICKED]: HdfcCustomerInfo;
-  [WebEngageEventName.HDFC_EXPLORE_BENEFITS_CLICKED]: HdfcCustomerPlanInfo;
   [WebEngageEventName.HDFC_HOMEPAGE_CAROUSEL_CLICKED]: HdfcCustomerPlanInfo;
   [WebEngageEventName.HDFC_MY_MEMBERSHIP_VIEWED]: HdfcBenefitInfo;
   [WebEngageEventName.HDFC_PLAN_DETAILS_VIEWED]: HdfcBenefitInfo;
