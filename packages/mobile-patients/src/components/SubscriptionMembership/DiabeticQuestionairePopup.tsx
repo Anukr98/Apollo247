@@ -30,6 +30,7 @@ const styles = StyleSheet.create({
   popupContainerView: {
     flexDirection: 'row',
     top: Dimensions.get('window').height * 0.2,
+    alignItems: 'center',
   },
   popupView: {
     width: '90%',
@@ -73,6 +74,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginTop: 15,
     width: '80%',
+    alignItems: 'center',
   },
   oneVectorStyle: {
     marginRight: 10,
@@ -140,7 +142,7 @@ export const DiabeticQuestionairePopup: React.FC<DiabeticQuestionairePopupProps>
                         <TouchableOpacity
                           activeOpacity={1}
                           onPress={() => onPressRadioButton(item, res)}
-                          style={{ flexDirection: 'row' }}
+                          style={{ flexDirection: 'row', alignItems: 'center' }}
                         >
                           {(isTypeOfDiabetesChecked == 'checked' && typeOfDiabetes === res.value) ||
                           (isDurationOfDiabetesChecked == 'checked' &&
@@ -187,6 +189,7 @@ export const DiabeticQuestionairePopup: React.FC<DiabeticQuestionairePopupProps>
           <View
             style={{
               flexDirection: 'row',
+              alignItems: 'center',
             }}
           >
             <View style={{ width: '90%' }}>
