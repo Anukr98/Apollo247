@@ -40,7 +40,8 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
       'Mobile Number': currentPatient?.mobileNumber,
       'Customer ID': currentPatient?.id,
     };
-    postWebEngageEvent(WebEngageEventName.PHARMA_WEBVIEW_PLAN_SELECTED, CircleEventAttributes);
+    source == ('Pharma' || 'Product Detail' || 'Pharma Cart') &&
+      postWebEngageEvent(WebEngageEventName.PHARMA_WEBVIEW_PLAN_SELECTED, CircleEventAttributes);
   };
   const renderWebView = () => {
     let WebViewRef: any;

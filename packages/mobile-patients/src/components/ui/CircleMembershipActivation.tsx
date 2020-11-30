@@ -179,6 +179,7 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
           : from === string.banner_context.DIAGNOSTIC_HOME
           ? AppConfig.Configuration.CIRCLE_TEST_URL
           : AppConfig.Configuration.CIRLCE_PHARMA_URL,
+      source: source,
     });
   };
 
