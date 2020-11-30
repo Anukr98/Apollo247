@@ -509,6 +509,16 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   }, [cartItems]);
 
   useEffect(() => {
+    const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      setBannerData && setBannerData([]); // default banners to be empty
+      getUserBanners();
+    });
+    return () => {
+      didFocus && didFocus.remove();
+    };
+  });
+
+  useEffect(() => {
     setWebEngageScreenNames('Medicine Home Page');
     fetchMedicinePageProducts(false);
   }, []);
@@ -2126,7 +2136,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                   </View>
                 </View>
               ) : (
-                <TouchableOpacity activeOpacity={1} onPress={() => {setShowCirclePopup(true)}} style={circleStyles.upgrade}>
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={() => {
+                    setShowCirclePopup(true);
+                  }}
+                  style={circleStyles.upgrade}
+                >
                   <View style={circleStyles.upgradeTo}>
                     <Text style={theme.viewStyles.text('M', 13, '#FCB716', 1, 20, 0)}>
                       UPGRADE TO

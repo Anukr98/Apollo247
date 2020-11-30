@@ -114,24 +114,41 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     const { cta_action } = item;
     const fineText = item?.banner_template_info?.fineText;
     const bannerUri = getMobileURL(item.banner);
-    let imageHeight = 160;
-    Image.getSize(
-      bannerUri,
-      (width, height) => {
-        imageHeight = height;
-      },
-      (error) => {
-        console.log(error);
-      }
-    );
     const isDynamicBanner = item?.banner_template_info?.headerText1;
+    const headerText1 = item?.banner_template_info?.headerText1;
+    const headerText2 = item?.banner_template_info?.headerText2;
+    const headerText3 = item?.banner_template_info?.headerText3;
+    const subHeaderText1 = item?.banner_template_info?.subHeaderText1;
+    const subHeaderText2 = item?.banner_template_info?.subHeaderText2;
+    const btnTxt = item?.banner_template_info?.Button;
+    let imageHeight = 180;
+
+    if (!subHeaderText2 || !btnTxt || !headerText3) {
+      imageHeight = 160;
+      Image.getSize(
+        bannerUri,
+        (width, height) => {
+          imageHeight = height;
+        },
+        (error) => {
+          console.log(error);
+        }
+      );
+    } else {
+      imageHeight = 180;
+    }
     return (
       <TouchableOpacity
         activeOpacity={1}
         onPress={() =>
           handleOnBannerClick(cta_action.type, cta_action.meta.action, cta_action.meta.message)
         }
-        style={styles.hdfcBanner}
+        style={[
+          styles.hdfcBanner,
+          {
+            height: imageHeight,
+          },
+        ]}
       >
         <ImageBackground
           style={{
@@ -147,13 +164,15 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
           resizeMode={isDynamicBanner ? 'cover' : 'contain'}
         >
           <View style={styles.bannerContainer}>
-            {renderBannerText(item?.banner_template_info?.headerText1)}
-            {renderBannerText(item?.banner_template_info?.headerText2)}
-            {renderBannerText(item?.banner_template_info?.headerText3)}
+            {headerText1 ? renderBannerText(headerText1) : null}
+            {headerText2 ? renderBannerText(headerText2) : null}
+            {headerText3 ? renderBannerText(headerText3) : null}
+            {subHeaderText1 ? renderBannerText(subHeaderText1, true, true) : null}
+            {subHeaderText2 ? renderBannerText(subHeaderText2, true) : null}
           </View>
           <View style={styles.bottomView}>
             {renderUpgradeBtn(item)}
-            {fineText && <Text style={styles.regularText}>{fineText}</Text>}
+            {fineText ? <Text style={styles.regularText}>{fineText}</Text> : null}
           </View>
         </ImageBackground>
       </TouchableOpacity>
@@ -183,20 +202,47 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     }
   };
 
-  const renderBannerText = (str: string) => {
+  const renderBannerText = (str: string, isSubHeader?: boolean, isFirstSubHeader?: boolean) => {
     if (str?.includes('<circle>')) {
       const arrayOfStrings = str.split(' ');
       var headerText = arrayOfStrings.map((str, i) => {
         if (str == '<circle>') {
-          return <CircleLogoWhite style={styles.circleLogo} />;
+          return (
+            <CircleLogoWhite
+              style={
+                isSubHeader
+                  ? [styles.smallCircleLogo, { marginTop: isFirstSubHeader ? 10 : 0 }]
+                  : styles.circleLogo
+              }
+            />
+          );
         } else {
-          return <Text style={styles.bannerTitle}>{str} </Text>;
+          return (
+            <Text
+              style={
+                isSubHeader
+                  ? [styles.bannerSubTitle, { marginTop: isFirstSubHeader ? 10 : 0 }]
+                  : styles.bannerTitle
+              }
+            >
+              {str}{' '}
+            </Text>
+          );
         }
       });
-
       return <View style={styles.row}>{headerText}</View>;
     }
-    return <Text style={styles.bannerTitle}>{str}</Text>;
+    return (
+      <Text
+        style={
+          isSubHeader
+            ? [styles.bannerSubTitle, { marginTop: isFirstSubHeader ? 5 : 0 }]
+            : styles.bannerTitle
+        }
+      >
+        {str}{' '}
+      </Text>
+    );
   };
 
   const renderBannerButtonText = (str: string, action: any, containsSubText: boolean) => {
@@ -413,10 +459,9 @@ const styles = StyleSheet.create({
     elevation: 15,
     marginTop: 10,
     marginHorizontal: 28,
-    marginBottom: 30,
+    marginBottom: 15,
     padding: 0,
-    height: 160,
-    width: 330,
+    width: width - 30,
     alignSelf: 'center',
   },
   bannerContainer: {
@@ -424,6 +469,9 @@ const styles = StyleSheet.create({
   },
   bannerTitle: {
     ...theme.viewStyles.text('M', 16, theme.colors.WHITE),
+  },
+  bannerSubTitle: {
+    ...theme.viewStyles.text('M', 10, theme.colors.LIGHT_BLUE),
   },
   sliderDots: {
     height: 6,
@@ -471,7 +519,7 @@ const styles = StyleSheet.create({
   sliderDotsContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    position: 'absolute',
+    // position: 'absolute',
     bottom: 10,
     alignSelf: 'center',
   },
