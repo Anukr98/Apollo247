@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
     width: '93%',
   },
   subHeadingText: {
-    ...theme.viewStyles.text('M', 14, 'black', 1, 18, 0.35),
+    ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE, 1, 18, 0.35),
   },
 });
 
