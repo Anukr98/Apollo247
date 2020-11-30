@@ -14,6 +14,7 @@ import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
 export interface CommonWebViewProps extends NavigationScreenProps {}
 
@@ -22,6 +23,7 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
   const source = props.navigation.getParam('source');
   const [loading, setLoading] = useState<boolean>(true);
   const isCallback = props.navigation.getParam('isCallback');
+  const { currentPatient } = useAllCurrentPatients();
   const {
     setCirclePlanSelected,
     setDefaultCirclePlan,
@@ -32,13 +34,13 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
   } = useShoppingCart();
   const { setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
 
-  const fireCirclePlanSelectedEvent = (currentPatient: any) => {
-    const CircleEventAttributes: WebEngageEvents[WebEngageEventName.PHARMA_WEBVIEW_PLAN1] = {
+  const fireCirclePlanSelectedEvent = () => {
+    const CircleEventAttributes: WebEngageEvents[WebEngageEventName.PHARMA_WEBVIEW_PLAN_SELECTED] = {
       'Patient UHID': currentPatient?.uhid,
       'Mobile Number': currentPatient?.mobileNumber,
       'Customer ID': currentPatient?.id,
     };
-    postWebEngageEvent(WebEngageEventName.PHARMA_WEBVIEW_PLAN1, CircleEventAttributes);
+    postWebEngageEvent(WebEngageEventName.PHARMA_WEBVIEW_PLAN_SELECTED, CircleEventAttributes);
   };
   const renderWebView = () => {
     let WebViewRef: any;
@@ -55,7 +57,7 @@ export const CommonWebView: React.FC<CommonWebViewProps> = (props) => {
           }
           if (data && JSON.parse(data)?.subPlanId) {
             const responseData = JSON.parse(data);
-            console.log('responseData >>>', responseData);
+            fireCirclePlanSelectedEvent();
             setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
             setDefaultCirclePlan && setDefaultCirclePlan(null);
             setCirclePlanSelected && setCirclePlanSelected(responseData);

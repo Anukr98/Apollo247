@@ -295,6 +295,7 @@ export enum WebEngageEventName {
   PHARMA_WEBVIEW_PLAN1 = 'App Pharma Plan 1 in Pharmacy Web View',
   PHARMA_WEBVIEW_PLAN2 = 'App Pharma Plan 2 in Pharmacy Web View',
   PHARMA_WEBVIEW_PLAN3 = 'App Pharma Plan 3 in Pharmacy Web View',
+  PHARMA_WEBVIEW_PLAN_SELECTED = 'App Pharma WebView Plan Selected',
   PHARMA_CIRCLE_SUBSCRIPTION_PURCHASE = 'App Pharma Non Circle buys Circle subscription',
 
   //Diagnostic Circle Events
@@ -551,6 +552,7 @@ export interface WebEngageEvents {
   [WebEngageEventName.PHARMA_WEBVIEW_PLAN1]: UserInfo;
   [WebEngageEventName.PHARMA_WEBVIEW_PLAN2]: UserInfo;
   [WebEngageEventName.PHARMA_WEBVIEW_PLAN3]: UserInfo;
+  [WebEngageEventName.PHARMA_WEBVIEW_PLAN_SELECTED]: UserInfo;
   [WebEngageEventName.PHARMA_CIRCLE_SUBSCRIPTION_PURCHASE]: UserInfo;
 
   // ********** DiagnosticCircleEvents ********** \\
