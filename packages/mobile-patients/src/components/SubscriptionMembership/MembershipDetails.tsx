@@ -620,8 +620,8 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         if (getResponse?.success) {
           setShowDiabeticQuestionaire(false);
           showAphAlert!({
-            title: '',
-            description: 'Thanks for submitting the information',
+            title: 'Thanks!',
+            description: 'Your information has been submitted',
           });
         }
       })
