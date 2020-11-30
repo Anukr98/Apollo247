@@ -27,12 +27,12 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   WebEngageEventName,
   WebEngageEvents,
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const { width } = Dimensions.get('window');
 interface CircleMembershipPlansProps extends NavigationScreenProps {
@@ -499,6 +499,18 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     });
   };
 
+  const circleWebEngageEvent = (eventName: any) => {
+    const eventAttributes = {
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+    };
+    postWebEngageEvent(eventName, eventAttributes);
+  };
+
   const removeAutoAddedPlan = () => {
     setCirclePlanSelected && setCirclePlanSelected(null);
     setDefaultCirclePlan && setDefaultCirclePlan(null);
@@ -507,6 +519,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     setCircleMembershipCharges && setCircleMembershipCharges(0);
     AsyncStorage.removeItem('circlePlanSelected');
     setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
+    circleWebEngageEvent(WebEngageEventName.VC_NON_CIRCLE_REMOVES_CART);
   };
 
   const renderAddToCart = () => {
@@ -561,37 +574,41 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     );
   };
 
-  const renderCarePlanAdded = () => (
-    <View style={styles.planAddedContainer}>
-      <View style={styles.spaceRow}>
-        <View style={styles.rowCenter}>
-          <CircleLogo style={styles.careLogo} />
-          <Text style={{ ...theme.viewStyles.text('SB', 13, theme.colors.LIGHT_BLUE) }}>
-            Plan added to cart!
-          </Text>
+  const renderCarePlanAdded = () => {
+    return (
+      <View style={styles.planAddedContainer}>
+        <View style={styles.spaceRow}>
+          <View style={styles.rowCenter}>
+            <CircleLogo style={styles.careLogo} />
+            <Text style={{ ...theme.viewStyles.text('SB', 13, theme.colors.LIGHT_BLUE) }}>
+              Plan added to cart!
+            </Text>
+          </View>
+          <View style={styles.rowCenter}>
+            <Text
+              style={{ ...theme.viewStyles.text('SB', 17, theme.colors.SEARCH_UNDERLINE_COLOR) }}
+            >
+              {string.common.Rs}
+              {circlePlanSelected?.currentSellingPrice}
+            </Text>
+          </View>
         </View>
-        <View style={styles.rowCenter}>
-          <Text style={{ ...theme.viewStyles.text('SB', 17, theme.colors.SEARCH_UNDERLINE_COLOR) }}>
-            {string.common.Rs}
-            {circlePlanSelected?.currentSellingPrice}
-          </Text>
-        </View>
+        <TouchableOpacity
+          style={{ marginTop: 7 }}
+          onPress={() => {
+            fireCirclePlanRemovedEvent();
+            setCirclePlanSelected && setCirclePlanSelected(null);
+            setIsCircleSubscription && setIsCircleSubscription(false);
+            setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
+            setCircleMembershipCharges && setCircleMembershipCharges(0);
+            AsyncStorage.removeItem('circlePlanSelected');
+          }}
+        >
+          <Text style={styles.removeTxt}>REMOVE</Text>
+        </TouchableOpacity>
       </View>
-      <TouchableOpacity
-        style={{ marginTop: 7 }}
-        onPress={() => {
-          fireCirclePlanRemovedEvent();
-          setCirclePlanSelected && setCirclePlanSelected(null);
-          setIsCircleSubscription && setIsCircleSubscription(false);
-          setIsDiagnosticCircleSubscription && setIsDiagnosticCircleSubscription(false);
-          setCircleMembershipCharges && setCircleMembershipCharges(0);
-          AsyncStorage.removeItem('circlePlanSelected');
-        }}
-      >
-        <Text style={styles.removeTxt}>REMOVE</Text>
-      </TouchableOpacity>
-    </View>
-  );
+    );
+  };
 
   return (
     <View style={isModal ? {} : [styles.careBannerView, props.style]}>

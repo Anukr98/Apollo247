@@ -383,7 +383,10 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
           {!showCircleSubscribed && showCirclePricing ? (
             <TouchableOpacity
               activeOpacity={1}
-              onPress={() => openCircleWebView(heading)}
+              onPress={() => {
+                openCircleWebView(heading);
+                circleWebEngage();
+              }}
               style={[
                 styles.row,
                 {
@@ -437,6 +440,16 @@ export const ConsultTypeScreen: React.FC<ConsultTypeScreenProps> = (props) => {
         </TouchableOpacity>
       </View>
     );
+  };
+
+  const circleWebEngage = () => {
+    const eventAttributes = {
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+    };
+    postWebEngageEvent(WebEngageEventName.VC_NON_CIRCLE_KNOWMORE_CONSULT, eventAttributes);
   };
 
   const postWebengaegConsultType = (consultType: 'Online' | 'In Person') => {
