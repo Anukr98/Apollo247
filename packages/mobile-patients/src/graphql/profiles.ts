@@ -3645,3 +3645,11 @@ export const GET_CIRCLE_SAVINGS_OF_USER_BY_MOBILE = gql`
     }
   }
 `;
+
+export const ADD_DIABETIC_QUESTIONNAIRE = gql`
+  mutation addDiabeticQuestionnaire($addDiabeticQuestionnaireInput: AddDiabeticQuestionnaireInput) {
+    addDiabeticQuestionnaire(addDiabeticQuestionnaireInput: $addDiabeticQuestionnaireInput) {
+      success
+    }
+  }
+`;

@@ -556,6 +556,13 @@ export enum one_apollo_store_code {
   WEBCUS = "WEBCUS",
 }
 
+export interface AddDiabeticQuestionnaireInput {
+  patientId: string;
+  plan?: string | null;
+  diabetic_type?: string | null;
+  diabetic_year?: string | null;
+}
+
 export interface AddHealthCheckRecordInput {
   id?: string | null;
   patientId: string;
