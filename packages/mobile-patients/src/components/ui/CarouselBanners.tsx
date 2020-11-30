@@ -173,7 +173,6 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
   const renderBannerText = (str: string) => {
     if (str?.includes('<circle>')) {
       const arrayOfStrings = str.split(' ');
-      console.log('arrayOfStrings', arrayOfStrings);
       var headerText = arrayOfStrings.map((str, i) => {
         if (str == '<circle>') {
           return <CircleLogoWhite style={styles.circleLogo} />;

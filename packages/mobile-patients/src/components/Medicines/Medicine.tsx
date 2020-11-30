@@ -251,6 +251,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
   const {
     cartItems,
+    setCartItems,
     addCartItem,
     removeCartItem,
     updateCartItem,
@@ -499,6 +500,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       updateServiceability(pharmacyPincode);
     }
   }, []);
+
+  useEffect(() => {
+    // set cart items again to set item cashbacks and total cashback
+    if (cartItems.length) {
+      setCartItems && setCartItems(cartItems);
+    }
+  }, [cartItems]);
 
   useEffect(() => {
     setWebEngageScreenNames('Medicine Home Page');
@@ -2057,7 +2065,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         // top: -24,
       },
     });
-    // const effectivePrice = Math.round(cartTotal - cartTotalCashback);
     const effectivePrice = Math.round(cartDiscountTotal - cartTotalCashback);
 
     return (
@@ -2118,7 +2125,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                   </View>
                 </View>
               ) : (
-                <TouchableOpacity activeOpacity={1} onPress={() => {}} style={circleStyles.upgrade}>
+                <TouchableOpacity activeOpacity={1} onPress={() => {setShowCirclePopup(true)}} style={circleStyles.upgrade}>
                   <View style={circleStyles.upgradeTo}>
                     <Text style={theme.viewStyles.text('M', 13, '#FCB716', 1, 20, 0)}>
                       UPGRADE TO

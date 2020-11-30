@@ -71,6 +71,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     setCircleMembershipCharges,
     setAutoCirlcePlanAdded,
     autoCirlcePlanAdded,
+    circleMembershipCharges,
   } = useShoppingCart();
   const { setIsDiagnosticCircleSubscription } = useDiagnosticsCart();
 
@@ -109,9 +110,19 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
             setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
           }
         } else {
-          setDefaultCirclePlan && setDefaultCirclePlan(null);
-          defaultCirclePlan && setCirclePlanSelected && setCirclePlanSelected(null);
-          setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
+          if (isConsultJourney || isDiagnosticJourney || !circleMembershipCharges) {
+            setDefaultCirclePlan && setDefaultCirclePlan(null);
+            defaultCirclePlan && setCirclePlanSelected && setCirclePlanSelected(null);
+            setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
+          } else {
+            // pharma journey and circle membership charges
+            const planSelected = circlePlans.filter((value) => value?.currentSellingPrice == circleMembershipCharges);
+            setCirclePlanSelected && setCirclePlanSelected(planSelected[0]);
+            setIsCircleSubscription && setIsCircleSubscription(true);
+            onSelectMembershipPlan && onSelectMembershipPlan(planSelected[0]);
+            setDefaultCirclePlan && setDefaultCirclePlan(null);
+            setAutoCirlcePlanAdded && setAutoCirlcePlanAdded(false);
+          }
         }
       }
       setLoading(false);
