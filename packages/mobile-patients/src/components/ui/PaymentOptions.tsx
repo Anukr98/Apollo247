@@ -35,8 +35,11 @@ type bankOptions = {
   imageUrl: string;
 };
 
-interface PaymentOptionsProps extends NavigationScreenProps {}
+interface PaymentOptionsProps extends NavigationScreenProps {
+  from?: string;
+}
 export const PaymentOptions: React.FC<PaymentOptionsProps> = (props) => {
+  const { from } = props;
   const { setLoading, showAphAlert } = useUIElements();
   const [paymentOptions, setpaymentOptions] = useState<paymentOptions[]>([]);
 
@@ -91,6 +94,7 @@ export const PaymentOptions: React.FC<PaymentOptionsProps> = (props) => {
   const initiatePayment = (item: paymentOptions) => {
     props.navigation.navigate(AppRoutes.SubscriptionPaymentGateway, {
       paymentTypeID: item?.paymentMode,
+      from: from,
     });
   };
 

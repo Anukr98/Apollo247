@@ -564,12 +564,14 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
 
   const renderHdfcMembershipDetails = () => {
     return (
-      <View>
-        {isCanUpgradeTo
-          ? renderSubscribeContent()
-          : isActivePlan
-          ? renderTabComponent()
-          : renderInactivePlansContainer()}
+      <View style={{ flex: 1 }}>
+        <ScrollView>
+          {isCanUpgradeTo
+            ? renderSubscribeContent()
+            : isActivePlan
+            ? renderTabComponent()
+            : renderInactivePlansContainer()}
+        </ScrollView>
         {renderBottomContainer()}
       </View>
     );
@@ -577,7 +579,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
 
   const renderCircleBenefits = (circleBenefits: any) => {
     const totalSavingsDone = totalCircleSavings?.totalSavings + totalCircleSavings?.callsUsed;
-    return circleBenefits.map((value) => {
+    return circleBenefits?.map((value) => {
       const { headerContent, description, benefitCtaAction, icon, availableCount, _id } = value;
       const { action, message, type, webEngageEvent } = benefitCtaAction;
       return (

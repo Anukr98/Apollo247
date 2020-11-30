@@ -71,6 +71,7 @@ import {
   setWebEngageScreenNames,
   postAppsFlyerEvent,
   postFirebaseEvent,
+  getDiscountPercentage,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { postMyOrdersClicked } from '@aph/mobile-patients/src/helpers/webEngageEventHelpers';
 import {
@@ -145,12 +146,13 @@ import {
 import { CircleMembershipPlans } from '@aph/mobile-patients/src/components/ui/CircleMembershipPlans';
 import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
-import { CircleBannerComponent } from '@aph/mobile-patients/src/components/ui/CircleBannerComponent';
 import {
   GetSubscriptionsOfUserByStatusVariables,
   GetSubscriptionsOfUserByStatus,
 } from '@aph/mobile-patients/src/graphql/types/GetSubscriptionsOfUserByStatus';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
+import { getUserBannersList } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { CarouselBanners } from '@aph/mobile-patients/src/components/ui/CarouselBanners';
 
 const { width: winWidth } = Dimensions.get('window');
 
@@ -195,6 +197,16 @@ const styles = StyleSheet.create({
     height: 200,
     borderRadius: 10,
   },
+  priceStrikeOff: {
+    ...theme.viewStyles.text('M', 13, '#01475b', 1, 20, 0.35),
+    textDecorationLine: 'line-through',
+    color: '#01475b',
+    opacity: 0.6,
+    paddingRight: 5,
+  },
+  discountPercentage: {
+    ...theme.viewStyles.text('M', 13, '#00B38E', 1, 20, 0.35),
+  },
 });
 
 const filterBanners = (banners: OfferBannerSection[]) => {
@@ -232,11 +244,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setAxdcCode,
     axdcCode,
     circleSubscription,
+    setBannerData,
+    bannerData,
   } = useAppCommonData();
   const [ShowPopop, setShowPopop] = useState<boolean>(!!showUploadPrescriptionPopup);
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
   const {
     cartItems,
+    setCartItems,
     addCartItem,
     removeCartItem,
     updateCartItem,
@@ -254,6 +269,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setCircleSubscriptionId,
     setIsCircleSubscription,
     productDiscount,
+    cartDiscountTotal,
   } = useShoppingCart();
   const {
     cartItems: diagnosticCartItems,
@@ -486,6 +502,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   }, []);
 
   useEffect(() => {
+    // set cart items again to set item cashbacks and total cashback
+    if (cartItems.length) {
+      setCartItems && setCartItems(cartItems);
+    }
+  }, [cartItems]);
+
+  useEffect(() => {
     setWebEngageScreenNames('Medicine Home Page');
     fetchMedicinePageProducts(false);
   }, []);
@@ -501,11 +524,45 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       fetchRecommendedProducts();
       fetchLatestMedicineOrder();
     }
+    if (currentPatient) {
+      getUserBanners();
+    }
   }, [currentPatient]);
 
   useEffect(() => {
+    setBannerData && setBannerData([]); // default banners to be empty
     fetchAddress();
   }, []);
+
+  const getUserBanners = async () => {
+    const res: any = await getUserBannersList(
+      client,
+      currentPatient,
+      string.banner_context.PHARMACY_HOME
+    );
+    if (res) {
+      setBannerData && setBannerData(res);
+    } else {
+      setBannerData && setBannerData([]);
+    }
+  };
+
+  const renderCarouselBanners = () => {
+    const showBanner = bannerData && bannerData.length > 0;
+    if (showBanner) {
+      return (
+        <CarouselBanners
+          navigation={props.navigation}
+          planActivationCallback={() => {
+            getUserBanners();
+            getUserSubscriptionsByStatus();
+          }}
+          from={string.banner_context.PHARMACY_HOME}
+          source={'Product Detail'}
+        />
+      );
+    }
+  };
 
   const formatAddressToLocation = (address: Address): LocationData => ({
     displayName: address.city!,
@@ -1461,20 +1518,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     }
   };
 
-  const renderCircleBanners = () => (
-    <CircleBannerComponent
-      navigation={props.navigation}
-      planActivationCallback={() => {
-        getUserSubscriptionsByStatus();
-      }}
-    />
-  );
-
   const renderDealsOfTheDay = (title: string, dealsOfTheDay: DealsOfTheDaySection[]) => {
     if (dealsOfTheDay.length == 0) return null;
     return (
       <View>
-        {renderCircleBanners()}
+        {renderCarouselBanners()}
         <View style={{ marginBottom: 10 }} />
         <SectionHeader leftText={title} />
         <FlatList
@@ -1955,6 +2003,23 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
+  const renderCartDiscount = () => {
+    const cartDiscountPercent = getDiscountPercentage(cartTotal, cartTotal - productDiscount);
+    return (
+      <>
+        {cartDiscountPercent ? (
+          <View style={{ flexDirection: 'row', marginLeft: 10 }}>
+            <Text style={styles.priceStrikeOff}>
+              ({string.common.Rs}
+              {cartTotal})
+            </Text>
+            <Text style={styles.discountPercentage}>{cartDiscountPercent}% off</Text>
+          </View>
+        ) : null}
+      </>
+    );
+  };
+
   const renderCircleCartDetails = () => {
     const circleStyles = StyleSheet.create({
       container: {
@@ -2001,7 +2066,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         // top: -24,
       },
     });
-    const effectivePrice = Math.round(cartTotal - cartTotalCashback);
+    const effectivePrice = Math.round(cartDiscountTotal - cartTotalCashback);
+
     return (
       <View style={[circleStyles.container, { backgroundColor: 'white' }]}>
         <View style={circleStyles.content}>
@@ -2032,10 +2098,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             <>
               {circleSubscription?._id || isCircleSubscription ? (
                 <View style={{ width: '60%' }}>
-                  <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 20, 0)}>
-                    {string.common.Rs}
-                    {cartTotal - productDiscount}
-                  </Text>
+                  <View style={{ flexDirection: 'row' }}>
+                    <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 20, 0)}>
+                      {string.common.Rs}
+                      {(cartTotal - productDiscount).toFixed(2)}
+                    </Text>
+                    {renderCartDiscount()}
+                  </View>
                   <View style={{ flexDirection: 'row' }}>
                     <CircleLogo style={circleStyles.circleLogoTwo} />
                     <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 25, 0)}>
@@ -2057,7 +2126,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                   </View>
                 </View>
               ) : (
-                <TouchableOpacity activeOpacity={1} onPress={() => {}} style={circleStyles.upgrade}>
+                <TouchableOpacity activeOpacity={1} onPress={() => {setShowCirclePopup(true)}} style={circleStyles.upgrade}>
                   <View style={circleStyles.upgradeTo}>
                     <Text style={theme.viewStyles.text('M', 13, '#FCB716', 1, 20, 0)}>
                       UPGRADE TO
@@ -2090,7 +2159,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             <Text style={theme.viewStyles.text('B', 13, '#FFFFFF', 1, 20, 0)}>GO TO CART</Text>
             {!circleSubscription?._id && !isCircleSubscription && cartTotalCashback > 1 && (
               <Text style={theme.viewStyles.text('M', 12, '#02475B', 1, 20, 0)}>
-                {`Buy for ₹${cartTotal}`}
+                {`Buy for ${string.common.Rs}${cartTotal}`}
               </Text>
             )}
           </TouchableOpacity>

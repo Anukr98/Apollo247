@@ -35,6 +35,11 @@ import moment from 'moment';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { NavigationScreenProps } from 'react-navigation';
 import { Spinner } from './Spinner';
+import {
+  WebEngageEventName,
+  WebEngageEvents,
+} from '@aph/mobile-patients/src/helpers/webEngageEvents';
+import { postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 interface props extends NavigationScreenProps {
   visible: boolean;
@@ -43,6 +48,8 @@ interface props extends NavigationScreenProps {
   healthCredits?: number;
   circlePaymentDone?: boolean;
   circlePlanValidity?: string;
+  from: string;
+  source?: 'Pharma' | 'Product Detail' | 'Pharma Cart' | 'Diagnostic' | 'Consult';
 }
 export const CircleMembershipActivation: React.FC<props> = (props) => {
   const {
@@ -52,6 +59,8 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
     healthCredits,
     circlePaymentDone,
     circlePlanValidity,
+    from,
+    source,
   } = props;
   const planActivated = useRef<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
@@ -64,6 +73,27 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
   const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
   const defaultPlanSellingPrice = defaultCirclePlan?.currentSellingPrice;
   planActivated.current = circlePaymentDone ? true : planActivated.current;
+  const CircleEventAttributes: WebEngageEvents[WebEngageEventName.PHARMA_HOME_UPGRADE_TO_CIRCLE] = {
+    'Patient UHID': currentPatient?.uhid,
+    'Mobile Number': currentPatient?.mobileNumber,
+    'Customer ID': currentPatient?.id,
+  };
+
+  const fireCircleOtherPaymentEvent = () => {
+    source == 'Diagnostic' &&
+      postWebEngageEvent(
+        WebEngageEventName.DIAGNOSTIC_OTHER_PAYMENT_OPTION_CLICKED_POPUP,
+        CircleEventAttributes
+      );
+  };
+
+  const fireCircleActivatedEvent = () => {
+    source == 'Diagnostic' &&
+      postWebEngageEvent(
+        WebEngageEventName.DIAGNOSTIC_CIRCLE_MEMBERSHIP_ACTIVATED,
+        CircleEventAttributes
+      );
+  };
 
   const renderCloseIcon = () => {
     return (
@@ -99,8 +129,9 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
         />
         <TouchableOpacity
           onPress={() => {
+            fireCircleOtherPaymentEvent();
             closeModal && closeModal();
-            props.navigation.navigate(AppRoutes.CircleSubscription);
+            props.navigation.navigate(AppRoutes.CircleSubscription, { from: from });
           }}
         >
           <Text style={styles.btnText}>{string.circleDoctors.useAnotherPaymentMethod}</Text>
@@ -125,7 +156,7 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
             <Text style={styles.mediumText}>{healthCredits - defaultPlanSellingPrice}</Text>
           </Text>
         ) : null}
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => openCircleWebView()}>
           <Text style={styles.btnText}>{string.common.knowMore}</Text>
         </TouchableOpacity>
         <Button
@@ -138,6 +169,18 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
         />
       </View>
     );
+  };
+
+  const openCircleWebView = () => {
+    props.navigation.navigate(AppRoutes.CommonWebView, {
+      url:
+        from === string.banner_context.HOME
+          ? AppConfig.Configuration.CIRCLE_CONSULT_URL
+          : from === string.banner_context.DIAGNOSTIC_HOME
+          ? AppConfig.Configuration.CIRCLE_TEST_URL
+          : AppConfig.Configuration.CIRLCE_PHARMA_URL,
+      source: source,
+    });
   };
 
   const onPurchasePlan = async () => {
@@ -166,6 +209,7 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
       });
       setLoading && setLoading(false);
       if (res?.data?.CreateUserSubscription?.success) {
+        fireCircleActivatedEvent();
         planActivated.current = true;
         setPlanValidity(res?.data?.CreateUserSubscription?.response?.end_date);
       } else {

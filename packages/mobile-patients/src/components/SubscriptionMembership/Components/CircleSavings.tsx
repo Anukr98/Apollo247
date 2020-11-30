@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Image } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import {
   DownOrange,
@@ -24,10 +24,13 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
 
   const renderCircleExpiryBanner = () => {
     return (
-      <View style={styles.expiryBanner}>
+      <View style={[styles.expiryBanner, { alignItems: 'center' }]}>
         <CircleLogo style={styles.circleLogo} />
-        <Text style={theme.viewStyles.text('SB', 14, '#01475B', 1, 28, 0.35)}>
-          Membership expires on {moment(circleSubscription?.endDate).format('DD/MM/YYYY')}
+        <Text style={theme.viewStyles.text('R', 12, '#01475B')}>
+          Membership expires on{' '}
+          <Text style={theme.viewStyles.text('M', 12, '#01475B')}>
+            {moment(circleSubscription?.endDate).format('DD/MM/YYYY')}
+          </Text>
         </Text>
       </View>
     );
@@ -136,6 +139,21 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
         </View>
         <View style={styles.savingsContainer}>
           <View style={styles.savingsRow}>
+            <Image
+              source={{
+                uri: 'https://assets.apollo247.com/images/circle/ic_diagnostics.png',
+              }}
+              style={styles.savingsIcon}
+            />
+            <Text style={styles.savingsHeading}>Total Savings on Diagnostics</Text>
+          </View>
+          <Text style={styles.savingsAmount}>
+            {strings.common.Rs}
+            {totalCircleSavings?.diagnosticsSavings || 0}
+          </Text>
+        </View>
+        <View style={styles.savingsContainer}>
+          <View style={styles.savingsRow}>
             <EmergencyCall style={styles.savingsIcon} />
             <Text style={styles.savingsHeading}>Free Emergency Calls Made</Text>
           </View>
@@ -168,14 +186,15 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
 const styles = StyleSheet.create({
   circleLogo: {
     resizeMode: 'contain',
-    width: 50,
+    width: 35,
     height: 30,
+    marginRight: 10,
   },
   expiryBanner: {
     flexDirection: 'row',
-    justifyContent: 'center',
     backgroundColor: '#FFFFFF',
     paddingVertical: 13,
+    paddingHorizontal: 15,
   },
   savingsCard: {
     ...theme.viewStyles.cardViewStyle,

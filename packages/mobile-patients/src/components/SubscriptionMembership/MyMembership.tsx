@@ -275,7 +275,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
             if (!isCare) {
               const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_PLAN_DETAILS_VIEWED] = {
                 'User ID': g(currentPatient, 'id'),
-                Plan: subscription_name.substring(0, subscription_name.indexOf('+')),
+                Plan: subscription_name?.substring(0, subscription_name.indexOf('+')),
               };
               postWebEngageEvent(WebEngageEventName.HDFC_PLAN_DETAILS_VIEWED, eventAttributes);
             }
@@ -294,7 +294,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
             if (isCanUpgradeToPlan) {
               const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_HOW_TO_AVAIL_CLICKED] = {
                 'User ID': g(currentPatient, 'id'),
-                Plan: subscription_name.substring(0, subscription_name.indexOf('+')),
+                Plan: subscription_name?.substring(0, subscription_name.indexOf('+')),
               };
               postWebEngageEvent(WebEngageEventName.HDFC_HOW_TO_AVAIL_CLICKED, eventAttributes);
               setUpgradeTransactionValue(transactionValue);
@@ -304,7 +304,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
               if (isActive && !isCare) {
                 const eventAttributes: WebEngageEvents[WebEngageEventName.HDFC_EXPLORE_PLAN_CLICKED] = {
                   'User ID': g(currentPatient, 'id'),
-                  Plan: subscription_name.substring(0, subscription_name.indexOf('+')),
+                  Plan: subscription_name?.substring(0, subscription_name.indexOf('+')),
                 };
                 postWebEngageEvent(WebEngageEventName.HDFC_EXPLORE_PLAN_CLICKED, eventAttributes);
               }

@@ -89,6 +89,11 @@ import { getMedicineOrderOMSDetailsWithAddress_getMedicineOrderOMSDetailsWithAdd
 import { Tagalys } from '@aph/mobile-patients/src/helpers/Tagalys';
 import { handleUniversalLinks } from './UniversalLinks';
 import { getDiagnosticSlotsWithAreaID_getDiagnosticSlotsWithAreaID_slots } from '../graphql/types/getDiagnosticSlotsWithAreaID';
+const isRegExp = require('lodash/isRegExp');
+const escapeRegExp = require('lodash/escapeRegExp');
+const isString = require('lodash/isString');
+const flatten = require('lodash/flatten');
+
 
 const { RNAppSignatureHelper } = NativeModules;
 const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
@@ -2005,4 +2010,27 @@ export const readableParam = (param: string) => {
     .replace(/\-\-+/g, '-') // Replace multiple - with single -
     .replace(/^-+/, '') // Trim - from start of text
     .replace(/-+$/, ''); // Trim - from end of text
+};
+
+const replaceString = (str: string, match:any, fn:any) => {
+  var curCharStart = 0;
+  var curCharLen = 0;
+  if (str === '') {
+    return str;
+  } else if (!str || !isString(str)) {
+    throw new TypeError('First argument to react-string-replace#replaceString must be a string');
+  }
+  var re = match;
+  if (!isRegExp(re)) {
+    re = new RegExp('(' + escapeRegExp(re) + ')', 'gi');
+  }
+  var result = str.split(re);
+  // Apply fn to all odd elements
+  for (var i = 1, length = result.length; i < length; i += 2) {
+    curCharLen = result[i].length;
+    curCharStart += result[i - 1].length;
+    result[i] = fn(result[i], i, curCharStart);
+    curCharStart += curCharLen;
+  }
+  return result;
 };

@@ -1150,18 +1150,6 @@ export const ExclamationGreen: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/info_blue.png')} />
 );
 
-export const LastStepIcon: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./icons/last_step.png')} />
-);
-
-export const SadFaceYellow: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./icons/sad_face_yellow.png')} />
-);
-
-export const ThumbsUp: React.FC<IconProps> = (props) => (
-  <IconBase {...props} source={require('./icons/thumbs_up.png')} />
-);
-
 export const HdfcBannerSilver: React.FC<IconProps> = (props) => (
   <IconBase {...props} source={require('./icons/Hdfc-Silver-Banner.png')} />
 );
@@ -1325,21 +1313,45 @@ export const OneApolloLogo: React.FC<IconProps> = (props) => (
 );
 
 export const CircleLogoWhite: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/circleLogoWhite.png')} />
+  <IconBase
+    resizeMode={'contain'}
+    size="md"
+    {...props}
+    source={require('./icons/circleLogoWhite.png')}
+  />
 );
 
 export const FemaleIcon: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/femaleIcon.png')} />
+  <IconBase
+    resizeMode={'contain'}
+    size="md"
+    {...props}
+    source={require('./icons/femaleIcon.png')}
+  />
 );
 
 export const MaleIcon: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/maleIcon.png')} />
+  <IconBase resizeMode={'contain'} size="md" {...props} source={require('./icons/maleIcon.png')} />
 );
 
 export const FemaleCircleIcon: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/femaleCircleIcon.png')} />
+  <IconBase
+    resizeMode={'contain'}
+    size="md"
+    {...props}
+    source={require('./icons/femaleCircleIcon.png')}
+  />
 );
 
 export const MaleCircleIcon: React.FC<IconProps> = (props) => (
-  <IconBase size="md" {...props} source={require('./icons/maleCircleIcon.png')} />
+  <IconBase
+    resizeMode={'contain'}
+    size="md"
+    {...props}
+    source={require('./icons/maleCircleIcon.png')}
+  />
+);
+
+export const CircleDiscountBadge: React.FC<IconProps> = (props) => (
+  <IconBase size="lg" {...props} source={require('./icons/discountBadge.png')} />
 );

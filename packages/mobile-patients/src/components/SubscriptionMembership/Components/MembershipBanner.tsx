@@ -25,7 +25,7 @@ export const MembershipBanner: React.FC<MembershipBannerProps> = (props) => {
     const circleSavings = totalCircleSavings?.totalSavings + totalCircleSavings?.callsUsed;
     return (
       <View>
-        <CircleMembershipBanner style={styles.circleBannerStyle} />
+        <CircleMembershipBanner resizeMode="cover" style={styles.circleBannerStyle} />
         {circleSavings == 0 && (
           <View style={styles.circleSaving}>
             <View style={{ flexDirection: 'row' }}>
@@ -67,8 +67,7 @@ const styles = StyleSheet.create({
   },
   circleBannerStyle: {
     width: '100%',
-    height: 190,
-    resizeMode: 'contain',
+    height: 165,
   },
   circleSaving: {
     position: 'absolute',

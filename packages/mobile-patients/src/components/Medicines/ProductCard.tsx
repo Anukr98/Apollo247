@@ -133,11 +133,7 @@ export const ProductCard: React.FC<Props> = ({
     const finalPrice = discount ? special_price : price;
     const cashback = getCareCashback(Number(finalPrice), type_id);
     if (!!cashback) {
-      return (
-        <CareCashbackBanner
-          bannerText={`Extra Care ₹${cashback} Cashback`}
-        />
-      );
+      return <CareCashbackBanner bannerText={`extra ₹${cashback.toFixed(2)} cashback`} />;
     } else {
       return <></>;
     }
