@@ -34,7 +34,7 @@ export const CircleTotalBill: React.FC<CircleTotalBillProps> = (props) => {
             {planDurationInMonth} month
             {`${planDurationInMonth === 1 ? '' : 's'}`} plan
           </Text>
-          <Text style={styles.validityText}>Valid till: xxxx</Text>
+          {/* <Text style={styles.validityText}>Valid till: xxxx</Text> */}
         </View>
       </View>
       <View style={styles.seperatorTwo} />
