@@ -523,6 +523,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
+    setBannerData && setBannerData([]); // default banners to be empty
     fetchAddress();
   }, []);
 

@@ -351,7 +351,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
           sliderWidth={width}
           itemWidth={width}
           loop={true}
-          autoplay={false}
+          autoplay={true}
         />
         {bannerData && bannerData.length > 1 ? (
           <View style={styles.sliderDotsContainer}>
