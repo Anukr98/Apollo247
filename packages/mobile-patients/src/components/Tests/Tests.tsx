@@ -486,6 +486,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
     checkLocation();
   }, [locationDetails]);
 
+  useEffect(() => {
+    setBannerData && setBannerData([]); // default banners to be empty
+  }, []);
+
   const checkLocation = () => {
     !locationDetails &&
       showAphAlert!({

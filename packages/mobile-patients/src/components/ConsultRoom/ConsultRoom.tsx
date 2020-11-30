@@ -887,6 +887,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     setWebEngageScreenNames('Home Screen');
     getUserSubscriptionsByStatus();
     checkCircleSelectedPlan();
+    setBannerData && setBannerData([]); // default banners to be empty
   }, []);
 
   const checkCircleSelectedPlan = async () => {
