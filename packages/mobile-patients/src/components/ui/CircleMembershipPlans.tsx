@@ -296,12 +296,19 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
           style={[
             styles.radioBtn,
             {
-              marginRight: index === 0 ? 0 : 12,
               top: value?.saved_extra_on_lower_plan ? iconDimension + 35 : iconDimension + 20,
-              borderWidth: isPlanActive ? 3 : 1,
             },
           ]}
-        />
+        >
+          <View
+            style={[
+              styles.radioBtnIcon,
+              {
+                borderWidth: isPlanActive ? 3 : 1,
+              },
+            ]}
+          />
+        </TouchableOpacity>
       </View>
     );
   };
@@ -739,13 +746,20 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   radioBtn: {
+    width: 24,
+    height: 24,
+    alignSelf: 'center',
+    marginTop: 12,
+    position: 'absolute',
+    justifyContent: 'center',
+  },
+  radioBtnIcon: {
     width: 12,
     height: 12,
     borderRadius: 6,
     borderWidth: 1,
     borderColor: theme.colors.SEARCH_UNDERLINE_COLOR,
     alignSelf: 'center',
-    marginTop: 16,
     position: 'absolute',
   },
   savingsText: {
