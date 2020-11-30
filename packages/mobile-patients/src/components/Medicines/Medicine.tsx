@@ -2232,7 +2232,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           {renderSearchInput()}
           {renderSearchResults()}
         </View>
-        <View style={{ flex: 1, paddingBottom: !!cartItems.length ? 50 : 0 }}>
+        <View style={{ flex: 1, paddingBottom: !!cartItems.length ? 80 : 0 }}>
           {renderSections()}
           {renderOverlay()}
           {!!cartItems.length && renderCircleCartDetails()}
