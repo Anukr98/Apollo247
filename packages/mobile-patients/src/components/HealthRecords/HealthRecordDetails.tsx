@@ -585,9 +585,7 @@ export const HealthRecordDetails: React.FC<HealthRecordDetailsProps> = (props) =
           ? renderDetailsFinding()
           : null}
         {data?.additionalNotes || data?.healthCheckSummary || data?.notes || data?.diagnosisNotes
-          ? healthCondition
-            ? null
-            : renderTopLineReport()
+          ? renderTopLineReport()
           : null}
         {!!data.fileUrl ? renderImage() : null}
         {!!data.fileUrl || labResults ? renderDownloadButton() : null}

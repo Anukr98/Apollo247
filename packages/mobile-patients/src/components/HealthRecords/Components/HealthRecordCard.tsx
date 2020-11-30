@@ -60,6 +60,7 @@ export interface HealthRecordCardProps {
   showUpdateDeleteOption?: boolean;
   healthConditionCard?: boolean;
   healthCondtionCardTopView?: React.ReactElement;
+  hideUpdateDeleteOption?: boolean;
 }
 
 export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
@@ -81,6 +82,7 @@ export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
     healthConditionCard,
     healthCondtionCardTopView,
     showUpdateDeleteOption,
+    hideUpdateDeleteOption,
   } = props;
   return (
     <TouchableOpacity
@@ -90,10 +92,10 @@ export const HealthRecordCard: React.FC<HealthRecordCardProps> = (props) => {
     >
       <View style={{ marginVertical: 12, marginLeft: 13, marginRight: 11 }}>
         <View style={{ flexDirection: 'row', position: 'absolute', top: 0, right: 0, zIndex: 1 }}>
-          {showUpdateDeleteOption ? null : (
+          {showUpdateDeleteOption && !hideUpdateDeleteOption ? null : (
             <Text style={{ ...theme.viewStyles.text('R', 10, '#67909C', 1, 13) }}>{dateText}</Text>
           )}
-          {showUpdateDeleteOption ? (
+          {showUpdateDeleteOption && !hideUpdateDeleteOption ? (
             <MaterialMenu
               options={editDeleteData}
               menuContainerStyle={[styles.menuContainerStyle, { marginTop: 25 }]}

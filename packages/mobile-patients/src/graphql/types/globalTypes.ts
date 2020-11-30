@@ -622,6 +622,7 @@ export interface AddPatientHealthRestrictionRecordInput {
   endDate?: any | null;
   suggestedByDoctor?: string | null;
   nature: HealthRestrictionNature;
+  notes?: string | null;
 }
 
 export interface AddPatientMedicalBillRecordInput {
@@ -642,7 +643,7 @@ export interface AddPatientMedicalInsuranceRecordInput {
   insuranceCompany: string;
   policyNumber?: string | null;
   startDate: any;
-  endDate?: any | null;
+  endDate: any;
   sumInsured?: string | null;
   insuranceFiles?: (MedicalInsuranceFileProperties | null)[] | null;
   notes?: string | null;

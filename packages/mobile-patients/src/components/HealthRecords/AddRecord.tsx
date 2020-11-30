@@ -499,6 +499,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const [healthRestrictionName, setHealthRestrictionName] = useState<string>('');
   const [healthRestrictionDocName, setHealthRestrictionDocName] = useState<string>('');
   const [healthRestrictionEndDate, setHealthRestrictionEndDate] = useState<string>('');
+  const [healthRestrictionAdditionalNotes, setHealthRestrictionAdditionalNotes] = useState<string>(
+    ''
+  );
   const [isHealthRestrictionDateTimePicker, setIsHealthRestrictionDateTimePicker] = useState<
     boolean
   >(false);
@@ -687,6 +690,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             ? moment(selectedRecord?.endDateTime).format(string.common.date_placeholder_text)
             : ''
         );
+        setHealthRestrictionAdditionalNotes(selectedRecord?.notes || '');
       } else if (recordType === MedicalRecordType.MEDICALCONDITION) {
         setMedicalConditionCheckbox(true);
         setShowMedicalConditionDetails(true);
@@ -1121,6 +1125,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             )
           : null,
       recordType: MedicalRecordType.HEALTHRESTRICTION,
+      notes: healthRestrictionAdditionalNotes,
     };
     client
       .mutate<addPatientHealthRestrictionRecord>({
@@ -2659,6 +2664,22 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               maximumDate={false}
               minimumDate={new Date()}
             />
+            {renderListItem(string.common.additional_text, false)}
+            <TextInput
+              placeholder={string.common.enter_additional_text}
+              style={[styles.textInputStyle, styles.additionalTextInputStyle]}
+              multiline
+              selectionColor={theme.colors.SKY_BLUE}
+              numberOfLines={1}
+              value={healthRestrictionAdditionalNotes}
+              placeholderTextColor={theme.colors.placeholderTextColor}
+              underlineColorAndroid={'transparent'}
+              onChangeText={(additionalNotes) => {
+                if (isValidText(additionalNotes)) {
+                  setHealthRestrictionAdditionalNotes(additionalNotes);
+                }
+              }}
+            />
           </>
         ) : null}
       </>
@@ -2921,6 +2942,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               maximumDate={false}
               minimumDate={new Date()}
             />
+            {renderListItem('Dosage Level', false)}
             <View style={styles.morningViewStyle}>
               <TouchableOpacity
                 onPress={() => setIsMorningChecked(!isMorningChecked)}
@@ -2957,7 +2979,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               </TouchableOpacity>
             </View>
             <View style={{ marginTop: 32 }}>
-              {renderListItem('Additional Notes', false)}
+              {renderListItem(string.common.additional_text, false)}
               <TextInput
                 placeholder={'Enter additional notes'}
                 style={[styles.textInputStyle, styles.additionalTextInputStyle]}

@@ -207,7 +207,7 @@ export const BillScreen: React.FC<BillScreenProps> = (props) => {
   const renderMedicalBillItems = (item: MedicalBillsType, index: number) => {
     const prescriptionName = item?.hospitalName || '';
     const dateText = getPrescriptionDate(item?.billDateTime);
-    const soureName = getSourceName(item?.source || '-');
+    const soureName = getSourceName(item?.source!) || '-';
     const selfUpload = true;
     const showEditDeleteOption =
       soureName === string.common.clicnical_document_text || soureName === '-' ? true : false;
