@@ -7,13 +7,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.media.AudioManager;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Vibrator;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -34,6 +37,7 @@ import com.facebook.react.bridge.WritableMap;
 public class UnlockScreenActivity extends ReactActivity implements UnlockScreenActivityInterface {
     private static final String TAG = "MessagingService";
     private Ringtone ringtone;
+    private Vibrator vibrator;
     LocalBroadcastManager mLocalBroadcastManager;
     BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
@@ -70,6 +74,8 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
         //ringtoneManager start
         Uri incoming_call_notif = Uri.parse("android.resource://" + this.getPackageName() + "/" + R.raw.incallmanager_ringtone);
         this.ringtone = RingtoneManager.getRingtone(getApplicationContext(), incoming_call_notif);
+        this.vibrator = (Vibrator) getApplicationContext().getSystemService(Context.VIBRATOR_SERVICE);
+
         //ringtoneManager end
 
         Boolean fallBack = intent.getBooleanExtra("FALL_BACK", true);
@@ -77,6 +83,16 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
             if (!fallBack) {
                 ringtone.setLooping(true);
                 ringtone.play();
+                try {
+                    Boolean isVibrationOn = ((AudioManager) getSystemService(Context.AUDIO_SERVICE)).getRingerMode() == AudioManager.RINGER_MODE_VIBRATE ||
+                            (Settings.System.getInt(getBaseContext().getContentResolver(), "vibrate_when_ringing", 0) == 1);
+                    if (isVibrationOn) {
+                        long[] pattern = new long[]{100, 200, 300, 400, 500, 400, 300, 200};
+                        vibrator.vibrate(pattern, 0);
+                    }
+                } catch (Exception e) {
+                    Log.e("vibration error", e.getMessage() + "\n" + e.toString());
+                }
             }
         } else if (notifMessageType.equals(incomingCallDisconnect)) {
             finish();
@@ -146,6 +162,7 @@ public class UnlockScreenActivity extends ReactActivity implements UnlockScreenA
         super.onDestroy();
         mLocalBroadcastManager.unregisterReceiver(mBroadcastReceiver);
         ringtone.stop();
+        vibrator.cancel();
     }
 
     @Override

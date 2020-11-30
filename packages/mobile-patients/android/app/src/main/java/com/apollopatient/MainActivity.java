@@ -9,6 +9,7 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.provider.Settings;
 import android.util.Log;
 
@@ -67,6 +68,8 @@ public class MainActivity extends ReactActivity {
                 NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
                 manager.cancel(getIntent().getIntExtra(NOTIFICATION_ID, -1));
                 ringtone.stop();
+                Vibrator vibrator = (Vibrator) getApplicationContext().getSystemService(Context.VIBRATOR_SERVICE);
+                vibrator.cancel();
             }
         } catch (Exception e) {
             Log.e("overlay permission err", e.getMessage() + "\n" + e.toString());
@@ -85,6 +88,8 @@ public class MainActivity extends ReactActivity {
                 Uri incoming_call_notif = Uri.parse("android.resource://" + this.getPackageName() + "/" + R.raw.incallmanager_ringtone);
                 ringtone = RingtoneManager.getRingtone(getApplicationContext(), incoming_call_notif);
                 ringtone.stop();
+                Vibrator vibrator = (Vibrator) getApplicationContext().getSystemService(Context.VIBRATOR_SERVICE);
+                vibrator.cancel();
             }
         } catch (Exception e) {
             Log.e("overlay permission err", e.getMessage() + "\n" + e.toString());

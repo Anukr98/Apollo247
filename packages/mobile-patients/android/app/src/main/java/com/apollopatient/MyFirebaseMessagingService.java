@@ -1,5 +1,6 @@
 package com.apollopatient;
 
+import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -7,9 +8,11 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioAttributes;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.SystemClock;
+import android.os.Vibrator;
 import android.provider.Settings;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -44,6 +47,7 @@ public class MyFirebaseMessagingService
         WebEngage.get().setRegistrationID(s);
     }
 
+    @SuppressLint("MissingPermission")
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
@@ -60,6 +64,8 @@ public class MyFirebaseMessagingService
                     } else if (disconnectCallType.equals(notifDataType)) {
                         NotificationManager notificationManager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
                         notificationManager.cancelAll();
+                        Vibrator vibrator = (Vibrator) getApplicationContext().getSystemService(Context.VIBRATOR_SERVICE);
+                        vibrator.cancel();
                     }
                 } else {
                     showUnlockScreen(remoteMessage, !isAppRunning());
@@ -80,8 +86,6 @@ public class MyFirebaseMessagingService
                         (new io.invertase.firebase.messaging.ReactNativeFirebaseMessagingService()).onMessageReceived(remoteMessage);
 
                     }
-
-
                 } catch (Exception e) {
                     Log.e("new io.invertase error", e.getMessage() + "\n" + e.toString());
                 }
@@ -121,6 +125,7 @@ public class MyFirebaseMessagingService
         return spannable;
     }
 
+    @SuppressLint("MissingPermission")
     private void sendNotifications(RemoteMessage remoteMessage) {
         String appointment_id = remoteMessage.getData().get("appointmentId");
         String incoming_call_type = remoteMessage.getData().get("callType");
@@ -131,12 +136,11 @@ public class MyFirebaseMessagingService
         Uri uri_home = Uri.parse(doctorCallRejectedDeepLink);
         int oneTimeID = (int) SystemClock.uptimeMillis();
 
-        //on notif click start
         Intent intent = new Intent(Intent.ACTION_VIEW, uri);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent,
                 PendingIntent.FLAG_ONE_SHOT);
-        //on notif click end
+        PendingIntent deleteIntent = PendingIntent.getActivity(this, 0, new Intent(Intent.ACTION_VIEW, uri_home).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP), PendingIntent.FLAG_ONE_SHOT);
 
         //when device locked show fullscreen notification start
         Intent i = new Intent(getApplicationContext(), UnlockScreenActivity.class);
@@ -165,7 +169,7 @@ public class MyFirebaseMessagingService
         NotificationCompat.Action rejectCall = new NotificationCompat.Action.Builder(R.drawable.rjt_btn, getActionText("Decline", android.R.color.holo_red_light), rjctIntent).build();
         //end
 
-        long[] v = {500, 1000};
+        long[] pattern = new long[]{100, 200, 300, 400, 500, 400, 300, 200};
 
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(this, channelId)
@@ -175,25 +179,23 @@ public class MyFirebaseMessagingService
                         .setPriority(NotificationCompat.PRIORITY_MAX)
                         .setCategory(NotificationCompat.CATEGORY_CALL)
                         .setAutoCancel(true)
-                        .setVibrate(v)
                         .setSound(incoming_call_notif)
                         .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                         .addAction(acceptCall)
                         .addAction(rejectCall)
                         .setFullScreenIntent(fullScreenIntent, true)
+                        .setDeleteIntent(deleteIntent)
                         .setContentIntent(pendingIntent);
 
         Log.e("notificationBuilder", String.valueOf(notificationId));
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-
         int importance = NotificationManager.IMPORTANCE_MAX;
 
         //channel creation start
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            NotificationChannel mChannel = new NotificationChannel(
-                    channelId, channelName, importance);
+            NotificationChannel mChannel = new NotificationChannel(channelId, channelName, importance);
             AudioAttributes attributes = new AudioAttributes.Builder()
                     .setUsage(AudioAttributes.USAGE_NOTIFICATION)
                     .build();
@@ -204,6 +206,17 @@ public class MyFirebaseMessagingService
             notificationManager.createNotificationChannel(mChannel);
         }
         //end
+
+        try {
+            Boolean isVibrationOn = ((AudioManager) getSystemService(Context.AUDIO_SERVICE)).getRingerMode() == AudioManager.RINGER_MODE_VIBRATE ||
+                    (Settings.System.getInt(getBaseContext().getContentResolver(), "vibrate_when_ringing", 0) == 1);
+            if (isVibrationOn) {
+                Vibrator vibrator = (Vibrator) getApplicationContext().getSystemService(Context.VIBRATOR_SERVICE);
+                vibrator.vibrate(pattern, 0);
+            }
+        } catch (Exception e) {
+            Log.e("vibration error", e.getMessage() + "\n" + e.toString());
+        }
 
         notificationManager.notify(oneTimeID, notificationBuilder.build());
     }
