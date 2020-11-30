@@ -48,6 +48,7 @@ interface CircleMembershipPlansProps extends NavigationScreenProps {
   onEndApiCall?: (() => void) | null;
   buyNow?: boolean;
   source?: 'Pharma' | 'Product Detail' | 'Pharma Cart' | 'Diagnostic' | 'Consult';
+  from: string;
 }
 
 export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (props) => {
@@ -64,6 +65,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
     onEndApiCall,
     buyNow,
     source,
+    from,
   } = props;
   const client = useApolloClient();
   const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
@@ -497,11 +499,12 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
   const openCircleWebView = () => {
     console.log(isDiagnosticJourney);
     props.navigation.navigate(AppRoutes.CommonWebView, {
-      url: isConsultJourney
-        ? AppConfig.Configuration.CIRCLE_CONSULT_URL
-        : isDiagnosticJourney
-        ? AppConfig.Configuration.CIRCLE_TEST_URL
-        : AppConfig.Configuration.CIRLCE_PHARMA_URL,
+      url:
+        isConsultJourney || from === string.banner_context.HOME
+          ? AppConfig.Configuration.CIRCLE_CONSULT_URL
+          : isDiagnosticJourney || from === string.banner_context.DIAGNOSTIC_HOME
+          ? AppConfig.Configuration.CIRCLE_TEST_URL
+          : AppConfig.Configuration.CIRLCE_PHARMA_URL,
       source: source,
     });
   };

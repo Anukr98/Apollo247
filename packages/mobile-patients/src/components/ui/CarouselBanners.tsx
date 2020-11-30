@@ -394,6 +394,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
         buyNow={true}
         membershipPlans={membershipPlans}
         source={source}
+        from={from}
       />
     );
   };
