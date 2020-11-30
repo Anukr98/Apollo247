@@ -457,6 +457,19 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     }
   }, [deliveryAddressId]);
 
+  const fireCircleBenifitAppliedEvent = () => {
+    const CircleEventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CIRCLE_BENIFIT_APPLIED] = {
+      'Patient UHID': currentPatient?.uhid,
+      'Mobile Number': currentPatient?.mobileNumber,
+      'Customer ID': currentPatient?.id,
+    };
+    isDiagnosticCircleSubscription &&
+      postWebEngageEvent(
+        WebEngageEventName.DIAGNOSTIC_CIRCLE_BENIFIT_APPLIED,
+        CircleEventAttributes
+      );
+  };
+
   useEffect(() => {
     if (cartItems.length) {
       const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CART_VIEWED] = {
@@ -485,6 +498,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       if (coupon) {
         eventAttributes['Coupon code used'] = coupon.code;
       }
+      fireCircleBenifitAppliedEvent();
       postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_CART_VIEWED, eventAttributes);
     }
   }, [hcCharges]);

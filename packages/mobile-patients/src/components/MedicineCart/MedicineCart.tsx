@@ -80,6 +80,7 @@ import {
   applyCouponClickedEvent,
   selectDeliveryAddressClickedEvent,
   uploadPrescriptionClickedEvent,
+  fireCircleBuyNowEvent,
 } from '@aph/mobile-patients/src/components/MedicineCart/Events';
 import {
   postPhamracyCartAddressSelectedFailure,
@@ -127,6 +128,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     deliveryTime,
     setdeliveryTime,
     cartTotalCashback,
+    circleMembershipCharges,
+    setIsFreeDelivery,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -155,7 +158,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   const navigatedFrom = props.navigation.getParam('movedFrom') || '';
   const pharmacyPincode =
     selectedAddress?.zipcode || pharmacyLocation?.pincode || locationDetails?.pincode || pinCode;
-  const [showCareSelectPlans, setShowCareSelectPlans] = useState<boolean>(false);
+  const [showCareSelectPlans, setShowCareSelectPlans] = useState<boolean>(true);
 
   useEffect(() => {
     fetchAddress();
@@ -223,6 +226,10 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       }
     }
   }, [coupon]);
+
+  useEffect(() => {
+    setIsFreeDelivery && setIsFreeDelivery(!!circleMembershipCharges);
+  }, [circleMembershipCharges])
 
   useEffect(() => {
     onFinishUpload();
@@ -938,6 +945,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
           onSelectMembershipPlan={(plan) => {
             if (plan && !coupon) {
               // if plan is selected
+              fireCircleBuyNowEvent(currentPatient);
               setCircleMembershipCharges && setCircleMembershipCharges(plan?.currentSellingPrice);
               setCircleSubPlanId && setCircleSubPlanId(plan?.subPlanId);
             } else {
@@ -946,6 +954,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
               setCircleMembershipCharges && setCircleMembershipCharges(0);
             }
           }}
+          source={'Pharma Cart'}
         />
       );
     } else {

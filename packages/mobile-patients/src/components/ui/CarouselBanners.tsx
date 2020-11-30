@@ -44,9 +44,10 @@ interface CarouselProps extends NavigationScreenProps {
   planActivationCallback?: (() => void) | null;
   circlePlanValidity?: string;
   from: string;
+  source?: 'Pharma' | 'Product Detail' | 'Pharma Cart' | 'Diagnostic' | 'Consult';
 }
 export const CarouselBanners: React.FC<CarouselProps> = (props) => {
-  const { circleActivated, planActivationCallback, circlePlanValidity, from } = props;
+  const { circleActivated, planActivationCallback, circlePlanValidity, from, source } = props;
   const [slideIndex, setSlideIndex] = useState(0);
   const { currentPatient } = useAllCurrentPatients();
   const hdfc_values = string.Hdfc_values;
@@ -95,6 +96,18 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
     const name = url.split(ext)[0].split('/')[txt.split('/').length - 1];
     const mPath = path.join('/').concat('/mweb_'.concat(name).concat(ext));
     return mPath;
+  };
+
+  const fireCircleEvent = () => {
+    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMA_HOME_UPGRADE_TO_CIRCLE] = {
+      'Patient UHID': currentPatient?.uhid,
+      'Mobile Number': currentPatient?.mobileNumber,
+      'Customer ID': currentPatient?.id,
+    };
+    source == 'Pharma' &&
+      postWebEngageEvent(WebEngageEventName.PHARMA_HOME_UPGRADE_TO_CIRCLE, eventAttributes);
+    source == 'Product Detail' &&
+      postWebEngageEvent(WebEngageEventName.PHARMA_PRODUCT_UPGRADE_TO_CIRCLE, eventAttributes);
   };
 
   const renderHdfcSliderItem = ({ item }) => {
@@ -368,6 +381,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
       circlePaymentDone={planPurchased.current}
       circlePlanValidity={circlePlanValidity}
       from={from}
+      source={source}
     />
   );
 
@@ -379,6 +393,7 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
         closeModal={() => setShowCirclePlans(false)}
         buyNow={true}
         membershipPlans={membershipPlans}
+        source={source}
       />
     );
   };

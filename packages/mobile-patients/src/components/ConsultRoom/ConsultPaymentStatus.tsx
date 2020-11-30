@@ -735,7 +735,20 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     );
   };
 
+  const circleWebEngage = () => {
+    const eventAttributes = {
+      'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      'Patient UHID': g(currentPatient, 'uhid'),
+      Relation: g(currentPatient, 'relation'),
+      'Patient Gender': g(currentPatient, 'gender'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+    };
+    postWebEngageEvent(WebEngageEventName.VC_NON_CIRCLE_BUYS_SUBSCRIPTION, eventAttributes);
+  };
+
   const renderAddedCirclePlanWithValidity = () => {
+    circleWebEngage();
     return (
       <AddedCirclePlanWithValidity
         circleSavings={circleSavings}

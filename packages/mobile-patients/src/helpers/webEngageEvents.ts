@@ -87,6 +87,20 @@ export enum WebEngageEventName {
   CONFIRM_LOCATION = 'Confirm Location',
   DOCTOR_LISTING_FILTER_APPLIED = 'Doctor Listing Filter Apply',
 
+  //Circle Plan event names
+  VC_NON_CIRCLE = 'VC Non Circle Clicks on Know More at Doctor Listing',
+  VC_NON_CIRCLE_ADD = 'VC Non Circle Adds Circle Plan at Doctor Listing',
+  VC_NON_CIRCLE_KNOWMORE_CONSULT = 'VC Non Circle Clicks on Know More at Choose Consult Type',
+  VC_NON_CIRCLE_KNOWMORE_PROFILE = 'VC Non Circle Clicks on Know More at Doctor Profile',
+  VC_NON_CIRCLE_ADDS_PROFILE = 'VC Non Circle Adds Circle Plan at Doctor Profile',
+  VC_CIRCLE_FILTER = 'VC Circle Filter Selected',
+  VC_NON_CIRCLE_PLAN_1 = 'VC Non Circle chooses Plan 1 in Consult Web View',
+  VC_NON_CIRCLE_PLAN_2 = 'VC Non Circle chooses Plan 2 in Consult Web View',
+  VC_NON_CIRCLE_PLAN_3 = 'VC Non Circle chooses Plan 3 in Consult Web View',
+  VC_NON_CIRCLE_ADDS_CART = 'VC Non Circle adds Circle to Cart',
+  VC_NON_CIRCLE_REMOVES_CART = 'VC Non Circle removes Circle from Cart',
+  VC_NON_CIRCLE_BUYS_SUBSCRIPTION = 'VC Non Circle buys Circle subscription',
+
   MY_ORDERS_CLICKED = 'My Orders Clicked',
   ORDER_SUMMARY_CLICKED = 'Order Summary Clicked',
   PHARMACY_MY_ORDER_TRACKING_CLICKED = 'Pharmacy My Order Tracking Clicked',
@@ -281,6 +295,30 @@ export enum WebEngageEventName {
   SYMPTOM_TRACKER_CONSULT_DOCTOR_CLICKED = 'user clicked on consult doc symptom check',
   SYMPTOM_TRACKER_RESTART_CLICKED = 'restart symptom checker clicked',
   SYMPTOM_TRACKER_SEARCH_SYMPTOMS = 'User searched symptom SC',
+
+  // Pharma Circle Events
+  PHARMA_CIRCLE_BANNER_CLICKED = 'App Pharma Circle Banner Clicked',
+  PHARMA_HOME_UPGRADE_TO_CIRCLE = 'App Pharma Upgrade to Circle sticky Clicked',
+  PHARMA_HOME_KNOW_MORE_CLICKED_CIRCLE_POPUP = 'App Pharma Home PopUp Know More Clicked ',
+  PHARMA_PRODUCT_UPGRADE_TO_CIRCLE = 'App Pharma PDP Banner Upgrade to Circle',
+  PHARMA_PRODUCT_KNOW_MORE_CLICKED_CIRCLE_POPUP = 'App Pharma PDP Popup Know More Clicked',
+  PHARMA_PRODUCT_ADD_TO_CART_CLICKED_CIRCLE_POPUP = 'App Pharma PDP Popup Add To Cart',
+  PHARMA_CART_KNOW_MORE_CLICKED_CIRCLE_POPUP = 'App Pharma Cart PopUp Know More Clicked',
+  PHARMA_CART_ADD_TO_CART_CLICKED_CIRCLE_POPUP = 'App Pharma Cart PopUp Add to Cart Clicked',
+  PHARMA_CART_CIRCLE_MEMBERSHIP_REMOVED = 'App Pharma Cart Circle Plan Removed',
+  PHARMA_WEBVIEW_PLAN1 = 'App Pharma Plan 1 in Pharmacy Web View',
+  PHARMA_WEBVIEW_PLAN2 = 'App Pharma Plan 2 in Pharmacy Web View',
+  PHARMA_WEBVIEW_PLAN3 = 'App Pharma Plan 3 in Pharmacy Web View',
+  PHARMA_WEBVIEW_PLAN_SELECTED = 'App Pharma WebView Plan Selected',
+  PHARMA_CIRCLE_SUBSCRIPTION_PURCHASE = 'App Pharma Non Circle buys Circle subscription',
+
+  //Diagnostic Circle Events
+  DIAGNOSTICS_CIRCLE_BANNER_CLICKED = 'App Non-circle banner clicked - Diagnostics',
+  DIAGNOSTICS_BUY_NOW_CLICKED_CIRCLE_POPUP = 'App Non-circle Buy Now clicked - Diagnostics',
+  DIAGNOSTICS_KNOW_MORE_CLICKED_CIRCLE_POPUP = 'App Non-circle Know more clicked - Diagnostics',
+  DIAGNOSTIC_OTHER_PAYMENT_OPTION_CLICKED_POPUP = 'App circle plan - other payment clicked - Diagnostics',
+  DIAGNOSTIC_CIRCLE_MEMBERSHIP_ACTIVATED = 'App Circle activated - Diagnostics',
+  DIAGNOSTIC_CIRCLE_BENIFIT_APPLIED = 'App circle benefits - Diagnostics',
 }
 
 export interface PatientInfo {
@@ -514,6 +552,30 @@ export interface WebEngageEvents {
     'Customer ID': string;
     'Past Searches': any;
   };
+
+  // ********** PharmaCircleEvents ********** \\
+  [WebEngageEventName.PHARMA_CIRCLE_BANNER_CLICKED]: UserInfo;
+  [WebEngageEventName.PHARMA_HOME_UPGRADE_TO_CIRCLE]: UserInfo;
+  [WebEngageEventName.PHARMA_HOME_KNOW_MORE_CLICKED_CIRCLE_POPUP]: UserInfo;
+  [WebEngageEventName.PHARMA_PRODUCT_UPGRADE_TO_CIRCLE]: UserInfo;
+  [WebEngageEventName.PHARMA_PRODUCT_KNOW_MORE_CLICKED_CIRCLE_POPUP]: UserInfo;
+  [WebEngageEventName.PHARMA_PRODUCT_ADD_TO_CART_CLICKED_CIRCLE_POPUP]: UserInfo;
+  [WebEngageEventName.PHARMA_CART_KNOW_MORE_CLICKED_CIRCLE_POPUP]: UserInfo;
+  [WebEngageEventName.PHARMA_CART_ADD_TO_CART_CLICKED_CIRCLE_POPUP]: UserInfo;
+  [WebEngageEventName.PHARMA_CART_CIRCLE_MEMBERSHIP_REMOVED]: UserInfo;
+  [WebEngageEventName.PHARMA_WEBVIEW_PLAN1]: UserInfo;
+  [WebEngageEventName.PHARMA_WEBVIEW_PLAN2]: UserInfo;
+  [WebEngageEventName.PHARMA_WEBVIEW_PLAN3]: UserInfo;
+  [WebEngageEventName.PHARMA_WEBVIEW_PLAN_SELECTED]: UserInfo;
+  [WebEngageEventName.PHARMA_CIRCLE_SUBSCRIPTION_PURCHASE]: UserInfo;
+
+  // ********** DiagnosticCircleEvents ********** \\
+  [WebEngageEventName.DIAGNOSTICS_CIRCLE_BANNER_CLICKED]: UserInfo;
+  [WebEngageEventName.DIAGNOSTICS_BUY_NOW_CLICKED_CIRCLE_POPUP]: UserInfo;
+  [WebEngageEventName.DIAGNOSTICS_KNOW_MORE_CLICKED_CIRCLE_POPUP]: UserInfo;
+  [WebEngageEventName.DIAGNOSTIC_OTHER_PAYMENT_OPTION_CLICKED_POPUP]: UserInfo;
+  [WebEngageEventName.DIAGNOSTIC_CIRCLE_MEMBERSHIP_ACTIVATED]: UserInfo;
+  [WebEngageEventName.DIAGNOSTIC_CIRCLE_BENIFIT_APPLIED]: UserInfo;
 
   // ********** PharmacyEvents ********** \\
 

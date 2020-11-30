@@ -1838,6 +1838,15 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     }
   };
 
+  const filterCircleWebEngage = () => {
+    const eventAttributes = {
+      'Patient UHID': g(currentPatient, 'uhid'),
+      'Mobile Number': g(currentPatient, 'mobileNumber'),
+      'Customer ID': g(currentPatient, 'id'),
+    };
+    postWebEngageEvent(WebEngageEventName.VC_CIRCLE_FILTER, eventAttributes);
+  };
+
   const renderViewCareSwitch = () => {
     return (
       <View style={styles.rowContainer}>
@@ -1848,6 +1857,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           onChange={(value) => {
             setCareDoctorsSwitch(value);
             setFilterActionTaken(true);
+            filterCircleWebEngage();
           }}
           value={careDoctorsSwitch}
         />
