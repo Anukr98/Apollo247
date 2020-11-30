@@ -55,9 +55,9 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
         </Text>
         {renderSavingsCard()}
       </View>
-    ) : (
-      renderSaveFromCircle()
-    );
+    ) : // next phase
+    // renderSaveFromCircle()
+    null;
   };
 
   const renderSaveFromCircle = () => {

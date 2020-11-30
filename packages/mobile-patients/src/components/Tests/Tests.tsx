@@ -490,6 +490,16 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setBannerData && setBannerData([]); // default banners to be empty
   }, []);
 
+  useEffect(() => {
+    const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      setBannerData && setBannerData([]); // default banners to be empty
+      getUserBanners();
+    });
+    return () => {
+      didFocus && didFocus.remove();
+    };
+  });
+
   const checkLocation = () => {
     !locationDetails &&
       showAphAlert!({

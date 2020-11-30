@@ -501,6 +501,16 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   }, []);
 
   useEffect(() => {
+    const didFocus = props.navigation.addListener('didFocus', (payload) => {
+      setBannerData && setBannerData([]); // default banners to be empty
+      getUserBanners();
+    });
+    return () => {
+      didFocus && didFocus.remove();
+    };
+  });
+
+  useEffect(() => {
     setWebEngageScreenNames('Medicine Home Page');
     fetchMedicinePageProducts(false);
   }, []);
