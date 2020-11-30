@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, FlatList } from 'react-native';
 import { RoundCancelIcon, RadioButtonIcon, RadioButtonUnselectedIcon } from '../ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { NavigationScreenProps } from 'react-navigation';
@@ -16,9 +16,9 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   radioButtonText: {
-    ...theme.fonts.IBMPlexSansMedium(10),
+    ...theme.fonts.IBMPlexSansMedium(12),
     lineHeight: 20,
-    color: theme.colors.SHERPA_BLUE,
+    color: '#3D5868',
     marginLeft: 8,
   },
   blurView: {
@@ -29,8 +29,7 @@ const styles = StyleSheet.create({
   },
   popupContainerView: {
     flexDirection: 'row',
-    top: Dimensions.get('window').height * 0.2,
-    alignItems: 'center',
+    top: Dimensions.get('window').height * 0.15,
   },
   popupView: {
     width: '90%',
@@ -47,14 +46,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   subHeadingView: {
-    marginHorizontal: 15,
     marginVertical: 10,
-    width: '93%',
+    width: '97%',
   },
   subHeadingText: {
-    ...theme.viewStyles.text('R', 13, '#02475B', 1, 18, 0.35),
+    ...theme.viewStyles.text('R', 12, '#02475B', 1, 18, 0.35),
+    textAlign: 'center',
   },
-  buttonView: { width: '40%', alignSelf: 'center', marginTop: 10 },
+  buttonView: { width: '40%', alignSelf: 'center', marginTop: 30 },
   cardStyle: {
     ...theme.viewStyles.cardViewStyle,
     marginHorizontal: 10,
@@ -68,13 +67,12 @@ const styles = StyleSheet.create({
   crossIconStyle: {
     resizeMode: 'contain',
     width: 22,
-    height: 23,
+    height: 21,
   },
   howToAvail: {
     flexDirection: 'row',
     marginTop: 15,
     width: '80%',
-    alignItems: 'center',
   },
   oneVectorStyle: {
     marginRight: 10,
@@ -107,13 +105,13 @@ export const DiabeticQuestionairePopup: React.FC<DiabeticQuestionairePopupProps>
     'unchecked'
   );
 
-  const onPressRadioButton = (item: any, selectedOption: any) => {
-    if (item.QUESTION == props.questions[0].QUESTION) {
+  const onPressRadioButton = (item: any, index: number) => {
+    if (index == 0) {
       setIsTypeOfDiabetesChecked('checked');
-      setTypeOfDiabetes(selectedOption.value);
+      setTypeOfDiabetes(item.item.value);
     } else {
       setIsDurationOfDiabetesChecked('checked');
-      setDurationOfDiabetes(selectedOption.value);
+      setDurationOfDiabetes(item.item.value);
     }
   };
 
@@ -127,56 +125,56 @@ export const DiabeticQuestionairePopup: React.FC<DiabeticQuestionairePopupProps>
                 style={[
                   styles.optionalText,
                   {
-                    marginTop: key == 1 ? 10 : 5,
+                    marginTop: key == 1 ? '10%' : 5,
                   },
                 ]}
               >
                 *Optional
               </Text>
               <Text style={styles.questionText}>{item.QUESTION}</Text>
-              {item.OPTIONS.map((res, key) => {
-                return (
-                  <View key={res.key}>
-                    <View style={{}}>
-                      <View style={{}}>
-                        <TouchableOpacity
-                          activeOpacity={1}
-                          onPress={() => onPressRadioButton(item, res)}
-                          style={{ flexDirection: 'row', alignItems: 'center' }}
-                        >
-                          {(isTypeOfDiabetesChecked == 'checked' && typeOfDiabetes === res.value) ||
-                          (isDurationOfDiabetesChecked == 'checked' &&
-                            durationOfDiabetes === res.value) ? (
-                            <RadioButtonIcon style={styles.radioIcon} />
-                          ) : (
-                            <RadioButtonUnselectedIcon style={styles.radioIcon} />
-                          )}
-
-                          <Text
-                            style={[
-                              styles.radioButtonText,
-                              {
-                                color:
-                                  (isTypeOfDiabetesChecked == 'checked' &&
-                                    typeOfDiabetes === res.value) ||
-                                  (isDurationOfDiabetesChecked == 'checked' &&
-                                    durationOfDiabetes === res.value)
-                                    ? theme.colors.APP_GREEN
-                                    : theme.colors.SHERPA_BLUE,
-                              },
-                            ]}
-                          >
-                            {res.value}
-                          </Text>
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                  </View>
-                );
-              })}
+              <FlatList
+                data={item.OPTIONS}
+                numColumns={2}
+                renderItem={(data) => renderOptions(data, key)}
+              />
             </View>
           );
         })}
+      </View>
+    );
+  };
+
+  const renderOptions = (item: any, index: number) => {
+    return (
+      <View style={{ width: '50%', marginTop: 10 }}>
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => onPressRadioButton(item, index)}
+          style={{ flexDirection: 'row' }}
+        >
+          {(isTypeOfDiabetesChecked == 'checked' && typeOfDiabetes === item.item.value) ||
+          (isDurationOfDiabetesChecked == 'checked' && durationOfDiabetes === item.item.value) ? (
+            <RadioButtonIcon style={styles.radioIcon} />
+          ) : (
+            <RadioButtonUnselectedIcon style={styles.radioIcon} />
+          )}
+
+          <Text
+            style={[
+              styles.radioButtonText,
+              {
+                color:
+                  (isTypeOfDiabetesChecked == 'checked' && typeOfDiabetes === item.item.value) ||
+                  (isDurationOfDiabetesChecked == 'checked' &&
+                    durationOfDiabetes === item.item.value)
+                    ? theme.colors.APP_GREEN
+                    : theme.colors.SHERPA_BLUE,
+              },
+            ]}
+          >
+            {item.item.value}
+          </Text>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -189,10 +187,9 @@ export const DiabeticQuestionairePopup: React.FC<DiabeticQuestionairePopupProps>
           <View
             style={{
               flexDirection: 'row',
-              alignItems: 'center',
             }}
           >
-            <View style={{ width: '90%' }}>
+            <View style={{ width: '89%' }}>
               <Text style={styles.headingText}>{props.heading}</Text>
             </View>
             <TouchableOpacity
