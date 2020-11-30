@@ -461,7 +461,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 28,
     marginBottom: 15,
     padding: 0,
-    width: width - 30,
+    width: width - 40,
     alignSelf: 'center',
   },
   bannerContainer: {
