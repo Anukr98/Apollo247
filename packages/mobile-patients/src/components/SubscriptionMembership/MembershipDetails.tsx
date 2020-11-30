@@ -3,6 +3,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Linking } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import {
   DownOrange,
   UpOrange,
@@ -17,6 +18,7 @@ import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonD
 import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AvailNowPopup } from './AvailNowPopup';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import {
   WebEngageEvents,
   WebEngageEventName,
@@ -33,6 +35,15 @@ import { BenefitsConsumedTab } from '@aph/mobile-patients/src/components/Subscri
 import { CircleSavings } from '@aph/mobile-patients/src/components/SubscriptionMembership/Components/CircleSavings';
 import { FAQComponent } from '@aph/mobile-patients/src/components/SubscriptionMembership/Components/FAQComponent';
 import { Circle } from '@aph/mobile-patients/src/strings/strings.json';
+import { UserConstentPopup } from '@aph/mobile-patients/src/components/SubscriptionMembership/UserConsentPopup';
+import { DiabeticQuestionairePopup } from '@aph/mobile-patients/src/components/SubscriptionMembership/DiabeticQuestionairePopup';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  addDiabeticQuestionnaire,
+  addDiabeticQuestionnaireVariables,
+} from '@aph/mobile-patients/src/graphql/types/addDiabeticQuestionnaire';
+import { ADD_DIABETIC_QUESTIONNAIRE } from '@aph/mobile-patients/src/graphql/profiles';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -156,7 +167,8 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     hdfcUpgradeUserSubscriptions,
     totalCircleSavings,
   } = useAppCommonData();
-  const { showAphAlert, hideAphAlert } = useUIElements();
+  const { circlePlanSelected } = useShoppingCart();
+  const { showAphAlert, hideAphAlert, loading, setLoading } = useUIElements();
   const { currentPatient } = useAllCurrentPatients();
   const planName = g(hdfcUserSubscriptions, 'name');
   const plan = planName?.substring(0, planName?.indexOf('+'));
@@ -180,6 +192,9 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const [showHdfcConnectPopup, setShowHdfcConnectPopup] = useState<boolean>(false);
   const [showAvailPopup, setShowAvailPopup] = useState<boolean>(false);
   const [benefitId, setBenefitId] = useState<string>('');
+  const [showUserConstentPopUp, setShowUserConsentPopup] = useState<boolean>(false);
+  const [showDiabeticQuestionaire, setShowDiabeticQuestionaire] = useState<boolean>(false);
+  const client = useApolloClient();
 
   const upgradeTransactionValue =
     membershipType === upgradePlanName
@@ -361,8 +376,6 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         props.navigation.navigate('DoctorSearchListing', {
           specialities: Hdfc_values.DIETICS_SPECIALITY_NAME,
         });
-      } else {
-        props.navigation.navigate(AppRoutes.ConsultRoom);
       }
     } else if (type == Hdfc_values.CALL_API) {
       if (action == Hdfc_values.CALL_EXOTEL_API) {
@@ -374,6 +387,10 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
             'Hey, looks like you have exhausted the monthly usage limit for this benefit. If you feel this is an error, please raise a ticket on the Help section.'
           );
         }
+      }
+    } else if (type == Hdfc_values.ADVANCED_DIABETES) {
+      if (action == Hdfc_values.FILL_FORM) {
+        setShowUserConsentPopup(true);
       }
     } else if (type == Hdfc_values.WHATSAPP_OPEN_CHAT) {
       Linking.openURL(`whatsapp://send?text=${message}&phone=91${action}`);
@@ -577,9 +594,51 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     );
   };
 
+  const onPressUserConsent = () => {
+    setShowUserConsentPopup(false);
+    setShowDiabeticQuestionaire(true);
+  };
+
+  const submitQuestionaire = (type: string, duration: string) => {
+    setLoading!(true);
+    client
+      .mutate<addDiabeticQuestionnaire, addDiabeticQuestionnaireVariables>({
+        mutation: ADD_DIABETIC_QUESTIONNAIRE,
+        variables: {
+          addDiabeticQuestionnaireInput: {
+            patientId: g(currentPatient, 'id'),
+            plan: circleSubscription?.name,
+            diabetic_type: type,
+            diabetic_year: duration,
+          },
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((response) => {
+        setLoading!(false);
+        const getResponse = g(response, 'data', 'addDiabeticQuestionnaire');
+        if (getResponse?.success) {
+          setShowDiabeticQuestionaire(false);
+          showAphAlert!({
+            title: '',
+            description: 'Thanks for submitting the information',
+          });
+        }
+      })
+      .catch((error) => {
+        setLoading!(false);
+        setShowDiabeticQuestionaire(false);
+        console.log(error);
+        showAphAlert!({
+          title: string.common.uhOh,
+          description: 'Error while connecting to the Doctor, Please try again',
+        });
+      });
+  };
+
   const renderCircleBenefits = (circleBenefits: any) => {
-    const totalSavingsDone = totalCircleSavings?.totalSavings + totalCircleSavings?.callsUsed;
-    return circleBenefits?.map((value) => {
+    const totalSavingsDone = totalCircleSavings?.totalSavings! + totalCircleSavings?.callsUsed!;
+    return circleBenefits?.map((value: any) => {
       const { headerContent, description, benefitCtaAction, icon, availableCount, _id } = value;
       const { action, message, type, webEngageEvent } = benefitCtaAction;
       return (
@@ -622,7 +681,6 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
       </ScrollView>
     );
   };
-
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={styles.safeAreaStyle}>
@@ -643,6 +701,32 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
           navigation={props.navigation}
         />
       )}
+      {showUserConstentPopUp ? (
+        <UserConstentPopup
+          heading={Hdfc_values.DIABETES_CONSENT.HEADING}
+          subHeading={Hdfc_values.DIABETES_CONSENT.SUBHEADING}
+          ctaText={Hdfc_values.DIABETES_CONSENT.CTA}
+          onClose={() => setShowUserConsentPopup(false)}
+          onPressConfirm={() => {
+            onPressUserConsent();
+          }}
+          navigation={props.navigation}
+        />
+      ) : null}
+      {showDiabeticQuestionaire ? (
+        <DiabeticQuestionairePopup
+          heading={Hdfc_values.ADVANCE_DIABETES_QUESTIONAIRE.HEADING}
+          subHeading={Hdfc_values.ADVANCE_DIABETES_QUESTIONAIRE.SUBHEADING}
+          ctaText={Hdfc_values.ADVANCE_DIABETES_QUESTIONAIRE.CTA}
+          questions={Hdfc_values.ADVANCE_DIABETES_QUESTIONAIRE.QUESTIONAIRE}
+          onClose={() => setShowDiabeticQuestionaire(false)}
+          onPressSubmit={(typeOfDiabetes, durationOfDiabetes) =>
+            submitQuestionaire(typeOfDiabetes, durationOfDiabetes)
+          }
+          navigation={props.navigation}
+        />
+      ) : null}
+      {loading && <Spinner />}
     </View>
   );
 };
