@@ -102,6 +102,7 @@ import {
   ViewStyle,
   Platform,
   FlatList,
+  BackHandler,
 } from 'react-native';
 import { Image, ListItem } from 'react-native-elements';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
@@ -512,11 +513,30 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     const didFocus = props.navigation.addListener('didFocus', (payload) => {
       setBannerData && setBannerData([]); // default banners to be empty
       getUserBanners();
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+    });
+    const _willBlur = props.navigation.addListener('willBlur', (payload) => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
     });
     return () => {
       didFocus && didFocus.remove();
+      _willBlur && _willBlur.remove();
     };
   });
+
+  const handleBack = async () => {
+    BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    setBannerData && setBannerData([]);
+
+    props.navigation.dispatch(
+      StackActions.reset({
+        index: 0,
+        key: null,
+        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+      })
+    );
+    return false;
+  };
 
   useEffect(() => {
     setWebEngageScreenNames('Medicine Home Page');
@@ -2057,7 +2077,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       circleLogo: {
         resizeMode: 'contain',
         width: 35,
-        height: 25,
+        height: 23,
         marginLeft: 5,
       },
       cartButton: {
