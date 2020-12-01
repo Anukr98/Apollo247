@@ -62,12 +62,12 @@ export const ConsultDiscountCard: React.FC<ConsultDiscountProps> = (props) => {
           }}
         >
           <Text style={styles.regularText}>
-            You{' '}
+            You will{' '}
             <Text style={{ ...styles.regularText, color: theme.colors.SEARCH_UNDERLINE_COLOR }}>
-              saved {string.common.Rs}
+              save {string.common.Rs}
               {totalSavings}
             </Text>{' '}
-            on your purchase.
+            on your consult.
           </Text>
           {showPriceBreakup ? <Up /> : <Down />}
         </TouchableOpacity>
