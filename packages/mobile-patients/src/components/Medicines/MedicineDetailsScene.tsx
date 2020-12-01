@@ -821,8 +821,8 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
               <View style={styles.priceView}>
                 <Text style={styles.price}>
                   {discountPercent
-                    ? `${string.common.Rs}${medicineDetails.special_price}`
-                    : `${string.common.Rs}${medicineDetails.price}`}
+                    ? `MRP ${string.common.Rs}${medicineDetails.special_price}`
+                    : `MRP ${string.common.Rs}${medicineDetails.price}`}
                 </Text>
                 {!!medicineDetails.special_price && (
                   <View style={styles.discountPriceView}>
