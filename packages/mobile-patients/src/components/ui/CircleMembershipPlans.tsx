@@ -48,7 +48,7 @@ interface CircleMembershipPlansProps extends NavigationScreenProps {
   onEndApiCall?: (() => void) | null;
   buyNow?: boolean;
   source?: 'Pharma' | 'Product Detail' | 'Pharma Cart' | 'Diagnostic' | 'Consult';
-  from: string;
+  from?: string;
 }
 
 export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (props) => {
@@ -91,7 +91,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
   const planDimension = isModal ? 100 : 120;
   const defaultPlanDimension = isModal ? 130 : 120;
   const isIos = Platform.OS === 'ios';
-  const CircleEventAttributes: WebEngageEvents[WebEngageEventName.PHARMA_HOME_UPGRADE_TO_CIRCLE] = {
+  const CircleEventAttributes: WebEngageEvents[WebEngageEventName.PHARMA_HOME_KNOW_MORE_CLICKED_CIRCLE_POPUP] = {
     'Patient UHID': currentPatient?.uhid,
     'Mobile Number': currentPatient?.mobileNumber,
     'Customer ID': currentPatient?.id,

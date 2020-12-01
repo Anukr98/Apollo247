@@ -53,7 +53,7 @@ export const SubscriptionPaymentGateway: React.FC<PaymentGatewayProps> = (props)
   }, []);
 
   const fireCircleActivatedEvent = () => {
-    const CircleEventAttributes: WebEngageEvents[WebEngageEventName.PHARMA_HOME_UPGRADE_TO_CIRCLE] = {
+    const CircleEventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_CIRCLE_MEMBERSHIP_ACTIVATED] = {
       'Patient UHID': currentPatient?.uhid,
       'Mobile Number': currentPatient?.mobileNumber,
       'Customer ID': currentPatient?.id,

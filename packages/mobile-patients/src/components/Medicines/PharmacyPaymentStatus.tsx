@@ -179,7 +179,6 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   };
 
   const statusIcon = () => {
-    fireCirclePlanActivatedEvent();
     if (status === success) {
       return <Success style={styles.statusIconStyles} />;
     } else if (status === failure || status === aborted) {

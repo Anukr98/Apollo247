@@ -568,7 +568,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             getUserSubscriptionsByStatus();
           }}
           from={string.banner_context.PHARMACY_HOME}
-          source={'Product Detail'}
+          source={'Pharma'}
         />
       );
     }
@@ -2137,6 +2137,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                   activeOpacity={1}
                   onPress={() => {
                     setShowCirclePopup(true);
+                    const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMA_HOME_UPGRADE_TO_CIRCLE] = {
+                      'Patient UHID': currentPatient?.uhid,
+                      'Mobile Number': currentPatient?.mobileNumber,
+                      'Customer ID': currentPatient?.id,
+                    };
+                    postWebEngageEvent(WebEngageEventName.PHARMA_HOME_UPGRADE_TO_CIRCLE, eventAttributes);
                   }}
                   style={circleStyles.upgrade}
                 >
@@ -2188,6 +2194,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         closeModal={() => setShowCirclePopup(false)}
         navigation={props.navigation}
         isConsultJourney={false}
+        from={string.banner_context.PHARMACY_HOME}
+        source={'Pharma'}
         onSelectMembershipPlan={(plan) => {
           if (plan) {
             // if plan is selected

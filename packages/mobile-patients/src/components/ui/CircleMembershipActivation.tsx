@@ -73,7 +73,7 @@ export const CircleMembershipActivation: React.FC<props> = (props) => {
   const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
   const defaultPlanSellingPrice = defaultCirclePlan?.currentSellingPrice;
   planActivated.current = circlePaymentDone ? true : planActivated.current;
-  const CircleEventAttributes: WebEngageEvents[WebEngageEventName.PHARMA_HOME_UPGRADE_TO_CIRCLE] = {
+  const CircleEventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_OTHER_PAYMENT_OPTION_CLICKED_POPUP] = {
     'Patient UHID': currentPatient?.uhid,
     'Mobile Number': currentPatient?.mobileNumber,
     'Customer ID': currentPatient?.id,
