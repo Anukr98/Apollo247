@@ -1823,7 +1823,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         {renderCovidBlueButtons(
           onPressHealthPro,
           <ApolloHealthProIcon style={{ width: 24, height: 24 }} />,
-          'Apollo Pro Health'
+          'Explore ApolloPro Health'
         )}
         {renderCovidBlueButtons(
           onPressRiskLevel,
