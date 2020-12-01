@@ -263,7 +263,7 @@ export const SearchMedicineGridCard: React.FC<Props> = (props) => {
   };
 
   const renderCareCashback = () => {
-    const finalPrice = price - Number(special_price) ? Number(special_price) : price;
+    const finalPrice = Number(special_price) || price;
     const cashback = getCareCashback(Number(finalPrice), type_id);
     if (!!cashback && type_id) {
       return (
