@@ -1195,6 +1195,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           placeholder={'Enter Weight'}
           value={weight}
           numberOfLines={1}
+          maxLength={3}
           keyboardType={Platform.OS === 'ios' ? 'numbers-and-punctuation' : 'numeric'}
           onChangeText={(text) => {
             setWeightValue(text);
