@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
-    marginTop: 10,
+    marginVertical: 20,
     marginLeft: 10,
   },
   circleLogo: {

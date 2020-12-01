@@ -69,6 +69,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
   } = props;
   const client = useApolloClient();
   const planId = AppConfig.Configuration.CIRCLE_PLAN_ID;
+  const circleStaticMonthlySavings = AppConfig.Configuration.CIRCLE_STATIC_MONTHLY_SAVINGS;
   const {
     circlePlanSelected,
     setCirclePlanSelected,
@@ -88,7 +89,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
 
   const isCartTotalLimit = cartTotal > 400;
   const planDimension = isModal ? 100 : 120;
-  const defaultPlanDimension = 130;
+  const defaultPlanDimension = isModal ? 130 : 120;
   const isIos = Platform.OS === 'ios';
   const CircleEventAttributes: WebEngageEvents[WebEngageEventName.PHARMA_HOME_UPGRADE_TO_CIRCLE] = {
     'Patient UHID': currentPatient?.uhid,
@@ -217,91 +218,85 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       (isModal && defaultCirclePlan?.subPlanId === value?.subPlanId);
     const iconDimension = isPlanActive ? defaultPlanDimension : planDimension;
     return (
-      <View style={{ paddingBottom: 62 }}>
-        <TouchableOpacity
-          key={index}
-          activeOpacity={1}
-          onPress={() => onPressMembershipPlans(index)}
-          style={[styles.subscriptionCard, { marginLeft: index === 0 ? 10 : 0 }]}
-        >
-          <ImageBackground
-            source={{ uri: value?.icon }}
-            style={[
-              styles.planContainer,
-              {
-                width: iconDimension,
-                height: iconDimension,
-              },
-            ]}
+      <View>
+        <View style={{ paddingBottom: 30 }}>
+          <TouchableOpacity
+            key={index}
+            activeOpacity={1}
+            onPress={() => onPressMembershipPlans(index)}
+            style={[styles.subscriptionCard, { marginLeft: index === 0 ? 10 : 0 }]}
           >
-            <Text
+            <ImageBackground
+              source={{ uri: value?.icon }}
               style={[
-                styles.duration,
+                styles.planContainer,
                 {
-                  left:
-                    `${duration}`.length === 1
-                      ? !isIos
-                        ? isPlanActive
-                          ? 6
+                  width: iconDimension,
+                  height: iconDimension,
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.duration,
+                  {
+                    left:
+                      `${duration}`.length === 1
+                        ? !isIos
+                          ? isPlanActive
+                            ? 6
+                            : isModal
+                            ? 5
+                            : 6
+                          : isPlanActive
+                          ? 7
                           : isModal
-                          ? 5
-                          : 6
+                          ? 6
+                          : 7
                         : isPlanActive
-                        ? 7
+                        ? 5
                         : isModal
-                        ? 6
-                        : 7
-                      : isPlanActive
-                      ? 5
-                      : isModal
-                      ? 3
-                      : 4,
-                  top: `${duration}`.length === 1 ? iconDimension / 2 - 3 : iconDimension / 2 + 3,
-                  transform:
-                    `${duration}`.length === 1 ? [{ rotate: '-80deg' }] : [{ rotate: '-100deg' }],
-                  color: value?.defaultPack ? 'white' : theme.colors.APP_YELLOW,
-                  fontSize: isPlanActive ? 16 : 14,
-                },
-              ]}
-            >
-              {duration}
-            </Text>
+                        ? 3
+                        : 4,
+                    top: `${duration}`.length === 1 ? iconDimension / 2 - 3 : iconDimension / 2 + 3,
+                    transform:
+                      `${duration}`.length === 1 ? [{ rotate: '-80deg' }] : [{ rotate: '-100deg' }],
+                    color: value?.defaultPack ? 'white' : theme.colors.APP_YELLOW,
+                    fontSize: isPlanActive ? 16 : 14,
+                  },
+                ]}
+              >
+                {duration}
+              </Text>
+              <Text
+                style={[
+                  styles.price,
+                  {
+                    marginTop: isPlanActive ? iconDimension / 2 - 12 : iconDimension / 2 - 8,
+                    fontSize: isPlanActive ? 22 : 16,
+                    color: value?.defaultPack ? 'white' : theme.colors.SEARCH_UNDERLINE_COLOR,
+                  },
+                ]}
+              >
+                {string.common.Rs}
+                {value?.currentSellingPrice}
+              </Text>
+            </ImageBackground>
+          </TouchableOpacity>
+          {value?.saved_extra_on_lower_plan && (
             <Text
               style={[
-                styles.price,
+                styles.savingsText,
                 {
-                  marginTop: isPlanActive ? iconDimension / 2 - 12 : iconDimension / 2 - 8,
-                  fontSize: isPlanActive ? 22 : 16,
-                  color: value?.defaultPack ? 'white' : theme.colors.SEARCH_UNDERLINE_COLOR,
+                  top: iconDimension + 24,
                 },
               ]}
             >
-              {string.common.Rs}
-              {value?.currentSellingPrice}
+              Save {value?.saved_extra_on_lower_plan} extra
             </Text>
-          </ImageBackground>
-        </TouchableOpacity>
-        {value?.saved_extra_on_lower_plan && (
-          <Text
-            style={[
-              styles.savingsText,
-              {
-                top: iconDimension + 24,
-              },
-            ]}
-          >
-            Save {value?.saved_extra_on_lower_plan} extra
-          </Text>
-        )}
-        <TouchableOpacity
-          onPress={() => onPressMembershipPlans(index)}
-          style={[
-            styles.radioBtn,
-            {
-              top: value?.saved_extra_on_lower_plan ? iconDimension + 35 : iconDimension + 20,
-            },
-          ]}
-        >
+          )}
+        </View>
+        <TouchableOpacity onPress={() => onPressMembershipPlans(index)} style={styles.radioBtn}>
           <View
             style={[
               styles.radioBtnIcon,
@@ -359,7 +354,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
       <View style={styles.subscriptionContainer}>
         <ContentLoader loading={loading} active containerStyles={{ marginTop: 10 }}>
           {isModal && renderHeaderTitle()}
-          <View style={isModal ? styles.careBannerView : {}}>
+          <View style={isModal ? [styles.careBannerView, { paddingBottom: 5 }] : {}}>
             <View style={styles.careTextContainer}>
               <CircleLogo style={styles.circleLogo} />
               {isConsultJourney ? (
@@ -571,7 +566,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
           <Text style={theme.viewStyles.text('R', 10, theme.colors.BORDER_BOTTOM_COLOR)}>
             On an average Circle members{'\n'}
           </Text>
-          save upto ₹400 every month
+          save upto ₹{circleStaticMonthlySavings} every month
         </Text>
       </View>
     );
@@ -752,9 +747,8 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     alignSelf: 'center',
-    marginTop: 12,
-    position: 'absolute',
     justifyContent: 'center',
+    marginBottom: 5,
   },
   radioBtnIcon: {
     width: 12,
@@ -763,7 +757,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.colors.SEARCH_UNDERLINE_COLOR,
     alignSelf: 'center',
-    position: 'absolute',
   },
   savingsText: {
     ...theme.viewStyles.text('M', 8, theme.colors.SHERPA_BLUE),
@@ -808,7 +801,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   headerText: {
-    ...theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE),
+    ...theme.viewStyles.text('SB', 14, theme.colors.LIGHT_BLUE),
   },
   buyNowBtn: {
     marginTop: 2,

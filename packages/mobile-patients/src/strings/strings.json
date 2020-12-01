@@ -64,7 +64,8 @@
     "couponApplied": "Coupon Applied",
     "careMembership": "CIRCLE Membership",
     "tryAgainLater": "Something went wrong, please try again after sometime",
-    "weAreHereToHelpYou": "Always caring about your health, we are here to help you!"
+    "weAreHereToHelpYou": "Always caring about your health, we are here to help you!",
+    "consultFee": "Consult Fee"
   },
   "components": {
     "medicineDetails": {
@@ -543,7 +544,7 @@
     "ONE_TOUCH": "ONE-TOUCH",
     "UPGRADE_CIRCLE": "UPGRADE_CIRCLE",
     "MEMBERSHIP_DETAIL_CIRCLE": "MEMBERSHIP_DETAIL_CIRCLE",
-    "ADVANCED_DIABETES" : "POP-UP",
+    "ADVANCED_DIABETES": "POP-UP",
     "FILL_FORM": "LEAD-FORM",
     "DIABETES_CONSENT": {
       "HEADING": "Our Team will reach out to you on call to activate the Free Trial of Advanced Diabetes Management.",
@@ -553,46 +554,47 @@
     "ADVANCE_DIABETES_QUESTIONAIRE": {
       "HEADING": "THANK YOU  !!",
       "SUBHEADING": "In order to assist you in the best possible way, please answer these questions",
-      "QUESTIONAIRE": [{
-        "QUESTION": "Q1. Which type of diabetes are you living with?",
-        "OPTIONS": [
-          { "key":"Pre-Diabetes",
-            "value":"Pre-Diabetes"
-          },
-          {
-            "key":"Type-1-Diabetes",
-            "value":"Type 1 Diabetes"
-          },
-          {
-            "key":"Type-2-Diabetes",
-            "value":"Type 2 Diabetes"
-          },
-          {
-            "key":"Gestational-Diabetes",
-            "value":"Gestational Diabetes"
-          }
-        ]
-      },{
-        "QUESTION": "Q2. For how many years have you lived with diabetes?",
-        "OPTIONS": [
-          {
-            "key":"lessThan2Years",
-            "value":"Less than 2 years"
-          },
-          {
-            "key":"between2-5Years",
-            "value":"Between 2-5 years"
-          },
-          {
-            "key":"between5-10Years",
-            "value":"Between 5-10 years"
-          },
-          {
-            "key":"over10Years",
-            "value":"Over 10 Years"
-          }
-        ]
-      }],
+      "QUESTIONAIRE": [
+        {
+          "QUESTION": "Q1. Which type of diabetes are you living with?",
+          "OPTIONS": [
+            { "key": "Pre-Diabetes", "value": "Pre-Diabetes" },
+            {
+              "key": "Type-1-Diabetes",
+              "value": "Type 1 Diabetes"
+            },
+            {
+              "key": "Type-2-Diabetes",
+              "value": "Type 2 Diabetes"
+            },
+            {
+              "key": "Gestational-Diabetes",
+              "value": "Gestational Diabetes"
+            }
+          ]
+        },
+        {
+          "QUESTION": "Q2. For how many years have you lived with diabetes?",
+          "OPTIONS": [
+            {
+              "key": "lessThan2Years",
+              "value": "Less than 2 years"
+            },
+            {
+              "key": "between2-5Years",
+              "value": "Between 2-5 years"
+            },
+            {
+              "key": "between5-10Years",
+              "value": "Between 5-10 years"
+            },
+            {
+              "key": "over10Years",
+              "value": "Over 10 Years"
+            }
+          ]
+        }
+      ],
       "CTA": "SUBMIT"
     }
   },
