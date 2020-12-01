@@ -635,20 +635,45 @@ export const Tests: React.FC<TestsProps> = (props) => {
             const addrComponents = data.results[0].address_components || [];
             const latLang = data.results[0].geometry.location || {};
             const response = getFormattedLocation(addrComponents, latLang, pincode);
-            response.city =
-              (isDiagnosticLocationServiceable == 'true' && diagnosticLocation?.city) ||
-              response.city;
-            response.state =
-              (isDiagnosticLocationServiceable == 'true' && diagnosticLocation?.state) ||
-              response.state;
+            let setCity, setState;
+            if (isDiagnosticLocationServiceable == 'true' && diagnosticServiceabilityData == null) {
+              setCity = diagnosticLocation?.city! || '';
+              setState = diagnosticLocation?.state! || '';
+            } else if (
+              isDiagnosticLocationServiceable == 'true' &&
+              diagnosticServiceabilityData?.city != ''
+            ) {
+              setCity = diagnosticServiceabilityData?.city! || '';
+              setState = diagnosticServiceabilityData?.state! || '';
+            } else {
+              setCity = response.city || '';
+              setState = response.state || '';
+            }
+            (response.city = setCity), (response.state = setState);
             setDiagnosticLocation!(response);
             !locationDetails && setLocationDetails!(response);
           } else {
+            //serviceable but no response
             let response = {
-              displayName: diagnosticLocation?.city! || '',
-              area: '',
-              city: diagnosticLocation?.city! || '',
-              state: diagnosticLocation?.state! || '',
+              displayName: '',
+              area:
+                isDiagnosticLocationServiceable == 'true'
+                  ? diagnosticServiceabilityData == null
+                    ? diagnosticLocation?.city!
+                    : diagnosticServiceabilityData?.city!
+                  : '',
+              city:
+                isDiagnosticLocationServiceable == 'true'
+                  ? diagnosticServiceabilityData == null
+                    ? diagnosticLocation?.city!
+                    : diagnosticServiceabilityData?.city!
+                  : '',
+              state:
+                isDiagnosticLocationServiceable == 'true'
+                  ? diagnosticServiceabilityData == null
+                    ? diagnosticLocation?.state!
+                    : diagnosticServiceabilityData?.state!
+                  : '',
               country: 'India',
               pincode: String(pincode),
             };
