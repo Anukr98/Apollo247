@@ -2057,7 +2057,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       circleLogo: {
         resizeMode: 'contain',
         width: 35,
-        height: 25,
+        height: 23,
         marginLeft: 5,
       },
       cartButton: {
