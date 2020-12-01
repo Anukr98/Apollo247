@@ -401,7 +401,11 @@ export const CheckoutSceneNew: React.FC<CheckoutSceneNewProps> = (props) => {
             console.log(error);
           }
           clearCartInfo && clearCartInfo();
-          handleOrderSuccess(`${orderAutoId}`);
+          props.navigation.navigate(AppRoutes.PharmacyPaymentStatus, {
+            status: 'PAYMENT_SUCCESS',
+            price: getFormattedAmount(grandTotal),
+            orderId: orderAutoId,
+          });
         }
       })
       .catch((e) => {
