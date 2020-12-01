@@ -352,6 +352,10 @@ export const CarouselBanners: React.FC<CarouselProps> = (props) => {
         }
       } else if (type == hdfc_values.WHATSAPP_OPEN_CHAT) {
         Linking.openURL(`whatsapp://send?text=${message}&phone=91${action}`);
+      } else if (type == hdfc_values.COVID_RECOVER_CLINIC) {
+        props.navigation.navigate('DoctorSearchListing', {
+          specialities: hdfc_values.COVID_RECOVER_CLINIC,
+        });
       } else {
         props.navigation.navigate(AppRoutes.ConsultRoom);
       }
