@@ -2305,7 +2305,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               Keyboard.dismiss();
             }}
             maximumDate={false}
-            minimumDate={new Date()}
           />
         </View>
         <View style={styles.listItemViewStyle}>
@@ -2494,7 +2493,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 Keyboard.dismiss();
               }}
               maximumDate={false}
-              minimumDate={new Date()}
             />
             {renderListItem('Allergy Reaction')}
             <TextInput
@@ -2662,7 +2660,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 Keyboard.dismiss();
               }}
               maximumDate={false}
-              minimumDate={new Date()}
             />
             {renderListItem(string.common.additional_text, false)}
             <TextInput
@@ -2810,7 +2807,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 Keyboard.dismiss();
               }}
               maximumDate={false}
-              minimumDate={new Date()}
             />
             {renderUploadedImages(3)}
             <View style={{ marginTop: 32 }}>
@@ -2940,7 +2936,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 Keyboard.dismiss();
               }}
               maximumDate={false}
-              minimumDate={new Date()}
             />
             {renderListItem('Dosage Level', false)}
             <View style={styles.morningViewStyle}>
