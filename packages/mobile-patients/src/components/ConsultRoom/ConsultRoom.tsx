@@ -389,7 +389,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   >([]);
   const [profileChange, setProfileChange] = useState<boolean>(false);
 
-  const [showHdfcConnectWidget, setShowHdfcConnectWidget] = useState<boolean>(true);
   const [hdfcLoading, setHdfcLoading] = useState<boolean>(false);
   const circleActivated = props.navigation.getParam('circleActivated');
   const circlePlanValidity = props.navigation.getParam('circlePlanValidity');
@@ -402,6 +401,15 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       getUserBanners();
     }
   };
+
+  useEffect(() => {
+    const _willBlur = props.navigation.addListener('willBlur', (payload) => {
+      setBannerData && setBannerData([]);
+    });
+    return () => {
+      _willBlur && _willBlur.remove();
+    };
+  });
 
   useEffect(() => {
     //TODO: if deeplinks is causing issue comment handleDeepLink here and uncomment in SplashScreen useEffect
@@ -423,7 +431,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       ) {
         setIsFreeDelivery && setIsFreeDelivery(true);
       }
-      setShowHdfcConnectWidget(true);
     } else if (g(currentPatient, 'partnerId') === hdfc_values.REFERRAL_CODE) {
     }
   }, [hdfcUserSubscriptions]);
@@ -894,7 +901,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 setIsFreeDelivery && setIsFreeDelivery(true);
               }
               getUserBanners();
-              setShowHdfcConnectWidget(true);
             }
 
             if (circlePlan) {
@@ -1705,7 +1711,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
-  const renderHdfcCarousel = () => {
+  const renderBannersCarousel = () => {
     const showBanner = bannerData && bannerData.length ? true : false;
     if (showBanner) {
       return (
@@ -2142,9 +2148,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <Text style={styles.descriptionTextStyle}>{string.common.weAreHereToHelpYou}</Text>
               {isPersonalizedCard && renderAppointmentWidget()}
               {renderMenuOptions()}
-              {showHdfcConnectWidget && (
-                <View style={{ backgroundColor: '#f0f1ec' }}>{renderHdfcCarousel()}</View>
-              )}
+              <View style={{ backgroundColor: '#f0f1ec' }}>{renderBannersCarousel()}</View>
               <View style={{ backgroundColor: '#f0f1ec' }}>{renderListView()}</View>
               {renderCovidMainView()}
               {/* {renderCovidHeader()}

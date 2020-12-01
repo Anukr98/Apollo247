@@ -179,7 +179,6 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
   };
 
   const statusIcon = () => {
-    fireCirclePlanActivatedEvent();
     if (status === success) {
       return <Success style={styles.statusIconStyles} />;
     } else if (status === failure || status === aborted) {
@@ -437,6 +436,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       <AddedCirclePlanWithValidity
         circleSavings={circleSavings}
         circlePlanDetails={circlePlanDetails}
+        isConsult={false}
       />
     );
   };

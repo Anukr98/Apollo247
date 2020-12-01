@@ -701,7 +701,7 @@
       },
       {
         "question": "Sounds good. Tell me more about the plans?",
-        "answer": "There are 3 plans available for you to choose from: INR 49 for 2 months, INR 199 for 6 months, and INR 349 for 12 months "
+        "answer": "There are 3 plans available for you to choose from: INR 49 for 2 months, INR 249 for 6 months, and INR 349 for 12 months."
       },
       {
         "question": "How Do I Sign Up for a Circle Membership?",
@@ -738,6 +738,14 @@
       {
         "question": "Can Circle cashback be used to pay for a Virtual Consultation?",
         "answer": "Not yet, but you can use your Circle cashback as Health Credits to re-order medicines or any healthcare products from Apollo 247."
+      },
+      {
+        "question": "What is URLife Program offering?",
+        "answer": "The URLife Program will be available on Circle soon. Stay tuned!"
+      },
+      {
+        "question": "Will some of these features be part of the Apollo Hospital experience as well?",
+        "answer": "Not as of now, but we are working towards it so you get the best out of Circle"
       }
     ]
   },
