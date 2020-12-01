@@ -28,7 +28,7 @@ export const AddedCirclePlanWithValidity: React.FC<AddedCirclePlanWithValidityPr
               saved {string.common.Rs}
               {circleSavings}{' '}
             </Text>
-            on your purchase
+            on your consult
           </Text>
           <View style={[styles.spaceRow, { alignItems: 'flex-start' }]}>
             {circlePlanDetails?.end_date ? (
