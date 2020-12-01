@@ -37,7 +37,7 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
   };
 
   const renderCircleSavings = () => {
-    const totalSavingsDone = totalCircleSavings?.totalSavings + totalCircleSavings?.callsUsed;
+    const totalSavingsDone = totalCircleSavings?.totalSavings! + totalCircleSavings?.callsUsed!;
     return totalSavingsDone ? (
       <View
         style={{
@@ -46,9 +46,9 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
           alignItems: 'center',
         }}
       >
-        <Text style={theme.viewStyles.text('M', 16, '#02475B', 1, 28, 0.35)}>
+        <Text style={theme.viewStyles.text('M', 14, '#02475B', 1, 18, 0.35)}>
           Total Savings Using Circle Plan{'  '}
-          <Text style={theme.viewStyles.text('SB', 19, '#00B38E', 1, 28, 0.35)}>
+          <Text style={theme.viewStyles.text('SB', 18, '#00B38E', 1, 28, 0.35)}>
             {strings.common.Rs}
             {totalCircleSavings?.totalSavings || 0}
           </Text>
@@ -122,20 +122,24 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
             <HealthLogo style={styles.savingsIcon} />
             <Text style={styles.savingsHeading}>Total Savings on Pharmacy</Text>
           </View>
-          <Text style={styles.savingsAmount}>
-            {strings.common.Rs}
-            {totalCircleSavings?.pharmaSavings || 0}
-          </Text>
+          <View style={styles.priceView}>
+            <Text style={styles.savingsAmount}>
+              {strings.common.Rs}
+              {totalCircleSavings?.pharmaSavings.toFixed(2) || 0}
+            </Text>
+          </View>
         </View>
         <View style={styles.savingsContainer}>
           <View style={styles.savingsRow}>
             <DoctorIcon style={styles.savingsIcon} />
             <Text style={styles.savingsHeading}>Total Savings on Doctor Consult</Text>
           </View>
-          <Text style={styles.savingsAmount}>
-            {strings.common.Rs}
-            {totalCircleSavings?.consultSavings || 0}
-          </Text>
+          <View style={styles.priceView}>
+            <Text style={styles.savingsAmount}>
+              {strings.common.Rs}
+              {totalCircleSavings?.consultSavings.toFixed(2) || 0}
+            </Text>
+          </View>
         </View>
         <View style={styles.savingsContainer}>
           <View style={styles.savingsRow}>
@@ -147,29 +151,36 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
             />
             <Text style={styles.savingsHeading}>Total Savings on Diagnostics</Text>
           </View>
-          <Text style={styles.savingsAmount}>
-            {strings.common.Rs}
-            {totalCircleSavings?.diagnosticsSavings || 0}
-          </Text>
+          <View style={styles.priceView}>
+            <Text style={styles.savingsAmount}>
+              {strings.common.Rs}
+              {totalCircleSavings?.diagnosticsSavings.toFixed(2) || 0}
+            </Text>
+          </View>
         </View>
+
         <View style={styles.savingsContainer}>
           <View style={styles.savingsRow}>
             <EmergencyCall style={styles.savingsIcon} />
             <Text style={styles.savingsHeading}>Free Emergency Calls Made</Text>
           </View>
-          <Text style={styles.savingsAmount}>
-            {totalCircleSavings?.callsUsed || 0}/{totalCircleSavings?.callsTotal || 0}
-          </Text>
+          <View style={styles.priceView}>
+            <Text style={styles.savingsAmount}>
+              {totalCircleSavings?.callsUsed || 0}/{totalCircleSavings?.callsTotal || 0}
+            </Text>
+          </View>
         </View>
         <View style={styles.savingsContainer}>
           <View style={styles.savingsRow}>
             <ExpressDelivery style={styles.savingsIcon} />
             <Text style={styles.savingsHeading}>Total Delivery Charges Saved</Text>
           </View>
-          <Text style={styles.savingsAmount}>
-            {strings.common.Rs}
-            {totalCircleSavings?.deliverySavings || 0}
-          </Text>
+          <View style={styles.priceView}>
+            <Text style={styles.savingsAmount}>
+              {strings.common.Rs}
+              {totalCircleSavings?.deliverySavings.toFixed(2) || 0}
+            </Text>
+          </View>
         </View>
       </View>
     );
@@ -210,18 +221,20 @@ const styles = StyleSheet.create({
   savingsRow: {
     flexDirection: 'row',
     justifyContent: 'flex-start',
+    width: '73%',
   },
   savingsHeading: {
-    ...theme.viewStyles.text('M', 15, '#02475B', 1, 24, 0.35),
+    ...theme.viewStyles.text('M', 12, '#02475B', 1, 20, 0.35),
     marginLeft: 10,
   },
   savingsAmount: {
-    ...theme.viewStyles.text('SB', 17, '#00B38E', 1, 24, 0.35),
+    ...theme.viewStyles.text('SB', 14, '#00B38E', 1, 18, 0.35),
+    textAlign: 'right',
   },
   savingsIcon: {
     resizeMode: 'contain',
-    width: 25,
-    height: 25,
+    width: 20,
+    height: 20,
   },
   saveCircleContainer: {
     ...theme.viewStyles.cardViewStyle,
@@ -235,5 +248,8 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
     width: 30,
     height: 30,
+  },
+  priceView: {
+    width: '25%',
   },
 });
