@@ -66,9 +66,9 @@ import {
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { getPatientFutureAppointmentCount } from '@aph/mobile-patients/src/graphql/types/getPatientFutureAppointmentCount';
 import {
-  GetAllUserSubscriptionsWithPlanBenefits,
-  GetAllUserSubscriptionsWithPlanBenefitsVariables,
-} from '@aph/mobile-patients/src/graphql/types/GetAllUserSubscriptionsWithPlanBenefits';
+  GetAllUserSubscriptionsWithPlanBenefitsV2,
+  GetAllUserSubscriptionsWithPlanBenefitsV2Variables,
+} from '@aph/mobile-patients/src/graphql/types/GetAllUserSubscriptionsWithPlanBenefitsV2';
 import { Relation, Gender } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
 import {
@@ -870,8 +870,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     mobile_number &&
       client
         .query<
-          GetAllUserSubscriptionsWithPlanBenefits,
-          GetAllUserSubscriptionsWithPlanBenefitsVariables
+          GetAllUserSubscriptionsWithPlanBenefitsV2,
+          GetAllUserSubscriptionsWithPlanBenefitsV2Variables
         >({
           query: GET_ALL_USER_SUSBSCRIPTIONS_WITH_PLAN_BENEFITS,
           variables: { mobile_number },
@@ -879,7 +879,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         })
         .then((data) => {
           setHdfcLoading(false);
-          const groupPlans = g(data, 'data', 'GetAllUserSubscriptionsWithPlanBenefits', 'response');
+          const groupPlans = g(
+            data,
+            'data',
+            'GetAllUserSubscriptionsWithPlanBenefitsV2',
+            'response'
+          );
           if (groupPlans) {
             const hdfcPlan = groupPlans?.HDFC;
             const circlePlan = groupPlans?.APOLLO;
