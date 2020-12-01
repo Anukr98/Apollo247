@@ -71,8 +71,8 @@ const styles = StyleSheet.create({
   },
   circleSaving: {
     position: 'absolute',
-    top: 130,
-    left: 20,
+    bottom: 18,
+    left: 16,
   },
   circleLogo: {
     resizeMode: 'contain',
