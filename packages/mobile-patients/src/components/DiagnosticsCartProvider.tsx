@@ -6,7 +6,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { Clinic } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { AppConfig, COVID_NOTIFICATION_ITEMID } from '@aph/mobile-patients/src/strings/AppConfig';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 import {
@@ -359,7 +359,14 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   const deliveryCharges =
     deliveryType == MEDICINE_DELIVERY_TYPE.STORE_PICKUP ? 0 : cartTotal > 0 ? hcCharges : 0;
 
-  const grandTotal = parseFloat((cartTotal + deliveryCharges - couponDiscount).toFixed(2));
+  const isPPEKitChargesApplicable = cartItems.map((item) =>
+    COVID_NOTIFICATION_ITEMID.includes(item.id)
+  );
+  const ppeKitCharges = isPPEKitChargesApplicable.find((item) => item == true);
+
+  const grandTotal = parseFloat(
+    (cartTotal + deliveryCharges + (ppeKitCharges ? 500 : 0) - couponDiscount).toFixed(2)
+  );
 
   const setClinicId = (id: DiagnosticsCartContextProps['clinicId']) => {
     setDeliveryType(MEDICINE_DELIVERY_TYPE.STORE_PICKUP);

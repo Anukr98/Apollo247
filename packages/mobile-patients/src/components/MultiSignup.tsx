@@ -58,6 +58,7 @@ import {
   postFirebaseEvent,
   postWEGReferralCodeEvent,
   g,
+  setFirebaseUserId,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { TextInputComponent } from './ui/TextInputComponent';
 import AsyncStorage from '@react-native-community/async-storage';
@@ -153,7 +154,7 @@ export interface MultiSignupProps extends NavigationScreenProps {}
 export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   const [relationIndex, setRelationIndex] = useState<number>(0);
   const [showPopup, setShowPopup] = useState<boolean>(false);
-  const { analytics, signOut, getPatientApiCall } = useAuth();
+  const { signOut, getPatientApiCall } = useAuth();
   const [profiles, setProfiles] = useState<GetCurrentPatients_getCurrentPatients_patients[] | null>(
     []
   );
@@ -480,11 +481,22 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
     </TouchableOpacity>
   );
 
+  const fireUserLoggedInEvent = (mePatient: any, type: 'Registration' | 'Login') => {
+    setFirebaseUserId(mePatient.primaryUhid);
+    const firebaseAttributes: FirebaseEvents[FirebaseEventName.USER_LOGGED_IN] = {
+      Type: type,
+      userId: mePatient.id,
+    };
+    postFirebaseEvent(FirebaseEventName.USER_LOGGED_IN, firebaseAttributes);
+    postAppsFlyerEvent(AppsFlyerEventName.USER_LOGGED_IN, firebaseAttributes);
+  };
+
   const _postWebEngageEvent = (patient: updatePatient_updatePatient_patient) => {
     try {
       if (isSignupEventFired) {
         return;
       }
+      fireUserLoggedInEvent(patient, 'Registration');
       const { firstName, lastName, dateOfBirth: date, gender, emailAddress: email } = patient;
       const eventAttributes: WebEngageEvents[WebEngageEventName.REGISTRATION_DONE] = {
         'Customer ID': currentPatient ? currentPatient.id : '',
@@ -741,7 +753,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                   key: null,
                   actions: [
                     NavigationActions.navigate({
-                      routeName: AppRoutes.SearchByBrand,
+                      routeName: AppRoutes.MedicineListing,
                       params: {
                         category_id: itemId,
                         title: `${name ? name : 'Products'}`.toUpperCase(),

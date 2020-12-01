@@ -14,6 +14,8 @@ import {
   postWebEngageEvent,
   isValidTestSlotWithArea,
   isEmptyObject,
+  postAppsFlyerEvent,
+  postFirebaseEvent,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import {
   DiagnosticData,
@@ -85,7 +87,7 @@ import {
   searchClinicApi,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { AppConfig, COVID_NOTIFICATION_ITEMID } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
@@ -120,6 +122,9 @@ import {
   findDiagnosticsByItemIDsAndCityIDVariables,
   findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCityID_diagnostics,
 } from '@aph/mobile-patients/src/graphql/types/findDiagnosticsByItemIDsAndCityID';
+import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
+import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
+
 const { width: winWidth } = Dimensions.get('window');
 const styles = StyleSheet.create({
   labelView: {
@@ -743,24 +748,25 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                   (product) => {
                     props.navigation.navigate(AppRoutes.TestDetails, {
                       testDetails: {
-                        ItemID: test.id,
-                        ItemName: test.name,
-                        Rate: test!.price,
-                        FromAgeInDays: product.fromAgeInDays!,
-                        ToAgeInDays: product.toAgeInDays!,
+                        ItemID: test?.id,
+                        ItemName: test?.name,
+                        Rate: test?.price,
+                        FromAgeInDays: product?.fromAgeInDays!,
+                        ToAgeInDays: product?.toAgeInDays!,
                         Gender: product.gender,
-                        collectionType: test.collectionMethod,
-                        preparation: product.testPreparationData,
+                        collectionType: test?.collectionMethod,
+                        preparation: product?.testPreparationData,
+                        testDescription: product?.testDescription,
                         source: 'Cart Page',
-                        type: product.itemType,
+                        type: product?.itemType,
                       } as TestPackageForDetails,
                     });
                   },
                   'onPress'
                 );
               }}
-              medicineName={test.name!}
-              price={test.price!}
+              medicineName={test?.name!}
+              price={test?.price!}
               imageUrl={imageUrl}
               onPressAdd={() => {}}
               onPressRemove={() => {
@@ -772,7 +778,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               isCardExpanded={true}
               isInStock={true}
               isTest={true}
-              specialPrice={test.specialPrice!}
+              specialPrice={test?.specialPrice!}
               isPrescriptionRequired={false}
               subscriptionStatus={'unsubscribed'}
               packOfCount={test.mou}
@@ -965,6 +971,22 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     });
   };
 
+  const AddressSelectedEvent = (address: savePatientAddress_savePatientAddress_patientAddress) => {
+    const firebaseAttributes: FirebaseEvents[FirebaseEventName.DIAGNOSTIC_CART_ADDRESS_SELECTED_SUCCESS] = {
+      DeliveryAddress: formatAddress(address),
+      Pincode: address?.zipcode || '',
+      LOB: 'Diagnostics',
+    };
+    postAppsFlyerEvent(
+      AppsFlyerEventName.DIAGNOSTIC_CART_ADDRESS_SELECTED_SUCCESS,
+      firebaseAttributes
+    );
+    postFirebaseEvent(
+      FirebaseEventName.DIAGNOSTIC_CART_ADDRESS_SELECTED_SUCCESS,
+      firebaseAttributes
+    );
+  };
+
   const renderHomeDelivery = () => {
     const selectedAddressIndex = addresses.findIndex((address) => address.id == deliveryAddressId);
     const addressListLength = addresses.length;
@@ -1005,6 +1027,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                       )}), that can only be done at the centre, we request you to get all tests in your cart done at the centre of your convenience. Please proceed to select.`,
                   });
                 } else {
+                  AddressSelectedEvent(item);
                   setDeliveryAddressId!(item.id);
                   setDiagnosticAreas!([]);
                   setAreaSelected!({});
@@ -1415,6 +1438,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const renderTotalCharges = () => {
+    const isPPEKitChargesApplicable = cartItems.map((item) =>
+      COVID_NOTIFICATION_ITEMID.includes(item.id)
+    );
+    const ppeKitCharges = isPPEKitChargesApplicable.find((item) => item == true);
     return (
       <View>
         {renderLabel('TOTAL CHARGES')}
@@ -1459,25 +1486,37 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         >
           <View style={styles.rowSpaceBetweenStyle}>
             <Text style={styles.blueTextStyle}>Subtotal</Text>
-            <Text style={styles.blueTextStyle}>Rs. {cartTotal.toFixed(2)}</Text>
+            <Text style={styles.blueTextStyle}>
+              {string.common.Rs} {cartTotal.toFixed(2)}
+            </Text>
           </View>
           {couponDiscount > 0 && (
             <View style={styles.rowSpaceBetweenStyle}>
               <Text style={styles.blueTextStyle}>Coupon Discount</Text>
-              <Text style={styles.blueTextStyle}>- Rs. {couponDiscount.toFixed(2)}</Text>
+              <Text style={styles.blueTextStyle}>
+                - {string.common.Rs} {couponDiscount.toFixed(2)}
+              </Text>
             </View>
           )}
           {selectedTab == tabs[0].title && (
             <View style={styles.rowSpaceBetweenStyle}>
               <Text style={styles.blueTextStyle}>Home Collection Charges</Text>
-              <Text style={styles.blueTextStyle}>Rs. {hcCharges.toFixed(2)}</Text>
+              <Text style={styles.blueTextStyle}>
+                {string.common.Rs} {hcCharges.toFixed(2)}
+              </Text>
+            </View>
+          )}
+          {selectedTab == tabs[0].title && ppeKitCharges && (
+            <View style={styles.rowSpaceBetweenStyle}>
+              <Text style={styles.blueTextStyle}>PPE kit charges</Text>
+              <Text style={styles.blueTextStyle}>{string.common.Rs} 500</Text>
             </View>
           )}
           <View style={[styles.separatorStyle, { marginTop: 16, marginBottom: 7 }]} />
           <View style={styles.rowSpaceBetweenStyle}>
             <Text style={styles.blueTextStyle}>To Pay </Text>
             <Text style={[styles.blueTextStyle, { ...theme.fonts.IBMPlexSansBold }]}>
-              Rs. {grandTotal.toFixed(2)}
+              {string.common.Rs} {grandTotal.toFixed(2)}
             </Text>
           </View>
         </View>
@@ -2044,7 +2083,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         <StickyBottomComponent defaultBG>
           <Button
             disabled={disableProceedToPay}
-            title={`PROCEED TO PAY RS. ${grandTotal.toFixed(2)}`}
+            title={`PROCEED TO PAY ${string.common.Rs} ${grandTotal.toFixed(2)}`}
             onPress={() => onPressProceedToPay()}
             style={{ flex: 1, marginHorizontal: 40 }}
           />

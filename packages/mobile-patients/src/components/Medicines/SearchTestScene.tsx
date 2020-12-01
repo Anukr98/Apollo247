@@ -36,6 +36,8 @@ import {
   isValidSearch,
   postWebEngageEvent,
   postWEGNeedHelpEvent,
+  postFirebaseEvent,
+  postAppsFlyerEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -63,6 +65,8 @@ import { getPackageData, PackageInclusion } from '@aph/mobile-patients/src/helpe
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import _ from 'lodash';
+import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
+import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -153,7 +157,7 @@ export interface SearchTestSceneProps
 export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
   const searchTextFromProp = props.navigation.getParam('searchText');
   const [showMatchingMedicines, setShowMatchingMedicines] = useState<boolean>(false);
-  const [searchText, setSearchText] = useState<string>('');
+  const [searchText, setSearchText] = useState<string>(searchTextFromProp);
   const [medicineList, setMedicineList] = useState<
     searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
   >([]);
@@ -337,15 +341,19 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       'Discounted Price': discountedPrice,
       Quantity: 1,
       Source: 'Diagnostic',
-      // 'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      // 'Patient UHID': g(currentPatient, 'uhid'),
-      // Relation: g(currentPatient, 'relation'),
-      // 'Patient Age': Math.round(moment().diff(currentPatient.dateOfBirth, 'years', true)),
-      // 'Patient Gender': g(ender': g(currentPatient, 'gender'),
-      // 'Mobile Number': g(currentPatient, 'mobileNumber'),
-      // 'Customer ID': g(currentPatient, 'id'),
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ADD_TO_CART, eventAttributes);
+
+    const firebaseAttributes: FirebaseEvents[FirebaseEventName.DIAGNOSTIC_ADD_TO_CART] = {
+      productname: name,
+      productid: id,
+      Source: 'Diagnostic',
+      Price: price,
+      DiscountedPrice: discountedPrice,
+      Quantity: 1,
+    };
+    postFirebaseEvent(FirebaseEventName.DIAGNOSTIC_ADD_TO_CART, firebaseAttributes);
+    postAppsFlyerEvent(AppsFlyerEventName.DIAGNOSTIC_ADD_TO_CART, firebaseAttributes);
   };
 
   const onAddCartItem = (
@@ -479,16 +487,17 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           fetchPackageDetails(pastSeacrh.name!, (product) => {
             props.navigation.navigate(AppRoutes.TestDetails, {
               testDetails: {
-                Rate: product.rate,
-                Gender: product.gender,
-                ItemID: `${product.itemId}`,
-                ItemName: product.itemName,
-                FromAgeInDays: product.fromAgeInDays,
-                ToAgeInDays: product.toAgeInDays,
-                collectionType: product.collectionType,
-                preparation: product.testPreparationData,
+                Rate: product?.rate,
+                Gender: product?.gender,
+                ItemID: `${product?.itemId}`,
+                ItemName: product?.itemName,
+                FromAgeInDays: product?.fromAgeInDays,
+                ToAgeInDays: product?.toAgeInDays,
+                collectionType: product?.collectionType,
+                preparation: product?.testPreparationData,
+                testDescription: product?.testPreparationData,
                 source: 'Search Page',
-                type: product.itemType,
+                type: product?.itemType,
               } as TestPackageForDetails,
             });
           });
@@ -546,26 +555,27 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
           props.navigation.navigate(AppRoutes.TestDetails, {
             testDetails: {
               Rate: price,
-              Gender: product.gender,
-              ItemID: `${product.itemId}`,
-              ItemName: product.itemName,
-              FromAgeInDays: product.fromAgeInDays,
-              ToAgeInDays: product.toAgeInDays,
-              collectionType: product.collectionType,
-              preparation: product.testPreparationData,
+              Gender: product?.gender,
+              ItemID: `${product?.itemId}`,
+              ItemName: product?.itemName,
+              FromAgeInDays: product?.fromAgeInDays,
+              ToAgeInDays: product?.toAgeInDays,
+              collectionType: product?.collectionType,
+              preparation: product?.testPreparationData,
+              testDescription: product?.testPreparationData,
               source: 'Search Page',
-              type: product.itemType,
+              type: product?.itemType,
             } as TestPackageForDetails,
           });
         }}
-        medicineName={stripHtml(product.itemName)}
+        medicineName={stripHtml(product?.itemName)}
         imageUrl={''}
         price={price}
         specialPrice={undefined}
         unit={1}
         onPressAdd={() => {
           CommonLogEvent(AppRoutes.SearchTestScene, 'Add item to cart');
-          fetchPackageInclusion(`${product.itemId}`, (tests) => {
+          fetchPackageInclusion(`${product?.itemId}`, (tests) => {
             onAddCartItem(product, tests.length);
           });
         }}

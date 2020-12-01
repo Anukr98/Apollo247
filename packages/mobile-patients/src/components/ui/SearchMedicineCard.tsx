@@ -1,11 +1,15 @@
 import { MedicineIcon, MedicineRxIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
-import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
+import { TouchableOpacityProps, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Image } from 'react-native-elements';
-import { getDiscountPercentage } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  getDiscountPercentage,
+  productsThumbnailUrl,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AddToCartButtons } from '@aph/mobile-patients/src/components/Medicines/AddToCartButtons';
 import { NotForSaleBadge } from '@aph/mobile-patients/src/components/Medicines/NotForSaleBadge';
+import { MedicineProduct } from '@aph/mobile-patients/src/helpers/apiCalls';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -44,53 +48,55 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.text('M', 12, '#02475b', 0.5, 20, 0.04),
     marginTop: 4,
   },
+  addToCartViewStyle: {
+    alignSelf: 'center',
+    borderColor: '#fc9916',
+    borderWidth: 0.5,
+    borderRadius: 1,
+    paddingHorizontal: 8,
+    shadowColor: 'rgba(0, 0, 0, 0.2)',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.4,
+    shadowRadius: 5,
+    backgroundColor: '#fff',
+    elevation: 5,
+  },
 });
 
-export interface SearchMedicineCardProps {
-  isSellOnline: boolean;
-  medicineName: string;
-  specialPrice?: number;
-  price: number;
-  imageUrl?: string;
-  quantity: number;
-  isInStock: boolean;
-  isPrescriptionRequired: boolean;
+export interface Props extends MedicineProduct {
   onPress: () => void;
-  onPressRemove: () => void;
-  onPressAdd: () => void;
-  onNotifyMeClicked: () => void;
-  onPressAddQuantity: () => void;
-  onPressSubtractQuantity: () => void;
-  containerStyle?: StyleProp<ViewStyle>;
-  maxOrderQty: number;
-  removeCartItem: () => void;
+  onPressAddToCart: () => void;
+  onPressNotify: () => void;
+  onPressAddQty: () => void;
+  onPressSubtractQty: () => void;
+  quantity: number;
+  containerStyle?: TouchableOpacityProps['style'];
 }
 
-export const SearchMedicineCard: React.FC<SearchMedicineCardProps> = (props) => {
+export const SearchMedicineCard: React.FC<Props> = (props) => {
   const {
-    isSellOnline,
-    medicineName,
-    specialPrice,
+    name,
     price,
-    imageUrl,
-    isInStock,
+    special_price,
+    thumbnail,
+    is_in_stock,
+    sell_online,
+    is_prescription_required,
+    MaxOrderQty,
     quantity,
     containerStyle,
-    isPrescriptionRequired,
-    onNotifyMeClicked,
-    onPressAddQuantity,
-    onPressSubtractQuantity,
-    onPressAdd,
     onPress,
-    maxOrderQty,
-    removeCartItem,
+    onPressAddToCart,
+    onPressNotify,
+    onPressAddQty,
+    onPressSubtractQty,
   } = props;
 
   const renderTitleAndIcon = () => {
     return (
       <View style={styles.rowSpaceBetweenView}>
         <View style={{ flex: 1 }}>
-          <Text style={styles.medicineTitle}>{medicineName}</Text>
+          <Text style={styles.medicineTitle}>{name}</Text>
           {renderOutOfStock()}
         </View>
       </View>
@@ -100,12 +106,11 @@ export const SearchMedicineCard: React.FC<SearchMedicineCardProps> = (props) => 
   const renderAddToCartView = () => {
     return (
       <TouchableOpacity
-        style={{ alignSelf: 'center' }}
-        activeOpacity={1}
-        onPress={!isInStock ? onNotifyMeClicked : onPressAdd}
+        style={[styles.addToCartViewStyle, !!is_in_stock && { paddingHorizontal: 23 }]}
+        onPress={!is_in_stock ? onPressNotify : onPressAddToCart}
       >
-        <Text style={{ ...theme.viewStyles.text('SB', 12, '#fc9916', 1, 24, 0) }}>
-          {!isInStock ? 'NOTIFY ME' : 'ADD TO CART'}
+        <Text style={theme.viewStyles.text('SB', 10, '#fc9916', 1, 24, 0)}>
+          {!is_in_stock ? 'NOTIFY ME' : 'ADD'}
         </Text>
       </TouchableOpacity>
     );
@@ -118,10 +123,10 @@ export const SearchMedicineCard: React.FC<SearchMedicineCardProps> = (props) => 
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <AddToCartButtons
           numberOfItemsInCart={quantity}
-          maxOrderQty={maxOrderQty}
-          addToCart={onPressAddQuantity}
-          removeItemFromCart={onPressSubtractQuantity}
-          removeFromCart={removeCartItem}
+          maxOrderQty={MaxOrderQty}
+          addToCart={onPressAddQty}
+          removeItemFromCart={onPressSubtractQty}
+          removeFromCart={onPressSubtractQty}
           isSolidContainer={false}
         />
       </View>
@@ -129,13 +134,14 @@ export const SearchMedicineCard: React.FC<SearchMedicineCardProps> = (props) => 
   };
 
   const renderMedicineIcon = () => {
+    const isPrescriptionRequired = is_prescription_required == 1;
     return (
       <View style={{ width: 40, marginRight: 12, alignItems: 'center', alignSelf: 'center' }}>
-        {imageUrl ? (
+        {thumbnail ? (
           <Image
             PlaceholderContent={isPrescriptionRequired ? <MedicineRxIcon /> : <MedicineIcon />}
             placeholderStyle={{ backgroundColor: 'transparent' }}
-            source={{ uri: imageUrl }}
+            source={{ uri: productsThumbnailUrl(thumbnail) }}
             style={{ height: 40, width: 40 }}
             resizeMode="contain"
           />
@@ -149,16 +155,17 @@ export const SearchMedicineCard: React.FC<SearchMedicineCardProps> = (props) => 
   };
 
   const renderOutOfStock = () => {
-    const off_text = getDiscountPercentage(price, specialPrice)
-      ? ' ' + getDiscountPercentage(price, specialPrice) + '%off'
-      : '';
-    return !isInStock && isSellOnline ? (
+    const discount = getDiscountPercentage(price, special_price);
+    const off_text = discount ? ' ' + discount + '%off' : '';
+    return !is_in_stock && sell_online ? (
       <Text style={styles.outOfStockStyle}>{'Out Of Stock'}</Text>
     ) : (
       <View style={{ flexDirection: 'row' }}>
-        <Text style={styles.priceTextCollapseStyle}>Rs. {specialPrice || price}</Text>
-        {specialPrice && (
+        {!discount && <Text style={styles.priceTextCollapseStyle}>{'MRP '}</Text>}
+        <Text style={styles.priceTextCollapseStyle}>Rs. {discount ? special_price : price}</Text>
+        {!!special_price && (
           <>
+            {!!discount && <Text style={styles.priceTextCollapseStyle}>{'   MRP'}</Text>}
             <Text style={[styles.priceTextCollapseStyle, { marginLeft: 4, letterSpacing: 0 }]}>
               {'('}
               <Text style={{ textDecorationLine: 'line-through' }}>{`Rs. ${price}`}</Text>
@@ -181,7 +188,7 @@ export const SearchMedicineCard: React.FC<SearchMedicineCardProps> = (props) => 
         {renderMedicineIcon()}
         <View style={styles.flexStyle}>{renderTitleAndIcon()}</View>
         <View style={{ width: 20 }}></View>
-        {!isSellOnline
+        {!sell_online
           ? renderNotForSaleTag()
           : !quantity
           ? renderAddToCartView()

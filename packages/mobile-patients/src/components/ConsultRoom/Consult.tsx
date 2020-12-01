@@ -42,7 +42,7 @@ import {
   overlyCallPermissions,
   isPastAppointment,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import AsyncStorage from '@react-native-community/async-storage';
@@ -87,6 +87,7 @@ import {
 } from '@aph/mobile-patients/src/helpers/webEngageEvents';
 import { NotificationListener } from '@aph/mobile-patients/src/components/NotificationListener';
 import _ from 'lodash';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 
 const { width, height } = Dimensions.get('window');
 
@@ -414,7 +415,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const articles = string.consult_room.articles.data;
   const tabs = [{ title: 'Today' }, { title: 'Upcoming' }, { title: 'Past' }];
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
-  const { analytics } = useAuth();
 
   const [consultations, setconsultations] = useState<
     getPatientAllAppointments_getPatientAllAppointments_appointments[]
@@ -448,7 +448,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   >([]);
   const [selectedDate, setSelectedDate] = React.useState<Date | null>(null);
   const [displayFilter, setDisplayFilter] = useState<boolean>(false);
-  const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
+  const { showAphAlert, hideAphAlert } = useUIElements();
+  const [loading, setLoading] = useState(true);
 
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
   const [
@@ -486,7 +487,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     //   }
     // }
     currentPatient && setProfile(currentPatient!);
-  }, [currentPatient, analytics, props.navigation.state.params]);
+  }, [currentPatient, props.navigation.state.params]);
 
   useEffect(() => {
     async function fetchData() {
@@ -1039,7 +1040,13 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           }}
         >
           {cancelConsulations ? null : (
-            <TouchableOpacity activeOpacity={1} onPress={onPressPastAppointmentViewDetails}>
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() => {
+                onPressPastAppointmentViewDetails();
+                fireWebengageEvent(item, 'details');
+              }}
+            >
               <Text
                 style={[
                   styles.prepareForConsult,
@@ -1057,6 +1064,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             onPress={() => {
               setAppoinmentItem(item);
               setdisplayoverlay(true);
+              fireWebengageEvent(item, cancelConsulations ? 'cancel' : 'followup');
             }}
           >
             <Text
@@ -1071,6 +1079,43 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             </Text>
           </TouchableOpacity>
         </View>
+      );
+    };
+
+    const fireWebengageEvent = (
+      item: getPatinetAppointments_getPatinetAppointments_patinetAppointments,
+      eventType: string
+    ) => {
+      const eventAttributesFollowUp:
+        | WebEngageEvents[WebEngageEventName.BOOK_AGAIN_CANCELLED_APPOINTMENT]
+        | WebEngageEvents[WebEngageEventName.PAST_APPOINTMENT_BOOK_FOLLOW_UP_CLICKED] = {
+        'Customer ID': g(currentPatient, 'id'),
+        'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+        'Patient UHID': g(currentPatient, 'uhid'),
+        'Patient Age': Math.round(
+          moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)
+        ),
+        'Doctor ID': g(item, 'doctorId') || '',
+        'Doctor Name': g(item, 'doctorInfo', 'fullName') || '',
+        'Doctor Category': g(item, 'doctorInfo', 'doctorType'),
+        'Doctor City': g(item, 'doctorInfo', 'city') || '',
+        'Speciality ID': g(item, 'doctorInfo', 'specialty', 'id') || '',
+        'Speciality Name': g(item, 'doctorInfo', 'specialty', 'name') || '',
+        'Consult ID': g(item, 'id') || '',
+        'Consult Date Time': moment(g(item, 'appointmentDateTime')).toDate(),
+        'Consult Mode':
+          g(item, 'appointmentType') == APPOINTMENT_TYPE.ONLINE ? 'Online' : 'Physical',
+        isConsultStarted: !!g(item, 'isConsultStarted'),
+        Prescription: followUpMedicineNameText || '',
+      };
+
+      postWebEngageEvent(
+        eventType === 'cancel'
+          ? WebEngageEventName.BOOK_AGAIN_CANCELLED_APPOINTMENT
+          : eventType === 'followup'
+          ? WebEngageEventName.PAST_APPOINTMENT_BOOK_FOLLOW_UP_CLICKED
+          : WebEngageEventName.VIEW_DETAILS_PAST_APPOINTMENT,
+        eventAttributesFollowUp
       );
     };
 
@@ -1934,7 +1979,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           </View>
         </BottomPopUp>
       )}
-      {/* {loading && <Spinner />} */}
+      {loading && <Spinner />}
       {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
       <NotificationListener navigation={props.navigation} />
       {renderAppointmentFilterScreen()}

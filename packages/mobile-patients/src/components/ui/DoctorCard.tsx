@@ -55,7 +55,7 @@ import {
 import { NavigationScreenProps } from 'react-navigation';
 import { SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors } from '../../graphql/types/SearchDoctorAndSpecialtyByName';
 import { WebEngageEvents, WebEngageEventName } from '../../helpers/webEngageEvents';
-
+import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
 const styles = StyleSheet.create({
   doctorView: {
     flex: 1,
@@ -138,8 +138,10 @@ export interface DoctorCardProps extends NavigationScreenProps {
 
 export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   const rowData = props.rowData;
+  const ctaBannerText = rowData?.availabilityTitle;
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
+  const [fetchedSlot, setfetchedSlot] = useState<string>('');
 
   useEffect(() => {
     if (!currentPatient) {
@@ -180,6 +182,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       ConsultType: props.availableModes,
       callSaveSearch: props.callSaveSearch,
       params: params,
+      availNowText: ctaBannerText?.AVAILABLE_NOW || '',
+      consultNowText: ctaBannerText?.CONSULT_NOW || '',
     });
   };
 
@@ -208,6 +212,23 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       timeDiff = Math.round(((date2 as any) - (today as any)) / 60000);
     }
     return timeDiff;
+  }
+
+  function getButtonTitle(slot: string) {
+    const title =
+      slot && moment(slot).isValid()
+        ? nextAvailability(slot, 'Consult')
+        : string.common.book_apointment;
+    if (title == 'BOOK APPOINTMENT') {
+      fetchNextAvailableSlot();
+    }
+    return title;
+  }
+  //Only triggered past the next available slot of a doctor
+  async function fetchNextAvailableSlot() {
+    const todayDate = new Date().toISOString().slice(0, 10);
+    const response = await getNextAvailableSlots(client, [rowData?.id] || [], todayDate);
+    setfetchedSlot(response?.data?.[0]?.availableSlot);
   }
 
   if (rowData) {
@@ -286,7 +307,11 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         <View style={{ borderRadius: 10, flex: 1, zIndex: 1 }}>
           <View style={{ flexDirection: 'row' }}>
             {rowData.slot ? (
-              <AvailabilityCapsule availableTime={rowData.slot} styles={styles.availableView} />
+              <AvailabilityCapsule 
+                availableTime={rowData.slot} 
+                styles={styles.availableView} 
+                availNowText={!!ctaBannerText ? ctaBannerText.AVAILABLE_NOW : ''} 
+              />
             ) : null}
             <View style={{ position: 'absolute', top: -6, right: -6 }}>
               {rowData.doctorType !== 'DOCTOR_CONNECT' ? (
@@ -465,9 +490,13 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                       props.buttonTextStyle,
                     ]}
                   >
-                    {rowData.slot && moment(rowData.slot).isValid()
-                      ? nextAvailability(rowData.slot, 'Consult')
-                      : string.common.book_apointment}
+                    {
+                      !!ctaBannerText 
+                      ? ctaBannerText.CONSULT_NOW 
+                      : !!fetchedSlot 
+                      ? getButtonTitle(fetchedSlot) 
+                      : getButtonTitle(rowData?.slot)
+                    }
                   </Text>
                 </TouchableOpacity>
               </View>

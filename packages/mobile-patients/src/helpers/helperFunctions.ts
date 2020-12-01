@@ -14,6 +14,7 @@ import {
   MEDICINE_ORDER_STATUS,
   Relation,
   MEDICINE_UNIT,
+  SaveSearchInput,
   STATUS,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -46,12 +47,14 @@ import {
   searchDiagnostics,
   searchDiagnosticsVariables,
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
+import { saveSearch, saveSearchVariables } from '@aph/mobile-patients/src/graphql/types/saveSearch';
 import {
   searchDiagnosticsByCityID,
   searchDiagnosticsByCityIDVariables,
   searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics,
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnosticsByCityID';
 import {
+  SAVE_SEARCH,
   SEARCH_DIAGNOSTICS,
   SEARCH_DIAGNOSTICS_BY_CITY_ID,
 } from '@aph/mobile-patients/src/graphql/profiles';
@@ -65,7 +68,8 @@ import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-pati
 import appsFlyer from 'react-native-appsflyer';
 import { AppsFlyerEventName, AppsFlyerEvents } from './AppsFlyerEvents';
 import { FirebaseEventName, FirebaseEvents } from './firebaseEvents';
-import firebase from 'react-native-firebase';
+import analytics from '@react-native-firebase/analytics';
+import crashlytics from '@react-native-firebase/crashlytics';
 import _ from 'lodash';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import {
@@ -849,11 +853,7 @@ export const reOrderMedicines = async (
   const cartItemsToAdd = lineItemsDetails.map(
     (item, index) =>
       ({
-        id: item.sku,
-        mou: item.mou,
-        name: item.name,
-        price: parseNumber(item.price),
-        specialPrice: item.special_price ? parseNumber(item.special_price) : undefined,
+        ...formatToCartItem(item),
         quantity: Math.ceil(
           (billedLineItems
             ? billedLineItems[index].issuedQty
@@ -863,12 +863,6 @@ export const reOrderMedicines = async (
               )
             : lineItems[index].quantity) || 1
         ),
-        prescriptionRequired: item.is_prescription_required == '1',
-        isMedicine: (item.type_id || '').toLowerCase() == 'pharma',
-        thumbnail: item.thumbnail || item.image,
-        isInStock: item.is_in_stock == 1,
-        maxOrderQty: item.MaxOrderQty,
-        productType: item.type_id,
       } as ShoppingCartItem)
   );
   const unavailableItems = billedLineItems
@@ -987,7 +981,7 @@ export const getDiscountPercentage = (price: number | string, specialPrice?: num
     : Number(price) == Number(specialPrice)
     ? 0
     : ((Number(price) - Number(specialPrice)) / Number(price)) * 100;
-  return discountPercent != 0 ? Number(discountPercent).toFixed(1) : 0;
+  return discountPercent != 0 ? Number(Number(discountPercent).toFixed(1)) : 0;
 };
 
 export const getBuildEnvironment = () => {
@@ -1164,24 +1158,23 @@ export const postwebEngageAddToCartEvent = (
     category_id,
   }: Pick<MedicineProduct, 'sku' | 'name' | 'price' | 'special_price' | 'category_id'>,
   source: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Source'],
-  section?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Section'],
-  sectionName?: string
+  sectionName?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Section Name'],
+  categoryName?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['category name']
 ) => {
   const eventAttributes: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART] = {
     'product name': name,
     'product id': sku,
     Brand: '',
     'Brand ID': '',
-    'category name': '',
+    'category name': categoryName || '',
+    'Section Name': sectionName || '',
     'category ID': category_id || '',
     Price: price,
     'Discounted Price': Number(special_price) || undefined,
     Quantity: 1,
     Source: source,
-    Section: section ? section : '',
     af_revenue: Number(special_price) || price,
     af_currency: 'INR',
-    'Section Name': sectionName || '',
   };
   postWebEngageEvent(WebEngageEventName.PHARMACY_ADD_TO_CART, eventAttributes);
 };
@@ -1443,19 +1436,47 @@ export const postAppsFlyerAddToCartEvent = (
   postAppsFlyerEvent(AppsFlyerEventName.PHARMACY_ADD_TO_CART, eventAttributes);
 };
 
+export const setFirebaseUserId = (userId: string) => {
+  try {
+    analytics().setUserId(userId);
+  } catch (error) {}
+};
+
+export const setCrashlyticsAttributes = async (
+  currentPatient: GetCurrentPatients_getCurrentPatients_patients
+) => {
+  try {
+    await Promise.all([
+      crashlytics().setUserId(currentPatient?.mobileNumber),
+      crashlytics().setAttributes({
+        firstName: currentPatient?.firstName!,
+        lastName: currentPatient?.lastName!,
+      }),
+    ]);
+  } catch (error) {}
+};
+
 export const postFirebaseEvent = (eventName: FirebaseEventName, attributes: Object) => {
   try {
     const logContent = `[Firebase Event] ${eventName}`;
     console.log(logContent);
-    firebase.analytics().logEvent(eventName, attributes);
+    analytics().logEvent(eventName, attributes);
   } catch (error) {
     console.log('********* Unable to post FirebaseEvent *********', { error });
   }
 };
 
 export const postFirebaseAddToCartEvent = (
-  { sku, name, category_id, price, special_price }: MedicineProduct,
-  source: FirebaseEvents[FirebaseEventName.PHARMACY_ADD_TO_CART]['Source']
+  {
+    sku,
+    name,
+    price,
+    special_price,
+    category_id,
+  }: Pick<MedicineProduct, 'sku' | 'name' | 'price' | 'special_price' | 'category_id'>,
+  source: FirebaseEvents[FirebaseEventName.PHARMACY_ADD_TO_CART]['Source'],
+  section?: FirebaseEvents[FirebaseEventName.PHARMACY_ADD_TO_CART]['Section'],
+  sectionName?: string
 ) => {
   try {
     const eventAttributes: FirebaseEvents[FirebaseEventName.PHARMACY_ADD_TO_CART] = {
@@ -1469,6 +1490,10 @@ export const postFirebaseAddToCartEvent = (
       DiscountedPrice: typeof special_price == 'string' ? Number(special_price) : special_price,
       Quantity: 1,
       Source: source,
+      af_revenue: Number(special_price) || price,
+      af_currency: 'INR',
+      Section: section ? section : '',
+      SectionName: sectionName || '',
     };
     postFirebaseEvent(FirebaseEventName.PHARMACY_ADD_TO_CART, eventAttributes);
   } catch (error) {}
@@ -1557,6 +1582,7 @@ export const formatToCartItem = ({
   is_in_stock,
   thumbnail,
   image,
+  sell_online,
 }: MedicineProduct): ShoppingCartItem => {
   return {
     id: sku,
@@ -1571,7 +1597,17 @@ export const formatToCartItem = ({
     maxOrderQty: MaxOrderQty,
     productType: type_id,
     isInStock: is_in_stock == 1,
+    unavailableOnline: sell_online == 0,
   };
+};
+
+export const savePastSearch = (client: ApolloClient<object>, input: SaveSearchInput) => {
+  try {
+    client.mutate<saveSearch, saveSearchVariables>({
+      mutation: SAVE_SEARCH,
+      variables: { saveSearchInput: input },
+    });
+  } catch (error) {}
 };
 
 export const addPharmaItemToCart = (
@@ -1586,6 +1622,7 @@ export const addPharmaItemToCart = (
     source: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Source'];
     section?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['Section'];
     categoryId?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['category ID'];
+    categoryName?: WebEngageEvents[WebEngageEventName.PHARMACY_ADD_TO_CART]['category name'];
   },
   onComplete?: () => void
 ) => {
@@ -1600,7 +1637,21 @@ export const addPharmaItemToCart = (
 
   const addToCart = () => {
     addCartItem!(cartItem);
+    console.log('>>>otherInfo?.categoryName', otherInfo?.categoryName);
+
     postwebEngageAddToCartEvent(
+      {
+        sku: cartItem.id,
+        name: cartItem.name,
+        price: cartItem.price,
+        special_price: cartItem.specialPrice,
+        category_id: otherInfo?.categoryId,
+      },
+      otherInfo?.source,
+      otherInfo?.section,
+      otherInfo?.categoryName
+    );
+    postFirebaseAddToCartEvent(
       {
         sku: cartItem.id,
         name: cartItem.name,
@@ -1924,4 +1975,21 @@ export const checkPermissions = (permissions: string[]) => {
 
 export const removeConsecutiveComma = (value: string) => {
   return value.replace(/^,|,$|,(?=,)/g, '');
+};
+
+export const readableParam = (param: string) => {
+  const a = 'àáâäæãåāăąçćčđďèéêëēėęěğǵḧîïíīįìłḿñńǹňôöòóœøōõőṕŕřßśšşșťțûüùúūǘůűųẃẍÿýžźż·/_,:;';
+  const b = 'aaaaaaaaaacccddeeeeeeeegghiiiiiilmnnnnoooooooooprrsssssttuuuuuuuuuwxyyzzz------';
+  const p = new RegExp(a.split('').join('|'), 'g');
+
+  return param
+    .toString()
+    .toLowerCase()
+    .replace(/\s+/g, '-') // Replace spaces with -
+    .replace(p, (c) => b.charAt(a.indexOf(c))) // Replace special characters
+    .replace(/&/g, '-and-') // Replace & with 'and'
+    .replace(/[^\w\-]+/g, '') // Remove all non-word characters
+    .replace(/\-\-+/g, '-') // Replace multiple - with single -
+    .replace(/^-+/, '') // Trim - from start of text
+    .replace(/-+$/, ''); // Trim - from end of text
 };

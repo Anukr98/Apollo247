@@ -49,7 +49,7 @@ import {
 } from '../../graphql/types/getAppointmentData';
 import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
 import { FirebaseEvents, FirebaseEventName } from '../../helpers/firebaseEvents';
-import firebase from 'react-native-firebase';
+import messaging from '@react-native-firebase/messaging';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { NotificationPermissionAlert } from '@aph/mobile-patients/src/components/ui/NotificationPermissionAlert';
 import { Snackbar } from 'react-native-paper';
@@ -77,7 +77,9 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
   const webEngageEventAttributes = props.navigation.getParam('webEngageEventAttributes');
   const appsflyerEventAttributes = props.navigation.getParam('appsflyerEventAttributes');
   const fireBaseEventAttributes = props.navigation.getParam('fireBaseEventAttributes');
+  const isDoctorsOfTheHourStatus = props.navigation.getParam('isDoctorsOfTheHourStatus');
   const coupon = props.navigation.getParam('coupon');
+  const paymentTypeID = props.navigation.getParam('paymentTypeID');
   const client = useApolloClient();
   const { success, failure, pending, aborted } = Payment;
   const { showAphAlert, hideAphAlert } = useUIElements();
@@ -118,11 +120,12 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
         try {
           const paymentEventAttributes = {
             Payment_Status: res.data.paymentTransactionStatus.appointment.paymentStatus,
-            Type: 'Consultation',
+            LOB: 'Consultation',
             Appointment_Id: orderId,
           };
           postWebEngageEvent(WebEngageEventName.PAYMENT_STATUS, paymentEventAttributes);
           postFirebaseEvent(FirebaseEventName.PAYMENT_STATUS, paymentEventAttributes);
+          postAppsFlyerEvent(AppsFlyerEventName.PAYMENT_STATUS, paymentEventAttributes);
         } catch (error) {}
         console.log(res.data);
         if (res.data.paymentTransactionStatus.appointment.paymentStatus == success) {
@@ -130,11 +133,14 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
           try {
             let eventAttributes = webEngageEventAttributes;
             eventAttributes['Display ID'] = res.data.paymentTransactionStatus.appointment.displayId;
-            postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
             postAppsFlyerEvent(AppsFlyerEventName.CONSULTATION_BOOKED, appsflyerEventAttributes);
             postFirebaseEvent(FirebaseEventName.CONSULTATION_BOOKED, fireBaseEventAttributes);
             firePurchaseEvent();
+            eventAttributes['Dr of hour appointment'] = !!isDoctorsOfTheHourStatus ? 'Yes' : 'No';
+            postWebEngageEvent(WebEngageEventName.CONSULTATION_BOOKED, eventAttributes);
           } catch (error) {}
+        } else {
+          fireOrderFailedEvent();
         }
         setrefNo(res.data.paymentTransactionStatus.appointment.bankTxnId);
         setStatus(res.data.paymentTransactionStatus.appointment.paymentStatus);
@@ -154,25 +160,30 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
     };
   }, []);
 
-  const fireBaseFCM = async () => {
-    const enabled = await firebase.messaging().hasPermission();
-    if (enabled) {
-      // user has permissions
-      console.log('enabled', enabled);
-    } else {
-      // user doesn't have permission
-      console.log('not enabled');
-      setNotificationAlert(true);
-      try {
-        const authorized = await firebase.messaging().requestPermission();
-        console.log('authorized', authorized);
+  const fireOrderFailedEvent = () => {
+    const eventAttributes: FirebaseEvents[FirebaseEventName.ORDER_FAILED] = {
+      Price: price,
+      CouponCode: coupon,
+      PaymentType: paymentTypeID,
+      LOB: 'Consultation',
+      Appointment_Id: orderId,
+    };
+    postAppsFlyerEvent(AppsFlyerEventName.ORDER_FAILED, eventAttributes);
+    postFirebaseEvent(FirebaseEventName.ORDER_FAILED, eventAttributes);
+  };
 
-        // User has authorised
-      } catch (error) {
-        // User has rejected permissions
-        CommonBugFender('Login_fireBaseFCM_try', error);
-        console.log('not enabled error', error);
+  const fireBaseFCM = async () => {
+    try {
+      const authStatus = await messaging().hasPermission();
+      const enabled =
+        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+      if (!enabled) {
+        setNotificationAlert(true);
+        await messaging().requestPermission();
       }
+    } catch (error) {
+      CommonBugFender('ConsultOverlay_FireBaseFCM_Error', error);
     }
   };
 

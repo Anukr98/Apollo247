@@ -110,6 +110,8 @@ export interface ConsultTypeCardProps {
   DoctorName: string | null;
   nextAppointemntOnlineTime: string;
   nextAppointemntInPresonTime: string;
+  availNowText?: string;
+  consultNowText?: string;
 }
 
 type stepsObject = {
@@ -128,6 +130,8 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
     DoctorName,
     nextAppointemntOnlineTime,
     nextAppointemntInPresonTime,
+    availNowText,
+    consultNowText,
   } = props;
 
   const { currentPatient } = useAllCurrentPatients();
@@ -153,7 +157,7 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
             </Text>
             {time && moment(time).isValid() ? (
               <Text style={timeDiff <= 15 ? styles.timeText2Style : styles.timeTextStyle}>
-                {nextAvailability(time)}
+                {availNowText || nextAvailability(time)}
               </Text>
             ) : null}
           </View>
@@ -185,7 +189,7 @@ export const ConsultTypeCard: React.FC<ConsultTypeCardProps> = (props) => {
         </View>
         <TouchableOpacity activeOpacity={1} onPress={onPress}>
           <View style={styles.buttonStyle}>
-            <Text style={styles.buttonTextStyle}>{`${
+            <Text style={styles.buttonTextStyle}>{consultNowText || `${
               time && moment(time).isValid()
                 ? nextAvailability(time, 'Consult')
                 : string.common.book_apointment

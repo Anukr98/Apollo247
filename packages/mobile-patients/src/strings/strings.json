@@ -68,6 +68,17 @@
       }
     }
   },
+  "specialOffers": "Special Offers",
+  "notInStockInYourArea": "Not in stock in your area",
+  "notForSale": "Not for sale",
+  "outOfStock": "Out of stock",
+  "removeUnavailableItems": "REMOVE UNAVAILABLE ITEMS",
+  "selectDeliveryAddress": "SELECT DELIVERY ADDRESS",
+  "addDeliveryAddress": "ADD DELIVERY ADDRESS",
+  "uploadPrescription": "UPLOAD PRESCRIPTION",
+  "proceedToPay": "PROCEED TO PAY",
+  "microphone": "microphone",
+  "enableMicrophoneToRecordCough": "Enable microphone from settings to record your cough.",
   "consultType": {
     "mainHeading": "How would you like to consult with",
     "checkBoxText": "I have consulted with {0} before",
@@ -311,6 +322,7 @@
     "itemsAddedSuccessfullyCTA": " Item successfully added",
     "proceedToCartCTA": "PROCEED TO CART",
     "noPreparationRequiredText": "No special preparation required",
+    "noTestDescription": "No test description available",
     "priceNotificationForCovidText": "Extra charges for Phlebotomist Protection Kit and Home Collection may apply for COVID Test. You will be informed of the charges after booking of the order."
   },
   "orders": {

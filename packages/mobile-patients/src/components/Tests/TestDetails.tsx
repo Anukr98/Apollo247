@@ -9,10 +9,13 @@ import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/glo
 import { getPackageData, TestPackage } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import stripHtml from 'string-strip-html';
 import {
   aphConsole,
   postWebEngageEvent,
   g,
+  postAppsFlyerEvent,
+  postFirebaseEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
@@ -47,6 +50,8 @@ import {
   findDiagnosticsByItemIDsAndCityID,
 } from '../../graphql/types/findDiagnosticsByItemIDsAndCityID';
 import { AppConfig, COVID_NOTIFICATION_ITEMID } from '../../strings/AppConfig';
+import { FirebaseEventName, FirebaseEvents } from '../../helpers/firebaseEvents';
+import { AppsFlyerEventName } from '../../helpers/AppsFlyerEvents';
 
 const styles = StyleSheet.create({
   testNameStyles: {
@@ -96,7 +101,7 @@ const styles = StyleSheet.create({
   },
   SeparatorStyle: {
     ...theme.viewStyles.lightSeparatorStyle,
-    opacity: 0.5,
+    borderBottomColor: 'rgba(2, 71, 91, 0.5)',
     paddingLeft: 20,
     paddingRight: 20,
     marginBottom: 20,
@@ -151,7 +156,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const tabs = [
+var tabs = [
   {
     id: '1',
     title: 'Tests Included',
@@ -176,11 +181,12 @@ export interface TestDetailsProps
   }> {}
 
 export const TestDetails: React.FC<TestDetailsProps> = (props) => {
-  const [selectedTab, setSelectedTab] = useState<string>(tabs[0].title);
   const testDetails = props.navigation.getParam('testDetails', {} as TestPackageForDetails);
   const itemId = props.navigation.getParam('itemId');
 
   const [testInfo, setTestInfo] = useState<TestPackageForDetails>(testDetails);
+  const [selectedTab, setSelectedTab] = useState<string>(tabs[0].title);
+
   const TestDetailsDiscription = testInfo.PackageInClussion;
   const { locationDetails, diagnosticLocation, diagnosticServiceabilityData } = useAppCommonData();
   const { cartItems, addCartItem } = useDiagnosticsCart();
@@ -213,6 +219,36 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   }, []);
 
   useEffect(() => {
+    if (testInfo?.testDescription != null) {
+      tabs = [
+        {
+          id: '1',
+          title: 'Tests Included',
+        },
+        {
+          id: '2',
+          title: 'Preparation',
+        },
+        {
+          id: '3',
+          title: 'Overview',
+        },
+      ];
+    } else {
+      tabs = [
+        {
+          id: '1',
+          title: 'Tests Included',
+        },
+        {
+          id: '2',
+          title: 'Preparation',
+        },
+      ];
+    }
+  }, []);
+
+  useEffect(() => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION] = {
       'Patient UHID': g(currentPatient, 'uhid'),
       'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
@@ -223,6 +259,19 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       'Item Price': testInfo.Rate,
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_TEST_DESCRIPTION, eventAttributes);
+
+    const firebaseEventAttributes: FirebaseEvents[FirebaseEventName.PRODUCT_PAGE_VIEWED] = {
+      PatientUHID: g(currentPatient, 'uhid'),
+      PatientName: `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
+      source: testInfo.source,
+      ItemName: testInfo.ItemName,
+      ItemType: testInfo.type,
+      ItemCode: testInfo.ItemID,
+      ItemPrice: testInfo.Rate,
+      LOB: 'Diagnostics',
+    };
+    postFirebaseEvent(FirebaseEventName.PRODUCT_PAGE_VIEWED, firebaseEventAttributes);
+    postAppsFlyerEvent(AppsFlyerEventName.PRODUCT_PAGE_VIEWED, firebaseEventAttributes);
   }, []);
 
   const loadTestDetails = async (itemId: string) => {
@@ -328,15 +377,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           {!!testInfo.ToAgeInDays && (
             <View style={styles.personDetailsView}>
               <Text style={styles.personDetailLabelStyles}>Age Group</Text>
-              <Text style={styles.personDetailStyles}>
-                {fromAge == '0' ? '12' : fromAge} TO{' '}
-                {COVID_NOTIFICATION_ITEMID.includes(testInfo.ItemID)
-                  ? 100
-                  : toAge == '192'
-                  ? '99'
-                  : toAge}{' '}
-                YEARS
-              </Text>
+              <Text style={styles.personDetailStyles}>For all Age Group</Text>
             </View>
           )}
           {!!testInfo.Gender && !!gender[testInfo.Gender] && (
@@ -415,6 +456,17 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     );
   };
 
+  const renderTestDescription = () => {
+    return (
+      <View style={styles.descriptionStyles}>
+        <Text style={styles.descriptionTextStyles}>
+          {(testInfo && stripHtml(testInfo?.testDescription)) ||
+            string.diagnostics.noTestDescription}
+        </Text>
+      </View>
+    );
+  };
+
   const renderNotification = () => {
     if (!COVID_NOTIFICATION_ITEMID.includes(testInfo.ItemID)) {
       return null;
@@ -448,6 +500,16 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       Quantity: 1,
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ADD_TO_CART, eventAttributes);
+    const firebaseAttributes: FirebaseEvents[FirebaseEventName.DIAGNOSTIC_ADD_TO_CART] = {
+      productname: name,
+      productid: id,
+      Source: 'Diagnostic',
+      Price: price,
+      DiscountedPrice: discountedPrice,
+      Quantity: 1,
+    };
+    postFirebaseEvent(FirebaseEventName.DIAGNOSTIC_ADD_TO_CART, firebaseAttributes);
+    postAppsFlyerEvent(AppsFlyerEventName.DIAGNOSTIC_ADD_TO_CART, firebaseAttributes);
   };
 
   const isAddedToCart = !!cartItems.find((item) => item.id == testInfo.ItemID);
@@ -486,12 +548,18 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           <View>{renderTestDetails()}</View>
           {renderNotification()}
           {renderTabsData()}
-          {selectedTab === tabs[0].title ? renderTestsIncludedData() : renderPreparation()}
+          {selectedTab === tabs[0].title
+            ? renderTestsIncludedData()
+            : selectedTab === tabs[1].title
+            ? renderPreparation()
+            : renderTestDescription()}
           <View style={{ height: 100 }} />
         </ScrollView>
         <StickyBottomComponent defaultBG style={styles.container}>
           <View style={{ marginBottom: 11, alignItems: 'flex-end' }}>
-            <Text style={styles.priceText}>Rs. {testInfo.Rate}</Text>
+            <Text style={styles.priceText}>
+              {string.common.Rs} {testInfo.Rate}
+            </Text>
           </View>
 
           <View style={styles.SeparatorStyle}></View>

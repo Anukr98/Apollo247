@@ -67,6 +67,8 @@ import {
   postWEGNeedHelpEvent,
   setWebEngageScreenNames,
   getFormattedLocation,
+  postAppsFlyerEvent,
+  postFirebaseEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -114,6 +116,8 @@ import {
   getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnosticHotSellers,
   getDiagnosticsHomePageItems_getDiagnosticsHomePageItems_diagnosticOrgans,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticsHomePageItems';
+import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
+import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 
 const { width: winWidth } = Dimensions.get('window');
 const styles = StyleSheet.create({
@@ -292,7 +296,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
     'Patient Age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
   };
   useEffect(() => {
-    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED] = patientAttributes;
+    const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED] = {
+      ...patientAttributes,
+      Serviceability: isDiagnosticLocationServiceable == 'true' ? 'Yes' : 'No',
+    };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_VIEWED, eventAttributes);
   }, []);
 
@@ -309,7 +316,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   useEffect(() => {
     if (!!locationDetails || !!diagnosticLocation) {
-      if (isDiagnosticLocationServiceable) {
+      if (isDiagnosticLocationServiceable == 'true') {
         const eventAttributes: WebEngageEvents[WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_SERVICEABLE] = serviceableAttributes;
         postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_LANDING_PAGE_SERVICEABLE, eventAttributes);
       } else {
@@ -559,15 +566,19 @@ export const Tests: React.FC<TestsProps> = (props) => {
       Price: price,
       'Discounted Price': discountedPrice,
       Quantity: 1,
-      // 'Patient Name': `${g(currentPatient, 'firstName')} ${g(currentPatient, 'lastName')}`,
-      // 'Patient UHID': g(currentPatient, 'uhid'),
-      // Relation: g(currentPatient, 'relation'),
-      // 'Patient Age': Math.round(moment().diff(g(currentPatient, 'dateOfBirth') || 0, 'years', true)),
-      // 'Patient Gender': g(currentPatient, 'gender'),
-      // 'Mobile Number': g(currentPatient, 'mobileNumber'),
-      // 'Customer ID': g(currentPatient, 'id'),
     };
     postWebEngageEvent(WebEngageEventName.DIAGNOSTIC_ADD_TO_CART, eventAttributes);
+
+    const firebaseAttributes: FirebaseEvents[FirebaseEventName.DIAGNOSTIC_ADD_TO_CART] = {
+      productname: name,
+      productid: id,
+      Source: 'Diagnostic',
+      Price: price,
+      DiscountedPrice: discountedPrice,
+      Quantity: 1,
+    };
+    postFirebaseEvent(FirebaseEventName.DIAGNOSTIC_ADD_TO_CART, firebaseAttributes);
+    postAppsFlyerEvent(AppsFlyerEventName.DIAGNOSTIC_ADD_TO_CART, firebaseAttributes);
   };
 
   const postBrowsePackageEvent = (packageName: string) => {
@@ -707,10 +718,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
               city: serviceableData.cityName || '',
             };
             setDiagnosticServiceabilityData!(obj);
-            setDiagnosticLocationServiceable!(true);
+            setDiagnosticLocationServiceable!('true');
             setServiceabilityMsg('');
           } else {
-            setDiagnosticLocationServiceable!(false);
+            setDiagnosticLocationServiceable!('false');
             setLoadingContext!(false);
             renderLocationNotServingPopUpForPincode(pincode);
           }
@@ -897,7 +908,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
             },
           ]}
         >
-          <Text style={[styles.priceText, { marginRight: 4 }]}>Rs. {specialPrice || price}</Text>
+          <Text style={[styles.priceText, { marginRight: 4 }]}>
+            {string.common.Rs} {specialPrice || price}
+          </Text>
           {!!specialPrice && (
             <Text style={styles.discountedPriceText}>
               (
@@ -908,7 +921,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                   },
                 ]}
               >
-                Rs. {price}
+                {string.common.Rs} {price}
               </Text>
               )
             </Text>
@@ -1033,16 +1046,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
         postFeaturedTestEvent(packageName!, `${diagnostics!.itemId}`);
         props.navigation.navigate(AppRoutes.TestDetails, {
           testDetails: {
-            Rate: diagnostics!.rate,
-            Gender: diagnostics!.gender,
-            ItemID: `${diagnostics!.itemId}`,
+            Rate: diagnostics?.rate,
+            Gender: diagnostics?.gender,
+            ItemID: `${diagnostics?.itemId}`,
             ItemName: packageName,
-            collectionType: diagnostics!.collectionType,
-            FromAgeInDays: diagnostics!.fromAgeInDays,
-            ToAgeInDays: diagnostics!.toAgeInDays,
-            preparation: diagnostics!.testPreparationData,
+            collectionType: diagnostics?.collectionType,
+            FromAgeInDays: diagnostics?.fromAgeInDays,
+            ToAgeInDays: diagnostics?.toAgeInDays,
+            preparation: diagnostics?.testPreparationData,
+            testDescription: diagnostics?.testDescription,
             source: 'Landing Page',
-            type: diagnostics!.itemType,
+            type: diagnostics?.itemType,
           } as TestPackageForDetails,
         });
       },
@@ -1094,7 +1108,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   //             item.title,
   //             `${config.IMAGES_BASE_URL[0]}${item.image_url}`,
   //             () =>
-  //               props.navigation.navigate(AppRoutes.SearchByBrand, {
+  //               props.navigation.navigate(AppRoutes.MedicineListing, {
   //                 category_id: item.category_id,
   //                 title: `${item.title || 'Products'}`.toUpperCase(),
   //                 isTest: true,
@@ -1196,7 +1210,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 ...theme.viewStyles.text('SB', 14, '#02475b', 1, 24),
               }}
             >
-              Rs. {specialPrice || price}
+              {string.common.Rs} {specialPrice || price}
             </Text>
             {!!specialPrice && (
               <Text
@@ -1213,7 +1227,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                     },
                   ]}
                 >
-                  Rs. {price}
+                  {string.common.Rs} {price}
                 </Text>
                 )
               </Text>
@@ -1350,10 +1364,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
                     props.navigation.navigate(AppRoutes.TestDetails, {
                       testDetails: {
                         ...item,
-                        collectionType: product.collectionType,
-                        preparation: product.testPreparationData,
+                        collectionType: product?.collectionType,
+                        preparation: product?.testPreparationData,
+                        testDescription: product?.testDescription,
                         source: 'Landing Page',
-                        type: product.itemType,
+                        type: product?.itemType,
                       } as TestPackageForDetails,
                       type: 'Package',
                     });
@@ -1397,7 +1412,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
       >
         <Text style={theme.viewStyles.text('M', 14, '#01475b', 1, 22)}>{name}</Text>
         <Spearator style={{ marginVertical: 7.5 }} />
-        <Text style={theme.viewStyles.text('B', 14, '#01475b', 1, 20)}>Rs. {price}</Text>
+        <Text style={theme.viewStyles.text('B', 14, '#01475b', 1, 20)}>
+          {string.common.Rs} {price}
+        </Text>
       </TouchableOpacity>
     );
   };
@@ -1438,8 +1455,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
     if (!hLoading && shopByOrgans.length == 0) return null;
     return (
-      <View>
-        <SectionHeader leftText={'FEATURED PACKAGES'} />
+      <View style={{ marginTop: 10 }}>
+        <SectionHeader leftText={'BROWSE PACKAGES'} />
         {hLoading ? (
           renderSectionLoader()
         ) : (
@@ -1501,31 +1518,29 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [isSearchFocused, setSearchFocused] = useState(false);
   const client = useApolloClient();
 
-  const onSearchMedicine = (_searchText: string) => {
+  const onSearchTest = (_searchText: string) => {
     if (isValidSearch(_searchText)) {
       if (!g(locationForDiagnostics, 'cityId')) {
         renderLocationNotServingPopup();
         return;
       }
-      setSearchText(_searchText);
       if (!(_searchText && _searchText.length > 2)) {
         setMedicineList([]);
         console.log('onSearchMedicine');
         return;
       }
       setsearchSate('load');
+
       client
         .query<searchDiagnosticsByCityID, searchDiagnosticsByCityIDVariables>({
           query: SEARCH_DIAGNOSTICS_BY_CITY_ID,
           variables: {
-            cityID: parseInt(locationForDiagnostics?.cityId!, 10), //be default show of hyderabad
             searchText: _searchText,
+            cityID: parseInt(locationForDiagnostics?.cityId!, 10),
           },
           fetchPolicy: 'no-cache',
         })
         .then(({ data }) => {
-          // aphConsole.log({ data });
-          setSearchText(_searchText);
           const products = g(data, 'searchDiagnosticsByCityID', 'diagnostics') || [];
           setMedicineList(
             products as searchDiagnosticsByCityID_searchDiagnosticsByCityID_diagnostics[]
@@ -1535,7 +1550,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
         })
         .catch((e) => {
           CommonBugFender('Tests_onSearchMedicine', e);
-          // aphConsole.log({ e });
           setsearchSate('fail');
         });
     }
@@ -1586,7 +1600,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04),
             }}
           >
-            Rs. {data.price}
+            {string.common.Rs} {data.price}
           </Text>
         </View>
       );
@@ -1732,7 +1746,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 setMedicineList([]);
                 return;
               }
-              const search = _.debounce(onSearchMedicine, 300);
+              const search = _.debounce(onSearchTest, 300);
               setSearchQuery((prevSearch: any) => {
                 if (prevSearch.cancel) {
                   prevSearch.cancel();
@@ -1907,6 +1921,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       toAgeInDays,
       testPreparationData,
       itemType,
+      testDescription,
     } = item;
     return renderSearchSuggestionItem({
       onPress: () => {
@@ -1924,6 +1939,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             preparation: testPreparationData,
             source: 'Landing Page',
             type: itemType,
+            testDescription: testDescription,
           } as TestPackageForDetails,
         });
       },
@@ -2097,61 +2113,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
           style={{ flex: 1 }}
           bounces={false}
           stickyHeaderIndices={[1]}
-          onScroll={handleScroll}
-          scrollEventThrottle={20}
           contentContainerStyle={[
             isSearchFocused && searchText.length > 2 && medicineList.length > 0 ? { flex: 1 } : {},
           ]}
         >
-          <ProfileList
-            navigation={props.navigation}
-            saveUserChange={true}
-            childView={
-              <View
-                style={{
-                  flexDirection: 'row',
-                  paddingRight: 8,
-                  borderRightWidth: 0,
-                  borderRightColor: 'rgba(2, 71, 91, 0.2)',
-                  backgroundColor: theme.colors.WHITE,
-                }}
-              >
-                <Text style={styles.hiTextStyle}>{'hi'}</Text>
-                <View style={styles.nameTextContainerStyle}>
-                  <View style={{ flexDirection: 'row', flex: 1 }}>
-                    <Text
-                      style={[
-                        styles.nameTextStyle,
-                        { maxWidth: Platform.OS === 'ios' ? '85%' : '75%' },
-                      ]}
-                      numberOfLines={1}
-                    >
-                      {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
-                    </Text>
-                    {currentPatient && g(currentPatient, 'isUhidPrimary') ? (
-                      <LinkedUhidIcon
-                        style={{
-                          width: 22,
-                          height: 20,
-                          marginLeft: 5,
-                          marginTop: Platform.OS === 'ios' ? 16 : 20,
-                        }}
-                        resizeMode={'contain'}
-                      />
-                    ) : null}
-                    <View style={{ paddingTop: 15, marginLeft: 6 }}>
-                      <DropdownGreen />
-                    </View>
-                  </View>
-                  {currentPatient && <View style={styles.seperatorStyle} />}
-                </View>
-              </View>
-            }
-            selectedProfile={profile}
-            unsetloaderDisplay={true}
-          ></ProfileList>
-
-          <View style={[isSearchFocused ? { flex: 1 } : {}]}>
+          <View style={{ height: 0, backgroundColor: theme.colors.WHITE }} />
+          <View style={{ flex: 1 }}>
             <View
               style={{
                 backgroundColor: 'white',

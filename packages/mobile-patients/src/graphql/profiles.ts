@@ -32,25 +32,6 @@ export const GET_CURRENT_PATIENTS = gql`
         primaryPatientId
         whatsAppMedicine
         whatsAppConsult
-        familyHistory {
-          description
-          relation
-        }
-        lifeStyle {
-          description
-          occupationHistory
-        }
-        patientMedicalHistory {
-          bp
-          dietAllergies
-          drugAllergies
-          height
-          menstrualHistory
-          pastMedicalHistory
-          pastSurgicalHistory
-          temperature
-          weight
-        }
       }
     }
   }
@@ -749,6 +730,11 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       awards
       photoUrl
       availableModes
+      availabilityTitle {
+        AVAILABLE_NOW
+        CONSULT_NOW
+        DOCTOR_OF_HOUR
+      }
       specialty {
         id
         name
@@ -854,6 +840,11 @@ export const GET_PLATINUM_DOCTOR = gql`
         photoUrl
         slot
         thumbnailUrl
+        availabilityTitle {
+          AVAILABLE_NOW
+          CONSULT_NOW
+          DOCTOR_OF_HOUR
+        }
       }
     }
   }
@@ -1398,7 +1389,6 @@ export const GET_DIAGNOSTIC_SLOTS = gql`
   }
 `;
 
-
 export const GET_DIAGNOSTIC_ORDER_LIST = gql`
   query getDiagnosticOrdersList($patientId: String) {
     getDiagnosticOrdersList(patientId: $patientId) {
@@ -1431,8 +1421,9 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
             id
             itemId
             itemName
-            itemType	
+            itemType
             testPreparationData
+            testDescription
           }
         }
       }
@@ -1440,19 +1431,19 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
   }
 `;
 
-export const GET_DIAGNOSTIC_ORDER_STATUS = gql`	
-  query getDiagnosticsOrderStatus($diagnosticOrderId: String) {	
-    getDiagnosticsOrderStatus(diagnosticOrderId: $diagnosticOrderId) {	
-      ordersList{	
-        statusDate	
-        orderStatus	
-        itemId	
-        itemName	
-        packageId	
-        packageName	
-      }	
-    }	
-  }	
+export const GET_DIAGNOSTIC_ORDER_STATUS = gql`
+  query getDiagnosticsOrderStatus($diagnosticOrderId: String) {
+    getDiagnosticsOrderStatus(diagnosticOrderId: $diagnosticOrderId) {
+      ordersList {
+        statusDate
+        orderStatus
+        itemId
+        itemName
+        packageId
+        packageName
+      }
+    }
+  }
 `;
 
 export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
@@ -1495,13 +1486,14 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
             itemType
             fromAgeInDays
             collectionType
+            testDescription
           }
         }
-        diagnosticOrdersStatus{	
-          orderStatus	
-          itemId	
-          statusDate	
-          packageId	
+        diagnosticOrdersStatus {
+          orderStatus
+          itemId
+          statusDate
+          packageId
         }
       }
     }
@@ -1527,22 +1519,23 @@ export const GET_DIAGNOSTICS_HC_CHARGES = gql`
 `;
 
 export const GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID = gql`
-  query findDiagnosticsByItemIDsAndCityID($cityID: Int!, $itemIDs:[Int]!) {
+  query findDiagnosticsByItemIDsAndCityID($cityID: Int!, $itemIDs: [Int]!) {
     findDiagnosticsByItemIDsAndCityID(cityID: $cityID, itemIDs: $itemIDs) {
-      diagnostics{
-      id
-      itemId
-      itemName
-      itemType
-      rate
-      gender
-      itemRemarks
-      city
-      state
-      collectionType
-      fromAgeInDays
-      toAgeInDays
-      testPreparationData
+      diagnostics {
+        id
+        itemId
+        itemName
+        itemType
+        rate
+        gender
+        itemRemarks
+        city
+        state
+        collectionType
+        fromAgeInDays
+        toAgeInDays
+        testPreparationData
+        testDescription
       }
     }
   }
@@ -1550,8 +1543,8 @@ export const GET_DIAGNOSTICS_BY_ITEMIDS_AND_CITYID = gql`
 
 export const GET_DIAGNOSTIC_ORDER_ITEM = gql`
   query getDiagnosticOrderItem($diagnosticOrderID: String!, $itemID: Int!) {
-    getDiagnosticOrderItem(diagnosticOrderID: $diagnosticOrderID, itemID: $itemID ) {
-      diagnostics{
+    getDiagnosticOrderItem(diagnosticOrderID: $diagnosticOrderID, itemID: $itemID) {
+      diagnostics {
         itemName
         rate
         itemType
@@ -1564,6 +1557,7 @@ export const GET_DIAGNOSTIC_ORDER_ITEM = gql`
         fromAgeInDays
         toAgeInDays
         testPreparationData
+        testDescription
       }
     }
   }
@@ -1571,47 +1565,49 @@ export const GET_DIAGNOSTIC_ORDER_ITEM = gql`
 
 export const GET_DIAGNOSTIC_HOME_PAGE_ITEMS = gql`
   query getDiagnosticsHomePageItems($cityID: Int!) {
-    getDiagnosticsHomePageItems(cityID: $cityID){
-        diagnosticOrgans{
+    getDiagnosticsHomePageItems(cityID: $cityID) {
+      diagnosticOrgans {
+        id
+        organName
+        organImage
+        diagnostics {
           id
-          organName
-          organImage
-          diagnostics{
-            id
-            itemId
-            itemName
-            gender
-            rate
-            itemRemarks
-            city
-            state
-            itemType
-            fromAgeInDays
-            toAgeInDays
-            testPreparationData
-            collectionType
-          }
+          itemId
+          itemName
+          gender
+          rate
+          itemRemarks
+          city
+          state
+          itemType
+          fromAgeInDays
+          toAgeInDays
+          testPreparationData
+          testDescription
+          collectionType
         }
-        diagnosticHotSellers{
+      }
+      diagnosticHotSellers {
+        id
+        packageName
+        price
+        packageImage
+        diagnostics {
           id
-          packageName
-          price
-          packageImage
-          diagnostics{
-            id
-            itemId
-            itemName
-            gender
-            rate
-            itemRemarks
-            city
-            state
-            itemType
-            fromAgeInDays
-            toAgeInDays
-            testPreparationData
-            collectionType
-        } 
+          itemId
+          itemName
+          gender
+          rate
+          itemRemarks
+          city
+          state
+          itemType
+          fromAgeInDays
+          toAgeInDays
+          testPreparationData
+          testDescription
+          collectionType
+        }
       }
     }
   }
@@ -1785,6 +1781,7 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
         redeemedAmount
         estimatedAmount
         prescriptionImageUrl
+        oldOrderTat
         orderTat
         oldOrderTat
         orderType
@@ -1872,7 +1869,6 @@ export const GET_MEDICINE_ORDER_OMS_DETAILS = gql`
     }
   }
 `;
-
 
 export const RE_UPLOAD_PRESCRIPTION = gql`
   mutation ReUploadPrescription($prescriptionInput: PrescriptionReUploadInput) {
@@ -2741,6 +2737,7 @@ export const SEARCH_DIAGNOSTICS = gql`
         collectionType
         fromAgeInDays
         toAgeInDays
+        testDescription
         testPreparationData
       }
     }
@@ -2764,6 +2761,7 @@ export const SEARCH_DIAGNOSTICS_BY_CITY_ID = gql`
         collectionType
         fromAgeInDays
         toAgeInDays
+        testDescription
         testPreparationData
       }
     }
@@ -2787,6 +2785,7 @@ export const SEARCH_DIAGNOSTICS_BY_ID = gql`
         collectionType
         fromAgeInDays
         toAgeInDays
+        testDescription
         testPreparationData
       }
     }
@@ -2809,6 +2808,17 @@ export const GET_DIAGNOSTICS_CITES = gql`
 export const SAVE_DIAGNOSTIC_ORDER = gql`
   mutation SaveDiagnosticOrder($diagnosticOrderInput: DiagnosticOrderInput) {
     SaveDiagnosticOrder(diagnosticOrderInput: $diagnosticOrderInput) {
+      errorCode
+      errorMessage
+      orderId
+      displayId
+    }
+  }
+`;
+
+export const SAVE_DIAGNOSTIC_HOME_COLLECTION_ORDER = gql`
+  mutation DiagnosticBookHomeCollection($diagnosticOrderInput: DiagnosticBookHomeCollectionInput) {
+    DiagnosticBookHomeCollection(diagnosticOrderInput: $diagnosticOrderInput) {
       errorCode
       errorMessage
       orderId
@@ -2950,14 +2960,38 @@ export const GET_PATIENTS_MOBILE = gql`
         primaryPatientId
         whatsAppMedicine
         whatsAppConsult
-        familyHistory {
-          description
-          relation
-        }
-        lifeStyle {
-          description
-          occupationHistory
-        }
+        isLinked
+        isUhidPrimary
+        primaryUhid
+        primaryPatientId
+        partnerId
+      }
+    }
+  }
+`;
+
+export const GET_PATIENTS_MOBILE_WITH_HISTORY = gql`
+  query getPatientByMobileNumberWithHistory($mobileNumber: String) {
+    getPatientByMobileNumber(mobileNumber: $mobileNumber) {
+      patients {
+        id
+        uhid
+        firstName
+        lastName
+        mobileNumber
+        dateOfBirth
+        emailAddress
+        gender
+        relation
+        photoUrl
+        athsToken
+        referralCode
+        isLinked
+        isUhidPrimary
+        primaryUhid
+        primaryPatientId
+        whatsAppMedicine
+        whatsAppConsult
         patientMedicalHistory {
           bp
           dietAllergies

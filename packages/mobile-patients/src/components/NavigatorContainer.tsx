@@ -1,10 +1,15 @@
+import analytics from '@react-native-firebase/analytics';
+import { isNumber } from 'lodash';
 import { AddressBook } from '@aph/mobile-patients/src/components/Account/AddressBook';
 import { MyAccount } from '@aph/mobile-patients/src/components/Account/MyAccount';
 import { NotificationSettings } from '@aph/mobile-patients/src/components/Account/NotificationSettings';
 import { ChatRoom } from '@aph/mobile-patients/src/components/Consult/ChatRoom';
 import { AppointmentDetails } from '@aph/mobile-patients/src/components/ConsultRoom/AppointmentDetails';
 import { Consult } from '@aph/mobile-patients/src/components/ConsultRoom/Consult';
-import { ConsultRoom } from '@aph/mobile-patients/src/components/ConsultRoom/ConsultRoom';
+import {
+  ConsultRoom,
+  tabBarOptions,
+} from '@aph/mobile-patients/src/components/ConsultRoom/ConsultRoom';
 import { DoctorDetails } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorDetails';
 import { DoctorSearch } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorSearch';
 import { DoctorSearchListing } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorSearchListing';
@@ -16,8 +21,9 @@ import { Login } from '@aph/mobile-patients/src/components/Login';
 import { AddAddress } from '@aph/mobile-patients/src/components/Medicines/AddAddress';
 import { ApplyCouponScene } from '@aph/mobile-patients/src/components/Medicines/ApplyCouponScene';
 import { Medicine } from '@aph/mobile-patients/src/components/Medicines/Medicine';
+import { MedicineSearch } from '@aph/mobile-patients/src/components/MedicineSearch/MedicineSearch';
+import { MedicineListing } from '@aph/mobile-patients/src/components/MedicineListing/MedicineListing';
 import { MedicineDetailsScene } from '@aph/mobile-patients/src/components/Medicines/MedicineDetailsScene';
-import { SearchMedicineScene } from '@aph/mobile-patients/src/components/Medicines/SearchMedicineScene';
 import { SelectDeliveryAddress } from '@aph/mobile-patients/src/components/Medicines/SelectDeliveryAddress';
 import { StorePickupScene } from '@aph/mobile-patients/src/components/Medicines/StorePickupScene';
 import { UploadPrescription } from '@aph/mobile-patients/src/components/Medicines/UploadPrescription';
@@ -53,7 +59,6 @@ import { MedicineConsultDetails } from '@aph/mobile-patients/src/components/Heal
 import { MobileHelp } from '@aph/mobile-patients/src/components/ui/MobileHelp';
 import { ShopByBrand } from '@aph/mobile-patients/src/components/Medicines/ShopByBrand';
 import { ImageSliderScreen } from '@aph/mobile-patients/src/components/ui/ImageSiderScreen';
-import { SearchByBrand } from '@aph/mobile-patients/src/components/Medicines/SearchByBrand';
 import AsyncStorage from '@react-native-community/async-storage';
 import { TestsCart } from '@aph/mobile-patients/src/components/Tests/TestsCart';
 import { MedAndTestCart } from '@aph/mobile-patients/src/components/Tests/MedAndTestCart';
@@ -67,7 +72,6 @@ import { TestOrderDetails } from '@aph/mobile-patients/src/components/Tests/Test
 import { TestOrderDetailsSummary } from '@aph/mobile-patients/src/components/Tests/TestOrderDetailsSummary';
 import { ClinicSelection } from '@aph/mobile-patients/src/components/Tests/ClinicSelection';
 import {
-  CommonScreenLog,
   CommonLogEvent,
   CommonBugFender,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -128,8 +132,9 @@ export enum AppRoutes {
   AssociateDoctorDetails = 'AssociateDoctorDetails',
   AppointmentDetails = 'AppointmentDetails',
   StorPickupScene = 'StorPickupScene',
-  SearchMedicineScene = 'SearchMedicineScene',
   SearchTestScene = 'SearchTestScene',
+  MedicineSearch = 'MedicineSearch',
+  MedicineListing = 'MedicineListing',
   MedicineDetailsScene = 'MedicineDetailsScene',
   ApplyCouponScene = 'ApplyCouponScene',
   ChatRoom = 'ChatRoom',
@@ -158,7 +163,6 @@ export enum AppRoutes {
   MedicineConsultDetails = 'MedicineConsultDetails',
   ShopByBrand = 'ShopByBrand',
   ImageSliderScreen = 'ImageSliderScreen',
-  SearchByBrand = 'SearchByBrand',
   TestsByCategory = 'TestsByCategory',
   TestsCart = 'TestsCart',
   TestPayment = 'TestPayment',
@@ -291,11 +295,14 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.AppointmentDetails]: {
     screen: AppointmentDetails,
   },
-  [AppRoutes.SearchMedicineScene]: {
-    screen: SearchMedicineScene,
-  },
   [AppRoutes.SearchTestScene]: {
     screen: SearchTestScene,
+  },
+  [AppRoutes.MedicineSearch]: {
+    screen: MedicineSearch,
+  },
+  [AppRoutes.MedicineListing]: {
+    screen: MedicineListing,
   },
   [AppRoutes.MedicineDetailsScene]: {
     screen: MedicineDetailsScene,
@@ -393,10 +400,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.ImageSliderScreen]: {
     screen: ImageSliderScreen,
-  },
-  [AppRoutes.SearchByBrand]: {
-    screen: SearchByBrand,
-    path: 'SearchByBrandPath',
   },
   [AppRoutes.TestsByCategory]: {
     screen: TestsByCategory,
@@ -523,40 +526,33 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
 };
 
-const logTabEvents = (routing: any) => {
-  if (routing.routeName === 'TabBar') {
-    switch (routing.index) {
-      case 0:
-        CommonLogEvent('TAB_BAR', 'CONSULT_ROOM clicked');
-        break;
-      case 1:
-        CommonLogEvent('TAB_BAR', 'HEALTH_RECORDS clicked');
-        break;
-      case 2:
-        CommonLogEvent('TAB_BAR', 'MEDICINES clicked');
-        break;
-      case 3:
-        CommonLogEvent('TAB_BAR', 'MY_ACCOUNT clicked');
-        break;
-      default:
-        break;
-    }
-  }
+const getTabBarRoute = (index: number) => {
+  return tabBarOptions?.[index]?.title || '';
 };
+
+const logRouteChange = (route: string, routeIndex: number | undefined) => {
+  const routeName = isNumber(routeIndex) ? getTabBarRoute(routeIndex) : route;
+  analytics().logScreenView({
+    screen_class: route,
+    screen_name: routeName,
+  });
+};
+
+let prevRoute = '';
 
 const stackConfig: StackNavigatorConfig = {
   initialRouteName: AppRoutes.SplashScreen,
   headerMode: 'none',
   cardStyle: { backgroundColor: 'transparent' },
   mode: 'card',
-  transitionConfig: (sceneProps, prevSceneProps) => {
+  transitionConfig: (sceneProps) => {
     try {
-      const currentRoute = sceneProps.scene.route.routeName;
-      const prevRoute = prevSceneProps?.scene?.route?.routeName;
-      if (prevRoute && prevRoute !== currentRoute) {
+      const currentRoute = sceneProps?.scene?.route?.routeName;
+      const currentRouteIndex = sceneProps?.scene?.route?.index;
+      if (prevRoute !== currentRoute) {
         AsyncStorage.setItem('setCurrentName', currentRoute);
-        CommonScreenLog(currentRoute, currentRoute);
-        logTabEvents(sceneProps.scene.route);
+        prevRoute = currentRoute;
+        logRouteChange(currentRoute, currentRouteIndex);
       }
     } catch (error) {
       CommonBugFender('NavigatorContainer_stackConfig_try', error);

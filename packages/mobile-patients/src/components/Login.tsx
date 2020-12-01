@@ -17,6 +17,7 @@ import { AppSignature } from '@aph/mobile-patients/src/helpers/AppSignature';
 import { FirebaseEventName, FirebaseEvents } from '@aph/mobile-patients/src/helpers/firebaseEvents';
 import {
   getNetStatus,
+  postAppsFlyerEvent,
   postFirebaseEvent,
   postWebEngageEvent,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -42,12 +43,13 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import firebase from 'react-native-firebase';
+import messaging from '@react-native-firebase/messaging';
 import { ScrollView } from 'react-native-gesture-handler';
 import HyperLink from 'react-native-hyperlink';
 import WebEngage from 'react-native-webengage';
 import { WebView } from 'react-native-webview';
 import { NavigationEventSubscription, NavigationScreenProps } from 'react-navigation';
+import { AppsFlyerEventName } from '@aph/mobile-patients/src/helpers/AppsFlyerEvents';
 
 const { height, width } = Dimensions.get('window');
 
@@ -148,17 +150,14 @@ export const Login: React.FC<LoginProps> = (props) => {
   useEffect(() => {
     const eventAttributes: WebEngageEvents[WebEngageEventName.MOBILE_ENTRY] = {};
     postWebEngageEvent(WebEngageEventName.MOBILE_ENTRY, eventAttributes);
+    postFirebaseEvent(FirebaseEventName.MOBILE_ENTRY, eventAttributes);
+    postAppsFlyerEvent(AppsFlyerEventName.MOBILE_ENTRY, eventAttributes);
   }, []);
 
   useEffect(() => {
     try {
       fireBaseFCM();
-      // if (firebase.auth().currentUser) {
-      //   console.log('login auth', firebase.auth().currentUser);
-      //   signOut();
-      // }
       setLoading && setLoading(false);
-      firebase.auth().appVerificationDisabledForTesting = true;
       if (Platform.OS === 'android') {
         AppSignature.getAppSignature().then((sign: string[]) => {
           setAppSign(sign[0] || '');
@@ -170,23 +169,16 @@ export const Login: React.FC<LoginProps> = (props) => {
   }, []);
 
   const fireBaseFCM = async () => {
-    const enabled = await firebase.messaging().hasPermission();
-    if (enabled) {
-      // user has permissions
-      console.log('enabled', enabled);
-    } else {
-      // user doesn't have permission
-      console.log('not enabled');
-      try {
-        await firebase.messaging().requestPermission();
-        console.log('authorized');
-
-        // User has authorised
-      } catch (error) {
-        // User has rejected permissions
-        CommonBugFender('Login_fireBaseFCM_try', error);
-        console.log('not enabled error', error);
+    try {
+      const authStatus = await messaging().hasPermission();
+      const enabled =
+        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+      if (!enabled) {
+        await messaging().requestPermission();
       }
+    } catch (error) {
+      CommonBugFender('Login_FireBaseFCM_Error', error);
     }
   };
 
@@ -251,6 +243,11 @@ export const Login: React.FC<LoginProps> = (props) => {
     try {
       webengage.user.login(`+91${phoneNumber}`);
       CommonLogEvent(AppRoutes.Login, 'Login clicked');
+      const eventAttributes: FirebaseEvents[FirebaseEventName.OTP_DEMANDED] = {
+        mobilenumber: phoneNumber,
+      };
+      postFirebaseEvent(FirebaseEventName.OTP_DEMANDED, eventAttributes);
+      postAppsFlyerEvent(AppsFlyerEventName.OTP_DEMANDED, eventAttributes);
       setTimeout(() => {
         const eventAttributes: WebEngageEvents[WebEngageEventName.MOBILE_NUMBER_ENTERED] = {
           mobilenumber: phoneNumber,

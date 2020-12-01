@@ -109,8 +109,8 @@ export interface AppCommonDataContextProps {
   locationForDiagnostics: DiagnosticData | null;
   diagnosticServiceabilityData: DiagnosticData | null;
   setDiagnosticServiceabilityData: ((items: DiagnosticData) => void) | null;
-  isDiagnosticLocationServiceable?: boolean;
-  setDiagnosticLocationServiceable: ((value: boolean) => void) | null;
+  isDiagnosticLocationServiceable?: string;
+  setDiagnosticLocationServiceable: ((value: string) => void) | null;
   VirtualConsultationFee: string;
   setVirtualConsultationFee: ((arg0: string) => void) | null;
   generalPhysicians: { id: string; data: getDoctorsBySpecialtyAndFilters } | null | undefined;
@@ -143,6 +143,8 @@ export interface AppCommonDataContextProps {
     | null;
   savePatientDetails: any;
   setSavePatientDetails: ((items: any) => void) | null;
+  savePatientDetailsWithHistory: any;
+  setSavePatientDetailsWithHistory: ((items: any) => void) | null;
   doctorJoinedChat: boolean;
   setDoctorJoinedChat: ((isJoined: boolean) => void) | null;
 }
@@ -169,7 +171,7 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   locationForDiagnostics: null,
   diagnosticServiceabilityData: null,
   setDiagnosticServiceabilityData: null,
-  isDiagnosticLocationServiceable: false,
+  isDiagnosticLocationServiceable: '',
   setDiagnosticLocationServiceable: null,
   VirtualConsultationFee: '',
   setVirtualConsultationFee: null,
@@ -195,6 +197,8 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setisUHID: null,
   savePatientDetails: [],
   setSavePatientDetails: null,
+  savePatientDetailsWithHistory: [],
+  setSavePatientDetailsWithHistory: null,
   doctorJoinedChat: false,
   setDoctorJoinedChat: null,
 });
@@ -212,9 +216,7 @@ export const AppCommonDataProvider: React.FC = (props) => {
     AppCommonDataContextProps['hdfcUserSubscriptions']
   >(null);
 
-  const [bannerData, _setBannerData] = useState<
-    AppCommonDataContextProps['bannerData']
-  >(null);
+  const [bannerData, _setBannerData] = useState<AppCommonDataContextProps['bannerData']>(null);
 
   const [pharmacyLocation, _setPharmacyLocation] = useState<
     AppCommonDataContextProps['pharmacyLocation']
@@ -240,7 +242,7 @@ export const AppCommonDataProvider: React.FC = (props) => {
     AppCommonDataContextProps['diagnosticServiceabilityData']
   >(null);
 
-  const [isDiagnosticLocationServiceable, setDiagnosticLocationServiceable] = useState<
+  const [isDiagnosticLocationServiceable, _setDiagnosticLocationServiceable] = useState<
     AppCommonDataContextProps['isDiagnosticLocationServiceable']
   >();
 
@@ -250,6 +252,9 @@ export const AppCommonDataProvider: React.FC = (props) => {
 
   const [savePatientDetails, setSavePatientDetails] = useState<
     AppCommonDataContextProps['savePatientDetails']
+  >([]);
+  const [savePatientDetailsWithHistory, setSavePatientDetailsWithHistory] = useState<
+    AppCommonDataContextProps['savePatientDetailsWithHistory']
   >([]);
 
   const [VirtualConsultationFee, setVirtualConsultationFee] = useState<string>('');
@@ -289,9 +294,7 @@ export const AppCommonDataProvider: React.FC = (props) => {
     _setHdfcUserSubscriptions(hdfcUserSubscriptions);
   };
 
-  const setBannerData: AppCommonDataContextProps['setBannerData'] = (
-    bannerData
-  ) => {
+  const setBannerData: AppCommonDataContextProps['setBannerData'] = (bannerData) => {
     _setBannerData(bannerData);
   };
 
@@ -310,6 +313,18 @@ export const AppCommonDataProvider: React.FC = (props) => {
     _setDiagnosticLocation(diagnosticLocation);
     AsyncStorage.setItem('diagnosticLocation', JSON.stringify(diagnosticLocation)).catch(() => {
       console.log('Failed to save diagnostic location in local storage.');
+    });
+  };
+
+  const setDiagnosticLocationServiceable: AppCommonDataContextProps['setDiagnosticLocationServiceable'] = (
+    diagnosticLocation
+  ) => {
+    _setDiagnosticLocationServiceable(diagnosticLocation);
+    AsyncStorage.setItem(
+      'diagnosticPinCodeServiceability',
+      JSON.stringify(diagnosticLocation)
+    ).catch(() => {
+      console.log('Failed to save diagnostic pincode serviceablity in local storage.');
     });
   };
 
@@ -333,14 +348,17 @@ export const AppCommonDataProvider: React.FC = (props) => {
           'locationDetails',
           'pharmacyLocation',
           'diagnosticLocation',
+          'diagnosticPinCodeServiceability',
         ]);
         const location = locationFromStorage[0][1];
         const pharmacyLocation = locationFromStorage[1][1];
         const diagnosticLocation = locationFromStorage[2][1];
+        const diagnosticPinCodeServiceability = locationFromStorage[3][1];
 
         _setLocationDetails(JSON.parse(location || 'null'));
         _setPharmacyLocation(JSON.parse(pharmacyLocation || 'null'));
         _setDiagnosticLocation(JSON.parse(diagnosticLocation || 'null'));
+        _setDiagnosticLocationServiceable(diagnosticPinCodeServiceability || 'null');
       } catch (error) {
         console.log('Failed to get location from local storage.');
       }
@@ -400,6 +418,8 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setSavePatientDetails,
         doctorJoinedChat,
         setDoctorJoinedChat,
+        savePatientDetailsWithHistory,
+        setSavePatientDetailsWithHistory,
       }}
     >
       {props.children}

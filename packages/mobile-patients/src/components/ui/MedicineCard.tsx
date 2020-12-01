@@ -15,6 +15,8 @@ import React, { useState } from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { Image } from 'react-native-elements';
 import { getMaxQtyForMedicineItem } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { string } from '../../strings/string';
+import strings from '@aph/mobile-patients/src/strings/strings.json';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -314,7 +316,7 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
                     ...theme.viewStyles.text('SB', 13, '#02475b', 0.7, undefined, 0.33),
                     textDecorationLine: 'line-through',
                   }}
-                >{`Rs. ${price.toFixed(2)}`}</Text>
+                >{`${strings.common.Rs} ${price.toFixed(2)}`}</Text>
                 <Text
                   style={{
                     ...theme.viewStyles.text('M', 10, '#02475b', 0.7, undefined, 0.25),
@@ -328,9 +330,9 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
           ) : (
             <Text style={[styles.unitAndRupeeText, { flex: 1 }]}>MRP</Text>
           )}
-          <Text style={[styles.unitAndRupeeText, { flex: 0, alignSelf: 'center' }]}>{`Rs. ${(
-            priceToBeDisplayed
-          ).toFixed(2)}`}</Text>
+          <Text style={[styles.unitAndRupeeText, { flex: 0, alignSelf: 'center' }]}>{`${
+            strings.common.Rs
+          } ${priceToBeDisplayed!.toFixed(2)}`}</Text>
         </View>
       </View>
     );
@@ -384,11 +386,15 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
       </Text>
     ) : !isCardExpanded ? (
       <View style={{ flexDirection: 'row' }}>
-        <Text style={styles.priceTextCollapseStyle}>Rs. {(specialPrice || price).toFixed(2)}</Text>
+        <Text style={styles.priceTextCollapseStyle}>
+          {strings.common.Rs} {(specialPrice || price).toFixed(2)}
+        </Text>
         {specialPrice && (
           <Text style={[styles.priceTextCollapseStyle, { marginLeft: 4 }]}>
             {'('}
-            <Text style={{ textDecorationLine: 'line-through' }}>{`Rs. ${price.toFixed(2)}`}</Text>
+            <Text style={{ textDecorationLine: 'line-through' }}>{`${
+              strings.common.Rs
+            } ${price.toFixed(2)}`}</Text>
             {')'}
           </Text>
         )}

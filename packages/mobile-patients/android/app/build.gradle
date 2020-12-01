@@ -137,8 +137,8 @@ android {
         applicationId "com.apollo.patientapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 64
-        versionName "5.0.1"
+        versionCode 66
+        versionName "5.1.0"
         ndk {
             abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
         }
@@ -201,6 +201,7 @@ android {
 }
 
 dependencies {
+    implementation 'com.google.firebase:firebase-messaging:17.3.2'
     implementation project(':@react-native-community_progress-bar-android')
     implementation project(':@react-native-community_progress-view')
     implementation project(':@react-native-community_datetimepicker')
@@ -210,7 +211,6 @@ dependencies {
     implementation project(':react-native-callkeep')
     implementation project(':react-native-background-timer')
     implementation project(':react-native-linear-gradient')
-    implementation project(':react-native-video')
     implementation project(':react-native-sound')
     implementation project(':react-native-system-setting')
     implementation project(':react-native-incall-manager')
@@ -242,23 +242,13 @@ dependencies {
     implementation project(':@react-native-community_netinfo')
 
     implementation project(':react-native-set-soft-input-mode')
-    implementation project(':react-native-firebase')
     implementation "com.android.support:appcompat-v7:${rootProject.ext.supportLibVersion}"
     implementation "com.facebook.react:react-native:+"  // From node_modules
 
-    // Firebase dependencies
-    implementation "com.google.android.gms:play-services-base:16.1.0"
-    implementation "com.google.firebase:firebase-core:16.0.9"
-    implementation "com.google.firebase:firebase-auth:17.0.0"
-    implementation "com.google.firebase:firebase-config:17.0.0"
-    implementation "com.google.firebase:firebase-database:17.0.0"
+    // Note, other modules you are using may required play-services-base to be installed.
+    // implementation "com.google.android.gms:play-services-base:16.1.0"
     implementation  "com.google.android.gms:play-services-fitness:18.0.0"
     implementation 'com.google.android.gms:play-services-auth:17.0.0'
-    implementation "com.google.firebase:firebase-messaging:18.0.0"
-    // Add the Firebase Crashlytics SDK.
-    implementation 'com.google.firebase:firebase-crashlytics:17.2.2'
-    // Recommended: Add the Google Analytics SDK.
-    implementation 'com.google.firebase:firebase-analytics:18.0.0'    
     implementation 'me.leolin:ShortcutBadger:1.1.21@aar' // <-- Add this line if you wish to use badge on Android
 
     //maps dependencies
@@ -386,3 +376,4 @@ apply from: file("../../node_modules/@react-native-community/cli-platform-androi
 apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
 apply from: "../../node_modules/react-native-code-push/android/codepush.gradle"
+googleServices { disableVersionCheck = true }

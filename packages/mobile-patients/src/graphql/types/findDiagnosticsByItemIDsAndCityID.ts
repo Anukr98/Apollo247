@@ -20,6 +20,7 @@ export interface findDiagnosticsByItemIDsAndCityID_findDiagnosticsByItemIDsAndCi
   itemRemarks: string;
   city: string;
   state: string;
+  testDescription: string;
   collectionType: TEST_COLLECTION_TYPE | null;
   fromAgeInDays: number;
   toAgeInDays: number;

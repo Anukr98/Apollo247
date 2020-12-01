@@ -115,6 +115,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     ePrescriptions,
     setPhysicalPrescriptions,
     pinCode,
+    deliveryTime,
+    setdeliveryTime,
   } = useShoppingCart();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
@@ -125,7 +127,6 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
   const [storeType, setStoreType] = useState<string | undefined>('');
   const [storeDistance, setStoreDistance] = useState(0);
   const [shopId, setShopId] = useState<string | undefined>('');
-  const [deliveryTime, setdeliveryTime] = useState<string>('');
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const [isfocused, setisfocused] = useState<boolean>(false);
   const selectedAddress = addresses.find((item) => item.id == deliveryAddressId);
@@ -168,7 +169,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     if (!deliveryAddressId && cartItems.length > 0) {
       setCartItems!(cartItems.map((item) => ({ ...item, unserviceable: false })));
     } else if (deliveryAddressId && cartItems.length > 0) {
-      isfocused ? availabilityTat(false, true) : availabilityTat(false);
+      isfocused && availabilityTat(false, true);
     }
   }, [deliveryAddressId]);
 
@@ -324,7 +325,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
                 setStoreType(storeType);
                 setShopId(storeCode);
                 setStoreDistance(distance);
-                setdeliveryTime(deliveryDate);
+                setdeliveryTime?.(deliveryDate);
                 addressSelectedEvent(selectedAddress, deliveryDate);
                 addressChange &&
                   NavigateToCartSummary(deliveryDate, distance, storeType, storeCode);
@@ -362,8 +363,8 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     selectedAddress: savePatientAddress_savePatientAddress_patientAddress,
     error: any
   ) {
-    addressSelectedEvent(selectedAddress, '');
-    setdeliveryTime(genericServiceableDate);
+    addressSelectedEvent(selectedAddress, genericServiceableDate);
+    setdeliveryTime?.(genericServiceableDate);
     postTatResponseFailureEvent(cartItems, selectedAddress.zipcode || '', error);
     setloading(false);
     validatePharmaCoupon();
@@ -378,7 +379,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
       address?.zipcode!,
       formatAddress(address),
       'Yes',
-      moment(tatDate, AppConfig.Configuration.MED_DELIVERY_DATE_DISPLAY_FORMAT).toDate(),
+      new Date(tatDate),
       moment(tatDate).diff(currentDate, 'd')
     );
   }
@@ -429,8 +430,9 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     await validatePharmaCoupon();
   }
   function hasUnserviceableproduct() {
-    const unserviceableItems = cartItems.filter((item) => item.unserviceable) || [];
-    return unserviceableItems?.length ? true : false;
+    return !!cartItems.find(
+      ({ unavailableOnline, unserviceable }) => unavailableOnline || unserviceable
+    );
   }
   function NavigateToCartSummary(
     deliveryTime: string,
@@ -596,6 +598,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
             isFreeCouponProduct: !!couponProducts[index]!.couponFree,
             couponPrice: 0,
             unserviceable: false,
+            unavailableOnline: medicineDetails.sell_online == 0,
           } as ShoppingCartItem;
         });
         addMultipleCartItems!(medicinesAll as ShoppingCartItem[]);
@@ -799,6 +802,7 @@ export const MedicineCart: React.FC<MedicineCartProps> = (props) => {
     return (
       <CartItemsList
         screen={'cart'}
+        setloading={setloading}
         onPressProduct={(item) => {
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: item.id,

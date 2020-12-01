@@ -23,6 +23,9 @@ import {
   postAppsFlyerEvent,
   SetAppsFlyerCustID,
   UnInstallAppsFlyer,
+  postFirebaseEvent,
+  setFirebaseUserId,
+  setCrashlyticsAttributes,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -48,7 +51,8 @@ import {
   TextInput,
 } from 'react-native';
 // import { WebView } from 'react-native-webview';
-import firebase from 'react-native-firebase';
+import firebaseAuth from '@react-native-firebase/auth';
+import messaging from '@react-native-firebase/messaging';
 import Hyperlink from 'react-native-hyperlink';
 // import SmsListener from 'react-native-android-sms-listener';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
@@ -70,6 +74,7 @@ import { ApolloLogo } from './ApolloLogo';
 import AsyncStorage from '@react-native-community/async-storage';
 import SmsRetriever from 'react-native-sms-retriever';
 import { saveTokenDevice } from '../helpers/clientCalls';
+import { FirebaseEventName, FirebaseEvents } from '../helpers/firebaseEvents';
 
 const { height, width } = Dimensions.get('window');
 
@@ -373,7 +378,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   }, [signInError, props.navigation, otp.length]);
 
   useEffect(() => {
-    const authListener = firebase.auth().onAuthStateChanged((user) => {
+    const authListener = firebaseAuth().onAuthStateChanged((user) => {
       const phoneNumberFromParams = `+91${props.navigation.getParam('phoneNumber')}`;
       const phoneNumberLoggedIn = user && user.phoneNumber;
       if (phoneNumberFromParams == phoneNumberLoggedIn) {
@@ -395,7 +400,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     CommonLogEvent(AppRoutes.OTPVerification, 'OTPVerification clicked');
     const eventAttributes: WebEngageEvents[WebEngageEventName.OTP_ENTERED] = { value: 'Yes' };
     postWebEngageEvent(WebEngageEventName.OTP_ENTERED, eventAttributes);
-
+    postAppsFlyerEvent(AppsFlyerEventName.OTP_ENTERED, eventAttributes);
+    postFirebaseEvent(FirebaseEventName.OTP_ENTERED, eventAttributes);
     try {
       Keyboard.dismiss();
 
@@ -465,7 +471,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                     error,
                   });
                   // setBugFenderLog('OTP_ENTERED_FAIL', error);
-
+                  postFirebaseEvent(FirebaseEventName.OTP_VALIDATION_FAILED, {});
+                  postAppsFlyerEvent(AppsFlyerEventName.OTP_VALIDATION_FAILED, {});
                   setshowErrorBottomLine(true);
                   setOnOtpClick(false);
                   setshowSpinner(false);
@@ -578,6 +585,17 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     postAppsFlyerEvent(AppsFlyerEventName.OTP_VERIFICATION_SUCCESS, appsflyerEventAttributes);
   };
 
+  const fireUserLoggedInEvent = (mePatient: any, type: 'Registration' | 'Login') => {
+    setFirebaseUserId(mePatient.id);
+    setCrashlyticsAttributes(mePatient);
+    const firebaseAttributes: FirebaseEvents[FirebaseEventName.USER_LOGGED_IN] = {
+      Type: type,
+      userId: mePatient.id,
+    };
+    postFirebaseEvent(FirebaseEventName.USER_LOGGED_IN, firebaseAttributes);
+    postAppsFlyerEvent(AppsFlyerEventName.USER_LOGGED_IN, firebaseAttributes);
+  };
+
   const moveScreenForward = (mePatient: any) => {
     AsyncStorage.setItem('logginHappened', 'true');
     setOpenFillerView(false);
@@ -594,6 +612,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       } else {
         AsyncStorage.setItem('userLoggedIn', 'true');
         deviceTokenAPI(mePatient.id);
+        fireUserLoggedInEvent(mePatient, 'Login');
         navigateTo(AppRoutes.ConsultRoom);
       }
     } else {
@@ -603,10 +622,12 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         };
         postWebEngageEvent(WebEngageEventName.PRE_APOLLO_CUSTOMER, eventAttributes);
         navigateTo(AppRoutes.SignUp);
+        fireUserLoggedInEvent(mePatient, 'Registration');
       } else {
         AsyncStorage.setItem('userLoggedIn', 'true');
         deviceTokenAPI(mePatient.id);
         navigateTo(AppRoutes.ConsultRoom);
+        fireUserLoggedInEvent(mePatient, 'Login');
       }
     }
   };
@@ -669,8 +690,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       typeof currentDeviceToken != 'string' ||
       typeof currentDeviceToken == 'object'
     ) {
-      firebase
-        .messaging()
+      messaging()
         .getToken()
         .then((token) => {
           console.log('token', token);

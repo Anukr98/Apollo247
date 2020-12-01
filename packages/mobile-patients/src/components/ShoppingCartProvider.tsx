@@ -27,6 +27,7 @@ export interface ShoppingCartItem {
   couponPrice?: number;
   isInStock: boolean;
   unserviceable?: boolean;
+  unavailableOnline?: boolean; // sell_online
   isMedicine: boolean;
   productType?: 'FMCG' | 'Pharma' | 'PL';
   isFreeCouponProduct?: boolean;
@@ -146,7 +147,8 @@ export interface ShoppingCartContextProps {
   addAddress: ((address: savePatientAddress_savePatientAddress_patientAddress) => void) | null;
   deliveryAddressId: string;
   setDeliveryAddressId: ((id: string) => void) | null;
-
+  deliveryTime: string;
+  setdeliveryTime: ((date: string) => void) | null;
   newAddressAdded: string;
   setNewAddressAdded: ((id: string) => void) | null;
 
@@ -243,6 +245,8 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
 
   onHoldOptionOrder: [],
   setOnHoldOptionOrder: null,
+  deliveryTime: '',
+  setdeliveryTime: null,
 });
 
 const AsyncStorageKeys = {
@@ -277,6 +281,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [newAddressAdded, _setNewAddedAddress] = useState<
     ShoppingCartContextProps['newAddressAdded']
   >('');
+  const [deliveryTime, setdeliveryTime] = useState<ShoppingCartContextProps['deliveryTime']>('');
   const [storeId, _setStoreId] = useState<ShoppingCartContextProps['storeId']>('');
   const [coupon, setCoupon] = useState<ShoppingCartContextProps['coupon']>(null);
   const [deliveryType, setDeliveryType] = useState<ShoppingCartContextProps['deliveryType']>(null);
@@ -534,6 +539,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     setCoupon(null);
     setCouponProducts([]);
     setHdfcPlanName('');
+    setdeliveryTime('');
   };
 
   useEffect(() => {
@@ -753,6 +759,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         isProuctFreeCouponApplied,
         onHoldOptionOrder,
         setOnHoldOptionOrder,
+        deliveryTime,
+        setdeliveryTime,
       }}
     >
       {props.children}

@@ -524,7 +524,7 @@ export const Maps: React.FC<MapProps> = (props) => {
       latitude,
       longitude
     );
-    if (diffInKm > 2) {
+    if (diffInKm > 5) {
       showAphAlert!({
         unDismissable: true,
         title: 'Uh oh.. :(',
@@ -639,7 +639,7 @@ export const Maps: React.FC<MapProps> = (props) => {
     return (
       <Circle
         center={{ latitude: initialAddressLatitude, longitude: initialAddressLongitude }}
-        radius={Platform.OS == 'android' ? 2100 : 2050}
+        radius={Platform.OS == 'android' ? 5100 : 5050}
         strokeWidth={2}
         strokeColor={'#1a66ff'}
         lineJoin={'round'}

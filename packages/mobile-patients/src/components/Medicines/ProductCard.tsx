@@ -47,10 +47,16 @@ export const ProductCard: React.FC<Props> = ({
 
   const renderPrice = () => {
     const strikeOffPrice = `(Rs. ${price})`;
-    const finalPrice = `  Rs. ${discount ? special_price : price}`;
+    const mrp = 'MRP  ';
+    const finalPrice = `${discount ? '' : mrp}Rs. ${discount ? special_price : price}`;
     return (
       <View style={styles.priceContainer}>
-        {!!discount && <Text style={styles.priceStrikeOff}>{strikeOffPrice}</Text>}
+        {!!discount && (
+          <View style={styles.specialPriceContainer}>
+            <Text style={styles.finalPrice}>{mrp}</Text>
+            <Text style={styles.priceStrikeOff}>{strikeOffPrice}</Text>
+          </View>
+        )}
         <Text style={styles.finalPrice}>{finalPrice}</Text>
       </View>
     );
@@ -119,7 +125,7 @@ const styles = StyleSheet.create({
     ...theme.viewStyles.card(12, 0),
     alignItems: 'center',
     width: 168,
-    height: 232,
+    height: 245,
   },
   image: {
     resizeMode: 'contain',
@@ -139,14 +145,19 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   priceContainer: {
-    paddingVertical: 10,
+    paddingVertical: 5,
+    height: 60,
+  },
+  specialPriceContainer: {
     flexDirection: 'row',
   },
   finalPrice: {
     ...text('B', 13, '#01475b', 1, 24),
+    textAlign: 'center',
   },
   priceStrikeOff: {
     ...text('M', 13, '#01475b', 0.6, 24),
+    textAlign: 'center',
     textDecorationLine: 'line-through',
   },
   addToCart: {
