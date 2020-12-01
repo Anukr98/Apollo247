@@ -55,7 +55,7 @@
     "optedForClinicConsultation": "You have opted for a Clinic Visit at -",
     "amountToPay": "Amount to Pay",
     "amountSavedByCare": "You save ₹ {amount} by using CARE",
-    "amountSavedOnConsultByCare": "You SAVE ₹ {amount} on this Consult",
+    "amountSavedOnConsultByCare": "You will save ₹ {amount} on this Consult",
     "totalCharges": "TOTAL CHARGES",
     "subtotal": "Subtotal",
     "toPay": "To Pay",
