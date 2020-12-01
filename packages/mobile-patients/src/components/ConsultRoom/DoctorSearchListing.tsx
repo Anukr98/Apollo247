@@ -196,6 +196,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginHorizontal: 20,
     marginBottom: 10,
+    marginTop: 20,
   },
   careLogo: {
     width: 45,
@@ -1876,12 +1877,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             renderSearchLoadingView()
           ) : (
             <View style={{ flex: 1 }}>
-              <Text style={styles.consultHeadingText}>
+              {/* <Text style={styles.consultHeadingText}>
                 {string.doctor_search_listing.consultBest.replace(
                   '{0}',
                   specialistPluralTerm || 'Doctors'
                 )}
-              </Text>
+              </Text> */}
               {renderDoctorSearches(
                 onlineCheckBox
                   ? physicalCheckBox
