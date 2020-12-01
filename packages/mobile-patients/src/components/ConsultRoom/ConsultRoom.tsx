@@ -403,15 +403,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   useEffect(() => {
-    const _willBlur = props.navigation.addListener('willBlur', (payload) => {
-      setBannerData && setBannerData([]);
-    });
-    return () => {
-      _willBlur && _willBlur.remove();
-    };
-  });
-
-  useEffect(() => {
     //TODO: if deeplinks is causing issue comment handleDeepLink here and uncomment in SplashScreen useEffect
     // handleDeepLink(props.navigation);
     isserviceable();
