@@ -145,8 +145,6 @@ export interface AppCommonDataContextProps {
   setSavePatientDetails: ((items: any) => void) | null;
   savePatientDetailsWithHistory: any;
   setSavePatientDetailsWithHistory: ((items: any) => void) | null;
-  isDoctorCallDisconnected: boolean;
-  setDoctorCallDisconnected: (value: boolean) => void;
   doctorJoinedChat: boolean;
   setDoctorJoinedChat: ((isJoined: boolean) => void) | null;
 }
@@ -201,8 +199,6 @@ export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   setSavePatientDetails: null,
   savePatientDetailsWithHistory: [],
   setSavePatientDetailsWithHistory: null,
-  isDoctorCallDisconnected: false,
-  setDoctorCallDisconnected: () => {},
   doctorJoinedChat: false,
   setDoctorJoinedChat: null,
 });
@@ -284,7 +280,6 @@ export const AppCommonDataProvider: React.FC = (props) => {
   >('');
 
   const [doctorJoinedChat, setDoctorJoinedChat] = useState<boolean>(false);
-  const [isDoctorCallDisconnected, setDoctorCallDisconnected] = useState<boolean>(false);
 
   const setLocationDetails: AppCommonDataContextProps['setLocationDetails'] = (locationDetails) => {
     _setLocationDetails(locationDetails);
@@ -423,8 +418,6 @@ export const AppCommonDataProvider: React.FC = (props) => {
         setSavePatientDetails,
         doctorJoinedChat,
         setDoctorJoinedChat,
-        isDoctorCallDisconnected,
-        setDoctorCallDisconnected,
         savePatientDetailsWithHistory,
         setSavePatientDetailsWithHistory,
       }}
