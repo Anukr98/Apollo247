@@ -358,7 +358,7 @@ export const AppCommonDataProvider: React.FC = (props) => {
         _setLocationDetails(JSON.parse(location || 'null'));
         _setPharmacyLocation(JSON.parse(pharmacyLocation || 'null'));
         _setDiagnosticLocation(JSON.parse(diagnosticLocation || 'null'));
-        _setDiagnosticLocationServiceable(diagnosticPinCodeServiceability || 'null');
+        _setDiagnosticLocationServiceable(JSON.parse(diagnosticPinCodeServiceability || 'null'));
       } catch (error) {
         console.log('Failed to get location from local storage.');
       }
