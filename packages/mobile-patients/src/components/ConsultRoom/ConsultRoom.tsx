@@ -1,4 +1,5 @@
 import messaging from '@react-native-firebase/messaging';
+import DeviceInfo from 'react-native-device-info';
 import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import {
   LocationData,
@@ -59,13 +60,13 @@ import {
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   GET_PATIENT_FUTURE_APPOINTMENT_COUNT,
-  SAVE_DEVICE_TOKEN,
   SAVE_VOIP_DEVICE_TOKEN,
   GET_ALL_USER_SUSBSCRIPTIONS_WITH_PLAN_BENEFITS,
   IDENTIFY_HDFC_CUSTOMER,
   VALIDATE_HDFC_OTP,
   CREATE_USER_SUBSCRIPTION,
   GET_ALL_GROUP_BANNERS_OF_USER,
+  UPDATE_PATIENT_APP_VERSION,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { getPatientFutureAppointmentCount } from '@aph/mobile-patients/src/graphql/types/getPatientFutureAppointmentCount';
 import {
@@ -88,11 +89,7 @@ import {
   GetAllGroupBannersOfUser,
   GetAllGroupBannersOfUserVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetAllGroupBannersOfUser';
-import { DEVICE_TYPE, Relation, STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import {
-  saveDeviceToken,
-  saveDeviceTokenVariables,
-} from '@aph/mobile-patients/src/graphql/types/saveDeviceToken';
+import { DEVICETYPE, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   GenerateTokenforCM,
   notifcationsApi,
@@ -153,11 +150,14 @@ import {
 import { ScrollView } from 'react-native-gesture-handler';
 import WebEngage from 'react-native-webengage';
 import { NavigationScreenProps } from 'react-navigation';
+import {
+  UpdatePatientAppVersion,
+  UpdatePatientAppVersionVariables,
+} from '@aph/mobile-patients/src/graphql/types/UpdatePatientAppVersion';
 import { getPatientPersonalizedAppointments_getPatientPersonalizedAppointments_appointmentDetails } from '../../graphql/types/getPatientPersonalizedAppointments';
 import { getPatientPersonalizedAppointmentList, saveTokenDevice } from '../../helpers/clientCalls';
 import { ConsultPersonalizedCard } from '../ui/ConsultPersonalizedCard';
 import VoipPushNotification from 'react-native-voip-push-notification';
-import { LocalStrings } from '@aph/mobile-patients/src/strings/LocalStrings';
 import { addVoipPushToken, addVoipPushTokenVariables } from '../../graphql/types/addVoipPushToken';
 import Carousel from 'react-native-snap-carousel';
 import { HdfcConnectPopup } from '../HdfcSubscription/HdfcConnectPopup';
@@ -456,9 +456,30 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     } catch (error) {}
   };
 
+  const notifyAppVersion = async (patientId: string) => {
+    try {
+      const key = `${patientId}-appVersion`;
+      const savedAppVersion = await AsyncStorage.getItem(key);
+      const appVersion = DeviceInfo.getVersion();
+      if (savedAppVersion !== appVersion) {
+        await client.mutate<UpdatePatientAppVersion, UpdatePatientAppVersionVariables>({
+          mutation: UPDATE_PATIENT_APP_VERSION,
+          variables: {
+            appVersion,
+            patientId,
+            osType: Platform.OS == 'ios' ? DEVICETYPE.IOS : DEVICETYPE.ANDROID,
+          },
+          fetchPolicy: 'no-cache',
+        });
+        await AsyncStorage.setItem(key, appVersion);
+      }
+    } catch (error) {}
+  };
+
   useEffect(() => {
     if (currentPatient?.id) {
-      saveDeviceNotificationToken(currentPatient?.id);
+      saveDeviceNotificationToken(currentPatient.id);
+      notifyAppVersion(currentPatient.id);
     }
   }, [currentPatient]);
 
