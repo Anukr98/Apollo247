@@ -822,7 +822,6 @@ const styles = StyleSheet.create({
   proceedBtn: {
     marginTop: 20,
     width: 155,
-    backgroundColor: colors.LIGHT_BLUE,
     alignSelf: 'center',
   },
   mainView: {
@@ -1015,7 +1014,7 @@ const styles = StyleSheet.create({
     opacity: 0.3,
   },
   restartBtnTxt: {
-    color: colors.SKY_BLUE,
+    color: colors.APP_YELLOW,
     ...theme.fonts.IBMPlexSansMedium(14),
   },
   infoIcon: {
