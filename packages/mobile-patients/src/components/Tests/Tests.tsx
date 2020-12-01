@@ -759,12 +759,57 @@ export const Tests: React.FC<TestsProps> = (props) => {
     getPlaceInfoByPincode(pincode)
       .then(({ data }) => {
         try {
-          const addrComponents = data.results[0].address_components || [];
-          const latLang = data.results[0].geometry.location || {};
-          const response = getFormattedLocation(addrComponents, latLang, pincode);
-          setDiagnosticLocation!(response);
-          !locationDetails && setLocationDetails!(response);
+          if (data?.results?.length > 0) {
+            const addrComponents = data.results[0].address_components || [];
+            const latLang = data.results[0].geometry.location || {};
+            const response = getFormattedLocation(addrComponents, latLang, pincode);
+            let setCity, setState;
+            if (isDiagnosticLocationServiceable == 'true' && diagnosticServiceabilityData == null) {
+              setCity = diagnosticLocation?.city! || '';
+              setState = diagnosticLocation?.state! || '';
+            } else if (
+              isDiagnosticLocationServiceable == 'true' &&
+              diagnosticServiceabilityData?.city != ''
+            ) {
+              setCity = diagnosticServiceabilityData?.city! || '';
+              setState = diagnosticServiceabilityData?.state! || '';
+            } else {
+              setCity = response.city || '';
+              setState = response.state || '';
+            }
+            (response.city = setCity), (response.state = setState);
+            setDiagnosticLocation!(response);
+            !locationDetails && setLocationDetails!(response);
+          } else {
+            //serviceable but no response
+            let response = {
+              displayName: '',
+              area:
+                isDiagnosticLocationServiceable == 'true'
+                  ? diagnosticServiceabilityData == null
+                    ? diagnosticLocation?.city!
+                    : diagnosticServiceabilityData?.city!
+                  : '',
+              city:
+                isDiagnosticLocationServiceable == 'true'
+                  ? diagnosticServiceabilityData == null
+                    ? diagnosticLocation?.city!
+                    : diagnosticServiceabilityData?.city!
+                  : '',
+              state:
+                isDiagnosticLocationServiceable == 'true'
+                  ? diagnosticServiceabilityData == null
+                    ? diagnosticLocation?.state!
+                    : diagnosticServiceabilityData?.state!
+                  : '',
+              country: 'India',
+              pincode: String(pincode),
+            };
+            setDiagnosticLocation!(response);
+            !locationDetails && setLocationDetails!(response);
+          }
         } catch (e) {
+          console.log(e);
           handleUpdatePlaceInfoByPincodeError(e);
         }
       })
@@ -800,8 +845,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
       .then((response) => {
         setLoadingContext!(false);
         checkIsPinCodeServiceable(response.pincode);
-        response && setDiagnosticLocation!(response);
-        response && !locationDetails && setLocationDetails!(response);
       })
       .catch((e) => {
         CommonBugFender('Diagnostic__ALLOW_AUTO_DETECT', e);
@@ -835,8 +878,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
           const serviceableData = g(data, 'getPincodeServiceability');
           if (serviceableData && serviceableData?.cityName != '') {
             let obj = {
-              cityId: serviceableData.cityID?.toString() || '',
-              stateId: serviceableData.stateID?.toString() || '',
+              cityId: serviceableData.cityID?.toString() || 0,
+              stateId: serviceableData.stateID?.toString() || 0,
               state: serviceableData.stateName || '',
               city: serviceableData.cityName || '',
             };
