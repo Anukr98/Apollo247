@@ -320,7 +320,7 @@ export const MyMembership: React.FC<MyMembershipProps> = (props) => {
   const renderMembershipCard = (subscription: any, isCanUpgradeToPlan: boolean) => {
     const planBenefits = subscription?.benefits;
     const isCare = subscription?.name === Circle.planName;
-    const isactive = isCare ? true : subscription!.isActive;
+    const isactive = isCare ? true : subscription?.isActive;
     return (
       <View style={styles.cardStyle}>
         <View style={styles.healthyLifeContainer}>

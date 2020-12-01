@@ -3380,8 +3380,8 @@ export const SAVE_VOIP_DEVICE_TOKEN = gql`
 `;
 
 export const GET_ALL_USER_SUSBSCRIPTIONS_WITH_PLAN_BENEFITS = gql`
-  query GetAllUserSubscriptionsWithPlanBenefits($mobile_number: String!) {
-    GetAllUserSubscriptionsWithPlanBenefits(mobile_number: $mobile_number) {
+  query GetAllUserSubscriptionsWithPlanBenefitsV2($mobile_number: String!) {
+    GetAllUserSubscriptionsWithPlanBenefitsV2(mobile_number: $mobile_number) {
       code
       success
       message
