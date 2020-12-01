@@ -1821,7 +1821,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         {renderCovidBlueButtons(
           onPressHealthPro,
           <ApolloHealthProIcon style={{ width: 28, height: 28 }} resizeMode="stretch" />,
-          'Explore ApolloPro Health'
+          'Explore Apollo ProHealth'
         )}
         {renderCovidBlueButtons(
           onPressRiskLevel,
