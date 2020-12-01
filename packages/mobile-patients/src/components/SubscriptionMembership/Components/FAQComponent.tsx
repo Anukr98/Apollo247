@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   faqHeading: {
-    ...theme.viewStyles.text('R', 16, '#02475B', 1, 20, 0.35),
+    ...theme.viewStyles.text('R', 14, '#02475B', 1, 20, 0.35),
     marginTop: 10,
   },
   horizontalLine: {
@@ -67,11 +67,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   faqQuestion: {
-    ...theme.viewStyles.text('M', 14, '#01475B', 1, 20, 0.35),
+    ...theme.viewStyles.text('M', 14, '#01475B', 1, 24, 0.35),
     marginBottom: 10,
     width: '80%',
   },
   faqAnswer: {
-    ...theme.viewStyles.text('L', 13, '#01475B', 1, 20, 0.35),
+    ...theme.viewStyles.text('L', 12, '#01475B', 1, 16, 0.35),
   },
 });
