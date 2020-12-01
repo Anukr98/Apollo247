@@ -2147,7 +2147,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                     <CircleLogo style={circleStyles.circleLogo} />
                   </View>
                   <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 17, 0)}>
-                    {`Get effective price of ₹${effectivePrice}`}
+                    {`Get Circle Cashback of ₹${cartTotalCashback.toFixed(2)}`}
                   </Text>
                 </TouchableOpacity>
               )}

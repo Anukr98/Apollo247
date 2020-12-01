@@ -540,6 +540,7 @@ export const CircleMembershipPlans: React.FC<CircleMembershipPlansProps> = (prop
         onPress={() => {
           fireCircleBuyNowEvent();
           setDefaultCirclePlan && setDefaultCirclePlan(null);
+          setIsCircleSubscription && setIsCircleSubscription(true);
           autoSelectDefaultPlan(membershipPlans);
           closeModal && closeModal();
           if (buyNow) {
