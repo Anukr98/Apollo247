@@ -1748,9 +1748,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       <TouchableOpacity activeOpacity={0.5} onPress={onButtonClick} style={styles.covidToucahble}>
         <View style={styles.covidIconView}>{buttonIcon}</View>
         <View style={styles.covidTitleView}>
-          <Text style={{ ...theme.viewStyles.text('M', 14, theme.colors.WHITE, 1, 18) }}>
-            {title}
-          </Text>
+          <Text style={{ ...theme.viewStyles.text('M', 14, theme.colors.WHITE) }}>{title}</Text>
         </View>
       </TouchableOpacity>
     );
@@ -1822,7 +1820,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
         {renderCovidBlueButtons(
           onPressHealthPro,
-          <ApolloHealthProIcon style={{ width: 24, height: 24 }} />,
+          <ApolloHealthProIcon style={{ width: 28, height: 28 }} resizeMode="stretch" />,
           'Explore ApolloPro Health'
         )}
         {renderCovidBlueButtons(
