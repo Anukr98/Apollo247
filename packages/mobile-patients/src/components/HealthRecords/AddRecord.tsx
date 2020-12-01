@@ -499,6 +499,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const [healthRestrictionName, setHealthRestrictionName] = useState<string>('');
   const [healthRestrictionDocName, setHealthRestrictionDocName] = useState<string>('');
   const [healthRestrictionEndDate, setHealthRestrictionEndDate] = useState<string>('');
+  const [healthRestrictionAdditionalNotes, setHealthRestrictionAdditionalNotes] = useState<string>(
+    ''
+  );
   const [isHealthRestrictionDateTimePicker, setIsHealthRestrictionDateTimePicker] = useState<
     boolean
   >(false);
@@ -687,6 +690,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             ? moment(selectedRecord?.endDateTime).format(string.common.date_placeholder_text)
             : ''
         );
+        setHealthRestrictionAdditionalNotes(selectedRecord?.notes || '');
       } else if (recordType === MedicalRecordType.MEDICALCONDITION) {
         setMedicalConditionCheckbox(true);
         setShowMedicalConditionDetails(true);
@@ -1121,6 +1125,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             )
           : null,
       recordType: MedicalRecordType.HEALTHRESTRICTION,
+      notes: healthRestrictionAdditionalNotes,
     };
     client
       .mutate<addPatientHealthRestrictionRecord>({
@@ -1520,6 +1525,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         title: 'Alert!',
         description: 'Please select allergy severity',
       });
+    } else if (allergyEndDate && moment(allergyEndDate).isSameOrBefore(dateOfTest)) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Please select correct end date of allergy',
+      });
     } else if (medicationCheckbox) {
       callMedicationApi();
     } else if (healthRestrictionCheckbox) {
@@ -1536,6 +1546,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       showAphAlert!({
         title: 'Alert!',
         description: 'Please enter name of medicine',
+      });
+    } else if (medicationEndDate && moment(medicationEndDate).isSameOrBefore(dateOfTest)) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Please select correct end date of medicine',
       });
     } else if (healthRestrictionCheckbox) {
       callHealthRestricitonApi();
@@ -1558,6 +1573,14 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       showAphAlert!({
         title: 'Alert!',
         description: 'Please select restriction nature',
+      });
+    } else if (
+      healthRestrictionEndDate &&
+      moment(healthRestrictionEndDate).isSameOrBefore(dateOfTest)
+    ) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Please select correct end date of restriction',
       });
     } else if (medicalConditionCheckbox) {
       callMedicalConditionApi();
@@ -1585,6 +1608,14 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       showAphAlert!({
         title: 'Alert!',
         description: 'Please select illness type',
+      });
+    } else if (
+      medicalConditionEndDate &&
+      moment(medicalConditionEndDate).isSameOrBefore(dateOfTest)
+    ) {
+      showAphAlert!({
+        title: 'Alert!',
+        description: 'Please select correct end date of condition',
       });
     } else if (allergyCheckbox) {
       addAllergyRecord();
@@ -1632,7 +1663,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     const base64Icon = 'data:image/png;base64,';
     fin = base64Icon.concat(data?.base64);
     const fileType = data?.fileType;
-    const onPressRemoveIcon = () => {
+    const deleteImage = () => {
       const imageCOPY =
         id === 1 ? [...Images] : id === 2 ? [...allergyImage] : [...medicalConditionImage];
       imageCOPY.splice(i, 1);
@@ -1645,6 +1676,22 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         setCallDeleteAttachmentApi(true);
       }
       CommonLogEvent('ADD_RECORD', 'Set Images');
+    };
+    const onPressRemoveIcon = () => {
+      if (
+        imageUpdate &&
+        (recordType === MedicalRecordType.MEDICALBILL ||
+          recordType === MedicalRecordType.MEDICALINSURANCE ||
+          recordType === MedicalRecordType.ALLERGY ||
+          recordType === MedicalRecordType.MEDICALCONDITION)
+      ) {
+        Alert.alert('Alert!', 'Are you sure, you want to remove the attachment', [
+          { text: 'Yes', onPress: () => deleteImage() },
+          { text: 'No', onPress: () => {} },
+        ]);
+      } else {
+        deleteImage();
+      }
     };
     return (
       <View style={[styles.addMoreImageViewStyle, { marginRight: 5 }]}>
@@ -2617,6 +2664,22 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               maximumDate={false}
               minimumDate={new Date()}
             />
+            {renderListItem(string.common.additional_text, false)}
+            <TextInput
+              placeholder={string.common.enter_additional_text}
+              style={[styles.textInputStyle, styles.additionalTextInputStyle]}
+              multiline
+              selectionColor={theme.colors.SKY_BLUE}
+              numberOfLines={1}
+              value={healthRestrictionAdditionalNotes}
+              placeholderTextColor={theme.colors.placeholderTextColor}
+              underlineColorAndroid={'transparent'}
+              onChangeText={(additionalNotes) => {
+                if (isValidText(additionalNotes)) {
+                  setHealthRestrictionAdditionalNotes(additionalNotes);
+                }
+              }}
+            />
           </>
         ) : null}
       </>
@@ -2879,6 +2942,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               maximumDate={false}
               minimumDate={new Date()}
             />
+            {renderListItem('Dosage Level', false)}
             <View style={styles.morningViewStyle}>
               <TouchableOpacity
                 onPress={() => setIsMorningChecked(!isMorningChecked)}
@@ -2915,7 +2979,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               </TouchableOpacity>
             </View>
             <View style={{ marginTop: 32 }}>
-              {renderListItem('Additional Notes', false)}
+              {renderListItem(string.common.additional_text, false)}
               <TextInput
                 placeholder={'Enter additional notes'}
                 style={[styles.textInputStyle, styles.additionalTextInputStyle]}

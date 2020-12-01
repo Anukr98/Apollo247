@@ -2354,6 +2354,7 @@ export const GET_MEDICAL_PRISM_RECORD = gql`
           suggestedByDoctor
           nature
           source
+          notes
         }
       }
       allergies {

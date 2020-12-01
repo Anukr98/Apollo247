@@ -514,20 +514,20 @@ export const TestReportScreen: React.FC<TestReportScreenProps> = (props) => {
         ? 'with Dr. ' + item?.data?.labTestRefferedBy
         : '';
     const dateText = getPresctionDate(item?.data?.date);
-    const soureName = getSourceName(
-      item?.data?.labTestSource || '-',
-      item?.data?.siteDisplayName || '-',
-      item?.data?.source || '-'
-    );
+    const soureName =
+      getSourceName(item?.data?.labTestSource, item?.data?.siteDisplayName, item?.data?.source) ||
+      '-';
     const selfUpload = true;
     const showEditDeleteOption =
       soureName === string.common.clicnical_document_text || soureName === '-' ? true : false;
+    const hideEditDeleteOption = item?.data?.healthCheckName && showEditDeleteOption ? true : false;
     return (
       <HealthRecordCard
         item={filterApplied === FILTER_TYPE.PARAMETER_NAME ? item : item?.data}
         index={index}
         editDeleteData={editDeleteData()}
         showUpdateDeleteOption={showEditDeleteOption}
+        hideUpdateDeleteOption={hideEditDeleteOption}
         onHealthCardPress={(selectedItem) => onHealthCardItemPress(selectedItem)}
         onDeletePress={(selectedItem) => onPressDeletePrismMedicalRecords(selectedItem)}
         onEditPress={(selectedItem) => onPressEditPrismMedicalRecords(selectedItem)}

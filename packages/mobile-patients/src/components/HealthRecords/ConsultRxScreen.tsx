@@ -697,7 +697,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         : getPresctionDate(item?.data?.appointmentDateTime);
     const soureName =
       item?.data?.prescriptionName || item?.data?.date
-        ? getSourceName(item?.data?.source || '-')
+        ? getSourceName(item?.data?.source) || '-'
         : g(item?.data, 'doctorInfo', 'doctorHospital', '0' as any, 'facility', 'name') || '-';
     const selfUpload = item?.data?.prescriptionName || item?.data?.date ? true : false;
     const caseSheetDetails =
@@ -712,7 +712,7 @@ export const ConsultRxScreen: React.FC<ConsultRxScreenProps> = (props) => {
         item={item?.data}
         index={index}
         editDeleteData={editDeleteData()}
-        showUpdateDeleteOption={showEditDeleteOption}
+        showUpdateDeleteOption={item?.data?.patientId ? false : showEditDeleteOption}
         onHealthCardPress={(selectedItem) => onHealthCardItemPress(selectedItem)}
         prescriptionName={prescriptionName}
         doctorName={doctorName}

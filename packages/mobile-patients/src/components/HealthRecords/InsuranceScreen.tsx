@@ -221,15 +221,15 @@ export const InsuranceScreen: React.FC<InsuranceScreenProps> = (props) => {
   const renderMedicalInsuranceItems = (item: MedicalInsuranceType, index: number) => {
     const getSourceName = (source: string) => {
       return source === 'self' || source === '247self'
-        ? string.common.patient_uploaded_text
+        ? string.common.clicnical_document_text
         : source;
     };
     const prescriptionName = item?.insuranceCompany || '';
     const dateText = getPrescriptionDate(item?.startDateTime);
-    const soureName = getSourceName(item?.source || '-');
+    const soureName = getSourceName(item?.source!) || '';
     const selfUpload = true;
     const showEditDeleteOption =
-      soureName === string.common.patient_uploaded_text || soureName === '-' ? true : false;
+      soureName === string.common.clicnical_document_text || soureName === '-' ? true : false;
     return (
       <HealthRecordCard
         item={item}

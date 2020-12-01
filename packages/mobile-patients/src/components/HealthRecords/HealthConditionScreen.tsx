@@ -329,7 +329,7 @@ export const HealthConditionScreen: React.FC<HealthConditionScreenProps> = (prop
       item?.medicalConditionName ||
       '';
     const dateText = getPrescriptionDate(item?.startDateTime);
-    const soureName = getSourceName(item?.source || '-');
+    const soureName = getSourceName(item?.source) || '-';
     const selfUpload = true;
     const showEditDeleteOption =
       soureName === string.common.clicnical_document_text || soureName === '-' ? true : false;
