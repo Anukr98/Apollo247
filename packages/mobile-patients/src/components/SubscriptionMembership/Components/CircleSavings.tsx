@@ -50,7 +50,7 @@ export const CircleSavings: React.FC<CircleSavingsProps> = (props) => {
           Total Savings Using Circle Plan{'  '}
           <Text style={theme.viewStyles.text('SB', 18, '#00B38E', 1, 28, 0.35)}>
             {strings.common.Rs}
-            {totalCircleSavings?.totalSavings || 0}
+            {totalCircleSavings?.totalSavings.toFixed(2) || 0}
           </Text>
         </Text>
         {renderSavingsCard()}
