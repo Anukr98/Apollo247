@@ -59,7 +59,7 @@ export const Savings: React.FC<SavingsProps> = (props) => {
   }
 
   function careSubscribeMessage() {
-    if (cartTotalCashback > 1) {
+    if (cartTotalCashback > 1 && showCareDetails) {
       return (
         <View style={styles.careMessageCard}>
           <Text style={styles.youText}>
