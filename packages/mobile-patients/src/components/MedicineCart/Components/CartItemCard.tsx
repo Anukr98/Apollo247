@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, Dimensions } from 'react-native';
 import { Image } from 'react-native-elements';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -100,8 +100,12 @@ export const CartItemCard: React.FC<CartItemCardProps> = (props) => {
   };
 
   const renderLowerCont = () => {
+    const { width } = Dimensions.get('window');
     return (
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+      <View style={{ 
+        flexDirection: 'row', 
+        justifyContent: width <= 360 ? 'space-around' : 'space-between' 
+      }}>
         <View>
           {renderQuantity()}
           {itemAvailable && !isProuctFreeCouponApplied && !!coupon && renderCoupon()}
