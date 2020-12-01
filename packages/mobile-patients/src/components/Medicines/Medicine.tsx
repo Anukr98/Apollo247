@@ -2110,6 +2110,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 <View style={{ width: '60%' }}>
                   <View style={{ flexDirection: 'row' }}>
                     <Text style={theme.viewStyles.text('SB', 15, '#02475B', 1, 20, 0)}>
+                      MRP{'  '}
                       {string.common.Rs}
                       {(cartTotal - productDiscount).toFixed(2)}
                     </Text>
@@ -2124,14 +2125,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                   </View>
                   <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
                     <Text style={theme.viewStyles.text('R', 12, '#02475B', 1, 25, 0)}>
-                      Effective price for
-                    </Text>
-                    <CircleLogo style={circleStyles.circleLogoTwo} />
-                    <Text style={{ ...theme.viewStyles.text('R', 12, '#02475B', 1, 25, 0) }}>
-                      members{' '}
+                      Effective price for you{' '}
                     </Text>
                     <Text style={theme.viewStyles.text('SB', 12, '#02475B', 1, 25, 0)}>
-                      ₹{effectivePrice}
+                      {string.common.Rs}{effectivePrice}
                     </Text>
                   </View>
                 </View>
