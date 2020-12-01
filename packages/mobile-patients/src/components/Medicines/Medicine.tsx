@@ -2092,8 +2092,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         resizeMode: 'contain',
         width: 35,
         height: 25,
-        marginHorizontal: 4,
-        // top: -24,
+        marginRight: 4,
       },
     });
     const effectivePrice = Math.round(cartDiscountTotal - cartTotalCashback);
