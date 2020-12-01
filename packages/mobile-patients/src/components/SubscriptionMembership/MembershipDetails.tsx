@@ -671,7 +671,7 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
             padding: 15,
           }}
         >
-          <Text style={theme.viewStyles.text('M', 16, '#02475B', 1, 20, 0.35)}>
+          <Text style={theme.viewStyles.text('M', 14, '#02475B', 1, 18, 0.35)}>
             AVAILABLE BENEFITS
           </Text>
           {renderCircleBenefits(circleSubscription?.benefits)}

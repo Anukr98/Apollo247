@@ -7,12 +7,12 @@ export interface CardContentProps {
   bodyText: string;
   icon: string | null;
   isActivePlan: boolean;
-  iconElement?: Element; 
+  iconElement?: Element;
 }
 
 export const CardContent: React.FC<CardContentProps> = (props) => {
   const { heading, bodyText, icon, isActivePlan, iconElement } = props;
-  const iconPngPath = icon ? icon.replace('.svg', '.png') : null; 
+  const iconPngPath = icon ? icon.replace('.svg', '.png') : null;
   return (
     <View>
       <View
@@ -44,12 +44,12 @@ export const CardContent: React.FC<CardContentProps> = (props) => {
 
 const styles = StyleSheet.create({
   redeemableCardsHeading: {
-    ...theme.viewStyles.text('SB', 15, '#02475B', 1, 20, 0.35),
+    ...theme.viewStyles.text('SB', 14, '#02475B', 1, 18.2, 0.35),
     width: '80%',
     marginBottom: 10,
   },
   redeemableCardsText: {
-    ...theme.viewStyles.text('R', 13, '#02475B', 1, 20, 0.35),
+    ...theme.viewStyles.text('R', 11, '#02475B', 1, 16, 0.35),
     width: '75%',
   },
 });
