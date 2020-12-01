@@ -436,6 +436,7 @@ export const PharmacyPaymentStatus: React.FC<PharmacyPaymentStatusProps> = (prop
       <AddedCirclePlanWithValidity
         circleSavings={circleSavings}
         circlePlanDetails={circlePlanDetails}
+        isConsult={false}
       />
     );
   };

@@ -753,6 +753,7 @@ export const ConsultPaymentStatus: React.FC<ConsultPaymentStatusProps> = (props)
       <AddedCirclePlanWithValidity
         circleSavings={circleSavings}
         circlePlanDetails={circlePlanDetails}
+        isConsult={true}
       />
     );
   };

@@ -9,9 +9,10 @@ import moment from 'moment';
 interface AddedCirclePlanWithValidityProps {
   circleSavings: number;
   circlePlanDetails?: any;
+  isConsult?: boolean;
 }
 export const AddedCirclePlanWithValidity: React.FC<AddedCirclePlanWithValidityProps> = (props) => {
-  const { circleSavings, circlePlanDetails } = props;
+  const { circleSavings, circlePlanDetails, isConsult } = props;
   return (
     <View style={styles.container}>
       <View style={styles.row}>
@@ -28,7 +29,8 @@ export const AddedCirclePlanWithValidity: React.FC<AddedCirclePlanWithValidityPr
               saved {string.common.Rs}
               {circleSavings}{' '}
             </Text>
-            on your purchase
+            on your
+            {isConsult ? ` consult` : ` purchase`}
           </Text>
           <View style={[styles.spaceRow, { alignItems: 'flex-start' }]}>
             {circlePlanDetails?.end_date ? (
