@@ -389,7 +389,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   >([]);
   const [profileChange, setProfileChange] = useState<boolean>(false);
 
-  const [showBannerCarousel, setShowBannerCarousel] = useState<boolean>(true);
   const [hdfcLoading, setHdfcLoading] = useState<boolean>(false);
   const circleActivated = props.navigation.getParam('circleActivated');
   const circlePlanValidity = props.navigation.getParam('circlePlanValidity');
@@ -423,7 +422,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       ) {
         setIsFreeDelivery && setIsFreeDelivery(true);
       }
-      setShowBannerCarousel(true);
     } else if (g(currentPatient, 'partnerId') === hdfc_values.REFERRAL_CODE) {
     }
   }, [hdfcUserSubscriptions]);
@@ -802,7 +800,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       });
       const data = res?.data?.GetSubscriptionsOfUserByStatus?.response;
       if (data) {
-        setShowBannerCarousel(true);
         /**
          * for circle and hdfc
          * data?.HDFC ------> HDFC data
@@ -895,7 +892,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 setIsFreeDelivery && setIsFreeDelivery(true);
               }
               getUserBanners();
-              setShowBannerCarousel(true);
             }
 
             if (circlePlan) {
@@ -2143,9 +2139,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <Text style={styles.descriptionTextStyle}>{string.common.weAreHereToHelpYou}</Text>
               {isPersonalizedCard && renderAppointmentWidget()}
               {renderMenuOptions()}
-              {showBannerCarousel && (
-                <View style={{ backgroundColor: '#f0f1ec' }}>{renderBannersCarousel()}</View>
-              )}
+              <View style={{ backgroundColor: '#f0f1ec' }}>{renderBannersCarousel()}</View>
               <View style={{ backgroundColor: '#f0f1ec' }}>{renderListView()}</View>
               {renderCovidMainView()}
               {/* {renderCovidHeader()}
