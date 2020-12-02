@@ -15,7 +15,11 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { HdfcConnectPopup } from './HdfcConnectPopup';
 import { Hdfc_values } from '@aph/mobile-patients/src/strings/strings.json';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { g, postWebEngageEvent } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  postWebEngageEvent,
+  setCircleMembershipType,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AvailNowPopup } from './AvailNowPopup';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
@@ -344,13 +348,83 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
     }
   };
 
+  const handleCircleWebengageEvents = (attribute: string) => {
+    const circleMembershipType = setCircleMembershipType(
+      circleSubscription?.startDate!,
+      circleSubscription?.endDate!
+    );
+    const circleEventAttributes: WebEngageEvents[WebEngageEventName.MY_MEMBERSHIP_VIEW_DETAILS_CLICKED] = {
+      'Patient UHID': currentPatient?.uhid,
+      'Mobile Number': currentPatient?.mobileNumber,
+      'Customer ID': currentPatient?.id,
+      'Circle Member': circleSubscription?._id ? 'Yes' : 'No',
+      'Membership Type': circleMembershipType,
+      'Circle Membership Start Date': circleSubscription?.startDate!,
+      'Circle Membership End Date': circleSubscription?.endDate!,
+    };
+
+    const attributeName = string.circleMembershipBenefits;
+    if (attribute == attributeName.PHARMA_CASHBACK) {
+      postWebEngageEvent(
+        WebEngageEventName.MY_MEMBERSHIP_PHARMACY_CASHBACK_BENEFITS_CLICKED,
+        circleEventAttributes
+      );
+    } else if (attribute === attributeName.FREE_DELIVERY) {
+      postWebEngageEvent(
+        WebEngageEventName.MY_MEMBERSHIP_FREE_DELIVERY_CLICKED,
+        circleEventAttributes
+      );
+    } else if (attribute === attributeName.DOCTOR_HELPLINE) {
+      postWebEngageEvent(
+        WebEngageEventName.MY_MEMBERSHIP_DOCTOR_HELPLINE_CLICKED,
+        circleEventAttributes
+      );
+    } else if (attribute === attributeName.DIAGNOSTICS_SAMPLE_COLLECTION) {
+      postWebEngageEvent(
+        WebEngageEventName.MY_MEMBERSHIP_DIAGNOSTICS_HOME_SAMPLE_CLICKED,
+        circleEventAttributes
+      );
+    } else if (attribute === attributeName.DIAGNOSTICS_DISCOUNT) {
+      postWebEngageEvent(
+        WebEngageEventName.MY_MEMBERSHIP_DIAGNOSTICS_DISCOUNTS_CLICKED,
+        circleEventAttributes
+      );
+    } else if (attribute === attributeName.DOC_ON_CALL) {
+      postWebEngageEvent(
+        WebEngageEventName.MY_MEMBERSHIP_DOC_ON_CALL_CLICKED,
+        circleEventAttributes
+      );
+    } else if (attribute === attributeName.PRO_HEALTH) {
+      postWebEngageEvent(
+        WebEngageEventName.MY_MEMBERSHIP_PRO_HEALTH_CLICKED,
+        circleEventAttributes
+      );
+    } else if (attribute === attributeName.ADVANCE_DIABETES) {
+      postWebEngageEvent(
+        WebEngageEventName.MY_MEMBERSHIP_ADVANCED_DIABETES_CLICKED,
+        circleEventAttributes
+      );
+    } else if (attribute === attributeName.COVID_CARE) {
+      postWebEngageEvent(
+        WebEngageEventName.MY_MEMBERSHIP_COVID_CARE_CLICKED,
+        circleEventAttributes
+      );
+    } else if (attribute === attributeName.DIGITALIZATION_PHR) {
+      postWebEngageEvent(
+        WebEngageEventName.MY_MEMBERSHIP_DIGITALIZATION_OF_PHR_CLICKED,
+        circleEventAttributes
+      );
+    }
+  };
+
   const handleCtaClick = (
     type: string,
     action: string,
     message: string,
     availableCount: number,
     id: string,
-    webengageevent: string | null
+    webengageevent: string | null,
+    attribute: string
   ) => {
     if (webengageevent) {
       handleWebengageEvents(webengageevent);
@@ -359,6 +433,10 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
         Benefit: type == Hdfc_values.WHATSAPP_OPEN_CHAT ? type : action,
       };
       postWebEngageEvent(WebEngageEventName.HDFC_REDEEM_CLICKED, eventAttributes);
+    }
+
+    if (isCirclePlan) {
+      handleCircleWebengageEvents(attribute);
     }
 
     if (type == Hdfc_values.REDIRECT) {
@@ -639,13 +717,21 @@ export const MembershipDetails: React.FC<MembershipDetailsProps> = (props) => {
   const renderCircleBenefits = (circleBenefits: any) => {
     const totalSavingsDone = totalCircleSavings?.totalSavings! + totalCircleSavings?.callsUsed!;
     return circleBenefits?.map((value: any) => {
-      const { headerContent, description, benefitCtaAction, icon, availableCount, _id } = value;
+      const {
+        headerContent,
+        description,
+        benefitCtaAction,
+        icon,
+        availableCount,
+        _id,
+        attribute,
+      } = value;
       const { action, message, type, webEngageEvent } = benefitCtaAction;
       return (
         <TouchableOpacity
           activeOpacity={1}
           onPress={() => {
-            handleCtaClick(type, action, message, availableCount, _id, null);
+            handleCtaClick(type, action, message, availableCount, _id, null, attribute);
           }}
           style={[styles.cardStyle, { marginVertical: 10 }]}
         >

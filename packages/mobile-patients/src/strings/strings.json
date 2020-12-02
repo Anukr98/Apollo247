@@ -754,5 +754,17 @@
     "HOME": "HOME",
     "PHARMACY_HOME": "PHARMACY_HOME",
     "DIAGNOSTIC_HOME": "DIAGNOSTIC_HOME"
+  },
+  "circleMembershipBenefits":{
+    "PHARMA_CASHBACK": "Pharma Cashback",
+    "FREE_DELIVERY":"Free Delivery",
+    "DOCTOR_HELPLINE": "Slashed Consults",
+    "DIAGNOSTICS_SAMPLE_COLLECTION" : "Diagnostic Collection",
+    "DIAGNOSTICS_DISCOUNT":"Diagnostic Discounts",
+    "DOC_ON_CALL":"Doc on Call",
+    "PRO_HEALTH": "Pro Health",
+    "ADVANCE_DIABETES" :"Advanced Diabetes",
+    "COVID_CARE" :"CovidCare",
+    "DIGITALIZATION_PHR" :"DigitizationPHR"
   }
 }

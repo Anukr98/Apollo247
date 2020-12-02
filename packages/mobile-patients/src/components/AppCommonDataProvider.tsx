@@ -91,6 +91,7 @@ export interface CicleSubscriptionData {
   planSummary: CirclePlanSummary[] | [];
   groupDetails: CircleGroup;
   endDate?: Date | null;
+  startDate?: Date | null;
   benefits?: PlanBenefits[];
 }
 

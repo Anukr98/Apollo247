@@ -2034,3 +2034,25 @@ const replaceString = (str: string, match:any, fn:any) => {
   }
   return result;
 };
+
+export const monthDiff = (dateFrom: Date, dateTo: Date) => {
+  return (
+    dateTo.getMonth() - dateFrom.getMonth() + 12 * (dateTo.getFullYear() - dateFrom.getFullYear())
+  );
+};
+
+export const setCircleMembershipType = (fromDate: Date, toDate: Date) => {
+  const diffInMonth = monthDiff(
+    new Date(fromDate!),
+    new Date(toDate!)
+  );
+  let circleMembershipType;
+  if (diffInMonth < 6) {
+    circleMembershipType = 'Monthly';
+  } else if (diffInMonth == 6) {
+    circleMembershipType = 'Half Yearly';
+  } else {
+    circleMembershipType = 'Annual';
+  }
+  return circleMembershipType;
+};
